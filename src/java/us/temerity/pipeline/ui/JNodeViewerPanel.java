@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.28 2004/08/22 22:07:17 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.29 2004/08/23 04:29:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -240,19 +240,18 @@ class JNodeViewerPanel
 
       pNodePopup.addSeparator();
       
-      item = new JMenuItem("Make");
-      item.setActionCommand("make");
-      item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
-      pNodePopup.add(item);
-      
-      item = new JMenuItem("Queue");
-      item.setActionCommand("queue");
+      item = new JMenuItem("Queue Jobs");
+      item.setActionCommand("queue-jobs");
       item.addActionListener(this);
       pNodePopup.add(item);
 
-      item = new JMenuItem("Kill");
-      item.setActionCommand("kill");
+      item = new JMenuItem("Kill Jobs");
+      item.setActionCommand("kill-jobs");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Remove Files");
+      item.setActionCommand("remove-files");
       item.addActionListener(this);
       pNodePopup.add(item);
 
@@ -2097,10 +2096,12 @@ class JNodeViewerPanel
       doAddSecondary();
     else if(cmd.startsWith("remove-secondary:")) 
       doRemoveSecondary(cmd.substring(17)); 
-    else if(cmd.equals("queue"))
-      doQueue();
-    else if(cmd.equals("kill"))
-      doKill();
+    else if(cmd.equals("queue-jobs"))
+      doQueueJobs();
+    else if(cmd.equals("kill-jobs"))
+      doKillJobs();
+    else if(cmd.equals("remove-files"))
+      doRemoveFiles();
     else if(cmd.equals("check-in"))
       doCheckIn();
     else if(cmd.equals("check-out"))
@@ -2571,16 +2572,16 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Submit jobs to the queue for the primary selected node and all nodes upstream of it.
+   * Queue jobs to the queue for the primary selected node and all nodes upstream of it.
    */ 
   private void 
-  doQueue() 
+  doQueueJobs() 
   {
     if(pPrimary != null) {
       NodeStatus status = pPrimary.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	QueueTask task = new QueueTask(status.getName(), null);
+	QueueJobsTask task = new QueueJobsTask(status.getName(), null);
 	task.start();
       }
     }
@@ -2593,7 +2594,7 @@ class JNodeViewerPanel
    * Kill all jobs associated with the selected nodes.
    */ 
   private void 
-  doKill() 
+  doKillJobs() 
   {
     TreeSet<Long> dead = new TreeSet<Long>();
     for(ViewerNode vnode : pSelected.values()) {
@@ -2617,7 +2618,45 @@ class JNodeViewerPanel
     }
 
     if(!dead.isEmpty()) {
-      KillTask task = new KillTask(dead);
+      KillJobsTask task = new KillJobsTask(dead);
+      task.start();
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Remove all primary/secondary files associated with the selected nodes.
+   */ 
+  private void 
+  doRemoveFiles() 
+  {
+    TreeSet<String> names = new TreeSet<String>();
+    boolean confirmed = false;
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	NodeMod work = details.getWorkingVersion();
+	if(work != null) {
+	  if(confirmed || work.isActionEnabled()) 
+	    names.add(work.getName());
+	  else {
+	    JConfirmDialog confirm = 
+	      new JConfirmDialog("Remove from Nodes without enabled Actions?");
+	    confirm.setVisible(true);
+	    confirmed = confirm.wasConfirmed(); 
+
+	    if(confirmed) 
+	      names.add(work.getName());
+	  }
+	}
+      }
+    }
+
+    if(!names.isEmpty()) {
+      RemoveFilesTask task = new RemoveFilesTask(names);
       task.start();
     }
 
@@ -3589,20 +3628,20 @@ class JNodeViewerPanel
   }
 
   /** 
-   * Submit jobs to the queue for the given node.
+   * Queue jobs to the queue for the given node.
    */ 
   private
-  class QueueTask
+  class QueueJobsTask
     extends Thread
   {
     public 
-    QueueTask
+    QueueJobsTask
     (
      String name, 
      TreeSet<Integer> indices
     ) 
     {
-      super("JNodeViewerPanel:QueueTask");
+      super("JNodeViewerPanel:QueueJobsTask");
 
       pName    = name; 
       pIndices = indices; 
@@ -3612,7 +3651,7 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Submitting Jobs...")) {
+      if(master.beginPanelOp("Submitting Jobs to the Queue...")) {
 	try {
 	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pName, pIndices);
 	}
@@ -3636,16 +3675,16 @@ class JNodeViewerPanel
    * Kill the given jobs.
    */ 
   private
-  class KillTask
+  class KillJobsTask
     extends Thread
   {
     public 
-    KillTask
+    KillJobsTask
     (
      TreeSet<Long> jobIDs
     ) 
     {
-      super("JNodeViewerPanel:KillTask");
+      super("JNodeViewerPanel:KillJobsTask");
 
       pJobIDs = jobIDs; 
     }
@@ -3673,6 +3712,48 @@ class JNodeViewerPanel
     private TreeSet<Long>  pJobIDs; 
   }
 
+  /** 
+   * Remove the working area files associated with the given nodes.
+   */ 
+  private
+  class RemoveFilesTask
+    extends Thread
+  {
+    public 
+    RemoveFilesTask
+    (
+     TreeSet<String> names
+    ) 
+    {
+      super("JNodeViewerPanel:RemoveFilesTask");
+
+      pNames = names; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      for(String name : pNames) {
+	if(master.beginPanelOp("Removing Files: " + name)) {
+	  try {
+	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+      }
+	
+      updateRoots();
+    }
+
+    private TreeSet<String>  pNames; 
+  }
 
   /** 
    * Check-in a given node.
@@ -3923,8 +4004,6 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
 
       if(pStatus != null) {
-	NodeDetails details = pStatus.getDetails();
-
 	{
 	  PanelGroup<JNodeFilesPanel> panels = 
 	    UIMaster.getInstance().getNodeFilesPanels();
@@ -3944,8 +4023,9 @@ class JNodeViewerPanel
 	    }
 	  }
 	}
-      
-	if(details.getLatestVersion() != null) {
+
+	NodeDetails details = pStatus.getDetails();
+	if((details != null) && (details.getLatestVersion() != null)) {
 	  PanelGroup<JNodeHistoryPanel> panels = 
 	    UIMaster.getInstance().getNodeHistoryPanels();
 	  JNodeHistoryPanel panel = panels.getPanel(pGroupID);
