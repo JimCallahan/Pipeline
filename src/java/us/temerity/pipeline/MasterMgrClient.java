@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.20 2004/08/27 23:34:40 jim Exp $
+// $Id: MasterMgrClient.java,v 1.21 2004/08/30 01:30:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1900,6 +1900,81 @@ class MasterMgrClient
     handleSimpleResponse(obj); 
   }
 
+  /**
+   * Pause the jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to pause the jobs.
+   */ 
+  public synchronized void
+  pauseJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may pause jobs owned by another user!");
+
+    verifyConnection();
+
+    NodePauseJobsReq req = new NodePauseJobsReq(jobIDs);
+
+    Object obj = performTransaction(MasterRequest.PauseJobs, req);
+    handleSimpleResponse(obj); 
+  }
+
+  /**
+   * Resume execution of the paused jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to resume the jobs.
+   */ 
+  public synchronized void
+  resumeJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may resume jobs owned by another user!");
+
+    verifyConnection();
+
+    NodeResumeJobsReq req = new NodeResumeJobsReq(jobIDs);
+
+    Object obj = performTransaction(MasterRequest.ResumeJobs, req);
+    handleSimpleResponse(obj); 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1919,7 +1994,7 @@ class MasterMgrClient
    *   The fully resolved node name.
    * 
    * @throws PipelineException 
-   *   If unable to kill the jobs.
+   *   If unable to remove the files.
    */ 
   public synchronized void
   removeFiles

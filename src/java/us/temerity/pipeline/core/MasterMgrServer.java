@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.16 2004/08/23 03:02:10 jim Exp $
+// $Id: MasterMgrServer.java,v 1.17 2004/08/30 01:30:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -208,6 +208,7 @@ class MasterMgrServer
     try {
       server = new ServerSocket(pPort, 100);
       Logs.net.fine("Listening on Port: " + pPort);
+      Logs.net.info("Server Ready.");
       Logs.flush();
 
       server.setSoTimeout(PackageInfo.sServerTimeOut);
@@ -261,7 +262,7 @@ class MasterMgrServer
 
       pMasterMgr.shutdown();
 
-      Logs.net.fine("Server Shutdown.");
+      Logs.net.info("Server Shutdown.");
       Logs.flush();
     }
   }
@@ -584,6 +585,14 @@ class MasterMgrServer
 	    }
 	    break;
 	    
+	  case RemoveFiles: 
+	    {
+	      NodeRemoveFilesReq req = (NodeRemoveFilesReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.removeFiles(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case Rename:
 	    {
 	      NodeRenameReq req = (NodeRenameReq) objIn.readObject();
@@ -625,7 +634,7 @@ class MasterMgrServer
 	    break;
 
 
-	  /*-- REVISION CONTROL ------------------------------------------------------------*/
+	  /*-- JOBS ------------------------------------------------------------------------*/
 	  case SubmitJobs: 
 	    {
 	      NodeSubmitJobsReq req = (NodeSubmitJobsReq) objIn.readObject();
@@ -650,13 +659,22 @@ class MasterMgrServer
 	    }
 	    break;
 
-	  case RemoveFiles: 
+	  case PauseJobs: 
 	    {
-	      NodeRemoveFilesReq req = (NodeRemoveFilesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.removeFiles(req));
+	      NodePauseJobsReq req = (NodePauseJobsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.pauseJobs(req));
 	      objOut.flush(); 
 	    }
 	    break;
+
+	  case ResumeJobs: 
+	    {
+	      NodeResumeJobsReq req = (NodeResumeJobsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.resumeJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 
 
 	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
