@@ -886,7 +886,7 @@ AC_MSG_RESULT([Locating C system headers:])
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
 AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h utime.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
-AC_CHECK_HEADERS([sys/ipc.h sys/sem.h linux/sem.h])
+AC_CHECK_HEADERS([sys/statfs.h])
 AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h])
 
 AC_MSG_RESULT([ ])
