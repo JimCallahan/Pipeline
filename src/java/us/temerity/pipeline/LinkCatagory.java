@@ -1,4 +1,4 @@
-// $Id: LinkCatagory.java,v 1.3 2004/03/23 20:41:25 jim Exp $
+// $Id: LinkCatagory.java,v 1.4 2004/03/29 08:14:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -20,7 +20,7 @@ class LinkCatagory
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  protected
+  public
   LinkCatagory() 
   {
     super();
@@ -35,7 +35,7 @@ class LinkCatagory
    * @param policy 
    *   The node state propogation policy.
    */ 
-  protected
+  public
   LinkCatagory
   (
    String name,  
@@ -52,7 +52,7 @@ class LinkCatagory
   /**
    * Copy constructor. 
    */ 
-  protected
+  public
   LinkCatagory
   (
    LinkCatagory link
