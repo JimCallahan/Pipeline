@@ -1,4 +1,4 @@
-// $Id: Main.java,v 1.4 2004/04/24 22:34:08 jim Exp $
+// $Id: Main.java,v 1.5 2004/07/07 13:21:17 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -85,8 +85,13 @@ class Main
       BootApp app = (BootApp) cls.newInstance();
       app.run(appArgs);
     }
+    catch(LicenseException ex) {
+      System.out.print("Unable to start Pipeline.\n" + 
+		       ex.getMessage());
+      System.exit(1);
+    }
     catch(Exception ex) {
-      System.out.print("Unable to start the application!\n");
+      System.out.print("INTERNAL-ERROR:\n");
       ex.printStackTrace(System.out);
       System.exit(1);
     }

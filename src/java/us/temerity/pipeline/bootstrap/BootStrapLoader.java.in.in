@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.3 2004/04/11 19:30:20 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.4 2004/07/07 13:21:17 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -156,9 +156,8 @@ class BootStrapLoader
 
 	if((now < start.getTime()) || (now > end.getTime())) 
 	  throw new LicenseException
-	    ("The license has expired!\n" + 
-	     "  Start Date: " + start + "\n" + 
-	     "    End Date: " + end + "\n");
+	    ("The current license expired on: " + end + "\n\n" + 
+	     "Contact <support@temerity.us> to renew the license.\n");
       }
       catch(IOException ex) {
 	throw new LicenseException
