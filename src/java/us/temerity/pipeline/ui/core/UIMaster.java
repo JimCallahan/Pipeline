@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.8 2005/01/08 15:25:17 jim Exp $
+// $Id: UIMaster.java,v 1.9 2005/01/09 23:13:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -575,30 +575,30 @@ class UIMaster
    * Show the manage editors dialog.
    */ 
   public void 
-  showManageEditorsDialog()
+  showManageEditorMenusDialog()
   {
-    pManageEditorsDialog.updateMenuLayout();
-    pManageEditorsDialog.setVisible(true);
+    pManageEditorMenusDialog.updateMenuLayout();
+    pManageEditorMenusDialog.setVisible(true);
   }
 
   /**
    * Show the manage comparators dialog.
    */ 
   public void 
-  showManageComparatorsDialog()
+  showManageComparatorMenusDialog()
   {
-    pManageComparatorsDialog.updateMenuLayout();
-    pManageComparatorsDialog.setVisible(true);
+    pManageComparatorMenusDialog.updateMenuLayout();
+    pManageComparatorMenusDialog.setVisible(true);
   }
 
   /**
    * Show the manage tools dialog.
    */ 
   public void 
-  showManageToolsDialog()
+  showManageToolMenusDialog()
   {
-    pManageToolsDialog.updateMenuLayout();
-    pManageToolsDialog.setVisible(true);
+    pManageToolMenusDialog.updateMenuLayout();
+    pManageToolMenusDialog.setVisible(true);
   }
 
   /**
@@ -1016,7 +1016,16 @@ class UIMaster
   }
 
   /**
-   * Make the given panel layout the default layout.
+   * Make the current layout the default layout.
+   */
+  public void 
+  doDefaultLayout() 
+  {
+    doDefaultLayout(pLayoutName);
+  }
+
+  /**
+   * Make the given layout the default layout.
    */
   public void 
   doDefaultLayout
@@ -1384,13 +1393,13 @@ class UIMaster
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
 
-	pManageUsersDialog         = new JManageUsersDialog();
-	pManageToolsetsDialog      = new JManageToolsetsDialog();
-	pManageEditorsDialog       = new JManageEditorsDialog();
-	pManageComparatorsDialog   = new JManageComparatorsDialog();
-	pManageToolsDialog         = new JManageToolsDialog();
-	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
-	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
+	pManageUsersDialog           = new JManageUsersDialog();
+	pManageToolsetsDialog        = new JManageToolsetsDialog();
+	pManageEditorMenusDialog     = new JManageEditorMenusDialog();
+	pManageComparatorMenusDialog = new JManageComparatorMenusDialog();
+	pManageToolMenusDialog       = new JManageToolMenusDialog();
+	pManageLicenseKeysDialog     = new JManageLicenseKeysDialog();
+	pManageSelectionKeysDialog   = new JManageSelectionKeysDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog();
 	
@@ -2692,17 +2701,17 @@ class UIMaster
   /**
    * The manage editors dialog.
    */ 
-  private JManageEditorsDialog  pManageEditorsDialog;
+  private JManageEditorMenusDialog  pManageEditorMenusDialog;
 
   /**
    * The manage comparators dialog.
    */ 
-  private JManageComparatorsDialog  pManageComparatorsDialog;
+  private JManageComparatorMenusDialog  pManageComparatorMenusDialog;
 
   /**
    * The manage tools dialog.
    */ 
-  private JManageToolsDialog  pManageToolsDialog;
+  private JManageToolMenusDialog  pManageToolMenusDialog;
 
   /**
    * The manage license keys dialog.

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.5 2005/01/08 08:32:18 jim Exp $
+// $Id: JManagerPanel.java,v 1.6 2005/01/09 23:14:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -318,17 +318,17 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("Editor Menus...");
-	item.setActionCommand("manage-editors");
+	item.setActionCommand("manage-editor-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Comparator Menus...");
-	item.setActionCommand("manage-comparators");
+	item.setActionCommand("manage-comparator-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Tool Menus...");
-	item.setActionCommand("manage-tools");
+	item.setActionCommand("manage-tool-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1304,6 +1304,11 @@ class JManagerPanel
       UIMaster.getInstance().showManageLayoutsDialog();
       return true;
     }
+    else if((prefs.getSetDefaultLayout() != null) &&
+	    prefs.getSetDefaultLayout().wasPressed(e)) {
+      UIMaster.getInstance().doDefaultLayout();
+      return true;
+    }
 
     else if((prefs.getShowUserPrefs() != null) &&
 	    prefs.getShowUserPrefs().wasPressed(e)) {
@@ -1326,14 +1331,19 @@ class JManagerPanel
       UIMaster.getInstance().showManageToolsetsDialog();
       return true;
     }
-    else if((prefs.getShowManageEditors() != null) &&
-	    prefs.getShowManageEditors().wasPressed(e)) {
-      UIMaster.getInstance().showManageEditorsDialog();
+    else if((prefs.getShowManageEditorMenus() != null) &&
+	    prefs.getShowManageEditorMenus().wasPressed(e)) {
+      UIMaster.getInstance().showManageEditorMenusDialog();
       return true;
     }
-    else if((prefs.getShowManageTools() != null) &&
-	    prefs.getShowManageTools().wasPressed(e)) {
-      UIMaster.getInstance().showManageToolsDialog();
+    else if((prefs.getShowManageComparatorMenus() != null) &&
+	    prefs.getShowManageComparatorMenus().wasPressed(e)) {
+      UIMaster.getInstance().showManageComparatorMenusDialog();
+      return true;
+    }
+    else if((prefs.getShowManageToolMenus() != null) &&
+	    prefs.getShowManageToolMenus().wasPressed(e)) {
+      UIMaster.getInstance().showManageToolMenusDialog();
       return true;
     }
     else if((prefs.getShowManageLicenseKeys() != null) &&
@@ -1367,8 +1377,8 @@ class JManagerPanel
 
     else if((prefs.getShowHomePage() != null) &&
 	    prefs.getShowHomePage().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us");
-      return true;
+      BaseApp.showURL("http://www.temerity.us/");
+      return true; 
     }
     else if((prefs.getShowSupportForums() != null) &&
 	    prefs.getShowSupportForums().wasPressed(e)) {
@@ -1494,12 +1504,12 @@ class JManagerPanel
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
 
-    else if(cmd.equals("manage-editors"))
-      UIMaster.getInstance().showManageEditorsDialog();
-    else if(cmd.equals("manage-comparators"))
-      UIMaster.getInstance().showManageComparatorsDialog();
-    else if(cmd.equals("manage-tools"))
-      UIMaster.getInstance().showManageToolsDialog();
+    else if(cmd.equals("manage-editor-menus"))
+      UIMaster.getInstance().showManageEditorMenusDialog();
+    else if(cmd.equals("manage-comparator-menus"))
+      UIMaster.getInstance().showManageComparatorMenusDialog();
+    else if(cmd.equals("manage-tool-menus"))
+      UIMaster.getInstance().showManageToolMenusDialog();
 
     else if(cmd.equals("manage-license-keys"))
       UIMaster.getInstance().showManageLicenseKeysDialog();
