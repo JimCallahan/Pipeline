@@ -1,7 +1,8 @@
-// $Id: JNodeBrowserFilterDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
+// $Id: JNodeBrowserFilterDialog.java,v 1.3 2005/02/22 08:44:13 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import us.temerity.pipeline.laf.LookAndFeelLoader;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*; 
 import us.temerity.pipeline.core.*; 
@@ -62,10 +63,19 @@ class JNodeBrowserFilterDialog
 	JPanel tpanel2 = null;
 	{
 	  tpanel2 = new JPanel();
-	  tpanel2.setName("TitlePanel");
+	  tpanel2.setName("IconPanel");
 	  tpanel2.setLayout(new BoxLayout(tpanel2, BoxLayout.Y_AXIS));
 
 	  body.add(tpanel2);
+	}
+
+	JPanel tpanel3 = null;
+	{
+	  tpanel3 = new JPanel();
+	  tpanel3.setName("TitlePanel");
+	  tpanel3.setLayout(new BoxLayout(tpanel3, BoxLayout.Y_AXIS));
+
+	  body.add(tpanel3);
 	}
 
 	JPanel vpanel = null;
@@ -80,18 +90,20 @@ class JNodeBrowserFilterDialog
 	{
 	  {
 	    JLabel label = 
-	      UIFactory.createFixedLabel("Working Versions:", sTSize, JLabel.CENTER);
+	      UIFactory.createFixedLabel("Checked-In Versions:", sTSize, JLabel.CENTER);
 	    label.setName("PanelLabel");
 	    
 	    tpanel1.add(label);
 	  }
 	  
+	  tpanel2.add(Box.createRigidArea(new Dimension(0, 19)));
+
 	  {
 	    JLabel label = 
-	      UIFactory.createFixedLabel("Checked-In Versions:", sTSize, JLabel.CENTER);
+	      UIFactory.createFixedLabel("Working Versions:", sTSize, JLabel.CENTER);
 	    label.setName("PanelLabel");
 	    
-	    tpanel2.add(label);
+	    tpanel3.add(label);
 	  }
 	  
 	  {
@@ -104,56 +116,60 @@ class JNodeBrowserFilterDialog
 	  }
 	}
 
-	addVerticalSpacer(tpanel1, tpanel2, vpanel, 12);
+	addVerticalSpacer(tpanel1, tpanel2, tpanel3, vpanel, 12);
 
 	{
-	  JBooleanField field = addTitledFilter(tpanel1, "In Current View", 
-						tpanel2, "Some Exist", 
+	  JBooleanField field = addTitledFilter(tpanel1, "Some Exist", 
+						tpanel2, 0, 
+						tpanel3, "In Current View", 
 						vpanel);
 	  pFilterFields.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, field);
 	}
 
-	addVerticalSpacer(tpanel1, tpanel2, vpanel, 3);
+	addVerticalSpacer(tpanel1, tpanel2, tpanel3, vpanel, 3);
 
 	{
-	  JBooleanField field = addTitledFilter(tpanel1, "Only In Other Views",   
-						tpanel2, "Some Exist", 
+	  JBooleanField field = addTitledFilter(tpanel1, "Some Exist", 
+						tpanel2, 1, 
+						tpanel3, "Only In Other Views",   
 						vpanel);
 	  pFilterFields.put(NodeTreeComp.State.WorkingOtherCheckedInSome, field);
 	}
 
-	addVerticalSpacer(tpanel1, tpanel2, vpanel, 3);
+	addVerticalSpacer(tpanel1, tpanel2, tpanel3, vpanel, 3);
 
 	{
-	  JBooleanField field = addTitledFilter(tpanel1, "None Exist",   
-						tpanel2, "Some Exist", 
+	  JBooleanField field = addTitledFilter(tpanel1, "Some Exist", 
+						tpanel2, 2, 
+						tpanel3, "None Exist",   
 						vpanel);
 	  pFilterFields.put(NodeTreeComp.State.WorkingNoneCheckedInSome, field);
 	}
 
-	addVerticalSpacer(tpanel1, tpanel2, vpanel, 12);
+	addVerticalSpacer(tpanel1, tpanel2, tpanel3, vpanel, 12);
 
 	{
-	  JBooleanField field = addTitledFilter(tpanel1, "In Current View", 
-						tpanel2, "None Exist", 
+	  JBooleanField field = addTitledFilter(tpanel1, "None Exist", 
+						tpanel2, 3, 
+						tpanel3, "In Current View", 
 						vpanel);
 	  pFilterFields.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, field);
 	}
 
-	addVerticalSpacer(tpanel1, tpanel2, vpanel, 3);
+	addVerticalSpacer(tpanel1, tpanel2, tpanel3, vpanel, 3);
 
 	{
-	  JBooleanField field = addTitledFilter(tpanel1, "Only In Other View",
-						tpanel2, "None Exist",
+	  JBooleanField field = addTitledFilter(tpanel1, "None Exist",
+						tpanel2, 4, 
+						tpanel3, "Only In Other View",
 						vpanel);
 	  pFilterFields.put(NodeTreeComp.State.WorkingOtherCheckedInNone, field);
 	}
 	
-	addVerticalGlue(tpanel1, tpanel2, vpanel);
+	addVerticalGlue(tpanel1, tpanel2, tpanel3, vpanel);
       }
 
       super.initUI("Node Browser Filter:", true, body, "Confirm", "Apply", null, "Close");
-
       pack();
     }  
   }
@@ -167,12 +183,26 @@ class JNodeBrowserFilterDialog
    JPanel tpanel1, 
    String label1, 
    JPanel tpanel2,
-   String label2, 
+   int idx,
+   JPanel tpanel3,
+   String label3, 
    JPanel vpanel
   ) 
   {
     tpanel1.add(UIFactory.createFixedLabel(label1, sTSize, JLabel.CENTER));
-    tpanel2.add(UIFactory.createFixedLabel(label2, sTSize, JLabel.CENTER));
+    
+    {
+      JLabel label = new JLabel(sIcons[idx]);
+
+      Dimension size = new Dimension(19, 19);
+      label.setMinimumSize(size);
+      label.setMaximumSize(size);
+      label.setPreferredSize(size);
+      
+      tpanel2.add(label);
+    }
+
+    tpanel3.add(UIFactory.createFixedLabel(label3, sTSize, JLabel.CENTER));
     
     JBooleanField field = UIFactory.createBooleanField(sVSize);
     vpanel.add(field);
@@ -188,12 +218,14 @@ class JNodeBrowserFilterDialog
   (
    JPanel tpanel1, 
    JPanel tpanel2,
+   JPanel tpanel3,
    JPanel vpanel,
    int height   
   ) 
   {
     tpanel1.add(Box.createRigidArea(new Dimension(0, height)));
     tpanel2.add(Box.createRigidArea(new Dimension(0, height)));
+    tpanel3.add(Box.createRigidArea(new Dimension(0, height)));
     vpanel.add(Box.createRigidArea(new Dimension(0, height)));
   }
 
@@ -205,11 +237,13 @@ class JNodeBrowserFilterDialog
   (
    JPanel tpanel1, 
    JPanel tpanel2, 
+   JPanel tpanel3, 
    JPanel vpanel
   ) 
   {
     tpanel1.add(Box.createVerticalGlue());
     tpanel2.add(Box.createVerticalGlue());
+    tpanel3.add(Box.createVerticalGlue());
     vpanel.add(Box.createVerticalGlue());
   }
 
@@ -274,6 +308,14 @@ class JNodeBrowserFilterDialog
   
   private static final int sTSize  = 160;
   private static final int sVSize  = 120;
+
+  private static Icon sIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon1.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon2.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon3.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon4.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon5.png"))
+  };
 
 
 
