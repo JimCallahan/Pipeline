@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.2 2004/07/28 19:08:39 jim Exp $
+// $Id: JobRequest.java,v 1.3 2004/09/03 01:58:05 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -57,6 +57,14 @@ enum JobRequest
    * An instance {@link JobWaitReq JobWaitReq} is next.
    */ 
   Wait, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance {@link JobCleanupResourcesReq JobCleanupResourcesReq} is next.
+   */  
+  CleanupResources, 
 
 
   /*----------------------------------------------------------------------------------------*/
