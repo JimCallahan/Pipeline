@@ -187,25 +187,26 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Server Host IDs])
 
-host_ids=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-               --lookup HostIDs`
+AC_SUBST(PIPELINE_HOST_NAMES)
+PIPELINE_HOST_NAMES=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                          --lookup HostIDs \
+                     | awk '{printf("\"%s\", ",$1)}' \
+                     | awk '{printf("'%s'\n",substr($0,0,length($0)-2))}'`
+
+AC_SUBST(PIPELINE_HOST_IDS)
+PIPELINE_HOST_IDS=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                        --lookup HostIDs \
+                   | awk '{printf("\"%s\", ",$2)}' \
+                   | awk '{printf("'%s'\n",substr($0,0,length($0)-2))}'`
 
 if test "$host_ids" != "null" 
 then
   AC_MSG_RESULT([])
-  AC_MSG_RESULT([$host_ids])
+  java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE --lookup HostIDs \
+  | awk '{printf("  %s\n",$0)}'
 else 
   AC_MSG_ERROR([customer profile was incomplete.])
 fi 
-
-AC_SUBST(PIPELINE_HOST_NAMES)
-PIPELINE_HOST_NAMES=`echo $host_ids | awk '{printf("\"%s\", ",$1)}' \
-                                    | awk '{printf("%s\n",substr($0,0,length($0)-2))}'`
-
-AC_SUBST(PIPELINE_HOST_IDS)
-PIPELINE_HOST_IDS=`echo $host_ids | awk '{printf("\"%s\", ",$2)}' \
-                                  | awk '{printf("%s\n",substr($0,0,length($0)-2))}'`
-
 
 
 AC_MSG_CHECKING([License Valid Until])
