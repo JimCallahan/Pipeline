@@ -1,4 +1,4 @@
-// $Id: JManageEditorsDialog.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JManageEditorsDialog.java,v 1.2 2004/06/22 19:40:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,9 +48,7 @@ class JManageEditorsDialog
 	SuffixEditorTableModel model = new SuffixEditorTableModel();
 	pTableModel = model;
 
-	int width[] = { 80, 200, 130 };
-
-	boolean resizable[] = { false, true, false };
+	int width[] = { 80, 600, 130 };
 
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
@@ -67,11 +65,11 @@ class JManageEditorsDialog
 	
 	TableCellEditor	editors[] = {
 	  null, 
-	  new JSimpleTableCellEditor(JLabel.LEFT), 
+	  new JStringTableCellEditor(200, JLabel.LEFT), 
 	  editor
 	};
 	
-	JTablePanel tpanel = new JTablePanel(model, width, resizable, renderers, editors);
+	JTablePanel tpanel = new JTablePanel(model, width, renderers, editors);
 	pTablePanel = tpanel;
 
 	body.add(tpanel);
@@ -79,7 +77,7 @@ class JManageEditorsDialog
     
       String extra[][] = {
 	null,
-	{ "Add",    "add-suffix" }, 
+	{ "Add",    "add" }, 
 	{ "Remove", "remove" }, 
 	{ "Reset",  "reset" },
       };
@@ -181,7 +179,7 @@ class JManageEditorsDialog
     super.actionPerformed(e);
 
     String cmd = e.getActionCommand();
-    if(cmd.equals("add-suffix")) 
+    if(cmd.equals("add")) 
       doAddSuffix();
     else if(cmd.equals("remove")) 
       doRemove();
