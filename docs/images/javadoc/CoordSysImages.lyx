@@ -1,0 +1,166 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccccc}
+0 & 0 & \cdots & 0 & 0\\
+0 & 0 & \cdots & 0 & 0\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+0 & 0 & \cdots & 0 & 0\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccccc}
+b_{11} & b_{12} & \cdots & b_{1n} & o_{1}\\
+b_{21} & b_{22} & \cdots & b_{2n} & o_{2}\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+b_{n1} & b_{n2} & \cdots & b_{nn} & o_{n}\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccccc}
+b_{11} & b_{12} & \cdots & b_{1n} & o_{1}\\
+b_{21} & b_{22} & \cdots & b_{2n} & o_{2}\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+b_{n1} & b_{n2} & \cdots & b_{nn} & o_{n}\\
+0 & 0 & \cdots & 0 & 1\end{array}\right]\left[\begin{array}{c}
+p_{1}\\
+p_{2}\\
+\vdots\\
+p_{n}\\
+1\end{array}\right]=\left[\begin{array}{c}
+q_{1}\\
+q_{2}\\
+\vdots\\
+q_{n}\\
+1\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccccc}
+b_{11} & b_{12} & \cdots & b_{1n} & 0\\
+b_{21} & b_{22} & \cdots & b_{2n} & 0\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+b_{n1} & b_{n2} & \cdots & b_{nn} & 0\\
+0 & 0 & \cdots & 0 & 1\end{array}\right]\left[\begin{array}{c}
+v_{1}\\
+v_{2}\\
+\vdots\\
+v_{n}\\
+1\end{array}\right]=\left[\begin{array}{c}
+u_{1}\\
+u_{2}\\
+\vdots\\
+u_{n}\\
+1\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccccc}
+a_{11} & a_{12} & \cdots & a_{1n} & t_{1}\\
+a_{21} & a_{22} & \cdots & a_{2n} & t_{2}\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+a_{n1} & a_{n2} & \cdots & a_{nn} & t_{n}\\
+0 & 0 & \cdots & 0 & 1\end{array}\right]\left[\begin{array}{ccccc}
+b_{11} & b_{12} & \cdots & b_{1n} & r_{1}\\
+b_{21} & b_{22} & \cdots & b_{2n} & r_{2}\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+b_{n1} & b_{n2} & \cdots & b_{nn} & r_{n}\\
+0 & 0 & \cdots & 0 & 1\end{array}\right]=\left[\begin{array}{ccccc}
+b_{11} & b_{12} & \cdots & b_{1n} & s_{1}\\
+b_{21} & b_{22} & \cdots & b_{2n} & s_{2}\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+b_{n1} & b_{n2} & \cdots & b_{nn} & s_{n}\\
+0 & 0 & \cdots & 0 & 1\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccccc}
+1 & 0 & \cdots & 0 & 0\\
+0 & 1 & \cdots & 0 & 0\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+0 & 0 & \cdots & 1 & 0\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $s\rightarrow\left[\begin{array}{ccccc}
+s & 0 & \cdots & 0 & 0\\
+0 & s & \cdots & 0 & 0\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+0 & 0 & \cdots & s & 0\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{c}
+a_{1}\\
+a_{2}\\
+\vdots\\
+a_{n}\end{array}\right]\rightarrow\left[\begin{array}{ccccc}
+a_{1} & 0 & \cdots & 0 & 0\\
+0 & a_{2} & \cdots & 0 & 0\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+0 & 0 & \cdots & a_{n} & 0\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{c}
+a_{1}\\
+a_{2}\\
+\vdots\\
+a_{n}\end{array}\right]\rightarrow\left[\begin{array}{ccccc}
+1 & 0 & \cdots & 0 & a_{1}\\
+0 & 1 & \cdots & 0 & a_{2}\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+0 & 0 & \cdots & 1 & a_{n}\end{array}\right]$
+\end_inset 
+
+
+\the_end
