@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.2 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,7 +21,7 @@ import javax.swing.table.*;
  */ 
 public
 class QueueJobGroupsTableModel
-  extends SortableTableModel
+  extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -69,7 +69,7 @@ class QueueJobGroupsTableModel
       }
 
       {
-	int widths[] = { 80, 140, 180, 180, 180, 360, 180 };
+	int widths[] = { 80, 140, 270, 180, 180, 540, 180 };
 	pColumnWidths = widths;
       }
 
@@ -107,7 +107,7 @@ class QueueJobGroupsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  protected void 
+  public void 
   sort()
   {
     ArrayList<Comparable> values = new ArrayList<Comparable>();

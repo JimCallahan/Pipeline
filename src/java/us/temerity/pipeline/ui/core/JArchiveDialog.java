@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.2 2005/02/07 14:53:34 jim Exp $
+// $Id: JArchiveDialog.java,v 1.3 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -51,9 +51,7 @@ class JArchiveDialog
 	  ArchiveCandidateTableModel model = new ArchiveCandidateTableModel();
 	  pCandidateTableModel = model;
 	  
-	  JTablePanel tpanel =
-	    new JTablePanel(model, model.getColumnWidths(), 
-			    model.getRenderers(), model.getEditors());
+	  JTablePanel tpanel = new JTablePanel(model);
 	  pCandidateTablePanel = tpanel;
 	  
 	  cpanel.add(tpanel);
@@ -143,9 +141,7 @@ class JArchiveDialog
 	    NodeVersionTableModel model = new NodeVersionTableModel();
 	    pArchiveTableModel = model;
 	    
-	    JTablePanel tpanel =
-	      new JTablePanel(model, model.getColumnWidths(), 
-			      model.getRenderers(), model.getEditors());
+	    JTablePanel tpanel = new JTablePanel(model);
 	    pArchiveTablePanel = tpanel;
 	    
 	    panel.add(tpanel);
@@ -293,9 +289,7 @@ class JArchiveDialog
 	    NodeVersionTableModel model = new NodeVersionTableModel();
 	    pOfflineTableModel = model;
 	    
-	    JTablePanel tpanel =
-	      new JTablePanel(model, model.getColumnWidths(), 
-			      model.getRenderers(), model.getEditors());
+	    JTablePanel tpanel = new JTablePanel(model);
 	    pOfflineTablePanel = tpanel;
 	    
 	    panel.add(tpanel);

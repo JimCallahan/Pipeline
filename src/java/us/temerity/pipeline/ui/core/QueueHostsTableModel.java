@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.2 2005/01/10 18:33:17 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.3 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.table.*;
  */ 
 public
 class QueueHostsTableModel
-  extends SortableTableModel
+  extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -50,6 +50,7 @@ class QueueHostsTableModel
       
       pEditedStatusIndices  = new TreeSet<Integer>();
       pEditedReserveIndices = new TreeSet<Integer>();
+      pEditedOrderIndices   = new TreeSet<Integer>();
       pEditedSlotsIndices   = new TreeSet<Integer>();
       pEditedBiasesIndices  = new TreeSet<Integer>();  
 
@@ -58,11 +59,11 @@ class QueueHostsTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 7;
+      pNumColumns = 8;
 
       {
 	Class classes[] = { 
-	  String.class, String.class, 
+	  String.class, String.class, Integer.class, 
 	  QueueHost.class, QueueHost.class, QueueHost.class,
 	  QueueHost.class, Integer.class 
 	}; 
@@ -71,7 +72,7 @@ class QueueHostsTableModel
 
       {
 	String names[] = {
-	  "Status", "Reservation", 
+	  "Status", "Reservation", "Order", 
 	  "System Load", "Free Memory", "Free Disk Space", 
 	  "Jobs", "Slots" 
 	};
@@ -79,9 +80,19 @@ class QueueHostsTableModel
       }
 
       {
+	String colors[] = {
+	  "", "", "", 
+	  "Blue", "Blue", "Blue", 
+	  "Green", "Green"
+	};
+	pColumnColorPrefix = colors; 
+      }
+      
+      {
 	String desc[] = {
 	  "The current status of the job server.", 
 	  "The name of the user holding the server reservation.", 
+	  "The order in which jobs are dispatched to the servers.", 
 	  "The system load of the server.", 
 	  "The amount of unused system memory (in GB).", 
 	  "The amount of available temporary disk space (in GB).", 
@@ -92,7 +103,7 @@ class QueueHostsTableModel
       }
 
       {
-	int widths[] = { 120, 120, 135, 135, 135, 135, 60 };
+	int widths[] = { 120, 120, 90, 135, 135, 135, 135, 60 };
 	pColumnWidths = widths;
       }
 
@@ -102,6 +113,7 @@ class QueueHostsTableModel
 
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JResourceSamplesTableCellRenderer
 	        (JResourceSamplesTableCellRenderer.SampleType.Load), 
@@ -114,6 +126,8 @@ class QueueHostsTableModel
 	  slotsRenderer
 	};
 	pRenderers = renderers;
+
+	pSelectionBiasRenderer = new JSelectionBiasTableCellRenderer();
       }
 
       {
@@ -123,6 +137,7 @@ class QueueHostsTableModel
 	TableCellEditor editors[] = {
 	  editor, 
 	  new JIdentifierTableCellEditor(120, JLabel.CENTER), 
+	  new JIntegerTableCellEditor(90, JLabel.CENTER), 
 	  null, 
 	  null, 
 	  null, 
@@ -130,10 +145,11 @@ class QueueHostsTableModel
 	  new JJobSlotsTableCellEditor()
 	};
 	pEditors = editors;
+
+	pSelectionBiasEditor = new JSelectionBiasTableCellEditor();
       }
     }
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -143,7 +159,7 @@ class QueueHostsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  protected void 
+  public void 
   sort()
   {
     ArrayList<Comparable> values = new ArrayList<Comparable>();
@@ -161,57 +177,61 @@ class QueueHostsTableModel
 	if(value == null)
 	  value = "";
 	break;
-
+	
       case 2:
+	value = new Integer(host.getOrder());
+	break;
+
       case 3:
       case 4:
       case 5:
+      case 6:
 	{
 	  ResourceSample sample = host.getLatestSample();
 	  if(sample == null) {
 	    switch(pSortColumn) {
-	    case 2:
+	    case 3:
 	      value = new Float(0.0f);
 	      break;
 
-	    case 3:
 	    case 4:
+	    case 5:
 	      value = new Long(0);
 	      break;
 	      
-	    case 5:
+	    case 6:
 	      value = new Integer(0);
 	    }
 	  }
 	  else {
 	    switch(pSortColumn) {
-	    case 2:
+	    case 3:
 	      value = new Float(sample.getLoad());
 	      break;
 
-	    case 3:
+	    case 4:
 	      value = new Long(sample.getMemory());
 	      break;
 
-	    case 4:
+	    case 5:
 	      value = new Long(sample.getDisk());
 	      break;
 	      
-	    case 5:
+	    case 6:
 	      value = new Integer(sample.getNumJobs());
 	    }
 	  }
 	}
 	break;
 
-      case 6:
+      case 7:
 	value = new Integer(host.getJobSlots());
 	break;
 	
       default:
 	{
 	  value = "";
-	  String kname = pSelectionKeys.get(pSortColumn-7);
+	  String kname = pSelectionKeys.get(pSortColumn-pNumColumns);
 	  if(kname != null) {
 	    Integer bias = host.getSelectionBias(kname);
 	    if(bias != null) 
@@ -262,7 +282,100 @@ class QueueHostsTableModel
   
 
   /*----------------------------------------------------------------------------------------*/
+  /*   C O L U M N   V I S I B I L I T Y                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Notifies the model that columns visible to the user have changed.
+   */ 
+  public void 
+  columnVisiblityChanged()
+  {
+    pParent.updateHostsHeaderButtons();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S O R T A B L E   T A B L E   M O D E L   O V E R R I D E S                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the width of the given column.
+   */ 
+  public int
+  getColumnWidth
+  (
+   int col   
+  )
+  {
+    if(col < pNumColumns) 
+      return pColumnWidths[col];
+    else 
+      return 100;
+  }
+
+  /**
+   * Returns the color prefix used to determine the synth style of the header button for 
+   * the given column.
+   */ 
+  public String 	
+  getColumnColorPrefix
+  (
+   int col
+  )
+  {
+    if(col < pNumColumns) 
+      return pColumnColorPrefix[col];
+    return "Purple";
+  }  
+  
+  /**
+   * Returns the description of the column columnIndex used in tool tips.
+   */ 
+  public String 	
+  getColumnDescription
+  (
+   int col
+  ) 
+  {
+    if(col < pNumColumns)
+      return pColumnDescriptions[col];
+    else 
+      return pSelectionDescriptions.get(col-pNumColumns);
+  }
+  
+  /**
+   * Get the renderer for the given column. 
+   */ 
+  public TableCellRenderer
+  getRenderer
+  (
+   int col   
+  )
+  {
+    if(col < pNumColumns)
+      return pRenderers[col];
+    return pSelectionBiasRenderer; 
+  }
+
+  /**
+   * Get the editor for the given column. 
+   */ 
+  public TableCellEditor
+  getEditor
+  (
+   int col   
+  )
+  {
+    if(col < pNumColumns)
+      return pEditors[col];
+    return pSelectionBiasEditor; 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -274,7 +387,7 @@ class QueueHostsTableModel
    int col
   )
   {
-    if(col < 7)
+    if(col < pNumColumns)
       return pColumnClasses[col];
     else 
       return Integer.class;
@@ -298,25 +411,10 @@ class QueueHostsTableModel
    int col
   ) 
   {
-    if(col < 7)
+    if(col < pNumColumns)
       return pColumnNames[col];
     else 
-      return pSelectionKeys.get(col-7);
-  }
-
-  /**
-   * Returns the description of the column columnIndex used in tool tips.
-   */ 
-  public String 	
-  getColumnDescription
-  (
-   int col
-  ) 
-  {
-    if(col < 7)
-      return pColumnDescriptions[col];
-    else 
-      return pSelectionDescriptions.get(col-7);
+      return pSelectionKeys.get(col-pNumColumns);
   }
 
 
@@ -327,8 +425,20 @@ class QueueHostsTableModel
 
   /**
    * Set table data.
+   *
+   * @param hosts
+   *   Current job server hosts indexed by fully resolved hostname.
+   * 
+   * @param keys
+   *   The valid selection key descriptions indexed by key name.
+   * 
+   * @param isPrivileged
+   *   Whether the current user is has privileged status.
+   * 
+   * @return 
+   *   The names of the selection keys which are no longer supported.
    */ 
-  public void
+  public TreeSet<String> 
   setQueueHosts
   (
    TreeMap<String,QueueHost> hosts, 
@@ -340,9 +450,12 @@ class QueueHostsTableModel
     if(hosts != null)
       pQueueHosts.addAll(hosts.values());
 
+    TreeSet<String> obsolete = new TreeSet<String>(pSelectionKeys);
     pSelectionKeys.clear();
-    if(keys != null) 
+    if(keys != null) {
       pSelectionKeys.addAll(keys.keySet());
+      obsolete.removeAll(keys.keySet());
+    }
 
     pSelectionDescriptions.clear();
     if(keys != null) 
@@ -352,10 +465,13 @@ class QueueHostsTableModel
     
     pEditedStatusIndices.clear();
     pEditedReserveIndices.clear();
+    pEditedOrderIndices.clear();
     pEditedSlotsIndices.clear();
     pEditedBiasesIndices.clear();
 
     sort();
+
+    return obsolete;
   }
 
   
@@ -431,6 +547,25 @@ class QueueHostsTableModel
   }
 
   /**
+   * Get the changes to host dispatch order. 
+   */ 
+  public TreeMap<String,Integer>
+  getHostOrders() 
+  {
+    TreeMap<String,Integer> table = new TreeMap<String,Integer>();
+    for(Integer idx : pEditedOrderIndices) {
+      QueueHost host = pQueueHosts.get(idx);
+      if(host != null) 
+	table.put(host.getName(), host.getOrder());
+    }
+    
+    if(!table.isEmpty()) 
+      return table;
+
+    return null;
+  }
+
+  /**
    * Get the changes to host user reservations. 
    */ 
   public TreeMap<String,Integer>
@@ -475,6 +610,17 @@ class QueueHostsTableModel
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the current selection key bias columns.
+   */ 
+  public TreeSet<String> 
+  getSelectionKeys() 
+  {
+    TreeSet<String> names = new TreeSet<String>(pSelectionKeys);
+    return names;
+  }
   
 
 
@@ -512,11 +658,12 @@ class QueueHostsTableModel
     switch(col) {
     case 0: 
     case 1: 
-    case 6:
+    case 2: 
+    case 7:
       return true;
 
     default:
-      return (!localOnly && (col >= 7));
+      return (!localOnly && (col >= pNumColumns));
     }
   }
 
@@ -539,17 +686,20 @@ class QueueHostsTableModel
       return host.getReservation();
 
     case 2:
+      return host.getOrder();
+
     case 3:
     case 4:
     case 5:
+    case 6:
       return host;
       
-    case 6:
+    case 7:
       return host.getJobSlots();
 
     default:
       {
-	String kname = pSelectionKeys.get(col-7);
+	String kname = pSelectionKeys.get(col-pNumColumns);
 	if(kname != null) 
 	  return host.getSelectionBias(kname);
 	else {
@@ -619,7 +769,17 @@ class QueueHostsTableModel
 	return true;
       }
 
-    case 6:
+    case 2:
+      {
+	Integer order = (Integer) value;
+	if((order != null) && (order >= 0)) 
+	  host.setOrder(order);
+
+	pEditedOrderIndices.add(srow);
+	return true; 
+      }
+
+    case 7:
       {
 	Integer slots = (Integer) value;
 	if((slots != null) && (slots >= 0)) 
@@ -630,8 +790,8 @@ class QueueHostsTableModel
       }
       
     default:
-      if(col >= 7) {
-	String kname = pSelectionKeys.get(col-7);
+      if(col >= pNumColumns) {
+	String kname = pSelectionKeys.get(col-pNumColumns);
 	if(kname != null) {
 	  Integer bias = (Integer) value;
 	  if(bias == null) {
@@ -693,26 +853,42 @@ class QueueHostsTableModel
    */ 
   private ArrayList<String>  pSelectionDescriptions; 
 
+  /**
+   * The shared renderer for all selection bias cells.
+   */ 
+  private TableCellRenderer  pSelectionBiasRenderer;
+  
+  /**
+   * The shared renderer for all selection bias cells.
+   */ 
+  private TableCellEditor  pSelectionBiasEditor;
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The indices of host which have had their status edited.
+   * The indices of hosts which have had their status edited.
    */ 
   private TreeSet<Integer>  pEditedStatusIndices; 
 
   /**
-   * The indices of host which have had their user reservations edited.
+   * The indices of hosts which have had their user reservations edited.
    */ 
   private TreeSet<Integer>  pEditedReserveIndices; 
 
   /**
-   * The indices of host which have had their job slots edited.
+   * The indices of hosts which have had their dispatch order edited.
+   */ 
+  private TreeSet<Integer>  pEditedOrderIndices; 
+
+  /**
+   * The indices of hosts which have had their job slots edited.
    */ 
   private TreeSet<Integer>  pEditedSlotsIndices; 
 
   /**
-   * The indices of host which have had their selection key biases edited.
+   * The indices of hosts which have had their selection key biases edited.
    */ 
   private TreeSet<Integer>  pEditedBiasesIndices; 
 

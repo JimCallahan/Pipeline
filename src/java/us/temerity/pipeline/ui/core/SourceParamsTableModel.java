@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.2 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.table.*;
  */ 
 public
 class SourceParamsTableModel
-  extends SortableTableModel
+  extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -179,7 +179,7 @@ class SourceParamsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  protected void 
+  public void 
   sort()
   {
     ArrayList<Comparable> values = new ArrayList<Comparable>();

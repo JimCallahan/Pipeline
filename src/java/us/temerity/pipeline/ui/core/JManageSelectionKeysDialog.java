@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.2 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -50,9 +50,7 @@ class JManageSelectionKeysDialog
 	SelectionKeysTableModel model = new SelectionKeysTableModel();
 	pTableModel = model;
 
-	JTablePanel tpanel =
-	  new JTablePanel(model, model.getColumnWidths(), 
-			  model.getRenderers(), model.getEditors());
+	JTablePanel tpanel = new JTablePanel(model);
 	pTablePanel = tpanel;
 
 	body.add(tpanel);

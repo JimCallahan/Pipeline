@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.2 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -72,17 +72,15 @@ class JSourceParamsDialog
 	  new SourceParamsTableModel(this, isEditable, stitles, snames, action);
 	pTableModel = model;
 
-	JTablePanel tpanel = 
-	  new JTablePanel(model, model.getColumnWidths(), 
-			  model.getRenderers(), model.getEditors());
+	JTablePanel tpanel = new JTablePanel(model);
 	pTablePanel = tpanel;
 
 	{
 	  int total = 3;
-	  int widths[] = model.getColumnWidths();
-	  int wk;
-	  for(wk=0; wk<widths.length; wk++)
-	    total += widths[wk] + 3;
+	  int col;
+	  for(col=0; col<model.getColumnCount(); col++) 
+	    total += model.getColumnWidth(col) + 3;
+
 	  
 	  if(total > 1000)
 	    tpanel.getTable().setPreferredScrollableViewportSize(new Dimension(1000, 300));

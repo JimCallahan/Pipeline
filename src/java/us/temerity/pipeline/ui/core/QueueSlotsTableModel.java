@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.2 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.swing.table.*;
  */ 
 public
 class QueueSlotsTableModel 
-  extends SortableTableModel
+  extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -88,7 +88,7 @@ class QueueSlotsTableModel
       }
 
       {
-	int widths[] = { 200, 80, 180, 120, 180, 120, 360, 180 };
+	int widths[] = { 200, 80, 270, 120, 180, 120, 540, 180 };
 	pColumnWidths = widths;
       }
 
@@ -122,7 +122,7 @@ class QueueSlotsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  protected void 
+  public void 
   sort()
   {
     Date now = new Date();

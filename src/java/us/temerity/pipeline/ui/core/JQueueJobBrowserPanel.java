@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.8 2005/01/30 02:05:22 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.9 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -270,6 +270,94 @@ class JQueueJobBrowserPanel
 	  panel.add(Box.createHorizontalGlue());
 
 	  {
+	    JToggleButton btn = new JToggleButton();		
+	    pDspButton = btn;
+	    btn.setName("DspButton");
+	    
+	    Dimension size = new Dimension(30, 10);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.setSelected(true);
+	    btn.setActionCommand("toggle-dsp-columns");
+	    btn.addActionListener(this);
+	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	     ("Toggle display of the Status, Reservation and Order columns."));
+	    
+	    panel.add(btn);
+	  } 
+	  
+	  panel.add(Box.createRigidArea(new Dimension(15, 0)));
+
+	  {
+	    JToggleButton btn = new JToggleButton();		
+	    pDynButton = btn;
+	    btn.setName("DynButton");
+	    
+	    Dimension size = new Dimension(30, 10);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.setSelected(true);
+	    btn.setActionCommand("toggle-dyn-columns");
+	    btn.addActionListener(this);
+	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	     ("Toggle display of the System Load, Free Memory and Free Disk Space columns."));
+	    
+	    panel.add(btn);
+	  } 
+	  
+	  panel.add(Box.createRigidArea(new Dimension(15, 0)));
+
+	  {
+	    JToggleButton btn = new JToggleButton();		
+	    pJobButton = btn;
+	    btn.setName("JobButton");
+	    
+	    Dimension size = new Dimension(30, 10);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.setSelected(true);
+	    btn.setActionCommand("toggle-job-columns");
+	    btn.addActionListener(this);
+	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Toggle display of the Jobs and Slots columns."));
+	  
+	    panel.add(btn);
+	  } 
+
+	  panel.add(Box.createRigidArea(new Dimension(15, 0)));
+
+	  {
+	    JToggleButton btn = new JToggleButton();		
+	    pKeyButton = btn;
+	    btn.setName("KeyButton");
+	    
+	    Dimension size = new Dimension(30, 10);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.setSelected(true);
+	    btn.setActionCommand("toggle-key-columns");
+	    btn.addActionListener(this);
+	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Toggle display of the selection key bias columns."));
+	    
+	    panel.add(btn);
+	  } 
+	  
+	  panel.add(Box.createRigidArea(new Dimension(45, 0)));
+
+	  {
 	    JButton btn = new JButton();		
 	    pHostsApplyButton = btn;
 	    btn.setName("ApplyHeaderButton");
@@ -307,8 +395,7 @@ class JQueueJobBrowserPanel
 	      pHostnamesTableModel = model;
 	      
 	      JTablePanel tpanel =
-		new JTablePanel(model, model.getColumnWidths(), 
-				model.getRenderers(), model.getEditors(), 
+		new JTablePanel(model, 
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 	      pHostnamesTablePanel = tpanel;
@@ -346,9 +433,7 @@ class JQueueJobBrowserPanel
 	    QueueHostsTableModel model = new QueueHostsTableModel(this, pLocalHostnames);
 	    pHostsTableModel = model;
 
-	    JTablePanel tpanel =
-	      new JTablePanel(model, model.getColumnWidths(), 
-			      model.getRenderers(), model.getEditors());
+	    JTablePanel tpanel = new JTablePanel(model);
 	    pHostsTablePanel = tpanel;
 	  
 	    {
@@ -374,69 +459,8 @@ class JQueueJobBrowserPanel
 	    }
 
 	    panel.add(tpanel);
-	    
-	    int width[] = model.getColumnWidths(); 
-	    int total = 0;
-	    {
-	      int wk;
-	      for(wk=0; wk<width.length; wk++) 
-		total += width[wk];
-	    }
-	    
-	    {
-	      Box box = new Box(BoxLayout.X_AXIS);
-	      
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		
-		int wk;
-		for(wk=0; wk<width.length; wk++) {
-		  String prefix = "";
-		  if((wk > 1) && (wk < 5)) 
-		    prefix = "Blue";
-		  else if((wk > 4) && (wk < 7)) 
-		    prefix = "Green"; 
-		  
-		  JButton btn = new JButton(pHostsTableModel.getColumnName(wk));
-		  btn.setName(prefix + "TableHeaderButton");
-		  
-		  {	    
-		    Dimension size = new Dimension(width[wk], 23);
-		    btn.setMinimumSize(size);
-		    btn.setPreferredSize(size);
-		    btn.setMaximumSize(size);
-		  }
-		  
-		  btn.addActionListener(tpanel);
-		  btn.setActionCommand("sort-column:" + wk);	  
-		  
-		  btn.setFocusable(false);
-		  
-		  btn.setToolTipText
-		    (UIFactory.formatToolTip(pHostsTableModel.getColumnDescription(wk)));
-		  
-		  hbox.add(btn);
-		}
-		
-		Dimension size = new Dimension(total, 23); 
-		hbox.setMinimumSize(size);
-		hbox.setPreferredSize(size);
-		hbox.setMaximumSize(size);
-		
-		box.add(hbox);
-	      }
-	      
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		pSelectionKeyHeaderBox = hbox; 
-		
-		box.add(hbox);
-	      }	  
-	    
-	      tpanel.getHeaderViewport().setView(box);
-	    }
 	  }
-
+	    
 	  body.add(panel);
 	}
 
@@ -498,9 +522,7 @@ class JQueueJobBrowserPanel
 	    QueueSlotsTableModel model = new QueueSlotsTableModel(this, pLocalHostnames);
 	    pSlotsTableModel = model;
 	    
-	    JTablePanel tpanel =
-	      new JTablePanel(model, model.getColumnWidths(), 
-			      model.getRenderers(), model.getEditors());
+	    JTablePanel tpanel = new JTablePanel(model);
 	    pSlotsTablePanel = tpanel;
 	    
 	    pSlotsListSelector = new SlotsListSelector();
@@ -613,10 +635,7 @@ class JQueueJobBrowserPanel
 	    
 	    pGroupsListSelector = new GroupsListSelector();
 
-	    JGroupsTablePanel tpanel =
-	      new JGroupsTablePanel(model, model.getColumnWidths(), 
-				    model.getRenderers(), model.getEditors(),
-				    pGroupsListSelector);
+	    JGroupsTablePanel tpanel = new JGroupsTablePanel(model, pGroupsListSelector);
 	    pGroupsTablePanel = tpanel;
 	    
 	    {
@@ -950,76 +969,9 @@ class JQueueJobBrowserPanel
     if((hosts != null) && (keys != null)) {
       pHostnamesTableModel.setHostnames(hosts.keySet());
 
-      pHostsTableModel.setQueueHosts(hosts, keys, pIsPrivileged);
-      pHostsTableModel.fireTableStructureChanged(); 
+      TreeSet<String> obsolete = pHostsTableModel.setQueueHosts(hosts, keys, pIsPrivileged);
+      pHostsTablePanel.refilterColumns(obsolete); 
 
-      {
-	TableColumnModel cmodel = pHostsTablePanel.getTable().getColumnModel();
-	
-	int wk;
-	for(wk=0; wk<7; wk++) {
-	  TableColumn tcol = cmodel.getColumn(wk);
-	  
-	  tcol.setCellRenderer(pHostsTableModel.getRenderers()[wk]);
-	  
-	  TableCellEditor editor = pHostsTableModel.getEditors()[wk];
-	  if(editor != null) 
-	    tcol.setCellEditor(editor);
-	  
-	  int width = pHostsTableModel.getColumnWidths()[wk];
-	  tcol.setMinWidth(width);
-	  tcol.setPreferredWidth(width);
-	  tcol.setMaxWidth(width);
-	}
-	  
-	wk = 7;
-	for(String kname : keys.keySet()) {
-	  TableColumn tcol = cmodel.getColumn(wk);
-	  
-	  tcol.setCellRenderer(new JSelectionBiasTableCellRenderer());
-	  tcol.setCellEditor(new JSelectionBiasTableCellEditor());
-	  
-	  tcol.setMinWidth(100);
-	  tcol.setPreferredWidth(100);
-	  tcol.setMaxWidth(100);
-	  
-	  wk++;
-	}
-      }
-      
-      {
-	pSelectionKeyHeaderBox.removeAll();
-	
-	int wk = 7;
-	for(String kname : keys.keySet()) {
-	  JButton btn = new JButton(kname);
-	  btn.setName("PurpleTableHeaderButton");
-	  
-	  {	    
-	    Dimension size = new Dimension(100, 23);
-	    btn.setMinimumSize(size);
-	    btn.setPreferredSize(size);
-	    btn.setMaximumSize(size);
-	  }
-	  
-	  btn.addActionListener(pHostsTablePanel);
-	  btn.setActionCommand("sort-column:" + wk);	  
-	  
-	  btn.setFocusable(false);
-	  
-	  btn.setToolTipText
-	    (UIFactory.formatToolTip(pHostsTableModel.getColumnDescription(wk)));
-
-	  pSelectionKeyHeaderBox.add(btn);
-	  
-	  wk++;
-	}
-	
-	Box parent = (Box) pSelectionKeyHeaderBox.getParent();
-	parent.revalidate();
-	parent.repaint();
-      }
-      
       pHostsApplyItem.setEnabled(false);
       pHostsApplyButton.setEnabled(false);
     }
@@ -1146,6 +1098,84 @@ class JQueueJobBrowserPanel
   {
     if(pHostsTableModel != null) 
       pHostsTableModel.externalSort(rowToIndex);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the state of the column visiblity buttons.
+   */ 
+  public void 
+  updateHostsHeaderButtons()
+  {
+    {
+      TreeSet<String> cnames = new TreeSet<String>();
+      cnames.add("Status");
+      cnames.add("Reservation");
+      cnames.add("Order");
+    
+      boolean selected = true;
+      for(String cname : cnames) {
+	if(!pHostsTablePanel.isColumnVisible(cname)) {
+	  selected = false;
+	  break;
+	}
+      }
+      
+      pDspButton.setSelected(selected);
+    }
+
+    {
+      TreeSet<String> cnames = new TreeSet<String>();
+      cnames.add("System Load");
+      cnames.add("Free Memory");
+      cnames.add("Free Disk Space");
+    
+      boolean selected = true;
+      for(String cname : cnames) {
+	if(!pHostsTablePanel.isColumnVisible(cname)) {
+	  selected = false;
+	  break;
+	}
+      }
+      
+      pDynButton.setSelected(selected);
+    }
+
+    {
+      TreeSet<String> cnames = new TreeSet<String>();
+      cnames.add("Jobs");
+      cnames.add("Slots");
+    
+      boolean selected = true;
+      for(String cname : cnames) {
+	if(!pHostsTablePanel.isColumnVisible(cname)) {
+	  selected = false;
+	  break;
+	}
+      }
+      
+      pJobButton.setSelected(selected);
+    }
+
+    {
+      TreeSet<String> cnames = pHostsTableModel.getSelectionKeys();
+
+      boolean selected = true;
+      if(cnames.isEmpty()) 
+	selected = false;
+      else {
+	for(String cname : cnames) {
+	  if(!pHostsTablePanel.isColumnVisible(cname)) {
+	    selected = false;
+	    break;
+	  }
+	}
+      }
+
+      pKeyButton.setSelected(selected);
+    }
   }
 
 
@@ -1496,6 +1526,15 @@ class JQueueJobBrowserPanel
     else if(cmd.equals("hosts-remove")) 
       doHostsRemove();
 
+    else if(cmd.equals("toggle-dsp-columns"))
+      doHostsToggleDspColumns();
+    else if(cmd.equals("toggle-dyn-columns"))
+      doHostsToggleDynColumns();
+    else if(cmd.equals("toggle-job-columns"))
+      doHostsToggleJobColumns();
+    else if(cmd.equals("toggle-key-columns"))
+      doHostsToggleKeyColumns();
+
     else if(cmd.equals("slots-kill-jobs")) 
       doSlotsKillJobs();
 
@@ -1624,6 +1663,93 @@ class JQueueJobBrowserPanel
       RemoveHostsTask task = new RemoveHostsTask(hostnames);
       task.start();
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Toggle display of the Status, Reservation and Order columns."
+   */ 
+  public void 
+  doHostsToggleDspColumns()
+  { 
+    TreeSet<String> cnames = new TreeSet<String>();
+    cnames.add("Status");
+    cnames.add("Reservation");
+    cnames.add("Order");
+    
+    boolean isVisible = false;
+    for(String cname : cnames) {
+      if(!pHostsTablePanel.isColumnVisible(cname)) {
+	isVisible = true;
+	break;
+      }
+    }
+    
+    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
+  }
+
+  /**
+   * Toggle display of the System Load, Free Memory and Free Disk Space columns."
+   */ 
+  public void 
+  doHostsToggleDynColumns()
+  { 
+    TreeSet<String> cnames = new TreeSet<String>();
+    cnames.add("System Load");
+    cnames.add("Free Memory");
+    cnames.add("Free Disk Space");
+    
+    boolean isVisible = false;
+    for(String cname : cnames) {
+      if(!pHostsTablePanel.isColumnVisible(cname)) {
+	isVisible = true;
+	break;
+      }
+    }
+    
+    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
+  }
+
+  /**
+   * Toggle display of the Jobs and Slots columns.
+   */ 
+  public void 
+  doHostsToggleJobColumns()
+  {
+    TreeSet<String> cnames = new TreeSet<String>();
+    cnames.add("Jobs");
+    cnames.add("Slots");
+    
+    boolean isVisible = false;
+    for(String cname : cnames) {
+      if(!pHostsTablePanel.isColumnVisible(cname)) {
+	isVisible = true;
+	break;
+      }
+    }
+    
+    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
+  }
+
+  /**
+   * Toggle display of the selection key bias columns.
+   */ 
+  public void 
+  doHostsToggleKeyColumns()
+  {
+    TreeSet<String> cnames = pHostsTableModel.getSelectionKeys();
+
+    boolean isVisible = false;
+    for(String cname : cnames) {
+      if(!pHostsTablePanel.isColumnVisible(cname)) {
+	isVisible = true;
+	break;
+      }
+    }
+    
+    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
   }
 
 
@@ -1966,7 +2092,7 @@ class JQueueJobBrowserPanel
     throws GlueException
   {
     super.toGlue(encoder);
-
+    
     encoder.encode("ViewFilter", pViewFilter);
     encoder.encode("SelectedTabIndex", pTab.getSelectedIndex());
 
@@ -2145,14 +2271,11 @@ class JQueueJobBrowserPanel
     public 
     JGroupsTablePanel
     (
-     SortableTableModel model, 
-     int width[], 
-     TableCellRenderer renderers[], 
-     TableCellEditor editors[],
+     AbstractSortableTableModel model,
      GroupsListSelector selector
     ) 
     {
-      super(model, width, renderers, editors);
+      super(model);
 
       pSelector = selector;
       ListSelectionModel smodel = getTable().getSelectionModel();
@@ -2583,6 +2706,7 @@ class JQueueJobBrowserPanel
 
       pStatus       = pHostsTableModel.getHostStatus();
       pReservations = pHostsTableModel.getHostReservations();
+      pOrders       = pHostsTableModel.getHostOrders();
       pSlots   	    = pHostsTableModel.getHostSlots(); 
       pBiases       = pHostsTableModel.getHostBiases(); 
     }
@@ -2595,7 +2719,7 @@ class JQueueJobBrowserPanel
       if(master.beginPanelOp("Modifying Servers...")) {
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient();
-	  client.editHosts(pStatus, pReservations, pSlots, pBiases); 
+	  client.editHosts(pStatus, pReservations, pOrders, pSlots, pBiases); 
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2611,6 +2735,7 @@ class JQueueJobBrowserPanel
 
     private TreeMap<String,QueueHost.Status>         pStatus; 
     private TreeMap<String,String>                   pReservations; 
+    private TreeMap<String,Integer>                  pOrders;  
     private TreeMap<String,Integer>                  pSlots;  
     private TreeMap<String,TreeMap<String,Integer>>  pBiases;       
   }
@@ -3070,6 +3195,14 @@ class JQueueJobBrowserPanel
    * The header panel.
    */ 
   private JPanel pHostsHeaderPanel; 
+
+  /** 
+   * Column display buttons.
+   */ 
+  private JToggleButton  pDspButton;
+  private JToggleButton  pDynButton;
+  private JToggleButton  pJobButton;
+  private JToggleButton  pKeyButton;
 
   /**
    * The button used to apply changes to the host properties.

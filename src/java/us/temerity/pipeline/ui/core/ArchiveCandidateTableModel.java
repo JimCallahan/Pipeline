@@ -1,4 +1,4 @@
-// $Id: ArchiveCandidateTableModel.java,v 1.2 2005/02/07 14:52:59 jim Exp $
+// $Id: ArchiveCandidateTableModel.java,v 1.3 2005/03/04 09:20:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,7 +21,7 @@ import javax.swing.table.*;
  */ 
 public
 class ArchiveCandidateTableModel
-  extends SortableTableModel
+  extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -111,7 +111,7 @@ class ArchiveCandidateTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  protected void 
+  public void 
   sort()
   {
     ArrayList<Comparable> values = new ArrayList<Comparable>();
