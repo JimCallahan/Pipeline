@@ -1,4 +1,4 @@
-// $Id: JFileSeqListCellRenderer.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JFileSeqListCellRenderer.java,v 1.2 2004/07/14 21:05:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -84,7 +84,7 @@ class JFileSeqListCellRenderer
       pSizeLabel.setText(null);
 
       Date date = new Date(file.lastModified());
-      pDateLabel.setText(date.toString());
+      pDateLabel.setText(Dates.format(date));
     }
     else if(value instanceof FileSeq) {
       FileSeq fseq = (FileSeq) value;
@@ -113,7 +113,7 @@ class JFileSeqListCellRenderer
       
       if(lastMod > 0) {
 	Date date = new Date(lastMod);
-	pDateLabel.setText(date.toString());
+	pDateLabel.setText(Dates.format(date));
       }
       else {
 	pDateLabel.setText(null);

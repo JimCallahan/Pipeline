@@ -1,7 +1,8 @@
-// $Id: JFileListCellRenderer.java,v 1.2 2004/06/08 02:56:53 jim Exp $
+// $Id: JFileListCellRenderer.java,v 1.3 2004/07/14 21:05:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
@@ -77,7 +78,7 @@ class JFileListCellRenderer
     setMinimumSize(size);
     setPreferredSize(size);
 
-    pFormat = new DecimalFormat("###0.0");    
+    pFormat = new DecimalFormat("###0.0");   
   }
 
   
@@ -121,7 +122,7 @@ class JFileListCellRenderer
     }
     
     Date date = new Date(file.lastModified());
-    pDateLabel.setText(date.toString());
+    pDateLabel.setText(Dates.format(date));
 
     if(isDir) 
       pNameLabel.setIcon(isSelected ? sDirSelectedIcon : sDirNormalIcon);
