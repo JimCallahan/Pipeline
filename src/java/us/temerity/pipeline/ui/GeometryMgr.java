@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.1 2004/12/16 15:41:03 jim Exp $
+// $Id: GeometryMgr.java,v 1.2 2004/12/29 17:33:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -235,6 +235,8 @@ class GeometryMgr
 	gl.glEnable(GL.GL_TEXTURE_2D);
 	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 	
+	gl.glColor3d(1.0, 1.0, 1.0);
+
 	gl.glBegin(GL.GL_QUADS);
 	{
 	  gl.glTexCoord2d(0.0, 1.0);
@@ -297,6 +299,8 @@ class GeometryMgr
 	gl.glEnable(GL.GL_TEXTURE_2D);
 	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 	
+	gl.glColor3d(1.0, 1.0, 1.0);
+
 	gl.glBegin(GL.GL_QUADS);
 	{
 	  gl.glTexCoord2d(0.0, 1.0);
