@@ -1,7 +1,8 @@
-// $Id: Named.java,v 1.3 2004/02/25 02:59:28 jim Exp $
+// $Id: Named.java,v 1.4 2004/02/28 20:00:27 jim Exp $
 
 package us.temerity.pipeline;
 
+import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -14,7 +15,7 @@ import java.util.logging.*;
  */
 public
 class Named
-  implements Glueable
+implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -56,6 +57,46 @@ class Named
     assert(pName != null);
     return pName;
   }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof Named)) {
+      Named named = (Named) obj;
+      return pName.equals(named.pName);
+    }
+    return false;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+    throws CloneNotSupportedException
+  {
+    return super.clone();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -84,6 +125,12 @@ class Named
       throw new GlueException("The \"Name\" was missing!");
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 4473685551529032568L;
 
   
   /*----------------------------------------------------------------------------------------*/
