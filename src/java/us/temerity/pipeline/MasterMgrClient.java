@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.42 2005/01/05 09:44:00 jim Exp $
+// $Id: MasterMgrClient.java,v 1.43 2005/01/07 07:07:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -665,6 +665,60 @@ class MasterMgrClient
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
 
     Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the comparator plugin selection menu.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the comparator menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getComparatorMenuLayout() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetComparatorMenuLayout, null); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the comparator plugin selection menu.
+   * 
+   * @param layout
+   *   The heirarchical set of menus for selection of a specific comparator plugin version.
+   * 
+   * @throws PipelineException
+   *   If unable to set the comparator menu layout.
+   */ 
+  public synchronized void 
+  setComparatorMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the comparator menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
+
+    Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
     handleSimpleResponse(obj);    
   }
 

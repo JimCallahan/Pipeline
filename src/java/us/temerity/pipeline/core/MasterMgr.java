@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.77 2005/01/05 14:51:45 jim Exp $
+// $Id: MasterMgr.java,v 1.78 2005/01/07 07:08:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -303,6 +303,7 @@ class MasterMgr
 
       pPluginMenuLayoutLock = new Object();
       pEditorMenuLayout     = new PluginMenuLayout();
+      pComparatorMenuLayout = new PluginMenuLayout();
       pToolMenuLayout       = new PluginMenuLayout();
 
       pPrivilegedUsers = new TreeSet<String>();
@@ -473,6 +474,7 @@ class MasterMgr
     throws PipelineException
   {
     readEditorMenuLayout(); 
+    readComparatorMenuLayout(); 
     readToolMenuLayout(); 
   }
   
@@ -722,6 +724,7 @@ class MasterMgr
 
 	pPluginMenuLayoutLock = null; 
 	pEditorMenuLayout     = null;
+	pComparatorMenuLayout = null;
 	pToolMenuLayout       = null;
 
 	pPrivilegedUsers = null;
@@ -1855,6 +1858,78 @@ class MasterMgr
 
 	try {
 	  writeEditorMenuLayout();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the comparator plugin selection menu.
+   *
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getComparatorMenuLayout() 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getComparatorMenuLayout()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	
+	PluginMenuLayout layout = new PluginMenuLayout(pComparatorMenuLayout);
+	return new MiscGetPluginMenuLayoutRsp(timer, layout);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the comparator plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setComparatorMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setComparatorMenuLayout()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	    
+	pComparatorMenuLayout = req.getLayout();
+
+	try {
+	  writeComparatorMenuLayout();
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -8478,6 +8553,105 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the layout of the comparator plugin selection menu to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the menu layout file.
+   */ 
+  private void 
+  writeComparatorMenuLayout() 
+    throws PipelineException
+  {
+    synchronized(pPluginMenuLayoutLock) {
+      File file = new File(pNodeDir, "etc/comparator-menu-layout");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old comparator menu layout file (" + file + ")!");
+      }
+      
+      Logs.glu.finer("Writing Comparator Menu Layout.");
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("ComparatorMenuLayout", pComparatorMenuLayout);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the comparator " + 
+	     "menu layout!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the comparator menu layout file " + 
+	   "(" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the layout of the comparator plugin selection menu from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the menu layout file.
+   */ 
+  private void 
+  readComparatorMenuLayout () 
+    throws PipelineException
+  {
+    synchronized(pPluginMenuLayoutLock) {
+      File file = new File(pNodeDir, "etc/comparator-menu-layout");
+      if(file.isFile()) {
+	Logs.glu.finer("Reading Comparator Menu Layout.");
+
+	PluginMenuLayout layout = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  layout = (PluginMenuLayout) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The comparator menu layout file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the comparator menu layout file " + 
+	     "(" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+	assert(layout != null);
+	
+	pComparatorMenuLayout = layout;
+      }
+      else {
+	pComparatorMenuLayout = new PluginMenuLayout();
+      }
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the layout of the tool plugin selection menu to disk. <P> 
    * 
    * @throws PipelineException
@@ -8564,7 +8738,7 @@ class MasterMgr
 	pToolMenuLayout = layout;
       }
       else {
-	pEditorMenuLayout = new PluginMenuLayout();
+	pToolMenuLayout = new PluginMenuLayout();
       }
     }
   }
@@ -9755,6 +9929,12 @@ class MasterMgr
    * is defined.
    */ 
   private PluginMenuLayout  pEditorMenuLayout;
+   
+  /**
+   * The cached layout of the comparator plugin selection menu or <CODE>null</CODE> if none 
+   * is defined.
+   */ 
+  private PluginMenuLayout  pComparatorMenuLayout;
    
   /**
    * The cached layout of the tool plugin selection menu or <CODE>null</CODE> if none 

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: JManagerPanel.java,v 1.3 2005/01/07 07:10:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -276,7 +276,7 @@ class JManagerPanel
       }
 
       {
-	JMenu sub = new JMenu("Restore Layout (no select)");   
+	JMenu sub = new JMenu("Restore Layout (NS)");   
 	pRestoreLayoutNoSelectMenu = sub;
 
 	pPopup.add(sub);  
@@ -319,6 +319,11 @@ class JManagerPanel
 
 	item = new JMenuItem("Editors...");
 	item.setActionCommand("manage-editors");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Comparators...");
+	item.setActionCommand("manage-comparators");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1490,6 +1495,8 @@ class JManagerPanel
 
     else if(cmd.equals("manage-editors"))
       UIMaster.getInstance().showManageEditorsDialog();
+    else if(cmd.equals("manage-comparators"))
+      UIMaster.getInstance().showManageComparatorsDialog();
     else if(cmd.equals("manage-tools"))
       UIMaster.getInstance().showManageToolsDialog();
 

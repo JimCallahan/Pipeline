@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.23 2005/01/05 09:44:00 jim Exp $
+// $Id: MasterRequest.java,v 1.24 2005/01/07 07:07:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -107,6 +107,17 @@ enum MasterRequest
    * Set layout of the editor plugin selection menu.
    */
   SetEditorMenuLayout, 
+  
+
+  /**
+   * Get layout of the comparator plugin selection menu.
+   */
+  GetComparatorMenuLayout, 
+  
+  /**
+   * Set layout of the comparator plugin selection menu.
+   */
+  SetComparatorMenuLayout, 
   
 
   /**
