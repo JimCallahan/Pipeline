@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 echo "Building macros."
 aclocal 
@@ -11,5 +11,3 @@ automake --verbose --add-missing --copy
 
 echo "Building configure."
 autoconf
-
-rm -f config.cache

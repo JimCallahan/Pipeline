@@ -1,0 +1,12 @@
+
+The haiku instructions:
+
+    > tar -zxvf Freedom-0.1.tgz
+    > cd Freedom-0.1
+    > source=`pwd`
+    > ./autogen.sh
+    > cd <<build directory>>
+    > $source/configure --enable-opt
+    > make all
+    > make install
+
