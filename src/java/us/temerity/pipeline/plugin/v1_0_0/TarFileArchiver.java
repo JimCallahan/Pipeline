@@ -1,4 +1,4 @@
-// $Id: TarballArchiver.java,v 1.4 2005/03/15 19:10:01 jim Exp $
+// $Id: TarFileArchiver.java,v 1.1 2005/03/19 15:56:50 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -8,7 +8,7 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   T A R B A L L   A R C H I V E R                                                        */
+/*   T A R   F I L E   A R C H I V E R                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /** 
@@ -34,7 +34,7 @@ import java.io.*;
  * </DIV> <P> 
  */
 public
-class TarballArchiver
+class TarFileArchiver
   extends BaseArchiver
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -42,9 +42,9 @@ class TarballArchiver
   /*----------------------------------------------------------------------------------------*/
   
   public
-  TarballArchiver()
+  TarFileArchiver()
   {
-    super("Tarball", new VersionID("1.0.0"),
+    super("TarFile", new VersionID("1.0.0"),
 	  "Archive to tar(1) file.");
 
     {
@@ -77,7 +77,6 @@ class TarballArchiver
     {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add("ArchiveDirectory");
-      layout.add(null);
       layout.add("Capacity");
       layout.add("Compress");
 
@@ -249,7 +248,6 @@ class TarballArchiver
     args.add("--extract");
     if(compress) 
       args.add("--ungzip");
-    args.add("--dereference");
     args.add("--file=" + tarball);
 
     for(File file : files) 
