@@ -1,4 +1,4 @@
-// $Id: TestGlueApp.java,v 1.1 2004/02/12 15:50:12 jim Exp $
+// $Id: TestGlueApp.java,v 1.2 2004/02/15 16:17:26 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -10,8 +10,6 @@ import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   o f   G L U E                                                                */
-/*                                                                                          */
-/*                                                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 public 
@@ -30,7 +28,6 @@ class TestGlueApp
     try {
       TestGlueApp app = new TestGlueApp();
       app.run();
-      app.run2();
     } 
     catch (Exception ex) {
       ex.printStackTrace();
@@ -43,54 +40,49 @@ class TestGlueApp
 
   public void 
   run() 
-    throws GlueError, InstantiationException, ClassNotFoundException, IllegalAccessException
+    throws GlueException, 
+           InstantiationException, ClassNotFoundException, IllegalAccessException
   {
-    String glue = null;
     {
       FilePattern pat  = new FilePattern("foo", 4, "rgb");
       FrameRange range = new FrameRange(10, 30, 5);
-      PFileSeq fseq = new PFileSeq(pat, range);
-
-      GlueEncoder ge = new GlueEncoder("Primary", fseq);
-      glue = ge.getText();
-      System.out.print("\n\n" + glue);
+      FileSeq fseq = new FileSeq(pat, range);
+      test("Primary", fseq);
     }
 
-//     PFileSeq fseq = null;
-//     {
-//       GlueDecoder gd = new GlueDecoder(glue);
-//       fseq = (PFileSeq) gd.getObject();
-//     }
-
-//     {
-//       GlueEncoder ge = new GlueEncoder("Primary", fseq);
-//       System.out.print("\n\n" + ge.getText());
-//     }
+    {
+      GlueableStuff stuff = new GlueableStuff("Bullshit");
+      test("Stuff", stuff);
+    }
   }
+
 
   public void 
-  run2() 
-    throws GlueError, InstantiationException, ClassNotFoundException, IllegalAccessException
+  test
+  ( 
+   String title, 
+   Glueable obj   
+  ) 
+    throws GlueException
   {
-    String glue = null;
-    {
-      Test test = new Test("Bullshit");
+    System.out.print("-----------------------------------\n" + 
+		     "BEFORE:\n");
 
-      GlueEncoder ge = new GlueEncoder("Test", test);
-      glue = ge.getText();
-      System.out.print("\n\n" + glue);
-    }
+    GlueEncoder ge = new GlueEncoder(title, obj);
+    String text = ge.getText();
+    System.out.print(text + "\n");
 
-//     Test test = null;
-//     {
-//       GlueDecoder gd = new GlueDecoder(glue);
-//       test = (Test) gd.getObject();
-//     }
+    System.out.print("AFTER:\n");
 
-//     {
-//       GlueEncoder ge = new GlueEncoder("Test", test);
-//       System.out.print("\n\n" + ge.getText());
-//     }
+    GlueDecoder gd = new GlueDecoder(text);
+    Object obj2 = gd.getObject();
+
+    GlueEncoder ge2 = new GlueEncoder(title, (Glueable) obj2);
+    String text2 = ge.getText();
+    System.out.print(text2 + "\n");
+    
+    assert(text.equals(text2));
   }
+   
 
 }
