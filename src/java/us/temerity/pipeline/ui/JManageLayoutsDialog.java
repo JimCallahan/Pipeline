@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.5 2004/10/13 03:34:02 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.6 2004/10/22 19:31:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -378,8 +378,6 @@ class JManageLayoutsDialog
 	  selected = ("/" + data.getName());
       }
     }
-
-    System.out.print("Default: " + selected + "\n");
 
     if(selected == null) 
       return;
