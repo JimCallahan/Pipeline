@@ -1,0 +1,5 @@
+// Run this from the project directory (../)
+
+source "renderFont.mel";
+renderFont("Utopia-Bold", "../../src/java/pipeline", "UtopiaBold");
+	   

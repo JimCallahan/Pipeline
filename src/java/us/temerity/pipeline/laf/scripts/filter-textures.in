@@ -1,0 +1,48 @@
+#!/bin/bash
+
+src=$1
+dest=laf/textures
+
+function mipmap {
+  prefix=$1
+  frame=$2
+  type=$3
+
+  if [ ! -d $dest/$prefix ] 
+  then
+    mkdir -p $dest/$prefix
+  fi
+
+  echo "Generating MipMaps for: $prefix"
+
+  fr=`printf "%04d" $frame`
+
+  size=64
+  while [ $size -ge 1 ]
+  do
+    if [ $src/$type.$fr.tif -nt $dest/$prefix/texture.$size.png ]
+    then 
+      echo "  Filtering ${size}x${size} MipMap"
+      @CONVERT@ -filter Sinc -resize ${size}x${size} \
+        $src/$type.$fr.tif -type TrueColor $dest/$prefix/texture.$size.png
+    fi
+
+    size=$(($size/2))
+  done
+} 
+
+for mode in Normal Selected Primary
+do
+  frame=0
+  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified Conflicted ModifiedLinks
+  do
+    for qstate in Stale Queued Running Missing Failed Finished
+    do
+      mipmap $nstate-$qstate-$mode $frame $mode
+      frame=$(($frame + 1))	
+    done
+  done
+
+  mipmap Blank-$mode     42 $mode
+  mipmap Collapsed-$mode 43 $mode
+done

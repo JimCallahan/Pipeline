@@ -1,0 +1,5 @@
+// Run this from the project directory (../)
+
+source "renderFont.mel";
+renderFont("CharterBT-Roman", "../../src/java/pipeline", "CharterBTRoman");
+	   
