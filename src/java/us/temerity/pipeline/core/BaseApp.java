@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.4 2004/04/11 19:16:42 jim Exp $
+// $Id: BaseApp.java,v 1.5 2004/05/08 15:03:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -63,55 +63,7 @@ class BaseApp
   public void
   htmlHelp()
   {
-    Map<String,String> env = System.getenv();
-    File dir = PackageInfo.sTempDir;
-
-    boolean isRunning = false;
-    {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("-remote");
-      args.add("ping()");
-      
-      SubProcess proc = 
-	new SubProcess("CheckMozilla", "mozilla", args, env, dir);
-      proc.start();
-
-      try {
-	proc.join();
-      }
-      catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
-      }
-      
-      isRunning = proc.wasSuccessful();
-    }
-
-    if(isRunning) {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("-remote");
-      args.add("openURL(" + 
-	       "file://" + PackageInfo.sDocsDir + "/man/" + pName + ".html" + 
-	       ", new-tab)");
-
-      SubProcess proc = 
-	new SubProcess("RemoteMozilla", "mozilla", args, env, dir);
-      proc.start();
-
-      try {
-	proc.join();
-      }
-      catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
-      }
-    }
-    else {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("file://" + PackageInfo.sDocsDir + "/man/" + pName + ".html");
-
-      SubProcess proc = 
-	new SubProcess("LaunchMozilla", "mozilla", args, env, dir);
-      proc.start();
-    }
+    showURL("file://" + PackageInfo.sDocsDir + "/man/" + pName + ".html");
   }
 
   /**
@@ -151,6 +103,67 @@ class BaseApp
   }
     
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   O P S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Open the given URL in mozilla(1).
+   */ 
+  public static void
+  showURL
+  (
+   String url 
+  ) 
+  {
+    Map<String,String> env = System.getenv();
+    File dir = PackageInfo.sTempDir;
+
+    boolean isRunning = false;
+    {
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("-remote");
+      args.add("ping()");
+      
+      SubProcess proc = 
+	new SubProcess("CheckMozilla", "mozilla", args, env, dir);
+      proc.start();
+
+      try {
+	proc.join();
+      }
+      catch(InterruptedException ex) {
+	Logs.sub.severe(ex.getMessage());
+      }
+      
+      isRunning = proc.wasSuccessful();
+    }
+
+    if(isRunning) {
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("-remote");
+      args.add("openURL(" + url + ", new-tab)");
+
+      SubProcess proc = 
+	new SubProcess("RemoteMozilla", "mozilla", args, env, dir);
+      proc.start();
+
+      try {
+	proc.join();
+      }
+      catch(InterruptedException ex) {
+	Logs.sub.severe(ex.getMessage());
+      }
+    }
+    else {
+      ArrayList<String> args = new ArrayList<String>();
+      args.add(url.toString());
+
+      SubProcess proc = 
+	new SubProcess("LaunchMozilla", "mozilla", args, env, dir);
+      proc.start();
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
