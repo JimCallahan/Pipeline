@@ -1,4 +1,4 @@
-// $Id: Node.java,v 1.1 2004/02/28 20:05:47 jim Exp $
+// $Id: Node.java,v 1.2 2004/03/03 07:50:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,8 +12,7 @@ import java.util.*;
  * The complete set of information related to a Pipeline node.
  */
 public
-class Node        
-  extends Named
+class Node      
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -37,8 +36,10 @@ class Node
    String name
   ) 
     throws GlueException
-  {
-    super(name);
+  { 
+    if(name == null) 
+      throw new IllegalArgumentException("The name cannot be (null)!");
+    pName = name;
 
     {
       pMods = new TreeMap<String,NodeMod>();
@@ -71,6 +72,15 @@ class Node
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Gets the fully resolved name of the node.
+   */ 
+  public String
+  getName() 
+  {
+    assert(pName != null);
+    return pName;
+  }
   
   
 
@@ -187,6 +197,11 @@ class Node
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
  
+  /**
+   * The fully resolved name of the node.
+   */
+  private String  pName;        
+
   /**
    * The working versions of the node indexed by user name.
    */ 
