@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.4 2004/08/29 09:22:06 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.5 2004/09/01 12:19:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -111,6 +111,11 @@ class PackageInfo
    * Set by the FileHostname customer profile entry.
    */
   public static final String sFileServer = "@PL_FILE_SERVER@";
+
+  /**
+   * Whether file state caching by plmaster(1) and invalidation by plnotify(1) is enabled.
+   */ 
+  public static final boolean sEnableCaching = @PL_ENABLE_CACHING@;  
 
   /**
    * The port number listened to by the Pipeline file server <I>plfilemgr(1)</I>. <P> 
