@@ -299,6 +299,20 @@
 
 
 
+  <!--  V A L U E   P A N E L   B U T T O N  L A B E L -->
+
+  <style id="ValuePanelButtonLabel">
+    <state>
+      <imagePainter path="ValuePanelButtonDisabled.png"
+                    method="labelBackground"
+                    sourceInsets="5 5 5 5"/>
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+  </style>
+  <bind style="ValuePanelButtonLabel" type="name" key="ValuePanelButtonLabel"/>
+
+
+
   <!--  S M A L L   L E F T   A R R O W   B U T T O N  -->
 
   <style id="SmallLeftArrowButton"> 
@@ -683,16 +697,16 @@
 
   <style id="TableHeaderButton">
     <state>
-      <imagePainter path="BlankButton.png"
+      <imagePainter path="TableHeaderButton.png"
                     method="buttonBackground"
-                    sourceInsets="5 5 5 5"/>
+                    sourceInsets="4 4 4 4"/>
     </state>
     <state value="PRESSED">
-      <imagePainter path="BlankButtonPressed.png"
+      <imagePainter path="TableHeaderButtonPressed.png"
                     method="buttonBackground"	
-                    sourceInsets="5 5 5 5"/>
+                    sourceInsets="4 4 4 4"/>
     </state>
-    <insets top="4" bottom="4" right="10" left="10"/> 
+    <insets top="3" bottom="3" right="10" left="10"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
   <bind style="TableHeaderButton" type="name" key="TableHeaderButton"/>
@@ -757,23 +771,22 @@
   <!--  S C R O L L   B A R  -->
 
   <style id="ScrollBar">
-    <insets top="0" bottom="0" right="0" left="3"/>
     <property key="ScrollBar.allowsAbsolutePositioning" type="boolean" value="true"/>
-    <property key="ScrollBar.squareButtons" type="boolean" value="true"/>
   </style>
   <bind style="ScrollBar" type="region" key="ScrollBar"/>
 
   <style id="ScrollBarThumb">
     <state>
       <imagePainter path="ScrollBarThumb.png"
-                    sourceInsets="3 4 3 4"/>
+                    sourceInsets="4 4 4 4"/>
     </state>
   </style>
   <bind style="ScrollBarThumb" type="region" key="ScrollBarThumb"/>
 
   <style id="ScrollBarTrack"> 
-    <imagePainter path="ScrollBarTrack.png"
-                  sourceInsets="2 6 2 6"/>
+    <imagePainter path="FrameInDark.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="3" bottom="3" right="3" left="3"/>
   </style>
   <bind style="ScrollBarTrack" type="region" key="ScrollBarTrack"/>
    
@@ -811,7 +824,39 @@
   </style>
   <bind style="ScrollBarArrowSouth" type="name" key="ScrollBar.button"/>
 
+  <style id="ScrollBarArrowWest"> 
+    <state>
+      <imagePainter path="ScrollArrowWest.png"
+                    method="arrowButtonForeground"
+                    direction="west"
+                    sourceInsets="14 16 0 0"/>  
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ScrollArrowWestPressed.png"
+                    method="arrowButtonForeground"
+                    direction="west"
+                    sourceInsets="14 16 0 0"/>  
+    </state>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="ScrollBarArrowWest" type="name" key="ScrollBar.button"/>
 
+  <style id="ScrollBarArrowEast"> 
+    <state>
+      <imagePainter path="ScrollArrowEast.png"
+                    method="arrowButtonForeground"
+                    direction="east"
+                    sourceInsets="14 16 0 0"/>  
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ScrollArrowEastPressed.png"
+                    method="arrowButtonForeground"
+                    direction="east"
+                    sourceInsets="14 16 0 0"/>  
+    </state>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="ScrollBarArrowEast" type="name" key="ScrollBar.button"/>
 
   <!--  M E N U S  -->
 
