@@ -79,6 +79,24 @@ class BBox3d
     return (p.allGe(pMin) && p.allLt(pMax));
   }									 
   
+  /**
+   * Whether the given bounding box shares any volume with this bounding box. 
+   */
+  public boolean 
+  intersects										 
+  (											 
+   BBox3d bbox
+  ) 											 
+  {		
+    int i; 
+    for(i=0; i<pMin.size(); i++) {
+      if(Math.max(pMin.getComp(i), bbox.pMin.getComp(i)) > 
+	 Math.min(pMax.getComp(i), bbox.pMax.getComp(i)))
+	return false;
+    }
+    return true;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

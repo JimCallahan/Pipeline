@@ -1,4 +1,4 @@
-// $Id: BBox2f.java,v 1.3 2004/12/16 21:34:26 jim Exp $
+// $Id: BBox2f.java,v 1.4 2004/12/31 07:38:13 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -79,6 +79,24 @@ class BBox2f
     return (p.allGe(pMin) && p.allLt(pMax));
   }									 
   
+  /**
+   * Whether the given bounding box shares any volume with this bounding box. 
+   */
+  public boolean 
+  intersects										 
+  (											 
+   BBox2f bbox
+  ) 											 
+  {		
+    int i; 
+    for(i=0; i<pMin.size(); i++) {
+      if(Math.max(pMin.getComp(i), bbox.pMin.getComp(i)) > 
+	 Math.min(pMax.getComp(i), bbox.pMax.getComp(i)))
+	return false;
+    }
+    return true;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
