@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.23 2004/08/23 03:02:10 jim Exp $
+// $Id: MasterMgr.java,v 1.24 2004/08/25 05:16:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3423,9 +3423,16 @@ class MasterMgr
 	for(QueueJob job : jobs.values()) 
 	  pQueueMgrClient.submitJob(job);
 
+	/* generate the root file pattern */ 
+	String rootPattern = null;
+	{
+	  QueueJob job = jobs.get(rootJobIDs.first());
+	  rootPattern = job.getActionAgenda().getPrimaryTarget().getFilePattern().toString();
+	}
+
 	/* group the jobs */ 
 	QueueJobGroup group = 
-	  new QueueJobGroup(pNextJobGroupID++, req.getNodeID(), rootJobIDs, 
+	  new QueueJobGroup(pNextJobGroupID++, req.getNodeID(), rootPattern, rootJobIDs, 
 			    new TreeSet<Long>(jobs.keySet()));
 	pQueueMgrClient.groupJobs(group);
 
