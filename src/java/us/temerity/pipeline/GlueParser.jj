@@ -120,6 +120,7 @@ TOKEN :
 | <REAL_LITERAL:        (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])+ (<EXPONENT>)?>
 
 | <OPEN_QUOTE:          "\""> : STRING_STATE
+| <COLON:               ":"> 
 
 /* primitive types */ 
 | <PRIM_BOOLEAN_CLASS:  "boolean">
@@ -161,6 +162,7 @@ TOKEN :
   <STRING_LITERAL:      ((~["\""]) | "\\\"")+>
 | <CLOSE_QUOTE:          "\""> : DEFAULT
 }
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -302,9 +304,19 @@ SimpleValue(Class cls, Long objID) :
 	  throw typeMismatch(cls, vcls);
       }    
       else if(vcls == sStringClass) {
-	if(cls != sStringClass) 
+	if(cls == sStringClass) 
+	  obj = val;      
+	else if(cls.isEnum()) {
+	  try {
+	    obj = Enum.valueOf(cls, (String) val);
+	  }
+	  catch(IllegalArgumentException ex) {
+	    throw new ParseException(
+	      "The \"" + cls.getName() + "\" enumeration does not contain \"" + val + "\"!");
+	  }
+	}
+	else 
 	  throw typeMismatch(cls, vcls);
-	obj = val;      
       }
       else {
 	throw new ParseException("Interal Error in GlueParser.SimpleValue()");
@@ -514,19 +526,29 @@ ArrayEntry(Object array) :
   Class cls;
 }
 {
-  idx=IntValue() <WS> "<" cls=AnyClass() 
-  (SimpleArrayEntry(cls, array, idx.intValue()) | 
-   SubArrayEntry(cls, array, idx.intValue()))
+  idx=IntValue() <WS> "<" 
+  ((cls=AnyClass() (SimpleArrayEntry(cls, array, idx.intValue()) | 
+		    SubArrayEntry(cls, array, idx.intValue()))) | 
+   RefArrayEntry(array, idx.intValue()) |
+   NullBody())
   {}
 }
 
 void 
 SimpleArrayEntry(Class cls, Object array, int idx) :
+{}
+{
+  ">" <WS> (PrimArrayEntry(cls, array, idx) | ObjectArrayEntry(cls, array, idx)) 
+  {}
+}
+
+void 
+PrimArrayEntry(Class cls, Object array, int idx) :
 {
   Object val;
 }
 {
-  ">" <WS> "{" <WS> val=Value() <WS> "}" <WS> 
+  "{" <WS> val=Value() <WS> "}" <WS> 
   {
     Class vcls = val.getClass();
     if(vcls == sBooleanClass) {
@@ -565,6 +587,25 @@ SimpleArrayEntry(Class cls, Object array, int idx) :
 }
 
 void 
+ObjectArrayEntry(Class cls, Object array, int idx) :
+{
+  Long objID;
+  Object obj;
+}
+{
+  objID=ObjectID() <WS> 
+  "{" <WS> 
+    (obj=SimpleValue(cls, objID) | 
+     obj=CollectionValues(cls, objID) | 
+     obj=MapValues(cls, objID) | 
+     obj=GlueableValues(cls, objID))
+  "}" <WS>
+  {
+    Array.set(array, idx, obj);
+  }
+}
+
+void 
 SubArrayEntry(Class cls, Object array, int idx) :
 {
   Object obj;
@@ -577,6 +618,17 @@ SubArrayEntry(Class cls, Object array, int idx) :
   }
 }
 
+void 
+RefArrayEntry(Object array, int idx) :
+{
+  Object obj;
+}
+{
+  obj=RefBody()
+  {
+    Array.set(array, idx, obj);
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -589,7 +641,8 @@ Value() :
   Object obj;
 }
 {
-  (obj=BooleanValue() | obj=IntValue() | obj=RealValue() | obj=StringValue())
+  (obj=BooleanValue() | obj=IntValue() | obj=RealValue() | 
+   obj=StringValue() | obj=EnumValue())
   {
     return obj;
   }
@@ -602,7 +655,7 @@ BooleanValue() :
   Boolean val;
 }
 {
-  val=True() | val=False()
+  (val=True() | val=False())
   {
     return val;
   }
@@ -676,6 +729,18 @@ StringValue() :
   }
 }
 
+
+String
+EnumValue() : 
+{
+  String e;
+}
+{
+  <COLON> e=Identifier() <COLON>
+  {
+    return e;
+  }
+}
 
 
 
