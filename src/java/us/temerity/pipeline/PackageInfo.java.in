@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.15 2004/05/21 21:17:51 jim Exp $
+// $Id: PackageInfo.java.in,v 1.16 2004/07/14 21:02:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -607,8 +607,15 @@ class PackageInfo
      "obligations of Customer hereunder may not be assigned, sublicensed or\n" + 
      "otherwise transferred, in whole or in part, without the prior written\n" + 
      "consent of Temerity, which may be granted or withheld by Temerity in its\n" + 
-     "sole and absolute discretion."); 
-
+     "sole and absolute discretion.\n" + 
+     "\n" + 	
+     "\n" + 
+     "For inquiries please contact:\n" +
+     "\n" +
+     "  Temerity Software, Inc.\n" + 
+     "  475 Central Avenue, Suite 300\n" + 
+     "  St. Petersburg, Florida  33701\n" +
+     "\n");	
 }
 
 
