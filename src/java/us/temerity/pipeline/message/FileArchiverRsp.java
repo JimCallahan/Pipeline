@@ -1,4 +1,4 @@
-// $Id: FileArchiveRsp.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: FileArchiverRsp.java,v 1.1 2005/03/21 08:52:08 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   S T A T E   R S P                                                            */
+/*   F I L E   A R C H I V E R   R S P                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link FileArchiveReq FileArchiveReq} request.
+ * A successful response to a {@link FileArchiveReq FileArchiveReq} or 
+ * {@link FileRestoreReq FileRestoreReq} request.
  */
 public
-class FileArchiveRsp
+class FileArchiverRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,17 +30,13 @@ class FileArchiveRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param name
-   *   The name of the create archive.
-   * 
    * @param output
    *   The STDOUT output of the archiver process or <CODE>null</CODE> if none exists.
    */
   public
-  FileArchiveRsp
+  FileArchiverRsp
   (
    TaskTimer timer, 
-   String name, 
    String output
   )
   { 
@@ -49,7 +46,7 @@ class FileArchiveRsp
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "FileMgr.archive(): " + name + "\n  " + getTimer());
+       getTimer().toString()); 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
