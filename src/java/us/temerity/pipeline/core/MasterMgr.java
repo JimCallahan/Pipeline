@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.13 2004/07/16 22:03:10 jim Exp $
+// $Id: MasterMgr.java,v 1.14 2004/07/18 21:31:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2155,7 +2155,7 @@ class MasterMgr
 	  ("Secondary file sequences can only be added to working versions of nodes!\n" + 
 	   "No working version (" + nodeID + ") exists.");
 
-      /* remove the link */ 
+      /* add the secondary sequence */ 
       NodeMod mod = new NodeMod(bundle.uVersion);
       mod.addSecondarySequence(fseq);
       
@@ -2364,24 +2364,29 @@ class MasterMgr
     try {
       timer.resume();	
 
-      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      try {
+	checkedIn = getCheckedInBundles(name);
+      }
+      catch(PipelineException ex) {
+      }
+
       TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty = 
 	new TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>();
 
-      for(VersionID vid : checkedIn.keySet()) {
-	NodeVersion vsn = checkedIn.get(vid).uVersion;
-
-	TreeMap<FileSeq,boolean[]> table = new TreeMap<FileSeq,boolean[]>();
-	for(FileSeq fseq : vsn.getSequences()) 
-	  table.put(fseq, vsn.isNovel(fseq));
-
-	novelty.put(vid, table);
+      if(checkedIn != null) {
+	for(VersionID vid : checkedIn.keySet()) {
+	  NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  
+	  TreeMap<FileSeq,boolean[]> table = new TreeMap<FileSeq,boolean[]>();
+	  for(FileSeq fseq : vsn.getSequences()) 
+	    table.put(fseq, vsn.isNovel(fseq));
+	  
+	  novelty.put(vid, table);
+	}
       }
-
+	
       return new NodeGetCheckedInFileNoveltyRsp(timer, name, novelty);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       lock.readLock().unlock();
@@ -2495,8 +2500,6 @@ class MasterMgr
 	
 	addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
       }
-
-      logNodeTree(); //DEBUG
     }
 
     timer.aquire();
@@ -2530,9 +2533,6 @@ class MasterMgr
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-
-      // needs to remove the NodeTreePath on failure...
-
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -2544,32 +2544,28 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Revoke a working version of a node which has never checked-in. <P> 
-   * 
-   * This operation is provided to allow users to remove nodes which they have previously 
-   * registered, but which they no longer want to keep or share with other users.  If a 
-   * working version is successfully revoked, all node connections to the revoked node 
-   * will be also be removed.
+   * Release the working version of a node and optionally remove the associated 
+   * working area files. <P> 
    * 
    * @param req 
-   *   The node revoke request.
+   *   The node release request.
    *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to revoke the working version.
+   *   <CODE>FailureRsp</CODE> if unable to release the working version.
    */
   public Object
-  revoke
+  release
   (
-   NodeRevokeReq req
+   NodeReleaseReq req
   ) 
   {
     assert(req != null);
     NodeID id = req.getNodeID();
 
-    TaskTimer timer = new TaskTimer("MasterMgr.revoke(): " + id);
+    TaskTimer timer = new TaskTimer("MasterMgr.release(): " + id);
 
-    /* unlink the downstream working versions from the to be revoked working version */ 
+    /* unlink the downstream working versions from the to be released working version */ 
     {
       timer.aquire();
       ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
@@ -2610,13 +2606,9 @@ class MasterMgr
       WorkingBundle bundle = getWorkingBundle(id);
       if(bundle == null) 
 	throw new PipelineException
-	  ("No working version (" + id + ") exists to be revoked.");
-      
+	  ("No working version (" + id + ") exists to be released.");
+
       NodeMod mod = bundle.uVersion;
-      if(mod.getWorkingID() != null) 
-	throw new PipelineException
-	  ("The working version (" + id + ") cannot be revoked because checked-in versions " +
-	   "of the node already exist!");
 
       /* remove the bundle */ 
       synchronized(pWorkingBundles) {
@@ -2645,19 +2637,22 @@ class MasterMgr
 	}
       }
 
-      /* remove the downstream links of the revoked node */ 
-      synchronized(pDownstream) {
-	pDownstream.remove(id.getName());
-      }
-
-      /* remove the downstream link file */ 
+      /* update the downstream links of this node */ 
       {
-	File file = new File(pNodeDir, "downstream/" + id.getName());
-	if(file.isFile()) {
-	  if(!file.delete())
-	    throw new PipelineException
-	      ("Unable to remove the downstream links file (" + file + ")!");
-	}
+	boolean isRevoked = false;
+
+	timer.aquire();	
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	  
+	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	  links.releaseWorking(id);
+	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	} 
       }
 
       /* update the downstream links of the source nodes */ 
@@ -2683,9 +2678,8 @@ class MasterMgr
       removeWorkingNodeTreePath(id);
 
       /* remove the associated files */ 
-      if(req.removeFiles()) {
-	pFileMgrClient.remove(id, mod);	
-      }
+      if(req.removeFiles()) 
+	pFileMgrClient.removeAll(id, mod);	
 
       unmonitor(id);
       return new SuccessRsp(timer);
@@ -2748,6 +2742,11 @@ class MasterMgr
 	WorkingBundle bundle = getWorkingBundle(id);
 	NodeMod mod = bundle.uVersion;
 
+	if(mod.getWorkingID() != null) 
+	  throw new PipelineException
+	    ("Cannot rename node (" + name + ") because it is not an initial " + 
+	     "working version!");
+
 	{
 	  FileSeq fseq = mod.getPrimarySequence();
 	  
@@ -2787,8 +2786,6 @@ class MasterMgr
       fseqs.addAll(secondary);
 
       addWorkingNodeTreePath(nid, fseqs);
-
-      logNodeTree(); //DEBUG
     }
 
     /* unlink the downstream working versions from the to be renamed working version 
@@ -2869,10 +2866,10 @@ class MasterMgr
 	}
       }
 
-      /* revoke the old named node */ 
+      /* release the old named node */ 
       {
 	timer.suspend();
-	Object obj = revoke(new NodeRevokeReq(id, false));
+	Object obj = release(new NodeReleaseReq(id, false));
 	timer.accum(((TimedRsp) obj).getTimer());
 	if(obj instanceof FailureRsp) {
 	  FailureRsp rsp = (FailureRsp) obj;
@@ -2913,6 +2910,74 @@ class MasterMgr
 
     return new SuccessRsp(timer);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Renumber the frame ranges of the file sequences associated with the given node. <P> 
+   * 
+   * @param req 
+   *   The node renumber request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to renumber the working version.
+   */
+  public Object
+  renumber
+  (
+   NodeRenumberReq req
+  ) 
+  {
+    assert(req != null);
+    
+    NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName();
+    FrameRange range = req.getFrameRange();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.renumber(): " + nodeID + " [" + range + "]");
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.writeLock().lock(); 
+    try {
+      timer.resume();
+    
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("Only working versions of nodes may have their frame ranges renumbered!\n" + 
+	   "No working version (" + nodeID + ") exists.");
+
+      /* renumber the file sequences */ 
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      ArrayList<File> obsolete = mod.adjustFrameRange(range);
+
+      /* write the new working version to disk */ 
+      writeWorkingVersion(nodeID, mod);
+      
+      /* update the bundle */ 
+      bundle.uVersion = mod;
+
+      /* invalidate the cached per-file states */ 
+      bundle.uFileStates      = null;
+      bundle.uFileTimeStamps  = null;
+
+      /* remove obsolete files... */ 
+      if(req.removeFiles()) 
+	pFileMgrClient.remove(nodeID, obsolete);
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+    }    
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -5668,12 +5733,25 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    Logs.ops.finer("Writing Downstream Links: " + links.getName());
 
     File file = new File(pNodeDir, "downstream/" + links.getName());
     File dir  = file.getParentFile();
+
+    if(!links.hasLinks()) {
+      if(file.isFile()) {
+	Logs.ops.finer("Removing Obsolete Downstream Links: " + links.getName());
+
+	if(!file.delete()) 
+	  throw new PipelineException
+	    ("Unable to delete obsolete downstream links file (" + file + ")!");
+      }
+
+      return;
+    }
     
     try {
+      Logs.ops.finer("Writing Downstream Links: " + links.getName());
+
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
 	  if(!dir.mkdirs()) 
@@ -5888,6 +5966,12 @@ class MasterMgr
 	  ("The working version of node (" + name + ") was in a Conflicted state!\n\n" + 
 	   "The conflicts must be resolved before this node or any downstream nodes with " + 
 	   "which this node is linked can be checked-in.");
+
+      case Missing:
+	throw new PipelineException
+	  ("The working version of node (" + name + ") was in a Missing state!\n\n" + 
+	   "The missing files must be created or regenerated before the node can be " +
+	   "checked-in.");
 
       case Pending:
       case Modified:
