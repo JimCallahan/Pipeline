@@ -1,4 +1,4 @@
-// $Id: TestNodeIDApp.java,v 1.1 2004/03/08 04:37:06 jim Exp $
+// $Id: TestNodeIDApp.java,v 1.2 2004/03/10 11:49:53 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -87,8 +87,7 @@ class TestNodeIDApp
   {
     System.out.print("-----------------------------------\n" +
 		     "NodeID: " + id + "\n" + 
-		     "   Dirname: " + id.getDir() + "\n" + 
-		     "  Basename: " + id.getBase() + "\n" + 
+		     "   Dirname: " + id.getParent() + "\n" + 
 		     "  HashCode: " + id.hashCode() + "\n");
 
     System.out.print("  ---\n");

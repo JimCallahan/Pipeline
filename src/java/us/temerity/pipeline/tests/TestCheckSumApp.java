@@ -1,4 +1,4 @@
-// $Id: TestCheckSumApp.java,v 1.2 2004/03/09 06:24:07 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.3 2004/03/10 11:49:53 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -52,7 +52,7 @@ class TestCheckSumApp
   )
   {
     pDir = dir;
-    pCheckSum = new CheckSum("MD5", dir, new File(dir, "checksum"));
+    pCheckSum = new CheckSum("MD5", dir);
   }
 
 

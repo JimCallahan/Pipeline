@@ -1,3 +1,1010 @@
+2004-03-09  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileCheckInReq.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/message/FileCheckSumReq.java, src/java/us/temerity/pipeline/message/FileFreezeReq.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java, src/java/us/temerity/pipeline/message/SuccessRsp.java:
+	initial revision
+
+	* docs/javadoc/Makefile.in, src/java/us/temerity/pipeline/Makefile.in:
+	added support for the "message" subpackage
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	converted per-file state from HashMap to TreeMap in WorkingBundle
+
+	* src/java/us/temerity/pipeline/NodeCommon.java: added getSequences()
+
+	* src/java/us/temerity/pipeline/Named.java: indentation
+
+	* src/java/us/temerity/pipeline/FileState.java: comments
+
+	* src/java/us/temerity/pipeline/tests/TestCheckSumApp.java:
+	full suite of tests complete
+
+	* src/java/us/temerity/pipeline/CheckSum.java: comments
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: added CheckSum test
+
+	* src/java/us/temerity/pipeline/Plugins.java: comments
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in:
+	added sProdDir and sCheckSumDir
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	changed setName() to rename(), added setToolset() and setProperties()
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	reorganized the node related directory structure, added checksums, implemented getNodeMod(), modifyNodeProperties(), getWorkingBundle()
+
+	* src/java/us/temerity/pipeline/CheckSum.java, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java:
+	initial revision
+
+2004-03-08  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/NodeID.java, src/java/us/temerity/pipeline/tests/TestNodeIDApp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: added NodeID test
+
+	* src/java/us/temerity/pipeline/Named.java:
+	fixed missing assignment to pName in fromGlue()
+
+	* src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/VersionID.java:
+	now caches the string representation and hash code to make use of this class as a key in Maps and Sets more efficient
+
+	* docs/javadoc/Makefile.in: back to external URLs
+
+	* configure.ac: added --with-node=DIR option
+
+2004-03-07  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestNativeFileSysApp.java, src/java/us/temerity/pipeline/tests/TestReadWriteLockApp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestFileSeqApp.java, src/java/us/temerity/pipeline/tests/TestPluginsApp.java, src/java/us/temerity/pipeline/tests/TestToolsetsApp.java, src/java/us/temerity/pipeline/tests/TestVersionIDApp.java:
+	replaced deep copying of internal data in getters by Collections.unmodifiable*() wrapper methods
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/Makefile.in:
+	added NODEDIR
+
+	* src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/ExecPath.java, src/java/us/temerity/pipeline/JobReqs.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/Toolsets.java:
+	replaced deep copying of internal data in getters by Collections.unmodifiable*() wrapper methods
+
+	* src/java/us/temerity/pipeline/VersionID.java:
+	made instances unmutable, version incrementing now done by a constructor, moved IncMethod enum into class as Level enum
+
+	* src/java/us/temerity/pipeline/PropertyState.java: comments
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in: added sNodeDir
+
+	* src/java/us/temerity/pipeline/NodeVersion.java:
+	added copy constructor, Object overrides and Glueable support
+
+	* src/java/us/temerity/pipeline/NodeStatus.java:
+	added getSources(), getTargets() and getTimeStamp()
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	added version freezing methods, reworked some internal datastructures
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	fleshed out the internal datastructures and thread locking stubs
+
+	* src/java/us/temerity/pipeline/DependVersion.java, src/java/us/temerity/pipeline/DependMod.java:
+	comments
+
+	* src/java/us/temerity/pipeline/Native.java, src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/native/NativeFileSys.cc, src/java/us/temerity/pipeline/native/NativeFileSys.hh:
+	initial revision
+
+	* src/java/us/temerity/pipeline/native/Makefile.am, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/native/NativeProcess.cc, src/java/us/temerity/pipeline/native/NativeProcess.hh:
+	moved native OS file system methods into NativeFileSys
+
+	* src/java/us/temerity/pipeline/IncMethod.java, src/java/us/temerity/pipeline/Node.java:
+	obsolete
+
+	* src/java/us/temerity/pipeline/plugin/AcroreadEditor.java, src/java/us/temerity/pipeline/plugin/EmacsClientEditor.java, src/java/us/temerity/pipeline/plugin/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/FCheckEditor.java, src/java/us/temerity/pipeline/plugin/GEditEditor.java, src/java/us/temerity/pipeline/plugin/GPlayEditor.java, src/java/us/temerity/pipeline/plugin/GimpEditor.java, src/java/us/temerity/pipeline/plugin/HoudiniEditor.java, src/java/us/temerity/pipeline/plugin/IvViewEditor.java, src/java/us/temerity/pipeline/plugin/MPlayEditor.java, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/plugin/MayaEditor.java, src/java/us/temerity/pipeline/plugin/ScriptAction.java, src/java/us/temerity/pipeline/plugin/XDviEditor.java:
+	added serialVersionUID
+
+2004-03-03  Jim Callahan  <jim@salamander>
+
+	* docs/javadoc/Makefile.in: added local docs args to -link
+
+	* src/java/us/temerity/pipeline/Node.java:
+	no longer a subclass of Named since this class should not be Serializable or Glueable
+
+	* src/java/us/temerity/pipeline/tests/TestFileSeqApp.java:
+	fixed bad test frame ranges
+
+	* src/java/us/temerity/pipeline/NodeStatus.java: added serialVersionUID
+
+	* src/java/us/temerity/pipeline/NodeMgr.java: comments
+
+	* src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java:
+	implemented all remaining methods
+
+	* src/java/us/temerity/pipeline/FrameRange.java:
+	fixed exception message
+
+2004-03-01  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/DependState.java, src/java/us/temerity/pipeline/FileState.java, src/java/us/temerity/pipeline/IncMethod.java, src/java/us/temerity/pipeline/NodeMgr.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/OverallQueueState.java, src/java/us/temerity/pipeline/PropertyState.java, src/java/us/temerity/pipeline/QueueState.java, src/java/us/temerity/pipeline/VersionState.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: latest
+
+	* src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java:
+	comments
+
+	* src/java/us/temerity/pipeline/tests/TestVersionIDApp.java, src/java/us/temerity/pipeline/VersionID.java:
+	overhauled to use a fixed number of levels (4)
+
+2004-02-28  Jim Callahan  <jim@salamander>
+
+	* docs/misc/tables.txt, src/java/us/temerity/pipeline/DependCommon.java, src/java/us/temerity/pipeline/DependMod.java, src/java/us/temerity/pipeline/DependVersion.java, src/java/us/temerity/pipeline/Node.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestToolsetsApp.java:
+	added test of Toolsets.exists()
+
+	* src/java/us/temerity/pipeline/tests/TestPluginsApp.java:
+	moved common code into testEditorHelper()
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in:
+	added Toolsets and VersionID tests
+
+	* src/java/us/temerity/pipeline/parser/ParseException.java, src/java/us/temerity/pipeline/parser/TokenMgrError.java:
+	updated serialVersionUID field value
+
+	* src/java/us/temerity/pipeline/Toolsets.java:
+	added exits(), moved toolset parsing code into parseToolset()
+
+	* src/java/us/temerity/pipeline/SubProcess.java:
+	replaced sUser with PackageInfo.sUser
+
+	* src/java/us/temerity/pipeline/SingleEditor.java:
+	added serialVersionUID field
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in: added sUser
+
+	* src/java/us/temerity/pipeline/Named.java: added equals() and clone()
+
+	* src/java/us/temerity/pipeline/LogMessage.java: initial revision
+
+	* src/java/us/temerity/pipeline/JobReqs.java, src/java/us/temerity/pipeline/VersionID.java, src/java/us/temerity/pipeline/tests/TestVersionIDApp.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/FrameRange.java:
+	added clone(), serialVersionUID field
+
+	* src/java/us/temerity/pipeline/FileSeq.java:
+	added compareTo(), clone(), serialVersionUID field
+
+	* src/java/us/temerity/pipeline/FilePattern.java:
+	added clone(), serialVersionUID field
+
+	* src/java/us/temerity/pipeline/Described.java: added equals()
+
+	* src/java/us/temerity/pipeline/BaseEditor.java:
+	added equals(), serialVersionUID field
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	improved equals(), added clone()
+
+2004-02-27  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ActionParam.java:
+	improved equals() method, added serialVersionUID
+
+2004-02-25  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestPluginsApp.java:
+	added Glue tests
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	made toGlue only write param tables if they are not empty
+
+	* src/java/us/temerity/pipeline/GlueEncoder.java:
+	fixed bug is determining whether an object can be written to Glue
+
+	* configure.ac: added --with-temp=DIR option
+
+	* src/java/us/temerity/pipeline/ExecPath.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/GlueDecoder.java, src/java/us/temerity/pipeline/GlueEncoder.java, src/java/us/temerity/pipeline/GlueParserState.java, src/java/us/temerity/pipeline/Glueable.java, src/java/us/temerity/pipeline/Named.java:
+	improved exception messages
+
+	* src/java/us/temerity/pipeline/tests/TestPluginsApp.java:
+	added Action tests
+
+	* docs/javadoc/Makefile.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/tests/Makefile.in:
+	updated configure vars
+
+	* src/java/us/temerity/pipeline/Plugins.java: enabled Actions
+
+	* src/java/us/temerity/pipeline/SubProcess.java: added wasSuccessful()
+
+	* src/java/us/temerity/pipeline/SingleEditor.java: added Program name
+
+	* src/java/us/temerity/pipeline/tests/TestInfo.java.in:
+	added sBuildToolset
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in: added sTempDir
+
+	* src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/native/NativeProcess.cc, src/java/us/temerity/pipeline/native/NativeProcess.hh:
+	added chmod() method
+
+	* src/java/us/temerity/pipeline/BaseEditor.java: added Program name
+
+	* src/java/us/temerity/pipeline/ActionParam.java, src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/Described.java, src/java/us/temerity/pipeline/FileCleaner.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/AcroreadEditor.java, src/java/us/temerity/pipeline/plugin/EmacsClientEditor.java, src/java/us/temerity/pipeline/plugin/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/FCheckEditor.java, src/java/us/temerity/pipeline/plugin/FcheckEditor.java, src/java/us/temerity/pipeline/plugin/GEditEditor.java, src/java/us/temerity/pipeline/plugin/GPlayEditor.java, src/java/us/temerity/pipeline/plugin/GeditEditor.java, src/java/us/temerity/pipeline/plugin/GimpEditor.java, src/java/us/temerity/pipeline/plugin/GplayEditor.java, src/java/us/temerity/pipeline/plugin/HoudiniEditor.java, src/java/us/temerity/pipeline/plugin/IvViewEditor.java, src/java/us/temerity/pipeline/plugin/IvviewEditor.java, src/java/us/temerity/pipeline/plugin/MPlayEditor.java, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/plugin/MayaEditor.java, src/java/us/temerity/pipeline/plugin/MplayEditor.java, src/java/us/temerity/pipeline/plugin/XDviEditor.java, src/java/us/temerity/pipeline/plugin/XdviEditor.java:
+	renamed Editor plugin classes
+
+	* src/java/us/temerity/pipeline/plugin/ScriptAction.java:
+	initial revision
+
+2004-02-23  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ExecPath.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/FrameRange.java, src/java/us/temerity/pipeline/GlueParser.jj, src/java/us/temerity/pipeline/Logs.java, src/java/us/temerity/pipeline/Named.java, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/SubProcess.java:
+	prettier exception code style -- no functional change
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	renabled plugins, copying of constant parser java files
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in:
+	added copying of data directory, plugin.jar on classpath, latest tests...
+
+	* src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/Plugins.java, src/java/us/temerity/pipeline/SingleEditor.java, src/java/us/temerity/pipeline/ToolsetEnvParser.jj, src/java/us/temerity/pipeline/Toolsets.java, src/java/us/temerity/pipeline/tests/TestPluginsApp.java, src/java/us/temerity/pipeline/tests/TestToolsetsApp.java, src/java/us/temerity/pipeline/tests/data/.cvsignore:
+	intial revision
+
+	* src/java/us/temerity/pipeline/plugin/AcroreadEditor.java, src/java/us/temerity/pipeline/plugin/EmacsClientEditor.java, src/java/us/temerity/pipeline/plugin/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/FcheckEditor.java, src/java/us/temerity/pipeline/plugin/GeditEditor.java, src/java/us/temerity/pipeline/plugin/GimpEditor.java, src/java/us/temerity/pipeline/plugin/GplayEditor.java, src/java/us/temerity/pipeline/plugin/HoudiniEditor.java, src/java/us/temerity/pipeline/plugin/IvviewEditor.java, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/plugin/MayaEditor.java, src/java/us/temerity/pipeline/plugin/MplayEditor.java, src/java/us/temerity/pipeline/plugin/XdviEditor.java, src/java/us/temerity/pipeline/parser/ParseException.java, src/java/us/temerity/pipeline/parser/SimpleCharStream.java, src/java/us/temerity/pipeline/parser/TokenMgrError.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/data/normal.0000.iff, src/java/us/temerity/pipeline/tests/data/normal.0000.tif, src/java/us/temerity/pipeline/tests/data/normal.0002.iff, src/java/us/temerity/pipeline/tests/data/normal.0002.tif, src/java/us/temerity/pipeline/tests/data/normal.0004.iff, src/java/us/temerity/pipeline/tests/data/normal.0004.tif, src/java/us/temerity/pipeline/tests/data/normal.0006.iff, src/java/us/temerity/pipeline/tests/data/normal.0006.tif, src/java/us/temerity/pipeline/tests/data/normal.0008.iff, src/java/us/temerity/pipeline/tests/data/normal.0008.tif, src/java/us/temerity/pipeline/tests/data/normal.0010.iff, src/java/us/temerity/pipeline/tests/data/normal.0010.tif, src/java/us/temerity/pipeline/tests/data/normal.0012.iff, src/java/us/temerity/pipeline/tests/data/normal.0012.tif, src/java/us/temerity/pipeline/tests/data/normal.0014.iff, src/java/us/temerity/pipeline/tests/data/normal.0014.tif, src/java/us/temerity/pipeline/tests/data/normal.0016.iff, src/java/us/temerity/pipeline/tests/data/normal.0016.tif, src/java/us/temerity/pipeline/tests/data/normal.0018.iff, src/java/us/temerity/pipeline/tests/data/normal.0018.tif, src/java/us/temerity/pipeline/tests/data/roadmap.dvi, src/java/us/temerity/pipeline/tests/data/roadmap.pdf, src/java/us/temerity/pipeline/tests/data/sometext, src/java/us/temerity/pipeline/tests/data/sphere.bgeo, src/java/us/temerity/pipeline/tests/data/sphere.hipnc, src/java/us/temerity/pipeline/tests/data/sphere.iv, src/java/us/temerity/pipeline/tests/data/sphere.ma, src/java/us/temerity/pipeline/tests/data/sphere.obj, src/java/us/temerity/pipeline/tests/data/testimage.iff, src/java/us/temerity/pipeline/tests/data/testimage.tif:
+	intial revision
+
+	* src/java/us/temerity/pipeline/native/NativeProcess.cc:
+	added setsid() call to execNative() so that child processes won't be killed when the parent dies
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in: added sHomeDir
+
+	* src/java/us/temerity/pipeline/GlueDecoder.java:
+	added file close in finally clause
+
+	* docs/misc/roadmap.pdf: latest
+
+	* docs/javadoc/Makefile.in: added plugin package
+
+	* configure.ac: added --with-home=DIR option
+
+2004-02-21  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in:
+	removes and recreates the "data" directory for each test run
+
+	* src/java/us/temerity/pipeline/tests/scripts/child-procs:
+	now launches a tree of child processes
+
+	* src/java/us/temerity/pipeline/tests/scripts/factors: initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestSubProcessApp.java:
+	full test suite implemented
+
+	* src/java/us/temerity/pipeline/tests/TestInfo.java.in: added sConvert
+
+	* src/java/us/temerity/pipeline/native/NativeProcess.cc:
+	collectStats() now uses /proc/#/statm instead of /proc/#/stat to gather runtime stats
+
+	* src/java/us/temerity/pipeline/SubProcess.java:
+	moved locking of runtime stats into NativeProcess where it belongs
+
+	* src/java/us/temerity/pipeline/NativeProcess.java:
+	improved locking of runtime stats fields
+
+2004-02-20  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/tests/Makefile.in:
+	configure variable update
+
+	* src/java/us/temerity/pipeline/tests/scripts/child-procs:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestInfo.java.in: intial revision
+
+	* src/java/us/temerity/pipeline/tests/TestGlueApp.java, src/java/us/temerity/pipeline/tests/GlueableStuff.java, src/java/us/temerity/pipeline/tests/GlueableColor.java:
+	comments
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in: reoganized
+
+	* src/java/us/temerity/pipeline/GlueException.java, src/java/us/temerity/pipeline/PipelineException.java:
+	update serialVersionUID
+
+	* src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/SubProcess.java, src/java/us/temerity/pipeline/native/NativeProcess.cc, src/java/us/temerity/pipeline/native/NativeProcess.hh, src/java/us/temerity/pipeline/tests/TestSubProcessApp.java:
+	subprocess system completely overhauled and javadoc'ed
+
+	* src/java/us/temerity/pipeline/ExecPath.java: fully javadoc'ed
+
+	* docs/misc/networking.dia, docs/misc/networking.png, docs/misc/networking.txt:
+	initial revision
+
+	* configure.ac: added TestInfo.java, added test for "id" program
+
+	* docs/javadoc/Makefile.in: fixed installation rule
+
+	* src/utils/src/Makefile.am: removed plput, plget
+
+	* src/utils/src/PlCommon.hh, src/utils/src/PlGet.cc, src/utils/src/PlPut.cc:
+	obsolete
+
+2004-02-17  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/Glueable.java, src/java/us/temerity/pipeline/GlueDecoder.java:
+	fixed javadoc comment
+
+	* src/java/us/temerity/pipeline/Named.java, src/java/us/temerity/pipeline/PosixSignal.java:
+	initial revision
+
+2004-02-15  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh: post SQL options, salamander build
+
+	* configure.ac: turned off unchecked warnings
+
+	* src/java/us/temerity/pipeline/tests/GlueableColor.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/GlueableStuff.java:
+	more test data types
+
+	* src/java/us/temerity/pipeline/GlueParser.jj:
+	support for enumerations, arrays of non-primitive objects
+
+	* src/java/us/temerity/pipeline/GlueEncoder.java:
+	support for enumerations
+
+	* src/java/us/temerity/pipeline/tests/GlueableDude.java, src/java/us/temerity/pipeline/tests/GlueableStuff.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestGlueApp.java:
+	reorganized test classes
+
+	* src/java/us/temerity/pipeline/tests/Dude.java, src/java/us/temerity/pipeline/tests/Test.java:
+	obsolete
+
+	* src/java/us/temerity/pipeline/GlueParserState.java:
+	arrays fully functional
+
+	* src/java/us/temerity/pipeline/GlueParser.jj:
+	now handles escaped quotes inside string constants, arrays fully functional, characters are now stored as int values
+
+	* src/java/us/temerity/pipeline/GlueEncoder.java:
+	now handles escaped quotes inside string constants
+
+2004-02-14  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: added FileSeq test
+
+	* src/java/us/temerity/pipeline/tests/Dude.java, src/java/us/temerity/pipeline/tests/Test.java:
+	renamed GlueError to GlueException
+
+	* src/java/us/temerity/pipeline/Logs.java: javadoc'ed and cleaned up
+
+	* src/java/us/temerity/pipeline/GlueParser.jj:
+	support for GlueParserState
+
+	* src/java/us/temerity/pipeline/GlueEncoder.java: javadoc'ed
+
+	* src/java/us/temerity/pipeline/GlueDecoder.java:
+	moved code related to talk with GlueParser into GlueParserState to clean up the interface
+
+	* src/java/us/temerity/pipeline/GlueParserState.java: intial revision
+
+	* docs/misc/roadmap.html, docs/misc/roadmap.lyx, docs/misc/roadmap.pdf:
+	added Needs Check-Out Symbols and Modifyable Primary Frame Range section
+
+	* docs/man/Makefile.am: added manpages for the C++ base utilities
+
+	* docs/images/Makefile.am: renamed iconsdir to imagedir
+
+	* docs/Makefile.am: renamed user-manual to manuals
+
+	* .cvsignore: added config.h.in
+
+	* config.h.in: is generated by autoheader and shouldn't be checked-in
+
+	* configure.ac:
+	version 1.1.0, removed SQL related stuff, javac v1.5.0 options, removed javamake stuff, directory reorganization
+
+	* docs/javadoc/Makefile.in, docs/man/plget.html.in, docs/man/plput.html.in, docs/man/pls.html.in, docs/man/realpath.html.in, src/java/us/temerity/pipeline/tests/TestFileSeqApp.java, src/java/us/temerity/pipeline/LogFormatter.java, src/java/us/temerity/pipeline/GlueException.java, src/java/us/temerity/pipeline/PipelineException.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/FrameRange.java:
+	fixed numFrames javadoc link
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in:
+	updated to use File for filename paths instead of String, javadoc'ed
+
+	* src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/FrameRange.java, src/java/us/temerity/pipeline/Glueable.java:
+	fully tested and javadoc'ed
+
+	* src/java/us/temerity/pipeline/PError.java:
+	renamed to PipelineException
+
+	* src/java/us/temerity/pipeline/GlueError.java:
+	renamed to GlueException
+
+	* src/java/us/temerity/pipeline/PFileSeq.java: renamed to FileSeq
+
+	* src/java/us/temerity/pipeline/CleanFormatter.java:
+	renamed to LogFormatter
+
+2004-02-13  Jim Callahan  <jim@salamander>
+
+	* src/java/testbed/TestReadWriteLockApp.java: updated to use generics
+
+	* src/utils/Makefile.am: removed docs SUBDIR
+
+	* src/java/testbed/Makefile.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/tests/Makefile.in:
+	overhaul of configure vars, javamake no longer used
+
+	* src/java/testbed/DNotify.java, src/java/testbed/FAM.java:
+	updated to use generics
+
+	* src/java/Makefile.am: removed docs and pipeline SUBDIRs
+
+	* src/Makefile.am: removed database SUBDIR
+
+	* src/java/testbed/PackageInfo.java.in, src/java/us/.cvsignore, src/java/us/Makefile.am, src/java/us/temerity/.cvsignore, src/java/us/temerity/Makefile.am, src/java/us/temerity/pipeline/tests/Dude.java, src/java/us/temerity/pipeline/tests/Test.java:
+	initial revision
+
+	* src/java/testbed/Hello.java, src/java/testbed/HelloImpl.java, src/java/testbed/TestRmiClientApp.java, src/java/testbed/TestRmiServerApp.java, src/java/testbed/policy, src/java/us/temerity/pipeline/Test.java, src/java/testbed/test-rmi-client, src/java/testbed/test-rmi-server:
+	obsolete
+
+	* src/java/testbed/test-dnotify, src/java/testbed/test-fam, src/java/testbed/test-rwlock:
+	moved to java/scripts directory
+
+	* src/java/scripts/Makefile.am, src/java/scripts/pltest-dnotify.in, src/java/scripts/pltest-fam.in, src/java/scripts/pltest-rwlock.in, src/java/scripts/pltest.in:
+	moved here from testbed directory
+
+	* src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	replaced SqlServer/Port with PipelineServer/Port
+
+2004-02-12  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/CleanFormatter.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FrameRange.java, src/java/us/temerity/pipeline/GlueDecoder.java, src/java/us/temerity/pipeline/GlueEncoder.java, src/java/us/temerity/pipeline/GlueError.java, src/java/us/temerity/pipeline/GlueParser.jj, src/java/us/temerity/pipeline/Glueable.java, src/java/us/temerity/pipeline/Logs.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/PError.java, src/java/us/temerity/pipeline/PFileSeq.java, src/java/us/temerity/pipeline/PackageInfo.java.in, src/java/us/temerity/pipeline/Test.java, src/java/us/temerity/pipeline/native/.cvsignore, src/java/us/temerity/pipeline/native/Makefile.am, src/java/us/temerity/pipeline/native/NativeProcess.cc, src/java/us/temerity/pipeline/native/NativeProcess.hh, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestGlueApp.java:
+	initial revision
+
+	* docs/Makefile.am, docs/man/.cvsignore, docs/man/Makefile.am, docs/man/pipeline.html.in, docs/man/pldispatcher.html.in, docs/man/plserver.html.in, docs/man/plui.html.in, docs/manuals/.cvsignore, docs/manuals/Makefile.am, docs/manuals/bits.html, docs/manuals/index.html, docs/manuals/quick-reference.html, docs/misc/TODO.txt, docs/misc/command-line, docs/misc/concepts.txt, docs/misc/data-flow.txt, docs/misc/fonts.txt, docs/misc/glue-api.txt, docs/misc/look-and-feel.txt, docs/misc/pid-workaround.txt, docs/misc/pipeline.lyx, docs/misc/roadmap.dvi, docs/misc/roadmap.html, docs/misc/roadmap.lyx, docs/misc/roadmap.pdf, docs/misc/state.txt:
+	docs reorganization
+
+2004-02-11  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	pre removal of javamake to get around java1.5.0 incompatibilities
+
+	* src/java/pipeline/Glue.java: reverted to 1.2
+
+	* src/java/pipeline/GlueParser.jj: moved to us.temerity.pipeline
+
+	* src/java/pipeline/GlueParser.jj: non-array parsing works!
+
+2004-02-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Glue.java:
+	completely redesigned to act as the persistent text format for Java objects
+
+2004-01-30  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Toolset.java:
+	fixed bug where toolset file was not being closed
+
+2004-01-29  Jim Callahan  <jim@salamander>
+
+	* src/java/testbed/TestDNotifyApp.java, src/utils/src/DNotify.cc:
+	initial revision
+
+	* configure.ac: added fcntl.h and signal.h
+
+	* src/java/testbed/DNotify.java, src/java/testbed/FAM.java, src/java/testbed/FAMEvent.java, src/java/testbed/TestFAMApp.java, src/java/testbed/native/DNotify.cc, src/java/testbed/native/DNotify.hh, src/java/testbed/native/FAM.cc, src/java/testbed/native/Makefile.am, src/java/testbed/test-dnotify, src/java/testbed/test-fam:
+	latest file notify tests
+
+2004-01-28  Jim Callahan  <jim@salamander>
+
+	* src/java/testbed/FAM.java, src/java/testbed/FAMEvent.java, src/java/testbed/Makefile.in, src/java/testbed/TestFAMApp.java, src/java/testbed/native/.cvsignore, src/java/testbed/native/FAM.cc, src/java/testbed/native/FAM.hh, src/java/testbed/native/Makefile.am, src/java/testbed/native/Monitor.cc, src/java/testbed/test-fam:
+	initial revision
+
+	* src/java/Makefile.am: added testbed
+
+	* configure.ac:
+	added fam.h and select.h to headers, added testbed/native/Makefile
+
+2004-01-27  Jim Callahan  <jim@salamander>
+
+	* src/java/testbed/ReadWriteLock.java, src/java/testbed/TestReadWriteLockApp.java, src/java/testbed/test-rwlock:
+	single-write, read-many setup...
+
+2004-01-26  Jim Callahan  <jim@salamander>
+
+	* src/java/testbed/ReadWriteLock.java, src/java/testbed/TestReadWriteLockApp.java, src/java/testbed/test-rwlock:
+	initial revision
+
+2004-01-24  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Dispatcher.java:
+	now automatically disables plserver's which don't accept connections
+
+2004-01-23  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java:
+	support for version numbers and --trivial/--massive modes in Check-In Dialog
+
+	* src/java/pipeline/JFilesDialog.java:
+	added revalidate() to primary/secondary file sequence containers after updating their contents
+
+	* src/java/pipeline/ClientApp.java:
+	added --trivial/--massive to check-in options in help()
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JCheckInDialog.java, src/java/pipeline/PMod.java, src/java/pipeline/VersionID.java, src/java/pipeline/tests/Makefile.in, src/java/pipeline/tests/TestVersionIDApp.java:
+	support for version numbers and --trivial/--massive modes in Check-In Dialog
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added --trivial, --massive options to check-in
+
+	* src/database/share/dbinit.sql.in:
+	added PRIMARY KEY and UNIQUE constraints to tables
+
+	* config/bootstrap.sh, configure.ac: version 1.0.5
+
+2004-01-21  Jim Callahan  <jim@salamander>
+
+	* configure.ac: Java RMI support
+
+	* src/java/testbed/Hello.java, src/java/testbed/HelloImpl.java, src/java/testbed/Makefile.in, src/java/testbed/TestRmiClientApp.java, src/java/testbed/TestRmiServerApp.java, src/java/testbed/policy, src/java/testbed/test-rmi-client, src/java/testbed/test-rmi-server:
+	initial revision
+
+2004-01-20  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh, src/java/pipeline/CheckSum.java, src/java/pipeline/JFileSeq.java, src/java/pipeline/PState.java, src/java/pipeline/Pipeline.java:
+	added file size checks to avoid checksum generation except when file sizes are equal
+
+2004-01-18  Jim Callahan  <jim@salamander>
+
+	* src/utils/src/Makefile.am, configure.ac: added realpath
+
+	* src/utils/src/RealPath.cc: initial revision
+
+2004-01-16  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Server.java:
+	changed the resource gathering delay to 20 secs
+
+2004-01-15  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/JFileMerger.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/Pipeline.java, src/java/pipeline/plugin/MayaEditor.java:
+	added the Wait option to the Make command
+
+	* src/java/pipeline/QueueJob.java: added lookupFinished()
+
+	* src/java/pipeline/PutOrder.java: comments
+
+2004-01-13  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added support for EnumParameters
+
+	* src/java/pipeline/plugin/MayaMELAction.java:
+	added SaveScene parameter
+
+2004-01-12  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/MayaRenderAction.java, src/database/share/dbinit.sql.in, src/java/pipeline/BaseAction.java, src/java/pipeline/ClientApp.java, src/java/pipeline/DependParamsTableModel.java, src/java/pipeline/EnumParameter.java, src/java/pipeline/JPropertiesDialog.java, src/java/pipeline/Pipeline.java, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/plugin/MayaMentalRayAction.java:
+	added EnumParameter
+
+	* src/java/pipeline/Dispatcher.java:
+	added table of last dispatch times to reduce overall latency
+
+	* src/database/share/postgresql.conf.in:
+	increased number of connections, memory cache sizes
+
+2004-01-11  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Dispatcher.java, src/java/pipeline/DispatcherApp.java, src/java/pipeline/DispatcherOptsParser.jj, src/java/pipeline/JobKillRequest.java, src/java/pipeline/JobStartRequest.java, src/java/scripts/pldispatcher.in:
+	intial revision
+
+	* config/bootstrap.sh: v1.0.4, added --with-job-port
+
+	* configure.ac: v1.0.4, added --with-job-port, added pldispatcher files
+
+	* src/java/pipeline/plugin/MayaRenderAction.java:
+	fixed bug in suffix testing for the Maya scene file dependency
+
+	* src/java/pipeline/ServerOptsParser.jj: added NET logger
+
+	* src/java/pipeline/Server.java:
+	reorganized to communicate with pldispatcher(1) instead of the database for deciding which job to run
+
+	* src/java/pipeline/QueueServerTableModel.java, src/java/pipeline/QueueServer.java:
+	local make support
+
+	* src/java/pipeline/QueueLicenseTableModel.java:
+	privileged user support
+
+	* src/java/scripts/Makefile.am: added pldispatcher
+
+	* src/java/pipeline/QueueJobTableModel.java: local make support
+
+	* src/java/pipeline/QueueJob.java:
+	local make support, seperate QueueOutput from QueueJob
+
+	* src/java/pipeline/Pipeline.java:
+	added getHostname(), privileged user support, local make support
+
+	* src/java/pipeline/PackageInfo.java.in: added sJobPort
+
+	* src/java/pipeline/Makefile.in: added DispatcherParser
+
+	* src/java/pipeline/Logs.java: added NET logger
+
+	* src/java/pipeline/JobReqs.java: changed field defaults
+
+	* src/java/pipeline/JQueueServerDialog.java:
+	now disables privileged components rather than making then invisible, custom editor for Mode column
+
+	* src/java/pipeline/JQueueLicenseDialog.java:
+	now disables privileged components rather than making then invisible
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java:
+	now only looks up job output when it really needs it
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	raised max load limit to 10.0
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JFileMerger.java, src/java/pipeline/JNodeViewer.java:
+	local make support
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added --local option to make command
+
+	* src/database/share/dbinit.sql.in:
+	local make support, QueueOutput seperated from QueueJob
+
+2004-01-09  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseEditor.java, src/java/pipeline/DependParameter.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/JobReqs.java, src/java/pipeline/LicenseKey.java, src/java/pipeline/LogMessage.java, src/java/pipeline/QueueJob.java, src/java/pipeline/QueueServer.java, src/java/pipeline/SelectKey.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java:
+	changed method of determining the last ID in a table from looking at the "last_value" column of the sequence to looking up the highest ID in the actualy table -- the first methods was NOT properly protected by transactions
+
+2004-01-08  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DependParamsTableModel.java:
+	fixed bug in setValueAt() where "no" was not being recognized
+
+	* src/java/pipeline/Server.java:
+	moved finishedJob() outside of exception catching block in JobTask.run()
+
+	* config/bootstrap.sh, src/java/pipeline/TestApp.java: latest
+
+	* configure.ac: v1.0.3
+
+	* src/java/pipeline/SubProcess2.java: renamed to SubProcess.java
+
+	* src/java/pipeline/Server.java: kill of SubProcess's now works
+
+	* src/java/pipeline/QueueJob.java: added kill()
+
+	* src/java/pipeline/SubProcess.java:
+	conversion to using NativeProcess instead of Runtime.exec()
+
+	* src/java/pipeline/native/NativeProcess.cc:
+	commented out debugging prints
+
+2004-01-07  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/SubProcess2.java, src/java/pipeline/TestApp.java:
+	all working, I think...
+
+	* src/java/pipeline/TestApp.java:
+	everything except the handling of interrupt() seems to work
+
+	* src/java/pipeline/QueueServer.java:
+	improved estimate of available memory by adding Free and Cached
+
+	* src/java/pipeline/QueueJobTableModel.java:
+	increased the max Load to 10
+
+	* src/java/pipeline/PState.java, src/java/pipeline/Pipeline.java:
+	was incorrectly using the list of file sequences from PState instead of PMod
+
+	* src/java/pipeline/SubProcess2.java: initial revision
+
+	* src/java/pipeline/NativeProcess.java, src/java/pipeline/native/NativeProcess.cc, src/java/pipeline/native/NativeProcess.hh:
+	everything except the handling of interrupt() seems to work
+
+2004-01-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/NativeProcess.java, src/java/pipeline/TestApp.java, src/java/pipeline/native/.cvsignore, src/java/pipeline/native/Makefile.am, src/java/pipeline/native/NativeProcess.cc, src/java/pipeline/native/NativeProcess.hh, src/java/pipeline/tests/TestJniApp.java, src/java/pipeline/tests/native/.cvsignore, src/java/pipeline/tests/native/Makefile.am, src/java/pipeline/tests/native/TestJni.cc, src/java/scripts/pltest.in:
+	initial revision
+
+	* src/java/pipeline/SubProcess.java: Zombie job state
+
+	* src/java/pipeline/QueueJobTableModel.java:
+	raised max allowable Load user's can set to 4.0 fro 2.0
+
+	* src/java/pipeline/QueueJob.java, src/java/pipeline/Server.java:
+	Zombie job state
+
+	* src/java/pipeline/Pipeline.java:
+	Zombie job state, added check for single frame dependencies when UseAllFrames in on during job dependency building
+
+	* src/java/pipeline/Makefile.in, src/java/pipeline/tests/Makefile.in, src/java/scripts/Makefile.am, config.h.in, configure.ac:
+	JNI related stuff
+
+2004-01-03  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/tests/TestLogMessageApp.java, src/java/pipeline/tests/TestFramePatternApp.java, src/java/pipeline/tests/TestFileDiff2App.java, src/java/pipeline/tests/TestFileDiffApp.java, src/java/pipeline/tests/TestDynamicLoad.java, src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestProcDependApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java:
+	obsolete
+
+	* src/utils/src/PlRun.cc: fixed bug in error reporting
+
+	* src/java/pipeline/SubProcess.java:
+	added ABORTED state, everything in place to kill job except JNI version of exec()
+
+	* src/java/pipeline/Server.java:
+	job killing works -- at least on this end
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java:
+	moved job killing into QueueJob.abortUpstream()
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	added ABORTED state for jobs
+
+2004-01-02  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	added deletion of dangling animation curves
+
+	* src/database/scripts/dbarchive.in:
+	added hourly backup, now uses scp to copy files over to fxrhino
+
+	* config/bootstrap.sh: fixed production root directory
+
+	* config/bootstrap.sh, configure.ac, src/database/share/dbinit.sql.in:
+	v1.0.2
+
+2003-12-31  Jim Callahan  <jim@salamander>
+
+	* src/database/share/Makefile.am: added dbtrans-031027to031230.awk
+
+	* src/database/share/dbtrans-031027to031230.awk: initial revision
+
+	* src/database/scripts/dbtrans-031027to031230.awk:
+	moved to share directory
+
+	* src/database/scripts/dbtrans-031027to031230.awk: initial revision
+
+	* src/java/pipeline/SubProcess.java, src/utils/src/PlRun.cc:
+	added a username parameter to plrun to support fixing HOME and USER environmental variables
+
+	* src/java/pipeline/Server.java:
+	fixed bug where the QueueJob was being put into the Threads table instead of the JobTask which owns the QueueJob
+
+	* src/java/pipeline/QueueJob.java: removed Author from JobReqs
+
+	* src/java/pipeline/Pipeline.java:
+	fixed erroneous frame range overflow in dependencies which UseAllFrames was true
+
+	* src/java/pipeline/PVersion.java: removed Author from JobReqs
+
+	* src/java/pipeline/PMod.java:
+	fixed bug in insert() which was causing checkouts to fail due to name conflicts
+
+	* src/java/pipeline/JobReqs.java: removed Author field
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	resurected the dependency Options header
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	fixed conflict in the order of updating the ExecutionMode and the Dependencies
+
+	* src/database/share/dbinit.sql.in: removed Author from JobReqs
+
+	* src/java/pipeline/Toolset.java: added SQL dubugging logs
+
+	* src/java/pipeline/Server.java, src/java/pipeline/QueueJob.java:
+	new queue now fully functional
+
+	* src/java/pipeline/Pipeline.java: new queue now fully working
+
+	* src/java/pipeline/PDepend.java: resurected UseAllFrames
+
+	* src/java/pipeline/JQueueJobDialog.java: added Remove Jobs
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	updates only job related stuff, not a full status after a Kill
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	reworked to hide/disable the parallel execution mode parameters
+
+	* src/java/pipeline/JDepend.java: resurected UseAllFrames
+
+	* src/java/pipeline/GraphicalApp.java: added updateJobsDialog()
+
+	* src/java/pipeline/Editor.java: added SQL debugging log messages
+
+	* src/java/pipeline/DependParameter.java:
+	replaced complicated short name lookups from the database with the basename component of the node path
+
+	* src/java/pipeline/ClientOptsParser.jj, src/database/share/dbinit.sql.in:
+	resurected UseAllFrames for PDepend
+
+2003-12-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	moved server only functions into Server, complete rewrite of make() and helper functions
+
+	* src/java/pipeline/ServerOptsParser.jj:
+	converted to use Server instead of Pipeline for database ops
+
+	* src/java/pipeline/QueueJob.java:
+	now removes QueueTargets upon job completion
+
+	* src/java/pipeline/PMod.java, src/java/pipeline/PState.java, src/java/pipeline/PVersion.java:
+	removed IsContiguous
+
+	* src/java/pipeline/JFilesDialog.java, src/java/pipeline/JRegisterDialog.java:
+	changed Pipeline.register()/modify() arguments
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	removed --contiguous/--distributed
+
+	* src/java/pipeline/JFileMerger.java: changed Pipeline.make() arguments
+
+	* src/java/pipeline/Editor.java, src/java/pipeline/Toolset.java:
+	added loops for concurent update conflicts to all database modifying functions
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	removed --contiguous/--distributed
+
+	* src/database/share/dbinit.sql.in: removed IsContiguous
+
+	* src/java/pipeline/Server.java:
+	split server only functions off of Pipeline
+
+2003-12-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	added visibility channels
+
+	* src/java/pipeline/Pipeline.java: transition to new job prep
+
+	* src/java/pipeline/JNodeViewer.java: removed Prep menu item
+
+	* src/java/pipeline/ClientApp.java, src/database/share/dbinit.sql.in, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/JDepend.java, src/java/pipeline/JFileSeqLister.java, src/java/pipeline/PDepend.java, src/java/pipeline/PState.java:
+	removed ALL/1:1 PDepend parameter
+
+2003-12-19  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	went back to the original jobPrep* methods
+
+	* src/java/pipeline/QueueJob.java:
+	added getPrimaryCanonicalTargets()/Sources() and lookupTargetID()
+
+	* src/java/pipeline/PState.java:
+	optimized QueueJob lookup, added getQueueJob()
+
+2003-12-18  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/MayaRenderAction.java:
+	allows (but ingores) dependencies which are not Maya Scenes, fixed output image file naming bug
+
+	* src/java/pipeline/plugin/MayaMELAction.java:
+	disabled MEL scripts without a Order per-dependency parameter
+
+	* src/java/pipeline/plugin/IConvertAction.java: improved sanity checks
+
+	* src/java/pipeline/plugin/FcheckEditor.java:
+	combined imgcvt/fcheck into a single script which is run the background
+
+	* src/java/pipeline/QueueJob.java:
+	replaced delete of target files with a pre/post run() chmod, fixed LicenseKey checkout bug
+
+	* src/java/pipeline/Pipeline.java:
+	added a mkdir for the node's parent directory during node registration, non-compiling start at rewriting the job prep code
+
+	* src/java/pipeline/PFileSeq.java:
+	fixed frame numbering bug for 0 frames
+
+	* src/java/pipeline/PMod.java:
+	fixed MAJOR loophole in Node/Mod creation which was allowing multiple users to create the SAME nodes
+
+	* src/java/pipeline/FilePattern.java: comments
+
+	* src/java/pipeline/Database.java: increased max tries to 100
+
+	* src/database/share/dbinit.sql.in:
+	added UPDATE on LicenseKey to PUBLIC
+
+2003-12-17  Jim Callahan  <jim@salamander>
+
+	* tests/Makefile.am: comments
+
+	* src/utils/src/PlRun.cc:
+	added a workaround to ld.so stripping the LD_LIBRARY_PATH from plrun due to its setuid status
+
+	* src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	added ypcat
+
+	* src/java/pipeline/SubProcess.java:
+	added support for running subprocess and another user via plrun
+
+	* src/java/pipeline/ServerOptsParser.jj:
+	moved processJobs() here from ServerApp
+
+	* src/java/pipeline/QueueServer.java:
+	added Load, Free Memory and Free Disk and dynamic updating of these fields
+
+	* src/java/pipeline/QueueJobTableModel.java:
+	moved selection keys into BaseQueueTableModel, replaced MaxProcs with Load
+
+	* src/java/pipeline/QueueJob.java:
+	replaced sUser with pAuthor, added sLookupNextIdForServerSt, sModifyLicenseCountsSt and sFinishedDependsSt, replaced lookupRunning() with lookupNumRunningOnServer(), added lookupNextJobForServer(), added license increment/decrements in started(), finished() and killed()
+
+	* src/java/pipeline/Pipeline.java:
+	added pDisableDelay, added getServerHostname(), processJobs() now never returns - disabled servers now idle instead of dying, added modifyLicenseKey(), replaced getQueueJobOnServer() with getNumRunningJobsOnServer(), delays now increase/decrease in random amounts
+
+	* src/java/pipeline/PackageInfo.java.in: added ypcat and df
+
+	* src/java/pipeline/NoneAction.java, src/java/pipeline/plugin/DelightShaderAction.java, src/java/pipeline/plugin/DelightShopAction.java, src/java/pipeline/plugin/DsTableAction.java, src/java/pipeline/plugin/HScriptAction.java, src/java/pipeline/plugin/IConvertAction.java, src/java/pipeline/plugin/MayaCollateAction.java, src/java/pipeline/plugin/MayaMELAction.java, src/java/pipeline/plugin/MayaPresetAction.java, src/java/pipeline/plugin/MayaRenderAction.java, src/java/pipeline/plugin/MergeTableAction.java, src/java/pipeline/plugin/ScriptAction.java, src/java/pipeline/plugin/SwitchAction.java, src/java/pipeline/plugin/TestDependParamsAction.java, src/java/pipeline/plugin/VexAction.java, src/java/pipeline/plugin/VexTableAction.java:
+	added author parameter to prep(), SubProcesses now use author/plrun, temporary scripts are now written to /usr/tmp/pipeline
+
+	* src/java/pipeline/LicenseKey.java:
+	moved Description into BaseKey, merged modifyTotal() and modifyEnabled() into modify()
+
+	* src/java/pipeline/JobReqs.java: replaced MinProcs with MaxLoad
+
+	* src/java/pipeline/ServerApp.java: moved processJobs() into parser
+
+	* src/java/pipeline/SelectKey.java: moved Description into BaseKey
+
+	* src/java/pipeline/JQueueServerDialog.java, src/java/pipeline/QueueServerTableModel.java:
+	replaced job related columns with a job counter
+
+	* src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JPropertiesDialog.java:
+	replaced MinProcs with MaxLoad
+
+	* src/java/pipeline/GraphicalApp.java:
+	added License dialog, finised support for servers in UpdateTask
+
+	* src/java/pipeline/BaseQueueTableModel.java:
+	move SelectKeys and getJob() into derived classes QueueServerTableModel/QueueJobTableModel
+
+	* src/java/pipeline/BaseKey.java:
+	moved Description here from SelectKey since LicenseKey now shares the field
+
+	* src/java/pipeline/BaseAction.java: made prep() abstract
+
+	* src/database/share/dbinit.sql.in:
+	replaces MaxProcs with Load, added IsFinished to QueueDepend, added Description to LicenseKey
+
+	* config/bootstrap.sh: latest
+
+	* configure.ac: added ypcat and df paths
+
+	* src/java/pipeline/JQueueLicenseDialog.java, src/java/pipeline/QueueLicenseTableModel.java:
+	initial revision
+
+2003-12-15  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JobApp.java, src/java/pipeline/JobOptsParser.jj:
+	obsolete
+
+	* src/java/pipeline/Pipeline.java: added job delay vars
+
+	* src/java/scripts/pljob.in: obsolete
+
+	* configure.ac, src/java/pipeline/Makefile.in, src/java/scripts/Makefile.am:
+	replaced pljob with plserver
+
+	* src/java/pipeline/ServerApp.java, src/java/pipeline/ServerOptsParser.jj, src/java/scripts/plserver.in:
+	initial revision
+
+	* src/java/pipeline/Logs.java: added job logger
+
 2003-12-15  Jim Callahan  <jim@salamander>
 
 	* configure.ac: v1.0.1
