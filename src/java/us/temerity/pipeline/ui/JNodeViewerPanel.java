@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.27 2004/08/01 15:36:27 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.28 2004/08/22 22:07:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -249,7 +249,11 @@ class JNodeViewerPanel
       item = new JMenuItem("Queue");
       item.setActionCommand("queue");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Kill");
+      item.setActionCommand("kill");
+      item.addActionListener(this);
       pNodePopup.add(item);
 
       pNodePopup.addSeparator();
@@ -2093,6 +2097,10 @@ class JNodeViewerPanel
       doAddSecondary();
     else if(cmd.startsWith("remove-secondary:")) 
       doRemoveSecondary(cmd.substring(17)); 
+    else if(cmd.equals("queue"))
+      doQueue();
+    else if(cmd.equals("kill"))
+      doKill();
     else if(cmd.equals("check-in"))
       doCheckIn();
     else if(cmd.equals("check-out"))
@@ -2553,6 +2561,64 @@ class JNodeViewerPanel
 	  }
 	}
       }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Submit jobs to the queue for the primary selected node and all nodes upstream of it.
+   */ 
+  private void 
+  doQueue() 
+  {
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	QueueTask task = new QueueTask(status.getName(), null);
+	task.start();
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Kill all jobs associated with the selected nodes.
+   */ 
+  private void 
+  doKill() 
+  {
+    TreeSet<Long> dead = new TreeSet<Long>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	  case Running:
+	    assert(jobIDs[wk] != null);
+	    dead.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!dead.isEmpty()) {
+      KillTask task = new KillTask(dead);
+      task.start();
     }
 
     for(ViewerNode vnode : clearSelection()) 
@@ -3521,6 +3587,92 @@ class JNodeViewerPanel
     private String  pName; 
     private boolean pRemoveFiles; 
   }
+
+  /** 
+   * Submit jobs to the queue for the given node.
+   */ 
+  private
+  class QueueTask
+    extends Thread
+  {
+    public 
+    QueueTask
+    (
+     String name, 
+     TreeSet<Integer> indices
+    ) 
+    {
+      super("JNodeViewerPanel:QueueTask");
+
+      pName    = name; 
+      pIndices = indices; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Submitting Jobs...")) {
+	try {
+	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pName, pIndices);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private String           pName; 
+    private TreeSet<Integer> pIndices; 
+  }
+
+  /** 
+   * Kill the given jobs.
+   */ 
+  private
+  class KillTask
+    extends Thread
+  {
+    public 
+    KillTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeViewerPanel:KillTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Killing Jobs...")) {
+	try {
+	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
 
   /** 
    * Check-in a given node.
