@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.1 2004/08/26 06:05:15 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.2 2004/08/30 02:50:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1467,7 +1467,7 @@ class JQueueJobViewerPanel
     Point2d maxPos = new Point2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
     for(ViewerJob vjob : vjobs) {
       Point2d minB = vjob.getMinBounds();
-      Point2d maxB = vjob.getMaxBounds();
+      Point2d maxB = vjob.getMaxCollapsedBounds();
       
       minPos.x = Math.min(minPos.x, minB.x);
       minPos.y = Math.min(minPos.y, minB.y);
