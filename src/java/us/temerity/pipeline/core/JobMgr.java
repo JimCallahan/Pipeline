@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.14 2004/11/09 06:01:32 jim Exp $
+// $Id: JobMgr.java,v 1.15 2004/11/11 00:38:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -928,13 +928,17 @@ class JobMgr
     {
       try {
 	long jobID = pJob.getJobID();
+
+	ActionAgenda agenda = pJob.getActionAgenda();
+	File wdir = agenda.getWorkingDir();
+	SortedMap<String,String> env = agenda.getEnvironment();
 	
 	File dir = new File(pJobDir, String.valueOf(jobID));
 	File outFile = new File(dir, "stdout");
 	File errFile = new File(dir, "stderr");
 	try {
 	  Logs.ops.finer("Preparing Job: " + jobID);
-	  
+
 	  /* create the job scratch directory */ 
 	  File scratch = new File(dir, "scratch");
 	  synchronized(pMakeDirLock) {
@@ -948,15 +952,35 @@ class JobMgr
 	    
 	    NativeFileSys.chmod(0777, scratch);	      
 	  }
+	  
+	  /* make sure the target directory exists */ 
+	  if(!wdir.isDirectory()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--parents");
+	    args.add("--mode=755");
+	    args.add(wdir.getPath());
+	    
+	    SubProcessLight proc = 
+	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				  "MakeWorkingDir", "mkdir", args, env, PackageInfo.sTempDir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to create the target working area directory (" + wdir + "):\n\n" + 
+		   "  " + proc.getStdErr());
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while creating target working area directory (" + wdir + ")!");
+	    }
+	  }
 
 	  /* remove the target primary and secondary files */ 
 	  {
 	    ArrayList<String> args = new ArrayList<String>();
 	    args.add("--force");
-
-	    ActionAgenda agenda = pJob.getActionAgenda();
-	    SortedMap<String,String> env = agenda.getEnvironment();
-	    File wdir = agenda.getWorkingDir();
 
 	    for(File file : agenda.getPrimaryTarget().getFiles()) {
 	      File path = new File(wdir, file.getPath());
@@ -1030,10 +1054,6 @@ class JobMgr
 	{
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("uga-w");
-
-	  ActionAgenda agenda = pJob.getActionAgenda();
-	  SortedMap<String,String> env = agenda.getEnvironment();
-	  File wdir = agenda.getWorkingDir();
 	  
 	  for(File file : agenda.getPrimaryTarget().getFiles()) {
 	    File path = new File(wdir, file.getPath());
