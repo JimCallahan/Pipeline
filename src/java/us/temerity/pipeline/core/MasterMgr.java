@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.48 2004/10/21 12:14:47 jim Exp $
+// $Id: MasterMgr.java,v 1.49 2004/10/22 17:06:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2996,6 +2996,13 @@ class MasterMgr
     NodeID nid   = new NodeID(id, nname);
 
     TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + nid);
+
+    try {
+      NodeCommon.validateName(nname);
+    }
+    catch(IllegalArgumentException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     if(name.equals(nname)) 
       return new FailureRsp
