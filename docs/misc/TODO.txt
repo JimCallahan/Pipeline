@@ -1,3 +1,4 @@
+----------------------------------------------------------------------------------------------
 
 ACTIONS:
 
@@ -6,106 +7,150 @@ ACTIONS:
   Maya simulation actions: particle systems, dynamics, cloth, fluid dynamics.  Generic MEL
   action.  Add 3Delight rendering.  XSI supprt?  Simple compositing actions?
 
-+ Create a BooleanParameter class.  UI is a JComboBox containing "Yes" or "No".
++ Add thumbnail generation method. 
 
-+ Create an EnumParameter class.  UI is a JComboBox containing the set of 
-  enumerations.  The BooleanParameter class could simply be a subclass of this class
-  with harcoded "Yes" and "No" enumerations.
-
++ Add output parsing method which can trigger a kill of the job and updates a completion 
+  percentage field.
 
 
-COMMAND LINE:
+OPERATIONS: 
 
-+ Add commands/options for setting JobReqs for nodes and running jobs.
+- Implement Import/Export ops in NodeViewer
 
-+ Add commands/options for setting QueueServer selection keys/biases for the pipeline user.
+- Implement Make
 
-+ Add command/options for adding license keys and changing the max number for the 
-  pipeline user.
+- Add an operation to delete the working area files associated with a node, but add 
+  a warning and confirmation dialog if the node has no regeneration action.
 
-+ Add command/options for adding selection keys for the pipeline user.
-
-+ Add command/options for adding/removing normal users to the database for the pipeline user.
+- Per-file Queue/Kill/Remove
 
 
 
-UI LOOK AND FEEL:
+USER INTERFACE: 
 
-+ Fix the buf in JDetailsDialog which caused the scroll pane to scroll to the bottom
-  after updateState() is called.  The problem only occurs when nodes have log messages.
-  It may be caused by the new Swing components being generated or might be related to 
-  the fact that nodes with log messages neccesarily have PNodes in addition to PMods... 
+- Thumbnail display options in the NodeViewer
 
-+ The JDetailsDialog also expands the file entries horizonally when resized, but will
-  never make them smaller when the window border is moved.
+- NodeLinks Panel?
 
-+ The JWaitDialog occasionally leaves junk on the screen. Only seems to happen
-  when the task is very short.  Possibly some thread misbehavior... 
+- Queue/Job Panels
 
-+ Add downstream and birectional layouts in addition to the current upstream tree
-  layout for the JNodeViewer.
+- Task/Scheduling Panels
 
-+ Add vertical and radial layout schemes to the JNodeViewer.
+- Multiple top level windows and tear-off panels.
 
-+ The horizontal scroll bar in the ActionOutput section of JQueueJobDetailsDialog 
-  can be offscreen if the text is long...
+- Improved UI for panel save/restore.
 
 
+BACKEND: 
 
-DATABASE / PIPELINE COMMANDS: 
+- Add checkes 
 
-+ References.  Add a new way to connect nodes which has a similar usage as dependencies
-  but specified only relationship not functionality.  A PRef would be associated 
-  with a PVersion (as with PDepend) and contain the following information:
+- Get rid of the IsFrozen field of NodeMod and the associated UI elements.
 
-     Name      Name of the node referenced.
-     Version   Specific version of the node referenced.
-     Type      Type of Reference (StyleFrame, LocationPhotos, etc...)     
+- Automated cleanup of Job Server sample files older than a given interval.
+
+- Task/Scheduling System
+
+- Automated Backup of Node/Queue database and production working areas.x
+
+- Node and File Online/Offline System
 
 
-+ plget/set should be extended to preserve file permissions (specifically execute).
+IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:
+
++ The Edit/Edit With operations should generate a warning when a job is Queue/Running for
+  the target file(s).
+
++ When critical modifications are performed on a node, any running jobs associated with the
+  node should immediately be killed/aborted.  Ideally, a dialog should give the user the 
+  choice of killing the jobs or cancelling the operation.
+
+  Critical modifications can come from Link/Unlink, Add/Remove Secondary, Check-Out, Rename, 
+  as well as from the modifyProperties() method.
+
++ The Renumber operation should kill any running jobs which generate frames which will be 
+  obsolete in the new frame range.  If the Execution Method is Serial, all running jobs should
+  be killed.
+
++ The Release operation should also kill any running jobs associated with the released node.
+
+
+----------------------------------------------------------------------------------------------
+
+DOCUMENTATION: 
+
++ Write Pipeline User Manual
+
++ Write Pipeline Whitepaper for manager types.
+
++ Write Pipeline Glossy Brochure suitable for printing and web page.
+
+
+
+WEB PAGE:
+
++ Company Info
+
+  - Bio of Jim Callahan
+
+  - Mission Statement / Philosophy
+
+
++ Pipeline 
+
+  - Intro Page
+
+  - Walkthrough of Features (with screen shots)
+
+  - News: press releases, articles, announcements
+
+  - Customer Testimonials
   
-+ plget/set should be executed on the fileserver via ssh to improve preformance and 
-  allow non-Linux users (Mac/NT) to fully user pipeline.
 
-+ Replace Make/Queue with a native Pipeline queue.
+  - Documentation
 
+  - Tutorials
 
- 
+  - Forums
 
-
-
-
-
--- NATIVE QUEUE JOB SELECTION QUERY -------------------------------------------------------
-
-SELECT QueueJob.ID FROM QueueJob, QueueServer 
-WHERE Started ISNULL 
-AND QueueServer.Hostname = ?
-
--- Unfinished Dependencies
-
-
--- Dynamic Requirements
-AND QueueJob.MinProcs  <= ?      
-AND QueueJob.MinMemory <= ?    
-AND QueueJob.MinDisk   <= ?
-
--- Licensing
-AND ('true' = ALL(SELECT (QueueJob.LicenseMask & LicenseKey.Flag) = LicenseKey.Flag)
-                  FROM LicenseKey)
-AND (0 < ALL (SELECT (LicenseKey.Total - LicenseKey.Used) FROM LicenseKey
-              WHERE (QueueJob.LicenseMask & LicenseKey.Flag) = LicenseKey.Flag))
-
--- Selection Criteria
-AND ((QueueJob.SelectMask & QueueServer.SelectMask) = QueueJob.SelectMask)
-ORDER BY ((SELECT sum(SelectBias.Bias) FROM SelectBias, SelectKey 
-           WHERE SelectBias.ServerID = QueueServer.ID
-           AND (SelectKey.Flag & QueueJob.SelectMask) = SelectKey.Flag
-           AND SelectBias.KeyID = SelectKey.ID) + QueueJob.SelectBias) DESC, 
-         QueueJob.Submitted ASC;
+  - Bug Database
 
 
 
+----------------------------------------------------------------------------------------------
 
------
+UPCOMING CONFERENCES: 
+
+- E3
+
+- NAB 
+
+- Game Developers Conference
+
+- SIGGRAPH 2005
+
+
+
+----------------------------------------------------------------------------------------------
+
+CONTACTS: 
+
+Massive Software:
+  - Stephen Regelous
+
+Charlex: 
+  - Bryan Godwin (techy animator)
+  - Steve Mann
+
+Weta:
+  - Matt Aitken (Digital FX Supervisor)
+
+Box Rocket: 
+  - Bay Raitt
+
+Dreamworks: 
+  - Nathan Wilson
+
+???
+  - Josh Richards 
+
