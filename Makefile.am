@@ -1,7 +1,11 @@
 
 SUBDIRS = \
-  Core \
-  UI
+  Core
+#  Thread
+
+
+EXTRA_DIST = \
+  autogen.sh
 
 
 
