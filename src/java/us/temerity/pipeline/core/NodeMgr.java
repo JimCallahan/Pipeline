@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.27 2004/05/08 23:32:11 jim Exp $
+// $Id: NodeMgr.java,v 1.28 2004/05/19 19:03:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2289,6 +2289,10 @@ class NodeMgr
 	}
 	catch(PipelineException ex) {
 	}
+
+	if((working == null) && (checkedIn == null)) 
+	  throw new PipelineException
+	    ("No node named (" + name + ") exists!");
       }
 
       /* extract the working, base checked-in version and latest checked-in versions 
