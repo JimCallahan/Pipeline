@@ -1,4 +1,4 @@
-// $Id: FCheckEditor.java,v 1.4 2004/03/23 20:41:25 jim Exp $
+// $Id: FCheckEditor.java,v 1.5 2004/07/16 22:02:00 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -52,6 +52,9 @@ class FCheckEditor
    * @return 
    *   The controlling <CODE>SubProcess</CODE> instance. 
    * 
+   * @throws PipelineException
+   *   If unable to launch the editor.
+   * 
    * @see SubProcess
    */  
   public SubProcess
@@ -61,11 +64,12 @@ class FCheckEditor
    Map<String, String> env,      
    File dir        
   ) 
+    throws PipelineException
   {
     {
       String suffix = fseq.getFilePattern().getSuffix();
       if((suffix == null) || (!suffix.equals("iff"))) {
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("Illegal image format (" + suffix + "), " + 
 	   "only IFF format images are supported by the fcheck editor.");
       }
@@ -91,7 +95,7 @@ class FCheckEditor
 	break; 
 	
       default:
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("FCheck only supports unpadded (@) and four place zero padded (#) " + 
 	   "frame numbers for image sequences.");
       }

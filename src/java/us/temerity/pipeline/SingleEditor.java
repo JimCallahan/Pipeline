@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.4 2004/03/23 07:40:37 jim Exp $
+// $Id: SingleEditor.java,v 1.5 2004/07/16 22:02:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -77,6 +77,9 @@ class SingleEditor
    * @return 
    *   The controlling <CODE>SubProcess</CODE> instance. 
    * 
+   * @throws PipelineException
+   *   If unable to launch the editor.
+   * 
    * @see SubProcess
    */  
   public SubProcess
@@ -86,10 +89,11 @@ class SingleEditor
    Map<String, String> env,      
    File dir        
   )   
+    throws PipelineException
   {
     FrameRange range = fseq.getFrameRange(); 
     if((range != null) && (!range.isSingle()))
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The " + getName() + " Editor can only edit a single file at a time!");
 
     return super.launch(fseq, env, dir);
