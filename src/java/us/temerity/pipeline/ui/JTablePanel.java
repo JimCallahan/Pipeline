@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.5 2004/08/25 05:19:59 jim Exp $
+// $Id: JTablePanel.java,v 1.6 2004/09/14 02:21:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -137,6 +137,8 @@ class JTablePanel
     {
       JTable table = new JTable(pTableModel);
       pTable = table;
+
+      pTableModel.setTable(table);
 
       table.setAutoCreateColumnsFromModel(true);
       table.setColumnSelectionAllowed(false);
@@ -306,9 +308,17 @@ class JTablePanel
   (
    int col
   )
-  {
+  { 
+    int[] selected = pTable.getSelectedRows();
+
     stopEditing();
-    pTableModel.sortByColumn(col);
+    int[] preToPost = pTableModel.sortByColumn(col);
+
+    int row;
+    for(row=0; row<selected.length; row++) {
+      int nrow = preToPost[selected[row]];
+      pTable.addRowSelectionInterval(nrow, nrow);
+    }
   }
 
 

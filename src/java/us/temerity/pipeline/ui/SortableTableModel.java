@@ -1,4 +1,4 @@
-// $Id: SortableTableModel.java,v 1.2 2004/06/28 00:19:40 jim Exp $
+// $Id: SortableTableModel.java,v 1.3 2004/09/14 02:20:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -45,6 +45,19 @@ class SortableTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Set the parent table.
+   */ 
+  public void 
+  setTable
+  (
+   JTable table
+  ) 
+  {
+    pTable = table;
+  }
+
+
+  /**
    * Get the widths of the columns.
    */ 
   public int[] 
@@ -79,18 +92,37 @@ class SortableTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sort the rows by the values in the given column number. 
+   * Sort the rows by the values in the given column number. <P> 
+   * 
+   * @return 
+   *   The mapping of the pre-sort to post-sort row numbers.
    */ 
-  public void 
+  public int[]
   sortByColumn
   (
    int col
   )
   {
+    int[] idxToRow = new int[pRowToIndex.length];
+    {
+      int row;
+      for(row=0; row<pRowToIndex.length; row++) 
+	idxToRow[pRowToIndex[row]] = row;
+    }
+
     pSortAscending = (pSortColumn == col) ? !pSortAscending : true;
     pSortColumn    = col;
     
     sort();
+
+    int[] preToPost = new int[pRowToIndex.length];
+    {
+      int row;
+      for(row=0; row<pRowToIndex.length; row++) 
+	preToPost[idxToRow[pRowToIndex[row]]] = row;
+    }
+
+    return preToPost;
   }
 
 
@@ -147,6 +179,14 @@ class SortableTableModel
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * The parent table.
+   */ 
+  protected JTable  pTable; 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Param row indices for each displayed row number.
    */ 
