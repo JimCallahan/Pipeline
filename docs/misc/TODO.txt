@@ -19,6 +19,9 @@ OPERATIONS:
 
 - Per-file Queue/Kill/Remove
 
+- The node status update immediately following a RemoveFiles operation frequently fails to   
+  catch the removed files.  Updates after do work properly.
+
 
 USER INTERFACE: 
 
@@ -26,7 +29,7 @@ USER INTERFACE:
 
 - NodeLinks Panel?
 
-- JobViewer and JobDetails Panels
+- JobDetails Panels
 
 - Task/Scheduling Panels
 
@@ -38,9 +41,11 @@ USER INTERFACE:
 - NodeBrowser contents are not intialized to the selected nodes in the linked NodeViewer 
   when the panel type is changed to NodeBrowser from some other type of panel.
 
-- The keyboard focus is grabbed by Table header buttons when pressed.
+- Check for duplicate hotkeys in the same group when changing a hot key.
 
-- Give JEmptyPanel a better appearance.
+- When layouts are restored, there can be conflicts between multiple update tasks and 
+  problems of some components not being instatiated yet at the point of update.  A more
+  methodical system needs to replace the current ad hoc system.
 
 
 BACKEND: 
