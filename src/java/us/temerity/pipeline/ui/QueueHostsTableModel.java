@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.5 2004/09/14 02:22:28 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.6 2004/09/28 14:31:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
 
 import java.text.*;
+import java.net.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -114,7 +115,28 @@ class QueueHostsTableModel
     pEditedStatusIndices  = new TreeSet<Integer>();
     pEditedReserveIndices = new TreeSet<Integer>();
     pEditedSlotsIndices   = new TreeSet<Integer>();
-    pEditedBiasesIndices  = new TreeSet<Integer>();    
+    pEditedBiasesIndices  = new TreeSet<Integer>();  
+
+    /* the canonical names of this host */ 
+    pLocalHostnames = new TreeSet<String>();
+    try {
+      Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+      while(nets.hasMoreElements()) {
+	NetworkInterface net = (NetworkInterface) nets.nextElement();
+	Enumeration addrs = net.getInetAddresses();
+	while(addrs.hasMoreElements()) {
+	  InetAddress addr = (InetAddress) addrs.nextElement();
+	  String ip = addr.getHostAddress();
+	  if(!ip.equals("127.0.0.1")) 
+	    pLocalHostnames.add(addr.getCanonicalHostName());
+	}
+      }
+    }
+    catch(Exception ex) {
+      UIMaster.getInstance().showErrorDialog
+	("Warning:",      
+	 "Could not determine the name of this machine!");
+    }
   }
 
 
@@ -290,7 +312,7 @@ class QueueHostsTableModel
       pSelectionKeys.addAll(keys);
 
     pIsPrivileged = isPrivileged;
-
+    
     sort();
   }
 
@@ -406,9 +428,14 @@ class QueueHostsTableModel
    int col
   ) 
   {
-    if(!pIsPrivileged) 
-      return false;
-
+    boolean localOnly = false;
+    if(!pIsPrivileged) {
+      QueueHost host = pQueueHosts.get(pRowToIndex[row]);
+      if(!pLocalHostnames.contains(host.getName())) 
+	return false;
+      localOnly = true;
+    }
+      
     switch(col) {
     case 1: 
     case 2: 
@@ -416,7 +443,7 @@ class QueueHostsTableModel
       return true;
 
     default:
-      return (col > 7); 
+      return (!localOnly && (col > 7));
     }
   }
 
@@ -477,14 +504,16 @@ class QueueHostsTableModel
     int vrow = pRowToIndex[row];
     boolean edited = setValueAtHelper(value, vrow, col);
     
-    int[] selected = pTable.getSelectedRows(); 
-    int wk;
-    for(wk=0; wk<selected.length; wk++) {
-      int srow = pRowToIndex[selected[wk]];
-      if(srow != vrow)
-	setValueAtHelper(value, srow, col);
+    if(pIsPrivileged) {
+      int[] selected = pTable.getSelectedRows(); 
+      int wk;
+      for(wk=0; wk<selected.length; wk++) {
+	int srow = pRowToIndex[selected[wk]];
+	if(srow != vrow)
+	  setValueAtHelper(value, srow, col);
+      }
     }
-
+      
     if(edited) {
       fireTableDataChanged();
       pParent.doEdited(); 
@@ -586,7 +615,6 @@ class QueueHostsTableModel
    */ 
   private JManageJobServersDialog  pParent;
 
-
   /**
    * The indices of host which have had their status edited.
    */ 
@@ -606,4 +634,11 @@ class QueueHostsTableModel
    * The indices of host which have had their selection key biases edited.
    */ 
   private TreeSet<Integer>  pEditedBiasesIndices; 
+
+
+  /**
+   * The canonical names of this host.
+   */ 
+  private TreeSet<String>  pLocalHostnames;
+
 }

@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.14 2004/09/22 20:00:05 jim Exp $
+// $Id: QueueMgrClient.java,v 1.15 2004/09/28 14:31:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,6 +44,7 @@ class QueueMgrClient
   {
     super(hostname, port, 
 	  QueueRequest.Disconnect, QueueRequest.Shutdown);
+    init();
   }
 
   /** 
@@ -58,6 +59,35 @@ class QueueMgrClient
   {
     super(PackageInfo.sQueueServer, PackageInfo.sQueuePort, 
 	  QueueRequest.Disconnect, QueueRequest.Shutdown);
+    init();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the fields.
+   */ 
+  private void 
+  init() 
+  {
+    /* the canonical names of this host */ 
+    pLocalHostnames = new TreeSet<String>();
+    try {
+      Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+      while(nets.hasMoreElements()) {
+	NetworkInterface net = (NetworkInterface) nets.nextElement();
+	Enumeration addrs = net.getInetAddresses();
+	while(addrs.hasMoreElements()) {
+	  InetAddress addr = (InetAddress) addrs.nextElement();
+	  String ip = addr.getHostAddress();
+	  if(!ip.equals("127.0.0.1")) 
+	    pLocalHostnames.add(addr.getCanonicalHostName());
+	}
+      }
+    }
+    catch(Exception ex) {
+    }
   }
 
 
@@ -665,10 +695,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged()) 
-      throw new PipelineException
-	("Only privileged users may edit the properties of the job server hosts!");
-
     if(biases != null) {
       for(TreeMap<String,Integer> table : biases.values()) {
 	for(String kname : table.keySet()) {
@@ -678,6 +704,25 @@ class QueueMgrClient
 	      ("The selection bias (" + bias + ") for key (" + kname + ") must " + 
 	       "be in the range: [-100,100]!");
 	}
+      }
+    }
+    
+    if(!isPrivileged()) {      
+      TreeSet<String> hostnames = new TreeSet<String>();
+      if(status != null) 
+	hostnames.addAll(status.keySet());
+      if(reservations != null) 
+	hostnames.addAll(reservations.keySet());
+      if(slots != null) 
+	hostnames.addAll(slots.keySet());
+      if(biases != null) 
+	hostnames.addAll(biases.keySet());
+
+      for(String hname : hostnames) {
+	if(!pLocalHostnames.contains(hname)) 
+	  throw new PipelineException
+	    ("Only privileged users may edit the properties of a job server " + 
+	     "(" + hname + ") which is not the local host!");
       }
     }
 
@@ -1094,6 +1139,11 @@ class QueueMgrClient
    * May be <CODE>null</CODE> if the cache has been invalidated.
    */ 
   private TreeSet<String>  pPrivilegedUsers;
+
+  /**
+   * The canonical names of this host.
+   */ 
+  private TreeSet<String>  pLocalHostnames;
 
 }
 
