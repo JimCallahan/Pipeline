@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 0.9.1)
+AM_INIT_AUTOMAKE(Pipeline, 0.9.2)
 
 AC_MSG_RESULT([ ])
 
@@ -163,6 +163,22 @@ then
 fi
 
 AC_MSG_RESULT([$SQL_PORT])
+
+
+AC_MSG_CHECKING([Max License/Selection Keys])
+
+AC_ARG_WITH([max-keys], 
+            [  --with-max-keys=NUM     The maximum number of license/select keys.])
+
+AC_SUBST(MAX_KEYS)
+MAX_KEYS=40
+
+if test "$with_max_keys" 
+then
+  MAX_KEYS=$with_max_keys
+fi
+
+AC_MSG_RESULT([$MAX_KEYS])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -600,6 +616,7 @@ AC_CONFIG_FILES([
   src/database/scripts/dbstop
 
   src/database/share/Makefile
+  src/database/share/dbinit.sql
   src/database/share/postgresql.conf
 
   src/java/Makefile
@@ -635,8 +652,7 @@ AC_CONFIG_FILES([
   src/utils/docs/plget.html
   src/utils/docs/pls.html
 
-  tests/Makefile
-  
+  tests/Makefile  
 ])
 
 AC_OUTPUT
