@@ -9,7 +9,8 @@
   <bind style="Default" type="region" key=".*"/>
 
 
-  <!--  R O O T   P A N E L -->
+
+  <!--  R O O T   P A N E L  -->
 
   <style id="RootPanel">
     <imagePainter path="BorderIn.png" 
@@ -19,12 +20,118 @@
   <bind style="RootPanel" type="name" key="RootPanel"/>
 
 
+  <!--  P A N E L   B A R  -->
+
+  <style id="PanelBar">
+      <imagePainter path="Panel.png"
+                    sourceInsets="5 5 5 5"
+                    paintCenter="false"/>
+      <insets top="5" bottom="5" right="5" left="5"/>
+  </style>
+  <bind style="PanelBar" type="name" key="PanelBar"/>
+
+
+  <!--  C L O S E   B U T T O N  -->
+
+  <style id="CloseButton"> 
+    <state>
+      <imagePainter path="CloseButton.png"
+                    sourceInsets="0 0 0 0"/>
+      <insets top="0" bottom="0" right="0" left="0"/> 
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="CloseButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+      <insets top="0" bottom="0" right="0" left="0"/> 
+    </state>
+  </style>
+  <bind style="CloseButton" type="name" key="CloseButton"/>
+
+
+  <!--  C O M B O   B O X  -->
+
+  <style id="ComboBox">
+      <imagePainter path="ValueBox.png"
+                    sourceInsets="1 2 1 2"/>
+      <insets top="1" bottom="1" right="2" left="2"/>
+  </style>
+  <bind style="ComboBox" type="region" key="ComboBox"/>
+
+  <style id="ComboBoxArrowButton">
+    <imagePainter path="ComboBoxArrowButton.png"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/> 
+  </style>
+  <bind style="ComboBoxArrowButton" type="name" key="ComboBox.arrowButton"/>
+
+  <style id="ComboBoxScrollPane">
+    <imagePainter path="Panel.png"
+                  sourceInsets="5 5 5 5"
+                  paintCenter="false"/>
+    <insets top="5" bottom="5" right="5" left="5"/>
+    <property key="ScrollPane.viewportBorderInsets" type="insets" value="5 5 5 5"/>
+  </style>
+  <bind style="ComboBoxScrollPane" type="name" key="ComboBox.scrollPane"/>
+
+   
+  <!--  S C R O L L   B A R  -->
+
+  <style id="ScrollBar">
+    <imagePainter path="Panel.png"
+                  sourceInsets="5 5 5 5"
+                  paintCenter="false"/>
+    <insets top="5" bottom="5" right="5" left="5"/>
+  </style>
+  <bind style="ScrollBar" type="region" key="ScrollBar"/>
+
+  <style id="ScrollBarThumb">
+    <state>
+      <imagePainter path="ScrollBarThumb.png"
+                    sourceInsets="10 6 10 6"/>
+      <insets top="10" bottom="10" right="6" left="6"/> 
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ScrollBarThumbPressed.png"
+                    sourceInsets="10 6 10 6"/>
+      <insets top="10" bottom="10" right="6" left="6"/>
+    </state>
+  </style>
+  <bind style="ScrollBarThumb" type="region" key="ScrollBarThumb"/>
+
+  <style id="ScrollBarTrack"> 
+    <imagePainter path="ScrollBarTrack.png"
+                  sourceInsets="10 6 10 6"/>
+    <insets top="10" bottom="10" right="6" left="6"/>
+  </style>
+  <bind style="ScrollBarTrack" type="region" key="ScrollBarTrack"/>
+   
+  <style id="ScrollBarArrowNorth"> 
+    <imagePainter path="ScrollArrowNorth.png"
+                  method="arrowButtonForeground"
+                  direction="north"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="ScrollBarArrowNorth" type="name" key="ScrollBar.button"/>
+
+  <style id="ScrollBarArrowSouth"> 
+    <imagePainter path="ScrollArrowSouth.png"
+                  method="arrowButtonForeground"
+                  direction="south"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="ScrollBarArrowSouth" type="name" key="ScrollBar.button"/>
+
+
+
+
   <!--  M E N U S  -->
 
   <style id="Menu">
     <imageIcon id="MenuIcon" path="MenuIcon.png"/>
     <property key="Menu.arrowIcon" value="MenuIcon"/>
-    <state value="">
+    <state>
       <imagePainter path="MenuItem.png"
                     sourceInsets="5 4 5 0"/>
       <insets top="5" bottom="5" right="0" left="4"/>
@@ -38,7 +145,7 @@
   <bind style="Menu" type="region" key="Menu"/>
 
   <style id="MenuItem">
-    <state value="">
+    <state>
       <imagePainter path="MenuItem.png"
                     sourceInsets="5 4 5 0"/>
       <insets top="5" bottom="5" right="0" left="4"/>
@@ -53,7 +160,7 @@
 
   <style id="PopupMenu">
     <opaque value="false"/>
-    <imagePainter path="PopupMenu.png"
+    <imagePainter path="Panel.png"
                   sourceInsets="5 5 5 5"/>
     <insets top="5" bottom="5" right="5" left="5"/>
   </style>
@@ -67,7 +174,7 @@
   <bind style="PopupMenuSeparator" type="region" key="PopupMenuSeparator"/>
 
 
-  <!--  S P L I T   P A N E -->
+  <!--  S P L I T   P A N E  -->
 
   <style id="SplitPaneHorizontalDivider">
     <imagePainter path="SplitPaneHorizontalDivider.png"
@@ -79,7 +186,7 @@
   <bind style="SplitPaneHorizontalDivider" type="region" key="SplitPaneDivider"/>
 
   <style id="SplitPaneHorizontalDividerLeftButton">
-    <state value="">
+    <state>
       <imagePainter path="SplitPaneHorizontalDividerLeftButton.png"
                     sourceInsets="2 2 2 2"/>
     </state>
@@ -93,7 +200,7 @@
         key="SplitPaneHorizontalDivider.leftOneTouchButton"/>
 
   <style id="SplitPaneHorizontalDividerRightButton">
-    <state value="">
+    <state>
       <imagePainter path="SplitPaneHorizontalDividerRightButton.png"
                     sourceInsets="2 2 2 2"/>
     </state>
@@ -117,7 +224,7 @@
   <bind style="SplitPaneVerticalDivider" type="region" key="SplitPaneDivider"/>
 
   <style id="SplitPaneVerticalDividerUpButton">
-    <state value="">
+    <state>
       <imagePainter path="SplitPaneVerticalDividerUpButton.png"
                     sourceInsets="2 2 2 2"/> 
     </state>
@@ -131,7 +238,7 @@
         key="SplitPaneVerticalDivider.upOneTouchButton"/>
 
   <style id="SplitPaneVerticalDividerDownButton">
-    <state value="">
+    <state>
       <imagePainter path="SplitPaneVerticalDividerDownButton.png"
                     sourceInsets="2 2 2 2"/>
     </state>
