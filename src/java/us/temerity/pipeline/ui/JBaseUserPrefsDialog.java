@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.4 2004/06/28 00:13:32 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.5 2004/07/18 21:33:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -141,10 +141,6 @@ class JBaseUserPrefsDialog
 	    
 	    layout.show(pCardPanel, " ");
 	  }
-	  
-	  Dimension size = new Dimension(395, 286);
- 	  cpanel.setMinimumSize(size);
- 	  cpanel.setPreferredSize(size);
 	}
 
 	{
