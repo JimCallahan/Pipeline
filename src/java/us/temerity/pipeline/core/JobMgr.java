@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.4 2004/08/22 21:55:19 jim Exp $
+// $Id: JobMgr.java,v 1.5 2004/08/22 21:59:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -316,7 +316,7 @@ class JobMgr
    *   <CODE>FailureRsp</CODE> if unable to start the job.
    */ 
   public Object
-  start
+  jobStart
   (
    JobStartReq req 
   ) 
@@ -349,7 +349,7 @@ class JobMgr
    *   <CODE>FailureRsp</CODE> if unable to start the job.
    */ 
   public Object
-  kill
+  jobKill
   (
    JobKillReq req 
   ) 
@@ -394,7 +394,7 @@ class JobMgr
    *   <CODE>FailureRsp</CODE> if unable to start the job.
    */ 
   public Object
-  wait
+  jobWait
   (
    JobWaitReq req 
   ) 

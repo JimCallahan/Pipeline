@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.2 2004/08/22 21:59:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -178,7 +178,7 @@ class JobMgrControlClient
    *   If unable to start the job.
    */ 
   public synchronized void 
-  start
+  jobStart
   (
    QueueJob job
   ) 
@@ -202,9 +202,9 @@ class JobMgrControlClient
    *   If unable to kill the job.
    */ 
   public synchronized void
-  kill
+  jobKill
   (
-   int jobID 
+   long jobID 
   ) 
     throws PipelineException 
   {
@@ -226,9 +226,9 @@ class JobMgrControlClient
    *   If unable to determine the results.
    */ 
   public synchronized QueueJobResults
-  wait
+  jobWait
   (
-   int jobID 
+   long jobID 
   ) 
     throws PipelineException 
   {

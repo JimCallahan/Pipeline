@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.4 2004/08/01 15:44:54 jim Exp $
+// $Id: JobMgrServer.java,v 1.5 2004/08/22 21:59:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -276,7 +276,7 @@ class JobMgrServer
 	  case Start:
 	    {
 	      JobStartReq req = (JobStartReq) objIn.readObject();
-	      objOut.writeObject(pJobMgr.start(req));
+	      objOut.writeObject(pJobMgr.jobStart(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -284,7 +284,7 @@ class JobMgrServer
 	  case Kill:
 	    {
 	      JobKillReq req = (JobKillReq) objIn.readObject();
-	      objOut.writeObject(pJobMgr.kill(req));
+	      objOut.writeObject(pJobMgr.jobKill(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -292,7 +292,7 @@ class JobMgrServer
 	  case Wait:
 	    {
 	      JobWaitReq req = (JobWaitReq) objIn.readObject();
-	      objOut.writeObject(pJobMgr.wait(req));
+	      objOut.writeObject(pJobMgr.jobWait(req));
 	      objOut.flush(); 
 	    }
 	    break;
