@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.37 2004/09/03 11:03:23 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.38 2004/09/05 06:49:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -301,9 +301,9 @@ class JNodeViewerPanel
       pNodePopup.add(item);
 
       item = new JMenuItem("Export...");
+      pExportItem = item;
       item.setActionCommand("export");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
 
       item = new JMenuItem("Rename...");
@@ -434,6 +434,7 @@ class JNodeViewerPanel
     {
       pAddSecondaryDialog = new JAddSecondaryDialog();
 
+      pExportDialog   = new JExportDialog();
       pRenameDialog   = new JRenameDialog();
       pRenumberDialog = new JRenumberDialog();
       pRegisterDialog = new JRegisterDialog();
@@ -712,6 +713,7 @@ class JNodeViewerPanel
     pLinkItem.setEnabled(hasWorking && multiple);
     pUnlinkItem.setEnabled(hasWorking && multiple);
 
+    pExportItem.setEnabled(hasWorking && multiple);
     pRenameItem.setEnabled(hasWorking && !hasCheckedIn);
     pRenumberItem.setEnabled(hasWorking && mod.getPrimarySequence().hasFrameNumbers());
     
@@ -2115,8 +2117,6 @@ class JNodeViewerPanel
    ActionEvent e
   ) 
   {
-    System.out.print("Action: " + e.getActionCommand() + "\n");
-
     /* node menu events */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("details"))
@@ -2169,6 +2169,8 @@ class JNodeViewerPanel
     else if(cmd.equals("remove-files"))
       doRemoveFiles();
 
+    else if(cmd.equals("export"))
+      doExport();
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("renumber"))
@@ -2357,6 +2359,7 @@ class JNodeViewerPanel
       vnode.update();
   }
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -2485,11 +2488,48 @@ class JNodeViewerPanel
       vnode.update();    
   }
 
-  
-
-  
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Export the node properties of the primary selected node to the rest of the selected 
+   * nodes.
+   */ 
+  private void 
+  doExport() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+
+	TreeSet<String> targets = new TreeSet<String>(); 
+	for(ViewerNode vnode : pSelected.values()) {
+	  NodeDetails tdetails = vnode.getNodeStatus().getDetails();
+	  if((tdetails != null) && (tdetails.getWorkingVersion() != null)) 
+	    targets.add(tdetails.getName());
+	}
+	targets.remove(details.getName());
+	
+	if(!targets.isEmpty()) {
+	  NodeMod mod = details.getWorkingVersion();
+	  if(mod != null) {
+	    synchronized(pExportDialog) {
+	      pExportDialog.updateNode(mod);
+	      pExportDialog.setVisible(true);
+	    }
+	    
+	    if(pExportDialog.wasConfirmed()) {
+	      ExportTask task = new ExportTask(mod.getName(), targets);
+	      task.start();	      
+	    }
+	  }
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
 
   /**
    * Rename the primary seleted node.
@@ -3572,6 +3612,184 @@ class JNodeViewerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Export the node properties 
+   */ 
+  private
+  class ExportTask
+    extends Thread
+  {
+    public 
+    ExportTask
+    (
+     String source,
+     TreeSet<String> targets
+    ) 
+    {
+      super("JNodeViewerPanel:ExportTask");
+
+      pSource  = source; 
+      pTargets = targets;
+    }
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Exporting Node Properties...")) {
+	StringBuffer warn = new StringBuffer();
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient();
+	  synchronized(pExportDialog) {
+	    NodeMod smod = client.getWorkingVersion(pAuthor, pView, pSource);
+	    for(String tname : pTargets) {
+	      NodeMod tmod = client.getWorkingVersion(pAuthor, pView, tname);
+
+	      /* upstream links */ 
+	      {
+		boolean addedLinks = false;
+		for(String source : smod.getSourceNames()) {
+		  if(pExportDialog.exportSource(source)) {
+		    if(tmod.getSource(source) == null) {
+		      LinkMod link = smod.getSource(source);
+		      client.link(pAuthor, pView, tmod.getName(), source, 
+				  link.getPolicy(), link.getRelationship(), 
+				  link.getFrameOffset());
+		      addedLinks = true;
+		    }
+		    else {
+		      warn.append
+			("Skipped adding link from source node (" + source + ") to " + 
+			 "target node (" + tname + ") because a link already existed " + 
+			 "between those nodes!\n\n");
+		    }
+		  }
+		}
+
+		/* update the links if we need to reference them below */ 
+		if(addedLinks && pExportDialog.exportActionSourceParams()) 
+		  tmod = client.getWorkingVersion(pAuthor, pView, tname);
+	      }
+
+	      /* node properties */ 
+	      {
+		if(pExportDialog.exportToolset()) 
+		  tmod.setToolset(smod.getToolset());
+
+		if(pExportDialog.exportEditor()) 
+		  tmod.setEditor(smod.getEditor());
+	      }
+
+	      /* actions and parameters */ 
+	      BaseAction taction = tmod.getAction(); 
+	      {
+		BaseAction saction = smod.getAction(); 
+		if((saction != null) && pExportDialog.exportAction()) {
+		  
+		  if((taction == null) || !taction.getName().equals(saction.getName())) {
+		    tmod.setAction(Plugins.newAction(saction.getName()));
+		    taction = tmod.getAction();
+		  }
+		  
+		  if(pExportDialog.exportActionEnabled()) 
+		    tmod.setActionEnabled(smod.isActionEnabled()); 
+		  
+		  for(BaseActionParam param : saction.getSingleParams()) {
+		    if(pExportDialog.exportActionSingleParam(param.getName())) 
+		      taction.setSingleParamValue(param.getName(), param.getValue());
+		  }
+		  
+		  if(pExportDialog.exportActionSourceParams()) {
+		    for(String source : saction.getSourceNames()) {
+		      if(tmod.getSource(source) != null) {
+			for(BaseActionParam param : saction.getSourceParams(source)) {
+			  taction.setSourceParamValue(source, 
+						      param.getName(), param.getValue());
+			}
+		      }
+		    }
+		  }
+		    
+		  tmod.setAction(taction);
+		}
+	      }
+		  
+	      if(taction != null) {
+		/* execution details */ 
+		{
+		  if(pExportDialog.exportOverflowPolicy()) 
+		    tmod.setOverflowPolicy(smod.getOverflowPolicy());
+		  
+		  if(pExportDialog.exportExecutionMethod()) 
+		    tmod.setExecutionMethod(smod.getExecutionMethod());
+		  
+		  if(pExportDialog.exportBatchSize() && 
+		     (smod.getExecutionMethod() == ExecutionMethod.Parallel) && 
+		     (tmod.getExecutionMethod() == ExecutionMethod.Parallel))
+		    tmod.setBatchSize(smod.getBatchSize());
+		}
+		  
+		/* job requirements */ 
+		{
+		  JobReqs sjreqs = smod.getJobRequirements();
+		  JobReqs tjreqs = tmod.getJobRequirements();
+		  
+		  if(pExportDialog.exportPriority()) 
+		    tjreqs.setPriority(sjreqs.getPriority());
+		  
+		  if(pExportDialog.exportMaxLoad()) 
+		    tjreqs.setMaxLoad(sjreqs.getMaxLoad());
+		  
+		  if(pExportDialog.exportMinMemory()) 
+		    tjreqs.setMinMemory(sjreqs.getMinMemory());
+		  
+		  if(pExportDialog.exportMinDisk()) 
+		    tjreqs.setMinDisk(sjreqs.getMinDisk());
+		  
+		  for(String kname : pExportDialog.exportedLicenseKeys()) {
+		    if(sjreqs.getLicenseKeys().contains(kname)) 
+		      tjreqs.addLicenseKey(kname);
+		    else 
+		      tjreqs.removeLicenseKey(kname);
+		  }
+		  
+		  for(String kname : pExportDialog.exportedSelectionKeys()) {
+		    if(sjreqs.getSelectionKeys().contains(kname)) 
+		      tjreqs.addSelectionKey(kname);
+		    else 
+		      tjreqs.removeSelectionKey(kname);
+		  }
+		  
+		  tmod.setJobRequirements(tjreqs);
+		}
+	      }
+
+	      /* apply the changes */ 
+	      tmod.removeAllSources();
+	      client.modifyProperties(pAuthor, pView, tmod);	      
+	    }
+	  }
+	}
+ 	catch(PipelineException ex) {
+ 	  master.showErrorDialog(ex);
+ 	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(warn.length() > 0) 
+	  master.showErrorDialog("Warning:", warn.toString()); 
+
+	updateRoots();
+      }
+    }
+    
+    private String          pSource;
+    private TreeSet<String> pTargets;
+  }
+    
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -4097,13 +4315,9 @@ class JNodeViewerPanel
 	    for(String name : pRoots.keySet()) {
 	      if(pRoots.get(name) == null) {
 		try {
-		  System.out.print("Recomputing Status: " + name + " ");
-		  
 		  MasterMgrClient client = master.getMasterMgrClient();
 		  NodeStatus status = client.status(pAuthor, pView, name);
 		  pRoots.put(name, status);
-		  
-		  System.out.print("[DONE]\n");
 		}
 		catch(PipelineException ex) {
 		  System.out.print("[undefined]\n");
@@ -4457,6 +4671,7 @@ class JNodeViewerPanel
    */ 
   private JMenuItem  pLinkItem;
   private JMenuItem  pUnlinkItem;
+  private JMenuItem  pExportItem;
   private JMenuItem  pRenameItem;
   private JMenuItem  pRenumberItem;
   private JMenuItem  pCheckInItem;
@@ -4558,6 +4773,11 @@ class JNodeViewerPanel
    * The add secondary dialog;
    */ 
   private JAddSecondaryDialog  pAddSecondaryDialog;
+
+  /**
+   * The export node properties dialog.
+   */ 
+  private JExportDialog  pExportDialog;
 
   /**
    * The rename node dialog.
