@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.7 2004/10/24 10:56:53 jim Exp $
+// $Id: GraphicalApp.java,v 1.8 2005/01/08 05:31:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,9 +99,11 @@ class GraphicalApp
       "  plui --license\n" + 
       "\n" + 
       "GLOBAL OPTIONS:\n" +
-      "  [--master-host=...][--master-port=...]\n" + 
-      "  [--queue-host=...][--queue-port=...][--job-port=...]\n" + 
-      "  [--log-file=...][--log-backups=...][--log=...]\n" +
+      "  [--master-host=...] [--master-port=...]\n" + 
+      "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
+      "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
+      "  [--no-layout] [--layout=...] [--no-selections]\n" + 
+      "  [--debug-gl=...] [--trace-gl=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"plui --html-help\" to browse the full documentation.\n");
@@ -136,12 +138,25 @@ class GraphicalApp
     case GraphicalOptsParserConstants.INTEGER:
       return "an integer";
 
+    case GraphicalOptsParserConstants.PATH_ARG:
+      return "an file system path";
+
     case GraphicalOptsParserConstants.HOSTNAME:
       return "a hostname";
       
     case GraphicalOptsParserConstants.LAYOUT_NAME:
       return "a panel layout name";
       
+    case GraphicalOptsParserConstants.TRUE:
+      return "\"true\" | \"yes\" | \"on\"";
+
+    case GraphicalOptsParserConstants.FALSE:
+      return "\"false\" | \"no\" | \"off\"";
+
+    case GraphicalOptsParserConstants.AE1:
+    case GraphicalOptsParserConstants.AE2:
+      return null;
+
     default: 
       if(printLiteral) 
 	return GraphicalOptsParserConstants.tokenImage[kind];

@@ -365,12 +365,22 @@ layout.<br>
 <br>
 <span style="font-weight: bold;">--no-selections<br>
 </span>
-<div style="margin-left: 40px;"><br>
-Normally, the intial panel layout restrores the selected nodes and/or
+<br>
+<div style="margin-left: 40px;">Normally, the intial panel layout
+restrores the selected nodes and/or
 job groups at the time the layout was saved.&nbsp; This option causes
 the layout to be restored without selections.<br>
+<br>
+<br>
 </div>
+<span style="font-weight: bold;">--trace-gl<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Causes all OpenGL calls to be printed to STDERR.&nbsp;&nbsp; This
+generates a lot of output and generally slows down all OpenGL rendering.<span
+ style="font-weight: bold;"></span><br>
 </div>
+<span style="font-weight: bold;"></span></div>
 <h3><a name="See_Also"></a>See
 Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>

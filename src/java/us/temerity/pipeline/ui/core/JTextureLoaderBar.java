@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.2 2005/01/08 05:31:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -190,7 +190,11 @@ class JTextureLoaderBar
    GLDrawable drawable
   )
   {    
-    drawable.setGL(new DebugGL(drawable.getGL()));
+    if(UIMaster.getInstance().getDebugGL()) 
+      drawable.setGL(new DebugGL(drawable.getGL()));
+
+    if(UIMaster.getInstance().getTraceGL()) 
+      drawable.setGL(new TraceGL(drawable.getGL(), System.err));
 
     GL gl = drawable.getGL();
     gl.glClearColor(0.0f, 0.5f, 0.5f, 0.0f);

@@ -61,6 +61,9 @@ GraphicalOptsParser
 
     pRestoreLayout     = true;
     pRestoreSelections = true;
+
+    pDebugGL = true;
+    pTraceGL = false;
   }
  
 
@@ -136,6 +139,19 @@ GraphicalOptsParser
    */ 
   private boolean  pRestoreSelections; 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to check all OpenGL calls for errors.
+   */ 
+  private boolean pDebugGL;
+
+  /**
+   * Whether to print all OpenGL calls to STDOUT.
+   */ 
+  private boolean pTraceGL;
+ 
 }
 
 
@@ -169,6 +185,8 @@ TOKEN :
 | <NO_LAYOUT:      "--no-layout">     
 | <NO_SELECTIONS:  "--no-selections">     
 
+| <DEBUG_GL:       "--debug-gl">      : BOOLEAN_SEP
+| <TRACE_GL:       "--trace-gl">      : BOOLEAN_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -291,6 +309,23 @@ TOKEN :
 }
 
 
+/* boolean arguments */ 
+<BOOLEAN_SEP> 
+TOKEN :
+{
+  <EQ6:                   "=">   : BOOLEAN_STATE
+| <MISSING_BOOLEAN_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<BOOLEAN_STATE> 
+TOKEN :
+{
+  <TRUE:            ("true" | "yes" | "on")>   : DEFAULT
+| <FALSE:           ("false" | "no" | "off")>  : DEFAULT
+| <MISSING_BOOLEAN: ["\0"]>                    : IGNORE_STATE
+| <ILLEGAL_BOOLEAN: (~["\0"])+>                : IGNORE_STATE
+}
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O P   L E V E L                                                                      */
@@ -336,7 +371,8 @@ Commands() :
     /* start the application */ 
     UIMaster.init(pMasterServer, pMasterPort, 
 		  pQueueServer, pQueuePort, pJobPort, 
-		  pLayout, pRestoreLayout, pRestoreSelections);
+		  pLayout, pRestoreLayout, pRestoreSelections, 
+		  pDebugGL, pTraceGL);
   }
 }
     
@@ -427,7 +463,8 @@ GlobalOpts() :
   (MasterHost() | MasterPort() | 
    QueueHost() | QueuePort() | JobPort() | 
    Log() | LogFile() | StandardLogFile() | LogBackups() |
-   Layout() | NoLayout() | NoSelections())
+   Layout() | NoLayout() | NoSelections() | 
+   DebugGL() | TraceGL()) 
   {}
 }
 
@@ -742,6 +779,58 @@ void NoSelections() :
   }
 }
 
+void DebugGL() : 
+{
+  boolean tf;
+}
+{
+  <DEBUG_GL> EQ() tf=Boolean() 
+  {
+    pDebugGL = tf;
+  }
+}
+
+void TraceGL() : 
+{
+  boolean tf;
+}
+{
+  <TRACE_GL> EQ() tf=Boolean() 
+  {
+    pTraceGL = tf;
+  }
+}
+
+boolean Boolean() : 
+{
+  boolean tf;
+}
+{
+  (tf=True() | tf=False())
+  {
+    return tf;
+  }
+}
+
+boolean True() : 
+{}
+{
+  <TRUE>
+  {
+    return true;
+  }
+}
+
+boolean False() : 
+{}
+{
+  <FALSE>
+  {
+    return false;
+  }
+}
+
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   S H A R E D   T O K E N S                                                              */
@@ -765,7 +854,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | t=<EQ6>)
   { 
     return t; 
   }

@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.3 2005/01/07 15:48:09 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.4 2005/01/08 05:31:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -169,8 +169,11 @@ implements MouseListener, MouseMotionListener, GLEventListener
    GLDrawable drawable
   )
   {    
-    drawable.setGL(new DebugGL(drawable.getGL()));
-    //drawable.setGL(new TraceGL(drawable.getGL(), System.err));
+    if(UIMaster.getInstance().getDebugGL()) 
+      drawable.setGL(new DebugGL(drawable.getGL()));
+
+    if(UIMaster.getInstance().getTraceGL()) 
+      drawable.setGL(new TraceGL(drawable.getGL(), System.err));
 
     GL gl = drawable.getGL();
 
