@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>plfs</title>
+</head>
+<body>
+<h3>Name</h3>
+<blockquote><b>plfs</b> - pipeline file system server</blockquote>
+<h3>Synopsis</h3>
+<blockquote><b>plfs</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
+  </i><br>
+  <b>plfs</b> <a style="font-weight: bold;"
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--help">--help</a><br>
+  <b>plfs</b> <a style="font-weight: bold;"
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--html-help">--html-help</a><br>
+  <b>plfs</b> <a style="font-weight: bold;"
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--version_">--version</a><br>
+  <b>plfs</b> <a style="font-weight: bold;"
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--release-date">--release-date</a><br>
+  <b>plfs</b> <a style="font-weight: bold;"
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--copyright">--copyright</a><br>
+</blockquote>
+<h3><a name="Description"></a>Description<br>
+</h3>
+<blockquote>A daemon process which runs on the file server and provides
+  <a href="file://@datadir@/docs/plmaster.html"><span
+ style="font-weight: bold;">plmaster</span></a>(1) with fast file
+system queries, checksum regeneration as well as file copying, deletion
+and linking services.<br>
+</blockquote>
+<h3> </h3>
+<h3><a name="Information_Options"></a>Information Options</h3>
+<blockquote>The following options provide online information about <a
+ href="file://@datadir@/docs/plfs.html"><b>plfs</b></a>(1)
+and then immediately exit:</blockquote>
+<blockquote><b><a name="--help"></a>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b><a name="--html-help"></a>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser.
+&nbsp;Look <a href="http://www.mozilla.org/unix/remote.html">here</a>
+for details about how this works.<br>
+  </blockquote>
+  <b><a name="--version"></a>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b><a name="--release-date"></a>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<br>
+  </blockquote>
+  <b><a name="--copyright"></a>--copyright<br>
+  </b><br>
+  <div style="margin-left: 40px;"> Prints copyright notice for this
+software and exits.</div>
+  <blockquote> </blockquote>
+</blockquote>
+<h3><a name="Global_Options"></a>Options</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--logging"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
+ style="font-style: italic;">,logger:level</span>[...]]</div>
+<div style="margin-left: 40px;"><br>
+<div style="margin-left: 40px;">In addition to the normal output, <a
+ href="file://@datadir@/docs/plfs.html"><b>plfs</b></a>(1) can
+generate
+detailed output tracing the various stages of internal execution.&nbsp;
+The arguments control the several different types
+of logging information (<span style="font-style: italic;">logger</span>)
+and different amounts of information (<span style="font-style: italic;">level</span>)
+of each type to generate.&nbsp; Several loggers can be modified in one
+option.<br>
+<br>
+The (<span style="font-style: italic;">logger</span>) portion of the
+option's argument can be:<br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
+ style="font-weight: bold;">
+</div>
+<div style="margin-left: 80px;">A shortcut for specifying all loggers
+at once.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;">arg</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs errors related to parsing the
+command-line options.<br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs file system related activity of
+the
+server.<br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs network connections and activity. <br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">sum</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs the activity of generating and
+comparing the checksum files which <a
+ href="file://@datadir@/docs/plfs.html"><span style="font-weight: bold;">plfs</span></a>(1)
+uses to optimize
+comparisons of the working area and repository files associated with
+nodes.<br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">sub</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs the creation and execution of
+external operating system level subprocesses by <a
+ href="file://@datadir@/docs/plfs.html"><b>plfs</b></a>(1).&nbsp;
+<br>
+</div>
+<span style="font-weight: bold;"><br style="font-weight: bold;">
+</span>The (<span style="font-style: italic;">level</span>) portion of
+the option's argument can be:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">This level is used for error messages
+and other catastrophic events.<br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">warning</span><br>
+</div>
+<div style="margin-left: 80px;">This level is used for non-fatal error
+messages and advisory information.<br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">info</span><br>
+</div>
+<div style="margin-left: 80px;">This is the default output level for
+all loggers and is used for normal output from <a
+ href="file://@datadir@/docs/plfs.html"><b>plfs</b></a>(1). <br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">fine</span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
+</div>
+<div style="margin-left: 80px;">These three levels are used for
+increasingly more detailed command tracing messages. <br>
+</div>
+<br>
+Logging can also be controlled on a system-wide basis by modifying the <a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#logger_properties"><span
+ style="font-weight: bold;">logger.properties</span></a>
+file installed with <a href="file://@datadir@/docs/plfs.html"><b>plfs</b></a>(1).&nbsp;
+See the Java
+API documention for the class<span style="font-weight: bold;">
+java.util.logging.Logger</span> for more information about the format
+of this file.&nbsp; Settings from the <a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--logs"><span
+ style="font-weight: bold;">--logs</span></a> option will override
+settings from the <a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#logger_properties"><span
+ style="font-weight: bold;">logger.properties</span></a> file.</div>
+</div>
+<h3><a name="See_Also"></a>See Also<br>
+</h3>
+<div style="margin-left: 40px;"><a
+ href="file://@datadir@/docs/pipeline.html"><span
+ style="font-weight: bold;"></span></a><a
+ href="file://@datadir@/docs/plmaster.html"><span
+ style="font-weight: bold;">plmaster</span></a>(1)<br>
+<a href="http://www.mozilla.org"><b>mozilla</b></a>(1)<span
+ style="font-weight: bold;"></span><br>
+</div>
+<h3><a name="Files"></a>Files</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="logger_properties"></a>@datadir@/logger.properties</span><br>
+<div style="margin-left: 40px;"><br>
+The site configuration for output loggers used by Pipeline
+programs.&nbsp;
+See the <a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--log"><span
+ style="font-weight: bold;">--log </span></a>option
+for details about the individual loggers.</div>
+</div>
+<h3><a name="Author"></a>Author </h3>
+<blockquote> Jim Callahan &lt;<a href="mailto:jim@polaris.net">jim@polaris.net</a>&gt;
+  <blockquote>Sole designer and author of <a
+ href="file://@datadir@/docs/plserver.html"><b>plfs</b></a>(1).</blockquote>
+</blockquote>
+<h3><a name="Copyright"></a>Copyright<br>
+</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Copyright
+(c) 2002, 2003, 2004 James M. Callahan.</span><br
+ style="font-weight: bold;">
+</div>
+<br style="font-weight: bold;">
+<div style="margin-left: 40px;"> Permission to use, copy and distribute
+this software and its documentation for any purpose is STRICTLY
+PROHIBITED without prior authorization in writing by James M. Callahan.<br>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+<div style="margin-left: 40px;"> THE SOFTWARE IS PROVIDED "AS-IS" AND
+WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING
+WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
+PARTICULAR PURPOSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br>
+</div>
+<div style="margin-left: 40px;"> IN NO EVENT SHALL JAMES M. CALLAHAN BE
+LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES
+OF
+ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON
+ANY
+THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.</div>
+<blockquote> </blockquote>
+<blockquote> </blockquote>
+<br>
+<br>
+</body>
+</html>

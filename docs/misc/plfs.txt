@@ -1,0 +1,81 @@
+
+  Request           Response 
+-----------------------------------------------------
+  CheckSumReq       SuccessRsp or ErrorRsp
+  FileStateReq      FileStateRsp or ErrorRsp
+  CheckInReq        SuccessRsp or ErrorRsp
+  CheckOutReq       SuccessRsp or ErrorRsp
+  FreezeReq         SuccessRsp or ErrorRsp
+  UnfreezeReq       SuccessRsp or ErrorRsp
+  
+
+
+--------
+
+
+FileCheckSumReq 
+{
+  NodeID           pNodeID;    // working version information
+  TreeSet<FileSeq> pFileSeqs;  // primary and secondary file sequences
+}
+
+
+
+FileStateReq 
+{
+  NodeID           pNodeID;     // working version information
+  VersionID        pWorkingID;  // revision number working version is based upon
+  VersionID        pLatestID;   // latest checked-in revision number
+  TreeSet<FileSeq> pFileSeqs;   // primary and secondary file sequences
+}
+
+FileStateRsp 
+{
+  NodeID                        pNodeID;      // working version information
+  TreeMap<FileSeq,FileState[]>  pFileStates;  // primary and secondary file states
+}
+
+
+
+FileCheckInReq 
+{
+  NodeID                 pNodeID;     // working version information
+  VersionID              pVersionID;  // revision number of new version
+  Collection<VersionID>  pPrevIDs;    // existing revision numbers
+  TreeSet<FileSeq>       pFileSeqs;   // primary and secondary file sequences
+}
+
+
+FileCheckOutReq 
+{
+  NodeID                 pNodeID;     // working version information
+  VersionID              pVersionID;  // revision number to check-out
+  boolean                pForce;      // overwrite existing working files? 
+  TreeSet<FileSeq>       pFileSeqs;   // primary and secondary file sequences
+}
+
+
+FileFreezeReq 
+{
+  NodeID                 pNodeID;     // working version information
+  VersionID              pVersionID;  // revision number of frozen version
+  TreeSet<FileSeq>       pFileSeqs;   // primary and secondary file sequences
+}
+
+FileUnfreezeReq 
+{
+  NodeID                 pNodeID;     // working version information
+  TreeSet<FileSeq>       pFileSeqs;   // primary and secondary file sequences
+}
+
+
+SuccessRsp 
+{
+}
+
+ErrorRsp 
+{
+  String  pMsg;
+}
+
+

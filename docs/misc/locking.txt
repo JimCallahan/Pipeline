@@ -1,0 +1,70 @@
+
+
+
+Register: 
+
+1. Write-lock the Node table.
+2. Check for name clash.
+3. Create initial NodeMod.
+4. Create Node.
+5. Insert Node in Node table.
+6. Write-unlock the Node table.
+
+
+Revoke: 
+
+1. Write-lock the Node table.
+2. Lookup Node.
+3. Make sure its an initial working version.
+4. Delete the associated files.
+5. Remove Node from Node table.
+6. Write-unlock the Node table.
+
+
+Rename: 
+
+1. Write-lock the Node table.
+2. Lookup Node.
+3. Make sure its an initial working version.
+4. Rename the associated files.
+5. Rename the NodeMod.
+6. Rename the DependMod's of the downstream nodes.
+7. Write-unlock the Node table.
+
+
+Check-In: 
+
+1. Write-lock the Node table.
+2. Get the NodeStatus of the root node.
+3. Depth first traverse the upstream nodes:
+  a. Make sure that the (OverallNodeState != Conflicts) and the 
+     (OverallQueueState == Finished).
+  b. If Node's (OverallNodeState != (Pending || Modified || ModifiedDepends)) skip it.
+  c. Copy the working files associated with the node to the repository.  Check each 
+     file's last modified timestamp during this operation to make sure its not newer 
+     than the NodeStatus.  If any are newer, remove all of the files that successfully 
+     copied from the repository and abort the check-in with an error.
+  d. Add a new NodeVersion to the Node based on the NodMod. 
+4. Write-unlock the Node table.
+
+
+Check-Out: 
+
+1. Write-lock the Node table.
+2. Get the NodeStatus of the root node.
+3. Depth first traverse the upstream nodes:
+  a. If this Node has a working version, (PreventRegression == true) and the 
+     
+ Make sure that the (OverallNodeState != Conflicts) and the 
+     (OverallQueueState == Finished).
+  b. If Node's (OverallNodeState != (Pending || Modified || ModifiedDepends)) skip it.
+  c. Copy the working files associated with the node to the repository.  Check each 
+     file's last modified timestamp during this operation to make sure its not newer 
+     than the NodeStatus.  If any are newer, remove all of the files that successfully 
+     copied from the repository and abort the check-in with an error.
+  d. Add a new NodeVersion to the Node based on the NodMod. 
+4. Write-unlock the Node table.
+
+
+
+
