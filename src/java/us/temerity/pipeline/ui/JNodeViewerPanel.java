@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.12 2004/05/19 19:05:40 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.13 2004/05/21 00:18:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -29,8 +29,8 @@ import com.sun.j3d.utils.geometry.*;
 public  
 class JNodeViewerPanel
   extends JTopLevelPanel
-  implements ComponentListener, MouseListener, MouseMotionListener, PopupMenuListener,
-             ActionListener
+  implements ComponentListener, MouseListener, MouseMotionListener, KeyListener, 
+             PopupMenuListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -86,6 +86,23 @@ class JNodeViewerPanel
       
       pPanelPopup = new JPopupMenu();  
       pPanelPopup.addPopupMenuListener(this);
+
+      item = new JMenuItem("Center");
+      item.setActionCommand("center");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
+      item = new JMenuItem("Frame Selection");
+      item.setActionCommand("frame-selection");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
+      item = new JMenuItem("Frame All");
+      item.setActionCommand("frame-all");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
+      pPanelPopup.addSeparator();
        
       item = new JMenuItem("Automatic Expand");
       item.setActionCommand("automatic-expand");
@@ -139,8 +156,8 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pNodePopup.add(item);  
 
-      item = new JMenuItem("Clear All Roots");
-      item.setActionCommand("clear-all-roots");
+      item = new JMenuItem("Remove All Roots");
+      item.setActionCommand("remove-all-roots");
       item.addActionListener(this);
       pNodePopup.add(item);  
       
@@ -300,6 +317,8 @@ class JNodeViewerPanel
 	pCanvas.addComponentListener(this); 
 	pCanvas.addMouseListener(this); 
 	pCanvas.addMouseMotionListener(this); 
+	pCanvas.setFocusable(true);
+	pCanvas.addKeyListener(this);
 	
 	add(pCanvas);
       }
@@ -1156,6 +1175,20 @@ class JNodeViewerPanel
     return null;
   }
 
+  /**
+   * Get the user-data of the Java3D object under given mouse position. <P> 
+   * 
+   * @return
+   *   The picked object or <CODE>null</CODE> if no pickable object was under position.
+   */ 
+  private Object
+  objectAtMousePos
+  (
+   Point pos
+  ) 
+  {
+    return objectAtMousePos(pos.x, pos.y);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1238,7 +1271,13 @@ class JNodeViewerPanel
    * Invoked when the mouse enters a component. 
    */
   public void 
-  mouseEntered(MouseEvent e) {} 
+  mouseEntered
+  (
+   MouseEvent e
+  ) 
+  {
+    pCanvas.requestFocusInWindow();
+  }
   
   /**
    * Invoked when the mouse exits a component. 
@@ -1290,6 +1329,7 @@ class JNodeViewerPanel
 	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
 		      MouseEvent.BUTTON3_DOWN_MASK | 
 		      MouseEvent.ALT_DOWN_MASK);
+
 	  
 	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
 	    
@@ -1616,7 +1656,128 @@ class JNodeViewerPanel
    * been pushed. 
    */ 
   public void 	
-  mouseMoved (MouseEvent e) {}
+  mouseMoved 
+  (
+   MouseEvent e
+  ) 
+  {
+    pMousePos = e.getPoint();
+  }
+
+
+  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
+
+  /**
+   * voked when a key has been pressed.
+   */   
+  public void 
+  keyPressed
+  (
+   KeyEvent e
+  )
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    Object under = objectAtMousePos(pMousePos);
+
+    /* node actions */
+    if(under instanceof ViewerNode) {
+      ViewerNode vunder = (ViewerNode) under;
+
+      for(ViewerNode vnode : primarySelect(vunder)) 
+	vnode.update();
+      
+      if((prefs.getNodeMakeRoot() != null) &&
+	 prefs.getNodeMakeRoot().wasPressed(e))
+	doMakeRoot();
+      else if((prefs.getNodeAddRoot() != null) &&
+	 prefs.getNodeAddRoot().wasPressed(e))
+	doAddRoot();
+      else if((prefs.getNodeReplaceRoot() != null) &&
+	 prefs.getNodeReplaceRoot().wasPressed(e))
+	doReplaceRoot();
+      else if((prefs.getNodeRemoveRoot() != null) &&
+	 prefs.getNodeRemoveRoot().wasPressed(e))
+	doRemoveRoot();
+      else if((prefs.getNodeRemoveAllRoots() != null) &&
+	 prefs.getNodeRemoveAllRoots().wasPressed(e))
+	doRemoveAllRoots();
+
+      // ...
+
+      else {
+	for(ViewerNode vnode : clearSelection()) 
+	  vnode.update();
+      }
+    }
+
+    /* link actions */
+    else if(under instanceof ViewerLinkRelationship) {
+      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
+      
+      {
+	HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+	for(ViewerNode vnode : clearSelection()) 
+	  changed.put(vnode.getNodePath(), vnode);
+	for(ViewerNode vnode : primarySelect(lunder.getViewerNode())) 
+	  changed.put(vnode.getNodePath(), vnode);
+	for(ViewerNode vnode : changed.values()) 
+	  vnode.update();
+      }
+      
+      pSelectedLink = lunder.getLink();
+
+      // ...
+
+//       else {
+// 	for(ViewerNode vnode : clearSelection()) 
+// 	  vnode.update();
+//       }
+    }
+    
+    /* panel actions */
+    else {
+      if((prefs.getCameraCenter() != null) &&
+	 prefs.getCameraCenter().wasPressed(e))
+	doCenter();
+      else if((prefs.getCameraFrameSelection() != null) &&
+	 prefs.getCameraFrameSelection().wasPressed(e))
+	doFrameSelection();
+      else if((prefs.getCameraFrameAll() != null) &&
+	 prefs.getCameraFrameAll().wasPressed(e))
+	doFrameAll();
+
+      else if((prefs.getAutomaticExpandNodes() != null) &&
+	 prefs.getAutomaticExpandNodes().wasPressed(e))
+	doAutomaticExpand();
+      else if((prefs.getCollapseAllNodes() != null) &&
+	 prefs.getCollapseAllNodes().wasPressed(e))
+	doCollapseAll();
+      else if((prefs.getExpandAllNodes() != null) &&
+	 prefs.getExpandAllNodes().wasPressed(e))
+	doExpandAll();
+
+      else if((prefs.getShowHideDownstreamNodes() != null) &&
+	 prefs.getShowHideDownstreamNodes().wasPressed(e))
+	doShowHideDownstream();
+
+      else {
+	for(ViewerNode vnode : clearSelection()) 
+	  vnode.update();
+      }
+    }
+  }
+
+  /**
+   * Invoked when a key has been released.
+   */ 
+  public void 	
+  keyReleased(KeyEvent e) {}
+
+  /**
+   * Invoked when a key has been typed.
+   */ 
+  public void 	
+  keyTyped(KeyEvent e) {} 
 
 
   /*-- POPUP MENU LISTNER METHODS ----------------------------------------------------------*/
@@ -1671,12 +1832,18 @@ class JNodeViewerPanel
       doReplaceRoot();
     else if(cmd.equals("remove-root"))
       doRemoveRoot();
-    else if(cmd.equals("clear-all-roots"))
-      doClearAllRoots();
+    else if(cmd.equals("remove-all-roots"))
+      doRemoveAllRoots();
 
     // ...
     
     /* panel menu events */ 
+    else if(cmd.equals("center"))
+      doCenter();
+    else if(cmd.equals("frame-selection"))
+      doFrameSelection();
+    else if(cmd.equals("frame-all"))
+      doFrameAll();
     else if(cmd.equals("automatic-expand"))
       doAutomaticExpand();
     else if(cmd.equals("expand-all"))
@@ -1762,12 +1929,174 @@ class JNodeViewerPanel
    * Remove all of the roots nodes.
    */ 
   private synchronized void
-  doClearAllRoots()
+  doRemoveAllRoots()
   {
     setRoots(new TreeSet<String>());
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Move the camera so that it is centered on current mouse position.
+   */ 
+  public void 
+  doCenter() 
+  {
+    Point3d eyePos = new Point3d();
+    Point3d pos    = new Point3d();
+
+    pCanvas.getCenterEyeInImagePlate(eyePos);
+    pCanvas.getPixelLocationInImagePlate(pMousePos.x, pMousePos.y, pos);
+
+    Transform3D xform = new Transform3D();
+    pCanvas.getImagePlateToVworld(xform);
+    xform.transform(eyePos);
+    xform.transform(pos);
+
+    Vector3d dir = new Vector3d(pos);
+    dir.sub(eyePos);
+    dir.scale((eyePos.z-1.0) / dir.z);
+
+    Point3d p = new Point3d(eyePos);
+    p.sub(dir);
+
+    centerOnPos(new Point2d(p.x, p.y));
+  }
+
+  /**
+   * Move the camera so that it is centered on the given world space position. 
+   */ 
+  private void 
+  centerOnPos
+  (
+   Point2d pos
+  ) 
+  {
+    Viewer viewer = pUniverse.getViewer();
+    TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+      
+    Transform3D xform = new Transform3D();
+    tg.getTransform(xform);
+    
+    Vector3d trans = new Vector3d();
+    xform.get(trans);
+
+    trans.x = pos.x;
+    trans.y = pos.y;
+
+    xform.setTranslation(trans);
+    tg.setTransform(xform);
+  }
+
+
+  /**
+   * Move the camera to frame the bounds of the currently selected nodes.
+   */ 
+  public void 
+  doFrameSelection() 
+  {
+    frameNodes(pSelected.values());
+  }
+
+  /**
+   * Move the camera to frame all active nodes.
+   */ 
+  public void 
+  doFrameAll() 
+  {
+    frameNodes(pNodePool.getActiveViewerNodes());
+  }
+
+  /**
+   * Move the camera to frame the given set of nodes.
+   */ 
+  private void 
+  frameNodes
+  (
+   Collection<ViewerNode> vnodes
+  ) 
+  {
+    if(vnodes.isEmpty()) 
+      return;
+
+    Point2d minPos = new Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    Point2d maxPos = new Point2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
+    for(ViewerNode vnode : vnodes) {
+      Point2d pos = vnode.getPosition();
+      
+      minPos.x = Math.min(minPos.x, pos.x);
+      minPos.y = Math.min(minPos.y, pos.y);
+
+      maxPos.x = Math.max(maxPos.x, pos.x);
+      maxPos.y = Math.max(maxPos.y, pos.y);
+    }
+
+    {
+      UserPrefs prefs = UserPrefs.getInstance();
+      
+      minPos.x -= prefs.getNodeSpaceX()*0.5;
+      minPos.y -= prefs.getNodeSpaceY()*0.5;
+      
+      maxPos.x += prefs.getNodeSpaceX()*0.5;
+      maxPos.y += prefs.getNodeSpaceY()*0.5;
+    }
+
+    frameBounds(minPos, maxPos);    
+  }  
+
+  /**
+   * Move the camera to frame the given bounds.
+   */ 
+  private void 
+  frameBounds
+  (
+   Point2d minPos,  
+   Point2d maxPos   
+  ) 
+  {
+    Viewer viewer = pUniverse.getViewer();
+    TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+      
+    Transform3D xform = new Transform3D();
+    tg.getTransform(xform);
+    
+    Vector3d trans = new Vector3d();
+    xform.get(trans);
+
+    Vector2d extent = new Vector2d(maxPos);
+    extent.sub(minPos);
+    assert(extent.x >= 0.0);
+    assert(extent.y > 0.0);
+
+    Vector2d center = new Vector2d(minPos);
+    center.add(maxPos);
+    center.scale(0.5);
+
+    trans.x = center.x;
+    trans.y = center.y;
+
+    Vector2d cExtent = new Vector2d((double) pCanvas.getWidth(), 
+				    (double) pCanvas.getHeight());
+
+    Vector2d nExtent = new Vector2d(extent);
+
+    double nRatio = nExtent.x / nExtent.y;
+    double cRatio = cExtent.x / cExtent.y;
+
+    if(nRatio > cRatio) 
+      trans.z = nExtent.x;
+    else 
+      trans.z = nExtent.y * (cExtent.x / cExtent.y);
+
+    trans.z *= 1.25;
+    trans.z = Math.max(((double) pCanvas.getWidth()) / 64.0, trans.z);
+
+    xform.setTranslation(trans);
+    tg.setTransform(xform);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2188,5 +2517,17 @@ class JNodeViewerPanel
    * The currently selected link.
    */
   private LinkCommon  pSelectedLink;
+
+
+  /**
+   * The last known mouse position.
+   */ 
+  private Point pMousePos;
+
+  /**
+   * The bounds of the currently visible nodes.
+   */ 
+  private Point2d  pMinNodeBounds;
+  private Point2d  pMaxNodeBounds;
 
 }
