@@ -44,9 +44,9 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHMOD = @CHMOD@
 CHOWN = @CHOWN@
-CONVERT = @CONVERT@
 CPPFLAGS = @CPPFLAGS@
 CRYPTO_APP_DIR = @CRYPTO_APP_DIR@
+CUSTOMER = @CUSTOMER@
 CUSTOMER_PROFILE = @CUSTOMER_PROFILE@
 CVS = @CVS@
 CXX = @CXX@
@@ -68,6 +68,7 @@ EXEEXT = @EXEEXT@
 EXPORT_DYNAMIC = @EXPORT_DYNAMIC@
 EXTRA_DEBUG_SUBDIRS = @EXTRA_DEBUG_SUBDIRS@
 GEN_LIB = @GEN_LIB@
+GIMP = @GIMP@
 HOMEDIR = @HOMEDIR@
 ID = @ID@
 INSTALL_DATA = @INSTALL_DATA@
@@ -195,7 +196,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    VersionState \
                    PosixSignal \
                    message/FileRequest \
-                   message/NodeRequest
+                   message/NodeRequest \
+                   ui/SelectionMode
 
 
     ENUM_SOURCES = $(patsubst %,$(srcdir)/%.java,$(ENUMS))
@@ -362,12 +364,12 @@ glue/%.java: glue/%.jj
 	(cd glue; $(JAVA_CC) $<)
 
 
-textures:
+textures: laf/scripts/filter-textures
 	$(BASH) laf/scripts/filter-textures $(srcdir)/laf/maya/synth/images
 
 fonts: CharterBTRoman
 
-CharterBTRoman:
+CharterBTRoman: laf/scripts/filter-fonts
 	$(BASH) laf/scripts/filter-fonts $@ $(srcdir)/laf/maya/synth/images
 
 
@@ -409,7 +411,7 @@ check: Makefile $(ALL_JAR)
 
 #--------------------------------------------------------------------------------------------#
 
-clean: clean-jar clean-vault clean-class clean-aux clean-parser clean-textures
+clean: clean-jar clean-vault clean-class clean-aux clean-parser clean-textures clean-fonts
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
@@ -486,6 +488,9 @@ clean-glue-parser:
 clean-textures:
 	rm -rf laf/textures
 
+clean-fonts:
+	rm -rf laf/fonts
+
 
 #--------------------------------------------------------------------------------------------#
 
@@ -495,6 +500,15 @@ core/PackageInfo.java: $(srcdir)/core/PackageInfo.java.in  $(top_builddir)/confi
 bootstrap/BootStrapLoader.java.in: $(srcdir)/bootstrap/BootStrapLoader.java.in.in  \
                                    $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
+laf/scripts/filter-fonts: $(srcdir)/laf/scripts/filter-fonts.in \
+                          $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
+laf/scripts/filter-textures: $(srcdir)/laf/scripts/filter-textures.in \
+                             $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
