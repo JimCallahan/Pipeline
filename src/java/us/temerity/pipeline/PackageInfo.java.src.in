@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.5 2004/09/01 12:19:03 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.6 2004/10/18 02:34:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -77,6 +77,12 @@ class PackageInfo
    * checking to see if the server should be shutdown. <P> 
    */
   public static final int sServerTimeOut = 5000;
+
+  /**
+   * The number milliseconds Pipeline server programs sleep after finding no new connection
+   * before checking again for a new connection. <P> 
+   */
+  public static final int sServerSleep = 200;
 
 
   /*----------------------------------------------------------------------------------------*/
