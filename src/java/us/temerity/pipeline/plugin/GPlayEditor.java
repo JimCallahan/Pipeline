@@ -1,29 +1,31 @@
-// $Id: IvviewEditor.java,v 1.1 2004/02/23 23:48:31 jim Exp $
+// $Id: GPlayEditor.java,v 1.1 2004/02/25 01:24:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
-import us.temerity.pipeline.BaseEditor; 
+import us.temerity.pipeline.SingleEditor; 
+
 
 /*------------------------------------------------------------------------------------------*/
-/*   I V V I E W   E D I T O R                                                              */
+/*   G P L A Y   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
-/**
- * The scene viewer distributed with OpenInventor.
+/** 
+ * The Houdini 3D model viewer.
  */
 public
-class IvviewEditor
-  extends BaseEditor
+class GPlayEditor
+  extends SingleEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  IvviewEditor()
+  GPlayEditor()
   {
-    super("ivview", 
-	  "The scene viewer distributed with OpenInventor.");
+    super("GPlay", 
+	  "The Houdini 3D model viewer.", 
+	  "gplay");
   }
 
 }

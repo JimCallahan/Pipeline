@@ -1,19 +1,18 @@
-// $Id: MplayEditor.java,v 1.1 2004/02/23 23:48:31 jim Exp $
+// $Id: GEditEditor.java,v 1.1 2004/02/25 01:24:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
-import us.temerity.pipeline.BaseEditor;
+import us.temerity.pipeline.BaseEditor; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   M P L A Y   E D I T O R                                                                */
+/*   G E D I T   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The Houdini image viewer.                                    
+ * The lightweight GNOME desktop text editor.                                            
  */
-
 public
-class MplayEditor
+class GEditEditor
   extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -21,11 +20,13 @@ class MplayEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  MplayEditor()
+  GEditEditor()
   {
-    super("mplay", 
-	  "The Houdini image viewer.");              
+    super("GEdit", 
+	  "A lightweight text editor for the GNOME desktop.", 
+	  "gedit");
   }
+
 }
 
 

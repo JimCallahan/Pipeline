@@ -1,4 +1,4 @@
-// $Id: FcheckEditor.java,v 1.1 2004/02/23 23:48:31 jim Exp $
+// $Id: FCheckEditor.java,v 1.1 2004/02/25 01:24:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -14,7 +14,7 @@ import java.util.*;
  * The Maya image viewer.
  */
 public
-class FcheckEditor
+class FCheckEditor
   extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -22,10 +22,11 @@ class FcheckEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  FcheckEditor()
+  FCheckEditor()
   {
-    super("fcheck", 
-	  "The Maya image viewer.");
+    super("FCheck", 
+	  "The Maya image viewer.", 
+	  "fcheck");
   }
 
 
@@ -89,14 +90,14 @@ class FcheckEditor
 	
       default:
 	throw new IllegalArgumentException
-	  ("Fcheck only supports unpadded (@) and four place zero padded (#) " + 
+	  ("FCheck only supports unpadded (@) and four place zero padded (#) " + 
 	   "frame numbers for image sequences.");
       }
 
       args.add(pat.toString());
     }
   
-    SubProcess proc = new SubProcess(getClassName(), getName(), args, env, dir);
+    SubProcess proc = new SubProcess(getName(), getProgram(), args, env, dir);
     proc.start();
     return proc;    
   }

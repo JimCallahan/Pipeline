@@ -1,4 +1,4 @@
-// $Id: HoudiniEditor.java,v 1.1 2004/02/23 23:48:31 jim Exp $
+// $Id: HoudiniEditor.java,v 1.2 2004/02/25 01:24:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -22,8 +22,9 @@ class HoudiniEditor
   public
   HoudiniEditor()
   {
-    super("houdini", 
-	  "3D modeling and animation software from Side Effects Software.");
+    super("Houdini", 
+	  "3D modeling and animation software from Side Effects Software.", 
+	  "houdini");
   }
 
 }

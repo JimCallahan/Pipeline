@@ -1,29 +1,30 @@
-// $Id: XdviEditor.java,v 1.1 2004/02/23 23:48:31 jim Exp $
+// $Id: IvViewEditor.java,v 1.1 2004/02/25 01:24:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
-import us.temerity.pipeline.SingleEditor; 
+import us.temerity.pipeline.BaseEditor; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   X D V I   E D I T O R                                                                  */
+/*   I V V I E W   E D I T O R                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The DVI previewer for the X Window System.             
+ * The scene viewer distributed with OpenInventor.
  */
 public
-class XdviEditor
-  extends SingleEditor
+class IvViewEditor
+  extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  XdviEditor()
+  IvViewEditor()
   {
-    super("xdvi",
-	  "The DVI previewer for the X Window System.");
+    super("IvView", 
+	  "The scene viewer distributed with OpenInventor.", 
+	  "ivview");
   }
 
 }

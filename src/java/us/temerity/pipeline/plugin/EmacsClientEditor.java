@@ -1,4 +1,4 @@
-// $Id: EmacsClientEditor.java,v 1.1 2004/02/23 23:48:31 jim Exp $
+// $Id: EmacsClientEditor.java,v 1.2 2004/02/25 01:24:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -22,8 +22,9 @@ class EmacsClientEditor
   public
   EmacsClientEditor()
   {
-    super("emacsclient", 
-	  "The GNU extensible, customizable, self-documenting text editor.");
+    super("EmacsClient", 
+	  "The GNU extensible, customizable, self-documenting text editor.", 
+	  "emacsclient");
   }
 
 }
