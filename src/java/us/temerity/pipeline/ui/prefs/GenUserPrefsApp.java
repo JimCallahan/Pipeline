@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.40 2004/12/17 08:13:36 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.41 2004/12/29 17:34:48 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -559,7 +559,7 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new ColorPref
 	("The color to use for non-stale link lines.", 
-	 "LinkColor", "Line Color:", Color.white),
+	 "LinkColor", "Line Color:", Color.white), 
 
 	new ColorPref
 	("The color to use for stale link lines.", 
@@ -1137,7 +1137,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.40 2004/12/17 08:13:36 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.41 2004/12/29 17:34:48 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1391,7 +1391,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.40 2004/12/17 08:13:36 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.41 2004/12/29 17:34:48 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -2359,6 +2359,8 @@ class GenUserPrefsApp
 	 indent(level+2) + " vpanel, " + 
 	 "new Color3d(" + c[0] + ", " + c[1] + ", " + c[2] + "), sVSize,\n" + 
 	 indent(level+2) + " \"" + pDesc + "\");\n" + 
+	 indent(level) + "p" + pTitle + ".setDialogTitle(\"Color Editor:  " + 
+	 pLabel.substring(0, pLabel.length()-1) + "\");\n" +
 	 "\n");
 
       if(!isLast) 

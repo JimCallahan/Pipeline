@@ -1,4 +1,4 @@
-// $Id: JColorField.java,v 1.2 2004/12/17 15:06:17 jim Exp $
+// $Id: JColorField.java,v 1.3 2004/12/29 17:32:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,6 +48,8 @@ class JColorField
     pValue = new Color3d();
     setValue(color);
 
+    pTitle = "Color Editor:";
+
     initUI();
   }
 
@@ -64,6 +66,8 @@ class JColorField
     
     pValue = new Color3d();
     setColor(color);
+
+    pTitle = "Color Editor:";
 
     initUI();
   }
@@ -98,6 +102,21 @@ class JColorField
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set header title to use for the color editor dialog.
+   */ 
+  public void 
+  setDialogTitle
+  (
+   String title
+  ) 
+  {
+    pTitle = title;
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -198,7 +217,7 @@ class JColorField
   private void 
   doEditColor() 
   {
-    JColorEditorDialog diag = UIMaster.getInstance().showColorEditorDialog(pValue);
+    JColorEditorDialog diag = UIMaster.getInstance().showColorEditorDialog(pTitle, pValue);
     if(diag.wasConfirmed()) 
       setValue(diag.getColor());
   }
@@ -221,5 +240,10 @@ class JColorField
    * The color being displayed.
    */ 
   private Color3d  pValue; 
+
+  /**
+   * The title of the color editor dialog.
+   */ 
+  private String  pTitle;
 
 }
