@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.5 2004/05/11 19:11:23 jim Exp $
+// $Id: JBaseDialog.java,v 1.6 2004/05/23 19:57:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -144,7 +144,7 @@ class JBaseDialog
     {
       JPanel panel = new JPanel();
       
-      panel.setName("DialogButtonPanel");
+      panel.setName((body != null) ? "DialogButtonPanel" : "DialogButtonPanel2");
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
       
       panel.add(Box.createHorizontalGlue());
@@ -155,10 +155,9 @@ class JBaseDialog
 	pConfirmButton = btn;
 	btn.setName("RaisedConfirmButton");
 	
-	Dimension size = new Dimension(108, 31);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
+	Dimension size = btn.getPreferredSize();
+	btn.setMinimumSize(new Dimension(108, 31));
+	btn.setMaximumSize(new Dimension(size.width, 31));
 	
 	btn.setActionCommand("confirm");
 	btn.addActionListener(this);
@@ -174,10 +173,9 @@ class JBaseDialog
 	pApplyButton = btn;
 	btn.setName("RaisedButton");
 	
-	Dimension size = new Dimension(108, 31);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
+	Dimension size = btn.getPreferredSize();
+	btn.setMinimumSize(new Dimension(108, 31));
+	btn.setMaximumSize(new Dimension(size.width, 31));
 	
 	btn.setActionCommand("apply");
 	btn.addActionListener(this);
@@ -197,10 +195,9 @@ class JBaseDialog
 	  extraBtns[wk] = btn;
 	  btn.setName("RaisedButton");
 	
-	  Dimension size = new Dimension(108, 31);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
+	  Dimension size = btn.getPreferredSize();
+	  btn.setMinimumSize(new Dimension(108, 31));
+	  btn.setMaximumSize(new Dimension(size.width, 31));
 	  
 	  btn.setActionCommand(extra[wk][1]);
 	  btn.addActionListener(this);
@@ -220,10 +217,9 @@ class JBaseDialog
 	pCancelButton = btn;
 	btn.setName("RaisedCancelButton");
 
-	Dimension size = new Dimension(108, 31);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
+	Dimension size = btn.getPreferredSize();
+	btn.setMinimumSize(new Dimension(108, 31));
+	btn.setMaximumSize(new Dimension(size.width, 31));
 
 	btn.setActionCommand("cancel");
 	btn.addActionListener(this);
@@ -244,7 +240,7 @@ class JBaseDialog
 
     return extraBtns;
   }
-
+     
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
