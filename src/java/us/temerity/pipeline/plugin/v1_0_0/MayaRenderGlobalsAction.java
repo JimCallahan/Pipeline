@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.1 2004/11/19 06:45:56 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.2 2004/11/19 13:21:11 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -52,225 +52,582 @@ class MayaRenderGlobalsAction
   {
     super("MayaRenderGlobals", new VersionID("1.0.0"), 
 	  "Creates a MEL script which sets the render globals of a Maya scene.");
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	("ImageWidth",
-	 "The horizontal resolution of the output image in pixels.", 
-	 640);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	("ImageHeight",
-	 "The vertical resolution of the output image in pixels.", 
-	 480);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	("PixelAspectRatio",
-	 "Ratio of pixel height to pixel width.", 
-	 1.0);
-      addSingleParam(param);
-    }
 
+    /* image resolution */ 
     {
-      ArrayList<String> choices = new ArrayList<String>();
-      choices.add("320x240");
-      choices.add("640x480");
-      choices.add("1k Square");
-      choices.add("2k Square");
-      choices.add("3k Square");
-      choices.add("4k Square");
-      choices.add("CCIR PAL/Quantel PAL");
-      choices.add("CCIR 601/Quantel NTSC");
-      choices.add("Full 1024");
-      choices.add("Full 1280/Screen");
-      choices.add("HD 720");
-      choices.add("HD 1080");
-      choices.add("NTSC 4d");
-      choices.add("PAL 768");
-      choices.add("PAL 780");
-      choices.add("Targa 486");
-      choices.add("Target NTSC");
-      choices.add("Targa PAL");
-
-      addPreset("ImageResolution", choices);
-
       {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       320);
-	values.put("ImageHeight",      240);
-	values.put("PixelAspectRatio", 1.0);
-	
-	addPresetValues("ImageResolution", "320x240", values);
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("ImageWidth",
+	   "The horizontal resolution of the output image in pixels.", 
+	   640);
+	addSingleParam(param);
       }
       
       {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       640);
-	values.put("ImageHeight",      480);
-	values.put("PixelAspectRatio", 1.0);
-	
-	addPresetValues("ImageResolution", "640x480", values);
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("ImageHeight",
+	   "The vertical resolution of the output image in pixels.", 
+	   480);
+	addSingleParam(param);
+      }
+    
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("PixelAspectRatio",
+	   "Ratio of pixel height to pixel width.", 
+	   1.0);
+	addSingleParam(param);
       }
 
       {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       1024);
-	values.put("ImageHeight",      1024);
-	values.put("PixelAspectRatio", 1.0);
-	
-	addPresetValues("ImageResolution", "1k Square", values);
-      }
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("320x240");
+	choices.add("640x480");
+	choices.add("1k Square");
+	choices.add("2k Square");
+	choices.add("3k Square");
+	choices.add("4k Square");
+	choices.add("CCIR PAL/Quantel PAL");
+	choices.add("CCIR 601/Quantel NTSC");
+	choices.add("Full 1024");
+	choices.add("Full 1280/Screen");
+	choices.add("HD 720");
+	choices.add("HD 1080");
+	choices.add("NTSC 4d");
+	choices.add("PAL 768");
+	choices.add("PAL 780");
+	choices.add("Targa 486");
+	choices.add("Target NTSC");
+	choices.add("Targa PAL");
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       2048);
-	values.put("ImageHeight",      2048);
-	values.put("PixelAspectRatio", 1.0);
-	
-	addPresetValues("ImageResolution", "2k Square", values);
-      }
+	addPreset("ImageResolution", choices);
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       3072);
-	values.put("ImageHeight",      3072);
-	values.put("PixelAspectRatio", 1.0);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       320);
+	  values.put("ImageHeight",      240);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "3k Square", values);
-      }
+	  addPresetValues("ImageResolution", "320x240", values);
+	}
+      
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       640);
+	  values.put("ImageHeight",      480);
+	  values.put("PixelAspectRatio", 1.0);
+	
+	  addPresetValues("ImageResolution", "640x480", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       4096);
-	values.put("ImageHeight",      4096);
-	values.put("PixelAspectRatio", 1.0);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       1024);
+	  values.put("ImageHeight",      1024);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "4k Square", values);
-      }
+	  addPresetValues("ImageResolution", "1k Square", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       720);
-	values.put("ImageHeight",      576);
-	values.put("PixelAspectRatio", 1.066);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       2048);
+	  values.put("ImageHeight",      2048);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "CCIR PAL/Quantel PAL", values);
-      }
+	  addPresetValues("ImageResolution", "2k Square", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       720);
-	values.put("ImageHeight",      486);
-	values.put("PixelAspectRatio", 0.900);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       3072);
+	  values.put("ImageHeight",      3072);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "CCIR 601/Quantel NTSC", values);
-      }
+	  addPresetValues("ImageResolution", "3k Square", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       1024);
-	values.put("ImageHeight",      768);
-	values.put("PixelAspectRatio", 1.0);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       4096);
+	  values.put("ImageHeight",      4096);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "Full 1024", values);
-      }
+	  addPresetValues("ImageResolution", "4k Square", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       1280);
-	values.put("ImageHeight",      1024);
-	values.put("PixelAspectRatio", 1.066);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       720);
+	  values.put("ImageHeight",      576);
+	  values.put("PixelAspectRatio", 1.066);
 	
-	addPresetValues("ImageResolution", "Full 1280/Screen", values);
-      }
+	  addPresetValues("ImageResolution", "CCIR PAL/Quantel PAL", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       1280);
-	values.put("ImageHeight",      720);
-	values.put("PixelAspectRatio", 1.0);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       720);
+	  values.put("ImageHeight",      486);
+	  values.put("PixelAspectRatio", 0.900);
 	
-	addPresetValues("ImageResolution", "HD 720", values);
-      }
+	  addPresetValues("ImageResolution", "CCIR 601/Quantel NTSC", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       1920);
-	values.put("ImageHeight",      1080);
-	values.put("PixelAspectRatio", 1.0);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       1024);
+	  values.put("ImageHeight",      768);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "HD 1080", values);
-      }
+	  addPresetValues("ImageResolution", "Full 1024", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       646);
-	values.put("ImageHeight",      485);
-	values.put("PixelAspectRatio", 1.001);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       1280);
+	  values.put("ImageHeight",      1024);
+	  values.put("PixelAspectRatio", 1.066);
 	
-	addPresetValues("ImageResolution", "NTSC 4d", values);
-      }
+	  addPresetValues("ImageResolution", "Full 1280/Screen", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       768);
-	values.put("ImageHeight",      576);
-	values.put("PixelAspectRatio", 1.0);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       1280);
+	  values.put("ImageHeight",      720);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "PAL 768", values);
-      }
+	  addPresetValues("ImageResolution", "HD 720", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       780);
-	values.put("ImageHeight",      576);
-	values.put("PixelAspectRatio", 0.984);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       1920);
+	  values.put("ImageHeight",      1080);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "PAL 780", values);
-      }
+	  addPresetValues("ImageResolution", "HD 1080", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       512);
-	values.put("ImageHeight",      486);
-	values.put("PixelAspectRatio", 1.265);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       646);
+	  values.put("ImageHeight",      485);
+	  values.put("PixelAspectRatio", 1.001);
 	
-	addPresetValues("ImageResolution", "Targa 486", values);
-      }
+	  addPresetValues("ImageResolution", "NTSC 4d", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       512);
-	values.put("ImageHeight",      482);
-	values.put("PixelAspectRatio", 1.255);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       768);
+	  values.put("ImageHeight",      576);
+	  values.put("PixelAspectRatio", 1.0);
 	
-	addPresetValues("ImageResolution", "Target NTSC", values);
-      }
+	  addPresetValues("ImageResolution", "PAL 768", values);
+	}
 
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put("ImageWidth",       512);
-	values.put("ImageHeight",      576);
-	values.put("PixelAspectRatio", 1.500);
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       780);
+	  values.put("ImageHeight",      576);
+	  values.put("PixelAspectRatio", 0.984);
 	
-	addPresetValues("ImageResolution", "Targa PAL", values);
+	  addPresetValues("ImageResolution", "PAL 780", values);
+	}
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       512);
+	  values.put("ImageHeight",      486);
+	  values.put("PixelAspectRatio", 1.265);
+	
+	  addPresetValues("ImageResolution", "Targa 486", values);
+	}
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       512);
+	  values.put("ImageHeight",      482);
+	  values.put("PixelAspectRatio", 1.255);
+	
+	  addPresetValues("ImageResolution", "Target NTSC", values);
+	}
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("ImageWidth",       512);
+	  values.put("ImageHeight",      576);
+	  values.put("PixelAspectRatio", 1.500);
+	
+	  addPresetValues("ImageResolution", "Targa PAL", values);
+	}
       }
     }
-    
 
-    // ...
+    /* render quality */ 
+    {
+      {
+	ArrayList<String> quality = new ArrayList<String>();
+	quality.add("Low Quality");
+	quality.add("Medium Quality");
+	quality.add("High Quality");
+	quality.add("Highest Quality");
 
+	ActionParam param = 
+	  new EnumActionParam
+	  ("EdgeAntiAliasing",
+	   "The quality of edge anti-aliasing.", 
+	   "Low Quality", quality);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("ShadingSamples",
+	   "The minimum number of shading samples.", 
+	   1);
+	addSingleParam(param);
+      }
 
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("MaxShadingSamples",
+	   "The maximum number of shading samples.", 
+	   1);
+	addSingleParam(param);
+      }
 
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("ParticleSamples",
+	   "The number of particle shading samples.", 
+	   1);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new BooleanActionParam
+	  ("UseMultiPixelFiltering",
+	   "Whether to enable multi-pixel filtering.",
+	   false);
+	addSingleParam(param);
+      }
+      
+      {
+	ArrayList<String> quality = new ArrayList<String>();
+	quality.add("Box Filter");
+	quality.add("Triangle Filter");
+	quality.add("Gaussian Filter");
+	quality.add("Quadratic B-Spline Filter");
+
+	ActionParam param = 
+	  new EnumActionParam
+	  ("PixelFilterType",
+	   "The type of filter used to integrate pixels.", 
+	   "Triangle Filter", quality);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("PixelFilterWidthX",
+	   "The horizontal pixel filter width.", 
+	   2.200);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("PixelFilterWidthY",
+	   "The vertical pixel filter width.", 
+	   2.200);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("RedThreshold",
+	   "The red contrast threshold.", 
+	   0.400);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("GreenThreshold",
+	   "The green contrast threshold.", 
+	   0.300);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("BlueThreshold",
+	   "The blue contrast threshold.", 
+	   0.600);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("CoverageThreshold",
+	   "The alpha coverage threshold.", 
+	   0.125);
+	addSingleParam(param);
+      }
+
+      {
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("Preview Quality");
+	choices.add("Intermediate Quality");
+	choices.add("Production Quality");
+	choices.add("Contrast Sensitive Production");
+
+	addPreset("Quality", choices);
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("EdgeAntiAliasing",  "Low Quality");
+	  values.put("ShadingSamples",    1);
+	  values.put("MaxShadingSamples", 1);
+	  values.put("ParticleSamples",   1);
+
+	  values.put("UseMultiPixelFiltering", false);
+	  values.put("PixelFilterType",        "Triangle Filter");	
+	  values.put("PixelFilterWidthX",      2.200);	
+	  values.put("PixelFilterWidthY",      2.200);
+
+	  values.put("RedThreshold",   0.400); 
+	  values.put("GreenThreshold", 0.300);     
+	  values.put("BlueThreshold",  0.600);    
+
+	  addPresetValues("Quality", "Preview Quality", values);
+	}
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("EdgeAntiAliasing",  "Highest Quality");
+	  values.put("ShadingSamples",    1);
+	  values.put("MaxShadingSamples", 8);
+	  values.put("ParticleSamples",   1);
+
+	  values.put("UseMultiPixelFiltering", false);
+	  values.put("PixelFilterType",        "Triangle Filter");	
+	  values.put("PixelFilterWidthX",      2.200);	
+	  values.put("PixelFilterWidthY",      2.200);
+
+	  values.put("RedThreshold",   0.400); 
+	  values.put("GreenThreshold", 0.300);     
+	  values.put("BlueThreshold",  0.600);    
+
+	  addPresetValues("Quality", "Intermediate Quality", values);
+	}
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("EdgeAntiAliasing",  "Highest Quality");
+	  values.put("ShadingSamples",    2);
+	  values.put("MaxShadingSamples", 8);
+	  values.put("ParticleSamples",   1);
+
+	  values.put("UseMultiPixelFiltering", true);
+	  values.put("PixelFilterType",        "Triangle Filter");	
+	  values.put("PixelFilterWidthX",      2.200);	
+	  values.put("PixelFilterWidthY",      2.200);
+
+	  values.put("RedThreshold",   0.400); 
+	  values.put("GreenThreshold", 0.300);     
+	  values.put("BlueThreshold",  0.600);    
+
+	  addPresetValues("Quality", "Production Quality", values);
+	}
+
+	{
+	  TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+	  values.put("EdgeAntiAliasing",  "Highest Quality");
+	  values.put("ShadingSamples",    2);
+	  values.put("MaxShadingSamples", 8);
+	  values.put("ParticleSamples",   1);
+
+	  values.put("UseMultiPixelFiltering", true);
+	  values.put("PixelFilterType",        "Triangle Filter");	
+	  values.put("PixelFilterWidthX",      2.200);	
+	  values.put("PixelFilterWidthY",      2.200);
+
+	  values.put("RedThreshold",   0.200); 
+	  values.put("GreenThreshold", 0.150);     
+	  values.put("BlueThreshold",  0.300);    
+
+	  addPresetValues("Quality", "Contrast Sensitive Production", values);
+	}
+      }
+    }
+
+    /* raytracing quality */ 
+    {
+      {
+	ActionParam param = 
+	  new BooleanActionParam
+	  ("UseRaytracing",
+	   "Whether to enable raytracing.",
+	   false);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("Reflections",
+	   "The reflection ray depth.", 
+	   1);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("Refractions",
+	   "The refraction ray depth.", 
+	   6);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("Shadows",
+	   "The shadow ray depth.", 
+	   2);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("Bias",
+	   "Distance a shadow ray travels before testing for intersections.", 
+	   0.0);
+	addSingleParam(param);
+      }
+    }
+
+    /* motion blur */ 
+    {
+      {
+	ActionParam param = 
+	  new BooleanActionParam
+	  ("UseMotionBlur",
+	   "Whether to enable motion blur.",
+	   false);
+	addSingleParam(param);
+      }
+
+      {
+	ArrayList<String> quality = new ArrayList<String>();
+	quality.add("2D");
+	quality.add("3D");
+
+	ActionParam param = 
+	  new EnumActionParam
+	  ("MotionBlurType",
+	   "The motion blur technique.", 
+	   "2D", quality);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("BlurByFrame",
+	   "The amount moving objects are blurred.", 
+	   1.0);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("BlurLength",
+	   "Scales the amount that moving objects are blurred.", 
+	   1.0);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("BlurSharpness",
+	   "The sharpness of motion blurred objects.", 
+	   1.0);
+	addSingleParam(param);
+      }
+
+      {
+	ArrayList<String> quality = new ArrayList<String>();
+	quality.add("Alpha");
+	quality.add("Color");
+
+	ActionParam param = 
+	  new EnumActionParam
+	  ("Smooth",
+	   "Anti-aliasing hack.", 
+	   "Alpha", quality);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new IntegerActionParam
+	  ("SmoothValue",
+	   "The amount Maya blurs motion blur edges.", 
+	   2);
+	addSingleParam(param);
+      }
+
+      {
+	ActionParam param = 
+	  new BooleanActionParam
+	  ("KeepMotionVectors",
+	   "Whehter to save the motion vectors for external 2D blur.",
+	   false);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new BooleanActionParam
+	  ("Use2dBlurMemoryLimit",
+	   "Whether to limit 2D blur memory.",
+	   false);
+	addSingleParam(param);
+      }
+      
+      {
+	ActionParam param = 
+	  new DoubleActionParam
+	  ("2dBlurMemoryLimit",
+	   "The maximum amount of memory used by the 2d blur operation.", 
+	   200.0);
+	addSingleParam(param);
+      }
+    }
+
+    /* layout */ 
     {
       LayoutGroup layout = new LayoutGroup("ActionParameters", true);
       layout.addEntry("ImageResolution");
@@ -278,12 +635,81 @@ class MayaRenderGlobalsAction
       layout.addEntry("ImageHeight");
       layout.addSeparator(); 
       layout.addEntry("PixelAspectRatio");
+      
+      {
+	LayoutGroup aaq = new LayoutGroup("AntiAliasingQuality", false);
+	aaq.addEntry("Quality");
+	aaq.addEntry("EdgeAntiAliasing");
+	
+	{
+	  LayoutGroup nos = new LayoutGroup("NumberOfSamples", true);
+	  nos.addEntry("ShadingSamples");
+	  nos.addEntry("MaxShadingSamples");
+	  nos.addSeparator(); 
+	  nos.addEntry("ParticleSamples");
+
+	  aaq.addSubGroup(nos);
+	}
+
+	{ 
+	  LayoutGroup mpf = new LayoutGroup("MultiPixelFiltering", true);
+	  mpf.addEntry("UseMultiPixelFiltering");
+	  mpf.addSeparator(); 
+	  mpf.addEntry("PixelFilterType");
+	  mpf.addEntry("PixelFilterWidthX");
+	  mpf.addEntry("PixelFilterWidthY");
+
+	  aaq.addSubGroup(mpf);
+	}
+	  
+	{ 
+	  LayoutGroup ct = new LayoutGroup("ContrastThreshold", true);
+	  ct.addEntry("RedThreshold");
+	  ct.addEntry("GreenThreshold");
+	  ct.addEntry("BlueThreshold");
+	  ct.addSeparator(); 
+	  ct.addEntry("CoverageThreshold");
+
+	  aaq.addSubGroup(ct);
+	}
+
+	layout.addSubGroup(aaq);
+      }
+
+      {
+	LayoutGroup rq = new LayoutGroup("RaytracingQuality", false);
+	rq.addEntry("UseRaytracing");
+	rq.addSeparator(); 
+	rq.addEntry("Reflections");
+	rq.addEntry("Refractions");
+	rq.addEntry("Shadows");
+	rq.addEntry("Bias");
+	
+	layout.addSubGroup(rq);
+      }
+
+      {
+	LayoutGroup mb = new LayoutGroup("MotionBlur", false);
+	mb.addEntry("UseMotionBlur");
+	mb.addSeparator(); 
+	mb.addEntry("MotionBlurType");
+	mb.addEntry("BlurByFrame");
+	mb.addEntry("BlurLength");
+	mb.addEntry("BlurSharpness");
+	mb.addSeparator(); 
+	mb.addEntry("Smooth");
+	mb.addEntry("SmoothValue");
+	mb.addSeparator(); 
+	mb.addEntry("KeepMotionVectors");
+	mb.addSeparator(); 
+	mb.addEntry("Use2dBlurMemoryLimit");
+	mb.addEntry("2dBlurMemoryLimit");
+	
+	layout.addSubGroup(mb);
+      }
 
       setSingleLayout(layout);
     }
-
-      // ...
-
   }
 
   
@@ -342,20 +768,20 @@ class MayaRenderGlobalsAction
 
       /* image resolution */ 
       {
-	Integer width  = (Integer) getSingleParamValue("ImageWidth"); 
+	Integer width = (Integer) getSingleParamValue("ImageWidth"); 
 	if((width == null) || (width <= 0)) 
 	  throw new PipelineException
-	    ("The ImageWidth (" + width + ") was illegal!");
+	    ("The value of ImageWidth (" + width + ") was illegal!");
 
 	Integer height = (Integer) getSingleParamValue("ImageHeight"); 
 	if((height == null) || (height <= 0)) 
 	  throw new PipelineException
-	    ("The ImageHeight (" + height + ") was illegal!");
+	    ("The value of ImageHeight (" + height + ") was illegal!");
 
 	Double ratio = (Double) getSingleParamValue("PixelAspectRatio");
 	if((ratio == null) || (ratio <= 0.0)) 
 	  throw new PipelineException
-	    ("The PixelAspectRatio (" + ratio + ") was illegal!");
+	    ("The value of PixelAspectRatio (" + ratio + ") was illegal!");
 
 	double deviceRatio = (width.doubleValue() / height.doubleValue()) * ratio;
 
@@ -368,11 +794,239 @@ class MayaRenderGlobalsAction
 	   "setAttr \"defaultResolution.deviceAspectRatio\" " + deviceRatio + ";\n\n");
       }
 
+      /* render quality */ 
+      {
+	EnumActionParam param = (EnumActionParam) getSingleParam("EdgeAntiAliasing");
+	int edgeAliasing = -1;
+	if(param != null) 
+	  edgeAliasing = 3 - param.getIndex();
+	if((edgeAliasing < 0) || (edgeAliasing > 3)) 
+	  throw new PipelineException
+	    ("The value of EdgeAntiAliasing (" + param.getValue() + ") was illegal!"); 
 
-      // ...
+	out.write
+	  ("// RENDER QUALITY\n" + 
+	   "setAttr \"defaultRenderQuality.edgeAntiAliasing\" " + edgeAliasing + ";\n\n");
+      }
+
+      /* number of samples */ 
+      {
+	Integer samples = (Integer) getSingleParamValue("ShadingSamples"); 
+	if((samples == null) || (samples <= 0)) 
+	  throw new PipelineException
+	    ("The value of ShadingSamples (" + samples + ") was illegal!");
+	
+	Integer msamples = (Integer) getSingleParamValue("MaxShadingSamples"); 
+	if((msamples == null) || (msamples <= 0)) 
+	  throw new PipelineException
+	    ("The value of MaxShadingSamples (" + msamples + ") was illegal!");
+	
+	Integer psamples = (Integer) getSingleParamValue("ParticleSamples"); 
+	if((psamples == null) || (psamples <= 0)) 
+	  throw new PipelineException
+	    ("The value of ParticleSamples (" + psamples + ") was illegal!");
+	
+	out.write
+	  ("// NUMBER OF SAMPLES\n" + 
+	   "setAttr \"defaultRenderQuality.shadingSamples\" " + samples + ";\n" + 
+	   "setAttr \"defaultRenderQuality.maxShadingSamples\" " + msamples + ";\n" + 
+	   "setAttr \"defaultRenderQuality.particleSamples\" " + psamples + ";\n\n");
+      }
       
+      /* pixel filtering */ 
+      {
+	Boolean useFilter = (Boolean) getSingleParamValue("UseMultiPixelFiltering");  
+	if(useFilter == null) 
+	  throw new PipelineException
+	    ("The UseMultiPixelFiltering was (null)!");
+	
+	int filterType = -1;
+	{
+	  EnumActionParam param = (EnumActionParam) getSingleParam("PixelFilterType");
+	  if(param != null) {
+	    switch(param.getIndex()) {
+	    case 0:
+	      filterType = 0;  // Box
+	      break;
+	      
+	    case 1:
+	      filterType = 2;  // Triagle
+	      break;
+	      
+	    case 2:
+	      filterType = 4;  // Gaussian
+	      break;
 
+	    case 3:
+	      filterType = 5;  // Quadratic B-Spline
+	    }
+	  }
 
+	  if(filterType == -1) 
+	    throw new PipelineException
+	      ("The PixelFilterType (" + param.getValue() + ") was illegal!"); 
+	}
+	 
+	Double filterX = (Double) getSingleParamValue("PixelFilterWidthX");
+	if((filterX == null) || (filterX <= 0.0)) 
+	  throw new PipelineException
+	    ("The value of PixelFilterWidthX (" + filterX + ") was illegal!");
+	
+	Double filterY = (Double) getSingleParamValue("PixelFilterWidthY");
+	if((filterY == null) || (filterY <= 0.0)) 
+	  throw new PipelineException
+	    ("The value of PixelFilterWidthY (" + filterY + ") was illegal!");
+
+	out.write
+	  ("// PIXEL FILTERING\n" +
+	   "setAttr \"defaultRenderQuality.useMultiPixelFilter\" " + useFilter + ";\n" +
+	   "setAttr \"defaultRenderQuality.pixelFilterType\" " + filterType + ";\n" + 
+	   "setAttr \"defaultRenderQuality.pixelFilterWidthX\" " + filterX + ";\n" + 
+	   "setAttr \"defaultRenderQuality.pixelFilterWidthY\" " + filterY + ";\n\n");
+      }
+
+      /* contrast threshold */ 
+      {
+	Double red = (Double) getSingleParamValue("RedThreshold");
+	if((red == null) || (red < 0.0)) 
+	  throw new PipelineException
+	    ("The value of RedThreshold (" + red + ") was illegal!");
+	
+	Double green = (Double) getSingleParamValue("GreenThreshold");
+	if((green == null) || (green < 0.0)) 
+	  throw new PipelineException
+	    ("The value of GreenThreshold (" + green + ") was illegal!");
+
+	Double blue = (Double) getSingleParamValue("BlueThreshold");
+	if((blue == null) || (blue < 0.0)) 
+	  throw new PipelineException
+	    ("The value of BlueThreshold (" + blue + ") was illegal!");
+	
+	Double coverage = (Double) getSingleParamValue("CoverageThreshold");
+	if((coverage == null) || (coverage < 0.0)) 
+	  throw new PipelineException
+	    ("The value of CoverageThreshold (" + coverage + ") was illegal!");
+	
+	out.write
+	  ("// CONTRAST THRESHOLD\n" +
+	   "setAttr \"defaultRenderQuality.redThreshold\" " + red + ";\n" + 
+	   "setAttr \"defaultRenderQuality.greenThreshold\" " + green + ";\n" + 
+	   "setAttr \"defaultRenderQuality.blueThreshold\" " + blue + ";\n" +
+	   "setAttr \"defaultRenderQuality.coverageThreshold\" " + coverage + ";\n\n");
+      }
+
+      /* raytracing quality */
+      {
+	Boolean useRay = (Boolean) getSingleParamValue("UseRaytracing");  
+	if(useRay == null) 
+	  throw new PipelineException
+	    ("The UseRaytracing was (null)!");
+
+	Integer reflect = (Integer) getSingleParamValue("Reflections"); 
+	if((reflect == null) || (reflect < 0)) 
+	  throw new PipelineException
+	    ("The value of Reflections (" + reflect + ") was illegal!");
+	
+	Integer refract = (Integer) getSingleParamValue("Refractions"); 
+	if((refract == null) || (refract < 0)) 
+	  throw new PipelineException
+	    ("The value of Refractions (" + refract + ") was illegal!");
+	
+	Integer shadow = (Integer) getSingleParamValue("Shadows"); 
+	if((shadow == null) || (shadow < 0)) 
+	  throw new PipelineException
+	    ("The value of Shadows (" + shadow + ") was illegal!");
+	
+	Double bias = (Double) getSingleParamValue("Bias");
+	if((bias == null) || (bias < 0.0)) 
+	  throw new PipelineException
+	    ("The value of Bias (" + bias + ") was illegal!");
+	
+	out.write
+	  ("// RAYTRACING QUALITY \n" +
+	   "setAttr \"defaultRenderQuality.enableRaytracing\" " + useRay + ";\n" +
+	   "setAttr \"defaultRenderQuality.reflections\" " + reflect + ";\n" + 
+	   "setAttr \"defaultRenderQuality.refractions\" " + refract + ";\n" +
+	   "setAttr \"defaultRenderQuality.shadows\" " + shadow + ";\n" +
+	   "setAttr \"defaultRenderQuality.rayTraceBias\" " + bias + ";\n\n");
+      }
+
+      /* motion blur */ 
+      { 
+	Boolean useBlur = (Boolean) getSingleParamValue("UseMotionBlur");  
+	if(useBlur == null) 
+	  throw new PipelineException
+	    ("The UseMotionBlur was (null)!");
+	
+	int blurType = -1;
+	{
+	  EnumActionParam param = (EnumActionParam) getSingleParam("MotionBlurType");
+	  if(param != null)
+	    blurType = param.getIndex();
+	  if(blurType == -1) 
+	  throw new PipelineException
+	    ("The MotionBlurType (" + param.getValue() + ") was illegal!"); 
+	}
+	
+	Double byFrame = (Double) getSingleParamValue("BlurByFrame");
+	if((byFrame == null) || (byFrame < 0.0)) 
+	  throw new PipelineException
+	    ("The value of BlurByFrame (" + byFrame + ") was illegal!");
+	
+	Double length = (Double) getSingleParamValue("BlurLength");
+	if((length == null) || (length < 0.0)) 
+	  throw new PipelineException
+	    ("The value of BlurLength (" + length + ") was illegal!");
+
+	Double sharpness = (Double) getSingleParamValue("BlurSharpness");
+	if((sharpness == null) || (sharpness < 0.0)) 
+	  throw new PipelineException
+	    ("The value of BlurSharpness (" + sharpness + ") was illegal!");
+
+	int smooth = -1;
+	{
+	  EnumActionParam param = (EnumActionParam) getSingleParam("Smooth");
+	  if(param != null)
+	    smooth = param.getIndex();
+	  if(smooth == -1) 
+	    throw new PipelineException
+	      ("The Smooth (" + param.getValue() + ") was illegal!"); 
+	}
+
+	Integer smoothValue = (Integer) getSingleParamValue("SmoothValue"); 
+	if((smoothValue == null) || (smoothValue < 0)) 
+	  throw new PipelineException
+	    ("The value of SmoothValue (" + smoothValue + ") was illegal!");
+	
+	Boolean keepVectors = (Boolean) getSingleParamValue("KeepMotionVectors");  
+	if(keepVectors == null) 
+	  throw new PipelineException
+	    ("The KeepMotionVectors was (null)!");
+	
+	Boolean useMemLimit = (Boolean) getSingleParamValue("Use2dBlurMemoryLimit");  
+	if(useMemLimit == null) 
+	  throw new PipelineException
+	    ("The Use2dBlurMemoryLimit was (null)!");
+	
+	Double memLimit = (Double) getSingleParamValue("2dBlurMemoryLimit");
+	if((memLimit == null) || (memLimit < 0.0)) 
+	  throw new PipelineException
+	    ("The value of 2dBlurMemoryLimit (" + memLimit + ") was illegal!");
+
+	out.write
+	  ("// MOTION BLUR \n" +
+	   "setAttr \"defaultRenderGlobals.\" " + useBlur + ";\n" +
+	   "setAttr \"defaultRenderGlobals.motionBlurType\" " + blurType + ";\n" + 
+	   "setAttr \"defaultRenderGlobals.motionBlurByFrame\" " + byFrame + ";\n" +
+	   "setAttr \"defaultRenderGlobals.blurLength\" " + length + ";\n" +
+	   "setAttr \"defaultRenderGlobals.blurSharpness\" " + sharpness + ";\n" +
+	   "setAttr \"defaultRenderGlobals.smoothColor\" " + smooth + ";\n" +
+	   "setAttr \"defaultRenderGlobals.smoothValue\" " + smoothValue + ";\n" +
+	   "setAttr \"defaultRenderGlobals.keepMotionVector\" " + keepVectors + ";\n" +
+	   "setAttr \"defaultRenderGlobals.useBlur2DMemoryCap\" " + useMemLimit + ";\n" +
+	   "setAttr \"defaultRenderGlobals.blur2DMemoryCap\" " + memLimit + ";\n\n");
+      }
+	
       out.write("EOF\n");
       out.close();
     }
