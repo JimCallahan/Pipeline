@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.10 2005/01/22 06:10:09 jim Exp $
+// $Id: GraphicalApp.java,v 1.11 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -101,8 +101,6 @@ class GraphicalApp
        "  plui --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--master-host=...] [--master-port=...]\n" + 
-       "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
        "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
        "  [--no-layout] [--layout=...] [--no-selections]\n" + 
        "  [--debug-gl=...] [--trace-gl=...]\n" +

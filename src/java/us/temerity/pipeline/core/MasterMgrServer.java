@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.47 2005/04/03 01:54:23 jim Exp $
+// $Id: MasterMgrServer.java,v 1.48 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,94 +36,21 @@ class MasterMgrServer
   /** 
    * Construct a new master manager server.
    * 
-   * @param nodeDir 
-   *   The root node directory.
-   * 
-   * @param nodePort 
-   *   The network port to monitor for incoming connections.
-   * 
-   * @param prodDir 
-   *   The root production directory.
-   * 
-   * @param fileHost 
-   *   The name of the host running the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param filePort 
-   *   The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param queueHost
-   *   The hostname running <B>plqueuemgr</B>(1).
-   * 
-   * @param queuePort
-   *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
-   * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
    */
   public
-  MasterMgrServer
-  (
-   File nodeDir, 
-   int nodePort, 
-   File prodDir, 
-   String fileHost, 
-   int filePort,
-   String queueHost, 
-   int queuePort
-  )
+  MasterMgrServer()
     throws PipelineException 
   { 
     super("MasterMgrServer");
 
-    pMasterMgr = new MasterMgr(nodeDir, prodDir, 
-			       fileHost, filePort, 
-			       queueHost, queuePort);
-
-    if(nodePort < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + nodePort + ")!");
-    pPort = nodePort;
+    pMasterMgr = new MasterMgr();
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
   }
   
-  /** 
-   * Construct a new master manager using the default root node directory and 
-   * network ports.
-   * 
-   * The root node directory is specified by the <B>--node-dir</B>=<I>dir</I>
-   * option to <B>plconfig</B>(1). <P> 
-   * 
-   * The network port to monitor for incoming connections is specified by the 
-   * <B>--master-port</B>=<I>dir</I> option to <B>plconfig</B>(1). <P>
-   * 
-   * The root production directory is specified by the <B>--prod-dir</B>=<I>dir</I>
-   * option to <B>plconfig</B>(1). <P> 
-   * 
-   * The file server hostname is specified by the <B>--file-host</B>=<I>host</I>
-   * option to <B>plconfig</B>(1). <P>  
-   * 
-   * The network port listened to by the <B>plfilemgr</B><A>(1) daemon is specified 
-   * by the <B>--file-port</B>=<I>dir</I> option to <B>plconfig</B>(1). <P>
-   * 
-   * The queue server hostname is specified by the <B>--queue-host</B>=<I>host</I>
-   * option to <B>plconfig</B>(1). <P>  
-   * 
-   * The port number listened to by <B>plqueuemgr</B>(1) for incoming connections is 
-   * specified by the <B>--queue-port</B>=<I>num</I> option to <B>plconfig</B>(1). 
-   * 
-   * @throws PipelineException 
-   *   If unable to properly initialize the server.
-   */
-  public
-  MasterMgrServer() 
-    throws PipelineException 
-  { 
-    this(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
-	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
-	 PackageInfo.sQueueServer, PackageInfo.sQueuePort);
-  }
-
  
 
   /*----------------------------------------------------------------------------------------*/
@@ -143,12 +70,12 @@ class MasterMgrServer
     try {
       schannel = ServerSocketChannel.open();
       ServerSocket server = schannel.socket();
-      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sMasterPort);
       server.bind(saddr, 100);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Listening on Port: " + pPort);
+	 "Listening on Port: " + PackageInfo.sMasterPort);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
@@ -193,7 +120,7 @@ class MasterMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + pPort + "):\n" + 
+	 "IO problems on port (" + PackageInfo.sMasterPort + "):\n" + 
 	 ex.getMessage());
       LogMgr.getInstance().flush();
     }
@@ -964,7 +891,8 @@ class MasterMgrServer
 	
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Connection from (" + host + ":" + pPort + ") terminated abruptly!");
+	   "Connection from (" + host + ":" + PackageInfo.sMasterPort + ") " + 
+	   "terminated abruptly!");
       }
       catch (IOException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -975,7 +903,7 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "IO problems on connection from " + 
-	   "(" + host + ":" + pPort + "):\n" + 
+	   "(" + host + ":" + PackageInfo.sMasterPort + "):\n" + 
 	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
@@ -987,7 +915,7 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Illegal object encountered on connection from " + 
-	   "(" + host + ":" + pPort + "):\n" + 
+	   "(" + host + ":" + PackageInfo.sMasterPort + "):\n" + 
 	   getFullMessage(ex));
       }
       catch (Exception ex) {
@@ -1071,11 +999,6 @@ class MasterMgrServer
    * The shared master manager. 
    */
   private MasterMgr  pMasterMgr;
-
-  /**
-   * The network port number the server listens to for incoming connections.
-   */
-  private int  pPort;
 
   /**
    * Has the server been ordered to shutdown?

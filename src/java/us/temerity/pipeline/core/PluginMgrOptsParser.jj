@@ -48,8 +48,6 @@ PluginMgrOptsParser
   init()
   {
     pLogBackups = 10;
-
-    pPluginPort = PackageInfo.sPluginPort;
   }
  
 
@@ -76,13 +74,6 @@ PluginMgrOptsParser
    */ 
   private int  pLogBackups;
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The network port to listen on.
-   */ 
-  private int pPluginPort;
 }
 
 
@@ -100,8 +91,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <PLUGIN_PORT:    "--plugin-port">    : INTEGER_SEP
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
@@ -267,7 +256,7 @@ Commands() :
     }
 
     /* create the server */ 
-    return (new PluginMgrServer(pPluginPort));
+    return (new PluginMgrServer());
   }
 }
     
@@ -355,22 +344,8 @@ void
 GlobalOpts() :
 {}
 {
-  (PluginPort() |
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
-}
-
-
-void
-PluginPort() :
-{
-  Token t;
-}
-{
-  <PLUGIN_PORT> EQ() t=<INTEGER>
-  { 
-    pPluginPort = Integer.parseInt(t.image);
-  }
 }
 
 

@@ -48,16 +48,6 @@ MasterOptsParser
   init()
   {
     pLogBackups  = 10;
-
-    pNodeDir     = PackageInfo.sNodeDir;
-    pMasterPort  = PackageInfo.sMasterPort;
-    
-    pProdDir     = PackageInfo.sProdDir;
-    pFileServer  = PackageInfo.sFileServer;
-    pFilePort    = PackageInfo.sFilePort;
-
-    pQueueServer = PackageInfo.sQueueServer; 
-    pQueuePort   = PackageInfo.sQueuePort;
   }
  
 
@@ -84,49 +74,6 @@ MasterOptsParser
    */ 
   private int  pLogBackups;
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The root directory of the of the persistent node storage area.
-   */ 
-  private File pNodeDir;
-
-  /**
-   * The network port to monitor for incoming connections.
-   */
-  private int  pMasterPort;
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The root directory of the file repository. 
-   */ 
-  private File pProdDir;
-
-  /*
-   * The name of the host running the <B>plfilemgr</B><A>(1) daemon. 
-   */
-  private String  pFileServer;
-
-  /**
-   * The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
-   */
-  private int  pFilePort;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /*
-   * The name of the host running the <B>plqueuemgr</B><A>(1) daemon. 
-   */
-  private String  pQueueServer;
-
-  /**
-   * The network port listened to by the <B>plqueuemgr</B><A>(1) daemon.
-   */
-  private int  pQueuePort;
 }
 
 
@@ -144,16 +91,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <NODE_DIR:     "--node-dir">      : PATH_SEP
-| <MASTER_PORT:  "--master-port">   : INTEGER_SEP
-
-| <PROD_DIR:             "--prod-dir">             : PATH_SEP
-| <FILE_HOST:            "--file-host">            : HOSTNAME_SEP
-| <FILE_PORT:            "--file-port">            : INTEGER_SEP
-
-| <QUEUE_HOST:           "--queue-host">           : HOSTNAME_SEP
-| <QUEUE_PORT:           "--queue-port">           : INTEGER_SEP
-
 | <LOG_FILE:          "--log-file">                : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
@@ -309,9 +246,7 @@ Commands()
     }
 
     /* create the server */ 
-    return (new MasterMgrServer(pNodeDir, pMasterPort, 
-				pProdDir, pFileServer, pFilePort, 
-				pQueueServer, pQueuePort));
+    return (new MasterMgrServer());
   }
 }
     
@@ -399,100 +334,9 @@ void
 GlobalOpts() :
 {}
 {
-  (NodeDir() | MasterPort() | 
-   ProdDir() | FileHost() | FilePort() | QueueHost() | QueuePort() | 
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
-
-
-void
-NodeDir() :
-{
-  Token t;
-}
-{
-  <NODE_DIR> EQ() t=<PATH_ARG>
-  { 
-    pNodeDir = new File(t.image);
-  }
-}
-
-void
-MasterPort() :
-{
-  Token t;
-}
-{
-  <MASTER_PORT> EQ() t=<INTEGER>
-  { 
-    pMasterPort = Integer.parseInt(t.image);
-  }
-}
-
-
-
-void
-ProdDir() :
-{
-  Token t;
-}
-{
-  <PROD_DIR> EQ() t=<PATH_ARG>
-  { 
-    pProdDir = new File(t.image);
-  }
-}
-
-void
-FileHost() :
-{
-  Token t;
-}
-{
-  <FILE_HOST> EQ() t=<HOSTNAME>
-  { 
-    pFileServer = t.image;
-  }
-}
-
-void
-FilePort() :
-{
-  Token t;
-}
-{
-  <FILE_PORT> EQ() t=<INTEGER>
-  { 
-    pFilePort = Integer.parseInt(t.image);
-  }
-}
-
-
-void
-QueueHost() :
-{
-  Token t;
-}
-{
-  <QUEUE_HOST> EQ() t=<HOSTNAME>
-  { 
-    pQueueServer = t.image;
-  }
-}
-
-void
-QueuePort() :
-{
-  Token t;
-}
-{
-  <QUEUE_PORT> EQ() t=<INTEGER>
-  { 
-    pQueuePort = Integer.parseInt(t.image);
-  }
-}
-
 
 void LogFile() : 
 {

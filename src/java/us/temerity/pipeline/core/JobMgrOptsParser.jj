@@ -49,7 +49,6 @@ JobMgrOptsParser
   init()
   {
     pLogBackups = 10;
-    pJobPort    = PackageInfo.sJobPort;
   }
  
 
@@ -77,13 +76,6 @@ JobMgrOptsParser
   private int  pLogBackups;
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The network port to listen on.
-   */ 
-  private int pJobPort;
-
 }
 
 
@@ -101,8 +93,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <JOB_PORT:     "--job-port">     : INTEGER_SEP
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
@@ -250,7 +240,7 @@ Commands() :
     }
 
     /* create the server */ 
-    return (new JobMgrServer(pJobPort));
+    return (new JobMgrServer());
   }
 }
     
@@ -338,24 +328,9 @@ void
 GlobalOpts() :
 {}
 {
-  (JobPort() |
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
-
-
-void
-JobPort() :
-{
-  Token t;
-}
-{
-  <JOB_PORT> EQ() t=<INTEGER>
-  { 
-    pJobPort = Integer.parseInt(t.image);
-  }
-}
-
 
 void LogFile() : 
 {

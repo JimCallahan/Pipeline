@@ -13,8 +13,8 @@
 <blockquote><b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a style="font-weight: bold;" href="#--list">--list</a><span
  style="font-weight: bold;"> </span><b><br>
-plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
-  <a href="#--install"><span style="font-weight: bold;">--install</span></a>
+plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
+ href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>class-file1 </i>[<i>class-file2 ...</i>]<i><br>
   </i><br>
   <b>plplugin</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
@@ -324,22 +324,18 @@ at once.<br>
 command-line options.<br>
 <br>
 </div>
-<>
-<></></>
-<div style="margin-left: 40px;"><><><span style="font-weight: bold;">ops</span></></><br>
-<><></></></div>
-<>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
+</div>
 <div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><><span style="font-weight: bold;"></span></>Logs
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span>Logs
 command operations.<br>
 <span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;"></span></div>
 <span style="font-weight: bold;">net</span><br>
 </div>
-</>
-<div style="margin-left: 80px;"><><span style="font-weight: bold;"></span>Logs
-network connections and activity.</><br>
-<></></div>
+<div style="margin-left: 80px;">Logs
+network connections and activity.<br>
+</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
 plg</span><br>
 <div style="margin-left: 40px;">Logs the loading and
@@ -418,30 +414,26 @@ plplugin us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--list"></a>--list</span><br>
 <span style="font-weight: bold;"></span></div>
-<><br>
-</>
+<br>
 <div style="margin-left: 40px;">
-<div style="margin-left: 40px;"><>Lists information about the currently
+<div style="margin-left: 40px;">Lists information about the currently
 installed plugins and exits.<br>
-</></div>
-<></></div>
-<><br>
-</>
-<div style="margin-left: 40px;"><><span style="font-weight: bold;"><a
+</div>
+</div>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--force"></a>--install</span><i>
-class-file1 </i>[<i>class-file2 ...</i>]</><br>
-<></><br>
-<div style="margin-left: 40px;"><><>Installs plugins contained in the
+class-file1 </i>[<i>class-file2 ...</i>]<br>
+<br>
+<div style="margin-left: 40px;">Installs plugins contained in the
 given class files and prints
 information about the installed plugins.&nbsp;&nbsp; If there exists a
 previously installed plugin with the same name and version as one of
 the given classes, an error will be generated and the plugin will not
 be installed unless the previous plugin was under development (see <a
  href="#Important_Caveats"><span style="font-weight: bold;">Important
-Caveats</span></a>).</></></div>
+Caveats</span></a>).</div>
 </div>
-<div style="margin-left: 40px;"><></></div>
-<></>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>

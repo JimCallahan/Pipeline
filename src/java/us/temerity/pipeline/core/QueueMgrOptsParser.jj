@@ -48,10 +48,6 @@ QueueMgrOptsParser
   init()
   {
     pLogBackups = 10;
-
-    pQueueDir  = PackageInfo.sQueueDir;
-    pQueuePort = PackageInfo.sQueuePort;
-    pJobPort = PackageInfo.sJobPort;
   }
  
 
@@ -78,23 +74,6 @@ QueueMgrOptsParser
    */ 
   private int  pLogBackups;
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The root directory of the queue repository. 
-   */ 
-  private File pQueueDir;
-
-  /**
-   * The network port to listen on.
-   */ 
-  private int pQueuePort;
-
-  /**
-   * The network port used to contact <B>pljobmgr</B>(1) daemons.
-   */ 
-  private int pJobPort;
 }
 
 
@@ -112,10 +91,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <QUEUE_DIR:    "--queue-dir">     : PATH_SEP
-| <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
-| <JOB_PORT:     "--job-port">      : INTEGER_SEP
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
@@ -266,7 +241,7 @@ Commands() :
     }
 
     /* create the server */ 
-    return (new QueueMgrServer(pQueueDir, pQueuePort, pJobPort));
+    return (new QueueMgrServer());
   }
 }
     
@@ -354,50 +329,9 @@ void
 GlobalOpts() :
 {}
 {
-  (QueueDir() | QueuePort() | JobPort() | 
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
-
-
-void
-QueueDir() :
-{
-  Token t;
-}
-{
-  <QUEUE_DIR> EQ() t=<PATH_ARG>
-  { 
-    pQueueDir = new File(t.image);
-  }
-}
-
-
-void
-QueuePort() :
-{
-  Token t;
-}
-{
-  <QUEUE_PORT> EQ() t=<INTEGER>
-  { 
-    pQueuePort = Integer.parseInt(t.image);
-  }
-}
-
-
-void
-JobPort() :
-{
-  Token t;
-}
-{
-  <JOB_PORT> EQ() t=<INTEGER>
-  { 
-    pJobPort = Integer.parseInt(t.image);
-  }
-}
-
 
 void LogFile() : 
 {

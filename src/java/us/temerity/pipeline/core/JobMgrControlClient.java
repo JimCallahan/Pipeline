@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.14 2005/03/11 06:34:39 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.15 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,34 +32,15 @@ class JobMgrControlClient
    * 
    * @param hostname 
    *   The name of the host running <B>pljobmgr</B>(1).
-   * 
-   * @param port 
-   *   The network port listened to by <B>pljobmgr</B>(1).
    */
   public
   JobMgrControlClient
   ( 
-   String hostname, 
-   int port
-  ) 
-  {
-    super(hostname, port, 
-	  JobRequest.Disconnect, JobRequest.Shutdown);
-  }
-
-  /** 
-   * Construct a new job manager control client. <P> 
-   * 
-   * The port used is specified by the <CODE><B>--job-port</B>=<I>num</I></CODE> option 
-   * to <B>plconfig</B>(1).
-   */
-  public
-  JobMgrControlClient
-  (
    String hostname
   ) 
   {
-    this(hostname, PackageInfo.sJobPort);
+    super(hostname, PackageInfo.sJobPort, 
+	  JobRequest.Disconnect, JobRequest.Shutdown);
   }
 
 

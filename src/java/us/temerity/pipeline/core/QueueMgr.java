@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.39 2005/03/11 06:34:39 jim Exp $
+// $Id: QueueMgr.java,v 1.40 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,19 +27,9 @@ class QueueMgr
 
   /** 
    * Construct a new queue manager.
-   * 
-   * @param dir 
-   *   The root queue directory.
-   * 
-   * @param jobPort 
-   *   The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
    */
   public
-  QueueMgr
-  (
-   File dir,
-   int jobPort
-  )
+  QueueMgr()
   { 
     pShutdownJobMgrs = new AtomicBoolean(false);
 
@@ -47,14 +37,6 @@ class QueueMgr
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing...");
     LogMgr.getInstance().flush();
-
-    if(dir == null)
-      throw new IllegalArgumentException("The root queue directory cannot be (null)!");
-    pQueueDir = dir;
-
-    if(jobPort < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + jobPort + ")!");
-    pJobPort = jobPort;
 
     init();
   }
@@ -105,7 +87,7 @@ class QueueMgr
 
       /* create the lock file */ 
       {
-	File file = new File(pQueueDir, "queue/lock");
+	File file = new File(PackageInfo.sQueueDir, "queue/lock");
 	if(file.exists()) 
 	  throw new IllegalStateException
 	    ("Another queue manager is already running!\n" + 
@@ -150,17 +132,17 @@ class QueueMgr
   makeRootDirs() 
     throws PipelineException
   {
-    if(!pQueueDir.isDirectory()) 
+    if(!PackageInfo.sQueueDir.isDirectory()) 
       throw new PipelineException
-	("The root node directory (" + pQueueDir + ") does not exist!");
+	("The root node directory (" + PackageInfo.sQueueDir + ") does not exist!");
     
     ArrayList<File> dirs = new ArrayList<File>();
-    dirs.add(new File(pQueueDir, "queue"));
-    dirs.add(new File(pQueueDir, "queue/etc"));
-    dirs.add(new File(pQueueDir, "queue/jobs"));
-    dirs.add(new File(pQueueDir, "queue/job-info"));
-    dirs.add(new File(pQueueDir, "queue/job-groups"));
-    dirs.add(new File(pQueueDir, "queue/job-servers/samples"));
+    dirs.add(new File(PackageInfo.sQueueDir, "queue"));
+    dirs.add(new File(PackageInfo.sQueueDir, "queue/etc"));
+    dirs.add(new File(PackageInfo.sQueueDir, "queue/jobs"));
+    dirs.add(new File(PackageInfo.sQueueDir, "queue/job-info"));
+    dirs.add(new File(PackageInfo.sQueueDir, "queue/job-groups"));
+    dirs.add(new File(PackageInfo.sQueueDir, "queue/job-servers/samples"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -182,7 +164,7 @@ class QueueMgr
     /* read the existing queue jobs files (in oldest to newest order) */ 
     TreeMap<Long,String> running = new TreeMap<Long,String>();
     {
-      File dir = new File(pQueueDir, "queue/jobs");
+      File dir = new File(PackageInfo.sQueueDir, "queue/jobs");
       File files[] = dir.listFiles(); 
       int wk;
       for(wk=0; wk<files.length; wk++) {
@@ -249,7 +231,7 @@ class QueueMgr
 
     /* initialize the job groups */ 
     {
-      File dir = new File(pQueueDir, "queue/job-groups");
+      File dir = new File(PackageInfo.sQueueDir, "queue/job-groups");
       File files[] = dir.listFiles(); 
       int wk;
       for(wk=0; wk<files.length; wk++) {
@@ -326,7 +308,7 @@ class QueueMgr
 	QueueHost host = pHosts.get(hname);
 	if(host != null) {
 	  try {
-	    JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+	    JobMgrControlClient client = new JobMgrControlClient(hname);
 	    client.shutdown();
 	  }
 	  catch(PipelineException ex) {
@@ -386,7 +368,7 @@ class QueueMgr
 
     /* remove the lock file */ 
     {
-      File file = new File(pQueueDir, "queue/lock");
+      File file = new File(PackageInfo.sQueueDir, "queue/lock");
       file.delete();
     }
   }
@@ -937,7 +919,7 @@ class QueueMgr
 		case Disabled:
 		case Enabled:
 		  try {
-		    JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+		    JobMgrControlClient client = new JobMgrControlClient(hname);
 		    client.verifyConnection();
 		    client.disconnect();
 		  }
@@ -949,7 +931,7 @@ class QueueMgr
 		switch(status) {
 		case Shutdown:
 		  try {
-		    JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+		    JobMgrControlClient client = new JobMgrControlClient(hname);
 		    client.shutdown();
 		  }
 		  catch(PipelineException ex) {
@@ -1862,7 +1844,7 @@ class QueueMgr
     TreeMap<String,Long> totalDisk = new TreeMap<String,Long>();
     for(String hname : needsCollect) {
       try {
-	JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+	JobMgrControlClient client = new JobMgrControlClient(hname);
 	ResourceSample sample = client.getResources();
 	samples.put(hname, sample);
 
@@ -2618,7 +2600,7 @@ class QueueMgr
     {
       JobMgrControlClient client = null;
       try {
- 	client = new JobMgrControlClient(host.getName(), pJobPort);	
+ 	client = new JobMgrControlClient(host.getName());	
  	client.jobStart(job);
 	
  	timer.aquire();
@@ -2831,7 +2813,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pLicenseKeys) {
-      File file = new File(pQueueDir, "queue/etc/license-keys");
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/license-keys");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -2890,7 +2872,7 @@ class QueueMgr
     synchronized(pLicenseKeys) {
       pLicenseKeys.clear();
 
-      File file = new File(pQueueDir, "queue/etc/license-keys");
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/license-keys");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -2936,7 +2918,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pSelectionKeys) {
-      File file = new File(pQueueDir, "queue/etc/selection-keys");
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/selection-keys");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -2995,7 +2977,7 @@ class QueueMgr
     synchronized(pSelectionKeys) {
       pSelectionKeys.clear();
 
-      File file = new File(pQueueDir, "queue/etc/selection-keys");
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/selection-keys");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3041,7 +3023,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pHosts) {
-      File file = new File(pQueueDir, "queue/job-servers/hosts");
+      File file = new File(PackageInfo.sQueueDir, "queue/job-servers/hosts");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -3098,7 +3080,7 @@ class QueueMgr
     synchronized(pHosts) {
       pHosts.clear();
 
-      File file = new File(pQueueDir, "queue/job-servers/hosts");
+      File file = new File(PackageInfo.sQueueDir, "queue/job-servers/hosts");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3164,7 +3146,7 @@ class QueueMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Writing Resource Samples: " + stamp.getTime());
 
-      File dir = new File(pQueueDir, "queue/job-servers/samples");
+      File dir = new File(PackageInfo.sQueueDir, "queue/job-servers/samples");
       timer.aquire();
       synchronized(pMakeDirLock) {
 	timer.resume();
@@ -3249,7 +3231,7 @@ class QueueMgr
       timer.resume();
 
       TreeMap<Long,ResourceSampleBlock> blocks = new TreeMap<Long,ResourceSampleBlock>();
-      File dir = new File(pQueueDir, "queue/job-servers/samples/" + hostname);
+      File dir = new File(PackageInfo.sQueueDir, "queue/job-servers/samples/" + hostname);
       if(!dir.isDirectory()) 
 	return blocks;
 	
@@ -3310,7 +3292,7 @@ class QueueMgr
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      File sdir = new File(pQueueDir, "queue/job-servers/samples"); 
+      File sdir = new File(PackageInfo.sQueueDir, "queue/job-servers/samples"); 
       if(!sdir.isDirectory()) 
 	return;
 
@@ -3388,7 +3370,7 @@ class QueueMgr
     long jobID = job.getJobID();
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/jobs/" + jobID);
+      File file = new File(PackageInfo.sQueueDir, "queue/jobs/" + jobID);
       if(file.exists()) {
 	throw new PipelineException
 	  ("Somehow the job file (" + file + ") already exists!");
@@ -3450,7 +3432,7 @@ class QueueMgr
   {
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/jobs/" + jobID);
+      File file = new File(PackageInfo.sQueueDir, "queue/jobs/" + jobID);
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3499,7 +3481,7 @@ class QueueMgr
   {
     Object lock = getJobFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/jobs/" + jobID); 
+      File file = new File(PackageInfo.sQueueDir, "queue/jobs/" + jobID); 
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3558,7 +3540,7 @@ class QueueMgr
     long jobID = info.getJobID();
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-info/" + jobID);
+      File file = new File(PackageInfo.sQueueDir, "queue/job-info/" + jobID);
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -3621,7 +3603,7 @@ class QueueMgr
   {
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-info/" + jobID);
+      File file = new File(PackageInfo.sQueueDir, "queue/job-info/" + jobID);
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3670,7 +3652,7 @@ class QueueMgr
   {
     Object lock = getJobInfoFileLock(jobID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-info/" + jobID); 
+      File file = new File(PackageInfo.sQueueDir, "queue/job-info/" + jobID); 
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3727,7 +3709,7 @@ class QueueMgr
     long groupID = group.getGroupID();
     Object lock = getJobGroupFileLock(groupID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-groups/" + groupID);
+      File file = new File(PackageInfo.sQueueDir, "queue/job-groups/" + groupID);
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -3787,7 +3769,7 @@ class QueueMgr
   {
     Object lock = getJobGroupFileLock(groupID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-groups/" + groupID);
+      File file = new File(PackageInfo.sQueueDir, "queue/job-groups/" + groupID);
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3834,7 +3816,7 @@ class QueueMgr
   {
     Object lock = getJobGroupFileLock(groupID);
     synchronized(lock) {
-      File file = new File(pQueueDir, "queue/job-groups/" + groupID);
+      File file = new File(PackageInfo.sQueueDir, "queue/job-groups/" + groupID);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -3884,7 +3866,7 @@ class QueueMgr
       int tries = 0;
       boolean done = false;
       while(!done) {
-	JobMgrControlClient client = new JobMgrControlClient(pHostname, pJobPort);	
+	JobMgrControlClient client = new JobMgrControlClient(pHostname);
 	try {
 	  results = client.jobWait(pJobID);
 	  done = true;
@@ -4001,7 +3983,7 @@ class QueueMgr
     {
       JobMgrControlClient client = null;
       try {
-	client = new JobMgrControlClient(pHostname, pJobPort);	
+	client = new JobMgrControlClient(pHostname);	
 	client.jobKill(pJobID);
       }
       catch (Exception ex) {
@@ -4056,7 +4038,7 @@ class QueueMgr
       for(String hname : hnames) {	  
 	JobMgrControlClient client = null;
 	try {
-	  client = new JobMgrControlClient(hname, pJobPort);	
+	  client = new JobMgrControlClient(hname);	
 	  client.cleanupResources(pJobIDs);
 	}
 	catch(Exception ex) {
@@ -4137,17 +4119,6 @@ class QueueMgr
    */
   private Object pMakeDirLock;
  
-
-  /**
-   * The root queue directory.
-   */ 
-  private File  pQueueDir;
-
-  /**
-   * The network port listened to by the <B>pljobmgr</B>(1) daemon.
-   */ 
-  private int  pJobPort;
-
 
   /*----------------------------------------------------------------------------------------*/
 

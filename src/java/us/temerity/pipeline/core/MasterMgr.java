@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.109 2005/04/03 01:54:23 jim Exp $
+// $Id: MasterMgr.java,v 1.110 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -194,37 +194,11 @@ class MasterMgr
   /** 
    * Construct a new node manager.
    * 
-   * @param nodeDir 
-   *   The root node directory.
-   * 
-   * @param prodDir 
-   *   The root production directory.
-   * 
-   * @param fileHost 
-   *   The name of the host running the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param filePort 
-   *   The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param queueHost
-   *   The hostname running <B>plqueuemgr</B>(1).
-   * 
-   * @param queuePort
-   *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
-   * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
    */
   public
-  MasterMgr
-  (
-   File nodeDir, 
-   File prodDir, 
-   String fileHost, 
-   int filePort, 
-   String queueHost, 
-   int queuePort
-  )
+  MasterMgr()
     throws PipelineException 
   { 
     pShutdownJobMgrs   = new AtomicBoolean(false);
@@ -240,11 +214,14 @@ class MasterMgr
       PluginMgrClient.init();
 
       /* make a connection to the file manager */ 
-      pFileMgrClient = new FileMgrClient(fileHost, filePort);
-      pFileMgrClient.waitForConnection(1000, 5000);
+      {
+	FileMgrNetClient client = new FileMgrNetClient();
+	pFileMgrClient = client;
+	client.waitForConnection(1000, 5000);
+      }
       
       /* make a connection to the queue manager */ 
-      pQueueMgrClient = new QueueMgrControlClient(queueHost, queuePort);
+      pQueueMgrClient = new QueueMgrControlClient();
       pQueueMgrClient.waitForConnection(1000, 5000);
     }
 
@@ -255,7 +232,7 @@ class MasterMgr
 
     /* create the lock file */ 
     {
-      File file = new File(nodeDir, "lock");
+      File file = new File(PackageInfo.sNodeDir, "lock");
       if(file.exists()) 
 	throw new PipelineException 
 	  ("Another node manager is already running!\n" + 
@@ -272,7 +249,7 @@ class MasterMgr
     }
 
     /* startup initialization */ 
-    init(nodeDir, prodDir);
+    init();
    }
 
 
@@ -288,20 +265,8 @@ class MasterMgr
    *   The root production directory.
    */ 
   private void 
-  init
-  (
-   File nodeDir, 
-   File prodDir
-  )
+  init()
   { 
-    if(nodeDir == null)
-      throw new IllegalArgumentException("The root node directory cannot be (null)!");
-    pNodeDir = nodeDir;
-
-    if(prodDir == null)
-      throw new IllegalArgumentException("The root production directory cannot be (null)!");
-    pProdDir = prodDir;
-
     /* initialize the fields */ 
     {
       pDatabaseLock = new ReentrantReadWriteLock();
@@ -375,20 +340,20 @@ class MasterMgr
   makeRootDirs() 
     throws PipelineException
   {
-    if(!pNodeDir.isDirectory()) 
+    if(!PackageInfo.sNodeDir.isDirectory()) 
       throw new PipelineException
-	("The root node directory (" + pNodeDir + ") does not exist!");
+	("The root node directory (" + PackageInfo.sNodeDir + ") does not exist!");
     
     ArrayList<File> dirs = new ArrayList<File>();
-    dirs.add(new File(pNodeDir, "repository"));
-    dirs.add(new File(pNodeDir, "working"));
-    dirs.add(new File(pNodeDir, "toolsets/packages"));
-    dirs.add(new File(pNodeDir, "toolsets/toolsets"));
-    dirs.add(new File(pNodeDir, "etc"));
-    dirs.add(new File(pNodeDir, "etc/suffix-editors"));
-    dirs.add(new File(pNodeDir, "archives/manifests"));
-    dirs.add(new File(pNodeDir, "archives/output/archive"));
-    dirs.add(new File(pNodeDir, "archives/output/restore"));
+    dirs.add(new File(PackageInfo.sNodeDir, "repository"));
+    dirs.add(new File(PackageInfo.sNodeDir, "working"));
+    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/packages"));
+    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/toolsets"));
+    dirs.add(new File(PackageInfo.sNodeDir, "etc"));
+    dirs.add(new File(PackageInfo.sNodeDir, "etc/suffix-editors"));
+    dirs.add(new File(PackageInfo.sNodeDir, "archives/manifests"));
+    dirs.add(new File(PackageInfo.sNodeDir, "archives/output/archive"));
+    dirs.add(new File(PackageInfo.sNodeDir, "archives/output/restore"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -412,7 +377,7 @@ class MasterMgr
   {
     /* scan archive volume GLUE files */ 
     {
-      File dir = new File(pNodeDir, "archives/manifests");
+      File dir = new File(PackageInfo.sNodeDir, "archives/manifests");
       File files[] = dir.listFiles(); 
       int wk;
       for(wk=0; wk<files.length; wk++) {
@@ -442,7 +407,7 @@ class MasterMgr
 
     /* scan restore output files */ 
     {
-      File dir = new File(pNodeDir, "archives/output/restore");
+      File dir = new File(PackageInfo.sNodeDir, "archives/output/restore");
       File files[] = dir.listFiles(); 
       int wk;
       for(wk=0; wk<files.length; wk++) {
@@ -486,7 +451,7 @@ class MasterMgr
 
     /* initialize toolset keys */ 
     {
-      File dir = new File(pNodeDir, "toolsets/toolsets");
+      File dir = new File(PackageInfo.sNodeDir, "toolsets/toolsets");
       File files[] = dir.listFiles(); 
       int wk;
       for(wk=0; wk<files.length; wk++) {
@@ -497,7 +462,7 @@ class MasterMgr
     
     /* initialize package keys */ 
     {
-      File dir = new File(pNodeDir, "toolsets/packages");
+      File dir = new File(PackageInfo.sNodeDir, "toolsets/packages");
       File dirs[] = dir.listFiles(); 
       int dk;
       for(dk=0; dk<dirs.length; dk++) {
@@ -559,12 +524,12 @@ class MasterMgr
     throws PipelineException 
   {
     {
-      File dir = new File(pNodeDir, "repository");
+      File dir = new File(PackageInfo.sNodeDir, "repository");
       initCheckedInNodeTree(dir.getPath(), dir); 
     }
 
     {
-      File dir = new File(pNodeDir, "working");
+      File dir = new File(PackageInfo.sNodeDir, "working");
       File authors[] = dir.listFiles(); 
       int ak;
       for(ak=0; ak<authors.length; ak++) {
@@ -706,7 +671,7 @@ class MasterMgr
     throws PipelineException 
   {
     {
-      File dir = new File(pNodeDir, "downstream");
+      File dir = new File(PackageInfo.sNodeDir, "downstream");
       if(dir.isDirectory()) 
 	return;
 
@@ -721,13 +686,13 @@ class MasterMgr
 
     /* process checked-in versions */ 
     {
-      File dir = new File(pNodeDir, "repository");
+      File dir = new File(PackageInfo.sNodeDir, "repository");
       collectCheckedInDownstreamLinks(dir.getPath(), dir); 
     }
 
     /* process working versions */ 
     {
-      File dir = new File(pNodeDir, "working");
+      File dir = new File(PackageInfo.sNodeDir, "working");
       File authors[] = dir.listFiles(); 
       int ak;
       for(ak=0; ak<authors.length; ak++) {
@@ -757,9 +722,6 @@ class MasterMgr
 
     /* shutdown and restart the server */ 
     {
-      File nodeDir = pNodeDir;
-      File prodDir = pProdDir;
-
       /* write cached downstream links */ 
       writeAllDownstreamLinks();
       
@@ -805,7 +767,7 @@ class MasterMgr
       }
       
       /* reinitialize */ 
-      init(nodeDir, prodDir);
+      init();
     }
   }
 
@@ -988,20 +950,23 @@ class MasterMgr
   {
     /* remove the lock file */ 
     {
-      File file = new File(pNodeDir, "lock");
+      File file = new File(PackageInfo.sNodeDir, "lock");
       file.delete();
     }
 
     /* close the connection to the file manager */ 
     if(pFileMgrClient != null) {
-      try {
-	pFileMgrClient.shutdown();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	   ex.getMessage());
-	LogMgr.getInstance().flush();
+      if(pFileMgrClient instanceof FileMgrNetClient) {
+	FileMgrNetClient client = (FileMgrNetClient) pFileMgrClient;
+	try {
+	  client.shutdown();
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
+	}
       }
     }
 
@@ -1089,7 +1054,7 @@ class MasterMgr
 	args.add("downstream");
 	
 	SubProcessLight proc = 
-	  new SubProcessLight("RemoveDownstreamLinks", "rm", args, env, pNodeDir);
+	  new SubProcessLight("RemoveDownstreamLinks", "rm", args, env, PackageInfo.sNodeDir);
 	try {
 	  proc.start();
 	  proc.join();
@@ -1098,14 +1063,14 @@ class MasterMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     "Interrupted while removing the downstream directory " + 
-	     "(" + pNodeDir + "/downstream)!");
+	     "(" + PackageInfo.sNodeDir + "/downstream)!");
 	}
 	
 	if(!proc.wasSuccessful()) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     "Unable to removing the downstream directory " + 
-	     "(" + pNodeDir + "/downstream)!");
+	     "(" + PackageInfo.sNodeDir + "/downstream)!");
 	}
       }
     }
@@ -1313,7 +1278,7 @@ class MasterMgr
 	  if((pDefaultToolset != null) && pDefaultToolset.equals(tname)) {
 	    pDefaultToolset = null;
 	    
-	    File file = new File(pNodeDir, "toolsets/default-toolset");
+	    File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
 	    if(file.exists()) {
 	      if(!file.delete())
 		return new FailureRsp
@@ -2319,7 +2284,7 @@ class MasterMgr
 	  return new SuccessRsp(timer);
 	
 	/* create the working area node directory */ 
-	File dir = new File(pNodeDir, "working/" + author + "/" + view);
+	File dir = new File(PackageInfo.sNodeDir, "working/" + author + "/" + view);
 	synchronized(pMakeDirLock) {
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) 
@@ -3627,7 +3592,7 @@ class MasterMgr
 	
 	/* remove the working version node file(s) */ 
 	{
-	  File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+	  File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
 	  File backup = new File(file + ".backup");
 	  
 	  if(file.isFile()) {
@@ -3646,8 +3611,11 @@ class MasterMgr
 		("Unable to remove the backup working version file (" + backup + ")!");
 	  }
 
-	  File root = new File(pNodeDir, "working/" + id.getAuthor() + "/" + id.getView());
-	  deleteEmptyParentDirs(root, new File(pNodeDir, id.getWorkingParent().toString()));
+	  File root = new File(PackageInfo.sNodeDir, 
+			       "working/" + id.getAuthor() + "/" + id.getView());
+
+	  deleteEmptyParentDirs(root, new File(PackageInfo.sNodeDir, 
+					       id.getWorkingParent().toString()));
 	}
 	
 	/* update the downstream links of this node */ 
@@ -3812,7 +3780,7 @@ class MasterMgr
 	
 	/* remove the checked-in version files */ 
 	for(VersionID vid : checkedIn.keySet()) {
-	  File file = new File(pNodeDir, "repository" + name + "/" + vid);
+	  File file = new File(PackageInfo.sNodeDir, "repository" + name + "/" + vid);
 	  if(!file.delete())
 	    throw new PipelineException
 	      ("Unable to remove the checked-in version file (" + file + ")!");
@@ -3820,13 +3788,13 @@ class MasterMgr
 
 	/* remove the checked-in version node directory */
 	{
-	  File dir = new File(pNodeDir, "repository" + name);
+	  File dir = new File(PackageInfo.sNodeDir, "repository" + name);
 	  File parent =  dir.getParentFile();
 	  if(!dir.delete())
 	    throw new PipelineException
 	      ("Unable to remove the checked-in version directory (" + dir + ")!");
 	  
-	  deleteEmptyParentDirs(new File(pNodeDir, "repository"), parent);
+	  deleteEmptyParentDirs(new File(PackageInfo.sNodeDir, "repository"), parent);
 	}	    
 	
 	/* remove the checked-in version entries */ 
@@ -3836,7 +3804,7 @@ class MasterMgr
 
       /* remove the downstream links file and entry */ 
       {
-	File file = new File(pNodeDir, "downstream" + name);
+	File file = new File(PackageInfo.sNodeDir, "downstream" + name);
 	if(file.isFile()) {
 	  if(!file.delete())
 	    throw new PipelineException
@@ -5984,7 +5952,7 @@ class MasterMgr
 	    getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), 
 				  work.getToolset(), timer);
 
-	  File dir = new File(pProdDir, nodeID.getWorkingParent().getPath());
+	  File dir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
 
 	  ActionAgenda agenda = 
 	    new ActionAgenda(jobID, nodeID, 
@@ -6646,7 +6614,8 @@ class MasterMgr
       {
 	String output = pFileMgrClient.archive(archiveName, fseqs, archiver);
 	if(output != null) {
-	  File file = new File(pNodeDir, "archives/output/archive/" + archiveName);
+	  File file = new File(PackageInfo.sNodeDir, 
+			       "archives/output/archive/" + archiveName);
 	  try {
 	    FileWriter out = new FileWriter(file);
 	    out.write(output);
@@ -7770,7 +7739,7 @@ class MasterMgr
 	  pFileMgrClient.extract(archiveName, stamp, fseqs, archiver, total);
 
 	Date now = new Date();
-	File file = new File(pNodeDir, "archives/output/restore/" + 
+	File file = new File(PackageInfo.sNodeDir, "archives/output/restore/" + 
 			     archiveName + "-" + now.getTime());
 	try {
 	  FileWriter out = new FileWriter(file);
@@ -7985,7 +7954,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getArchivedOutput(): " + aname);
 
     try {
-      File file = new File(pNodeDir, 
+      File file = new File(PackageInfo.sNodeDir, 
 			   "archives/output/archive/" + aname);
       String output = null;
       if(file.length() > 0) {
@@ -8034,7 +8003,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getRestoredOutput(): " + aname + "-" + stamp.getTime());
     try {
-      File file = new File(pNodeDir, 
+      File file = new File(PackageInfo.sNodeDir, 
 			   "archives/output/restore/" + aname + "-" + stamp.getTime());
       String output = null;
       if(file.length() > 0) {
@@ -10050,7 +10019,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchiveFileLock) {
-      File file = new File(pNodeDir, "archives/manifests/" + archive.getName());
+      File file = new File(PackageInfo.sNodeDir, "archives/manifests/" + archive.getName());
       if(file.exists()) {
 	throw new PipelineException
 	  ("Unable to overrite the existing archive file(" + file + ")!");
@@ -10109,7 +10078,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchiveFileLock) {
-      File file = new File(pNodeDir, "archives/manifests/" + name);
+      File file = new File(PackageInfo.sNodeDir, "archives/manifests/" + name);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No file exists for archive (" + name + ")!");
@@ -10157,7 +10126,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pRestoreReqs) {
-      File file = new File(pNodeDir, "archives/restore-reqs");
+      File file = new File(PackageInfo.sNodeDir, "archives/restore-reqs");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -10214,7 +10183,7 @@ class MasterMgr
     synchronized(pRestoreReqs) {
       pRestoreReqs.clear();
 
-      File file = new File(pNodeDir, "archives/restore-reqs");
+      File file = new File(PackageInfo.sNodeDir, "archives/restore-reqs");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10258,7 +10227,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pDefaultToolsetLock) {
-      File file = new File(pNodeDir, "toolsets/default-toolset");
+      File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -10315,7 +10284,7 @@ class MasterMgr
     synchronized(pDefaultToolsetLock) {
       pDefaultToolset = null;
 
-      File file = new File(pNodeDir, "toolsets/default-toolset");
+      File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10356,7 +10325,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pActiveToolsets) {
-      File file = new File(pNodeDir, "toolsets/active-toolsets");
+      File file = new File(PackageInfo.sNodeDir, "toolsets/active-toolsets");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -10413,7 +10382,7 @@ class MasterMgr
     synchronized(pActiveToolsets) {
       pActiveToolsets.clear();
 
-      File file = new File(pNodeDir, "toolsets/active-toolsets");
+      File file = new File(PackageInfo.sNodeDir, "toolsets/active-toolsets");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10463,7 +10432,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsets) {
-      File file = new File(pNodeDir, "toolsets/toolsets/" + tset.getName());
+      File file = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + tset.getName());
       if(file.exists()) {
 	throw new PipelineException
 	  ("Unable to overrite the existing toolset file(" + file + ")!");
@@ -10522,7 +10491,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsets) {
-      File file = new File(pNodeDir, "toolsets/toolsets/" + name);
+      File file = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + name);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No toolset file exists for toolset (" + name + ")!");
@@ -10577,7 +10546,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsetPackages) {
-      File dir = new File(pNodeDir, "toolsets/packages/" + pkg.getName());
+      File dir = new File(PackageInfo.sNodeDir, "toolsets/packages/" + pkg.getName());
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
 	  if(!dir.mkdirs()) 
@@ -10648,7 +10617,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsetPackages) {
-      File file = new File(pNodeDir, "toolsets/packages/" + name + "/" + vid);
+      File file = new File(PackageInfo.sNodeDir, "toolsets/packages/" + name + "/" + vid);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No toolset package file exists for package (" + name + " v" + vid + ")!");
@@ -10715,7 +10684,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pSuffixEditors) {
-      File file = new File(pNodeDir, "etc/suffix-editors/" + author); 
+      File file = new File(PackageInfo.sNodeDir, "etc/suffix-editors/" + author); 
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -10775,7 +10744,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pSuffixEditors) {
-      File file = new File(pNodeDir, "etc/suffix-editors/" + author); 
+      File file = new File(PackageInfo.sNodeDir, "etc/suffix-editors/" + author); 
       if(!file.isFile()) 
 	return null;
 
@@ -10828,7 +10797,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(pNodeDir, "etc/editor-menu-layout");
+      File file = new File(PackageInfo.sNodeDir, "etc/editor-menu-layout");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -10881,7 +10850,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(pNodeDir, "etc/editor-menu-layout");
+      File file = new File(PackageInfo.sNodeDir, "etc/editor-menu-layout");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -10930,7 +10899,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(pNodeDir, "etc/comparator-menu-layout");
+      File file = new File(PackageInfo.sNodeDir, "etc/comparator-menu-layout");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -10985,7 +10954,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(pNodeDir, "etc/comparator-menu-layout");
+      File file = new File(PackageInfo.sNodeDir, "etc/comparator-menu-layout");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -11035,7 +11004,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(pNodeDir, "etc/tool-menu-layout");
+      File file = new File(PackageInfo.sNodeDir, "etc/tool-menu-layout");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -11088,7 +11057,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(pNodeDir, "etc/tool-menu-layout");
+      File file = new File(PackageInfo.sNodeDir, "etc/tool-menu-layout");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -11136,7 +11105,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pPrivilegedUsers) {
-      File file = new File(pNodeDir, "etc/privileged-users");
+      File file = new File(PackageInfo.sNodeDir, "etc/privileged-users");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -11193,7 +11162,7 @@ class MasterMgr
     synchronized(pPrivilegedUsers) {
       pPrivilegedUsers.clear();
 
-      File file = new File(pNodeDir, "etc/privileged-users");
+      File file = new File(PackageInfo.sNodeDir, "etc/privileged-users");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -11237,7 +11206,7 @@ class MasterMgr
   writeNextIDs() 
     throws PipelineException
   {
-    File file = new File(pNodeDir, "etc/next-ids");
+    File file = new File(PackageInfo.sNodeDir, "etc/next-ids");
     if(file.exists()) {
       if(!file.delete())
 	throw new PipelineException
@@ -11294,7 +11263,7 @@ class MasterMgr
   readNextIDs() 
     throws PipelineException 
   {
-    File file = new File(pNodeDir, "etc/next-ids");
+    File file = new File(PackageInfo.sNodeDir, "etc/next-ids");
     if(file.exists()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -11360,7 +11329,8 @@ class MasterMgr
        "Writing Checked-In Version: " + 
        vsn.getName() + " (" + vsn.getVersionID() + ")");
 
-    File file = new File(pNodeDir, "repository/" + vsn.getName() + "/" + vsn.getVersionID());
+    File file = new File(PackageInfo.sNodeDir, 
+			 "repository/" + vsn.getName() + "/" + vsn.getVersionID());
     File dir  = file.getParentFile();
 
     try {
@@ -11432,7 +11402,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File dir = new File(pNodeDir, "repository" + name + "/");
+    File dir = new File(PackageInfo.sNodeDir, "repository" + name + "/");
     if(!dir.isDirectory()) 
       return null;
 
@@ -11509,7 +11479,7 @@ class MasterMgr
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Writing Working Version: " + id);
 
-    File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+    File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
     File backup = new File(file + ".backup");
     File dir    = file.getParentFile();
 
@@ -11585,7 +11555,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+    File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
     File backup = new File(file + ".backup");
     
     try {
@@ -11694,7 +11664,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file = new File(pNodeDir, "downstream/" + links.getName());
+    File file = new File(PackageInfo.sNodeDir, "downstream/" + links.getName());
     File dir  = file.getParentFile();
 
     if(!links.hasLinks()) {
@@ -11775,7 +11745,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file = new File(pNodeDir, "downstream/" + name);
+    File file = new File(PackageInfo.sNodeDir, "downstream/" + name);
     
     try {
       if(file.exists()) {
@@ -12366,11 +12336,6 @@ class MasterMgr
    */
   private Object  pMakeDirLock;
 
-  /**
-   * The root node directory.
-   */ 
-  private File  pNodeDir;
-  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -12586,11 +12551,6 @@ class MasterMgr
   
   
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The root production directory.
-   */ 
-  private File  pProdDir;
 
   /**
    * The connection to the file manager daemon: <B>plfilemgr<B>(1).

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.20 2005/04/03 01:54:23 jim Exp $
+// $Id: UIMaster.java,v 1.21 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -45,22 +45,6 @@ class UIMaster
   /** 
    * Construct the sole instance.
    * 
-   * @param masterHost
-   *   The hostname running <B>plmaster</B>(1).
-   * 
-   * @param masterPort
-   *   The port number listened to by the <B>plmaster</B>(1) daemon for incoming connections.
-   * 
-   * @param queueHost
-   *   The hostname running <B>plqueuemgr</B>(1).
-   * 
-   * @param queuePort
-   *   The port number listened to by the <B>plqueuemgr</B>(1) daemon for incoming 
-   *   connections.
-   * 
-   * @param jobPort
-   *   The port number listened to by <B>pljobmgr</B>(1) daemons for incoming connections.
-   * 
    * @param layout
    *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
    * 
@@ -79,11 +63,6 @@ class UIMaster
   private 
   UIMaster
   (
-   String masterHost, 
-   int masterPort, 
-   String queueHost, 
-   int queuePort, 
-   int jobPort, 
    String layout, 
    boolean restoreLayout,
    boolean restoreSelections, 
@@ -91,10 +70,8 @@ class UIMaster
    boolean traceGL
   ) 
   {
-    pMasterMgrClient = new MasterMgrClient(masterHost, masterPort);
-    pQueueMgrClient  = new QueueMgrClient(queueHost, queuePort);
-
-    pJobPort = jobPort;
+    pMasterMgrClient = new MasterMgrClient();
+    pQueueMgrClient  = new QueueMgrClient();
 
     pOpsLock = new ReentrantLock();
 
@@ -132,22 +109,6 @@ class UIMaster
   /** 
    * Initialize the user interface and connection to <B>plmaster<B>(1).
    * 
-   * @param masterHost
-   *   The hostname running <B>plmaster</B>(1).
-   * 
-   * @param masterPort
-   *   The port number listened to by the <B>plmaster</B>(1) daemon for incoming connections.
-   * 
-   * @param queueHost
-   *   The hostname running <B>plqueuemgr</B>(1).
-   * 
-   * @param queuePort
-   *   The port number listened to by the <B>plqueuemgr</B>(1) daemon for incoming 
-   *   connections.
-   * 
-   * @param jobPort
-   *   The port number listened to by <B>pljobmgr</B>(1) daemons for incoming connections.
-   * 
    * @param layout
    *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
    * 
@@ -166,11 +127,6 @@ class UIMaster
   public static void 
   init
   (
-   String masterHost, 
-   int masterPort, 
-   String queueHost, 
-   int queuePort, 
-   int jobPort, 
    String layout,
    boolean restoreLayout,
    boolean restoreSelections,
@@ -179,10 +135,7 @@ class UIMaster
   ) 
   {
     assert(sMaster == null);
-    sMaster = new UIMaster(masterHost, masterPort, 
-			   queueHost, queuePort, jobPort, 
-			   layout, restoreLayout, restoreSelections, 
-			   debugGL, traceGL);
+    sMaster = new UIMaster(layout, restoreLayout, restoreSelections, debugGL, traceGL);
   }
 
 
@@ -220,16 +173,6 @@ class UIMaster
   {
     return pQueueMgrClient;
   }
-
-  /**
-   * Get the port number used by <B>pljobmgr</B>(1) daemons.
-   */ 
-  public int
-  getJobPort() 
-  {
-    return pJobPort; 
-  }
-
 
  
   /*----------------------------------------------------------------------------------------*/
@@ -2530,11 +2473,6 @@ class UIMaster
    * The network interface to the <B>plqueuemgr</B>(1) daemon.
    */ 
   private QueueMgrClient  pQueueMgrClient;
-
-  /**
-   * The port number to use when contacting <B>pljobmgr</B>(1) daemons.
-   */ 
-  private int  pJobPort; 
 
 
   /*----------------------------------------------------------------------------------------*/

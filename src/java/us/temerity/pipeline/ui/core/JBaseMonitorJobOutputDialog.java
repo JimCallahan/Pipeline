@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.2 2005/01/22 21:55:12 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.3 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -381,7 +381,7 @@ class JBaseMonitorJobOutputDialog
       UIMaster master = UIMaster.getInstance();
       JobMgrClient client = null;
       try {
-	client = new JobMgrClient(pHostname, master.getJobPort());	
+	client = new JobMgrClient(pHostname);	
 	pJobMonitorPanel.setJob(pJobID, client);
 
 	boolean done = false;

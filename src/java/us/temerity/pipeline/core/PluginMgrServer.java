@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.4 2005/03/11 06:34:39 jim Exp $
+// $Id: PluginMgrServer.java,v 1.5 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,41 +35,18 @@ class PluginMgrServer
 
   /** 
    * Construct a new plugin manager server.
-   * 
-   * @param port 
-   *   The network port to monitor for incoming connections.
    */
   public
-  PluginMgrServer
-  (
-   int port
-  )
+  PluginMgrServer()
   { 
     super("PluginMgrServer");
 
     pPluginMgr = new PluginMgr();
 
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
-
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();    
   }
-  
-  /** 
-   * Construct a new file manager using the default root production directory and 
-   * network port.
-   * 
-   * The root production directory and network port used are those specified by 
-   * <B>plconfig(1)</B>.
-   */
-  public
-  PluginMgrServer() 
-  { 
-    this(PackageInfo.sFilePort);
-  }
- 
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -89,12 +66,12 @@ class PluginMgrServer
     try {
       schannel = ServerSocketChannel.open();
       ServerSocket server = schannel.socket();
-      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sPluginPort);
       server.bind(saddr, 100);
       
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Listening on Port: " + pPort);
+	 "Listening on Port: " + PackageInfo.sPluginPort);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
@@ -138,7 +115,7 @@ class PluginMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + pPort + "):\n" + 
+	 "IO problems on port (" + PackageInfo.sPluginPort + "):\n" + 
 	 ex.getMessage());
       LogMgr.getInstance().flush();
     }
@@ -284,18 +261,18 @@ class PluginMgrServer
       catch (EOFException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Connection on port (" + pPort + ") terminated abruptly!");	
+	   "Connection on port (" + PackageInfo.sPluginPort + ") terminated abruptly!");
       }
       catch (IOException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on port (" + pPort + "):\n" + 
+	   "IO problems on port (" + PackageInfo.sPluginPort + "):\n" + 
 	   ex.getMessage());
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on port (" + pPort + "):\n" + 
+	   "Illegal object encountered on port (" + PackageInfo.sPluginPort + "):\n" + 
 	   ex.getMessage());	
       }
       catch (Exception ex) {
@@ -346,11 +323,6 @@ class PluginMgrServer
    * The shared plugin manager. 
    */
   private PluginMgr  pPluginMgr;
-
-  /**
-   * The network port number the server listens to for incoming connections.
-   */
-  private int  pPort;
   
   /**
    * Has the server been ordered to shutdown?

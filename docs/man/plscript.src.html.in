@@ -1064,93 +1064,9 @@ all <span style="font-weight: bold;">plscript</span>(1) commands and
 must be specified before the command keywords and any command options. <br>
 </div>
 <br>
-<blockquote><b><a name="--master-host"></a>--master-host</b>=<i>hostname</i><br>
-</blockquote>
-<blockquote>
-  <blockquote>Communicate with the <a href="plmaster.html"><span
- style="font-weight: bold;">plmaster</span></a>(1) daemon running on
-the given host (<i>hostname</i>). <br>
-    <br>
-The default hostname is set by the <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-host"><span
- style="font-weight: bold;">--master-host</span></a>
-option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-  </blockquote>
-  <b><a name="--master-port"></a>--master-port</b>=<i>num</i><br>
-  <blockquote>Communicate with the <a href="plmaster.html"><span
- style="font-weight: bold;">plmaster</span></a>(1) daemon using the
-given port (<i>num</i>).<br>
-    <br>
-The default port is set by the <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-port"><span
- style="font-weight: bold;">--master-port</span></a>
-option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-    <br>
-    <br>
-  </blockquote>
-</blockquote>
-<div style="margin-left: 40px;"><a href="pljobmgr.html"><span
- style="font-weight: bold;"></span></a><b style="color: rgb(0, 0, 0);"><a
- name="--queue-host"></a>--queue-host</b><span
- style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">hostname</i><br
- style="color: rgb(0, 0, 0);">
-</div>
-<blockquote style="color: rgb(0, 0, 0);">
-  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
- style="font-weight: bold;">plqueuemgr</span></a>(1) daemon running on
-the given host (<i>hostname</i>). <br>
-    <br>
-The default hostname is set by the <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-host"><span
- style="font-weight: bold;">--queue-host</span></a>
-option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-  </blockquote>
-  <b><a name="--queue-port"></a>--queue-port</b>=<i>num</i><br>
-  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
- style="font-weight: bold;">plqueuemgr</span></a>(1) daemon using the
-given port (<i>num</i>).<br>
-    <br>
-The default port is set by the <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
- style="font-weight: bold;">--queue-port</span></a>
-option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).</blockquote>
-</blockquote>
-<br style="color: rgb(0, 0, 0);">
-<br style="color: rgb(0, 0, 0);">
-<div style="margin-left: 40px; color: rgb(0, 0, 0);"><b><a
- name="--job-port"></a>--job-port</b>=<i>num<br>
-<br>
-</i>
-<div style="margin-left: 40px;"><span style="color: rgb(0, 0, 0);">Contact
-</span><a style="color: rgb(0, 0, 0);" href="pljobmgr.html"><span
- style="font-weight: bold;">pljobmgr</span></a><span
- style="color: rgb(0, 0, 0);">(1) daemons on an
-alternative network port (</span><i style="color: rgb(0, 0, 0);">num</i><span
- style="color: rgb(0, 0, 0);">). </span><br
- style="color: rgb(0, 0, 0);">
-<br style="color: rgb(0, 0, 0);">
-<span style="color: rgb(0, 0, 0);">The
-default port is set by the </span><a style="color: rgb(0, 0, 0);"
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--job-port"><span
- style="font-weight: bold;">--job-port</span></a><span
- style="color: rgb(0, 0, 0);">
-option to </span><a style="color: rgb(0, 0, 0);"
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a><span
- style="color: rgb(0, 0, 0);">(1).<br>
-<br>
-<br>
-</span><span style="color: rgb(0, 0, 0);"></span></div>
-<span style="color: rgb(0, 0, 0);"></span><span
- style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
+<div style="margin-left: 40px; color: rgb(0, 0, 0);"><span
+ style="color: rgb(0, 0, 0);"></span><span style="font-weight: bold;"><a
+ name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename</span><br>
 <div style="margin-left: 40px;">
 <div style="margin-left: 40px;"><span style="font-style: italic;"></span><br>
@@ -1853,18 +1769,15 @@ selected.<br>
  style="font-weight: normal;"><span style="font-weight: bold;">--max-archives</span>=<span
  style="font-style: italic;">integer</span><br>
 </span>
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span></span><br>
+<><span style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
 The maximum allowable number of archive volumes (<span
  style="font-style: italic;">integer</span>) containing a checked-in
-version<br>
-</div>
-<div style="margin-left: 40px;">in order for it to be selected.&nbsp;
+version in order for it to be selected.&nbsp;
 By default, the maximum number of archive volumes is (2).&nbsp; Any
 checked-in versions which have already been archived more than this
 number of times will be excluded from the selected versions specified
 by the node name pattern.<br>
-</div>
+</>
 <br>
 <span style="font-weight: normal;"><span style="font-weight: bold;">--min-size</span>=<span
  style="font-style: italic;">bytes</span>[K|M|G]<br>

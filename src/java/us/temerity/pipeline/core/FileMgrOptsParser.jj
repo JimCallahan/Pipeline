@@ -48,9 +48,6 @@ FileMgrOptsParser
   init()
   {
     pLogBackups = 10;
-
-    pProdDir  = PackageInfo.sProdDir;
-    pFilePort = PackageInfo.sFilePort;
   }
  
 
@@ -77,18 +74,6 @@ FileMgrOptsParser
    */ 
   private int  pLogBackups;
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The root directory of the file repository. 
-   */ 
-  private File pProdDir;
-
-  /**
-   * The network port to listen on.
-   */ 
-  private int pFilePort;
 }
 
 
@@ -106,9 +91,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <PROD_DIR:     "--prod-dir">     : PATH_SEP
-| <FILE_PORT:    "--file-port">    : INTEGER_SEP
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
@@ -291,7 +273,7 @@ Commands() :
     }
 
     /* create the server */ 
-    return (new FileMgrServer(pProdDir, pFilePort));
+    return (new FileMgrServer());
   }
 }
     
@@ -379,37 +361,9 @@ void
 GlobalOpts() :
 {}
 {
-  (ProdDir() | FilePort() |
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
-
-
-void
-ProdDir() :
-{
-  Token t;
-}
-{
-  <PROD_DIR> EQ() t=<PATH_ARG>
-  { 
-    pProdDir = new File(t.image);
-  }
-}
-
-
-void
-FilePort() :
-{
-  Token t;
-}
-{
-  <FILE_PORT> EQ() t=<INTEGER>
-  { 
-    pFilePort = Integer.parseInt(t.image);
-  }
-}
-
 
 void LogFile() : 
 {

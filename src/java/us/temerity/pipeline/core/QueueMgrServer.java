@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.23 2005/03/11 06:34:39 jim Exp $
+// $Id: QueueMgrServer.java,v 1.24 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,49 +35,17 @@ class QueueMgrServer
 
   /** 
    * Construct a new queue manager server.
-   * 
-   * @param dir 
-   *   The root queue directory.
-   * 
-   * @param port 
-   *   The network port to monitor for incoming connections.
-   * 
-   * @param jobPort 
-   *   The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
    */
   public
-  QueueMgrServer
-  (
-   File dir, 
-   int port,
-   int jobPort
-  )
+  QueueMgrServer()
   { 
     super("QueueMgrServer");
 
-    pQueueMgr = new QueueMgr(dir, jobPort);
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
+    pQueueMgr = new QueueMgr();
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
   }
-  
-  /** 
-   * Construct a new queue manager using the default root queue directory and network
-   * ports.
-   * 
-   * The root queue directory and network ports used are those specified by 
-   * <B>plconfig(1)</B>.
-   */
-  public
-  QueueMgrServer() 
-  { 
-    this(PackageInfo.sQueueDir, PackageInfo.sQueuePort, PackageInfo.sJobPort);
-  }
-
  
 
   /*----------------------------------------------------------------------------------------*/
@@ -97,12 +65,12 @@ class QueueMgrServer
     try {
       schannel = ServerSocketChannel.open();
       ServerSocket server = schannel.socket();
-      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sQueuePort);
       server.bind(saddr, 100);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Listening on Port: " + pPort);
+	 "Listening on Port: " + PackageInfo.sQueuePort);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
@@ -156,7 +124,7 @@ class QueueMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + pPort + "):\n" + 
+	 "IO problems on port (" + PackageInfo.sQueuePort + "):\n" + 
 	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
@@ -602,7 +570,8 @@ class QueueMgrServer
 	
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Connection from (" + host + ":" + pPort + ") terminated abruptly!");
+	   "Connection from (" + host + ":" + PackageInfo.sQueuePort + ") " + 
+	   "terminated abruptly!");
       }
       catch (IOException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -613,7 +582,7 @@ class QueueMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "IO problems on connection from " + 
-	   "(" + host + ":" + pPort + "):\n" + 
+	   "(" + host + ":" + PackageInfo.sQueuePort + "):\n" + 
 	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
@@ -625,7 +594,7 @@ class QueueMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Illegal object encountered on connection from " + 
-	   "(" + host + ":" + pPort + "):\n" + 
+	   "(" + host + ":" + PackageInfo.sQueuePort + "):\n" + 
 	   getFullMessage(ex));
       }
       catch (Exception ex) {
@@ -759,11 +728,6 @@ class QueueMgrServer
    */
   private QueueMgr  pQueueMgr;
 
-  /**
-   * The network port number the server listens to for incoming connections.
-   */
-  private int  pPort;
-  
   /**
    * Has the server been ordered to shutdown?
    */

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.60 2005/04/03 01:54:23 jim Exp $
+// $Id: MasterMgrClient.java,v 1.61 2005/04/03 06:10:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -33,37 +33,13 @@ class MasterMgrClient
 
   /** 
    * Construct a new master manager client.
-   * 
-   * @param hostname 
-   *   The name of the host running <B>plmaster</B>(1).
-   * 
-   * @param port 
-   *   The network port listened to by <B>plmaster</B>(1).
    */
   public
-  MasterMgrClient
-  ( 
-   String hostname, 
-   int port
-  ) 
+  MasterMgrClient()
   {
-    super(hostname, port, 
+    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
 	  MasterRequest.Disconnect, MasterRequest.Shutdown);
   }
-
-  /** 
-   * Construct a new master manager client. <P> 
-   * 
-   * The hostname and port used are those specified by the 
-   * <CODE><B>--master-host</B>=<I>host</I></CODE> and 
-   * <CODE><B>--master-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
-   */
-  public
-  MasterMgrClient() 
-  {
-    this(PackageInfo.sMasterServer, PackageInfo.sMasterPort);
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/

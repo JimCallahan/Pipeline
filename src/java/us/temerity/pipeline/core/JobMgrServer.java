@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.18 2005/03/11 06:34:39 jim Exp $
+// $Id: JobMgrServer.java,v 1.19 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,39 +35,18 @@ class JobMgrServer
 
   /** 
    * Construct a new job manager server.
-   * 
-   * @param port 
-   *   The network port to monitor for incoming connections.
    */
   public
-  JobMgrServer
-  (
-   int port
-  )
+  JobMgrServer()
   { 
     super("JobMgrServer");
 
     pJobMgr = new JobMgr();
 
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
-
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
   }
   
-  /** 
-   * Construct a new job manager using the given network port.
-   * 
-   * The network port used is that specified by <B>plconfig(1)</B>.
-   */
-  public
-  JobMgrServer() 
-  { 
-    this(PackageInfo.sJobPort);
-  }
-
  
 
   /*----------------------------------------------------------------------------------------*/
@@ -87,12 +66,12 @@ class JobMgrServer
     try {
       schannel = ServerSocketChannel.open();
       ServerSocket server = schannel.socket();
-      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sJobPort);
       server.bind(saddr, 100);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Listening on Port: " + pPort);
+	 "Listening on Port: " + PackageInfo.sJobPort);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
@@ -144,7 +123,7 @@ class JobMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + pPort + "):\n" + 
+	 "IO problems on port (" + PackageInfo.sJobPort + "):\n" + 
 	 getFullMessage(ex));
       LogMgr.getInstance().flush();  
     }
@@ -430,18 +409,18 @@ class JobMgrServer
       catch (EOFException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Connection on port (" + pPort + ") terminated abruptly!");	
+	   "Connection on port (" + PackageInfo.sJobPort + ") terminated abruptly!");	
       }
       catch (IOException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on port (" + pPort + "):\n" + 
+	   "IO problems on port (" + PackageInfo.sJobPort + "):\n" + 
 	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on port (" + pPort + "):\n" + 
+	   "Illegal object encountered on port (" + PackageInfo.sJobPort + "):\n" + 
 	   getFullMessage(ex));	
       }
       catch (Exception ex) {
@@ -537,11 +516,6 @@ class JobMgrServer
    */
   private JobMgr  pJobMgr;
 
-  /**
-   * The network port number the server listens to for incoming connections.
-   */
-  private int  pPort;
-  
   /**
    * Has the server been ordered to shutdown?
    */

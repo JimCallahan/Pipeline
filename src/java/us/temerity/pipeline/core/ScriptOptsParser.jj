@@ -53,14 +53,6 @@ ScriptOptsParser
   init()
   {
     pLogBackups = 10;
-
-    pMasterServer = PackageInfo.sMasterServer;
-    pMasterPort   = PackageInfo.sMasterPort;
-
-    pQueueServer = PackageInfo.sQueueServer; 
-    pQueuePort   = PackageInfo.sQueuePort;
-    pJobPort     = PackageInfo.sJobPort;
-
     pBatchFiles = new Stack();
   }
  
@@ -75,14 +67,8 @@ ScriptOptsParser
   {
     pApp = parent.pApp;
 
-    pMasterServer    = parent.pMasterServer;
-    pMasterPort      = parent.pMasterPort;
     pMasterMgrClient = parent.pMasterMgrClient;
-
-    pQueueServer    = parent.pQueueServer;
-    pQueuePort      = parent.pQueuePort;
-    pJobPort        = parent.pJobPort;
-    pQueueMgrClient = parent.pQueueMgrClient;
+    pQueueMgrClient  = parent.pQueueMgrClient;
 
     pBatchFiles = new Stack(); 
     pBatchFiles.addAll(parent.pBatchFiles);
@@ -129,37 +115,9 @@ ScriptOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the host running the <B>plmaster</B><A>(1) daemon.
-   */ 
-  private String  pMasterServer;
-
-  /**
-   * The network port listened to by the <B>plmaster</B><A>(1) daemon.
-   */
-  private int  pMasterPort;
-
-  /**
    * The connection to the <B>plmaster</B><A>(1) daemon. 
    */ 
   private MasterMgrClient  pMasterMgrClient; 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /*
-   * The name of the host running the <B>plqueuemgr</B><A>(1) daemon. 
-   */
-  private String  pQueueServer;
-
-  /**
-   * The network port listened to by the <B>plqueuemgr</B><A>(1) daemon.
-   */
-  private int  pQueuePort;
-
-  /**
-   * The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
-   */
-  private int  pJobPort;
 
   /**
    * The connection to the <B>plqueuemgr</B><A>(1) daemon. 
@@ -290,13 +248,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <MASTER_HOST:  "--master-host">   : HOST_NAME_SEP2
-| <MASTER_PORT:  "--master-port">   : PORT_NUMBER_SEP
-
-| <QUEUE_HOST:   "--queue-host">    : HOST_NAME_SEP2
-| <QUEUE_PORT:   "--queue-port">    : PORT_NUMBER_SEP
-| <JOB_PORT:     "--job-port">      : PORT_NUMBER_SEP
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP2
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP2
@@ -1512,8 +1463,8 @@ Commands()
   }
   
   /* create the network clients */ 
-  pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
-  pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
+  pMasterMgrClient = new MasterMgrClient();
+  pQueueMgrClient  = new QueueMgrClient();
 }
 {
   (PrivilegedCmds() | AdminCmds() | ArchiveVolumeCmds() |
@@ -1559,8 +1510,8 @@ Batch()
   }
 
   /* create the network clients */ 
-  pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
-  pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
+  pMasterMgrClient = new MasterMgrClient();
+  pQueueMgrClient  = new QueueMgrClient();
 }
 {
   (BatchOpt())
@@ -1733,77 +1684,9 @@ GlobalOpts()
   throws PipelineException :
 {}
 {
-  (MasterHost() | MasterPort() | 
-   QueueHost() | QueuePort() | JobPort() | 
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
-
-
-void
-MasterHost() :
-{
-  String hname = null;
-}
-{
-  <MASTER_HOST> EQ() hname=HostName()
-  { 
-    pMasterServer = hname;
-  }
-}
-
-void
-MasterPort()
-  throws PipelineException :
-{
-  int port; 
-}
-{
-  <MASTER_PORT> EQ() port=PortNumber() 
-  { 
-    pMasterPort = port;
-  }
-}
-
-void
-QueueHost() :
-{
-  String hname = null;
-}
-{
-  <QUEUE_HOST> EQ() hname=HostName()
-  { 
-    pQueueServer = hname;
-  }
-}
-
-void
-QueuePort()
-  throws PipelineException :
-{
-  int port; 
-}
-{
-  <QUEUE_PORT> EQ() port=PortNumber()
-  { 
-    pQueuePort = port;
-  }
-}
-
-void
-JobPort()
-  throws PipelineException :
-{
-  int port; 
-}
-{
-  <JOB_PORT> EQ() port=PortNumber()
-  { 
-    pJobPort = port;
-  }
-}
-
-
 
 void LogFile() : 
 {

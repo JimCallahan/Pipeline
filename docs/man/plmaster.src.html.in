@@ -58,128 +58,41 @@ agreement</span></a> for this software and exits.<br>
   </div>
   <blockquote> </blockquote>
 </blockquote>
-<h3><a name="Global_Options"></a>Global Options</h3>
+<h3><a name="Global_Options"></a>Global Options<br>
+</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--node-dir"></a>--node-dir</span>=<span
- style="font-style: italic;">dir<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Use an alternative root node directory
-(dir) under which the persistent copies of Pipeline
-nodes are stored.<br>
-<br>
-The default root node directory is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--node-dir"><span
- style="font-weight: bold;">--node-dir</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).</div>
-</div>
-<h4 style="font-weight: normal; margin-left: 80px;"><span
- style="font-weight: bold;"></span> <span style="font-weight: bold;"></span><span
- style="font-weight: bold;"></span></h4>
-<div style="margin-left: 40px;"><b><a name="--master-port"></a>--master-port</b>=<i>num<br>
-<br>
-</i>
-<div style="margin-left: 40px;">Listen for client connections on an
-alternative network port (<i>num</i>).&nbsp; <br>
-<br>
-The
-default port is set by the <a
- href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-port"><span
- style="font-weight: bold;">--master-port</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1). <br>
-<br>
-<br>
-<span style="text-decoration: underline;"><span
- style="font-weight: bold;"><br>
-</span></span></div>
-<b><a name="--prod-dir"></a>--prod-dir</b>=<span
- style="font-style: italic;">dir<br>
-</span>
+ name="--file-mgr"></a>--file-mgr</span><br>
 <div style="margin-left: 40px;"><br>
-Use an alternative root production directory (<span
- style="font-style: italic;">dir</span>).&nbsp; <br>
+Run the Pipeline file manager as an internal thread of <span
+ style="font-weight: bold;">plmaster</span>(1) instead of running the
+file manager as a standalone <a href="plfilemgr.html"><span
+ style="font-weight: bold;">plfilemgr</span></a>(1) daemon.&nbsp; This
+option can only be used if the host configured to run the <span
+ style="font-weight: bold;">plmaster</span>(1) and <a
+ href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1)
+daemons are identical.&nbsp; See the <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-host"><span
+ style="font-weight: bold;">--master-host</span></a> and <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
+ style="font-weight: bold;">--file-host</span></a> options to <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1) for details.<br>
 <br>
-The
-default root production directory is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
- style="font-weight: bold;">--prod-dir</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).
+When the file manager and master manager are running on the same host,
+it is preferable that this option is used to reduce the network
+overhead and eliminate the need to run a second Java Virtual Machine
+process.&nbsp; However, if the best performance can usually be obtained
+by running the file manager as the <a href="plfilemgr.html"><span
+ style="font-weight: bold;">plfilemgr</span></a>(1) daemon on the
+network file server so that the heavy file system activity of the file
+manger can be performed locally and not over NFS.&nbsp;&nbsp; When this
+is not possible or desirable to run <a href="plfilemgr.html"><span
+ style="font-weight: bold;">plfilemgr</span></a>(1) on the network file
+server, the next best option is to run the file manager internally
+using this option.<br>
+<br>
+<br>
 </div>
-<b><br>
-</b><b><a name="--file-host"></a>--file-host</b><span
- style="font-weight: normal;">=</span><span style="font-style: italic;"><span
- style="font-weight: normal;">host<br>
-<br>
-</span></span>
-<div style="margin-left: 40px;">Use an alternative file server (host)
-to run the Pipeline File Manager daemon <a href="plfilemgr.html"><span
- style="font-weight: bold;">plfilemgr</span></a>(1)<span
- style="font-weight: normal;"></span>.</div>
-</div>
-<br>
-<div style="margin-left: 80px;">The
-default file host is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
- style="font-weight: bold;">--file-host</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-</div>
-<span style="font-weight: bold;"></span>
-<h4 style="margin-left: 40px;"><b><a name="--file-port"></a>--file-port</b><span
- style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
-<h4 style="margin-left: 80px;"><span style="font-weight: normal;">Use
-an alternative network port (<span style="font-style: italic;">num</span>)
-to communicate with the Pipeline File Manager daemon <span
- style="font-weight: bold;">plfilemgr</span>(1).&nbsp; <br>
-</span></h4>
-<div style="margin-left: 80px;">The
-default file port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-port"><span
- style="font-weight: bold;">--file-port</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1). </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
-<br>
-</span><b style="color: rgb(0, 0, 0);"><a name="--queue-host"></a>--queue-host</b><span
- style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">hostname</i><br
- style="color: rgb(0, 0, 0);">
-<blockquote style="color: rgb(0, 0, 0);"> Communicate with the <a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
-daemon running on
-the given host (<i>hostname</i>). <br>
-  <br>
-The default hostname is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-host"><span
- style="font-weight: bold;">--queue-host</span></a>
-option to <a
- href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-</blockquote>
-<b style="color: rgb(0, 0, 0);"><a name="--queue-port"></a>--queue-port</b><span
- style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">num</i><br
- style="color: rgb(0, 0, 0);">
-<blockquote style="color: rgb(0, 0, 0);"> Communicate with the <a
- href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
-daemon using the
-given port (<i>num</i>).<br>
-  <br>
-The default port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
- style="font-weight: bold;">--queue-port</span></a>
-option to <a
- href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-  <br>
-  <br>
-</blockquote>
 <span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename<br>
 <br>

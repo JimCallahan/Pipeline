@@ -65,23 +65,8 @@ agreement</span></a> for this software and exits.<br>
   </div>
   <blockquote> </blockquote>
 </blockquote>
-<h3><a name="Global_Options"></a>Global Options<br>
+<h3><a name="Global_Options"></a>Global Option<br>
 </h3>
-<div style="margin-left: 40px;"><b><a name="--job-port"></a>--job-port</b>=<i>num</i><br>
-</div>
-<blockquote style="margin-left: 80px;">Listen for connections on an
-alternative network port (<i>num</i>). <br>
-  <br>
-The
-default port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--job-port"><span
- style="font-weight: bold;">--job-port</span></a>
-option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1). <br>
-  <br>
-  <br>
-</blockquote>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename</span><br>

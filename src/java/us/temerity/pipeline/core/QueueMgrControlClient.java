@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.10 2005/03/11 06:34:39 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.11 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -28,35 +28,13 @@ class QueueMgrControlClient
 
   /** 
    * Construct a new queue manager control client.
-   * 
-   * @param hostname 
-   *   The name of the host running <B>plqueuemgr</B>(1).
-   * 
-   * @param port 
-   *   The network port listened to by <B>plqueuemgr</B>(1).
-   */
-  public
-  QueueMgrControlClient
-  ( 
-   String hostname, 
-   int port
-  ) 
-  {
-    super(hostname, port);
-  }
-
-  /** 
-   * Construct a new queue manager control client. <P> 
-   * 
-   * The hostname and port used are those specified by the 
-   * <CODE><B>--queue-host</B>=<I>host</I></CODE> and 
-   * <CODE><B>--queue-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
    */
   public
   QueueMgrControlClient() 
   {
-    this(PackageInfo.sQueueServer, PackageInfo.sQueuePort);
+    super();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

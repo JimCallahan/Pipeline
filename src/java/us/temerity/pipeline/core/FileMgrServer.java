@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.30 2005/03/30 20:37:29 jim Exp $
+// $Id: FileMgrServer.java,v 1.31 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,45 +35,18 @@ class FileMgrServer
 
   /** 
    * Construct a new file manager server.
-   * 
-   * @param dir 
-   *   The root production directory.
-   * 
-   * @param port 
-   *   The network port to monitor for incoming connections.
    */
   public
-  FileMgrServer
-  (
-   File dir, 
-   int port
-  )
+  FileMgrServer()
   { 
     super("FileMgrServer");
 
-    pFileMgr = new FileMgr(dir);
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
+    pFileMgr = new FileMgr();
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();    
   }
   
-  /** 
-   * Construct a new file manager using the default root production directory and 
-   * network port.
-   * 
-   * The root production directory and network port used are those specified by 
-   * <B>plconfig(1)</B>.
-   */
-  public
-  FileMgrServer() 
-  { 
-    this(PackageInfo.sProdDir, PackageInfo.sFilePort);
-  }
-
  
 
   /*----------------------------------------------------------------------------------------*/
@@ -93,12 +66,12 @@ class FileMgrServer
     try {
       schannel = ServerSocketChannel.open();
       ServerSocket server = schannel.socket();
-      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sFilePort);
       server.bind(saddr, 100);
       
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Listening on Port: " + pPort);
+	 "Listening on Port: " + PackageInfo.sFilePort);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
@@ -143,7 +116,7 @@ class FileMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + pPort + "):\n" + 
+	 "IO problems on port (" + PackageInfo.sFilePort + "):\n" + 
 	 ex.getMessage());
       LogMgr.getInstance().flush();
     }
@@ -439,18 +412,18 @@ class FileMgrServer
       catch (EOFException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Connection on port (" + pPort + ") terminated abruptly!");	
+	   "Connection on port (" + PackageInfo.sFilePort + ") terminated abruptly!");	
       }
       catch (IOException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on port (" + pPort + "):\n" + 
+	   "IO problems on port (" + PackageInfo.sFilePort + "):\n" + 
 	   ex.getMessage());
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on port (" + pPort + "):\n" + 
+	   "Illegal object encountered on port (" + PackageInfo.sFilePort + "):\n" + 
 	   ex.getMessage());	
       }
       catch (Exception ex) {
@@ -501,11 +474,6 @@ class FileMgrServer
    * The shared file manager. 
    */
   private FileMgr  pFileMgr;
-
-  /**
-   * The network port number the server listens to for incoming connections.
-   */
-  private int  pPort;
   
   /**
    * Has the server been ordered to shutdown?

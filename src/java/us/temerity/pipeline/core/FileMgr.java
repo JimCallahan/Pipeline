@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.42 2005/03/30 22:42:09 jim Exp $
+// $Id: FileMgr.java,v 1.43 2005/04/03 06:10:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -153,15 +153,9 @@ class FileMgr
 
   /** 
    * Construct a new file manager.
-   * 
-   * @param dir 
-   *   The root production directory.
    */
   public
-  FileMgr
-  (
-   File dir
-  ) 
+  FileMgr()
   {
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
@@ -172,11 +166,7 @@ class FileMgr
     pWorkingLocks   = new HashMap<NodeID,Object>();
     pMakeDirLock    = new Object();
 
-    if(dir == null)
-      throw new IllegalArgumentException("The root production directory cannot be (null)!");
-    pProdDir = dir;
-
-    pCheckSum = new CheckSum("MD5", pProdDir);
+    pCheckSum = new CheckSum("MD5", PackageInfo.sProdDir);
   }
 
 
@@ -217,7 +207,7 @@ class FileMgr
       timer.resume();	
 
       try {
-	File wdir = new File(pProdDir, "working/" + author + "/" + view);
+	File wdir = new File(PackageInfo.sProdDir, "working/" + author + "/" + view);
 	if(wdir.exists()) {
 	  if(!wdir.isDirectory()) 
 	    throw new PipelineException
@@ -235,7 +225,8 @@ class FileMgr
 	  Map<String,String> env = System.getenv();
 
 	  SubProcessLight proc = 
-	    new SubProcessLight(author, "CreateWorkingArea", "mkdir", args, env, pProdDir);
+	    new SubProcessLight(author, "CreateWorkingArea", "mkdir", 
+				args, env, PackageInfo.sProdDir);
 	  try {
 	    proc.start();
 	    proc.join();
@@ -287,7 +278,7 @@ class FileMgr
       timer.resume();	
 
       try {
-	File wdir = new File(pProdDir, "working/" + author + "/" + view);
+	File wdir = new File(PackageInfo.sProdDir, "working/" + author + "/" + view);
 	if(wdir.exists()) {
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("--recursive");
@@ -297,7 +288,8 @@ class FileMgr
 	  Map<String,String> env = System.getenv();
 
 	  SubProcessLight proc = 
-	    new SubProcessLight(author, "RemoveWorkingArea", "rm", args, env, pProdDir);
+	    new SubProcessLight(author, "RemoveWorkingArea", "rm", 
+				args, env, PackageInfo.sProdDir);
 	  try {
 	    proc.start();
 	    proc.join();
@@ -364,7 +356,8 @@ class FileMgr
 	    
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
-	      File work = new File(pProdDir, req.getNodeID().getWorkingParent() + "/" + file);
+	      File work = new File(PackageInfo.sProdDir, 
+				   req.getNodeID().getWorkingParent() + "/" + file);
 
 	      if(work.isFile())
 		fs[wk] = FileState.Pending;
@@ -391,14 +384,14 @@ class FileMgr
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
 	      File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-	      File work  = new File(pProdDir, wpath.getPath());
+	      File work  = new File(PackageInfo.sProdDir, wpath.getPath());
 	      
 	      if(!work.isFile()) 
 		fs[wk] = FileState.Missing;
 	      else {
 		VersionID lvid = req.getLatestVersionID();
 		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		File latest = new File(pProdDir, lpath.getPath());
+		File latest = new File(PackageInfo.sProdDir, lpath.getPath());
 		
 		if(!latest.isFile()) 
 		  fs[wk] = FileState.Added;
@@ -432,18 +425,18 @@ class FileMgr
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
 	      File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-	      File work  = new File(pProdDir, wpath.getPath());
+	      File work  = new File(PackageInfo.sProdDir, wpath.getPath());
 
 	      if(!work.isFile()) 
 		fs[wk] = FileState.Missing;
 	      else {
 		VersionID lvid = req.getLatestVersionID();
 		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		File latest = new File(pProdDir, lpath.getPath());
+		File latest = new File(PackageInfo.sProdDir, lpath.getPath());
 
 		VersionID bvid = req.getWorkingVersionID();
 		File bpath = new File(req.getNodeID().getCheckedInPath(bvid) + "/" + file);
-		File base  = new File(pProdDir, bpath.getPath());
+		File base  = new File(PackageInfo.sProdDir, bpath.getPath());
 		
 		if(!latest.isFile()) {
 		  if(!base.isFile()) 
@@ -503,7 +496,8 @@ class FileMgr
 
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
-	      File work = new File(pProdDir, req.getNodeID().getWorkingParent() + "/" + file);
+	      File work = new File(PackageInfo.sProdDir, 
+				   req.getNodeID().getWorkingParent() + "/" + file);
 	      long when = work.lastModified();
 	      if(when > 0) 
 		stamps[wk] = new Date(when);
@@ -582,8 +576,8 @@ class FileMgr
 	File crdir = null;
 	{
 	  File rpath = req.getNodeID().getCheckedInPath(rvid);
-	  rdir  = new File(pProdDir, rpath.getPath());
-	  crdir = new File(pProdDir, "checksum/" + rpath);
+	  rdir  = new File(PackageInfo.sProdDir, rpath.getPath());
+	  crdir = new File(PackageInfo.sProdDir, "checksum/" + rpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -637,7 +631,8 @@ class FileMgr
 	VersionID lvid = req.getLatestVersionID();
 	File ldir = null;
 	if(lvid != null) {
-	  ldir = new File(pProdDir, req.getNodeID().getCheckedInPath(lvid).getPath());
+	  ldir = new File(PackageInfo.sProdDir, 
+			  req.getNodeID().getCheckedInPath(lvid).getPath());
 	  if(!ldir.isDirectory()) {
 	    throw new PipelineException
 	      ("Somehow the latest repository directory (" + ldir + ") was missing!");
@@ -652,8 +647,8 @@ class FileMgr
 	File cwdir = null;
 	{
 	  File wpath = req.getNodeID().getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  cwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 	}
 	
 	/* process the files */ 
@@ -868,8 +863,8 @@ class FileMgr
 	File wpath = null;
 	{
 	  wpath = req.getNodeID().getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  cwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -907,7 +902,8 @@ class FileMgr
 	      
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "CheckOut-MakeDirs", "mkdir", args, env, pProdDir);
+				    "CheckOut-MakeDirs", "mkdir", 
+				    args, env, PackageInfo.sProdDir);
 	      try {
 		proc.start();
 		proc.join();
@@ -933,8 +929,8 @@ class FileMgr
 	File rpath = null;
 	{
 	  rpath = req.getNodeID().getCheckedInPath(rvid);
-	  rdir  = new File(pProdDir, rpath.getPath());
-	  crdir = new File(pProdDir, "checksum/" + rpath);
+	  rdir  = new File(PackageInfo.sProdDir, rpath.getPath());
+	  crdir = new File(PackageInfo.sProdDir, "checksum/" + rpath);
 	}
 
 	/* build the list of files to copy */ 
@@ -1156,8 +1152,8 @@ class FileMgr
 	File cwdir = null;
 	{
 	  File wpath = req.getNodeID().getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  cwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 
 	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
@@ -1195,7 +1191,8 @@ class FileMgr
 	      
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "Revert-MakeDirs", "mkdir", args, env, pProdDir);
+				    "Revert-MakeDirs", "mkdir", 
+				    args, env, PackageInfo.sProdDir);
 	      try {
 		proc.start();
 		proc.join();
@@ -1225,7 +1222,8 @@ class FileMgr
 	  args.add("--target-directory=" + wdir);
 	  args.addAll(rfiles);
 
-	  File rdir = new File(pProdDir, "repository" + req.getNodeID().getName());
+	  File rdir = new File(PackageInfo.sProdDir, 
+			       "repository" + req.getNodeID().getName());
 	    
 	  SubProcessLight proc = 
 	    new SubProcessLight(req.getNodeID().getAuthor(), 
@@ -1253,7 +1251,8 @@ class FileMgr
 	  args.add("--target-directory=" + cwdir);
 	  args.addAll(rfiles);
 
-	  File crdir = new File(pProdDir, "checksum/repository" + req.getNodeID().getName());
+	  File crdir = new File(PackageInfo.sProdDir, 
+				"checksum/repository" + req.getNodeID().getName());
 
 	  SubProcessLight proc = 
 	    new SubProcessLight("Revert-CopyCheckSums", "cp", args, env, crdir);
@@ -1370,8 +1369,8 @@ class FileMgr
 	File ocwdir = null;
 	{
 	  File wpath = sourceID.getWorkingParent();
-	  owdir  = new File(pProdDir, wpath.getPath());
-	  ocwdir = new File(pProdDir, "checksum/" + wpath);
+	  owdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  ocwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 	}
 	
 	/* verify (or create) the target working area file and checksum directories */ 
@@ -1379,8 +1378,8 @@ class FileMgr
 	File cwdir = null;
 	{
 	  File wpath = targetID.getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  cwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 	  
 	  synchronized(pMakeDirLock) { 
 	    File dir = null;
@@ -1402,7 +1401,8 @@ class FileMgr
 
 	      SubProcessLight proc = 
 		new SubProcessLight(targetID.getAuthor(), 
-				    "Clone-MakeDirs", "mkdir", args, env, pProdDir);
+				    "Clone-MakeDirs", "mkdir", 
+				    args, env, PackageInfo.sProdDir);
 	      try {
 		proc.start();
 		proc.join();
@@ -1672,8 +1672,8 @@ class FileMgr
 	File ocwdir = null;
 	{
 	  File wpath = req.getNodeID().getWorkingParent();
-	  owdir  = new File(pProdDir, wpath.getPath());
-	  ocwdir = new File(pProdDir, "checksum/" + wpath);
+	  owdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  ocwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 	}
 	
 	/* verify (or create) the new working area file and checksum directories */ 
@@ -1681,8 +1681,8 @@ class FileMgr
 	File cwdir = null;
 	{
 	  File wpath = id.getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  cwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 	  
 	  synchronized(pMakeDirLock) { 
 	    File dir = null;
@@ -1716,7 +1716,8 @@ class FileMgr
 	      
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "Rename-MakeDirs", "mkdir", args, env, pProdDir);
+				    "Rename-MakeDirs", "mkdir", 
+				    args, env, PackageInfo.sProdDir);
 	      try {
 		proc.start();
 		proc.join();
@@ -1931,8 +1932,8 @@ class FileMgr
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     checkedInLock.writeLock().lock();
     try {
-      String rdir  = (pProdDir + "/repository" + name);
-      String crdir = (pProdDir + "/checksum/repository" + name);
+      String rdir  = (PackageInfo.sProdDir + "/repository" + name);
+      String crdir = (PackageInfo.sProdDir + "/checksum/repository" + name);
       
       {
 	ArrayList<String> args = new ArrayList<String>();
@@ -1991,8 +1992,11 @@ class FileMgr
 	}
       }
 
-      deleteEmptyParentDirs(new File(pProdDir + "/repository"), rparent);
-      deleteEmptyParentDirs(new File(pProdDir + "/checksum/repository"), crparent);
+      deleteEmptyParentDirs(new File(PackageInfo.sProdDir + "/repository"), 
+			    rparent);
+
+      deleteEmptyParentDirs(new File(PackageInfo.sProdDir + "/checksum/repository"), 
+			    crparent);
 
       return new SuccessRsp(timer);
     }
@@ -2041,7 +2045,8 @@ class FileMgr
 	timer.resume();	
 
 	Map<String,String> env = System.getenv();
-	File wdir = new File(pProdDir, req.getNodeID().getWorkingParent().getPath());
+	File wdir = new File(PackageInfo.sProdDir, 
+			     req.getNodeID().getWorkingParent().getPath());
 
 	ArrayList<String> args = new ArrayList<String>();
 	args.add(req.getWritable() ? "u+w" : "u-w");
@@ -2385,7 +2390,7 @@ class FileMgr
     try {
       timer.resume();
 
-      File nodeDir = new File(pProdDir, "repository" + name);
+      File nodeDir = new File(PackageInfo.sProdDir, "repository" + name);
 
       /* all versions being modified */ 
       TreeSet<VersionID> avids = new TreeSet<VersionID>();
@@ -2597,7 +2602,7 @@ class FileMgr
     try {
       TreeMap<String,TreeSet<VersionID>> offlined = new TreeMap<String,TreeSet<VersionID>>();
 
-      File dir = new File(pProdDir, "repository");
+      File dir = new File(PackageInfo.sProdDir, "repository");
       getOfflinedHelper(dir, offlined);
 
       return new FileGetOfflinedRsp(timer, offlined);
@@ -2623,7 +2628,7 @@ class FileMgr
    TreeMap<String,TreeSet<VersionID>> offlined
   ) 
   {
-    int head = (pProdDir + "/repository").length();
+    int head = (PackageInfo.sProdDir + "/repository").length();
     File files[] = dir.listFiles(); 
     if(files != null) {
       if(files.length == 0) {
@@ -2669,19 +2674,20 @@ class FileMgr
     BaseArchiver archiver = req.getArchiver();
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
     
-    File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp.getTime());
+    File restoreDir = new File(PackageInfo.sProdDir, 
+			       "restore/" + archiveName + "-" + stamp.getTime());
 
     TaskTimer timer = new TaskTimer("FileMgr.extract: " + archiveName);
     try {
       /* verify that enough disk space exists to perform the restore operation */ 
       {
 	Long size = req.getSize() + 134217728L;  
-	long freeDisk = NativeFileSys.freeDiskSpace(pProdDir);
+	long freeDisk = NativeFileSys.freeDiskSpace(PackageInfo.sProdDir);
 	if(size > freeDisk)
 	  throw new PipelineException
 	    ("There is not enough free disk space (" + formatLong(size) + ") in " +
-	     "the production directory (" + pProdDir + ") to restore the archive " + 
-	     "volume (" + archiveName + ")!");
+	     "the production directory (" + PackageInfo.sProdDir + ") to restore the " + 
+	     "archive volume (" + archiveName + ")!");
       }
       
       /* determine the names of the files to extract */ 
@@ -2856,7 +2862,8 @@ class FileMgr
     TreeMap<File,TreeSet<VersionID>> symlinks = req.getSymlinks();
     TreeMap<File,VersionID> targets = req.getTargets();
     
-    File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp.getTime());
+    File restoreDir = new File(PackageInfo.sProdDir, 
+			       "restore/" + archiveName + "-" + stamp.getTime());
     Map<String,String> env = System.getenv();
 
     TaskTimer timer = new TaskTimer("FileMgr.restore: " + archiveName);
@@ -2867,7 +2874,7 @@ class FileMgr
     try {
       timer.resume();
 
-      File nodeDir = new File(pProdDir, "repository" + name);
+      File nodeDir = new File(PackageInfo.sProdDir, "repository" + name);
 
       /* all versions being modified */ 
       TreeSet<VersionID> avids = new TreeSet<VersionID>();
@@ -2976,7 +2983,8 @@ class FileMgr
 	for(File file : symlinks.keySet()) {
 	  File target = new File("../" + vid + "/" + file);
 	  for(VersionID svid : symlinks.get(file)) {
-	    File link = new File(pProdDir, "repository" + name + "/" + svid + "/" + file);
+	    File link = new File(PackageInfo.sProdDir, 
+				 "repository" + name + "/" + svid + "/" + file);
 	    NativeFileSys.symlink(target, link);
 	  }
 	}
@@ -2987,7 +2995,8 @@ class FileMgr
       for(File file : targets.keySet()) {
 	VersionID tvid = targets.get(file);
 	File target = new File("../" + tvid + "/" + file);
-	File link = new File(pProdDir, "repository" + name + "/" + vid + "/" + file);
+	File link = new File(PackageInfo.sProdDir, 
+			     "repository" + name + "/" + vid + "/" + file);
 	NativeFileSys.symlink(target, link);
       }
 
@@ -3048,7 +3057,8 @@ class FileMgr
   {
     String archiveName = req.getArchiveName();	
     Date stamp = req.getTimeStamp();     
-    File dir = new File(pProdDir, "restore/" + archiveName + "-" + stamp.getTime());
+    File dir = new File(PackageInfo.sProdDir, 
+			"restore/" + archiveName + "-" + stamp.getTime());
 
     TaskTimer timer = new TaskTimer("FileMgr.removeExtractDir: " + archiveName);
 
@@ -3211,8 +3221,8 @@ class FileMgr
 	File cwdir = null;
 	{
 	  File wpath = id.getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  wdir  = new File(PackageInfo.sProdDir, wpath.getPath());
+	  cwdir = new File(PackageInfo.sProdDir, "checksum/" + wpath);
 	}
 	
 	/* remove the working files */ 
@@ -3282,7 +3292,8 @@ class FileMgr
 	  }
 
 	  deleteEmptyParentDirs
-	    (new File(pProdDir, "checksum/working/" + id.getAuthor() + "/" + id.getView()),
+	    (new File(PackageInfo.sProdDir, 
+		      "checksum/working/" + id.getAuthor() + "/" + id.getView()),
 	     cwdir);
 	}
 	
@@ -3382,15 +3393,9 @@ class FileMgr
   private Object pMakeDirLock;
  
   /**
-   * The root production directory.
-   */ 
-  private File  pProdDir;
-
-  /**
    * The checksum generator. 
    */ 
   private CheckSum  pCheckSum; 
-
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 

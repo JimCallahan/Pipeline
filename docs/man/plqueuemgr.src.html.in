@@ -63,53 +63,6 @@ agreement</span></a> for this software and exits.<br>
   <blockquote> </blockquote>
 </blockquote>
 <h3><a name="Global_Options"></a>Global Options</h3>
-<div style="margin-left: 40px;"><b><a name="--queue-dir"></a>--queue-dir</b>=<span
- style="font-style: italic;">dir<br>
-</span>
-<div style="margin-left: 40px;"><br>
-Use an alternative root queue directory (<span
- style="font-style: italic;">dir</span>).&nbsp; <br>
-<br>
-The
-default root queue directory is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-dir"><span
- style="font-weight: bold;">--queue-dir</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).
-</div>
-<b><br>
-<a name="--file-port"></a>--queue-port</b>=<i>num</i><br>
-</div>
-<blockquote style="margin-left: 80px;">Listen for connections on an
-alternative network port (<i>num</i>). <br>
-  <br>
-The
-default port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
- style="font-weight: bold;">--queue-port</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1). <br>
-  <br>
-  <br>
-</blockquote>
-<div style="margin-left: 40px;"><b><a name="--job-port"></a>--job-port</b>=<i>num</i><br>
-</div>
-<blockquote style="margin-left: 80px;">Contact <a href="pljobmgr.html"><span
- style="font-weight: bold;">pljobmgr</span></a>(1) daemons on an
-alternative network port (<i>num</i>). <br>
-  <br>
-The
-default port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--job-port"><span
- style="font-weight: bold;">--job-port</span></a>
-option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1). <br>
-  <br>
-  <br>
-</blockquote>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename</span><br>

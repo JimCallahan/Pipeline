@@ -51,13 +51,6 @@ GraphicalOptsParser
   {
     pLogBackups = 10;
 
-    pMasterServer = PackageInfo.sMasterServer;
-    pMasterPort   = PackageInfo.sMasterPort;
-
-    pQueueServer = PackageInfo.sQueueServer; 
-    pQueuePort   = PackageInfo.sQueuePort;
-    pJobPort     = PackageInfo.sJobPort;
-
     pRestoreLayout     = true;
     pRestoreSelections = true;
 
@@ -75,7 +68,6 @@ GraphicalOptsParser
    */
   private GraphicalApp  pApp;
 
-
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -88,37 +80,6 @@ GraphicalOptsParser
    * The number of backup to maintain of the log file.
    */ 
   private int  pLogBackups;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The name of the host running the <B>plmaster</B><A>(1) daemon.
-   */ 
-  private String  pMasterServer;
-
-  /**
-   * The network port listened to by the <B>plmaster</B><A>(1) daemon.
-   */
-  private int  pMasterPort;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /*
-   * The name of the host running the <B>plqueuemgr</B><A>(1) daemon. 
-   */
-  private String  pQueueServer;
-
-  /**
-   * The network port listened to by the <B>plqueuemgr</B><A>(1) daemon.
-   */
-  private int  pQueuePort;
-
-  /**
-   * The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
-   */
-  private int  pJobPort;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -168,13 +129,6 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <MASTER_HOST:  "--master-host">   : HOSTNAME_SEP
-| <MASTER_PORT:  "--master-port">   : INTEGER_SEP
-
-| <QUEUE_HOST:   "--queue-host">    : HOSTNAME_SEP
-| <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
-| <JOB_PORT:     "--job-port">      : INTEGER_SEP 
-
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
@@ -376,9 +330,7 @@ Commands() :
     }
 
     /* start the application */ 
-    UIMaster.init(pMasterServer, pMasterPort, 
-		  pQueueServer, pQueuePort, pJobPort, 
-		  pLayout, pRestoreLayout, pRestoreSelections, 
+    UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, 
 		  pDebugGL, pTraceGL);
   }
 }
@@ -467,76 +419,11 @@ void
 GlobalOpts() :
 {}
 {
-  (MasterHost() | MasterPort() | 
-   QueueHost() | QueuePort() | JobPort() | 
-   Log() | LogFile() | StandardLogFile() | LogBackups() |
+  (Log() | LogFile() | StandardLogFile() | LogBackups() |
    Layout() | NoLayout() | NoSelections() | 
    DebugGL() | TraceGL()) 
   {}
 }
-
-
-void
-MasterHost() :
-{
-  Token t;
-}
-{
-  <MASTER_HOST> EQ() t=<HOSTNAME>
-  { 
-    pMasterServer = t.image;
-  }
-}
-
-void
-MasterPort() :
-{
-  Token t;
-}
-{
-  <MASTER_PORT> EQ() t=<INTEGER>
-  { 
-    pMasterPort = Integer.parseInt(t.image);
-  }
-}
-
-void
-QueueHost() :
-{
-  Token t;
-}
-{
-  <QUEUE_HOST> EQ() t=<HOSTNAME>
-  { 
-    pQueueServer = t.image;
-  }
-}
-
-void
-QueuePort() :
-{
-  Token t;
-}
-{
-  <QUEUE_PORT> EQ() t=<INTEGER>
-  { 
-    pQueuePort = Integer.parseInt(t.image);
-  }
-}
-
-void
-JobPort() :
-{
-  Token t;
-}
-{
-  <JOB_PORT> EQ() t=<INTEGER>
-  { 
-    pJobPort = Integer.parseInt(t.image);
-  }
-}
-
-
 
 void LogFile() : 
 {

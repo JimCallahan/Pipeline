@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.13 2005/02/12 15:30:52 jim Exp $
+// $Id: MasterApp.java,v 1.14 2005/04/03 06:10:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -120,10 +120,6 @@ class MasterApp
        "  plmaster --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--node-dir=...][--master-port=...]\n" + 
-       "  [--prod-dir=...][--file-host=...][--file-port]\n" + 
-       "  [--notify-control-port=...][--notify-monitor-port=...]\n" + 
-       "  [--queue-host=...][--queue-port=...]\n" + 
        "  [--log-file=...][--log-backups=...][--log=...]\n" +
        "\n" + 
        "\n" +  
