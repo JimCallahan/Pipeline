@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInReq.java,v 1.1 2004/06/14 22:32:16 jim Exp $
+// $Id: NodeGetCheckedInReq.java,v 1.2 2004/10/09 16:55:08 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,7 +32,8 @@ class NodeGetCheckedInReq
    *   The fully resolved node name.
    *
    * @param vid
-   *   The revision number of the checked-in version.
+   *   The revision number of the checked-in version or <CODE>null</CODE> for the latest 
+   *   version.
    */
   public
   NodeGetCheckedInReq
@@ -45,8 +46,6 @@ class NodeGetCheckedInReq
       throw new IllegalArgumentException("The node name cannot be (null)!");
     pName = name;
 
-    if(vid == null) 
-      throw new IllegalArgumentException("The revision number cannot be (null)!");
     pVersionID = vid;
   }
 
@@ -66,7 +65,8 @@ class NodeGetCheckedInReq
   }
 
   /**
-   * Get the revision number of the checked-in version.
+   * Get the revision number of the checked-in version or <CODE>null</CODE> for the latest 
+   * version.
    */ 
   public VersionID
   getVersionID()
@@ -94,7 +94,8 @@ class NodeGetCheckedInReq
   private String  pName;
 
   /**
-   * The revision number of the checked-in version.
+   * The revision number of the checked-in version or <CODE>null</CODE> for the latest 
+   * version.
    */ 
   private VersionID  pVersionID;    
 
