@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.2 2004/09/11 14:14:13 jim Exp $
+// $Id: MayaMelAction.java,v 1.3 2004/09/12 19:03:18 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -245,6 +245,7 @@ class MayaMelAction
 	  for(File file : scripts) 
 	    out.write("source \"" + file + "\";\n");
 	}
+	out.write("\n");
       }
 
       /* save the file */ 
