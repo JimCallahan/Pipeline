@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.36 2004/08/25 05:20:25 jim Exp $
+// $Id: UIMaster.java,v 1.37 2004/08/26 05:58:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -78,6 +78,7 @@ class UIMaster
     pNodeFilesPanels   = new PanelGroup<JNodeFilesPanel>();
 
     pQueueJobBrowserPanels = new PanelGroup<JQueueJobBrowserPanel>();
+    pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -277,6 +278,7 @@ class UIMaster
     return pNodeFilesPanels;
   }
 
+
   /**
    * Get the job broswer panel group.
    */ 
@@ -284,6 +286,15 @@ class UIMaster
   getQueueJobBrowserPanels() 
   {
     return pQueueJobBrowserPanels;
+  }
+
+  /**
+   * Get the job broswer panel group.
+   */ 
+  public PanelGroup<JQueueJobViewerPanel>
+  getQueueJobViewerPanels() 
+  {
+    return pQueueJobViewerPanels;
   }
 
 
@@ -2233,11 +2244,22 @@ class UIMaster
 	  SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt));
 	}
 
-	mgr.verifySimpleTexture("White");
-	mgr.verifySimpleTexture("Yellow");
-	mgr.verifySimpleTexture("LightGrey");
-	mgr.verifySimpleTexture("DarkGrey");
-	update();
+	{
+	  mgr.verifySimpleTexture("White");
+	  mgr.verifySimpleTexture("Yellow");
+	  mgr.verifySimpleTexture("Cyan");
+
+	  mgr.verifySimpleTexture("LightGrey");
+	  mgr.verifySimpleTexture("DarkGrey");
+	  
+	  mgr.verifySimpleTexture("Queued");
+	  mgr.verifySimpleTexture("Aborted");
+	  mgr.verifySimpleTexture("Running");
+	  mgr.verifySimpleTexture("Finished");
+	  mgr.verifySimpleTexture("Failed");
+
+	  update();
+	}
 
 	for(LinkRelationship rel : LinkRelationship.all()) {
 	  mgr.verifyTexture("LinkRelationship-" + rel);
@@ -2589,6 +2611,7 @@ class UIMaster
 	pNodeFilesPanels.clear();
 
 	pQueueJobBrowserPanels.clear();
+	pQueueJobViewerPanels.clear();
       }
 
       /* restore saved panels */
@@ -2885,6 +2908,11 @@ class UIMaster
    * The active job browser panels. <P> 
    */ 
   private PanelGroup<JQueueJobBrowserPanel>  pQueueJobBrowserPanels;
+
+  /**
+   * The active job viewer panels. <P> 
+   */ 
+  private PanelGroup<JQueueJobViewerPanel>  pQueueJobViewerPanels;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.34 2004/08/25 05:20:25 jim Exp $
+// $Id: JManagerPanel.java,v 1.35 2004/08/26 05:58:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -117,7 +117,6 @@ class JManagerPanel
 	item = new JMenuItem("Job Viewer");
 	item.setActionCommand("job-viewer");
 	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	item = new JMenuItem("Job Details");
@@ -705,6 +704,8 @@ class JManagerPanel
 
     else if(cmd.equals("job-browser"))
       doJobBrowserPanel();
+    else if(cmd.equals("job-viewer"))
+      doJobViewerPanel();
 
     else if(cmd.equals("none"))
       doEmptyPanel();
@@ -860,6 +861,17 @@ class JManagerPanel
   {
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobBrowserPanel(dead));
+    dead.setGroupID(0);
+  }
+
+  /**
+   * Change the contents of this panel to a JQueueJobViewerPanel. 
+   */ 
+  private void 
+  doJobViewerPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JQueueJobViewerPanel(dead));
     dead.setGroupID(0);
   }
 
