@@ -1,4 +1,4 @@
-// $Id: ActionParam.java,v 1.1 2004/02/25 01:25:17 jim Exp $
+// $Id: ActionParam.java,v 1.2 2004/02/27 06:21:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -128,7 +128,7 @@ class ActionParam
   /** 
    * Indicates whether some other object is "equal to" this one.
    * 
-   * @param obj 
+   * @param obj [<B>in</B>]
    *   The reference object with which to compare.
    */
   public boolean
@@ -140,8 +140,8 @@ class ActionParam
     if((obj != null) && (obj instanceof ActionParam)) {
       ActionParam param = (ActionParam) obj;
     
-      return (getValue().equals(param.getValue()) && 
-	      getName().equals(param.getName()));
+      return (super.equals(obj) && 
+	      pValue.equals(param.pValue));
     }
 
     return false;
@@ -164,6 +164,14 @@ class ActionParam
   {
     return pValue.toString();
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -841968510233915472L;
 
 
    
