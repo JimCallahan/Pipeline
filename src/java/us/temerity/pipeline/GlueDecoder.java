@@ -1,4 +1,4 @@
-// $Id: GlueDecoder.java,v 1.3 2004/02/17 17:50:25 jim Exp $
+// $Id: GlueDecoder.java,v 1.4 2004/02/23 23:45:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,12 +44,17 @@ class GlueDecoder
   {
     pState = new GlueParserState();
 
+    StringReader in = null;
     try {
-      GlueParser parser = new GlueParser(new StringReader(text));
+      in = new StringReader(text);
+      GlueParser parser = new GlueParser(in);
       pRoot = parser.Decode(this, pState);
     }
     catch(ParseException ex) {
       throw new GlueException(ex);
+    }
+    finally {
+      in.close();
     }
   }
 
@@ -75,6 +80,14 @@ class GlueDecoder
     catch(ParseException ex) {
       throw new GlueException(ex);
     }
+    finally {
+      try {
+	stream.close(); 
+      }
+      catch(IOException ex) {
+	throw new GlueException(ex);
+      }
+    }
   }
 
   /** 
@@ -98,6 +111,14 @@ class GlueDecoder
     }
     catch(ParseException ex) {
       throw new GlueException(ex);
+    }
+    finally {
+      try {
+	reader.close();  
+      }
+      catch(IOException ex) {
+	throw new GlueException(ex);
+      }
     }
   }
 
