@@ -1,4 +1,4 @@
-// $Id: ViewerNodePool.java,v 1.4 2004/08/26 06:01:36 jim Exp $
+// $Id: ViewerNodePool.java,v 1.5 2004/08/30 06:52:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -69,10 +69,10 @@ class ViewerNodePool
   /**
    * Get the node paths of the active viewer nodes.
    */ 
-  public synchronized Set
+  public synchronized Set<NodePath>
   getActiveNodePaths() 
   {
-    return pActive.keySet();
+    return Collections.unmodifiableSet(pActive.keySet());
   }
 
   /**
@@ -93,10 +93,10 @@ class ViewerNodePool
   /** 
    * Get all of the active viewer nodes.
    */ 
-  public synchronized Collection
+  public synchronized Collection<ViewerNode>
   getActiveViewerNodes()
   {
-    return pActive.values();
+    return Collections.unmodifiableCollection(pActive.values());
   }
   
 

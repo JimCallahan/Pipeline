@@ -1,4 +1,4 @@
-// $Id: ViewerJobPool.java,v 1.1 2004/08/26 06:05:15 jim Exp $
+// $Id: ViewerJobPool.java,v 1.2 2004/08/30 06:52:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -69,10 +69,10 @@ class ViewerJobPool
   /**
    * Get the job paths of the active viewer jobs.
    */ 
-  public synchronized Set
+  public synchronized Set<JobPath>
   getActiveJobPaths() 
   {
-    return pActive.keySet();
+    return Collections.unmodifiableSet(pActive.keySet());
   }
 
   /**
@@ -93,10 +93,10 @@ class ViewerJobPool
   /** 
    * Get all of the active viewer jobs.
    */ 
-  public synchronized Collection
+  public synchronized Collection<ViewerJob>
   getActiveViewerJobs()
   {
-    return pActive.values();
+    return Collections.unmodifiableCollection(pActive.values());
   }
   
 
