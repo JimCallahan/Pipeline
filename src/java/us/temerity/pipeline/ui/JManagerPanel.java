@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.13 2004/05/08 15:07:07 jim Exp $
+// $Id: JManagerPanel.java,v 1.14 2004/05/08 23:39:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -187,6 +187,25 @@ class JManagerPanel
 	
       pPopup.addSeparator();
 
+      item = new JMenuItem("Save Layout...");
+      item.setActionCommand("save-layout");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      {
+	JMenu sub = new JMenu("Restore Layout");   
+	pRestoreLayoutMenu = sub;
+
+	pPopup.add(sub);  
+      }
+
+      item = new JMenuItem("Manage Layouts...");
+      item.setActionCommand("manage-layouts");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      pPopup.addSeparator();
+
       item = new JMenuItem("Preferences...");
       item.setActionCommand("preferences");
       item.addActionListener(this);
@@ -259,7 +278,7 @@ class JManagerPanel
 
 	item.setIcon(sGroupIcons[wk]);
 	item.setDisabledIcon(sGroupDisabledIcons[wk]);
-	item.setActionCommand("group-" + wk);
+	item.setActionCommand("group:" + wk);
 	item.addActionListener(this);
 
 	pGroupPopup.add(item);  
@@ -332,8 +351,6 @@ class JManagerPanel
     }
 
     addComponentListener(this); 
-
-    UIMaster.getInstance().addManager(this);
   }
 
 
@@ -504,55 +521,62 @@ class JManagerPanel
     System.out.print("Action: " + e.getActionCommand() + "\n");
 
     /* dispatch event */ 
-    if(e.getActionCommand().equals("node-browser"))
+    String cmd = e.getActionCommand();
+    if(cmd.equals("node-browser"))
       doNodeBrowserPanel();
-    else if(e.getActionCommand().equals("node-viewer"))
+    else if(cmd.equals("node-viewer"))
       doNodeViewerPanel();
 
     // ...
 
-    else if(e.getActionCommand().equals("none"))
+    else if(cmd.equals("none"))
       doEmptyPanel();
 
     
     /* layout */ 
-    else if(e.getActionCommand().equals("add-left"))
+    else if(cmd.equals("add-left"))
       doAddLeft();
-    else if(e.getActionCommand().equals("add-right"))
+    else if(cmd.equals("add-right"))
       doAddRight();
-    else if(e.getActionCommand().equals("add-above"))
+    else if(cmd.equals("add-above"))
       doAddAbove();
-    else if(e.getActionCommand().equals("add-below"))
+    else if(cmd.equals("add-below"))
       doAddBelow();
-    else if(e.getActionCommand().equals("add-tab"))
+    else if(cmd.equals("add-tab"))
       doAddTab();
-    else if(e.getActionCommand().equals("close-panel"))
+    else if(cmd.equals("close-panel"))
       doClosePanel();
 
     /* owner|view */
-    else if(e.getActionCommand().equals("change-owner-view"))
+    else if(cmd.equals("change-owner-view"))
       doChangeOwnerView();
     
     /* group */ 
-    else if(e.getActionCommand().startsWith("group-")) 
-      doGroup(e.getActionCommand());
+    else if(cmd.startsWith("group:")) 
+      doGroup(Integer.valueOf(cmd.substring(6)));
     
     /* UIMaster */ 
-    else if(e.getActionCommand().equals("about"))
+    else if(cmd.equals("save-layout"))
+      UIMaster.getInstance().showSaveLayoutDialog();
+//     else if(cmd.startsWith("restore-layout:")) 
+//       UIMaster.getInstance().doRestoreLayout(cmd.substring(15));
+    else if(cmd.equals("manage-layouts"))
+      UIMaster.getInstance().showManageLayoutsDialog();
+    else if(cmd.equals("about"))
       UIMaster.getInstance().showAboutDialog();
 
     //...
 
-    else if(e.getActionCommand().equals("home-page"))
+    else if(cmd.equals("home-page"))
       BaseApp.showURL("http://www.temerity.us");
-    else if(e.getActionCommand().equals("support-forums"))
+    else if(cmd.equals("support-forums"))
       BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
-    else if(e.getActionCommand().equals("bug-database"))
+    else if(cmd.equals("bug-database"))
       BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
 
     //...
 
-    else if(e.getActionCommand().equals("quit"))
+    else if(cmd.equals("quit"))
       UIMaster.getInstance().doQuit();    
   }
 
@@ -769,8 +793,6 @@ class JManagerPanel
       grandpa.setContents(liveMgr.removeContents());
 
       pTopLevelPanel.setGroupID(0);
-      UIMaster.getInstance().removeManager(liveMgr);
-      UIMaster.getInstance().removeManager(this);
     }
 
     /* remove this tab from the parent tabbed pane */ 
@@ -785,7 +807,6 @@ class JManagerPanel
       }
 
       pTopLevelPanel.setGroupID(0);
-      UIMaster.getInstance().removeManager(this);
     }
 
     // DEBUG
@@ -848,10 +869,9 @@ class JManagerPanel
   private void 
   doGroup
   (
-   String command
+   int groupID
   )
   {
-    int groupID = Integer.valueOf(command.substring(6, 7));
     pTopLevelPanel.setGroupID(groupID);
     pGroupMenuAnchor.setIcon(sGroupIcons[groupID]);
   }
@@ -921,6 +941,13 @@ class JManagerPanel
 	boolean vert = (pPanel.getHeight() > (29*2 + 10));
 	pAddAboveItem.setEnabled(vert);
 	pAddBelowItem.setEnabled(vert);
+      }
+
+      {
+
+	// update from UIManager...
+
+	pRestoreLayoutMenu.setEnabled(pRestoreLayoutMenu.getItemCount() > 0);
       }
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
@@ -1117,6 +1144,11 @@ class JManagerPanel
   private JMenuItem  pAddAboveItem; 
   private JMenuItem  pAddBelowItem; 
   private JMenuItem  pOwnerViewItem;
+
+  /**
+   * The load layout submenu.
+   */ 
+  private JMenu pRestoreLayoutMenu;
 
 
   /**

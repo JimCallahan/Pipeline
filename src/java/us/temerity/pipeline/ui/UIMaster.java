@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.7 2004/05/08 15:10:32 jim Exp $
+// $Id: UIMaster.java,v 1.8 2004/05/08 23:40:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -52,7 +52,6 @@ class UIMaster
 
     pOpsLock = new ReentrantLock();
 
-    pManagerPanels = new LinkedList<JManagerPanel>(); // IS THIS NEEDED?
     pNodeBrowsers  = new JNodeBrowserPanel[10];
     pNodeViewers   = new JNodeViewerPanel[10];
 
@@ -122,41 +121,6 @@ class UIMaster
   getFrame()
   {
     return pFrame;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  // IS THIS NEEDED?
-
-  /**
-   * Add a new manager panel.
-   */ 
-  public void 
-  addManager
-  (
-   JManagerPanel mgr
-  ) 
-  {
-    assert(!pManagerPanels.contains(mgr));
-    pManagerPanels.add(mgr);
-    
-    System.out.print("ManagerPanels = " + pManagerPanels.size() + "\n");
-  }
-  
-  /**
-   * Recursively remove the subtree of manager panels.
-   */ 
-  public void 
-  removeManager
-  (
-   JManagerPanel mgr
-  ) 
-  {
-    assert(pManagerPanels.contains(mgr));
-    pManagerPanels.remove(mgr);
-    
-    System.out.print("ManagerPanels = " + pManagerPanels.size() + "\n");
   }
   
 
@@ -272,6 +236,24 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Show the save layouts dialog.
+   */ 
+  public void 
+  showSaveLayoutDialog()
+  {
+    SwingUtilities.invokeLater(new ShowSaveLayoutDialogTask());
+  }
+  
+  /**
+   * Show the save layouts dialog.
+   */ 
+  public void 
+  showManageLayoutsDialog()
+  {
+    SwingUtilities.invokeLater(new ShowManageLayoutsDialogTask());
+  }
+
+  /**
    * Show an error message dialog for the given exception.
    */ 
   public void 
@@ -280,22 +262,22 @@ class UIMaster
    Exception ex
   ) 
   {
-    showErrorDialog(ex.getMessage());
+    pErrorDialog.setMessage(ex);
+    SwingUtilities.invokeLater(new ShowErrorDialogTask());
   }
 
   /**
-   * Show an error message dialog containing the given message.
+   * Show an error message dialog with the given title and message.
    */ 
   public void 
   showErrorDialog
   (
+   String title, 
    String msg
   ) 
   {
-    System.out.print("UIMaster.showErrorDialog(): " + msg + "\n");
-
-    // ... 
-
+    pErrorDialog.setMessage(title, msg);
+    SwingUtilities.invokeLater(new ShowErrorDialogTask());
   }
 
 
@@ -483,7 +465,7 @@ class UIMaster
   )
   {
     JTextField field = new JTextField(text);
-    fiels.setName("EditableTextField");
+    field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -797,9 +779,9 @@ class UIMaster
 	    JPanel panel = new JPanel(new BorderLayout());
 	    panel.setName("RootPanel");
 	    
-	    JManagerPanel mgr = null;
 	    {
-	      mgr = new JManagerPanel();
+	      JManagerPanel mgr = new JManagerPanel();
+	      pManagerPanel = mgr;
 	      mgr.setContents(new JEmptyPanel());
 	      
 	      panel.add(mgr);
@@ -858,10 +840,10 @@ class UIMaster
       }
 
       {
-	pAboutDialog = new JAboutDialog();
-
-	// ...
-
+	pSaveLayoutDialog    = new JSaveLayoutDialog();
+	pManageLayoutsDialog = new JManageLayoutsDialog();
+	pErrorDialog         = new JErrorDialog();
+	pAboutDialog         = new JAboutDialog();
       }
       
       pFrame.setVisible(true);
@@ -896,7 +878,7 @@ class UIMaster
   }
 
   /**
-   *  Notify the user that a panel operation is finished.
+   * Notify the user that a panel operation is finished.
    */ 
   private
   class EndOpsTask
@@ -920,6 +902,60 @@ class UIMaster
     private String  pMsg;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Show the save layout dialog. <P> 
+   * 
+   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
+   * showing the dialog.
+   */ 
+  private
+  class ShowSaveLayoutDialogTask
+    extends Thread
+  { 
+    public void 
+    run() 
+    {
+      pSaveLayoutDialog.setVisible(true);
+    }
+  }
+
+  /**
+   * Show the manage layouts dialog. <P> 
+   * 
+   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
+   * showing the dialog.
+   */ 
+  private
+  class ShowManageLayoutsDialogTask
+    extends Thread
+  { 
+    public void 
+    run() 
+    {
+      pManageLayoutsDialog.setVisible(true);
+    }
+  }
+
+  /**
+   * Show the error dialog. <P> 
+   * 
+   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
+   * showing the dialog.
+   */ 
+  private
+  class ShowErrorDialogTask
+    extends Thread
+  { 
+    public void 
+    run() 
+    {
+      pErrorDialog.setVisible(true);
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -989,9 +1025,9 @@ class UIMaster
 
  
   /**
-   * The current set of manager panels.
+   * The root manager panel.
    */ 
-  private LinkedList<JManagerPanel>  pManagerPanels;  // IS THIS NEEDED?
+  private JManagerPanel  pManagerPanel; 
 
   /**
    * The table of active node browsers indexed by assigned group: [1-9]. <P> 
@@ -1009,6 +1045,21 @@ class UIMaster
    */ 
   private JNodeViewerPanel[]  pNodeViewers;
 
+
+  /**
+   * The save layouts dialog.
+   */ 
+  private JSaveLayoutDialog  pSaveLayoutDialog;
+
+  /**
+   * The manage layouts dialog.
+   */ 
+  private JManageLayoutsDialog  pManageLayoutsDialog;
+
+  /**
+   * The error message dialog.
+   */ 
+  private JErrorDialog  pErrorDialog;
 
   /**
    * The information dialog.
