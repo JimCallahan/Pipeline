@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.40 2004/09/26 06:23:08 jim Exp $
+// $Id: MasterMgr.java,v 1.41 2004/10/01 17:08:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3808,9 +3808,9 @@ class MasterMgr
 	for(LinkMod link : work.getSources()) {
 	  switch(link.getPolicy()) {
 	  case Association:
-	  case Reference:
 	    break;
 	    
+	  case Reference:
 	  case Dependency:
 	    {
 	      TreeSet<Integer> lindices = sourceIndices.get(link.getName());
@@ -3831,9 +3831,9 @@ class MasterMgr
 	for(LinkMod link : work.getSources()) {
 	  switch(link.getPolicy()) {
 	  case Association:
-	  case Reference:
 	    break;
 	    
+	  case Reference:
 	  case Dependency:
 	    {
 	      NodeStatus lstatus = status.getSource(link.getName());
@@ -5004,16 +5004,25 @@ class MasterMgr
 	  overallQueueState = OverallQueueState.Finished;
       }
 
-      /* propagate staleness by updating the last modified time stamps of each file to be 
-	 the newest of its actual time stamp and any upstream file upon which it depends 
-	 through a Reference link or through a Dependency link if the node's action is 
-         disabled or (null) */ 
+      /**
+       * Propagate staleness by updating the last modified time stamps of each file to be 
+       * the newest of:
+       * 
+       *   + The actual file time stamp.
+       * 
+       *   + The last critical modification timestamp of the current node.
+       * 
+       *   + The timestamp of any upstream file upon which the file depends through a 
+       *     Reference/Dependency link.  These upstream timestamp have been previously
+       *     modified to propogate staleness of those nodes further upstream.
+       */
       switch(versionState) {
       case CheckedIn:
 	break;
 
       default:
 	{
+	  Date critical = work.getLastCriticalModification();
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
 	    for(LinkMod link : work.getSources()) {
@@ -5022,24 +5031,24 @@ class MasterMgr
 	      
 	      QueueState lqs[] = ldetails.getQueueState();
 	      Date lstamps[] = ldetails.getFileTimeStamps();
-	      
+
 	      switch(link.getRelationship()) {
 	      case OneToOne:
 		{
 		  Integer offset = link.getFrameOffset();
 		  int idx = wk+offset;
-		  if(((idx >= 0) && (idx < lqs.length)) && 
-		     ((lstamps[idx] != null) && 
-		      ((fileTimeStamps[wk] == null) ||
-		       (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0)))) {
-		    switch(link.getPolicy()) {
-		    case Reference:
-		      fileTimeStamps[wk] = lstamps[idx];
-		      break;
-		      
-		    case Dependency:
-		      if(!work.isActionEnabled()) 
-			fileTimeStamps[wk] = lstamps[idx];
+		  if((idx >= 0) && (idx < lqs.length)) {
+ 		    Date stamp = critical;
+ 		    if((lstamps[idx] != null) && (lstamps[idx].compareTo(critical) > 0)) 
+ 		      stamp = lstamps[idx];
+
+ 		    if((fileTimeStamps[wk] == null) ||
+ 		       (fileTimeStamps[wk].compareTo(stamp) < 0)) {
+		      switch(link.getPolicy()) {
+		      case Reference:
+		      case Dependency:
+			fileTimeStamps[wk] = stamp;
+		      }
 		    }
 		  }
 		}
@@ -5049,17 +5058,16 @@ class MasterMgr
 		{
 		  int fk;
 		  for(fk=0; fk<lqs.length; fk++) {
-		    if((lstamps[fk] != null) && 
-		       ((fileTimeStamps[wk] == null) ||
-			(fileTimeStamps[wk].compareTo(lstamps[fk]) < 0))) {
+ 		    Date stamp = critical;
+ 		    if((lstamps[fk] != null) && (lstamps[fk].compareTo(critical) > 0)) 
+ 		      stamp = lstamps[fk];
+
+ 		    if((fileTimeStamps[wk] == null) ||
+ 		       (fileTimeStamps[wk].compareTo(stamp) < 0)) {
 		      switch(link.getPolicy()) {
 		      case Reference:
-			fileTimeStamps[wk] = lstamps[fk];
-			break;
-			
 		      case Dependency:
-			if(!work.isActionEnabled()) 
-			  fileTimeStamps[wk] = lstamps[fk];
+ 			fileTimeStamps[wk] = stamp;
 		      }
 		    }
 		  }
