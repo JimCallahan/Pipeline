@@ -1561,6 +1561,15 @@
 
 
 
+  <!--  B U T T O N   D I A L O G   P A N E L  -->
+
+  <style id="ButtonDialogPanel">
+    <insets top="20" bottom="5" right="20" left="20"/>
+  </style>
+  <bind style="ButtonDialogPanel" type="name" key="ButtonDialogPanel"/>
+
+
+
   <!--  M A I N   P A N E L  -->
 
   <style id="MainPanel">
