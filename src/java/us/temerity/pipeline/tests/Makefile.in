@@ -177,17 +177,18 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-#           TESTS = FileMgr
+           TESTS = NodeMgr
 
-            TESTS = CheckSum \
-                    FileSeq \
-                    Glue \
-                    NativeFileSys \
-                    NodeID \
-                    NodeModVersion \
-                    SubProcess \
-                    Toolsets \
-                    VersionID
+#             TESTS = CheckSum \
+#                     FileSeq \
+#                     FileMgr \
+#                     Glue \
+#                     NativeFileSys \
+#                     NodeID \
+#                     NodeModVersion \
+#                     SubProcess \
+#                     Toolsets \
+#                    VersionID
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
 
