@@ -1,6 +1,8 @@
-// $Id: OverallNodeState.java,v 1.6 2004/04/18 04:07:43 jim Exp $
+// $Id: OverallNodeState.java,v 1.7 2004/05/05 20:57:06 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   O V E R A L L   N O D E   S T A T E                                                    */
@@ -108,4 +110,23 @@ enum OverallNodeState
    * some of them are <CODE>NeedsCheckOut</CODE> or <CODE>Obsolete</CODE>.
    */
   Conflicted;
+
+
+  /**
+   * Get the list of all possible states.
+   */ 
+  public static ArrayList<OverallNodeState>
+  all() 
+  {
+    ArrayList<OverallNodeState> states = new ArrayList<OverallNodeState>();
+    states.add(Pending);
+    states.add(CheckedIn);
+    states.add(Identical);
+    states.add(ModifiedLinks);
+    states.add(Modified);
+    states.add(NeedsCheckOut);
+    states.add(Conflicted);
+
+    return states;
+  }
 }

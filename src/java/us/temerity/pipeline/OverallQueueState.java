@@ -1,6 +1,8 @@
-// $Id: OverallQueueState.java,v 1.2 2004/04/15 00:19:45 jim Exp $
+// $Id: OverallQueueState.java,v 1.3 2004/05/05 20:57:06 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E    S T A T E                                                                 */
@@ -65,4 +67,22 @@ enum OverallQueueState
    * <CODE>Stale</CODE>, <CODE>Queued</CODE> and <CODE>Running</CODE> states.
    */
   Failed;
+
+
+  /**
+   * Get the list of all possible states.
+   */ 
+  public static ArrayList<OverallQueueState>
+  all() 
+  {
+    ArrayList<OverallQueueState> states = new ArrayList<OverallQueueState>();
+    states.add(Finished);
+    states.add(Missing);
+    states.add(Stale);
+    states.add(Queued);
+    states.add(Running);
+    states.add(Failed);
+
+    return states;
+  }
 }
