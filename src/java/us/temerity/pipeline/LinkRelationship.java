@@ -1,4 +1,4 @@
-// $Id: LinkRelationship.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: LinkRelationship.java,v 1.4 2004/06/28 23:00:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -41,6 +41,12 @@ enum LinkRelationship
    */
   All;
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the list of all possible values.
    */ 
@@ -54,4 +60,43 @@ enum LinkRelationship
       all.add(values[wk]);
     return all;
   }
+
+  /**
+   * Get the list of human friendly string representation for all possible values.
+   */ 
+  public static ArrayList<String>
+  titles() 
+  {
+    ArrayList<String> titles = new ArrayList<String>();
+    for(LinkRelationship rel : LinkRelationship.all()) 
+      titles.add(rel.toTitle());
+    return titles;
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return sTitles[ordinal()];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "None", 
+    "1:1", 
+    "All"
+  };
 }

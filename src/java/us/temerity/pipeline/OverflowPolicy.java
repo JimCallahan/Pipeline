@@ -1,4 +1,4 @@
-// $Id: OverflowPolicy.java,v 1.3 2004/06/19 00:28:38 jim Exp $
+// $Id: OverflowPolicy.java,v 1.4 2004/06/28 23:00:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,8 +61,8 @@ enum OverflowPolicy
   titles() 
   {
     ArrayList<String> titles = new ArrayList<String>();
-    for(OverflowPolicy color : OverflowPolicy.all()) 
-      titles.add(color.toTitle());
+    for(OverflowPolicy policy : OverflowPolicy.all()) 
+      titles.add(policy.toTitle());
     return titles;
   }
 

@@ -1,4 +1,4 @@
-// $Id: ExecutionMethod.java,v 1.2 2004/06/19 00:23:53 jim Exp $
+// $Id: ExecutionMethod.java,v 1.3 2004/06/28 23:00:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -73,8 +73,8 @@ enum ExecutionMethod
   titles() 
   {
     ArrayList<String> titles = new ArrayList<String>();
-    for(ExecutionMethod color : ExecutionMethod.all()) 
-      titles.add(color.toTitle());
+    for(ExecutionMethod method : ExecutionMethod.all()) 
+      titles.add(method.toTitle());
     return titles;
   }
 
