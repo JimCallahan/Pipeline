@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.2 2004/09/10 15:41:40 jim Exp $
+// $Id: MayaRenderAction.java,v 1.3 2004/09/11 14:14:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -31,17 +31,19 @@ class MayaRenderAction
     
     {
       BaseActionParam param = 
-	new StringActionParam("CameraOverride",
-			      "Overrides the render camera (if set).", 
-			      null);
+	new StringActionParam
+	("CameraOverride",
+	 "Overrides the render camera (if set).", 
+	 null);
       addSingleParam(param);
     }
 
     {
       BaseActionParam param = 
-	new IntegerActionParam("Processors", 
-			       "The number of processors to use (0 = all available).", 
-			       0);
+	new IntegerActionParam
+	("Processors", 
+	 "The number of processors to use (0 = all available).", 
+	 0);
       addSingleParam(param);
     }
   }

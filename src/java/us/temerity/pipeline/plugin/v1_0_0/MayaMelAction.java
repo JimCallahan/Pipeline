@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.1 2004/09/10 15:42:22 jim Exp $
+// $Id: MayaMelAction.java,v 1.2 2004/09/11 14:14:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -62,17 +62,19 @@ class MayaMelAction
     
     {
       BaseActionParam param = 
-	new LinkActionParam("MayaScene",
-			    "The source Maya scene node.", 
-			    null);
+	new LinkActionParam
+	("MayaScene",
+	 "The source Maya scene node.", 
+	 null);
       addSingleParam(param);
     }
 
     {
       BaseActionParam param = 
-	new BooleanActionParam("SaveResult",
-			       "Whether to save the post-MEL Maya scene.",
-			       true);
+	new BooleanActionParam
+	("SaveResult",
+	 "Whether to save the post-MEL Maya scene.",
+	 true);
       addSingleParam(param);
     }
   }
@@ -101,9 +103,10 @@ class MayaMelAction
     
     {
       BaseActionParam param = 
-	new IntegerActionParam("Order", 
-			       "Evaluates the MEL script in this order.",
-			       100);
+	new IntegerActionParam
+	("Order", 
+	 "Evaluates the MEL script in this order.",
+	 100);
       params.put(param.getName(), param);
     }
 

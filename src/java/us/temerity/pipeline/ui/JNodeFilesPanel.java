@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.9 2004/09/08 18:39:57 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.10 2004/09/11 14:16:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -535,7 +535,7 @@ class JNodeFilesPanel
       }
     }
       
-    /* the drawer body */ 
+    /* the file sequence component */ 
     {
       Box left = new Box(BoxLayout.X_AXIS);
       {
