@@ -190,7 +190,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    QueueState \
                    VersionState \
                    core/PosixSignal \
-                   message/FileRequest
+                   message/FileRequest \
+                   message/NodeRequest
+
 
     ENUM_SOURCES = $(patsubst %,$(srcdir)/%.java,$(ENUMS))
 
