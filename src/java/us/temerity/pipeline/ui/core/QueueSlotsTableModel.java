@@ -1,9 +1,8 @@
-// $Id: QueueSlotsTableModel.java,v 1.3 2005/03/05 02:29:23 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.4 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;

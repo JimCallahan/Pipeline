@@ -1,9 +1,8 @@
-// $Id: JQueueJobViewerPanel.java,v 1.10 2005/02/18 23:40:25 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.11 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*; 
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
 

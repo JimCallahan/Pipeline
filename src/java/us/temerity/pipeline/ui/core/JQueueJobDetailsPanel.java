@@ -1,11 +1,10 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.2 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;

@@ -1,9 +1,8 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.2 2005/03/04 09:20:30 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.3 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;

@@ -1,9 +1,8 @@
-// $Id: ArchiveCandidateTableModel.java,v 1.4 2005/03/10 08:07:27 jim Exp $
+// $Id: ArchiveCandidateTableModel.java,v 1.5 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.ui.*;
 
 import java.text.*;

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1703,12 +1703,14 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
        "import us.temerity.pipeline.*;\n" + 
-       "import us.temerity.pipeline.core.*;\n" + 
+       "import us.temerity.pipeline.core.BaseApp;\n" + 
+       "import us.temerity.pipeline.core.LockedGlueFile;\n" + 
+       "import us.temerity.pipeline.core.GlueLockException;\n" +
        "import us.temerity.pipeline.math.*;\n" + 
        "import us.temerity.pipeline.ui.*;\n" + 
        "import us.temerity.pipeline.glue.*;\n" + 
@@ -1958,7 +1960,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3314,7 +3316,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

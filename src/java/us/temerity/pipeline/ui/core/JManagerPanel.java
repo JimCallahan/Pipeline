@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.12 2005/03/10 08:07:27 jim Exp $
+// $Id: JManagerPanel.java,v 1.13 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,8 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.core.BaseApp;
+import us.temerity.pipeline.core.LockedGlueFile;
+import us.temerity.pipeline.core.GlueLockException;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;

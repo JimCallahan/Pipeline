@@ -1,9 +1,8 @@
-// $Id: JBaseViewerPanel.java,v 1.6 2005/01/16 02:43:21 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.7 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*; 
 import us.temerity.pipeline.math.*; 
 import us.temerity.pipeline.glue.*;
 

@@ -1,11 +1,10 @@
-// $Id: JNodeBrowserFilterDialog.java,v 1.3 2005/02/22 08:44:13 jim Exp $
+// $Id: JNodeBrowserFilterDialog.java,v 1.4 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*; 
-import us.temerity.pipeline.core.*; 
 
 import java.awt.*;
 import java.awt.event.*;

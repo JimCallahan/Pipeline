@@ -1,10 +1,9 @@
-// $Id: JReleaseDialog.java,v 1.5 2005/02/22 18:19:30 jim Exp $
+// $Id: JReleaseDialog.java,v 1.6 2005/03/11 06:33:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*; 
-import us.temerity.pipeline.core.*; 
 
 import java.awt.*;
 import java.awt.event.*;
