@@ -1,4 +1,4 @@
-// $Id: JSelectLayoutDialog.java,v 1.1 2004/05/12 04:00:36 jim Exp $
+// $Id: JSelectLayoutDialog.java,v 1.2 2004/05/12 04:03:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -17,9 +17,7 @@ import javax.swing.event.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The common base class of {@link JSaveLayoutDialog JSaveLayoutDialog} and 
- * {@link JRenameLayoutDialog JRenameLayoutDialog} which provides most of the functionality
- * for both.
+ * Provides listing and selection of saved panel layouts.
  */ 
 public 
 class JSelectLayoutDialog
