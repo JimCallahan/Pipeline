@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.1 2005/03/14 16:08:34 jim Exp $
+// $Id: JOfflineDialog.java,v 1.2 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -75,6 +75,9 @@ class JOfflineDialog
 	    btn.setActionCommand("candidate-search");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Search for new candidate checked-in versions to offline."));
+
 	    hbox.add(btn);
 	  }
 
@@ -91,6 +94,9 @@ class JOfflineDialog
 	    btn.setActionCommand("clear-candidate");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Clear the displayed candidate checked-in versions."));
+
 	    hbox.add(btn);	  
 	  }
 
@@ -162,6 +168,9 @@ class JOfflineDialog
 	    btn.setActionCommand("add-offline");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	     ("Add the selected candidate versions to the list of versions to be offlined."));
+
 	    hbox.add(btn);
 	  }
 	    
@@ -178,6 +187,9 @@ class JOfflineDialog
 	    btn.setActionCommand("add-all-offline");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Add all candidate versions to the list of versions to be offlined."));
+
 	    hbox.add(btn);
 	  }
 	  
@@ -194,6 +206,9 @@ class JOfflineDialog
 	    btn.setActionCommand("remove-offline");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Remove the selected versions from the list of versions to be offlined."));
+
 	    hbox.add(btn);
 	  }
 	  
@@ -210,6 +225,9 @@ class JOfflineDialog
 	    btn.setActionCommand("remove-all-offline");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Clear the list of versions to be offlined."));
+
 	    hbox.add(btn);	  
 	  }
 	  
@@ -226,6 +244,10 @@ class JOfflineDialog
 	    btn.setActionCommand("calc-offline");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Calculate the amount of disk space that would be freed by offlining " + 
+	       "the files associated with the checked-in versions."));
+
 	    hbox.add(btn);
 	  }	  
 	  
@@ -248,6 +270,8 @@ class JOfflineDialog
 
       pOfflineButton = btns[0];
       pOfflineButton.setEnabled(false);
+      pOfflineButton.setToolTipText(UIFactory.formatToolTip
+        ("Delete the files associated with the checked-in versions."));
 
       updatePanel();
       pack();
@@ -276,6 +300,8 @@ class JOfflineDialog
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
     }
+
+    updateButtons();
   }
 
   /**
@@ -304,8 +330,6 @@ class JOfflineDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("candidate-search")) 
       doCandidateSearch();
@@ -325,6 +349,9 @@ class JOfflineDialog
 
     else if(cmd.equals("offline"))
       doOffline();
+
+    else 
+      super.actionPerformed(e);
   }
 
 
@@ -650,7 +677,7 @@ class JOfflineDialog
 	  }
 	}
 
-	UpdateOfflineTask task = new UpdateOfflineTask(data);
+	UpdateSizesTask task = new UpdateSizesTask(data);
 	SwingUtilities.invokeLater(task);
       }
     }
@@ -659,19 +686,19 @@ class JOfflineDialog
   }
 
   /** 
-   * Update the offline table. 
+   * Update the offline table sizes.
    */ 
   private
-  class UpdateOfflineTask
+  class UpdateSizesTask
     extends Thread
   {
     public 
-    UpdateOfflineTask
+    UpdateSizesTask
     (
      TreeMap<String,TreeMap<VersionID,Long>> data
     ) 
     {
-      super("JOfflineDialog:UpdateOfflineTask");
+      super("JOfflineDialog:UpdateSizesTask");
       pData = data;
     }
 
@@ -728,16 +755,39 @@ class JOfflineDialog
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
+	  return;
 	}
 	finally {
 	  master.endPanelOp("Done.");
 	}
+
+	RemoveAllTask task = new RemoveAllTask();
+	SwingUtilities.invokeLater(task);      
       }
     }
 
     private TreeMap<String,TreeSet<VersionID>>  pVersions;
   }
 
+  /** 
+   * Remove all entries from the offline table.
+   */ 
+  private
+  class RemoveAllTask
+    extends Thread
+  {
+    public 
+    RemoveAllTask() 
+    {
+      super("JOfflineDialog:RemoveAllTask");
+    }
+
+    public void 
+    run() 
+    {
+      doRemoveAllOffline();
+    }
+  }
   
 
   /*----------------------------------------------------------------------------------------*/

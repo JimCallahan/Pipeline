@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.34 2005/03/15 19:09:10 jim Exp $
+// $Id: ScriptApp.java,v 1.35 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3204,6 +3204,12 @@ class ScriptApp
     case ScriptOptsParserConstants.COMPARATOR_NAME:
       return "an Comparator plugin name";
 
+    case ScriptOptsParserConstants.ARCHIVER_NAME:
+      return "an Archiver plugin name";
+
+    case ScriptOptsParserConstants.ARCHIVE_PREFIX: 
+      return "an archive volume prefix/name"; 
+
     case ScriptOptsParserConstants.REVISION_NUMBER:
       return "a revision number";
 
@@ -3211,13 +3217,13 @@ class ScriptApp
       return "a working area view name";
 
     case ScriptOptsParserConstants.PARAM_NAME: 
-      return "an Action parameter name";
+      return "an Action/Archiver parameter name";
 
     case ScriptOptsParserConstants.PARAM_VALUE: 
-      return "an Action parameter value";
+      return "an Action/Archiver parameter value";
       
     case ScriptOptsParserConstants.EMPTY_PARAM_VALUE:
-      return "an empty Action parameter value"; 
+      return "an empty Action/Archiver parameter value"; 
 
     case ScriptOptsParserConstants.SOURCE_NAME: 
     case ScriptOptsParserConstants.LINK_NAME: 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.53 2005/03/14 16:08:20 jim Exp $
+// $Id: MasterMgrClient.java,v 1.54 2005/03/21 07:04:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3279,17 +3279,33 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names and revision numbers of the checked-in versions which users have 
-   * requested to be restored from an previously created archive. <P> 
+   * Submit a request to restore the given set of checked-in versions.
+   *
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions.
+   */ 
+  public synchronized void
+  requestRestore
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscRequestRestoreReq req = new MiscRequestRestoreReq(versions);
+    Object obj = performTransaction(MasterRequest.RequestRestore, req);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the requests for restoration of checked-in versions.
    * 
    * @return 
-   *   The names of the archives containing the requested checked-in versions indexed by 
+   *   The restore requests for checked-in versions indexed by 
    *   fully resolved node name and revision number.
-   * 
-   * @throws PipelineException 
-   *   If determine which checked-in versions match the criteria.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  public synchronized TreeMap<String,TreeMap<VersionID,RestoreRequest>>
   getRestoreRequests() 
     throws PipelineException
   {
@@ -3305,6 +3321,90 @@ class MasterMgrClient
       return null;
     }
   } 
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for restoration purposes. <P> 
+   * 
+   * File sizes reflect the total amount of bytes of disk space that will be need to be 
+   * available in order to restore the given offline checked-in versions.  The actual 
+   * amount of disk space used after the completion of the restore operation may be less
+   * than this amount if some of the restored files are identical to the corresponding
+   * files in an earlier online version.  <P> 
+   * 
+   * @param versions
+   *   The fully resolved node names and revision numbers of the checked-in versions.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  getRestoreSizes
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscGetRestoreSizesReq req = new MiscGetRestoreSizesReq(versions);
+
+    Object obj = performTransaction(MasterRequest.GetRestoreSizes, req);
+    if(obj instanceof MiscGetSizesRsp) {
+      MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Restore the given checked-in versions from the given archive. <P> 
+   * 
+   * Only privileged users may restore checked-in versions. <P> 
+   * 
+   * If an alternative archiver plugin instance is passed as the <CODE>archiver</CODE>
+   * parameter, it must have exactly the same plugin name and revision number as the
+   * archiver plugin used to create the archive volume.  The archiver plugin parameters
+   * can be different to allow for possible changes in file system or site organization.
+   * 
+   * @param name
+   *   The unique name of the archive containing the checked-in versions to restore.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to restore.
+   * 
+   * @param archiver
+   *   The alternative archiver plugin instance used to perform the restore operation
+   *   or <CODE>null</CODE> to use the default archiver.
+   * 
+   * @throws PipelineException
+   *   If unable to restore the checked-in versions.
+   */
+  public synchronized void
+  restore
+  (
+   String name, 
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   BaseArchiver archiver
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may restore checked-in versions!"); 
+
+    verifyConnection();
+
+    MiscRestoreReq req = new MiscRestoreReq(name, versions, archiver);
+    Object obj = performTransaction(MasterRequest.Restore, req);
+    handleSimpleResponse(obj);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the names and creation timestamps of all existing archives. <P> 
@@ -3331,6 +3431,43 @@ class MasterMgrClient
       return null;
     }
   }
+
+  /**
+   * Get the names of the archive volumes containing the given checked-in versions. <P> 
+   * 
+   * If there are no archive volume which contain a checked-in version, it will be ommitted
+   * from the returned tables.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions.
+   *
+   * @return 
+   *   The names of the archives containing the requested checked-in versions indexed by 
+   *   fully resolved node name and revision number.
+   * 
+   * @throws PipelineException 
+   *   If determine which archives contain the versions.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  getArchivesContaining
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetArchivesContainingReq req = new MiscGetArchivesContainingReq(versions);
+    Object obj = performTransaction(MasterRequest.GetArchivesContaining, req);
+    if(obj instanceof MiscGetArchivesContainingRsp) {
+      MiscGetArchivesContainingRsp rsp = (MiscGetArchivesContainingRsp) obj;
+      return rsp.getArchiveNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
 
   /**
    * Get the complete information about the archive with the given name.
@@ -3363,39 +3500,6 @@ class MasterMgrClient
       handleFailure(obj);
       return null;
     }    
-  }
-
-  /**
-   * Restore the given checked-in versions from the given archive. <P> 
-   * 
-   * Only privileged users may restore checked-in versions. <P> 
-   * 
-   * @param name
-   *   The unique name of the archive containing the checked-in versions to restore.
-   * 
-   * @param versions
-   *   The fully resolved names and revision numbers of the checked-in versions to restore.
-   * 
-   * @throws PipelineException
-   *   If unable to restore the checked-in versions.
-   */
-  public synchronized void
-  restore
-  (
-   String name, 
-   TreeMap<String,TreeSet<VersionID>> versions
-  ) 
-    throws PipelineException
-  {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may restore checked-in versions!"); 
-
-    verifyConnection();
-
-    MiscRestoreReq req = new MiscRestoreReq(name, versions);
-    Object obj = performTransaction(MasterRequest.Restore, req);
-    handleSimpleResponse(obj);    
   }
 
 

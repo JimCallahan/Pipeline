@@ -1,4 +1,4 @@
-// $Id: MiscGetRestoreRequestsRsp.java,v 1.4 2005/03/21 07:04:36 jim Exp $
+// $Id: MiscGetArchivesContainingRsp.java,v 1.1 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,14 +10,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   R E S T O R E   R E Q U E S T S   R S P                              */
+/*   M I S C   G E T   A R C H I V E S   C O N T A I N I N G   R S P                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the requests for restoration of checked-in versions.
+ * A successful response to a 
+ * {@link MiscGetArchivesContainingReq MiscGetArchivesContainingReq} request.
  */
 public
-class MiscGetRestoreRequestsRsp
+class MiscGetArchivesContainingRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,26 +31,26 @@ class MiscGetRestoreRequestsRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param requests
-   *   The restore requests for checked-in versions indexed by fully resolved node 
-   *   name and revision number.
+   * @param archives
+   *   The names of the archives containing the requested checked-in versions indexed by 
+   *   fully resolved node name and revision number.
    */ 
   public
-  MiscGetRestoreRequestsRsp
+  MiscGetArchivesContainingRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,RestoreRequest>> requests
+   TreeMap<String,TreeMap<VersionID,TreeSet<String>>> archives
   )
   { 
     super(timer);
 
-    if(requests == null) 
-      throw new IllegalArgumentException("The restore requests cannot be (null)!");
-    pRequests = requests;
+    if(archives == null) 
+      throw new IllegalArgumentException("The archive names cannot be (null)!");
+    pArchives = archives;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.getRestoreRequests()\n  " + getTimer());
+       "MasterMgr.getArchivesContaining()\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -61,12 +62,13 @@ class MiscGetRestoreRequestsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets restore requests.
+   * Gets the names of the archives containing the requested checked-in versions indexed by 
+   * fully resolved node name and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,RestoreRequest>>
-  getRequests()
+  public TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  getArchiveNames()
   {
-    return pRequests;
+    return pArchives;
   }
   
 
@@ -75,7 +77,7 @@ class MiscGetRestoreRequestsRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 8602222632897469336L;
+  private static final long serialVersionUID = -3775313534470409809L;
   
 
 
@@ -84,9 +86,10 @@ class MiscGetRestoreRequestsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The restore requests.
+   * The names of the archives containing the requested checked-in versions indexed by 
+   * fully resolved node name and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,RestoreRequest>> pRequests;
+  private  TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchives;
 
 }
   

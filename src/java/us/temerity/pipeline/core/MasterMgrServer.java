@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.41 2005/03/14 16:08:21 jim Exp $
+// $Id: MasterMgrServer.java,v 1.42 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -746,7 +746,7 @@ class MasterMgrServer
 	      }
 	      break;  
 
-	    /*-- ADMINISTRATION ------------------------------------------------------------*/
+	    /*-- ADMIN ---------------------------------------------------------------------*/
 	    case BackupDatabase: 
 	      {
 		MiscBackupDatabaseReq req = (MiscBackupDatabaseReq) objIn.readObject();
@@ -755,6 +755,7 @@ class MasterMgrServer
 	      }
 	      break;  
 
+	    /*-- ARCHIVE -------------------------------------------------------------------*/
 	    case ArchiveQuery: 
 	      {
 		MiscArchiveQueryReq req = (MiscArchiveQueryReq) objIn.readObject();
@@ -779,7 +780,7 @@ class MasterMgrServer
 	      }
 	      break;  
 
-
+	    /*-- OFFLINE -------------------------------------------------------------------*/
 	    case OfflineQuery: 
 	      {
 		MiscOfflineQueryReq req = (MiscOfflineQueryReq) objIn.readObject();
@@ -814,6 +815,15 @@ class MasterMgrServer
 	      break;
 
 
+	    /*-- RESTORE -------------------------------------------------------------------*/
+	    case RequestRestore:
+	      {
+		MiscRequestRestoreReq req = (MiscRequestRestoreReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.requestRestore(req));
+		objOut.flush(); 
+	      }
+	      break;   
+
 	    case GetRestoreRequests:
 	      {
 		objOut.writeObject(pMasterMgr.getRestoreRequests());
@@ -821,6 +831,24 @@ class MasterMgrServer
 	      }
 	      break;
 	    
+	    case GetRestoreSizes:
+	      {
+		MiscGetRestoreSizesReq req = (MiscGetRestoreSizesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getRestoreSizes(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Restore: 
+	      {
+		MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.restore(req));
+		objOut.flush(); 
+	      }
+	      break;    
+
+
+	    /*-- ARCHIVE VOLUMES -----------------------------------------------------------*/
 	    case GetArchiveIndex:
 	      {
 		objOut.writeObject(pMasterMgr.getArchiveIndex());
@@ -828,18 +856,19 @@ class MasterMgrServer
 	      }
 	      break;
 	    
-	    case GetArchive: 
+	    case GetArchivesContaining: 
 	      {
-		MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.getArchive(req));
+		MiscGetArchivesContainingReq req = 
+		  (MiscGetArchivesContainingReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getArchivesContaining(req));
 		objOut.flush(); 
 	      }
 	      break;    
 
-	    case Restore: 
+	    case GetArchive: 
 	      {
-		MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.restore(req));
+		MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getArchive(req));
 		objOut.flush(); 
 	      }
 	      break;    

@@ -1,4 +1,4 @@
-// $Id: NodeVersionTableModel.java,v 1.5 2005/03/14 16:08:21 jim Exp $
+// $Id: NodeVersionTableModel.java,v 1.6 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -176,6 +176,33 @@ class NodeVersionTableModel
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of version at the given row.
+   */
+  public String 
+  getName
+  (
+   int row
+  ) 
+  {
+    return pNames.get(pRowToIndex[row]);
+  }
+
+  /**
+   * Get the revision number of the version at the given row.
+   */
+  public VersionID 
+  getVersionID
+  (
+   int row
+  ) 
+  {
+    return pVersionIDs.get(pRowToIndex[row]);
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

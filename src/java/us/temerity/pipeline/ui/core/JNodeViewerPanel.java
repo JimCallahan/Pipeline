@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.22 2005/03/15 19:13:37 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.23 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -200,6 +200,7 @@ class JNodeViewerPanel
       pRemoveRootItems    = new JMenuItem[5];
       pEditItems          = new JMenuItem[4];
       pCheckOutItems      = new JMenuItem[3];
+      pRestoreItems       = new JMenuItem[3];
       pReleaseItems       = new JMenuItem[2];
 
       int wk;
@@ -255,6 +256,12 @@ class JNodeViewerPanel
 	  item = new JMenuItem("Check-Out...");
 	  pCheckOutItems[wk-2] = item;
 	  item.setActionCommand("check-out");
+	  item.addActionListener(this);
+	  menus[wk].add(item);
+
+	  item = new JMenuItem("Restore...");
+	  pRestoreItems[wk-2] = item;
+	  item.setActionCommand("restore");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 	}
@@ -348,6 +355,12 @@ class JNodeViewerPanel
 	item = new JMenuItem("Evolve Version...");
 	pEvolveItem = item;
 	item.setActionCommand("evolve");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+
+	item = new JMenuItem("Restore...");
+	pRestoreItems[2] = item;
+	item.setActionCommand("restore");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
@@ -449,6 +462,7 @@ class JNodeViewerPanel
       pCheckInDialog      = new JCheckInDialog();
       pCheckOutDialog     = new JCheckOutDialog();
       pEvolveDialog       = new JEvolveDialog();
+      pRestoreDialog      = new JRestoreNodeDialog();
       pCreateLinkDialog   = new JCreateLinkDialog();
       pEditLinkDialog     = new JEditLinkDialog();
     }
@@ -810,6 +824,12 @@ class JNodeViewerPanel
 	 "Check-out the current primary selection.");
     }
 
+    for(wk=0; wk<3; wk++) {
+      updateMenuToolTip
+	(pRestoreItems[wk], prefs.getNodeViewerCheckOut(), 
+	 "Restore offline checked-in versions of the primary selection.");
+    }
+
     for(wk=0; wk<2; wk++) {
       updateMenuToolTip
 	(pReleaseItems[wk], prefs.getNodeViewerRelease(), 
@@ -937,6 +957,7 @@ class JNodeViewerPanel
     
     pCheckOutItems[2].setEnabled(hasCheckedIn);
     pEvolveItem.setEnabled(hasCheckedIn);
+    pRestoreItems[2].setEnabled(hasCheckedIn);
     
     {
       UIMaster master = UIMaster.getInstance();
@@ -2471,6 +2492,8 @@ class JNodeViewerPanel
       doCheckOut();
     else if(cmd.equals("evolve"))
       doEvolve();
+    else if(cmd.equals("restore"))
+      doRestore();
 
     else if(cmd.equals("clone"))
       doClone();
@@ -3468,6 +3491,48 @@ class JNodeViewerPanel
 	      task.start();
 	    }
 	  }
+	}
+      }
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Restore offline checked-in versions of the primary selected node.
+   */ 
+  private void 
+  doRestore() 
+  {
+    if(pPrimary != null) {
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+
+      NodeStatus status = pPrimary.getNodeStatus();
+
+      TreeSet<VersionID> offline = null;
+      try {
+	offline  = client.getOfflineVersionIDs(status.getName());
+      }
+      catch (PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+      
+      pRestoreDialog.updateNameVersions
+	("Restore Versions:  " + status, offline);
+      pRestoreDialog.setVisible(true);
+      
+      if(pRestoreDialog.wasConfirmed()) {
+	TreeSet<VersionID> restore = pRestoreDialog.getVersionIDs();
+	if(!restore.isEmpty()) {
+	  TreeMap<String,TreeSet<VersionID>> versions = 
+	    new TreeMap<String,TreeSet<VersionID>>();
+	  versions.put(status.getName(), restore);
+	  
+	  RestoreTask task = new RestoreTask(versions);
+	    task.start();
 	}
       }
     }
@@ -4776,6 +4841,45 @@ class JNodeViewerPanel
     private VersionID  pVersionID; 
   }
 
+  /** 
+   * Restore the given versions of the node.
+   */ 
+  private
+  class RestoreTask
+    extends Thread
+  {
+    public 
+    RestoreTask
+    (
+     TreeMap<String,TreeSet<VersionID>> versions   
+    ) 
+    {
+      super("JNodeViewerPanel:RestoreTask");
+      pVersions = versions;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Requesting Restore...")) {
+	try {
+	  master.getMasterMgrClient().requestRestore(pVersions);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private TreeMap<String,TreeSet<VersionID>>   pVersions;
+  }
 
   /** 
    * Get the status of the root nodes.
@@ -5374,6 +5478,7 @@ class JNodeViewerPanel
   private JMenuItem[]  pRemoveRootItems;
   private JMenuItem[]  pEditItems;
   private JMenuItem[]  pCheckOutItems;
+  private JMenuItem[]  pRestoreItems;
   private JMenuItem[]  pReleaseItems;
 
   private JMenuItem  pLinkItem;
@@ -5481,6 +5586,11 @@ class JNodeViewerPanel
    * The evolve node dialog.
    */ 
   private JEvolveDialog  pEvolveDialog;
+
+  /** 
+   * The restore node dialog.
+   */ 
+  private JRestoreNodeDialog  pRestoreDialog;
 
 
   /**

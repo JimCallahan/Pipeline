@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.36 2005/03/15 19:11:00 jim Exp $
+// $Id: FileMgr.java,v 1.37 2005/03/21 07:04:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2232,7 +2232,6 @@ class FileMgr
 	    else {
 	      File link = new File(nodeDir, lvid + "/" + file);
 	      try {
-		System.out.print("Symlink: " + link + " -> " + target + "\n"); // DEBUG
 		NativeFileSys.symlink(target, link);
 	      }
 	      catch(IOException ex) {

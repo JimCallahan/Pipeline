@@ -1,4 +1,4 @@
-// $Id: ArchiveVolume.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: ArchiveVolume.java,v 1.2 2005/03/21 07:04:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -110,6 +110,25 @@ class ArchiveVolume
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the archive volume contains the given checked-in version.
+   * 
+   * @param name
+   *   The fully resolved node name.   
+   * 
+   * @param vid
+   *   The revision number of the checked-in version. 
+   */ 
+  public boolean
+  contains
+  (
+   String name, 
+   VersionID vid
+  ) 
+  {
+    return (pFileSeqs.containsKey(name) && pFileSeqs.get(name).containsKey(vid));
+  }
 
   /**
    * Get the fully resolved names of the nodes contained in the archive.
@@ -301,6 +320,7 @@ class ArchiveVolume
   {
     out.writeObject(pTimeStamp);
     out.writeObject(pFileSeqs);
+    out.writeObject(pSizes);
     out.writeObject(new BaseArchiver(pArchiver));
   }
 
@@ -320,6 +340,7 @@ class ArchiveVolume
   {
     pTimeStamp = (Date) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
+    pSizes = (TreeMap<String,TreeMap<VersionID,Long>>) in.readObject();
 
     {
       BaseArchiver archiver = (BaseArchiver) in.readObject();

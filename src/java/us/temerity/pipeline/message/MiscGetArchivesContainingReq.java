@@ -1,72 +1,59 @@
-// $Id: MiscGetRestoreRequestsRsp.java,v 1.4 2005/03/21 07:04:36 jim Exp $
+// $Id: MiscGetArchivesContainingReq.java,v 1.1 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
-import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   R E S T O R E   R E Q U E S T S   R S P                              */
+/*   M I S C   G E T   A R C H I V E S   C O N T A I N I N G   R E Q                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the requests for restoration of checked-in versions.
+ * A request to get the names of the archive volumes containing the given checked-in 
+ * versions. 
  */
 public
-class MiscGetRestoreRequestsRsp
-  extends TimedRsp
+class MiscGetArchivesContainingReq
+  implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new response.
+   * Constructs a new request.
    * 
-   * @param timer 
-   *   The timing statistics for a task.
-   * 
-   * @param requests
-   *   The restore requests for checked-in versions indexed by fully resolved node 
-   *   name and revision number.
-   */ 
+   * @param versions
+   *   The fully resolved node names and revision numbers of the checked-in versions.
+   */
   public
-  MiscGetRestoreRequestsRsp
+  MiscGetArchivesContainingReq
   (
-   TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,RestoreRequest>> requests
+   TreeMap<String,TreeSet<VersionID>> versions
   )
   { 
-    super(timer);
-
-    if(requests == null) 
-      throw new IllegalArgumentException("The restore requests cannot be (null)!");
-    pRequests = requests;
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.getRestoreRequests()\n  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
+    if(versions == null) 
+      throw new IllegalArgumentException("The node versions cannot be (null)!");
+    pVersions = versions;
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets restore requests.
+   * Gets the fully resolved node names and revision numbers of the checked-in versions.
    */
-  public TreeMap<String,TreeMap<VersionID,RestoreRequest>>
-  getRequests()
+  public TreeMap<String,TreeSet<VersionID>>
+  getVersions()
   {
-    return pRequests;
+    return pVersions;
   }
   
 
@@ -74,19 +61,19 @@ class MiscGetRestoreRequestsRsp
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  private static final long serialVersionUID = 8602222632897469336L;
   
+  private static final long serialVersionUID = -3334627849661391139L;
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The restore requests.
+   * The fully resolved node names and revision numbers of the checked-in versions.
    */ 
-  private TreeMap<String,TreeMap<VersionID,RestoreRequest>> pRequests;
+  private TreeMap<String,TreeSet<VersionID>>  pVersions;
 
 }
   

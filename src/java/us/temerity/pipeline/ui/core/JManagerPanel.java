@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.14 2005/03/15 19:12:47 jim Exp $
+// $Id: JManagerPanel.java,v 1.15 2005/03/21 07:04:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -379,19 +379,19 @@ class JManagerPanel
 
 	sub.addSeparator();
 
-	item = new JMenuItem("Archive...");
+	item = new JMenuItem("Archive Tool...");
 	pArchiveItem = item;
 	item.setActionCommand("archive");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Offline...");
+	item = new JMenuItem("Offline Tool...");
 	pOfflineItem = item;
 	item.setActionCommand("offline");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Restore...");
+	item = new JMenuItem("Restore Tool...");
 	pRestoreItem = item;
 	item.setActionCommand("restore");
 	item.addActionListener(this);
