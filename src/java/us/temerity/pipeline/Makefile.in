@@ -324,6 +324,11 @@ core/%.java: core/%.jj
 	(cd core; $(JAVA_CC) $<)
 
 
+PackageInfo.java: PackageInfo.java.src
+	@echo Adding legal notices to: $@
+	awk -- '/@JAVA_LICENSE_STRING@/ { system("cat @top_srcdir@/docs/legal/java-@LICENSE_DOC@") } \
+               !/@JAVA_LICENSE_STRING@/ { print }' $< > $@
+
 textures: laf/scripts/filter-textures
 	$(BASH) laf/scripts/filter-textures $(srcdir)/laf/maya/synth/images
 
@@ -398,6 +403,7 @@ clean-class:
 	rm -f java-all bootstrap-all
 
 clean-aux:
+	rm -f PackageInfo.cc
 	rm -f bootstrap/BootStrapLoader.java
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java

@@ -10,11 +10,11 @@ html_DATA = \
   realpath.html
 
 
-$(html_DATA): %.html: %.src.html copyright license
+$(html_DATA): %.html: %.src.html copyright @LICENSE_DOC@
 	@echo Adding legal notices to: $@
 	@awk -- '/@COPYRIGHT@/ { system("cat copyright") } \
                !/@COPYRIGHT@/ { print }' $< | \
-        awk -- '/@LICENSE@/ { system("cat license") } \
+        awk -- '/@LICENSE@/ { system("cat @LICENSE_DOC@") } \
                !/@LICENSE@/ { print }' > $@
 
 %: ../legal/%.html
@@ -23,4 +23,4 @@ $(html_DATA): %.html: %.src.html copyright license
 
 clean:
 	rm -f $(html_DATA) 
-	rm -f copyright license
+	rm -f copyright @LICENSE_DOC@

@@ -17,9 +17,10 @@ header: RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-1.i686.rpm \
 	@(cd RPMS/i686; \
           checksum=`md5sum pipeline-@CUSTOMER@-@VERSION@-1.i686.rpm`; \
           cd ../../; \
-          hlen=`wc -l $(top_srcdir)/docs/legal/license.txt | awk '{ print($$1+70) }'`; \
+          hlen=`wc -l $(top_srcdir)/docs/legal/@LICENSE_DOC@.txt \
+                | awk '{ print($$1+70) }'`; \
           cat $(srcdir)/headerA > header; \
-          cat $(top_srcdir)/docs/legal/license.txt >> header; \
+          cat $(top_srcdir)/docs/legal/@LICENSE_DOC@.txt >> header; \
           sed -e "s/@CHECKSUM@/$$checksum/g" headerB | \
           sed -e "s/@HEADER_LENGTH@/$$hlen/g" >> header)
 
@@ -36,7 +37,7 @@ rpm-mkdirs:
 
 rpm-install:
 	DESTDIR=`pwd`/BUILD $(MAKE) -C ../src install
-#	DESTDIR=`pwd`/BUILD $(MAKE) -C ../docs install
+	DESTDIR=`pwd`/BUILD $(MAKE) -C ../docs install
 
 clean:
 	rm -rf BUILD RPMS SPECS

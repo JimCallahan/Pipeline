@@ -54,7 +54,7 @@ The core features of Pipeline include:
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
 @ROOT_INST_DIR@/plugins
-#@ROOT_INST_DIR@/share/docs
+@ROOT_INST_DIR@/share/docs
 @ROOT_INST_DIR@/share/logger.properties
 
 

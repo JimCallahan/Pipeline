@@ -32,3 +32,13 @@ EXTRA_DIST = \
 
 INCLUDES = 
 
+
+
+PackageInfo.cc: PackageInfo.cc.src
+	@echo Adding legal notices to: $@
+	awk -- '/@CPP_LICENSE_STRING@/ { system("cat @top_srcdir@/docs/legal/cpp-@LICENSE_DOC@") } \
+               !/@CPP_LICENSE_STRING@/ { print }' $< > $@
+
+
+clean-generic:
+	rm -f PackageInfo.cc

@@ -97,9 +97,17 @@ AC_ARG_WITH([customer],
 AC_SUBST(CUSTOMER)
 CUSTOMER=/base/prod
 
+AC_SUBST(LICENSE_DOC)
+LICENSE_DOC=license
+
 if test "$with_customer" 
 then
   CUSTOMER=$with_customer
+
+  if test "$CUSTOMER" = "rhinofx"
+  then
+    LICENSE_DOC=rhino-license
+  fi
 else 
   AC_MSG_ERROR([the --with-customer option is required.])
 fi
@@ -985,7 +993,7 @@ AC_CONFIG_FILES([
   src/java/us/Makefile
   src/java/us/temerity/Makefile
   src/java/us/temerity/pipeline/Makefile
-  src/java/us/temerity/pipeline/PackageInfo.java
+  src/java/us/temerity/pipeline/PackageInfo.java.src
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
@@ -1007,7 +1015,7 @@ AC_CONFIG_FILES([
 
   src/utils/Makefile
   src/utils/src/Makefile
-  src/utils/src/PackageInfo.cc
+  src/utils/src/PackageInfo.cc.src
 
   rpm/Makefile
   rpm/pipeline.spec
