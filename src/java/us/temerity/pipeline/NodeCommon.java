@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.13 2004/05/21 18:07:30 jim Exp $
+// $Id: NodeCommon.java,v 1.14 2004/06/19 00:26:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -346,7 +346,7 @@ class NodeCommon
    */
   public JobReqs
   getJobRequirements() 
-   {
+  {
     if(pJobReqs != null) 
       return (JobReqs) pJobReqs.clone();
     return null;
@@ -501,8 +501,10 @@ class NodeCommon
       assert(pExecution != null);
       encoder.encode("ExecutionMethod", pExecution); 
 
-      assert(pBatchSize != null);
-      encoder.encode("BatchSize", pBatchSize);
+      if(pExecution == ExecutionMethod.Parallel) {
+	assert(pBatchSize != null);
+	encoder.encode("BatchSize", pBatchSize);
+      }
     }
   }
 
@@ -552,10 +554,12 @@ class NodeCommon
 	throw new GlueException("The \"ExecutionMethod\" was missing or (null)!");
       pExecution = execution;
 
-      Integer size = (Integer) decoder.decode("BatchSize");  
-      if(size == null) 
-	throw new GlueException("The \"BatchSize\" was missing or (null)!");
-      pBatchSize = size;
+      if(pExecution == ExecutionMethod.Parallel) {
+	Integer size = (Integer) decoder.decode("BatchSize");  
+	if(size == null) 
+	  throw new GlueException("The \"BatchSize\" was missing or (null)!");
+	pBatchSize = size;
+      }
     }
   }
 
