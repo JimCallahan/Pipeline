@@ -1,4 +1,4 @@
-// $Id: JHotKeyField.java,v 1.5 2005/01/09 17:31:42 jim Exp $
+// $Id: JHotKeyField.java,v 1.6 2005/01/09 23:12:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -63,9 +63,21 @@ class JHotKeyField
    HotKey key
   ) 
   {
+    setHotKeyNoAction(key);
+    fireActionPerformed(); 
+  }
+
+  /**
+   * Set the hot key to display without firing an action event.
+   */ 
+  public void 
+  setHotKeyNoAction
+  (
+   HotKey key
+  ) 
+  {
     pHotKey = key;
     setText((key != null) ? key.toString() : "-");
-    fireActionPerformed(); 
   }
 
   /**
