@@ -20,14 +20,14 @@ public class Dude
   }
   
   public void toGlue(GlueEncoder ge) 
-    throws GlueError
+    throws GlueException
   {
     ge.encode("Name", myName);
     ge.encode("Age", myAge);
   }
 
   public void fromGlue(GlueDecoder gd) 
-    throws GlueError
+    throws GlueException
   {
     myName = (String)  gd.decode("Name");
     myAge  = (Integer) gd.decode("Age");

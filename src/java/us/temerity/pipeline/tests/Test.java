@@ -63,7 +63,7 @@ class Test
   ( 
    GlueEncoder ge   /* IN: the current GLUE encoder */ 
   ) 
-   throws GlueError
+   throws GlueException
   {
     ge.encode("Name", pName);
     ge.encode("Stuff", pStuff);
@@ -82,7 +82,7 @@ class Test
   (
    GlueDecoder gd  /* IN: the current GLUE decoder */ 
   ) 
-    throws GlueError
+    throws GlueException
   {
     pName  = (String)  gd.decode("Name");
     pStuff = (int[][]) gd.decode("Stuff");      
