@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.2 2004/09/10 15:41:59 jim Exp $
+// $Id: TestAction.java,v 1.3 2004/09/11 14:15:19 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -53,14 +53,6 @@ class TestAction
     }
 
     {
-      BaseActionParam param = 
-	new TextActionParam("SomeText",
-			    "An long string parameter.",
-			    "Some testing text...");
-      addSingleParam(param);
-    }
-
-    {
       ArrayList<String> colors = new ArrayList<String>();
       colors.add("Red");
       colors.add("Yellow");
@@ -87,7 +79,6 @@ class TestAction
     {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add("SomeString");
-      layout.add("SomeText");
       layout.add(null);
       layout.add("SomeDouble");
       layout.add("SomeInteger");
@@ -102,7 +93,6 @@ class TestAction
 
     {
       ArrayList<String> layout = new ArrayList<String>();
-      layout.add("AnotherText");
       layout.add("AnotherDouble");
       layout.add("AnotherInteger");
       layout.add("AnotherLink");
@@ -156,14 +146,6 @@ class TestAction
 	new StringActionParam("AnotherString",
 			      "A short string parameter.",
 			      "test");
-      params.put(param.getName(), param);
-    }
-
-    {
-      BaseActionParam param = 
-	new TextActionParam("AnotherText",
-			    "An long string parameter.",
-			    "Some testing text...");
       params.put(param.getName(), param);
     }
 

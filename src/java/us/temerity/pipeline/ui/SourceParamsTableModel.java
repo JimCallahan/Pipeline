@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.3 2004/06/28 23:38:38 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.4 2004/09/11 14:17:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -86,12 +86,19 @@ class SourceParamsTableModel
 
       /* parameters */ 
       int col = 1;
-      for(BaseActionParam aparam : params.values()) {
+      for(String pname : pAction.getSourceLayout()) {
+	BaseActionParam aparam = params.get(pname);
+
 	pColumnClasses[col] = aparam.getClass();
 	pColumnNames[col]   = aparam.getNameUI();
 	pParamNames[col]    = aparam.getName(); 
 
-	if(aparam instanceof IntegerActionParam) {
+	if(aparam instanceof BooleanActionParam) {
+	  pColumnWidths[col]  = 160;
+	  pRenderers[col]     = new JBooleanTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]       = new JBooleanParamTableCellEditor(160, JLabel.CENTER);
+	}
+	else if(aparam instanceof IntegerActionParam) {
 	  pColumnWidths[col]  = 160;
 	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
 	  pEditors[col]       = new JIntegerParamTableCellEditor(160, JLabel.CENTER);
@@ -105,11 +112,6 @@ class SourceParamsTableModel
 	  pColumnWidths[col]  = 160;
 	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
 	  pEditors[col]       = new JStringParamTableCellEditor(160, JLabel.CENTER);
-	}
-	else if(aparam instanceof TextActionParam) {
-	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JTextParamTableCellRenderer(pIsEditable);
-	  pEditors[col]       = new JTextParamTableCellEditor(pIsEditable, 160);
 	}
 	else if(aparam instanceof EnumActionParam) {
 	  pColumnWidths[col]  = 160;
@@ -139,15 +141,18 @@ class SourceParamsTableModel
       pSourceTitles = new String[numRows];
       stitles.toArray(pSourceTitles);
 
+      Set<String> sources = pAction.getSourceNames();
+
       int row;
       for(row=0; row<pSourceNames.length; row++) {
-	Collection<BaseActionParam> params = pAction.getSourceParams(pSourceNames[row]);
-	if(!params.isEmpty()) {
-	  assert(params.size() == (pNumColumns-1));
-	  pParams[row] = new BaseActionParam[params.size()];
+	String sname = pSourceNames[row];
+
+	if(sources.contains(sname)) {
+	  pParams[row] = new BaseActionParam[pNumColumns-1];
 
 	  int col = 0;
-	  for(BaseActionParam aparam : params) {
+	  for(String pname : pAction.getSourceLayout()) {
+	    BaseActionParam aparam = pAction.getSourceParam(sname, pname);
 	    pParams[row][col] = (BaseActionParam) aparam.clone();
 	    col++;
 	  }
@@ -261,11 +266,13 @@ class SourceParamsTableModel
     int wk;
     for(wk=0; wk<rows.length; wk++) {
       int srow = pRowToIndex[rows[wk]];
+
       TreeMap<String,BaseActionParam> params = pAction.getInitialSourceParams();
       pParams[srow] = new BaseActionParam[params.size()];
+
       int col = 0;
-      for(BaseActionParam aparam : params.values()) {
-	pParams[srow][col] = aparam;
+      for(String pname : pAction.getSourceLayout()) {
+	pParams[srow][col] = params.get(pname); 
 	col++;
       }
     }
@@ -320,10 +327,8 @@ class SourceParamsTableModel
   ) 
   {
     int srow = pRowToIndex[row];
-    if((pParams[srow] != null) && (col > 0)) {
-      if(pIsEditable || (pParams[srow][col-1] instanceof TextActionParam)) 
-	return true;
-    }
+    if((pParams[srow] != null) && (col > 0)) 
+      return pIsEditable;
 
     return false;
   }
