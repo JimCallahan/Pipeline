@@ -1,6 +1,8 @@
-// $Id: DNotify.java,v 1.1 2004/04/01 03:10:27 jim Exp $
+// $Id: DNotify.java,v 1.2 2004/04/11 19:17:50 jim Exp $
 
 package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
 
 import java.io.*;
 import java.util.*;
@@ -21,12 +23,12 @@ import java.util.concurrent.locks.*;
  * instantiates the <CODE>DNotify</CODE> instance.  All other methods may be called with
  * safety from any thread. <P>
  * 
- * There is also an OS limitation on the number of directories which can be monitored by
- * any given thread.  Typically this limit is (1024), so its not very likely to be encountered
- * under normal usage.  The limit can be queried by the {@link #getLimit getLimit} method.  
- * The count of currently monitored directories can be obtained with 
- * {@link #getNumMonitored getNumMonitored}.  If the directory limit is exceeded, the 
- * <CODE>watch</CODE> method will throw an exception.
+ * Due to the OS limit on the number of directories which can be monitored by a process, 
+ * this class needs to be run by root in order to monitor more than (1024) directories.
+ * When constructed, <CODE>DNotify</CODE> will attempt to raise the number of directories
+ * which can be monitored up to (65536).  This may not succeed if not run as root. If the 
+ * directory limit is exceeded, the <CODE>watch</CODE> method will throw an 
+ * <CODE>IOException</CODE>.
  */
 public
 class DNotify
@@ -51,6 +53,9 @@ class DNotify
     pDescToDir = new HashMap<Integer,File>();
 
     pMaxDirs = initNative();
+
+    Logs.ops.finest("Maximum Directories: " + pMaxDirs);
+    Logs.flush();
   }
 
 
@@ -64,24 +69,36 @@ class DNotify
   public int
   getLimit()
   {
-    synchronized(pLock) {
-      if(pMinDesc != null)
-	return (pMaxDirs - pMinDesc);
-      return pMaxDirs;
-    }
+    return pMaxDirs;
   }
 
   /**
-   * Get the number of directories currently being monitored.
+   * Get the number of currently monitored directories.
    */ 
-  public int 
+  public int
   getNumMonitored() 
   {
     synchronized(pLock) {
       return pDirToDesc.size();
-    }    
+    }
   }
 
+  /**
+   * Get the set of currently monitored directories.
+   */ 
+  public TreeSet<File>
+  getMonitored() 
+  {
+    synchronized(pLock) {
+      return new TreeSet(pDirToDesc.keySet());
+    }
+  }
+    
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Begin monitoring the given directory.
@@ -89,7 +106,7 @@ class DNotify
    * @param dir
    *   The directory to monitor.
    */ 
-  public void 
+  public void
   monitor
   (
    File dir  
@@ -101,6 +118,9 @@ class DNotify
       throw new IOException("Path to monitor was NOT a directory: " + canon);
     
     synchronized(pLock) {
+      if((pMonitor.size() + pDirToDesc.size()) >= pMaxDirs) 
+	throw new IOException("Directory limit (" + pMaxDirs + ") reached!");
+
       pMonitor.add(dir);
     }
   }
@@ -124,12 +144,6 @@ class DNotify
       pUnmonitor.add(dir);
     }
   }
-
-
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
-  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Wait for one of the monitored directories to be modified. <P> 
@@ -209,9 +223,10 @@ class DNotify
 	  
 	  if(!pDirToDesc.isEmpty()) {
 	    StringBuffer buf = new StringBuffer();
-	    buf.append("Monitored Directories:\n");
-	    for(File file : pDirToDesc.keySet()) 
-	      buf.append("  [" + pDirToDesc.get(file) + "] " + file + "\n");
+	    buf.append("Directories Currently Monitored: " + pDirToDesc.size() + "\n");
+
+ 	    for(File file : pDirToDesc.keySet()) 
+ 	      buf.append("  [" + pDirToDesc.get(file) + "] " + file + "\n");
 	    Logs.ops.finest(buf.toString());
 	    Logs.flush();
 	  }
