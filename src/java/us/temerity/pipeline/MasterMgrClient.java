@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.33 2004/10/29 14:03:52 jim Exp $
+// $Id: MasterMgrClient.java,v 1.34 2004/10/31 20:01:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1867,6 +1867,45 @@ class MasterMgrClient
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Delete all working and checked-in versions of a node and optionally remove all  
+   * associated working area files. <P> 
+   * 
+   * This operation may only be performed on nodes which have downstream or upstream links
+   * to other nodes in any checked-in version.  Only privileged users may delete nodes.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @param removeFiles 
+   *   Should the files associated with the working versions be deleted?
+   *
+   * @throws PipelineException 
+   *   If unable to release the given node.
+   */ 
+  public synchronized void 
+  delete
+  ( 
+   String name, 
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may delete nodes!"); 
+
+    verifyConnection();
+
+    NodeDeleteReq req = new NodeDeleteReq(name, removeFiles);
+
+    Object obj = performTransaction(MasterRequest.Delete, req);
+    handleSimpleResponse(obj);
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Check-In the tree of nodes owned by the given user rooted at the given working 
    * version. <P> 
@@ -2499,6 +2538,54 @@ class MasterMgrClient
     handleSimpleResponse(obj);    
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a database backup file and write it to the given directory. <P> 
+   * 
+   * The backup will not be perfomed until any currently running database operations have 
+   * completed.  Once the databsae backup has begun, all new database operations will blocked
+   * until the backup is complete.  The this reason, the backup should be performed during 
+   * non-peak hours. <P> 
+   * 
+   * The database backup file will be named: <P> 
+   * <DIV style="margin-left: 40px;">
+   *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   * </DIV>
+   * 
+   * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
+   * the backup.  The backup file is a <B>gzip</B>(1) compressed <B>tar</B>(1) archive of
+   * the {@link Glueable GLUE} format files which make of the persistent storage of the
+   * Pipeline database. <P> 
+   * 
+   * Only privileged users may create a database backup. <P> 
+   * 
+   * @param file
+   *   The name of the backup file.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the backup.
+   */ 
+  public synchronized void
+  backupDatabase
+  (
+   File file
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may backup the database!"); 
+
+    verifyConnection();
+
+    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file);
+    Object obj = performTransaction(MasterRequest.BackupDatabase, req);
+    handleSimpleResponse(obj);    
+  } 
 
 
   /*----------------------------------------------------------------------------------------*/
