@@ -207,7 +207,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
   PLUGIN_SOURCES = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/plugin \
-                                -type f -name "*.java")
+                                -type f -path "*/v*_*_*/*.java")
      PLUGIN_DIRS = $(patsubst $(top_srcdir)/src/java/%.java,%,$(PLUGIN_SOURCES))
  PLUGIN_PACKAGES = $(sort $(subst /,.,$(patsubst %/,%,$(dir $(PLUGIN_DIRS)))))
 
