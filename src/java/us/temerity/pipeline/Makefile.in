@@ -168,7 +168,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
           TARGET = pipeline.jar
 
          PARSERS = GlueParser \
-                   ToolsetEnvParser
+                   ToolsetEnvParser \
+                   FileMgrOptsParser
 
 
       JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
@@ -180,8 +181,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
     # This hack is here to workaround a bug in the Java compiler which requires that enum 
     # classes are compiled BEFORE any classes which use the enum class!
     #
-    JAVA_SOURCES = $(filter %State.java %PosixSignal.java,$(ALL_SOURCES)) \
-                   $(filter-out %State.java %PosixSignal.java,$(ALL_SOURCES))
+    JAVA_SOURCES = \
+      $(filter %State.java %PosixSignal.java %FileRequest.java,$(ALL_SOURCES)) \
+      $(filter-out %State.java %PosixSignal.java %FileRequest.java,$(ALL_SOURCES))
 
 
 #--------------------------------------------------------------------------------------------#
