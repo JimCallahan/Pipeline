@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.17 2004/07/16 22:03:50 jim Exp $
+// $Id: FileMgr.java,v 1.18 2004/07/18 21:28:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -283,6 +283,9 @@ class FileMgr
     return new SuccessRsp(timer);
   }  
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Compute the {@link FileState FileState} for each file associated with the working 
    * version of a node. <P> 
@@ -482,6 +485,9 @@ class FileMgr
       checkedInLock.readLock().unlock();
     }  
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Perform the file system operations needed to create a new checked-in version of the 
@@ -775,6 +781,9 @@ class FileMgr
     }  
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Overwrite the files associated with the working version of the node with a copy of
    * the files associated with the given checked-in version. 
@@ -1053,7 +1062,10 @@ class FileMgr
     finally {
       checkedInLock.readLock().unlock();
     }  
-  }
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * 
@@ -1318,6 +1330,8 @@ class FileMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Replaces the files associated with a working version of a node with symlinks to  
    * the respective files associated with the checked-in version upon which the working 
@@ -1446,6 +1460,9 @@ class FileMgr
       checkedInLock.readLock().unlock();
     }  
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Replace the symlinks associated with the a working version of a node with copies 
@@ -1601,8 +1618,11 @@ class FileMgr
     }  
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Remove the files associated with the given working version.
+   * Remove specific files associated with the given working version.
    * 
    * @param req 
    *   The remove request.
@@ -1618,114 +1638,49 @@ class FileMgr
   ) 
   {
     assert(req != null);
+    TaskTimer timer = new TaskTimer("FileMgr.remove(): " + req.getNodeID());
+
+    return removeHelper(timer, req.getNodeID(), req.getFiles());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove all of the files associated with the given working version.
+   * 
+   * @param req 
+   *   The remove request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the files.
+   */
+  public Object
+  removeAll
+  (
+   FileRemoveAllReq req
+  ) 
+  {
+    assert(req != null);
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
-      buf.append("FileMgr.remove(): " + req.getNodeID() + " ");
+      buf.append("FileMgr.removeAll(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
       timer = new TaskTimer(buf.toString());
     }
 
-    timer.aquire();
-    try {
-      Object workingLock = getWorkingLock(req.getNodeID());
-      synchronized(workingLock) {
-	timer.resume();	
-	
-	Map<String,String> env = System.getenv();
-	
-	/* the working and working checksum directories */ 
-	File wdir  = null;
-	File cwdir = null;
-	{
-	  File wpath = req.getNodeID().getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
-	}
-	
-	/* build the list of files to delete */ 
-	ArrayList<File> files = new ArrayList<File>();
-	for(FileSeq fseq : req.getFileSequences()) 
-	  files.addAll(fseq.getFiles());
-	
-	/* remove the working files */ 
-	{
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(File file : files) {
-	    File work = new File(wdir, file.getPath());
-	    if(work.isFile()) 
-	      old.add(file.getName());
-	  }
-	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.addAll(old);
-	    
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "Remove-Files", "rm", args, env, wdir);
-	    proc.start();
-	    
-	    try {
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the working files for version (" + 
-		   req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while removing the working files for version (" + 
-		 req.getNodeID() + ")!");
-	    }
-	  }
-	}
-	
-	/* remove the working checksums */ 
-	{
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(File file : files) {
-	    File cksum = new File(cwdir, file.getPath());
-	    if(cksum.isFile()) 
-	      old.add(file.getName());
-	  }
-	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.addAll(old);
-	    
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "Remove-CheckSums", "rm", args, env, cwdir);
-	    proc.start();
-	    
-	    try {
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the working checksums for version (" + 
-		   req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while removing the working checksums for version (" + 
-		 req.getNodeID() + ")!");
-	    }
-	  }
-	}
-	
-	return new SuccessRsp(timer);
-      }
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
+    ArrayList<File> files = new ArrayList<File>();
+    for(FileSeq fseq : req.getFileSequences()) 
+      files.addAll(fseq.getFiles());
+    
+    return removeHelper(timer, req.getNodeID(), files);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Rename the files associated with the given working version.
@@ -2117,6 +2072,124 @@ class FileMgr
       }
 
       return lock;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove the given working area files.
+   * 
+   * @param id
+   *   The unique working version identifier.
+   * 
+   * @param files
+   *   The specific files to remove.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the files.
+   */
+  private Object
+  removeHelper
+  (
+   TaskTimer timer, 
+   NodeID id, 
+   ArrayList<File> files
+  ) 
+  {
+    timer.aquire();
+    try {
+      Object workingLock = getWorkingLock(id);
+      synchronized(workingLock) {
+	timer.resume();	
+	
+	Map<String,String> env = System.getenv();
+	
+	/* the working and working checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	{
+	  File wpath = id.getWorkingParent();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	}
+	
+	/* remove the working files */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : files) {
+	    File work = new File(wdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.addAll(old);
+	    
+	    SubProcess proc = 
+	      new SubProcess(id.getAuthor(), 
+			     "Remove-Files", "rm", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the working files for version (" + 
+		   id + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the working files for version (" + 
+		 id + ")!");
+	    }
+	  }
+	}
+	
+	/* remove the working checksums */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : files) {
+	    File cksum = new File(cwdir, file.getPath());
+	    if(cksum.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.addAll(old);
+	    
+	    SubProcess proc = 
+	      new SubProcess("Remove-CheckSums", "rm", args, env, cwdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the working checksums for version (" + 
+		   id + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the working checksums for version (" + 
+		 id + ")!");
+	    }
+	  }
+	}
+	
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: FileRemoveReq.java,v 1.1 2004/03/30 22:19:18 jim Exp $
+// $Id: FileRemoveReq.java,v 1.2 2004/07/18 21:29:29 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the files associated with the given working version.
+ * A request to remove specific files associated with the given working version.
  */
 public
 class FileRemoveReq
@@ -29,23 +29,23 @@ class FileRemoveReq
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param fseqs 
-   *   The primary and secondary file sequences associated with the working version.
+   * @param files
+   *   The specific files to remove.
    */
   public
   FileRemoveReq
   (
    NodeID id, 
-   TreeSet<FileSeq> fseqs
+   ArrayList<File> files
   )
   { 
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    if(fseqs == null) 
-      throw new IllegalArgumentException("The working file sequences cannot (null)!");
-    pFileSeqs = fseqs;
+    if(files == null) 
+      throw new IllegalArgumentException("The working files cannot (null)!");
+    pFiles = files;
   }
 
 
@@ -63,12 +63,12 @@ class FileRemoveReq
   }
     
   /**
-   * Gets the primary and secondary file sequences associated with the working version.
+   * Gets the specific files to remove.
    */
-  public TreeSet<FileSeq>
-  getFileSequences() 
+  public ArrayList<File>
+  getFiles() 
   {
-    return pFileSeqs;
+    return pFiles;
   }
 
   
@@ -91,8 +91,8 @@ class FileRemoveReq
   private NodeID  pNodeID;
 
   /** 
-   * The primary and secondary file sequences associated with the working version. 
+   * The specific files to remove.
    */
-  private TreeSet<FileSeq>  pFileSeqs;
+  private ArrayList<File>  pFiles;
 }
   

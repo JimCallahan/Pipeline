@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.12 2004/07/16 22:04:05 jim Exp $
+// $Id: FileMgrClient.java,v 1.13 2004/07/18 21:29:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -343,7 +343,33 @@ class FileMgrClient
   }
 
   /**
-   * Remove the files associated with the given working version.
+   * Remove specific files associated with the given working version.
+   *
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param files
+   *   The specific files to remove.
+   */  
+  public synchronized void 
+  remove 
+  (
+   NodeID id, 
+   ArrayList<File> files
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileRemoveReq req = 
+      new FileRemoveReq(id, files);
+
+    Object obj = performTransaction(FileRequest.Remove, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the all of the files associated with the given working version.
    *
    * @param id 
    *   The unique working version identifier.
@@ -352,7 +378,7 @@ class FileMgrClient
    *   The working version of the node.
    */  
   public synchronized void 
-  remove 
+  removeAll
   (
    NodeID id, 
    NodeMod mod
@@ -361,10 +387,10 @@ class FileMgrClient
   {
     verifyConnection();
 
-    FileRemoveReq req = 
-      new FileRemoveReq(id, mod.getSequences());
+    FileRemoveAllReq req = 
+      new FileRemoveAllReq(id, mod.getSequences());
 
-    Object obj = performTransaction(FileRequest.Remove, req);
+    Object obj = performTransaction(FileRequest.RemoveAll, req);
     handleSimpleResponse(obj);
   }
 

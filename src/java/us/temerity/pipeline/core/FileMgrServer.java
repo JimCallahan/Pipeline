@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.12 2004/07/16 22:04:05 jim Exp $
+// $Id: FileMgrServer.java,v 1.13 2004/07/18 21:29:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -263,6 +263,14 @@ class FileMgrServer
 	    {
 	      FileRemoveReq req = (FileRemoveReq) objIn.readObject();
 	      objOut.writeObject(pFileMgr.remove(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case RemoveAll:
+	    {
+	      FileRemoveAllReq req = (FileRemoveAllReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.removeAll(req));
 	      objOut.flush(); 
 	    }
 	    break;
