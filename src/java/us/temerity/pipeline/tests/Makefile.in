@@ -179,7 +179,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                     NodeID \
 #                     Plugins 
 
-            TESTS = VersionID
+            TESTS = CheckSum
 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
