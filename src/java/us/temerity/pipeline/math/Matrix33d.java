@@ -123,6 +123,9 @@ class Matrix33d
    * 
    * @return 
    *   The product of this matrix and the given vector.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/MatrixMultiplication.html">
+   *      Math World: Matrix Multiplication</A>
    */ 					    
   public Tuple3d 
   mult
@@ -151,6 +154,9 @@ class Matrix33d
    * 
    * @param mx
    *   The matrix to multiply (on the right) with this matrix.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/MatrixMultiplication.html">
+   *      Math World: Matrix Multiplication</A>
    */ 		    
   public Matrix33d
   mult							    
@@ -165,6 +171,9 @@ class Matrix33d
 
   /**
    * Concatenate (multiply in place) this matrix with the given matrix (on the right). 
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/MatrixMultiplication.html">
+   *      Math World: Matrix Multiplication</A>
    */ 	    
   public void
   concat
@@ -179,7 +188,14 @@ class Matrix33d
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a new matrix which is a transposed copy of this matrix. 
+   * Create a new matrix which is a transposed copy of this matrix. <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   <IMG alt="" src="../../../../images/Matrix33Transpose.gif">
+   * </DIV>
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/Transpose.html">
+   *      Math World: Matrix Transpose </A>
    */
   public Matrix33d
   transposed() 
@@ -198,6 +214,9 @@ class Matrix33d
    * <DIV style="margin-left: 40px;">
    *   <IMG alt="" src="../../../../images/Matrix33Identity.gif">
    * </DIV>
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/IdentityMatrix.html">
+   *      Math World: Identity Matrix</A>
    */ 
   public static Matrix33d
   newIdentity() 
@@ -389,7 +408,17 @@ class Matrix33d
   /*----------------------------------------------------------------------------------------*/
 	
   /**
-   * Find the inverse of this matrix. 
+   * Find the inverse of this matrix. <P> 
+   * 
+   * The inverse of a matrix is defined as: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   <IMG alt="" src="../../../../images/MatrixInverse.gif">
+   * </DIV> <P> 
+   * 
+   * Where <CODE>I</CODE> is the identity matrix.  This method computes the inverse of
+   * the matrix using <A HREF="http://mathworld.wolfram.com/GaussianElimination.html">
+   * Gaussian Elimination</A>.
    * 
    * @param epsilon
    *   The epsilon used in determining singularity.
@@ -414,7 +443,17 @@ class Matrix33d
   }
   
   /**
-   * Find the inverse of this matrix.
+   * Find the inverse of this matrix. <P> 
+   * 
+   * The inverse of a matrix is defined as: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   <IMG alt="" src="../../../../images/MatrixInverse.gif">
+   * </DIV> <P> 
+   * 
+   * Where <CODE>I</CODE> is the identity matrix.  This method computes the inverse of
+   * the matrix using <A HREF="http://mathworld.wolfram.com/GaussianElimination.html">
+   * Gaussian Elimination</A>.
    * 
    * @param epsilon
    *   The epsilon used in determining singularity.

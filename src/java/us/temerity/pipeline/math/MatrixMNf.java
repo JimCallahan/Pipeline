@@ -1,4 +1,4 @@
-// $Id: MatrixMNf.java,v 1.2 2004/12/21 15:45:14 jim Exp $
+// $Id: MatrixMNf.java,v 1.3 2004/12/21 16:23:44 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -28,6 +28,9 @@ import java.util.*;
  * <DIV style="margin-left: 40px;">
  *   <IMG alt="" src="../../../../images/MatrixMathIndex.gif">
  * </DIV> <P>
+ * 
+ * @see <A HREF="http://mathworld.wolfram.com/topics/MatrixOperations.html">
+ *      Math World: Matrix Operations</A>
  */
 public 
 class MatrixMNf
@@ -556,6 +559,9 @@ class MatrixMNf
    * @throws RowSizeMismatchException
    *   If the number of rows in this matrix is not identical to the number of components 
    *   in the results vector.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/MatrixMultiplication.html">
+   *      Math World: Matrix Multiplication</A>
    */ 					    
   public void
   multTuple
@@ -705,6 +711,9 @@ class MatrixMNf
    * 
    * @throws MatrixSizeMismatchException
    *   If the sizes of the matrices do not satisfy size requirements above.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/MatrixMultiplication.html">
+   *      Math World: Matrix Multiplication</A>
    */ 		    
   public void
   multMatrix										    
@@ -738,6 +747,9 @@ class MatrixMNf
    * 
    * @throws UnsupportedOperationException 
    *   If either of the matrices are not square.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/MatrixMultiplication.html">
+   *      Math World: Matrix Multiplication</A>
    */ 	    
   public void
   concatMatrix									    
@@ -757,7 +769,7 @@ class MatrixMNf
     set(rtn);
   }
 	
-										    
+									    
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -774,6 +786,9 @@ class MatrixMNf
    *   If the number rows in this matrix is not identical to the number of columns in the
    *   results matrix.  If the number of columns in this matrix in not identical to the 
    *   number of rows in the results matrix. 
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/Transpose.html">
+   *      Math World: Matrix Transpose </A>
    */
   public void 
   transpose
@@ -799,6 +814,9 @@ class MatrixMNf
    * 
    * @throws UnsupportedOperationException 
    *   If either of the matrices are not square.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/Transpose.html">
+   *      Math World: Matrix Transpose </A>
    */
   public void
   transpose() 
@@ -822,7 +840,7 @@ class MatrixMNf
    * Zero all components of this matrix. <P> 
    * 
    * <DIV style="margin-left: 40px;">
-   *   <IMG alt="" src="../../../../images/MatrixIdentity.gif">
+   *   <IMG alt="" src="../../../../images/MatrixZero.gif">
    * </DIV>
    */ 
   public void 
@@ -843,6 +861,9 @@ class MatrixMNf
    * 
    * @throws UnsupportedOperationException 
    *   If this matrix is not square.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/IdentityMatrix.html">
+   *      Math World: Identity Matrix</A>
    */ 
   public void 
   identity()
@@ -863,6 +884,9 @@ class MatrixMNf
    * 
    * @throws UnsupportedOperationException 
    *   If this matrix is not square.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/DiagonalMatrix.html">
+   *      Math World: Diagonal Matrix</A>
    */
   public void
   diagonal
@@ -897,6 +921,9 @@ class MatrixMNf
    * 
    * @throws TupleSizeMismatchException
    *   If the size of the matrix is not identical to the size of the diagonal vector.
+   * 
+   * @see <A HREF="http://mathworld.wolfram.com/DiagonalMatrix.html">
+   *      Math World: Diagonal Matrix</A>
    */
   public void
   diagonal
@@ -930,7 +957,9 @@ class MatrixMNf
    *   <IMG alt="" src="../../../../images/MatrixInverse.gif">
    * </DIV> <P> 
    * 
-   * Where <CODE>I</CODE> is the identity matrix.
+   * Where <CODE>I</CODE> is the identity matrix.  This method computes the inverse of
+   * the matrix using <A HREF="http://mathworld.wolfram.com/GaussianElimination.html">
+   * Gaussian Elimination</A>.
    * 
    * @param epsilon
    *   The epsilon used to determine singularity.
@@ -1029,7 +1058,9 @@ class MatrixMNf
    *   <IMG alt="" src="../../../../images/MatrixInverse.gif">
    * </DIV> <P> 
    * 
-   * Where <CODE>I</CODE> is the identity matrix.
+   * Where <CODE>I</CODE> is the identity matrix. This method computes the inverse of
+   * the matrix using <A HREF="http://mathworld.wolfram.com/GaussianElimination.html">
+   * Gaussian Elimination</A>. 
    * 
    * @param rtn [<B>modified</B>]
    *   If successfull, the resulting inverse matrix is stored in this matrix.
