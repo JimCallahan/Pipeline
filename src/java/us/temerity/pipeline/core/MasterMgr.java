@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.80 2005/01/11 12:52:55 jim Exp $
+// $Id: MasterMgr.java,v 1.81 2005/01/15 02:47:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3920,6 +3920,9 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      /* make sure the latest action plugins are loaded */ 
+      PluginMgrClient.getInstance().update();
 
       /* determine the revision number of the to be created version of the root node */ 
       VersionID rootVersionID = null;
@@ -9560,6 +9563,19 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Somehow a frozen node (" + name + ") was erroneously " + 
 	       "submitted for check-in!");
+
+	  /* make sure the action is NOT under development */ 
+	  {
+	    work.updateAction();
+
+	    BaseAction action = work.getAction();
+	    if((action != null) && action.isUnderDevelopment()) {
+	      throw new PipelineException 
+		("The node (" + name + ") cannot be checked-in because its Action plugin " +
+		 "(" + action.getName() + " v" + action.getVersionID() + ") is currently " +
+		 "under development!");
+	    }
+	  }
 
 	  /* determine the checked-in revision numbers of the upstream nodes */ 
 	  TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
