@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.3 2005/01/07 08:41:50 jim Exp $
+// $Id: UIMaster.java,v 1.4 2005/01/07 11:33:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -103,6 +103,8 @@ class UIMaster
     pRestoreLayout      = restoreLayout;
     pRestoreSelections  = restoreSelections; 
     pIsRestoring        = new AtomicBoolean();
+
+    pCollapsedNodePaths = new HashSet<String>();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -405,6 +407,50 @@ class UIMaster
     return pQueueJobDetailsPanels;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Save the collapsed state of the given viewer node.
+   * 
+   * @param path
+   *   The unique path to the viewer node.
+   * 
+   * @param wasCollapsed
+   *   Whether the viewer node is currently collapsed.
+   */ 
+  public void 
+  setNodeCollapsed
+  (
+   String path,
+   boolean wasCollapsed
+  ) 
+  {
+    synchronized(pCollapsedNodePaths) {
+      if(wasCollapsed) 
+	pCollapsedNodePaths.add(path);
+      else 
+	pCollapsedNodePaths.remove(path);
+    }
+  }
+
+  /**
+   * Whether the given viewer node was previously collapsed.
+   * 
+   * @param path
+   *   The unique path to the viewer node.
+   */ 
+  public boolean
+  wasNodeCollapsed
+  (
+   String path 
+  ) 
+  {
+    synchronized(pCollapsedNodePaths) {
+      return pCollapsedNodePaths.contains(path);
+    }    
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -912,6 +958,19 @@ class UIMaster
     if(pQueueMgrClient != null) 
       pQueueMgrClient.disconnect();
 
+    /* save the collapsed node paths */ 
+    synchronized(pCollapsedNodePaths) {
+      File file = new File(PackageInfo.sHomeDir, 
+			   PackageInfo.sUser + "/.pipeline/collapsed-nodes");
+      try {
+	LockedGlueFile.save(file, "CollapsedNodePaths", pCollapsedNodePaths); 
+      }
+      catch(Exception ex) {
+	Logs.ops.warning("Unable to save (" + file + ")!");
+	Logs.flush();
+      }
+    }
+
     /* give the sockets time to disconnect cleanly */ 
     try {
       Thread.sleep(500);
@@ -969,6 +1028,22 @@ class UIMaster
 	  File file = new File(base, "preferences");
 	  if(file.isFile()) 	  
 	    UserPrefs.load();
+	}
+
+	/* read the collapsed node paths */ 
+	synchronized(pCollapsedNodePaths) {
+	  File file = new File(base, "collapsed-nodes");
+	  if(file.isFile()) {
+	    try {      
+	      HashSet<String> collapsed = (HashSet<String>) LockedGlueFile.load(file);
+	      if(collapsed != null) 
+		pCollapsedNodePaths.addAll(collapsed);
+	    }
+	    catch(Exception ex) {
+	      Logs.ops.warning("Unable to load (" + file + ")!");
+	      Logs.flush();
+	    }
+	  }
 	}
       }
       catch(Exception ex) {	
@@ -2457,6 +2532,14 @@ class UIMaster
    * The active job details panels. <P> 
    */ 
   private PanelGroup<JQueueJobDetailsPanel>  pQueueJobDetailsPanels;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The unique paths to the previously collapsed viewer nodes.
+   */ 
+  private HashSet<String>  pCollapsedNodePaths;
 
 
   /*----------------------------------------------------------------------------------------*/

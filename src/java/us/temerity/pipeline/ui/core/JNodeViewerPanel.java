@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.3 2005/01/07 08:41:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.4 2005/01/07 11:33:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -990,12 +990,12 @@ class JNodeViewerPanel
 	pPinnedPos = bbox.getCenter(); 
     }
 
-    /* get the paths to the currently collapsed nodes */ 
-    TreeSet<NodePath> wasCollapsed = new TreeSet<NodePath>();
-    for(ViewerNode vnode : pViewerNodes.values()) {
-      if(vnode.isCollapsed()) 
-	wasCollapsed.add(vnode.getNodePath());
-    }
+//     /* get the paths to the currently collapsed nodes */ 
+//     TreeSet<NodePath> wasCollapsed = new TreeSet<NodePath>();
+//     for(ViewerNode vnode : pViewerNodes.values()) {
+//       if(vnode.isCollapsed()) 
+// 	wasCollapsed.add(vnode.getNodePath());
+//     }
 
     /* remove all previous nodes and links */ 
     pViewerNodes.clear();
@@ -1014,14 +1014,14 @@ class JNodeViewerPanel
 	  double uheight = 0.0;
 	  {
 	    TreeSet<String> seen = new TreeSet<String>();
-	    uheight = layoutNodes(true, true, status, path, anchor, wasCollapsed, seen);
+	    uheight = layoutNodes(true, true, status, path, anchor, seen);
 	  }
 	  
 	  /* layout the downstream nodes */ 
 	  double dheight = 0.0;  
 	  if(pShowDownstream) {
 	    TreeSet<String> seen = new TreeSet<String>();
-	    dheight = layoutNodes(true, false, status, path, anchor, wasCollapsed, seen);
+	    dheight = layoutNodes(true, false, status, path, anchor, seen);
 	  }
 	  
 	  /* shift the upstream/downstream nodes so that they line up vertically */ 
@@ -1097,9 +1097,6 @@ class JNodeViewerPanel
    * @param anchor
    *   The upper-left corner of the layout area for the current node.
    * 
-   * @param wasCollapsed
-   *   The node paths of the previously collapsed nodes.
-   * 
    * @param seen
    *   The fully resolved node names of processed nodes.
    * 
@@ -1114,7 +1111,6 @@ class JNodeViewerPanel
     NodeStatus status, 
     NodePath path, 
     Point2d anchor, 
-    TreeSet<NodePath> wasCollapsed, 
     TreeSet<String> seen
    ) 
    {
@@ -1130,22 +1126,33 @@ class JNodeViewerPanel
        assert(vnode != null);
      }
 
+     /* set the collapsed state of the node */ 
+     UIMaster master = UIMaster.getInstance();
      if((upstream && status.hasSources()) || 
-        (!upstream && status.hasTargets() && !isRoot)) {
+	(!upstream && status.hasTargets() && !isRoot)) {
        switch(pLayoutPolicy) {
        case Preserve:
-	 vnode.setCollapsed(wasCollapsed.contains(path));
+	 vnode.setCollapsed(master.wasNodeCollapsed(path.toString()));
 	 break;
 	 
        case AutomaticExpand:
-	 vnode.setCollapsed(seen.contains(status.getName()));
+	 {
+	   boolean collapsed = seen.contains(status.getName());
+	   vnode.setCollapsed(collapsed);
+	   master.setNodeCollapsed(path.toString(), collapsed);
+	 }
 	 break;
-
+	 
        case CollapseAll:
 	 vnode.setCollapsed(true);
+	 master.setNodeCollapsed(path.toString(), true);
+	 break;
+	 
+       case ExpandAll:
+	 master.setNodeCollapsed(path.toString(), false);	   
        }
      }
-
+       
      seen.add(status.getName());
 
      double height = 0.0;
@@ -1168,8 +1175,7 @@ class JNodeViewerPanel
  	    double sign = upstream ? 1.0 : -1.0;
 	    Point2d canchor = 
 	      Point2d.add(anchor, new Vector2d(sign*prefs.getNodeSpaceX(), height));
- 	    height += layoutNodes(false, upstream, cstatus, cpath, canchor, 
-				  wasCollapsed, seen);
+ 	    height += layoutNodes(false, upstream, cstatus, cpath, canchor, seen);
  	  }
 
  	  /* add a link between this node and the child node */ 
@@ -1664,6 +1670,8 @@ class JNodeViewerPanel
 	  if((mods & (on1 | off1)) == on1) {
 	    if(vunder.getNodeStatus().hasSources()) {
 	      vunder.toggleCollapsed();
+	      UIMaster master = UIMaster.getInstance();
+	      master.setNodeCollapsed(vunder.getNodePath().toString(), vunder.isCollapsed());
 
 	      pPinnedPos  = vunder.getPosition();
 	      pPinnedPath = vunder.getNodePath();

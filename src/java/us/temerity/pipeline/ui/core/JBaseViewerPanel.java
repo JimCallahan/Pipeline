@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.2 2005/01/07 11:33:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -69,7 +69,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
   {  
     /* initialize fields */ 
     {
-      pLayoutPolicy = LayoutPolicy.AutomaticExpand;
+      pLayoutPolicy = LayoutPolicy.Preserve;
 
       pCameraPos = new Point3d(0.0, 0.0, -20.0);
       setFOV(90.0);
