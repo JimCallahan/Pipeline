@@ -66,7 +66,7 @@ Pipeline
 \noun default 
  have been oriented around the methodologies of accomplishing a complex
  task involving the collaboration of many artists and automated procedures.
- With the exception of change comments and check-in log messages, 
+ With the exception of check-in log messages, 
 \noun on 
 Pipeline
 \noun default 
@@ -100,192 +100,343 @@ A Task is somewhat analogous to a
 \noun on 
 Pipeline
 \noun default 
- Node in that they both represent a stage in a hierarchical process representabl
-e by a dependency tree who's root represents the completion of the process.
+ Node in that they both represent a stage in a process.
  However, there isn't a direct one-to-one relationship between Nodes and
  Tasks.
- Tasks can be thought of as a more abstract and high level overview which
- represents the production status of a portion of the overall Node tree.
- Typically, Tasks are created very early in the planning stages of the productio
-n process.
- As the production progresses, Nodes are later created to implement the
- goals of a Task.
- 
+ Tasks can be thought of as a more abstract and high level representation
+ of the production.
+ Typically, Tasks are usually created early in the planning stages of the
+ production process.
+ As the production progresses, Nodes may later created to implement some
+ or all of the goals of an existing Task.
+ Tasks may even be used to schedule work which never has any associated
+ Nodes.
 \layout Standard
 
-Due to these differences, Pipeline will represent Tasks separately from
- Nodes and provide connections between these two systems where they are
- related.
+Due to these differences, Pipeline represents Tasks separately from Nodes
+ but provides connections between these two systems where they interact.
 \layout Subsection
 
 Properties
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Name
-\noun default 
-: Each Task is given a unique name within the Project (see below).
+\layout Standard
+
+Each Task is given a unique name within the Project.
  This name should be a short identifier similar to the last component of
  a Node name.
  
-\layout Itemize
-
-
-\noun on 
-Type
-\noun default 
-: To aid in the assignment of a Task to an appropriate artist, Tasks are
- classified as being one of a predetermined set of Task types.
- The set of types can be extended by a privileged user of Pipeline.
- For the CGI process, common types would include: 
-\noun on 
-Design, Research, Texturing, Modeling, Rigging, Animation, Lighting, Compositing
-, Tracking
-\noun default 
-, etc...
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Supervisor
-\noun default 
-: The name of the user who has supervisory responsibilities for the Task.
+\layout Standard
+
+The name of the user who has supervisory responsibilities for the Task.
  This could be a Lead Artist, a Producer or the Director for the Project.
  The Supervisor has special privileges and responsibilities related to the
  Task.
  Initially, the Supervisor is the user who created the Task but this can
  be changed later.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Owner
-\noun default 
-: The name of the Artist to whom the Task is currently assigned.
+\layout Standard
+
+The name of the Artist to whom the Task is currently assigned.
  This does necessarily mean that the artist is currently working on the
  Task, only that the currently plan is for them to eventually complete the
  Task.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Start Date
-\noun default 
-: The estimated date and time when work on the Task should have begun.
+\layout Standard
+
+The estimated date and time when work on the Task should have begun.
  This can be different from when work actually does begin.
  This information contributes to the process which determines the order
  Tasks are assigned and acts as a metric for evaluating Project progress.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Completion Date
-\noun default 
-: The estimated date and time when all work on the Task should be complete
+\layout Standard
+
+The estimated date and time when all work on the Task should be complete
  and approved.
  Similar to the Start Date, this information is provided for scheduling
  and information purposes and may not exactly correspond to the actual completio
 n date.
 \layout Subsection
 
-State
+Tags
 \layout Standard
 
-The currently state of progress in completing the Task.
+Privileged users may define an arbitrary set of Tags for each Project.
+ Each Tag has an identifying name and a set of possible values used to classify
+ Tasks.
  
 \layout Standard
 
-Must be one of the following symbolic constants:
-\layout Itemize
+For instance, a CGI project might define a Tag called 
+\noun on 
+Type
+\noun default 
+ with values such as: 
+\noun on 
+Design, Research, Texturing, Modeling, Rigging, Animation, Lighting, Compositing
+, Tracking
+\noun default 
+, etc...
+ The same project might also define
+\noun on 
+ 
+\noun default 
+a 
+\noun on 
+Shot
+\noun default 
+ Tag with values corresponding to the scene and shot breakdown of the project.
+ 
+\layout Standard
+
+Each Task may select one or more of the defined values for each Tag.
+ Tags may be either can be created in one of two modes: Exclusive or Multiple.
+ Exclusive Tags require that the Task selects zero or one of the values
+ for which make up the Tag.
+ Multiple Tags allow several values to be selected at once.
+ 
+\layout Standard
+
+The 
+\noun on 
+Type
+\noun default 
+ example Tag above would probably be an Exclusive Tag, while the 
+\noun on 
+Shot
+\noun default 
+ example Tag would be a Multiple Tag.
+ For instance, consider a modeling task which produces a model used in several
+ shots.
+ It might use the 
+\noun on 
+Type[Modeling]
+\noun default 
+ and 
+\noun on 
+Shot[12_10,12_13,23_4]
+\noun default 
+ Tags.
+\layout Standard
+
+Tags can be used to filter which Tasks are shown in the Task Timeline and
+ to sort and group the shown Tasks according to Tag commonalities.
+ Tags can also aid in the process of assigning Jobs to Artists capable of
+ accomplishing the Task.
+ 
+\layout Subsection
+
+Constraints
+\layout Standard
+
+Some Tasks cannot (or should not) be started or actively worked on until
+ other Tasks have already been completed (
+\noun on 
+CBB
+\noun default 
+ or 
+\noun on 
+Final
+\noun default 
+ Event) or reached its first intermediate state of completion (
+\noun on 
+Approve
+\noun default 
+ Event).
+ Until all constraints have been met for a Task, its 
+\noun on 
+Start Date
+\noun default 
+ cannot be moved to a time earlier than the Event on the constraining Task.
+ In the case where no Events yet exist on the constraining Task, the 
+\noun on 
+Start Date
+\noun default 
+ cannot be moved to a time earlier than the
+\noun on 
+ Start Date
+\noun default 
+ of the constraining Task (for
+\noun on 
+ Approve
+\noun default 
+ constraints) or the 
+\noun on 
+Completion Date
+\noun default 
+ (for 
+\noun on 
+CBB
+\noun default 
+ or 
+\noun on 
+Final
+\noun default 
+ constants).
+ While constrained, the Task will not accept 
+\noun on 
+Start
+\noun default 
+ Events.
+\layout Subsection
+
+Current Nodes
+\layout Standard
+
+Each task may be associated with a set of 
+\noun on 
+Pipeline
+\noun default 
+ Nodes.
+ Only checked-in versions of Nodes may be associated with a Task.
+ The 
+\noun on 
+Add Node
+\noun default 
+, 
+\noun on 
+Remove Node
+\noun default 
+ and 
+\noun on 
+Update
+\noun default 
+ events described below alter which Nodes and/or which version of a Node
+ are associated with a Task.
+ The most up-to-date set of checked-in Node versions associated with the
+ Task make up the Current Nodes.
+ 
+\layout Standard
+
+The history Task Events which change the associates node provide a way of
+ determining which nodes and/or node versions where associated with the
+ Task at any point in time.
+\layout Subsection
+
+Event History
+\layout Standard
+
+Each Task maintains a log of the Task Events which have occurred for the
+ Task.
+ The Event History provides a detailed accounting of the life of a Task
+ from creation to completion including all interaction between the Supervisors
+ and Owners of a Task.
+\layout Subsection
+
+Task States
+\layout Standard
+
+The Task State represents the currently state of progress in completing
+ the Task.
+ Task Events can be used to change the state of a Task.
+ At any point in time, a Task will have one of the following states.
+\layout Subsubsection
 
 
 \noun on 
 Unassigned
-\noun default 
-: The initial state of the Task.
+\layout Standard
+
+The initial state of the Task.
  The Task has no Owner.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
-Waiting
-\noun default 
-: An Artist has been assigned as the Owner of the Task, but no work has
- yet begun to complete the Task.
-\layout Itemize
+Inactive
+\layout Standard
 
-
-\noun on 
-In Progress
-\noun default 
-: The Owner of the Task in actively working on the Task.
+An Artist has been assigned as the Owner of the Task, but no work is currently
+ being done to accomplish the Task.
  
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
-Updated
-\noun default 
-: The Owner of the Task has completed some intermediate step toward the
- completion of the task which should be brought to the Supervisors attention.
- However, the Owner is not waiting on the Supervisor's approval and is continuin
-g to actively work on the Task.
- This is typically caused by a Node check-in related to the Task.
-\layout Itemize
+Active
+\layout Standard
+
+The Owner of the Task in actively working on the Task.
+ 
+\layout Subsubsection
 
 
 \noun on 
 Needs Approval
-\noun default 
-: The Owner of the Task has completed some intermediate step toward the
- completion of the task which must be approved by the
+\layout Standard
+
+The Owner of the Task has completed an intermediate step toward the completion
+ of the task which must be approved by the
 \emph on 
  
 \emph default 
 Supervisor before work can continue.
  The Owner will not actively work on the Task until the step is approved
  or otherwise commented upon by the Supervisor.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Approved
-\noun default 
-: The Supervisor has reviewed and approved the previous intermediate step
+\layout Standard
+
+The Supervisor has reviewed and approved the previous intermediate step
  submitted by the Owner.
  
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
-Change
+Changes
 \noun default 
  
 \noun on 
 Required
-\noun default 
-: The Supervisor has reviewed the previous intermediate step submitted by
+\layout Standard
+
+The Supervisor has reviewed the previous intermediate step submitted by
  the Owner and has submitted a message giving additional direction concerning
  the Task.
  The Owner of the Task should not continue working on the task until they
  have read the associated message.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
-Hold
-\noun default 
-: The Supervisor or Owner has decided that all work on this Task should
- be temporarily suspended until further notice.
-\layout Itemize
+Held
+\layout Standard
+
+The Supervisor or Owner has decided that all work on this Task should be
+ temporarily suspended until further notice.
+\layout Subsubsection
 
 
 \noun on 
 Could Be Better
-\noun default 
-: The Supervisor has reviewed the last approval request and has decided
- that the current state of the Task is good enough to be considered 
+\layout Standard
+
+The Supervisor has reviewed the last approval request and has decided that
+ the current state of the Task is good enough to be considered 
 \noun on 
 Finalled
 \noun default 
@@ -301,76 +452,36 @@ Finalled
 \noun default 
  state in order to improve the quality of the Project.
  No work should progress on this Task until further notice.
-\layout Itemize
+\layout Subsubsection
 
 
 \noun on 
 Finalled
-\noun default 
-: The Supervisor has reviewed the last approval request and has decided
- that the Task is now complete.
+\layout Standard
+
+The Supervisor has decided that the Task has been completed and no further
+ changes should take place.
  Once a Task has been 
 \noun on 
 Finalled
 \noun default 
-, only the Supervisor may change its state.
-\layout Subsection
-
-Dependencies
-\layout Standard
-
-Some Tasks cannot (or should not) be started or actively worked on until
- other Tasks have already been completed or reached at least some intermediate
- state of completion.
- Changes to the State of one Task may have consequences for other Tasks
- which depend on the results of the Task.
- For this reason, Warning Events may be generated for the current Task when
- Events occur in upstream Tasks.
- See the Task Event section for details on the interaction of Dependencies
- and Events.
-\layout Subsection
-
-Current Nodes
-\layout Standard
-
-Each task may be associated with a set of 
-\noun on 
-Pipeline
-\noun default 
- Nodes.
- Only checked-in versions of Nodes may be associated with a Task.
- Some of the Task Events described below alter the which Nodes and/or which
- version of a Node are associated with a Task.
- The most up-to-date set of checked-in Node versions associated with the
- Task make up the Current Nodes.
- 
-\layout Subsection
-
-Event History
-\layout Standard
-
-Each Task maintains a log of the Task Events (see below) which have occurred
- for the Task.
- The Event History provides a detailed accounting of the life of a Task
- from creation to completion including all interaction between the Supervisors
- and Owners of a Task.
+, only the Supervisor may request further changes to the Task.
 \layout Section
 
 Task Events
 \layout Standard
 
 Task Events represent the occurrence of a significant change in the Task
- Properties, State, Dependencies or a change in the Current Nodes associated
- with a Task.
+ Properties, Dependencies or Current Nodes associated with a Task.
  Each Task Event is logged in the Event History for the specific Task which
  is the target of the Event.
 \layout Standard
 
-In essence, all operations which modify the scheduling system involve generating
- a Task Event.
- Some of these events are generated by the interaction of the user with
- the scheduling user interface and some are generated as a side effect of
- operations on the Nodes associated with a Task.
+All operations which modify the scheduling system involve generating a Task
+ Event.
+ Some of these events are generated by the direct interaction with the schedulin
+g user interface and some are generated as a side effect of operations on
+ the Nodes associated with a Task.
 \layout Subsection
 
 Event Properties
@@ -490,6 +601,8 @@ ny
 : Any user may generate the Event.
 \layout Subsubsection
 
+
+\noun on 
 Create
 \layout Standard
 
@@ -499,20 +612,21 @@ Access
 \layout Standard
 
 This Event causes a new Task to be created.
- The initial Name, Type and Supervisor properties must be specified for
- the Task.
+ The initial Name, Supervisor properties must be specified for the Task.
  In addition, an initial 
 \noun on 
 Message
 \noun default 
  must be given which outlines the requirements for completion of the Task.
- The new Task will be created with a Task State of 
+ The new Task will be created with a Task State of
 \noun on 
-Unassigned
+ Unassigned
 \noun default 
 .
 \layout Subsubsection
 
+
+\noun on 
 Assign
 \layout Standard
 
@@ -527,7 +641,7 @@ Owner
 \noun default 
  of the Task and sets the Task State to 
 \noun on 
-Waiting
+Inactive
 \noun default 
 .
  An optional 
@@ -537,6 +651,8 @@ Message
  may be given for this Event to explain the change of assignment.
 \layout Subsubsection
 
+
+\noun on 
 Manage
 \layout Standard
 
@@ -554,7 +670,9 @@ Message
  Task State is unchanged by this Event.
 \layout Subsubsection
 
-Begin
+
+\noun on 
+Start
 \layout Standard
 
 Access
@@ -565,7 +683,7 @@ Access
 This Event signals that the Owner of the Task has begun actively working
  on the Task and changes the Task State to 
 \noun on 
-In Progress
+Active
 \noun default 
 .
  An optional 
@@ -573,30 +691,38 @@ In Progress
 Message
 \noun default 
  may be given for this Event to explaining the intended course of action.
+ This Event is generated when the Owner begins work on the Task for the
+ day or switches to this Task from another Task.
 \layout Subsubsection
 
-Associate
-\layout Standard
 
-Access: 
 \noun on 
-Privileged, Supervisor, Owner
+Stop
 \layout Standard
 
-This Event adds a specific checked-in version of a Node to the Current Nodes
- for the Task.
- If another version of the Node is already a member of the Current Nodes,
- it is replaced by the version specified by the Event.
+Access
+\noun on 
+: Owner
+\layout Standard
+
+This Event signals that the Owner of the Task has ceased actively working
+ on the Task and changes the Task State to 
+\noun on 
+Inactive
+\noun default 
+.
  An optional 
 \noun on 
 Message
 \noun default 
- may be given for this Event to explaining the reason for the association
- of the Node with the Task.
- Task State is unchanged by this Event.
+ may be given for this Event to explaining the reason work as ceased.
+ This Event is generated when the Owner switches to work on another Task
+ or leaves for the day.
 \layout Subsubsection
 
-Disassociate
+
+\noun on 
+Add Node
 \layout Standard
 
 Access: 
@@ -604,17 +730,44 @@ Access:
 Privileged, Supervisor, Owner
 \layout Standard
 
-This Event removes a Node from the Current Nodes associated with a Task.
+This Event adds one or more checked-in Node versions to the set Current
+ Nodes associated with the Task.
+ If a different version of any of the given Nodes are already associated
+ with the Task an error will be generated.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given with this Event to explaining the reason for adding the Node
+ to the Task.
+ Task State is unchanged by this Event.
+ 
+\layout Subsubsection
+
+
+\noun on 
+Remove Node
+\layout Standard
+
+Access: 
+\noun on 
+Privileged, Supervisor, Owner
+\layout Standard
+
+This Event removes one or more Nodes from the Current Nodes associated with
+ a Task.
  An optional 
 \noun on 
 Message
 \noun default 
  may be given for this Event to explaining the reason for the disassociation
- of the Node with the Task.
+ of the Nodes with the Task.
  Task State is unchanged by this Event.
 \layout Subsubsection
 
-Update
+
+\noun on 
+Update 
 \layout Standard
 
 Access
@@ -631,36 +784,33 @@ This Event signals the completion of an intermediate step toward the completion
 Message
 \noun default 
  must be provided explaining the progress which has been made.
- This event sets the Task State to 
-\noun on 
-Updated
-\noun default 
-.
+ Task State is unchanged by this Event.
 \layout Standard
 
 This Event may be generated manually by the Owner to log progress on a Task
  which is unrelated to any Node.
- More commonly, this Event is generated automatically as part of a Node
- check-in operation for any of the Current Nodes associated with the Task.
+ More commonly though, this Event is generated automatically as part of
+ a check-in operation for one or more of the Current Nodes associated with
+ the Task.
  In this case, the 
 \noun on 
 Message
 \noun default 
- property of the Event is copied from the check-in log message given during
- check-in of the Node.
- The Current Node version is also updated to the newly checked-in version
- of the Node.
+ property of the Event is copied from the check-in log message.
+ The revision numbers stored for the Current Nodes are also updated.
 \layout Standard
 
 Note that it is possible for users other than the Owner to generate this
  Event.
- This may be cause for concern if this was not expected by the Owner and
- Supervisor of the Task.
+ It may be cause for concern if this Event was not expected by the Owner
+ and Supervisor of the Task.
  The more liberal access to Any user is allowed so that renegade check-ins
- for Nodes associated with the Task will be brought to the Owner's and Superviso
-r's attention as soon as possible.
+ for Current Nodes associated with the Task will be brought to the Owner's
+ and Supervisor's attention as soon as possible.
 \layout Subsubsection
 
+
+\noun on 
 Submit
 \layout Standard
 
@@ -676,16 +826,18 @@ This Event signals the completion of an intermediate step toward the completion
 \noun on 
 Needs Approval
 \noun default 
-.
+ and can only be performed by the Owner of the Task.
 \layout Standard
 
 When a Node is checked-in, if the user performing the check-in is the Owner
  of a Task associated with the Node, they are given the option of choosing
  whether an Update Event or Submit Event will be generated.
  If the user performing the check-in is not the Owner, an Update Event is
- always generated and no choice is given to the user.
+ always generated.
 \layout Subsubsection
 
+
+\noun on 
 Approve
 \layout Standard
 
@@ -696,15 +848,6 @@ Supervisor
 
 This Event signals that the Supervisor has reviewed and approved the intermediat
 e step marked by a previous Update or Submit Event.
- This Event can only be generated if the current Task State is either 
-\noun on 
-Updated
-\noun default 
- or 
-\noun on 
-Needs Approval
-\noun default 
-.
  An optional 
 \noun on 
 Message
@@ -717,6 +860,8 @@ Approved
 .
 \layout Subsubsection
 
+
+\noun on 
 Change
 \layout Standard
 
@@ -725,27 +870,14 @@ Access:
 Supervisor
 \layout Standard
 
-This Event signals that the Supervisor has reviewed the previous intermediate
- step and has added additional directions and/or requirements which must
- be satisfied for the Task.
- This Event can only be generated if the current Task State is one of 
-\noun on 
-Updated, Needs Approval
-\noun default 
-, 
-\noun on 
-Approved
-\noun default 
- or 
-\noun on 
-Could Be Better
-\noun default 
-.
+This Event signals that the Supervisor has reviewed the Task and has added
+ additional directions and/or requirements which must be satisfied for the
+ Task.
  A 
 \noun on 
 Message
 \noun default 
- must be given which explains the changes required.
+ must be given which explains the required course of action.
  This event sets the Task State to 
 \noun on 
 Change Required
@@ -753,6 +885,8 @@ Change Required
 .
 \layout Subsubsection
 
+
+\noun on 
 Hold
 \layout Standard
 
@@ -775,7 +909,9 @@ Hold
 .
 \layout Subsubsection
 
-Could Be Better
+
+\noun on 
+CBB
 \layout Standard
 
 Access: 
@@ -806,6 +942,8 @@ Finalled State
 Could Be Better.
 \layout Subsubsection
 
+
+\noun on 
 Finalled
 \layout Standard
 
@@ -826,20 +964,1286 @@ Message
 Finalled
 \noun default 
 .
-\layout Subsubsection
+\layout Subsection
 
-Warning
+Task Events for each Task State
 \layout Standard
 
-Access: Any
+The following tables describe the types of Task Events which can be generated
+ based on the current Task State.
+ The structure of the tables in as follows:
+\newline 
+
 \layout Standard
 
-This Event signals some change for which the Owner and/or Supervisor of
- the Task should be made aware.
- The most common reason this Event is generated is in response to Events
- occurring for one or more of the upstream Tasks which the current Task
- depends upon.
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\emph on 
+Initial State
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\emph on 
+Event
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\emph on 
+Access
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\emph on 
+New State
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\layout Standard
+
+Where the 
+\emph on 
+Initial State
+\emph default 
+ is the Task State before the event is generated.
+ The 
+\emph on 
+Event
+\emph default 
+ is the generated Task Event.
+ The 
+\emph on 
+Access
+\emph default 
+ section consists of a set of letter representing the types of users which
+ may generate the Task Event: O=Owner, P=Privileged, S=Supervisor, A=Any.
+ The 
+\emph on 
+New State
+\emph default 
+ is the Task State after the event has been generated.
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<column alignment="center" valignment="top" rightline="true" width="0">
+<column alignment="center" valignment="top" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+(none)
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Create
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+P
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Unassigned
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Unassigned
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Assign
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+PS
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Inactive
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="8" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Active
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Stop
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+O
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Inactive
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Add Node
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+PSO
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+(unchanged)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Remove Node
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+PSO
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+(unchanged)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Update
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+A
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+(unchanged)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Submit
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+O
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Needs Approval
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Direct
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Changes Required
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Hold
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+SO
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Held
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="5" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Needs Approval
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Approve
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Approved
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Hold
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+SO
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Held
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+CBB
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Could Be Better
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Final
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Finalled
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
  
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="5" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Approved
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Start
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+O
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Active
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Hold
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+SO
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Held
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+CBB
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Could Be Better
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Final
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\family roman 
+\series medium 
+\shape up 
+\size normal 
+\emph off 
+\bar no 
+\noun off 
+\color none
+Finalled
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+ 
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="block" valignment="top" leftline="true" width="0">
+<column alignment="block" valignment="top" leftline="true" width="0">
+<column alignment="block" valignment="top" leftline="true" rightline="true" width="1in">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Changes Required
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Start
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+O
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Active
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+ 
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Held
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Direct
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Changes Required
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+ 
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="3" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Could Be Better
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Direct
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Changes Required
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Final
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Finalled
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+  
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Finalled
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Direct
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+S
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Changes Required
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+ 
+\newline 
+
+\newline 
+
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="2" columns="3">
+<features>
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" width="0">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
+<row topline="true">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+(any)
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Manage
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+PS
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+(unchanged)
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+  
+\newline 
+
+\newline 
+
 \layout Section
 
 Projects
@@ -868,7 +2272,7 @@ The previous sections have concentrated on the mechanics of how Tasks and
  and tries to give some idea of a typical work flow using this system.
 \layout Subsection
 
-Timeline
+Task Timeline Panel
 \layout Standard
 
 The Timeline is the primary visualization of a Project and its Tasks.
@@ -881,38 +2285,71 @@ The Timeline is the primary visualization of a Project and its Tasks.
  
 \layout Standard
 
-The Tasks may be grouped vertically according to Supervisor
-\emph on 
- 
-\emph default 
-or Owner into panels which may be collapsed or expanded.
- Alternatively, the Tasks may be arranged according to Task Dependency relations
-hips into a nested panel structure which allows branches of the Task tree
- to be collapsed or expanded.
+The set of Tasks displayed may be filtered using a criteria involving the
+ Owner and Supervisor names and any combination of Tag values.
+ These same criteria are also used to sort and organize the displayed Tasks.
+ For instance, it would be possible to view only those Tasks assigned to
+ a particular user (or users) and arrange them in a nested hierarchy first
+ by 
+\noun on 
+Shot 
+\noun default 
+and then by 
+\noun on 
+Type
+\noun default 
+ Tag values.
+ Alternatively, only those Tasks which set the 
+\noun on 
+Model
+\noun default 
+ value of the 
+\noun on 
+Type
+\noun default 
+ Tag could be displayed sorted by Task 
+\noun on 
+Owner
+\noun default 
+.
+ The current Task State can also be used as part of the filter and sort
+ criteria.
 \layout Subsection
 
-Task Details
+Task Details Panel
 \layout Standard
 
 The Timeline can be used to select a specific Task or an Event for more
  detail.
- The Task Details panel provides access to all Task Properties, State, Current
- Node and Event History information associated with the Task.
- This information is presented in a form similar to the existing Node Details
- and History panels.
+ The Task Details panel provides access to all Task Properties, Tags, Constraint
+s, State and Event History information associated with the Task.
+ This information is presented in a form similar to the Node Details and
+ History panels.
  The Timeline and Node Details panels will be linked so that selecting an
  Event from the Task's bar in the Timeline will cause the Task Details panel
- to scroll to the corresponding Event details.
+ to scroll to the corresponding Event in the history.
+\layout Subsection
+
+Task Nodes Panel
+\layout Standard
+
+This panel displays the set of Current Nodes for the Tasks selected in the
+ Task Timeline.
+ Nodes may be displayed in a textual table form or as a set of thumbnails
+ images associated with the Node.
+ The Edit operation is available for these Nodes within this panel.
+ Also, if there is a Node Browser panel which shares the same panel group,
+ the Nodes may be added to the selection of the Node Browser from this panel.
 \layout Subsection
 
 Event Generation
 \layout Standard
 
 Task Events can be generated from the Timeline and Task Details panel using
- a context sensitive popup menu similar to that used to perform Node operations
+ a context sensitive pop-up menu similar to that used to perform Node operations
  such as check-in and check-out.
  Only the set of events which are legal for the current user and Task State
- will be enabled in this popup menu.
+ will be enabled in this pop-up menu.
 \layout Subsection
 
 Node Interface Changes
@@ -929,7 +2366,7 @@ Pipeline
 Whenever a Node has been associated with a Task, the State of the Task and
  the relationship of its Owner to the current user should be represented
  whenever a Node is visualized.
- The most important place for this to occur is in the Node Graph panel.
+ The most important place for this to occur is in the Node Viewer panel.
  One idea is for some small iconic modifier to be rendered near to the Node's
  symbol in the graph which would alert the user and provide an anchor for
  the the Task Event pop-up menu and a way to jump to the task in the Timeline
@@ -937,40 +2374,49 @@ Whenever a Node has been associated with a Task, the State of the Task and
  
 \layout Standard
 
-When a Checked-In operation is performed for a Node which has an associated
- Task and the current user is the Owner of the Task, an option should be
- added to the Check-In panel which allows the user to specify whether an
- Update or Submit Event should be generated.
- If the current user is not the Owner, an Update Event should be generated
- automatically.
- In both cases the log message will be attached to the Event.
+When a Node operation is performed for a Node which has an associated Task
+ some additional actions should be taken.
+ 
 \layout Standard
 
-When an Edit, Make or Make Local operation is performed for a Node which
- has an associated Task warning messages should be generated if the Task
- State is 
+In the case of a Check-In operation where the current user is the Owner
+ of the Task, an option should be added to the Check-In panel which allows
+ the user to specify whether an 
 \noun on 
-Hold
+Update
 \noun default 
  or 
 \noun on 
-Finalled.
- 
+Submit
 \noun default 
-Warnings should also be generated if the current user is not the Owner of
- the Task and especially if the Task State is 
+ Event should be generated.
+ If the current user is not the Owner, a warning dialog should be displayed
+ advising the user that they are not the Owner of the Task and should not
+ proceed, if they choose to Check-In the Node anyway, an Update Event should
+ be generated automatically.
+ Regardless of the current user and Owner, a warning message should be generated
+ if a Check-In is attempted if the associated Task is not in an 
 \noun on 
-In Progress.
- 
+Active
 \noun default 
-These warning shouldn't stop the user from performing the operation, but
- hopefully make them think about the consequences before proceeding.
-\layout Subsection
-
-Obsoleted Features
+ state.
+ In all cases the check-in log message will be used for the Task Events.
 \layout Standard
 
-The Change Comments feature of Nodes will be made obsolete by Tasks.
- However, the Node History panel will still contain the check-in log messages
- associated with a Node.
+Any Node operation which would modify the working version of the Node (such
+ as Edit, Link, Unlink, Renumber or Node property changes) should cause
+ a warning dialog to be displayed before performing the operation if there
+ exists an associated Task and the current user is not the 
+\noun on 
+Owner
+\noun default 
+ of the Task or the Task is not in an 
+\noun on 
+Active
+\noun default 
+ state.
+\layout Standard
+
+These warning shouldn't stop the user from performing the operation, but
+ hopefully make them think about the consequences before proceeding.
 \the_end

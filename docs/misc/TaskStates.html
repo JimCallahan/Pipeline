@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>TaskStates</title>
+</head>
+<body>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="6"
+ cellspacing="0">
+  <tbody>
+    <tr align="center">
+      <td colspan="4" rowspan="1"
+ style="vertical-align: top; background-color: rgb(255, 255, 204);"><big><big>Task
+States and Events</big></big></td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; font-weight: normal; background-color: rgb(255, 255, 153);"><big>Current
+State</big></td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; font-weight: normal; background-color: rgb(255, 255, 153);"><big>Event</big></td>
+      <td
+ style="text-align: center; vertical-align: middle; font-weight: normal; background-color: rgb(255, 255, 153);"><big>Access<br>
+      </big></td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; background-color: rgb(255, 255, 153);"><big
+ style="font-weight: normal;">New
+State</big><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">-<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Create<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">P<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Unassigned<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Unassigned</td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Assign<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">PS<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Inactive<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Inactive<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Start<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">O<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Active<br>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="1" rowspan="7"
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Active<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Stop<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">O<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Inactive<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Add
+Node<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">PSO<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">(unchanged)<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Remove
+Node<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">PSO</td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">(unchanged)<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Update</td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">A<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">(unchanged)<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Submit<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">O<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Needs
+Approval<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Direct<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">S<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Changes
+Required </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Hold<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">SO<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Held<br>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="1" rowspan="4"
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Needs
+Approval<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Approve<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">S<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Approved<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Hold</td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">SO<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Held<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">CBB<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">S<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Could
+Be Better<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Final<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">S<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Finalled<br>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="1" rowspan="4"
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Approved<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Start<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">O<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Active<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Hold</td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">SO<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Held<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">CBB</td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">S<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Could
+Be Better<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Final</td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">S<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Finalled<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Changes
+Required<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Start<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">O<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Active<br>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="1" rowspan="1"
+ style="text-align: center; vertical-align: top; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Held<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Direct<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">S<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Changes
+Required </td>
+    </tr>
+    <tr>
+      <td colspan="1" rowspan="2"
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Could
+Be Better<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Direct</td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">S
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Changes
+Required</td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; text-align: center; background-color: rgb(136, 136, 136); color: rgb(255, 255, 255); font-weight: bold;">Final</td>
+      <td
+ style="vertical-align: top; text-align: center; background-color: rgb(136, 136, 136); color: rgb(255, 255, 255); font-weight: bold;">S</td>
+      <td
+ style="vertical-align: top; text-align: center; background-color: rgb(136, 136, 136); color: rgb(255, 255, 255); font-weight: bold;">Finalled</td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Finalled<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Direct<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">S
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(127, 127, 127);">Changes
+Required </td>
+    </tr>
+    <tr>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">-<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">Manage<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">PS<br>
+      </td>
+      <td
+ style="width: 30%; text-align: center; vertical-align: middle; color: rgb(255, 255, 255); font-weight: bold; background-color: rgb(136, 136, 136);">-<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</body>
+</html>
