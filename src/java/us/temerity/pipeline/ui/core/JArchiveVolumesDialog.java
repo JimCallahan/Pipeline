@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.2 2005/04/04 23:36:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1109,7 +1109,7 @@ class JArchiveVolumesDialog
       pTitle   = title; 
 
       if((msg == null) || (msg.length() == 0)) 
-	pMessage = "<Nothing Output>";
+	pMessage = "(Nothing Output)";
       else 
 	pMessage = msg; 
     }
