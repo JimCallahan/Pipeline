@@ -248,8 +248,36 @@ Administration</span></span></a><br>
  style="font-style: italic;">micro</span>]</span></li>
         <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
  style="font-weight: normal;"><a href="#comparator_--get-info-all"><span
- style="font-weight: bold;">--get-info-all</span></a><br>
-          </span></li>
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">tool</li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#tool_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#tool_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">tool-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#tool_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">archiver<br>
+      </li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#archiver_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#archiver_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">archiver-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#archiver_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#User_Preferences">User
@@ -2218,7 +2246,79 @@ installed.<br>
 Comparator plugins.&nbsp; Equivalent to performing a <a
  href="#comparator_--get-info"><span style="font-weight: bold;">comparator
 --get-info</span></a> for each Comparator plugin.<br>
+<br>
+<br>
 </div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="tool_--get"></a>tool --get</span><br>
+<br>
+</div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Tool plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="tool_--get-info"></a>tool</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an Tool plugin.&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="tool_--get-info-all"></a>tool</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+Prints a summary of information for all Tool plugins.&nbsp; Equivalent
+to performing a <a href="#tool_--get-info"><span
+ style="font-weight: bold;">tool
+--get-info</span></a> for each Tool plugin.<br>
+<br>
+<br>
+<span style="font-weight: bold;"><a name="archiver_--get"></a>archiver
+--get</span><br>
+<br>
+</div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Archiver plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="archiver_--get-info"></a>archiver</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an </span>Archiver<span
+ style="font-weight: normal;"> plugin.&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="archiver_--get-info-all"></a>archiver</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+Prints a summary of information for all Archiver plugins.&nbsp;
+Equivalent to performing a <a href="#archiver_--get-info"><span
+ style="font-weight: bold;">archiver
+--get-info</span></a> for each Archiver plugin.<br>
 </div>
 <h3><a name="User_Preferences"></a><span style="font-weight: bold;"></span>User
 Preferences</h3>

@@ -12,12 +12,8 @@
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a style="font-weight: bold;" href="#--list">--list</a><span
- style="font-weight: bold;"> </span><br>
-  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
- href="#--inspect"><span style="font-weight: bold;">--inspect</span></a>
-  <i>class-file1 </i>[<i>class-file2 ...</i>]<b><br>
+ style="font-weight: bold;"> </span><b><br>
 plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
-[<a href="#--force"><span style="font-weight: bold;">--force</span></a>]
   <a href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>class-file1 </i>[<i>class-file2 ...</i>]<i><br>
   </i><br>
@@ -39,20 +35,14 @@ and use the newly installed plugins.&nbsp; All Pipeline programs which
 use plugins are capable of reloading plugins on the fly.&nbsp; This is
 important when developing and testing new plugins, but it requires that
 care be taken so that Pipeline maintains a consistent state.&nbsp; <br>
-  <br>
-  <span style="color: rgb(153, 0, 0);">If you manually copy plugin Java
-class files into the installed plugin directories without using </span><span
- style="font-weight: bold; color: rgb(153, 0, 0);">plplugin</span><span
- style="color: rgb(153, 0, 0);">(1), various bad things can happen
-ranging from erratic behavior of Pipeline to outright crashes of the
-server daemons!&nbsp; </span><br>
-  <br>
+  <span style="color: rgb(153, 0, 0);"></span><span
+ style="color: rgb(153, 0, 0);"></span><br>
 This program must be run by the
 (@PIPELINE_USER@) user when installing plugins (see <a
  href="#--install"><span style="font-weight: bold;">--install</span></a>).<br>
 </blockquote>
 <h3><a name="Plugin_Limitations"></a>Plugin Requirements</h3>
-<blockquote>Besides safe copying of plugin files, <span
+<blockquote>Besides safely installing plugin files, <span
  style="font-weight: bold;">plplugin</span>(1) inspects the compiled
 Java class files to make sure they will be loaded properly by Pipeline
 programs before performing the installation.&nbsp; Due to the dynamic
@@ -148,7 +138,8 @@ super("Emacs", new VersionID("1.0.0"),</span><br
  style="font-family: monospace;">
   <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU extensible, customizable,
-self-documenting text editor.", </span><br
+self-documenting" + <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "text editor.", </span><br
  style="font-family: monospace;">
   <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "emacs");</span><br
@@ -157,7 +148,8 @@ self-documenting text editor.", </span><br
  style="font-family: monospace;">
   <br style="font-family: monospace;">
   <span style="font-family: monospace;">&nbsp; private static final
-long serialVersionUID = -5044455288055639029L;</span><br
+long serialVersionUID = <br>
+&nbsp;&nbsp;&nbsp; -5044455288055639029L;</span><br
  style="font-family: monospace;">
   <span style="font-family: monospace;">}</span><br
  style="font-family: monospace;">
@@ -196,27 +188,34 @@ you into trouble if you aren't careful.&nbsp; <br>
 Action plugins should be treated with some extra caution.&nbsp; Its
 important to remember that one of Pipeline's fundamental principles is
 that checked-in nodes with regeneration actions should be able to
-exactly regenerate their files at any time.&nbsp; If you replace a
-version of an Action plugin that is used by checked-in nodes you are
-taking a big risk that you may change this behavior.<br>
+exactly regenerate their files at any time.&nbsp; If you were to
+replace a
+version of an Action plugin that is used by checked-in nodes you would
+be
+taking a big risk that your changes would violate this behavior.<br>
   <br>
-The reason for plugin versioning is to avoid this possibility.&nbsp;
-Whenever you are going to tinker with an existing Action plugin, you
-should first create a new plugin version.&nbsp;&nbsp; This guarantees
+The plugin versioning prevents this possibility.&nbsp;
+Whenever you need to change an existing plugin, you must make the
+changes in a new plugin version.&nbsp;&nbsp; This guarantees
 that both checked-in and working versions of nodes which use the older
-versions of the plugin will continue to behave in a consistent manner
-while you test the new Action. <br>
+versions of the plugin will continue to behave in a consistent
+manner.&nbsp; <br>
   <br>
-When developing new plugin versions (especially Action plugins), you
-should call the <code><a
+To facilitate testing of new plugin versions, the API provides a way to
+mark plugin versions as being under active development by calling&nbsp;
+  <code><a
  href="../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment%28%29"><span
  style="font-weight: bold;">underDevelopment</span></a></code> method
 in the plugin's constructor.&nbsp; This lets Pipeline know that the
 plugin might change substantially and that its use should be restricted
 when changes could cause problems.&nbsp; In particular, nodes who's
-Action plugin is under development cannot be Checked-In until the
-plugin version is reinstalled which does not call the <code>underDevelopment</code>
-method from its constructor.<br>
+Action plugin is under development cannot be Checked-In.&nbsp; <br>
+  <br>
+Plugins which are under developement can also be repeatably updated
+using the <a href="#--install"><span style="font-weight: bold;">--install</span></a>
+option.&nbsp; Once the the plugin is no longer under developement, it
+cannot be updated and a new version has to be created in order to
+change the plugin.<br>
 </blockquote>
 <h3> </h3>
 <h3><a name="Information_Options"></a>Information Options</h3>
@@ -325,12 +324,22 @@ at once.<br>
 command-line options.<br>
 <br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
+<>
+<></></>
+<div style="margin-left: 40px;"><><><span style="font-weight: bold;">ops</span></></><br>
+<><></></></div>
+<>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><><span style="font-weight: bold;"></span></>Logs
+command operations.<br>
+<span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs queue job related activity of
-the
-server.<br>
+<span style="font-weight: bold;">net</span><br>
 </div>
+</>
+<div style="margin-left: 80px;"><><span style="font-weight: bold;"></span>Logs
+network connections and activity.</><br>
+<></></div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
 plg</span><br>
 <div style="margin-left: 40px;">Logs the loading and
@@ -338,10 +347,7 @@ initialization of
 Pipeline plugins.<br>
 <span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;"></span></div>
-<span style="font-weight: bold;">sub</span><br>
-<div style="margin-left: 40px;">Logs the launching and monitoring
-of OS level subprocesses.</div>
-</div>
+<span style="font-weight: bold;"></span></div>
 <br>
 <span style="font-weight: bold;"></span>The (<span
  style="font-style: italic;">level</span>) portion of
@@ -412,48 +418,30 @@ plplugin us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--list"></a>--list</span><br>
 <span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;"><br>
-Lists information about the currently installed plugins and exits.<br>
-<br>
-<br>
+<><br>
+</>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><>Lists information about the currently
+installed plugins and exits.<br>
+</></div>
+<></></div>
+<><br>
+</>
+<div style="margin-left: 40px;"><><span style="font-weight: bold;"><a
+ name="--force"></a>--install</span><i>
+class-file1 </i>[<i>class-file2 ...</i>]</><br>
+<></><br>
+<div style="margin-left: 40px;"><><>Installs plugins contained in the
+given class files and prints
+information about the installed plugins.&nbsp;&nbsp; If there exists a
+previously installed plugin with the same name and version as one of
+the given classes, an error will be generated and the plugin will not
+be installed unless the previous plugin was under development (see <a
+ href="#Important_Caveats"><span style="font-weight: bold;">Important
+Caveats</span></a>).</></></div>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--inspect"></a>--inspect</span><i> class-file1 </i>[<i>class-file2
-...</i>]
-<div style="margin-left: 40px;"><br>
-Loads the given class
-files, verifies that they are legal Pipeline plugins and prints
-information about the plugins.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-<br>
-<span style="font-weight: bold;"><a name="--force"></a>--install</span><i>
-class-file1 </i>[<i>class-file2 ...</i>]<br>
-<div style="margin-left: 40px;"><br>
-Installs plugins contained in the given class files and prints
-information about the installed plugins.&nbsp; <br>
-</div>
-<br>
-<span style="font-weight: bold;"><a name="--force_"></a>--force</span><br>
-<span style="font-weight: bold;"></span><br>
-<div style="margin-left: 40px;">By default, the <a href="#--install"><span
- style="font-weight: bold;">--install</span></a> option <span
- style="font-weight: bold;"></span>will
-generate a warning message and refuse to install a plugin if there
-exists a prevously installed plugin with the same name and
-version.&nbsp; If this option
-is specified before <a href="#--install"><span
- style="font-weight: bold;">--install</span></a>, any previously
-installed plugins which conflict with the given plugins will be
-replaced.<br>
-<br>
-This option should not be used on an Action plugin which is currently
-visible to non-privileged users as it may cause unexpected consequences
-(see <a href="#Important_Caveats"><span style="font-weight: bold;">Important
-Caveats</span></a>).<br>
-</div>
-</div>
+<div style="margin-left: 40px;"><></></div>
+<></>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
