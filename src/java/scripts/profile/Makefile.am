@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/bin
+instbindir = @ROOT_INST_DIR@/bin/profile
 
 instbin_SCRIPTS = \
   plplugin \
@@ -7,7 +7,7 @@ instbin_SCRIPTS = \
   plui
 
 
-instsbindir = @ROOT_INST_DIR@/sbin
+instsbindir = @ROOT_INST_DIR@/sbin/profile
 
 instsbin_SCRIPTS = \
   plfilemgr \
@@ -15,8 +15,3 @@ instsbin_SCRIPTS = \
   plmaster \
   plqueuemgr
 
-
-SUBDIRS = \
-  debug \
-  profile \
-  debug-profile

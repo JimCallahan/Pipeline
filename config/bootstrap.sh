@@ -14,7 +14,8 @@ plprofile=$plsrcdir/plconfig/customers/testing/041020
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
     --disable-opt \
-    --enable-attach \
+    --with-debug-base=45000 \
+    --with-prof-base=45100 \
     --with-compiler=GNU \
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=testing \

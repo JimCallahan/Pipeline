@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.8.9)
+AM_INIT_AUTOMAKE(Pipeline, 1.8.10)
 
 AC_MSG_RESULT([ ])
 
@@ -751,70 +751,119 @@ fi
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Java Debugger Attach])
+AC_MSG_RESULT([Java Debugging Options])
 
-AC_ARG_ENABLE([attach], 
-              [  --enable-attach           Enable Java debugger to attach via sockets.])
+AC_ARG_WITH([debug-base], 
+            [  --with-debug-base=PORT      The base port number used for debugging.])
 
-AC_SUBST(PLMASTERMGR_DEBUG_OPTS)
-PLMASTERMGR_DEBUG_OPTS=""
-
-AC_SUBST(PLFILEMGR_DEBUG_OPTS)
-PLFILEMGR_DEBUG_OPTS=""
-
-AC_SUBST(PLNOTIFY_DEBUG_OPTS)
-PLNOTIFY_DEBUG_OPTS=""
-
-AC_SUBST(PLPLUGIN_DEBUG_OPTS)
-PLPLUGIN_DEBUG_OPTS=""
-
-AC_SUBST(PLQUEUEMGR_DEBUG_OPTS)
-PLQUEUEMGR_DEBUG_OPTS=""
-
-AC_SUBST(PLJOBMGR_DEBUG_OPTS)
-PLJOBMGR_DEBUG_OPTS=""
-
-AC_SUBST(PLUI_DEBUG_OPTS)
-PLUI_DEBUG_OPTS=""
-
-AC_SUBST(PLSCRIPT_DEBUG_OPTS)
-PLSCRIPT_DEBUG_OPTS=""
-
-if test "$BUILD_MODE" = "dbg" -a "$enable_attach" = "yes"
-then 
-  java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
-  PLMASTERMGR_DEBUG_OPTS=${java_debug_opts}"43001"
-  PLFILEMGR_DEBUG_OPTS=${java_debug_opts}"43002"
-  PLNOTIFY_DEBUG_OPTS=${java_debug_opts}"43003"
-  PLPLUGIN_DEBUG_OPTS=${java_debug_opts}"43004"
-  PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43005"
-  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006"
-  PLUI_DEBUG_OPTS=
-dnl PLUI_DEBUG_OPTS=${java_debug_opts}"43007"
-  PLSCRIPT_DEBUG_OPTS=
-dnl PLSCRIPT_DEBUG_OPTS=${java_debug_opts}"43008"
-  AC_MSG_RESULT([yes])
-else 
-  AC_MSG_RESULT([no])
+debug_base=43100
+if test "$with_debug_base"
+then
+  debug_base=$with_debug_base
 fi
+
+java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
+
+AC_MSG_CHECKING([plmaster])
+AC_SUBST(PLMASTER_DEBUG_OPTS)
+PLMASTER_DEBUG_OPTS=${java_debug_opts}$(($debug_base+1))
+AC_MSG_RESULT([$PLMASTER_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plfilemgr])
+AC_SUBST(PLFILEMGR_DEBUG_OPTS)
+PLFILEMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+2))
+AC_MSG_RESULT([$PLFILEMGR_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plnotify])
+AC_SUBST(PLNOTIFY_DEBUG_OPTS)
+PLNOTIFY_DEBUG_OPTS=${java_debug_opts}$(($debug_base+3))
+AC_MSG_RESULT([$PLNOTIFY_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plplugin])
+AC_SUBST(PLPLUGIN_DEBUG_OPTS)
+PLPLUGIN_DEBUG_OPTS=${java_debug_opts}$(($debug_base+4))
+AC_MSG_RESULT([$PLPLUGIN_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plqueuemgr])
+AC_SUBST(PLQUEUEMGR_DEBUG_OPTS)
+PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+5))
+AC_MSG_RESULT([$PLQUEUEMGR_DEBUG_OPTS])
+
+AC_MSG_CHECKING([pljobmgr])
+AC_SUBST(PLJOBMGR_DEBUG_OPTS)
+PLJOBMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+6))
+AC_MSG_RESULT([$PLJOBMGR_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plui])
+AC_SUBST(PLUI_DEBUG_OPTS)
+PLUI_DEBUG_OPTS=${java_debug_opts}$(($debug_base+7))
+AC_MSG_RESULT([$PLUI_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plscript])
+AC_SUBST(PLSCRIPT_DEBUG_OPTS)
+PLSCRIPT_DEBUG_OPTS=${java_debug_opts}$(($debug_base+8))
+AC_MSG_RESULT([$PLSCRIPT_DEBUG_OPTS])
+
+AC_MSG_RESULT([ ])
 
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_ARG_ENABLE([prof], 
-              [  --enable-prof             Use profiling options.])
+AC_MSG_RESULT([Java Profiling Options])
 
-if test "$enable_prof" = "yes" 
-then 
-  case "$with_compiler" in 
-    (gnu | GNU | "") \
-       CXXFLAGS="$CXXFLAGS -pg";
-       BUILD_MODE="prof";;
+AC_ARG_WITH([prof-base], 
+            [  --with-prof-base=PORT       The base port number used for profiling.])
 
-    (*) \
-       AC_MSG_ERROR([don't know how to profile with this compiler]);;
-  esac
+prof_base=43100
+if test "$with_prof_base" 
+then
+  prof_base=$with_prof_base
 fi
+
+java_prof_opts="-Xrunyjpagent:tracing,alloc,onexit=both,port="
+java_prof_dir=",dir=/usr/tmp/pipeline-profile/"
+
+AC_MSG_CHECKING([plmaster])
+AC_SUBST(PLMASTER_PROFILE_OPTS)
+PLMASTER_PROFILE_OPTS=${java_prof_opts}$(($prof_base+1))${java_prof_dir}"plmaster"
+AC_MSG_RESULT([$PLMASTER_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plfilemgr])
+AC_SUBST(PLFILEMGR_PROFILE_OPTS)
+PLFILEMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+2))${java_prof_dir}"plfilemgr"
+AC_MSG_RESULT([$PLFILEMGR_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plnotify])
+AC_SUBST(PLNOTIFY_PROFILE_OPTS)
+PLNOTIFY_PROFILE_OPTS=${java_prof_opts}$(($prof_base+3))${java_prof_dir}"plnotify"
+AC_MSG_RESULT([$PLNOTIFY_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plplugin])
+AC_SUBST(PLPLUGIN_PROFILE_OPTS)
+PLPLUGIN_PROFILE_OPTS=${java_prof_opts}$(($prof_base+4))${java_prof_dir}"plplugin"
+AC_MSG_RESULT([$PLPLUGIN_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plqueuemgr])
+AC_SUBST(PLQUEUEMGR_PROFILE_OPTS)
+PLQUEUEMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+5))${java_prof_dir}"plqueuemgr"
+AC_MSG_RESULT([$PLQUEUEMGR_PROFILE_OPTS])
+
+AC_MSG_CHECKING([pljobmgr])
+AC_SUBST(PLJOBMGR_PROFILE_OPTS)
+PLJOBMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+6))${java_prof_dir}"pljobmgr"
+AC_MSG_RESULT([$PLJOBMGR_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plui])
+AC_SUBST(PLUI_PROFILE_OPTS)
+PLUI_PROFILE_OPTS=${java_prof_opts}$(($prof_base+7))${java_prof_dir}"plui"
+AC_MSG_RESULT([$PLUI_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plscript])
+AC_SUBST(PLSCRIPT_PROFILE_OPTS)
+PLSCRIPT_PROFILE_OPTS=${java_prof_opts}$(($prof_base+8))${java_prof_dir}"plscript"
+AC_MSG_RESULT([$PLSCRIPT_PROFILE_OPTS])
+
+AC_MSG_RESULT([ ])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -1091,6 +1140,33 @@ AC_CONFIG_FILES([
   src/java/scripts/plqueuemgr
   src/java/scripts/plscript
   src/java/scripts/plui
+
+  src/java/scripts/debug/Makefile
+  src/java/scripts/debug/plfilemgr
+  src/java/scripts/debug/pljobmgr
+  src/java/scripts/debug/plmaster
+  src/java/scripts/debug/plplugin
+  src/java/scripts/debug/plqueuemgr
+  src/java/scripts/debug/plscript
+  src/java/scripts/debug/plui
+
+  src/java/scripts/profile/Makefile
+  src/java/scripts/profile/plfilemgr
+  src/java/scripts/profile/pljobmgr
+  src/java/scripts/profile/plmaster
+  src/java/scripts/profile/plplugin
+  src/java/scripts/profile/plqueuemgr
+  src/java/scripts/profile/plscript
+  src/java/scripts/profile/plui
+
+  src/java/scripts/debug-profile/Makefile
+  src/java/scripts/debug-profile/plfilemgr
+  src/java/scripts/debug-profile/pljobmgr
+  src/java/scripts/debug-profile/plmaster
+  src/java/scripts/debug-profile/plplugin
+  src/java/scripts/debug-profile/plqueuemgr
+  src/java/scripts/debug-profile/plscript
+  src/java/scripts/debug-profile/plui
 
   src/java/share/Makefile
 
