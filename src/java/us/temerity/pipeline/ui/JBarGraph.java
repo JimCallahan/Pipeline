@@ -1,4 +1,4 @@
-// $Id: JBarGraph.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: JBarGraph.java,v 1.2 2004/08/01 15:34:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,7 +30,7 @@ class JBarGraph
   {
     super();
 
-    pHighlight = Color.yellow;
+    pHighlightColor = Color.yellow;
   }
 
 
@@ -52,16 +52,20 @@ class JBarGraph
    * {@link #setHighlight setHighlight}).  The remaining lines will be drawn in the foreground
    * color (see {@link #setForeground setForeground}).
    * 
-   * @param
+   * @param values
    *   The normalized [0,1] values.
+   * 
+   * @param hightlight
    */ 
   public void 
   setValues
   (
-   float[] values
+   float[] values, 
+   boolean highlight
   ) 
   {
     pValues = values;
+    pHighlightFirst = highlight;
   } 
 
 
@@ -71,7 +75,7 @@ class JBarGraph
   public Color
   getHighlight() 
   {
-    return pHighlight;
+    return pHighlightColor;
   }
 
   /**
@@ -83,7 +87,7 @@ class JBarGraph
    Color color
   ) 
   {
-    pHighlight = color;
+    pHighlightColor = color;
   }
 
 
@@ -110,25 +114,40 @@ class JBarGraph
     int width = getWidth();
     int height = getHeight()-1;
     
-    /* draw the first value */ 
-    {
-      int value = 0;
-      if(pValues.length > 0)
-	value = Math.min(height, Math.max(0, (int) (pValues[0] * ((float) height))));
-      
-      gfx.setColor(pHighlight);
-      gfx.drawLine(0, height, 0, height-value);
-      gfx.drawLine(1, height, 1, height-value);
+    /* draw the first value highlighted */ 
+    if(pHighlightFirst) {
+      {
+	int value = 0;
+	if(pValues.length > 0)
+	  value = Math.min(height, Math.max(0, (int) (pValues[0] * ((float) height))));
+	
+	if(value > 0) {
+	  gfx.setColor(pHighlightColor);
+	  gfx.drawLine(0, height, 0, height-value);
+	  gfx.drawLine(1, height, 1, height-value);
+	}
+      }
+
+      {
+	gfx.setColor(getForeground());
+	
+	int npt = Math.min(width, pValues.length) - 1;
+	int wk;
+	for(wk=2; wk<npt; wk++) {
+	  int value = Math.min(height, Math.max(0, (int) (pValues[wk-1] * ((float) height))));
+	  gfx.drawLine(wk, height, wk, height-value);
+	}
+      }
     }
 
-    /* draw the rest of the values */ 
-    {
+    /* draw all values the same */ 
+    else {
       gfx.setColor(getForeground());
 
-      int npt = Math.min(width, pValues.length) - 1;
+      int npt = Math.min(width, pValues.length);
       int wk;
-      for(wk=2; wk<npt; wk++) {
-	int value = Math.min(height, Math.max(0, (int) (pValues[wk-1] * ((float) height))));
+      for(wk=0; wk<npt; wk++) {
+	int value = Math.min(height, Math.max(0, (int) (pValues[wk] * ((float) height))));
 	gfx.drawLine(wk, height, wk, height-value);
       }
     }
@@ -148,9 +167,14 @@ class JBarGraph
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Whether the first value should be drawn in the highlight color.
+   */ 
+  private boolean  pHighlightFirst; 
+
+  /**
    * The highlight color used to draw the first value.
    */ 
-  private Color  pHighlight; 
+  private Color  pHighlightColor; 
 
   /**
    * The values to graph.
