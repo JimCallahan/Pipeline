@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.6 2004/10/21 07:08:15 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.7 2004/10/21 07:35:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -78,7 +78,7 @@ class QueueMgrControlClient
    * Similarly, if any of the members of the output <CODE>states</CODE> argument are 
    * <CODE>null</CODE>, then no job exists which regenerates that specific file. <P> 
    * 
-   * @param id
+   * @param nodeID
    *   The unique working version identifier.
    *
    * @param stamp
@@ -101,7 +101,7 @@ class QueueMgrControlClient
   public synchronized void 
   getJobStates
   (
-   NodeID id, 
+   NodeID nodeID, 
    Date stamp, 
    FileSeq fseq, 
    ArrayList<Long> jobIDs, 
@@ -111,7 +111,7 @@ class QueueMgrControlClient
   {
     verifyConnection();
     
-    QueueGetJobStatesReq req = new QueueGetJobStatesReq(id, stamp, fseq);
+    QueueGetJobStatesReq req = new QueueGetJobStatesReq(nodeID, stamp, fseq);
     
     Object obj = performTransaction(QueueRequest.GetJobStates, req);
     if(obj instanceof QueueGetJobStatesRsp) {
