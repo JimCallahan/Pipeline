@@ -735,6 +735,9 @@ fi
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_ARG_ENABLE([attach], 
+              [  --enable-attach           Enable Java debugger to attach via sockets.])
+
 AC_SUBST(PLMASTERMGR_DEBUG_OPTS)
 PLMASTERMGR_DEBUG_OPTS=""
 
@@ -753,7 +756,7 @@ PLJOBMGR_DEBUG_OPTS=""
 AC_SUBST(PLUI_DEBUG_OPTS)
 PLUI_DEBUG_OPTS=""
 
-if test "$BUILD_MODE" = "dbg" 
+if test "$BUILD_MODE" = "dbg" -a "$enable_attach" = "yes"
 then 
   java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
   PLMASTERMGR_DEBUG_OPTS=${java_debug_opts}"43001"
