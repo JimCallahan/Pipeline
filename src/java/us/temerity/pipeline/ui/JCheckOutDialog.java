@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.4 2004/11/17 13:33:51 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.5 2004/12/10 00:10:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -184,7 +184,7 @@ class JCheckOutDialog
       pConfirmButton.setEnabled(true);
     }
 
-    pModeField.setSelectedIndex(0);
+    pModeField.setSelectedIndex(2);
     pMethodField.setSelectedIndex(0);
   }
 
