@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.1 2004/05/29 06:36:26 jim Exp $
+// $Id: Toolset.java,v 1.2 2004/06/02 21:33:11 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -50,43 +50,112 @@ class Toolset
    String desc
   ) 
   {
+    super(name);
+
     if(desc == null) 
       throw new IllegalArgumentException("The package description cannot be (null)!");
     pMessage = new LogMessage(author, desc);
 
-    pPackages    = new LinkedList<String>();
-    pVersionIDs  = new TreeMap<String,VersionID>();  
-    pEnvironment = new TreeMap<String,String>();
+    init(packages);
+  }
+
+  /**
+   * Construct a working toolset composed of the given packages.
+   * 
+   * @param name
+   *   The name of the toolset.
+   * 
+   * @param packages
+   *   The packages in order of evaluation.
+   */ 
+  public
+  Toolset
+  (
+   String name, 
+   Collection<PackageCommon> packages
+  ) 
+  {
+    super(name);
+    init(packages);
+  }
+
+  /**
+   * Construct an empty working toolset.
+   * 
+   * @param name
+   *   The name of the toolset.
+   */ 
+  public
+  Toolset
+  (
+   String name
+  ) 
+  {
+    super(name);
+    init(new ArrayList<PackageCommon>());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a toolset composed of the given packages.
+   * 
+   * @param packages
+   *   The packages in order of evaluation.
+   */ 
+  private void 
+  init
+  (
+   Collection<PackageCommon> packages
+  ) 
+  {
+    pPackages       = new ArrayList<String>();
+    pPackageHistory = new TreeMap<String,LinkedList<Integer>>();
+    pVersionIDs     = new ArrayList<VersionID>();  
+    pEnvironment    = new TreeMap<String,String>();
 
     pHasModifiable = false;
-    pConflicts     = new TreeMap<String,LinkedList<String>>();
+    pConflicts     = new TreeMap<String,LinkedList<Integer>>();
+    pAnyConflicts  = new TreeSet<Integer>();
     
+    int idx = 0;
     for(PackageCommon com : packages) {
       pPackages.add(com.getName());
 
       if(com instanceof PackageVersion) {
 	PackageVersion vsn = (PackageVersion) com;
-	pVersionIDs.put(vsn.getName(), vsn.getVersionID());
+	pVersionIDs.add(vsn.getVersionID());
       }
       else {
 	pHasModifiable = true;
+	pVersionIDs.add(null);
       }
 
       for(String key : com.getEnvNames()) {
-	String value = com.getEnvValue(key);
+	{
+	  LinkedList<Integer> pkgs = pPackageHistory.get(key);
+	  if(pkgs == null) {
+	    pkgs = new LinkedList<Integer>();
+	    pPackageHistory.put(key, pkgs);
+	  }
+	  pkgs.add(idx);
+	}
 
+	String value = com.getEnvValue(key);
 	if(pEnvironment.containsKey(key)) {
 	  String prev = pEnvironment.get(key);
-
 	  switch(com.getMergePolicy(key)) {
 	  case Exclusive:
 	    {
-	      LinkedList<String> pkgs = pConflicts.get(key);
+	      LinkedList<Integer> pkgs = pConflicts.get(key);
 	      if(pkgs == null) {
-		pkgs = new LinkedList<String>();
+		pkgs = new LinkedList<Integer>();
 		pConflicts.put(key, pkgs);
 	      }
-	      pkgs.add(com.getName());
+	      pkgs.add(idx);
+
+	      pAnyConflicts.add(idx);
 	    }
 	    break;
 	    
@@ -96,26 +165,66 @@ class Toolset
 
 	  case Ignore:
 	    break;
-
+	    
 	  case AppendPath:
-	    if((prev != null) && (prev.length() > 0)) 
-	      pEnvironment.put(key, prev + ":" + value);
-	    else 
-	      pEnvironment.put(key, value);
-	    break;
-
 	  case PrependPath:
-	    if((prev != null) && (prev.length() > 0)) 
-	      pEnvironment.put(key, value + ":" + prev);
-	    else 
+	    if(prev != null) {
+	      String first = null;
+	      String second = null;
+	      switch(com.getMergePolicy(key)) {
+	      case AppendPath:
+		first  = prev;
+		second = value;
+		break;
+		
+	      case PrependPath:
+		first  = value;
+		second = prev;
+	      }
+		
+	      ArrayList<String> paths = new ArrayList<String>();
+	      {
+		String dirs[] = first.split(":");  
+		int wk;
+		for(wk=0; wk<dirs.length; wk++) 
+		  if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
+		    paths.add(dirs[wk]);
+	      }
+
+	      {
+		String dirs[] = second.split(":");
+		int wk;
+		for(wk=0; wk<dirs.length; wk++) 
+		  if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
+		    paths.add(dirs[wk]);
+	      }
+	      
+	      String nvalue = null;
+	      {
+		StringBuffer buf = new StringBuffer();
+		for(String path : paths) 
+		  buf.append(path + ":");
+		String str = buf.toString();
+
+		if(paths.size() > 1) 
+		  nvalue = str.substring(0, str.length()-1);
+		else 
+		  nvalue = str;
+	      }
+
+	      pEnvironment.put(key, nvalue);
+	    }
+	    else {
 	      pEnvironment.put(key, value);
-	    break;
+	    }
 	  }
 	}
 	else {
 	  pEnvironment.put(key, value);
 	}
       }
+
+      idx++;
     }
   }
   
@@ -135,43 +244,94 @@ class Toolset
   }
 
   /**
-   * Does this toolset have any package conflicts?
+   * Is the current toolset ready to be frozen?
+   */ 
+  public boolean 
+  isFreezable() 
+  {
+    return (hasPackages() && !pHasModifiable && !hasConflicts());
+  }
+
+  /**
+   * Is the current toolset already frozen?
+   */ 
+  public boolean 
+  isFrozen() 
+  {
+    return (isFreezable() && (pMessage != null));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Does this toolset have any environmental variable package conflicts?
    */ 
   public boolean 
   hasConflicts() 
   {
-    return (!pConflicts.isEmpty());
+    return (!pAnyConflicts.isEmpty());
+  }
+
+  
+  /**
+   * Does the given environmental variable have any package conflicts?
+   * 
+   * @param name
+   *   The environmental variable name.
+   */ 
+  public boolean 
+  isEnvConflicted
+  (
+   String name
+  ) 
+  {
+    return pConflicts.containsKey(name);
   }
   
   /**
    * Get the names of the environmental variables which have package conflicts.
    */ 
-  public Set<String>
-  getConflictedNames() 
+  public TreeSet<String>
+  getConflictedEnvNames() 
   {
-    return Collections.unmodifiableSet(pConflicts.keySet());
+    return new TreeSet<String>(pConflicts.keySet());
+  }
+
+
+  /**
+   * Does the package for the given index have any environmental variable conflicts?
+   * 
+   * @param idx
+   *   The package index.
+   */ 
+  public boolean 
+  isPackageConflicted
+  (
+   int idx
+  ) 
+  {
+    return pAnyConflicts.contains(idx);
   }
 
   /**
-   * Get the names of the packages which have conflicts for the given environmental variable.
+   * Does the package for the given index have a conflict for the given environmental 
+   * variable name?
+   * 
+   * @param idx
+   *   The package index.
    * 
    * @param name
-   *   The name of the environmental variable.
-   * 
-   * @return
-   *   The package names in order of evaluation or <CODE>null</CODE> if no
-   *   conflict exists.
+   *   The environmental variable name.
    */ 
-  public Collection<String>
-  getConflictingPackages
+  public boolean 
+  isPackageEnvConflicted
   (
+   int idx, 
    String name
-  ) 
+  )
   {
-    LinkedList<String> packages = pConflicts.get(name);
-    if(packages != null) 
-      return Collections.unmodifiableCollection(packages);
-    return null;
+    return (pConflicts.containsKey(name) && pConflicts.get(name).contains(idx));
   }
 
 
@@ -183,7 +343,9 @@ class Toolset
   public Date
   getTimeStamp() 
   {
-    return pMessage.getTimeStamp();
+    if(pMessage != null) 
+      return pMessage.getTimeStamp();
+    return null;
   }
 
   /**
@@ -192,7 +354,9 @@ class Toolset
   public String
   getAuthor() 
   {
-    return pMessage.getAuthor();
+    if(pMessage != null) 
+      return pMessage.getAuthor();
+    return null;
   }
 
   /**
@@ -201,26 +365,64 @@ class Toolset
   public String
   getDescription() 
   {
-    return pMessage.getMessage();
+    if(pMessage != null) 
+      return pMessage.getMessage();
+    return null;
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Get the names of the packages which make up the toolset in evaluation order.
-   */ 
-  public Collection<String>
-  getPackages() 
+  /** 
+   * Does this toolset have any packages?
+   */
+  public boolean 
+  hasPackages() 
   {
-    return Collections.unmodifiableCollection(pPackages);
+    return (!pPackages.isEmpty());
   }
 
   /**
-   * Get revision number of the given package. <P> 
-   * 
-   * @param name
-   *   The name of the package.
+   * Does the toolset contain a modifiable package with the given name.
+   */ 
+  public boolean 
+  hasModifiablePackage
+  (
+   String name
+  ) 
+  {
+    int wk;
+    for(wk=0; wk<pPackages.size(); wk++) {
+      if(pPackages.get(wk).equals(name) && (pVersionIDs.get(wk) == null))
+	return true;
+    }
+
+    return false;
+  }
+
+  /** 
+   * Get the number of packages.
+   */ 
+  public int
+  getNumPackages() 
+  {
+    return (pPackages.size());
+  }
+
+  /**
+   * Get the name of the package with the given index.
+   */ 
+  public String
+  getPackageName
+  (
+   int idx
+  ) 
+  {
+    return (pPackages.get(idx));
+  }
+
+  /**
+   * Get revision number of the package with the given index. <P> 
    * 
    * @return
    *   The revision number or <CODE>null</CODE> if the package is modifiable.
@@ -228,10 +430,30 @@ class Toolset
   public VersionID
   getPackageVersionID
   (
-   String name
+   int idx
   ) 
   {
-    return pVersionIDs.get(name);
+    return (pVersionIDs.get(idx));
+  }
+
+
+  /**
+   * Get the indices of the packages which provide a value for the given environmental
+   * variable name.
+   * 
+   * @param ename
+   *   The environmental variable name.
+   */ 
+  public LinkedList<Integer> 
+  getPackageHistory
+  (
+   String ename
+  ) 
+  {
+    LinkedList<Integer> indices = new LinkedList<Integer>();
+    if(pPackageHistory.containsKey(ename))
+      indices.addAll(pPackageHistory.get(ename));
+    return indices;
   }
 
 
@@ -245,6 +467,59 @@ class Toolset
   {
     return new TreeMap<String,String>(pEnvironment);
   }
+  
+  /**
+   * Get the cooked toolset environment specific to the given user.
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   */ 
+  public TreeMap<String,String>
+  getEnvironment
+  (
+   String author
+  )
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    TreeMap<String,String> env = getEnvironment();
+    
+    env.put("HOME", PackageInfo.sHomeDir + "/" + author);
+    env.put("USER", author);
+
+    return env;
+  }
+
+  /**
+   * Get the cooked toolset environment specific to the given user and working area.
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   */ 
+  public TreeMap<String,String>
+  getEnvironment
+  (
+   String author, 
+   String view
+  )
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    TreeMap<String,String> env = getEnvironment(author);
+
+    env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
+
+    return env;
+  }
+
 
 
 
@@ -259,16 +534,17 @@ class Toolset
   ) 
     throws GlueException
   {
-    if(hasConflicts() || pHasModifiable) 
+    if(!isFrozen()) 
       throw new GlueException
-	("Cannot encode Toolsets with conflicts or modifiable packages as Glue!");
+	("Only frozen Toolsets can be encoded as Glue!");
 
     super.toGlue(encoder);
 
-    encoder.encode("Packages",    pPackages);
-    encoder.encode("Versions",    pVersionIDs);
-    encoder.encode("Message",     pMessage);
-    encoder.encode("Environment", pEnvironment);
+    encoder.encode("Packages",       pPackages);
+    encoder.encode("PackageHistory", pPackageHistory);
+    encoder.encode("Versions",       pVersionIDs);
+    encoder.encode("Message",        pMessage);
+    encoder.encode("Environment",    pEnvironment);
   }
   
   public void 
@@ -280,13 +556,18 @@ class Toolset
   {
     super.fromGlue(decoder);
 
-    LinkedList<String> packages = (LinkedList<String>) decoder.decode("Packages");
+    ArrayList<String> packages = (ArrayList<String>) decoder.decode("Packages");
     if(packages == null) 
       throw new GlueException("The \"Packages\" was missing or (null)!");
     pPackages = packages;
 
-    TreeMap<String,VersionID> versions = 
-      (TreeMap<String,VersionID>) decoder.decode("Versions");
+    TreeMap<String,LinkedList<Integer>> hist = 
+      (TreeMap<String,LinkedList<Integer>>) decoder.decode("PackageHistory");
+    if(hist == null) 
+      throw new GlueException("The \"PackageHistory\" was missing or (null)!");
+    pPackageHistory = hist;
+
+    ArrayList<VersionID> versions = (ArrayList<VersionID>) decoder.decode("Versions");
     if(versions == null) 
       throw new GlueException("The \"Versions\" was missing or (null)!");
     pVersionIDs = versions;
@@ -302,7 +583,8 @@ class Toolset
     pEnvironment = env;
 
     pHasModifiable = false;
-    pConflicts     = new TreeMap<String,LinkedList<String>>();
+    pConflicts     = new TreeMap<String,LinkedList<Integer>>();
+    pAnyConflicts  = new TreeSet<Integer>();
   }
  
 
@@ -322,14 +604,21 @@ class Toolset
   /**
    * The names of the packages which make up the toolset in the order they are included.
    */
-  private LinkedList<String>  pPackages;
+  private ArrayList<String>  pPackages;
 
   /**
-   * The revision numbers of the packages indexed by package name. <P> 
+   * The indices in order of evaluation of the packages which provide a value for an 
+   * environmental variable indexed by the environmental variable name.
+   */
+  private TreeMap<String,LinkedList<Integer>>  pPackageHistory;
+
+  /**
+   * The revision numbers of the packages in the order they are included.
    * 
    * If there is no revision number entry for a package, then the package is modifiable.
    */
-  private TreeMap<String,VersionID>  pVersionIDs;
+  private ArrayList<VersionID>  pVersionIDs;
+
 
   /**
    * The descriptive message given at the time the toolset was created. <P> 
@@ -344,6 +633,8 @@ class Toolset
    */ 
   private TreeMap<String,String>  pEnvironment;
   
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Was the toolset built with any modifiable packages.
@@ -351,11 +642,15 @@ class Toolset
   private boolean  pHasModifiable;
 
   /**
-   * The names of the packages who's entries cannot be combined with the values defined by
-   * a previous package indexed by the conflicting entry name. <P> 
-   * 
-   * If this table is empty, then the toolset is suitable for production use.
+   * The indices in order of evaluation of the packages which are in conflict indexed by 
+   * the environmental variable name.
    */
-  private TreeMap<String,LinkedList<String>>  pConflicts;
+  private TreeMap<String,LinkedList<Integer>>  pConflicts;
+
+  /**
+   * The indices of the packages for which there are one or more environmental 
+   * variable conflicts.
+   */
+  private TreeSet<Integer>  pAnyConflicts;
 
 }
