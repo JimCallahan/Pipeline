@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.1 2004/03/09 09:45:31 jim Exp $
+// $Id: FileCheckInReq.java,v 1.2 2004/03/15 19:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -55,6 +55,10 @@ class FileCheckInReq
    * 
    * @param fseqs [<B>in</B>]
    *   The primary and secondary file sequences associated with the working version.
+   * 
+   * @param states [<B>in</B>]
+   *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
+   *   the working version indexed by file sequence.
    */
   public
   FileCheckInReq
@@ -62,7 +66,8 @@ class FileCheckInReq
    NodeID id, 
    VersionID vid, 
    VersionID latest, 
-   TreeSet<FileSeq> fseqs
+   TreeSet<FileSeq> fseqs, 
+   TreeMap<FileSeq,FileState[]> states
   )
   { 
     if(id == null) 
@@ -73,13 +78,15 @@ class FileCheckInReq
       throw new IllegalArgumentException("The new revision number cannot be (null)!");
     pVersionID = vid;
 
-    if(latest == null) 
-      throw new IllegalArgumentException("The latest revision number cannot be (null)!");
     pLatestVersionID = latest;
 
     if(fseqs == null) 
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
     pFileSeqs = fseqs;
+    
+    if(states == null) 
+      throw new IllegalArgumentException("The working file states cannot (null)!");
+    pStates = states;
   }
 
 
@@ -123,6 +130,15 @@ class FileCheckInReq
     return pFileSeqs;
   }
 
+  /**
+   * Gets the <CODE>FileState</CODE> of each the primary and secondary file associated with 
+   * the working version indexed by file sequence.
+   */
+  public TreeMap<FileSeq, FileState[]>
+  getFileStates() 
+  {
+    return pStates;
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -156,5 +172,12 @@ class FileCheckInReq
    * The primary and secondary file sequences associated with the working version. 
    */
   private TreeSet<FileSeq>  pFileSeqs;
+
+  /** 
+   * The <CODE>FileState</CODE> of each the primary and secondary file associated with 
+   * the working version indexed by file sequence.
+   */
+  private TreeMap<FileSeq, FileState[]>  pStates; 
+
 }
   
