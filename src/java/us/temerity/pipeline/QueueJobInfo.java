@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.6 2004/10/28 15:55:23 jim Exp $
+// $Id: QueueJobInfo.java,v 1.7 2004/10/31 15:19:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,7 +45,7 @@ class QueueJobInfo
     pJobID = jobID;
 
     pState = JobState.Queued;
-    pSubmittedStamp = Dates.now();
+    pSubmittedStamp = new Date();
   }
 
   
@@ -176,7 +176,7 @@ class QueueJobInfo
 	("The hostname cannot be (null)!");
     pHostname = hostname; 
 
-    pStartedStamp = Dates.now();
+    pStartedStamp = new Date();
     pState = JobState.Running;
   }
   
@@ -187,7 +187,7 @@ class QueueJobInfo
   public synchronized void 
   aborted() 
   {
-    pCompletedStamp = Dates.now();
+    pCompletedStamp = new Date();
     pState = JobState.Aborted;
   }
 
@@ -205,7 +205,7 @@ class QueueJobInfo
   {
     pResults = results; 
 
-    pCompletedStamp = Dates.now();
+    pCompletedStamp = new Date();
 
     if((pResults != null) && (pResults.getExitCode() == BaseSubProcess.SUCCESS))
       pState = JobState.Finished;
