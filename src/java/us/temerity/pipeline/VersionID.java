@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.12 2004/07/07 13:20:59 jim Exp $
+// $Id: VersionID.java,v 1.13 2004/07/22 00:07:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -156,6 +156,52 @@ class VersionID
     return pIDs.clone();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R I S O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Characterize the level of difference between this revision number and the given 
+   * revision number. <P> 
+   * 
+   * @param vid
+   *   The revision number to compare.
+   * 
+   * @return 
+   *   The level of difference or <CODE>null</CODE> if they are identical.
+   */
+  public Level
+  compareLevel
+  (
+   VersionID vid
+  ) 
+  {
+    if(vid == null) 
+      throw new NullPointerException();
+
+    VersionID older = null;
+    VersionID newer = null;
+    if(compareTo(vid) > 0) {
+      older = vid;
+      newer = this;
+    }
+    else {
+      older = this;
+      newer = vid;
+    }
+
+    if((newer.pIDs[0] - older.pIDs[0]) > 0) 
+      return Level.Major;
+    else if((newer.pIDs[1] - older.pIDs[1]) > 0) 
+      return Level.Minor;
+    else if((newer.pIDs[2] - older.pIDs[2]) > 0) 
+      return Level.Micro;
+    else 
+      return null;
+  }
+  
+  
 
 
   /*----------------------------------------------------------------------------------------*/
