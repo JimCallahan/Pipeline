@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.2 2004/07/25 03:04:19 jim Exp $
+// $Id: QueueJob.java,v 1.3 2004/08/22 21:51:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -33,8 +33,8 @@ class QueueJob
    * @param agenda
    *   The agenda to be accomplished by the job.
    * 
-   * @param aname
-   *   The name of the action plugin instance used execute the job.
+   * @param action
+   *   The action plugin instance used to execute the job.
    * 
    * @param jreqs 
    *   The requirements that a server must meet in order to be eligable to run the job.
@@ -46,7 +46,7 @@ class QueueJob
   QueueJob
   (
    ActionAgenda agenda, 
-   String aname, 
+   BaseAction action, 
    JobReqs jreqs,
    TreeSet<Long> sourceIDs
   ) 
@@ -55,9 +55,9 @@ class QueueJob
       throw new IllegalArgumentException("The action agenda cannot be (null)!");
     pActionAgenda = agenda;
 
-    if(aname == null) 
-      throw new IllegalArgumentException("The action name cannot be (null)!");
-    pActionName = aname;
+    if(action == null) 
+      throw new IllegalArgumentException("The action cannot be (null)!");
+    pAction = action; 
 
     if(jreqs == null) 
       throw new IllegalArgumentException("The job requirements cannot be (null)!");
@@ -103,12 +103,12 @@ class QueueJob
 
   
   /**
-   * Get the name of the action plugin instance used execute the job.
+   * Get the action plugin instance used execute the job.
    */ 
-  public String
-  getActionName() 
+  public BaseAction
+  getAction() 
   {
-    return pActionName;
+    return pAction;
   }
 
   /** 
@@ -143,9 +143,11 @@ class QueueJob
     throws GlueException
   {
     encoder.encode("ActionAgenda", pActionAgenda);
-    encoder.encode("ActionName", pActionName);
+    encoder.encode("Action", pAction);
     encoder.encode("JobRequirements", pJobReqs);
-    encoder.encode("SourceJobIDs", pSourceJobIDs);
+    
+    if(!pSourceJobIDs.isEmpty())
+      encoder.encode("SourceJobIDs", pSourceJobIDs);
   }
 
   public void 
@@ -160,10 +162,10 @@ class QueueJob
       throw new GlueException("The \"ActionAgenda\" was missing!");
     pActionAgenda = agenda;
 
-    String aname = (String) decoder.decode("ActionName"); 
-    if(aname == null) 
-      throw new GlueException("The \"ActionName\" was missing!");
-    pActionName = aname;
+    BaseAction action = (BaseAction) decoder.decode("Action");
+    if(action == null) 
+      throw new GlueException("The \"Action\" was missing!");
+    pAction = action;
 
     JobReqs jreqs = (JobReqs) decoder.decode("JobRequirements");
     if(jreqs == null) 
@@ -195,10 +197,10 @@ class QueueJob
    */
   private ActionAgenda  pActionAgenda;
   
-  /**
-   * The name of the action plugin instance used execute the job.
+  /** 
+   * The action plugin instance used to execute the job.
    */
-  private String  pActionName;
+  private BaseAction  pAction;       
 
   /**
    * The requirements that a server must meet in order to be eligable to run the job.
