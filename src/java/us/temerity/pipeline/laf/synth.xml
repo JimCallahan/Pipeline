@@ -15,20 +15,6 @@
   <bind style="DefaultFont" type="name" key=".*"/>
 
 
-  <!--  R E S T O R E   S P L A S H  -->
-
-  <style id="RestoreSplashBorder">
-    <imagePainter path="RestoreSplashBorder.png" 
-                  sourceInsets="8 8 8 8"/>
-    <insets top="22" bottom="22" right="22" left="22"/>
-  </style>
-  <bind style="RestoreSplashBorder" type="name" key="RestoreSplashBorder"/>
-
-  <style id="HeaderFont">
-    <font name="Lucida Sans Demibold" size="16"/>
-  </style>
-  <bind style="HeaderFont" type="name" key="HeaderFont"/>
-  
 
   <!--  S P L A S H  -->
 

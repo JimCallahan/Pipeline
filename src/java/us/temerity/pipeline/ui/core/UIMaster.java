@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.4 2005/01/07 11:33:42 jim Exp $
+// $Id: UIMaster.java,v 1.5 2005/01/07 15:47:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1556,19 +1556,8 @@ class UIMaster
 	splash.setResizable(false);
 	splash.setUndecorated(true);
 	
-	{ 
-	  JPanel panel = new JPanel(); 
-	  panel.setName("RestoreSplashBorder");
-	  panel.setLayout(new BorderLayout());
-	  
-	  {
-	    JLabel label = new JLabel("Restoring Layout...");
-	    panel.add(label);
-	  }
-	  
-	  splash.setContentPane(panel);
-	}
-	
+	JLabel label = new JLabel(sRestoreSplashIcon);	  
+	splash.setContentPane(label);
 	splash.pack();
 	
 	{
@@ -2366,6 +2355,9 @@ class UIMaster
    */ 
   private static Icon sSplashIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("Splash.png"));
+
+  private static Icon sRestoreSplashIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("RestoreSplash.png"));
 
   private static Icon sProgressLightIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightIcon.png"));
