@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.15 2005/02/18 23:47:53 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.16 2005/02/20 20:53:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,7 +156,7 @@ class JNodeViewerPanel
 
       pPanelPopup.addSeparator();
 
-      item = new JMenuItem("Remove All Roots");
+      item = new JMenuItem("Hide All Roots");
       pRemoveAllRootsItem = item;
       item.setActionCommand("remove-all-roots");
       item.addActionListener(this);
@@ -3601,21 +3601,9 @@ class JNodeViewerPanel
 	  selected.put(status.getName(), status);
       }
 
-      tool.setSelectedNodes(primary, selected);
+      tool.initExecution(primary, selected);
 
-      if(tool.isInteractive()) {
-	JToolDialog diag = new JToolDialog(tool);
-	tool.update();
-	
-	diag.setVisible(true);
-	if(!diag.wasConfirmed()) 
-	  return;
-      }
-	
-      tool.validate();
-
-      RunToolTask task = new RunToolTask(tool);
-      task.start();	
+      SwingUtilities.invokeLater(new ToolInputTask(tool));
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -4656,7 +4644,43 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Run the given tool.
+   * Collect user input for the next tool phase.
+   */ 
+  private
+  class ToolInputTask
+    extends Thread
+  {
+    public 
+    ToolInputTask
+    (
+     BaseTool tool
+    ) 
+    {
+      super("JNodeViewerPanel:ToolInputTask");
+      pTool = tool;
+    }
+
+    public void 
+    run() 
+    {	
+      UIMaster master = UIMaster.getInstance();
+      try {
+	String msg = pTool.collectPhaseInput();
+	if(msg != null) {
+	  RunToolTask task = new RunToolTask(msg, pTool);
+	  task.start();	
+	}
+      }
+      catch(Exception ex) {
+	master.showErrorDialog(ex);
+      }
+    }
+
+    private BaseTool  pTool;
+  }
+
+  /** 
+   * Run the next tool phase. 
    */ 
   private
   class RunToolTask
@@ -4665,33 +4689,36 @@ class JNodeViewerPanel
     public 
     RunToolTask
     (
+     String msg, 
      BaseTool tool
     ) 
     {
       super("JNodeViewerPanel:RunToolTask");
-      pTool = tool;
+      pMessage = msg; 
+      pTool    = tool;
     }
 
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Running " + pTool.getName() + "...")) {
+      if(master.beginPanelOp("Running " + pTool.getName() + pMessage)) {
 	try {
-	  pTool.execute(master.getMasterMgrClient(), master.getQueueMgrClient());
+	  if(pTool.executePhase(master.getMasterMgrClient(), master.getQueueMgrClient())) 
+	    SwingUtilities.invokeLater(new ToolInputTask(pTool));
+	  else 
+	    updateRoots();
 	}
-	catch(PipelineException ex) {
+	catch(Exception ex) {
 	  master.showErrorDialog(ex);
-	  return;
 	}
 	finally {
 	  master.endPanelOp("Done.");
 	}
-
-	updateRoots();
       }
     }
 
+    private String    pMessage; 
     private BaseTool  pTool;
   }
 
