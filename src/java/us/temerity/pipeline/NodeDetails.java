@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.8 2004/05/07 15:02:49 jim Exp $
+// $Id: NodeDetails.java,v 1.9 2004/06/14 22:43:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,6 +47,9 @@ class NodeDetails
    * 
    * @param latest    
    *   The latest checked-in version of the node.
+   *
+   * @param versionIDs
+   *   The revision numbers of all checked-in versions.
    * 
    * @param overallNodeState 
    *   The overall revision control state of the node.
@@ -79,6 +82,7 @@ class NodeDetails
    NodeMod work, 
    NodeVersion base, 
    NodeVersion latest, 
+   Collection<VersionID> versionIDs,
    OverallNodeState overallNodeState, 
    OverallQueueState overallQueueState, 
    VersionState versionState, 
@@ -115,6 +119,7 @@ class NodeDetails
 	 "details name (" + pName + ")!");
     pLatestVersion = latest;
 
+    pVersionIDs = new ArrayList<VersionID>(versionIDs);
 
     pOverallNodeState  = overallNodeState;
     pOverallQueueState = overallQueueState;
@@ -151,9 +156,6 @@ class NodeDetails
     return pName;
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-  
   /**
    * Get when the node state was determined.
    */ 
@@ -201,6 +203,16 @@ class NodeDetails
   getLatestVersion()
   {
     return pLatestVersion;
+  }
+
+
+  /**
+   * Get the revision numbers of all checked-in versions.
+   */ 
+  public ArrayList<VersionID> 
+  getVersionIDs() 
+  {
+    return pVersionIDs;
   }
 
 
@@ -384,6 +396,11 @@ class NodeDetails
    * The latest checked-in version of the node.
    */
   private NodeVersion  pLatestVersion;
+
+  /**
+   * The revision numbers of all checked-in versions.
+   */ 
+  private ArrayList<VersionID>  pVersionIDs;
 
 
   /** 
