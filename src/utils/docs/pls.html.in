@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>plget</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<h3>Name
+</h3>
+<blockquote><b>pls</b> - lists file sequences in a directory<br>
+</blockquote>
+<h3>Synopsis</h3>
+<blockquote><b>pls</b> [<span style="font-style: italic;">options</span>]
+[<span style="font-style: italic;">directory</span>]<br>
+  <br>
+  <b> </b><b>pls</b> <b>--help<br>
+pls</b> <b>--html-help<br>
+pls</b> <b>--version<br>
+pls</b><span style="font-weight: bold;"> --release-date</span><b><br>
+pls</b><span style="font-weight: bold;"> --copyright</span></blockquote>
+<h3>Description</h3>
+<blockquote>A utility program which lists the files in a directory by
+file sequences.&nbsp; If a directory name is given (<span
+ style="font-style: italic;">directory</span>), then the contents of
+that directory will be listed.&nbsp; If no directory option is given,
+the current directory will be listed.<br>
+  <br>
+A file is considered to be part of a sequence if it contains one or
+more digits ("0", "1" ... "9") it shares a common prefix and/or suffix
+with one or more files in the directory.&nbsp; In other words, files of
+the form:<br>
+  <br>
+  <div style="margin-left: 40px;">[<span style="font-style: italic;">prefix</span>]<span
+ style="font-style: italic;">frame-number</span>[<span
+ style="font-style: italic;">suffix</span>]<br>
+  </div>
+</blockquote>
+<div style="margin-left: 40px;">Where (<span style="font-style: italic;">suffix</span>)
+does not contain any digits, the (<span style="font-style: italic;">frame</span>-number)
+contains only digits and the (<span style="font-style: italic;">prefix</span>)
+contains any character as long as the last character is not a
+digit.&nbsp; The (<span style="font-style: italic;">frame</span>-number)
+can be zero-padded or unpadded. <br>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;">The default output of <a
+ href="file://@datadir@/docs/pls.html"><b>pls</b></a>(1) lists file
+sequences in alphabetic order in the following format:<br>
+<br>
+<div style="margin-left: 40px;">[<span style="font-style: italic;">prefix</span>]<span
+ style="font-style: italic;">pad</span>[<span
+ style="font-style: italic;">suffix</span>]&nbsp; (<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>x<span
+ style="font-style: italic;">by</span>[: <span
+ style="font-style: italic;">range</span>[,<span
+ style="font-style: italic;">range</span>[...]]])<br>
+</div>
+<br>
+Where (pad) is one or more "@" characters, each representing a padded
+frame number digit.&nbsp; The (pad) component can also be a "#"
+character for 4-digit padded frame numbers.&nbsp; Next, the frame range
+pattern is composed of the start frame (<span
+ style="font-style: italic;">start</span>), the end frame (<span
+ style="font-style: italic;">end</span>) and the frame increment (<span
+ style="font-style: italic;">by</span>).&nbsp; If there are missing
+frames in the sequence, the frame range patten will be followed by a
+list of existing frame ranges (range) which will either be single frame
+numbers or contigous frame ranges.<br>
+</div>
+<h3>Information Options</h3>
+<blockquote><b>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser.
+&nbsp;Look <a href="http://www.mozilla.org/unix/remote.html">here</a>
+for details about how this works.<br>
+  </blockquote>
+  <b>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<b><br>
+    </b></blockquote>
+  <b>--copyright</b><br>
+  <blockquote> Prints copyright notice for this software and exits.<br>
+  </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<h3>Options</h3>
+<blockquote><b>--fcheck</b><br>
+  <blockquote>Alternative output format which prints a set of <span
+ style="font-weight: bold;">fcheck</span>(1) command lines which which
+display the file sequences if they are legal image files.<br>
+  </blockquote>
+  <span style="font-weight: bold;">--zero</span><br>
+  <span style="font-weight: bold;">--size</span>=<span
+ style="font-style: italic;">bytes<br>
+  </span>
+  <div style="margin-left: 40px;"><br>
+In addition to the normal output, these two options cause pls(1) to
+print the frame numbers of files which are zero length (<span
+ style="font-weight: bold;">--zero</span>) or are smaller than the
+given size (<span style="font-weight: bold;">--size</span>=<span
+ style="font-style: italic;">bytes</span>).&nbsp; This can be useful
+for detecting bad image frames in a sequence.&nbsp; The bad frame
+numbers are listing at the end of the line between "&lt;BAD:" and
+"&gt;" seperators.<br>
+  <br>
+These two options are mutually exclusive and cannot be used with the <span
+ style="font-weight: bold;">--fcheck </span>option.<br>
+  </div>
+  <blockquote> </blockquote>
+  <span style="font-weight: bold;"></span></blockquote>
+<h3>See Also</h3>
+<blockquote><a href="http://www.mozilla.org"><b>mozilla</b></a>(1), <span
+ style="font-weight: bold;">fcheck</span>(1)<br>
+</blockquote>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<blockquote> </blockquote>
+<h3>Author</h3>
+<blockquote>Jim Callahan &lt;jim@polaris.net&gt;<br>
+  <blockquote>Sole designer and author of pipeline. &nbsp;<br>
+  </blockquote>
+</blockquote>
+<h3>Copyright<br>
+</h3>
+<blockquote>
+  <blockquote> <span style="font-weight: bold;">Copyright (c) 2001,
+2002, 2003 James M. Callahan.</span><br style="font-weight: bold;">
+    <br style="font-weight: bold;">
+Permission to use, copy and distribute this software and its
+documentation for any purpose is STRICTLY PROHIBITED without prior
+authorization in writing by James M. Callahan.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+PURPOSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+IN NO EVENT SHALL JAMES M. CALLAHAN BE LIABLE FOR ANY SPECIAL,
+INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY
+DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.<br>
+  </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>
