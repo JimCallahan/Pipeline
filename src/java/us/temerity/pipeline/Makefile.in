@@ -200,9 +200,13 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     ENUM_SOURCES = $(patsubst %,$(srcdir)/%.java,$(ENUMS))
 
+
      API_SOURCES = $(shell ls $(srcdir)/*.java)
 
     GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java) 
+
+     LAF_SOURCES = $(shell ls $(srcdir)/laf/*.java) 
+
 
     CORE_SOURCES = $(shell ls $(srcdir)/core/*.java) 
 
@@ -211,7 +215,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
       UI_SOURCES = $(shell ls $(srcdir)/ui/*.java) 
 
 
-     ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) \
+     ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) \
                    $(CORE_SOURCES) $(MSG_SOURCES) $(UI_SOURCES)
 
 
@@ -278,13 +282,14 @@ all: Makefile $(ALL_JAR) $(API_JAR)
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
-	$(MAKE) $(VAULT) bootstrap-jar 
+	$(MAKE) $(VAULT) bootstrap-jar laf-jar
 
 $(ALL_JAR): java-all
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(ALL_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
+                    us/temerity/pipeline/laf/*.class \
                     us/temerity/pipeline/core/*.class \
                     us/temerity/pipeline/message/*.class)
 
@@ -292,7 +297,9 @@ $(API_JAR): java-all
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(API_JAR) \
                     us/temerity/pipeline/*.class \
-                    us/temerity/pipeline/glue/*.class)
+                    us/temerity/pipeline/glue/*.class \
+                    us/temerity/pipeline/laf/*.class)
+
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
@@ -317,6 +324,14 @@ BootStrapFields $(VAULT): java-all
             --build-vault $$f $(VAULT); \
           $(JAVA) -classpath $(CRYPTO_APP_DIR) CryptoApp $(CUSTOMER_PROFILE) \
             --build-vault $$f $(VAULT) > BootStrapFields);
+
+
+laf-jar: 
+	(bdir=`pwd`; \
+         cd $(srcdir)/../../..; \
+         $(JAR) uvf $$bdir/$(API_JAR) \
+                    us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
+
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
