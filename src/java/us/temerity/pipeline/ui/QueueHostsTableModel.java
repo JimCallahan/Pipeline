@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.2 2004/08/01 15:39:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,6 +30,9 @@ class QueueHostsTableModel
 
   /**
    * Construct a table model.
+   * 
+   * @param parent
+   *   The parent dialog. 
    */
   public 
   QueueHostsTableModel
@@ -101,7 +104,7 @@ class QueueHostsTableModel
 	  null, 
 	  null, 
 	  null, 
-	  new JIntegerTableCellEditor(60, JLabel.CENTER)
+	  new JJobSlotsTableCellEditor()
 	};
 	pEditors = editors;
       }
@@ -364,9 +367,11 @@ class QueueHostsTableModel
     for(Integer idx : pEditedBiasesIndices) {
       QueueHost host = pQueueHosts.get(idx);
       if(host != null) {
+	TreeMap<String,Integer> biases = new TreeMap<String,Integer>();
+	for(String kname : host.getSelectionKeys()) 
+	  biases.put(kname, host.getSelectionBias(kname));
 
-	// ...
-
+	table.put(host.getName(), biases); 
       }
     }
     
@@ -413,7 +418,7 @@ class QueueHostsTableModel
       return true;
 
     default:
-      return false;
+      return (col > 7); 
     }
   }
 
@@ -449,7 +454,7 @@ class QueueHostsTableModel
 
     default:
       {
-	String kname = pSelectionKeys.get(pSortColumn-8);
+	String kname = pSelectionKeys.get(col-8);
 	if(kname != null) 
 	  return host.getSelectionBias(kname);
 	else {
@@ -506,12 +511,24 @@ class QueueHostsTableModel
       }
       break;
 
-
-      // ... 
-
       
     default:
-      assert(false);
+      if(col > 7) {
+	String kname = pSelectionKeys.get(col-8);
+	if(kname != null) {
+	  Integer bias = (Integer) value;
+	  if(bias == null) {
+	    host.removeSelectionKey(kname); 
+	    pEditedBiasesIndices.add(idx);
+	    pParent.doEdited(); 
+	  }
+	  else if((bias >= -100) && (bias <= 100)) {
+	    host.addSelectionKey(kname, bias);
+	    pEditedBiasesIndices.add(idx);
+	    pParent.doEdited(); 
+	  }	  
+	}
+      }
     }
   }
 
