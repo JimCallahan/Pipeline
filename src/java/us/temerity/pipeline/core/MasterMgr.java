@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.86 2005/01/22 06:10:09 jim Exp $
+// $Id: MasterMgr.java,v 1.87 2005/02/07 14:50:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5828,7 +5828,7 @@ class MasterMgr
    *   The archive request.
    * 
    * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>MiscArchiveRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to archive the files.
    */
   public Object
@@ -5837,8 +5837,39 @@ class MasterMgr
    MiscArchiveReq req
   ) 
   {
+//     TaskTimer timer = new TaskTimer();
 
-    // ...
+//     Long total = null;
+//     try {
+//       Object obj = getSizes(new MiscGetSizesReq(req.getVersions(), false));
+//       if(obj instanceof MiscGetSizesRsp) {
+// 	MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
+
+// 	TreeMap<String,TreeMap<VersionID,Long>> sizes = rsp.getSizes();
+// 	for(TreeMap<VersionID,Long> vsizes : sizes.values()) {
+// 	  for(Long size : vsizes.values()) 
+// 	    total += size;
+// 	}
+//       }
+//       else {
+// 	throw new PipelineException();
+//       }
+//     }
+//     catch(PipelineException ex) {
+//       return new FailureRsp
+// 	(timer, "Unable to determine the total size of files to be archived!");
+//     }
+    
+//     BaseArchiver archiver = req.getArchiver();
+//     if(total > archiver.getCapacity()) {
+//       return new FailureRsp
+// 	(timer, 
+// 	 "The total size of the files to be archived (" + total + ") exceeds the " + 
+// 	 "capacity of the archiver (" + archiver.getCapacity() + ")!");
+//     }
+    
+    
+    
 
     return new FailureRsp(new TaskTimer(), "Not implemented yet.");
   }

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.46 2005/01/15 21:15:54 jim Exp $
+// $Id: MasterMgrClient.java,v 1.47 2005/02/07 14:50:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2977,22 +2977,21 @@ class MasterMgrClient
    * 
    * Only privileged users may create archives. <P> 
    * 
-   * @param name
-   *   The unique name of the archive to create.
-   * 
    * @param versions
    *   The fully resolved names and revision numbers of the checked-in versions to archive.
    * 
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
    * 
+   * @return 
+   *   The unique name given to the newly created archive. 
+   * 
    * @throws PipelineException
    *   If unable to perform the archive operation succesfully.
    */
-  public synchronized void
+  public synchronized String
   archive
   (
-   String name, 
    TreeMap<String,TreeSet<VersionID>> versions, 
    BaseArchiver archiver
   ) 
@@ -3004,9 +3003,16 @@ class MasterMgrClient
 
     verifyConnection();
 
-    MiscArchiveReq req = new MiscArchiveReq(name, versions, archiver);
+    MiscArchiveReq req = new MiscArchiveReq(versions, archiver);
     Object obj = performTransaction(MasterRequest.Archive, req);
-    handleSimpleResponse(obj);    
+    if(obj instanceof MiscArchiveRsp) {
+      MiscArchiveRsp rsp = (MiscArchiveRsp) obj;
+      return rsp.getName();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
   /**
