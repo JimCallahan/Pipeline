@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.2 2004/08/22 22:02:45 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.3 2004/08/30 01:40:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -188,5 +188,52 @@ class QueueMgrControlClient
     Object obj = performTransaction(QueueRequest.KillJobs, req); 
     handleSimpleResponse(obj);
   }
+
+  /**
+   * Pause the jobs with the given IDs. <P> 
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to pause the jobs.
+   */  
+  public synchronized void
+  pauseJobs
+  (
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueuePauseJobsReq req = new QueuePauseJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.PauseJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Resume execution of the paused jobs with the given IDs. <P> 
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to resume the jobs.
+   */  
+  public synchronized void
+  resumeJobs
+  (
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueResumeJobsReq req = new QueueResumeJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.ResumeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
 }
 
