@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.2 2004/05/07 15:06:06 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.3 2004/05/07 18:11:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -132,90 +132,27 @@ class JNodeViewerPanel
       {
 	// ...
       }
+
+      /* the node pool */ 
+      {
+	pNodePool = new ViewerNodePool();
+	pUniverse.addBranchGraph(pNodePool.getBranchGroup());
+      }
       
-      
+
       // DEBUG 
       {
- 	BranchGroup branch = new BranchGroup();
-
-// 	try {
-// 	  TransformGroup tg = new TransformGroup();
-// 	  tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-// 	  branch.addChild(tg);
-
-// 	  AppearanceMgr amgr = AppearanceMgr.getInstance();
-// 	  Appearance apr = amgr.getNodeAppearance(OverallNodeState.Pending, 
-// 						  OverallQueueState.Queued, 
-// 						  SelectionMode.Normal);
-// 	  {
-// 	    ColoringAttributes attr = 
-// 	    new ColoringAttributes(1.0f, 1.0f, 0.0f, ColoringAttributes.SHADE_FLAT);
-// 	    apr.setColoringAttributes(attr);
-// 	  }
-	  
-// 	  Point3d pts[] = new Point3d[4];
-// 	  TexCoord2f uvs[] = new TexCoord2f[4];
-// 	  {
-// 	    pts[0] = new Point3d(-1.25, -1.25, 0.0);
-// 	    uvs[0] = new TexCoord2f(0.0f, 0.0f);
-	    
-// 	    pts[1] = new Point3d(1.25, -1.25, 0.0);
-// 	    uvs[1] = new TexCoord2f(1.0f, 0.0f);
-	    
-// 	    pts[2] = new Point3d(1.25, 1.25, 0.0);
-// 	    uvs[2] = new TexCoord2f(1.0f, 1.0f);
-	  
-// 	    pts[3] = new Point3d(-1.25, 1.25, 0.0);
-// 	    uvs[3] = new TexCoord2f(0.0f, 1.0f);
-// 	  }
-	  
-// 	  GeometryInfo gi = new GeometryInfo(GeometryInfo.QUAD_ARRAY);
-// 	  gi.setCoordinates(pts);
-// 	  gi.setTextureCoordinateParams(1, 2);
-// 	  gi.setTextureCoordinates(0, uvs);
-	  
-// 	  NormalGenerator ng = new NormalGenerator();
-// 	  ng.generateNormals(gi);
-	
-// 	  Stripifier st = new Stripifier();
-// 	  st.stripify(gi);
-	  
-// 	  GeometryArray ga = gi.getGeometryArray();
-// 	  Shape3D shape = new Shape3D(ga, apr);
-	  
-// 	  tg.addChild(shape);
-// 	}
-// 	catch(IOException ex) {
-// 	  Logs.tex.severe(ex.getMessage());
-// 	}
-	
-
-// 	try {
-// 	  TransformGroup tg = 
-// 	    ViewerLabels.createLabelGeometry("Hello", "CharterBTRoman", 
-// 					     SelectionMode.Normal, 
-// 					     0.0, new Point3d(0.0, 1.0, 0.0));
-// 	  branch.addChild(tg); 
-// 	}
-// 	catch(IOException ex) {
-// 	  Logs.tex.severe(ex.getMessage());
-// 	}
-
-// 	pUniverse.addBranchGraph(branch);
-
 	try {
+	  pNodePool.updatePrep();
+
 	  {
-	    ViewerNode vnode = new ViewerNode();
-	    pUniverse.addBranchGraph(vnode.getBranchGroup());
-	    
 	    NodeStatus status = 
 	      UIMaster.getInstance().getNodeMgrClient().status
 	        ("default", "/images/normal");
-	    vnode.setStatus(status); 
+	    NodePath path = new NodePath(status.getName());
+
+	    ViewerNode vnode = pNodePool.getViewerNode(status, path);
 	    vnode.setPosition(new Point2d(0.0, -2.0));
-	    vnode.update();
-	    
-	    vnode.setVisible(true);
 	  }
 
 	  {
@@ -223,32 +160,25 @@ class JNodeViewerPanel
 	      UIMaster.getInstance().getNodeMgrClient().status
 	      ("default", "/animals/birds/eagle");
 
-	      ViewerNode vnode = new ViewerNode();
-	      pUniverse.addBranchGraph(vnode.getBranchGroup());
+	    NodePath path = new NodePath(status.getName());
+	    
+	    ViewerNode vnode = pNodePool.getViewerNode(status, path);
+	    vnode.setPosition(new Point2d(0.0, 0.0));
 
-	      vnode.setStatus(status); 
-	      vnode.setPosition(new Point2d(0.0, 0.0));
-	      vnode.setCollapsed(true);
-	      vnode.update();
+	    double y = 2.0;
+	    for(String sname : status.getSourceNames()) {
+	      NodeStatus sstatus = status.getSource(sname);
+	      NodePath spath = new NodePath(path, sstatus.getName());
+	    
+	      ViewerNode svnode = pNodePool.getViewerNode(sstatus, spath);
+	      svnode.setPosition(new Point2d(3.0, y));
+	      svnode.setCollapsed(true);
 
-	      vnode.setVisible(true);
+	      y -= 2.0;
+	    }
 	  }
 
-	  {
-	    NodeStatus status = 
-	      UIMaster.getInstance().getNodeMgrClient().status
-	        ("default", "/animals/insects/fly");
-	      
-	    ViewerNode vnode = new ViewerNode();
-	    pUniverse.addBranchGraph(vnode.getBranchGroup());
-	    
-	    vnode.setStatus(status.getTarget("/animals/insects/dragonfly")); 
-	    vnode.setPosition(new Point2d(0.0, 2.0));
-	    vnode.setCollapsed(true);
-	    vnode.update();
-	    
-	    vnode.setVisible(true);
-	  }
+	  pNodePool.update();
 	}
  	catch(Exception ex) {
 	  ex.printStackTrace();
@@ -428,6 +358,9 @@ class JNodeViewerPanel
    */ 
   private Canvas3D  pCanvas;       
 
-  
+  /**
+   * The reuseable collection of ViewerNodes.
+   */ 
+  private ViewerNodePool  pNodePool;
 
 }
