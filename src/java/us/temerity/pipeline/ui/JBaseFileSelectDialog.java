@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.7 2005/01/03 06:56:23 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.8 2005/02/20 20:52:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
 public abstract 
 class JBaseFileSelectDialog
   extends JBaseDialog
-implements ListSelectionListener, DocumentListener, MouseListener
+  implements ListSelectionListener, DocumentListener, MouseListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
