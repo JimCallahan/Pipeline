@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.4 2004/08/30 01:31:16 jim Exp $
+// $Id: QueueJobInfo.java,v 1.5 2004/08/31 12:42:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -239,7 +239,10 @@ class QueueJobInfo
       if(pCompletedStamp != null) 
 	encoder.encode("CompletedStamp", pCompletedStamp.getTime());
     }
-    
+
+    if(pHostname != null)
+      encoder.encode("Hostname", pHostname);
+
     if(pResults != null) 
       encoder.encode("Results", pResults);
   }
