@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.3 2004/03/28 00:48:12 jim Exp $
+// $Id: NodeMgrServer.java,v 1.4 2004/03/29 08:18:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -134,9 +134,6 @@ class NodeMgrServer
 	Logs.net.severe("Interrupted while shutting down!");
 	Logs.flush();
       }
-
-      Logs.net.fine("Server Shutdown.");
-      Logs.flush();
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
@@ -156,6 +153,11 @@ class NodeMgrServer
 	catch (IOException ex) {
 	}
       }
+
+      pNodeMgr.shutdown();
+
+      Logs.net.fine("Server Shutdown.");
+      Logs.flush();
     }
   }
 
@@ -216,6 +218,26 @@ class NodeMgrServer
 	    }
 	    break;
 
+	  case Link:
+	    {
+	      NodeLinkReq req = (NodeLinkReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.link(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case Unlink:
+	    {
+	      NodeUnlinkReq req = (NodeUnlinkReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.unlink(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  // ...
+
+	    
+
 	  case Register:
 	    {
 	      NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
@@ -226,6 +248,7 @@ class NodeMgrServer
 	    
 	  // ...
 	    
+
 	  case Disconnect:
 	    live = false;
 	    break;
