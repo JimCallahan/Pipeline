@@ -24,7 +24,8 @@ import javax.swing.*;
 public class 
 BatchParser
 {
-  private ArrayList  pLines; 
+  private ArrayList     pLines; 
+  private StringBuffer  pBuf; 
 }
 
 
@@ -33,20 +34,18 @@ PARSER_END(BatchParser)
 <DEFAULT> 
 TOKEN :
 {       
-  <OPEN_QUOTE:       "'">           : QUOTED_STATE 
-| <ESCAPED_NEWLINE:  "\\" "\n">   
-| <WS_NEWLINE:       ([" ","\t"])+ "\n">
-| <WS:               ([" ","\t"])+>
-| <NEWLINE:          "\n">
+  <OPEN_QUOTE:       "'">                      : QUOTED_STATE 
+| <NEWLINE:          (([" ","\t"]) | ("\\" "\n"))* "\n">
+| <WS:               (([" ","\t"])+ (([" ","\t"]) | ("\\" "\n"))*) | 
+	             ((([" ","\t"]) | ("\\" "\n"))* ([" ","\t"])+)>
 | <ANY:              (~["\n","'"," ","\t"])+>
-}
- 
+} 
 
 <QUOTED_STATE> 
 TOKEN :
 {
   <QUOTED:         (~["'"])+>  
-| <CLOSE_QUOTE:    "'">        : DEFAULT
+| <CLOSE_QUOTE:    "'">                        : DEFAULT
 }
 
 
@@ -61,70 +60,72 @@ Contents() :
   pLines = new ArrayList();
 }
 {
-  (Line() | Blank())+ <EOF>
-  {
+  (Line())+ 
+  { 
     return pLines;
   }	
 }
 
-void 
-Blank() : 
+void
+Line() :
 {}
 {
-  ((WS() <NEWLINE>) | <WS_NEWLINE> | <NEWLINE>) 
+  (<WS>)? (Command() | <NEWLINE>)
+  {}  
+}
+
+void
+Command() : 
+{
+  pBuf = new StringBuffer();
+}
+{
+  Argument() (<WS> Argument())* NewLine()
   {}
 }
 
 void
-Line() :
-{
-  StringBuffer buf = new StringBuffer();
-}
-{
-  Argument(buf) (WS() Argument(buf))* (<WS_NEWLINE> | <NEWLINE>) 
-  {
-    pLines.add(buf.toString());
-  }	
-}
-
-void
-Argument(StringBuffer buf) : 
+Argument() : 
 {}
 {
-  (Any(buf) | Quoted(buf))+ 
+  (Any() | Quoted())+ 
   {
-    buf.append('\0');
+    pBuf.append('\0');
   }
 }
 
 void
-Any(StringBuffer buf) : 
+Any() : 
 {
   Token t;
 } 
 {
   t=<ANY>
   {
-    buf.append(t.image);
+    pBuf.append(t.image);
   }
 }
 
 void
-Quoted(StringBuffer buf) : 
+Quoted() : 
 {
   Token t;
 } 
 {
   <OPEN_QUOTE> t=<QUOTED> <CLOSE_QUOTE> 
   {
-    buf.append(t.image);
+    pBuf.append(t.image);
   }
 }
 
-void
-WS() : 
+void 
+NewLine() : 
 {}
 {
-  (<WS> (<ESCAPED_NEWLINE> (<WS>)?)*) | (<ESCAPED_NEWLINE> (<WS>)?)+
-  {}
+  (<NEWLINE> | <EOF>)
+  {
+    if(pBuf.length() > 0) 
+      pLines.add(pBuf.toString());
+    pBuf = new StringBuffer();
+  }
 }
