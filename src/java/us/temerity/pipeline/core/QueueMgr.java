@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.7 2004/08/22 22:02:22 jim Exp $
+// $Id: QueueMgr.java,v 1.8 2004/08/23 03:05:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1570,8 +1570,8 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.dispatcher()");
     
-    Logs.ops.finest("---------------------------------------------------------------------"); 
-    logJobLists("Pre-Dispatch:");
+    //Logs.ops.finest("-------------------------------------------------------------------"); 
+    //logJobLists("Pre-Dispatch:");
 
     /* kill/abort the jobs in the hit list */ 
     while(true) {
@@ -1606,7 +1606,7 @@ class QueueMgr
       }
     }
 
-    logJobLists("After Kills:");
+    //logJobLists("After Kills:");
 
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
     {
@@ -1700,7 +1700,7 @@ class QueueMgr
       pWaiting.addAll(waiting);      
     }
 
-    logJobLists("After Sort:");
+    //logJobLists("After Sort:");
 
     /* process the ready jobs from highest to lowest priority */ 
     {
@@ -1768,7 +1768,7 @@ class QueueMgr
     }
 
     logJobLists("Post-Dispatch:");
-    Logs.ops.finest("---------------------------------------------------------------------"); 
+    //Logs.ops.finest("-------------------------------------------------------------------"); 
 
     Logs.ops.finest(timer.toString()); 
     if(Logs.ops.isLoggable(Level.FINEST))
@@ -1892,7 +1892,7 @@ class QueueMgr
       JobMgrControlClient client = null;
       try {
 	client = new JobMgrControlClient(bestHost, pJobPort);	
-	client.jobStart(job);
+	int numJobs = client.jobStart(job);
 	
 	timer.aquire();
 	synchronized(pJobInfo) {
@@ -1900,6 +1900,14 @@ class QueueMgr
 	  info.started(bestHost);
 	  writeJobInfo(info);
 	  pJobInfo.put(job.getJobID(), info);
+	}
+	
+	timer.aquire();
+	synchronized(pHosts) {
+	  timer.resume();
+	  QueueHost host = pHosts.get(bestHost);
+	  ResourceSample sample = host.getLatestSample();
+	  sample.setNumJobs(numJobs);
 	}
       }
       catch (Exception ex) {
@@ -2973,9 +2981,10 @@ class QueueMgr
     {
       JobMgrControlClient client = null;
       QueueJobResults results = null;
+      int[] numJobs = new int[1];
       try {
 	client = new JobMgrControlClient(pHostname, pJobPort);	
-	results = client.jobWait(pJobID);
+	results = client.jobWait(pJobID, numJobs);
       }
       catch (Exception ex) {
 	Logs.net.severe(ex.getMessage()); 
@@ -2997,6 +3006,15 @@ class QueueMgr
 	  Logs.flush();
 	}	
       }
+
+      synchronized(pHosts) {
+	QueueHost host = pHosts.get(pHostname);
+	if(host != null) {
+	  ResourceSample sample = host.getLatestSample();
+	  if(sample != null)
+	    sample.setNumJobs(numJobs[0]);
+	}
+      }      
 
       // release the license keys held by the job...
     }
