@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.28 2005/01/07 07:07:51 jim Exp $
+// $Id: MasterMgrServer.java,v 1.29 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,9 +74,17 @@ class MasterMgrServer
   )
   { 
     super("MasterMgrServer");
-    init(nodeDir, nodePort, 
-	 prodDir, fileHost, filePort, 
-	 queueHost, queuePort);
+
+    pMasterMgr = new MasterMgr(nodeDir, prodDir, 
+			       fileHost, filePort, 
+			       queueHost, queuePort);
+
+    if(nodePort < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + nodePort + ")!");
+    pPort = nodePort;
+
+    pShutdown = new AtomicBoolean(false);
+    pTasks    = new HashSet<HandlerTask>();
   }
   
   /** 
@@ -107,61 +115,9 @@ class MasterMgrServer
   public
   MasterMgrServer() 
   { 
-    super("MasterMgrServer");
-    init(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
+    this(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
 	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
 	 PackageInfo.sQueueServer, PackageInfo.sQueuePort);
-  }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  /**
-   * Initialize a new instance.
-   * 
-   * @param nodeDir 
-   *   The root node directory.
-   * 
-   * @param nodePort 
-   *   The network port to monitor for incoming connections.
-   * 
-   * @param prodDir 
-   *   The root production directory.
-   * 
-   * @param fileHost 
-   *   The name of the host running the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param filePort 
-   *   The network port listened to by <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param queueHost
-   *   The hostname running <B>plqueuemgr</B>(1).
-   * 
-   * @param queuePort
-   *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
-   */
-  private synchronized void 
-  init
-  (
-   File nodeDir, 
-   int nodePort, 
-   File prodDir, 
-   String fileHost, 
-   int filePort,
-   String queueHost, 
-   int queuePort
-  )
-  { 
-    pMasterMgr = new MasterMgr(nodeDir, prodDir, 
-			       fileHost, filePort, 
-			       queueHost, queuePort);
-
-    if(nodePort < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + nodePort + ")!");
-    pPort = nodePort;
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
   }
 
  
@@ -216,6 +172,8 @@ class MasterMgrServer
 	  for(HandlerTask task : pTasks) 
 	    task.join();
 	}
+
+	PluginMgrClient.getInstance().disconnect();
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
@@ -283,9 +241,9 @@ class MasterMgrServer
 
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
-	  InputStream in    = pSocket.getInputStream();
-	  ObjectInput objIn = new ObjectInputStream(in);
-	  MasterRequest kind  = (MasterRequest) objIn.readObject();
+	  InputStream in     = pSocket.getInputStream();
+	  ObjectInput objIn  = new PluginInputStream(in);
+	  MasterRequest kind = (MasterRequest) objIn.readObject();
 	  
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);

@@ -236,7 +236,7 @@ Commands() :
 
     /* initialize the plugins */ 
     try {
-      PluginMgr.init();
+      PluginMgrClient.init();
     }
     catch(PipelineException ex) {
       Logs.plg.severe("Unable to load plugins: " + ex);

@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.4 2004/09/08 18:33:09 jim Exp $
+// $Id: QueueJob.java,v 1.5 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -178,12 +178,13 @@ class QueueJob
     BaseAction action = (BaseAction) in.readObject();
     if(action != null) {
       try {
-	pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pAction = client.newAction(action.getName(), action.getVersionID());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
       catch(PipelineException ex) {
-	throw new IOException("Unable to instantiate action plugin: " + ex.getMessage());
+	throw new IOException(ex.getMessage());
       }
     }
     else {
@@ -231,12 +232,13 @@ class QueueJob
     if(action == null) 
       throw new GlueException("The \"Action\" was missing!");
     try {
-      pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+      PluginMgrClient client = PluginMgrClient.getInstance();
+      pAction = client.newAction(action.getName(), action.getVersionID());
       pAction.setSingleParamValues(action);
       pAction.setSourceParamValues(action);
     }
     catch(PipelineException ex) {
-      throw new GlueException("Unable to instantiate action plugin: " + ex.getMessage());
+      throw new GlueException(ex.getMessage());
     }
     
     JobReqs jreqs = (JobReqs) decoder.decode("JobRequirements");

@@ -1,4 +1,4 @@
-// $Id: JManageToolMenusDialog.java,v 1.1 2005/01/09 23:14:19 jim Exp $
+// $Id: JManageToolMenusDialog.java,v 1.2 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -48,9 +48,11 @@ class JManageToolMenusDialog
     MasterMgrClient client = master.getMasterMgrClient();
     try {
       boolean isPrivileged = client.isPrivileged(false);
-
       PluginMenuLayout layout = client.getToolMenuLayout(); 
-      TreeMap<String,TreeSet<VersionID>> plugins = PluginMgr.getInstance().getTools();
+
+      PluginMgrClient pclient = PluginMgrClient.getInstance();
+      pclient.update();
+      TreeMap<String,TreeSet<VersionID>> plugins = pclient.getTools();
 
       updateMenuLayout(layout, plugins, isPrivileged);
     }

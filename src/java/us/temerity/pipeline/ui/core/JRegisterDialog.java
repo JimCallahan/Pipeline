@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JRegisterDialog.java,v 1.2 2005/01/15 02:56:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -294,8 +294,15 @@ class JRegisterDialog
     {
       String editor = pEditorField.getSelected();
 
-      PluginMgr mgr = PluginMgr.getInstance();
-      ArrayList<String> values = new ArrayList<String>(mgr.getEditors().keySet());
+      PluginMgrClient pclient = PluginMgrClient.getInstance();
+      try {
+	pclient.update();
+      } 
+      catch(PipelineException ex) {
+	UIMaster.getInstance().showErrorDialog(ex);
+      }    
+
+      ArrayList<String> values = new ArrayList<String>(pclient.getEditors().keySet());
       values.add("-");
       pEditorField.setValues(values);
 

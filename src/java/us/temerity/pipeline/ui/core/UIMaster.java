@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.9 2005/01/09 23:13:47 jim Exp $
+// $Id: UIMaster.java,v 1.10 2005/01/15 02:56:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1064,6 +1064,8 @@ class UIMaster
     if(pQueueMgrClient != null) 
       pQueueMgrClient.disconnect();
 
+    PluginMgrClient.getInstance().disconnect();
+
     /* save the collapsed node paths */ 
     synchronized(pCollapsedNodePaths) {
       File file = new File(PackageInfo.sHomeDir, 
@@ -2028,7 +2030,7 @@ class UIMaster
 		throw new PipelineException
 		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
 	      
-	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion);
+	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion);
 	    }
 
 	    /* lookup the toolset environment */ 

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.4 2005/01/10 16:02:01 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.5 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -72,11 +72,11 @@ class JNodeFilesPanel
   {
     /* initialize fields */ 
     {
-      pEditorPlugins      = PluginMgr.getInstance().getEditors();
+      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
       pEditorMenuLayout   = new PluginMenuLayout();
       pRefreshEditorMenus = true; 
 
-      pComparatorPlugins     = PluginMgr.getInstance().getComparators();
+      pComparatorPlugins     = PluginMgrClient.getInstance().getComparators();
       pComparatorMenuLayout  = new PluginMenuLayout();
       pRefreshComparatorMenu = true; 
     }
@@ -420,7 +420,7 @@ class JNodeFilesPanel
       details = pStatus.getDetails();
 
     {
-      PluginMgr plg = PluginMgr.getInstance();
+      PluginMgrClient plg = PluginMgrClient.getInstance();
       pComparatorPlugins = plg.getComparators();
 
       if(editorPlugins != null) 
@@ -2272,7 +2272,7 @@ class JNodeFilesPanel
 		throw new PipelineException
 		  ("No editor was specified for node (" + name + ")!");
 	      
-	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion); 
+	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion); 
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -2392,7 +2392,8 @@ class JNodeFilesPanel
 
 	    /* create an comparator plugin instance */ 
 	    BaseComparator comparator = 
-	      PluginMgr.getInstance().newComparator(pComparatorName, pComparatorVersion);
+	      PluginMgrClient.getInstance().newComparator
+	      (pComparatorName, pComparatorVersion);
 
 	    /* the checked-in file */ 
 	    File fileB = new File(pFileSeq.toString());

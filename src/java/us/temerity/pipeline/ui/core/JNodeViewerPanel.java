@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.11 2005/01/12 21:47:16 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.12 2005/01/15 02:56:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -84,11 +84,11 @@ class JNodeViewerPanel
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
-      pEditorPlugins      = PluginMgr.getInstance().getEditors();
+      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
       pEditorMenuLayout   = new PluginMenuLayout();
       pRefreshEditorMenus = true; 
 
-      pToolPlugins      = PluginMgr.getInstance().getTools();
+      pToolPlugins      = PluginMgrClient.getInstance().getTools();
       pToolMenuLayout   = new PluginMenuLayout();
       pRefreshToolMenu  = true; 
     }
@@ -1167,12 +1167,14 @@ class JNodeViewerPanel
   { 
     /* refresh the plugins */    
     {
-      PluginMgr plg = PluginMgr.getInstance();
-      pEditorPlugins = plg.getEditors();
-      pToolPlugins = plg.getTools();
-
       UIMaster master = UIMaster.getInstance(); 
       try {
+	PluginMgrClient pclient = PluginMgrClient.getInstance();
+	pclient.update();
+      
+	pEditorPlugins = pclient.getEditors();
+	pToolPlugins   = pclient.getTools();
+
 	pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
 	pRefreshEditorMenus = true;
 
@@ -3583,7 +3585,7 @@ class JNodeViewerPanel
     }
     
     try {
-      BaseTool tool = PluginMgr.getInstance().newTool(tname, tvid);
+      BaseTool tool = PluginMgrClient.getInstance().newTool(tname, tvid);
 
       String primary = null;
       if(pPrimary != null) 
@@ -3996,7 +3998,7 @@ class JNodeViewerPanel
 		  
 		  /* the action and parameters */ 
 		  {
-		    PluginMgr mgr = PluginMgr.getInstance();
+		    PluginMgrClient mgr = PluginMgrClient.getInstance();
 		    if((taction == null) || 
 		       !taction.getName().equals(saction.getName()) || 
 		       !taction.getVersionID().equals(saction.getVersionID()))

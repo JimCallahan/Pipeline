@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.4 2005/01/10 16:02:01 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.5 2005/01/15 02:56:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,7 +67,7 @@ class JNodeHistoryPanel
   {
     /* initialize fields */ 
     {
-      pEditorPlugins      = PluginMgr.getInstance().getEditors();
+      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
       pEditorMenuLayout   = new PluginMenuLayout();
       pRefreshEditorMenus = true; 
     }
@@ -370,7 +370,7 @@ class JNodeHistoryPanel
       details = pStatus.getDetails();
 
     {
-      PluginMgr plg = PluginMgr.getInstance();
+      PluginMgrClient plg = PluginMgrClient.getInstance();
 
       if(editorPlugins != null) 
 	pEditorPlugins = editorPlugins;

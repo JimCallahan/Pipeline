@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.19 2004/10/29 14:03:52 jim Exp $
+// $Id: NodeCommon.java,v 1.20 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -538,12 +538,13 @@ class NodeCommon
     BaseAction action = (BaseAction) in.readObject();
     if(action != null) {
       try {
-	pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pAction = client.newAction(action.getName(), action.getVersionID());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
       catch(PipelineException ex) {
-	throw new IOException("Unable to instantiate action plugin: " + ex.getMessage());
+	throw new IOException(ex.getMessage());
       }
     }
     else {
@@ -631,12 +632,13 @@ class NodeCommon
     BaseAction action = (BaseAction) decoder.decode("Action");
     if(action != null) {
       try {
-	pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pAction = client.newAction(action.getName(), action.getVersionID());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
       catch(PipelineException ex) {
-	throw new GlueException("Unable to instantiate action plugin: " + ex.getMessage());
+	throw new GlueException(ex.getMessage());
       }
       
       Boolean enabled = (Boolean) decoder.decode("IsActionEnabled");

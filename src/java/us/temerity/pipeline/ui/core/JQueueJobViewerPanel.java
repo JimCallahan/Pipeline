@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.7 2005/01/10 22:01:05 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.8 2005/01/15 02:56:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,7 +80,7 @@ class JQueueJobViewerPanel
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
       pSelected       = new HashMap<JobPath,ViewerJob>();
 
-      pEditorPlugins = PluginMgr.getInstance().getEditors();
+      pEditorPlugins = PluginMgrClient.getInstance().getEditors();
     }
 
     /* panel popup menu */ 
@@ -652,7 +652,17 @@ class JQueueJobViewerPanel
   )
   {  
     /* refresh the editor plugins */ 
-    pEditorPlugins = PluginMgr.getInstance().getEditors();
+    {
+      PluginMgrClient pclient = PluginMgrClient.getInstance();
+      try {
+	pclient.update();
+      } 
+      catch(PipelineException ex) {
+	UIMaster.getInstance().showErrorDialog(ex);
+      }
+
+      pEditorPlugins = pclient.getEditors();
+    }
 
     /* get the paths to the currently collapsed jobs */ 
     TreeSet<JobPath> wasCollapsed = new TreeSet<JobPath>();
@@ -2370,7 +2380,7 @@ class JQueueJobViewerPanel
 		throw new PipelineException
 		  ("No editor was specified for node (" + mod.getName() + ")!");
 	      
-	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion);
+	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion);
 	    }
 
 	    /* lookup the toolset environment */ 

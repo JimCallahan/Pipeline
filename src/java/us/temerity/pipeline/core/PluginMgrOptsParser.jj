@@ -197,6 +197,7 @@ TOKEN :
 | <LOG_ARG: 	     "arg">        
 | <LOG_OPS: 	     "ops">     
 | <LOG_NET: 	     "net">     
+| <LOG_PLG: 	     "plg">     
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -429,6 +430,7 @@ void LoggerAll() :
     Logs.arg.setLevel(v); 
     Logs.ops.setLevel(v);
     Logs.net.setLevel(v);
+    Logs.plg.setLevel(v);
   }
 }
 
@@ -449,7 +451,7 @@ Logger Logger() :
   Logger g;
 }
 {
-  (g=ArgLogger() | g=OpsLogger() | g=NetLogger())
+  (g=ArgLogger() | g=NetLogger() |  g=PlgLogger())
   {
     return g;
   }
@@ -464,21 +466,21 @@ Logger ArgLogger() :
   }
 }
 
-Logger OpsLogger() : 
-{}
-{
-  <LOG_OPS>
-  {
-    return Logs.ops;
-  }
-}
-
 Logger NetLogger() : 
 {}
 {
   <LOG_NET>
   {
     return Logs.net;
+  }
+}
+
+Logger PlgLogger() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return Logs.plg;
   }
 }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.5 2005/01/12 18:47:27 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.6 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -81,11 +81,11 @@ class JNodeDetailsPanel
     {
       pCheckedInVersions = new TreeMap<VersionID,NodeVersion>();
 
-      pEditorPlugins      = PluginMgr.getInstance().getEditors();
+      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
       pEditorMenuLayout   = new PluginMenuLayout();
       pRefreshEditorMenus = true; 
       
-      pActionPlugins = PluginMgr.getInstance().getActions();
+      pActionPlugins = PluginMgrClient.getInstance().getActions();
 
       pActionParamComponents = new TreeMap<String,Component[]>();
       pActionParamGroupsOpen = new TreeMap<String,Boolean>();
@@ -1525,7 +1525,7 @@ class JNodeDetailsPanel
     }
 
     {
-      PluginMgr plg = PluginMgr.getInstance();
+      PluginMgrClient plg = PluginMgrClient.getInstance();
       pActionPlugins = plg.getActions();
 
       if(editorPlugins != null) 
@@ -3893,7 +3893,7 @@ class JNodeDetailsPanel
 
 	if(rebuild) {
 	  try {
-	    setWorkingAction(PluginMgr.getInstance().newAction(aname, vid));
+	    setWorkingAction(PluginMgrClient.getInstance().newAction(aname, vid));
 	    
 	    BaseAction waction = getWorkingAction();
 	    if((oaction != null) && oaction.getName().equals(waction.getName())) {

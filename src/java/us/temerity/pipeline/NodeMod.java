@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.34 2005/01/10 00:15:44 jim Exp $
+// $Id: NodeMod.java,v 1.35 2005/01/15 02:56:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -704,6 +704,26 @@ class NodeMod
       updateLastCriticalMod();
     else 
       updateLastMod();
+  }
+
+  /**
+   * Update any under development action plugin (if any) to the latest loaded instance.
+   */ 
+  public void 
+  updateAction() 
+    throws PipelineException
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be have their actions updated!");
+
+    if((pAction != null) && pAction.isUnderDevelopment()) {
+      BaseAction action = pAction;
+      PluginMgrClient pclient = PluginMgrClient.getInstance();
+      pAction = pclient.newAction(action.getName(), action.getVersionID());
+      pAction.setSingleParamValues(action);
+      pAction.setSourceParamValues(action);
+    }
   }
 
   /**
