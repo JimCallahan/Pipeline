@@ -1,4 +1,4 @@
-// $Id: TestInfo.java.in,v 1.1 2004/02/20 22:51:42 jim Exp $
+// $Id: TestInfo.java.in,v 1.2 2004/02/21 18:56:47 jim Exp $
 
 import java.io.File;
 
@@ -34,6 +34,11 @@ class TestInfo
    */ 
   public static final String sTopBuildDir = "@top_builddir@";        
 
+
+  /**
+   * The path to the convert(1) image utility.
+   */
+  public static final File sConvert = new File("@CONVERT@");
 }
 
 
