@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.12 2004/06/28 00:05:32 jim Exp $
+// $Id: FileSeq.java,v 1.13 2004/07/07 13:15:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -191,7 +191,6 @@ class FileSeq
   {
     return ((pFrameRange == null) || (pFrameRange.isSingle()));
   }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -422,7 +421,6 @@ class FileSeq
     return compareTo((FileSeq) obj);
   }
 
-
   /**
    * Compares this <CODE>FileSeq</CODE> with the given <CODE>FileSeq</CODE> for order.
    * 
@@ -438,6 +436,27 @@ class FileSeq
     return pStringRep.compareTo(fseq.pStringRep);
   }
 
+
+  /**
+   * Whether the given file sequence have an identical prefix and suffix as this file 
+   * sequence. <P> 
+   * 
+   * The similarity of file sequences is independent of whether they have any frame numbers 
+   * in common.  In other words, there is no requuirement that they share any literal files.
+   */ 
+  public boolean 
+  similarTo
+  (
+   FileSeq fseq
+  )
+  {
+    return (pFilePattern.getPrefix().equals(fseq.pFilePattern.getPrefix()) && 
+	    (((pFilePattern.getSuffix() == null) && 
+	      (fseq.pFilePattern.getSuffix() == null)) ||
+	     ((pFilePattern.getSuffix() != null) && 
+	      pFilePattern.getSuffix().equals(fseq.pFilePattern.getSuffix()))));
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/
