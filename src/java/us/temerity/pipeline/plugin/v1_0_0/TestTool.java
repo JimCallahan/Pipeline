@@ -1,4 +1,4 @@
-// $Id: TestTool.java,v 1.1 2005/01/05 09:44:31 jim Exp $
+// $Id: TestTool.java,v 1.2 2005/01/15 02:49:43 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -33,6 +33,8 @@ class TestTool
 
     pField = new JPathField();
     setDialogBody(pField);
+
+    underDevelopment();
   }
 
 
@@ -107,7 +109,7 @@ class TestTool
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 7830454485918743724L;
 
 
 
