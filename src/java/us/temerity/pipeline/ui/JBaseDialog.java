@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.4 2004/05/08 23:38:38 jim Exp $
+// $Id: JBaseDialog.java,v 1.5 2004/05/11 19:11:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -118,7 +118,7 @@ class JBaseDialog
     JPanel root = new JPanel();
     root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));  
 
-    {
+    if(title != null) {
       JPanel panel = new JPanel();
       panel.setName(modal ? "ModalDialogHeader" : "DialogHeader");	
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -259,8 +259,6 @@ class JBaseDialog
     return pConfirmed;
   }
 
-
-  
 
 
   /*----------------------------------------------------------------------------------------*/
