@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.9 2004/08/25 05:23:28 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.10 2004/08/26 06:01:10 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -306,6 +306,90 @@ class GenUserPrefsApp
 
       pPrefs.put("Panel|Job Browser|Hot Keys", prefs);
     }
+
+    {
+      BasePref prefs[] = {
+	new BoundedDoublePref
+	("the width of a job", 
+	 "JobSizeX", "Width:", 1.0, 4.0, 2.0),
+
+	new BoundedDoublePref
+	("the height of a job", 
+	 "JobSizeY", "Height:", 0.5, 2.0, 1.0),
+
+	new BoundedDoublePref
+	("the distance between jobs",
+	 "JobSpace", "Space:", 0.0, 0.3, 0.1), 
+	
+	new BasePref(),
+
+	new BooleanPref
+	("whether to anti-alias lines", 
+	 "JobViewerLineAntiAlias", "Antialiased Lines:", true), 
+	
+	new BoundedDoublePref
+	("the thickness of lines", 
+	 "JobViewerLineThickness", "Line Thickness:", 0.25, 2.0, 1.0)
+      };
+
+      pPrefs.put("Panel|Job Viewer|Job|Appearance", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("update connected job details panels",
+	 "JobDetails", "Details:")
+      };
+
+      pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("update the status of all jobs", 
+	 "JobViewerUpdate", "Update Jobs:", 
+	 false, false, false, 32), /* Space */ 
+	
+	new BasePref(),
+
+	new HotKeyPref
+	("move the camera so that it is centered on current mouse position",
+	 "JobViewerCameraCenter", "Center:", 
+	 false, false, false, 67),  /* C */ 
+	 
+	
+	new HotKeyPref
+	("move the camera to frame the bounds of the currently selected jobs",
+	 "JobViewerCameraFrameSelection", "Frame Selection:",
+	 false, false, false, 70),  /* F */ 
+	
+	new HotKeyPref
+	("move the camera to frame all active jobs",
+	 "JobViewerCameraFrameAll", "Frame All:", 
+	 false, false, false, 71),  /* G */ 
+	
+	new BasePref(),
+
+	new HotKeyPref
+	("automatically expand the first occurance of a job",
+	 "JobViewerAutomaticExpandJobs", "Automatic Expand:", 
+	 false, false, false, 65),  /* A */
+
+	new HotKeyPref
+	("expand all jobs",
+	 "JobViewerExpandAllJobs", "Expand All:", 
+	 false, false, false, 69),  /* E */
+
+	new HotKeyPref
+	("collapse all jobs",
+	 "JobViewerCollapseAllJobs", "Collapse All:", 
+	 false, false, false, 67),  /* C */
+      };
+
+      pPrefs.put("Panel|Job Viewer|Hot Keys", prefs);
+    }
   }
 
 
@@ -346,7 +430,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.9 2004/08/25 05:23:28 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.10 2004/08/26 06:01:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -599,7 +683,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.9 2004/08/25 05:23:28 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.10 2004/08/26 06:01:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
