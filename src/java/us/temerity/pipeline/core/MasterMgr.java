@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.38 2004/09/22 23:14:23 jim Exp $
+// $Id: MasterMgr.java,v 1.39 2004/09/23 09:23:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1546,28 +1546,20 @@ class MasterMgr
     synchronized(pSuffixEditors) {
       timer.resume();
 
-      String author = req.getAuthor();
-
-      TreeMap<String,SuffixEditor> editors = pSuffixEditors.get(author);
-      if(editors == null)
-	editors = pSuffixEditors.get(author);
-
-      if(editors == null) {
-	try {
-	  editors = readSuffixEditors(author);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+      try {
+	String author = req.getAuthor();
+	TreeMap<String,SuffixEditor> editors = getSuffixEditors(author);
+	
+	String ename = null;
+	SuffixEditor se = editors.get(req.getSuffix());
+	if(se != null) 
+	  ename = se.getEditor();
+	
+	return new MiscGetEditorForSuffixRsp(timer, ename); 
       }
-      assert(editors != null);
-
-      String ename = null;
-      SuffixEditor se = editors.get(req.getSuffix());
-      if(se != null) 
-	ename = se.getEditor();
-
-      return new MiscGetEditorForSuffixRsp(timer, ename);
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
     }
   }
 
@@ -1592,32 +1584,49 @@ class MasterMgr
     timer.aquire();
     synchronized(pSuffixEditors) {
       timer.resume();
-      String author = req.getAuthor();
 
+      try {
+	String author = req.getAuthor();
+	TreeSet<SuffixEditor> editors =	
+	  new TreeSet<SuffixEditor>(getSuffixEditors(author).values());
+	return new MiscGetSuffixEditorsRsp(timer, editors);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+    }
+  }
+
+  /**
+   * Get the filename suffix to default editor mappings for the given user. 
+   */ 
+  private  TreeMap<String,SuffixEditor> 
+  getSuffixEditors
+  (
+   String author
+  ) 
+    throws PipelineException
+  {
+    synchronized(pSuffixEditors) {
       TreeMap<String,SuffixEditor> editors = pSuffixEditors.get(author);
       if(editors == null) 
 	editors = pSuffixEditors.get(author);
-
+      
       if(editors == null) {
-	try {
-	  editors = readSuffixEditors(author);
-
-	  if((editors == null) && !author.equals(PackageInfo.sPipelineUser)) {
-	    editors = pSuffixEditors.get(PackageInfo.sPipelineUser);
-	    if(editors == null) 
-	      editors = readSuffixEditors(PackageInfo.sPipelineUser);
-	  }
-
+	editors = readSuffixEditors(author);
+	
+	if((editors == null) && !author.equals(PackageInfo.sPipelineUser)) {
+	  editors = pSuffixEditors.get(PackageInfo.sPipelineUser);
 	  if(editors == null) 
-	    editors = new TreeMap<String,SuffixEditor>();
+	    editors = readSuffixEditors(PackageInfo.sPipelineUser);
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+      
+      if(editors == null) 
+	editors = new TreeMap<String,SuffixEditor>();
       }
       assert(editors != null);
-
-      return new MiscGetSuffixEditorsRsp(timer, new TreeSet<SuffixEditor>(editors.values()));
+      
+      return editors;
     }
   }
 
