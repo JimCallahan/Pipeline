@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.16 2004/04/11 19:30:20 jim Exp $
+// $Id: NodeMod.java,v 1.17 2004/04/15 00:11:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -215,9 +215,7 @@ class NodeMod
   public VersionID
   getWorkingID()
   {
-    if(pWorkingID != null)
-      return new VersionID(pWorkingID);
-    return null;
+    return pWorkingID;
   }
   
 

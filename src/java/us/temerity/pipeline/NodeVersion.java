@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.12 2004/04/11 19:30:20 jim Exp $
+// $Id: NodeVersion.java,v 1.13 2004/04/15 00:11:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -91,7 +91,7 @@ class NodeVersion
   public VersionID
   getVersionID()
   {
-    return new VersionID(pVersionID);
+    return pVersionID;
   }
 
 
