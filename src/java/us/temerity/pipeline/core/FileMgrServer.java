@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.7 2004/04/11 19:21:53 jim Exp $
+// $Id: FileMgrServer.java,v 1.8 2004/04/12 22:36:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -261,6 +261,8 @@ class FileMgrServer
 	    break;
 
 	  case Shutdown:
+	    Logs.net.info("Shutdown Request Received: " + pSocket.getInetAddress());
+	    Logs.flush();
 	    pShutdown.set(true);
 	    break;	    
 

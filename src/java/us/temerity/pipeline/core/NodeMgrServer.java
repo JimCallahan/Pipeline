@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.6 2004/04/11 19:24:45 jim Exp $
+// $Id: NodeMgrServer.java,v 1.7 2004/04/12 22:36:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -304,6 +304,8 @@ class NodeMgrServer
 	    break;
 
 	  case Shutdown:
+	    Logs.net.info("Shutdown Request Received: " + pSocket.getInetAddress());
+	    Logs.flush();
 	    pShutdown.set(true);
 	    break;	    
 
