@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInFileNoveltyRsp.java,v 1.1 2004/07/07 13:30:26 jim Exp $
+// $Id: NodeGetCheckedInFileNoveltyRsp.java,v 1.2 2004/07/16 22:04:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -31,8 +31,11 @@ class NodeGetCheckedInFileNoveltyRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param history
-   *   The log messages indexed by revision number.
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param novelty
+   *   The file novelty table.
    */
   public
   NodeGetCheckedInFileNoveltyRsp
