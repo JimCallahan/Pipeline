@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.7 2004/04/15 17:55:51 jim Exp $
+// $Id: NodeID.java,v 1.8 2004/05/02 12:05:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,7 +34,7 @@ class NodeID
    * given view owned by the given user. <P> 
    * 
    * @param author 
-   *   The of the user which owns the working version..
+   *   The name of the user which owns the working version.
    * 
    * @param view 
    *   The name of the user's working area view. 
