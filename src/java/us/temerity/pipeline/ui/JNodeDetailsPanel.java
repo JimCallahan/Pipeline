@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.15 2004/09/11 14:16:25 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.16 2004/09/21 23:51:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1487,6 +1487,8 @@ class JNodeDetailsPanel
 	  pWorkingActionField.setSelected("-");
 	
 	pWorkingActionField.setEnabled(!pIsLocked && (work != null));
+	
+	updateActionVersionFields();
       }
       pWorkingActionField.addActionListener(this);
 
