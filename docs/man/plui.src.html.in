@@ -223,7 +223,7 @@ same as the log file with the backup number appended to the end of the
 name.&nbsp;&nbsp; The logfile will be automatically close the current
 logfile,
 rotate the backups and reopen the logfile whenever the log grows to
-larger than 1MB.<br>
+larger than 10MB.<br>
 <br>
 The default number of backups is (10).</div>
 <br>
