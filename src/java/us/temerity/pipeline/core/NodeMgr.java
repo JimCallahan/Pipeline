@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.6 2004/03/28 00:47:45 jim Exp $
+// $Id: NodeMgr.java,v 1.7 2004/03/29 08:17:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -75,6 +75,8 @@ import java.util.concurrent.locks.*;
  *         </DIV>
  *         ... <P> 
  *     </DIV> 
+ * 
+ *     lock<P>
  *   </DIV> 
  * 
  *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
@@ -86,10 +88,12 @@ import java.util.concurrent.locks.*;
  *   runtime instances. <P> 
  * 
  *   The (<CODE>working</CODE>) subdirectory contains Glue translations of 
- *   {@link NodeMod NodeMod} instances saved in files (<I>view</I>) named after the working 
- *   area view owning the working version.  There may also exist a backup files 
- *   (<I>view</I>.backup) containing the previously saved state of the <CODE>NodeMod</CODE> 
- *   instances. <P> 
+ *   {@link NodeMod NodeMod} instances saved in files (<I>node-name</I>) named after the last
+ *   component of the node name.  These working version files are organized under 
+ *   subdirectories named after the particular user's working area view 
+ *   (<I>author</I>/<I>view</I>) owning the working version.  There may also exist a backup 
+ *   files (<I>node-name</I>.backup) containing the previously saved state of the 
+ *   <CODE>NodeMod</CODE> instances for castastrophic recovery purposes. <P> 
  * 
  *   The (<CODE>repository</CODE>) subdirectory contains Glue translations of 
  *   {@link NodeVersion NodeVersion} instances saved in files (<I>revision-number</I>) 
@@ -99,21 +103,27 @@ import java.util.concurrent.locks.*;
  *   {@link LogMessage LogMessage} instances saved in files (<I>time-stamp</I>) named for the 
  *   time stamp of when the respective change comment was written. <P> 
  *  
- *   Finally, the (<CODE>downstream</CODE>) subdirectory contains Glue translations of 
- *   tables containing downstream node connection information.  The downstream connections 
- *   of both working version and checked-in versions are stored in a file (<I>node-name</I>) 
-     named after the node. These files contain cached node connection 
- *   information that can be regenerated at any time from the <CODE>NodeMod</CODE> and 
- *   <CODE>NodeVersion</CODE> data. The purpose of these files is to prevent having to 
- *   load all of the nodes in order to determine downstream connection information. This
- *   is more efficient in terms of memory usage, disk I/O and processor cycles. 
- *   Note that these files are only read the first time a node is accessed and written only 
- *   upon shutdown of the server. <P> 
+ *   The (<CODE>downstream</CODE>) subdirectory contains Glue translations of 
+ *   {@link DownstreamLinks DownstreamLinks} instances saved in files (<I>node-name</I>)
+ *   named after the last component of the node name.  Note that these files are only read 
+ *   the first time a node is accessed and written only upon shutdown of the server. <P> 
+ * 
+ *   The node manager uses an empty file called (<CODE>lock</CODE>) written to the root 
+ *   node directory (<I>node-dir</I>) to protect against multiple instances of 
+ *   <CODE>NodeMgr</CODE> running simultaneously.  This file is created when the class is
+ *   instantiated and removed when the instance is finalized.  If this file already exists
+ *   the constructor will throw an exception and refuse to instantiate the class.  The 
+ *   lock file may exist even if there are no running instances if there has been a 
+ *   catastrophic failure of the Java VM.  In such cases, the file should be manually 
+ *   removed. <P> 
  * </DIV> 
  * 
+ * @see NodeMgrClient
+ * @see NodeMgrServer
  * @see NodeMod
  * @see NodeVersion
  * @see LogMessage
+ * @see DownstreamLinks
  * @see FileMgr
  */
 public
@@ -152,6 +162,9 @@ class NodeMgr
 
   /**
    * Initialize a new instance.
+   * 
+   * @param dir 
+   *   The root node directory.
    */ 
   private void 
   init
@@ -163,18 +176,47 @@ class NodeMgr
       throw new IllegalArgumentException("The root node directory cannot be (null)!");
     pNodeDir = dir;
 
-    pMakeDirLock      = new Object();
-    pNodeNames        = new HashSet<String>();
-    pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
-    pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
-    pWorkingLocks     = new HashMap<NodeID,ReentrantReadWriteLock>();
-    pWorkingBundles   = new HashMap<NodeID,WorkingBundle>(); 
+    /* remove the lock file */ 
+    {
+      File file = new File(pNodeDir, "lock");
+      if(file.exists()) 
+	throw new IllegalStateException
+	  ("Another node manager is already running!\n" + 
+	   "If you are certain this is not the case, remove the lock file (" + file + ")!");
 
-    makeRootDirs();
-    initNodeNames();
+      try {
+	FileWriter out = new FileWriter(file);
+	out.close();
+      }
+      catch(IOException ex) {
+	throw new IllegalStateException
+	  ("Unable to create lock file (" + file + ")!");
+      }
+    }
+
+    /* initialize the fields */ 
+    {
+      pMakeDirLock      = new Object();
+      pNodeNames        = new HashSet<String>();
+      pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
+      pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
+      pWorkingLocks     = new HashMap<NodeID,ReentrantReadWriteLock>();
+      pWorkingBundles   = new HashMap<NodeID,WorkingBundle>();       
+      pDownstreamLocks  = new HashMap<String,ReentrantReadWriteLock>();
+      pDownstream       = new HashMap<String,DownstreamLinks>();
+    }
+
+    /* perform startup I/O operations */ 
+    {
+      makeRootDirs();
+      rebuildDownstreamLinks();
+      initNodeNames();
+    }
   }
 
-  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Make sure that the root node directories exist.
    */ 
@@ -189,7 +231,6 @@ class NodeMgr
     dirs.add(new File(pNodeDir, "repository"));
     dirs.add(new File(pNodeDir, "working"));
     dirs.add(new File(pNodeDir, "comments"));
-    dirs.add(new File(pNodeDir, "downstream"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -200,7 +241,9 @@ class NodeMgr
       }
     }
   }
+
   
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Build the initial node name table by searching the file system for node related files.
@@ -208,6 +251,9 @@ class NodeMgr
   private void 
   initNodeNames()
   {
+    if(!pNodeNames.isEmpty()) 
+      return;
+
     {
       File dir = new File(pNodeDir, "repository");
       initCheckedInNodeNames(dir.getPath(), dir); 
@@ -229,18 +275,25 @@ class NodeMgr
       }
     }
 
-    // DEBUG 
-    {
-      System.out.print("Initial Node Names:\n");
+    if(!pNodeNames.isEmpty()) {
+      StringBuffer buf = new StringBuffer(); 
+      buf.append("Node Names:\n");
       for(String name : pNodeNames) 
-	System.out.print("  " + name + "\n");
-      System.out.print("\n");
+	buf.append("  " + name + "\n");
+      Logs.ops.finer(buf.toString());
     }
-    // DEBUG
   }
 
   /**
-   * Recursively search the checked-in node directories for node names.
+   * Recursively search the checked-in node directories for node names. <P> 
+   * 
+   * No locks are aquired because this method is only called by the constructor.
+   * 
+   * @param prefix 
+   *   The root directory of checked-in versions.
+   * 
+   * @param dir
+   *   The current directory to process.
    */ 
   private void 
   initCheckedInNodeNames
@@ -281,7 +334,15 @@ class NodeMgr
   }
   
   /**
-   * Recursively search the working node directories for node names.
+   * Recursively search the working node directories for node names. <P> 
+   * 
+   * No locks are aquired because this method is only called by the constructor.
+   * 
+   * @param prefix 
+   *   The root directory of a particular user's view. 
+   * 
+   * @param dir
+   *   The current directory to process.
    */
   private void 
   initWorkingNodeNames
@@ -303,6 +364,296 @@ class NodeMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * If the downstream links directory is missing, rebuild the downstream links from 
+   * the working and checked-in version of ALL nodes! 
+   */ 
+  private void 
+  rebuildDownstreamLinks()
+  {
+    {
+      File dir = new File(pNodeDir, "downstream");
+      if(dir.isDirectory()) 
+	return;
+
+      if(!dir.mkdir()) 
+	throw new IllegalArgumentException
+	  ("Unable to create the directory (" + dir + ")!");
+    }
+
+    Logs.ops.fine("Rebuilding Downstream Links Cache...");   
+
+    /* process checked-in versions */ 
+    {
+      File dir = new File(pNodeDir, "repository");
+      collectCheckedInDownstreamLinks(dir.getPath(), dir); 
+    }
+
+    /* process working versions */ 
+    {
+      File dir = new File(pNodeDir, "working");
+      File authors[] = dir.listFiles(); 
+      int ak;
+      for(ak=0; ak<authors.length; ak++) {
+	assert(authors[ak].isDirectory());
+	String author = authors[ak].getName();
+	
+	File views[] = authors[ak].listFiles();  
+	int vk;
+	for(vk=0; vk<views.length; vk++) {
+	  assert(views[vk].isDirectory());
+	  String view = views[vk].getName();
+	  collectWorkingDownstreamLinks(author, view, views[vk].getPath(), views[vk]);
+	}
+      }
+    }
+
+    if(!pDownstream.isEmpty()) { 
+      StringBuffer buf = new StringBuffer(); 
+      buf.append("Rebuilt Links:\n");
+      for(String name : pDownstream.keySet()) 
+	buf.append("  " + name + "\n");
+      Logs.ops.finer(buf.toString());
+    }
+
+    /* shutdown and restart the server */ 
+    {
+      File dir = pNodeDir;
+      shutdown();
+      init(dir);
+    }
+  }
+
+  /**
+   * Recursively search the checked-in node directories for downstream links.<P> 
+   * 
+   * No locks are aquired because this method is only called by the constructor.
+   * 
+   * @param prefix 
+   *   The root directory of checked-in versions.
+   * 
+   * @param dir
+   *   The current directory to process.
+   */ 
+  private void 
+  collectCheckedInDownstreamLinks
+  (
+   String prefix, 
+   File dir
+  ) 
+  {
+    boolean allDirs  = true;
+    boolean allFiles = true;
+
+    File files[] = dir.listFiles(); 
+
+    {
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	if(files[wk].isDirectory()) 
+	  allFiles = false;
+	else if(files[wk].isFile()) 
+	  allDirs = false;
+	else
+	  assert(false);
+      }
+    }
+
+    if(allFiles) {
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	File path = new File(files[wk].getPath().substring(prefix.length()));
+	String name = path.getParent();
+	VersionID vid = new VersionID(path.getName());
+      
+	try {
+	  NodeVersion vsn = readCheckedInVersion(name, vid);
+	  if(vsn == null) 
+	    throw new PipelineException
+	      ("I/O ERROR:\n" + 
+	       "  Somehow the checked-in version (" + vid + ") of node (" + name + ") " + 
+	       "was missing!");
+
+	  for(LinkVersion link : vsn.getSources()) {
+	    DownstreamLinks dsl = pDownstream.get(link.getName());
+	    if(dsl == null) {
+	      dsl = new DownstreamLinks(link.getName());
+	      pDownstream.put(dsl.getName(), dsl);
+	    }
+	    
+	    dsl.addCheckedIn(link.getVersionID(), vsn.getName(), vsn.getVersionID());
+	  }
+	}
+	catch(PipelineException ex) {
+	  Logs.ops.severe(ex.getMessage());
+	  Logs.flush();
+	  System.exit(1);
+	}      
+      }
+    }
+    else if(allDirs) {
+      int wk;
+      for(wk=0; wk<files.length; wk++) 
+	collectCheckedInDownstreamLinks(prefix, files[wk]);
+    }
+    else {
+      assert(false);
+    } 
+  }
+  
+  /**
+   * Recursively search the working node directories for for downstream links.<P> 
+   * 
+   * No locks are aquired because this method is only called by the constructor.
+   * 
+   * @param author 
+   *   The of the user which owns the working version..
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param prefix 
+   *   The root directory of a particular user's view. 
+   * 
+   * @param dir
+   *   The current directory to process.
+   */
+  private void 
+  collectWorkingDownstreamLinks
+  (
+   String author, 
+   String view, 
+   String prefix, 
+   File dir
+  ) 
+  {
+    File files[] = dir.listFiles(); 
+    int wk;
+    for(wk=0; wk<files.length; wk++) {
+      if(files[wk].isDirectory()) 
+	collectWorkingDownstreamLinks(author, view, prefix, files[wk]);
+      else {
+	String path = files[wk].getPath();
+	if(!path.endsWith(".backup")) {
+	  try {
+	    NodeID id = new NodeID(author, view, path.substring(prefix.length()));
+	    NodeMod mod = readWorkingVersion(id);
+	    if(mod == null) 
+	      throw new PipelineException
+		("I/O ERROR:\n" + 
+		 "  Somehow the working version (" + id + ") was missing!");
+	    
+	    for(LinkMod link : mod.getSources()) {
+	      DownstreamLinks dsl = pDownstream.get(link.getName());
+	      if(dsl == null) {
+		dsl = new DownstreamLinks(link.getName());
+		pDownstream.put(dsl.getName(), dsl);
+	      }
+	    
+	      dsl.addWorking(new NodeID(author, view, link.getName()), mod.getName());
+	    }
+	  }
+	  catch(PipelineException ex) {
+	    Logs.ops.severe(ex.getMessage());
+	    Logs.flush();
+	    System.exit(1);
+	  }      
+	}
+      }
+    }
+  }
+  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S H U T D O W N                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform shutdown tasks for the node manager. <P> 
+   * 
+   * It is crucial that this method be called when only a single thread is able to access
+   * this instance!  In other words, after all request threads have already exited.
+   * 
+   * After this method has been called, this instance should never be used again.
+   */
+  public void  
+  shutdown() 
+  {
+    /* write cached downstream links */ 
+    writeAllDownstreamLinks();
+
+    /* remove the lock file */ 
+    {
+      File file = new File(pNodeDir, "lock");
+      file.delete();
+    }
+
+    /* make sure this instance can't be used anymore! */ 
+    {
+      pMakeDirLock      = null;
+      pNodeDir          = null;
+      pNodeNames        = null;
+      pCheckedInLocks   = null;
+      pCheckedInBundles = null;
+      pWorkingLocks     = null;
+      pWorkingBundles   = null;
+      pDownstreamLocks  = null;
+      pDownstream       = null;
+    }
+  }
+
+  /**
+   * Write all of the cached downstream links to disk. <P> 
+   * 
+   * No locks are aquired because this method is only called by {@link #shutdown shutdown} 
+   * when only a single thread should be able to access this instance.
+   * 
+   * If any I/O problems are encountered, the entire downstream links directory is removed
+   * so that it will be rebuilt from scratch the next time the server is started. 
+   */ 
+  private void 
+  writeAllDownstreamLinks()
+  {
+    try {
+      for(DownstreamLinks links : pDownstream.values()) 
+	writeDownstreamLinks(links);
+    }
+    catch(PipelineException ex) {
+      Logs.ops.severe(ex.getMessage());
+      
+      /* remove the entire downstream directory */ 
+      {
+	Map<String,String> env = System.getenv();
+	
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("--force");
+	args.add("--recursive");
+	args.add("downstream");
+	
+	SubProcess proc = 
+	  new SubProcess("RemoveDownstreamLinks", "rm", args, env, pNodeDir);
+	proc.start();
+	
+	try {
+	  proc.join();
+	}
+	catch(InterruptedException ex2) {
+	  Logs.ops.severe("Interrupted while removing the downstream directory " + 
+			  "(" + pNodeDir + "/downstream)!");
+	}
+	
+	if(!proc.wasSuccessful()) {
+	  Logs.ops.severe("Unable to removing the downstream directory " + 
+			  "(" + pNodeDir + "/downstream)!");
+	}
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -368,8 +719,8 @@ class NodeMgr
    * </DIV> 
    * 
    * Note that any existing upstream dependency relationship information contain in the
-   * working version being copied will be ignored.  The {@link #linkNodes linkNodes} and
-   * {@link #unlinkNodes unlinkNodes} methods must be used to alter the connections 
+   * working version being copied will be ignored.  The {@link #link link} and
+   * {@link #unlink unlink} methods must be used to alter the connections 
    * between working node versions.
    * 
    * @param req 
@@ -424,6 +775,101 @@ class NodeMgr
       lock.writeLock().unlock();
     }      
   }
+  
+  /**
+   * Create or modify an existing link between the working versions. <P> 
+   * 
+   * @param req 
+   *   The node link request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to link the working versions.
+   */
+  public Object
+  link
+  (
+   NodeLinkReq req 
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The node link request cannot be (null)!");
+    
+    NodeID targetID = req.getTargetID();
+    String source   = req.getSourceLink().getName();
+    NodeID sourceID = new NodeID(targetID.getAuthor(), targetID.getView(), source);
+
+    String task = ("NodeMgr.link(): " + targetID + " to " + sourceID);
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
+    targetLock.writeLock().lock();
+    ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+    downstreamLock.writeLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
+
+      WorkingBundle bundle = getWorkingBundle(targetID);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("Only working versions of nodes can be linked!\n" + 
+	   "No working version (" + targetID + ") exists for the downstream node.");
+
+      /* add the link */ 
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.getSource(source) == null) 
+	checkForCircularity(source, targetID, new HashSet<String>(), new Stack<String>()); 
+      mod.setSource(req.getSourceLink());
+      
+      /* write the new working version to disk */ 
+      writeWorkingVersion(req.getTargetID(), mod);
+      
+      /* update the bundle */ 
+      bundle.uVersion          = mod;
+      bundle.uOverallNodeState = null;
+      bundle.uPropertyState    = null;
+
+      /* update the downstream links of the source node */ 
+      DownstreamLinks links = getDownstreamLinks(source); 
+      links.addWorking(sourceID, targetID.getName());
+
+      return new SuccessRsp(task, wait, start);
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      downstreamLock.writeLock().unlock();
+      targetLock.writeLock().unlock();
+    }    
+  }
+
+  /**
+   * Destroy an existing link between the working versions. <P> 
+   * 
+   * @param req 
+   *   The node unlink request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to unlink the working versions.
+   */
+  public Object
+  unlink
+  (
+   NodeUnlinkReq req 
+  ) 
+  {
+
+    return new FailureRsp("Not implemented yet!");
+
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -516,6 +962,75 @@ class NodeMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   T R A V E R S A L   H E L P E R S                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Recursively check upstream links for any references to the source node. <P> 
+   * 
+   * @param name
+   *   The next upstream node to check.
+   * 
+   * @param targetID
+   *   The unique working version identifier of the target node of the proposed link.
+   * 
+   * @param checked
+   *   The set of previously checked node names.
+   * 
+   * @param branch
+   *   The stack of nodes in this search branch.
+   * 
+   * @throws PipelineException 
+   *   If a potential link circularity is detected.
+   */ 
+  private void 
+  checkForCircularity
+  ( 
+   String name,
+   NodeID targetID, 
+   HashSet<String> checked, 
+   Stack<String> branch
+  ) 
+    throws PipelineException 
+  {
+    if(checked.contains(name)) 
+      return;
+
+    if(targetID.getName().equals(name)) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Potential link circularity detected: \n" + 
+		 "  " + targetID.getName() + " -> ");
+      for(String bname : branch) 
+	buf.append(bname + " -> ");
+      buf.append(targetID.getName());
+      throw new PipelineException(buf.toString());
+    }
+
+
+    NodeID id = new NodeID(targetID.getAuthor(), targetID.getView(), name);
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.readLock().lock();
+    try {
+      WorkingBundle bundle = getWorkingBundle(id);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("Only working versions of nodes can be linked!\n" + 
+	   "No working version (" + id + ") exists for the upstream node.");
+      
+      checked.add(name);
+      branch.push(name);
+      for(LinkMod link : bundle.uVersion.getSources()) 
+	checkForCircularity(link.getName(), targetID, checked, branch);
+      branch.pop();      
+    }
+    finally {
+      lock.readLock().unlock();
+    }   
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   L O C K   H E L P E R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
@@ -562,6 +1077,30 @@ class NodeMgr
       if(lock == null) { 
 	lock = new ReentrantReadWriteLock();
 	pWorkingLocks.put(id, lock);
+      }
+
+      return lock;
+    }
+  }
+
+  /** 
+   * Lookup the lock for the downstream links for the node with the given name.
+   * 
+   * @param name 
+   *   The fully resolved node name
+   */
+  private ReentrantReadWriteLock
+  getDownstreamLock
+  (
+   String name
+  ) 
+  {
+    synchronized(pDownstreamLocks) {
+      ReentrantReadWriteLock lock = pDownstreamLocks.get(name);
+
+      if(lock == null) { 
+	lock = new ReentrantReadWriteLock();
+	pDownstreamLocks.put(name, lock);
       }
 
       return lock;
@@ -644,8 +1183,180 @@ class NodeMgr
   }
 
 
+  /**
+   * Get the downstream links for a node.
+   * 
+   * This method assumes that a read/write lock for the downstream links has already been 
+   * aquired.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */ 
+  private DownstreamLinks
+  getDownstreamLinks
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+
+    DownstreamLinks links = null;
+    synchronized(pDownstream) {
+      links = pDownstream.get(name);
+    }
+
+    if(links != null) 
+      return links;
+      
+    links = readDownstreamLinks(name);
+    if(links == null) 
+      links = new DownstreamLinks(name);
+
+    synchronized(pDownstream) {
+      pDownstream.put(name, links);
+    }
+
+    return links;
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the checked-in version to disk. <P> 
+   * 
+   * This method assumes that the write lock for the checked-in version has already been 
+   * aquired.
+   * 
+   * @param vsn
+   *   The checked-in version to write.
+   * 
+   * @throws PipelineException
+   *   If unable to write the checkedi-in version file or create the needed parent 
+   *   directories.
+   */ 
+  private void 
+  writeCheckedInVersion
+  (
+   NodeVersion vsn
+  ) 
+    throws PipelineException
+  {
+    Logs.ops.finer("Writing Checked-In Version: " + 
+		   vsn.getName() + " (" + vsn.getVersionID() + ")");
+
+    File file = new File(pNodeDir, "repository/" + vsn.getName() + "/" + vsn.getVersionID());
+    File dir  = file.getParentFile();
+
+    try {
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create checked-in version directory (" + dir + ")!");
+      }
+      
+      if(file.exists()) 
+	throw new IOException
+	  ("Somehow a checked-in version file (" + file + ") already exists!");
+      
+      String glue = null;
+      try {
+	GlueEncoder ge = new GlueEncoder("NodeVersion", vsn);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	Logs.glu.severe
+	  ("Unable to generate a Glue format representation of checked-in " + 
+	   "version (" + vsn.getVersionID() + ") of node (" + vsn.getName() + ")!");
+	Logs.flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+      
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write checked-in version (" + vsn.getVersionID() + ") " + 
+	 "of node (" + vsn.getName() + ") to file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+
+  /**
+   * Read the checked-in version from disk. <P> 
+   * 
+   * This method assumes that the write lock for the checked-in version has already been 
+   * aquired.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param vid
+   *   The revision number of the checked-in version.
+   * 
+   * @return 
+   *   The checked-in version or <CODE>null</CODE> if no file exists.
+   * 
+   * @throws PipelineException
+   *   If the checked-in version files are corrupted in some manner.
+   */ 
+  private NodeVersion
+  readCheckedInVersion
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    Logs.ops.finer("Reading Checked-In Version: " + name + " (" + vid + ")");
+
+    File file = new File(pNodeDir, "repository/" + name + "/" + vid);
+    
+    try {
+      if(file.exists()) {
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoder(in);
+	  NodeVersion vsn = (NodeVersion) gd.getObject();
+	  in.close();
+	  
+	  return vsn;
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The checked-in version file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw ex;
+	}
+      }
+
+      return null;
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read checked-in version (" + vid + ") of node " + 
+	 "(" + name + ") from file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+      
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -671,6 +1382,8 @@ class NodeMgr
   ) 
     throws PipelineException
   {
+    Logs.ops.finer("Writing Working Version: " + id);
+
     File file   = new File(pNodeDir, id.getWorkingPath().getPath());
     File backup = new File(file + ".backup");
     File dir    = file.getParentFile();
@@ -746,6 +1459,8 @@ class NodeMgr
   ) 
     throws PipelineException
   {
+    Logs.ops.finer("Reading Working Version: " + id);
+
     File file   = new File(pNodeDir, id.getWorkingPath().getPath());
     File backup = new File(file + ".backup");
     
@@ -818,6 +1533,125 @@ class NodeMgr
   }
       
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the downstream links to disk. <P> 
+   * 
+   * This method assumes that the write lock for the downstream links has already been 
+   * aquired.
+   * 
+   * @param links
+   *   The downstream links to write.
+   * 
+   * @throws PipelineException
+   *   If unable to write the downstream links file or create the needed parent directories.
+   */ 
+  private void 
+  writeDownstreamLinks
+  (
+   DownstreamLinks links
+  ) 
+    throws PipelineException
+  {
+    Logs.ops.finer("Writing Downstream Links: " + links.getName());
+
+    File file = new File(pNodeDir, "downstream/" + links.getName());
+    File dir  = file.getParentFile();
+    
+    try {
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create downstream links directory (" + dir + ")!");
+      } 
+
+      String glue = null;
+      try {
+	GlueEncoder ge = new GlueEncoder("DownstreamLinks", links);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	Logs.glu.severe
+	  ("Unable to generate a Glue format representation of the downstream links " + 
+	   "for (" + links.getName() + ")!");
+	Logs.flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+      
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write downstream links for (" + links.getName() + ") " + 
+	 "to file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+  /**
+   * Read the downstream links from disk. <P> 
+   * 
+   * This method assumes that it was called from within a synchronized(pDownstream) block.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The downstream links or <CODE>null</CODE> if no downstream links file exists.
+   * 
+   * @throws PipelineException
+   *   If the downstream links file is corrupted in some manner.
+   */ 
+  private DownstreamLinks
+  readDownstreamLinks
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    Logs.ops.finer("Reading Downstream Links: " + name);
+
+    File file = new File(pNodeDir, "downstream/" + name);
+    
+    try {
+      if(file.exists()) {
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoder(in);
+	  DownstreamLinks links = (DownstreamLinks) gd.getObject();
+	  in.close();
+	  
+	  return links;
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The downstream links file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	
+	  throw ex;
+	}
+      }
+
+      return null;
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read the downstream links for (" + name + ") from file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -840,7 +1674,6 @@ class NodeMgr
     ) 
     {
       uVersion = mod;
-      uTargets = new TreeSet<String>();
     }
 
 
@@ -848,11 +1681,6 @@ class NodeMgr
      * The working version of a node. 
      */ 
     public NodeMod  uVersion;
-
-    /** 
-     * The fully resolved names of the downstream nodes connected to the working version.
-     */
-    public TreeSet<String>  uTargets;
 
 
     /*--------------------------------------------------------------------------------------*/
@@ -935,7 +1763,6 @@ class NodeMgr
     ) 
     {
       uVersion  = vsn;
-      uTargets  = new TreeMap<String,VersionID>(); 
       uComments = new TreeMap<Date,LogMessage>();
     }
 
@@ -943,12 +1770,6 @@ class NodeMgr
      * The checked-in version of a node.
      */ 
     public NodeVersion  uVersion;
-
-    /**
-     * The fully resolved names and revision numbers of the downstream node connections 
-     * for the checked-in version.
-     */ 
-    public TreeMap<String,VersionID>  uTargets; 
 
     /**
      * The change comments associated with the checked-in version indexed by 
@@ -978,6 +1799,7 @@ class NodeMgr
    * The fully resolved names of all nodes.
    */ 
   private HashSet<String> pNodeNames;
+
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
@@ -1013,5 +1835,21 @@ class NodeMgr
    */ 
   private HashMap<NodeID,WorkingBundle>  pWorkingBundles;
  
+
+  /**
+   * The per-node downstream links locks indexed by fully resolved node name. <P> 
+   * 
+   * These locks protect the cached downstream links of each node. The per-node read-lock 
+   * should be aquired for operations which will only access the downstream links of a node.
+   * The per-node write-lock should be aquired when adding or removing links for a node.
+   */
+  private HashMap<String,ReentrantReadWriteLock>  pDownstreamLocks;
+  
+  /**
+   * The table of downstream links indexed by fully resolved node name. <P> 
+   * 
+   * Access to this table should be protected by a synchronized block.
+   */
+  private HashMap<String,DownstreamLinks>  pDownstream;
 }
 
