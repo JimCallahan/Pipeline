@@ -1,4 +1,4 @@
-// $Id: LicenseKey.java,v 1.2 2004/07/24 18:14:33 jim Exp $
+// $Id: LicenseKey.java,v 1.3 2004/08/31 07:31:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -109,7 +109,7 @@ class LicenseKey
   public boolean
   aquire() 
   {
-    if((pUsed - pTotal) > 0) {
+    if((pTotal - pUsed) > 0) {
       pUsed++;
       return true;
     }
