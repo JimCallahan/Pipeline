@@ -1968,16 +1968,15 @@ selected.<br>
 </div>
 <span style="font-weight: normal;"><span style="font-weight: bold;">--exclude-latest</span>=<span
  style="font-style: italic;">integer<br>
-</span></span><><br>
-</>
-<div style="margin-left: 40px;"><>This opion is used to exclude the
+</span></span><br>
+<div style="margin-left: 40px;">This opion is used to exclude the
 latest (integer) number of checked-in versions of a node from those
 selected for offlining.&nbsp; By default, all versions are
 selected.&nbsp; However, some versions may be excluded due to the
-existance of working versions mentioned above.</><br>
-<></></div>
-<><br>
-</><span style="font-weight: normal;"><span style="font-weight: bold;">--min-archives</span>=<span
+existance of working versions mentioned above.<br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;">--min-archives</span>=<span
  style="font-style: italic;">integer<br>
 <br>
 </span></span>
