@@ -9,41 +9,41 @@ popd
 
 pushd i686-pc-linux-gnu-dbg
   $HOME/code/src/pipeline/configure \
-    --prefix=/base/pipeline \
-    --datadir=/usr/share/pipeline \
     --disable-opt \
     --with-compiler=GNU \
-    --with-code=$HOME/code \
-    --with-toolset=/base/toolset/toolsets \
+    --with-javamake=/usr/java/javamake/lib/javamake.jar \
+    --prefix=/base/pipeline \
+    --datadir=/usr/share/pipeline \
+    --with-prod=/base/prod \
+    --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
-    --with-pbs-server=linuxserv1 \
-    --with-javamake=/usr/java/javamake/lib/javamake.jar
+    --with-pbs-server=linuxserv1
 popd
 
 pushd i686-pc-linux-gnu-opt
   $HOME/code/src/pipeline/configure \
-    --prefix=/base/pipeline \
-    --datadir=/usr/share/pipeline \
     --enable-opt \
     --with-compiler=GNU \
-    --with-code=$HOME/code \
-    --with-toolset=/base/toolset/toolsets \
+    --with-javamake=/usr/java/javamake/lib/javamake.jar \
+    --prefix=/base/pipeline \
+    --datadir=/usr/share/pipeline \
+    --with-prod=/base/prod \
+    --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
-    --with-pbs-server=linuxserv1 \
-    --with-javamake=/usr/java/javamake/lib/javamake.jar
+    --with-pbs-server=linuxserv1 
 popd
 
 pushd i686-pc-linux-gnu-prof
   $HOME/code/src/pipeline/configure \
-    --prefix=/base/pipeline \
-    --datadir=/usr/share/pipeline \
     --enable-opt \
     --enable-prof \
     --with-compiler=GNU \
-    --with-code=$HOME/code \
-    --with-toolset=/base/toolset/toolsets \
+    --with-javamake=/usr/java/javamake/lib/javamake.jar \
+    --prefix=/base/pipeline \
+    --datadir=/usr/share/pipeline \
+    --with-prod=/base/prod \
+    --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
-    --with-pbs-server=linuxserv1 \
-    --with-javamake=/usr/java/javamake/lib/javamake.jar
+    --with-pbs-server=linuxserv1
 popd
 
