@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.43 2004/12/30 02:47:58 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.44 2004/12/31 07:41:15 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -943,36 +943,6 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {
-	new BoundedDoublePref
-	("The job group label size.",
-	 "JobLabelSize", "Label Size:", 0.1, 2.0, 0.65),
-
-	new BasePref(),
-
-	new BoundedDoublePref
-	("The width of a job.", 
-	 "JobSizeX", "Width:", 1.0, 4.0, 2.0),
-
-	new BoundedDoublePref
-	("The height of a job.", 
-	 "JobSizeY", "Height:", 0.5, 2.0, 0.7),
-
-	new BoundedDoublePref
-	("The distance between jobs.",
-	 "JobSpace", "Job Space:", 0.0, 0.3, 0.1), 	
-	
-	new BasePref(),
-	
-	new BoundedDoublePref
-	("The thickness of lines.", 
-	 "JobViewerLineThickness", "Line Thickness:", 0.25, 2.0, 1.0)
-      };
-
-      pPrefs.put("Panel|Job Viewer|Job|Appearance", prefs);
-    }
-
-    {
-      BasePref prefs[] = {
 	new HotKeyPref
 	("Update connected job details panels.",
 	 "JobDetails", "Details:",
@@ -1033,7 +1003,7 @@ class GenUserPrefsApp
 	
 	new BoundedDoublePref
 	("The distance between job groups.",
-	 "JobGroupSpace", "Group Space:", 2.25, 5.0, 2.75)
+	 "JobGroupSpace", "Group Space:", 0.0, 3.0, 1.0)
       };
 
       pPrefs.put("Panel|Job Viewer|Appearance", prefs);
@@ -1141,7 +1111,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.43 2004/12/30 02:47:58 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.44 2004/12/31 07:41:15 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1395,7 +1365,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.43 2004/12/30 02:47:58 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.44 2004/12/31 07:41:15 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
