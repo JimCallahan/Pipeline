@@ -631,7 +631,7 @@ AC_CONFIG_FILES([
   src/java/docs/Makefile
 
   src/java/docs/pipeline.html 
-  src/java/docs/pljob.html 
+  src/java/docs/plserver.html 
   src/java/docs/plui.html
 
   src/java/pipeline/Makefile
@@ -642,10 +642,8 @@ AC_CONFIG_FILES([
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
-  src/java/scripts/pljob
+  src/java/scripts/plserver
   src/java/scripts/plui
-  src/java/scripts/plui-prof
-  src/java/scripts/texture-tester
 
   src/java/share/Makefile
 
