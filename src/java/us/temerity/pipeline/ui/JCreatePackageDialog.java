@@ -1,4 +1,4 @@
-// $Id: JCreatePackageDialog.java,v 1.3 2004/10/20 07:23:45 jim Exp $
+// $Id: JCreatePackageDialog.java,v 1.4 2004/10/20 07:25:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -37,7 +37,6 @@ class JCreatePackageDialog
   )
   {
     super(owner, "New Package", "Add", false);
-    //setResizable(false);
   }
 
 

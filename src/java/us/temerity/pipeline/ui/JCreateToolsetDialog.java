@@ -1,4 +1,4 @@
-// $Id: JCreateToolsetDialog.java,v 1.2 2004/07/07 13:23:38 jim Exp $
+// $Id: JCreateToolsetDialog.java,v 1.3 2004/10/20 07:23:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -77,7 +77,6 @@ class JCreateToolsetDialog
     }  
 
     pConfirmButton.setEnabled(false);
-    setResizable(false);
   }
 
 
