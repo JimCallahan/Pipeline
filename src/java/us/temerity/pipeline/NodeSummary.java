@@ -1,4 +1,4 @@
-// $Id: NodeSummary.java,v 1.1 2004/04/15 00:10:27 jim Exp $
+// $Id: NodeSummary.java,v 1.2 2004/04/15 00:14:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -276,7 +276,7 @@ class NodeSummary
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 5489205652602559487L;
+  private static final long serialVersionUID = -7284411862218313003L;
 
 
 
