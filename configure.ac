@@ -1053,6 +1053,8 @@ AC_CONFIG_FILES([
   docs/images/node-icons/Makefile
   docs/images/browser-icons/Makefile
 
+  docs/javadoc/Makefile
+
   docs/man/Makefile
   docs/man/plfilemgr.src.html
   docs/man/pljobmgr.src.html
