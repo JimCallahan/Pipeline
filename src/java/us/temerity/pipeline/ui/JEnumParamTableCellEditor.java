@@ -1,4 +1,4 @@
-// $Id: JEnumParamTableCellEditor.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JEnumParamTableCellEditor.java,v 1.2 2004/09/08 18:38:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -76,8 +76,8 @@ class JEnumParamTableCellEditor
   )
   {
     pParam = (EnumActionParam) value;
-    pField.setValues(pParam.getTitles());
-    pField.setSelectedIndex(((Enum) pParam.getValue()).ordinal());
+    pField.setValues(pParam.getValues());
+    pField.setSelected((String) pParam.getValue()); 
     
     return pField;
   }
