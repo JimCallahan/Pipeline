@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.55 2004/10/09 20:00:41 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.56 2004/10/09 20:15:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -72,7 +72,7 @@ class JNodeViewerPanel
     {
       pRoots = new TreeMap<String,NodeStatus>();
 
-      pShowDownstream = true;
+      pShowDownstream = UserPrefs.getInstance().getShowDownstream();
       pLayoutPolicy   = LayoutPolicy.AutomaticExpand;
 
       pSelected = new HashMap<NodePath,ViewerNode>();
