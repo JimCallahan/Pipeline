@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.14 2004/09/27 04:54:35 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.15 2004/10/14 22:40:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2553,13 +2553,15 @@ class JQueueJobViewerPanel
 	}
 
 	/* wait for the editor to exit */ 
-	try {
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    master.showSubprocessFailureDialog("Editor Failure:", proc);
-	}
-	catch(InterruptedException ex) {
-	  master.showErrorDialog(ex);
+	if(proc != null) {
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+	  }
+	  catch(InterruptedException ex) {
+	    master.showErrorDialog(ex);
+	  }
 	}
       }
     }

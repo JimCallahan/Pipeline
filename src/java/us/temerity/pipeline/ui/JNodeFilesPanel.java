@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.14 2004/10/09 19:07:27 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.15 2004/10/14 22:40:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2107,13 +2107,15 @@ class JNodeFilesPanel
 	}
 
 	/* wait for the editor to exit */ 
-	try {
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    master.showSubprocessFailureDialog("Editor Failure:", proc);
-	}
-	catch(InterruptedException ex) {
-	  master.showErrorDialog(ex);
+	if(proc != null) {
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+	  }
+	  catch(InterruptedException ex) {
+	    master.showErrorDialog(ex);
+	  }
 	}
       }
     }
@@ -2230,13 +2232,15 @@ class JNodeFilesPanel
 	}
 
 	/* wait for the comparator to exit */ 
-	try {
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    master.showSubprocessFailureDialog("Comparator Failure:", proc);
-	}
-	catch(InterruptedException ex) {
-	  master.showErrorDialog(ex);
+	if(proc != null) {
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      master.showSubprocessFailureDialog("Comparator Failure:", proc);
+	  }
+	  catch(InterruptedException ex) {
+	    master.showErrorDialog(ex);
+	  }
 	}
       }
     }

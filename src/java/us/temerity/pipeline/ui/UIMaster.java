@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.47 2004/10/13 03:34:02 jim Exp $
+// $Id: UIMaster.java,v 1.48 2004/10/14 22:40:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3178,13 +3178,15 @@ class UIMaster
 	}
 
 	/* wait for the editor to exit */ 
-	try {
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    master.showSubprocessFailureDialog("Editor Failure:", proc);
-	}
-	catch(InterruptedException ex) {
-	  master.showErrorDialog(ex);
+	if(proc != null) {
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+	  }
+	  catch(InterruptedException ex) {
+	    master.showErrorDialog(ex);
+	  }
 	}
       }
     }
