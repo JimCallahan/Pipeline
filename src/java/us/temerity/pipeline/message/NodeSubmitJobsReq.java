@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsReq.java,v 1.1 2004/08/04 01:43:45 jim Exp $
+// $Id: NodeSubmitJobsReq.java,v 1.2 2004/08/22 22:04:34 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -41,7 +41,7 @@ class NodeSubmitJobsReq
   NodeSubmitJobsReq
   (
    NodeID id, 
-   int[] indices   
+   TreeSet<Integer> indices
   )
     throws PipelineException
   { 
@@ -72,7 +72,7 @@ class NodeSubmitJobsReq
    * Gets the file sequence indices of the files to regenerate or <CODE>null</CODE> to 
    * regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
    */
-  public int[]
+  public TreeSet<Integer>
   getFileIndices() 
   {
     return pFileIndices; 
@@ -101,7 +101,7 @@ class NodeSubmitJobsReq
    * The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
    * regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
    */
-  private int[]  pFileIndices; 
+  private TreeSet<Integer>  pFileIndices; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: NodeKillJobsReq.java,v 1.1 2004/08/04 01:43:45 jim Exp $
+// $Id: NodeKillJobsReq.java,v 1.2 2004/08/22 22:04:34 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,24 +28,15 @@ class NodeKillJobsReq
   /** 
    * Constructs a new request.
    * 
-   * @param author 
-   *   The name of the user which owns the jobs.
-   * 
    * @param jobIDs
    *   The unique job identifiers.
    */
   public
   NodeKillJobsReq
   (
-   String author, 
-   long[] jobIDs
+   TreeSet<Long> jobIDs
   )
   { 
-    if(author == null) 
-      throw new IllegalArgumentException
-	("The owner of the jobs cannot be (null)!");
-    pAuthor = author;
-
     if(jobIDs == null)
       throw new IllegalArgumentException
 	("The job IDs cannot be (null)!");
@@ -59,21 +50,12 @@ class NodeKillJobsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the name of the user which owns the jobs.
+   * Get the unique job identifiers.
    */
-  public String
-  getAuthor() 
-  {
-    return pAuthor; 
-  }
-
-  /**
-   * Gets the unique job identifiers.
-   */
-  public long[]
+  public TreeSet<Long>
   getJobIDs() 
   {
-    return pJobIDs; 
+    return pJobIDs;
   }
 
   
@@ -91,14 +73,9 @@ class NodeKillJobsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the user which owns the jobs.
-   */ 
-  private String  pAuthor; 
-
-  /**
    * The unique job identifiers.
    */ 
-  private long[]  pJobIDs;
+  private TreeSet<Long>  pJobIDs;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsRsp.java,v 1.1 2004/08/04 01:43:45 jim Exp $
+// $Id: NodeSubmitJobsRsp.java,v 1.2 2004/08/22 22:04:34 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,7 +46,8 @@ class NodeSubmitJobsRsp
       throw new IllegalArgumentException("The job group cannot be (null)!");
     pJobGroup = group;
 
-    Logs.net.finest("MasterMgr.submitJobs(): " + group.getGroupID() + ":\n  " + getTimer());
+    Logs.net.finest("MasterMgr.submitJobs(): Group [" + group.getGroupID() + "]:\n  " + 
+		    getTimer());
     if(Logs.net.isLoggable(Level.FINEST))
       Logs.flush();
   }

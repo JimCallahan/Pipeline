@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.5 2004/08/01 15:42:26 jim Exp $
+// $Id: QueueRequest.java,v 1.6 2004/08/22 22:04:34 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -110,6 +110,49 @@ enum QueueRequest
    */
   GetHostResourceSamples, 
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance {@link QueueGetJobStatesReq QueueGetJobStatesReq} is next.
+   */
+  GetJobStates, 
+
+  /**
+   * An instance {@link QueueGetJobReq QueueGetJobReq} is next.
+   */
+  GetJob, 
+
+  /**
+   * An instance {@link QueueGetJobInfoReq QueueGetJobInfoReq} is next.
+   */
+  GetJobInfo, 
+
+  /**
+   * An instance {@link QueueGetJobGroupReq QueueGetJobGroupReq} is next.
+   */
+  GetJobGroup, 
+
+  /**
+   * Get all of the existing the job groups.
+   */
+  GetJobGroups, 
+
+  /**
+   * An instance {@link QueueSubmitJobReq QueueSubmitJobReq} is next.
+   */
+  SubmitJob, 
+
+  /**
+   * An instance {@link QueueGroupJobsReq QueueGroupJobsReq} is next.
+   */
+  GroupJobs, 
+
+  /**
+   * An instance {@link QueueKillJobsReq QueueKillJobsReq} is next.
+   */
+  KillJobs, 
+
 
   /*----------------------------------------------------------------------------------------*/
 
