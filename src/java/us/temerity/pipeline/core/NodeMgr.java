@@ -1,8 +1,10 @@
-// $Id: NodeMgr.java,v 1.3 2004/03/25 02:14:45 jim Exp $
+// $Id: NodeMgr.java,v 1.4 2004/03/26 04:40:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.message.*;
 
 import java.io.*;
 import java.util.*;
@@ -148,7 +150,10 @@ class NodeMgr
 
   /*-- CONTRUCTION HELPERS -----------------------------------------------------------------*/
 
-  private synchronized void 
+  /**
+   * Initialize a new instance.
+   */ 
+  private void 
   init
   (
    File dir
@@ -158,557 +163,145 @@ class NodeMgr
       throw new IllegalArgumentException("The root node directory cannot be (null)!");
     pNodeDir = dir;
 
+    pMakeDirLock      = new Object();
+    pNodeNames        = new HashSet<String>();
     pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
     pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
+    pWorkingLocks     = new HashMap<NodeID,ReentrantReadWriteLock>();
+    pWorkingBundles   = new HashMap<NodeID,WorkingBundle>(); 
 
-    pWorkingLocks   = new HashMap<NodeID,ReentrantReadWriteLock>();
-    pWorkingBundles = new HashMap<NodeID,WorkingBundle>(); 
+    makeRootDirs();
+    initNodeNames();
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   W O R K I N G   V E R S I O N S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the working version of the node.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   *
-   * @throws PipelineException
-   *   If unable to retrieve the working version.
-   */
-  public NodeMod
-  getNodeMod
-  ( 
-   String author, 
-   String view, 
-   String name
-  ) 
-    throws PipelineException
-  {	 
-    NodeID id = new NodeID(author, view, name);
-    WorkingBundle bundle = getWorkingBundle(id);
-      
-    ReentrantReadWriteLock lock = getWorkingLock(id);
-    lock.readLock().lock();
-    try {
-      return new NodeMod(bundle.uVersion);      
-    }
-    finally {
-      lock.readLock().unlock();
-    }  
-  }  
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Set the node properties of the working version of the node. <P> 
-   * 
-   * Node properties include: <BR>
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
-   *   The toolset environment under which editors and actions are run. <BR>
-   *   The name of the editor plugin used to edit the data files associated with the node.<BR>
-   *   The regeneration action and its single and per-dependency parameters. <BR>
-   *   The job requirements. <BR>
-   *   The IgnoreOverflow and IsSerial flags. <BR>
-   *   The job batch size. <P> 
-   * </DIV> 
-   * 
-   * Note that any existing upstream dependency relationship information contain in the
-   * <CODE>mod</CODE> argument will be ignored.  The {@link #linkNodes linkNodes} and
-   * {@link #unlinkNodes unlinkNodes} methods must be used to alter the connections 
-   * between working node versions.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param mod 
-   *   The working version containing the node property information to copy.
-   * 
-   * @throws PipelineException
-   *   If unable to set the node properties.
-   */
-  public void 
-  modifyNodeProperties
-  ( 
-   String author, 
-   String view, 
-   NodeMod mod   
-  ) 
-    throws PipelineException
+  
+  /**
+   * Make sure that the root node directories exist.
+   */ 
+  private void 
+  makeRootDirs() 
   {
-    NodeID id = new NodeID(author, view, mod.getName());
-    WorkingBundle bundle = getWorkingBundle(id);
+    if(!pNodeDir.isDirectory()) 
+      throw new IllegalArgumentException
+	("The root node directory (" + pNodeDir + " does not exist!");
+    
+    ArrayList<File> dirs = new ArrayList<File>();
+    dirs.add(new File(pNodeDir, "repository"));
+    dirs.add(new File(pNodeDir, "working"));
+    dirs.add(new File(pNodeDir, "comments"));
+    dirs.add(new File(pNodeDir, "downstream"));
 
-    ReentrantReadWriteLock lock = getWorkingLock(id);
-    lock.writeLock().lock();
-    try {
-      if(bundle.uVersion.setProperties(mod)) {
-	bundle.uOverallNodeState = null;
-	bundle.uPropertyState    = null;
+    synchronized(pMakeDirLock) {
+      for(File dir : dirs) {
+	if(!dir.isDirectory())
+	  if(!dir.mkdir()) 
+	    throw new IllegalArgumentException
+	      ("Unable to create the directory (" + dir + ")!");
       }
     }
-    finally {
-      lock.writeLock().unlock();
-    }  
-  } 
-
+  }
   
-  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create (or modify an existing) all-to-all dependency connection between the working 
-   * versions of the given nodes under the given view owned by the given user. 
-   * 
-   * @param author 
-   *   The name of the user which owns the working versions.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param target 
-   *   The fully resolved name of the downstream node to connect.
-   * 
-   * @param source 
-   *   The fully resolved name of the upstream node to connect.
-   * 
-   * @throws PipelineException
-   *   If unable to create (or modify) the connection.
+   * Build the initial node name table by searching the file system for node related files.
    */
-  public void 
-  linkNodes
-  (
-   String author, 
-   String view, 
-   String target, 
-   String source
-  ) 
-    throws PipelineException
+  private void 
+  initNodeNames()
   {
-      
-    throw new PipelineException("Not implemented yet.");
-     
-  } 
-   
+    {
+      File dir = new File(pNodeDir, "repository");
+      initCheckedInNodeNames(dir.getPath(), dir); 
+    }
+
+    {
+      File dir = new File(pNodeDir, "working");
+      File authors[] = dir.listFiles(); 
+      int ak;
+      for(ak=0; ak<authors.length; ak++) {
+	assert(authors[ak].isDirectory());
+	
+	File views[] = authors[ak].listFiles();  
+	int vk;
+	for(vk=0; vk<views.length; vk++) {
+	  assert(views[vk].isDirectory());
+	  initWorkingNodeNames(views[vk].getPath(), views[vk]);
+	}
+      }
+    }
+
+    // DEBUG 
+    {
+      System.out.print("Initial Node Names:\n");
+      for(String name : pNodeNames) 
+	System.out.print("  " + name + "\n");
+      System.out.print("\n");
+    }
+    // DEBUG
+  }
+
   /**
-   * Create (or modify an existing) one-to-one dependency connection between the working 
-   * versions of the given nodes under the given view owned by the given user.
-   * 
-   * @param author 
-   *   The name of the user which owns the working versions.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param target 
-   *   The fully resolved name of the downstream node to connect.
-   * 
-   * @param source 
-   *   The fully resolved name of the upstream node to connect.
-   * 
-   * @param offset 
-   *   The frame index offset of source file indices from target file indices.
-   * 
-   * @throws PipelineException
-   *   If unable to create (or modify) the connection.
-   */
-  public void 
-  linkNodes
+   * Recursively search the checked-in node directories for node names.
+   */ 
+  private void 
+  initCheckedInNodeNames
   (
-   String author, 
-   String view, 
-   String target, 
-   String source, 
-   int offset
+   String prefix, 
+   File dir
   ) 
-    throws PipelineException
   {
+    boolean allDirs  = true;
+    boolean allFiles = true;
 
-    throw new PipelineException("Not implemented yet.");
+    File files[] = dir.listFiles(); 
 
-  } 
-   
+    {
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	if(files[wk].isDirectory()) 
+	  allFiles = false;
+	else if(files[wk].isFile()) 
+	  allDirs = false;
+	else
+	  assert(false);
+      }
+    }
+
+    if(allFiles) {
+      String path = dir.getPath();
+      pNodeNames.add(path.substring(prefix.length()));
+    }
+    else if(allDirs) {
+      int wk;
+      for(wk=0; wk<files.length; wk++) 
+	initCheckedInNodeNames(prefix, files[wk]);
+    }
+    else {
+      assert(false);
+    } 
+  }
   
   /**
-   * Destroy an existing dependency connection between the working versions of the 
-   * given nodes under the given view owned by the given user.
-   * 
-   * @param author 
-   *   The name of the user which owns the working versions.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param target 
-   *   The fully resolved name of the downstream node to disconnect.
-   * 
-   * @param source 
-   *   The fully resolved name of the upstream node to disconnect.
-   * 
-   * @throws PipelineException
-   *   If unable to destroy the connection.
+   * Recursively search the working node directories for node names.
    */
-  public void 
-  unlinkNodes
+  private void 
+  initWorkingNodeNames
   (
-   String author, 
-   String view, 
-   String target, 
-   String source
-  )
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
-
-  } 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Disables modification of the working version of a node under the given view owned 
-   * by the given user. <P>  
-   * 
-   * This operation can only be performed on nodes for which the working version is 
-   * identical to the checked-in version upon which it is based.  However, it is not 
-   * required that the working version is based on the latest checked-in version. <P> 
-   * 
-   * This operation makes all node properties and dependency (upstream node connection) 
-   * information read-only.  In addition, all of the working files associated with this
-   * node are replaced with symbolic links to the respective read-only checked-in files 
-   * upon which the working files are based.  Note that these working and checked-in files 
-   * must have been identical to each other prior to being replaced in order for this 
-   * operation to succeed. <P>
-   * 
-   * The result of this operation is that a particular working version and its associated
-   * files will remain in exactly the same state until the node is later unfrozen.  This 
-   * can be desirable for nodes which have been checked-in and whose files will be accessed 
-   * by regeneration actions which rely on these files remaining unaltered. <P> 
-   * 
-   * Nodes must be unfrozen using the {@link #unfreeze unfreeze} method before any other 
-   * node operations which would result in changes to the working version or associated 
-   * files can be performed on the node.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version being frozen.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @throws PipelineException
-   *   If unable to sucessfully complete the freeze operation.
-   */ 
-  public void 
-  freeze
-  ( 
-   String author, 
-   String view, 
-   String name
-  )
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
-      
-  } 
-
-  /** 
-   * Enables modification of a working version of a node under the given view owned 
-   * by the given user. <P>  
-   * 
-   * This operation can only be performed on nodes with working versions which have
-   * previously been frozen using the {@link #freeze freeze} method. <P> 
-   * 
-   * This operation makes all node properties and dependency (upstream node connection) 
-   * information modifiable once again.  In addition, the symbolic links previous created 
-   * for the working version when the node was frozen are replaced by regular file copies 
-   * of the checked-in files which were the targets of these symbolic links.  This allows
-   * the working files to once again be modified by regeneration actions or manual 
-   * user editing. 
-   * 
-   * @param author 
-   *   The name of the user which owns the working version being unfrozen.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @throws PipelineException
-   *   If unable to sucessfully complete the unfreeze operation.
-   */ 
-  public void 
-  unfreeze
-  ( 
-   String author, 
-   String view, 
-   String name
-  )
-    throws PipelineException
-  {
-
-    throw new PipelineException("Not implemented yet.");
-
-  } 
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K E D - I N   V E R S I O N S                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the revision numbers of the checked-in versions of the given node.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @return
-   *   The revision numbers in ascending order.
-   */
-  public TreeSet<VersionID>
-  getRevisionNumbers
-  ( 
-   String name
+   String prefix, 
+   File dir
   ) 
-    throws PipelineException
   {
-    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
-
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      return new TreeSet(table.keySet());
+    File files[] = dir.listFiles(); 
+    int wk;
+    for(wk=0; wk<files.length; wk++) {
+      if(files[wk].isDirectory()) 
+	initWorkingNodeNames(prefix, files[wk]);
+      else {
+	String path = files[wk].getPath();
+	if(!path.endsWith(".backup"))
+	  pNodeNames.add(path.substring(prefix.length()));
+      }
     }
-    finally {
-      lock.readLock().unlock();
-    }
-  } 
-
-  /** 
-   * Get the revision number of the latest checked-in version of the given node.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @return
-   *   The revision numbers in ascending order.
-   */
-  public VersionID
-  getLatestRevisionNumber
-  ( 
-   String name
-  )
-    throws PipelineException
-  {
-    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
-
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      return table.lastKey();
-    }
-    finally {
-      lock.readLock().unlock();
-    }
-  } 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the checked-in version of the node with the given revision number.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in version.
-   */
-  public NodeVersion
-  getNodeVersion
-  ( 
-   String name, 
-   VersionID vid
-  ) 
-    throws PipelineException
-  {
-    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
-
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      CheckedInBundle bundle = table.get(vid);
-      if(bundle == null) 
-	throw new PipelineException
- 	  ("No version (" + vid + ") exist for node (" + name + ")!");
-
-      return bundle.uVersion;
-    }
-    finally {
-      lock.readLock().unlock();
-    }
-  } 
-  
-  /** 
-   * Get the latest checked-in version of the node.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   */
-  public NodeVersion
-  getLatestNodeVersion
-  ( 
-   String name
-  ) 
-    throws PipelineException
-  {
-    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
-
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      CheckedInBundle bundle = table.get(table.lastKey());
-      if(bundle == null) 
-	throw new PipelineException
-	  ("No checked-in versions exist for node (" + name + ")!");
-
-      return bundle.uVersion;
-    }
-    finally {
-      lock.readLock().unlock();
-    }
-  } 
-
-   
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the change comment messages associated a specific checked-in version of the given 
-   * node.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in version.
-   * 
-   * @return 
-   *   The list of messages in order of message timestamp.
-   */
-  public ArrayList<LogMessage>
-  getChangeComments
-  ( 
-   String name, 
-   VersionID vid
-  ) 
-    throws PipelineException
-  {
-    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
-
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      CheckedInBundle bundle = table.get(vid);
-      if(bundle == null) 
-	throw new PipelineException
- 	  ("No version (" + vid + ") exist for node (" + name + ")!");
-
-      return new ArrayList(bundle.uComments.values());
-    }
-    finally {
-      lock.readLock().unlock();
-    }
-  } 
-   
-  /** 
-   * Add a new change comment messages to a checked-in version of the given node.
-   * 
-   * @param author 
-   *   The name of the user submitting the message.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in version.
-   * 
-   * @param msg 
-   *   The change comment message text.
-   */
-  public void
-  addChangeComment
-  ( 
-   String author, 
-   String name, 
-   VersionID vid, 
-   String msg
-  )
-    throws PipelineException
-  {
-   
-    throw new PipelineException("Not implemented yet.");
-
-  } 
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   S T A T U S                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the current status of a node under the given view owned by the given
-   * user. <P> 
-   * 
-   * The returned <CODE>NodeStatus</CODE> object will contain references to the 
-   * <CODE>NodeStatus</CODE> of all upstream and downstream trees of nodes connected to 
-   * the given node.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   */ 
-  public NodeStatus
-  status
-  ( 
-   String author, 
-   String view, 
-   String name   
-  ) 
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
-
-  } 
-    
-  
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -716,271 +309,116 @@ class NodeMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Register an initial working version of a node under the given view owned by the 
-   * given user. <P> 
+   * Register an initial working version of a node. <P> 
    * 
-   * The <CODE>mod</CODE> argument must have a node name which does not already exist and
-   * does not match any of the path components of any existing node.  <P> 
-   * 
-   * The working version must be an inital version.  In other words, the 
-   * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
-   * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
-   * not contain any upstream dependency relationship information.
-   *  
-   * @param author 
-   *   The name of the user which will own the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param mod 
-   *   The initial working version to register.
+   * @param req 
+   *   The node register request.
    *
-   * @throws PipelineException
-   *   If unable to register the given node.
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
    */
-  public void 
+  public Object
   register
   (
-   String author,
-   String view, 
-   NodeMod mod 
+   NodeRegisterReq req
   ) 
-    throws PipelineException
   {
-    
-    throw new PipelineException("Not implemented yet.");
+    if(req == null) 
+      return new FailureRsp("The node register request cannot be (null)!");
 
-  } 
+    /* node identifiers */ 
+    String name = req.getNodeMod().getName();
 
-  /**
-   * Revoke a previously registered but never checked-in node under the given view owned 
-   * by the given user. <P> 
-   * 
-   * This operation is provided to allow users to remove nodes which they have previously 
-   * registered, but which they no longer want to keep or share with other users.  In 
-   * addition to removing the working version of the node, this operation also deletes any
-   * files associated with the nodes and should therefore be used with caution.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   *
-   * @throws PipelineException 
-   *   If unable to revoke the given node.
-   */ 
-  public void 
-  revoke
-  ( 
-   String author,
-   String view, 
-   String name
-  ) 
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
-
-  } 
-
-  /**
-   * Rename a previously registered but never checked-in node under the given view owned 
-   * by the given user. <P> 
-   * 
-   * This operation allows a user to change the name of a previously registered node before 
-   * it is checked-in.  In addition to changing the name of the working version, this 
-   * operation also renames the files which make up the primary file sequence associated 
-   * with the node to match the new node name.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param oldName 
-   *   The current fully resolved node name.
-   * 
-   * @param newName 
-   *   The new fully resolved node name.
-   * 
-   * @throws PipelineException 
-   *   If unable to rename the given node or its associated primary files.
-   */ 
-  public void 
-  rename
-  ( 
-   String author,
-   String view, 
-   String oldName, 
-   String newName
-  ) 
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
-
-  } 
-
-  /** 
-   * Create a new revision of a node based on a working version under the given view owned 
-   * by the given user. <P> 
-   * 
-   * In addition to creating a new node version, this method will make a copy of any  
-   * modified data files associated with the working version and place them in the 
-   * file repository.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param msg 
-   *   The check-in log message text.
-   * 
-   * @param level 
-   *   The component level of the revision number of the previous latest version to 
-   *   increment in order to generate the revision number for the new version.
-   * 
-   * @throws PipelineException
-   *   If unable to sucessfully complete the check-in operation.
-   */  
-  public void
-  checkIn
-  (
-   String author,
-   String view, 
-   String name, 
-   String msg, 
-   VersionID.Level level
-  )
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
-
-  }  
-
-  /** 
-   * Create a new working version (or update an existing working version) under the given 
-   * view owned by the given user for the named node based on an existing checked-in 
-   * version. <P> 
-   * 
-   * @param author 
-   *   The name of the user which owns the working version being created (or updated).
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param vid 
-   *   The revision number of version to check-out or <CODE>null</CODE> for the latest 
-   *   checked-in version.
-   * 
-   * @throws PipelineException
-   *   If unable to sucessfully complete the check-out operation.
-   */  
-  public void
-  checkOut
-  (
-   String author, 
-   String view, 
-   String name, 
-   VersionID vid
-  )
-    throws PipelineException
-  {
-
-    throw new PipelineException("Not implemented yet.");
+    /* reserve the node name, 
+         after verifying that it doesn't conflict with existing nodes */ 
+    synchronized(pNodeNames) {
+      if(pNodeNames.contains(name))
+	return new FailureRsp
+	  ("Cannot register node (" + name + ") because a node with that name " + 
+	   "already exists!");
       
-  }  
+      File path = new File(name);
+      File parent = null;
+      while((parent = path.getParentFile()) != null) {
+	if(pNodeNames.contains(parent.getPath())) 
+	  return new FailureRsp
+	   ("Cannot register node (" + name + ") because its node path contains " +
+	    "an existing node (" + parent + ")!");
 
-  /** 
-   * Remove the working version of the named node under the given view owned by the 
-   * given user. <P> 
-   * 
-   * In addition, this operation also removes any working area files (or links) associated 
-   * with the released node. <P> 
-   * 
-   * Unless the <CODE>override</CODE> argument is set to <CODE>true</CODE>, this operation 
-   * will throw an exception if the working version of the node does not have an 
-   * <CODE>OverallNodeState</CODE> of {@link OverallNodeState#Identical Identical}.  This is 
-   * behavior is designed to prevent accidental loss of node information and associated data 
-   * files. Therefore, setting the <CODE>override</CODE> argument to <CODE>false</CODE> is 
-   * strongly recommended. <P> 
-   * 
-   * This operation should be performed on nodes once they are no longer being used
-   * to free up node database and file system resources.  
-   * 
-   * @param author 
-   *   The name of the user which owns the working version being released.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param override 
-   *   Ignore all safety precautions and release the node regardless of its state?
-   * 
-   * @throws PipelineException
-   *   If unable to sucessfully complete the release operation.
-   */ 
-  public void 
-  release
-  ( 
-   String author, 
-   String view, 
-   String name, 
-   boolean override 
-  )
-    throws PipelineException
-  {
+	path = parent;
+      }
+
+      pNodeNames.add(name);
+    }
     
-    throw new PipelineException("Not implemented yet.");
+    String task = ("NodeMgr.register(): " + req.getNodeID());
 
-  } 
-   
-  /** 
-   * Deletes all working versions for all views and users as well as all checked-in 
-   * versions of the given node. <P> 
-   * 
-   * In addition, all files associated with the node both in user working areas 
-   * and in the file repository will also be deleted. This operation is provided to 
-   * allow system administrators to destroy badly named nodes which never should have 
-   * been checked-in in the first place. <P> 
-   * 
-   * Because of the extreemly dangerous and destructive nature of this operation, only 
-   * users with priviledged status should be allowed to execute this method. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @throws PipelineException
-   *   If unable to sucessfully destroy the node.
-   */ 
-  public void 
-  destroy
-  ( 
-   String name
-  )
-    throws PipelineException
-  {
-    
-    throw new PipelineException("Not implemented yet.");
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+    lock.writeLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
 
+      /* write the new working version to disk */ 
+      try {
+	File file   = new File(pNodeDir, req.getNodeID().getWorkingPath().getPath());
+	File backup = new File(file + ".backup");
+	File dir    = file.getParentFile();
+	
+	synchronized(pMakeDirLock) {
+	  if(!dir.isDirectory()) 
+	    if(!dir.mkdirs()) 
+	      throw new IOException
+		("Unable to create working version directory (" + dir + ")!");
+	}
+	
+	if(backup.exists())
+	  if(!backup.delete()) 
+	    throw new IOException
+	      ("Unable to remove the backup working version file (" + backup + ")!");
+	
+	if(file.exists()) 
+	  if(!file.renameTo(backup)) 
+	    throw new IOException
+	      ("Unable to backup the current working version file (" + file + ") to the " + 
+	       "the file (" + backup + ")!");
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  GlueEncoder ge = new GlueEncoder("NodeMod", req.getNodeMod());
+	  out.write(ge.getText());
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(Exception ex) { 
+	/* remove failed node name */ 
+	synchronized(pNodeNames) {
+	  pNodeNames.remove(name);
+	}
+
+	throw new PipelineException("INTERNAL ERROR:\n" + ex.getMessage());
+      }
+
+      /* create a working bundle for the new working version */ 
+      synchronized(pWorkingBundles) {
+	pWorkingBundles.put(req.getNodeID(), new WorkingBundle(req.getNodeMod()));
+      }
+
+      return new SuccessRsp(task, wait, start);
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      lock.writeLock().unlock();
+    }  
   } 
 
 
@@ -1086,10 +524,16 @@ class NodeMgr
     /* lookup the bundle */ 
     synchronized(pWorkingBundles) {
       WorkingBundle bundle = pWorkingBundles.get(id);
-      if(bundle == null)
+
+      if(bundle == null) {
+	
+	// check for file... 
+
+
 	throw new PipelineException
 	  ("No working version of node (" + id.getName() + ") exists under the view (" + 
 	   id.getView() + ") owned by user (" + id.getAuthor() + ")!");
+      }
 
       return bundle;
     }
@@ -1242,10 +686,20 @@ class NodeMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The file system directory creation lock.
+   */
+  private Object pMakeDirLock;
+ 
+  /**
    * The root node directory.
    */ 
   private File  pNodeDir;
 
+
+  /**
+   * The fully resolved names of all nodes.
+   */ 
+  private HashSet<String> pNodeNames;
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
