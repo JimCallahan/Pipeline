@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.6 2004/07/24 18:14:11 jim Exp $
+// $Id: ScriptAction.java,v 1.7 2004/08/22 22:06:10 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -206,40 +206,23 @@ class ScriptAction
       interp = ifile.getPath();
     }
 
-    /* create a temporary executable script file */ 
-    File script = null;
-    try {
-      /* create temporary directory */ 
-      File sdir = new File(getTempDir(), "pipeline");
-      sdir.mkdir();
-      
-      /* generate script filename */ 
-      File node = new File(agenda.getNodeID().getName());
-      script = File.createTempFile("ScriptAction-" + agenda.getJobID(), ".script", sdir);
-
-      /* write script contents */ 
-      {
-	FileWriter out = new FileWriter(script);
+    /* write a temporary executable script file */ 
+    File script = createTemp(agenda, 0755, "script");
+    try {      
+      FileWriter out = new FileWriter(script);
 	
-	String header = ("#!" + interp + "\n\n");
-	out.write(header);
+      String header = ("#!" + interp + "\n\n");
+      out.write(header);
       
-	String body = (String) getSingleParamValue("ScriptText");
-	out.write(body);
-	
-	out.close();
-      }
-
-      /* schedule deletion of the temporary script upon exit of the calling program */ 
-      cleanupLater(script);
+      String body = (String) getSingleParamValue("ScriptText");
+      out.write(body);
       
-      /* make script executable */ 
-      chmod(0777, script);
+      out.close();
     }
-    catch (Exception ex) {
+    catch(IOException ex) {
       throw new PipelineException
-	("Unable to create temporary script file (" + script.getPath() + ") for Job (" + 
-	 agenda.getJobID() + ")!\n" +
+	("Unable to write temporary script file (" + script + ") for Job " + 
+	 "(" + agenda.getJobID() + ")!\n" +
 	 ex.getMessage());
     }
 
