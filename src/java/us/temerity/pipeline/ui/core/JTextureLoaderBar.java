@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.5 2005/01/22 06:10:10 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.6 2005/01/31 23:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -182,6 +182,11 @@ class JTextureLoaderBar
 	pTextures.add("ExternalJob-Finished-" + mode);
 	pTextures.add("ExternalJob-Paused-" + mode);
       }
+
+      pTextures.add("Cpu");
+      pTextures.add("Mem");
+      pTextures.add("Disk");
+      pTextures.add("Job");
     }
 
     pInc = 1.0 / ((double) (20 + pTextures.size()*3 + pIcon21s.size()));

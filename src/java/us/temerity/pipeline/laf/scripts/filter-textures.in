@@ -380,6 +380,38 @@ do
   done
 done
 
+for name in Cpu Mem Disk Job
+do
+  simg=`printf "%s/%s.sgi" $src $name`
+  dir=`echo $dest/$name`
+
+  if [ ! -d $dir ]
+  then 
+    mkdir -p $dir
+  fi
+
+  filter=0
+  size=128
+  while [ $size -gt 1 ]
+  do
+    size=$(($size / 2)) 
+
+    dimg=$dir/texture.$size.png
+    if [ $simg -nt $dimg ] 
+    then
+      filter=1
+    fi
+  done
+
+  if [ $filter -eq 1 ]
+  then 
+    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
+    anynewer=1
+  fi
+
+  frame=$(($frame + 1))
+done
+
 if [ $anynewer -eq 1 ]
 then 
   echo '(gimp-quit 1)' >> $tmpfile
