@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.4 2005/01/30 08:50:30 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.5 2005/01/30 23:56:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -207,6 +207,12 @@ class JResourceUsageHistoryDialog
 
       setContentPane(root);
       pack();
+
+      {
+	Rectangle bounds = getGraphicsConfiguration().getBounds();
+	setLocation(bounds.x + bounds.width/2 - getWidth()/2, 
+		    bounds.y + bounds.height/2 - getHeight()/2);		    
+      }
     }
   }
     
