@@ -1,7 +1,7 @@
 #!/bin/sh
 
-#rm -rf i686-pc-linux-gnu-dbg i686-pc-linux-gnu-opt
-#mkdir  i686-pc-linux-gnu-dbg i686-pc-linux-gnu-opt
+rm -rf i686-pc-linux-gnu-dbg i686-pc-linux-gnu-opt
+mkdir  i686-pc-linux-gnu-dbg i686-pc-linux-gnu-opt
 
 pushd $HOME/code2/src/pipeline
   sh autogen.sh
