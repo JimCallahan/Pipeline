@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.9 2004/05/03 04:28:25 jim Exp $
+// $Id: JManagerPanel.java,v 1.10 2004/05/04 11:01:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E R   P A N E L                                                              */
@@ -39,10 +40,6 @@ class JManagerPanel
   JManagerPanel()
   {
     super();
-
-    pAuthor = PackageInfo.sUser;
-    pView   = "default";
-
     initUI();
   }
 
@@ -190,6 +187,29 @@ class JManagerPanel
       pPopup.add(item);  
     }
 
+
+    /* group popup menu */ 
+    {
+      JMenuItem item;
+      
+      pGroupPopup = new JPopupMenu();  
+      pGroupItems = new JMenuItem[10];
+
+      int wk;
+      for(wk=0; wk<10; wk++) {
+	item = new JMenuItem();
+	pGroupItems[wk] = item;
+
+	item.setIcon(sGroupIcons[wk]);
+	item.setDisabledIcon(sGroupDisabledIcons[wk]);
+	item.setActionCommand("group-" + wk);
+	item.addActionListener(this);
+
+	pGroupPopup.add(item);  
+      }
+    }
+    
+
     /* panel title bar */ 
     {
       JPanel panel = new JPanel();
@@ -198,37 +218,27 @@ class JManagerPanel
       panel.setName("PanelBar");
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
 
-      panel.setMinimumSize(new Dimension(230, 29));
+      panel.setMinimumSize(new Dimension(214, 29));
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-      panel.setPreferredSize(new Dimension(230, 29));
+      panel.setPreferredSize(new Dimension(214, 29));
 
       {
-	JMenuAnchor anchor = new JMenuAnchor(this);
-	pPopup.addPopupMenuListener(anchor);
+	PopupMenuAnchor anchor = new PopupMenuAnchor(this);
 	panel.add(anchor);
       }
 
-      panel.add(Box.createRigidArea(new Dimension(16, 0)));
+      panel.add(Box.createRigidArea(new Dimension(8, 0)));
 
       {
-	JToggleButton btn = new JToggleButton();
-	btn.setName("TargetButton");
-
-	Dimension size = new Dimension(15, 19);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
-	
-	btn.setActionCommand("target-panel");
-        btn.addActionListener(this);
-
-	panel.add(btn);
+	GroupMenuAnchor anchor = new GroupMenuAnchor();
+	pGroupMenuAnchor = anchor;
+	panel.add(anchor);	
       }
 
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
-	JTextField field = new JTextField(pAuthor + " | " + pView);
+	JTextField field = new JTextField();
 	pOwnerViewField = field;
 
 	Dimension size = new Dimension(120, 19);
@@ -245,18 +255,18 @@ class JManagerPanel
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
-	JLabel label = new JLabel(sLockedLightIcon);
+	JLabel label = new JLabel();
 	pLockedLight = label;
-	
-	Dimension size = new Dimension(16, 19);
+
+	Dimension size = new Dimension(19, 19);
 	label.setMinimumSize(size);
 	label.setMaximumSize(size);
 	label.setPreferredSize(size);
-	
+
 	panel.add(label);
       }
 
-      panel.add(Box.createRigidArea(new Dimension(16, 0)));
+      panel.add(Box.createRigidArea(new Dimension(8, 0)));
 
       {
 	JButton btn = new JButton();
@@ -271,7 +281,7 @@ class JManagerPanel
         btn.addActionListener(this);
 
 	panel.add(btn);
-      }
+      } 
     }
 
     UIMaster.getInstance().addManager(this);
@@ -280,83 +290,7 @@ class JManagerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Is the contents of the panel read-only.
-   */ 
-  public boolean
-  isLocked() 
-  {
-    return pIsLocked;
-  }
-
-  /**
-   * Change the locked state of the panel.
-   */ 
-  public void 
-  setLocked
-  ( 
-   boolean tf
-  ) 
-  {
-    pIsLocked = tf;
-    pLockedLight.setIcon(pIsLocked ? sLockedLightOnIcon : sLockedLightIcon);
-  }
-
-
-  /** 
-   * Get the name of user which owns the working area view.
-   */ 
-  public String
-  getAuthor() 
-  {
-    return pAuthor; 
-  }
-
-  /** 
-   * Get the name of the working area view.
-   */
-  public String
-  getView()
-  {
-    return pView;
-  }
-
-  /**
-   * Copy the author and view from the given manager panel.
-   */ 
-  public void 
-  setAuthorView
-  (
-   JManagerPanel mgr
-  ) 
-  {
-    setAuthorView(mgr.getAuthor(), mgr.getView());
-  }
-
-  /**
-   * Set the author and view.
-   */ 
-  public void 
-  setAuthorView
-  (
-   String author, 
-   String view 
-  ) 
-  {
-    if((author != null) && (view != null)) {
-      pAuthor = author;
-      pView   = view;
-      
-      pOwnerViewField.setText(pAuthor + " | " + pView);
-      
-      setLocked(!pAuthor.equals(PackageInfo.sUser));
-    }
-  }
-
-
+  /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -376,13 +310,20 @@ class JManagerPanel
 
     removeContents();
 
-    if(!((child instanceof JSplitPanel) ||
-	 (child instanceof JTabbedPane))) {
+    if((child instanceof JSplitPanel) || (child instanceof JTabbedPane)) {
+      pTopLevelPanel = null;
+    }
+    else if(child instanceof JTopLevelPanel) {
+      pTopLevelPanel = (JTopLevelPanel) child;
+      pTopLevelPanel.setManager(this);
+
+      updateTitlePanel();
       add(pTitlePanel);
     }
-    
-    // .. set pSelectorCombo
-    
+    else {
+      assert(false);
+    }
+
     add(child);
     
     validate();
@@ -408,31 +349,19 @@ class JManagerPanel
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Show the popup menu.
+   * Update the components which make up the title panel to reflect the current state of 
+   * the top level panel contents.
    */ 
   public void 
-  showPopup
-  (
-   MouseEvent e
-  )
+  updateTitlePanel()
   {
-    /* only enable layout changes if there is enough space */ 
-    {
-      pAddTabItem.setEnabled(getHeight() > 29+20);
-      
-      boolean horz = (getWidth() > (230*2 + 11));
-      pAddLeftItem.setEnabled(horz);
-      pAddRightItem.setEnabled(horz);
-      
-      boolean vert = (getHeight() > (29*2 + 10));
-      pAddAboveItem.setEnabled(vert);
-      pAddBelowItem.setEnabled(vert);
-    }
+    if(pTopLevelPanel == null) 
+      return; 
 
-    pPopup.show(e.getComponent(), e.getX(), e.getY()); 
+    pGroupMenuAnchor.setIcon(sGroupIcons[pTopLevelPanel.getGroupID()]);
+    pOwnerViewField.setText(pTopLevelPanel.getAuthor() + " | " + pTopLevelPanel.getView());
+    pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
   }
 
 
@@ -444,9 +373,8 @@ class JManagerPanel
   public void 
   disableOps() 
   {
-
-    // ...
-
+    if(pTopLevelPanel != null) 
+      pTopLevelPanel.disableOps();
   }
 
   /**
@@ -455,9 +383,8 @@ class JManagerPanel
   public void 
   enableOps() 
   {
-
-    // ...
-
+    if(pTopLevelPanel != null) 
+      pTopLevelPanel.enableOps();
   }
 
 
@@ -480,7 +407,17 @@ class JManagerPanel
     System.out.print("Action: " + e.getActionCommand() + "\n");
 
     /* dispatch event */ 
-    if(e.getActionCommand().equals("add-left"))
+    if(e.getActionCommand().equals("node-browser"))
+      doNodeBrowserPanel();
+
+    // ...
+
+    else if(e.getActionCommand().equals("none"))
+      doEmptyPanel();
+
+    
+    /* layout */ 
+    else if(e.getActionCommand().equals("add-left"))
       doAddLeft();
     else if(e.getActionCommand().equals("add-right"))
       doAddRight();
@@ -493,10 +430,13 @@ class JManagerPanel
     else if(e.getActionCommand().equals("close-panel"))
       doClosePanel();
 
-    // ...
-
+    /* owner|view */
     else if(e.getActionCommand().equals("change-owner-view"))
       doChangeOwnerView();
+    
+    /* group */ 
+    else if(e.getActionCommand().startsWith("group-")) 
+      doGroup(e.getActionCommand());
   }
 
 
@@ -506,6 +446,31 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Change the contents of this panel to a JNodeBrowserPanel. 
+   */ 
+  private void 
+  doNodeBrowserPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JNodeBrowserPanel(dead));
+    dead.setGroupID(0);
+  }
+
+  /**
+   * Change the contents of this panel to a JEmptyPanel. 
+   */ 
+  private void 
+  doEmptyPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JEmptyPanel(dead));
+    dead.setGroupID(0);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
    * Split the panel horizontally adding a new empty panel on the left.
    */ 
   private void 
@@ -514,15 +479,13 @@ class JManagerPanel
     JManagerPanel left = null;
     {
       left = new JManagerPanel();
-      left.setContents(new JEmptyPanel());
-      left.setAuthorView(this);
+      left.setContents(new JEmptyPanel(pTopLevelPanel));
     }
 
     JManagerPanel right = null;
     {    
       right = new JManagerPanel();
       right.setContents(removeContents());
-      right.setAuthorView(this);
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -538,14 +501,12 @@ class JManagerPanel
     {
       left = new JManagerPanel();
       left.setContents(removeContents());
-      left.setAuthorView(this);
     }
 
     JManagerPanel right = null;
     {    
       right = new JManagerPanel();
-      right.setContents(new JEmptyPanel());
-      right.setAuthorView(this);
+      right.setContents(new JEmptyPanel(pTopLevelPanel));
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -560,15 +521,13 @@ class JManagerPanel
     JManagerPanel above = null;
     {
       above = new JManagerPanel();
-      above.setContents(new JEmptyPanel());
-      above.setAuthorView(this);
+      above.setContents(new JEmptyPanel(pTopLevelPanel));
     }
 
     JManagerPanel below = null;
     {    
       below = new JManagerPanel();
       below.setContents(removeContents());
-      below.setAuthorView(this);
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -584,14 +543,12 @@ class JManagerPanel
     {
       above = new JManagerPanel();
       above.setContents(removeContents());
-      above.setAuthorView(this);
     }
 
     JManagerPanel below = null;
     {    
       below = new JManagerPanel();
-      below.setContents(new JEmptyPanel());
-      below.setAuthorView(this);
+      below.setContents(new JEmptyPanel(pTopLevelPanel));
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -615,8 +572,7 @@ class JManagerPanel
       JManagerPanel select = (JManagerPanel) tab.getSelectedComponent();
 
       JManagerPanel mgr = new JManagerPanel();
-      mgr.setContents(new JEmptyPanel());
-      mgr.setAuthorView(select);
+      mgr.setContents(new JEmptyPanel(pTopLevelPanel));
 
       tab.addTab(null, sTabIcon, mgr);
     }
@@ -627,7 +583,6 @@ class JManagerPanel
       if(comp != null) {
 	JManagerPanel mgr = new JManagerPanel();
 	mgr.setContents(comp);
-	mgr.setAuthorView(this);
 
 	JTabbedPane tab = new JTabbedPane();
 	tab.addTab(null, sTabIcon, mgr);
@@ -684,8 +639,8 @@ class JManagerPanel
       JManagerPanel liveMgr = (JManagerPanel) live;
       JManagerPanel grandpa = (JManagerPanel) sparent;
       grandpa.setContents(liveMgr.removeContents());
-      grandpa.setAuthorView(liveMgr);
 
+      pTopLevelPanel.setGroupID(0);
       UIMaster.getInstance().removeManager(liveMgr);
       UIMaster.getInstance().removeManager(this);
     }
@@ -698,10 +653,10 @@ class JManagerPanel
       /* if empty, remove the tabbed pane as well */ 
       if(tab.getTabCount() == 0) {
 	JManagerPanel grandpa = (JManagerPanel) tab.getParent();
-	grandpa.setContents(new JEmptyPanel());
-	grandpa.setAuthorView(this);
+	grandpa.setContents(new JEmptyPanel(pTopLevelPanel));
       }
 
+      pTopLevelPanel.setGroupID(0);
       UIMaster.getInstance().removeManager(this);
     }
 
@@ -724,7 +679,7 @@ class JManagerPanel
 
     TreeMap<String,TreeSet<String>> working = null;
     try {
-      working = master.getWorkingAreas(); 
+      working = master.getNodeMgrClient().getWorkingAreas(); 
       
       // DEBUG 
       {
@@ -742,12 +697,193 @@ class JManagerPanel
       return;
     }
 
-    JOwnerViewDialog dialog = new JOwnerViewDialog(pAuthor, pView, working);
+    JOwnerViewDialog dialog = 
+      new JOwnerViewDialog(pTopLevelPanel.getAuthor(), pTopLevelPanel.getView(), working);
     dialog.setVisible(true);
     
-    if(dialog.wasConfirmed())
-      setAuthorView(dialog.getAuthor(), dialog.getView());
+    if(dialog.wasConfirmed()) {
+      String author = dialog.getAuthor();
+      String view   = dialog.getView();
+      if((author != null) && (view != null)) {
+	pTopLevelPanel.setAuthorView(author, view);
+	updateTitlePanel();
+      }
+    }	
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Change the panel group.
+   */ 
+  private void 
+  doGroup
+  (
+   String command
+  )
+  {
+    int groupID = Integer.valueOf(command.substring(6, 7));
+    pTopLevelPanel.setGroupID(groupID);
+    pGroupMenuAnchor.setIcon(sGroupIcons[groupID]);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L   C L A S S E S                                                       */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A anchor icon which shows the title bar popup menu when pressed.
+   */ 
+  private 
+  class PopupMenuAnchor
+    extends JLabel
+    implements MouseListener, PopupMenuListener
+  {
+    PopupMenuAnchor
+    (
+     JPanel panel
+    )
+    {
+      super();
+
+      setIcon(sMenuAnchorIcon);
+
+      Dimension size = new Dimension(14, 19);
+      setMinimumSize(size);
+      setMaximumSize(size);
+      setPreferredSize(size);
+      
+      addMouseListener(this);
+      pPopup.addPopupMenuListener(this);
+
+      pPanel = panel;
+    }
+
+
+    /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+
+    public void 
+    mouseClicked(MouseEvent e) {}
+    
+    public void 
+    mouseEntered(MouseEvent e) {}
+
+    public void 
+    mouseExited(MouseEvent e) {}
+
+    public void 
+    mousePressed
+    (
+     MouseEvent e
+    )
+    {
+      setIcon(sMenuAnchorPressedIcon);
+
+      /* only enable layout changes if there is enough space */ 
+      {
+	pAddTabItem.setEnabled(pPanel.getHeight() > 29+20);
+	
+	boolean horz = (pPanel.getWidth() > (214*2 + 11));
+	pAddLeftItem.setEnabled(horz);
+	pAddRightItem.setEnabled(horz);
+	
+	boolean vert = (pPanel.getHeight() > (29*2 + 10));
+	pAddAboveItem.setEnabled(vert);
+	pAddBelowItem.setEnabled(vert);
+      }
+      
+      pPopup.show(e.getComponent(), e.getX(), e.getY()); 
+    }
+
+    public void 
+    mouseReleased(MouseEvent e) {}
+
+    
+    /*-- POPUP MENU LISTENER METHODS -------------------------------------------------------*/
+
+    public void 	
+    popupMenuCanceled(PopupMenuEvent e) {} 
+
+    public void 	
+    popupMenuWillBecomeInvisible
+    (
+     PopupMenuEvent e
+    )
+    {
+      setIcon(sMenuAnchorIcon);
+    }
+
+    public void
+    popupMenuWillBecomeVisible(PopupMenuEvent e) {} 
+
+
+    /*-- INTERNALS -------------------------------------------------------------------------*/
+
+    private static final long serialVersionUID = 2138270471079189817L;;
+
+    private JPanel  pPanel;
+  }
+
+
+  /**
+   * A anchor icon which shows the group popup menu when pressed.
+   */ 
+  private 
+  class GroupMenuAnchor
+    extends JLabel
+    implements MouseListener
+  {
+    GroupMenuAnchor()
+    {
+      super();
+
+      setIcon(sGroupIcons[0]);
+
+      Dimension size = new Dimension(19, 19);
+      setMinimumSize(size);
+      setMaximumSize(size);
+      setPreferredSize(size);
+      
+      addMouseListener(this);
+    }
+
+
+    /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+
+    public void 
+    mouseClicked(MouseEvent e) {}
+    
+    public void 
+    mouseEntered(MouseEvent e) {}
+
+    public void 
+    mouseExited(MouseEvent e) {}
+
+    public void 
+    mousePressed
+    (
+     MouseEvent e
+    )
+    {
+      int wk;
+      for(wk=1; wk<10; wk++) 
+	pGroupItems[wk].setEnabled(pTopLevelPanel.isGroupUnused(wk));
+      
+      pGroupPopup.show(e.getComponent(), e.getX(), e.getY()); 
+    }
+
+    public void 
+    mouseReleased(MouseEvent e) {}
+
+
+    /*-- INTERNALS -------------------------------------------------------------------------*/
+
+    private static final long serialVersionUID = -4700928181653009212L; 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -757,8 +893,55 @@ class JManagerPanel
   private static final long serialVersionUID = -3791561567661137439L;
 
 
-  static private Icon sTabIcon = 
+  private static Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
+
+
+  private static Icon sMenuAnchorIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("MenuAnchorIcon.png"));
+
+  private static Icon sMenuAnchorPressedIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("MenuAnchorPressedIcon.png"));
+
+
+  private static Icon sGroupIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9.png"))
+  };
+
+  private static Icon sGroupSelectedIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Selected.png"))
+  };
+
+  private static Icon sGroupDisabledIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Disabled.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Disabled.png"))
+  };
 
 
   private static Icon sLockedLightIcon = 
@@ -785,7 +968,7 @@ class JManagerPanel
   private JPopupMenu  pPopup; 
 
   /**
-   * The popup menu items.
+   * The panel layout popup menu items.
    */ 
   private JMenuItem  pNodeBrowserItem;
   private JMenuItem  pNodeViewerItem;
@@ -809,29 +992,36 @@ class JManagerPanel
 
 
   /**
-   * The combo box used to select the panel type.
+   * The group popup menu.
+   */ 
+  private JPopupMenu  pGroupPopup; 
+
+  /**
+   * The group popup menu items.
+   */  
+  private JMenuItem[]  pGroupItems;
+
+  /** 
+   * The anchor label for the group popup menu.
+   */
+  private GroupMenuAnchor  pGroupMenuAnchor;
+
+
+  /**
+   * Displays the owning author and name of the current working area view.
    */ 
   private JTextField  pOwnerViewField;
 
-  /** 
-   * The name of user which owns the working area view associated with this panel.
-   */
-  private String  pAuthor;
-
-  /** 
-   * The name of the working area view associated with this panel.
-   */
-  private String  pView;
-
-
   /**
-   * The light indicating that the contents of the panel is read-only.
+   * Indicates whether the contents of the panel is read-only.
    */ 
   private JLabel  pLockedLight;
-  
-  /**
-   * Whether the contents of the panel is read-only.
-   */   
-  private boolean  pIsLocked;
 
+
+  /**
+   * The top level panel contents 
+   * or <CODE>null</CODE> if the contents is not a top level panel.
+   */ 
+  private JTopLevelPanel  pTopLevelPanel;
+  
 }

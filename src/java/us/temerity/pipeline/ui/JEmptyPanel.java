@@ -1,4 +1,4 @@
-// $Id: JEmptyPanel.java,v 1.2 2004/04/30 11:24:29 jim Exp $
+// $Id: JEmptyPanel.java,v 1.3 2004/05/04 11:01:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -15,20 +15,49 @@ import javax.swing.*;
  */ 
 public 
 class JEmptyPanel
-  extends JPanel
+  extends JTopLevelPanel
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct an empty panel.
+   * Construct a new panel with the default working area view.
    */
+  public 
   JEmptyPanel()
   {
-    super(new BorderLayout());
+    super();
+    initUI();
+  }
+
+  /**
+   * Construct a new panel with a working area view identical to the given panel.
+   */
+  public 
+  JEmptyPanel
+  (
+   JTopLevelPanel panel
+  )
+  {
+    super(panel);
+    initUI();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the common user interface components.
+   */ 
+  private void 
+  initUI()
+  {
+    setLayout(new BorderLayout());
     setName("Empty");
     setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+    add(new Label("Empty Panel"));
   }
 
 

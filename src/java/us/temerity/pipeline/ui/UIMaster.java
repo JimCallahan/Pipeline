@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.2 2004/05/02 12:14:17 jim Exp $
+// $Id: UIMaster.java,v 1.3 2004/05/04 11:01:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -46,6 +46,7 @@ class UIMaster
     pNodeMgrClient = new NodeMgrClient(hostname, port);
 
     pManagerPanels = new LinkedList<JManagerPanel>();
+    pNodeBrowsers  = new JNodeBrowserPanel[10];
 
     InitUITask task = new InitUITask();
     SwingUtilities.invokeLater(task);
@@ -92,6 +93,19 @@ class UIMaster
     return sMaster;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the network connection to <B>plmaster</B>(1).
+   */ 
+  public NodeMgrClient
+  getNodeMgrClient() 
+  {
+    return pNodeMgrClient;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -115,12 +129,10 @@ class UIMaster
    JManagerPanel mgr
   ) 
   {
-    synchronized(pManagerPanels) {
-      assert(!pManagerPanels.contains(mgr));
-      pManagerPanels.add(mgr);
-
-      System.out.print("ManagerPanels = " + pManagerPanels.size() + "\n");
-    }
+    assert(!pManagerPanels.contains(mgr));
+    pManagerPanels.add(mgr);
+    
+    System.out.print("ManagerPanels = " + pManagerPanels.size() + "\n");
   }
   
   /**
@@ -132,36 +144,57 @@ class UIMaster
    JManagerPanel mgr
   ) 
   {
-    synchronized(pManagerPanels) {
-      assert(pManagerPanels.contains(mgr));
-      pManagerPanels.remove(mgr);
-
-      System.out.print("ManagerPanels = " + pManagerPanels.size() + "\n");
-    }
+    assert(pManagerPanels.contains(mgr));
+    pManagerPanels.remove(mgr);
+    
+    System.out.print("ManagerPanels = " + pManagerPanels.size() + "\n");
   }
   
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S E R V E R    C O M M U N I C A T I O N                                             */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the table of current working areas.
+   * Assign the given node browser to the given group.
    */ 
-  public TreeMap<String,TreeSet<String>>
-  getWorkingAreas() 
-    throws PipelineException
+  public void 
+  assignNodeBrowserGroup
+  (
+   JNodeBrowserPanel panel, 
+   int groupID
+  ) 
   {
-    disableOps();
-    try {
-      return pNodeMgrClient.getWorkingAreas();
-    }
-    finally {
-      enableOps();
-    }
+    assert((groupID > 0) && (groupID < 10));
+    assert(pNodeBrowsers[groupID] == null);
+    pNodeBrowsers[groupID] = panel;
   }
 
+  /**
+   * Make the given node browser group available.
+   */ 
+  public void 
+  releaseNodeBrowserGroup 
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    assert(pNodeBrowsers[groupID] != null);
+    pNodeBrowsers[groupID] = null;
+  }
+
+  /**
+   * Is the given node browser group currently unused.
+   */ 
+  public boolean
+  isNodeBrowserGroupUnused
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    return (pNodeBrowsers[groupID] == null);      
+  }
+   
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -185,13 +218,13 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E   H E L P E R S                                          */
+  /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
    * Disable new client/server operations until the current operation is complete.
    */ 
-  private void 
+  public void 
   disableOps()
   {
     disableOps("");
@@ -203,7 +236,7 @@ class UIMaster
    * @param msg
    *   The progress message.
    */ 
-  private void 
+  public void 
   disableOps
   (
    String msg
@@ -220,7 +253,7 @@ class UIMaster
   /**
    * Reenable client/server operations.
    */ 
-  private void 
+  public void 
   enableOps()
   {
     enableOps("");
@@ -232,7 +265,7 @@ class UIMaster
    * @param msg
    *   The completion message.
    */ 
-  private void 
+  public void 
   enableOps
   (
    String msg
@@ -245,6 +278,7 @@ class UIMaster
     pProgressLight.setIcon(sProgressLightIcon);
   }
 
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -424,5 +458,13 @@ class UIMaster
    * The current set of manager panels.
    */ 
   private LinkedList<JManagerPanel>  pManagerPanels;
+
+  /**
+   * The table of active node browsers indexed by assigned group: [1-9]. <P> 
+   * 
+   * If no node browser is assigned to the group, the element will be <CODE>null</CODE>. 
+   * The (0) element is always <CODE>null</CODE>, because the (0) group ID means unassinged.
+   */ 
+  private JNodeBrowserPanel[]  pNodeBrowsers;
 
 }
