@@ -9,10 +9,11 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/041005
+plprofile=$plsrcdir/plconfig/customers/rhinofx/041020
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
     --disable-opt \
+    --enable-attach \
     --with-compiler=GNU \
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=rhinofx \
