@@ -1,4 +1,4 @@
-// $Id: JoglTestApp.java,v 1.1 2004/12/11 13:41:32 jim Exp $
+// $Id: JoglTestApp.java,v 1.2 2004/12/17 08:15:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -54,7 +54,7 @@ class JoglTestApp
   {
     try {
       JFrame frame = new JFrame("jogltest");
-      frame.setSize(512, 512);
+      frame.setSize(1024, 1024);
       
       {
 	JPanel panel = new JPanel();
@@ -76,6 +76,7 @@ class JoglTestApp
 	  JoglTestRenderer renderer = new JoglTestRenderer(canvas);
 	  canvas.addGLEventListener(renderer);
 	  canvas.addMouseListener(renderer);	
+	  canvas.addMouseMotionListener(renderer);	
 	}
 
 	frame.setContentPane(panel);

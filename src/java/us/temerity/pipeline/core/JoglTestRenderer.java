@@ -1,15 +1,16 @@
-// $Id: JoglTestRenderer.java,v 1.1 2004/12/11 13:41:32 jim Exp $
+// $Id: JoglTestRenderer.java,v 1.2 2004/12/17 08:15:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.ui.jogl.TextureMgr;
+import us.temerity.pipeline.ui.TextureMgr;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*; 
+import java.awt.geom.*; 
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
@@ -29,7 +30,7 @@ import net.java.games.jogl.*;
  */ 
 public class 
 JoglTestRenderer 
-  implements GLEventListener, MouseListener
+  implements GLEventListener, MouseListener, MouseMotionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,7 +45,12 @@ JoglTestRenderer
    GLCanvas canvas
   ) 
   {
-    pCanvas = canvas;
+    pCanvas   = canvas;
+    pGeometry = -1;
+
+    pPanSpeed  = 0.415;
+    pZoomSpeed = 0.1;
+    pMaxFactor = 100.0;
   }
 
 
@@ -68,8 +74,12 @@ JoglTestRenderer
     drawable.setGL(new DebugGL(drawable.getGL()));
 //     drawable.setGL(new TraceGL(drawable.getGL(), System.err));
 
-    GL gl   = drawable.getGL();
+    GL  gl  = drawable.getGL();
     GLU glu = drawable.getGLU();
+
+    /* initial camera location */ 
+    pCameraPos  = new Point2D.Double(0.0, 0.0);
+    pCameraDist = 20.0;
 
     /* global OpenGL state */ 
     {
@@ -78,12 +88,11 @@ JoglTestRenderer
       gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    Logs.tex.setLevel(Level.FINEST);
+    Logs.tex.setLevel(Level.FINE);
    
     /* load the textures */ 
     try {
-      us.temerity.pipeline.ui.jogl.TextureMgr mgr = 
-	us.temerity.pipeline.ui.jogl.TextureMgr.getInstance();
+      TextureMgr mgr = TextureMgr.getInstance();
       
       for(SelectionMode mode : SelectionMode.all()) {
 	for(OverallQueueState qstate : OverallQueueState.all()) {
@@ -91,10 +100,10 @@ JoglTestRenderer
 	    mgr.verifyTexture(gl, nstate + "-" + qstate + "-" + mode);
 	  }
 	}
-
-	mgr.registerFont("CharterBTRoman", new CharterBTRomanFontGeometry());
-	mgr.verifyFontTextures(gl, "CharterBTRoman");
       }
+
+      mgr.registerFont("CharterBTRoman", new CharterBTRomanFontGeometry());
+      mgr.verifyFontTextures(gl, "CharterBTRoman");
     }
     catch(IOException ex) {
       Logs.tex.severe("Unable to load textures!\n" + 
@@ -103,91 +112,6 @@ JoglTestRenderer
       System.exit(1);
     }
 
-
-//     /* load a texture */ 
-//     try {
-//       pTextures = new int[1];
-//       gl.glGenTextures(pTextures.length, pTextures);
-      
-      
-//      String path = ("textures/ModifiedLinks-Finished-Normal/texture.64.png");
-//      URL url = LookAndFeelLoader.class.getResource(path);
-//      if(url == null) 
-// 	throw new IOException("Unable to find: " + path);
-//      BufferedImage bi = ImageIO.read(url);
-  
-//      switch(bi.getType()) {
-//      case BufferedImage.TYPE_CUSTOM:
-// 	{
-// 	  byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-// 	  ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
-// 	  buf.order(ByteOrder.nativeOrder());
-// 	  buf.put(data, 0, data.length);
-// 	  buf.rewind();
-
-// 	  gl.glBindTexture(GL.GL_TEXTURE_2D, pTextures[0]);
-// 	  glu.gluBuild2DMipmaps(GL.GL_TEXTURE_2D, GL.GL_RGBA, bi.getWidth(), bi.getHeight(), 
-// 				GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
-
-// 	}
-// 	break;
-	
-//      default:
-// 	throw new IOException
-// 	  ("Texture image (" + path + ") has an unsupported format (" + bi.getType() + ")!");
-//      }
-
-
-//        {
-//  	gl.glBindTexture(GL.GL_TEXTURE_2D, pTextures[0]);
-	
-//  	String name = "ModifiedLinks-Finished-Normal";
-//  	Logs.tex.info("Loading Texture: " + name );
-//  	Logs.flush();
-	
-//  	int level, size; 
-//  	for(level=0, size=64; size>=1; level++, size/=2) {
-//  	  Logs.tex.info("Loading MipMap: " + size + "x" + size);
-//  	  Logs.flush();
-	  
-//  	  String path = ("textures/" + name + "/texture." + size + ".png");
-//  	  URL url = LookAndFeelLoader.class.getResource(path);
-//  	  if(url == null) 
-//  	    throw new IOException("Unable to find: " + path);
-
-//  	  BufferedImage bi = ImageIO.read(url);
-//  	  if((bi.getWidth() != size) || (bi.getHeight() != size)) 
-//  	    throw new IOException
-//  	      ("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
-//  	       "texture (" + path + ") does not match the expected size " + 
-//  	       "(" + size + "x" + size + ")!");
-//  	  if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
-//  	    throw new IOException
-//  	      ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
-//  	       "not supported!");	    
-	  
-//  	  byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-//  	  ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
-//  	  buf.order(ByteOrder.nativeOrder());
-//  	  buf.put(data, 0, data.length);
-//  	  buf.rewind();
-	  
-//  	  gl.glTexImage2D(GL.GL_TEXTURE_2D, level, GL.GL_RGBA, size, size, 
-//  			  0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
-//  	}
-	  
-//  	gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
-//  	gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
-	
-//  	gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
-//  			   GL.GL_LINEAR_MIPMAP_LINEAR);
-//  	gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-//        }
-//     }   
-//     catch(IOException ex) {
-//        Logs.tex.severe(ex.getMessage());
-//     }
-    
     Logs.flush();
   }
  
@@ -200,47 +124,82 @@ JoglTestRenderer
    GLDrawable drawable
   )
   {
-    GL gl = drawable.getGL();
-    Random rand = new Random((new Date()).getTime());
+    GL  gl  = drawable.getGL();
+    GLU glu = drawable.getGLU();
 
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-    gl.glLoadIdentity();
-
-    Integer texture = null;
-    try {
-      us.temerity.pipeline.ui.jogl.TextureMgr mgr = 
-	us.temerity.pipeline.ui.jogl.TextureMgr.getInstance();
-      texture = mgr.getTexture(gl, "ModifiedLinks-Stale-Normal");
-    }
-    catch(IOException ex) {
-      Logs.tex.severe(ex.getMessage());
-    }
     
-    gl.glEnable(GL.GL_TEXTURE_2D); 
+    /* set camera position */ 
     {
-      gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-
-      gl.glBegin(GL.GL_QUADS);
-      {
-	float x = rand.nextFloat()*2.0f - 1.0f;  
-	float y = rand.nextFloat()*2.0f - 1.0f;  
-	float s = 0.25f + rand.nextFloat()*0.25f;
-	
-	gl.glTexCoord2f(0.0f, 1.0f);
-	gl.glVertex3f(x, y, 0.0f);
-	
-	gl.glTexCoord2f(1.0f, 1.0f);
-	gl.glVertex3f(x+s, y, 0.0f);
-	
-	gl.glTexCoord2f(1.0f, 0.0f);	
-	gl.glVertex3f(x+s, y+s, 0.0f);
-	
-	gl.glTexCoord2f(0.0f, 0.0f);
-	gl.glVertex3f(x, y+s, 0.0f);
-      }
-      gl.glEnd();
+       gl.glMatrixMode(GL.GL_MODELVIEW);
+       gl.glLoadIdentity();
+       gl.glTranslated(pCameraPos.x, pCameraPos.y, -pCameraDist);
     }
-    gl.glDisable(GL.GL_TEXTURE_2D); 
+
+    /* draw geometry */ 
+    if(pGeometry != -1) {
+      gl.glCallList(pGeometry);
+    }
+    else {
+      pGeometry = gl.glGenLists(1);
+      gl.glNewList(pGeometry, GL.GL_COMPILE_AND_EXECUTE);
+
+      gl.glEnable(GL.GL_TEXTURE_2D); 
+      {
+	Random rand = new Random((new Date()).getTime());
+	int cnt = 0;
+
+	for(SelectionMode mode : SelectionMode.all()) {
+	  for(OverallQueueState qstate : OverallQueueState.all()) {
+	    for(OverallNodeState nstate : OverallNodeState.all()) {
+	      
+	      Integer texture = null;
+	      try {
+		TextureMgr mgr = TextureMgr.getInstance();
+		texture = mgr.getTexture(gl, nstate + "-" + qstate + "-" + mode);
+	      }
+	      catch(IOException ex) {
+		Logs.tex.severe(ex.getMessage());
+	      }
+	      
+	      gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
+	      
+	      int wk;
+	      for(wk=0; wk<150; wk++) {
+		gl.glBegin(GL.GL_QUADS);
+		{
+		  float x = (rand.nextFloat() - 0.5f) * 250.0f; 
+		  float y = (rand.nextFloat() - 0.5f) * 250.0f; 
+		  float s = 1.0f;
+		  float z = 0.0f;
+		  
+		  gl.glTexCoord2f(0.0f, 1.0f);
+		  gl.glVertex3f(x, y, z);
+		  
+		  gl.glTexCoord2f(1.0f, 1.0f);
+		  gl.glVertex3f(x+s, y, z);
+		  
+		  gl.glTexCoord2f(1.0f, 0.0f);	
+		  gl.glVertex3f(x+s, y+s, z);
+		  
+		  gl.glTexCoord2f(0.0f, 0.0f);
+		  gl.glVertex3f(x, y+s, z);
+		}
+		gl.glEnd();
+		
+		cnt++;
+	      }
+	      
+	    }
+	  }
+	}
+
+	System.out.print("Nodes = " + cnt + "\n");
+      }
+      gl.glDisable(GL.GL_TEXTURE_2D); 
+      
+      gl.glEndList();
+    }
   }
   
     
@@ -256,7 +215,14 @@ JoglTestRenderer
    int width, 
    int height
   )
-  {}
+  {
+    GL  gl  = drawable.getGL();
+    GLU glu = drawable.getGLU();
+
+    gl.glMatrixMode(GL.GL_PROJECTION);
+    gl.glLoadIdentity();
+    glu.gluPerspective(90.0, ((double) width) / ((double) height), 0.1, 500.0);
+  }
  
   /** 
    * Called by the drawable when the display mode or the display device associated with 
@@ -301,16 +267,131 @@ JoglTestRenderer
    MouseEvent e
   )
   {
-    System.out.print("Mouse Pressed!\n");
-    pCanvas.repaint();
+    int mods = e.getModifiersEx();
+    
+    int on1  = (MouseEvent.BUTTON2_DOWN_MASK |
+		MouseEvent.ALT_DOWN_MASK);
+    
+    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		MouseEvent.BUTTON3_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);
+    
+	
+    int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		MouseEvent.BUTTON2_DOWN_MASK | 
+		MouseEvent.ALT_DOWN_MASK);
+    
+    int off2 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);
+
+    /* <BUTTON2+ALT> (pan start) or <BUTTON1+BUTTON2+ALT> (zoom start) */ 
+    if(((mods & (on1 | off1)) == on1) || ((mods & (on2 | off2)) == on2)) {
+      
+      /* set start point of the drag */ 
+      pDragStart = e.getPoint();
+      
+      /* change cursor */ 
+      if((mods & (on1 | off1)) == on1)
+	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+      else 
+	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+    }
   }
 
   /**
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  mouseReleased(MouseEvent e) {}
+  mouseReleased
+  (
+   MouseEvent e
+  )
+  {
+    pCanvas.setCursor(Cursor.getDefaultCursor());
+  }
 
+
+  /*-- MOUSE MOTION LISTENER METHODS -------------------------------------------------------*/
+
+  /**
+   * Invoked when a mouse button is pressed on a component and then dragged.
+   */
+  public void 
+  mouseDragged
+  (
+   MouseEvent e
+  )
+  {
+    if(pDragStart != null) {
+      int mods = e.getModifiersEx();
+    
+      int on1  = (MouseEvent.BUTTON2_DOWN_MASK |
+		  MouseEvent.ALT_DOWN_MASK);
+      
+      int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		  MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+      
+      
+      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK);
+      
+      int off2 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+      
+//       /* <BUTTON2+ALT> (pan) */ 
+//       if((mods & (on1 | off1)) == on1) {	
+// 	Point3d startPos = new Point3d();
+// 	canvas.getPixelLocationInImagePlate(pDragStart.x, pDragStart.y, startPos);
+	
+// 	Point3d endPos = new Point3d();
+// 	canvas.getPixelLocationInImagePlate(e.getX(), e.getY(), endPos);
+	
+// 	Transform3D mx = new Transform3D();
+// 	canvas.getImagePlateToVworld(mx);
+// 	mx.transform(startPos);
+// 	mx.transform(endPos);
+	  
+// 	Point3d delta = new Point3d(startPos);
+// 	delta.sub(endPos);
+// 	delta.scale(trans.z * pPanSpeed);
+	
+// 	trans.add(delta);
+	
+// 	xform.setTranslation(trans);
+// 	tg.setTransform(xform);
+//       }
+      
+      /* <BUTTON1+BUTTON2+ALT> (zoom) */ 
+      if((mods & (on2 | off2)) == on2) {
+	double dx = ((double) e.getX()) - pDragStart.x;
+	double dy = ((double) e.getY()) - pDragStart.y;
+	
+	double zoom = dy;
+	if(Math.abs(dx) > Math.abs(dy)) 
+	  zoom = -dx;
+	
+	pCameraDist += pZoomSpeed*zoom;
+	pCameraDist = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, pCameraDist);
+	
+	pCanvas.repaint();
+      }
+    }
+
+    pDragStart = e.getPoint();
+  }
+
+  /**
+   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
+   * been pushed.
+   */ 
+  public void 
+  mouseMoved(MouseEvent e) {}
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -323,7 +404,43 @@ JoglTestRenderer
   private GLCanvas  pCanvas;
 
   /**
-   * OpenGL texture objects handles.
+   * The geometry display list handle.
    */ 
-  private int[]  pTextures; 
+  private int  pGeometry; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The camera position.
+   */ 
+  private Point2D.Double pCameraPos; 
+
+  /**
+   * The camera distance.
+   */ 
+  private double pCameraDist;
+
+
+  /**
+   * The pan speed scale factor. 
+   */ 
+  private double  pPanSpeed;   
+
+  /**
+   * The zoom speed scale factor. 
+   */ 
+  private double  pZoomSpeed;  
+
+  /**
+   * The max zoom factor. 
+   */ 
+  private double  pMaxFactor; 
+
+
+  /**
+   * The pixel location of start of mouse drag. 
+   */ 
+  private Point  pDragStart;  
+
 }
