@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.12 2005/03/04 09:20:30 jim Exp $
+// $Id: JTablePanel.java,v 1.13 2005/03/28 21:51:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -188,6 +188,8 @@ class JTablePanel
 	add(scroll);
       }
     }
+
+    pTableModel.fireTableStructureChanged();
   }
 
   
@@ -954,6 +956,16 @@ class JTablePanel
       pModel.removeTableModelListener(l);
     }
 
+    
+    /**
+     * Notifies all listeners that the table's structure has changed.
+     */ 
+    public void 	
+    fireTableStructureChanged()
+    {
+      pModel.fireTableStructureChanged();
+    }
+          
       
     /*--------------------------------------------------------------------------------------*/
 
