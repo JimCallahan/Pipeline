@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.11 2004/07/14 20:50:00 jim Exp $
+// $Id: FileMgrClient.java,v 1.12 2004/07/16 22:04:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -196,7 +196,7 @@ class FileMgrClient
    *   previous checked-in version.
    * 
    * @throws PipelineException
-   *   If unable to check-in the working files.
+   *   If unable to check-in the files.
    */
   public synchronized void 
   checkIn
@@ -227,6 +227,9 @@ class FileMgrClient
    * 
    * @param vsn 
    *   The checked-in version to check-out.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the files.
    */ 
   public synchronized void 
   checkOut
@@ -242,6 +245,37 @@ class FileMgrClient
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences());
 
     Object obj = performTransaction(FileRequest.CheckOut, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Revert specific working area files to an earlier checked-in version of the files. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param files
+   *   The table of checked-in file revision numbers indexed by file name.
+   * 
+   * @throws PipelineException
+   *   If unable to revert the files.
+   */ 
+  public synchronized void 
+  revert
+  (
+   NodeID id, 
+   TreeMap<String,VersionID> files
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileRevertReq req = new FileRevertReq(id, files);
+    
+    Object obj = performTransaction(FileRequest.Revert, req);
     handleSimpleResponse(obj);
   }
 
