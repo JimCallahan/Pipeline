@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.7 2004/10/04 16:06:53 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.8 2004/10/31 15:20:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -136,38 +136,46 @@ class JQueueJobDetailsPanel
 	    JPanel vpanel = (JPanel) comps[1];
 	    
 	    /* job state */ 
-	    {
-	      pJobStateField = 
-		UIMaster.createTitledTextField(tpanel, "Job State:", sTSize, 
-					       vpanel, "-", sVSize);
-	    }
+	    pJobStateField = 
+	      UIMaster.createTitledTextField(tpanel, "Job State:", sTSize, 
+					     vpanel, "-", sVSize);
 	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	    /* time waiting */ 
+	    pWaitingField = 
+	      UIMaster.createTitledTextField(tpanel, "Time Waiting:", sTSize, 
+					     vpanel, "-", sVSize);
+
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	    /* time running */ 
+	    pRunningField = 
+	      UIMaster.createTitledTextField(tpanel, "Time Running:", sTSize, 
+					     vpanel, "-", sVSize);
+
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 	    
 	    /* submitted stamp */ 
-	    {
-	      pSubmittedField = 
-		UIMaster.createTitledTextField(tpanel, "Submitted:", sTSize, 
-					       vpanel, "-", sVSize);
-	    }
+	    pSubmittedField = 
+	      UIMaster.createTitledTextField(tpanel, "Submitted:", sTSize, 
+					     vpanel, "-", sVSize);
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* started stamp */ 
-	    {
-	      pStartedField = 
-		UIMaster.createTitledTextField(tpanel, "Started:", sTSize, 
-					       vpanel, "-", sVSize);
-	    }
+	    pStartedField = 
+	      UIMaster.createTitledTextField(tpanel, "Started:", sTSize, 
+					     vpanel, "-", sVSize);
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* completed stamp */ 
-	    {
-	      pCompletedField = 
-		UIMaster.createTitledTextField(tpanel, "Completed:", sTSize, 
-					       vpanel, "-", sVSize);
-	    }
+	    pCompletedField = 
+	      UIMaster.createTitledTextField(tpanel, "Completed:", sTSize, 
+					     vpanel, "-", sVSize);
+
+	    
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Summary:", (JComponent) comps[2], true);
@@ -713,38 +721,62 @@ class JQueueJobDetailsPanel
 	pJobStateField.setText(text);
       }
 
+      Date submitted = null;
+      if(pJobInfo != null) 
+	submitted = pJobInfo.getSubmittedStamp();
+
+      Date started = null;
+      if(pJobInfo != null) 
+	started = pJobInfo.getStartedStamp();
+
+      Date completed = null;
+      if(pJobInfo != null) 
+	completed = pJobInfo.getCompletedStamp();
+
       {
 	String text = "-";
-	if(pJobInfo != null) {
-	  Date stamp = pJobInfo.getSubmittedStamp();
-	  if(stamp != null) 
-	    text = Dates.format(stamp);
+	if(submitted != null) {
+	  if(started != null)
+	    text = Dates.formatInterval(started.getTime() - submitted.getTime());
+	  else if(completed != null)
+	    text = Dates.formatInterval(completed.getTime() - submitted.getTime());
 	}
+	
+	pWaitingField.setText(text);
+      }
+
+      {
+	String text = "-";
+	if((started != null) && (completed != null))
+	  text = Dates.formatInterval(completed.getTime() - started.getTime());
+	
+	pRunningField.setText(text);
+      }
+
+      {
+	String text = "-";
+	if(submitted != null) 
+	  text = Dates.format(submitted);
 
 	pSubmittedField.setText(text);
       }
 
       {
 	String text = "-";
-	if(pJobInfo != null) {
-	  Date stamp = pJobInfo.getStartedStamp();
-	  if(stamp != null) 
-	    text = Dates.format(stamp);
-	}
+	if(started != null) 
+	  text = Dates.format(started);
 
 	pStartedField.setText(text);
       }
 
       {
 	String text = "-";
-	if(pJobInfo != null) {
-	  Date stamp = pJobInfo.getCompletedStamp();
-	  if(stamp != null) 
-	    text = Dates.format(stamp);
-	}
+	if(completed != null) 
+	  text = Dates.format(completed);
 
 	pCompletedField.setText(text);
       }
+
     }
 
     /* process details panel */ 
@@ -1492,6 +1524,17 @@ class JQueueJobDetailsPanel
   private JTextField pJobStateField; 
   
   
+  /**
+   * The waiting stamp field.
+   */ 
+  private JTextField pWaitingField; 
+  
+  /**
+   * The running stamp field.
+   */ 
+  private JTextField pRunningField; 
+  
+
   /**
    * The submitted stamp field.
    */ 
