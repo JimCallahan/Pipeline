@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.3 2004/03/13 17:19:40 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.4 2004/03/15 19:12:53 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -120,28 +120,32 @@ class TestFileMgrApp
     {
       ArrayList<ClientTask> clients = new ArrayList<ClientTask>();
       {
-	long time = (new Date()).getTime();
-	
-	int wk; 
-	for(wk=0; wk<10; wk++) {
-	  ClientTask client = new ClientTask(time + wk, idA, modA);
-	  clients.add(client);
-	}
-	
+ 	{
+ 	  int wk; 
+ 	  for(wk=0; wk<10; wk++) {
+ 	    ClientTask clientA = new ClientTask((new Date()).getTime(), idA, modA);
+ 	    clients.add(clientA);
+
+ 	    ClientTask clientB = new ClientTask((new Date()).getTime(), idB, modB);
+ 	    clients.add(clientB);
+ 	  }
+ 	}
+
 	{
-	  ClientTask client = new ClientTask(0, idB, modB);
-	  clients.add(client);	
+	  ClientTask clientA = new ClientTask(0, idB, modB);
+	  clients.add(clientA);	
+
+	  ClientTask clientB = new ClientTask(0, idA, modA);
+	  clients.add(clientB);	
 	}
       }
       
       for(ClientTask client : clients) 
 	client.start();
-      
-      for(ClientTask client : clients) 
-	client.join();
-    }
 
-    
+       for(ClientTask client : clients) 
+ 	client.join();
+    }
 
     /* give the server a chance to shutdown */ 
     Thread.currentThread().sleep(1000);
@@ -172,10 +176,15 @@ class TestFileMgrApp
     public void 
     run() 
     {
+      Map<String,String> env = System.getenv();
+      File cwd = new File(System.getProperty("user.dir") + "/data");
+      String user = System.getProperty("user.name");
+      File dir = new File(cwd, "prod/working/" + user + "/default/images");
+
       Random random = new Random(pSeed);
       int sleep = random.nextInt(1000);
 
-      System.out.print(getName() + ": sleeping for " + sleep + " msecs...\n");
+      //System.out.print(getName() + ": sleeping for " + sleep + " msecs...\n");
       try {
 	sleep(sleep);
       }
@@ -183,33 +192,119 @@ class TestFileMgrApp
 	assert(false);
       }
 
+
       try {
 	FileMgrClient client = new FileMgrClient("localhost", 53138);
 
-	TreeMap<FileSeq, FileState[]> states = 
-	  client.computeFileStates(pNodeID, pNodeMod, VersionState.Pending, null);
-	{
-	  StringBuffer buf = new StringBuffer(); 
-	  buf.append(pNodeID + ":\n");
-	  
-	  for(FileSeq fseq : states.keySet()) {
-	    buf.append("  " + fseq + ":\n");
+	int count = 50;
 
-	    FileState fs[] = states.get(fseq);
-	    int wk;
-	    for(wk=0; wk<fs.length; wk++) 
-	      buf.append("    " + wk + ": " + fs[wk].name() + "\n");
+	if(pSeed == 0) {
+	  VersionID lvid = null;
+	  int rk;
+	  for(rk=0; rk<count; rk++) {
+	    VersionID vid = new VersionID();
+	    VersionState vstate = VersionState.Pending;
+		
+	    if(lvid != null) {
+	      VersionID.Level levels[] = VersionID.Level.values();
+	      vid = new VersionID(lvid, levels[random.nextInt(levels.length)]);
+	      vstate = VersionState.Identical;
+	    }
+	    
+	    {
+	      TreeMap<FileSeq, FileState[]> states = 
+		client.computeFileStates(pNodeID, pNodeMod, vstate, lvid);
+	      printStates(states);
+	      
+	      client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
+
+	      NodeVersion vsn = new NodeVersion(pNodeMod, vid, "Some Message...");
+	      pNodeMod = new NodeMod(vsn);
+	    }
+	    
+	    {
+	      FrameRange range = pNodeMod.getPrimarySequence().getFrameRange();
+	      int f1 = range.getStart() + random.nextInt(10) - 5;
+	      int f2 = range.getEnd() + random.nextInt(10) - 5;
+	      int s = Math.min(43, Math.max(0, Math.min(f1, f2)));
+	      int e = Math.min(43, Math.max(0, Math.max(f1, f2)));
+	      
+	      pNodeMod.adjustFrameRange(new FrameRange(s, e, range.getBy()));
+	    }
+	    
+	    for(File file : pNodeMod.getPrimarySequence().getFiles()) {
+	      if(random.nextInt(10) == 0) {
+		int size = random.nextInt(100) + 600;
+
+		ArrayList<String> args = new ArrayList<String>();
+		args.add("-resize");
+		args.add(size + "x" + size);
+		args.add(file.getPath());
+		args.add(file.getPath());	      
+		
+		SubProcess proc = new SubProcess("ScaleImage", "convert", args, env, dir);
+		proc.start(); 
+		
+		try {
+		  proc.join();
+		}
+		catch(InterruptedException ex) {
+		  assert(false);
+		}
+	      }
+	    }
+
+	    lvid = vid;
 	  }
-
-	  System.out.print(buf.toString());
 	}
-
-	client.refreshCheckSums(pNodeID, pNodeMod.getSequences());
+	else { 
+	  int wk=0;
+	  for(wk=0; wk<count; wk++) {
+	    TreeMap<FileSeq, FileState[]> states = 
+	      client.computeFileStates(pNodeID, pNodeMod, VersionState.Pending, null); 
+	    
+	    client.refreshCheckSums(pNodeID, pNodeMod.getSequences());
+	    
+	    int sleep2 = random.nextInt(1000);
+	    //System.out.print(getName() + ": sleeping for " + sleep2 + " msecs...\n");
+	    try {
+	      sleep(sleep2);
+	    }
+	    catch(InterruptedException ex) {
+	      assert(false);
+	    }
+	  }
+	}
 
 	client.shutdown();
       }
       catch(PipelineException ex) {
 	Logs.ops.severe(ex.getMessage());
+      }
+    }
+
+
+    private void 
+    printStates
+    (
+     TreeMap<FileSeq, FileState[]> states
+    ) 
+    {
+      if(false) {
+	StringBuffer buf = new StringBuffer(); 
+	buf.append(pNodeID + ":\n");
+	
+	for(FileSeq fseq : states.keySet()) {
+	  buf.append("  " + fseq + ":\n");
+	  
+	  FileState fs[] = states.get(fseq);
+	  int wk;
+	  for(wk=0; wk<fs.length; wk++) 
+	    buf.append("    " + fseq.getFrameRange().indexToFrame(wk) + ": " + 
+		       fs[wk].name() + "\n");
+	}
+	
+	System.out.print(buf.toString());
       }
     }
 
