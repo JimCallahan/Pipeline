@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.1 2004/07/07 13:30:26 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.2 2004/07/14 21:08:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -63,11 +63,6 @@ class JNodeHistoryPanel
   private void 
   initUI()
   {
-    /* initialize fields */ 
-    {
-
-    }
-
     /* initialize the panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
@@ -138,7 +133,7 @@ class JNodeHistoryPanel
       setPreferredSize(size); 
     }
 
-    updateHistory();
+    updateNodeStatus(null, null);
   }
 
 
@@ -232,7 +227,7 @@ class JNodeHistoryPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the check-in log messages for the node with the given node status.
+   * Update the UI components to reflect the current check-in log messages.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -242,47 +237,44 @@ class JNodeHistoryPanel
    * 
    * @param status
    *   The current node status.
+   * 
+   * @param history
+   *   The check-in log messages.
    */
   public synchronized void 
   updateNodeStatus
   (
    String author, 
    String view, 
-   NodeStatus status
+   NodeStatus status,
+   TreeMap<VersionID,LogMessage> history
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status);
+    updateNodeStatus(status, history);
   }
 
   /**
-   * Update the check-in log messages for the node with the given node status.
+   * Update the UI components to reflect the current check-in log messages.
    * 
    * @param status
    *   The current node status.
+   * 
+   * @param history
+   *   The check-in log messages.
    */
   public synchronized void 
   updateNodeStatus
   (
-   NodeStatus status
+   NodeStatus status,
+   TreeMap<VersionID,LogMessage> history
   ) 
   {
-    pStatus = status;
+    pStatus  = status;
+    pHistory = history;
 
-    if(pStatus != null) {
-      HistoryTask task = new HistoryTask(this);
-      task.start();
-    }
-  }
-
-  /**
-   * Update the UI components to reflect the current node history.
-   */ 
-  private synchronized void 
-  updateHistory() 
-  {
     NodeDetails details = null;
     if(pStatus != null) 
       details = pStatus.getDetails();
@@ -329,8 +321,8 @@ class JNodeHistoryPanel
 	
 	VersionID wvid = null;
 	if((details != null) && (details.getWorkingVersion() != null)) 
-	  wvid = details.getWorkingVersion().getWorkingID();
-	
+	  wvid = details.getWorkingVersion().getWorkingID();	
+
 	for(VersionID vid : vids) {
 	  LogMessage msg = pHistory.get(vid);
 	  
@@ -366,7 +358,7 @@ class JNodeHistoryPanel
 	      hbox2.add(Box.createRigidArea(new Dimension(4, 0)));
 	      
 	      {
-		JLabel label = new JLabel(fmt.format(msg.getTimeStamp()));
+		JLabel label = new JLabel(Dates.format(msg.getTimeStamp()));
 		label.setForeground(color);
 		hbox2.add(label);
 	      }
@@ -445,58 +437,6 @@ class JNodeHistoryPanel
     }
       
     pMessageBox.revalidate();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the check-in log messages for the current node.
-   */ 
-  private
-  class HistoryTask
-    extends Thread
-  {
-    public 
-    HistoryTask
-    (
-     JNodeHistoryPanel panel
-    ) 
-    {
-      pPanel = panel;
-    }
- 
-    public void 
-    run() 
-    {
-      synchronized(pPanel) {
-	pHistory = null;
-
-	if(pStatus != null) {
-	  UIMaster master = UIMaster.getInstance();
-	  if(master.beginPanelOp("Updating Node History...")) {
-	    try {
-	      MasterMgrClient client = master.getMasterMgrClient();
-	      pHistory = client.getHistory(pStatus.getName());
-	    }
-	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
-	      return;
-	    }
-	    finally {
-	      master.endPanelOp("Done.");
-	    }
-	  }
-	}
-
-	updateHistory(); 
-      }
-    }
-    
-    private JNodeHistoryPanel  pPanel;
   }
 
 
