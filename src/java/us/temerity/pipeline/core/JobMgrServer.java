@@ -1,0 +1,279 @@
+// $Id: JobMgrServer.java,v 1.1 2004/07/21 07:15:01 jim Exp $
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.message.*;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   Q U E U E   M G R   S E R V E R                                                        */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * The server-side manager of job queries and operations. <P> 
+ * 
+ * This class handles network communication with {@link JobMgrClient JobMgrClient} 
+ * and {@link JobMgrFullClient JobMgrFullClient} instances running on remote hosts.  
+ * This class listens for new connections from clients and creats a thread to manage each 
+ * connection.  Each of these threads then listens for requests for job related operations 
+ * and dispatches these requests to an underlying instance of the {@link JobMgr JobMgr}
+ * class.
+ * 
+ * @see JobMgr
+ * @see JobMgrClient
+ * @see JobMgrFullClient
+ */
+public
+class JobMgrServer
+  extends Thread
+{  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Construct a new job manager server.
+   * 
+   * @param port 
+   *   The network port to monitor for incoming connections.
+   */
+  public
+  JobMgrServer
+  (
+   int port
+  )
+  { 
+    super("JobMgrServer");
+    init(port);
+  }
+  
+  /** 
+   * Construct a new job manager using the given network port.
+   * 
+   * The network port used is that specified by <B>plconfig(1)</B>.
+   */
+  public
+  JobMgrServer() 
+  { 
+    super("JobMgrServer");
+    init(PackageInfo.sJobPort);
+  }
+
+
+  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
+
+  /**
+   * Initialize a new instance.
+   * 
+   * @param port 
+   *   The network port to monitor for incoming connections.
+   */ 
+  private synchronized void 
+  init
+  (
+   int port
+  )
+  { 
+    pJobMgr = new JobMgr();
+
+    if(port < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
+    pPort = port;
+
+    pShutdown = new AtomicBoolean(false);
+    pTasks    = new HashSet<HandlerTask>();
+  }
+
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T H R E A D   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Begin listening to the network port and spawn threads to process the job management 
+   * requests received over the connection. <P>
+   * 
+   * This will only return if there is an unrecoverable error.
+   */
+  public void 
+  run() 
+  {
+    ServerSocket server = null;
+    try {
+      server = new ServerSocket(pPort, 100);
+      Logs.net.fine("Listening on Port: " + pPort);
+      Logs.flush();
+
+      server.setSoTimeout(PackageInfo.sServerTimeOut);
+
+      while(!pShutdown.get()) {
+	try {
+	  Socket socket = server.accept();
+	  
+	  HandlerTask task = new HandlerTask(socket);
+	  pTasks.add(task);
+	  task.start();	
+	}
+	catch(SocketTimeoutException ex) {
+	  //Logs.net.finest("Timeout: accept()");
+	}
+      }
+
+      try {
+	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
+	Logs.flush();
+	for(HandlerTask task : pTasks) {
+	  task.join();
+	}
+      }
+      catch(InterruptedException ex) {
+	Logs.net.severe("Interrupted while shutting down!");
+	Logs.flush();
+      }
+
+      Logs.net.fine("Server Shutdown.");    
+      Logs.flush();  
+    }
+    catch (IOException ex) {
+      Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
+		      ex.getMessage());
+      Logs.flush();
+    }
+    catch (SecurityException ex) {
+      Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
+		      ex.getMessage());
+      Logs.flush();
+    }
+    finally {
+      if(server != null) {
+	try {
+	  server.close();
+	}
+	catch (IOException ex) {
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Handle an incoming connection from a <CODE>JobMgrClient</CODE> instance.
+   */
+  private 
+  class HandlerTask
+    extends Thread
+  {
+    public 
+    HandlerTask
+    (
+     Socket socket
+    ) 
+    {
+      super("JobMgrServer:HandlerTask");
+      pSocket = socket;
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
+	Logs.flush();
+
+	boolean live = true;
+	while(pSocket.isConnected() && live && !pShutdown.get()) {
+	  InputStream in    = pSocket.getInputStream();
+	  ObjectInput objIn = new ObjectInputStream(in);
+	  JobRequest kind  = (JobRequest) objIn.readObject();
+	  
+	  OutputStream out    = pSocket.getOutputStream();
+	  ObjectOutput objOut = new ObjectOutputStream(out);
+	  
+	  Logs.net.finer("Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
+	  Logs.flush();
+
+	  switch(kind) {
+
+	    // ...
+
+	  case Disconnect:
+	    live = false;
+	    break;
+
+	  case Shutdown:
+	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
+	    Logs.flush();
+	    pShutdown.set(true);
+	    break;	    
+
+	  default:
+	    assert(false);
+	  }
+	}
+      }
+      catch (IOException ex) {
+	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
+			ex.getMessage());
+      }
+      catch(ClassNotFoundException ex) {
+	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
+			ex.getMessage());	
+      }
+      finally {
+	try {
+	  pSocket.close();
+	}
+	catch(IOException ex) {
+	}
+
+	Logs.net.fine("Connection Closed: " + pSocket.getInetAddress());
+	Logs.flush();
+	
+	if(!pShutdown.get()) {
+	  synchronized(pTasks) {
+	    pTasks.remove(this);
+	  }
+	}
+      }
+    }
+    
+    private Socket pSocket;
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The shared job manager. 
+   */
+  private JobMgr  pJobMgr;
+
+  /**
+   * The network port number the server listens to for incoming connections.
+   */
+  private int  pPort;
+  
+  /**
+   * Has the server been ordered to shutdown?
+   */
+  private AtomicBoolean  pShutdown;
+
+  /**
+   * The set of currently running tasks.
+   */ 
+  private HashSet<HandlerTask>  pTasks;
+}
+
