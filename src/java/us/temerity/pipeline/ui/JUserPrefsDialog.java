@@ -1,4 +1,4 @@
-// $Id: JUserPrefsDialog.java,v 1.4 2004/05/16 19:14:28 jim Exp $
+// $Id: JUserPrefsDialog.java,v 1.5 2004/05/17 03:13:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -328,8 +328,14 @@ class JUserPrefsDialog
 
 	  pLinkThickness = 
 	    UIMaster.createTitledSlider(tpanel, "Line Thickness:", 150, 
-					vpanel, 1.0, 5.0, 210);
+					vpanel, 0.25, 3.0, 210);
 	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	  pLinkGap = 
+	    UIMaster.createTitledSlider(tpanel, "Node/Link Space:", 150, 
+					vpanel, 0.0, 1.0, 210);
+
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	  pDrawArrowHeads = 
@@ -338,22 +344,27 @@ class JUserPrefsDialog
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
-
 	  pArrowHeadWidth = 
 	    UIMaster.createTitledSlider(tpanel, "Arrowhead Width:", 150, 
-					vpanel, 1.0, 5.0, 210);
+					vpanel, 0.0, 1.0, 210);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  pArrowHeadLength = 
 	    UIMaster.createTitledSlider(tpanel, "Arrowhead Length:", 150, 
-					vpanel, 1.0, 5.0, 210);
+					vpanel, 0.0, 1.0, 210);
 	  
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
-	  
-	  pLinkGap = 
-	    UIMaster.createTitledSlider(tpanel, "Node/Link Space:", 150, 
-					vpanel, 1.0, 5.0, 210);
+
+	  pDrawLinkPolicy = 
+	    UIMaster.createTitledBooleanField(tpanel, "Draw Link Policy:", 150, 
+					       vpanel, 210);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pLinkPolicySize = 
+	    UIMaster.createTitledSlider(tpanel, "Link Policy Size:", 150, 
+					vpanel, 0.0, 1.0, 210);
 	}
 	
 	tpanel.add(Box.createVerticalGlue());
@@ -491,6 +502,9 @@ class JUserPrefsDialog
       prefs.setArrowHeadWidth(((double) pArrowHeadWidth.getValue())/1000.0);
 
       prefs.setLinkGap(((double) pLinkGap.getValue())/1000.0);
+
+      prefs.setDrawLinkPolicy(pDrawLinkPolicy.getValue());
+      prefs.setLinkPolicySize(((double) pLinkPolicySize.getValue())/1000.0);      
     }
 
     /* panels - node viewer - hot keys */ 
@@ -558,6 +572,9 @@ class JUserPrefsDialog
       pArrowHeadWidth.setValue((int) (prefs.getArrowHeadWidth()*1000.0));
 
       pLinkGap.setValue((int) (prefs.getLinkGap()*1000.0));
+
+      pDrawLinkPolicy.setValue(prefs.getDrawLinkPolicy());
+      pLinkPolicySize.setValue((int) (prefs.getLinkPolicySize()*1000.0));
     }    
 
     /* panels - node viewer - hot keys */ 
@@ -743,6 +760,8 @@ class JUserPrefsDialog
 
   private JSlider  pLinkGap;
   
+  private JBooleanField  pDrawLinkPolicy;  
+  private JSlider        pLinkPolicySize;
 
   /**
    * Panels - NodeViewer - Hot Keys:

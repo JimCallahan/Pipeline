@@ -1,4 +1,4 @@
-// $Id: UserPrefs.java,v 1.4 2004/05/16 19:14:29 jim Exp $
+// $Id: UserPrefs.java,v 1.5 2004/05/17 03:13:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -275,6 +275,52 @@ class UserPrefs
   }
 
 
+  
+  /**
+   * Get whether to draw graphics representating {@link LinkPolicy LinkPolicy}.
+   */ 
+  public boolean
+  getDrawLinkPolicy()
+  {
+    return pDrawLinkPolicy;
+  }
+
+  /**
+   * Set whether to draw graphics representating {@link LinkPolicy LinkPolicy}.
+   */ 
+  public void 
+  setDrawLinkPolicy
+  (
+   boolean tf
+  )
+  {
+    pDrawLinkPolicy = tf;
+  }
+
+  
+  /**
+   * Get the size of {@link LinkPolicy LinkPolicy} graphics.
+   */ 
+  public double 
+  getLinkPolicySize()
+  {
+    return pLinkPolicySize;
+  }
+
+  /**
+   * Set the size of {@link LinkPolicy LinkPolicy} graphics.
+   */
+  public void 
+  setLinkPolicySize
+  (
+   double v
+  )
+  {
+    pLinkPolicySize = v;
+  }
+
+
+
   /*-- PANEL - NODE VIEWER - HOT KEYS ------------------------------------------------------*/
  
   /**
@@ -394,6 +440,9 @@ class UserPrefs
       pArrowHeadWidth     = 0.05;
   
       pLinkGap = 0.1;
+
+      pDrawLinkPolicy = true;
+      pLinkPolicySize = 0.075;
     }
      
     /* panel - node viewer - hot keys */ 
@@ -471,6 +520,9 @@ class UserPrefs
       encoder.encode("ArrowHeadWidth",  pArrowHeadWidth);
 
       encoder.encode("LinkGap", pLinkGap);      
+
+      encoder.encode("DrawLinkPolicy", pDrawLinkPolicy);
+      encoder.encode("LinkPolicySize", pLinkPolicySize);      
     }
     
     /* panel - node viewer - hot keys */ 
@@ -536,9 +588,19 @@ class UserPrefs
       if(arrowWidth != null)
 	pArrowHeadWidth = arrowWidth;
 
+
       Double linkGap = (Double) decoder.decode("LinkGap");
       if(linkGap != null)
 	pLinkGap = linkGap;
+
+
+      Boolean drawPolicy = (Boolean) decoder.decode("DrawLinkPolicy");
+      if(drawPolicy != null)
+	pDrawLinkPolicy = drawPolicy;
+      
+      Double policySize = (Double) decoder.decode("LinkPolicySize");
+      if(policySize != null)
+	pLinkPolicySize = policySize;
     }
     
     /* panel - node viewer - hot keys */ 
@@ -640,6 +702,17 @@ class UserPrefs
    * The distance between node and the start/end of link.
    */ 
   private double  pLinkGap;
+
+
+  /**
+   * Whether to draw graphics representating {@link LinkPolicy LinkPolicy}.
+   */ 
+  private boolean  pDrawLinkPolicy;
+
+  /**
+   * The size of {@link LinkPolicy LinkPolicy} graphics.
+   */ 
+  private double  pLinkPolicySize;
 
 
 
