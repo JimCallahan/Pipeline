@@ -1,4 +1,4 @@
-// $Id: JPanelFrame.java,v 1.1 2004/08/23 06:43:37 jim Exp $
+// $Id: JPanelFrame.java,v 1.2 2004/10/22 14:02:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -118,6 +118,33 @@ class JPanelFrame
   }
 
 
+  /**
+   * Get the name of the window.
+   */ 
+  public String
+  getWindowName()
+  {
+    return pWindowName;
+  }
+
+  /** 
+   * Set the name of the window.
+   */ 
+  public void 
+  setWindowName
+  (
+   String name
+  ) 
+  {
+    pWindowName = name;
+    if(pWindowName != null) 
+      setTitle("plui - " + pWindowName);
+    else 
+      setTitle("plui");
+  }
+ 
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -191,5 +218,10 @@ class JPanelFrame
    * The parent of the root manager panel.
    */ 
   private JPanel  pRootPanel; 
+
+  /**
+   * The name of the window saved in layouts.
+   */ 
+  private String  pWindowName; 
   
 }

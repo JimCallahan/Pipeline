@@ -1,4 +1,4 @@
-// $Id: PanelLayout.java,v 1.2 2004/08/23 06:43:37 jim Exp $
+// $Id: PanelLayout.java,v 1.3 2004/10/22 14:02:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -33,6 +33,9 @@ class PanelLayout
    * @param root
    *   The root manager panel.
    * 
+   * @param name
+   *   The name of the window.
+   * 
    * @param bounds
    *   The bounds of the parent window.
    */
@@ -40,10 +43,12 @@ class PanelLayout
   PanelLayout
   (
    JManagerPanel root, 
+   String name, 
    Rectangle bounds
   )
   {
     pRoot   = root;
+    pName   = name;
     pBounds = bounds; 
   }
 
@@ -60,6 +65,15 @@ class PanelLayout
   getRoot() 
   {
     return pRoot;
+  }
+  
+  /**
+   * Get the name of the window.
+   */ 
+  public String
+  getName() 
+  {
+    return pName;
   }
   
   /**
@@ -86,6 +100,9 @@ class PanelLayout
   {
     encoder.encode("RootPanel", pRoot);
 
+    if(pName != null) 
+      encoder.encode("Name", pName);
+
     encoder.encode("FramePosX",   pBounds.x);
     encoder.encode("FramePosY",   pBounds.y);
     encoder.encode("FrameWidth",  pBounds.width);
@@ -104,6 +121,9 @@ class PanelLayout
       throw new GlueException("The \"RootPanel\" was missing or (null)!");
     pRoot = root;
 
+    String name = (String) decoder.decode("Name");
+    if(name != null) 
+      pName = name;
 
     Integer posX = (Integer) decoder.decode("FramePosX");
     if(posX == null) 
@@ -133,6 +153,11 @@ class PanelLayout
    * The root manager panel.
    */ 
   private JManagerPanel  pRoot; 
+
+  /**
+   * The name of the window.
+   */ 
+  private String  pName;  
 
   /**
    * The bounds of the parent window. 

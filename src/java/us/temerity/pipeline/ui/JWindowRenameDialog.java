@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.4 2004/10/22 14:02:45 jim Exp $
+// $Id: JWindowRenameDialog.java,v 1.1 2004/10/22 14:02:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -13,16 +13,15 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N E W   I D E N T I F I E R   D I A L O G                                              */
+/*   W I N D O W   R E N A M E   D I A L O G                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Queries the user for an identifier name.
+ * Queries the user for a new name for the current top-level window.
  */ 
 public 
-class JNewIdentifierDialog
+class JWindowRenameDialog
   extends JBaseDialog
-  implements DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,27 +29,14 @@ class JNewIdentifierDialog
   
   /**
    * Construct a new dialog.
-   * 
-   * @param owner
-   *   The parent dialog.
-   * 
-   * @param title
-   *   The title of the dialog.
-   * 
-   * @param fieldTitle
-   *   The title of the text field.
    */ 
   public 
-  JNewIdentifierDialog
+  JWindowRenameDialog
   (
-   Dialog owner,       
-   String title,  
-   String fieldTitle, 
-   String name, 
-   String confirm
+   String name
   )
   {
-    super(owner, title, true);
+    super("Rename Window", true); 
 
     /* create dialog body components */ 
     {
@@ -59,63 +45,21 @@ class JNewIdentifierDialog
 
       body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
 
-      body.add(UIMaster.createPanelLabel(fieldTitle));
+      body.add(UIMaster.createPanelLabel("New Window Name:"));
       
       body.add(Box.createRigidArea(new Dimension(0, 4)));
       
       {
-	JIdentifierField field = UIMaster.createIdentifierField(name, 60, JLabel.LEFT);
+	JTextField field = UIMaster.createEditableTextField(name, 60, JLabel.LEFT);
 	pNameField = field;
-	
-	field.getDocument().addDocumentListener(this);
 	
 	body.add(field);
       }
 	  
-      super.initUI(null, true, body, confirm, null, null, "Cancel");
+      super.initUI(null, true, body, "Rename", null, null, "Cancel");
     }  
 
-    pConfirmButton.setEnabled((name != null) && (name.length() > 0));
     setResizable(false);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I S T E N E R S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
-
-  /**
-   * Gives notification that an attribute or set of attributes changed.
-   */ 
-  public void 
-  changedUpdate(DocumentEvent e) {}
-
-  /**
-   * Gives notification that there was an insert into the document.
-   */
-  public void
-  insertUpdate
-  (
-   DocumentEvent e
-  )
-  {
-    String name = pNameField.getText();
-    pConfirmButton.setEnabled((name != null) && (name.length() > 0));
-  }
-  
-  /**
-   * Gives notification that a portion of the document has been removed.
-   */
-  public void 
-  removeUpdate
-  (
-   DocumentEvent e
-  )
-  {
-    String name = pNameField.getText();
-    pConfirmButton.setEnabled((name != null) && (name.length() > 0));    
   }
 
 
@@ -138,13 +82,11 @@ class JNewIdentifierDialog
 
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -8184225402127026678L;
-
+  private static final long serialVersionUID = 8360927556757670807L;
 
 
 
@@ -153,8 +95,9 @@ class JNewIdentifierDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The field containing the new name. <P> 
+   * The field containing the new window name. <P> 
    */
-  protected JIdentifierField  pNameField;
+  protected JTextField  pNameField;
 
 }
+

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.50 2004/10/21 01:24:07 jim Exp $
+// $Id: UIMaster.java,v 1.51 2004/10/22 14:02:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -278,12 +278,10 @@ class UIMaster
       String def = "";
       if((pDefaultLayoutName != null) && pDefaultLayoutName.equals(pLayoutName))
 	def = " (default)";
-      title = ("plui | " + path.getName() + def);
+      title = ("plui - Main | " + path.getName() + def);
     }
 
     pFrame.setTitle(title);    
-    for(JPanelFrame frame : pPanelFrames) 
-      frame.setTitle(title);
   }
 
 
@@ -2119,13 +2117,14 @@ class UIMaster
       LinkedList<PanelLayout> layouts = new LinkedList<PanelLayout>();
       {
 	JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
-	PanelLayout layout = new PanelLayout(mpanel, pFrame.getBounds());
+	PanelLayout layout = new PanelLayout(mpanel, null, pFrame.getBounds());
 	layouts.add(layout);
       }
       
       for(JPanelFrame frame : pPanelFrames) {
 	JManagerPanel mpanel = frame.getManagerPanel();
-	PanelLayout layout = new PanelLayout(mpanel, frame.getBounds());
+	PanelLayout layout = 
+	  new PanelLayout(mpanel, frame.getWindowName(), frame.getBounds());
 	layouts.add(layout);
       }
       
@@ -2800,13 +2799,14 @@ class UIMaster
 	LinkedList<PanelLayout> layouts = new LinkedList<PanelLayout>();
 	{
 	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
-	  PanelLayout layout = new PanelLayout(mpanel, pFrame.getBounds());
+	  PanelLayout layout = new PanelLayout(mpanel, null, pFrame.getBounds());
 	  layouts.add(layout);
 	}
 	  
 	for(JPanelFrame frame : pPanelFrames) {
 	  JManagerPanel mpanel = frame.getManagerPanel();
-	  PanelLayout layout = new PanelLayout(mpanel, frame.getBounds());
+	  PanelLayout layout = 
+	    new PanelLayout(mpanel, frame.getWindowName(), frame.getBounds());
 	  layouts.add(layout);
 	}
 
@@ -2898,6 +2898,7 @@ class UIMaster
 	    
 	    frame.setBounds(layout.getBounds());
 	    frame.setManagerPanel(mpanel);
+	    frame.setWindowName(layout.getName());
 	    frame.setVisible(true);
 
 	    pPanelFrames.add(frame);

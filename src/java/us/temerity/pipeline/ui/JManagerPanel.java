@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.47 2004/10/22 04:55:54 jim Exp $
+// $Id: JManagerPanel.java,v 1.48 2004/10/22 14:02:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -132,6 +132,12 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);
       }
+
+      item = new JMenuItem("Rename Window");
+      pRenameWindowItem = item;
+      item.setActionCommand("rename-window");
+      item.addActionListener(this);
+      pPopup.add(item);  
 
       pPopup.addSeparator();
       
@@ -501,6 +507,35 @@ class JManagerPanel
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the frame containing this panel.
+   * 
+   * @return 
+   *   The frame or <CODE>null</CODE> if the containing window is not a JPanelFrame.
+   */ 
+  public JPanelFrame
+  getPanelFrame() 
+  {
+    JPanelFrame frame = null;
+    {
+      Container contain = getParent();
+      while(true) {
+	if(contain == null)
+	  break;
+
+	if(contain instanceof JPanelFrame) {
+	  frame = (JPanelFrame) contain;
+	  break;
+	}
+	
+	contain = contain.getParent();
+      }
+    }
+
+    return frame;
+  }
+
+
   /**
    * Get body component of the panel.
    */ 
@@ -1312,6 +1347,9 @@ class JManagerPanel
     else if(cmd.equals("none-window"))
       doEmptyWindow();
 
+    else if(cmd.equals("rename-window"))
+      doRenameWindow();
+
     /* panels */ 
     else if(cmd.equals("node-browser"))
       doNodeBrowserPanel();
@@ -1538,6 +1576,30 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JEmptyPanel(pTopLevelPanel));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Change the name of the current window.
+   */ 
+  private void 
+  doRenameWindow() 
+  {
+    JPanelFrame frame = getPanelFrame();
+    if(frame != null) {
+      JWindowRenameDialog diag = new JWindowRenameDialog(frame.getWindowName());
+      diag.setVisible(true);
+      
+      if(diag.wasConfirmed()) {
+	String wname = diag.getName();
+	if((wname != null) && (wname.length() > 0))
+	frame.setWindowName(wname);
+	else 
+	  frame.setWindowName(null);
+      }
+    }
   }
 
 
@@ -2120,6 +2182,9 @@ class JManagerPanel
     {
       setIcon(sMenuAnchorPressedIcon);
 
+      /* the main window cannot be renamed */ 
+      pRenameWindowItem.setEnabled(getPanelFrame() != null);
+
       /* only enable layout changes if there is enough space */ 
       {
 	pAddTabItem.setEnabled(pPanel.getHeight() > 29+20);
@@ -2510,6 +2575,8 @@ class JManagerPanel
   /**
    * The panel layout popup menu items.
    */ 
+  private JMenuItem  pRenameWindowItem; 
+  
   private JMenuItem  pAddTabItem; 
 
   private JMenuItem  pAddLeftItem; 
