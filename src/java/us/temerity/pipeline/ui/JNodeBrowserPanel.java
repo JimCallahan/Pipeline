@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.15 2004/05/19 19:07:08 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.16 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -268,7 +268,7 @@ class JNodeBrowserPanel
 	TreeSet<String> paths = new TreeSet<String>(expanded);
 	paths.addAll(pSelected);
 
-	comp = master.getNodeMgrClient().updatePaths(pAuthor, pView, paths); 
+	comp = master.getMasterMgrClient().updatePaths(pAuthor, pView, paths); 
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);

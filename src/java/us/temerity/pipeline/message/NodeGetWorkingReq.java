@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingReq.java,v 1.1 2004/03/26 19:13:41 jim Exp $
+// $Id: NodeGetWorkingReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to get the working version of a node.                  
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeGetWorkingReq

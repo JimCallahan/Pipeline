@@ -1,6 +1,7 @@
-// $Id: TestFileSeqApp.java,v 1.5 2004/03/23 20:41:25 jim Exp $
+// $Id: TestFileSeqApp.java,v 1.6 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
@@ -183,10 +184,10 @@ class TestFileSeqApp
     System.out.print("  ---\n");
 
     try {
-      GlueEncoder ge = new GlueEncoder("FileSeq", fseq);
+      GlueEncoder ge = new GlueEncoderImpl("FileSeq", fseq);
       System.out.print(ge.getText());
 
-      GlueDecoder gd = new GlueDecoder(ge.getText());
+      GlueDecoder gd = new GlueDecoderImpl(ge.getText());
       FileSeq fseq2 = (FileSeq) gd.getObject();
       
       System.out.print("FileSeq (Glue): " + fseq2 + "\n");

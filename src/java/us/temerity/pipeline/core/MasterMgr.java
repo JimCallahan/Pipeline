@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.28 2004/05/19 19:03:13 jim Exp $
+// $Id: MasterMgr.java,v 1.1 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18,7 +18,9 @@ import java.util.logging.Level;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The complete set of high-level node operations supported by Pipeline. <P> 
+ * The complete set of high-level operations supported by Pipeline. <P> 
+ * 
+ * <H3> Pipeline Nodes </H3>
  * 
  * This class is responsible for managing both working and checked-in versions of a nodes as
  * well as auxiliary node information such as downstream node connections. All methods of 
@@ -34,38 +36,38 @@ import java.util.logging.Level;
  * <DIV style="margin-left: 40px;">
  *   <I>node-dir</I>/ <BR>
  *     <DIV style="margin-left: 20px;">
- *     working/<I>author</I>/<I>view</I>/ <BR>
+ *       working/<I>author</I>/<I>view</I>/ <BR>
  *       <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-path</I>/ <BR>
- *         <DIV style="margin-left: 20px;">
- *         <I>node-name</I> <BR>
- *         [<I>node-name</I>.backup] <BR>
- *         ... <BR>
- *       </DIV> 
- *       ... <P>
- *     </DIV> 
- * 
- *     repository/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-name</I>/ <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>revision-number</I> <BR>
- *         ... <BR>
- *       </DIV> 
- *       ... <P> 
- *     </DIV> 
- *  
- *     downstream/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-path</I>/ <BR>
+ *         <I>fully-resolved-node-path</I>/ <BR>
  *         <DIV style="margin-left: 20px;">
  *           <I>node-name</I> <BR>
- *         ... <BR> 
- *         </DIV>
- *         ... <P> 
- *     </DIV> 
+ *           [<I>node-name</I>.backup] <BR>
+ *           ... <BR>
+ *         </DIV> 
+ *         ... <P>
+ *       </DIV> 
  * 
- *     lock<P>
+ *       repository/ <BR>
+ *       <DIV style="margin-left: 20px;">
+ *         <I>fully-resolved-node-name</I>/ <BR>
+ *         <DIV style="margin-left: 20px;">
+ *           <I>revision-number</I> <BR>
+ *           ... <BR>
+ *         </DIV> 
+ *         ... <P> 
+ *       </DIV> 
+ *  
+ *      downstream/ <BR>
+ *       <DIV style="margin-left: 20px;">
+ *         <I>fully-resolved-node-path</I>/ <BR>
+ *           <DIV style="margin-left: 20px;">
+ *             <I>node-name</I> <BR>
+ *           ... <BR> 
+ *           </DIV>
+ *           ... <P> 
+ *       </DIV> 
+ * 
+ *      lock<P>
  *   </DIV> 
  * 
  *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
@@ -95,7 +97,7 @@ import java.util.logging.Level;
  * 
  *   The node manager uses an empty file called (<CODE>lock</CODE>) written to the root 
  *   node directory (<I>node-dir</I>) to protect against multiple instances of 
- *   <CODE>NodeMgr</CODE> running simultaneously.  This file is created when the class is
+ *   <CODE>MasterMgr</CODE> running simultaneously.  This file is created when the class is
  *   instantiated and removed when the instance is finalized.  If this file already exists
  *   the constructor will throw an exception and refuse to instantiate the class.  The 
  *   lock file may exist even if there are no running instances if there has been a 
@@ -103,16 +105,60 @@ import java.util.logging.Level;
  *   removed. <P> 
  * </DIV> 
  * 
- * @see NodeMgrClient
- * @see NodeMgrServer
- * @see NodeMod
- * @see NodeVersion
- * @see LogMessage
+ * <H3> Toolsets </H3>
+ * 
+ * This class also manages Toolsets used by various Pipeline programs.  A Toolset is a named 
+ * collection of shell environmental variable name/value pairs which make up the shell 
+ * environment under which Editors, Actions and other auxillary OS level processes are 
+ * run. <P>
+ * 
+ * In addition to providing the runtime representation of Toolsets, this class also provides 
+ * the I/O operations necessary to maintain a persistent file system representation. The 
+ * persistent storage of Toolset is organized as follows: <P> 
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   <I>node-dir</I>/toolsets/ <BR>
+ *   <DIV style="margin-left: 20px;">
+ *     packages/ <BR>
+ *     <DIV style="margin-left: 20px;">
+ *       <I>toolset-package</I>/<BR>
+ *       <DIV style="margin-left: 20px;">
+ *         <I>revision-number</I> <BR>
+ *         ... <BR>
+ *       </DIV> 
+ *       ... <P>
+ *     </DIV> 
+ * 
+ *     toolsets/<BR>
+ *     <DIV style="margin-left: 20px;">
+ *       <I>toolset</I> <BR>
+ *       ... <P>
+ *     </DIV> 
+ *   </DIV> 
+ * 
+ *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
+ *   <I>configure(1)</I> or as an agument to the constructor for this class. <P> 
+ *    
+ *   Toolsets are built from a set of Packages which contain the evironment needed by a 
+ *   particular release of some application software.  Each release of an application 
+ *   typically is associated with a version of a Toolset Package.  Packages are stored
+ *   in files named after the Package version (<I>revision-number</I>) under a directory
+ *   named for the package (<I>toolset-package</I>). <P> 
+ * 
+ *   Toolsets are stored in files named after the Toolset (<I>toolset</I>) in a seperate 
+ *   directory.  Toolsets are built by merging the environments of several Packages.  The
+ *   persistent files for Toolsets contains the specific names and versions of the Packages
+ *   used to build the Toolset and a consise environment which is the result of merging 
+ *   the packages. <P> 
+ * </DIV> 
+ *  
+ * @see MasterMgrClient
+ * @see MasterMgrServer
  * @see DownstreamLinks
  * @see FileMgr
  */
 public
-class NodeMgr
+class MasterMgr
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -143,7 +189,7 @@ class NodeMgr
    *   monitor connections.
    */
   public
-  NodeMgr
+  MasterMgr
   (
    File nodeDir, 
    File prodDir, 
@@ -914,7 +960,7 @@ class NodeMgr
   ) 
   {
     assert(req != null);
-    TaskTimer timer = new TaskTimer("NodeMgr.modifyProperties(): " + req.getNodeID());
+    TaskTimer timer = new TaskTimer("MasterMgr.modifyProperties(): " + req.getNodeID());
 
     timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
@@ -971,7 +1017,7 @@ class NodeMgr
     String source   = req.getSourceLink().getName();
     NodeID sourceID = new NodeID(targetID, source);
 
-    TaskTimer timer = new TaskTimer("NodeMgr.link(): " + targetID + " to " + sourceID);
+    TaskTimer timer = new TaskTimer("MasterMgr.link(): " + targetID + " to " + sourceID);
 
     timer.aquire();
     ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
@@ -1037,7 +1083,7 @@ class NodeMgr
     String source   = req.getSourceName();
     NodeID sourceID = new NodeID(targetID, source);
 
-    TaskTimer timer = new TaskTimer("NodeMgr.unlink(): " + targetID + " from " + sourceID);
+    TaskTimer timer = new TaskTimer("MasterMgr.unlink(): " + targetID + " from " + sourceID);
 
     timer.aquire();
     ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
@@ -1147,7 +1193,7 @@ class NodeMgr
     String name = req.getNodeMod().getName();
     NodeID id   = req.getNodeID();
 
-    TaskTimer timer = new TaskTimer("NodeMgr.register(): " + id);
+    TaskTimer timer = new TaskTimer("MasterMgr.register(): " + id);
 
     /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
@@ -1228,7 +1274,7 @@ class NodeMgr
     assert(req != null);
     NodeID id = req.getNodeID();
 
-    TaskTimer timer = new TaskTimer("NodeMgr.revoke(): " + id);
+    TaskTimer timer = new TaskTimer("MasterMgr.revoke(): " + id);
 
     /* unlink the downstream working versions from the to be revoked working version */ 
     {
@@ -1390,7 +1436,7 @@ class NodeMgr
     String nname = req.getNewName();
     NodeID nid   = new NodeID(id, nname);
 
-    TaskTimer timer = new TaskTimer("NodeMgr.rename(): " + id + " to " + nid);
+    TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + nid);
 
     /* reserve the new node name, 
          after verifying that it doesn't conflict with existing nodes */ 
@@ -3781,7 +3827,7 @@ class NodeMgr
      int port
     ) 
     {
-      super("NodeMgr:DirtyTask");
+      super("MasterMgr:DirtyTask");
       pClient = new NotifyMonitorClient(hostname, port);
       pShutdown = new AtomicBoolean(false);
     }

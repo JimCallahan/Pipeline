@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.16 2004/05/16 19:04:05 jim Exp $
+// $Id: MasterMgrClient.java,v 1.1 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -9,11 +9,11 @@ import java.net.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   M G R   C L I E N T                                                          */
+/*   M A S T E R    M G R   C L I E N T                                                     */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The client-side manager of node queries and operations. <P> 
+ * A connection to the Pipeline master server daemon. <P> 
  * 
  * This class handles network communication with the Pipeline master server daemon 
  * <A HREF="../../../../man/plmaster.html"><B>plmaster</B><A>(1).  This class represents the
@@ -21,14 +21,14 @@ import java.util.*;
  * Pipeline system.
  */
 public
-class NodeMgrClient
+class MasterMgrClient
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a new node manager client.
+   * Construct a new master manager client.
    * 
    * @param hostname 
    *   The name of the host running <B>plmaster</B>(1).
@@ -37,7 +37,7 @@ class NodeMgrClient
    *   The network port listened to by <B>plmaster</B>(1).
    */
   public
-  NodeMgrClient
+  MasterMgrClient
   ( 
    String hostname, 
    int port
@@ -53,14 +53,14 @@ class NodeMgrClient
   }
 
   /** 
-   * Construct a new node manager client. <P> 
+   * Construct a new master manager client. <P> 
    * 
    * The hostname and port used are those specified by the 
    * <CODE><B>--master-host</B>=<I>host</I></CODE> and 
    * <CODE><B>--master-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
    */
   public
-  NodeMgrClient() 
+  MasterMgrClient() 
   {
     pHostname = PackageInfo.sMasterServer;
     pPort     = PackageInfo.sMasterPort;
@@ -85,7 +85,7 @@ class NodeMgrClient
       if(pSocket.isConnected()) {
 	OutputStream out = pSocket.getOutputStream();
 	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(NodeRequest.Disconnect);
+	objOut.writeObject(MasterRequest.Disconnect);
 	objOut.flush(); 
 
 	pSocket.close();
@@ -114,7 +114,7 @@ class NodeMgrClient
     try {
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(NodeRequest.Shutdown);
+      objOut.writeObject(MasterRequest.Shutdown);
       objOut.flush(); 
 
       pSocket.close();
@@ -153,7 +153,7 @@ class NodeMgrClient
 	 
     NodeGetWorkingAreasReq req = new NodeGetWorkingAreasReq();
 
-    Object obj = performTransaction(NodeRequest.GetWorkingAreas, req);
+    Object obj = performTransaction(MasterRequest.GetWorkingAreas, req);
     if(obj instanceof NodeGetWorkingAreasRsp) {
       NodeGetWorkingAreasRsp rsp = (NodeGetWorkingAreasRsp) obj;
       return rsp.getTable();
@@ -193,7 +193,7 @@ class NodeMgrClient
 	 
     NodeUpdatePathsReq req = new NodeUpdatePathsReq(author, view, paths);
 
-    Object obj = performTransaction(NodeRequest.UpdatePaths, req);
+    Object obj = performTransaction(MasterRequest.UpdatePaths, req);
     if(obj instanceof NodeUpdatePathsRsp) {
       NodeUpdatePathsRsp rsp = (NodeUpdatePathsRsp) obj;
       return rsp.getRootComp();
@@ -235,7 +235,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, name);
     NodeGetWorkingReq req = new NodeGetWorkingReq(id);
 
-    Object obj = performTransaction(NodeRequest.GetWorking, req);
+    Object obj = performTransaction(MasterRequest.GetWorking, req);
     if(obj instanceof NodeGetWorkingRsp) {
       NodeGetWorkingRsp rsp = (NodeGetWorkingRsp) obj;
       return rsp.getNodeMod();      
@@ -288,7 +288,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, mod.getName());
     NodeModifyPropertiesReq req = new NodeModifyPropertiesReq(id, mod);
 
-    Object obj = performTransaction(NodeRequest.ModifyProperties, req);
+    Object obj = performTransaction(MasterRequest.ModifyProperties, req);
     handleSimpleResponse(obj);
   }
 
@@ -376,7 +376,7 @@ class NodeMgrClient
     LinkMod link = new LinkMod(source, catagory, relationship, offset);
     NodeLinkReq req = new NodeLinkReq(id, link);
 
-    Object obj = performTransaction(NodeRequest.Link, req);
+    Object obj = performTransaction(MasterRequest.Link, req);
     handleSimpleResponse(obj);
   } 
 
@@ -409,7 +409,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, target);
     NodeUnlinkReq req = new NodeUnlinkReq(id, source);
 
-    Object obj = performTransaction(NodeRequest.Unlink, req);
+    Object obj = performTransaction(MasterRequest.Unlink, req);
     handleSimpleResponse(obj);
   } 
 
@@ -454,7 +454,7 @@ class NodeMgrClient
     NodeID id = new NodeID(author, view, name);
     NodeStatusReq req = new NodeStatusReq(id);
 
-    Object obj = performTransaction(NodeRequest.Status, req);
+    Object obj = performTransaction(MasterRequest.Status, req);
     if(obj instanceof NodeStatusRsp) {
       NodeStatusRsp rsp = (NodeStatusRsp) obj;
       return rsp.getNodeStatus();
@@ -530,7 +530,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, mod.getName());
     NodeRegisterReq req = new NodeRegisterReq(id, mod);
 
-    Object obj = performTransaction(NodeRequest.Register, req);
+    Object obj = performTransaction(MasterRequest.Register, req);
     handleSimpleResponse(obj);
   }
 
@@ -572,7 +572,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, name);
     NodeRevokeReq req = new NodeRevokeReq(id, removeFiles);
 
-    Object obj = performTransaction(NodeRequest.Revoke, req);
+    Object obj = performTransaction(MasterRequest.Revoke, req);
     handleSimpleResponse(obj);
   } 
 
@@ -621,7 +621,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, oldName);
     NodeRenameReq req = new NodeRenameReq(id, newName, renameFiles);
 
-    Object obj = performTransaction(NodeRequest.Rename, req);
+    Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);
   } 
 
@@ -671,7 +671,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, name);
     NodeCheckInReq req = new NodeCheckInReq(id, msg, level);
 
-    Object obj = performTransaction(NodeRequest.CheckIn, req);
+    Object obj = performTransaction(MasterRequest.CheckIn, req);
     if(obj instanceof NodeStatusRsp) {
       NodeStatusRsp rsp = (NodeStatusRsp) obj;
       return rsp.getNodeStatus();
@@ -727,7 +727,7 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, name);
     NodeCheckOutReq req = new NodeCheckOutReq(id, vid, keepNewer);
 
-    Object obj = performTransaction(NodeRequest.CheckOut, req);
+    Object obj = performTransaction(MasterRequest.CheckOut, req);
     if(obj instanceof NodeStatusRsp) {
       NodeStatusRsp rsp = (NodeStatusRsp) obj;
       return rsp.getNodeStatus();

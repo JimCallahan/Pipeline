@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.7 2004/03/23 20:41:25 jim Exp $
+// $Id: TestPluginsApp.java,v 1.8 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -253,7 +253,7 @@ class TestPluginsApp
 	assert(script.equals(clone));
 	
 	{
-	  GlueEncoder ge = new GlueEncoder("ScriptAction", clone);
+	  GlueEncoder ge = new GlueEncoderImpl("ScriptAction", clone);
 	  String text = ge.getText();
 	  System.out.print(text + "\n");
 	}
@@ -266,13 +266,13 @@ class TestPluginsApp
 	assert(!script.equals(clone));
 	
 	{
-	  GlueEncoder ge = new GlueEncoder("ScriptAction", script);
+	  GlueEncoder ge = new GlueEncoderImpl("ScriptAction", script);
 	  String text = ge.getText();
 	  System.out.print(text + "\n");
 	}
 	
 	{
-	  GlueEncoder ge = new GlueEncoder("ScriptAction", clone);
+	  GlueEncoder ge = new GlueEncoderImpl("ScriptAction", clone);
 	  String text = ge.getText();
 	  System.out.print(text + "\n");
 	}
@@ -292,17 +292,17 @@ class TestPluginsApp
     System.out.print("-----------------------------------\n" + 
 		     "BEFORE:\n");
 
-    GlueEncoder ge = new GlueEncoder(title, obj);
+    GlueEncoder ge = new GlueEncoderImpl(title, obj);
     String text = ge.getText();
     System.out.print(text + "\n");
 
     System.out.print("AFTER:\n");
 
-    GlueDecoder gd = new GlueDecoder(text);
+    GlueDecoder gd = new GlueDecoderImpl(text);
     Object obj2 = gd.getObject();	
     assert(obj.equals(obj2));
 
-    GlueEncoder ge2 = new GlueEncoder(title, (Glueable) obj2);
+    GlueEncoder ge2 = new GlueEncoderImpl(title, (Glueable) obj2);
     String text2 = ge.getText();
     System.out.print(text2 + "\n");
     

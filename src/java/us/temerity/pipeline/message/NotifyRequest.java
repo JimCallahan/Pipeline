@@ -1,4 +1,4 @@
-// $Id: NotifyRequest.java,v 1.1 2004/04/11 19:31:31 jim Exp $
+// $Id: NotifyRequest.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,10 +10,6 @@ package us.temerity.pipeline.message;
  * The set of identifiers for request messages which may be sent over a network 
  * connection from the <CODE>NotifyControlClient</CODE> or <CODE>NotifyMonitorClient</CODE> 
  * to the <CODE>NotifyServer</CODE>.  <P> 
- * 
- * @see NotifyMonitorReq
- * @see NotifyUnmonitorReq
- * @see NotifyWatchReq
  */
 public
 enum NotifyRequest

@@ -1,4 +1,4 @@
-// $Id: NodeModifyPropertiesReq.java,v 1.2 2004/03/29 08:18:53 jim Exp $
+// $Id: NodeModifyPropertiesReq.java,v 1.3 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to set the node properties of the working version of the node. <P> 
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeModifyPropertiesReq

@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.3 2004/05/08 23:31:39 jim Exp $
+// $Id: DownstreamLinks.java,v 1.4 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21,9 +21,9 @@ import java.io.*;
  * be regenerated (with a considerable amount of effort) from the {@link NodeMod NodeMod} 
  * and {@link NodeVersion NodeVersion} instances. <P> 
  * 
- * The {@link NodeMgr NodeMgr} class is responsible for keeping the linkage information  
+ * The {@link MasterMgr MasterMgr} class is responsible for keeping the linkage information  
  * contained in instances of this class up to date with the <CODE>NodeMod</CODE> and 
- * <CODE>NodeVersion</CODE> instances.  The <CODE>NodeMgr</CODE> class is also responsible 
+ * <CODE>NodeVersion</CODE> instances.  The <CODE>MasterMgr</CODE> class is also responsible 
  * for reading and writing the Glue format text files which store persistant instance of 
  * this class on disk. <P> 
  * 

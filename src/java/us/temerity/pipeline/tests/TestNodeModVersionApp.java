@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.5 2004/04/20 22:03:23 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.6 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -304,13 +304,10 @@ class TestNodeModVersionApp
       mod6 = mod;
     }
 
-    try {
+    {
       NodeMod modA = new NodeMod(mod5);
       NodeMod modB = (NodeMod) mod5.clone();
       assert(modA.equals(modB));
-    }
-    catch(CloneNotSupportedException ex) {
-      System.out.print("Caught: " + ex.getMessage() + "\n");
     }
 
     {
@@ -339,7 +336,7 @@ class TestNodeModVersionApp
       System.out.print("-----------------------------------\n");
       {
 	NodeTest test = new NodeTest(table);
-	GlueEncoder ge = new GlueEncoder("Node", test);
+	GlueEncoder ge = new GlueEncoderImpl("Node", test);
 	System.out.print(ge.getText() + "\n");
       }
     }
@@ -360,13 +357,13 @@ class TestNodeModVersionApp
   {
     System.out.print("-----------------------------------\n");
     {
-      GlueEncoder ge = new GlueEncoder("NodeMod", mod);
+      GlueEncoder ge = new GlueEncoderImpl("NodeMod", mod);
       System.out.print(ge.getText() + "\n");
 
-      GlueDecoder gd = new GlueDecoder(ge.getText());
+      GlueDecoder gd = new GlueDecoderImpl(ge.getText());
       NodeMod mod2 = (NodeMod) gd.getObject();
 
-//       GlueEncoder ge2 = new GlueEncoder("NodeMod (Glue)", mod2);
+//       GlueEncoder ge2 = new GlueEncoderImpl("NodeMod (Glue)", mod2);
 //       System.out.print(ge2.getText() + "\n");
 		       
       assert(mod.equals(mod2));
@@ -382,10 +379,10 @@ class TestNodeModVersionApp
   {
     System.out.print("-----------------------------------\n");
     {
-      GlueEncoder ge = new GlueEncoder("NodeVersion", vsn);
+      GlueEncoder ge = new GlueEncoderImpl("NodeVersion", vsn);
       System.out.print(ge.getText() + "\n");
 
-      GlueDecoder gd = new GlueDecoder(ge.getText());
+      GlueDecoder gd = new GlueDecoderImpl(ge.getText());
       NodeVersion vsn2 = (NodeVersion) gd.getObject();
 
       assert(vsn.equals(vsn2));

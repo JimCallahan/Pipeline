@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.19 2004/05/21 00:15:49 jim Exp $
+// $Id: JManagerPanel.java,v 1.20 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -897,7 +897,7 @@ class JManagerPanel
 
     TreeMap<String,TreeSet<String>> working = null;
     try {
-      working = master.getNodeMgrClient().getWorkingAreas(); 
+      working = master.getMasterMgrClient().getWorkingAreas(); 
       
       // DEBUG 
       {

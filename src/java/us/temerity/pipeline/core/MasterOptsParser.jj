@@ -263,9 +263,9 @@ Commands() :
   (GlobalOpts() WS())*
   { 
     try {
-      NodeMgrServer server = 
-	new NodeMgrServer(pNodeDir, pMasterPort, 
-			  pProdDir, pFileServer, pFilePort, pControlPort, pMonitorPort);
+      MasterMgrServer server = 
+	new MasterMgrServer(pNodeDir, pMasterPort, 
+			    pProdDir, pFileServer, pFilePort, pControlPort, pMonitorPort);
       server.start();
       server.join();
     }

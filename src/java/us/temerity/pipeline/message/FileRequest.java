@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.8 2004/03/30 22:18:16 jim Exp $
+// $Id: FileRequest.java,v 1.9 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,14 +15,6 @@ package us.temerity.pipeline.message;
  * object which contains the needed request data.  The purpose of this enumeration is to 
  * make testing for which request is being send more efficient and cleaner on the 
  * <CODE>FileMgrServer</CODE> side of the connection.
- * 
- * @see FileCheckInReq
- * @see FileCheckOutReq
- * @see FileFreezeReq
- * @see FileUnfreezeReq
- * @see FileStateReq
- * @see FileRemoveReq
- * @see FileRenameReq
  */
 public
 enum FileRequest

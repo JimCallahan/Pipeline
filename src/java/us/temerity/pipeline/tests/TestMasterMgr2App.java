@@ -1,4 +1,4 @@
-// $Id: TestNodeMgr2App.java,v 1.2 2004/05/03 04:31:01 jim Exp $
+// $Id: TestMasterMgr2App.java,v 1.1 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -14,7 +14,7 @@ import java.util.logging.*;
 /*------------------------------------------------------------------------------------------*/
 
 public 
-class TestNodeMgr2App
+class TestMasterMgr2App
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   M A I N                                                                              */
@@ -32,7 +32,7 @@ class TestNodeMgr2App
     Logs.ops.setLevel(Level.FINEST);
 
     try {
-      TestNodeMgr2App app = new TestNodeMgr2App();
+      TestMasterMgr2App app = new TestMasterMgr2App();
       app.run();
     } 
     catch (Exception ex) {
@@ -220,7 +220,7 @@ class TestNodeMgr2App
 	modB = clientB.getNodeMod();
       }
       
-      NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+      MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
       printStatus(client.status("default", modA.getName()));
       printStatus(client.status("default", modB.getName()));
@@ -282,7 +282,7 @@ class TestNodeMgr2App
       }
 
       {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
 	client.checkOut("modeling", modA.getName(), null, false);
 	printStatus(client.status("modeling", modA.getName()));
@@ -306,7 +306,7 @@ class TestNodeMgr2App
       }
 
       {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
 	printStatus(client.status("default", eagle.getName()));
 	printStatus(client.status("default", eagle.getName()));
@@ -324,7 +324,7 @@ class TestNodeMgr2App
       }
    
       /* modify the some of the animal directories */ 
-      NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+      MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
       {
 	File animals = new File(prodDir, "working/jim/default/animals/");
@@ -551,7 +551,7 @@ class TestNodeMgr2App
       return;
     }
 
-    GlueEncoder ge = new GlueEncoder(title, obj);
+    GlueEncoder ge = new GlueEncoderImpl(title, obj);
     String text = ge.getText();
     String lines[] = text.split("\n");
     int wk;
@@ -592,7 +592,7 @@ class TestNodeMgr2App
 	Random random = new Random(pSeed);
 	sleep(random.nextInt(2000));
 	
-	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 	
 	client.register("default", pNodeMod);
 	
@@ -668,7 +668,7 @@ class TestNodeMgr2App
 	Random random = new Random(pSeed);
 	sleep(random.nextInt(2000));
 	
-	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 	
 	{
 	  int cnt;
@@ -722,7 +722,7 @@ class TestNodeMgr2App
       try {
 	sleep(random.nextInt(1000));
      
-	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
 	client.register("default", pSalamander);
 	client.register("default", pFrog);
@@ -800,7 +800,7 @@ class TestNodeMgr2App
       try {
 	sleep(random.nextInt(1000));
     
-	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
 	client.register("default", pSparrow);
 	client.register("default", pEagle);

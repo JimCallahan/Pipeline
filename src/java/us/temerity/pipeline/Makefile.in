@@ -196,7 +196,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    VersionState \
                    PosixSignal \
                    message/FileRequest \
-                   message/NodeRequest \
+                   message/MasterRequest \
                    ui/SelectionMode
 
 
@@ -209,16 +209,17 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
      LAF_SOURCES = $(shell ls $(srcdir)/laf/*.java) 
 
-
     CORE_SOURCES = $(shell ls $(srcdir)/core/*.java) 
 
      MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
+
+      TS_SOURCES = $(shell ls $(srcdir)/toolset/*.java)
 
       UI_SOURCES = $(shell ls $(srcdir)/ui/*.java) 
 
 
      ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) \
-                   $(CORE_SOURCES) $(MSG_SOURCES) $(UI_SOURCES)
+                   $(CORE_SOURCES) $(MSG_SOURCES) $(TS_SOURCES) $(UI_SOURCES)
 
 
     CORE_PARSERS = ToolsetEnvParser \
@@ -236,7 +237,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                    bootstrap/BootStrapLoader.java
 
-          LOCKED = $(shell ls core/*.class) $(shell ls ui/*.class)
+          LOCKED = $(shell ls core/*.class) \
+                   $(shell ls toolset/*.class) \
+                   $(shell ls ui/*.class)
 
 
 
@@ -259,6 +262,7 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/core/*.class \
                     us/temerity/pipeline/message/*.class \
+                    us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
@@ -302,7 +306,8 @@ ui/UserPrefs.java ui/JUserPrefsDialog.java: ui/prefs/GenUserPrefsApp.class
 	$(JAVA) -cp ui/prefs $(JAVA_RUNTIME_FLAGS) GenUserPrefsApp
 
 ui/prefs/GenUserPrefsApp.class: ui/prefs/GenUserPrefsApp.java
-	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/prefs -classpath ui/prefs $<
+	@mkdir -p ui/prefs
+	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/prefs -classpath $(srcdir)/ui/prefs $<
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)

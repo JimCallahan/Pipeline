@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.13 2004/05/04 11:00:15 jim Exp $
+// $Id: MasterMgrServer.java,v 1.1 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15,20 +15,20 @@ import java.util.concurrent.atomic.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The server-side manager of node queries and operations. <P> 
+ * The server-side network support for the Pipeline master server daemon. <P> 
  * 
- * This class handles network communication with {@link NodeMgrClient NodeMgrClient} 
+ * This class handles network communication with {@link MasterMgrClient MasterMgrClient} 
  * instances running on remote hosts.  This class listens for new connections from  
- * <CODE>NodeMgrClient</CODE> instances and creats a thread to manage each connection.
+ * <CODE>MasterMgrClient</CODE> instances and creats a thread to manage each connection.
  * Each of these threads then listens for requests for file system related operations 
- * and dispatches these requests to an underlying instance of the {@link NodeMgr NodeMgr}
+ * and dispatches these requests to an underlying instance of the {@link MasterMgr MasterMgr}
  * class.
  * 
- * @see NodeMgr
- * @see NodeMgrClient
+ * @see MasterMgr
+ * @see MasterMgrClient
  */
 public
-class NodeMgrServer
+class MasterMgrServer
   extends Thread
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ class NodeMgrServer
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a new node manager server.
+   * Construct a new master manager server.
    * 
    * @param nodeDir 
    *   The root node directory.
@@ -63,7 +63,7 @@ class NodeMgrServer
    *   monitor connections.
    */
   public
-  NodeMgrServer
+  MasterMgrServer
   (
    File nodeDir, 
    int nodePort, 
@@ -74,12 +74,12 @@ class NodeMgrServer
    int monitorPort
   )
   { 
-    super("NodeMgrServer");
+    super("MasterMgrServer");
     init(nodeDir, nodePort, prodDir, fileHostname, filePort, controlPort, monitorPort);
   }
   
   /** 
-   * Construct a new node manager using the default root node directory and 
+   * Construct a new master manager using the default root node directory and 
    * network ports.
    * 
    * The root node directory is specified by the <B>--node-dir</B>=<I>dir</I>
@@ -94,9 +94,9 @@ class NodeMgrServer
    * <B>--notify-monitor-port</B>=<I>num</I> options to <B>plconfig</B>(1).
    */
   public
-  NodeMgrServer() 
+  MasterMgrServer() 
   { 
-    super("NodeMgrServer");
+    super("MasterMgrServer");
     init(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
 	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
 	 PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort);
@@ -144,8 +144,8 @@ class NodeMgrServer
    int monitorPort
   )
   { 
-    pNodeMgr = new NodeMgr(nodeDir, prodDir, 
-			   fileHostname, filePort, controlPort, monitorPort);
+    pMasterMgr = new MasterMgr(nodeDir, prodDir, 
+			       fileHostname, filePort, controlPort, monitorPort);
 
     if(nodePort < 0) 
       throw new IllegalArgumentException("Illegal port number (" + nodePort + ")!");
@@ -222,7 +222,7 @@ class NodeMgrServer
 	}
       }
 
-      pNodeMgr.shutdown();
+      pMasterMgr.shutdown();
 
       Logs.net.fine("Server Shutdown.");
       Logs.flush();
@@ -235,7 +235,7 @@ class NodeMgrServer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Handle an incoming connection from a <CODE>NodeMgrClient</CODE> instance.
+   * Handle an incoming connection from a <CODE>MasterMgrClient</CODE> instance.
    */
   private 
   class HandlerTask
@@ -247,7 +247,7 @@ class NodeMgrServer
      Socket socket
     ) 
     {
-      super("NodeMgrServer:HandlerTask");
+      super("MasterMgrServer:HandlerTask");
       pSocket = socket;
     }
 
@@ -262,7 +262,7 @@ class NodeMgrServer
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
 	  ObjectInput objIn = new ObjectInputStream(in);
-	  NodeRequest kind  = (NodeRequest) objIn.readObject();
+	  MasterRequest kind  = (MasterRequest) objIn.readObject();
 	  
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
@@ -274,7 +274,7 @@ class NodeMgrServer
 	  case GetWorkingAreas:
 	    {
 	      NodeGetWorkingAreasReq req = (NodeGetWorkingAreasReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.getWorkingAreas(req));
+	      objOut.writeObject(pMasterMgr.getWorkingAreas(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -282,7 +282,7 @@ class NodeMgrServer
 	  case UpdatePaths:
 	    {
 	      NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.updatePaths(req));
+	      objOut.writeObject(pMasterMgr.updatePaths(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -294,7 +294,7 @@ class NodeMgrServer
 	  case GetWorking:
 	    {
 	      NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.getWorkingVersion(req));
+	      objOut.writeObject(pMasterMgr.getWorkingVersion(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -302,7 +302,7 @@ class NodeMgrServer
 	  case ModifyProperties:
 	    {
 	      NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.modifyProperties(req));
+	      objOut.writeObject(pMasterMgr.modifyProperties(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -310,7 +310,7 @@ class NodeMgrServer
 	  case Link:
 	    {
 	      NodeLinkReq req = (NodeLinkReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.link(req));
+	      objOut.writeObject(pMasterMgr.link(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -318,7 +318,7 @@ class NodeMgrServer
 	  case Unlink:
 	    {
 	      NodeUnlinkReq req = (NodeUnlinkReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.unlink(req));
+	      objOut.writeObject(pMasterMgr.unlink(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -330,7 +330,7 @@ class NodeMgrServer
 	  case Status:
 	    {
 	      NodeStatusReq req = (NodeStatusReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.status(req));
+	      objOut.writeObject(pMasterMgr.status(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -338,7 +338,7 @@ class NodeMgrServer
 	  case Register:
 	    {
 	      NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.register(req));
+	      objOut.writeObject(pMasterMgr.register(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -346,7 +346,7 @@ class NodeMgrServer
 	  case Revoke:
 	    {
 	      NodeRevokeReq req = (NodeRevokeReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.revoke(req));
+	      objOut.writeObject(pMasterMgr.revoke(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -354,7 +354,7 @@ class NodeMgrServer
 	  case Rename:
 	    {
 	      NodeRenameReq req = (NodeRenameReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.rename(req));
+	      objOut.writeObject(pMasterMgr.rename(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -362,7 +362,7 @@ class NodeMgrServer
 	  case CheckIn:
 	    {
 	      NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.checkIn(req));
+	      objOut.writeObject(pMasterMgr.checkIn(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -370,7 +370,7 @@ class NodeMgrServer
 	  case CheckOut:
 	    {
 	      NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.checkOut(req));
+	      objOut.writeObject(pMasterMgr.checkOut(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -386,7 +386,7 @@ class NodeMgrServer
 	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
 
 	    // DEBUG 
-	    pNodeMgr.logNodeTree();
+	    pMasterMgr.logNodeTree();
 	    // DEBUG
       
 	    Logs.flush();
@@ -434,9 +434,9 @@ class NodeMgrServer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The shared node manager. 
+   * The shared master manager. 
    */
-  private NodeMgr  pNodeMgr;
+  private MasterMgr  pMasterMgr;
 
   /**
    * The network port number the server listens to for incoming connections.

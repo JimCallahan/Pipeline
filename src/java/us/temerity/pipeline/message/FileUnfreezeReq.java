@@ -1,4 +1,4 @@
-// $Id: FileUnfreezeReq.java,v 1.5 2004/03/26 04:41:31 jim Exp $
+// $Id: FileUnfreezeReq.java,v 1.6 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,7 +20,7 @@ import java.util.*;
  * copies of the checked-in checksum files which are the current targets of the checksum 
  * symlinks.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class FileUnfreezeReq

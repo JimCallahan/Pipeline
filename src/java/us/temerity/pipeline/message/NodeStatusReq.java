@@ -1,4 +1,4 @@
-// $Id: NodeStatusReq.java,v 1.2 2004/04/20 22:01:56 jim Exp $
+// $Id: NodeStatusReq.java,v 1.3 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to obtain the overall node status of the given node.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeStatusReq

@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.3 2004/05/14 02:36:37 jim Exp $
+// $Id: CheckSum.java,v 1.4 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -21,7 +21,7 @@ import java.nio.channels.*;
  * nodes and uses these checksums to optimize file comparisons. <P> 
  * 
  * @see MessageDigest
- * @see NodeMgr
+ * @see MasterMgr
  */ 
 public
 class CheckSum

@@ -1,6 +1,7 @@
-// $Id: TestGlueApp.java,v 1.4 2004/03/23 20:41:25 jim Exp $
+// $Id: TestGlueApp.java,v 1.5 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
 
 import java.lang.reflect.*;
@@ -67,16 +68,16 @@ class TestGlueApp
     System.out.print("-----------------------------------\n" + 
 		     "BEFORE:\n");
 
-    GlueEncoder ge = new GlueEncoder(title, obj);
+    GlueEncoder ge = new GlueEncoderImpl(title, obj);
     String text = ge.getText();
     System.out.print(text + "\n");
 
     System.out.print("AFTER:\n");
 
-    GlueDecoder gd = new GlueDecoder(text);
+    GlueDecoder gd = new GlueDecoderImpl(text);
     Object obj2 = gd.getObject();
 
-    GlueEncoder ge2 = new GlueEncoder(title, (Glueable) obj2);
+    GlueEncoder ge2 = new GlueEncoderImpl(title, (Glueable) obj2);
     String text2 = ge.getText();
     System.out.print(text2 + "\n");
     

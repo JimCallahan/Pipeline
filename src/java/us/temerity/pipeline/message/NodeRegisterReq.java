@@ -1,4 +1,4 @@
-// $Id: NodeRegisterReq.java,v 1.4 2004/03/30 22:18:51 jim Exp $
+// $Id: NodeRegisterReq.java,v 1.5 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to register an initial working version of a node.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeRegisterReq

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.13 2004/05/21 00:18:22 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.14 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -590,7 +590,7 @@ class JNodeViewerPanel
 
       /* rebuild items */ 
       {
-	for(String catagory : master.getNodeMgrClient().getLinkCatagories().keySet()) {
+	for(String catagory : master.getMasterMgrClient().getLinkCatagories().keySet()) {
 	  item = new JMenuItem(catagory);
 	  item.setActionCommand("link:" + catagory);
 	  item.addActionListener(this);
@@ -635,7 +635,7 @@ class JNodeViewerPanel
       pLinkCatagoryMenu.removeAll();
       pLinkCatagoryMenu.setEnabled(false);
     
-      for(String catagory : master.getNodeMgrClient().getLinkCatagories().keySet()) {
+      for(String catagory : master.getMasterMgrClient().getLinkCatagories().keySet()) {
 	JMenuItem item = new JMenuItem(catagory);
 	item.setActionCommand("link-catagory:" + catagory);
 	item.addActionListener(this);
@@ -2293,7 +2293,8 @@ class JNodeViewerPanel
 		try {
 		  System.out.print("Recomputing Status: " + name + " ");
 		  
-		  NodeStatus status = master.getNodeMgrClient().status(pAuthor, pView, name);
+		  MasterMgrClient client = master.getMasterMgrClient();
+		  NodeStatus status = client.status(pAuthor, pView, name);
 		  pRoots.put(name, status);
 		  
 		  System.out.print("[DONE]\n");

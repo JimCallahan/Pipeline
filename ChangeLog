@@ -1,3 +1,401 @@
+2004-05-19  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	custom tree node selection, communication with JNodeViewerPanel to coordinate selected tree nodes with roots in the viewer
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserTreeCellRenderer.java:
+	custom tree node selection support
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added support for multiple node trees, communication of root changes with JNodeBrowserPanel, fully support for Author/View changes
+
+	* src/java/us/temerity/pipeline/ui/ViewerLinkRelationshipPool.java:
+	removed debugging messages
+
+	* src/java/us/temerity/pipeline/ui/NodePath.java: added getRootName()
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added getNodeBrowser()
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added check for BOTH the working and checked-in bundle missing
+
+2004-05-18  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java:
+	replaced scroll pane with JPanel for values
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/images/LinkIcons-painted.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/LinkIcons-painted.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/LinkIcons-painted.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/LinkIcons.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/LinkIcons.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/LinkIcons.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/scenes/LinkIcons.ma, src/java/us/temerity/pipeline/ui/ViewerLinkRelationship.java, src/java/us/temerity/pipeline/ui/ViewerLinkRelationshipPool.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/LinkRelationship.java: added all()
+
+	* src/java/us/temerity/pipeline/ui/ViewerLinks.java:
+	added link relationship icons
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added loading of link icon textures during startup
+
+	* src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java, src/java/us/temerity/pipeline/ui/UserPrefs.java:
+	added VerticalCrossbar and DrawLinkRelationship
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added link relationship icons
+
+	* src/java/us/temerity/pipeline/ui/AppearanceMgr.java:
+	added getLinkRelationshipAppearance()
+
+	* src/java/us/temerity/pipeline/laf/scripts/filter-textures.in:
+	added link icons
+
+2004-05-17  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/ViewerLinks.java:
+	links fully operational
+
+	* src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java, src/java/us/temerity/pipeline/ui/UserPrefs.java:
+	added DrawLinkPolicy and LinkPolicySize
+
+2004-05-16  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/laf/BooleanIcon.png, src/java/us/temerity/pipeline/laf/CollectionFieldIcon.png, src/java/us/temerity/pipeline/laf/LightGrey.png, src/java/us/temerity/pipeline/ui/JBooleanField.java, src/java/us/temerity/pipeline/ui/JCollectionField.java, src/java/us/temerity/pipeline/ui/RubberBand.java, src/java/us/temerity/pipeline/ui/ViewerLinks.java:
+	initial revision
+
+	* configure.ac:
+	added -switcheck to the list of Java warnings not to report
+
+	* src/java/us/temerity/pipeline/ui/ViewerNodePool.java:
+	added getActiveNodePaths(), getActiveViewerNode() and getActiveViewerNodes(), commented debugging messages
+
+	* src/java/us/temerity/pipeline/ui/ViewerNode.java:
+	fixed pickability bug, commented debugging messages
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added createTitledBooleanField() and createTitledCollectionField(), comments
+
+	* src/java/us/temerity/pipeline/ui/UserPrefs.java, src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java:
+	node and link appearance preferences
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added node popup menu, node selection with rubber band and mouse clicks, merged upstream/downstreal layout methods, node link basics, node expand/collapse, panel menu
+
+	* src/java/us/temerity/pipeline/ui/JErrorDialog.java:
+	added getStackTrace()
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java: obsolete
+
+	* src/java/us/temerity/pipeline/ui/AppearanceMgr.java:
+	fixed table indexing bug in getNodeAppearance()
+
+	* src/java/scripts/plui.in: added plugin directory to CLASSPATH
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	added BooleanField and CollectionField, removed ComboBox
+
+	* src/java/us/temerity/pipeline/laf/SliderTrack.png:
+	changed inset color to dark grey
+
+	* src/java/us/temerity/pipeline/laf/ComboBoxArrowButton.png, src/java/us/temerity/pipeline/laf/ValueBox.png:
+	obsolete
+
+	* src/java/us/temerity/pipeline/core/Plugins.java:
+	added getEditorNames() and getActionNames()
+
+	* src/java/us/temerity/pipeline/core/LockedGlueFile.java:
+	error messages
+
+	* src/java/us/temerity/pipeline/core/GraphicalOptsParser.jj:
+	added Plugins and FileCleaner initialization
+
+	* src/java/us/temerity/pipeline/core/GlueParserState.java:
+	extra error checking
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added getLinkCatagories() placeholder
+
+2004-05-14  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/UserPrefs.java, src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java:
+	added node viewer hot key fields
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added createTitledHotKey()
+
+	* src/java/us/temerity/pipeline/ui/JUserPrefsTreeCellRenderer.java:
+	comments
+
+	* src/java/us/temerity/pipeline/laf/synth.xml: added HotKeyField
+
+	* src/java/us/temerity/pipeline/core/CheckSum.java: comments
+
+	* src/java/us/temerity/pipeline/ui/HotKey.java, src/java/us/temerity/pipeline/ui/JHotKeyField.java:
+	initial revision
+
+2004-05-13  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JManageLayoutsDialog.java, src/java/us/temerity/pipeline/ui/JNewIdentifierDialog.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JSelectLayoutDialog.java, src/java/us/temerity/pipeline/ui/UserPrefs.java:
+	added NodeOffset
+
+	* src/java/us/temerity/pipeline/ui/NodePath.java: added getNumNodes()
+
+	* src/java/us/temerity/pipeline/ui/JUserPrefsTreeCellRenderer.java:
+	add serialVersionUID
+
+	* src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java:
+	reorganized panels
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/JTopLevelPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added updateUserPrefs(), comments
+
+	* src/java/us/temerity/pipeline/laf/SliderThumb.png, src/java/us/temerity/pipeline/laf/SliderTrack.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JBaseLayoutDialog.java, src/java/us/temerity/pipeline/ui/JLayoutTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNewIdentifierDialog.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java, src/java/us/temerity/pipeline/ui/JSaveLayoutTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java, src/java/us/temerity/pipeline/ui/JUserPrefsTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/UIMaster.java, src/java/us/temerity/pipeline/ui/UserPrefs.java:
+	user preferences dialog working
+
+2004-05-12  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added full Glue support
+
+	* src/java/us/temerity/pipeline/ui/JSelectLayoutDialog.java: comments
+
+	* src/java/us/temerity/pipeline/ui/JBaseLayoutDialog.java, src/java/us/temerity/pipeline/ui/JManageLayoutsDialog.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNewFolderDialog.java, src/java/us/temerity/pipeline/ui/JNewIdentifierDialog.java, src/java/us/temerity/pipeline/ui/JSaveLayoutDialog.java, src/java/us/temerity/pipeline/ui/JSelectLayoutDialog.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	saved layouts complete
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	merged NewFolderPanel, ErrorPanel and SavedLayoutPanel into MainDialogPanel
+
+	* src/java/us/temerity/pipeline/ui/JErrorDialog.java:
+	renamed root panel to MainDialogPanel
+
+2004-05-11  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	automated collection of inner classes for the vault
+
+	* src/java/us/temerity/pipeline/ui/JFancyTree.java, src/java/us/temerity/pipeline/ui/JHorzSplitPanel.java, src/java/us/temerity/pipeline/ui/JIdentifierField.java, src/java/us/temerity/pipeline/ui/JNewFolderDialog.java, src/java/us/temerity/pipeline/ui/JNodeBrowserTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/JSaveLayoutTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/JTabbedPanel.java, src/java/us/temerity/pipeline/ui/JVertSplitPanel.java, src/java/us/temerity/pipeline/ui/PanelLayout.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/JManageLayoutsDialog.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java, src/java/us/temerity/pipeline/ui/JSaveLayoutDialog.java, src/java/us/temerity/pipeline/ui/JTopLevelPanel.java, src/java/us/temerity/pipeline/ui/JTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/UIMaster.java, src/java/us/temerity/pipeline/ui/ViewerLabels.java:
+	support for saved panel layouts
+
+	* src/java/us/temerity/pipeline/ui/JListCellRenderer.java:
+	code organization, non-functional change
+
+	* src/java/us/temerity/pipeline/ui/JErrorDialog.java:
+	support for GlueException and GlueLockException
+
+	* src/java/us/temerity/pipeline/ui/JBaseDialog.java:
+	optional header panel
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java: comments
+
+	* src/java/us/temerity/pipeline/core/GlueLockException.java, src/java/us/temerity/pipeline/core/LockedGlueFile.java, src/java/us/temerity/pipeline/laf/FolderButton.png, src/java/us/temerity/pipeline/laf/FolderButtonPressed.png:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	FolderButton, EditableTextField, PanelLabel, improved JTree look, ScrollPaneTitle, SavedLayoutPanel, NewFolderPanel
+
+	* src/java/us/temerity/pipeline/laf/MenuIcon.png, src/java/us/temerity/pipeline/laf/MenuItem.png, src/java/us/temerity/pipeline/laf/MenuItemDisabled.png, src/java/us/temerity/pipeline/laf/MenuItemSelected.png:
+	transparent background, extra spacing
+
+	* src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellSpacerIcon.png:
+	improved JTree look
+
+2004-05-10  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JSplitPanel.java:
+	replaced by JHorzSplitPanel and JVertSplitPanel
+
+2004-05-08  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JErrorDialog.java, src/java/us/temerity/pipeline/ui/JManageLayoutsDialog.java, src/java/us/temerity/pipeline/ui/JSaveLayoutDialog.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	saved layout support
+
+	* src/java/us/temerity/pipeline/ui/JAboutDialog.java, src/java/us/temerity/pipeline/ui/JBaseDialog.java, src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java:
+	added extra button support to initUI()
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	added ErrorPanel, TextArea and a disabled state for Menu
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	moved Glue implementation back into the core package, leaving only interfaces in the glue package
+
+	* src/java/us/temerity/pipeline/core/DownstreamLinks.java:
+	uses null values for placeholder working/checked-in keys instead of empty Sets/Maps
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/core/GlueDecoderImpl.java, src/java/us/temerity/pipeline/core/GlueEncoderImpl.java, src/java/us/temerity/pipeline/core/GlueParser.jj, src/java/us/temerity/pipeline/core/GlueParserState.java, src/java/us/temerity/pipeline/glue/GlueDecoder.java, src/java/us/temerity/pipeline/glue/GlueEncoder.java, src/java/us/temerity/pipeline/glue/GlueParser.jj, src/java/us/temerity/pipeline/glue/GlueParserState.java, src/java/us/temerity/pipeline/glue/parser/ParseException.java, src/java/us/temerity/pipeline/glue/parser/SimpleCharStream.java, src/java/us/temerity/pipeline/glue/parser/TokenMgrError.java:
+	moved Glue implementation back into the core package, leaving only interfaces in the glue package
+
+	* src/java/us/temerity/pipeline/ui/JAboutDialog.java, src/java/us/temerity/pipeline/ui/JListCellRenderer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/ViewerNodePool.java:
+	more sophisticated and efficient ViewerNode recycling to minimize label and icon appearance changes
+
+	* src/java/us/temerity/pipeline/ui/ViewerNode.java:
+	better caching of the label text and icon appearance
+
+	* src/java/us/temerity/pipeline/NodeStatus.java:
+	added hasSources() and hasTargets()
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added AboutDialog, textfield and label creation methods, WindowListener to support doQuit() action
+
+	* src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java:
+	now used JListCellRenderer
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	basic upstream layout works
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	added application popup menu items, now used UIMaster textfield and label creation methods
+
+	* src/java/us/temerity/pipeline/ui/JBaseDialog.java:
+	fixed bug where Cancel button label was being ignored, support for non-modal look-and-feel
+
+	* src/java/us/temerity/pipeline/laf/DarkGrey.png, src/java/us/temerity/pipeline/laf/DialogHeader.png, src/java/us/temerity/pipeline/laf/EditableValuePanel.png, src/java/us/temerity/pipeline/laf/FrameInDark.png, src/java/us/temerity/pipeline/laf/TitlePanel.png:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	added TitlePanel and ValuePanel, made List background darker, added non-modal DialogHeader
+
+	* src/java/us/temerity/pipeline/core/BaseApp.java:
+	added static showURL() method and made htmlHelp() use it to show the man page
+
+	* src/java/us/temerity/pipeline/laf/DialogButtonPanel.png:
+	make background darker
+
+	* src/java/us/temerity/pipeline/laf/ListCellNormalIcon.png, src/java/us/temerity/pipeline/laf/ListCellSelectedIcon.png:
+	make background transparent
+
+2004-05-07  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	removed debugging messages
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added setFocus(), updateNodeStatus() and the StatusTask internal class to support proper asynchronous update of node status with  panel operation locking provided but UIMaster
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	used new beginPanelOp()/endPanelOp() methods in UIMaster, now updates any JNodeViewerPanel in the current group when an appropriate tree node is clicked on with the mouse
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	replaced obsolete enableOps()/disableOps() methods with a panel operations locking scheme and UI update tasks
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JTopLevelPanel.java:
+	removed obsolete enableOps() and disableOps() methods
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added more UI internal classes to the vault
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added a status() method which accepts an alternate author
+
+	* src/java/us/temerity/pipeline/ui/NodePath.java, src/java/us/temerity/pipeline/ui/ViewerNodePool.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	early ViewerNodePool tests
+
+	* src/java/us/temerity/pipeline/ui/ViewerNode.java:
+	added reset() and getNodePath()
+
+	* src/java/us/temerity/pipeline/ui/AppearanceMgr.java, src/java/us/temerity/pipeline/ui/ViewerLabels.java, src/java/us/temerity/pipeline/ui/ViewerNode.java:
+	initial revision
+
+	* configure.ac: replaced convert with gimp
+
+	* src/java/us/temerity/pipeline/ui/package.html:
+	added Java3D references
+
+	* src/java/us/temerity/pipeline/ui/TextureMgr.java:
+	comments, improved argument checking, added getNodeGeometry()
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	ViewerNode debugging
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in:
+	updated for new configure vars
+
+	* src/java/us/temerity/pipeline/laf/scripts/filter-fonts.in, src/java/us/temerity/pipeline/laf/scripts/filter-textures.in:
+	gimp from configure
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/scenes/CharterBTRoman.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Normal.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Primary.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Selected.ma:
+	SGI format images
+
+	* src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeStatus.java:
+	added toString()
+
+	* src/java/us/temerity/pipeline/Makefile.in: new texture/font filtering
+
+2004-05-06  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/laf/scripts/build-mipmap.scm, src/java/us/temerity/pipeline/laf/scripts/filter-fonts.in, src/java/us/temerity/pipeline/laf/scripts/filter-textures.in:
+	now uses GIMP to filter MipMaps
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0044.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0045.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0046.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0047.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0048.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0049.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0050.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0051.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0052.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0053.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0054.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0055.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0056.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0057.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0058.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0059.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0060.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0061.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0062.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0063.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0064.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0065.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0066.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0067.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0068.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0069.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0070.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0071.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0072.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0073.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0074.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0075.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0076.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0077.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0078.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0079.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0080.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0081.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0082.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0083.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0084.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0085.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0086.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0087.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0088.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0089.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0090.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0091.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0092.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0093.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0094.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0095.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0096.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0097.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0098.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0099.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0100.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0101.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0102.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0103.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0104.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0105.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0106.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0107.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0108.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0109.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0110.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0111.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0112.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0113.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0114.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0115.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0116.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0117.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0118.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0119.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0120.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0121.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0122.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0123.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0124.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0125.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0126.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0127.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0028.tif:
+	obsolete
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0044.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0045.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0046.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0047.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0048.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0049.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0050.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0051.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0052.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0053.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0054.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0055.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0056.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0057.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0058.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0059.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0060.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0061.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0062.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0063.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0064.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0065.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0066.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0067.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0068.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0069.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0070.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0071.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0072.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0073.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0074.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0075.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0076.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0077.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0078.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0079.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0080.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0081.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0082.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0083.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0084.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0085.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0086.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0087.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0088.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0089.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0090.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0091.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0092.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0093.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0094.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0095.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0096.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0097.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0098.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0099.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0100.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0101.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0102.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0103.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0104.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0105.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0106.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0107.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0108.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0109.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0110.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0111.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0112.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0113.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0114.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0115.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0116.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0117.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0118.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0119.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0120.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0121.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0122.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0123.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0124.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0125.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0126.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0127.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0029.sgi, src/java/us/temerity/pipeline/laf/scripts/filter-fonts.in, src/java/us/temerity/pipeline/ui/CharterBTRomanFontGeometry.java, src/java/us/temerity/pipeline/ui/FontGeometry.java:
+	initial revision
+
+	* configure.ac, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/ui/UIMaster.java, src/java/us/temerity/pipeline/ui/TextureMgr.java:
+	added font textures
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/mel/renderFont.mel:
+	made FontGeometry an interface
+
+2004-05-05  Jim Callahan  <jim@salamander>
+
+	* ChangeLog: latest
+
+	* Makefile.am, configure.ac, rpm/Makefile.am, rpm/pipeline.spec.in:
+	moved data into JAR file
+
+	* src/java/us/temerity/pipeline/Makefile.in: texture support
+
+	* src/java/us/temerity/pipeline/ui/TextAreaLogHandler.java: comments
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	splash screen, JNodeViewerPanel support
+
+	* src/java/us/temerity/pipeline/ui/JTreeCellRenderer.java:
+	added serialVersionUID
+
+	* src/java/us/temerity/pipeline/ui/JTopLevelPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	comments
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	added ComponentListener methods to handle hiding of panel contents when it is collapsed by JSplitPanel
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	new NodeTreeComp methods
+
+	* src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java:
+	comments
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/SelectionMode.java, src/java/us/temerity/pipeline/ui/TextureMgr.java, src/java/us/temerity/pipeline/ui/ZoomPanBehavior.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/OverallQueueState.java:
+	added all() method
+
+	* src/java/us/temerity/pipeline/laf/Grey.png, src/java/us/temerity/pipeline/laf/ProgressBar.png, src/java/us/temerity/pipeline/laf/ProgressBarMeter.png, src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/SplashBorder.png, src/java/us/temerity/pipeline/laf/White.png, src/java/us/temerity/pipeline/laf/Yellow.png, src/java/us/temerity/pipeline/laf/scripts/filter-textures.in:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/synth.xml: added splash screen
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/data/CharterBTRoman.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/UtopiaBold.txt, src/java/us/temerity/pipeline/laf/maya/synth/mel/CharterBTRoman.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/UtopiaBold.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/UtopiaRegular.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/renderFont.mel, src/java/us/temerity/pipeline/laf/maya/synth/scenes/.cvsignore, src/java/us/temerity/pipeline/laf/maya/synth/scenes/CharterBTRoman.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Normal.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Primary.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Selected.ma:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/scenes/flat.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/flat.mb:
+	changed to ASCII scene
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.1.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.2.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.3.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.4.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.5.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.6.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0044.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0045.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0046.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0047.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0048.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0049.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0050.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0051.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0052.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0053.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0054.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0055.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0056.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0057.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0058.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0059.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0060.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0061.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0062.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0063.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0064.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0065.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0066.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0067.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0068.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0069.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0070.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0071.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0072.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0073.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0074.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0075.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0076.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0077.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0078.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0079.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0080.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0081.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0082.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0083.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0084.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0085.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0086.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0087.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0088.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0089.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0090.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0091.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0092.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0093.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0094.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0095.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0096.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0097.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0098.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0099.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0100.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0101.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0102.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0103.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0104.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0105.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0106.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0107.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0108.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0109.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0110.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0111.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0112.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0113.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0114.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0115.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0116.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0117.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0118.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0119.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0120.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0121.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0122.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0123.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0124.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0125.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0126.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0127.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/.cvsignore, src/java/us/temerity/pipeline/laf/maya/synth/images/flat-painted.1.png, src/java/us/temerity/pipeline/laf/maya/synth/images/flat-painted.4.png, src/java/us/temerity/pipeline/laf/maya/synth/images/flat-painted.4a.png, src/java/us/temerity/pipeline/laf/maya/synth/scenes/flat.mb, src/java/us/temerity/pipeline/laf/maya/synth/workspace.mel:
+	initial revision
+
 2004-05-05  Jim Callahan  <jim@salamander>
 
 	* Makefile.am, configure.ac, rpm/Makefile.am, rpm/pipeline.spec.in:

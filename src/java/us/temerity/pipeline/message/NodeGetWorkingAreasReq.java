@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasReq.java,v 1.1 2004/05/02 12:13:34 jim Exp $
+// $Id: NodeGetWorkingAreasReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to get the table of current working area authors and views
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeGetWorkingAreasReq

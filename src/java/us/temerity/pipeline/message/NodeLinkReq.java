@@ -1,4 +1,4 @@
-// $Id: NodeLinkReq.java,v 1.1 2004/03/29 08:19:16 jim Exp $
+// $Id: NodeLinkReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to create or modify an existing link between the working versions.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeLinkReq

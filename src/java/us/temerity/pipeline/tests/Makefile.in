@@ -183,7 +183,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = NodeMgr2
+           TESTS = NewToolsets
 
 #             TESTS = CheckSum \
 #                     DNotify \
@@ -192,7 +192,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                     Glue \
 #                     NativeFileSys \
 #                     NodeID \
-#                     NodeMgr \
+#                     MasterMgr \
 #                     NodeModVersion \
 #                     SubProcess \
 #                     Toolsets \

@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.15 2004/05/05 20:58:14 jim Exp $
+// $Id: TestMasterMgrApp.java,v 1.1 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -14,7 +14,7 @@ import java.util.logging.*;
 /*------------------------------------------------------------------------------------------*/
 
 public 
-class TestNodeMgrApp
+class TestMasterMgrApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   M A I N                                                                              */
@@ -32,7 +32,7 @@ class TestNodeMgrApp
     Logs.ops.setLevel(Level.FINEST);
 
     try {
-      TestNodeMgrApp app = new TestNodeMgrApp();
+      TestMasterMgrApp app = new TestMasterMgrApp();
       app.run();
     } 
     catch (Exception ex) {
@@ -215,8 +215,8 @@ class TestNodeMgrApp
       Thread.currentThread().sleep(1000);
 
       /* start the node manager daemon */ 
-      NodeMgrServer nodeServer = 
-	new NodeMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
+      MasterMgrServer nodeServer = 
+	new MasterMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
       nodeServer.start();
       
       /* give the server a chance to start */ 
@@ -242,7 +242,7 @@ class TestNodeMgrApp
 	modB = clientB.getNodeMod();
       }
       
-      NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+      MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 
       printStatus(client.status("default", modA.getName()));
       printStatus(client.status("default", modB.getName()));
@@ -316,8 +316,8 @@ class TestNodeMgrApp
       /* give the servers a chance to start */ 
       Thread.currentThread().sleep(1000);
       /* start the node manager server */ 
-      NodeMgrServer nodeServer = 
-	new NodeMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
+      MasterMgrServer nodeServer = 
+	new MasterMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
       nodeServer.start();
    
       /* give the server a chance to start */ 
@@ -341,7 +341,7 @@ class TestNodeMgrApp
       }
 
       {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 	client.register("default", fly);
 	client.register("default", dragonfly);
 	client.disconnect();
@@ -361,7 +361,7 @@ class TestNodeMgrApp
       }
 
       {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 
 	printStatus(client.status("default", eagle.getName()));
 	printStatus(client.status("default", eagle.getName()));
@@ -379,7 +379,7 @@ class TestNodeMgrApp
       }
    
       /* modify the some of the animal directories */ 
-      NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+      MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 
       {
 	File animals = new File(prodDir, "working/jim/default/animals/");
@@ -635,7 +635,7 @@ class TestNodeMgrApp
       return;
     }
 
-    GlueEncoder ge = new GlueEncoder(title, obj);
+    GlueEncoder ge = new GlueEncoderImpl(title, obj);
     String text = ge.getText();
     String lines[] = text.split("\n");
     int wk;
@@ -719,7 +719,7 @@ class TestNodeMgrApp
 	Random random = new Random(pSeed);
 	sleep(random.nextInt(2000));
 	
-	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 	
 	client.register("default", pNodeMod);
 	
@@ -795,7 +795,7 @@ class TestNodeMgrApp
 	Random random = new Random(pSeed);
 	sleep(random.nextInt(2000));
 	
-	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 	
 	{
 	  int cnt;
@@ -849,7 +849,7 @@ class TestNodeMgrApp
       try {
 	sleep(random.nextInt(1000));
      
-	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 
 	client.register("default", pSalamander);
 	client.register("default", pFrog);
@@ -927,7 +927,7 @@ class TestNodeMgrApp
       try {
 	sleep(random.nextInt(1000));
     
-	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+	MasterMgrClient client = new MasterMgrClient("localhost", 53145);
 
 	client.register("default", pSparrow);
 	client.register("default", pEagle);

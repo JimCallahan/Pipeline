@@ -1,4 +1,4 @@
-// $Id: NodeCheckOutReq.java,v 1.1 2004/04/24 22:44:42 jim Exp $
+// $Id: NodeCheckOutReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to check-out a specific version of the given node. 
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeCheckOutReq

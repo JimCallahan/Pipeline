@@ -1,6 +1,7 @@
-// $Id: TestNodeIDApp.java,v 1.3 2004/03/23 20:41:25 jim Exp $
+// $Id: TestNodeIDApp.java,v 1.4 2004/05/21 21:17:51 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
@@ -94,10 +95,10 @@ class TestNodeIDApp
     System.out.print("  ---\n");
 
     try {
-      GlueEncoder ge = new GlueEncoder("NodeID", id);
+      GlueEncoder ge = new GlueEncoderImpl("NodeID", id);
       System.out.print(ge.getText());
 
-      GlueDecoder gd = new GlueDecoder(ge.getText());
+      GlueDecoder gd = new GlueDecoderImpl(ge.getText());
       NodeID id2 = (NodeID) gd.getObject();
       
       System.out.print("NodeID (Glue): " + id2 + "\n");

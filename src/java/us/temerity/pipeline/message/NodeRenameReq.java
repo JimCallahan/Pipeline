@@ -1,4 +1,4 @@
-// $Id: NodeRenameReq.java,v 1.2 2004/03/31 02:01:03 jim Exp $
+// $Id: NodeRenameReq.java,v 1.3 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to rename a working version which has not ever been checked-in.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeRenameReq

@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathsReq.java,v 1.1 2004/05/04 11:00:16 jim Exp $
+// $Id: NodeUpdatePathsReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -16,7 +16,7 @@ import java.util.*;
  * A request to update the immediate children of all node path components along the 
  * given paths.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeUpdatePathsReq

@@ -1,4 +1,4 @@
-// $Id: NodeRevokeReq.java,v 1.1 2004/03/30 22:19:18 jim Exp $
+// $Id: NodeRevokeReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * A request to revoke a working version which has not ever been checked-in.
  * 
- * @see NodeMgr
+ * @see MasterMgr
  */
 public
 class NodeRevokeReq

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.17 2004/05/21 00:17:22 jim Exp $
+// $Id: UIMaster.java,v 1.18 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -50,7 +50,7 @@ class UIMaster
    int port
   ) 
   {
-    pNodeMgrClient = new NodeMgrClient(hostname, port);
+    pMasterMgrClient = new MasterMgrClient(hostname, port);
 
     pOpsLock = new ReentrantLock();
 
@@ -107,10 +107,10 @@ class UIMaster
   /**
    * Get the network connection to <B>plmaster</B>(1).
    */ 
-  public NodeMgrClient
-  getNodeMgrClient() 
+  public MasterMgrClient
+  getMasterMgrClient() 
   {
-    return pNodeMgrClient;
+    return pMasterMgrClient;
   }
 
 
@@ -1058,8 +1058,8 @@ class UIMaster
   public void 
   doQuit()
   {
-    if(pNodeMgrClient != null) 
-      pNodeMgrClient.disconnect();
+    if(pMasterMgrClient != null) 
+      pMasterMgrClient.disconnect();
 
     System.exit(0);
   }
@@ -1677,7 +1677,7 @@ class UIMaster
   /**
    * The network interface to the <B>plmaster</B>(1) daemon.
    */ 
-  private NodeMgrClient  pNodeMgrClient;
+  private MasterMgrClient  pMasterMgrClient;
 
 
   /**

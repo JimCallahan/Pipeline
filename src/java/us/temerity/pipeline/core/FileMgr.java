@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.11 2004/05/03 04:29:30 jim Exp $
+// $Id: FileMgr.java,v 1.12 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,10 +32,10 @@ import java.util.concurrent.locks.*;
  * {@link FileMgrClient FileMgrClient} class should then be used to communicate over a 
  * network connection with the <CODE>FileMgrServer</CODE>. <P> 
  * 
- * This class acts together with the {@link NodeMgr NodeMgr} class to provide the 
+ * This class acts together with the {@link MasterMgr MasterMgr} class to provide the 
  * complete I/O support for Pipeline. The files managed by this class live under a 
  * standardized directory structure which has a close coupling with node related 
- * information managed by <CODE>NodeMgr</CODE>.  The following details the layout of 
+ * information managed by <CODE>MasterMgr</CODE>.  The following details the layout of 
  * files associated with Pipeline nodes. <P> 
  * 
  * The location of files (or symbolic links) associated with working versions: <P> 
@@ -152,7 +152,7 @@ import java.util.concurrent.locks.*;
  * 
  * @see FileMgrClient
  * @see FileMgrServer
- * @see NodeMgr
+ * @see MasterMgr
  * @see CheckSum
  */
 public

@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.14 2004/05/21 00:12:30 jim Exp $
+// $Id: PackageInfo.java.in,v 1.15 2004/05/21 21:17:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -231,6 +231,12 @@ class PackageInfo
    */
   public static final String  sJavaHome = "@JAVA_HOME@";
 
+
+  /**
+   * The location of the <B>bash</B>(1) program.
+   */ 
+  public static final String   sBash = "@BASH@";
+  
 
   /**
    * The copyright notice for Pipeline. 
