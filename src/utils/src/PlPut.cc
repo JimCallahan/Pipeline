@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.11 2003/08/20 00:11:47 jim Exp $
+// $Id: PlPut.cc,v 1.12 2003/09/22 20:55:31 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -45,8 +45,7 @@
 #include <PackageInfo.hh>
 #include <PlCommon.hh>
 
-using namespace Phoenix;
-using namespace Phoenix::Core;
+using namespace Pipeline;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L P U T                                                                              */
@@ -161,7 +160,7 @@ main
     else if(strcmp(argv[1], "--html-help") == 0) {
       char buf[1024];
       sprintf(buf, "openURL(file:%s/plput.html, new-window)", 
-	      Pipeline::PackageInfo::sDocsDir); 
+	      PackageInfo::sDocsDir); 
 
       char* args[4]; 
       args[0] = strdup("mozilla");
@@ -169,18 +168,18 @@ main
       args[2] = strdup(buf);
       args[3] = NULL;
 
-      execv(Pipeline::PackageInfo::sMozilla, args);
+      execv(PackageInfo::sMozilla, args);
     }
     else if(strcmp(argv[1], "--version") == 0) {
-      std::cerr << Pipeline::PackageInfo::sVersion << "\n";
+      std::cerr << PackageInfo::sVersion << "\n";
       exit(EXIT_SUCCESS);
     }
     else if(strcmp(argv[1], "--release-date") == 0) {
-      std::cerr << Pipeline::PackageInfo::sRelease << "\n";
+      std::cerr << PackageInfo::sRelease << "\n";
       exit(EXIT_SUCCESS);
     }
     else if(strcmp(argv[1], "--copyright") == 0) {
-      std::cerr << Pipeline::PackageInfo::sCopyright << "\n";
+      std::cerr << PackageInfo::sCopyright << "\n";
       exit(EXIT_SUCCESS);
     }
   }
@@ -204,9 +203,9 @@ main
   char msg[1024];
   
   /* read in the file list */ 
-  int workDirSize = strlen(Pipeline::PackageInfo::sWorkDir);
-  int repoDirSize = strlen(Pipeline::PackageInfo::sRepoDir);
-  typedef std::list<Pipeline::PathPair*> Pairs;
+  int workDirSize = strlen(PackageInfo::sWorkDir);
+  int repoDirSize = strlen(PackageInfo::sRepoDir);
+  typedef std::list<PathPair*> Pairs;
   Pairs pairs;
   FB::stageBegin("Reading File List: ");
   {
@@ -239,27 +238,27 @@ main
       }
 
       if(isLink) {
-	if(strncmp(work, Pipeline::PackageInfo::sRepoDir, repoDirSize) != 0) {
+	if(strncmp(work, PackageInfo::sRepoDir, repoDirSize) != 0) {
 	  char msg[1024];
 	  sprintf(msg, "Illegal repository filename \"%s\" encountered!", work);
 	  FB::error(msg);	
 	}
       }
       else {
-	if(strncmp(work, Pipeline::PackageInfo::sWorkDir, workDirSize) != 0) {
+	if(strncmp(work, PackageInfo::sWorkDir, workDirSize) != 0) {
 	  char msg[1024];
 	  sprintf(msg, "Illegal working area filename \"%s\" encountered!", work);
 	  FB::error(msg);	
 	}
       }
 	  
-      if(strncmp(repo, Pipeline::PackageInfo::sRepoDir, repoDirSize) != 0) {
+      if(strncmp(repo, PackageInfo::sRepoDir, repoDirSize) != 0) {
 	char msg[1024];
 	sprintf(msg, "Illegal repository filename \"%s\" encountered!", repo);
 	FB::error(msg);	
       }
 
-      pairs.push_back(new Pipeline::PathPair(isLink, work, repo));
+      pairs.push_back(new PathPair(isLink, work, repo));
 
       sprintf(msg, "%s: %s to %s", mode, work, repo);
       FB::stageMsg(msg);
@@ -288,7 +287,7 @@ main
   /* make sure the repository files DO NOT already exist */ 
   FB::stageBegin("Verifying Target Files:");
   {
-    std::list<Pipeline::PathPair*>::iterator iter;
+    std::list<PathPair*>::iterator iter;
     for(iter=pairs.begin(); iter != pairs.end(); iter++) {
       const char* repo = (*iter)->uRepo;
       FB::stageMsg(repo);
@@ -324,7 +323,7 @@ main
   FB::stageBegin("Creating Repository Directories:");
   {
     /* build a list of unique directories needed by all paths */ 
-    typedef std::set<const char*, Pipeline::StringCmp> DirSet;
+    typedef std::set<const char*, StringCmp> DirSet;
     DirSet dirs;
     {
       Pairs::iterator iter;

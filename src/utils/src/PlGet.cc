@@ -1,4 +1,4 @@
-// $Id: PlGet.cc,v 1.1 2003/08/20 00:08:22 jim Exp $
+// $Id: PlGet.cc,v 1.2 2003/09/22 20:55:31 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -45,8 +45,7 @@
 #include <PackageInfo.hh>
 #include <PlCommon.hh>
 
-using namespace Phoenix;
-using namespace Phoenix::Core;
+using namespace Pipeline;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L G E T                                                                              */
@@ -133,7 +132,7 @@ main
     else if(strcmp(argv[1], "--html-help") == 0) {
       char buf[1024];
       sprintf(buf, "openURL(file:%s/plget.html, new-window)", 
-	      Pipeline::PackageInfo::sDocsDir); 
+	      PackageInfo::sDocsDir); 
 
       char* args[4]; 
       args[0] = strdup("mozilla");
@@ -141,18 +140,18 @@ main
       args[2] = strdup(buf);
       args[3] = NULL;
 
-      execv(Pipeline::PackageInfo::sMozilla, args);
+      execv(PackageInfo::sMozilla, args);
     }
     else if(strcmp(argv[1], "--version") == 0) {
-      std::cerr << Pipeline::PackageInfo::sVersion << "\n";
+      std::cerr << PackageInfo::sVersion << "\n";
       exit(EXIT_SUCCESS);
     }
     else if(strcmp(argv[1], "--release-date") == 0) {
-      std::cerr << Pipeline::PackageInfo::sRelease << "\n";
+      std::cerr << PackageInfo::sRelease << "\n";
       exit(EXIT_SUCCESS);
     }
     else if(strcmp(argv[1], "--copyright") == 0) {
-      std::cerr << Pipeline::PackageInfo::sCopyright << "\n";
+      std::cerr << PackageInfo::sCopyright << "\n";
       exit(EXIT_SUCCESS);
     }
   }
@@ -176,9 +175,9 @@ main
   char msg[1024];
   
   /* read in the file list */ 
-  int workDirSize = strlen(Pipeline::PackageInfo::sWorkDir);
-  int repoDirSize = strlen(Pipeline::PackageInfo::sRepoDir);
-  typedef std::list<Pipeline::PathPair*> Pairs;
+  int workDirSize = strlen(PackageInfo::sWorkDir);
+  int repoDirSize = strlen(PackageInfo::sRepoDir);
+  typedef std::list<PathPair*> Pairs;
   Pairs pairs;
   FB::stageBegin("Reading File List: ");
   {
@@ -208,19 +207,19 @@ main
 	FB::error(msg);
       }
 
-      if(strncmp(work, Pipeline::PackageInfo::sWorkDir, workDirSize) != 0) {
+      if(strncmp(work, PackageInfo::sWorkDir, workDirSize) != 0) {
 	char msg[1024];
 	sprintf(msg, "Illegal working area filename \"%s\" encountered!", work);
 	FB::error(msg);	
       }
 
-      if(strncmp(repo, Pipeline::PackageInfo::sRepoDir, repoDirSize) != 0) {
+      if(strncmp(repo, PackageInfo::sRepoDir, repoDirSize) != 0) {
 	char msg[1024];
 	sprintf(msg, "Illegal repository filename \"%s\" encountered!", repo);
 	FB::error(msg);	
       }
 
-      pairs.push_back(new Pipeline::PathPair(isLink, work, repo));
+      pairs.push_back(new PathPair(isLink, work, repo));
 
       sprintf(msg, "%s: %s to %s", mode, repo, work);
       FB::stageMsg(msg);
@@ -250,7 +249,7 @@ main
   FB::stageBegin("Creating Working Area Directories:");
   {
     /* build a list of unique directories needed by all paths */ 
-    typedef std::set<const char*, Pipeline::StringCmp> DirSet;
+    typedef std::set<const char*, StringCmp> DirSet;
     DirSet dirs;
     {
       Pairs::iterator iter;
