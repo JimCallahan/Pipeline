@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cc,v 1.1 2004/10/28 15:55:24 jim Exp $
+// $Id: NativeProcessHeavy.cc,v 1.2 2004/11/09 06:01:32 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -240,33 +240,15 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     return -1;
   }
     
-  jfieldID pUserSecs = env->GetFieldID(NativeProcessHeavyClass, "pUserSecs", "J");
-  if(pUserSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pUserSecs");
+  jfieldID pUTime = env->GetFieldID(NativeProcessHeavyClass, "pUTime", "J");
+  if(pUTime == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pUTime");
     return -1;
   }
 
-  jfieldID pUserMSecs = env->GetFieldID(NativeProcessHeavyClass, "pUserMSecs", "J");
-  if(pUserMSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pUserMSecs");
-    return -1;
-  }
-
-  jfieldID pSystemSecs = env->GetFieldID(NativeProcessHeavyClass, "pSystemSecs", "J");
-  if(pSystemSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pSystemSecs");
-    return -1;
-  }
-
-  jfieldID pSystemMSecs = env->GetFieldID(NativeProcessHeavyClass, "pSystemMSecs", "J");
-  if(pSystemMSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pSystemMSecs");
-    return -1;
-  }
-
-  jfieldID pPageFaults = env->GetFieldID(NativeProcessHeavyClass, "pPageFaults", "J");
-  if(pPageFaults == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pPageFaults");
+  jfieldID pSTime = env->GetFieldID(NativeProcessHeavyClass, "pSTime", "J");
+  if(pSTime == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pSTime");
     return -1;
   }
   
@@ -497,7 +479,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	ru.ru_utime.tv_usec = -1;
 	ru.ru_stime.tv_sec  = -1;
 	ru.ru_stime.tv_usec = -1;
-	ru.ru_majflt        = -1;
 	
 	pid_t epid = wait4(pid, &status, 0, &ru);
 
@@ -511,14 +492,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	  return -1;
 	}
 	else if(WIFEXITED(status)) {
-	  env->SetLongField(obj, pUserSecs, ru.ru_utime.tv_sec);
-	  env->SetLongField(obj, pUserMSecs, ru.ru_utime.tv_usec);
-	  
-	  env->SetLongField(obj, pSystemSecs, ru.ru_stime.tv_sec);
-	  env->SetLongField(obj, pSystemMSecs, ru.ru_stime.tv_usec);
-	  
-	  env->SetLongField(obj, pPageFaults, ru.ru_majflt);
-	  
+	  env->SetLongField(obj, pUTime, 
+			    ru.ru_utime.tv_sec*100 + ru.ru_utime.tv_usec/10000);
+	  env->SetLongField(obj, pSTime, 
+			    ru.ru_stime.tv_sec*100 + ru.ru_stime.tv_usec/10000);
 	  return WEXITSTATUS(status);
 	}
 	else if(WIFSIGNALED(status)) {
@@ -544,121 +521,3 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 }
 
 
-
-/* Resource usage statistics for running native process. 
-       Returns whether the collection was successful. */ 
-JNIEXPORT jboolean 
-JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_collectStatsNative
-(
- JNIEnv *env, 
- jobject obj
-)
-{
-  /* exception initialization */ 
-  char msg[1024];
-  jclass IOException = env->FindClass("java/io/IOException");
-  if(IOException == 0) {
-    errno = ECANCELED;
-    perror("NativeProcessHeavy.waitNative(), unable to lookup \"java/lang/IOException\"");
-    return false;
-  }
-
-  /* get handles for the NativeProcessHeavy object's fields/methods */ 
-  jclass NativeProcessHeavyClass = env->GetObjectClass(obj);  
-  if(NativeProcessHeavyClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcessHeavy");
-    return false;
-  }
-    
-  jfieldID pAvgVMem = env->GetFieldID(NativeProcessHeavyClass, "pAvgVMem", "J");
-  if(pAvgVMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pAvgVMem");
-    return false;
-  }
-
-  jfieldID pMaxVMem = env->GetFieldID(NativeProcessHeavyClass, "pMaxVMem", "J");
-  if(pMaxVMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pMaxVMem");
-    return false;
-  }
-
-  jfieldID pAvgResMem = env->GetFieldID(NativeProcessHeavyClass, "pAvgResMem", "J");
-  if(pAvgResMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pAvgResMem");
-    return false;
-  }
-
-  jfieldID pMaxResMem = env->GetFieldID(NativeProcessHeavyClass, "pMaxResMem", "J");
-  if(pMaxResMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pMaxResMem");
-    return false;
-  }
-
-  jfieldID pMemSamples = env->GetFieldID(NativeProcessHeavyClass, "pMemSamples", "J");
-  if(pMemSamples == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.pMemSamples");
-    return false;
-  }
-
-  jmethodID getPid = env->GetMethodID(NativeProcessHeavyClass, "getPid", "()I");
-  if(getPid == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessHeavy.getPid()");
-    return false;
-  }
-
-
-  /* get the process ID */ 
-  jint pid         = env->CallIntMethod(obj, getPid);
-  jlong avgVMem    = env->GetLongField(obj, pAvgVMem);
-  jlong maxVMem    = env->GetLongField(obj, pMaxVMem);
-  jlong avgResMem  = env->GetLongField(obj, pAvgResMem);
-  jlong maxResMem  = env->GetLongField(obj, pMaxResMem);
-  jlong memSamples = env->GetLongField(obj, pMemSamples);
-
-  /* determine the size of memory pages */ 
-  long psize = (long) getpagesize(); 
-  if(psize <= 0) {
-    env->ThrowNew(IOException, "cannot determine the page size!");
-    return false;
-  }
-
-  /* open the statistics psuedo-file for the process */ 
-  {
-    char path[1024];
-    sprintf(path, "/proc/%d/statm", pid);
-    FILE* file = fopen(path, "r");
-    if(file == NULL) 
-      return false;
-
-    long vmem, rss;
-    int matches = 
-      fscanf(file, "%ld %ld %*s %*s %*s %*s %*s", &vmem, &rss);
-    fclose(file);
-    if(matches != 2) {
-      sprintf(msg, "internal error: %s", strerror(errno));
-      env->ThrowNew(IOException, msg);
-      return false;
-    }
-    vmem = vmem / 1024;
-    rss  = rss * (psize / 1024);
-
-    avgVMem += vmem;
-    if(maxVMem < vmem)
-      maxVMem = vmem;
-
-    avgResMem += rss;
-    if(maxResMem < rss)
-      maxResMem = rss;
-
-    memSamples++;
-  }
-
-  /* set statistics fields */ 
-  env->SetLongField(obj, pAvgVMem, avgVMem);
-  env->SetLongField(obj, pMaxVMem, maxVMem);
-  env->SetLongField(obj, pAvgResMem, avgResMem);
-  env->SetLongField(obj, pMaxResMem, maxResMem);
-  env->SetLongField(obj, pMemSamples, memSamples);
-
-  return true;
-}

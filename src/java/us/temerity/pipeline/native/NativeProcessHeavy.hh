@@ -39,14 +39,6 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_signalNative
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
   (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring, jstring, jstring);
 
-/*
- * Class:     us_temerity_pipeline_NativeProcessHeavy
- * Method:    collectStatsNative
- * Signature: ()Z
- */
-JNIEXPORT jboolean JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_collectStatsNative
-  (JNIEnv *, jobject);
-
 #ifdef __cplusplus
 }
 #endif

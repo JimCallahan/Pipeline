@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.java,v 1.1 2004/10/28 15:55:23 jim Exp $
+// $Id: NativeProcessLight.java,v 1.2 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -190,43 +190,37 @@ class NativeProcessLight
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  
+  /*   R U N   S T A T I S T I C S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Gets the number of seconds the OS level process ran in user space. 
+   * Get the number of seconds the process has been scheduled in user mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if the process is still running.
    */
-  public double
-  getUserSecs() 
+  public Double
+  getUserTime() 
   {
     if(pIsRunning.get()) 
-      throw new IllegalStateException("The process is still running!");
-
-    return ((double) pUserSecs) + (((double) pUserMSecs) / 1000000.0);
+      return null;
+    return (((double) pUTime) / 100.0);
   }
 
   /**
-   * Gets the number of seconds the OS level process ran in system (kernel) space. 
+   * Get the number of seconds the process has been scheduled in kernel mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if the process is still running.
    */
-  public double
-  getSystemSecs() 
+  public Double
+  getSystemTime() 
   {
     if(pIsRunning.get()) 
-      throw new IllegalStateException("The process is still running!");
-
-    return ((double) pSystemSecs) + (((double) pSystemMSecs) / 1000000.0);
-  }
-
-  /**
-   * Gets the number of hard page faults during execution of the OS level process. 
-   * A hard page fault is a memory fault that required I/O operations.
-   */
-  public long
-  getPageFaults() 
-  {
-    if(pIsRunning.get()) 
-      throw new IllegalStateException("The process is still running!");
-
-    return pPageFaults;
+      return null;
+    return (((double) pSTime) / 100.0);
   }
   
 
@@ -491,28 +485,15 @@ class NativeProcessLight
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The number of seconds the OS level process was running in user space. 
+   * The number of jiffies (1/100th of a second) the process has been scheduled in 
+   * user mode.
    */
-  private long  pUserSecs;  
+  private long  pUTime;
 
   /**
-   * The number of microseconds the OS level process was running in user space. 
-   */      
-  private long  pUserMSecs;       
-
-  /**
-   * The number of seconds the OS level process was running in system (kernel) space. 
+   * The number of jiffies (1/100th of a second) the process has been scheduled in 
+   * kernel mode.
    */
-  private long  pSystemSecs;      
-
-  /**
-   * The number of microseconds the OS level process was running in system (kernel) space. 
-   */
-  private long  pSystemMSecs;     
-
-  /**
-   * The number of hard page faults during execution of the OS level process. <P> 
-   * A hard page fault is a memory fault that required I/O operations.
-   */
-  private long  pPageFaults;      
+  private long  pSTime;
+  
 }

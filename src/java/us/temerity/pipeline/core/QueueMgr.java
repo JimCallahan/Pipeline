@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.20 2004/10/28 17:06:13 jim Exp $
+// $Id: QueueMgr.java,v 1.21 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1917,6 +1917,7 @@ class QueueMgr
 
     /* if we're ahead of schedule, take a nap */ 
     {
+      timer.suspend();
       long nap = sCollectorInterval - timer.getTotalDuration();
       if(nap > 0) {
 	try {
@@ -2252,6 +2253,7 @@ class QueueMgr
 
     /* if we're ahead of schedule, take a nap */ 
     {
+      timer.suspend();
       long nap = sDispatcherInterval - timer.getTotalDuration();
       if(nap > 0) {
 	try {

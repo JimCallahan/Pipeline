@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.9 2004/10/28 15:55:23 jim Exp $
+// $Id: JobMgrServer.java,v 1.10 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -117,6 +117,9 @@ class JobMgrServer
       Logs.net.info("Server Ready.");
       Logs.flush();
 
+      CollectorTask collector = new CollectorTask();
+      collector.start();
+
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
 	SocketChannel channel = schannel.accept();
@@ -135,6 +138,8 @@ class JobMgrServer
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
 	Logs.flush();
+
+	collector.join();
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -436,6 +441,42 @@ class JobMgrServer
     private Socket         pSocket;
   }
   
+
+  /**
+   * Collects pre-proccess resource usage statistics.
+   */
+  private 
+  class CollectorTask
+    extends Thread
+  {
+    public 
+    CollectorTask() 
+    {
+      super("JobMgrServer:CollectorTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	Logs.net.fine("Collector Started.");	
+	Logs.flush();
+
+	while(!pShutdown.get()) {
+	  pJobMgr.collector();
+	}
+      }
+      catch (Exception ex) {
+	Logs.net.severe("Collector Failed: " + getFullMessage(ex));	
+	Logs.flush();	
+      }
+      finally {
+	Logs.net.fine("Collector Finished.");	
+	Logs.flush();
+      }
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.java,v 1.2 2004/11/04 01:21:06 jim Exp $
+// $Id: NativeProcessHeavy.java,v 1.3 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,9 +18,6 @@ import java.util.concurrent.atomic.*;
  * for long running and IO intensive processes.  The 
  * {@link NativeProcessLight NativeProcessLight} class is a better fit for short lived 
  * processes where low latency access to minimal amounts of output is desired. <P> 
- * 
- * System resource usage information can also collected for the subprocess using the 
- * {@link #collectStats collectStats} method. <P> 
  * 
  * Normally, the {@link SubProcessHeavy SubProcessHeavy} class is used instead of this class 
  * to interact with OS level processes.  The <CODE>SubProces</CODE> class manages several 
@@ -93,8 +90,6 @@ class NativeProcessHeavy
 
     pStdOutFile = outFile;
     pStdErrFile = errFile; 
-
-    pProcStatsLock = new Object();    
   }
 
 
@@ -205,45 +200,39 @@ class NativeProcessHeavy
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  
+  /*   R U N   S T A T I S T I C S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Gets the number of seconds the OS level process ran in user space. 
+   * Get the number of seconds the process has been scheduled in user mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if unknown.
    */
-  public double
-  getUserSecs() 
+  public Double
+  getUserTime()
   {
     if(pIsRunning.get()) 
-      throw new IllegalStateException("The process is still running!");
-
-    return ((double) pUserSecs) + (((double) pUserMSecs) / 1000000.0);
+      return null;
+    return (((double) pUTime) / 100.0);
   }
 
   /**
-   * Gets the number of seconds the OS level process ran in system (kernel) space. 
+   * Get the number of seconds the process has been scheduled in kernel mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if unknown.
    */
-  public double
-  getSystemSecs() 
+  public Double
+  getSystemTime()
   {
     if(pIsRunning.get()) 
-      throw new IllegalStateException("The process is still running!");
-
-    return ((double) pSystemSecs) + (((double) pSystemMSecs) / 1000000.0);
+      return null;
+    return (((double) pSTime) / 100.0);
   }
 
-  /**
-   * Gets the number of hard page faults during execution of the OS level process. 
-   * A hard page fault is a memory fault that required I/O operations.
-   */
-  public long
-  getPageFaults() 
-  {
-    if(pIsRunning.get()) 
-      throw new IllegalStateException("The process is still running!");
-
-    return pPageFaults;
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -361,100 +350,6 @@ class NativeProcessHeavy
   }
 
 
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   R U N   S T A T I S T I C S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Collect resource usage statistics for running OS level process at regular intervals.
-   * Does not return until the OS level process has exited.
-   * 
-   * @param millis 
-   *   The number of milliseconds between samples.
-   *
-   * @throws IOException 
-   *   If unable to collect statistics for the OS level process. 
-   */
-  public void 
-  collectStats
-  (
-   long millis  
-  ) 
-    throws IOException    
-  {
-    synchronized(pProcStatsLock) {
-      pAvgVMem    = 0;
-      pMaxVMem    = 0;
-      pAvgResMem  = 0;
-      pMaxResMem  = 0;
-      pMemSamples = 0;
-    }
-
-    try {
-      while(true) {
-	synchronized(pProcStatsLock) {
-	  if(!collectStatsNative()) 
-	    break;
-	} 
-	Thread.sleep(millis);
-      }
-    }
-    catch(InterruptedException ex) {
-    }
-  }
-
-
-  /**
-   * Gets the average virtual memory size of the OS level process in kilobytes.
-   */
-  public long
-  getAverageVirtualSize() 
-  {
-    synchronized(pProcStatsLock) {
-      if(pMemSamples > 0) 
-	return (pAvgVMem / pMemSamples);
-    } 
-    return 0;
-  }
-
-  /**
-   * Gets the maximum virtual memory size of the OS level process in kilobytes.
-   */
-  public long
-  getMaxVirtualSize() 
-  {
-    synchronized(pProcStatsLock) {
-      return pMaxVMem;
-    }
-  }
-
-
-  /**
-   * Gets the average resident memory size of the OS level process in kilobytes.
-   */
-  public long
-  getAverageResidentSize() 
-  {
-    synchronized(pProcStatsLock) {
-      if(pMemSamples > 0) 
-	return (pAvgResMem / pMemSamples);
-    }
-    return 0;
-  }
-
-  /**
-   * Gets the maximum resident memory size of the OS level process in kilobytes.
-   */
-  public long
-  getMaxResidentSize() 
-  {
-    synchronized(pProcStatsLock) {
-      return pMaxResMem;
-    }
-  }
-
-
  
   /*----------------------------------------------------------------------------------------*/
   /*   N A T I V E    H E L P E R S                                                         */
@@ -519,19 +414,6 @@ class NativeProcessHeavy
     throws IOException;
 
 
-  /**
-   * Collect resource usage statistics for running OS level process.
-   * 
-   * @return 
-   *   Whether statistics where successfully collected.
-   * 
-   * @throws IOException 
-   *   If unable to collect statistics for the OS level process. 
-   */
-  private native boolean 
-  collectStatsNative()
-    throws IOException;
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -590,63 +472,15 @@ class NativeProcessHeavy
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The number of seconds the OS level process was running in user space. 
+   * The number of jiffies (1/100th of a second) the process has been scheduled in 
+   * user mode.
    */
-  private long  pUserSecs;  
+  private long  pUTime;
 
   /**
-   * The number of microseconds the OS level process was running in user space. 
-   */      
-  private long  pUserMSecs;       
-
-  /**
-   * The number of seconds the OS level process was running in system (kernel) space. 
+   * The number of jiffies (1/100th of a second) the process has been scheduled in 
+   * kernel mode.
    */
-  private long  pSystemSecs;      
-
-  /**
-   * The number of microseconds the OS level process was running in system (kernel) space. 
-   */
-  private long  pSystemMSecs;     
-
-  /**
-   * The number of hard page faults during execution of the OS level process. <P> 
-   * A hard page fault is a memory fault that required I/O operations.
-   */
-  private long  pPageFaults;      
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * A synchronization lock for process statistics.
-   */
-  private Object pProcStatsLock;       
-
-  /**
-   * The average virtual memory size of the OS level process in kilobytes.
-   */
-  private long pAvgVMem;  
-
-  /**
-   * The maximum virtual memory size of the OS level process in kilobytes.
-   */       
-  private long pMaxVMem;         
-
-  /**
-   * The average resident memory size of the OS level process in kilobytes.
-   */
-  private long pAvgResMem;   
-
-  /**
-   * The maximum resident memory size of the OS level process in kilobytes.
-   */    
-  private long pMaxResMem;       
-
-  /**
-   * The number of hard page faults during execution of the OS level process. <P> 
-   * A hard page fault is a memory fault that required I/O operations.
-   */
-  private long pMemSamples;      
+  private long  pSTime;
 
 }

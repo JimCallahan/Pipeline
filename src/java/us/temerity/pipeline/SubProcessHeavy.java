@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.2 2004/11/04 01:21:06 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.3 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -215,8 +215,6 @@ class SubProcessHeavy
       throw new IllegalArgumentException
 	("The STDERR output file cannot be (null)!");
     pStdErrFile = errFile;
-
-    pStatsInterval = new AtomicLong(500);
   }
 
   /**
@@ -278,76 +276,135 @@ class SubProcessHeavy
   /*   R U N   S T A T I S T I C S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Gets the number of milliseconds between resource usage statistics queries. 
+  /**
+   * Collect process resource usage statistics for the native processes and their children.
    */ 
-  public long
-  getStatsInterval() 
+  public static void 
+  collectStats()
   {
-    return pStatsInterval.get();
+    sProcStats.collect();
   }
 
-  /** 
-   * Sets the number of milliseconds between resource usage statistics queries. 
+  /**
+   * Cease monitoring resource usage statistics for the native process and release 
+   * any statistics resources associated with the process.
    */ 
   public void 
-  setStatsInterval
-  (
-   long millis
-  ) 
+  freeStats() 
   {
-    if(millis <= 0)
-      throw new IllegalArgumentException
-	("Resource statistics collection interval (" + millis + ") must be positive!");
-    pStatsInterval.set(millis);
+    sProcStats.unmonitor(pProc.getPid());
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the average virtual memory size of the OS level process in kilobytes. <P>
+   * Get the number of seconds the process and its children have been scheduled in 
+   * user mode.
    * 
-   * This method should only be called after the this thread has finished.
+   * @return 
+   *   The time in seconds.
    */
-  public long
-  getAverageVirtualSize() 
+  public Double
+  getUserTime() 
   {
-    return ((NativeProcessHeavy) pProc).getAverageVirtualSize();
-  }
+    double timeA = 0.0;
+    {
+      Double time = sProcStats.getUserTime(pProc.getPid());
+      if(time != null)
+	timeA = time;
+    }
 
-  /**
-   * Gets the maximum virtual memory size of the OS level process in kilobytes. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public long
-  getMaxVirtualSize() 
-  {
-    return ((NativeProcessHeavy) pProc).getMaxVirtualSize();
-  }
+    double timeB = 0.0;
+    {
+      Double time = pProc.getUserTime();
+      if(time != null)
+	timeB = time;
+    }
 
+    return Math.max(timeA, timeB);
+  }
   
   /**
-   * Gets the average resident memory size of the OS level process in kilobytes. <P>
+   * Get the number of seconds the process and its children have been scheduled in 
+   * kernel mode.
    * 
-   * This method should only be called after the this thread has finished.
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if no statistics have been collected 
+   *   for the given process.
    */
-  public long
-  getAverageResidentSize() 
+  public Double
+  getSystemTime() 
   {
-    return ((NativeProcessHeavy) pProc).getAverageResidentSize();
+    double timeA = 0.0;
+    {
+      Double time = sProcStats.getSystemTime(pProc.getPid());
+      if(time != null)
+	timeA = time;
+    }
+
+    double timeB = 0.0;
+    {
+      Double time = pProc.getSystemTime();
+      if(time != null)
+	timeB = time;
+    }
+
+    return Math.max(timeA, timeB);
+  }
+  
+  /**
+   * Get the number of major faults which occured for the process and its children which 
+   * have required loading a memory page from disk.
+   * 
+   * @return 
+   *   The number of faults or <CODE>null</CODE> if no statistics have been collected 
+   *   for the given process.
+   */
+  public Long
+  getPageFaults() 
+  {
+    return sProcStats.getPageFaults(pProc.getPid());
   }
 
   /**
-   * Gets the maximum resident memory size of the OS level process in kilobytes. <P>
+   * Get the maximum virtual memory size of the process and its children in bytes.
    * 
-   * This method should only be called after the this thread has finished.
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if no statistics have been collected 
+   *   for the given process.
    */
-  public long
-  getMaxResidentSize() 
+  public Long
+  getVirtualSize() 
   {
-    return ((NativeProcessHeavy) pProc).getMaxResidentSize();
+    return sProcStats.getVirtualSize(pProc.getPid());
   }
-  
+
+  /**
+   * Get the maximum resident memory size of the process and its children in bytes.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if no statistics have been collected 
+   *   for the given process.
+   */
+  public Long
+  getResidentSize() 
+  {
+    return sProcStats.getResidentSize(pProc.getPid());
+  }
+
+  /**
+   * Get the cumilative amount of memory swapped by the process and its children in bytes.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if no statistics have been collected 
+   *   for the given process.
+   */
+  public Long
+  getSwappedSize()  
+  {
+    return sProcStats.getSwappedSize(pProc.getPid());
+  }
 
 
 
@@ -465,12 +522,14 @@ class SubProcessHeavy
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * A thread to gather resource usage statistics for the native process. 
+   * A thread which waits for the process to start and then registers the process with 
+   * the process resource usage statistics collection task.
    */ 
   protected 
   class StatsTask
@@ -511,20 +570,35 @@ class SubProcessHeavy
 	  }
 	}
 
-	Logs.sub.finest(pName + " [stats]: collecting...");
-	((NativeProcessHeavy) pProc).collectStats(pStatsInterval.get());
+	if(!pIsFinished.get()) {
+	  int pid = pProc.getPid();
+	  assert(pid != -1);
+	  
+	  sProcStats.monitor(pid);
+	  Logs.sub.finer(pName + " [stats]: monitoring process resource usage statistics.");
+	}
       }
-      catch (IOException ex) {
-	Logs.sub.severe("IO Error while collection resource usage statistics from " + 
-			pName + " [stats]\n" + 
+      catch (Exception ex) {
+	Logs.sub.severe(pName + " [stats]:\n" + 
 			ex.getMessage());
       }
-      
+
       Logs.sub.finest(pName + " [stats]: thread finished.");
     }
     
     private String  pName;
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The per-process resource usage statistics collector.
+   */ 
+  private static NativeProcessStats  sProcStats = new NativeProcessStats();
 
 
 
@@ -547,11 +621,6 @@ class SubProcessHeavy
    * to complexities of native process field initialization.
    */ 
   private File pStdErrFile; 
-
-  /**
-   * The number of milliseconds between resource usage statistics queries. 
-   */ 
-  private AtomicLong  pStatsInterval; 
 
 }
 

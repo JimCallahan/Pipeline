@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.1 2004/10/28 15:55:23 jim Exp $
+// $Id: BaseSubProcess.java,v 1.2 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -332,49 +332,6 @@ class BaseSubProcess
   }
 
   
-  /**
-   * Gets the number of seconds the OS level process was running in user space. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public double
-  getUserSecs() 
-  {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getUserSecs();
-  }
-
-  /**
-   * Gets the number of seconds the OS level process was running in system 
-   * (kernel) space. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public double
-  getSystemSecs() 
-  {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getSystemSecs();
-  }
-
-
-  /**
-   * Gets the number of hard page faults during execution of the OS level process.  
-   * A hard page fault is a memory fault that required I/O operations. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public long
-  getPageFaults() 
-  {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getPageFaults(); 
-  }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   P R O C C E S S   M A N A G E M E N T                                                */
@@ -601,15 +558,15 @@ class BaseSubProcess
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * A table of cached UIDs indexed by username.
-   */
-  protected static HashMap<String,Integer>  sUserIDs = new HashMap<String,Integer>();
-
-  /**
    * The number of milliseconds between attempts to begin collecting output from the 
    * subprocess. 
    */
   protected static final long sCollectionDelay = 100;
+
+  /**
+   * A table of cached UIDs indexed by username.
+   */
+  protected static HashMap<String,Integer>  sUserIDs = new HashMap<String,Integer>();
 
 
 

@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cc,v 1.1 2004/10/28 15:55:24 jim Exp $
+// $Id: NativeProcessLight.cc,v 1.2 2004/11/09 06:01:32 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -436,36 +436,18 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
     env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdErrFileDesc");
     return -1;
   }
-
-  jfieldID pUserSecs = env->GetFieldID(NativeProcessLightClass, "pUserSecs", "J");
-  if(pUserSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pUserSecs");
+ 
+  jfieldID pUTime = env->GetFieldID(NativeProcessLightClass, "pUTime", "J");
+  if(pUTime == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pUTime");
     return -1;
   }
 
-  jfieldID pUserMSecs = env->GetFieldID(NativeProcessLightClass, "pUserMSecs", "J");
-  if(pUserMSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pUserMSecs");
+  jfieldID pSTime = env->GetFieldID(NativeProcessLightClass, "pSTime", "J");
+  if(pSTime == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pSTime");
     return -1;
-  }
-
-  jfieldID pSystemSecs = env->GetFieldID(NativeProcessLightClass, "pSystemSecs", "J");
-  if(pSystemSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pSystemSecs");
-    return -1;
-  }
-
-  jfieldID pSystemMSecs = env->GetFieldID(NativeProcessLightClass, "pSystemMSecs", "J");
-  if(pSystemMSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pSystemMSecs");
-    return -1;
-  }
-
-  jfieldID pPageFaults = env->GetFieldID(NativeProcessLightClass, "pPageFaults", "J");
-  if(pPageFaults == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pPageFaults");
-    return -1;
-  }
+  }  
   
   jmethodID setPid = env->GetMethodID(NativeProcessLightClass, "setPid", "(I)V");
   if(setPid == 0) {
@@ -728,7 +710,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	ru.ru_utime.tv_usec = -1;
 	ru.ru_stime.tv_sec  = -1;
 	ru.ru_stime.tv_usec = -1;
-	ru.ru_majflt        = -1;
 	
 	pid_t epid = wait4(pid, &status, 0, &ru);
 
@@ -742,14 +723,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	  return -1;
 	}
 	else if(WIFEXITED(status)) {
-	  env->SetLongField(obj, pUserSecs, ru.ru_utime.tv_sec);
-	  env->SetLongField(obj, pUserMSecs, ru.ru_utime.tv_usec);
-	  
-	  env->SetLongField(obj, pSystemSecs, ru.ru_stime.tv_sec);
-	  env->SetLongField(obj, pSystemMSecs, ru.ru_stime.tv_usec);
-	  
-	  env->SetLongField(obj, pPageFaults, ru.ru_majflt);
-	  
+	  env->SetLongField(obj, pUTime, 
+			    ru.ru_utime.tv_sec*100 + ru.ru_utime.tv_usec/10000);
+	  env->SetLongField(obj, pSTime, 
+			    ru.ru_stime.tv_sec*100 + ru.ru_stime.tv_usec/10000);
 	  return WEXITSTATUS(status);
 	}
 	else if(WIFSIGNALED(status)) {

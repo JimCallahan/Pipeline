@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.8 2004/10/31 15:20:00 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.9 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -317,64 +317,27 @@ class JQueueJobDetailsPanel
 
 	    /* resident memory */ 
 	    {
-	      {
-		JLabel label = 
-		  UIMaster.createFixedLabel("Resident Memory (avg/max):", 
-					    sTSize, JLabel.RIGHT);
-		tpanel.add(label);
-	      }
-	      
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		
-		{
-		  pAvgResidentField = 
-		    UIMaster.createTextField(null, sHSize, JLabel.CENTER);
-		  hbox.add(pAvgResidentField);
-		}
-		
-		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-		
-		{
-		  pMaxResidentField = 
-		    UIMaster.createTextField(null, sHSize, JLabel.CENTER);		  
-		  hbox.add(pMaxResidentField);
-		}
-		
-		vpanel.add(hbox);
-	      }		  
+	      pResidentField = 
+		UIMaster.createTitledTextField(tpanel, "Resident Memory:", sTSize, 
+					       vpanel, "-", sVSize);
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* virtual memory */ 
 	    {
-	      {
-		JLabel label = 
-		  UIMaster.createFixedLabel("Virtual Memory (avg/max):", 
-					    sTSize, JLabel.RIGHT);
-		tpanel.add(label);
-	      }
-	      
-	      {
-		Box hbox = new Box(BoxLayout.X_AXIS);
-		
-		{
-		  pAvgVirtualField = 
-		    UIMaster.createTextField(null, sHSize, JLabel.CENTER);		  
-		  hbox.add(pAvgVirtualField);
-		}
-		
-		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-		
-		{
-		  pMaxVirtualField = 
-		    UIMaster.createTextField(null, sHSize, JLabel.CENTER);		  
-		  hbox.add(pMaxVirtualField);
-		}
-		
-		vpanel.add(hbox);
-	      }		  
+	      pVirtualField = 
+		UIMaster.createTitledTextField(tpanel, "Virtual Memory:", sTSize, 
+					       vpanel, "-", sVSize);
+	    }
+	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	    /* swapped memory */ 
+	    {
+	      pSwappedField = 
+		UIMaster.createTitledTextField(tpanel, "Swapped Memory:", sTSize, 
+					       vpanel, "-", sVSize);
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
@@ -820,7 +783,7 @@ class JQueueJobDetailsPanel
       {
 	Double secs = null;
 	if(results != null)
-	  secs = results.getUserSecs();
+	  secs = results.getUserTime();
 	
 	pUserTimeField.setText(formatInterval(secs));
       }
@@ -828,7 +791,7 @@ class JQueueJobDetailsPanel
       {
 	Double secs = null;
 	if(results != null)
-	  secs = results.getSystemSecs();
+	  secs = results.getSystemTime();
 	
 	pSystemTimeField.setText(formatInterval(secs));
       }
@@ -836,35 +799,27 @@ class JQueueJobDetailsPanel
       {
 	Long size = null;
 	if(results != null)
-	  size = results.getAverageResidentSize();
+	  size = results.getResidentSize();
 	
-	pAvgResidentField.setText(formatLong(size));
+	pResidentField.setText(formatLong(size));
       }
 
       {
 	Long size = null;
 	if(results != null)
-	  size = results.getMaximumResidentSize();
+	  size = results.getVirtualSize();
 	
-	pMaxResidentField.setText(formatLong(size));
-      }
-      
-      {
-	Long size = null;
-	if(results != null)
-	  size = results.getAverageVirtualSize();
-	
-	pAvgVirtualField.setText(formatLong(size));
+	pVirtualField.setText(formatLong(size));
       }
 
       {
 	Long size = null;
 	if(results != null)
-	  size = results.getMaximumVirtualSize();
+	  size = results.getSwappedSize();
 	
-	pMaxVirtualField.setText(formatLong(size));
+	pSwappedField.setText(formatLong(size));
       }
-      
+
       {
 	Long faults = null;
 	if(results != null)
@@ -1143,11 +1098,11 @@ class JQueueJobDetailsPanel
     }
     else if(value < 1073741824) {
       double m = ((double) value) / 1048576.0;
-      return String.format("%1$.2fM", m);
+      return String.format("%1$.1fM", m);
     }
     else {
       double g = ((double) value) / 1073741824.0;
-      return String.format("%1$.2fG", g);
+      return String.format("%1$.1fG", g);
     }
   }
 
@@ -1599,17 +1554,20 @@ class JQueueJobDetailsPanel
   private JTextField  pSystemTimeField;
 
   /**
-   * The average/max resident memory fields;
+   * The resident memory size. 
    */ 
-  private JTextField  pAvgResidentField;
-  private JTextField  pMaxResidentField;
+  private JTextField  pResidentField;
   
   /**
-   * The average/max virtual memory fields;
+   * The virtual memory size. 
    */ 
-  private JTextField  pAvgVirtualField;
-  private JTextField  pMaxVirtualField;
-
+  private JTextField  pVirtualField;
+  
+  /**
+   * The swapped memory size. 
+   */ 
+  private JTextField  pSwappedField;
+  
   /**
    * The page faults field.
    */ 

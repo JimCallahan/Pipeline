@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.13 2004/11/05 18:16:26 jim Exp $
+// $Id: JobMgr.java,v 1.14 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 import java.util.concurrent.locks.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -36,7 +37,7 @@ class JobMgr
   {
     /* initialize the fields */ 
     {
-      pMakeDirLock  = new Object();
+      pMakeDirLock  = new Object(); 
       pExecuteTasks = new TreeMap<Long,ExecuteTask>();
       pFileMonitors = new HashMap<File, FileMonitor>();
     }
@@ -848,6 +849,39 @@ class JobMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   C O L L E C T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform one round of collecting per-process resource usage statistics.
+   */ 
+  public void 
+  collector()
+  {
+    TaskTimer timer = new TaskTimer("JobMgr.collector()");
+
+    SubProcessHeavy.collectStats();
+
+    Logs.ops.finest(timer.toString()); 
+    if(Logs.ops.isLoggable(Level.FINEST))
+      Logs.flush();
+    
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      timer.suspend();
+      long nap = sStatsInterval - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -1039,10 +1073,9 @@ class JobMgr
 	synchronized(pLock) {
 	  pResults = 
 	    new QueueJobResults(pProc.getCommand(), pProc.getExitCode(), 
-				pProc.getUserSecs(), pProc.getSystemSecs(), 
-				pProc.getAverageResidentSize(), pProc.getMaxResidentSize(), 
-				pProc.getAverageVirtualSize(), pProc.getMaxVirtualSize(), 
-				pProc.getPageFaults());
+				pProc.getUserTime(), pProc.getSystemTime(), 
+				pProc.getVirtualSize(), pProc.getResidentSize(), 
+				pProc.getSwappedSize(), pProc.getPageFaults());
 
 	  File file = new File(dir, "results");
 	  try {
@@ -1107,6 +1140,18 @@ class JobMgr
     private QueueJobResults  pResults; 
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The minimum time a cycle of the process statistics collection loop should take 
+   * (in milliseconds).
+   */ 
+  private static final long  sStatsInterval = 5000;  /* 5-second */ 
+  
 
 
   /*----------------------------------------------------------------------------------------*/

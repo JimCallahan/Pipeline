@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.2 2004/11/04 01:21:06 jim Exp $
+// $Id: SubProcessLight.java,v 1.3 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -191,6 +191,36 @@ class SubProcessLight
   
    
   /*----------------------------------------------------------------------------------------*/
+  /*   R U N   S T A T I S T I C S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the number of seconds the process has been scheduled in user mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if the process is still running.
+   */
+  public Double
+  getUserTime() 
+  {
+    return ((NativeProcessLight) pProc).getUserTime();
+  }
+
+  /**
+   * Get the number of seconds the process has been scheduled in kernel mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if the process is still running.
+   */
+  public Double
+  getSystemTime() 
+  {
+    return ((NativeProcessLight) pProc).getSystemTime();
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   I / O                                                                                */
   /*----------------------------------------------------------------------------------------*/
 
@@ -215,6 +245,7 @@ class SubProcessLight
       return pErrors.toString();
     }
   }   
+   
 
 
   /*----------------------------------------------------------------------------------------*/

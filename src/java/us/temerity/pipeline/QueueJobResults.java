@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.2 2004/08/22 21:54:05 jim Exp $
+// $Id: QueueJobResults.java,v 1.3 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -49,54 +49,48 @@ class QueueJobResults
    * @param exitCode
    *   The exit code of the subprocess.
    * 
-   * @param userSecs 
-   *   The number of seconds the subprocess was running in user space.
+   * @param userTime
+   *   The number of seconds the subprocess and its children have been scheduled in 
+   *   user mode.
    * 
-   * @param systemSecs
-   *   The number of seconds the subprocess was running in system space.
+   * @param systemTime
+   *   The number of seconds the subprocess and its children have been scheduled in 
+   *   kernal mode.
    * 
-   * @param avgResidentSize
-   *   The average resident memory size of the subprocess in kilobytes.
+   * @param virtualSize
+   *   The maximum virtual memory size of the subprocess and its children in bytes.
    * 
-   * @param maxResidentSize
-   *   The maximum resident memory size of the subprocess in kilobytes.
+   * @param residentSize
+   *   The maximum resident memory size of the subprocess and its children in bytes.
    * 
-   * @param avgVirtualSize
-   *   The average virtual memory size of the subprocess in kilobytes.
-   * 
-   * @param maxVirtualSize
-   *   The maximum virtual memory size of the subprocess in kilobytes.
+   * @param swappedSize 
+   *   The cumilative amount of memory swapped by the process and its children in bytes.
    * 
    * @param pageFaults
-   *   The total number of hard page faults during execution of the subprocess.
+   *   The number of major faults which occured for the process and its children which 
+   *   have required loading a memory page from disk.
    */ 
   public
   QueueJobResults
   ( 
    String command,
    int exitCode, 
-   double userSecs, 
-   double systemSecs, 
-   long avgResidentSize, 
-   long maxResidentSize, 
-   long avgVirtualSize, 
-   long maxVirtualSize, 
-   long pageFaults   
+   Double userTime, 
+   Double systemTime, 
+   Long virtualSize, 
+   Long residentSize, 
+   Long swappedSize, 
+   Long pageFaults   
   )
   {
-    pCommand  = command; 
-    pExitCode = exitCode;
-
-    pUserSecs   = userSecs;
-    pSystemSecs = systemSecs; 
-    
-    pAvgResidentSize = avgResidentSize;
-    pMaxResidentSize = maxResidentSize;
-
-    pAvgVirtualSize = avgVirtualSize;
-    pMaxVirtualSize = maxVirtualSize;
-
-    pPageFaults = pageFaults;
+    pCommand      = command; 
+    pExitCode     = exitCode;
+    pUserTime     = userTime;
+    pSystemTime   = systemTime;
+    pVirtualSize  = virtualSize;
+    pResidentSize = residentSize;
+    pSwappedSize  = swappedSize;
+    pPageFaults   = pageFaults;
   }
 
 
@@ -129,96 +123,82 @@ class QueueJobResults
     return pExitCode;
   }
   
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The number of seconds the regeneration action subprocess was running in user space.
-   * 
+   * Get the number of seconds the subprocess and its children have been scheduled in 
+   * user mode.
+   *  
    * @return 
-   *    The user seconds or <CODE>null</CODE> if the job was never executed.
+   *    The user seconds or <CODE>null</CODE> if unknown.
    */ 
   public Double
-  getUserSecs() 
+  getUserTime() 
   {
-    return pUserSecs;
+    return pUserTime;
   }
 
   /** 
-   * The number of seconds the regeneration action subprocess was running in system 
-   * (kernel) space.
-   * 
-   * @return
-   *   The system seconds or <CODE>null</CODE> if the job was never executed.
-   */ 
-  public Double  
-  getSystemSecs() 
-  {
-    return pSystemSecs;
-  }
-
-
-  /**
-   * The average resident memory size of the regeneration action subprocess in kilobytes.
-   * 
+   * Get the number of seconds the subprocess and its children have been scheduled in 
+   * kernel mode.
+   *  
    * @return 
-   *   The memory size or <CODE>null</CODE> if the job was never executed.
+   *    The system seconds or <CODE>null</CODE> if unknown.
    */ 
-  public Long
-  getAverageResidentSize() 
+  public Double
+  getSystemTime() 
   {
-    return pAvgResidentSize;
+    return pSystemTime;
   }
 
   /**
-   * The maximum resident memory size of the regeneration action subprocess in kilobytes.
+   * Get the number of major faults which occured for the process and its children which 
+   * have required loading a memory page from disk.
    * 
    * @return 
-   *    The memory size or <CODE>null</CODE> if the job was never executed.
-   */ 
-  public Long 
-  getMaximumResidentSize() 
-  {
-    return pMaxResidentSize;
-  }
-  
-
-  /**
-   * The average virtual memory size of the regeneration action subprocess in kilobytes.
-   * 
-   * @return 
-   *   The memory size or <CODE>null</CODE> if the job was never executed.
-   */ 
-  public Long
-  getAverageVirtualSize() 
-  {
-    return pAvgVirtualSize;
-  }
-
-  /**
-   * The maximum virtual memory size of the regeneration action subprocess in kilobytes.
-   * 
-   * @return 
-   *    The memory size or <CODE>null</CODE> if the job was never executed.
-   */ 
-  public Long 
-  getMaximumVirtualSize() 
-  {
-    return pMaxVirtualSize;
-  }
-  
-
-  /**
-   * The total number of hard page faults during execution of the regeneration action 
-   * subprocess. <P> 
-   * 
-   * A hard page fault is a memory fault that required I/O operations.
-   * 
-   * @return 
-   *   The number of page faults or <CODE>null</CODE> if the job was never executed.
-   */ 
+   *   The number of faults or <CODE>null</CODE> if unknown.
+   */
   public Long
   getPageFaults() 
   {
-    return pPageFaults; 
+    return pPageFaults;
+  }
+
+  /**
+   * Get the maximum virtual memory size of the process and its children in bytes.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getVirtualSize() 
+  {
+    return pVirtualSize;
+  }
+
+  /**
+   * Get the maximum resident memory size of the process and its children in bytes.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getResidentSize() 
+  {
+    return pResidentSize;
+  }
+
+  /**
+   * Get the cumilative amount of memory swapped by the process and its children in bytes.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getSwappedSize()  
+  {
+    return pSwappedSize;
   }
   
 
@@ -240,26 +220,23 @@ class QueueJobResults
     if(pExitCode != null) 
       encoder.encode("ExitCode", pExitCode);
     
-    if(pUserSecs != null) 
-      encoder.encode("UserSecs", pUserSecs);
+    if(pUserTime != null) 
+      encoder.encode("UserTime", pUserTime);
     
-    if(pSystemSecs != null) 
-      encoder.encode("SystemSecs", pSystemSecs);
+    if(pSystemTime != null) 
+      encoder.encode("SystemTime", pSystemTime);
       
-    if(pAvgResidentSize != null) 
-      encoder.encode("AvgResidentSize", pAvgResidentSize);
-    
-    if(pMaxResidentSize != null) 
-      encoder.encode("MaxResidentSize", pMaxResidentSize);
-    
-    if(pAvgVirtualSize != null) 
-	encoder.encode("AvgVirtualSize", pAvgVirtualSize);
-      
-    if(pMaxVirtualSize != null) 
-      encoder.encode("MaxVirtualSize", pMaxVirtualSize);
-    
     if(pPageFaults != null) 
       encoder.encode("PageFaults", pPageFaults);
+
+    if(pVirtualSize != null) 
+      encoder.encode("VirtualSize", pVirtualSize);
+
+    if(pResidentSize != null) 
+      encoder.encode("ResidentSize", pResidentSize);
+
+    if(pSwappedSize != null) 
+      encoder.encode("SwappedSize", pSwappedSize);
   }
 
   public void 
@@ -281,50 +258,40 @@ class QueueJobResults
 	pExitCode = code;
     }
 
-
     {
-      Double secs = (Double) decoder.decode("UserSecs"); 
-      if(secs != null) 
-	pUserSecs = secs;
+      Double time = (Double) decoder.decode("UserTime"); 
+      if(time != null) 
+	pUserTime = time;
     }
 
     {
-      Double secs = (Double) decoder.decode("SystemSecs"); 
-      if(secs != null) 
-	pSystemSecs = secs;
+      Double time = (Double) decoder.decode("SystemTime"); 
+      if(time != null) 
+	pSystemTime = time;
     }
-
-    
-    {
-      Long size = (Long) decoder.decode("AvgResidentSize"); 
-      if(size != null) 
-	pAvgResidentSize = size;
-    }
-
-    {
-      Long size = (Long) decoder.decode("MaxResidentSize"); 
-      if(size != null) 
-	pMaxResidentSize = size;
-    }
-    
-
-    {
-      Long size = (Long) decoder.decode("AvgVirtualSize"); 
-      if(size != null) 
-	pAvgVirtualSize = size;
-    }
-
-    {
-      Long size = (Long) decoder.decode("MaxVirtualSize"); 
-      if(size != null) 
-	pMaxVirtualSize = size;
-    }
-
     
     {
       Long faults = (Long) decoder.decode("PageFaults"); 
       if(faults != null) 
 	pPageFaults = faults;
+    }
+
+    {
+      Long size = (Long) decoder.decode("VirtualSize"); 
+      if(size != null) 
+	pVirtualSize = size;
+    }
+
+    {
+      Long size = (Long) decoder.decode("ResidentSize"); 
+      if(size != null) 
+	pResidentSize = size;
+    }
+
+    {
+      Long size = (Long) decoder.decode("SwappedSize"); 
+      if(size != null) 
+	pSwappedSize = size;
     }
   }
   
@@ -354,53 +321,39 @@ class QueueJobResults
    */ 
   private Integer pExitCode;
 
+  /** 
+   * The number of seconds the subprocess and its children have been scheduled in 
+   * user mode or <CODE>null</CODE> if unknown.
+   */  
+  private Double  pUserTime;
 
   /** 
-   * The number of seconds the regeneration action subprocess was running in user space or
-   * <CODE>null</CODE> if the job was never executed.
-   */ 
-  private Double  pUserSecs;
-
-  /** 
-   * The number of seconds the regeneration action subprocess was running in system 
-   * (kernel) space or <CODE>null</CODE> if the job was never executed.
-   */ 
-  private Double  pSystemSecs;
-
+   * The number of seconds the subprocess and its children have been scheduled in 
+   * kernel mode or <CODE>null</CODE> if unknown.
+   */
+  private Double  pSystemTime;
 
   /**
-   * The average resident memory size of the regeneration action subprocess in kilobytes or
-   * <CODE>null</CODE> if the job was never executed.
-   */ 
-  private Long  pAvgResidentSize;
+   * The number of major faults which occured for the process and its children which 
+   * have required loading a memory page from disk or <CODE>null</CODE> if unknown.
+   */
+  private Long  pPageFaults;      
 
   /**
-   * The maximum resident memory size of the regeneration action subprocess in kilobytes or
-   * <CODE>null</CODE> if the job was never executed.
-   */ 
-  private Long  pMaxResidentSize;
-  
+   * The maximum virtual memory size of the process and its children in bytes or 
+   * <CODE>null</CODE> if unknown.
+   */
+  private Long  pVirtualSize;
 
   /**
-   * The average virtual memory size of the regeneration action subprocess in kilobytes or
-   * <CODE>null</CODE> if the job was never executed.
-   */ 
-  private Long  pAvgVirtualSize;
+   * The maximum resident memory size of the process and its children in bytes or 
+   * <CODE>null</CODE> if unknown.
+   */
+  private Long pResidentSize;
 
   /**
-   * The maximum virtual memory size of the regeneration action subprocess in kilobytes or
-   * <CODE>null</CODE> if the job was never executed.
-   */ 
-  private Long  pMaxVirtualSize;
-  
-
-  /**
-   * The total number of hard page faults during execution of the regeneration action 
-   * subprocess or <CODE>null</CODE> if the job was never executed. <P> 
-   * 
-   * A hard page fault is a memory fault that required I/O operations.
-   */ 
-  private Long  pPageFaults; 
-
-  
+   * The cumilative amount of memory swapped by the process and its children in bytes 
+   * or <CODE>null</CODE> if unknown.
+   */
+  private Long pSwappedSize;
 }

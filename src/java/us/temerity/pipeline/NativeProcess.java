@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.9 2004/10/28 15:55:23 jim Exp $
+// $Id: NativeProcess.java,v 1.10 2004/11/09 06:01:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -75,25 +75,26 @@ interface NativeProcess
 
 
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Gets the number of seconds the OS level process ran in user space. 
-   */
-  public double
-  getUserSecs();
+  /*   R U N   S T A T I S T I C S                                                          */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the number of seconds the OS level process ran in system (kernel) space. 
+   * Get the number of seconds the process has been scheduled in user mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if unknown.
    */
-  public double
-  getSystemSecs();
+  public Double
+  getUserTime();
 
   /**
-   * Gets the number of hard page faults during execution of the OS level process. 
-   * A hard page fault is a memory fault that required I/O operations.
+   * Get the number of seconds the process has been scheduled in kernel mode.
+   * 
+   * @return 
+   *   The time in seconds or <CODE>null</CODE> if unknown.
    */
-  public long
-  getPageFaults();
+  public Double
+  getSystemTime();
 
 
 
