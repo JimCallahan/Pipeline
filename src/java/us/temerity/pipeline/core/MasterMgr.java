@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.1 2004/05/21 21:17:51 jim Exp $
+// $Id: MasterMgr.java,v 1.2 2004/05/23 19:48:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -151,7 +151,23 @@ import java.util.logging.Level;
  *   used to build the Toolset and a consise environment which is the result of merging 
  *   the packages. <P> 
  * </DIV> 
- *  
+ * 
+ * <H3> Miscellaneous Files </H3>
+ * 
+ * This class also maintains a persistent list of privileged users.  Privileged users are 
+ * allowed to perform operations which are restricted for normal users. In general privileged 
+ * access is required when an operation is dangerous or involves making changes which affect 
+ * all users. The "pipeline" user is always privileged. <P> 
+ * 
+ * The list of priviledged users is maintained in a Glue format text file called: <P> 
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   <I>node-dir</I>/etc/privileged-users <P>
+ * 
+ *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
+ *   <I>configure(1)</I> or as an agument to the constructor for this class. <P> 
+ * </DIV>
+ * 
  * @see MasterMgrClient
  * @see MasterMgrServer
  * @see DownstreamLinks
@@ -263,20 +279,27 @@ class MasterMgr
 
     /* initialize the fields */ 
     {
-      pMakeDirLock      = new Object();
-      pNodeTreeRoot     = new NodeTreeEntry();
+      pMakeDirLock = new Object();
+
+      pPrivilegedUsers = new PrivilegedUsers();
+
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
+      pNodeTreeRoot     = new NodeTreeEntry();
+
       pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
       pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
-      pWorkingLocks     = new HashMap<NodeID,ReentrantReadWriteLock>();
-      pWorkingBundles   = new HashMap<NodeID,WorkingBundle>();       
-      pDownstreamLocks  = new HashMap<String,ReentrantReadWriteLock>();
-      pDownstream       = new HashMap<String,DownstreamLinks>();
+
+      pWorkingLocks   = new HashMap<NodeID,ReentrantReadWriteLock>();
+      pWorkingBundles = new HashMap<NodeID,WorkingBundle>();       
+
+      pDownstreamLocks = new HashMap<String,ReentrantReadWriteLock>();
+      pDownstream      = new HashMap<String,DownstreamLinks>();
     }
 
     /* perform startup I/O operations */ 
     {
       makeRootDirs();
+      initPrivilegedUsers();
       rebuildDownstreamLinks();
       initNodeTree();
     }
@@ -293,23 +316,43 @@ class MasterMgr
   {
     if(!pNodeDir.isDirectory()) 
       throw new IllegalArgumentException
-	("The root node directory (" + pNodeDir + " does not exist!");
+	("The root node directory (" + pNodeDir + ") does not exist!");
     
     ArrayList<File> dirs = new ArrayList<File>();
     dirs.add(new File(pNodeDir, "repository"));
     dirs.add(new File(pNodeDir, "working"));
+    dirs.add(new File(pNodeDir, "toolsets/packages"));
+    dirs.add(new File(pNodeDir, "toolsets/toolsets"));
+    dirs.add(new File(pNodeDir, "etc"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
 	if(!dir.isDirectory())
-	  if(!dir.mkdir()) 
+	  if(!dir.mkdirs()) 
 	    throw new IllegalArgumentException
 	      ("Unable to create the directory (" + dir + ")!");
       }
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Load the privileged users if any exist.
+   */ 
+  private void 
+  initPrivilegedUsers()
+  {
+    try {
+      readPrivilegedUsers();
+    }
+    catch(PipelineException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    }
+  }
   
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -329,13 +372,26 @@ class MasterMgr
       int ak;
       for(ak=0; ak<authors.length; ak++) {
 	assert(authors[ak].isDirectory());
+	String author = authors[ak].getName();
 	
 	File views[] = authors[ak].listFiles();  
 	int vk;
 	for(vk=0; vk<views.length; vk++) {
 	  assert(views[vk].isDirectory());
-	  initWorkingNodeTree
-	    (views[vk].getPath(), authors[ak].getName(), views[vk].getName(), views[vk]);
+	  String view = views[vk].getName();
+
+	  /* add all of the nodes in working area */ 
+	  initWorkingNodeTree(views[vk].getPath(), author, view, views[vk]);
+
+	  /* make sure empty working areas are added */ 
+	  synchronized(pWorkingAreaViews) {
+	    TreeSet<String> vs = pWorkingAreaViews.get(author);
+	    if(vs == null) {
+	      vs = new TreeSet<String>();
+	      pWorkingAreaViews.put(author, vs);
+	    }
+	    vs.add(view);
+	  }
 	}
       }
     } 
@@ -655,7 +711,6 @@ class MasterMgr
   
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   S H U T D O W N                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -719,14 +774,21 @@ class MasterMgr
     {
       pMakeDirLock         = null;
       pNodeDir             = null;
+
+      pPrivilegedUsers     = null;
+
       pNodeTreeRoot        = null;
       pWorkingAreaViews    = null;
+
       pCheckedInLocks      = null;
       pCheckedInBundles    = null;
+
       pWorkingLocks        = null;
       pWorkingBundles      = null;
+
       pDownstreamLocks     = null;
       pDownstream          = null;
+
       pFileMgrClient       = null;
       pMonitored           = null;
       pNotifyControlClient = null;
@@ -783,11 +845,116 @@ class MasterMgr
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   G E N E R A L                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
-  /* 
+  /**
+   * Get the names of the privileged users. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPrivilegedUsersRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the privileged users.
+   */ 
+  public Object 
+  getPrivilegedUsers
+  ( 
+   MiscGetPrivilegedUsersReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pPrivilegedUsers) {
+      timer.resume();	
+
+      TreeSet<String> users = new TreeSet<String>(pPrivilegedUsers);
+      return new MiscGetPrivilegedUsersRsp(timer, users);
+    }
+  }
+  
+  /**
+   * Grant the given user privileged access status. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to grant the given user privileged status.
+   */ 
+  public Object 
+  grantPrivileges
+  ( 
+   MiscGrantPrivilegesReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.grantPrivileges(): " + req.getAuthor());
+    
+    timer.aquire();
+    synchronized(pPrivilegedUsers) {
+      timer.resume();	
+
+      if(!pPrivilegedUsers.contains(req.getAuthor())) {      
+	pPrivilegedUsers.add(req.getAuthor());
+	try {
+	  writePrivilegedUsers();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+      }
+
+      return new SuccessRsp(timer);
+    }
+  }
+
+  /**
+   *  Remove the given user's privileged access status. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to to remove the given user's priviledges.
+   */ 
+  public Object 
+  removePrivileges
+  ( 
+   MiscRemovePrivilegesReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.removePrivileges(): " + req.getAuthor());
+    
+    timer.aquire();
+    synchronized(pPrivilegedUsers) {
+      timer.resume();	
+
+      if(pPrivilegedUsers.contains(req.getAuthor())) {      
+	pPrivilegedUsers.remove(req.getAuthor());
+	try {
+	  writePrivilegedUsers();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+      }
+
+      return new SuccessRsp(timer);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the table of current working area authors and views.
    * 
    * @param req 
@@ -817,7 +984,73 @@ class MasterMgr
     }
   }
 
-  /* 
+  /**
+   * Create a new empty working area. <P> 
+   * 
+   * If the working area already exists, the operation is successful even though nothing
+   * is actually done.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the given working area.
+   */ 
+  public Object 
+  createWorkingArea
+  ( 
+   NodeCreateWorkingAreaReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.createWorkingArea(): " + 
+		    req.getAuthor() + "|" + req.getView());
+    
+    timer.aquire();
+    synchronized(pWorkingAreaViews) {
+      timer.resume();	
+      
+      String author = req.getAuthor();
+      String view   = req.getView();
+
+      /* make sure it doesn't already exist */ 
+      TreeSet<String> views = pWorkingAreaViews.get(author);
+      if((views != null) && views.contains(view))
+	return new SuccessRsp(timer);
+
+      /* create the working area node directory */ 
+      File dir = new File(pNodeDir, "working/" + author + "/" + view);
+      if(!dir.isDirectory()) {
+	if(!dir.mkdirs()) 
+	  return new FailureRsp
+	    (timer, 
+	     "Unable to create the working area (" + view + ") for user (" + author + ")!");
+      }
+
+      /* create the working area files directory */ 
+      try {
+	pFileMgrClient.createWorkingArea(author, view);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+
+      /* add the view to the runtime table */ 
+      if(views == null) {
+	views = new TreeSet<String>();
+	pWorkingAreaViews.put(author, views);
+      }
+      views.add(view);
+
+      return new SuccessRsp(timer);
+    }
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Update the immediate children of all node path components along the given path 
    * which are visible within a working area view owned by the user. <P> 
    * 
@@ -3068,6 +3301,104 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the privileged users to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the privileged users file.
+   */ 
+  private void 
+  writePrivilegedUsers() 
+    throws PipelineException
+  {
+    synchronized(pPrivilegedUsers) {
+      File file = new File(pNodeDir, "etc/privileged-users");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old privileged users file (" + file + ")!");
+      }
+      
+      if(!pPrivilegedUsers.isEmpty()) {
+	Logs.ops.finer("Writing Privileged Users.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("PrivilegedUsers", pPrivilegedUsers);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the privileged users!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the privileged users file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the privileged users from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the privileged users file.
+   */ 
+  private void 
+  readPrivilegedUsers() 
+    throws PipelineException
+  {
+    synchronized(pPrivilegedUsers) {
+      pPrivilegedUsers.clear();
+
+      File file = new File(pNodeDir, "etc/privileged-users");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Privileged Users.");
+
+	PrivilegedUsers users = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  users = (PrivilegedUsers) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The privileged users file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the privileged users file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+	assert(users != null);
+	
+	pPrivilegedUsers.addAll(users);
+      }
+    }
+  }
+
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the checked-in version to disk. <P> 
    * 
    * This method assumes that the write lock for the table of checked-in versions for
@@ -3913,6 +4244,16 @@ class MasterMgr
   private File  pNodeDir;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The cached names of the priviledged users. 
+   */ 
+  private PrivilegedUsers  pPrivilegedUsers;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The table of working area view names indexed by author user name.
    * 
@@ -3927,6 +4268,8 @@ class MasterMgr
    */ 
   private NodeTreeEntry  pNodeTreeRoot;
 
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
@@ -3978,8 +4321,10 @@ class MasterMgr
    * Access to this table should be protected by a synchronized block.
    */
   private HashMap<String,DownstreamLinks>  pDownstream;
-
   
+  
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The root production directory.
    */ 

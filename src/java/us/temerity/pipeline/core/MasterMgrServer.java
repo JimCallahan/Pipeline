@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.1 2004/05/21 21:17:51 jim Exp $
+// $Id: MasterMgrServer.java,v 1.2 2004/05/23 19:48:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -271,6 +271,33 @@ class MasterMgrServer
 	  Logs.flush();
 
 	  switch(kind) {
+	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
+	  case GetPrivilegedUsers:
+	    {
+	      MiscGetPrivilegedUsersReq req = (MiscGetPrivilegedUsersReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getPrivilegedUsers(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GrantPrivileges:
+	    {
+	      MiscGrantPrivilegesReq req = (MiscGrantPrivilegesReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.grantPrivileges(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case RemovePrivileges:
+	    {
+	      MiscRemovePrivilegesReq req = (MiscRemovePrivilegesReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.removePrivileges(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- WORKING AREAS ---------------------------------------------------------------*/
 	  case GetWorkingAreas:
 	    {
 	      NodeGetWorkingAreasReq req = (NodeGetWorkingAreasReq) objIn.readObject();
@@ -279,6 +306,16 @@ class MasterMgrServer
 	    }
 	    break;
 
+	  case CreateWorkingArea:
+	    {
+	      NodeCreateWorkingAreaReq req = (NodeCreateWorkingAreaReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.createWorkingArea(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- NODE PATHS ------------------------------------------------------------------*/
 	  case UpdatePaths:
 	    {
 	      NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
@@ -287,10 +324,8 @@ class MasterMgrServer
 	    }
 	    break;
 
-	  // ...
 
-	    
-
+	  /*-- WORKING VERSIONS ------------------------------------------------------------*/
 	  case GetWorking:
 	    {
 	      NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
@@ -322,11 +357,9 @@ class MasterMgrServer
 	      objOut.flush(); 
 	    }
 	    break;
-	    
-	  // ...
 
 	    
-
+	  /*-- NODE STATUS -----------------------------------------------------------------*/
 	  case Status:
 	    {
 	      NodeStatusReq req = (NodeStatusReq) objIn.readObject();
@@ -335,6 +368,8 @@ class MasterMgrServer
 	    }
 	    break;
 
+
+	  /*-- REVISION CONTROL ------------------------------------------------------------*/
 	  case Register:
 	    {
 	      NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
@@ -374,10 +409,9 @@ class MasterMgrServer
 	      objOut.flush(); 
 	    }
 	    break;
-	    
-	  // ...
-	    
 
+
+	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:
 	    live = false;
 	    break;

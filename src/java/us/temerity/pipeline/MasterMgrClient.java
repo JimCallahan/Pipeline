@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.1 2004/05/21 21:17:51 jim Exp $
+// $Id: MasterMgrClient.java,v 1.2 2004/05/23 19:48:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -131,12 +131,241 @@ class MasterMgrClient
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   G E N E R A L                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the privileged users. <P> 
+   * 
+   * Privileged users are allowed to perform operations which are restricted for normal
+   * users. In general privileged access is required when an operation is dangerous or 
+   * involves making changes which affect all users. The "pipeline" user is always 
+   * privileged. <P> 
+   * 
+   * Each client caches the set of privileged users recieved from the master server the 
+   * first time this method is called and uses this cache instead of network communication
+   * for subsequent calls.  This cache can be ignored and rebuilt if the <CODE>useCache</CODE>
+   * argument is set to <CODE>false</CODE>.
+   * 
+   * @param useCache
+   *   Should the local cache be used to determine whether the user is privileged?
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileged users.
+   */ 
+  public synchronized TreeSet<String> 
+  getPrivilegedUsers
+  (
+   boolean useCache   
+  ) 
+    throws PipelineException
+  {
+    if(!useCache || (pPrivilegedUsers == null)) 
+      updatePrivilegedUsers();
+
+    return new TreeSet<String>(pPrivilegedUsers);
+  }
+
+  /**
+   * Is the given user privileged? <P> 
+   * 
+   * Privileged users are allowed to perform operations which are restricted for normal
+   * users. In general privileged access is required when an operation is dangerous or 
+   * involves making changes which affect all users. The "pipeline" user is always 
+   * privileged. <P> 
+   * 
+   * Each client caches the set of privileged users recieved from the master server the 
+   * first time this method is called and uses this cache instead of network communication
+   * for subsequent calls.  This cache can be ignored and rebuilt if the <CODE>useCache</CODE>
+   * argument is set to <CODE>false</CODE>.
+   * 
+   * @param author
+   *   The user in question.
+   * 
+   * @param useCache
+   *   Should the local cache be used to determine whether the user is privileged?
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileged users.
+   */ 
+  public synchronized boolean 
+  isPrivileged
+  (
+   String author, 
+   boolean useCache
+  ) 
+    throws PipelineException
+  {
+    if(author.equals("pipeline")) 
+      return true;
+
+    if(!useCache || (pPrivilegedUsers == null)) 
+      updatePrivilegedUsers();
+    assert(pPrivilegedUsers != null);
+
+    return pPrivilegedUsers.contains(author);
+  }
+
+  /**
+   * Is the given user privileged? <P> 
+   * 
+   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
+   * with a <CODE>useCache</CODE> argument of <CODE>true</CODE>.
+   * 
+   * @param author
+   *   The user in question.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileged users.
+   */ 
+  public synchronized boolean 
+  isPrivileged
+  (
+   String author
+  ) 
+    throws PipelineException
+  {
+    return isPrivileged(author, true);
+  }
+
+  /**
+   * Is the current user privileged? <P> 
+   * 
+   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
+   * with the current user as the <CODE>author</CODE> argument and a <CODE>useCache</CODE> 
+   * argument of <CODE>true</CODE>.
+   * 
+   * @param useCache
+   *   Should the local cache be used to determine whether the current user is privileged?
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileged users.
+   */ 
+  public synchronized boolean 
+  isPrivileged
+  ( 
+   boolean useCache
+  ) 
+    throws PipelineException
+  {
+    return isPrivileged(PackageInfo.sUser, useCache);
+  }
+
+  /**
+   * Is the current user privileged? <P> 
+   * 
+   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
+   * with the current user as the <CODE>author</CODE> argument.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileged users.
+   */ 
+  public synchronized boolean 
+  isPrivileged() 
+    throws PipelineException
+  {
+    return isPrivileged(PackageInfo.sUser, true);
+  }
+
+  /**
+   * Update the local cache of privileged users.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileged users.
+   */ 
+  private synchronized void 
+  updatePrivilegedUsers() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetPrivilegedUsersReq req = new MiscGetPrivilegedUsersReq();
+
+    Object obj = performTransaction(MasterRequest.GetPrivilegedUsers, req);
+    if(obj instanceof MiscGetPrivilegedUsersRsp) {
+      MiscGetPrivilegedUsersRsp rsp = (MiscGetPrivilegedUsersRsp) obj;
+      pPrivilegedUsers = rsp.getUsers();
+    }
+    else {
+      handleFailure(obj);
+      return;
+    }
+  }
   
-  /* 
+
+  /**
+   * Grant the given user privileged access status. <P> 
+   * 
+   * This method may only be called by the "pipeline" user.  An exception will be thrown
+   * if called by any other user.
+   * 
+   * @param author
+   *   The user to make privileged.
+   * 
+   * @throws PipelineException
+   *   If unable to make the given user privileged.
+   */
+  public synchronized void 
+  grantPriviledges
+  (
+   String author
+  ) 
+    throws PipelineException    
+  {
+    if(!PackageInfo.sUser.equals("pipeline"))
+      throw new PipelineException
+	("Only the \"pipeline\" user may change a user's privileges!");
+
+    /* invalidate the cache */ 
+    pPrivilegedUsers = null;
+
+    verifyConnection();
+
+    MiscGrantPrivilegesReq req = new MiscGrantPrivilegesReq(author);
+
+    Object obj = performTransaction(MasterRequest.GrantPrivileges, req);
+    handleSimpleResponse(obj);
+  }
+   
+  /**
+   * Remove the given user's privileged access status. <P> 
+   * 
+   * This method may only be called by the "pipeline" user.  An exception will be thrown
+   * if called by any other user.
+   * 
+   * @param author
+   *   The user to remove priviledges from.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the given user's priviledges.
+   */
+  public synchronized void 
+  removePriviledges
+  (
+   String author
+  ) 
+    throws PipelineException    
+  {
+    if(!PackageInfo.sUser.equals("pipeline"))
+      throw new PipelineException
+	("Only the \"pipeline\" user may change a user's privileges!");
+
+    /* invalidate the cache */ 
+    pPrivilegedUsers = null;
+
+    verifyConnection();
+
+    MiscRemovePrivilegesReq req = new MiscRemovePrivilegesReq(author);
+
+    Object obj = performTransaction(MasterRequest.RemovePrivileges, req);
+    handleSimpleResponse(obj);
+  }
+
+   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the table of current working area authors and views
    *
    * @return 
@@ -164,7 +393,74 @@ class MasterMgrClient
     }
   }
 
-  /* 
+  /**
+   * Create a new empty working area for the given user and view. <P> 
+   * 
+   * If the working area already exists, the operation is successful even though 
+   * nothing is actually done.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @throws PipelineException
+   *   If unable to create the working area.
+   */
+  public synchronized void  
+  createWorkingArea
+  ( 
+   String author, 
+   String view   
+  ) 
+    throws PipelineException 
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Working areas can only be created which are owned by you if you are not a " + 
+	 "privileged user!");
+
+    verifyConnection();
+
+    NodeCreateWorkingAreaReq req = new NodeCreateWorkingAreaReq(author, view);
+
+    Object obj = performTransaction(MasterRequest.CreateWorkingArea, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Create a new empty working area for the current user and view. <P> 
+   * 
+   * If the working area already exists, the operation is successful even though 
+   * nothing is actually done.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @throws PipelineException
+   *   If unable to create the working area.
+   */
+  public synchronized void  
+  createWorkingArea
+  ( 
+   String view   
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    NodeCreateWorkingAreaReq req = new NodeCreateWorkingAreaReq(PackageInfo.sUser, view);
+
+    Object obj = performTransaction(MasterRequest.CreateWorkingArea, req);
+    handleSimpleResponse(obj);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Update the immediate children of all node path components along the given paths
    * which are visible within a working area view owned by the given user. <P> 
    * 
@@ -884,5 +1180,13 @@ class MasterMgrClient
    */
   private Socket  pSocket;
 
+
+  /**
+   * The cached names of the priviledged users. <P> 
+   *
+   * May be <CODE>null</CODE> if the cache has been invalidated.
+   */ 
+  private TreeSet<String>  pPrivilegedUsers;
+  
 }
 
