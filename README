@@ -1,5 +1,14 @@
 
-The haiku instructions:
+Directory Structure:
+
+  tools		Programs used as part of the build process.
+  libs 		Shared code packaged into libraries.
+  utils		A collection of small utility programs in one directory.
+  apps		Large complex programs with their own directory structure.
+
+
+
+The haiku build instructions:
 
   $ tar -zxvf Phoenix-0.1.tgz
   $ cd Phoenix-0.1

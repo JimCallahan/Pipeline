@@ -25,8 +25,14 @@
 /* Define if OpenGL is available. */ 
 #undef HAVE_OPEN_GL
 
+/* Define a unique host architecture and build mode string. */ 
+#undef BUILD_NAME
+
 /* Name of HTML documentation directory. */ 
 #undef HTML_DOCS_DIR
+
+/* Name of directory where installed binaries live. */ 
+#undef INST_BIN_DIR
 
 /* The number of bytes in a char.  */
 #undef SIZEOF_CHAR

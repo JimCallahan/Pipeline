@@ -1,13 +1,11 @@
 
 SUBDIRS = \
-  Core \
-  Vornoi
-#  Thread
+  libs \
+  utils
 
 
 EXTRA_DIST = \
   autogen.sh
-
 
 
 pack-links:

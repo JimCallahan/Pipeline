@@ -11,9 +11,9 @@ dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
 
-dnl UK_CHECK_CXX_LIB(LIBRARY, FUNCTION, ARGS, INCLUDES [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND
+dnl PHX_CHECK_CXX_LIB(LIBRARY, FUNCTION, ARGS, INCLUDES [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND
 dnl              [, OTHER-LIBRARIES]]])
-AC_DEFUN(UK_CHECK_CXX_LIB,
+AC_DEFUN(PHX_CHECK_CXX_LIB,
 [AC_MSG_CHECKING([for $2 in -l$1])
 dnl Use a cache variable name containing both the library and function name,
 dnl because the test really is for library $1 defining function $2, not
@@ -48,8 +48,8 @@ fi
 
 
 
-dnl UK_CHECK_CXX_FUNC(FUNCTION, ARGS, INCLUDES [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
-AC_DEFUN(UK_CHECK_CXX_FUNC,
+dnl PHX_CHECK_CXX_FUNC(FUNCTION, ARGS, INCLUDES [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+AC_DEFUN(PHX_CHECK_CXX_FUNC,
 [AC_MSG_CHECKING([for $1])
 fx_func=`echo $1 | sed 'y%./+-:%__p__%'`
 AC_CACHE_VAL(ac_cv_fx_func_$fx_func,
@@ -68,19 +68,19 @@ fi
 ])
 
 
-dnl UK_CHECK_CXX_FUNCS(FUNCTIONS..., ARGS, INCLUDES)
-AC_DEFUN(UK_CHECK_CXX_FUNCS,
+dnl PHX_CHECK_CXX_FUNCS(FUNCTIONS..., ARGS, INCLUDES)
+AC_DEFUN(PHX_CHECK_CXX_FUNCS,
 [for fx_func in $1
 do
   fx_have_func=HAVE_`echo $fx_func | sed -e 's/[^a-zA-Z0-9_]/_/g' -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'`
-  UK_CHECK_CXX_FUNC([$fx_func], [$2], [$3], AC_DEFINE_UNQUOTED([$fx_have_func]))dnl
+  PHX_CHECK_CXX_FUNC([$fx_func], [$2], [$3], AC_DEFINE_UNQUOTED([$fx_have_func]))dnl
 done
 ])
 
 
 
-dnl UK_TRY_CPP(INCLUDES, [CPP-OPTIONS, [ACTION-IF-TRUE [, ACTION-IF-FALSE]]])
-AC_DEFUN(UK_TRY_CPP,
+dnl PHX_TRY_CPP(INCLUDES, [CPP-OPTIONS, [ACTION-IF-TRUE [, ACTION-IF-FALSE]]])
+AC_DEFUN(PHX_TRY_CPP,
 [AC_REQUIRE_CPP()dnl
 cat > conftest.$ac_ext <<EOF
 [#]line __oline__ "configure"
@@ -108,13 +108,13 @@ fi
 rm -f conftest*])
 
 
-dnl UK_CHECK_HEADER(HEADER-FILE, [CPP-OPTIONS, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
-AC_DEFUN(UK_CHECK_HEADER,
+dnl PHX_CHECK_HEADER(HEADER-FILE, [CPP-OPTIONS, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+AC_DEFUN(PHX_CHECK_HEADER,
 [dnl Do the transliteration at runtime so arg 1 can be a shell variable.
 ac_safe=`echo "$1" | sed 'y%./+-%__p_%'`
 AC_MSG_CHECKING([for $1])
 AC_CACHE_VAL(ac_cv_header_$ac_safe,
-[UK_TRY_CPP([#include <$1>], [$2], eval "ac_cv_header_$ac_safe=yes",
+[PHX_TRY_CPP([#include <$1>], [$2], eval "ac_cv_header_$ac_safe=yes",
   eval "ac_cv_header_$ac_safe=no")])dnl
 if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
   AC_MSG_RESULT(yes)
