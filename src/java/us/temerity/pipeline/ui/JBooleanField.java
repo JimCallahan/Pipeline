@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.4 2004/06/19 00:31:57 jim Exp $
+// $Id: JBooleanField.java,v 1.5 2004/06/23 22:30:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -37,7 +37,7 @@ class JBooleanField
     addMouseListener(this);
 
     {
-      add(Box.createHorizontalGlue());
+      add(Box.createRigidArea(new Dimension(16, 0)));
       
       {
 	JValueField field = new JValueField(this);
@@ -50,8 +50,6 @@ class JBooleanField
 
 	add(field);
       }
-      
-      add(Box.createHorizontalGlue());
 
       {
 	JLabel label = new JLabel(sEnabledIcon);
@@ -59,7 +57,7 @@ class JBooleanField
 	add(label);
       }
 
-      add(Box.createRigidArea(new Dimension(8, 0)));
+      add(Box.createRigidArea(new Dimension(4, 0)));
     }
       
     setValue(false);
@@ -76,11 +74,14 @@ class JBooleanField
   public void 
   setValue
   (
-   boolean tf
+   Boolean value
   ) 
   {
-    pValue = tf;    
-    pTextField.setText(pValue ? "YES" : "no");
+    pValue = value;
+    if(pValue != null) 
+      pTextField.setText(pValue ? "YES" : "no");
+    else 
+      pTextField.setText("-");
 
     pTextField.fireActionPerformed2();
   }
@@ -88,7 +89,7 @@ class JBooleanField
   /**
    * Get the boolean value.
    */ 
-  public boolean
+  public Boolean
   getValue() 
   {
     return pValue;
@@ -123,14 +124,12 @@ class JBooleanField
       addMouseListener(this);
       pTextField.addMouseListener(this);
       
-      pTextField.setText(pValue ? "YES" : "no");
       pIconLabel.setIcon(sEnabledIcon);
     }
     else if(!enabled && isEnabled()) {
       removeMouseListener(this);
       pTextField.removeMouseListener(this);
 
-      pTextField.setText("-");
       pIconLabel.setIcon(sDisabledIcon);
     }
 
@@ -208,7 +207,10 @@ class JBooleanField
   public void 
   mouseClicked(MouseEvent e) 
   {
-    setValue(!pValue);
+    if(pValue != null) 
+      setValue(!pValue);
+    else 
+      setValue(true);
   }    
 
   /**
@@ -293,7 +295,7 @@ class JBooleanField
   /**
    * The underlying boolean value.
    */ 
-  private boolean  pValue;
+  private Boolean  pValue;
 
 
   /**
