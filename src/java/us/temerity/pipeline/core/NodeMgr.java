@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.5 2004/03/26 19:12:15 jim Exp $
+// $Id: NodeMgr.java,v 1.6 2004/03/28 00:47:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -352,8 +352,78 @@ class NodeMgr
     }  
   }  
 
-  
-  // ...
+  /** 
+   * Set the node properties of the working version of the node. <P> 
+   * 
+   * Node properties include: <BR>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
+   *   The toolset environment under which editors and actions are run. <BR>
+   *   The name of the editor plugin used to edit the data files associated with the node.<BR>
+   *   The regeneration action and its single and per-dependency parameters. <BR>
+   *   The job requirements. <BR>
+   *   The IgnoreOverflow and IsSerial flags. <BR>
+   *   The job batch size. <P> 
+   * </DIV> 
+   * 
+   * Note that any existing upstream dependency relationship information contain in the
+   * working version being copied will be ignored.  The {@link #linkNodes linkNodes} and
+   * {@link #unlinkNodes unlinkNodes} methods must be used to alter the connections 
+   * between working node versions.
+   * 
+   * @param req 
+   *   The modify properties request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to modify the properties of the working version.
+   */
+  public Object
+  modifyProperties
+  (
+   NodeModifyPropertiesReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The modify properties request cannot be (null)!");
+
+    String task = ("NodeMgr.modifyProperties(): " + req.getNodeID());
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+    lock.writeLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
+
+      /* set the node properties */ 
+      WorkingBundle bundle = getWorkingBundle(req.getNodeID());
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.setProperties(req.getNodeMod())) {
+
+	/* write the new working version to disk */ 
+	writeWorkingVersion(req.getNodeID(), mod);
+
+	/* update the bundle */ 
+	bundle.uVersion          = mod;
+	bundle.uOverallNodeState = null;
+	bundle.uPropertyState    = null;
+      }
+
+      return new SuccessRsp(task, wait, start);
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      lock.writeLock().unlock();
+    }      
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -416,43 +486,13 @@ class NodeMgr
 
       /* write the new working version to disk */ 
       try {
-	File file   = new File(pNodeDir, req.getNodeID().getWorkingPath().getPath());
-	File backup = new File(file + ".backup");
-	File dir    = file.getParentFile();
-	
-	synchronized(pMakeDirLock) {
-	  if(!dir.isDirectory()) 
-	    if(!dir.mkdirs()) 
-	      throw new IOException
-		("Unable to create working version directory (" + dir + ")!");
-	}
-	
-	if(backup.exists())
-	  if(!backup.delete()) 
-	    throw new IOException
-	      ("Unable to remove the backup working version file (" + backup + ")!");
-	
-	if(file.exists()) 
-	  if(!file.renameTo(backup)) 
-	    throw new IOException
-	      ("Unable to backup the current working version file (" + file + ") to the " + 
-	       "the file (" + backup + ")!");
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  GlueEncoder ge = new GlueEncoder("NodeMod", req.getNodeMod());
-	  out.write(ge.getText());
-	  out.flush();
-	  out.close();
-	}
+	writeWorkingVersion(req.getNodeID(), req.getNodeMod());
       }
-      catch(Exception ex) { 
-	/* remove failed node name */ 
+      catch(PipelineException ex) { 
 	synchronized(pNodeNames) {
 	  pNodeNames.remove(name);
 	}
-
-	throw new PipelineException("INTERNAL ERROR:\n" + ex.getMessage());
+	throw ex;
       }
 
       /* create a working bundle for the new working version */ 
@@ -537,6 +577,9 @@ class NodeMgr
   /**
    * Get the table of checked-in bundles for the node with the given name.
    * 
+   * This method assumes that a read/write lock for the checked-in version has already been 
+   * aquired.
+   * 
    * @param name 
    *   The fully resolved node name.
    */
@@ -560,6 +603,9 @@ class NodeMgr
   /** 
    * Get the working bundle with the given working version ID.
    * 
+   * This method assumes that a read/write lock for the working version has already been 
+   * aquired.
+   * 
    * @param id 
    *   The unique working version identifier.
    */
@@ -574,23 +620,203 @@ class NodeMgr
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
       
     /* lookup the bundle */ 
+    WorkingBundle bundle = null;
     synchronized(pWorkingBundles) {
-      WorkingBundle bundle = pWorkingBundles.get(id);
+      bundle = pWorkingBundles.get(id);
+    }
 
-      if(bundle == null) {
-	
-	// check for file... 
-
-
-	throw new PipelineException
-	  ("No working version of node (" + id.getName() + ") exists under the view (" + 
-	   id.getView() + ") owned by user (" + id.getAuthor() + ")!");
-      }
-
+    if(bundle != null)
       return bundle;
+
+    NodeMod mod = readWorkingVersion(id);
+    if(mod == null) 
+      throw new PipelineException
+	("No working version of node (" + id.getName() + ") exists under the view (" + 
+	 id.getView() + ") owned by user (" + id.getAuthor() + ")!");
+    
+    bundle = new WorkingBundle(mod);
+
+    synchronized(pWorkingBundles) {
+      pWorkingBundles.put(id, bundle);
+    }
+
+    return bundle;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I / O   H E L P E R S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the working version to disk. <P> 
+   * 
+   * This method assumes that the write lock for the working version has already been 
+   * aquired.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod
+   *   The working version to write.
+   * 
+   * @throws PipelineException
+   *   If unable to write the working version file or create the needed parent directories.
+   */ 
+  private void 
+  writeWorkingVersion
+  (
+   NodeID id,
+   NodeMod mod 
+  ) 
+    throws PipelineException
+  {
+    File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+    File backup = new File(file + ".backup");
+    File dir    = file.getParentFile();
+
+    try {
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create working version directory (" + dir + ")!");
+      }
+      
+      if(backup.exists())
+	if(!backup.delete()) 
+	  throw new IOException
+	    ("Unable to remove the backup working version file (" + backup + ")!");
+      
+      if(file.exists()) 
+	if(!file.renameTo(backup)) 
+	  throw new IOException
+	    ("Unable to backup the current working version file (" + file + ") to the " + 
+	     "the file (" + backup + ")!");
+      
+      String glue = null;
+      try {
+	GlueEncoder ge = new GlueEncoder("NodeMod", mod);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	Logs.glu.severe
+	  ("Unable to generate a Glue format representation of working " + 
+	   "version (" + id + ")!");
+	Logs.flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+      
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write working version (" + id + ") to file...\n" +
+	 "    " + ex.getMessage());
     }
   }
 
+
+  /**
+   * Read the working version from disk. <P> 
+   * 
+   * This method assumes that the write lock for the working version has already been 
+   * aquired.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @return 
+   *   The working version or <CODE>null</CODE> if no file or backup file exists.
+   * 
+   * @throws PipelineException
+   *   If the working version files are corrupted in some manner.
+   */ 
+  private NodeMod
+  readWorkingVersion
+  (
+   NodeID id
+  ) 
+    throws PipelineException
+  {
+    File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+    File backup = new File(file + ".backup");
+    
+    try {
+      if(file.exists()) {
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoder(in);
+	  NodeMod mod = (NodeMod) gd.getObject();
+	  in.close();
+	  
+	  return mod;
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The working version file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  if(backup.exists()) {
+	    NodeMod mod = null;
+	    try {
+	      FileReader in = new FileReader(backup);
+	      GlueDecoder gd = new GlueDecoder(in);
+	      mod = (NodeMod) gd.getObject();
+	      in.close();
+	    }
+	    catch(Exception ex2) {
+	      Logs.glu.severe
+		("The backup working version file (" + backup + ") appears to be corrupted!");
+	      Logs.flush();
+	      
+	      throw ex;
+	    }
+	    
+	    Logs.glu.severe
+	      ("Successfully recovered the working version from the backup file " + 
+	       "(" + backup + ")\n" + 
+	       "Renaming the backup to (" + file + ")!");
+	    Logs.flush();
+	    
+	    if(!file.delete()) 
+	      throw new IOException
+		("Unable to remove the corrupted working version file (" + file + ")!");
+	    
+	    if(!backup.renameTo(file)) 
+	      throw new IOException
+		("Unable to replace the corrupted working version file (" + file + ") " + 
+		 "with the valid backup file (" + backup + ")!");
+	    
+	    return mod;
+	  }
+	  else {
+	    Logs.glu.severe
+	      ("The backup working version file (" + backup + ") does not exist!");
+	    Logs.flush();
+	
+	    throw ex;
+	  }
+	}
+      }
+
+      return null;
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read working version (" + id + ") from file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+      
 
 
   /*----------------------------------------------------------------------------------------*/
