@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.11 2004/07/07 13:19:59 jim Exp $
+// $Id: MasterMgrClient.java,v 1.12 2004/07/14 20:59:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1460,6 +1460,47 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.Unlink, req);
     handleSimpleResponse(obj);
   } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add a secondary file sequence to the given working version.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The secondary file sequence to add.
+   * 
+   * @throws PipelineException
+   *   If unable to add the file sequence.
+   */
+  public synchronized void 
+  addSecondary
+  (
+   String author, 
+   String view, 
+   String name, 
+   FileSeq fseq
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeAddSecondaryReq req = new NodeAddSecondaryReq(id, fseq);
+
+    Object obj = performTransaction(MasterRequest.AddSecondary, req);
+    handleSimpleResponse(obj);
+  } 
+  
 
 
   /*----------------------------------------------------------------------------------------*/
