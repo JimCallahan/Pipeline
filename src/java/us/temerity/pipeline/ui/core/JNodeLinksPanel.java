@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.1 2005/02/09 18:21:12 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.2 2005/02/10 00:18:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -527,25 +527,19 @@ class JNodeLinksPanel
       pFrameOffsetFields.clear();
       pLinkComps.clear();
 
-      ArrayList<String> lnames = new ArrayList<String>();
-      if(mod != null) {
-	for(String lname : mod.getSourceNames()) 
-	  lnames.add(lname);
-      }
+      TreeSet<String> lnames = new TreeSet<String>();
+      if(mod != null) 
+	lnames.addAll(mod.getSourceNames());
+      for(VersionID vid : pLinks.keySet()) 
+	lnames.addAll(pLinks.get(vid).keySet());
 
-      for(VersionID vid : pLinks.keySet()) {
-	for(String lname : pLinks.get(vid).keySet()) {
-	  if(!lnames.contains(lname)) 
-	    lnames.add(lname);
-	}
-      }
-      
       for(String lname : lnames) {
 	LinkMod link = null;
 	if(mod != null) 
 	  link = mod.getSource(lname);
 
-	boolean isModifiable = ((link != null) && !pIsFrozen);
+	boolean isModifiable     = ((mod != null) && !pIsFrozen);
+	boolean isLinkModifiable = ((link != null) && !pIsFrozen);
 
 	Component comps[] = createCommonPanels();
 	{
@@ -561,16 +555,51 @@ class JNodeLinksPanel
 
 	  {
 	    tpanel.add(Box.createRigidArea(new Dimension(0, 52)));  
-	    vpanel.add(Box.createRigidArea(new Dimension(0, 28)));  
+
+	    {
+	      Box hbox = new Box(BoxLayout.X_AXIS);
+	      
+	      hbox.add(Box.createHorizontalGlue());
+	      
+	      {
+		JButton btn = new JButton();
+		btn.setName("CloseButton");
+		
+		Dimension size = new Dimension(15, 19);
+		btn.setMinimumSize(size);
+		btn.setMaximumSize(size);
+		btn.setPreferredSize(size);
+
+		if(isLinkModifiable) {
+		  btn.setActionCommand("unlink:" + lname);
+		  btn.addActionListener(this);
+		  btn.setToolTipText(UIFactory.formatToolTip("Unlinks the upstream node."));
+		}
+		else {
+		  btn.setEnabled(false);
+		}
+		
+		hbox.add(btn);
+	      }
+	      
+	      hbox.add(Box.createHorizontalGlue());
+	      
+	      vpanel.add(hbox);
+	    }
+
+	    vpanel.add(Box.createRigidArea(new Dimension(0, 11)));  	      
 	    
 	    {
 	      Box hbox = new Box(BoxLayout.X_AXIS);
 
 	      hbox.add(Box.createHorizontalGlue());
 
-	      JLinkArrow arrow = new JLinkArrow(link != null);
-	      pArrows.put(lname, arrow);
-	      hbox.add(arrow);
+	      {
+		JLinkArrow arrow = new JLinkArrow(isModifiable); 
+		pArrows.put(lname, arrow);
+
+		hbox.add(arrow);
+	      }
 
 	      hbox.add(Box.createHorizontalGlue());
 
@@ -582,72 +611,68 @@ class JNodeLinksPanel
 	
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);	    
 
-	    {
-	      ArrayList<String> values = new ArrayList<String>();
-	      if(link != null) 
-		values.addAll(LinkPolicy.titles());
-	      else 
-		values.add("-");	      
-
+	    if(isLinkModifiable) {
 	      JCollectionField field = 
-		UIFactory.createTitledCollectionField(tpanel, "Link Policy:", sTSize, 
-						      vpanel, values, sVSize);
+		UIFactory.createTitledCollectionField
+		(tpanel, "Link Policy:", sTSize, 
+		 vpanel, LinkPolicy.titles(), sVSize);
 
-	      if(link != null) 
-		field.setSelectedIndex(link.getPolicy().ordinal()); 
+	      field.setSelectedIndex(link.getPolicy().ordinal()); 
 
-	      field.setEnabled(isModifiable); 
-	      
 	      field.addActionListener(this);
 	      field.setActionCommand("policy-changed:" + lname);
 
 	      pPolicyFields.put(lname, field);
 	    }
+	    else {
+	      UIFactory.createTitledTextField(tpanel, "Link Policy:", sTSize, 
+					      vpanel, "-", sVSize);
+	    }
 	
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	    
-	    {
-	      ArrayList<String> values = new ArrayList<String>();
-	      if(link != null) 
-		values.addAll(LinkRelationship.titles()); 
-	      else 
-		values.add("-");
-	      
+	    if(isLinkModifiable) {	      
 	      JCollectionField field = 
-		UIFactory.createTitledCollectionField(tpanel, "Link Relationship:", sTSize, 
-						      vpanel, values, sVSize);
+		UIFactory.createTitledCollectionField
+		(tpanel, "Link Relationship:", sTSize, 
+		 vpanel, LinkRelationship.titles(), sVSize);
 
-	      if(link != null) 
-		field.setSelectedIndex(link.getRelationship().ordinal());
+	      field.setSelectedIndex(link.getRelationship().ordinal());
 
-	      field.setEnabled(isModifiable); 
-	      
 	      field.addActionListener(this);
 	      field.setActionCommand("relationship-changed:" + lname);
 
 	      pRelationshipFields.put(lname, field);
 	    }
+	    else {
+	      UIFactory.createTitledTextField(tpanel, "Link Relationship:", sTSize, 
+					      vpanel, "-", sVSize);	      
+	    }
 	    
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	    
-	    {
+	    if(isLinkModifiable) {
 	      JIntegerField field = 
 		UIFactory.createTitledIntegerField(tpanel, "Frame Offset:", sTSize, 
 						   vpanel, null, sVSize);
 
-	      Integer offset = null;
-	      if(link != null) 
-		offset = link.getFrameOffset();
-
-	      if(offset != null) 
-		field.setValue(offset);    
-
-	      field.setEnabled(isModifiable); 
+	      field.setValue(link.getFrameOffset());
+	      field.setEnabled(link.getRelationship() == LinkRelationship.OneToOne);
 
 	      field.addActionListener(this);
 	      field.setActionCommand("offset-changed:" + lname);
 
 	      pFrameOffsetFields.put(lname, field);
+	    }
+	    else {
+	      UIFactory.createTitledTextField(tpanel, "Frame Offset:", sTSize, 
+					      vpanel, "-", sVSize);		      
+	    }
+
+	    if(isLinkModifiable) {
+	      updatePolicyColors(lname);
+	      updateRelationshipColors(lname);
+	      updateOffsetColors(lname);
 	    }
 
 	    UIFactory.addVerticalGlue(tpanel, vpanel);
@@ -686,8 +711,10 @@ class JNodeLinksPanel
 		    if((bvid != null) && bvid.equals(vid)) 
 		      btn.setForeground(Color.cyan);
 		    
-		    btn.addActionListener(this);
-		    btn.setActionCommand("version-pressed:" + lname + ":" + vid);
+		    if(isModifiable) {
+		      btn.addActionListener(this);
+		      btn.setActionCommand("version-pressed:" + lname + ":" + vid);
+		    }
 		    
 		    btn.setFocusable(false);
 		    
@@ -719,7 +746,7 @@ class JNodeLinksPanel
 	    
 	    /* table contents */ 
 	    {
-	      JLinksPanel panel = new JLinksPanel(this, lname, isModifiable);
+	      JLinksPanel panel = new JLinksPanel(this, lname, isModifiable); 
 	      
 	      {
 		JScrollPane scroll = new JScrollPane(panel);
@@ -1084,8 +1111,22 @@ class JNodeLinksPanel
     else if(cmd.equals("remove-files"))
       doRemoveFiles();        
 
-    else 
-      System.out.print("Action = " + cmd + "\n");
+    else if(cmd.startsWith("policy-changed:")) 
+      doPolicyChanged(cmd.substring(15));
+    else if(cmd.startsWith("relationship-changed:")) 
+      doRelationshipChanged(cmd.substring(21));
+    else if(cmd.startsWith("offset-changed:")) 
+      doOffsetChanged(cmd.substring(15));
+    
+    else if(cmd.startsWith("version-pressed:")) {
+      String comps[] = cmd.split(":");
+      doVersionPressed(comps[1], new VersionID(comps[2]));
+    }
+    else if(cmd.startsWith("link-checked:")) 
+      doLinkChecked((JLinkCheckBox) e.getSource(), cmd.substring(13));
+
+    else if(cmd.startsWith("unlink:")) 
+      doUnlink(cmd.substring(7));
   }
 
 
@@ -1102,15 +1143,365 @@ class JNodeLinksPanel
     if(pIsFrozen) 
       return;
 
-    //....
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeMod mod = details.getWorkingVersion(); 
+	if(mod != null) {
+	  TreeMap<String,LinkCommon> links = new TreeMap<String,LinkCommon>();
 
-    pApplyButton.setEnabled(false);
-    pApplyItem.setEnabled(false);
+	  /* collect the selected checked-in link properties */ 
+	  for(String name : pLinkComps.keySet()) {
+	    ArrayList<JComponent[]> vcomps = pLinkComps.get(name);
+	    for(JComponent comps[] : vcomps) {
+	      if((comps != null) && (comps[0] instanceof JLinkCheckBox)) {
+		JLinkCheckBox check = (JLinkCheckBox) comps[0];
+		if(check.isSelected()) 
+		  links.put(name, check.getLink());
+	      }
+	    }
+	  }
+    
+	  /* collect the modified link properties (not already set) */ 
+	  for(String name : mod.getSourceNames()) {
+	    if(!links.containsKey(name)) {
+	      JCollectionField pfield = pPolicyFields.get(name);
+	      JCollectionField rfield = pRelationshipFields.get(name);
+	      JIntegerField ofield = pFrameOffsetFields.get(name);
+	      if((pfield != null) && (rfield != null) && (ofield != null)) {
+		LinkPolicy policy = LinkPolicy.values()[pfield.getSelectedIndex()];
+		LinkRelationship rel = LinkRelationship.values()[rfield.getSelectedIndex()];
+		Integer offset = ofield.getValue();
+		
+		LinkMod link = new LinkMod(name, policy, rel, offset);
+		links.put(name, link);
+	      }
+	    }
+	  }
+	
+	  pApplyButton.setEnabled(false);
+	  pApplyItem.setEnabled(false);
 	  
-    //RevertTask task = new RevertTask(files);
-    //task.start();
+	  ApplyTask task = new ApplyTask(links);
+	  task.start();
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The link policy has been changed.
+   */ 
+  private void 
+  doPolicyChanged
+  (
+   String name
+  )
+  {
+    if(updatePolicyColors(name)) {
+      pApplyButton.setEnabled(true);
+      pApplyItem.setEnabled(true);
+    }
   }
   
+  /**
+   * The update the color of the link policy field.
+   */ 
+  private boolean 
+  updatePolicyColors
+  (
+   String name
+  )
+  {
+    JCollectionField field = pPolicyFields.get(name);
+    LinkPolicy policy = LinkPolicy.values()[field.getSelectedIndex()];
+
+    boolean isModified = true;
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeVersion vsn = details.getBaseVersion();
+	if(vsn != null) {
+	  LinkVersion link = vsn.getSource(name);
+	  if((link != null) && link.getPolicy().equals(policy))
+	    isModified = false;
+	}
+      }
+    }
+
+    field.setForeground(isModified ? Color.cyan : Color.white);
+    
+    return isModified;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The link relationship has been changed.
+   */ 
+  private void 
+  doRelationshipChanged
+  (
+   String name
+  ) 
+  {
+    JCollectionField rfield = pRelationshipFields.get(name);
+    LinkRelationship rel = LinkRelationship.values()[rfield.getSelectedIndex()];
+
+    JIntegerField ofield = pFrameOffsetFields.get(name);
+
+    switch(rel) {
+    case OneToOne:
+      {
+	ofield.setEnabled(true);
+	Integer offset = ofield.getValue();
+	if(offset == null) 
+	  ofield.setValue(0);
+      }
+      break;
+
+    default:
+      ofield.setValue(null);
+      ofield.setEnabled(false);
+    }
+    
+    if(updateRelationshipColors(name)) {
+      pApplyButton.setEnabled(true);
+      pApplyItem.setEnabled(true);    
+    }
+
+    if(updateOffsetColors(name)) {
+      pApplyButton.setEnabled(true);
+      pApplyItem.setEnabled(true);    
+    }
+  }
+  
+  /**
+   * The update the color of the link relationship field.
+   */ 
+  private boolean 
+  updateRelationshipColors
+  (
+   String name
+  ) 
+  {
+    JCollectionField field = pRelationshipFields.get(name);
+    LinkRelationship rel = LinkRelationship.values()[field.getSelectedIndex()];
+
+    boolean isModified = true;
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeVersion vsn = details.getBaseVersion();
+	if(vsn != null) {
+	  LinkVersion link = vsn.getSource(name);
+	  if((link != null) && link.getRelationship().equals(rel))
+	    isModified = false;
+	}
+      }
+    }
+
+    field.setForeground(isModified ? Color.cyan : Color.white);
+
+    return isModified;
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The link frame offset has been changed.
+   */ 
+  private void 
+  doOffsetChanged
+  (
+   String name
+  ) 
+  {
+    if(updateOffsetColors(name)) {
+      pApplyButton.setEnabled(true);
+      pApplyItem.setEnabled(true);    
+    }
+  }
+  
+  /**
+   * The update the color of the link relationship field.
+   */ 
+  private boolean 
+  updateOffsetColors
+  (
+   String name
+  ) 
+  {
+    JIntegerField field = pFrameOffsetFields.get(name);
+    Integer offset = field.getValue();
+
+    boolean isModified = true;
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeMod mod = details.getWorkingVersion();
+	NodeVersion vsn = details.getBaseVersion();
+	if((vsn != null) && (mod != null)) {
+	  LinkVersion link = vsn.getSource(name);
+	  if(link != null) {
+	    Integer loffset  = link.getFrameOffset();
+	    if(((offset == null) && (loffset == null)) || 
+	       ((offset != null) && offset.equals(loffset)))
+	      isModified = false;
+	  }
+	}
+      }
+    }
+
+    field.setForeground(isModified ? Color.cyan : Color.white);
+
+    return isModified;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * One of the checked-in version buttons was pressed.
+   */ 
+  private void 
+  doVersionPressed
+  (
+   String name, 
+   VersionID vid
+  ) 
+  {
+    ArrayList<JComponent[]> vcomps = pLinkComps.get(name);
+    
+    int wk;
+    for(wk=0; wk<vcomps.size(); wk++) {
+      JComponent comps[] = vcomps.get(wk);
+      if(comps != null) {
+	if(comps[0] instanceof JLinkCheckBox) {
+	  JLinkCheckBox check = (JLinkCheckBox) comps[0];
+	  if(check.getVersionID().equals(vid)) {
+	    check.setSelected(!check.isSelected());
+	    doLinkChecked(check, name);
+	    return;
+	  }
+	}
+	else if(comps[0] instanceof JLinkBar) {
+	  JLinkBar bar = (JLinkBar) comps[0];
+	  if(bar.getVersionID().equals(vid)) {
+	    for(wk++; wk<vcomps.size(); wk++) {
+	      comps = vcomps.get(wk);
+	      if(comps[0] instanceof JLinkCheckBox) {
+		JLinkCheckBox check = (JLinkCheckBox) comps[0];
+		check.setSelected(!check.isSelected());
+		doLinkChecked(check, name);
+		return;
+	      }
+	    }
+	  }
+	}    
+      }
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * One of the checked-in version check boxes was pressed.
+   */ 
+  private void 
+  doLinkChecked
+  (
+   JLinkCheckBox check, 
+   String name
+  ) 
+  {
+    boolean selected = check.isSelected();
+    
+    ArrayList<JComponent[]> vcomps = pLinkComps.get(name);
+      
+    /* deselect the entire row */ 
+    int idx = -1;
+    int wk;
+    for(wk=0; wk<vcomps.size(); wk++) {
+      JComponent comps[] = vcomps.get(wk);
+      if(comps != null) {
+	int ck; 
+	for(ck=0; ck<comps.length; ck++) {
+	  if(comps[ck] instanceof JLinkCheckBox) {
+	    JLinkCheckBox cb = (JLinkCheckBox) comps[ck];
+	    cb.setSelected(false);
+	    if(cb == check) 
+	      idx = wk;
+	  }
+	  else if(comps[ck] instanceof JLinkBar) {
+	    JLinkBar bar = (JLinkBar) comps[ck];
+	    bar.setSelected(false);
+	  }
+	  else if(comps[ck] instanceof JTextField) {
+	    JTextField field = (JTextField) comps[ck];
+	    field.setForeground(Color.white);
+	  }
+	}
+      }
+    }
+    assert(idx >= 0);
+
+    /* reselect the checkbox and associated components */ 
+    if(selected) {
+      check.setSelected(true);
+
+      for(wk=idx; wk>=0; wk--) {
+	JComponent comps[] = vcomps.get(wk);
+	if((comps != null) && 
+	   ((comps[0] instanceof JLinkBar) || (wk == idx))) {
+	  int ck; 
+	  for(ck=0; ck<comps.length; ck++) {
+	    if(comps[ck] instanceof JLinkBar) {
+	      JLinkBar bar = (JLinkBar) comps[ck];
+	      bar.setSelected(true);
+	    }
+	    else if(comps[ck] instanceof JTextField) {
+	      JTextField field = (JTextField) comps[ck];
+	      field.setForeground(Color.yellow);
+	    }
+	  }
+	}
+	else {
+	  break;
+	}
+      }
+    }
+
+    /* update the arrow selection */ 
+    JLinkArrow arrow = pArrows.get(name);
+    arrow.setSelected(selected);
+
+    pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Unlink the given upstream node.
+   */ 
+  private void 
+  doUnlink
+  (
+   String name
+  )
+  {
+    UnlinkTask task = new UnlinkTask(name);
+    task.start();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1376,12 +1767,15 @@ class JNodeLinksPanel
     public 
     JLinkBar
     (
-     boolean isExtended
+     boolean isExtended, 
+     VersionID vid     
     ) 
     {
       super();
 
       pIsExtended = isExtended;
+      pVersionID  = vid;
+
       setSelected(false);
 
       Dimension size = new Dimension(70, 19);
@@ -1395,6 +1789,12 @@ class JNodeLinksPanel
     {
       return pIsExtended;
     }
+
+    public VersionID 
+    getVersionID() 
+    {
+      return pVersionID;
+    }    
 
     public boolean
     isSelected()
@@ -1417,8 +1817,9 @@ class JNodeLinksPanel
 
     private static final long serialVersionUID = -8182004303495407765L;
 
-    protected boolean      pIsExtended;
-    protected boolean      pIsSelected; 
+    private VersionID  pVersionID; 
+    protected boolean  pIsExtended;
+    protected boolean  pIsSelected; 
   }
   
   private 
@@ -1428,10 +1829,11 @@ class JNodeLinksPanel
     public 
     JExtraLinkBar
     (
-     boolean isExtended
+     boolean isExtended, 
+     VersionID vid
     ) 
     {
-      super(isExtended);
+      super(isExtended, vid);
     }
 
     public void 
@@ -1515,12 +1917,14 @@ class JNodeLinksPanel
     public 
     JLinkCheckBox
     (
-     LinkVersion link
+     LinkVersion link, 
+     VersionID vid
     ) 
     {
       super();
 
-      pLink = link;
+      pLink      = link;
+      pVersionID = vid; 
 
       setName("FileCheck");
       setSelected(false);
@@ -1531,6 +1935,12 @@ class JNodeLinksPanel
       setPreferredSize(size);
     }
 
+    public VersionID 
+    getVersionID() 
+    {
+      return pVersionID;
+    }    
+
     public LinkVersion
     getLink() 
     {
@@ -1540,6 +1950,7 @@ class JNodeLinksPanel
     private static final long serialVersionUID = 1623467331258706403L;
 
     private LinkVersion  pLink; 
+    private VersionID    pVersionID; 
   }
 
 
@@ -1567,6 +1978,8 @@ class JNodeLinksPanel
      * @param name
      *   The fully resolved name of the upstream node.
      * 
+     * @param isModifiable
+     *   Whether the link properties can be edited.
      */ 
     public 
     JLinksPanel
@@ -1617,7 +2030,7 @@ class JNodeLinksPanel
 		  if(!isExtended) 
 		    hbox.add(Box.createRigidArea(new Dimension(2, 0)));	
 
-		  JLinkBar bar = new JLinkBar(isExtended);
+		  JLinkBar bar = new JLinkBar(isExtended, vid);
 		  comps[0] = bar; 
 
 		  hbox.add(bar); 
@@ -1626,12 +2039,12 @@ class JNodeLinksPanel
 		  if(!link.equals(llink)) 
 		    hbox.add(Box.createRigidArea(new Dimension(2, 0)));	
 
-		  JLinkCheckBox check = new JLinkCheckBox(link);
+		  JLinkCheckBox check = new JLinkCheckBox(link, vid);
 		  comps[0] = check;
 		  
 		  if(isModifiable) {
 		    check.addActionListener(parent);
-		    check.setActionCommand("link-check:" + lname + ":" + vid);
+		    check.setActionCommand("link-checked:" + lname);
 		  }
 		  else {
 		    check.setEnabled(false);
@@ -1736,7 +2149,7 @@ class JNodeLinksPanel
 		boolean isExtended = vbar.isExtended();
 		int bk;
 		for(bk=0; bk<4; bk++) {
-		  JExtraLinkBar bar = new JExtraLinkBar(isExtended);
+		  JExtraLinkBar bar = new JExtraLinkBar(isExtended, vid);
 		  comps[bk+1] = bar; 
 
 		  vbox.add(bar);
@@ -1862,6 +2275,110 @@ class JNodeLinksPanel
     private Dimension pViewportSize;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Apply the changes to the link properties.
+   */ 
+  private
+  class ApplyTask
+    extends Thread
+  {
+    public 
+    ApplyTask
+    (
+     TreeMap<String,LinkCommon> links
+    ) 
+    {
+      super("JNodeLinksPanel:ApplyTask");
+
+      pLinks = links;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Modifying Link Properties...")) {
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient();
+	  for(String sname : pLinks.keySet()) {
+	    LinkCommon link = pLinks.get(sname);
+	    client.link(pAuthor, pView, pStatus.getName(), sname, 
+			link.getPolicy(), link.getRelationship(), link.getFrameOffset());
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private  TreeMap<String,LinkCommon>  pLinks; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Unlink the given upstream node.
+   */ 
+  private
+  class UnlinkTask
+    extends Thread
+  {
+    public 
+    UnlinkTask
+    (
+     String name
+    ) 
+    {
+      super("JNodeLinksPanel:UnlinkTask");
+
+      pSourceName = name;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Unlinking Node...")) {
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient();
+	  master.getMasterMgrClient().unlink(pAuthor, pView, pStatus.getName(), pSourceName);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private String pSourceName; 
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -2238,7 +2755,11 @@ class JNodeLinksPanel
   private TreeMap<String,JIntegerField>  pFrameOffsetFields; 
 
   /**
-   * The link novelty UI components indexed by upstream node name
+   * The link novelty UI components indexed by upstream node name. <P> 
+   * 
+   * The value of an entry in the ArrayList be <CODE>null</CODE> if there is no link
+   * for the checked-in version.  The JComponents array contains the components vertically
+   * from top to bottom of the table column under a particular checked-in version.
    */ 
   private TreeMap<String,ArrayList<JComponent[]>>  pLinkComps;
 
