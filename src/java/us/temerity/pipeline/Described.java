@@ -1,4 +1,4 @@
-// $Id: Described.java,v 1.2 2004/02/28 19:56:51 jim Exp $
+// $Id: Described.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,10 +29,10 @@ class Described
   /** 
    * Construct with a name and description. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The short name of the plugin.  
    * 
-   * @param desc [<B>in</B>]
+   * @param desc 
    *   A short description used in tooltips.
    */ 
   protected

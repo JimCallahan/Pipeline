@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.3 2004/03/15 19:11:48 jim Exp $
+// $Id: FileStateReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,21 +29,21 @@ class FileStateReq
    * The <CODE>working</CODE> and <CODE>latest</CODE> arguments may be <CODE>null</CODE> 
    * if this is an initial working version. 
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param vstate [<B>in</B>]
+   * @param vstate 
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
-   * @param working [<B>in</B>]
+   * @param working 
    *   The revision number of the checked-in version upon which the working version 
    *   is based.
    * 
-   * @param latest [<B>in</B>]
+   * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param fseqs [<B>in</B>]
+   * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
    */
   public

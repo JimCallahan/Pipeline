@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: FileMgr.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -166,7 +166,7 @@ class FileMgr
   /** 
    * Construct a new file manager.
    * 
-   * @param dir [<B>in</B>]
+   * @param dir 
    *   The root production directory.
    */
   public
@@ -220,7 +220,7 @@ class FileMgr
    * Compute the {@link FileState FileState} for each file associated with the working 
    * version of a node. <P> 
    * 
-   * @param req [<B>in</B>]
+   * @param req 
    *   The file state request.
    * 
    * @return
@@ -417,7 +417,7 @@ class FileMgr
    * Perform the file system operations needed to create a new checked-in version of the 
    * node in the file repository based on the given working version. <P> 
    * 
-   * @param req [<B>in</B>]
+   * @param req 
    *   The check-in request.
    * 
    * @return
@@ -726,7 +726,7 @@ class FileMgr
    * Overwrite the files associated with the working version of the node with a copy of
    * the files associated with the given checked-in version. 
    * 
-   * @param req [<B>in</B>]
+   * @param req 
    *   The check-out request.
    * 
    * @return
@@ -962,7 +962,7 @@ class FileMgr
    * the respective files associated with the checked-in version upon which the working 
    * version is based.
    * 
-   * @param req [<B>in</B>]
+   * @param req 
    *   The freeze request.
    * 
    * @return
@@ -1087,7 +1087,7 @@ class FileMgr
    * Replace the symlinks associated with the a working version of a node with copies 
    * of the respective checked-in files which are the current targets of the symlinks. 
    * 
-   * @param req [<B>in</B>]
+   * @param req 
    *   The unfreeze request.
    * 
    * @return
@@ -1222,7 +1222,7 @@ class FileMgr
    * the state of checked-in files should aquire the READ lock instread.  Threads which 
    * no not access or modify any checked-in files do not need to aquire the node lock.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name
    */
   private ReentrantReadWriteLock
@@ -1256,7 +1256,7 @@ class FileMgr
    * modified by the thread, then this lock should be uses within the scope of an already 
    * aquired READ or WRITE node lock.  See {@link #getNodeLock getNodeLock} for details.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    */
   private Object

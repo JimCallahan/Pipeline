@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.2 2004/03/22 20:29:16 jim Exp $
+// $Id: NativeProcess.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -44,16 +44,16 @@ class NativeProcess
    * Construct an OS level process with the given command line arguments.  The process is 
    * not actually started until the {@link #exec exec} method is called.
    * 
-   * @param cmd [<B>in</B>]
+   * @param cmd 
    *   The command line arguments used to launch the OS level process.  The first element
    *   of the array <CODE>cmd[0]</CODE> is the name of the program to run.
    * 
-   * @param env [<B>in</B>]
+   * @param env 
    *   The environment under which the OS level process is run.  The <CODE>env</CODE> 
    *   argument must consist of environmental variable name/value pairs of the form 
    *   <CODE>"name=value"</CODE>.
    * 
-   * @param dir [<B>in</B>]
+   * @param dir 
    *   The working directory of the OS level process.
    */ 
   public 
@@ -261,10 +261,10 @@ class NativeProcess
   /**
    * Send a POSIX signal to the OS level process. 
    * 
-   * @param signal  [<B>in</B>]
+   * @param signal  
    *   The signal to send.
    * 
-   * @param pid  [<B>in</B>]
+   * @param pid  
    *   The OS process ID of the subprocess to signal.
    * 
    * @throws IOException 
@@ -284,7 +284,7 @@ class NativeProcess
   /**
    * Kills the OS level process. 
    * 
-   * @param pid  [<B>in</B>]
+   * @param pid  
    *   The OS process ID of the subprocess to signal.
    * 
    * @throws IOException 
@@ -310,7 +310,7 @@ class NativeProcess
   /**
    * Write the given string data to the STDIN of the OS level process. 
    * 
-   * @param input [<B>in</B>]
+   * @param input 
    *   The data to write to the STDIN of the OS level process.
    * 
    * @return
@@ -334,7 +334,7 @@ class NativeProcess
   /**
    * Read up to the given number of characters from the STDOUT of the OS level process. 
    * 
-   * @param size [<B>in</B>]
+   * @param size 
    *   The maximum number of characters to read.
    * 
    * @return 
@@ -359,7 +359,7 @@ class NativeProcess
   /**
    * Read up to the given number of characters from the STDERR of the OS level process. 
    * 
-   * @param size [<B>in</B>]
+   * @param size 
    *   The maximum number of characters to read.
    * 
    * @return 
@@ -390,7 +390,7 @@ class NativeProcess
    * Collect resource usage statistics for running OS level process at regular intervals.
    * Does not return until the OS level process has exited.
    * 
-   * @param millis [<B>in</B>]
+   * @param millis 
    *   The number of milliseconds between samples.
    *
    * @throws IOException 
@@ -483,16 +483,16 @@ class NativeProcess
   /** 
    * Fork and execute a OS level process and wait for it to exit.
    * 
-   * @param cmd [<B>in</B>]
+   * @param cmd 
    *   The command line arguments used to launch the OS level process.  The first element
    *   of the array <CODE>cmd[0]</CODE> is the name of the program to run.
    * 
-   * @param env [<B>in</B>]
+   * @param env 
    *   The environment under which the OS level process is run.  The <CODE>env</CODE> 
    *   argument must consist of environmental variable name/value pairs of the form 
    *   <CODE>"name=value"</CODE>.
    * 
-   * @param dir [<B>in</B>]
+   * @param dir 
    *   The working directory of the OS level process.
    * 
    * @return
@@ -528,10 +528,10 @@ class NativeProcess
   /**
    * Send a POSIX signal to the OS level process. 
    * 
-   * @param signal  [<B>in</B>]
+   * @param signal  
    *   The signal to send.
    * 
-   * @param pid  [<B>in</B>]
+   * @param pid  
    *   The OS process ID of the subprocess to signal.
    * 
    * @throws IOException 

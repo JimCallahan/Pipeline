@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.2 2004/03/23 03:35:52 jim Exp $
+// $Id: FileMgrApp.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,7 +41,7 @@ class FileMgrApp
   /**
    * Run the application with the given command-line arguments.
    * 
-   * @param args [<B>in</B>]
+   * @param args 
    *   The command-line arguments.
    */ 
   public

@@ -1,4 +1,4 @@
-// $Id: FileUnfreezeReq.java,v 1.3 2004/03/22 20:29:16 jim Exp $
+// $Id: FileUnfreezeReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,13 +33,13 @@ class FileUnfreezeReq
   /** 
    * Constructs a new request.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in version which is the target of the symlinks.
    * 
-   * @param fseqs [<B>in</B>]
+   * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
    */
   public

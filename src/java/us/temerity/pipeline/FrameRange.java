@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.6 2004/03/03 07:47:47 jim Exp $
+// $Id: FrameRange.java,v 1.7 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -43,7 +43,7 @@ class FrameRange
   /**
    * Construct for a single frame. 
    * 
-   * @param single  [<B>in</B>]
+   * @param single  
    *   The sole frame number of the single frame file sequence. 
    * 
    * @throws IllegalArgumentException
@@ -69,13 +69,13 @@ class FrameRange
   /**
    * Construct for a sequence of frames. 
    * 
-   * @param start  [<B>in</B>]
+   * @param start  
    *   The first frame number in the file sequence.
    * 
-   * @param end  [<B>in</B>]
+   * @param end  
    *   The last frame number in the file sequence.
    * 
-   * @param by  [<B>in</B>]
+   * @param by  
    *   The frame step increment. 
    * 
    * @throws IllegalArgumentException
@@ -119,7 +119,7 @@ class FrameRange
   /**
    * Copy constructor. 
    *
-   * @param range  [<B>in</B>]
+   * @param range  
    *    The <CODE>FrameRange</CODE> to copy. 
    */ 
   public 
@@ -154,7 +154,7 @@ class FrameRange
    * Is the given frame number valid? In other words, is the given frame number a member 
    * of the set of frames for this <CODE>FrameRange</CODE>.
    * 
-   * @param frame [<B>in</B>]
+   * @param frame 
    *   The frame number to test for validity.
    */
   public boolean
@@ -239,7 +239,7 @@ class FrameRange
   /**
    * Convert a frame index into a frame number.
    * 
-   * @param idx [<B>in</B>]
+   * @param idx 
    *   The frame index to convert.  Valid frame indices are in the range: 
    *   [0,{@link #numFrames() numFrames()}).
    * 
@@ -266,7 +266,7 @@ class FrameRange
   /**
    * Convert a frame number into a frame index.
    * 
-   * @param frame [<B>in</B>]
+   * @param frame 
    *   The frame number to convert.  
    * 
    * @return 

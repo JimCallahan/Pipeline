@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.5 2004/03/11 14:12:33 jim Exp $
+// $Id: VersionID.java,v 1.6 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,7 +44,7 @@ class VersionID
   /**
    * Construct from revision number components. 
    * 
-   * @param comps [<B>in</B>]
+   * @param comps 
    *   The revision number components.
    */ 
   public 
@@ -80,7 +80,7 @@ class VersionID
   /**
    * Construct from the given string representation. 
    * 
-   * @param str [<B>in</B>]
+   * @param str 
    *   The initial version ID encoded as a <CODE>String</CODE>.
    */ 
   public 
@@ -96,10 +96,10 @@ class VersionID
    * Construct a new revision number by incrementing the specified level of the 
    * given revision number.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number to increment.
    * 
-   * @param level  [<B>in</B>]
+   * @param level  
    *   The revision number component level to increment..
    */ 
   public 
@@ -209,7 +209,7 @@ class VersionID
   /**
    * Compares this object with the specified object for order.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be compared.
    */
   public int
@@ -231,7 +231,7 @@ class VersionID
   /**
    * Compares this <CODE>VersionID</CODE> with the given <CODE>VersionID</CODE> for order.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The <CODE>VersionID</CODE> to be compared.
    */
   public int
@@ -363,7 +363,7 @@ class VersionID
   /**
    * Convertion from the given string representation. 
    * 
-   * @param str [<B>in</B>]
+   * @param str 
    *   The initial version ID encoded as a <CODE>String</CODE>.
    */ 
   private void 

@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: NodeMgr.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -139,13 +139,13 @@ class NodeMgr
   /** 
    * Get the working version of the node.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    *
    * @throws PipelineException
@@ -194,13 +194,13 @@ class NodeMgr
    * {@link #unlinkNodes unlinkNodes} methods must be used to alter the connections 
    * between working node versions.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The working version containing the node property information to copy.
    * 
    * @throws PipelineException
@@ -236,16 +236,16 @@ class NodeMgr
    * Create (or modify an existing) all-to-all dependency connection between the working 
    * versions of the given nodes under the given view owned by the given user. 
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working versions.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param target [<B>in</B>]
+   * @param target 
    *   The fully resolved name of the downstream node to connect.
    * 
-   * @param source [<B>in</B>]
+   * @param source 
    *   The fully resolved name of the upstream node to connect.
    * 
    * @throws PipelineException
@@ -276,19 +276,19 @@ class NodeMgr
    * Create (or modify an existing) one-to-one dependency connection between the working 
    * versions of the given nodes under the given view owned by the given user.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working versions.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param target [<B>in</B>]
+   * @param target 
    *   The fully resolved name of the downstream node to connect.
    * 
-   * @param source [<B>in</B>]
+   * @param source 
    *   The fully resolved name of the upstream node to connect.
    * 
-   * @param offset [<B>in</B>]
+   * @param offset 
    *   The frame index offset of source file indices from target file indices.
    * 
    * @throws PipelineException
@@ -321,16 +321,16 @@ class NodeMgr
    * Destroy an existing dependency connection between the working versions of the 
    * given nodes under the given view owned by the given user.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working versions.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param target [<B>in</B>]
+   * @param target 
    *   The fully resolved name of the downstream node to disconnect.
    * 
-   * @param source [<B>in</B>]
+   * @param source 
    *   The fully resolved name of the upstream node to disconnect.
    * 
    * @throws PipelineException
@@ -384,13 +384,13 @@ class NodeMgr
    * node operations which would result in changes to the working version or associated 
    * files can be performed on the node.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version being frozen.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
    * @throws PipelineException
@@ -430,13 +430,13 @@ class NodeMgr
    * the working files to once again be modified by regeneration actions or manual 
    * user editing. 
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version being unfrozen.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
    * @throws PipelineException
@@ -471,7 +471,7 @@ class NodeMgr
   /** 
    * Get the revision numbers of the checked-in versions of the given node.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
    * @return
@@ -500,7 +500,7 @@ class NodeMgr
   /** 
    * Get the revision number of the latest checked-in version of the given node.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
    * @return
@@ -532,10 +532,10 @@ class NodeMgr
   /** 
    * Get the checked-in version of the node with the given revision number.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in version.
    */
   public NodeVersion
@@ -558,7 +558,7 @@ class NodeMgr
   /** 
    * Get the latest checked-in version of the node.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    */
   public NodeVersion
@@ -584,10 +584,10 @@ class NodeMgr
    * Get the change comment messages associated a specific checked-in version of the given 
    * node.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in version.
    * 
    * @return 
@@ -614,16 +614,16 @@ class NodeMgr
   /** 
    * Add a new change comment messages to a checked-in version of the given node.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user submitting the message.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in version.
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The change comment message text.
    */
   public void
@@ -661,13 +661,13 @@ class NodeMgr
    * <CODE>NodeStatus</CODE> of all upstream and downstream trees of nodes connected to 
    * the given node.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    */ 
   public NodeStatus
@@ -709,13 +709,13 @@ class NodeMgr
    * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
    * not contain any upstream dependency relationship information.
    *  
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which will own the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The initial working version to register.
    *
    * @throws PipelineException
@@ -750,13 +750,13 @@ class NodeMgr
    * addition to removing the working version of the node, this operation also deletes any
    * files associated with the nodes and should therefore be used with caution.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    *
    * @throws PipelineException 
@@ -791,16 +791,16 @@ class NodeMgr
    * operation also renames the files which make up the primary file sequence associated 
    * with the node to match the new node name.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param oldName [<B>in</B>]
+   * @param oldName 
    *   The current fully resolved node name.
    * 
-   * @param newName [<B>in</B>]
+   * @param newName 
    *   The new fully resolved node name.
    * 
    * @throws PipelineException 
@@ -835,19 +835,19 @@ class NodeMgr
    * modified data files associated with the working version and place them in the 
    * file repository.
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The check-in log message text.
    * 
-   * @param level [<B>in</B>]
+   * @param level 
    *   The component level of the revision number of the previous latest version to 
    *   increment in order to generate the revision number for the new version.
    * 
@@ -881,16 +881,16 @@ class NodeMgr
    * view owned by the given user for the named node based on an existing checked-in 
    * version. <P> 
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version being created (or updated).
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of version to check-out or <CODE>null</CODE> for the latest 
    *   checked-in version.
    * 
@@ -935,16 +935,16 @@ class NodeMgr
    * This operation should be performed on nodes once they are no longer being used
    * to free up node database and file system resources.  
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The name of the user which owns the working version being released.
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param override [<B>in</B>]
+   * @param override 
    *   Ignore all safety precautions and release the node regardless of its state?
    * 
    * @throws PipelineException
@@ -983,7 +983,7 @@ class NodeMgr
    * Because of the extreemly dangerous and destructive nature of this operation, only 
    * users with priviledged status should be allowed to execute this method. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
    * @throws PipelineException
@@ -1016,7 +1016,7 @@ class NodeMgr
   /** 
    * Get the working bundle with the given working version ID.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    */
   private WorkingBundle
@@ -1042,10 +1042,10 @@ class NodeMgr
   /** 
    * Get the checked-in bundle for the node with the given revision number.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in bundle.
    */
   private CheckedInBundle
@@ -1076,7 +1076,7 @@ class NodeMgr
   /** 
    * Get the latest checked-in bundle for the node.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    */
   private CheckedInBundle

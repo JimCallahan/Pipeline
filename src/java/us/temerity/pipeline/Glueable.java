@@ -1,4 +1,4 @@
-// $Id: Glueable.java,v 1.4 2004/02/25 02:59:28 jim Exp $
+// $Id: Glueable.java,v 1.5 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -109,7 +109,7 @@ interface Glueable
    * will call {@link GlueEncoder#encode(String, Object) GlueEncoder.encode} for each 
    * non-transient field of the parent object.
    * 
-   * @param encoder  [<B>in,out</B>]
+   * @param encoder  [<B>modified</B>]
    *   The object used to encode this object's fields into Glue format.
    */
   public void 
@@ -124,7 +124,7 @@ interface Glueable
    * will call {@link GlueDecoder#decode(String) GlueDecoder.decode} for each non-transient 
    * field of the parent object.
    *
-   * @param decoder  [<B>in,out</B>]
+   * @param decoder
    *   The object used to decode this object's fields from Glue format.
    */
   public void 

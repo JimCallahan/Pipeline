@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.3 2004/03/22 20:29:16 jim Exp $
+// $Id: FileCheckInReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,19 +45,19 @@ class FileCheckInReq
   /** 
    * Constructs a new request.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the new checked-in version.
    * 
-   * @param latest [<B>in</B>]
+   * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param fseqs [<B>in</B>]
+   * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
    * 
-   * @param states [<B>in</B>]
+   * @param states 
    *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    *   the working version indexed by file sequence.
    */

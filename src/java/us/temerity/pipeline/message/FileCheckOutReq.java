@@ -1,4 +1,4 @@
-// $Id: FileCheckOutReq.java,v 1.3 2004/03/22 20:29:16 jim Exp $
+// $Id: FileCheckOutReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,17 +33,17 @@ class FileCheckOutReq
   /** 
    * Constructs a new request.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in version to check-out.
    * 
-   * @param fseqs [<B>in</B>]
+   * @param fseqs 
    *   The primary and secondary file sequences associated with the checked-in version to 
    *   check-out.
    * 
-   * @param isEditable [<B>in</B>]
+   * @param isEditable 
    *   Should the working files have write permissions after being checked-out?
    */
   public

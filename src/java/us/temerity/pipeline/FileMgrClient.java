@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.8 2004/03/22 03:11:08 jim Exp $
+// $Id: FileMgrClient.java,v 1.9 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,10 +37,10 @@ class FileMgrClient
   /** 
    * Construct a new file manager client.
    * 
-   * @param hostname [<B>in</B>]
+   * @param hostname 
    *   The name of the host running the <CODE>FileMgrServer</CODE> instance.
    * 
-   * @param port [<B>in</B>]
+   * @param port 
    *   The network port listened to by the <CODE>FileMgrServer</CODE> instance.
    */
   public
@@ -97,17 +97,17 @@ class FileMgrClient
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
    * working version. 
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The working version of the node.
    * 
-   * @param vstate [<B>in</B>]
+   * @param vstate 
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
-   * @param latest [<B>in</B>]
+   * @param latest 
    *   The revision number of the latest checked-in version.
    * 
    * @return
@@ -156,22 +156,22 @@ class FileMgrClient
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
    * working version. 
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The working version of the node.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the new checked-in version being created.
    * 
-   * @param latest [<B>in</B>]
+   * @param latest 
    *   The revision number of the latest checked-in version.
    * 
    * @throws PipelineException
    *   If unable to check-in the working files.
    * 
-   * @param states [<B>in</B>]
+   * @param states 
    *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    *   the working version indexed by file sequence.
    */
@@ -210,10 +210,10 @@ class FileMgrClient
    * Overwrite the files associated with the given working version of the node with the 
    * files associated with the given checked-in version. <P> 
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param vsn [<B>in</B>]
+   * @param vsn 
    *   The checked-in version to check-out.
    */ 
   public synchronized void 
@@ -249,10 +249,10 @@ class FileMgrClient
    * respective files associated with the checked-in version upon which the working 
    * version is based.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The working version of the node.
    */
   public synchronized void 
@@ -291,10 +291,10 @@ class FileMgrClient
    * Replace the symlinks associated with the given working version with copies of the 
    * respective checked-in files which are the current targets of the symlinks. 
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The working version of the node.
    */  
   public synchronized void 
@@ -394,10 +394,10 @@ class FileMgrClient
    * Send the given file request to the <CODE>FileMgrServer</CODE> instance and 
    * wait for the response.
    * 
-   * @param kind [<B>in</B>]
+   * @param kind 
    *   The kind of request being sent.
    * 
-   * @param req [<B>in</B>]
+   * @param req 
    *   The request data.
    * 
    * @return

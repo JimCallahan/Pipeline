@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.2 2004/03/22 20:29:16 jim Exp $
+// $Id: Logs.java,v 1.3 2004/03/23 07:40:37 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -134,7 +134,7 @@ class Logs
    * with the (<CODE>--log=...</CODE>) command line option supported by all Pipeline 
    * programs. 
    * 
-   * @param logger  [<B>in</B>]
+   * @param logger  
    *   The {@link Logger Logger} who's message level is used to generate the 
    *   <CODE>String</CODE>.
    * 

@@ -1,4 +1,4 @@
-// $Id: LinkCommon.java,v 1.1 2004/03/13 17:20:13 jim Exp $
+// $Id: LinkCommon.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,17 +34,17 @@ class LinkCommon
    * <CODE>offset</CODE> argument must not be <CODE>null</CODE>.  For all other 
    * link relationships, the <CODE>offset</CODE> argument must be <CODE>null</CODE>.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved name of the source node.
    * 
-   * @param catagory [<B>in</B>]
+   * @param catagory 
    *   The named classification of the link's node state propogation policy.
    * 
-   * @param relationship [<B>in</B>]
+   * @param relationship 
    *   The nature of the relationship between files associated with the source and 
    *   target nodes. 
    * 
-   * @param offset [<B>in</B>]
+   * @param offset 
    *   The frame index offset of target frames from source frames.
    */ 
   protected

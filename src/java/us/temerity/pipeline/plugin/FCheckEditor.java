@@ -1,4 +1,4 @@
-// $Id: FCheckEditor.java,v 1.2 2004/03/07 02:35:53 jim Exp $
+// $Id: FCheckEditor.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -38,13 +38,13 @@ class FCheckEditor
    * Launch fcheck under the given environmant to view the images in the given 
    * file sequence. 
    * 
-   * @param fseq [<B>in</B>] 
+   * @param fseq  
    *   The file sequence to edit.
    * 
-   * @param env [<B>in</B>] 
+   * @param env  
    *   The environment under which the editor is run.  
    * 
-   * @param dir [<B>in</B>] 
+   * @param dir  
    *   The working directory where the editor is run.
    *
    * @return 

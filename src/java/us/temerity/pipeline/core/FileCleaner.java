@@ -1,4 +1,4 @@
-// $Id: FileCleaner.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: FileCleaner.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -56,7 +56,7 @@ class FileCleaner
    * Add the given file to the set of files which will be removed upon termination of the
    * Java runtime.
    * 
-   * @param file [<B>in</B>]
+   * @param file 
    *   The temporary file to cleanup.
    */
   public static void 

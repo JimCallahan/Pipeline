@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.3 2004/02/28 20:01:07 jim Exp $
+// $Id: SingleEditor.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,13 +29,13 @@ class SingleEditor
   /** 
    * Construct with a name and description. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The short name of the editor.  
    * 
-   * @param desc [<B>in</B>]
+   * @param desc 
    *   A short description used in tooltips.
    * 
-   * @param program [<B>in</B>]
+   * @param program 
    *   A name of the editor executable. 
    */ 
   protected
@@ -65,13 +65,13 @@ class SingleEditor
    * command line arguments are needed in order to launch the editor for the given file 
    * sequence.
    * 
-   * @param fseq [<B>in</B>] 
+   * @param fseq  
    *   The file sequence to edit.
    * 
-   * @param env [<B>in</B>] 
+   * @param env  
    *   The environment under which the editor is run.  
    * 
-   * @param dir [<B>in</B>] 
+   * @param dir  
    *   The working directory where the editor is run.
    *
    * @return 

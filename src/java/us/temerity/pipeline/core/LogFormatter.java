@@ -1,4 +1,4 @@
-// $Id: LogFormatter.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: LogFormatter.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,7 +33,7 @@ class LogFormatter
   /**
    * Format the given log record and return the formatted string.
    *
-   * @param record [<B>in</B>]
+   * @param record 
    *   The log record to be formatted.
    */ 
   public String 

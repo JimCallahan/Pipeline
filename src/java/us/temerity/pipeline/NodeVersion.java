@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.7 2004/03/22 03:11:08 jim Exp $
+// $Id: NodeVersion.java,v 1.8 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,13 +31,13 @@ class NodeVersion
   /**
    * Construct a new checked-in version based on a working version of the node.
    *
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The working version of the node.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the new checked-in node version.
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The check-in log message.
    */
   public 
@@ -59,7 +59,7 @@ class NodeVersion
   /** 
    * Copy constructor. 
    * 
-   * @param vsn [<B>in</B>]
+   * @param vsn 
    *   The <CODE>NodeVersion</CODE> to copy.
    */ 
   public 
@@ -137,7 +137,7 @@ class NodeVersion
   /** 
    * Get the link relationship information for the given upstream node.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved node name of the upstream node.
    * 
    * @return 

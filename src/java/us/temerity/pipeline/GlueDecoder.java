@@ -1,4 +1,4 @@
-// $Id: GlueDecoder.java,v 1.6 2004/03/22 03:11:08 jim Exp $
+// $Id: GlueDecoder.java,v 1.7 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -33,7 +33,7 @@ class GlueDecoder
   /** 
    * Decode objects from a <CODE>String</CODE> containing Glue text.
    * 
-   * @param text [<B>in</B>]
+   * @param text 
    *   The Glue format text to be decoded.
    */
   public 
@@ -62,7 +62,7 @@ class GlueDecoder
   /** 
    * Decode objects from an input stream of bytes containing Glue text.
    * 
-   * @param stream [<B>in</B>]
+   * @param stream 
    *   The input stream of bytes containing the Glue text to be decoded.
    */
   public 
@@ -94,7 +94,7 @@ class GlueDecoder
   /** 
    * Decode objects read from a character stream containing Glue text.
    * 
-   * @param reader [<B>in</B>]
+   * @param reader 
    *   The character stream reader providing the Glue text to be decoded.
    */
   public 

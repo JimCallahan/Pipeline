@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: NativeFileSys.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -34,10 +34,10 @@ class NativeFileSys
    * 
    * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.
    *
-   * @param mode [<B>in</B>]
+   * @param mode 
    *   The access mode bitmask.
    *
-   * @param file [<B>in</B>]
+   * @param file 
    *   The fully resolved path to the file to change.
    * 
    * @throws IOException 
@@ -62,10 +62,10 @@ class NativeFileSys
   /** 
    * Create a symbolic link which points to the given file. <P> 
    * 
-   * @param file [<B>in</B>]
+   * @param file 
    *   The relative or absolute path to the file pointed to by the symlink. 
    * 
-   * @param link [<B>in</B>]
+   * @param link 
    *   The fully resolved path of the symlink to create.  
    * 
    * @throws IOException 
@@ -96,7 +96,7 @@ class NativeFileSys
    * the resulting path will have no symbolic link, <CODE>'/./'</CODE> or 
    * <CODE>'/../'</CODE> components.
    * 
-   * @param path [<B>in</B>]
+   * @param path 
    *   The file system path to resolve.
    * 
    * @return
@@ -124,10 +124,10 @@ class NativeFileSys
   /**
    * Change file access permissions. <P> 
    * 
-   * @param mode [<B>in</B>]
+   * @param mode 
    *   The access mode bitmask.
    *
-   * @param file [<B>in</B>]
+   * @param file 
    *   The fully resolved path to the file to change.
    * 
    * @throws IOException 
@@ -144,10 +144,10 @@ class NativeFileSys
   /** 
    * Create a symbolic link which points to the given file. <P> 
    * 
-   * @param file [<B>in</B>]
+   * @param file 
    *   The relative or absolute path to the file pointed to by the symlink. 
    * 
-   * @param link [<B>in</B>]
+   * @param link 
    *   The fully resolved path of the symlink to create.
    */
   private static native void 
@@ -161,7 +161,7 @@ class NativeFileSys
   /** 
    * Determine the canonicalized absolute pathname of the given path. <P> 
    * 
-   * @param path [<B>in</B>]
+   * @param path 
    *   The file system path to resolve.
    * 
    * @return

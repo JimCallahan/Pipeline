@@ -1,4 +1,4 @@
-// $Id: Named.java,v 1.6 2004/03/09 09:42:44 jim Exp $
+// $Id: Named.java,v 1.7 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,7 +28,7 @@ class Named
   /**
    * Internal constructor used by subclasses to initialize the name. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of this instance.
    */ 
   protected

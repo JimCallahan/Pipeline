@@ -1,4 +1,4 @@
-// $Id: FailureRsp.java,v 1.3 2004/03/22 03:11:08 jim Exp $
+// $Id: FailureRsp.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,7 +26,7 @@ class FailureRsp
   /** 
    * Constructs a failure response without timing information.
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The error message explaining the failure.
    */
   public
@@ -43,13 +43,13 @@ class FailureRsp
   /** 
    * Constructs a failure response during the wait on locks.
    * 
-   * @param task [<B>in</B>]
+   * @param task 
    *   The name of the request task that failed to be fufilled.
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The error message explaining the failure.
    * 
-   * @param start [<B>in</B>]
+   * @param start 
    *   The timestamp of when the wait on locks was started.
    */
   public
@@ -76,16 +76,16 @@ class FailureRsp
   /** 
    * Constructs a failure response while fufilling the request.
    * 
-   * @param task [<B>in</B>]
+   * @param task 
    *   The name of the request task that failed to be fufilled.
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The error message explaining the failure.
    * 
-   * @param wait [<B>in</B>]
+   * @param wait 
    *   The number of milliseconds spent waiting to aquire the needed locks.
    * 
-   * @param start [<B>in</B>]
+   * @param start 
    *   The timestamp of when the request started to be fufilled.
    */
   public

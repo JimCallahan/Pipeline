@@ -1,4 +1,4 @@
-// $Id: Main.java,v 1.2 2004/03/23 03:33:51 jim Exp $
+// $Id: Main.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -57,7 +57,7 @@ class Main
    * subclass of {@link BootApp BootApp}.  The remaining command-line arguments are passed 
    * unaltered to the application's {@link BootApp#run run} method. <P> 
    * 
-   * @param args [<B>in</B>]
+   * @param args 
    *   The command line arguments. 
    */ 
   public static void 

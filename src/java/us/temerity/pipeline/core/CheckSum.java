@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: CheckSum.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -64,10 +64,10 @@ class CheckSum
    *   </DIV>
    * </DIV>
    * 
-   * @param algorithm [<B>in</B>]
+   * @param algorithm 
    *   The digest algorithm.
    * 
-   * @param dir [<B>in</B>]
+   * @param dir 
    *   The root production directory.
    */ 
   public
@@ -157,7 +157,7 @@ class CheckSum
    *   described above for working versions. <P> 
    * </DIV>
    * 
-   * @param path [<B>in</B>]
+   * @param path 
    *   The fully resolved node file path.
    * 
    * @return 
@@ -184,7 +184,7 @@ class CheckSum
    * regular file or if there already exists a checksum file which is newer than 
    * the given source file. <P> 
    * 
-   * @param path [<B>in</B>]
+   * @param path 
    *   The fully resolved node file path.
    * 
    * @throws PipelineException
@@ -325,10 +325,10 @@ class CheckSum
    * The checksum files associated with the given node file paths are assumed to up-to-date 
    * by a previous call to {@link #refresh refresh}. 
    * 
-   * @param pathA [<B>in</B>]
+   * @param pathA 
    *   The first fully resolved node file path.
    * 
-   * @param pathB [<B>in</B>]
+   * @param pathB 
    *   The second fully resolved node file path.
    * 
    * @return 

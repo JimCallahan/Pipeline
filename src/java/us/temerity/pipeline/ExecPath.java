@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.4 2004/03/07 02:46:07 jim Exp $
+// $Id: ExecPath.java,v 1.5 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -26,7 +26,7 @@ class ExecPath
    * paths to file system directories. Typically, the <CODE>path</CODE> originates from
    * the environmental variable PATH in a Toolset.
    * 
-   * @param path [<B>in</B>] 
+   * @param path  
    *   The execution search path.  
    */ 
   public
@@ -81,7 +81,7 @@ class ExecPath
    * which make up this instance and a simple program name.  Behaves in a similar manner
    * as the UNIX shell command <I>which(1)</I>.
    * 
-   * @param program [<B>in</B>] 
+   * @param program  
    *   The name of the program to resolve.
    * 
    * @return

@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.7 2004/03/11 10:53:22 jim Exp $
+// $Id: GlueEncoder.java,v 1.8 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,10 +30,10 @@ class GlueEncoder
   /** 
    * Encode the heirarchy of objects reachable from the given object into Glue format text.
    * 
-   * @param title [<B>in</B>]
+   * @param title 
    *   The name to be given to the object when encoded.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be encoded.
    */
   public 
@@ -80,10 +80,10 @@ class GlueEncoder
    * to encode their fields from within 
    * {@link Glueable#toGlue(GlueEncoder) Glueable.toGlue}.
    * 
-   * @param title [<B>in</B>]
+   * @param title 
    *   The name to be given to the object when encoded.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be encoded.
    */ 
   public void 
@@ -119,10 +119,10 @@ class GlueEncoder
   /**
    * Encode a reference to a previously encoded Object. 
    * 
-   * @param title [<B>in</B>]
+   * @param title 
    *   The name to be given to the object when encoded.
    * 
-   * @param objID [<B>in</B>]
+   * @param objID 
    *   The unique ID of the object.
    */ 
   private void 
@@ -141,13 +141,13 @@ class GlueEncoder
   /**
    * Encode the first reference to an Object. 
    * 
-   * @param title [<B>in</B>]
+   * @param title 
    *   The name to be given to the object when encoded.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be encoded.
    *
-   * @param objID [<B>in</B>]
+   * @param objID 
    *   The unique ID of the object.
    */ 
   private void 
@@ -450,7 +450,7 @@ class GlueEncoder
   /**
    * Insert a new object into the object table and assign it a unique ID.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be inserted.
    * 
    * @return 
@@ -514,7 +514,7 @@ class GlueEncoder
   /**
    * Strips the package prefix off of commonly used class names.
    * 
-   * @param cname [<B>in</B>]
+   * @param cname 
    *   The full name of the class.
    */
   private String 

@@ -1,4 +1,4 @@
-// $Id: LinkCatagory.java,v 1.1 2004/03/13 17:20:13 jim Exp $
+// $Id: LinkCatagory.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,10 +27,10 @@ class LinkCatagory
   /**
    * Construct a new node state propogation policy catagory with the given name.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the link catagory.
    * 
-   * @param policy [<B>in</B>]
+   * @param policy 
    *   The node state propogation policy.
    */ 
   protected

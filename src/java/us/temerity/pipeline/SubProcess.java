@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.8 2004/03/22 03:11:08 jim Exp $
+// $Id: SubProcess.java,v 1.9 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -33,13 +33,13 @@ class SubProcess
    * executed in an empty environment.  The working directory of the subprocess will be 
    * "/usr/tmp".
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the new thread.
    * 
-   * @param program [<B>in</B>] 
+   * @param program  
    *   The absolute filesystem path to the program to execute. 
    * 
-   * @param args [<B>in</B>] 
+   * @param args  
    *   The command line arguments of the program to execute.
    */ 
   public 
@@ -62,19 +62,19 @@ class SubProcess
    * variable PATH. The environment <CODE>env</CODE> consists of a table of environmental 
    * variable name/value pairs.  Typically, this environment is corresponds to a Toolset.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the new thread.
    * 
-   * @param program [<B>in</B>] 
+   * @param program  
    *   The name of program to execute as an OS level subprocess.  
    * 
-   * @param args [<B>in</B>] 
+   * @param args  
    *   The command line arguments of the program to execute.
    * 
-   * @param env [<B>in</B>] 
+   * @param env  
    *   The environment under which the OS level process is run.  
    * 
-   * @param dir [<B>in</B>] 
+   * @param dir  
    *   The working directory of the OS level process.   
    */ 
   public 
@@ -106,22 +106,22 @@ class SubProcess
    * variable PATH. The environment <CODE>env</CODE> consists of a table of environmental 
    * variable name/value pairs.  Typically, this environment is corresponds to a Toolset.
    * 
-   * @param user [<B>in</B>] 
+   * @param user  
    *   The username which will own the OS level subprocess.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the new thread.
    * 
-   * @param program [<B>in</B>] 
+   * @param program  
    *   The name of program to execute as an OS level subprocess.  
    * 
-   * @param args [<B>in</B>] 
+   * @param args  
    *   The command line arguments of the program to execute.
    * 
-   * @param env [<B>in</B>] 
+   * @param env  
    *   The environment under which the OS level process is run.  
    * 
-   * @param dir [<B>in</B>] 
+   * @param dir  
    *   The working directory of the OS level process.   
    */ 
   public 
@@ -269,7 +269,7 @@ class SubProcess
    * Use the UNIX utility "id" to lookup the UID for the given username.  A static table
    * of user IDs is maintained to optimize lookups.
    * 
-   * @param [<B>in</B>] 
+   * @param  
    *   The name of the user. 
    */
   private Integer
@@ -468,7 +468,7 @@ class SubProcess
    * from a currently running process is possible by incrementing the <CODE>start</CODE>
    * argument based on the number of previously returned lines of output.
    *
-   * @param start [<B>in</B>]
+   * @param start 
    *   The index of the first line of output to return.  
    * 
    * @return 
@@ -517,7 +517,7 @@ class SubProcess
    * from a currently running process is possible by incrementing the <CODE>start</CODE>
    * argument based on the number of previously returned lines of output.
    *
-   * @param start [<B>in</B>]
+   * @param start 
    *   The index of the first line of output to return.  
    * 
    * @return 
@@ -731,7 +731,7 @@ class SubProcess
   /**
    * Send a POSIX signal to the OS level process and all of its child processes.
    * 
-   * @param signal  [<B>in</B>]
+   * @param signal  
    *   The signal to send.
    * 
    * @throws IOException 

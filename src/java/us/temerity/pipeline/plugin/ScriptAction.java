@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.3 2004/03/22 03:11:08 jim Exp $
+// $Id: ScriptAction.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -146,31 +146,31 @@ class ScriptAction
    * Construct a {@link SubProcess SubProcess} instance which when executed will 
    * regenerate the given file sequences for the target node. <P>
    * 
-   * @param jobID [<B>in</B>] 
+   * @param jobID  
    *   A unique job identifier.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved name of the target node. 
    * 
-   * @param author [<B>in</B>] 
+   * @param author  
    *   The name of the user which submitted the job.
    * 
-   * @param primaryTarget [<B>in</B>] 
+   * @param primaryTarget  
    *   The primary file sequence to generate.
    *
-   * @param secondaryTargets [<B>in</B>] 
+   * @param secondaryTargets  
    *   The secondary file sequences to generate.
    *
-   * @param primarySources [<B>in</B>] 
+   * @param primarySources  
    *   A table of primary file sequences associated with each dependency.
    *
-   * @param secondarySources [<B>in</B>] 
+   * @param secondarySources  
    *   The table of secondary file sequences associated with each dependency.
    *
-   * @param env [<B>in</B>] 
+   * @param env  
    *   The environment under which the action is run.  
    * 
-   * @param dir [<B>in</B>] 
+   * @param dir  
    *   The working directory where the action is run.
    * 
    * @return 

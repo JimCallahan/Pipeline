@@ -1,4 +1,4 @@
-// $Id: ActionParam.java,v 1.2 2004/02/27 06:21:38 jim Exp $
+// $Id: ActionParam.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,13 +29,13 @@ class ActionParam
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The short name of the editor.  
    * 
-   * @param desc [<B>in</B>]
+   * @param desc 
    *   A short description used in tooltips.
    * 
-   * @param value [<B>in</B>]
+   * @param value 
    *   The default value for this parameter.
    */ 
   public
@@ -128,7 +128,7 @@ class ActionParam
   /** 
    * Indicates whether some other object is "equal to" this one.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The reference object with which to compare.
    */
   public boolean

@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.10 2004/03/22 03:11:08 jim Exp $
+// $Id: NodeMod.java,v 1.11 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,37 +48,37 @@ class NodeMod
    * which can be assigned to a single job is equal to the number of frames in the 
    * primary file sequence.  The <CODE>batchSize</CODE> argument cannot be negative. <P> 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param primary [<B>in</B>]
+   * @param primary 
    *   The primary file sequence associated with the node.
    * 
-   * @param secondary [<B>in</B>]
+   * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
-   * @param toolset [<B>in</B>]
+   * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
-   * @param editor [<B>in</B>]
+   * @param editor 
    *   The name of the editor plugin used to editing/viewing the files associated with 
    *   the node.
    * 
-   * @param action [<B>in</B>]
+   * @param action 
    *   The action plugin instance used to regeneration the files associated the node. 
    * 
-   * @param jobReqs [<B>in</B>]
+   * @param jobReqs 
    *   The requirements that a server must meet in order to be eligable to run jobs 
    *   the node.
    *
-   * @param overflow [<B>in</B>]
+   * @param overflow 
    *   The frame range overflow policy.
    *
-   * @param execution [<B>in</B>]
+   * @param execution 
    *   The methodology for regenerating the files associated with nodes with regeneration
    *   actions.
    * 
-   * @param batchSize [<B>in</B>]
+   * @param batchSize 
    *   For parallel jobs, this is the maximum number of frames assigned to each job.
    */
   public
@@ -115,19 +115,19 @@ class NodeMod
    * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
    * editor associated with the node. <P> 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param primary [<B>in</B>]
+   * @param primary 
    *   The primary file sequence associated with the node.
    * 
-   * @param secondary [<B>in</B>]
+   * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
-   * @param toolset [<B>in</B>]
+   * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
-   * @param editor [<B>in</B>]
+   * @param editor 
    *   The name of the editor plugin used to editing/viewing the files associated with 
    *   the node.
    */
@@ -153,7 +153,7 @@ class NodeMod
   /** 
    * Construct a new working version based on a checked-in version of the node.
    * 
-   * @param vsn [<B>in</B>]
+   * @param vsn 
    *   The checked-in version of the node.
    */ 
   public 
@@ -177,7 +177,7 @@ class NodeMod
   /** 
    * Copy constructor. 
    * 
-   * @param mod [<B>in</B>]
+   * @param mod 
    *   The <CODE>NodeMod</CODE> to copy.
    */ 
   public 
@@ -306,7 +306,7 @@ class NodeMod
   /**
    * Rename an initial working version of the node and its associated primary file sequence.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The new fully resolved node name.
    */
   public void 
@@ -402,7 +402,7 @@ class NodeMod
    * If there are no secondary sequences, then then any legal frame range may be given 
    * for the <CODE>range</CODE> argument.
    *
-   * @param range [<B>in</B>]
+   * @param range 
    *   The new frame range of the primary file sequence.  
    * 
    * @return
@@ -487,7 +487,7 @@ class NodeMod
   /**
    * Add a secondary file sequences to this working version. 
    * 
-   * @param fseq [<B>in</B>]
+   * @param fseq 
    *   The secondary file sequence to add.
    */
   public void
@@ -529,7 +529,7 @@ class NodeMod
   /** 
    * Remove an existing secondary file sequence from this working version.
    * 
-   * @param fseq [<B>in</B>]
+   * @param fseq 
    *   The secondary file sequence to remove.
    */ 
   public void
@@ -573,7 +573,7 @@ class NodeMod
    * Set the name of the execution environment under which to execute the editor program and 
    * the regeneration action. 
    * 
-   * @param toolset [<B>in</B>]
+   * @param toolset 
    *   The name of the toolset environment.
    */
   public void
@@ -603,7 +603,7 @@ class NodeMod
    * Set name of the editor plugin used to editing/viewing the files associated with this 
    * working version of the node.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the editor or <CODE>null</CODE> for no editor.
    */
   public void 
@@ -629,7 +629,7 @@ class NodeMod
    * be removed and all action related flags and parameters will be reset to default 
    * values.
    * 
-   * @param action [<B>in</B>]
+   * @param action 
    *   The regeneration action or <CODE>null</CODE> for no action.
    */
   public void 
@@ -669,7 +669,7 @@ class NodeMod
    * Set the requirements that a server must meet in order to be eligable to run jobs 
    * for this working version of the node. 
    * 
-   * @param jobReqs [<B>in</B>]
+   * @param jobReqs 
    *   The requirements that a server must meet in order to be eligable to run jobs 
    *   the node.
    */
@@ -804,7 +804,7 @@ class NodeMod
    * working version, than this working version will not changed in any way by calling 
    * this method. 
    * 
-   * @param mod [<B>in</B>] 
+   * @param mod  
    *   The working version from which to copy node properties. 
    * 
    * @return
@@ -928,7 +928,7 @@ class NodeMod
   /** 
    * Get the link relationship information for the given upstream node.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved node name of the upstream node.
    * 
    * @return 
@@ -959,7 +959,7 @@ class NodeMod
   /** 
    * Set the link relationship information for the given upstream node.
    * 
-   * @param link [<B>in</B>] 
+   * @param link  
    *   The new link relationship information.
    */
   public void
@@ -980,7 +980,7 @@ class NodeMod
   /** 
    * Remove the link relationship information for the given upstream node.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved node name of the upstream node.
    */
   public void

@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.2 2004/03/22 20:29:16 jim Exp $
+// $Id: GlueParserState.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,7 +35,7 @@ class GlueParserState
   /**
    * Lookup an decoded <CODE>Object</CODE> with the given title from the current object table.
    *
-   * @param title  [<B>in</B>]
+   * @param title  
    *   The name of the object to lookup.
    * 
    * @return 
@@ -55,7 +55,7 @@ class GlueParserState
    * Used by the parser to initialize the current object table before 
    * <CODE>Glueable.fromGlue()</CODE> is called. 
    * 
-   * @param table  [<B>in</B>]
+   * @param table  
    *   The <CODE>HashMap</CODE> containing the decoded objects at the current level 
    *   indexed by object title <CODE>String</CODE>.
    */ 
@@ -73,10 +73,10 @@ class GlueParserState
    * Used by the parser to create a new instance of the given class and store it in 
    * the master objects table under the given ID.
    * 
-   * @param objID [<B>in</B>]
+   * @param objID 
    *   A unique ID used to index objects in the master object table.
    * 
-   * @param cls [<B>in</B>]
+   * @param cls 
    *   The class to instantiate.
    * 
    * @return 
@@ -109,16 +109,16 @@ class GlueParserState
    * Used by the parser to create a new array with elements of the given class and 
    * store it in the master objects table under the given ID.
    * 
-   * @param objID [<B>in</B>]
+   * @param objID 
    *   A unique ID used to index objects in the master object table.
    * 
-   * @param cls [<B>in</B>]
+   * @param cls 
    *   The class to instantiate.
    * 
-   * @param size [<B>in</B>]
+   * @param size 
    *   The number of elements in the array. 
    * 
-   * @param depth [<B>in</B>]
+   * @param depth 
    *   The number of levels of indirection.
    * 
    * @return 
@@ -194,10 +194,10 @@ class GlueParserState
    * Used by the parser to insert a parser created object into the master objects 
    * table under the given ID.
    * 
-   * @param objID [<B>in</B>]
+   * @param objID 
    *   A unique ID used to index objects in the master object table.
    *   
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The object to insert.
    */
   public void 
@@ -219,7 +219,7 @@ class GlueParserState
    * Used by the parser to lookup a previously instantiated objects from the master object 
    * table.
    * 
-   * @param objID [<B>in</B>]
+   * @param objID 
    *   A unique ID used to index objects in the master object table.
    */ 
   public Object 

@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.3 2004/03/15 19:09:37 jim Exp $
+// $Id: NodeID.java,v 1.4 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,13 +31,13 @@ class NodeID
    * Construct a unique identifier for the given working version of a node under the 
    * given view owned by the given user. <P> 
    * 
-   * @param author [<B>in</B>]
+   * @param author 
    *   The of the user which owns the working version..
    * 
-   * @param view [<B>in</B>]
+   * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    */
   public
@@ -127,7 +127,7 @@ class NodeID
   /** 
    * Get the checked-in version directory path relative to the root production directory.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The revision number of the checked-in version.
    */
   public File
@@ -151,7 +151,7 @@ class NodeID
   /** 
    * Indicates whether some other object is "equal to" this one.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The reference object with which to compare.
    */
   public boolean
@@ -200,7 +200,7 @@ class NodeID
   /**
    * Compares this object with the specified object for order.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be compared.
    */
   public int
@@ -222,7 +222,7 @@ class NodeID
   /**
    * Compares this <CODE>NodeID</CODE> with the given <CODE>NodeID</CODE> for order.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The <CODE>NodeID</CODE> to be compared.
    */
   public int

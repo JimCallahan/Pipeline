@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.4 2004/03/22 20:29:16 jim Exp $
+// $Id: NodeStatus.java,v 1.5 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -26,13 +26,13 @@ class NodeStatus
   /**
    * Construct a node status with the given overall node and queue states.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param nodeState [<B>in</B>]
+   * @param nodeState 
    *   The overall revision control state of the node.
    * 
-   * @param queueState [<B>in</B>]
+   * @param queueState 
    *   The overall state of queue jobs associated with the node.
    * 
    */
@@ -55,7 +55,7 @@ class NodeStatus
   /**
    * Construct a node status with undefined overall node and queue states.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    */
   protected 
@@ -127,7 +127,7 @@ class NodeStatus
   /** 
    * Get the node status of the given upstream node.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved node name of the upstream node.
    * 
    * @return 
@@ -157,7 +157,7 @@ class NodeStatus
    * This method is used internally by the {@link NodeMgr#status NodeMgr.status} method 
    * and should not be called directly by the user.
    * 
-   * @param state [<B>in</B>] 
+   * @param state  
    *   The state of the upstream node.
    */ 
   public void 
@@ -185,7 +185,7 @@ class NodeStatus
   /** 
    * Get the node status of the given downstream node.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved node name of the downstream node.
    * 
    * @return 
@@ -215,7 +215,7 @@ class NodeStatus
    * This method is used internally by the {@link NodeMgr#status NodeMgr.status} method 
    * and should not be called directly by the user.
    * 
-   * @param state [<B>in</B>] 
+   * @param state  
    *   The state of the downstream node.
    */ 
   public void 

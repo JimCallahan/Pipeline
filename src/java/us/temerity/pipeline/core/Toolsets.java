@@ -1,4 +1,4 @@
-// $Id: Toolsets.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: Toolsets.java,v 1.2 2004/03/23 07:40:37 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -82,13 +82,13 @@ class Toolsets
    * for these environmental variables at runtime which override the constant values stored 
    * in the Toolset shell script.
    * 
-   * @param name  [<B>in</B>]
+   * @param name  
    *   The name of the toolset.
    * 
-   * @param user  [<B>in</B>]
+   * @param user  
    *   The name of the user under which this environment will be used.
    * 
-   * @param view  [<B>in</B>]
+   * @param view  
    *   The name of user working area view.
    * 
    * @return 
@@ -136,7 +136,7 @@ class Toolsets
    * Lookup the environmental variable name/value pairs which make up the given
    * named Toolset for the current user and default working area view. <P> 
    * 
-   * @param name  [<B>in</B>]
+   * @param name  
    *   The name of the toolset.
    * 
    * @return 

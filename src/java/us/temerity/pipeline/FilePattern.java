@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.5 2004/03/08 04:36:06 jim Exp $
+// $Id: FilePattern.java,v 1.6 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -54,7 +54,7 @@ implements Cloneable, Glueable, Serializable
   /**
    * Construct a <CODE>FilePattern</CODE> without frame number or suffix components. 
    * 
-   * @param prefix  [<B>in</B>]
+   * @param prefix  
    *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
    * 
    * @throws IllegalArgumentException
@@ -78,10 +78,10 @@ implements Cloneable, Glueable, Serializable
   /**
    * Construct a <CODE>FilePattern</CODE> without a frame number component.
    * 
-   * @param prefix  [<B>in</B>]
+   * @param prefix  
    *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
    * 
-   * @param suffix  [<B>in</B>]
+   * @param suffix  
    *   The filename extension (or suffix) component.  If <CODE>null</CODE> is passed for this 
    *   argument, then the filename will have no suffix component.
    * 
@@ -112,16 +112,16 @@ implements Cloneable, Glueable, Serializable
   /**
    * Construct a <CODE>FilePattern</CODE> from general components. 
    * 
-   * @param prefix  [<B>in</B>]
+   * @param prefix  
    *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
    * 
-   * @param padding [<B>in</B>]
+   * @param padding 
    *   The number of digits of zero padding of the frame number component of the filename.
    *   If <CODE>0</CODE> is passed for this argument, then frame numbers will be unpadded.
    *   If <CODE>-1</CODE> is passed for this argument, then the constructed 
    *   <CODE>FilePattern</CODE> will have <I>no</I> frame number component.
    * 
-   * @param suffix  [<B>in</B>]
+   * @param suffix  
    *   The filename extension (or suffix) component.  If <CODE>null</CODE> is passed for this 
    *   argument, then the filename will have <I>no</I> suffix component.
    * 
@@ -156,7 +156,7 @@ implements Cloneable, Glueable, Serializable
   /**
    * Copy constructor. 
    * 
-   * @param pattern  [<B>in</B>]
+   * @param pattern  
    *    The <CODE>FilePattern</CODE> to copy. 
    */ 
   public 
@@ -251,7 +251,7 @@ implements Cloneable, Glueable, Serializable
    * This method is only valid for <CODE>FilePattern</CODE> objects which have a frame 
    * number component.
    * 
-   * @param frame  [<B>in</B>]
+   * @param frame  
    *   The frame number used to generate the filename.
    */ 
   public File

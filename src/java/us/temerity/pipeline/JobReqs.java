@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.5 2004/03/13 17:17:10 jim Exp $
+// $Id: JobReqs.java,v 1.6 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -105,23 +105,23 @@ implements Cloneable, Glueable, Serializable
   /**
    * Construct a new set of job requirements. <P> 
    * 
-   * @param priority [<B>in</B>]
+   * @param priority 
    *    The priority of the job relative to other jobs.  
    * 
-   * @param maxLoad [<B>in</B>]
+   * @param maxLoad 
    *    The maxmimum system load allowed on an eligable host.
    * 
-   * @param minMemory [<B>in</B>]
+   * @param minMemory 
    *    The minimum amount of free memory (in MB) required on an eligable host.
    * 
-   * @param minDisk [<B>in</B>]
+   * @param minDisk 
    *    The minimum amount of free temporary local disk space (in MB) required on an 
    *    eligable host.
    * 
-   * @param licenseKeys [<B>in</B>]
+   * @param licenseKeys 
    *    The set of license keys an eligable host is required to have.
    * 
-   * @param selectionKeys [<B>in</B>]
+   * @param selectionKeys 
    *   The set of selection keys an eligable host is required to have.
    */ 
   public 
@@ -177,7 +177,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Set the relative job priority. The priority can be negative.
    * 
-   * @param priority [<B>in</B>]
+   * @param priority 
    *    The priority of the job relative to other jobs.  
    */
   public void
@@ -204,7 +204,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Set the maximum allowable system load on an eligable host.
    * 
-   * @param load [<B>in</B>]
+   * @param load 
    *    The maxmimum system load allowed.
    */ 
   public void 
@@ -231,7 +231,7 @@ implements Cloneable, Glueable, Serializable
   /**
    * Set the minimum amount of free memory (in MB) required on an eligable host.
    * 
-   * @param megs [<B>in</B>]
+   * @param megs 
    *    The minimum amount of free memory.
    */ 
   public void 
@@ -260,7 +260,7 @@ implements Cloneable, Glueable, Serializable
    * Set the minimum amount of free temporary local disk space (in MB) required on an 
    * eligable host.
    *
-   * @param megs [<B>in</B>]
+   * @param megs 
    *    The minimum amount of free temporary local disk space.
    */
   public void 
@@ -289,7 +289,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Add the named key to the set of required license keys.
    *
-   * @param key [<B>in</B>]
+   * @param key 
    *    The name of the license key to add.
    */
   public void
@@ -304,7 +304,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Add all of the given named keys to the set of required license keys.
    *
-   * @param keys [<B>in</B>]
+   * @param keys 
    *    The names of the license keys to add.
    */
   public void
@@ -319,7 +319,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Remove the named key from the set of required license keys.
    *
-   * @param key [<B>in</B>]
+   * @param key 
    *    The name of the license key to remove.
    */
   public void
@@ -334,7 +334,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Remove all of the named keys from the set of required license keys.
    *
-   * @param keys [<B>in</B>]
+   * @param keys 
    *    The names of the license keys to remove.
    */
   public void
@@ -370,7 +370,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Add the named key to the set of required selection keys.
    *
-   * @param key [<B>in</B>]
+   * @param key 
    *    The name of the selection key to add.
    */
   public void
@@ -385,7 +385,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Add all of the given named keys to the set of required selection keys.
    *
-   * @param keys [<B>in</B>]
+   * @param keys 
    *    The names of the selection keys to add.
    */
   public void
@@ -400,7 +400,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Remove the named key from the set of required selection keys.
    *
-   * @param key [<B>in</B>]
+   * @param key 
    *    The name of the selection key to remove.
    */
   public void
@@ -415,7 +415,7 @@ implements Cloneable, Glueable, Serializable
   /** 
    * Remove all of the named keys from the set of required selection keys.
    *
-   * @param keys [<B>in</B>]
+   * @param keys 
    *    The names of the selection keys to remove.
    */
   public void

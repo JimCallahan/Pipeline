@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.4 2004/03/22 03:11:08 jim Exp $
+// $Id: FileStateRsp.java,v 1.5 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,17 +26,17 @@ class FileStateRsp
   /** 
    * Constructs a new response.
    * 
-   * @param id [<B>in</B>]
+   * @param id 
    *   The unique working version identifier.
    * 
-   * @param states [<B>in</B>]
+   * @param states 
    *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    *   the working version indexed by file sequence.
    * 
-   * @param wait [<B>in</B>]
+   * @param wait 
    *   The number of milliseconds spent waiting to aquire the needed locks.
    * 
-   * @param start [<B>in</B>]
+   * @param start 
    *   The timestamp of when the request started to be fufilled.
    */
   public

@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: FileMgrServer.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -37,10 +37,10 @@ class FileMgrServer
   /** 
    * Construct a new file manager server.
    * 
-   * @param dir [<B>in</B>]
+   * @param dir 
    *   The root production directory.
    * 
-   * @param port [<B>in</B>]
+   * @param port 
    *   The network port to monitor for incoming connections.
    */
   public

@@ -1,4 +1,4 @@
-// $Id: BootApp.java,v 1.1 2004/03/22 22:52:53 jim Exp $
+// $Id: BootApp.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.bootstrap;  
 
@@ -39,7 +39,7 @@ class BootApp
    * Pipeline application.  This method performs the same function as the standard 
    * <CODE>main(String[])</CODE> function of general Java applications.
    * 
-   * @param args [<B>in</B>]
+   * @param args 
    *   The command-line arguments.
    */ 
   public abstract

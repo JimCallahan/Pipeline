@@ -1,4 +1,4 @@
-// $Id: TestApp.java,v 1.2 2004/03/22 20:29:16 jim Exp $
+// $Id: TestApp.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,7 +42,7 @@ class TestApp
   /**
    * Run the application with the given command-line arguments.
    * 
-   * @param args [<B>in</B>]
+   * @param args 
    *   The command-line arguments.
    */ 
   public 

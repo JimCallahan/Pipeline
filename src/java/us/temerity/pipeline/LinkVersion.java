@@ -1,4 +1,4 @@
-// $Id: LinkVersion.java,v 1.1 2004/03/13 17:20:13 jim Exp $
+// $Id: LinkVersion.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,10 +27,10 @@ class LinkVersion
   /**
    * Construct from a working node link.
    * 
-   * @param link [<B>in</B>]
+   * @param link 
    *   The working node link.
    * 
-   * @param vid [<B>in</B>]
+   * @param vid 
    *   The the revision number of the upstream node version upon which the downstream 
    *   node depends.
    */ 

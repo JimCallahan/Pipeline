@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.5 2004/03/22 03:11:08 jim Exp $
+// $Id: BaseAction.java,v 1.6 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,10 +28,10 @@ class BaseAction
   /** 
    * Construct with a name and description. 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The short name of the editor.  
    * 
-   * @param desc [<B>in</B>]
+   * @param desc 
    *   A short description used in tooltips.
    */ 
   protected
@@ -61,7 +61,7 @@ class BaseAction
    * This method is used by subclasses in thier constructors initialize the set of 
    * single valued parameters that they support.
    *
-   * @param param [<B>in</B>] 
+   * @param param  
    *   The parameter to add.
    */
   protected void 
@@ -81,7 +81,7 @@ class BaseAction
   /** 
    * Get the value of the single valued parameter with the given name.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the parameter. 
    *
    * @return 
@@ -107,7 +107,7 @@ class BaseAction
   /** 
    * Get the single valued parameter with the given name.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the parameter. 
    *
    * @return 
@@ -143,10 +143,10 @@ class BaseAction
   /**
    * Set the value of a single valued parameter. 
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the parameter. 
    * 
-   * @param value [<B>in</B>] 
+   * @param value  
    *   The new value of the parameter. 
    */ 
   public void 
@@ -173,7 +173,7 @@ class BaseAction
   /** 
    * Copy the values of all of the single valued parameters from the given action.
    * 
-   * @param action [<B>in</B>] 
+   * @param action  
    *   The action to use as the source of single valued parameter values.
    */
   public void 
@@ -210,7 +210,7 @@ class BaseAction
   /** 
    * Does this action have per-dependency parameters for the given node? 
    * 
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name.
    */ 
   public boolean 
@@ -225,7 +225,7 @@ class BaseAction
   /**
    * Initialize a new set of parameters for the given dependency. 
    * 
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name.
    */ 
   protected void
@@ -272,10 +272,10 @@ class BaseAction
   /**
    * Get the value of the named parameter for the given dependency. 
    *
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the parameter. 
    * 
    * @return 
@@ -304,10 +304,10 @@ class BaseAction
   /**
    * Get the named parameter for the given dependency. 
    *
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the parameter. 
    * 
    * @return 
@@ -337,7 +337,7 @@ class BaseAction
    * The returned ArrayList may be empty if the given dependency does not have any
    * parameters.
    * 
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name. 
    * 
    * @return 
@@ -363,13 +363,13 @@ class BaseAction
   /**
    * Set the value of parameter for the given dependency.
    *
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name. 
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The name of the parameter. 
    *
-   * @param value [<B>in</B>] 
+   * @param value  
    *   The new value of the parameter. 
    */ 
   public void 
@@ -405,7 +405,7 @@ class BaseAction
   /** 
    * Copy the values of all of the per-dependency parameters from the given action.
    * 
-   * @param action [<B>in</B>] 
+   * @param action  
    *   The action to use as the source of single valued parameter values.
    */
   public void 
@@ -432,7 +432,7 @@ class BaseAction
   /**
    * Remove all of the per-dependency parameters associated with the given dependency. 
    * 
-   * @param depend [<B>in</B>] 
+   * @param depend  
    *   The fully resolved dependency node name. 
    */ 
   public void 
@@ -466,31 +466,31 @@ class BaseAction
    * Construct a {@link SubProcess SubProcess} instance which when executed will 
    * regenerate the given file sequences for the target node. <P>
    * 
-   * @param jobID [<B>in</B>] 
+   * @param jobID  
    *   A unique job identifier.
    * 
-   * @param name [<B>in</B>] 
+   * @param name  
    *   The fully resolved name of the target node. 
    * 
-   * @param author [<B>in</B>] 
+   * @param author  
    *   The name of the user which submitted the job.
    * 
-   * @param primaryTarget [<B>in</B>] 
+   * @param primaryTarget  
    *   The primary file sequence to generate.
    *
-   * @param secondaryTargets [<B>in</B>] 
+   * @param secondaryTargets  
    *   The secondary file sequences to generate
    *
-   * @param primarySources [<B>in</B>] 
+   * @param primarySources  
    *   A table of primary file sequences associated with each dependency.
    *
-   * @param secondarySources [<B>in</B>] 
+   * @param secondarySources  
    *   The table of secondary file sequences associated with each dependency.
    *
-   * @param env [<B>in</B>] 
+   * @param env  
    *   The environment under which the action is run.  
    * 
-   * @param dir [<B>in</B>] 
+   * @param dir  
    *   The working directory where the action is run.
    * 
    * @return 
@@ -525,7 +525,7 @@ class BaseAction
    * Add the given file to the set of files which will be removed upon termination of the
    * Java runtime.
    * 
-   * @param file [<B>in</B>]
+   * @param file 
    *   The temporary file to cleanup.
    */
   protected void 
@@ -542,10 +542,10 @@ class BaseAction
    * 
    * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.
    *
-   * @param mode [<B>in</B>]
+   * @param mode 
    *   The access mode bitmask.
    *
-   * @param file [<B>in</B>]
+   * @param file 
    *   The fully resolved path to the file to change.
    * 
    * @throws IOException 

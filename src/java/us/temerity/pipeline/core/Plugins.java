@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: Plugins.java,v 1.2 2004/03/23 07:40:37 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -120,7 +120,7 @@ class Plugins
    * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
    * by calling {@link BaseEditor#getName BaseEditor.getName} for the returned editor.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the editor to instantiate.  
    * 
    * @throws  PipelineException
@@ -143,7 +143,7 @@ class Plugins
    * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
    * by calling {@link BaseAction#getName BaseAction.getName} for the returned action.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the action to instantiate.  
    * 
    * @throws  PipelineException
@@ -167,7 +167,7 @@ class Plugins
    * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
    * by calling {@link BaseTool#getName BaseTool.getName} for the returned tool.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the tool to instantiate.  
    * 
    * @throws  PipelineException
@@ -193,13 +193,13 @@ class Plugins
    * Create a new plugin instance looked up from the given table of classes using the 
    * given name.
    * 
-   * @param ptype [<B>in</B>]
+   * @param ptype 
    *   The kind of plugin being instantiated: Editor, Action or Tool.
    * 
-   * @param table [<B>in</B>]
+   * @param table 
    *   The table of plugin classes to search for <CODE>name</CODE>.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the plugin to instantiate.  
    * 
    * @throws  PipelineException

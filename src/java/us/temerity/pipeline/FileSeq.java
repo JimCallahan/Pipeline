@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.7 2004/03/22 03:11:08 jim Exp $
+// $Id: FileSeq.java,v 1.8 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,10 +37,10 @@ class FileSeq
   /**
    * Construct a <CODE>FileSeq</CODE> which contains a single frame without a frame number.
    * 
-   * @param prefix  [<B>in</B>]
+   * @param prefix  
    *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
    * 
-   * @param suffix  [<B>in</B>]
+   * @param suffix  
    *   The filename extension (or suffix) component.  If <CODE>null</CODE> is passed for this 
    *   argument, then the filename will have no suffix component.
    */
@@ -66,10 +66,10 @@ class FileSeq
    * Construct a general <CODE>FileSeq</CODE> from <CODE>FilePattern</CODE> and 
    * <CODE>FrameRange</CODE> components. 
    * 
-   * @param pattern [<B>in</B>]
+   * @param pattern 
    *   The filename pattern.  This argument cannot be <CODE>null</CODE>.
    * 
-   * @param range [<B>in</B>]
+   * @param range 
    *   The frame range of the file sequence.  If this is a single frame file sequence 
    *   without frame numbers, <CODE>null</CODE> should be passed for this argument.
    * 
@@ -107,10 +107,10 @@ class FileSeq
    * Construct a <CODE>FileSeq</CODE> which contains only a single file extracted from 
    * the given file sequence. 
    * 
-   * @param fseq  [<B>in</B>]
+   * @param fseq  
    *   The file sequence which contains the file to be extracted.
    * 
-   * @param idx   [<B>in</B>]
+   * @param idx   
    *   The frame index of the file to be extracted.
    */ 
   public
@@ -215,7 +215,7 @@ class FileSeq
   /**
    * Generated a literal filename for the given frame number. <P>
    * 
-   * @param idx  [<B>in</B>]
+   * @param idx  
    *   The frame index of the file.  Valid frame indices are in the range: 
    *   [0,{@link #numFrames() numFrames()}).
    */ 
@@ -262,7 +262,7 @@ class FileSeq
   /** 
    * Delete any existing files from this sequence under the given directory. 
    * 
-   * @param dir  [<B>in</B>]
+   * @param dir  
    *   The parent directory of the file sequence.
    * 
    * @throws PipelineException
@@ -297,7 +297,7 @@ class FileSeq
    * Change the permissions to read-only for any existing files from the sequence 
    * in the given directory. 
    * 
-   * @param dir  [<B>in</B>]
+   * @param dir  
    *   The parent directory of the file sequence.
    * 
    * @throws PipelineException
@@ -382,7 +382,7 @@ class FileSeq
   /**
    * Compares this object with the specified object for order.
    * 
-   * @param obj [<B>in</B>]
+   * @param obj 
    *   The <CODE>Object</CODE> to be compared.
    */
   public int
@@ -404,7 +404,7 @@ class FileSeq
   /**
    * Compares this <CODE>FileSeq</CODE> with the given <CODE>FileSeq</CODE> for order.
    * 
-   * @param fseq [<B>in</B>]
+   * @param fseq 
    *   The <CODE>FileSeq</CODE> to be compared.
    */
   public int

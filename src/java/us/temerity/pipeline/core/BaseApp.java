@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.2 2004/03/23 03:35:28 jim Exp $
+// $Id: BaseApp.java,v 1.3 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,7 +27,7 @@ class BaseApp
   /**
    * Construct an application with the given name and command-line arguments.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The name of the application executable.
    */ 
   protected
@@ -152,7 +152,7 @@ class BaseApp
    * Concatentates the command-line arguments into a single <CODE>String</CODE> suitable 
    * for parsing by the command-line parser of the application subclass.
    * 
-   * @param args [<B>in</B>]
+   * @param args 
    *   The command-line arguments.
    */
   protected void
@@ -193,7 +193,7 @@ class BaseApp
   /** 
    * Generate a string containing both the exception message and stack trace. 
    * 
-   * @param ex [<B>in</B>]
+   * @param ex 
    *   The thrown exception.   
    */ 
   protected String 

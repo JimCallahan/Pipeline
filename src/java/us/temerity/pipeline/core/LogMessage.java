@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: LogMessage.java,v 1.2 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -29,7 +29,7 @@ class LogMessage
   /**
    * Construct a new message (recording the current author and time). 
    * 
-   * @param msg [<B>in</B>]
+   * @param msg 
    *   The message text.
    */ 
   public 

@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.7 2004/03/16 00:04:47 jim Exp $
+// $Id: NodeCommon.java,v 1.8 2004/03/23 07:40:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,37 +50,37 @@ class NodeCommon
    * which may be assigned to a single job is equal to the number of frames in the 
    * primary file sequence.  The <CODE>batchSize</CODE> argument cannot be negative. <P> 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param primary [<B>in</B>]
+   * @param primary 
    *   The primary file sequence associated with the node.
    * 
-   * @param secondary [<B>in</B>]
+   * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
-   * @param toolset [<B>in</B>]
+   * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
-   * @param editor [<B>in</B>]
+   * @param editor 
    *   The name of the editor plugin used to editing/viewing the files associated with 
    *   the node.
    * 
-   * @param action [<B>in</B>]
+   * @param action 
    *   The action plugin instance used to regeneration the files associated the node. 
    * 
-   * @param jobReqs [<B>in</B>]
+   * @param jobReqs 
    *   The requirements that a server must meet in order to be eligable to run jobs 
    *   the node.
    *
-   * @param overflow [<B>in</B>]
+   * @param overflow 
    *   The frame range overflow policy.
    *
-   * @param execution [<B>in</B>]
+   * @param execution 
    *   The methodology for regenerating the files associated with nodes with regeneration
    *   actions.
    *
-   * @param batchSize [<B>in</B>]
+   * @param batchSize 
    *   For parallel jobs, this is the maximum number of frames assigned to each job.
    */
   protected 
@@ -115,19 +115,19 @@ class NodeCommon
    * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
    * editor associated with the node. <P> 
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
-   * @param primary [<B>in</B>]
+   * @param primary 
    *   The primary file sequence associated with the node.
    * 
-   * @param secondary [<B>in</B>]
+   * @param secondary 
    *   The secondary file sequences associated with the node.
    * 
-   * @param toolset [<B>in</B>]
+   * @param toolset 
    *   The named execution environment under which editor and action are run.
    * 
-   * @param editor [<B>in</B>]
+   * @param editor 
    *   The name of the editor plugin used to editing/viewing the files associated with 
    *   the node.
    */
@@ -567,7 +567,7 @@ class NodeCommon
   /** 
    * Verify that the given fully resolved node name is legal.
    * 
-   * @param name [<B>in</B>]
+   * @param name 
    *   The fully resolved node name.
    * 
    * @throws IllegalArgumentException
@@ -619,7 +619,7 @@ class NodeCommon
   /** 
    * Verify that the given file sequence has a legal prefix.
    * 
-   * @param fseq [<B>in</B>]
+   * @param fseq 
    *   The file sequence.
    * 
    * @throws IllegalArgumentException
