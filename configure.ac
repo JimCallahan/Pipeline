@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.3.0)
+AM_INIT_AUTOMAKE(Pipeline, 1.3.2)
 
 AC_MSG_RESULT([ ])
 
@@ -21,7 +21,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([C++ compiler vendor (version)])
 
 AC_ARG_WITH([compiler], 
-            [  --with-compiler=TYPE        C/C++ compiler type: GNU, SGI or KAI.])
+            [  --with-compiler=TYPE        C/C++ compiler type: GNU or SGI])
 
 AR="ar"
 
@@ -39,9 +39,9 @@ CXX_BRAND=""
 case "$with_compiler" in 
   (gnu | GNU | "") \
      CC="gcc";
-     CFLAGS="";
+     CFLAGS="-D_REENTRANT";
      CXX="g++";
-     CXXFLAGS="";
+     CXXFLAGS="-D_REENTRANT";
      EXPORT_DYNAMIC="-Wl,-export-dynamic";
      DLOPEN_LIB="-ldl";
      AR="ar ";
@@ -59,14 +59,6 @@ case "$with_compiler" in
      AR="$CXX -ar -o";
      AC_DEFINE(USING_MIPSPRO_CXX, 1, 
                [Define if using SGI's MIPSPRO C++ compiler (CC).]);;
-
-  (kai | KAI) \
-     CFLAGS="";
-     CXX="KCC";
-     CXXFLAGS="--one_per";
-     AR="$CXX -o"; 
-     AC_DEFINE(USING_KAI_CXX, 1, 
-               [Define if using the KAI C++ compiler (KCC).]);;
 
   (*) \
      AC_MSG_ERROR([unknown compiler type]);;
@@ -138,21 +130,48 @@ fi
 AC_MSG_RESULT([$CRYPTO_APP_DIR])
 
 
+AC_MSG_CHECKING([Customer Profile Version Check])
+
+AC_SUBST(PLCONFIG_VERSION)
+PLCONFIG_VERSION=
+
+crypto_version=`java -classpath $CRYPTO_APP_DIR CryptoApp --version`
+profile_version=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                      --lookup PlConfigVersion`
+
+if test "$profile_version" != "$crypto_version"
+then 
+  AC_MSG_ERROR([the Customer Profile version ($profile_version) did not match the CryptoApp version ($crypto_version).])
+else 
+  PLCONFIG_VERSION=$profile_version	
+fi 
+
+AC_MSG_RESULT([$PLCONFIG_VERSION (OK)])
+
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Customer Site Domain Name])
+AC_MSG_CHECKING([Customer Site Specification])
 
 AC_SUBST(DOMAIN)
 DOMAIN=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup DomainName`
+             --lookup DomainName`
 
-if test "$DOMAIN" == "null"
+AC_SUBST(IP_ADDRS)
+IP_ADDRS=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+               --lookup IPAddrs`
+
+if test "$DOMAIN" != "null" 
 then
-  AC_MSG_ERROR([customer profile was incomplete.])
+  AC_MSG_RESULT([$DOMAIN])
+else
+  if test "$IP_ADDRS" != "null"
+  then 
+    AC_MSG_RESULT([$IP_ADDRS])
+  else 
+    AC_MSG_ERROR([customer profile was incomplete.])
+  fi
 fi 
-
-AC_MSG_RESULT([$DOMAIN])
 
 
 
@@ -160,7 +179,7 @@ AC_MSG_CHECKING([Root Installation Directory])
 
 AC_SUBST(ROOT_INST_DIR)
 ROOT_INST_DIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup RootInstallDirectory`
+                    --lookup RootInstallDirectory`
 
 if test "$ROOT_INST_DIR" == "null"
 then
@@ -175,7 +194,7 @@ AC_MSG_CHECKING([Root Production Directory])
 
 AC_SUBST(PRODDIR)
 PRODDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-           --lookup ProductionDirectory`
+              --lookup ProductionDirectory`
 
 if test "$PRODDIR" == "null"
 then
@@ -189,7 +208,7 @@ AC_MSG_CHECKING([Root Node Storage Directory])
 
 AC_SUBST(NODEDIR)
 NODEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-           --lookup NodeDirectory`
+              --lookup NodeDirectory`
 
 if test "$NODEDIR" == "null"
 then
@@ -204,7 +223,7 @@ AC_MSG_CHECKING([Installed Toolsets Directory])
 
 AC_SUBST(TOOLSETDIR)
 TOOLSETDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup ToolsetDirectory`
+                 --lookup ToolsetDirectory`
 
 if test "$TOOLSETDIR" == "null"
 then
@@ -219,7 +238,7 @@ AC_MSG_CHECKING([User Home Directory])
 
 AC_SUBST(HOMEDIR)
 HOMEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-           --lookup HomeDirectory`
+              --lookup HomeDirectory`
 
 if test "$HOMEDIR" == "null"
 then
@@ -234,7 +253,7 @@ AC_MSG_CHECKING([Temporary Directory])
 
 AC_SUBST(TEMPDIR)
 TEMPDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-           --lookup TemporaryDirectory`
+              --lookup TemporaryDirectory`
 
 if test "$TEMPDIR" == "null"
 then
@@ -251,7 +270,7 @@ AC_MSG_CHECKING([Pipeline Master Server Hostname])
 
 AC_SUBST(PL_MASTER_SERVER)
 PL_MASTER_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                    --lookup MasterHostname`
+                       --lookup MasterHostname`
 
 if test "$PL_MASTER_SERVER" == "null"
 then
@@ -266,7 +285,7 @@ AC_MSG_CHECKING([Pipeline Master Server Port])
 
 AC_SUBST(PL_MASTER_PORT)
 PL_MASTER_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                  --lookup MasterPort`
+                     --lookup MasterPort`
 
 if test "$PL_MASTER_PORT" == "null"
 then
@@ -283,7 +302,7 @@ AC_MSG_CHECKING([Pipeline File Server Hostname])
 
 AC_SUBST(PL_FILE_SERVER)
 PL_FILE_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                  --lookup FileHostname`
+                     --lookup FileHostname`
 
 if test "$PL_FILE_SERVER" == "null"
 then
@@ -298,7 +317,7 @@ AC_MSG_CHECKING([Pipeline File Server Port])
 
 AC_SUBST(PL_FILE_PORT)
 PL_FILE_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup FilePort`
+                   --lookup FilePort`
 
 if test "$PL_FILE_PORT" == "null"
 then
@@ -309,13 +328,43 @@ AC_MSG_RESULT([$PL_FILE_PORT])
 
 
 
+AC_MSG_CHECKING([Pipeline Directory Notification Control Port])
+
+AC_SUBST(NOTIFY_CONTROL_PORT)
+NOTIFY_CONTROL_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                          --lookup NotifyControlPort`
+
+if test "$NOTIFY_CONTROL_PORT" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$NOTIFY_CONTROL_PORT])
+
+
+
+AC_MSG_CHECKING([Pipeline Directory Notification Monitor Port])
+
+AC_SUBST(NOTIFY_MONITOR_PORT)
+NOTIFY_MONITOR_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                          --lookup NotifyMonitorPort`
+
+if test "$NOTIFY_MONITOR_PORT" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$NOTIFY_MONITOR_PORT])
+
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline User ID])
 
 AC_SUBST(PIPELINE_UID)
 PIPELINE_UID=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup PipelineUserID`
+                   --lookup PipelineUserID`
 
 if test "$PIPELINE_UID" == "null"
 then
@@ -329,7 +378,7 @@ AC_MSG_CHECKING([Pipeline Group ID])
 
 AC_SUBST(PIPELINE_GID)
 PIPELINE_GID=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup PipelineGroupID`
+                   --lookup PipelineGroupID`
 
 if test "$PIPELINE_GID" == "null"
 then
@@ -346,7 +395,7 @@ AC_MSG_CHECKING([Java Runtime])
 
 AC_SUBST(JAVA_HOME)
 JAVA_HOME=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-             --lookup JavaHome`
+                --lookup JavaHome`
 
 if test "$JAVA_HOME" == "null"
 then
@@ -496,25 +545,6 @@ fi
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_SUBST(PTHREAD_LIB)
-PTHREAD_LIB=""
-
-AC_ARG_ENABLE([threads], 
-              [  --enable-threads          Multitask with Posix threads.])
-
-if test "$enable_threads" = "yes" 
-then  
-  AC_DEFINE(USING_PTHREADS, 1, 
-            [Define if using Posix threads.])
-
-  CFLAGS="$CFLAGS -D_REENTRANT"
-  CXXFLAGS="$CXXFLAGS -D_REENTRANT"
-  PTHREAD_LIB="-lpthread"
-fi
-
-
-dnl ------------------------------------------------------------------------------------------
-
 AC_SUBST(RPM_ROOT)
 RPM_ROOT=`pwd`/rpm
 
@@ -635,6 +665,8 @@ AC_MSG_RESULT([Locating C system headers:])
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
 AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
+AC_CHECK_HEADERS([sys/ipc.h sys/sem.h linux/sem.h])
+AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h])
 
 AC_MSG_RESULT([ ])
 
@@ -660,8 +692,9 @@ AC_MSG_RESULT([ ])
 AC_MSG_RESULT([Locating STL headers:])
 
 AC_CHECK_HEADERS([hash_map ext/hash_map], [break])
+AC_CHECK_HEADERS([hash_set ext/hash_set], [break])
 AC_CHECK_HEADERS([slist ext/slist], [break])
-AC_CHECK_HEADERS([stack deque list set vector])
+AC_CHECK_HEADERS([stack deque list set map vector])
 
 AC_MSG_RESULT([ ])
 
@@ -731,6 +764,10 @@ AC_CONFIG_FILES([
   docs/images/Makefile
   docs/javadoc/Makefile
   docs/man/Makefile
+  docs/man/plfilemgr.html
+  docs/man/plnotify.html
+  docs/man/pls.html
+  docs/man/realpath.html
   docs/manuals/Makefile
 
   src/Makefile
