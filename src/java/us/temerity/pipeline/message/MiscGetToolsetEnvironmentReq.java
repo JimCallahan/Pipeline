@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetEnvironmentReq.java,v 1.1 2004/06/02 21:30:06 jim Exp $
+// $Id: MiscGetToolsetEnvironmentReq.java,v 1.2 2004/06/28 00:12:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,15 +28,31 @@ class MiscGetToolsetEnvironmentReq
   /** 
    * Constructs a new request.
    * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
    * @param name
    *   The toolset name.
    */
   public
   MiscGetToolsetEnvironmentReq
   (
+   String author, 
+   String view,
    String name
   )
   {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    pAuthor = author;
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+    pView = view;
+
     if(name == null) 
       throw new IllegalArgumentException
 	("The toolset name cannot be (null)!");
@@ -48,6 +64,24 @@ class MiscGetToolsetEnvironmentReq
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the name of user which owens the working area.
+   */ 
+  public String
+  getAuthor() 
+  {
+    return pAuthor;
+  }
+
+  /** 
+   * Get the name of the working area view.
+   */
+  public String
+  getView()
+  {
+    return pView;
+  }
 
   /**
    * Gets the name of the toolset;
@@ -72,6 +106,16 @@ class MiscGetToolsetEnvironmentReq
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * The name of user which owens the working version.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view.
+   */
+  private String  pView;
 
   /**
    * The name of the toolset.
