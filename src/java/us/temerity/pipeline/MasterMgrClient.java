@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.9 2004/06/28 00:09:55 jim Exp $
+// $Id: MasterMgrClient.java,v 1.10 2004/06/28 23:01:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -305,13 +305,20 @@ class MasterMgrClient
   }
 
   /**
-   * Get the cooked toolset environment specific to the given user and working area.
+   * Get the cooked toolset environment specific to the given user and working area. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is not <CODE>null</CODE>, <CODE>HOME</CODE> and 
+   * <CODE>USER</CODE> environmental variables will be added to the cooked environment. <P> 
+   * 
+   * If the <CODE>author</CODE> and <CODE>view</CODE> arguments are both not 
+   * <CODE>null</CODE>, <CODE>HOME</CODE>, <CODE>USER</CODE> and <CODE>WORKING</CODE> 
+   * environmental variables will be added to the cooked environment. <P> 
    * 
    * @param author
    *   The user owning the generated environment.
    * 
    * @param view 
-   *   The name of the user's working area view. 
+   *   The name of the user's working area view.
    * 
    * @param name
    *   The toolset name.
@@ -648,6 +655,124 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the table of all currently defined link catagory descriptions indexed by 
+   * link catagory name.
+   * 
+   * @throws PipelineException
+   *   If unable to lookup the link catagories.
+   */ 
+  public synchronized TreeMap<String,LinkCatagoryDesc>
+  getLinkCatagoryDesc() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetLinkCatagoryDesc, null);
+    if(obj instanceof MiscGetLinkCatagoryDescRsp) {
+      MiscGetLinkCatagoryDescRsp rsp = (MiscGetLinkCatagoryDescRsp) obj;
+      return rsp.getTable();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Get the names of the currently active link catagories.
+   * 
+   * @throws PipelineException
+   *   If unable to lookup the link catagories.
+   */ 
+  public synchronized TreeSet<String>
+  getActiveLinkCatagoryNames() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetActiveLinkCatagoryNames, null);
+    if(obj instanceof MiscGetActiveLinkCatagoryNamesRsp) {
+      MiscGetActiveLinkCatagoryNamesRsp rsp = (MiscGetActiveLinkCatagoryNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+  
+  /**
+   * Create a new link catagory.
+   * 
+   * @param name 
+   *   The name of the link catagory.
+   * 
+   * @param policy 
+   *   The node state propogation policy.
+   * 
+   * @param desc
+   *   A short description of the link catagory.
+   * 
+   * @throws PipelineException
+   *   If unable to create the link catagory.
+   */ 
+  public synchronized void 
+  createLinkCatagory
+  (
+   String name,  
+   LinkPolicy policy, 
+   String desc
+  )
+    throws PipelineException
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may create new link catagories!");
+
+    verifyConnection();
+
+    MiscCreateLinkCatagoryReq req = new MiscCreateLinkCatagoryReq(name, policy, desc);
+
+    Object obj = performTransaction(MasterRequest.CreateLinkCatagory, req); 
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Set the active/inactive state of the link catagory with the given name. <P> 
+   *
+   * @param name
+   *   The name of the link catagory.
+   *
+   * @param isActive
+   *   Whether the toolset should be active.
+   * 
+   * @throws PipelineException
+   *   If unable to change the active state of the link catagory.
+   */ 
+  public synchronized void 
+  setLinkCatagoryActive
+  (
+   String name, 
+   boolean isActive
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the active status of a link catagory!");
+
+    verifyConnection();
+
+    MiscSetLinkCatagoryActiveReq req = new MiscSetLinkCatagoryActiveReq(name, isActive);
+
+    Object obj = performTransaction(MasterRequest.SetLinkCatagoryActive, req); 
+    handleSimpleResponse(obj);    
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -1175,29 +1300,6 @@ class MasterMgrClient
     }
   }
 
-
-  /**
-   * Create a new empty working area for the current user and view. <P> 
-   * 
-   * If the working area already exists, the operation is successful even though 
-   * nothing is actually done.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   *
-   * @throws PipelineException
-   *   If unable to create the working area.
-   */
-  public synchronized void  
-  createWorkingArea
-  ( 
-   String view   
-  ) 
-    throws PipelineException 
-  {
-    createWorkingArea(PackageInfo.sUser, view);
-  }
-
   /**
    * Create a new empty working area for the given user and view. <P> 
    * 
@@ -1232,6 +1334,7 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.CreateWorkingArea, req);
     handleSimpleResponse(obj);
   }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1282,29 +1385,6 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the working version of the node for the current user. <P> 
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   *
-   * @throws PipelineException
-   *   If unable to retrieve the working version.
-   */
-  public synchronized NodeMod
-  getWorkingVersion
-  ( 
-   String view, 
-   String name
-  ) 
-    throws PipelineException
-  {
-    return getWorkingVersion(PackageInfo.sUser, view, name);
-  }  
-
-  /** 
    * Get the working version of the node for the given user. <P> 
    * 
    * @param author 
@@ -1346,46 +1426,6 @@ class MasterMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Set the node properties of the working version of the node for the current user. <P> 
-   * 
-   * Node properties include: <BR>
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
-   *   The toolset environment under which editors and actions are run. <BR>
-   *   The name of the editor plugin used to edit the data files associated with the node.<BR>
-   *   The regeneration action and its single and per-dependency parameters. <BR>
-   *   The job requirements. <BR>
-   *   The IgnoreOverflow and IsSerial flags. <BR>
-   *   The job batch size. <P> 
-   * </DIV> 
-   * 
-   * Note that any existing upstream node link information contained in the
-   * <CODE>mod</CODE> argument will be ignored.  The {@link #link link} and
-   * {@link #unlink unlink} methods must be used to alter the connections 
-   * between working node versions.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param mod 
-   *   The working version containing the node property information to copy.
-   * 
-   * @throws PipelineException
-   *   If unable to set the node properties.
-   */
-  public synchronized void 
-  modifyProperties
-  ( 
-   String view, 
-   NodeMod mod   
-  ) 
-    throws PipelineException
-  {
-    modifyProperties(PackageInfo.sUser, view, mod);
-  }
 
   /** 
    * Set the node properties of the working version of the node for the given user. <P> 
@@ -1448,45 +1488,14 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the table of currently defined link catagories indexed by catagory name.
-   * 
-   * @throws PipelineException
-   *   If unable to lookup the link catagories.
-   */ 
-  public synchronized TreeMap<String,LinkCatagory>
-  getLinkCatagories() 
-    throws PipelineException
-  {
-    // PLACEHOLDER ... 
-
-    TreeMap<String,LinkCatagory> table = new TreeMap<String,LinkCatagory>();
-
-    {
-      LinkCatagory lcat = new LinkCatagory("Dependency", LinkPolicy.Both);
-      table.put(lcat.getName(), lcat);
-    }
-
-    {
-      LinkCatagory lcat = new LinkCatagory("Simulation", LinkPolicy.NodeStateOnly);
-      table.put(lcat.getName(), lcat);
-    }
-
-    {
-      LinkCatagory lcat = new LinkCatagory("Reference", LinkPolicy.None);
-      table.put(lcat.getName(), lcat);
-    }
-
-    return table;
-  }
-
-  // addLinkCatagory(LinkCatagory lcat)
-
-  /**
    * Create or modify an existing link between the working versions. <P> 
    * 
    * If the <CODE>relationship</CODE> argument is <CODE>OneToOne</CODE> then the 
    * <CODE>offset</CODE> argument must not be <CODE>null</CODE>.  For all other 
    * link relationships, the <CODE>offset</CODE> argument must be <CODE>null</CODE>.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -1513,6 +1522,7 @@ class MasterMgrClient
   public synchronized void 
   link
   (
+   String author, 
    String view, 
    String target, 
    String source,
@@ -1524,7 +1534,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeID id = new NodeID(PackageInfo.sUser, view, target);
+    NodeID id = new NodeID(author, view, target);
     LinkMod link = new LinkMod(source, catagory, relationship, offset);
     NodeLinkReq req = new NodeLinkReq(id, link);
 
@@ -1534,6 +1544,9 @@ class MasterMgrClient
 
   /**
    * Destroy an existing link between the working versions. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -1550,6 +1563,7 @@ class MasterMgrClient
   public synchronized void 
   unlink
   (
+   String author, 
    String view, 
    String target, 
    String source
@@ -1558,7 +1572,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeID id = new NodeID(PackageInfo.sUser, view, target);
+    NodeID id = new NodeID(author, view, target);
     NodeUnlinkReq req = new NodeUnlinkReq(id, source);
 
     Object obj = performTransaction(MasterRequest.Unlink, req);
@@ -1657,32 +1671,6 @@ class MasterMgrClient
     }
   } 
 
-  /**
-   * Get the status of the tree of nodes rooted at the given node. <P> 
-   * 
-   * Identical to the {@link #status(String,String,String) status} method which 
-   * takes an author name except that the current user is used as the author.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the status of the node.
-   */ 
-  public NodeStatus
-  status
-  ( 
-   String view, 
-   String name   
-  ) 
-    throws PipelineException
-  {
-    return status(PackageInfo.sUser, view, name);
-  } 
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1735,37 +1723,6 @@ class MasterMgrClient
 
     Object obj = performTransaction(MasterRequest.Register, req);
     handleSimpleResponse(obj);
-  }
-
-  /**
-   * Register an initial working version of a node owned by the current user. <P> 
-   * 
-   * The <CODE>mod</CODE> argument must have a node name which does not already exist and
-   * does not match any of the path components of any existing node.  <P> 
-   * 
-   * The working version must be an inital version.  In other words, the 
-   * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
-   * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
-   * not contain any upstream node link information.
-   *  
-   * @param view 
-   *   The name of the user's working area view. 
-   *
-   * @param mod
-   *   The initial working version to register.
-   * 
-   * @throws PipelineException
-   *   If unable to register the given node.
-   */
-  public synchronized void 
-  register
-  ( 
-   String view, 
-   NodeMod mod
-  ) 
-    throws PipelineException
-  {
-    register(PackageInfo.sUser, view, mod);
   }
 
 
@@ -1825,42 +1782,6 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   } 
 
-  /**
-   * Revoke a working version of a node owned by the current user which has never 
-   * been checked-in  <P> 
-   * 
-   * This operation is provided to allow users to remove nodes which they have previously 
-   * registered, but which they no longer want to keep or share with other users. If a 
-   * working version is successfully revoked, all node connections to the revoked node 
-   * will be also be removed. <P> 
-   * 
-   * In addition to removing the working version of the node, this operation can also 
-   * delete the files associated with the working version if the <CODE>removeFiles</CODE>
-   * argument is <CODE>true</CODE>.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   *
-   * @param removeFiles 
-   *   Should the files associated with the working version be deleted?
-   *
-   * @throws PipelineException 
-   *   If unable to revoke the given node.
-   */ 
-  public void 
-  revoke
-  ( 
-   String view, 
-   String name, 
-   boolean removeFiles
-  ) 
-    throws PipelineException
-  {
-    revoke(PackageInfo.sUser, view, name, removeFiles);
-  } 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1924,50 +1845,6 @@ class MasterMgrClient
 
     Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);
-  } 
-
-  /**
-   * Rename a working version of a node owned by the current user which has never 
-   * been checked-in. <P> 
-   * 
-   * This operation allows a user to change the name of a previously registered node before 
-   * it is checked-in. If a working version is successfully renamed, all node connections 
-   * will be preserved. <P> 
-   * 
-   * In addition to changing the name of the working version, this operation can also 
-   * rename the files associated with the working version to match the new node name if 
-   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
-   * will be renamed to have a prefix which is identical to the last component of the 
-   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
-   * unchanged. Both primary and secondary file sequences will be moved into the working 
-   * directory based on the new node name.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param oldName 
-   *   The current fully resolved node name.
-   * 
-   * @param newName 
-   *   The new fully resolved node name.
-   * 
-   * @param renameFiles 
-   *   Should the files associated with the working version be renamed?
-   * 
-   * @throws PipelineException 
-   *   If unable to rename the given node or its associated primary files.
-   */ 
-  public void 
-  rename
-  ( 
-   String view, 
-   String oldName, 
-   String newName,
-   boolean renameFiles
-  ) 
-    throws PipelineException
-  {
-    rename(PackageInfo.sUser, view, oldName, newName, renameFiles);
   } 
 
 
@@ -2042,51 +1919,6 @@ class MasterMgrClient
     }
   } 
 
-  /** 
-   * Check-In the tree of nodes owned by the current user rooted at the given working 
-   * version. <P> 
-   * 
-   * The check-in operation proceeds in a depth-first manner checking-in the most upstream
-   * nodes first.  The check-in operation aborts at the first failure of a particular node. 
-   * It is therefore possible for the overall check-in to fail after already succeeding for 
-   * some set of upstream nodes. <P> 
-   * 
-   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
-   * nodes (both upstream and downstream) linked to the given node.  The status information 
-   * for the upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param msg 
-   *   The check-in message text.
-   * 
-   * @param level  
-   *   The revision number component level to increment.
-   * 
-   * @return 
-   *   The post check-in status of tree of nodes linked to the given node.
-   * 
-   * @throws PipelineException
-   *   If unable to check-in the nodes.
-   */ 
-  public NodeStatus
-  checkIn
-  ( 
-   String view, 
-   String name, 
-   String msg, 
-   VersionID.Level level   
-  ) 
-    throws PipelineException
-  {
-    return checkIn(PackageInfo.sUser, view, name, msg, level);
-  } 
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2158,49 +1990,6 @@ class MasterMgrClient
     }
   } 
 
-  /** 
-   * Check-Out the tree of nodes owned by the current user rooted at the given working 
-   * version. <P> 
-   * 
-   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
-   * version. <P>
-   * 
-   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
-   * nodes (both upstream and downstream) linked to the given node.  The status information 
-   * for the upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param vid 
-   *   The revision number of the node to check-out.
-   * 
-   * @param keepNewer
-   *   Should upstream nodes which have a newer revision number than the version to be 
-   *   checked-out be skipped? 
-   * 
-   * @return 
-   *   The post check-out status of tree of nodes linked to the given node.
-   * 
-   * @throws PipelineException
-   *   If unable to check-out the nodes.
-   */ 
-  public NodeStatus
-  checkOut
-  ( 
-   String view, 
-   String name, 
-   VersionID vid, 
-   boolean keepNewer
-  ) 
-    throws PipelineException
-  {
-    return checkOut(PackageInfo.sUser, view, name, vid, keepNewer);
-  } 
 
 
   /*----------------------------------------------------------------------------------------*/
