@@ -1,4 +1,4 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: FileGetSizesReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   F I L E   G E T   S I Z E S   R E Q                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A request to Calculate the total size (in bytes) of the files associated with the given 
+ * checked-in versions.
  */
 public
-class FileDeleteCheckedInReq
+class FileGetSizesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,18 +27,24 @@ class FileDeleteCheckedInReq
   /** 
    * Constructs a new request.
    * 
-   * @param name
-   *   The fully resolved node name. 
+   * @param fseqs
+   *   The files sequences indexed by fully resolved node names and revision numbers.
+   * 
+   * @param considerLinks
+   *   Whether symbolic links should be considered when computing file sizes.
    */
   public
-  FileDeleteCheckedInReq
+  FileGetSizesReq
   (
-   String name
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs,
+   boolean considerLinks
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    if(fseqs == null) 
+      throw new IllegalArgumentException("The file sequences cannot be (null)!");
+    pFileSeqs = fseqs;
+
+    pConsiderLinks = considerLinks;
   }
 
 
@@ -47,20 +53,30 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets the files sequences indexed by fully resolved node names and revision numbers.
    */
-  public String
-  getName() 
+  public TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>
+  getFileSequences()
   {
-    return pName; 
+    return pFileSeqs;
   }
     
+  /**
+   * Whether symbolic links should be considered when computing file sizes.
+   */
+  public boolean
+  considerLinks()
+  {
+    return pConsiderLinks;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = 1233755280980268386L;
+  private static final long serialVersionUID = -8608461216665159347L;
 
   
 
@@ -69,8 +85,13 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The files sequences indexed by fully resolved node names and revision numbers.
    */ 
-  private String  pName; 
+  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs;
+
+  /** 
+   * Whether symbolic links should be considered when computing file sizes.
+   */
+  private boolean  pConsiderLinks; 
 }
   

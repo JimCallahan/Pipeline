@@ -1,66 +1,80 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetArchiveIndexRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   G E T   A R C H I V E   I N D E X   R S P                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A successful response to a requet to get the names and creation timestamps of all 
+ * existing archives. <P> 
  */
 public
-class FileDeleteCheckedInReq
-  implements Serializable
+class MiscGetArchiveIndexRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response.
    * 
-   * @param name
-   *   The fully resolved node name. 
-   */
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param index
+   *   The timestamps of when each archive was created indexed by unique archive name.
+   */ 
   public
-  FileDeleteCheckedInReq
+  MiscGetArchiveIndexRsp
   (
-   String name
+   TaskTimer timer, 
+   TreeMap<String,Date> index
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    super(timer);
+
+    if(index == null) 
+      throw new IllegalArgumentException("The restore index cannot be (null)!");
+    pIndex = index;
+
+    Logs.net.finest("MasterMgr.getArchiveIndex()\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets the timestamps of when each archive was created indexed by unique archive name.
    */
-  public String
-  getName() 
+  public TreeMap<String,Date>
+  getIndex()
   {
-    return pName; 
+    return pIndex;
   }
-    
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = 1634842766569482147L;
 
   
 
@@ -69,8 +83,9 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The timestamps of when each archive was created indexed by unique archive name.
    */ 
-  private String  pName; 
+  private TreeMap<String,Date>  pIndex;
+
 }
   

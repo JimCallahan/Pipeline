@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.66 2004/11/06 23:36:29 jim Exp $
+// $Id: MasterMgr.java,v 1.67 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10,6 +10,7 @@ import us.temerity.pipeline.ui.NodeStyles;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.atomic.*;
 import java.util.logging.Level;
@@ -286,6 +287,12 @@ class MasterMgr
       pDatabaseLock = new ReentrantReadWriteLock();
       pMakeDirLock  = new Object();
 
+      pArchiveFileLock = new Object();
+      pArchivedIn      = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
+      pArchivedOn      = new TreeMap<String,Date>();
+      pOfflined        = new TreeMap<String,TreeSet<VersionID>>();
+      pRestoreReqs     = new TreeMap<String,TreeSet<VersionID>>();
+
       pDefaultToolsetLock = new Object();
       pDefaultToolset     = null;
       pActiveToolsets     = new TreeSet<String>();
@@ -314,6 +321,7 @@ class MasterMgr
     /* perform startup I/O operations */ 
     try {
       makeRootDirs();
+      initArchives();
       initToolsets();
       initPrivilegedUsers();
       rebuildDownstreamLinks();
@@ -348,6 +356,7 @@ class MasterMgr
     dirs.add(new File(pNodeDir, "toolsets/toolsets"));
     dirs.add(new File(pNodeDir, "etc"));
     dirs.add(new File(pNodeDir, "etc/suffix-editors"));
+    dirs.add(new File(pNodeDir, "etc/archives"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -359,6 +368,48 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Load the archives.
+   */ 
+  private void 
+  initArchives()
+    throws PipelineException
+  {
+    File dir = new File(pNodeDir, "etc/archives");
+    File files[] = dir.listFiles(); 
+    int wk;
+    for(wk=0; wk<files.length; wk++) {
+      Archive archive = readArchive(files[wk].getName());
+      
+      for(String name : archive.getNames()) {
+	TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	if(versions == null) {
+	  versions = new TreeMap<VersionID,TreeSet<String>>();
+	  pArchivedIn.put(name, versions);
+	}
+
+	for(VersionID vid : archive.getVersionIDs(name)) { 
+	  TreeSet<String> anames = versions.get(vid);
+	  if(anames == null) {
+	    anames = new TreeSet<String>();
+	    versions.put(vid, anames);
+	  }
+
+	  anames.add(archive.getName());
+	}
+      }
+      
+      pArchivedOn.put(archive.getName(), archive.getTimeStamp());
+    }
+
+    pOfflined = pFileMgrClient.getOfflined();
+
+    readRestoreReqs();
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -420,6 +471,7 @@ class MasterMgr
     pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
   }
   
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -632,32 +684,38 @@ class MasterMgr
       
       /* invalidate the fields */ 
       {
-	pDatabaseLock        = null;
-	pMakeDirLock         = null;
-	
-	pDefaultToolsetLock  = null;
-	pDefaultToolset      = null;
-	pActiveToolsets      = null;
-	pToolsets            = null;
-	pToolsetPackages     = null;
-	
-	pSuffixEditors       = null;
-	
-	pPrivilegedUsers     = null;
-	
-	pNodeTreeRoot        = null;
-	pWorkingAreaViews    = null;
+	pDatabaseLock = null;
+	pMakeDirLock  = null;
 
-	pCheckedInLocks      = null;
-	pCheckedInBundles    = null;
-	
-	pWorkingLocks        = null;
-	pWorkingBundles      = null;
-	
-	pDownstreamLocks     = null;
-	pDownstream          = null;
+	pArchiveFileLock = null;
+	pArchivedIn      = null;
+	pArchivedOn      = null;
+	pOfflined        = null;
+	pRestoreReqs     = null;
 
-	pQueueSubmitLock     = null; 
+	pDefaultToolsetLock = null;
+	pDefaultToolset     = null;
+	pActiveToolsets     = null;
+	pToolsets           = null;
+	pToolsetPackages    = null;
+	
+	pSuffixEditors = null;
+	
+	pPrivilegedUsers = null;
+	
+	pNodeTreeRoot     = null;
+	pWorkingAreaViews = null;
+
+	pCheckedInLocks   = null;
+	pCheckedInBundles = null;
+	
+	pWorkingLocks   = null;
+	pWorkingBundles = null;
+	
+	pDownstreamLocks = null;
+	pDownstream      = null;
+
+	pQueueSubmitLock = null; 
       }
       
       /* reinitialize */ 
@@ -5106,6 +5164,428 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get information about the checked-in versions which match the given archival 
+   * criteria. <P> 
+   * 
+   * @param req 
+   *   The query request.
+   * 
+   * @return 
+   *   <CODE>MiscArchivalQueryRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the query.
+   */
+  public Object
+  archivalQuery
+  (
+   MiscArchivalQueryReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    pDatabaseLock.readLock().lock();
+    try {
+      String pattern      = req.getPattern();
+      Integer exclude     = req.getExcludeLatest();
+      Integer maxWorking  = req.getMaxWorking();
+      Integer maxArchives = req.getMaxArchives();
+      
+      /* get the node names which match the pattern */ 
+      TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
+	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
+      {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  try {
+	    timer.resume();
+	    
+	    Pattern pat = null;
+	    if(pattern != null) 
+	      pat = Pattern.compile(pattern);
+	    
+	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
+	      matchingNodes("", entry, pat, matches);
+	  }
+	  catch(PatternSyntaxException ex) {
+	    return new FailureRsp(timer, 
+				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+	  }
+	}
+      }
+      
+      /* process the matching nodes */ 
+      TreeMap<String,TreeMap<VersionID,ArchivalInfo>> table = 
+	new TreeMap<String,TreeMap<VersionID,ArchivalInfo>>();
+      VersionID latestID = null;
+      for(String name : matches.keySet()) {
+	
+	/* get the revision numbers and creation timestamps of the included versions */ 
+	TreeMap<VersionID,Date> stamps = new TreeMap<VersionID,Date>();
+	{
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getCheckedInLock(name);
+	  lock.readLock().lock();  
+	  try {
+	    timer.resume();	
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    int wk = 0;
+	    for(VersionID vid : checkedIn.keySet()) {
+	      if((exclude != null) && (wk >= (checkedIn.size() - exclude)))
+		break;
+	      stamps.put(vid, checkedIn.get(vid).uVersion.getTimeStamp());
+	      wk++;
+	    }
+
+	    latestID = checkedIn.lastKey();
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
+	  }
+	  finally {
+	    lock.readLock().unlock();  
+	  }
+	}
+	
+	/* process the matching checked-in versions */ 
+	for(VersionID vid : stamps.keySet()) {
+
+	  /* get the number of archives which already contain the checked-in version */ 
+	  int numArchives = 0;
+	  String lastArchive = null;
+	  {
+	    timer.aquire();
+	    synchronized(pArchivedIn) {
+	      timer.resume();
+	      
+	      TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	      if(versions != null) {
+		TreeSet<String> archives = versions.get(vid);
+		if(archives != null) {
+		  numArchives = archives.size();
+		  lastArchive = archives.last();
+		}
+	      }
+	    }
+	  }
+
+	  /* only include the checked-in versions which aren't already members of the 
+	     given maximum number of archives  */ 
+	  if((maxArchives == null) || (numArchives <= maxArchives)) {
+
+	    /* get the timestamp of the latest archive containing the checked-in version */ 
+	    Date archived = null;
+	    if(lastArchive != null) {
+	      timer.aquire();
+	      synchronized(pArchivedOn) {
+		timer.resume();
+		archived = pArchivedOn.get(lastArchive);
+	      }
+	    }
+	    
+	    /* get the number of working versions based on the checked-in version and 
+	       the timestamp of when the latest working version was checked-out */ 
+	    int numWorking = 0;
+	    Date checkedOut = null;
+	    boolean canOffline = true;
+	    {	      
+	      TreeMap<String,TreeSet<String>> areas = matches.get(name);
+	      for(String author : areas.keySet()) {
+		TreeSet<String> views = areas.get(author);
+		for(String view : views) {
+		  NodeID nodeID = new NodeID(author, view, name);
+		  
+		  timer.aquire();
+		  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+		  lock.readLock().lock();
+		  try {
+		    timer.resume();	
+		      
+		    WorkingBundle bundle = getWorkingBundle(nodeID);
+		    NodeMod mod = bundle.uVersion;
+		    if(vid.equals(mod.getWorkingID())) {
+		      if((checkedOut == null) || 
+			 (checkedOut.compareTo(mod.getTimeStamp()) < 0)) 
+			checkedOut = mod.getTimeStamp();
+		      canOffline = false;
+		      numWorking++;
+		    }		      
+		  } 
+		  finally {
+		    lock.readLock().unlock();
+		  } 
+
+		  if(vid.equals(latestID))
+		    canOffline = false;
+		}
+	      }
+	    }
+
+	    /* only include checked-in version which do not have more than the given
+	       maximum number of working versions based on the checked-in version */ 
+	    if((maxWorking == null) || (numWorking <= maxWorking)) {
+	      Date checkedIn = stamps.get(vid);
+
+	      ArchivalInfo info = 
+		new ArchivalInfo(checkedIn, checkedOut, archived, 
+				 numWorking, numArchives, canOffline);
+	      
+	      TreeMap<VersionID,ArchivalInfo> versions = table.get(name);
+	      if(versions == null) {
+		versions = new TreeMap<VersionID,ArchivalInfo>();
+		table.put(name, versions);
+	      }
+
+	      versions.put(vid, info);
+	    }
+	  }
+	}	
+      }
+
+      return new MiscArchivalQueryRsp(timer, table);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /** 
+   * Recursively check the names of all nodes with at least one checked-in versions 
+   * against the given regular expression pattern.
+   */ 
+  private void 
+  matchingNodes
+  (
+   String path,
+   NodeTreeEntry entry, 
+   Pattern pattern, 
+   TreeMap<String,TreeMap<String,TreeSet<String>>> matches
+  ) 
+  {
+    String name = (path + "/" + entry.getName());
+    if(entry.isLeaf() && entry.isCheckedIn()) {
+      if((pattern == null) || pattern.matcher(name).matches()) {
+	TreeMap<String,TreeSet<String>> areas = new TreeMap<String,TreeSet<String>>();
+	for(String author : entry.getWorkingAuthors()) 
+	  areas.put(author, new TreeSet<String>(entry.getWorkingViews(author)));
+	matches.put(name, areas);
+      }
+    }
+    else {
+      for(NodeTreeEntry child : entry.values())
+	matchingNodes(name, child, pattern, matches);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions.
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>MiscGetSizesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getSizes
+  (
+   MiscGetSizesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      /* get the file sequences for the given checked-in versions */ 
+      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
+	new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
+      {
+	TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+	for(String name : versions.keySet()) {
+	  TreeMap<VersionID,TreeSet<FileSeq>> vfseqs = 
+	    new TreeMap<VersionID,TreeSet<FileSeq>>();
+	  fseqs.put(name, vfseqs);
+
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getCheckedInLock(name);
+	  lock.readLock().lock(); 
+	  try {
+	    timer.resume();
+
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    for(VersionID vid : versions.get(name)) 
+	      vfseqs.put(vid, checkedIn.get(vid).uVersion.getSequences());
+	  }
+	  finally {
+	    lock.readLock().unlock();
+	  }
+	}
+      }
+
+      /* compute the sizes of the files */ 
+      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
+      if(req.considerLinks()) 
+	sizes = pFileMgrClient.getOfflinedSizes(fseqs);
+      else 
+	sizes = pFileMgrClient.getArchivedSizes(fseqs);
+
+      return new MiscGetSizesRsp(timer, sizes);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Archive the files associated with the given checked-in versions. <P> 
+   * 
+   * Only privileged users may create archives. <P> 
+   * 
+   * @param req 
+   *   The archive request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to archive the files.
+   */
+  public Object
+  archive
+  (
+   MiscArchiveReq req
+  ) 
+  {
+
+    // ...
+
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  }
+  
+  /**
+   * Remove the repository files associated with the given checked-in versions. <P> 
+   * 
+   * All checked-in versions to be offlined must have prevously been included in at least
+   * one archive. <P> 
+   * 
+   * The offline operation will not be perfomed until any currently running database 
+   * operations have completed.  Once the offline operation has begun, all new database 
+   * operations will blocked until the offline operation is complete.  The this reason, 
+   * this should be performed during non-peak hours. <P> 
+   * 
+   * Only privileged users may offline checked-in versions. <P> 
+   * 
+   * @param req 
+   *   The offline request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the files.
+   */
+  public Object
+  offline
+  (
+   MiscOfflineReq req
+  ) 
+  {
+
+    // ...
+
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names and revision numbers of the checked-in versions which users have 
+   * requested to be restored from an previously created archive. <P> 
+   * 
+   * @return 
+   *   <CODE>MiscGetRestoreRequestsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the requests.
+   */
+  public Object
+  getRestoreRequests()   
+  {
+
+    // ...
+
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  }
+
+  /**
+   * Get the names and creation timestamps of all existing archives. <P> 
+   * 
+   * @return 
+   *   <CODE>MiscGetArchiveIndexRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the archives.
+   */
+  public Object
+  getArchiveIndex() 
+  {
+
+    // ...
+
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  }
+  
+  /**
+   * Get the complete information about the archive with the given name. <P>
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>MiscGetArchiveRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the archive.
+   */
+  public Object
+  getArchive
+  (
+   MiscGetArchiveReq req
+  ) 
+  {
+
+    // ...
+
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  }
+
+  /**
+   * Restore the given checked-in versions from the given archive. <P> 
+   * 
+   * Only privileged users may restore checked-in versions. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the archive.
+   */
+  public Object
+  restore
+  (
+   MiscRestoreReq req
+  ) 
+  {
+
+    // ...
+
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   N O D E   P A T H   T R E E   H E L P E R S                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -6791,6 +7271,208 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Write the given archive information to disk. <P> 
+   * 
+   * @param archive
+   *   The archive information.
+   * 
+   * @throws PipelineException
+   *   If unable to write the archive file. 
+   */ 
+  private void 
+  writeArchive
+  (
+   Archive archive
+  ) 
+    throws PipelineException
+  {
+    synchronized(pArchiveFileLock) {
+      File file = new File(pNodeDir, "etc/archives/" + archive.getName());
+      if(file.exists()) {
+	throw new PipelineException
+	  ("Unable to overrite the existing archive file(" + file + ")!");
+      }
+      
+      Logs.glu.finer("Writing Archive: " + archive.getName());
+      
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Archive", archive);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the archive " + 
+	     "(" + archive.getName() + ")!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the archive file (" + file + ")...\n" + 
+	 "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the archive information with the given name from disk. <P> 
+   * 
+   * @param name
+   *   The archive name.
+   * 
+   * @throws PipelineException
+   *   If unable to read the archive file.
+   */ 
+  private Archive
+  readArchive
+  (
+   String name
+  )
+    throws PipelineException
+  {
+    synchronized(pArchiveFileLock) {
+      File file = new File(pNodeDir, "etc/archives/" + name);
+      if(!file.isFile()) 
+	throw new PipelineException
+	  ("No file exists for archive (" + name + ")!");
+
+      Logs.glu.finer("Reading Archive: " + name);
+
+      Archive archive = null;
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	archive = (Archive) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	Logs.glu.severe
+	  ("The archive file (" + file + ") appears to be corrupted!");
+	Logs.flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the archive file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      assert(archive != null);
+      assert(archive.getName().equals(name));
+
+      return archive;
+    }
+  }
+   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the offline versions table to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the offline versions file.
+   */ 
+  private void 
+  writeRestoreReqs() 
+    throws PipelineException
+  {
+    synchronized(pRestoreReqs) {
+      File file = new File(pNodeDir, "etc/restore-reqs");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old restore requests file (" + file + ")!");
+      }
+
+      if(!pRestoreReqs.isEmpty()) {
+	Logs.glu.finer("Writing Restore Requests.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("RestoreReqs", pRestoreReqs);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the restore requests!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the restore requests file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the restore requests table from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the restore requests file.
+   */ 
+  private void 
+  readRestoreReqs()
+    throws PipelineException
+  {
+    synchronized(pRestoreReqs) {
+      pRestoreReqs.clear();
+
+      File file = new File(pNodeDir, "etc/restore-reqs");
+      if(file.isFile()) {
+	Logs.glu.finer("Reading Restore Requests.");
+
+	TreeMap<String,TreeSet<VersionID>> requests = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  requests = (TreeMap<String,TreeSet<VersionID>>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The restore requests file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the restore requests file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+
+	pRestoreReqs.putAll(requests);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Write the default toolset to disk. <P> 
@@ -8387,12 +9069,55 @@ class MasterMgr
   /**
    * The file system directory creation lock.
    */
-  private Object pMakeDirLock;
- 
+  private Object  pMakeDirLock;
+
   /**
    * The root node directory.
    */ 
   private File  pNodeDir;
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A lock which serializes access to the archive file I/O operations.
+   */ 
+  private Object pArchiveFileLock; 
+
+  /**	
+   * The cached names of the archives indexed by the fully resolved node names and revision
+   * numbers of the checked-in versions contained in the archive. <P> 
+   * 
+   * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
+   * written to disk. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
+
+  /**
+   * The timestamps of when each archive was created indexed by unique archive name.
+   *	 
+   * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
+   * written to disk. <P> 
+   */
+  private TreeMap<String,Date>  pArchivedOn;
+
+  /**
+   * The fully resolved node names and revision numbers of the checked-in versions which
+   * are currently offline. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,TreeSet<VersionID>>  pOfflined;
+
+  /**
+   * The fully resolved node names and revision numbers of the checked-in versions which 
+   * users have requested to be restored from a previously created archive. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */  
+  private TreeMap<String,TreeSet<VersionID>>  pRestoreReqs;  
 
 
   /*----------------------------------------------------------------------------------------*/

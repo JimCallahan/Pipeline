@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.24 2004/11/06 23:36:29 jim Exp $
+// $Id: MasterMgrServer.java,v 1.25 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -670,6 +670,67 @@ class MasterMgrServer
 	    }
 	    break;  
 
+	  case ArchivalQuery: 
+	    {
+	      MiscArchivalQueryReq req = (MiscArchivalQueryReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.archivalQuery(req));
+	      objOut.flush(); 
+	    }
+	    break;  
+	    
+	  case GetSizes:
+	    {
+	      MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getSizes(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case Archive: 
+	    {
+	      MiscArchiveReq req = (MiscArchiveReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.archive(req));
+	      objOut.flush(); 
+	    }
+	    break;  
+
+	  case Offline: 
+	    {
+	      MiscOfflineReq req = (MiscOfflineReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.offline(req));
+	      objOut.flush(); 
+	    }
+	    break;    
+
+	  case GetRestoreRequests:
+	    {
+	      objOut.writeObject(pMasterMgr.getRestoreRequests());
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case GetArchiveIndex:
+	    {
+	      objOut.writeObject(pMasterMgr.getArchiveIndex());
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case GetArchive: 
+	    {
+	      MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getArchive(req));
+	      objOut.flush(); 
+	    }
+	    break;    
+
+	  case Restore: 
+	    {
+	      MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.restore(req));
+	      objOut.flush(); 
+	    }
+	    break;    
 
 	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:

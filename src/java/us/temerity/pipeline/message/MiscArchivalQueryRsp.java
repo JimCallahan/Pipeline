@@ -1,45 +1,59 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscArchivalQueryRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   A R C H I V A L   Q U E R Y   R S P                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A successful response to a {@link MiscArchivalQueryReq MiscArchivalQueryReq} 
+ * request.
  */
 public
-class FileDeleteCheckedInReq
-  implements Serializable
+class MiscArchivalQueryRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response.
    * 
-   * @param name
-   *   The fully resolved node name. 
-   */
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param info
+   *   Archival information for each matching checked-in version indexed by fully resolved 
+   *   node name and revision number.
+   */ 
   public
-  FileDeleteCheckedInReq
+  MiscArchivalQueryRsp
   (
-   String name
+   TaskTimer timer, 
+   TreeMap<String,TreeMap<VersionID,ArchivalInfo>> info
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    super(timer);
+
+    if(info == null) 
+      throw new IllegalArgumentException("The archival information cannot be (null)!");
+    pInfo = info;
+
+    Logs.net.finest("MasterMgr.archivalQuery()\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -47,20 +61,21 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets the archival info.
    */
-  public String
-  getName() 
+  public TreeMap<String,TreeMap<VersionID,ArchivalInfo>> 
+  getInfo()
   {
-    return pName; 
+    return pInfo;
   }
-    
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = -8111998008065857229L;
 
   
 
@@ -69,8 +84,9 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The archival info.
    */ 
-  private String  pName; 
+  private TreeMap<String,TreeMap<VersionID,ArchivalInfo>>  pInfo;
+
 }
   

@@ -1,4 +1,4 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetSizesRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,39 +7,51 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   G E T   S I Z E S   R S P                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A successful response to a {@link MiscGetSizesReq MiscGetSizesReq} request.
  */
 public
-class FileDeleteCheckedInReq
-  implements Serializable
+class MiscGetSizesRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response. <P> 
    * 
-   * @param name
-   *   The fully resolved node name. 
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param sizes
+   *   The total version file sizes indexed by fully resolved node name and 
+   *   revision number.
    */
   public
-  FileDeleteCheckedInReq
+  MiscGetSizesRsp
   (
-   String name
+   TaskTimer timer, 
+   TreeMap<String,TreeMap<VersionID,Long>> sizes
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    super(timer);
+
+    if(sizes == null) 
+      throw new IllegalArgumentException("The file sizes cannot be (null)!");
+    pSizes = sizes;
+
+    Logs.net.finest("MasterMgr.getSizes(): \n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -47,20 +59,22 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets the total version file sizes indexed by fully resolved node name and 
+   * revision number.
    */
-  public String
-  getName() 
+  public TreeMap<String,TreeMap<VersionID,Long>>
+  getSizes() 
   {
-    return pName; 
+    return pSizes; 
   }
-    
+  
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = 4190099445440562218L;
 
   
 
@@ -69,8 +83,11 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The total version file sizes indexed by fully resolved node name and 
+   * revision number.
    */ 
-  private String  pName; 
+  private TreeMap<String,TreeMap<VersionID,Long>>  pSizes; 
+
+
 }
   

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.37 2004/11/03 23:41:12 jim Exp $
+// $Id: MasterMgrClient.java,v 1.38 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -9,6 +9,7 @@ import us.temerity.pipeline.glue.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R    M G R   C L I E N T                                                     */
@@ -2671,6 +2672,333 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.BackupDatabase, req);
     handleSimpleResponse(obj);    
   } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get information about the checked-in versions which match the given archival 
+   * criteria. <P> 
+   * 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes to restore.
+   * 
+   * @param excludeLatest
+   *   The number of newer checked-in versions of the node to exclude from the returned list
+   *   or <CODE>null</CODE> to include all versions.
+   * 
+   * @param maxWorking
+   *   The maximum allowable number of existing working versions based on the checked-in 
+   *   version in order for checked-in version to be inclued in the returned list or 
+   *   <CODE>null</CODE> for any number of working versions.
+   * 
+   * @param maxArchives
+   *   The maximum allowable number of archives which already contain the checked-in version
+   *   in order for it to be inclued in the returned list or <CODE>null</CODE> for any number 
+   *   of archives.
+   * 
+   * @return 
+   *   Archival information for each matching checked-in version indexed by fully resolved 
+   *   node name and revision number.
+   * 
+   * @throws PipelineException 
+   *   If determine which checked-in versions match the criteria.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,ArchivalInfo>>
+  archivalQuery
+  (
+    String pattern,
+    Integer excludeLatest, 
+    Integer maxWorking, 
+    Integer maxArchives
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscArchivalQueryReq req = 
+      new MiscArchivalQueryReq(pattern, excludeLatest, maxWorking, maxArchives);
+
+    Object obj = performTransaction(MasterRequest.ArchivalQuery, req);
+    if(obj instanceof MiscArchivalQueryRsp) {
+      MiscArchivalQueryRsp rsp = (MiscArchivalQueryRsp) obj;
+      return rsp.getInfo();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for archival purposes. <P> 
+   * 
+   * File sizes are computed from the target of any symbolic links and therefore reflects the 
+   * amount of bytes that would need to be copied if the files where archived.  This may be
+   * considerably more than the actual amount of disk space used when several versions of 
+   * a node have identical files. <P> 
+   * 
+   * @param versions
+   *   The fully resolved node names and revision numbers of the checked-in versions.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  getArchivedSizes
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscGetSizesReq req = new MiscGetSizesReq(versions, false);
+
+    Object obj = performTransaction(MasterRequest.GetSizes, req);
+    if(obj instanceof MiscGetSizesRsp) {
+      MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Archive the files associated with the given checked-in versions. <P> 
+   * 
+   * Only privileged users may create archives. <P> 
+   * 
+   * @param name
+   *   The unique name of the archive to create.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to archive.
+   * 
+   * @param archiver
+   *   The archiver plugin instance used to perform the archive operation.
+   * 
+   * @throws PipelineException
+   *   If unable to perform the archive operation succesfully.
+   */
+  public synchronized void
+  archive
+  (
+   String name, 
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   BaseArchiver archiver
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may create archives!"); 
+
+    verifyConnection();
+
+    MiscArchiveReq req = new MiscArchiveReq(name, versions, archiver);
+    Object obj = performTransaction(MasterRequest.Archive, req);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for offlining purposes. <P> 
+   * 
+   * File sizes reflect the actual amount of bytes that will be freed from disk if the 
+   * given checked-in versions are offlined.  A file will only be added to this freed
+   * size if it a regular file and there are no symbolic links which target it which are
+   * not included in the given file sequences. <P> 
+   * 
+   * @param versions
+   *   The fully resolved node names and revision numbers of the checked-in versions.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  getOfflinedSizes
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscGetSizesReq req = new MiscGetSizesReq(versions, true);
+
+    Object obj = performTransaction(MasterRequest.GetSizes, req);
+    if(obj instanceof MiscGetSizesRsp) {
+      MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Remove the repository files associated with the given checked-in versions. <P> 
+   * 
+   * All checked-in versions to be offlined must have prevously been included in at least
+   * one archive. <P> 
+   * 
+   * The offline operation will not be perfomed until any currently running database 
+   * operations have completed.  Once the offline operation has begun, all new database 
+   * operations will blocked until the offline operation is complete.  The this reason, 
+   * this should be performed during non-peak hours. <P> 
+   * 
+   * Only privileged users may offline checked-in versions. <P> 
+   *
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to offline.
+   */ 
+  public synchronized void
+  offline
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may offline checked-in versions!"); 
+
+    verifyConnection();
+
+    MiscOfflineReq req = new MiscOfflineReq(versions);
+    Object obj = performTransaction(MasterRequest.Offline, req);
+    handleSimpleResponse(obj);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names and revision numbers of the checked-in versions which users have 
+   * requested to be restored from an previously created archive. <P> 
+   * 
+   * @return 
+   *   The names of the archives containing the requested checked-in versions indexed by 
+   *   fully resolved node name and revision number.
+   * 
+   * @throws PipelineException 
+   *   If determine which checked-in versions match the criteria.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  getRestoreRequests() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetRestoreRequests, null);
+    if(obj instanceof MiscGetRestoreRequestsRsp) {
+      MiscGetRestoreRequestsRsp rsp = (MiscGetRestoreRequestsRsp) obj;
+      return rsp.getRequests();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+  /**
+   * Get the names and creation timestamps of all existing archives. <P> 
+   *
+   * @return 
+   *   The timestamps of when each archive was created indexed by unique archive name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the archives.
+   */ 
+  public synchronized TreeMap<String,Date> 
+  getArchiveIndex() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetArchiveIndex, null);
+    if(obj instanceof MiscGetArchiveIndexRsp) {
+      MiscGetArchiveIndexRsp rsp = (MiscGetArchiveIndexRsp) obj;
+      return rsp.getIndex();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Get the complete information about the archive with the given name.
+   * 
+   * @param name
+   *   The unique name of the archive.
+   * 
+   * @return 
+   *   The archive information.
+   * 
+   * @throws PipelineException
+   *   If unable to find the archive.
+   */ 
+  public synchronized Archive
+  getArchive
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetArchiveReq req = new MiscGetArchiveReq(name);
+    Object obj = performTransaction(MasterRequest.GetArchive, req);
+    if(obj instanceof MiscGetArchiveRsp) {
+      MiscGetArchiveRsp rsp = (MiscGetArchiveRsp) obj;
+      return rsp.getArchive();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Restore the given checked-in versions from the given archive. <P> 
+   * 
+   * Only privileged users may restore checked-in versions. <P> 
+   * 
+   * @param name
+   *   The unique name of the archive containing the checked-in versions to restore.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to restore.
+   * 
+   * @throws PipelineException
+   *   If unable to restore the checked-in versions.
+   */
+  public synchronized void
+  restore
+  (
+   String name, 
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may restore checked-in versions!"); 
+
+    verifyConnection();
+
+    MiscRestoreReq req = new MiscRestoreReq(name, versions);
+    Object obj = performTransaction(MasterRequest.Restore, req);
+    handleSimpleResponse(obj);    
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

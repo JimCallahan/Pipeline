@@ -1,23 +1,26 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscOfflineReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   O F F L I N E   R E Q                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A request to remove the repository files associated with the given checked-in 
+ * versions. <P> 
+ * 
+ * @see MasterMgr
  */
 public
-class FileDeleteCheckedInReq
+class MiscOfflineReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -25,21 +28,23 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new request. <P> 
    * 
-   * @param name
-   *   The fully resolved node name. 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to offline.
    */
   public
-  FileDeleteCheckedInReq
+  MiscOfflineReq
   (
-   String name
+    TreeMap<String,TreeSet<VersionID>> versions
   )
-  { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+  {
+    if(versions == null) 
+      throw new IllegalArgumentException
+	("The checked-in versions cannot be (null)!");
+    pVersions = versions;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -47,20 +52,21 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
-   */
-  public String
-  getName() 
+   * Get the fully resolved names and revision numbers of the checked-in versions to offline.
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
+  getVersions()
   {
-    return pName; 
+    return pVersions; 
   }
-    
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = 3459782054684415655L;
 
   
 
@@ -69,8 +75,9 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The fully resolved names and revision numbers of the checked-in versions to offline.
    */ 
-  private String  pName; 
+  private TreeMap<String,TreeSet<VersionID>>  pVersions; 
+
 }
   

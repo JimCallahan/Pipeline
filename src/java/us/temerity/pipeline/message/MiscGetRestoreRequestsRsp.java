@@ -1,76 +1,92 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetRestoreRequestsRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   G E T   R E S T O R E   R E Q U E S T S   R S P                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A successful response to a requet to get the names and revision numbers of the checked-in 
+ * versions which users have requested to be restored from an previously created archive. 
  */
 public
-class FileDeleteCheckedInReq
-  implements Serializable
+class MiscGetRestoreRequestsRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response.
    * 
-   * @param name
-   *   The fully resolved node name. 
-   */
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param requests
+   *   The names of the archives containing the requested checked-in versions indexed by 
+   *   fully resolved node name and revision number.
+   */ 
   public
-  FileDeleteCheckedInReq
+  MiscGetRestoreRequestsRsp
   (
-   String name
+   TaskTimer timer, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<String>>> requests
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    super(timer);
+
+    if(requests == null) 
+      throw new IllegalArgumentException("The restore requests cannot be (null)!");
+    pRequests = requests;
+
+    Logs.net.finest("MasterMgr.getRestoreRequests()\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets restore requests.
    */
-  public String
-  getName() 
+  public TreeMap<String,TreeMap<VersionID,TreeSet<String>>>
+  getRequests()
   {
-    return pName; 
+    return pRequests;
   }
-    
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
 
+  private static final long serialVersionUID = 8602222632897469336L;
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The restore requests.
    */ 
-  private String  pName; 
+  private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pRequests;
+
 }
   

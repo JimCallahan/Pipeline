@@ -1,45 +1,57 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetArchiveRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   G E T   A R C H I V E   R S P                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A successful response to a {@link MiscGetArchiveReq MiscGetArchiveReq} request.
  */
 public
-class FileDeleteCheckedInReq
-  implements Serializable
+class MiscGetArchiveRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response.
    * 
-   * @param name
-   *   The fully resolved node name. 
-   */
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param archive
+   *   The archive.
+   */ 
   public
-  FileDeleteCheckedInReq
+  MiscGetArchiveRsp
   (
-   String name
+   TaskTimer timer, 
+   Archive archive
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    super(timer);
+
+    if(archive == null) 
+      throw new IllegalArgumentException("The archive cannot be (null)!");
+    pArchive = archive;
+
+    Logs.net.finest("MasterMgr.getArchive(): " + pArchive.getName() + "\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -47,20 +59,21 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets the archive.
    */
-  public String
-  getName() 
+  public Archive
+  getArchive() 
   {
-    return pName; 
+    return pArchive;
   }
-    
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = 2560564056383317219L;
 
   
 
@@ -69,8 +82,9 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The archive information.
    */ 
-  private String  pName; 
+  private Archive  pArchive;
+
 }
   

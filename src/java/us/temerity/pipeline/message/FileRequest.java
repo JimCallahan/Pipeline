@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.14 2004/11/03 18:16:31 jim Exp $
+// $Id: FileRequest.java,v 1.15 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,16 +38,6 @@ enum FileRequest
    * An instance of {@link FileRevertReq FileRevertReq} is next.
    */
   Revert, 
-
-  /**
-   * An instance of {@link FileFreezeReq FileFreezeReq} is next.
-   */
-  Freeze, 
-  
-  /**
-   * An instance of {@link FileUnfreezeReq FileUnfreezeReq} is next.
-   */
-  Unfreeze, 
   
   /**
    * An instance of {@link FileStateReq FileStateReq} is next.
@@ -70,15 +60,29 @@ enum FileRequest
   Rename, 
 
   /**
+   * An instance of {@link FileChangeModeReq FileChangeModeReq} is next.
+   */
+  ChangeMode,
+
+  /**
    * An instance of {@link FileDeleteCheckedInReq FileDeleteCheckedInReq} is next.
    */
   DeleteCheckedIn, 
 
   /**
-   * An instance of {@link FileChangeModeReq FileChangeModeReq} is next.
+   * An instance of {@link FileOfflineReq FileOfflineReq} is next.
    */
-  ChangeMode,
+  Offline, 
 
+  /**
+   * Get the fully resolved names and revision numbers of all offlined checked-in versions.
+   */
+  GetOfflined, 
+
+  /**
+   * An instance of {@link FileGetSizesReq FileGetSizesReq} is next.
+   */
+  GetSizes, 
 
   /**
    * No more requests will be send over this connection.

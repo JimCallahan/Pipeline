@@ -1,4 +1,4 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: FileGetOfflinedRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,39 +7,51 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   F I L E   G E T   O F F L I N E D   R S P                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A successful response to a {@link FileGetOfflinedReq FileGetOfflinedReq} request.
  */
 public
-class FileDeleteCheckedInReq
-  implements Serializable
+class FileGetOfflinedRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response. <P> 
    * 
-   * @param name
-   *   The fully resolved node name. 
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of all offlined checked-in versions.
    */
   public
-  FileDeleteCheckedInReq
+  FileGetOfflinedRsp
   (
-   String name
+   TaskTimer timer,
+   TreeMap<String,TreeSet<VersionID>> versions
   )
   { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-    pName = name;
+    super(timer);
+
+    if(versions == null) 
+      throw new IllegalArgumentException
+	("The offlined versions cannot be (null)!");
+    pVersions = versions;
+
+    Logs.net.finest("FileMgr.getOfflined():\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -47,20 +59,21 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
+   * Gets the fully resolved names and revision numbers of all offlined checked-in versions.
    */
-  public String
-  getName() 
+  public TreeMap<String,TreeSet<VersionID>>
+  getVersions() 
   {
-    return pName; 
+    return pVersions;
   }
-    
+  
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = 1623003001052551372L;
 
   
 
@@ -69,8 +82,9 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
+   * The fully resolved names and revision numbers of all offlined checked-in versions.
    */ 
-  private String  pName; 
+  private  TreeMap<String,TreeSet<VersionID>>  pVersions; 
+
 }
   

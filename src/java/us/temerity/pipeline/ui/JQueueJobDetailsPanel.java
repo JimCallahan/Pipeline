@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.9 2004/11/09 06:01:32 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.10 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1093,8 +1093,12 @@ class JQueueJobDetailsPanel
     if(value == null) 
       return "-";
 
-    if(value < 1048576) {
+    if(value < 1024) {
       return value.toString();
+    }
+    else if(value < 1048576) {
+      double k = ((double) value) / 1024.0;
+      return String.format("%1$.1fK", k);
     }
     else if(value < 1073741824) {
       double m = ((double) value) / 1048576.0;

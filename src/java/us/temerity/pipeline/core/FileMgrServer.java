@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.18 2004/11/03 18:16:31 jim Exp $
+// $Id: FileMgrServer.java,v 1.19 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -282,6 +282,14 @@ class FileMgrServer
 	    }
 	    break;
 
+	  case ChangeMode:
+	    {
+	      FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.changeMode(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case DeleteCheckedIn:
 	    {
 	      FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
@@ -290,10 +298,25 @@ class FileMgrServer
 	    }
 	    break;
 
-	  case ChangeMode:
+	  case Offline:
 	    {
-	      FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.changeMode(req));
+	      FileOfflineReq req = (FileOfflineReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.offline(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetOfflined:
+	    {
+	      objOut.writeObject(pFileMgr.getOfflined());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetSizes:
+	    {
+	      FileGetSizesReq req = (FileGetSizesReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.getSizes(req));
 	      objOut.flush(); 
 	    }
 	    break;

@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.10 2004/06/08 20:05:10 jim Exp $
+// $Id: FileStateRsp.java,v 1.11 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,7 +30,6 @@ class FileStateRsp
    * The <CODE>timestamps</CODE> argument may contain <CODE>null</CODE> entries for those 
    * working files which do not exist.
    * 
-   *   file exists.
    * @param timer 
    *   The timing statistics for a task.
    * 

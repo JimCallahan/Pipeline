@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.21 2004/11/02 23:06:44 jim Exp $
+// $Id: MasterRequest.java,v 1.22 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -292,6 +292,52 @@ enum MasterRequest
    * An instance of {@link MiscBackupDatabaseReq MiscBackupDatabaseReq} is next.
    */
   BackupDatabase, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link MiscArchivalQueryReq MiscArchivalQueryReq} is next.
+   */
+  ArchivalQuery, 
+
+  /**
+   * An instance of {@link MiscGetSizesReq MiscGetSizesReq} is next.
+   */
+  GetSizes, 
+
+  /**
+   * An instance of {@link MiscArchiveReq MiscArchiveReq} is next.
+   */
+  Archive, 
+  
+  /**
+   * An instance of {@link MiscOfflineReq MiscOfflineReq} is next.
+   */
+  Offline, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link MiscGetRestoreRequestsReq MiscGetRestoreRequestsReq} is next.
+   */
+  GetRestoreRequests, 
+
+  /**
+   * Get the names and creation timestamps of all existing archives.
+   */
+  GetArchiveIndex, 
+
+  /**
+   * An instance of {@link MiscGetArchiveReq MiscGetArchiveReq} is next.
+   */
+  GetArchive, 
+
+  /**
+   * An instance of {@link MiscRestoreReq MiscRestoreReq} is next.
+   */
+  Restore, 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.25 2004/11/03 19:53:49 jim Exp $
+// $Id: FileMgr.java,v 1.26 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1045,7 +1045,8 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * A request to revert specific working area files to an earlier checked-in version of 
+   * the files.
    * 
    * @param req 
    *   The revert request.
@@ -1713,7 +1714,8 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Remove the all of the files associated all checked-in versions of a node.
+   * Remove the entire repository directory structure for the given node including all
+   * files associated with all checked-in versions of a node.
    * 
    * @param req 
    *   The delete request.
@@ -1803,6 +1805,8 @@ class FileMgr
   }  
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Change the user write permission of all existing files associated with the given 
    * working version.
@@ -1876,6 +1880,277 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove the files associated with the given checked-in version of a node.
+   * 
+   * @param req 
+   *   The offline request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the checked-in version files.
+   */
+  public Object
+  offline
+  (
+   FileOfflineReq req
+  ) 
+  {
+    String name = req.getName();
+    VersionID vid = req.getVersionID();
+    TaskTimer timer = new TaskTimer("FileMgr.offline(): " + name + " (" + vid + ")");
+    
+    timer.aquire();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.writeLock().lock();
+    try {
+      File rdir = new File(pProdDir, "repository" + name + "/" + vid);
+      
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("--force");
+
+      {
+	File files[] = rdir.listFiles(); 
+	int wk;
+	for(wk=0; wk<files.length; wk++) 
+	  args.add(files[wk].getName());
+      }
+	
+      Map<String,String> env = System.getenv();
+	
+      SubProcessLight proc = 
+	new SubProcessLight("Offline", "rm", args, env, rdir);
+      try {
+	proc.start();
+	proc.join();
+	if(!proc.wasSuccessful()) 
+	  throw new PipelineException
+	    ("Unable to offline the files associated with the checked-in version " + 
+	     "(" + vid + ") of node (" + name + ") from the repository:\n" +
+	     "  " + proc.getStdErr());
+      }
+      catch(InterruptedException ex) {
+	throw new PipelineException
+	  ("Interrupted while offline the files associated with the checked-in version " + 
+	   "(" + vid + ") of node (" + name + ") from the repository!");
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      checkedInLock.writeLock().unlock();
+    }  
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the fully resolved names and revision numbers of all offlined checked-in versions.
+   * 
+   * @return
+   *   <CODE>FileGetOfflinedRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the offlined files.
+   */ 
+  public Object
+  getOfflined() 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      TreeMap<String,TreeSet<VersionID>> offlined = new TreeMap<String,TreeSet<VersionID>>();
+
+      File dir = new File(pProdDir, "repository");
+      getOfflinedHelper(dir, offlined);
+
+      return new FileGetOfflinedRsp(timer, offlined);
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /**
+   * Recursively scan the repository directories for offlined checked-in versions.
+   * 
+   * @param dir
+   *   The current directory (or file).
+   * 
+   * @param offlined
+   *   The fully resolved names and revision numbers of offlined checked-in versions.
+   */ 
+  private void 
+  getOfflinedHelper
+  (
+   File dir, 
+   TreeMap<String,TreeSet<VersionID>> offlined
+  ) 
+  {
+    File files[] = dir.listFiles(); 
+    if(files != null) {
+      if(files.length == 0) {
+	String name = dir.getParent().substring(pProdDir.getPath().length());
+	VersionID vid = new VersionID(dir.getName());
+	
+	TreeSet<VersionID> vids = offlined.get(name);
+	if(vids == null) {
+	  vids = new TreeSet<VersionID>();
+	  offlined.put(name, vids);
+	}
+
+	vids.add(vid);
+      }
+      else {
+	int wk;
+	for(wk=0; wk<files.length; wk++) 
+	  getOfflinedHelper(files[wk], offlined);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions.
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>FileGetSizesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getSizes
+  (
+   FileGetSizesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
+
+      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getFileSequences();
+      if(req.considerLinks()) 
+	sizes = getOfflinedSizes(timer, fseqs);
+      else
+	sizes = getArchivedSizes(timer, fseqs);
+
+      return new FileGetSizesRsp(timer, sizes);
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+  
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for archival purposes. <P> 
+   * 
+   * File sizes are computed from the target of any symbolic links and therefore reflects the 
+   * amount of bytes that would need to be copied if the files where archived.  This may be
+   * considerably more than the actual amount of disk space used when several versions of 
+   * a node have identical files. <P> 
+   * 
+   * @param fseqs
+   *   The files sequences indexed by fully resolved node names and revision numbers.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  private TreeMap<String,TreeMap<VersionID,Long>>
+  getArchivedSizes
+  (
+   TaskTimer timer, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
+  ) 
+  {
+    TreeMap<String,TreeMap<VersionID,Long>> sizes =
+      new TreeMap<String,TreeMap<VersionID,Long>>();
+    
+    for(String name : fseqs.keySet()) {
+      TreeMap<VersionID,TreeSet<FileSeq>> versions = fseqs.get(name);
+
+      TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
+      sizes.put(name, vsizes);
+
+      for(VersionID vid : versions.keySet()) {
+	File dir = new File(PackageInfo.sRepoDir, name + "/" + vid);
+
+	long total = 0L;
+	for(FileSeq fseq : versions.get(vid)) {
+	  for(File file : fseq.getFiles()) { 
+	    File target = new File(dir, file.getPath());
+	    total += target.length();
+	  }
+	}
+
+	vsizes.put(vid, total);  
+      }
+    }
+
+    return sizes;
+  }
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for offlining purposes. <P> 
+   * 
+   * File sizes reflect the actual amount of bytes that will be freed from disk if the 
+   * given checked-in versions are offlined.  A file will only be added to this freed
+   * size if it a regular file and there are no symbolic links which target it which are
+   * not included in the given file sequences. <P> 
+   * 
+   * @param fseqs
+   *   The files sequences indexed by fully resolved node names and revision numbers.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  private TreeMap<String,TreeMap<VersionID,Long>>
+  getOfflinedSizes
+  (
+   TaskTimer timer, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
+  ) 
+  {
+    TreeMap<String,TreeMap<VersionID,Long>> sizes =
+      new TreeMap<String,TreeMap<VersionID,Long>>();
+    
+    for(String name : fseqs.keySet()) {
+      TreeMap<VersionID,TreeSet<FileSeq>> versions = fseqs.get(name);
+
+      TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
+      sizes.put(name, vsizes);
+
+      for(VersionID vid : versions.keySet()) {
+	File dir = new File(PackageInfo.sRepoDir, name + "/" + vid);
+
+	long total = 0L;
+	for(FileSeq fseq : versions.get(vid)) {
+	  for(File file : fseq.getFiles()) { 
+	    File target = new File(dir, file.getPath());
+	  
+	    // ...
+
+	  }
+	}
+
+	vsizes.put(vid, total);  
+      }
+    }
+
+    return sizes;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

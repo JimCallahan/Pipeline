@@ -1,4 +1,4 @@
-// $Id: FileDeleteCheckedInReq.java,v 1.2 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetArchiveReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,16 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   D E L E T E   C H E C K E D - I N   R E Q                                    */
+/*   M I S C   G E T   A R C H I V E   R E Q                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to remove the entire repository directory structure for the given node 
- * including all files associated with all checked-in versions of a node.
+ * A request to get the archive with the given name.
+ * 
+ * @see MasterMgr
  */
 public
-class FileDeleteCheckedInReq
+class MiscGetArchiveReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,18 +29,20 @@ class FileDeleteCheckedInReq
    * Constructs a new request.
    * 
    * @param name
-   *   The fully resolved node name. 
+   *   The archive name.
    */
   public
-  FileDeleteCheckedInReq
+  MiscGetArchiveReq
   (
    String name
   )
-  { 
+  {
     if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
+      throw new IllegalArgumentException
+	("The archive name cannot be (null)!");
     pName = name;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -47,20 +50,21 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node name. 
-   */
+   * Gets the name of the archive;
+   */ 
   public String
   getName() 
   {
-    return pName; 
+    return pName;
   }
-    
+ 
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = 1233755280980268386L;
+
+  private static final long serialVersionUID = -6468116808392413415L;
 
   
 
@@ -69,8 +73,9 @@ class FileDeleteCheckedInReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node name. 
-   */ 
-  private String  pName; 
+   * The name of the archive.
+   */
+  private String  pName;  
+
 }
   
