@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.9 2004/09/27 04:54:35 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.10 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,6 +65,18 @@ class JTopLevelPanel
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "Unknown Type";
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the parent manager panel.
    */ 

@@ -88,7 +88,7 @@
       <imagePainter path="Panel.png"
                     sourceInsets="5 5 5 5"
                     paintCenter="false"/>
-      <insets top="5" bottom="5" right="5" left="5"/>
+      <insets top="4" bottom="4" right="5" left="5"/>
   </style>
   <bind style="PanelBar" type="name" key="PanelBar"/>
 
@@ -602,6 +602,13 @@
   </style>
   <bind style="PanelLabel" type="name" key="PanelLabel"/>
 
+
+  <!--  P A N E L   T Y P E   L A B E L  -->
+
+  <style id="PanelTypeLabel">
+    <font name="Lucida Sans Demibold" size="15"/>
+  </style>
+  <bind style="PanelTypeLabel" type="name" key="PanelTypeLabel"/>
 
 
   <!--  D I S A B L E   L A B E L  -->

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.69 2004/11/21 18:39:56 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.70 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -495,6 +495,18 @@ class JNodeViewerPanel
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "Node Viewer";
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the group ID. <P> 
    * 

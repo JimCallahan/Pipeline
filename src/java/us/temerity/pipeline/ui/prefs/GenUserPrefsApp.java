@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.38 2004/11/21 18:39:56 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.39 2004/12/01 23:03:10 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -82,7 +82,7 @@ class GenUserPrefsApp
 	 false, false, true, 81)  /* CTRL+Q */ 
       };
 
-      pPrefs.put("Global|Main|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Top Level|Hot Keys", prefs);
     }
 
     {
@@ -106,7 +106,7 @@ class GenUserPrefsApp
 	 "ShowManageSelectionKeys", "Selection Keys:")
       };
 
-      pPrefs.put("Global|Admin|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Admin|Hot Keys", prefs);
     }
 
     {
@@ -140,7 +140,7 @@ class GenUserPrefsApp
 	 "ShowConfig", "Site Configuration:")
       };
 
-      pPrefs.put("Global|Help|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Help|Hot Keys", prefs);
     }
 
     {
@@ -204,7 +204,7 @@ class GenUserPrefsApp
 	 false, false, true, 57)  /* CTRL+9 */ 
       };
 
-      pPrefs.put("Global|Panel Group|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Panel Group|Hot Keys", prefs);
     }
 
     {
@@ -259,7 +259,7 @@ class GenUserPrefsApp
 	 false, true, false, 120),  /* ALT+F9 */ 	
       };
 
-      pPrefs.put("Global|Panel Window|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Panel Window|Hot Keys", prefs);
     }
 
     {
@@ -314,7 +314,7 @@ class GenUserPrefsApp
 	 false, false, false, 120),  /* F9 */ 
       };
 
-      pPrefs.put("Global|Panel Type|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Panel Type|Hot Keys", prefs);
     }
 
     {
@@ -356,7 +356,7 @@ class GenUserPrefsApp
 	 false, true, false, 88)   /* ALT+X */ 
       };
 
-      pPrefs.put("Global|Panel Layout|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Panel Layout|Hot Keys", prefs);
     }
 
     {
@@ -371,10 +371,20 @@ class GenUserPrefsApp
 
 	new BoundedIntegerPref
 	("The amount of time the tool tip is visible.", 
-	 "ToolTipDuration", "Tool Tip Duration:", 1000, 10000, 4000)
+	 "ToolTipDuration", "Tool Tip Duration:", 1000, 10000, 4000), 
       };
 
-      pPrefs.put("Global|Tool Tips", prefs);
+      pPrefs.put("Main Menu|Tool Tips", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new BooleanPref
+	("Whether to show panel type labels.", 
+	 "ShowPanelLabels", "Show Panel Labels:", false)
+      };
+
+      pPrefs.put("Panel|Appearance", prefs);
     }
 
     {
@@ -1134,7 +1144,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.38 2004/11/21 18:39:56 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.39 2004/12/01 23:03:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1387,7 +1397,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.38 2004/11/21 18:39:56 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.39 2004/12/01 23:03:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

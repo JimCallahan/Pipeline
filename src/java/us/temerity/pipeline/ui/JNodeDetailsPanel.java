@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.28 2004/11/21 18:39:56 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.29 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1170,6 +1170,18 @@ class JNodeDetailsPanel
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "Node Details";
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the group ID. <P> 
    * 

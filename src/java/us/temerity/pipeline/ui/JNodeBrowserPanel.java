@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.23 2004/10/24 03:52:03 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.24 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -131,6 +131,18 @@ class JNodeBrowserPanel
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "Node Browser";
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the group ID. <P> 
    * 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.11 2004/11/21 18:39:56 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.12 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -562,6 +562,18 @@ class JQueueJobBrowserPanel
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "Job Browser";
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the group ID. <P> 
    * 

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.54 2004/11/21 18:39:56 jim Exp $
+// $Id: JManagerPanel.java,v 1.55 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -433,93 +433,112 @@ class JManagerPanel
       }
     }
     
-
     /* panel title bar */ 
     {
-      JPanel panel = new JPanel();
-      pTitlePanel = panel;
+      JPanel tpanel = new JPanel();
+      pTitlePanel = tpanel;
 
-      panel.setName("PanelBar");
-      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
-
-      panel.setMinimumSize(new Dimension(222, 29));
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-      panel.setPreferredSize(new Dimension(222, 29));
-      
-      panel.addMouseListener(this);
-      panel.setFocusable(true);
-      panel.addKeyListener(this);
-      panel.addMouseListener(new KeyFocuser());
+      tpanel.setName("PanelBar");
+      tpanel.setLayout(new BoxLayout(tpanel, BoxLayout.Y_AXIS)); 
 
       {
-	PopupMenuAnchor anchor = new PopupMenuAnchor(this);
-	pPopupMenuAnchor = anchor; 
+	JLabel label = UIMaster.createLabel("X", 120, JLabel.LEFT);
+	pTypeLabel = label;
+
+	label.setName("PanelTypeLabel");
+	label.setVisible(UserPrefs.getInstance().getShowPanelLabels());
+
+	label.setAlignmentX(0.5f);
+
+	tpanel.add(label);
+      }
+
+      {
+	JPanel panel = new JPanel();
 	
-	anchor.addMouseListener(this);
-	anchor.setToolTipText(UIMaster.formatToolTip("The main menu."));
-	panel.add(anchor);
-      }
+	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
 
-      panel.add(Box.createRigidArea(new Dimension(8, 0)));
-
-      {
-	GroupMenuAnchor anchor = new GroupMenuAnchor();
-	pGroupMenuAnchor = anchor;
-
-	anchor.addMouseListener(this);
-	anchor.setToolTipText(UIMaster.formatToolTip("The panel group selector."));
-	panel.add(anchor);	
-      }
-
-      panel.add(Box.createRigidArea(new Dimension(4, 0)));
-
-      {
-	JTextField field = UIMaster.createTextField(null, 120, JLabel.CENTER);
-	pOwnerViewField = field;
-
-	field.addMouseListener(this);
-	field.setToolTipText(UIMaster.formatToolTip
-	  ("The working area Owner|View associated with the panel."));
-	panel.add(field);
-      }
-
-      panel.add(Box.createRigidArea(new Dimension(4, 0)));
-
-      {
-	JLabel label = new JLabel();
-	pLockedLight = label;
-
-	Dimension size = new Dimension(19, 19);
-	label.setMinimumSize(size);
-	label.setMaximumSize(size);
-	label.setPreferredSize(size);
-
-	label.addMouseListener(this);
-	label.setToolTipText(UIMaster.formatToolTip
-	  ("Indicator of whether the panel is locked (read-only)."));
-
-	panel.add(label);
-      }
-
-      panel.add(Box.createRigidArea(new Dimension(8, 0)));
-
-      {
-	JButton btn = new JButton();
-	btn.setName("CloseButton");
-
-	Dimension size = new Dimension(15, 19);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
+	panel.setMinimumSize(new Dimension(222, 26));
+	panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 26));
+	panel.setPreferredSize(new Dimension(222, 26));
 	
-	btn.setActionCommand("close-panel");
-        btn.addActionListener(this);
-	btn.addMouseListener(this);
+	panel.addMouseListener(this);
+	panel.setFocusable(true);
+	panel.addKeyListener(this);
+	panel.addMouseListener(new KeyFocuser());
 
-	btn.setToolTipText(UIMaster.formatToolTip("Closes the panel."));
+	{
+	  PopupMenuAnchor anchor = new PopupMenuAnchor(this);
+	  pPopupMenuAnchor = anchor; 
+	  
+	  anchor.addMouseListener(this);
+	  anchor.setToolTipText(UIMaster.formatToolTip("The main menu."));
+	  panel.add(anchor);
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(8, 0)));
+	
+	{
+	  GroupMenuAnchor anchor = new GroupMenuAnchor();
+	  pGroupMenuAnchor = anchor;
+	  
+	  anchor.addMouseListener(this);
+	  anchor.setToolTipText(UIMaster.formatToolTip("The panel group selector."));
+	  panel.add(anchor);	
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(4, 0)));
+	
+	{
+	  JTextField field = UIMaster.createTextField(null, 120, JLabel.CENTER);
+	  pOwnerViewField = field;
+	  
+	  field.addMouseListener(this);
+	  field.setToolTipText(UIMaster.formatToolTip
+			       ("The working area Owner|View associated with the panel."));
+	  panel.add(field);
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(4, 0)));
+	
+	{
+	  JLabel label = new JLabel();
+	  pLockedLight = label;
+	  
+	  Dimension size = new Dimension(19, 19);
+	  label.setMinimumSize(size);
+	  label.setMaximumSize(size);
+	  label.setPreferredSize(size);
+	  
+	  label.addMouseListener(this);
+	  label.setToolTipText(UIMaster.formatToolTip
+			       ("Indicator of whether the panel is locked (read-only)."));
 
-	panel.add(btn);
-      } 
+	  panel.add(label);
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(8, 0)));
+	
+	{
+	  JButton btn = new JButton();
+	  btn.setName("CloseButton");
+	
+	  Dimension size = new Dimension(15, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	  
+	  btn.setActionCommand("close-panel");
+	  btn.addActionListener(this);
+	  btn.addMouseListener(this);
+	  
+	  btn.setToolTipText(UIMaster.formatToolTip("Closes the panel."));
+	  
+	  panel.add(btn);
+	} 
+
+	tpanel.add(panel);
+      }
     }
 
     addComponentListener(this); 
@@ -754,6 +773,8 @@ class JManagerPanel
     if(pTopLevelPanel == null) 
       return; 
 
+    pTypeLabel.setText(" " + pTopLevelPanel.getTypeName());
+
     pGroupMenuAnchor.setIcon(sGroupIcons[pTopLevelPanel.getGroupID()]);
     pOwnerViewField.setText(pTopLevelPanel.getTitle());
     pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
@@ -797,6 +818,8 @@ class JManagerPanel
       else if(comp instanceof JTopLevelPanel) {
 	JTopLevelPanel panel = (JTopLevelPanel) comp;
 	panel.updateUserPrefs();
+
+	pTypeLabel.setVisible(UserPrefs.getInstance().getShowPanelLabels());
       }
       else {
 	assert(false);
@@ -2595,6 +2618,13 @@ class JManagerPanel
    */ 
   private JPanel  pTitlePanel;
 
+  /** 
+   * The panel type label.
+   */ 
+  private JLabel  pTypeLabel;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * The anchor label for the popup menu.

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.60 2004/11/21 18:39:56 jim Exp $
+// $Id: UIMaster.java,v 1.61 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3809,6 +3809,12 @@ class UIMaster
       try {
 	if(pRootPanel != null) {
 	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
+	  if(mpanel != null) 
+	    mpanel.updateUserPrefs();
+	}
+
+	for(JPanelFrame frame : pPanelFrames) {
+	  JManagerPanel mpanel = frame.getManagerPanel();
 	  if(mpanel != null) 
 	    mpanel.updateUserPrefs();
 	}

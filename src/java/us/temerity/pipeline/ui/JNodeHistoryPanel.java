@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.13 2004/11/21 18:39:56 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.14 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -224,6 +224,18 @@ class JNodeHistoryPanel
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "Node History";
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the group ID. <P> 
    * 

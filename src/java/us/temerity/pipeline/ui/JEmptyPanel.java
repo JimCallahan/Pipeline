@@ -1,4 +1,4 @@
-// $Id: JEmptyPanel.java,v 1.5 2004/09/27 04:54:35 jim Exp $
+// $Id: JEmptyPanel.java,v 1.6 2004/12/01 23:03:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,6 +65,20 @@ class JEmptyPanel
     addKeyListener(this);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the title of this type of panel.
+   */
+  public String 
+  getTypeName() 
+  {
+    return "None";
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
