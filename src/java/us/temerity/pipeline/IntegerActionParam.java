@@ -1,4 +1,4 @@
-// $Id: IntegerActionParam.java,v 1.2 2004/09/08 18:33:09 jim Exp $
+// $Id: IntegerActionParam.java,v 1.3 2004/09/10 15:39:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,9 +47,6 @@ class IntegerActionParam
   ) 
   {
     super(name, desc, value);
-
-    if(value == null)
-      throw new IllegalArgumentException("The value cannot be (null)!");
   }
 
 
