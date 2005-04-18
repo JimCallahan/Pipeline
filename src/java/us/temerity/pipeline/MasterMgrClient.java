@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.61 2005/04/03 06:10:11 jim Exp $
+// $Id: MasterMgrClient.java,v 1.62 2005/04/18 22:53:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3084,7 +3084,7 @@ class MasterMgrClient
     MiscArchiveQueryReq req = 
       new MiscArchiveQueryReq(pattern, maxArchives);
 
-    Object obj = performTransaction(MasterRequest.ArchiveQuery, req);
+    Object obj = performLongTransaction(MasterRequest.ArchiveQuery, req, 15000, 60000);  
     if(obj instanceof MiscArchiveQueryRsp) {
       MiscArchiveQueryRsp rsp = (MiscArchiveQueryRsp) obj;
       return rsp.getInfo();
@@ -3121,7 +3121,7 @@ class MasterMgrClient
 
     MiscGetArchiveSizesReq req = new MiscGetArchiveSizesReq(versions);
 
-    Object obj = performTransaction(MasterRequest.GetArchiveSizes, req);
+    Object obj = performLongTransaction(MasterRequest.GetArchiveSizes, req, 15000, 60000);  
     if(obj instanceof MiscGetSizesRsp) {
       MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
       return rsp.getSizes();
@@ -3222,7 +3222,7 @@ class MasterMgrClient
     MiscOfflineQueryReq req = 
       new MiscOfflineQueryReq(pattern, excludeLatest, minArchives, unusedOnly);
 
-    Object obj = performTransaction(MasterRequest.OfflineQuery, req);
+    Object obj = performLongTransaction(MasterRequest.OfflineQuery, req, 15000, 60000);  
     if(obj instanceof MiscOfflineQueryRsp) {
       MiscOfflineQueryRsp rsp = (MiscOfflineQueryRsp) obj;
       return rsp.getInfo();
@@ -3290,7 +3290,7 @@ class MasterMgrClient
 
     MiscGetOfflineSizesReq req = new MiscGetOfflineSizesReq(versions);
 
-    Object obj = performTransaction(MasterRequest.GetOfflineSizes, req);
+    Object obj = performLongTransaction(MasterRequest.GetOfflineSizes, req, 15000, 60000);  
     if(obj instanceof MiscGetSizesRsp) {
       MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
       return rsp.getSizes();
@@ -3363,7 +3363,7 @@ class MasterMgrClient
 
     MiscRestoreQueryReq req = new MiscRestoreQueryReq(pattern);
 
-    Object obj = performTransaction(MasterRequest.RestoreQuery, req);
+    Object obj = performLongTransaction(MasterRequest.RestoreQuery, req, 15000, 60000);  
     if(obj instanceof MiscRestoreQueryRsp) {
       MiscRestoreQueryRsp rsp = (MiscRestoreQueryRsp) obj;
       return rsp.getVersions();
@@ -3678,7 +3678,8 @@ class MasterMgrClient
     verifyConnection();
 
     MiscGetArchivesContainingReq req = new MiscGetArchivesContainingReq(versions);
-    Object obj = performTransaction(MasterRequest.GetArchivesContaining, req);
+    Object obj = performLongTransaction(MasterRequest.GetArchivesContaining, req, 
+					15000, 60000);  
     if(obj instanceof MiscGetArchivesContainingRsp) {
       MiscGetArchivesContainingRsp rsp = (MiscGetArchivesContainingRsp) obj;
       return rsp.getArchiveNames();
