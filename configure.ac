@@ -778,6 +778,55 @@ fi
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_MSG_RESULT([Java GC Options])
+
+java_gc_opts="-XX:+UseParallelGC"
+
+AC_MSG_CHECKING([plmaster])
+AC_SUBST(PLMASTER_GC_OPTS)
+PLMASTER_GC_OPTS="${java_gc_opts} -Xms256M -Xmx1G"
+AC_MSG_RESULT([$PLMASTER_GC_OPTS])
+
+AC_MSG_CHECKING([plfilemgr])
+AC_SUBST(PLFILEMGR_GC_OPTS)
+PLFILEMGR_GC_OPTS="${java_gc_opts} -Xms64M -Xmx512M"
+AC_MSG_RESULT([$PLFILEMGR_GC_OPTS])
+
+AC_MSG_CHECKING([plplugin])
+AC_SUBST(PLPLUGIN_GC_OPTS)
+PLPLUGIN_GC_OPTS="${java_gc_opts} -Xms32M -Xmx128M"
+AC_MSG_RESULT([$PLPLUGIN_GC_OPTS])
+
+AC_MSG_CHECKING([plqueuemgr])
+AC_SUBST(PLQUEUEMGR_GC_OPTS)
+PLQUEUEMGR_GC_OPTS="${java_gc_opts} -Xms256M -Xmx1G"
+AC_MSG_RESULT([$PLQUEUEMGR_GC_OPTS])
+
+AC_MSG_CHECKING([pljobmgr])
+AC_SUBST(PLJOBMGR_GC_OPTS)
+PLJOBMGR_GC_OPTS="${java_gc_opts} -Xms32M -Xmx128M"
+AC_MSG_RESULT([$PLJOBMGR_GC_OPTS])
+
+AC_MSG_CHECKING([plui])
+AC_SUBST(PLUI_GC_OPTS)
+PLUI_GC_OPTS="${java_gc_opts} -Xms64M -Xmx512M"
+AC_MSG_RESULT([$PLUI_GC_OPTS])
+
+AC_MSG_CHECKING([plscript])
+AC_SUBST(PLSCRIPT_GC_OPTS)
+PLSCRIPT_GC_OPTS="${java_gc_opts} -Xms32M -Xmx256M"
+AC_MSG_RESULT([$PLSCRIPT_GC_OPTS])
+
+AC_MSG_CHECKING([plpluginmgr])
+AC_SUBST(PLPLUGINMGR_GC_OPTS)
+PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms32M -Xmx128M"
+AC_MSG_RESULT([$PLPLUGINMGR_GC_OPTS])
+
+AC_MSG_RESULT([ ])
+
+
+dnl ------------------------------------------------------------------------------------------
+
 AC_MSG_RESULT([Java Debugging Options])
 
 AC_ARG_WITH([debug-base], 
@@ -1192,16 +1241,6 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plscript
   src/java/scripts/profile/plui
-
-  src/java/scripts/debug-profile/Makefile
-  src/java/scripts/debug-profile/plfilemgr
-  src/java/scripts/debug-profile/pljobmgr
-  src/java/scripts/debug-profile/plmaster
-  src/java/scripts/debug-profile/plplugin
-  src/java/scripts/debug-profile/plpluginmgr
-  src/java/scripts/debug-profile/plqueuemgr
-  src/java/scripts/debug-profile/plscript
-  src/java/scripts/debug-profile/plui
 
   src/java/share/Makefile
 

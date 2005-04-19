@@ -34,17 +34,13 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/bin/plscript
 @ROOT_INST_DIR@/bin/plui
 
-@ROOT_INST_DIR@/bin/debug/plplugin
-@ROOT_INST_DIR@/bin/debug/plscript
-@ROOT_INST_DIR@/bin/debug/plui
+@ROOT_INST_DIR@/debug/bin/plplugin
+@ROOT_INST_DIR@/debug/bin/plscript
+@ROOT_INST_DIR@/debug/bin/plui
 
-@ROOT_INST_DIR@/bin/profile/plplugin
-@ROOT_INST_DIR@/bin/profile/plscript
-@ROOT_INST_DIR@/bin/profile/plui
-
-@ROOT_INST_DIR@/bin/debug-profile/plplugin
-@ROOT_INST_DIR@/bin/debug-profile/plscript
-@ROOT_INST_DIR@/bin/debug-profile/plui
+@ROOT_INST_DIR@/profile/bin/plplugin
+@ROOT_INST_DIR@/profile/bin/plscript
+@ROOT_INST_DIR@/profile/bin/plui
 
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plrun
@@ -57,23 +53,18 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/sbin/plqueuemgr
 @ROOT_INST_DIR@/sbin/plrestore
 
-@ROOT_INST_DIR@/sbin/debug/plfilemgr
-@ROOT_INST_DIR@/sbin/debug/pljobmgr
-@ROOT_INST_DIR@/sbin/debug/plmaster
-@ROOT_INST_DIR@/sbin/debug/plpluginmgr
-@ROOT_INST_DIR@/sbin/debug/plqueuemgr
+@ROOT_INST_DIR@/debug/sbin/plfilemgr
+@ROOT_INST_DIR@/debug/sbin/pljobmgr
+@ROOT_INST_DIR@/debug/sbin/plmaster
+@ROOT_INST_DIR@/debug/sbin/plpluginmgr
+@ROOT_INST_DIR@/debug/sbin/plqueuemgr
 
-@ROOT_INST_DIR@/sbin/profile/plfilemgr
-@ROOT_INST_DIR@/sbin/profile/pljobmgr
-@ROOT_INST_DIR@/sbin/profile/plmaster
-@ROOT_INST_DIR@/sbin/profile/plpluginmgr
-@ROOT_INST_DIR@/sbin/profile/plqueuemgr
+@ROOT_INST_DIR@/profile/sbin/plfilemgr
+@ROOT_INST_DIR@/profile/sbin/pljobmgr
+@ROOT_INST_DIR@/profile/sbin/plmaster
+@ROOT_INST_DIR@/profile/sbin/plpluginmgr
+@ROOT_INST_DIR@/profile/sbin/plqueuemgr
 
-@ROOT_INST_DIR@/sbin/debug-profile/plfilemgr
-@ROOT_INST_DIR@/sbin/debug-profile/pljobmgr
-@ROOT_INST_DIR@/sbin/debug-profile/plmaster
-@ROOT_INST_DIR@/sbin/debug-profile/plpluginmgr
-@ROOT_INST_DIR@/sbin/debug-profile/plqueuemgr
 
 %defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/working

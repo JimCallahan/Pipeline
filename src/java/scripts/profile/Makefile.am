@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/bin/profile
+instbindir = @ROOT_INST_DIR@/profile/bin
 
 instbin_SCRIPTS = \
   plplugin \
@@ -7,7 +7,7 @@ instbin_SCRIPTS = \
   plui
 
 
-instsbindir = @ROOT_INST_DIR@/sbin/profile
+instsbindir = @ROOT_INST_DIR@/profile/sbin
 
 instsbin_SCRIPTS = \
   plfilemgr \

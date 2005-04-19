@@ -20,8 +20,7 @@ instsbin_SCRIPTS = \
 
 SUBDIRS = \
   debug \
-  profile \
-  debug-profile
+  profile
 
 
 
