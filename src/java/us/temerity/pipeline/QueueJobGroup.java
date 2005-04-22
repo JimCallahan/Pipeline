@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.9 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueJobGroup.java,v 1.10 2005/04/22 18:29:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,7 +55,7 @@ class QueueJobGroup
    long groupID, 
    NodeID nodeID, 
    FileSeq rootSeq,
-   TreeSet<Long> rootIDs,
+   ArrayList<Long> rootIDs,
    TreeSet<Long> externalIDs,
    TreeSet<Long> jobIDs
   ) 
@@ -73,7 +73,7 @@ class QueueJobGroup
       throw new IllegalArgumentException("The root target file sequence cannot be (null)!");
     pRootSeq = rootSeq;
 
-    pRootIDs = new TreeSet<Long>();
+    pRootIDs = new ArrayList<Long>();
     if(rootIDs != null) 
       pRootIDs.addAll(rootIDs);
 
@@ -159,10 +159,10 @@ class QueueJobGroup
   /**
    * Get the unique identifiers of the root jobs of the group. 
    */ 
-  public SortedSet<Long>
+  public List<Long>
   getRootIDs()
   {
-    return Collections.unmodifiableSortedSet(pRootIDs);
+    return Collections.unmodifiableList(pRootIDs);
   }
 
   /**
@@ -281,11 +281,11 @@ class QueueJobGroup
     pRootSeq = fseq;
 
     {
-      TreeSet<Long> ids = (TreeSet<Long>) decoder.decode("RootIDs");
+      ArrayList<Long> ids = (ArrayList<Long>) decoder.decode("RootIDs");
       if(ids != null) 
 	pRootIDs = ids;
       else 
-	pRootIDs = new TreeSet<Long>();
+	pRootIDs = new ArrayList<Long>();
     }
 
     {
@@ -354,7 +354,7 @@ class QueueJobGroup
   /**
    * The unique identifiers of the root jobs of the group.
    */
-  private TreeSet<Long>  pRootIDs; 
+  private ArrayList<Long>  pRootIDs; 
 
   /**
    * The unique identifiers of the jobs which are not members of the group, but which 

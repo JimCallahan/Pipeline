@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.115 2005/04/04 22:06:17 jim Exp $
+// $Id: MasterMgr.java,v 1.116 2005/04/22 18:29:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5714,15 +5714,20 @@ class MasterMgr
 	  ("No new jobs where generated for node (" + status + ") or any node upstream " +
 	   "of this node!");
       
-      /* generate the root target file sequence for the job group */ 
+      /* generate the root target file sequence for the job group, 
+	   sorting root IDs by target file sequence order */ 
       FileSeq targetSeq = null;
+      ArrayList<Long> orderedRootIDs = new ArrayList<Long>();
       {
+	TreeMap<FileSeq,Long> rootOrder = new TreeMap<FileSeq,Long>();
+
 	FilePattern fpat = null;
 	TreeSet<Integer> frames = new TreeSet<Integer>();
 	{
 	  for(Long jobID : rootJobIDs) {
 	    QueueJob job = jobs.get(jobID);
 	    FileSeq fseq = job.getActionAgenda().getPrimaryTarget();
+	    rootOrder.put(fseq, jobID);
 
 	    if(fpat == null) 
 	      fpat = fseq.getFilePattern();
@@ -5752,6 +5757,8 @@ class MasterMgr
 
 	  targetSeq = new FileSeq(fpat, new FrameRange(frames.first(), frames.last(), step));
 	}
+
+	orderedRootIDs.addAll(rootOrder.values());
       }
       
       /* generate the list of external job IDs */ 
@@ -5764,7 +5771,7 @@ class MasterMgr
       /* group the jobs */ 
       QueueJobGroup group = 
 	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
-			  targetSeq, rootJobIDs, externalIDs, 
+			  targetSeq, orderedRootIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
       pQueueMgrClient.groupJobs(group);
       
