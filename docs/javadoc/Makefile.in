@@ -276,7 +276,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #--------------------------------------------------------------------------------------------#
 
   EXTERNAL_DIRS = j2se/1.5.0/docs/api \
-                  products/java-media/3D/forDevelopers/J3D_1_3_API/j3dapi \
                   products/java-media/jai/forDevelopers/jai-imageio-1_0-docs \
                   products/java-media/jai/forDevelopers/jai-apidocs            
 
@@ -298,7 +297,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.math \
                   us.temerity.pipeline.toolset \
-                  us.temerity.pipeline.ui
+                  #us.temerity.pipeline.ui
 
 
        PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES)
@@ -309,7 +308,13 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
    JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java \
-                  -d javadoc -source 1.5 -use $(LOCAL_URLS) #$(EXTERNAL_URLS) 
+                  -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
+                  -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#000000;">TEMERITY</SPAN><SPAN style="color: \#7a7f7f;">SOFTWARE</SPAN></A></BIG><EM>' \
+                  -stylesheetfile $(srcdir)/stylesheet.css
+
+
+#$(LOCAL_URLS) 
+#$(EXTERNAL_URLS) 
 
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
@@ -320,9 +325,10 @@ all: javadoc.tar
 javadoc.tar: docs-all
 	tar -cvf $@ javadoc
 
-docs-all: $(PACKAGE_HTML)
+docs-all: $(PACKAGE_HTML) Makefile
 	$(JAVADOC) $(JAVADOC_OPTS) $(PACKAGES) \
            $(top_builddir)/src/java/us/temerity/pipeline/PackageInfo.java
+	cp $(srcdir)/inherit.gif javadoc/resources/inherit.gif
 	touch $@
 
 
