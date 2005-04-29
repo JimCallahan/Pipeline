@@ -74,14 +74,6 @@ agreement</span></a> for this software and exits.</div>
 <blockquote> </blockquote>
 <h3><a name="See_Also"></a>See
 Also</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
-<br>
-<div style="margin-left: 40px;"><a href="../manuals/index.html"
- style="font-weight: bold;">Pipeline
-Manual</a><span style="font-weight: bold;"></span><a
- href="../javadoc/index.html"><span style="font-weight: bold;"></span></a><span
- style="font-weight: bold;"></span></div>
-</div>
 <blockquote>
   <blockquote> </blockquote>
   <span style="font-weight: bold;">Pipeline Programs</span><br>
@@ -93,12 +85,12 @@ Manual</a><span style="font-weight: bold;"></span><a
   <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
   <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
   <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
   <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
   <span style="font-weight: bold;"></span><a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
   <br>
   </div>

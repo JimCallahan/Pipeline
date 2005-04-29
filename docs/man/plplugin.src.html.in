@@ -65,95 +65,81 @@ plugin base classes: <a
 these classes has a protected constructor which should be called from
 your plugin's single no-arg constructor with constant values for the
 following three parameters:<br>
-  <div style="margin-left: 40px;"><br>
-  <span style="font-family: monospace;">String name</span><br>
-  <br>
-  <div style="margin-left: 40px;">The unique name of the plugin.&nbsp;
+</blockquote>
+<div style="margin-left: 40px;"><code>String name</code><br>
+</div>
+<div style="margin-left: 40px;"><br>
+<div style="margin-left: 40px;">The unique name of the plugin.&nbsp;
 This name should be short since it will be used in popup menus and
-option lists within <span style="font-weight: bold;">plui</span>(1) to
+option lists within plui(1) to
 identify the plugin.&nbsp; For convenience of using the names in
 scripts and command line arguments, its advisable that it does not
 contain whitespace or other non-printable characters.<br>
-  </div>
-  <br>
-  <span style="font-family: monospace;">VersionID vid</span><br>
-  <br>
-  <div style="margin-left: 40px;">The plugin revision number.&nbsp;
+</div>
+<br>
+<code>VersionID vid</code><br>
+<br>
+<div style="margin-left: 40px;">The plugin revision number.&nbsp;
 Pipeline allows multiple versions of the same plugin to be used
 simultaneously and this revision number is used to distinguish between
 the various versions.&nbsp; <br>
-  </div>
-  <br>
-  <span style="font-family: monospace;">String desc</span><br>
-  <br>
-  <div style="margin-left: 40px;">A short description of the
+</div>
+<br>
+<code>String desc</code><br>
+<br>
+<div style="margin-left: 40px;">A short description of the
 plugin.&nbsp; This should be a short phrase suitable for use in tool
 tips and other one line UI contexts.<br>
-  <br>
-  </div>
-  </div>
-The plugin class should belong to a Java package who's last component
+</div>
+</div>
+<blockquote>The plugin class should belong to a Java package who's last
+component
 corresponds with the plugin revision number.&nbsp; Due to the syntax of
 Java package specifications a "v" must be prepended to the version
 number and the version number component must be separated by "_"
 instead of "." characters.&nbsp; <br>
   <br>
 For example, here is complete source code of the 1.0.0 version of the
-simple Emacs editor plugin distributed with Pipeline:<br>
-  <div style="margin-left: 40px;"><br>
-  <span style="font-family: monospace;"><a name="emacs"></a>package
-us.temerity.pipeline.plugin.v1_0_0;</span><br
- style="font-family: monospace;">
+simple Emacs editor plugin distributed with Pipeline:<code><br>
+  </code>
+  <div style="margin-left: 40px;"><code><br>
+  <a name="emacs"></a>package
+us.temerity.pipeline.plugin.v1_0_0;<br style="font-family: monospace;">
   <br style="font-family: monospace;">
-  <span style="font-family: monospace;">import
-us.temerity.pipeline.BaseEditor; </span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">import
-us.temerity.pipeline.VersionID; </span><br
- style="font-family: monospace;">
+import
+us.temerity.pipeline.BaseEditor; <br style="font-family: monospace;">
+import
+us.temerity.pipeline.VersionID; <br style="font-family: monospace;">
   <br style="font-family: monospace;">
-  <span style="font-family: monospace;">/**</span><br
+/**<br style="font-family: monospace;">
+&nbsp;* The GNU extensible,
+customizable, self-documenting text editor.<br
  style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp;* The GNU extensible,
-customizable, self-documenting text editor.</span><br
+&nbsp;*/<br style="font-family: monospace;">
+public<br style="font-family: monospace;">
+class EmacsEditor<br style="font-family: monospace;">
+&nbsp; extends BaseEditor<br style="font-family: monospace;">
+{&nbsp; <br style="font-family: monospace;">
+&nbsp; public<br style="font-family: monospace;">
+&nbsp; EmacsEditor()<br style="font-family: monospace;">
+&nbsp; {<br style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;
+super("Emacs", new VersionID("1.0.0"),<br
  style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp;*/</span><br
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU text editor.", <br
  style="font-family: monospace;">
-  <span style="font-family: monospace;">public</span><br
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "emacs");<br
  style="font-family: monospace;">
-  <span style="font-family: monospace;">class EmacsEditor</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp; extends BaseEditor</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">{&nbsp; </span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp; public</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp; EmacsEditor()</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp; {</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
-super("Emacs", new VersionID("1.0.0"),</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU extensible, customizable,
-self-documenting" + <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "text editor.", </span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "emacs");</span><br
- style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp; }</span><br
- style="font-family: monospace;">
+&nbsp; }<br style="font-family: monospace;">
   <br style="font-family: monospace;">
-  <span style="font-family: monospace;">&nbsp; private static final
+&nbsp; private static final
 long serialVersionUID = <br>
-&nbsp;&nbsp;&nbsp; -5044455288055639029L;</span><br
+&nbsp;&nbsp;&nbsp; -5044455288055639029L;<br
  style="font-family: monospace;">
-  <span style="font-family: monospace;">}</span><br
- style="font-family: monospace;">
-  <br style="font-family: monospace;">
+}</code> <code><br style="font-family: monospace;">
+  </code> <br style="font-family: monospace;">
   </div>
 You could use a shorter package name, but the general Java convention
 of prefixing the package with the company domain in reverse order is
@@ -406,9 +392,9 @@ For instance, to command line to install the <a href="#emacs"><span
  style="font-weight: bold;">EmacsEditor</span></a> plugin<span
  style="font-weight: bold;"> </span>mentioned above would be be: <br>
 <br>
-<div style="margin-left: 40px;"><span style="font-family: monospace;">&gt;
+<div style="margin-left: 40px;"><code>&gt;
 plplugin us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
-</span></div>
+</code></div>
 <br>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
@@ -438,14 +424,11 @@ Caveats</span></a>).</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
 </div>
-<div style="margin-left: 80px;"><a href="../manuals/index.html"
+<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span
  style="font-weight: bold;">Pipeline
-Manual</a><span style="font-weight: bold;">, </span><a
- href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
 Java API</span></a><br>
 <br>
 </div>
-<div style="margin-left: 40px;"></div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
 Programs</span><br>
 <div style="margin-left: 40px;"><a href="plui.html"><span
@@ -456,12 +439,12 @@ Programs</span><br>
 <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
 <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
 <span style="font-weight: bold;"></span><a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
 <br>
 </div>
@@ -504,6 +487,7 @@ Software, Inc</span></a>.</div>
 <div style="margin-left: 40px;">
 @LICENSE@
 </div>
+<br>
 <br>
 </body>
 </html>

@@ -31,13 +31,7 @@ is also available in a scripting format using the <a
 command-line scripting tool. Custom user tools may also
 access the full functionality of <span style="font-weight: bold;">plui</span>(1)
 using the <a href="../javadoc/index.html"><span
- style="font-weight: bold;">Pipeline Java API</span></a>.&nbsp; <br>
-  <br>
-See the&nbsp;<a href="../manuals/index.html" style="font-weight: bold;">Pipeline
-Manual</a> for information about the
-shared concepts behind these tools as well as detailed help on using
-the graphical interface of <a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1).&nbsp; <br>
+ style="font-weight: bold;">Pipeline Java API</span></a>. <br>
   <br>
 All properties, except for the <a href="#Global_Options"
  style="font-weight: bold;">Global
@@ -314,10 +308,8 @@ By default OpenGL tracing is (off).<span style="font-weight: bold;"></span><br>
 Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
-<div style="margin-left: 40px;"><a href="../manuals/index.html"
+<div style="margin-left: 40px;"><a href="../javadoc/index.html"><span
  style="font-weight: bold;">Pipeline
-Manual</a><span style="font-weight: bold;">, </span><a
- href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
 Java API</span></a><span style="font-weight: bold;"></span></div>
 </div>
 <blockquote>
@@ -331,12 +323,12 @@ Java API</span></a><span style="font-weight: bold;"></span></div>
   <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
   <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
   <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
   <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
   <span style="font-weight: bold;"></span><a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
   </div>
   <div style="margin-left: 40px;"><br>

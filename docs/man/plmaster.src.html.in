@@ -87,11 +87,11 @@ option can only be used if the host configured to run the <span
  style="font-weight: bold;">plmaster</span>(1) and <a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1)
 daemons are identical.&nbsp; See the <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-host"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-host"><span
  style="font-weight: bold;">--master-host</span></a> and <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
  style="font-weight: bold;">--file-host</span></a> options to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1) for details.<br>
 <br>
 When the file manager and master manager are running on the same host,
@@ -255,10 +255,8 @@ file.<br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
 </div>
-<div style="margin-left: 80px;"><a href="../manuals/index.html"
+<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span
  style="font-weight: bold;">Pipeline
-Manual</a><span style="font-weight: bold;">, </span><a
- href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
 Java API</span></a><br>
 <br>
 </div>
@@ -272,12 +270,12 @@ Java API</span></a><br>
 <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
 <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
 <span style="font-weight: bold;"></span><a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
 </div>
 <br>

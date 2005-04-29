@@ -555,7 +555,7 @@ Node Versions</a></li>
  style="font-weight: bold;">--abort</span></a>] [<a href="#--serial"><span
  style="font-weight: bold;">--serial</span></a> | </span><a
  href="#--parallel"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a href="#--subdivided">--subdivided</a></span></span></a><span
+ style="font-weight: bold;"></span></span></a><a href="#--subdivided">--subdivided</a><span
  style="font-weight: normal;"><span style="font-weight: bold;"> | </span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span><a
  href="#--parallel"><span style="font-weight: bold;">--parallel</span></a>]
@@ -1903,7 +1903,7 @@ follow options:<br>
  style="font-weight: normal;"><br>
 </span>
 <div style="margin-left: 40px;">A <a
- href="file://@java_home@/docs/api/java/util/regex/Pattern.html#sum">regular
+ href="file://@JAVA_HOME@/docs/api/java/util/regex/Pattern.html#sum">regular
 expression</a> (<span style="font-style: italic;">node-regex</span>)
 used to select the checked-in versions based on fully resolved node
 name.&nbsp; If this option is not specified, all node versions will be
@@ -4006,10 +4006,10 @@ node is constructed as follows:<br>
 <div style="margin-left: 40px;">Where (<span style="font-style: italic;">root-production-dir</span>)
 is the root directory of all production file for the site set by the
 the <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
  style="font-weight: bold;">--prod-dir</span></a>
 option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).&nbsp; The (<span
  style="font-style: italic;">user-name</span>) is the name of the user
 owning the working area.&nbsp; The (<span style="font-style: italic;">view-name</span>)
@@ -4067,10 +4067,8 @@ which is identical in each of the versions. <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
 </div>
-<div style="margin-left: 80px;"><a href="../manuals/index.html"
+<div style="margin-left: 80px;"><a href="../javadoc/index.html"><span
  style="font-weight: bold;">Pipeline
-Manual</a><span style="font-weight: bold;">, </span><a
- href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
 Java API</span></a><br>
 <br>
 </div>
@@ -4084,12 +4082,12 @@ Programs</span><br>
 <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
- href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
 <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
  href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
 <span style="font-weight: bold;"></span><a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
 </div>
 </div>
@@ -4107,8 +4105,8 @@ Software</span><br>
 </blockquote>
 <h3><a name="Files"></a>Files</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="logger_properties"></a></span><span style="font-weight: bold;"><a
- href="../../logger.properties">logger.properties</a></span><br>
+ name="logger_properties"></a></span><span style="font-weight: bold;">
+<a href="../../logger.properties">logger.properties</a></span><br>
 <div style="margin-left: 40px;"><br>
 The site configuration for output loggers used by Pipeline
 programs.&nbsp;
