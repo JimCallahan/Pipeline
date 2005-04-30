@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.3 2005/02/20 20:52:55 jim Exp $
+// $Id: UIFactory.java,v 1.4 2005/04/30 01:02:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -369,6 +369,45 @@ class UIFactory
   )
   {
     JIdentifierField field = new JIdentifierField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setText(text);
+    
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain node identifiers. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JNodeIdentifierField
+  createNodeIdentifierField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JNodeIdentifierField field = new JNodeIdentifierField();
     field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
@@ -1134,6 +1173,82 @@ class UIFactory
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JIdentifierField field = createIdentifierField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new node identifier text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JNodeIdentifierField
+  createTitledNodeIdentifierField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    return createTitledNodeIdentifierField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new node identifier text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JNodeIdentifierField
+  createTitledNodeIdentifierField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JNodeIdentifierField field = createNodeIdentifierField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;

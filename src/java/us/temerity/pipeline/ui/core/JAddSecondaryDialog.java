@@ -1,4 +1,4 @@
-// $Id: JAddSecondaryDialog.java,v 1.5 2005/03/18 16:33:53 jim Exp $
+// $Id: JAddSecondaryDialog.java,v 1.6 2005/04/30 01:02:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,8 +46,8 @@ class JAddSecondaryDialog
 	body = (Box) comps[2];
 	
 	pPrefixField =
-	  UIFactory.createTitledAlphaNumField(tpanel, "Filename Prefix:", sTSize, 
-					     vpanel, "", sVSize);
+	  UIFactory.createTitledNodeIdentifierField(tpanel, "Filename Prefix:", sTSize, 
+						    vpanel, "", sVSize);
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
@@ -559,7 +559,7 @@ class JAddSecondaryDialog
   /**
    * The filename prefix.
    */ 
-  private JAlphaNumField  pPrefixField;
+  private JNodeIdentifierField  pPrefixField;
   
   /**
    * The single/sequence file mode.
