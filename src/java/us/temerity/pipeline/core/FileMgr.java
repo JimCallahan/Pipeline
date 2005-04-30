@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.44 2005/04/04 23:37:22 jim Exp $
+// $Id: FileMgr.java,v 1.45 2005/04/30 01:03:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1799,8 +1799,8 @@ class FileMgr
 	  }
 	}
 	
-	/* move all of the secondary files */ 
-	{	
+	/* move all of the secondary files (if the node directory changed) */ 
+	if(!owdir.equals(wdir)) {	
 	  ArrayList<String> old = new ArrayList<String>();
 	  for(File file : sfiles) {
 	    File work = new File(owdir, file.getPath());
@@ -1866,8 +1866,8 @@ class FileMgr
 	  }
 	}
 	
-	/* move all of the secondary checksums */ 
-	{	
+	/* move all of the secondary checksums (if the node directory changed) */ 
+	if(!owdir.equals(wdir)) {	
 	  ArrayList<String> old = new ArrayList<String>();
 	  for(File file : sfiles) {
 	    File work = new File(ocwdir, file.getPath());
