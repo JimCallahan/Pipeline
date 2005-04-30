@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.116 2005/04/22 18:29:43 jim Exp $
+// $Id: MasterMgr.java,v 1.117 2005/04/30 22:08:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4231,10 +4231,12 @@ class MasterMgr
 
       /* if the prefix is different, 
 	   unlink the downstream working versions from the to be renamed working version 
-	   while collecting the existing downstream links */ 
+	   while collecting the existing downstream links and source parameters */ 
       TreeMap<String,LinkMod> dlinks = null;
+      TreeMap<String,Collection<ActionParam>> sourceParams = null;
       if(!name.equals(nname)) {
 	dlinks = new TreeMap<String,LinkMod>();
+	sourceParams = new TreeMap<String,Collection<ActionParam>>();
 	
 	timer.aquire();
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
@@ -4254,9 +4256,15 @@ class MasterMgr
 	    try {
 	      timer.resume();
 	      
-	      LinkMod dlink = getWorkingBundle(targetID).uVersion.getSource(name);
-	      if(dlink != null) 
-		dlinks.put(target,dlink);
+	      NodeMod targetMod = getWorkingBundle(targetID).uVersion;
+	      LinkMod dlink = targetMod.getSource(name);
+	      if(dlink != null) {
+		dlinks.put(target, dlink);
+
+		BaseAction targetAction = targetMod.getAction();
+		if((targetAction != null) && targetAction.getSourceNames().contains(name)) 
+		  sourceParams.put(target, targetAction.getSourceParams(name));
+	      }
 	    }
 	    finally {
 	      lock.readLock().unlock();
@@ -4275,97 +4283,158 @@ class MasterMgr
 	}
       }
 
-      timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(id);
-      lock.writeLock().lock();
-      ReentrantReadWriteLock nlock = getWorkingLock(nid);
-      nlock.writeLock().lock();
-      try {
-	timer.resume();
-
-	WorkingBundle bundle = getWorkingBundle(id);
-	NodeMod omod = bundle.uVersion;
-	NodeMod nmod = new NodeMod(omod);
-	
-	nmod.rename(npat);
-
-	if(name.equals(nname)) {
-	  /* write the new working version to disk */ 
-	  writeWorkingVersion(id, nmod);
+      {
+	timer.aquire();
+	ReentrantReadWriteLock lock = getWorkingLock(id);
+	lock.writeLock().lock();
+	ReentrantReadWriteLock nlock = getWorkingLock(nid);
+	nlock.writeLock().lock();
+	try {
+	  timer.resume();
 	  
-	  /* update the bundle */ 
-	  bundle.uVersion = nmod;
-	}	
-	else {
-	  nmod.removeAllSources();
-
-	  /* register the new named node */ 
-	  {
-	    Object obj = register(new NodeRegisterReq(nid, nmod), false);
-	    if(obj instanceof FailureRsp) {
-	      FailureRsp rsp = (FailureRsp) obj;
-	      throw new PipelineException(rsp.getMessage());	
+	  WorkingBundle bundle = getWorkingBundle(id);
+	  NodeMod omod = bundle.uVersion;
+	  NodeMod nmod = new NodeMod(omod);
+	  
+	  nmod.rename(npat);
+	  
+	  if(name.equals(nname)) {
+	    /* write the new working version to disk */ 
+	    writeWorkingVersion(id, nmod);
+	    
+	    /* update the bundle */ 
+	    bundle.uVersion = nmod;
+	  }	
+	  else {
+	    nmod.removeAllSources();
+	    
+	    /* register the new named node */ 
+	    {
+	      Object obj = register(new NodeRegisterReq(nid, nmod), false);
+	      if(obj instanceof FailureRsp) {
+		FailureRsp rsp = (FailureRsp) obj;
+		throw new PipelineException(rsp.getMessage());	
+	      }
+	    }
+	    
+	    /* reconnect the upstream nodes to the new named node */ 
+	    for(LinkMod ulink : bundle.uVersion.getSources()) {
+	      timer.suspend();
+	      Object obj = link(new NodeLinkReq(nid, ulink));
+	      timer.accum(((TimedRsp) obj).getTimer());
+	      if(obj instanceof FailureRsp) {
+		FailureRsp rsp = (FailureRsp) obj;
+		return new FailureRsp(timer, rsp.getMessage());
+	      }
+	    }
+	    
+	    /* release the old named node */ 
+	    {
+	      timer.suspend();
+	      Object obj = release(new NodeReleaseReq(id, false));
+	      timer.accum(((TimedRsp) obj).getTimer());
+	      if(obj instanceof FailureRsp) {
+		FailureRsp rsp = (FailureRsp) obj;
+		throw new PipelineException(rsp.getMessage());	
+	      }
 	    }
 	  }
-
-	  /* reconnect the upstream nodes to the new named node */ 
-	  for(LinkMod ulink : bundle.uVersion.getSources()) {
-	    timer.suspend();
-	    Object obj = link(new NodeLinkReq(nid, ulink));
-	    timer.accum(((TimedRsp) obj).getTimer());
-	    if(obj instanceof FailureRsp) {
-	      FailureRsp rsp = (FailureRsp) obj;
-	      return new FailureRsp(timer, rsp.getMessage());
-	    }
-	  }
 	  
-	  /* release the old named node */ 
-	  {
-	    timer.suspend();
-	    Object obj = release(new NodeReleaseReq(id, false));
-	    timer.accum(((TimedRsp) obj).getTimer());
-	    if(obj instanceof FailureRsp) {
-	      FailureRsp rsp = (FailureRsp) obj;
-	      throw new PipelineException(rsp.getMessage());	
+	  /* rename the files */ 
+	  if(req.renameFiles()) {
+	    FileMgrClient fclient = getFileMgrClient();
+	    try {
+	      fclient.rename(id, omod, npat);
+	    }
+	    finally {
+	      freeFileMgrClient(fclient);
 	    }
 	  }
 	}
-
-	/* rename the files */ 
-	if(req.renameFiles()) {
-	  FileMgrClient fclient = getFileMgrClient();
-	  try {
-	    fclient.rename(id, omod, npat);
-	  }
-	  finally {
-	    freeFileMgrClient(fclient);
-	  }
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
 	}
+	finally {
+	  nlock.writeLock().unlock();
+	  lock.writeLock().unlock();
+	}  
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-      finally {
-	nlock.writeLock().unlock();
-	lock.writeLock().unlock();
-      }  
 
-      /* if the prefix is different, 
-	   reconnect the downstream nodes to the new named node */ 
+      /* if the prefix is different... */ 	   
       if(!name.equals(nname)) {
+	/* reconnect the downstream nodes to the new named node */ 
 	for(String target : dlinks.keySet()) {
 	  LinkMod dlink = dlinks.get(target);
 	  
-	  NodeID tid = new NodeID(id, target);
+	  NodeID targetID = new NodeID(id, target);
 	  LinkMod ndlink = new LinkMod(nname, dlink.getPolicy(), 
 				       dlink.getRelationship(), dlink.getFrameOffset());
 	  
 	  timer.suspend();
-	  Object obj = link(new NodeLinkReq(tid, ndlink));
+	  Object obj = link(new NodeLinkReq(targetID, ndlink));
 	  timer.accum(((TimedRsp) obj).getTimer());
 	  if(obj instanceof FailureRsp) {
 	    FailureRsp rsp = (FailureRsp) obj;
 	    return new FailureRsp(timer, rsp.getMessage());
+	  }
+	}
+	
+	/* set per-source parameters previously set for the old name under the new name */ 
+	for(String target : sourceParams.keySet()) {
+	  Collection<ActionParam> aparams = sourceParams.get(target);
+	  if(!aparams.isEmpty()) {
+	    NodeID targetID = new NodeID(id, target);
+	    
+	    NodeMod targetMod = null;
+	    {
+	      timer.aquire();
+	      ReentrantReadWriteLock lock = getWorkingLock(targetID);
+	      lock.readLock().lock();
+	      try {
+		timer.resume();
+		targetMod = new NodeMod(getWorkingBundle(targetID).uVersion);
+	      }
+	      catch(PipelineException ex) {
+		return new FailureRsp(timer, ex.getMessage());
+	      }
+	      finally {
+		lock.readLock().unlock();
+	      }  
+	    }
+	    
+	    BaseAction action         = targetMod.getAction(); 
+	    boolean enabled           = targetMod.isActionEnabled();
+	    JobReqs jreqs             = targetMod.getJobRequirements();
+	    OverflowPolicy policy     = targetMod.getOverflowPolicy();
+	    ExecutionMethod execution = targetMod.getExecutionMethod();
+	    Integer batchSize         = targetMod.getBatchSize();
+
+	    action.initSourceParams(nname);
+	    for(ActionParam aparam : aparams) 
+	      action.setSourceParamValue(nname, aparam.getName(), aparam.getValue());
+
+	    try {
+	      targetMod.setAction(action);
+	      targetMod.setActionEnabled(enabled);
+	      targetMod.setJobRequirements(jreqs);
+	      targetMod.setOverflowPolicy(policy);
+	      targetMod.setExecutionMethod(execution);
+	      switch(execution) {
+	      case Parallel: 
+		targetMod.setBatchSize(batchSize);
+	      }
+	    }
+	    catch(PipelineException ex) {
+	      return new FailureRsp(timer, ex.getMessage());	      
+	    }
+	    
+	    timer.suspend();
+	    Object obj = modifyProperties(new NodeModifyPropertiesReq(targetID, targetMod));
+	    timer.accum(((TimedRsp) obj).getTimer());
+	    if(obj instanceof FailureRsp) {
+	      FailureRsp rsp = (FailureRsp) obj;
+	      return new FailureRsp(timer, rsp.getMessage());
+	    }	  
 	  }
 	}
       }
@@ -5004,7 +5073,10 @@ class MasterMgr
 	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
 	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
 	     work.getWorkingID().equals(vsn.getVersionID()) && 
-	     (work.isFrozen() == isFrozen)) {
+	     (work.isFrozen() == isFrozen)) {   // This causes the entire check-out to abort when the node is 
+                                                // not currently frozen and the CheckOutMethod is FrozenUpstream!
+                                                // A more sophisitcated test is needed instead of 
+	                                        // (work.isFrozen() == isFrozen).
 	    branch.removeLast();
 	    return;
 	  }
