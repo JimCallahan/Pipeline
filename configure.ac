@@ -357,6 +357,21 @@ AC_MSG_RESULT([$PL_MASTER_PORT])
 
 
 
+AC_MSG_CHECKING([Pipeline Master Server Heap Size])
+
+AC_SUBST(PL_MASTER_HEAP_SIZE)
+PL_MASTER_HEAP_SIZE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                     --lookup MasterHeapSize`
+
+if test "$PL_MASTER_HEAP_SIZE" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_MASTER_HEAP_SIZE])
+
+
+
 AC_MSG_CHECKING([Root Node Storage Directory])
 
 AC_SUBST(NODEDIR)
@@ -401,6 +416,21 @@ then
 fi 
 
 AC_MSG_RESULT([$PL_FILE_PORT])
+
+
+
+AC_MSG_CHECKING([Pipeline File Server Heap Size])
+
+AC_SUBST(PL_FILE_HEAP_SIZE)
+PL_FILE_HEAP_SIZE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                        --lookup FileHeapSize`
+
+if test "$PL_FILE_HEAP_SIZE" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_FILE_HEAP_SIZE])
 
 
 
@@ -449,6 +479,20 @@ fi
 
 AC_MSG_RESULT([$PL_QUEUE_PORT])
 
+
+
+AC_MSG_CHECKING([Pipeline Queue Server Heap Size])
+
+AC_SUBST(PL_QUEUE_HEAP_SIZE)
+PL_QUEUE_HEAP_SIZE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                        --lookup QueueHeapSize`
+
+if test "$PL_QUEUE_HEAP_SIZE" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_QUEUE_HEAP_SIZE])
 
 
 AC_MSG_CHECKING([Pipeline Job Server Port])
@@ -784,12 +828,14 @@ java_gc_opts="-XX:+UseParallelGC"
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_GC_OPTS)
-PLMASTER_GC_OPTS="${java_gc_opts} -Xms256M -Xmx1G"
+pl_master_min_heap_size=$(($PL_MASTER_HEAP_SIZE / 4))
+PLMASTER_GC_OPTS="${java_gc_opts} -Xms${pl_master_min_heap_size} -Xmx${PL_MASTER_HEAP_SIZE}"
 AC_MSG_RESULT([$PLMASTER_GC_OPTS])
 
 AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_GC_OPTS)
-PLFILEMGR_GC_OPTS="${java_gc_opts} -Xms64M -Xmx512M"
+pl_file_min_heap_size=$(($PL_FILE_HEAP_SIZE / 4))
+PLFILEMGR_GC_OPTS="${java_gc_opts} -Xms${pl_file_min_heap_size} -Xmx${PL_FILE_HEAP_SIZE}"
 AC_MSG_RESULT([$PLFILEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plplugin])
@@ -799,7 +845,8 @@ AC_MSG_RESULT([$PLPLUGIN_GC_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
 AC_SUBST(PLQUEUEMGR_GC_OPTS)
-PLQUEUEMGR_GC_OPTS="${java_gc_opts} -Xms256M -Xmx1G"
+pl_queue_min_heap_size=$(($PL_QUEUE_HEAP_SIZE / 4))
+PLQUEUEMGR_GC_OPTS="${java_gc_opts} -Xms${pl_queue_min_heap_size} -Xmx${PL_QUEUE_HEAP_SIZE}"
 AC_MSG_RESULT([$PLQUEUEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([pljobmgr])
