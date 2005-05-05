@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.21 2005/01/22 06:10:09 jim Exp $
+// $Id: NodeCommon.java,v 1.22 2005/05/05 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -325,7 +325,7 @@ class NodeCommon
 
 
   /**
-   * Whether this node has a regeneration action which his currently active?
+   * Whether this node has a regeneration action which his currently active.
    */ 
   public boolean 
   isActionEnabled() 

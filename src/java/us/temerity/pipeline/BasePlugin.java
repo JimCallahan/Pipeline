@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.2 2005/01/15 02:51:16 jim Exp $
+// $Id: BasePlugin.java,v 1.3 2005/05/05 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -62,7 +62,7 @@ class BasePlugin
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the revision number of the action plugin. 
+   * Get the revision number of the plugin. 
    */ 
   public VersionID
   getVersionID()
@@ -270,7 +270,7 @@ class BasePlugin
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The revision number of the action plugin. 
+   * The revision number of the plugin. 
    */ 
   protected VersionID  pVersionID;
 
