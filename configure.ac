@@ -791,6 +791,8 @@ then
   esac
 
   JAVA_C_FLAGS="-source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
+  JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
+
   JAVA_RUNTIME_FLAGS="-disableassertions -server"
 
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
@@ -813,6 +815,8 @@ else
   esac
 
   JAVA_C_FLAGS="-g -source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
+  JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
+
   JAVA_RUNTIME_FLAGS="-enableassertions -server"
 
   EXTRA_DEBUG_SUBDIRS="tests"
