@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: ActionAgenda.java,v 1.6 2005/05/05 22:46:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,6 +47,10 @@ class ActionAgenda
    * @param secondarySources  
    *   The secondary file sequences indexed by fully resolved source node name.
    *
+   * @param actionInfo
+   *   The action parameter information for each source node linked to the target node
+   *   by a Dependency link and which has an action.
+   * 
    * @param toolset 
    *   The name of the toolset environment under which the action is executed.
    * 
@@ -65,6 +69,7 @@ class ActionAgenda
    Set<FileSeq> secondaryTargets,
    Map<String,FileSeq> primarySources,        
    Map<String,Set<FileSeq>> secondarySources,  
+   Map<String,ActionInfo> actionInfo, 
    String toolset, 
    Map<String,String> env, 
    File dir
@@ -100,6 +105,11 @@ class ActionAgenda
     pSecondarySources = new TreeMap<String,TreeSet<FileSeq>>();
     for(String name : secondarySources.keySet()) 
       pSecondarySources.put(name, new TreeSet<FileSeq>(secondarySources.get(name)));
+
+    if(actionInfo == null) 
+      throw new IllegalArgumentException
+	("The action parameter information cannot be (null)!");
+    pActionInfo = new TreeMap<String,ActionInfo>(actionInfo);
 
     if(toolset == null) 
       throw new IllegalArgumentException
@@ -207,8 +217,27 @@ class ActionAgenda
     else 
       return new TreeSet<FileSeq>();
   }
-
  
+  /** 
+   * The action parameter information for a given source node.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The action info or <CODE>null</CODE> if the given source does not have an action
+   *   or is linked to the target node by a Reference link.
+   */ 
+  public ActionInfo 
+  getSourceActionInfo
+  (
+   String name
+  )
+  {
+    return pActionInfo.get(name);
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -265,7 +294,9 @@ class ActionAgenda
 
     if(!pSecondarySources.isEmpty())
       encoder.encode("SecondarySources", pSecondarySources);
-
+    
+    if(!pActionInfo.isEmpty()) 
+      encoder.encode("ActionInfo", pActionInfo);
     
     encoder.encode("Toolset", pToolset);
     encoder.encode("Environment", pEnvironment);
@@ -321,6 +352,15 @@ class ActionAgenda
 	pSecondarySources = table;
       else 
 	pSecondarySources = new TreeMap<String,TreeSet<FileSeq>>();
+    }
+
+    {
+      TreeMap<String,ActionInfo> table = 
+	(TreeMap<String,ActionInfo>) decoder.decode("ActionInfo");
+      if(table != null) 
+	pActionInfo = table;
+      else 
+	pActionInfo = new TreeMap<String,ActionInfo>();
     }
 
     String toolset = (String) decoder.decode("Toolset");
@@ -382,6 +422,11 @@ class ActionAgenda
    * The secondary file sequences indexed by fully resolved source node name.
    */
   private TreeMap<String,TreeSet<FileSeq>> pSecondarySources;
+
+  /**
+   * The action parameter information for each source node with an action.
+   */ 
+  private TreeMap<String,ActionInfo>  pActionInfo; 
 
   /**
    * The name of the toolset environment.

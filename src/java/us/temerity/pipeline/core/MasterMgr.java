@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.117 2005/04/30 22:08:06 jim Exp $
+// $Id: MasterMgr.java,v 1.118 2005/05/05 22:46:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6243,6 +6243,7 @@ class MasterMgr
 	  TreeMap<String,FileSeq> primarySources = new TreeMap<String,FileSeq>();
 	  TreeMap<String,Set<FileSeq>> secondarySources = 
 	    new TreeMap<String,Set<FileSeq>>();
+	  TreeMap<String,ActionInfo> actionInfos = new TreeMap<String,ActionInfo>();
 	  for(String sname : sourceIndices.keySet()) {
 	    TreeSet<Integer> lindices = sourceIndices.get(sname);
 	    if((lindices != null) && !lindices.isEmpty()) {
@@ -6263,7 +6264,16 @@ class MasterMgr
 
 		if(!fseqs.isEmpty()) 
 		  secondarySources.put(sname, fseqs);
-	      }	    
+	      }	  
+
+	      BaseAction laction = lwork.getAction();
+	      if(laction != null) {
+		LinkMod slink = work.getSource(sname);
+		if((slink != null) && (slink.getPolicy() == LinkPolicy.Dependency)) {
+		  ActionInfo ainfo = new ActionInfo(laction, lwork.isActionEnabled());
+		  actionInfos.put(sname, ainfo);
+		}
+	      }
 	    }
 	  }
 
@@ -6276,7 +6286,7 @@ class MasterMgr
 	  ActionAgenda agenda = 
 	    new ActionAgenda(jobID, nodeID, 
 			     primaryTarget, secondaryTargets, 
-			     primarySources, secondarySources, 
+			     primarySources, secondarySources, actionInfos,  
 			     work.getToolset(), env, dir);
 	  
 	  JobReqs jreqs = work.getJobRequirements();
