@@ -4,8 +4,8 @@ FileHostname = gecko
 FilePort = 53136
 HomeDirectory = /home
 HostIDs = 
-    24-90-80-137.nyc.rr.com       -151796265836246037513599292049410084949
-    gecko                         -151796265836246037513599292049410084949
+    192.168.15.100                27040926823849639572382700395894080288
+    gecko                         27040926823849639572382700395894080288
 JavaClassVersion = 49.0
 JavaHome = /usr/java/jdk1.5.0/jre
 JavaName = Java HotSpot(TM) Client VM
@@ -14,8 +14,8 @@ JavaVersion = 1.5.0-b64
 JobPort = 53140
 LicenseEnd = Sun Aug 17 02:12:55 EST 292278994
 LicenseEndStamp = 9223372036854775807
-LicenseStart = Thu May 05 09:26:52 EDT 2005
-LicenseStartStamp = 1115299612768
+LicenseStart = Thu May 05 17:38:58 EDT 2005
+LicenseStartStamp = 1115329138014
 LicenseType = Perpetual
 MasterHeapSize = 402653184
 MasterHostname = gecko
