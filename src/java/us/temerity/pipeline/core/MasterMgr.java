@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.118 2005/05/05 22:46:06 jim Exp $
+// $Id: MasterMgr.java,v 1.119 2005/05/10 23:42:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10091,7 +10091,7 @@ class MasterMgr
       assert(dsl != null);
 
       TreeSet<String> wlinks = dsl.getWorking(nodeID);
-      if((wlinks != null) && (!wlinks.isEmpty())) {
+      if(wlinks != null) {
 	for(String lname : wlinks) {
 	  getDownstreamNodeStatus(root, new NodeID(nodeID, lname), null, 
 				  branch, table, timer);
@@ -10110,7 +10110,7 @@ class MasterMgr
 	else 
 	  clinks = dsl.getLatestCheckedIn();
 
-	if((clinks != null) && (!clinks.isEmpty())) {
+	if(clinks != null) {
 	  for(String lname : clinks.keySet()) {
 	    VersionID lvid = clinks.get(lname);
 	    
