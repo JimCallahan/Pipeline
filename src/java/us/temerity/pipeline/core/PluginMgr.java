@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.4 2005/03/11 06:34:39 jim Exp $
+// $Id: PluginMgr.java,v 1.5 2005/05/11 11:22:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -193,6 +193,10 @@ class PluginMgr
       String cname = req.getClassName();
       byte bytes[] = req.getBytes();
 
+      /* load the class and cache the class bytes */ 
+      pLoadCycleID++;
+      loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), bytes);      
+
       /* save the plugin class bytes in a file */ 
       File file = null;
       try {
@@ -214,16 +218,6 @@ class PluginMgr
       catch(IOException ex) {
 	throw new PipelineException
 	  ("Unable to save the plugin (" + cname + ") to file (" + file + ")!");
-      }
-
-      /* load the class and cache the class bytes */ 
-      try {
-	pLoadCycleID++;
-	loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), bytes);      
-      }
-      catch(PipelineException ex) {
-	file.delete();
-	throw ex;
       }
 
       return new SuccessRsp(timer);
