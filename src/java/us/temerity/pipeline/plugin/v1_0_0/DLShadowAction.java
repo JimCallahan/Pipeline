@@ -1,4 +1,4 @@
-// $Id: DLShadowAction.java,v 1.1 2005/05/11 01:10:10 jim Exp $
+// $Id: DLShadowAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -16,7 +16,9 @@ import java.io.*;
  * Convert ZFile depth maps into optimized 3Delight shadow maps. <P> 
  * 
  * Converts the ZFile depth maps (.z) which make up the primary file sequence of one of the 
- * source nodes into shadow maps (.tdl) which make up the primary file sequence of this node. 
+ * source nodes into shadow maps (.tdl) which make up the primary file sequence of this 
+ * node. <P> 
+ * 
  * See the <A href="http://www.3delight.com">3Delight</A> documentation for
  * <A href="http://www.3delight.com/ZDoc/3delight_12.html"><B>tdlmake</B></A>(1) for 
  * details. <P> 
@@ -161,7 +163,7 @@ class DLShadowAction
 	String cmdopts = null;
 	{
 	  StringBuffer buf = new StringBuffer();
-	  buf.append("hdri2tif");
+	  buf.append("tdlmake");
 	  for(String arg : args) 
 	    buf.append(" " + arg);
 	  cmdopts = buf.toString();

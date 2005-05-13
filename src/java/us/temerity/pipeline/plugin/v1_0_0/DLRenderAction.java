@@ -1,4 +1,4 @@
-// $Id: DLRenderAction.java,v 1.1 2005/05/11 11:23:29 jim Exp $
+// $Id: DLRenderAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -17,8 +17,9 @@ import java.io.*;
  * 
  * The RIB file (.rib) which is the single member of the primary file sequence of each 
  * source node which sets the Order per-source parameter will be processed.  One or more 
- * images, depthmaps or deep shadow maps may be generated in one rendering pass. See the 
- * <A href="http://www.3delight.com">3Delight</A> documentation for
+ * images, depthmaps or deep shadow maps may be generated in one rendering pass. <P> 
+ * 
+ * See the <A href="http://www.3delight.com">3Delight</A> documentation for
  * <A href="http://www.3delight.com/ZDoc/3delight_10.html"><B>renderdl</B></A>(1) for 
  * details. <P> 
  * 

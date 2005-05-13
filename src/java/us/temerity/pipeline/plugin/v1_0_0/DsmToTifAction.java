@@ -1,4 +1,4 @@
-// $Id: DsmToTifAction.java,v 1.1 2005/05/11 01:10:10 jim Exp $
+// $Id: DsmToTifAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -17,7 +17,8 @@ import java.io.*;
  * display. <P>
  * 
  * Converts the DSMs (.shd) which make up the primary file sequence of one of the source
- * nodes into the TIFF images which make up the primary file sequence of this node. 
+ * nodes into the TIFF images which make up the primary file sequence of this node. <P>
+ * 
  * See the <A href="http://www.3delight.com">3Delight</A> documentation for 
  * <A href="http://www.3delight.com/ZDoc/3delight_13.html"><B>dsm2tif</B></A>(1) for 
  * details. <P> 

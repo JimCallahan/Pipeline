@@ -1,4 +1,4 @@
-// $Id: DLShaderAction.java,v 1.1 2005/05/11 01:10:10 jim Exp $
+// $Id: DLShaderAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -17,8 +17,9 @@ import java.io.*;
  * 
  * Compiles the shader source file (.sl) which is the single member of the primary file 
  * sequence of one of the source nodes into a byte-code or object-code (.sdl) shader which 
- * is the single member of the primary file sequence of this node. See the 
- * <A href="http://www.3delight.com">3Delight</A> documentation for
+ * is the single member of the primary file sequence of this node. <P> 
+ * 
+ * See the <A href="http://www.3delight.com">3Delight</A> documentation for
  * <A href="http://www.3delight.com/ZDoc/3delight_11.html"><B>shaderdl</B></A>(1) for 
  * details. <P> 
  * 

@@ -1,4 +1,4 @@
-// $Id: DLTextureAction.java,v 1.1 2005/05/11 01:10:10 jim Exp $
+// $Id: DLTextureAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -16,7 +16,8 @@ import java.io.*;
  * Generates optimized 3Delight textures from source images. 
  * 
  * Converts the images which make up the primary file sequence of one of the source
- * nodes into the texture maps which make up the primary file sequence of this node. 
+ * nodes into the texture maps which make up the primary file sequence of this node. <P>
+ * 
  * See the <A href="http://www.3delight.com">3Delight</A> documentation for 
  * <A href="http://www.3delight.com/ZDoc/3delight_12.html"><B>tdlmake</B></A>(1) for 
  * details. <P> 
@@ -91,7 +92,7 @@ import java.io.*;
  * 
  *   Flip <BR>
  *   <DIV style="margin-left: 40px;">
- *     Whether and how to flip the output image:
+ *     Whether and how to flip the output texture maps:
  *     <UL>
  *       <LI> None - No flipping is performed.
  *       <LI> S-Only - Flip image in the S direction.
@@ -265,7 +266,7 @@ class DLTextureAction
       ActionParam param = 
 	new EnumActionParam
 	("Flip", 
-	 "Whether and how to flip the output image.",
+	 "Whether and how to flip the output texture maps.",
 	 "None", choices);
       addSingleParam(param);
     }   
