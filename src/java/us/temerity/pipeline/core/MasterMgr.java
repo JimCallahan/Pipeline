@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.119 2005/05/10 23:42:03 jim Exp $
+// $Id: MasterMgr.java,v 1.120 2005/05/13 06:06:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5791,7 +5791,8 @@ class MasterMgr
       FileSeq targetSeq = null;
       ArrayList<Long> orderedRootIDs = new ArrayList<Long>();
       {
-	TreeMap<FileSeq,Long> rootOrder = new TreeMap<FileSeq,Long>();
+	TreeMap<String,TreeMap<Integer,Long>> rootOrder = 
+	  new TreeMap<String,TreeMap<Integer,Long>>();
 
 	FilePattern fpat = null;
 	TreeSet<Integer> frames = new TreeSet<Integer>();
@@ -5799,18 +5800,27 @@ class MasterMgr
 	  for(Long jobID : rootJobIDs) {
 	    QueueJob job = jobs.get(jobID);
 	    FileSeq fseq = job.getActionAgenda().getPrimaryTarget();
-	    rootOrder.put(fseq, jobID);
-
+	    
 	    if(fpat == null) 
 	      fpat = fseq.getFilePattern();
 
+	    int start = 0;
 	    FrameRange range = fseq.getFrameRange();
 	    if(range != null) {
 	      int fnums[] = range.getFrameNumbers();
 	      int wk;
 	      for(wk=0; wk<fnums.length; wk++) 
 		frames.add(fnums[wk]);
+
+	      start = range.getStart();
 	    }
+
+	    TreeMap<Integer,Long> frameOrder = rootOrder.get(fpat.toString());
+	    if(frameOrder == null) {
+	      frameOrder = new TreeMap<Integer,Long>();
+	      rootOrder.put(fpat.toString(), frameOrder);
+	    }
+	    frameOrder.put(start, jobID);
 	  }
 	}
 
@@ -5830,7 +5840,8 @@ class MasterMgr
 	  targetSeq = new FileSeq(fpat, new FrameRange(frames.first(), frames.last(), step));
 	}
 
-	orderedRootIDs.addAll(rootOrder.values());
+	for(TreeMap<Integer,Long> frameOrder : rootOrder.values()) 
+	  orderedRootIDs.addAll(frameOrder.values());
       }
       
       /* generate the list of external job IDs */ 
