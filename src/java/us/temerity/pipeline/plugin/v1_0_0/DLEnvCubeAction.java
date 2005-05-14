@@ -1,4 +1,4 @@
-// $Id: DLEnvCubeAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
+// $Id: DLEnvCubeAction.java,v 1.3 2005/05/14 08:20:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -88,17 +88,6 @@ import java.io.*;
  *       <LI>Black - Use black for all values outside [0,1] range.
  *       <LI>Clamp - Use border texel color for values outside [0,1] range.
  *       <LI>Peridoc - Tiles environment map outside [0,1] range.
- *     </UL>
- *   </DIV> <BR>
- * 
- *   Flip <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether and how to flip the output environment maps:
- *     <UL>
- *       <LI> None - No flipping is performed.
- *       <LI> S-Only - Flip image in the S direction.
- *       <LI> T-Only - Flip image in the T direction.
- *       <LI> Both - Flip in both the S and T directions. 
  *     </UL>
  *   </DIV> <BR>
  * 
@@ -261,21 +250,6 @@ class DLEnvCubeAction
     
     {
       ArrayList<String> choices = new ArrayList<String>();
-      choices.add("None");
-      choices.add("S-Only");
-      choices.add("T-Only");
-      choices.add("Both"); 
-
-      ActionParam param = 
-	new EnumActionParam
-	("Flip", 
-	 "Whether and how to flip the output environment maps.",
-	 "None", choices);
-      addSingleParam(param);
-    }   
-
-    {
-      ArrayList<String> choices = new ArrayList<String>();
       choices.add("LZW");
       choices.add("Deflate");
       choices.add("PackBits");
@@ -315,7 +289,6 @@ class DLEnvCubeAction
 	output.addEntry("SMode");
 	output.addEntry("TMode");
 	output.addSeparator();
-	output.addEntry("Flip");
 	output.addEntry("Compression");
 	
 	layout.addSubGroup(output);	
@@ -393,8 +366,8 @@ class DLEnvCubeAction
 	String suffix = fseq.getFilePattern().getSuffix();
 	if((suffix == null) || !suffix.equals("tdl"))
 	  throw new PipelineException
-	    ("The target primary file sequence (" + fseq + ") must contain 3Delight " + 
-	     "environment maps (.tdl)!");
+	    ("The target primary file sequence (" + fseq + ") must contain a 3Delight " + 
+	     "environment map (.tdl)!");
 	
 	if(fseq.numFrames() != 1)
 	  throw new PipelineException
@@ -572,30 +545,6 @@ class DLEnvCubeAction
       }
     }
     
-    {
-      EnumActionParam param = (EnumActionParam) getSingleParam("Flip");
-      switch(param.getIndex()) {
-      case 0:
-	break;
-
-      case 1:
-	args.add("-flips");
-	break;
-
-      case 2:
-	args.add("-flipt");
-	break;
-	
-      case 3:
-	args.add("-flipst");
-	break;
-	
-      default:
-	throw new PipelineException
-	  ("Illegal Flip value!");
-      }
-    }
-
     {
       EnumActionParam param = (EnumActionParam) getSingleParam("Compression");
       switch(param.getIndex()) {
