@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.122 2005/05/14 12:54:28 jim Exp $
+// $Id: MasterMgr.java,v 1.123 2005/05/14 13:44:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5482,7 +5482,7 @@ class MasterMgr
       }
       
       FileSeq targetSeq = null;
-      boolean writeable = false;
+      boolean writeable = true;
       {
 	timer.aquire(); 
 	ReentrantReadWriteLock lock = getWorkingLock(targetID);
@@ -5502,7 +5502,7 @@ class MasterMgr
 	       "cannot be replaced!");
 
 	  targetSeq = mod.getPrimarySequence();
-	  writeable = mod.isActionEnabled();
+	  writeable = !mod.isActionEnabled();
 	}
 	finally {
 	  lock.readLock().unlock();
