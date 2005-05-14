@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.121 2005/05/14 11:20:17 jim Exp $
+// $Id: MasterMgr.java,v 1.122 2005/05/14 12:54:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4329,8 +4329,8 @@ class MasterMgr
 	      }
 	    }
 	    
-	    /* reconnect the upstream nodes to the new named node */ 
-	    for(LinkMod ulink : bundle.uVersion.getSources()) {
+	    /* reconnect the upstream nodes to the new named node */
+	    for(LinkMod ulink : omod.getSources()) {
 	      timer.suspend();
 	      Object obj = link(new NodeLinkReq(nid, ulink));
 	      timer.accum(((TimedRsp) obj).getTimer());
@@ -4338,6 +4338,44 @@ class MasterMgr
 		FailureRsp rsp = (FailureRsp) obj;
 		return new FailureRsp(timer, rsp.getMessage());
 	      }
+	    }
+
+	    /* copy any per-source parameters from the old named node to the new named node */
+	    BaseAction oaction = omod.getAction();
+	    if((oaction != null) && 
+	       oaction.supportsSourceParams() && !oaction.getSourceNames().isEmpty()) {
+	      
+	      /* relookup the new working version to get the added links */ 
+	      nmod = getWorkingBundle(nid).uVersion;
+	      
+	      /* get the current action related parameters */ 
+	      BaseAction naction        = nmod.getAction(); 
+	      boolean enabled           = nmod.isActionEnabled();
+	      JobReqs jreqs             = nmod.getJobRequirements();
+	      OverflowPolicy policy     = nmod.getOverflowPolicy();
+	      ExecutionMethod execution = nmod.getExecutionMethod();
+	      Integer batchSize         = nmod.getBatchSize();
+	      
+	      naction.setSourceParamValues(oaction);
+
+	      nmod.setAction(naction);
+	      nmod.setActionEnabled(enabled);
+	      nmod.setJobRequirements(jreqs);
+	      nmod.setOverflowPolicy(policy);
+	      nmod.setExecutionMethod(execution);
+	      switch(execution) {
+	      case Parallel: 
+		nmod.setBatchSize(batchSize);
+	      }
+	      
+	      /* update the new working version */ 
+	      timer.suspend();
+	      Object obj = modifyProperties(new NodeModifyPropertiesReq(nid, nmod));
+	      timer.accum(((TimedRsp) obj).getTimer());
+	      if(obj instanceof FailureRsp) {
+		FailureRsp rsp = (FailureRsp) obj;
+		return new FailureRsp(timer, rsp.getMessage());
+	      }	  
 	    }
 	    
 	    /* release the old named node */ 
