@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.120 2005/05/13 06:06:07 jim Exp $
+// $Id: MasterMgr.java,v 1.121 2005/05/14 11:20:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4233,9 +4233,11 @@ class MasterMgr
 	   unlink the downstream working versions from the to be renamed working version 
 	   while collecting the existing downstream links and source parameters */ 
       TreeMap<String,LinkMod> dlinks = null;
+      TreeMap<String,String> singleLinkParams = null;
       TreeMap<String,Collection<ActionParam>> sourceParams = null;
       if(!name.equals(nname)) {
 	dlinks = new TreeMap<String,LinkMod>();
+	singleLinkParams = new TreeMap<String,String>();
 	sourceParams = new TreeMap<String,Collection<ActionParam>>();
 	
 	timer.aquire();
@@ -4262,8 +4264,18 @@ class MasterMgr
 		dlinks.put(target, dlink);
 
 		BaseAction targetAction = targetMod.getAction();
-		if((targetAction != null) && targetAction.getSourceNames().contains(name)) 
-		  sourceParams.put(target, targetAction.getSourceParams(name));
+		if(targetAction != null) {
+		  if(targetAction.getSourceNames().contains(name))
+		    sourceParams.put(target, targetAction.getSourceParams(name));
+
+		  for(ActionParam aparam : targetAction.getSingleParams()) {
+		    if(aparam instanceof LinkActionParam) {
+		      LinkActionParam lparam = (LinkActionParam) aparam;
+		      if(name.equals(lparam.getStringValue()))
+			singleLinkParams.put(target, lparam.getName());
+		    }
+		  }
+		}
 	      }
 	    }
 	    finally {
@@ -4379,62 +4391,83 @@ class MasterMgr
 	  }
 	}
 	
-	/* set per-source parameters previously set for the old name under the new name */ 
-	for(String target : sourceParams.keySet()) {
-	  Collection<ActionParam> aparams = sourceParams.get(target);
-	  if(!aparams.isEmpty()) {
-	    NodeID targetID = new NodeID(id, target);
+	/* update downstream action parameters related to the new node name */ 
+	{
+	  TreeSet<String> targets = new TreeSet<String>();
+	  targets.addAll(sourceParams.keySet());
+	  targets.addAll(singleLinkParams.keySet());
+
+	  for(String target : targets) {
+	    String lparamName = singleLinkParams.get(target);
+	    Collection<ActionParam> aparams = sourceParams.get(target);
 	    
-	    NodeMod targetMod = null;
-	    {
-	      timer.aquire();
-	      ReentrantReadWriteLock lock = getWorkingLock(targetID);
-	      lock.readLock().lock();
+	    if((lparamName != null) || ((aparams != null) && !aparams.isEmpty())) {
+
+	      /* lookup the target working version */ 
+	      NodeID targetID = new NodeID(id, target);
+	      NodeMod targetMod = null;
+	      {
+		timer.aquire();
+		ReentrantReadWriteLock lock = getWorkingLock(targetID);
+		lock.readLock().lock();
+		try {
+		  timer.resume();
+		  targetMod = new NodeMod(getWorkingBundle(targetID).uVersion);
+		}
+		catch(PipelineException ex) {
+		  return new FailureRsp(timer, ex.getMessage());
+		}
+		finally {
+		  lock.readLock().unlock();
+		}  
+	      }
+	      
+	      /* get the current action related parameters */ 
+	      BaseAction action         = targetMod.getAction(); 
+	      boolean enabled           = targetMod.isActionEnabled();
+	      JobReqs jreqs             = targetMod.getJobRequirements();
+	      OverflowPolicy policy     = targetMod.getOverflowPolicy();
+	      ExecutionMethod execution = targetMod.getExecutionMethod();
+	      Integer batchSize         = targetMod.getBatchSize();
+
+	      /* set the value of the single link parameters to the new name if their 
+		   previous value was the old name. */ 
+	      if(lparamName != null) 
+		action.setSingleParamValue(lparamName, nname);
+	      	      
+	      /* add per-source parameters previously set for the old name under the 
+		   new name. */ 
+	      if((aparams != null) && !aparams.isEmpty()) {
+		action.initSourceParams(nname);
+		for(ActionParam aparam : aparams) 
+		  action.setSourceParamValue(nname, aparam.getName(), aparam.getValue());
+	      }
+
+	      /* update the action related parameters */ 
 	      try {
-		timer.resume();
-		targetMod = new NodeMod(getWorkingBundle(targetID).uVersion);
+		targetMod.setAction(action);
+		targetMod.setActionEnabled(enabled);
+		targetMod.setJobRequirements(jreqs);
+		targetMod.setOverflowPolicy(policy);
+		targetMod.setExecutionMethod(execution);
+		switch(execution) {
+		case Parallel: 
+		  targetMod.setBatchSize(batchSize);
+		}
 	      }
 	      catch(PipelineException ex) {
-		return new FailureRsp(timer, ex.getMessage());
+		return new FailureRsp(timer, ex.getMessage());	      
 	      }
-	      finally {
-		lock.readLock().unlock();
-	      }  
+	      
+	      /* modify the working version */ 
+	      timer.suspend();
+	      Object obj = modifyProperties(new NodeModifyPropertiesReq(targetID, targetMod));
+	      timer.accum(((TimedRsp) obj).getTimer());
+	      if(obj instanceof FailureRsp) {
+		FailureRsp rsp = (FailureRsp) obj;
+		return new FailureRsp(timer, rsp.getMessage());
+	      }	  
 	    }
-	    
-	    BaseAction action         = targetMod.getAction(); 
-	    boolean enabled           = targetMod.isActionEnabled();
-	    JobReqs jreqs             = targetMod.getJobRequirements();
-	    OverflowPolicy policy     = targetMod.getOverflowPolicy();
-	    ExecutionMethod execution = targetMod.getExecutionMethod();
-	    Integer batchSize         = targetMod.getBatchSize();
-
-	    action.initSourceParams(nname);
-	    for(ActionParam aparam : aparams) 
-	      action.setSourceParamValue(nname, aparam.getName(), aparam.getValue());
-
-	    try {
-	      targetMod.setAction(action);
-	      targetMod.setActionEnabled(enabled);
-	      targetMod.setJobRequirements(jreqs);
-	      targetMod.setOverflowPolicy(policy);
-	      targetMod.setExecutionMethod(execution);
-	      switch(execution) {
-	      case Parallel: 
-		targetMod.setBatchSize(batchSize);
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      return new FailureRsp(timer, ex.getMessage());	      
-	    }
-	    
-	    timer.suspend();
-	    Object obj = modifyProperties(new NodeModifyPropertiesReq(targetID, targetMod));
-	    timer.accum(((TimedRsp) obj).getTimer());
-	    if(obj instanceof FailureRsp) {
-	      FailureRsp rsp = (FailureRsp) obj;
-	      return new FailureRsp(timer, rsp.getMessage());
-	    }	  
 	  }
 	}
       }
