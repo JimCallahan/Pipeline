@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.9 2005/05/11 01:08:23 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.10 2005/05/14 08:33:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -40,10 +40,12 @@ class MayaTextureSyncTool
     pTextureFormats.add("bmp");
     pTextureFormats.add("iff");
     pTextureFormats.add("gif");
+    pTextureFormats.add("hdr");
     pTextureFormats.add("jpg");
     pTextureFormats.add("jpeg");
     pTextureFormats.add("png");
     pTextureFormats.add("ppm");
+    pTextureFormats.add("psd");
     pTextureFormats.add("rgb");
     pTextureFormats.add("sgi");
     pTextureFormats.add("bw");
@@ -70,6 +72,8 @@ class MayaTextureSyncTool
     pCheckOutFields = new TreeMap<NodeID,JBooleanField>(); 
     pLinkFields     = new TreeMap<NodeID,JBooleanField>(); 
     pUnlinkFields   = new TreeMap<NodeID,JBooleanField>(); 
+
+    underDevelopment();
   }
 
 
