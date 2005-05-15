@@ -1,0 +1,98 @@
+
+Customer Completes a Profile...
+
+  1. Send an email to support@temerity.us containg the 
+
+
+
+
+
+
+
+Input from parameters:
+
+  1. Customer ID                   (rhinofx)               
+  2. Site Profile ID               (050513)                temerity_general 
+  3. Site Profile Filename         (../site-profile)
+  4. Pipeline Version              (1.9.20)
+
+
+
+Steps: 
+
+  1. Create a directory structure for the release:
+
+     /pipeline/customer-id/site-profile-id/
+       src/
+       build/
+       release/
+       info/
+
+     Abort if this structure already exists!
+
+
+  2. Check-out the source code for the given version:
+  
+     > cd /pipeline/customer-id/site-profile-id/src
+     > cvs checkout -r v1_9_20
+
+
+  3. Copy the Site Profile into the info directory and dump the config parameters:
+ 
+     > cd /pipeline/customer-id/site-profile-id/info
+     > cp site-profile .
+     > java -cp ../src/pipeline/plconfig CryptoApp site-profile --params > site-profile.txt
+
+
+  4. Build a list of all Java classes which define the serialVersionUID: 
+
+     > cd /pipeline/customer-id/site-profile-id/src
+     > find pipeline -type f -name "*.java" -exec grep -l serialVersionUID {} \; > list
+
+
+  5. Generate a unique random serialVersionUID for each listed class and string replace 
+     the old serialVersionUID with the newly generated values.
+
+
+  6. Generate a plain text file containing the MD5 checksums of all classes which have 
+     had their serialVersionUID replaced and put this file in the "info" directory.
+
+
+  7. Configure and build Pipeline (log the output to the info directory): 
+
+     > cd /pipeline/customer-id/site-profile-id/build
+     > mkdir -p pipeline/i686-pc-linux-gnu-dbg
+
+     > cd /pipeline/customer-id/site-profile-id/src/pipeline
+     > sh autogen.sh
+
+     > cd /pipeline/customer-id/site-profile-id/build/pipeline
+     > /pipeline/customer-id/site-profile-id/src/pipeline/configure ...
+     
+     > cd /pipeline/customer-id/site-profile-id/build/i686-pc-linux-gnu-dbg/rpm
+     > make install
+
+
+  8. Verify that the RPMs have been built.
+
+
+  9. Archive and remove the source and build dirctories:
+  
+     > cd /pipeline/customer-id/site-profile-id
+
+     > tar -zcvf build.tgz build
+     > rm -rf build
+
+     > tar -zcvf src.tgz src
+     > rm -rf src
+
+
+  10. Upload the RPMs to temerity.us
+
+  
+  11. Insert relevant information into the temerity.us SQL database needed to generate
+      a download page using PHP.
+
+
+  12. Send a standard email to the customer pointing to this page and giving install
+      instructions.
