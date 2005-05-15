@@ -1,4 +1,4 @@
-// $Id: JBaseManagePluginsDialog.java,v 1.5 2005/03/18 16:33:53 jim Exp $
+// $Id: JBaseManagePluginsDialog.java,v 1.6 2005/05/15 17:54:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -57,7 +57,7 @@ class JBaseManagePluginsDialog
       
       pPopup = new JPopupMenu();  
  
-      item = new JMenuItem("New Menu...");
+      item = new JMenuItem("New Menu/Item...");
       pNewMenu = item;
       item.setActionCommand("new-menu");
       item.addActionListener(this);
@@ -74,6 +74,20 @@ class JBaseManagePluginsDialog
       item = new JMenuItem("Delete...");
       pDeleteMenu = item;
       item.setActionCommand("delete-menu");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      pPopup.addSeparator();
+
+      item = new JMenuItem("Move Up");
+      pMoveUpMenu = item;
+      item.setActionCommand("move-up-menu");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      item = new JMenuItem("Move Down");
+      pMoveDownMenu = item;
+      item.setActionCommand("move-down-menu");
       item.addActionListener(this);
       pPopup.add(item);  
     }
@@ -315,14 +329,19 @@ class JBaseManagePluginsDialog
   {    
     PluginMenuLayout pml = getSelectedPluginMenuLayout();
     if(pml != null) {
+      boolean isRoot = pml.getTitle().equals("Plugin Menu");
       pNewMenu.setEnabled(pml.isSubmenu());
-      pRenameMenu.setEnabled(!pml.getTitle().equals("Plugin Menu"));
+      pRenameMenu.setEnabled(!isRoot);
       pDeleteMenu.setEnabled(true);
+      pMoveUpMenu.setEnabled(!isRoot);
+      pMoveDownMenu.setEnabled(!isRoot);
     }
     else {
       pNewMenu.setEnabled(true);
       pRenameMenu.setEnabled(false);
       pDeleteMenu.setEnabled(false);
+      pMoveUpMenu.setEnabled(false);
+      pMoveDownMenu.setEnabled(false);
     }
   }
 
@@ -574,6 +593,10 @@ class JBaseManagePluginsDialog
       doRenameMenu();
     else if(cmd.equals("delete-menu")) 
       doDeleteMenu();
+    else if(cmd.equals("move-up-menu")) 
+      doMoveUpMenu();
+    else if(cmd.equals("move-down-menu")) 
+      doMoveDownMenu();
     else if(cmd.equals("set-plugin"))
       doSetPlugin();
     else if(cmd.equals("clear-plugin"))
@@ -674,6 +697,52 @@ class JBaseManagePluginsDialog
     }
   }
  
+  /**
+   * Move the selected menu one place earlier in its parent's list. 
+   */ 
+  public void 
+  doMoveUpMenu()
+  {
+    DefaultMutableTreeNode mnode = getSelectedMenuLayoutNode();
+    if(mnode != null) {
+      PluginMenuLayout pml = (PluginMenuLayout) mnode.getUserObject();
+      
+      DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) mnode.getParent();
+      if(pnode != null) {
+	PluginMenuLayout ppml = (PluginMenuLayout) pnode.getUserObject();
+
+	int idx = ppml.indexOf(pml);
+	if(idx > 0) {
+	  Collections.swap(ppml, idx-1, idx);
+	  rebuildMenuLayout();
+	}
+      }
+    }
+  }
+
+  /**
+   * Move the selected menu one place later in its parent's list. 
+   */ 
+  public void 
+  doMoveDownMenu()
+  {
+    DefaultMutableTreeNode mnode = getSelectedMenuLayoutNode();
+    if(mnode != null) {
+      PluginMenuLayout pml = (PluginMenuLayout) mnode.getUserObject();
+      
+      DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) mnode.getParent();
+      if(pnode != null) {
+	PluginMenuLayout ppml = (PluginMenuLayout) pnode.getUserObject();
+
+	int idx = ppml.indexOf(pml);
+	if((idx != -1) && (idx < (ppml.size()-1))) {
+	  Collections.swap(ppml, idx, idx+1);
+	  rebuildMenuLayout();
+	}
+      }
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1124,6 +1193,8 @@ class JBaseManagePluginsDialog
   private JMenuItem  pNewMenu; 
   private JMenuItem  pRenameMenu;
   private JMenuItem  pDeleteMenu;
+  private JMenuItem  pMoveUpMenu; 
+  private JMenuItem  pMoveDownMenu; 
   
 
   /*----------------------------------------------------------------------------------------*/
