@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -114,6 +114,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Manage the comparator plugin menu layout.", 
 	 "ShowManageComparatorMenus", "Comparator Menus:"),    
+
+	new HotKeyPref
+	("Manage the action plugin menu layout.", 
+	 "ShowManageActionMenus", "Action Menus:"),    
 
 	new HotKeyPref
 	("Manage the tool plugin menu layout.", 
@@ -1703,7 +1707,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1960,7 +1964,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3316,7 +3320,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.18 2005/03/11 06:33:44 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

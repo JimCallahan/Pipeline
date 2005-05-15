@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.62 2005/04/18 22:53:15 jim Exp $
+// $Id: MasterMgrClient.java,v 1.63 2005/05/15 19:45:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -723,6 +723,60 @@ class MasterMgrClient
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
 
     Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the action plugin selection menu.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the action menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getActionMenuLayout() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetActionMenuLayout, null); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the action plugin selection menu.
+   * 
+   * @param layout
+   *   The heirarchical set of menus for selection of a specific action plugin version.
+   * 
+   * @throws PipelineException
+   *   If unable to set the action menu layout.
+   */ 
+  public synchronized void 
+  setActionMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the action menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
+
+    Object obj = performTransaction(MasterRequest.SetActionMenuLayout, req); 
     handleSimpleResponse(obj);    
   }
 

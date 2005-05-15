@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.16 2005/04/03 01:54:23 jim Exp $
+// $Id: JManagerPanel.java,v 1.17 2005/05/15 19:45:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -346,6 +346,12 @@ class JManagerPanel
 	item = new JMenuItem("Comparator Menus...");
 	pManageComparatorMenusItem = item;
 	item.setActionCommand("manage-comparator-menus");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Action Menus...");
+	pManageActionMenusItem = item;
+	item.setActionCommand("manage-action-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1036,6 +1042,9 @@ class JManagerPanel
       (pManageComparatorMenusItem, prefs.getShowManageComparatorMenus(), 
        "Manage the comparator plugin menu layout.");
     updateMenuToolTip
+      (pManageActionMenusItem, prefs.getShowManageActionMenus(), 
+       "Manage the action plugin menu layout.");
+    updateMenuToolTip
       (pManageToolMenusItem, prefs.getShowManageToolMenus(), 
        "Manage the tool plugin menu layout.");
     updateMenuToolTip
@@ -1674,6 +1683,11 @@ class JManagerPanel
       UIMaster.getInstance().showManageComparatorMenusDialog();
       return true;
     }
+    else if((prefs.getShowManageActionMenus() != null) &&
+	    prefs.getShowManageActionMenus().wasPressed(e)) {
+      UIMaster.getInstance().showManageActionMenusDialog();
+      return true;
+    }
     else if((prefs.getShowManageToolMenus() != null) &&
 	    prefs.getShowManageToolMenus().wasPressed(e)) {
       UIMaster.getInstance().showManageToolMenusDialog();
@@ -1869,6 +1883,8 @@ class JManagerPanel
       UIMaster.getInstance().showManageEditorMenusDialog();
     else if(cmd.equals("manage-comparator-menus"))
       UIMaster.getInstance().showManageComparatorMenusDialog();
+    else if(cmd.equals("manage-action-menus"))
+      UIMaster.getInstance().showManageActionMenusDialog();
     else if(cmd.equals("manage-tool-menus"))
       UIMaster.getInstance().showManageToolMenusDialog();
 
@@ -3263,6 +3279,7 @@ class JManagerPanel
   private JMenuItem  pManageToolsetsItem;
   private JMenuItem  pManageEditorMenusItem;
   private JMenuItem  pManageComparatorMenusItem;
+  private JMenuItem  pManageActionMenusItem;
   private JMenuItem  pManageToolMenusItem;
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;

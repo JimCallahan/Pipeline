@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.50 2005/04/04 03:58:14 jim Exp $
+// $Id: MasterMgrServer.java,v 1.51 2005/05/15 19:45:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -389,6 +389,23 @@ class MasterMgrServer
 		MiscSetPluginMenuLayoutReq req = 
 		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.setComparatorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    case GetActionMenuLayout:
+	      {
+		objOut.writeObject(pMasterMgr.getActionMenuLayout());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetActionMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setActionMenuLayout(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.21 2005/04/03 06:10:12 jim Exp $
+// $Id: UIMaster.java,v 1.22 2005/05/15 19:45:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -543,6 +543,16 @@ class UIMaster
   {
     pManageComparatorMenusDialog.updateMenuLayout();
     pManageComparatorMenusDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage actions dialog.
+   */ 
+  public void 
+  showManageActionMenusDialog()
+  {
+    pManageActionMenusDialog.updateMenuLayout();
+    pManageActionMenusDialog.setVisible(true);
   }
 
   /**
@@ -1394,6 +1404,7 @@ class UIMaster
 	pManageToolsetsDialog        = new JManageToolsetsDialog();
 	pManageEditorMenusDialog     = new JManageEditorMenusDialog();
 	pManageComparatorMenusDialog = new JManageComparatorMenusDialog();
+	pManageActionMenusDialog     = new JManageActionMenusDialog();
 	pManageToolMenusDialog       = new JManageToolMenusDialog();
 	pManageLicenseKeysDialog     = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog   = new JManageSelectionKeysDialog();
@@ -2711,6 +2722,11 @@ class UIMaster
    * The manage comparators dialog.
    */ 
   private JManageComparatorMenusDialog  pManageComparatorMenusDialog;
+
+  /**
+   * The manage actions dialog.
+   */ 
+  private JManageActionMenusDialog  pManageActionMenusDialog;
 
   /**
    * The manage tools dialog.

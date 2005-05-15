@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.123 2005/05/14 13:44:56 jim Exp $
+// $Id: MasterMgr.java,v 1.124 2005/05/15 19:45:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -299,6 +299,7 @@ class MasterMgr
       pPluginMenuLayoutLock = new Object();
       pEditorMenuLayout     = new PluginMenuLayout();
       pComparatorMenuLayout = new PluginMenuLayout();
+      pActionMenuLayout     = new PluginMenuLayout();
       pToolMenuLayout       = new PluginMenuLayout();
 
       pPrivilegedUsers = new TreeSet<String>();
@@ -581,9 +582,10 @@ class MasterMgr
   initPluginMenuLayouts()
     throws PipelineException
   {
-    readEditorMenuLayout(); 
-    readComparatorMenuLayout(); 
-    readToolMenuLayout(); 
+    pEditorMenuLayout     = readPluginMenuLayout("editor"); 
+    pComparatorMenuLayout = readPluginMenuLayout("comparator"); 
+    pActionMenuLayout     = readPluginMenuLayout("action"); 
+    pToolMenuLayout       = readPluginMenuLayout("tool"); 
   }
   
 
@@ -2053,7 +2055,7 @@ class MasterMgr
 	pEditorMenuLayout = req.getLayout();
 
 	try {
-	  writeEditorMenuLayout();
+	  writePluginMenuLayout("editor", pEditorMenuLayout);
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -2125,7 +2127,7 @@ class MasterMgr
 	pComparatorMenuLayout = req.getLayout();
 
 	try {
-	  writeComparatorMenuLayout();
+	  writePluginMenuLayout("comparator", pComparatorMenuLayout);
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -2142,6 +2144,78 @@ class MasterMgr
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get layout of the action plugin selection menu.
+   *
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getActionMenuLayout() 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getActionMenuLayout()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	
+	PluginMenuLayout layout = new PluginMenuLayout(pActionMenuLayout);
+	return new MiscGetPluginMenuLayoutRsp(timer, layout);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the action plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setActionMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setActionMenuLayout()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	    
+	pActionMenuLayout = req.getLayout();
+
+	try {
+	  writePluginMenuLayout("action", pActionMenuLayout);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get layout of the tool plugin selection menu.
    *
@@ -2197,7 +2271,7 @@ class MasterMgr
 	pToolMenuLayout = req.getLayout();
 
 	try {
-	  writeToolMenuLayout();
+	  writePluginMenuLayout("tool", pToolMenuLayout);
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -11734,37 +11808,55 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Write the layout of the editor plugin selection menu to disk. <P> 
+   * Write the a plugin menu layout to disk. <P> 
+   * 
+   * @param title
+   *   The title of the layout.
+   * 
+   * @param layout
+   *   The layout to write.
    * 
    * @throws PipelineException
    *   If unable to write the menu layout file.
    */ 
   private void 
-  writeEditorMenuLayout() 
+  writePluginMenuLayout
+  (
+   String title, 
+   PluginMenuLayout layout
+  ) 
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(PackageInfo.sNodeDir, "etc/editor-menu-layout");
+      String utitle = null;
+      {
+	char cs[] = title.toCharArray();
+	cs[0] = Character.toUpperCase(cs[0]);
+	utitle = new String(cs);
+      }
+
+      File file = new File(PackageInfo.sNodeDir, "etc/" + title + "-menu-layout");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
-	    ("Unable to remove the old editor menu layout file (" + file + ")!");
+	    ("Unable to remove the old " + title + " menu layout file (" + file + ")!");
       }
       
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Editor Menu Layout.");
+	 "Writing " + utitle + " Menu Layout.");
 
       try {
 	String glue = null;
 	try {
-	  GlueEncoder ge = new GlueEncoderImpl("EditorMenuLayout", pEditorMenuLayout);
+	  GlueEncoder ge = new GlueEncoderImpl(utitle + "MenuLayout", layout);
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the editor menu layout!");
+	     "Unable to generate a Glue format representation of the " + title + 
+	     " menu layout!");
 	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
@@ -11780,7 +11872,8 @@ class MasterMgr
       catch(IOException ex) {
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the editor menu layout file (" + file + ")...\n" + 
+	   "  While attempting to write the " + title + " menu layout file " + 
+	   "(" + file + ")...\n" + 
 	   "    " + ex.getMessage());
       }
     }
@@ -11789,19 +11882,32 @@ class MasterMgr
   /**
    * Read the layout of the editor plugin selection menu from disk. <P> 
    * 
+   * @param title
+   *   The title of the layout.
+   * 
    * @throws PipelineException
    *   If unable to read the menu layout file.
    */ 
-  private void 
-  readEditorMenuLayout () 
+  private  PluginMenuLayout
+  readPluginMenuLayout
+  (
+   String title 
+  ) 
     throws PipelineException
   {
     synchronized(pPluginMenuLayoutLock) {
-      File file = new File(PackageInfo.sNodeDir, "etc/editor-menu-layout");
+      String utitle = null;
+      {
+	char cs[] = title.toCharArray();
+	cs[0] = Character.toUpperCase(cs[0]);
+	utitle = new String(cs);
+      }
+
+      File file = new File(PackageInfo.sNodeDir, "etc/" + title + "-menu-layout");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Editor Menu Layout.");
+	   "Reading " + utitle + " Menu Layout.");
 
 	PluginMenuLayout layout = null;
 	try {
@@ -11813,227 +11919,21 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The editor menu layout file (" + file + ") appears to be corrupted!");
+	     "The " + title + " menu layout file (" + file + ") appears to be corrupted!");
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the editor menu layout file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-	}
-	assert(layout != null);
-	
-	pEditorMenuLayout = layout;
-      }
-      else {
-	pEditorMenuLayout = new PluginMenuLayout();
-      }
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Write the layout of the comparator plugin selection menu to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the menu layout file.
-   */ 
-  private void 
-  writeComparatorMenuLayout() 
-    throws PipelineException
-  {
-    synchronized(pPluginMenuLayoutLock) {
-      File file = new File(PackageInfo.sNodeDir, "etc/comparator-menu-layout");
-      if(file.exists()) {
-	if(!file.delete())
-	  throw new PipelineException
-	    ("Unable to remove the old comparator menu layout file (" + file + ")!");
-      }
-      
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Comparator Menu Layout.");
-
-      try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("ComparatorMenuLayout", pComparatorMenuLayout);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the comparator " + 
-	     "menu layout!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
-      }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the comparator menu layout file " + 
-	   "(" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
-    }
-  }
-  
-  /**
-   * Read the layout of the comparator plugin selection menu from disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to read the menu layout file.
-   */ 
-  private void 
-  readComparatorMenuLayout () 
-    throws PipelineException
-  {
-    synchronized(pPluginMenuLayoutLock) {
-      File file = new File(PackageInfo.sNodeDir, "etc/comparator-menu-layout");
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Comparator Menu Layout.");
-
-	PluginMenuLayout layout = null;
-	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  layout = (PluginMenuLayout) gd.getObject();
-	  in.close();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The comparator menu layout file (" + file + ") appears to be corrupted!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the comparator menu layout file " + 
+	     "  While attempting to read the " + title + " menu layout file " + 
 	     "(" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 	assert(layout != null);
 	
-	pComparatorMenuLayout = layout;
+	return layout; 
       }
       else {
-	pComparatorMenuLayout = new PluginMenuLayout();
-      }
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Write the layout of the tool plugin selection menu to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the menu layout file.
-   */ 
-  private void 
-  writeToolMenuLayout() 
-    throws PipelineException
-  {
-    synchronized(pPluginMenuLayoutLock) {
-      File file = new File(PackageInfo.sNodeDir, "etc/tool-menu-layout");
-      if(file.exists()) {
-	if(!file.delete())
-	  throw new PipelineException
-	    ("Unable to remove the old tool menu layout file (" + file + ")!");
-      }
-      
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Tool Menu Layout.");
-
-      try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("ToolMenuLayout", pToolMenuLayout);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the tool menu layout!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
-      }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the tool menu layout file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
-    }
-  }
-  
-  /**
-   * Read the layout of the tool plugin selection menu from disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to read the menu layout file.
-   */ 
-  private void 
-  readToolMenuLayout () 
-    throws PipelineException
-  {
-    synchronized(pPluginMenuLayoutLock) {
-      File file = new File(PackageInfo.sNodeDir, "etc/tool-menu-layout");
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Tool Menu Layout.");
-
-	PluginMenuLayout layout = null;
-	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  layout = (PluginMenuLayout) gd.getObject();
-	  in.close();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The tool menu layout file (" + file + ") appears to be corrupted!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the tool menu layout file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-	}
-	assert(layout != null);
-	
-	pToolMenuLayout = layout;
-      }
-      else {
-	pToolMenuLayout = new PluginMenuLayout();
+	return new PluginMenuLayout();
       }
     }
   }
@@ -13512,6 +13412,12 @@ class MasterMgr
    */ 
   private PluginMenuLayout  pComparatorMenuLayout;
    
+  /**
+   * The cached layout of the action plugin selection menu or <CODE>null</CODE> if none 
+   * is defined.
+   */ 
+  private PluginMenuLayout  pActionMenuLayout;
+
   /**
    * The cached layout of the tool plugin selection menu or <CODE>null</CODE> if none 
    * is defined.
