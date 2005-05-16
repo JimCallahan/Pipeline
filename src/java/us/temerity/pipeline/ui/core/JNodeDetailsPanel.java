@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.13 2005/05/16 22:18:36 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.14 2005/05/16 22:28:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1921,12 +1921,9 @@ class JNodeDetailsPanel
 	  pWorkingActionVersionField.setText("v" + vid);
 	else
 	  pWorkingActionVersionField.setText("-");
-	
-	//pWorkingActionVersionField.setEnabled(!pIsLocked && !pIsFrozen);
       }
       else {
 	pWorkingActionVersionField.setText("-");
-	//pWorkingActionVersionField.setEnabled(false);
       }
     }
     pWorkingActionVersionField.addActionListener(this);
@@ -3947,8 +3944,7 @@ class JNodeDetailsPanel
 	    setWorkingAction(PluginMgrClient.getInstance().newAction(aname, vid));
 	    
 	    BaseAction waction = getWorkingAction();
-	    if((oaction != null) && 
-	       oaction.getName().equals(waction.getName())) { // REMOVE THIS SECOND CONDITION
+	    if(oaction != null) {
 	      waction.setSingleParamValues(oaction);
 	      waction.setSourceParamValues(oaction);  
 	    }
