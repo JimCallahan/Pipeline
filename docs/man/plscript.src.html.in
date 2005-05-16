@@ -458,6 +458,10 @@ Node Versions</a></li>
  style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 [<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
  style="font-weight: bold;"><a href="#--action">--action</a></span>=<span
@@ -527,6 +531,10 @@ Node Versions</a></li>
  style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 [<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
  style="font-weight: bold;"></span></span><a href="#--action"><span
@@ -1301,10 +1309,18 @@ the <span style="font-weight: bold;">toolset</span> command. <br>
   <br>
   <span style="font-weight: bold;"><a name="--editor"></a>--editor</span>=<span
  style="font-style: italic;">editor-name</span><span
- style="font-weight: normal;"><br>
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
   </span>
   <div style="margin-left: 40px;"><br>
-Specifies the name (editor-name)<span style="font-weight: normal;"> of
+Specifies the name (editor-name)<span style="font-weight: normal;"> </span>and
+optionally the specific version number (<span
+ style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) </span><span
+ style="font-weight: normal;">of
 the default Editor plugin
 associated with the target node.&nbsp; The default Editor of a node is
 used to launch an external program to
@@ -2914,6 +2930,10 @@ links.<br>
  style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
@@ -3018,7 +3038,11 @@ with the working version.<br>
  style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
- style="font-weight: normal;">] <br>
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">]
+<br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
  style="font-weight: bold;">--no-action</span></a> | <a
  href="#--no-action"><span style="font-weight: bold;"></span></a><span

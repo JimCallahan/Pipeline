@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.41 2005/04/04 23:13:27 jim Exp $
+// $Id: ScriptApp.java,v 1.42 2005/05/16 19:25:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1578,6 +1578,7 @@ class ScriptApp
    FileSeq primary, 
    String toolset, 
    String editor, 
+   VersionID editorVID, 
    Boolean noAction, 
    String actionName, 
    VersionID actionVersionID, 
@@ -1609,8 +1610,11 @@ class ScriptApp
       if(tset == null) 
 	tset = client.getDefaultToolsetName();
 
-      if((editor != null) &&
-	 (!PluginMgrClient.getInstance().getEditors().keySet().contains(editor)))
+
+      TreeMap<String,TreeSet<VersionID>> editorPlugins = 
+	PluginMgrClient.getInstance().getEditors();
+
+      if((editor != null) && !editorPlugins.keySet().contains(editor))
 	throw new PipelineException 
 	  ("No Editor plugin named (" + editor + ") exists!");
 
@@ -1620,8 +1624,17 @@ class ScriptApp
 	if(suffix != null) 
 	  edit = client.getEditorForSuffix(suffix);
       }
+      
+      VersionID evid = editorVID;
+      if(edit != null) {
+	if(evid == null) 
+	  evid = editorPlugins.get(edit).last();
+	else if(!editorPlugins.get(edit).contains(evid)) 
+	  throw new PipelineException 
+	    ("No version (" + evid + ") of Editor plugin (" + editor + ") exists!");
+      }
 
-      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), tset, edit);
+      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), tset, edit, evid);
 
       setActionProperties
 	(mod, noAction, actionName, actionVersionID, actionEnabled, 
@@ -1649,6 +1662,7 @@ class ScriptApp
    NodeID nodeID, 
    String toolset, 
    String editor, 
+   VersionID editorVID, 
    Boolean noAction, 
    String actionName, 
    VersionID actionVersionID, 
@@ -1680,11 +1694,22 @@ class ScriptApp
 	  mod.setToolset(toolset);
 	}
 	
+	TreeMap<String,TreeSet<VersionID>> editorPlugins = 
+	  PluginMgrClient.getInstance().getEditors();
+	
 	if(editor != null) {
-	  if(!PluginMgrClient.getInstance().getEditors().keySet().contains(editor))
+	  if(!editorPlugins.keySet().contains(editor))
 	    throw new PipelineException 
 	      ("No Editor plugin named (" + editor + ") exists!");
-	  mod.setEditor(editor);
+      
+	  VersionID evid = editorVID;
+	  if(evid == null) 
+	    evid = editorPlugins.get(editor).last();
+	  else if(!editorPlugins.get(editor).contains(evid)) 
+	    throw new PipelineException 
+	      ("No version (" + evid + ") of Editor plugin (" + editor + ") exists!");
+	  
+	  mod.setEditor(editor, evid);
 	}
       }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.10 2005/04/04 08:35:59 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.11 2005/05/16 19:25:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -84,7 +84,8 @@ class JNodeDetailsPanel
       pEditorMenuLayout   = new PluginMenuLayout();
       pRefreshEditorMenus = true; 
       
-      pActionPlugins = PluginMgrClient.getInstance().getActions();
+      pActionPlugins      = PluginMgrClient.getInstance().getActions();
+      pActionMenuLayout   = new PluginMenuLayout();
 
       pActionParamComponents = new TreeMap<String,Component[]>();
       pActionParamGroupsOpen = new TreeMap<String,Boolean>();
@@ -171,6 +172,9 @@ class JNodeDetailsPanel
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
       } 
+ 
+      pSelectEditorPopup = new JPopupMenu();
+      pSelectActionPopup = new JPopupMenu();
 
       updateMenuToolTips();
     }
@@ -404,7 +408,7 @@ class JNodeDetailsPanel
 	      }
 	    }
 
-	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	    /* editor */ 
 	    { 
@@ -421,10 +425,9 @@ class JNodeDetailsPanel
 		Box hbox = new Box(BoxLayout.X_AXIS);
 
 		{
-		  ArrayList<String> values = new ArrayList<String>();
-		  values.add("-");
-		  
-		  JCollectionField field = UIFactory.createCollectionField(values, sVSize);
+		  JPluginSelectionField field = 
+		    UIFactory.createPluginSelectionField
+		    (pEditorMenuLayout, pEditorPlugins, sVSize);
 		  pWorkingEditorField = field;
 		  
 		  field.setActionCommand("editor-changed");
@@ -463,8 +466,43 @@ class JNodeDetailsPanel
 		vpanel.add(hbox);
 	      }
 	    }
-	  }
 	  
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    /* editor version */ 
+	    { 
+	      {
+		JLabel label = UIFactory.createFixedLabel
+		  ("Version:", sTSize, JLabel.RIGHT, 
+		   "The revision number of the Editor plugin.");
+		pEditorVersionTitle = label;
+		tpanel.add(label);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pWorkingEditorVersionField = field;
+		  
+		  hbox.add(field);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+		
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pCheckedInEditorVersionField = field;
+		  
+		  hbox.add(field);
+		}
+		
+		vpanel.add(hbox);
+	      }
+	    }
+	  }
+	    
 	  JDrawer drawer = new JDrawer("Properties:", (JComponent) comps[2], true);
 	  drawer.setToolTipText(UIFactory.formatToolTip
 				("Node property related information."));
@@ -1525,7 +1563,15 @@ class JNodeDetailsPanel
 
     {
       PluginMgrClient plg = PluginMgrClient.getInstance();
+      UIMaster master = UIMaster.getInstance(); 
+
       pActionPlugins = plg.getActions();
+      try {
+	pActionMenuLayout = master.getMasterMgrClient().getActionMenuLayout();
+      } 
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
 
       if(editorPlugins != null) 
 	pEditorPlugins = editorPlugins;
@@ -1533,13 +1579,12 @@ class JNodeDetailsPanel
 	pEditorPlugins = plg.getEditors();
 
       if(editorLayout != null) {
-	pEditorMenuLayout = editorLayout; 
+	pEditorMenuLayout   = editorLayout; 
 	pRefreshEditorMenus = true;
       }
       else {
-	UIMaster master = UIMaster.getInstance(); 
 	try {
-	  pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
+	  pEditorMenuLayout   = master.getMasterMgrClient().getEditorMenuLayout();
 	  pRefreshEditorMenus = true;
 	} 
 	catch(PipelineException ex) {
@@ -1702,18 +1747,19 @@ class JNodeDetailsPanel
       { 
 	pWorkingEditorField.removeActionListener(this);
 	{
-	  TreeSet<String> editors = new TreeSet<String>();
+	  pWorkingEditorField.updatePlugins(pEditorMenuLayout, pEditorPlugins);
+
 	  if(work != null) 
-	    editors.addAll(pEditorPlugins.keySet());
-	  editors.add("-");
-	  pWorkingEditorField.setValues(editors);
-	  
-	  if((work != null) && 
-	     (work.getEditor() != null) && (editors.contains(work.getEditor())))
-	    pWorkingEditorField.setSelected(work.getEditor());
+	    pWorkingEditorField.setPlugin(work.getEditor(), work.getEditorVersionID());
+	  else
+	    pWorkingEditorField.setPlugin(null, null);
+
+	  VersionID evid = pWorkingEditorField.getPluginVersionID();
+	  if(evid == null) 
+	    pWorkingEditorVersionField.setText("-");
 	  else 
-	    pWorkingEditorField.setSelected("-");
-	  
+	    pWorkingEditorVersionField.setText("v" + evid);
+
 	  pWorkingEditorField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
 	}
 	pWorkingEditorField.addActionListener(this);
@@ -1722,12 +1768,21 @@ class JNodeDetailsPanel
 	  (!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
 	
 	{
-	  if((latest != null) && (latest.getEditor() != null))
+	  if((latest != null) && (latest.getEditor() != null)) {
 	    pCheckedInEditorField.setText(latest.getEditor());
-	  else 
+	    
+	    if(latest.getEditorVersionID() != null) 
+	      pCheckedInEditorVersionField.setText("v" + latest.getEditorVersionID());
+	    else
+	      pCheckedInEditorVersionField.setText("-");
+	  }
+	  else {
 	    pCheckedInEditorField.setText("-");
+	    pCheckedInEditorVersionField.setText("-");
+	  }
 	  
 	  pCheckedInEditorField.setEnabled(latest != null);
+	  pCheckedInEditorVersionField.setEnabled(latest != null);
 	}
 
 	doEditorChanged();
@@ -1826,6 +1881,11 @@ class JNodeDetailsPanel
 	  pCheckedInEditorField.setText(vsn.getEditor());
 	else 
 	  pCheckedInEditorField.setText("-");
+
+	if(vsn.getEditorVersionID() != null) 
+	  pCheckedInEditorVersionField.setText("v" + vsn.getEditorVersionID());
+	else
+	  pCheckedInEditorVersionField.setText("-");
 
 	doEditorChanged();
       }
@@ -3065,7 +3125,7 @@ class JNodeDetailsPanel
       pRefreshEditorMenus = false;
     }
   }
-  
+
   /**
    * Recursively update a plugin menu.
    */ 
@@ -3543,11 +3603,8 @@ class JNodeDetailsPanel
 	    if((toolset != null) && !toolset.equals("-"))
 	      mod.setToolset(toolset);
 	    
-	    String editor = pWorkingEditorField.getSelected();
-	    if((editor != null) && !editor.equals("-"))
-	      mod.setEditor(editor);
-	    else 
-	      mod.setEditor(null);	
+	    mod.setEditor(pWorkingEditorField.getPluginName(), 
+			  pWorkingEditorField.getPluginVersionID());
 	  }
 	
 	  /* action panel */ 
@@ -3778,11 +3835,8 @@ class JNodeDetailsPanel
   { 
     pWorkingEditorField.removeActionListener(this);
     {
-      String editor = pCheckedInEditorField.getText();
-      if(pWorkingEditorField.getValues().contains(editor))
-	pWorkingEditorField.setSelected(editor);
-      else 
-	pWorkingEditorField.setSelected("-");
+      NodeVersion vsn = getCheckedInVersion();
+      pWorkingEditorField.setPlugin(vsn.getEditor(), vsn.getEditorVersionID());
     }
     pWorkingEditorField.addActionListener(this);
 
@@ -3798,17 +3852,29 @@ class JNodeDetailsPanel
     pApplyButton.setEnabled(true);
     pApplyItem.setEnabled(true);
 
+    VersionID evid = pWorkingEditorField.getPluginVersionID();
+    if(evid == null) 
+      pWorkingEditorVersionField.setText("-");
+    else 
+      pWorkingEditorVersionField.setText("v" + evid);
+
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String weditor = pWorkingEditorField.getSelected();
+      String weditor = pWorkingEditorField.getPluginName();
       String ceditor = pCheckedInEditorField.getText();
-      if(!ceditor.equals(weditor))
+      String wvsn = pWorkingEditorVersionField.getText();
+      String cvsn = pCheckedInEditorVersionField.getText();
+      if(!ceditor.equals(weditor) || !cvsn.equals(wvsn))
 	color = Color.cyan;
     }
 
     pEditorTitle.setForeground(color);
     pWorkingEditorField.setForeground(color);
     pCheckedInEditorField.setForeground(color);
+
+    pEditorVersionTitle.setForeground(color);
+    pWorkingEditorVersionField.setForeground(color);
+    pCheckedInEditorVersionField.setForeground(color);
   }
   
 
@@ -5229,6 +5295,12 @@ class JNodeDetailsPanel
    */
   private TreeMap<String,TreeSet<VersionID>>  pActionPlugins; 
 
+  /**
+   * The menu layout for action plugins.
+   */ 
+  private PluginMenuLayout  pActionMenuLayout;
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -5258,6 +5330,12 @@ class JNodeDetailsPanel
    */ 
   private JMenuItem[]  pEditItems;
   private JMenu[]      pEditWithMenus; 
+
+  /**
+   * Plugin selection popup menus.
+   */ 
+  private JPopupMenu   pSelectEditorPopup; 
+  private JPopupMenu   pSelectActionPopup; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5343,9 +5421,9 @@ class JNodeDetailsPanel
   private JLabel  pEditorTitle;
 
   /**
-   * The working editor field.
+   * The working editor name field.
    */ 
-  private JCollectionField pWorkingEditorField;
+  private JPluginSelectionField pWorkingEditorField;
 
   /**
    * The set editor button.
@@ -5356,6 +5434,23 @@ class JNodeDetailsPanel
    * The checked-in editor field.
    */ 
   private JTextField pCheckedInEditorField;
+
+
+  /**
+   * The editor version title label.
+   */ 
+  private JLabel  pEditorVersionTitle;
+
+  /**
+   * The working editor revision number field.
+   */ 
+  private JTextField pWorkingEditorVersionField;
+
+  /**
+   * The checked-in editor version field.
+   */ 
+  private JTextField pCheckedInEditorVersionField;
+
 
   /**
    * The drawer containing the property components.

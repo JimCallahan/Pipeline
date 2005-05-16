@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.4 2005/04/30 01:02:20 jim Exp $
+// $Id: UIFactory.java,v 1.5 2005/05/16 19:25:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -855,6 +855,36 @@ class UIFactory
   ) 
   {
     JCollectionField field = new JCollectionField(values, parent);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create a plugin selection field.
+   * 
+   * @param layout
+   *   The plugin menu layout.
+   * 
+   * @param plugins
+   *   The legal plugin names and revision numbers.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JPluginSelectionField
+  createPluginSelectionField
+  (
+   PluginMenuLayout layout, 
+   TreeMap<String,TreeSet<VersionID>> plugins,
+   int width
+  ) 
+  {
+    JPluginSelectionField field = new JPluginSelectionField(layout, plugins);
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -2366,7 +2396,7 @@ class UIFactory
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a tree set field with a title and add them to the given panels.
+   * Create a collection field with a title and add them to the given panels.
    * 
    * @param tpanel
    *   The titles panel.
@@ -2401,7 +2431,7 @@ class UIFactory
   }
 
   /**
-   * Create a tree set field with a title and add them to the given panels.
+   * Create a collection field with a title and add them to the given panels.
    * 
    * @param tpanel
    *   The titles panel.
@@ -2442,7 +2472,7 @@ class UIFactory
   }
 
   /**
-   * Create a tree set field with a title and add them to the given panels.
+   * Create a collection field with a title and add them to the given panels.
    * 
    * @param tpanel
    *   The titles panel.
@@ -2484,6 +2514,97 @@ class UIFactory
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     
     JCollectionField field = createCollectionField(values, parent, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a PluginSelection field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param layout
+   *   The plugin menu layout.
+   * 
+   * @param plugins
+   *   The legal plugin names and revision numbers.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   */ 
+  public static JPluginSelectionField
+  createTitledPluginSelectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   PluginMenuLayout layout, 
+   TreeMap<String,TreeSet<VersionID>> plugins,
+   int vwidth
+  ) 
+  {
+    return createTitledPluginSelectionField(tpanel, title, twidth, 
+					    vpanel, layout, plugins, vwidth, null);
+  }
+
+  /**
+   * Create a PluginSelection field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param layout
+   *   The plugin menu layout.
+   * 
+   * @param plugins
+   *   The legal plugin names and revision numbers.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JPluginSelectionField
+  createTitledPluginSelectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   PluginMenuLayout layout, 
+   TreeMap<String,TreeSet<VersionID>> plugins,
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JPluginSelectionField field = createPluginSelectionField(layout, plugins, vwidth);
     vpanel.add(field);
 
     return field;

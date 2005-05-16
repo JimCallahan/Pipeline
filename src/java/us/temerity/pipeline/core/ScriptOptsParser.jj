@@ -3694,8 +3694,9 @@ WorkingRegister()
   pView       = "default";
   pFileSeq    = null;
   pToolset    = null;
-  pEditorName = null;
 
+  pEditorName      = null;
+  pEditorVersionID = null;
   pNoAction        = null;
   pActionName      = null;
   pActionVersionID = null; 
@@ -3721,12 +3722,12 @@ WorkingRegister()
         ("The --fseq option is required!");
 
     pApp.workingVersionRegister
-      (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditorName, pNoAction, 
-       pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
-       pOverflowPolicy, pExecutionMethod, pBatchSize, 
-       pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
-       pLicenseKeys, pSelectionKeys,
-       pMasterMgrClient);
+     (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditorName, pEditorVersionID, 
+      pNoAction, pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+      pOverflowPolicy, pExecutionMethod, pBatchSize, 
+      pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
+      pLicenseKeys, pSelectionKeys,
+      pMasterMgrClient);
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -3740,7 +3741,7 @@ WorkingRegisterOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | FSeq() | Toolset() | Editor() | 
+  (Author() | View() | FSeq() | Toolset() | EditorVersion() | 
    Action() | ActionEnabled() | Param() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
@@ -3794,8 +3795,9 @@ WorkingSet()
   pAuthor      = PackageInfo.sUser;
   pView        = "default";
   pToolset     = null;
-  pEditorName  = null;
 
+  pEditorName      = null;
+  pEditorVersionID = null;
   pNoAction        = null;
   pActionName      = null;
   pActionVersionID = null; 
@@ -3817,8 +3819,8 @@ WorkingSet()
   <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
   {
     pApp.workingVersionSet
-      (new NodeID(pAuthor, pView, name), pToolset, pEditorName, pNoAction, 
-       pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+      (new NodeID(pAuthor, pView, name), pToolset, pEditorName, pEditorVersionID, 
+       pNoAction, pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
        pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
        pLicenseKeys, pSelectionKeys,
@@ -3836,7 +3838,7 @@ WorkingSetOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | Toolset() | Editor() | 
+  (Author() | View() | Toolset() | EditorVersion() | 
    NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 

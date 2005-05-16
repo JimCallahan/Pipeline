@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.3 2005/05/14 13:13:33 jim Exp $
+// $Id: JCloneDialog.java,v 1.4 2005/05/16 19:25:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -538,10 +538,15 @@ class JCloneDialog
 
       /* node properties */ 
       String editor = null;
-      if(pExportPanel.exportEditor()) 
+      VersionID evid = null;
+      if(pExportPanel.exportEditor()) {
 	editor = pNodeMod.getEditor();
-      else 
+	evid   = pNodeMod.getEditorVersionID();
+      }
+      else {
 	editor = master.getMasterMgrClient().getEditorForSuffix(suffix);
+	evid   = PluginMgrClient.getInstance().getEditors().get(editor).last();
+      }
 
       String toolset = null;
       if(pExportPanel.exportToolset()) 
@@ -549,7 +554,7 @@ class JCloneDialog
       else 
 	toolset = master.getMasterMgrClient().getDefaultToolsetName();
       
-      mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
+      mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor, evid);
     }
     catch(Exception ex) {
       UIMaster.getInstance().showErrorDialog(ex);

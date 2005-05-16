@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.28 2005/03/30 20:37:29 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.29 2005/05/16 19:25:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3008,7 +3008,7 @@ class JNodeViewerPanel
   private void 
   doRegister() 
   {
-    pRegisterDialog.updateNode(pAuthor, pView, null);
+    pRegisterDialog.updateNode(pAuthor, pView);
     pRegisterDialog.setVisible(true); 
 
     TreeSet<String> names = pRegisterDialog.getRegistered();
@@ -4087,7 +4087,7 @@ class JNodeViewerPanel
 		  tmod.setToolset(smod.getToolset());
 
 		if(pExportDialog.exportEditor()) 
-		  tmod.setEditor(smod.getEditor());
+		  tmod.setEditor(smod.getEditor(), smod.getEditorVersionID());
 	      }
 
 	      /* actions */ 
