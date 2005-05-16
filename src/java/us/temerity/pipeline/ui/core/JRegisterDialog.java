@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.8 2005/05/16 19:25:32 jim Exp $
+// $Id: JRegisterDialog.java,v 1.9 2005/05/16 21:25:00 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -274,20 +274,25 @@ class JRegisterDialog
       String toolset = pToolsetField.getSelected();
 
       TreeSet<String> tsets = new TreeSet<String>();
-      try {
-	tsets.addAll(master.getMasterMgrClient().getActiveToolsetNames());
-	defaultToolset = master.getMasterMgrClient().getDefaultToolsetName();
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-      
-      if(tsets.isEmpty())
-	tsets.add("-");
+      {
+	try {
+	  tsets.addAll(master.getMasterMgrClient().getActiveToolsetNames());
+	  defaultToolset = master.getMasterMgrClient().getDefaultToolsetName();
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	}
 
-      pToolsetField.setValues(tsets);
-      if(defaultToolset == null)
-	defaultToolset = tsets.last();
+	if(tsets.isEmpty())
+	  tsets.add("-");
+
+	if(defaultToolset == null)
+	  defaultToolset = tsets.last();
+      }
+
+      LinkedList<String> vlist = new LinkedList<String>(tsets);
+      Collections.reverse(vlist);	 
+      pToolsetField.setValues(vlist);
 
       if((toolset != null) && pToolsetField.getValues().contains(toolset))
 	pToolsetField.setSelected(toolset);

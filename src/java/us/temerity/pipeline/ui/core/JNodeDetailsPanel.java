@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.11 2005/05/16 19:25:32 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.12 2005/05/16 21:25:00 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1717,7 +1717,9 @@ class JNodeDetailsPanel
 	  if(toolsets.isEmpty())
 	    toolsets.add("-");
 	  
-	  pWorkingToolsetField.setValues(toolsets);
+	  LinkedList<String> vlist = new LinkedList<String>(toolsets);
+	  Collections.reverse(vlist);	 
+	  pWorkingToolsetField.setValues(vlist);
 
 	  if((work != null) && (work.getToolset() != null)) 
 	    pWorkingToolsetField.setSelected(work.getToolset());
@@ -3791,7 +3793,10 @@ class JNodeDetailsPanel
 	if(!pWorkingToolsetField.getValues().contains(toolset)) {
 	  TreeSet<String> values = new TreeSet<String>(pWorkingToolsetField.getValues());
 	  values.add(toolset);
-	  pWorkingToolsetField.setValues(values);
+	  
+	  LinkedList<String> vlist = new LinkedList<String>(values);
+	  Collections.reverse(vlist);	  
+	  pWorkingToolsetField.setValues(vlist);
 	}
 	
 	pWorkingToolsetField.setSelected(toolset);
