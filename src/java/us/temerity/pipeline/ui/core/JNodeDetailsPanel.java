@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.12 2005/05/16 21:25:00 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.13 2005/05/16 22:18:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -537,10 +537,9 @@ class JNodeDetailsPanel
 		Box hbox = new Box(BoxLayout.X_AXIS);
 		
 		{
-		  ArrayList<String> values = new ArrayList<String>();
-		  values.add("-");
-		  
-		  JCollectionField field = UIFactory.createCollectionField(values, sVSize);
+		  JPluginSelectionField field = 
+		    UIFactory.createPluginSelectionField
+		    (pActionMenuLayout, pActionPlugins, sVSize);
 		  pWorkingActionField = field;
 		
 		  field.setActionCommand("action-changed");
@@ -596,14 +595,8 @@ class JNodeDetailsPanel
 		Box hbox = new Box(BoxLayout.X_AXIS);
 		
 		{
-		  ArrayList<String> values = new ArrayList<String>();
-		  values.add("-");
-
-		  JCollectionField field = UIFactory.createCollectionField(values, sVSize);
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
 		  pWorkingActionVersionField = field;
-
-		  field.setActionCommand("action-changed");
-		  field.addActionListener(this);
 
 		  hbox.add(field);
 		}
@@ -1757,10 +1750,10 @@ class JNodeDetailsPanel
 	    pWorkingEditorField.setPlugin(null, null);
 
 	  VersionID evid = pWorkingEditorField.getPluginVersionID();
-	  if(evid == null) 
-	    pWorkingEditorVersionField.setText("-");
-	  else 
+	  if(evid != null) 
 	    pWorkingEditorVersionField.setText("v" + evid);
+	  else
+	    pWorkingEditorVersionField.setText("-");
 
 	  pWorkingEditorField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
 	}
@@ -1794,18 +1787,14 @@ class JNodeDetailsPanel
     /* actions panel */ 
     {
       pWorkingActionField.removeActionListener(this);
-      {
-	TreeSet<String> actions = new TreeSet<String>();
-	if(work != null) 
-	  actions.addAll(pActionPlugins.keySet());
-	actions.add("-");
-	pWorkingActionField.setValues(actions);
+      { 
+	pWorkingActionField.updatePlugins(pActionMenuLayout, pActionPlugins);
 	
 	BaseAction waction = initWorkingAction();
-	if((waction != null) && (actions.contains(waction.getName())))
-	  pWorkingActionField.setSelected(waction.getName());
-	else 
-	  pWorkingActionField.setSelected("-");
+	if(waction != null) 
+	  pWorkingActionField.setPlugin(waction.getName(), waction.getVersionID());
+	else
+	  pWorkingActionField.setPlugin(null, null);
 	
 	pWorkingActionField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
 	
@@ -1927,21 +1916,17 @@ class JNodeDetailsPanel
     {
       BaseAction waction = getWorkingAction();
       if(waction != null) {
-	TreeSet<String> vstr = new TreeSet<String>();
-	TreeSet<VersionID> vids = pActionPlugins.get(waction.getName());
-	for(VersionID vid : vids)
-	  vstr.add("v" + vid.toString());
-	pWorkingActionVersionField.setValues(vstr);
+	VersionID vid = waction.getVersionID();
+	if(vid != null) 
+	  pWorkingActionVersionField.setText("v" + vid);
+	else
+	  pWorkingActionVersionField.setText("-");
 	
-	pWorkingActionVersionField.setSelected("v" + waction.getVersionID().toString());
-	pWorkingActionVersionField.setEnabled(!pIsLocked && !pIsFrozen);
+	//pWorkingActionVersionField.setEnabled(!pIsLocked && !pIsFrozen);
       }
       else {
-	TreeSet<String> vstr = new TreeSet<String>();
-	vstr.add("-");
-	pWorkingActionVersionField.setValues(vstr);
-	pWorkingActionVersionField.setSelected("-");
-	pWorkingActionVersionField.setEnabled(false);
+	pWorkingActionVersionField.setText("-");
+	//pWorkingActionVersionField.setEnabled(false);
       }
     }
     pWorkingActionVersionField.addActionListener(this);
@@ -3900,15 +3885,14 @@ class JNodeDetailsPanel
       if(vsn != null) 
 	action = vsn.getAction();
       
-      if((action != null) && 
-	 pWorkingActionField.getValues().contains(action.getName())) {
-	pWorkingActionField.setSelected(action.getName());
-	
+      if(action != null) {
+	pWorkingActionField.setPlugin(action.getName(), action.getVersionID());
+
 	pWorkingActionEnabledField.setValue(vsn.isActionEnabled());
 	pWorkingActionEnabledField.setEnabled(true);	  
       }
       else {
-	pWorkingActionField.setSelected("-");
+	pWorkingActionField.setPlugin(null, null);
 	
 	pWorkingActionEnabledField.setValue(null);
 	pWorkingActionEnabledField.setEnabled(false);
@@ -3937,8 +3921,8 @@ class JNodeDetailsPanel
 
     BaseAction oaction = getWorkingAction();
     {
-      String aname = pWorkingActionField.getSelected();
-      if(aname.equals("-")) {
+      String aname = pWorkingActionField.getPluginName();
+      if(aname == null) {
 	setWorkingAction(null);
 
 	pWorkingActionEnabledField.setValue(null);
@@ -3953,14 +3937,9 @@ class JNodeDetailsPanel
 	if((oaction == null) || !oaction.getName().equals(aname)) 
 	  rebuild = true;
 	else {
-	  String vstr = pWorkingActionVersionField.getSelected();
-	  if(vstr.equals("-")) 
+	  vid = pWorkingActionField.getPluginVersionID();
+	  if((vid == null) || !vid.equals(oaction.getVersionID()))
 	    rebuild = true;
-	  else {
-	    vid = new VersionID(vstr.substring(1));
-	    if(!vid.equals(oaction.getVersionID()))
-	      rebuild = true;
-	  }
 	}
 
 	if(rebuild) {
@@ -3968,9 +3947,10 @@ class JNodeDetailsPanel
 	    setWorkingAction(PluginMgrClient.getInstance().newAction(aname, vid));
 	    
 	    BaseAction waction = getWorkingAction();
-	    if((oaction != null) && oaction.getName().equals(waction.getName())) {
+	    if((oaction != null) && 
+	       oaction.getName().equals(waction.getName())) { // REMOVE THIS SECOND CONDITION
 	      waction.setSingleParamValues(oaction);
-	      waction.setSourceParamValues(oaction);
+	      waction.setSourceParamValues(oaction);  
 	    }
 
 	    if(pWorkingActionEnabledField.getValue() == null) 
@@ -3986,7 +3966,7 @@ class JNodeDetailsPanel
 	    pWorkingActionEnabledField.setEnabled(false);
 	    
 	    pWorkingActionField.removeActionListener(this);
-  	    pWorkingActionField.setSelected("-");
+  	    pWorkingActionField.setPlugin(null, null);
 	    pWorkingActionField.addActionListener(this);
 	  }
 
@@ -5479,7 +5459,7 @@ class JNodeDetailsPanel
   /**
    * The working action field.
    */ 
-  private JCollectionField pWorkingActionField;
+  private JPluginSelectionField pWorkingActionField;
 
   /**
    * The set action button.
@@ -5500,7 +5480,7 @@ class JNodeDetailsPanel
   /**
    * The working action version field.
    */ 
-  private JCollectionField pWorkingActionVersionField;
+  private JTextField pWorkingActionVersionField;
 
   /**
    * The checked-in action version field.
