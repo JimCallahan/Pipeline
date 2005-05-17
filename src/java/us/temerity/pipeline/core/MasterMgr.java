@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.124 2005/05/15 19:45:34 jim Exp $
+// $Id: MasterMgr.java,v 1.125 2005/05/17 00:45:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3941,17 +3941,30 @@ class MasterMgr
 
       /* make sure none of the checked-in versions are the source node of a link of 
            another node */ 
-      for(VersionID vid : checkedIn.keySet()) {
-	TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
-	if(dlinks == null) 
+      {
+	boolean failed = false;
+	StringBuffer buf = new StringBuffer();
+	for(VersionID vid : checkedIn.keySet()) {
+	  TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
+	  if(dlinks == null) 
+	    throw new PipelineException
+	      ("Somehow there was no downstream links entry for checked-in version " + 
+	       "(" + vid + ") of node (" + name + ")!");
+	  
+	  if(!dlinks.isEmpty()) {
+	    failed = true;
+	    buf.append("\nChecked-in versions downstream of the (" + vid + ") version:\n");
+	    for(String dname : dlinks.keySet()) 
+	      buf.append("  " + dname + "  (" + dlinks.get(dname) + ")\n");
+	  }
+	}
+
+	if(failed) {
 	  throw new PipelineException
-	    ("Somehow there was no downstream links entry for checked-in version " + 
-	     "(" + vid + ") of node (" + name + ")!");
-	
-	if(!dlinks.isEmpty()) 
-	  throw new PipelineException
-	    ("Cannot delete node (" + name + ") because the checked-in version " + 
-	     "(" + vid + ") is linked to other nodes!");
+	    ("Cannot delete node (" + name + ") because links to the following " +
+	     "checked-in versions exist in the repository:\n" + 
+	     buf.toString());
+	}
       } 
 
       /* release all working versions of the node */ 
