@@ -2,112 +2,126 @@ EditorMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
-      Title <String> #5 { "Text Editors" }
+      Title <String> #5 { "Images" }
       Children <LinkedList> #6 {
         <PluginMenuLayout> #7 {
-          Title <String> #8 { "Emacs" }
-          Name <String> #9 { "Emacs" }
+          Title <String> #8 { "AirShow" }
+          Name <String> #9 { "AirShow" }
           VersionID <VersionID> #10 {
             RevisionNumber <String> #11 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #12 {
-          Title <String> #13 { "GEdit" }
-          Name <String> #14 { "GEdit" }
+          Title <String> #13 { "I-Display" }
+          Name <String> #14 { "I-Display" }
           VersionID <VersionID> #15 {
             RevisionNumber <String> #16 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #17 {
-          Title <String> #18 { "Emacs Client" }
-          Name <String> #19 { "EmacsClient" }
+          Title <String> #18 { "Gimp" }
+          Name <String> #19 { "Gimp" }
           VersionID <VersionID> #20 {
-            RevisionNumber <String> #21 { "1.0.0" }
+            RevisionNumber <String> #21 { "1.1.0" }
           }
         }
         <PluginMenuLayout> #22 {
-          Title <String> #23 { "XDvi" }
-          Name <String> #24 { "XDvi" }
+          Title <String> #23 { "FCheck" }
+          Name <String> #24 { "FCheck" }
           VersionID <VersionID> #25 {
             RevisionNumber <String> #26 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #27 {
-          Title <String> #28 { "Acroread" }
-          Name <String> #29 { "Acroread" }
+          Title <String> #28 { "ImfDisp" }
+          Name <String> #29 { "ImfDisp" }
           VersionID <VersionID> #30 {
             RevisionNumber <String> #31 { "1.0.0" }
           }
         }
+        <PluginMenuLayout> #32 {
+          Title <String> #33 { "MPlay" }
+          Name <String> #34 { "MPlay" }
+          VersionID <VersionID> #35 {
+            RevisionNumber <String> #36 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #37 {
+          Title <String> #38 { "XImage" }
+          Name <String> #39 { "XImage" }
+          VersionID <VersionID> #40 {
+            RevisionNumber <String> #41 { "1.0.0" }
+          }
+        }
       }
     }
-    <PluginMenuLayout> #32 {
-      Title <String> #33 { "Image Viewers" }
-      Children <LinkedList> #34 {
-        <PluginMenuLayout> #35 {
-          Title <String> #36 { "FCheck" }
-          Name <String> #37 { "FCheck" }
-          VersionID <VersionID> #38 {
-            RevisionNumber <String> #39 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #40 {
-          Title <String> #41 { "Gimp" }
-          Name <String> #42 { "Gimp" }
-          VersionID <VersionID> #43 {
-            RevisionNumber <String> #44 { "1.1.0" }
-          }
-        }
+    <PluginMenuLayout> #42 {
+      Title <String> #43 { "3D Apps" }
+      Children <LinkedList> #44 {
         <PluginMenuLayout> #45 {
-          Title <String> #46 { "ImfDisp" }
-          Name <String> #47 { "ImfDisp" }
+          Title <String> #46 { "Maya" }
+          Name <String> #47 { "Maya" }
           VersionID <VersionID> #48 {
             RevisionNumber <String> #49 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #50 {
-          Title <String> #51 { "MPlay" }
-          Name <String> #52 { "MPlay" }
+          Title <String> #51 { "Houdini" }
+          Name <String> #52 { "Houdini" }
           VersionID <VersionID> #53 {
             RevisionNumber <String> #54 { "1.0.0" }
           }
         }
-      }
-    }
-    <PluginMenuLayout> #55 {
-      Title <String> #56 { "3D Apps" }
-      Children <LinkedList> #57 {
-        <PluginMenuLayout> #58 {
-          Title <String> #59 { "Maya" }
-          Name <String> #60 { "Maya" }
-          VersionID <VersionID> #61 {
-            RevisionNumber <String> #62 { "1.0.0" }
+        <PluginMenuLayout> #55 {
+          Title <String> #56 { "Open Inventor" }
+          Name <String> #57 { "IvView" }
+          VersionID <VersionID> #58 {
+            RevisionNumber <String> #59 { "1.0.0" }
           }
         }
+      }
+    }
+    <PluginMenuLayout> #60 {
+      Title <String> #61 { "Documents" }
+      Children <LinkedList> #62 {
         <PluginMenuLayout> #63 {
-          Title <String> #64 { "Houdini" }
-          Name <String> #65 { "Houdini" }
+          Title <String> #64 { "Emacs" }
+          Name <String> #65 { "Emacs" }
           VersionID <VersionID> #66 {
             RevisionNumber <String> #67 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #68 {
-          Title <String> #69 { "Open Inventor" }
-          Name <String> #70 { "IvView" }
+          Title <String> #69 { "GEdit" }
+          Name <String> #70 { "GEdit" }
           VersionID <VersionID> #71 {
             RevisionNumber <String> #72 { "1.0.0" }
           }
         }
+        <PluginMenuLayout> #73 {
+          Title <String> #74 { "XDvi" }
+          Name <String> #75 { "XDvi" }
+          VersionID <VersionID> #76 {
+            RevisionNumber <String> #77 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #78 {
+          Title <String> #79 { "Acroread" }
+          Name <String> #80 { "Acroread" }
+          VersionID <VersionID> #81 {
+            RevisionNumber <String> #82 { "1.0.0" }
+          }
+        }
       }
     }
-    <PluginMenuLayout> #73 {
-      Title <String> #74 { "Utils" }
-      Children <LinkedList> #75 {
-        <PluginMenuLayout> #76 {
-          Title <String> #77 { "Terminal" }
-          Name <String> #78 { "Terminal" }
-          VersionID <VersionID> #79 {
-            RevisionNumber <String> #80 { "1.0.0" }
+    <PluginMenuLayout> #83 {
+      Title <String> #84 { "Utils" }
+      Children <LinkedList> #85 {
+        <PluginMenuLayout> #86 {
+          Title <String> #87 { "Terminal" }
+          Name <String> #88 { "Terminal" }
+          VersionID <VersionID> #89 {
+            RevisionNumber <String> #90 { "1.0.0" }
           }
         }
       }
