@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.10 2005/05/14 08:33:01 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.11 2005/05/17 00:42:47 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -1336,8 +1336,20 @@ class MayaTextureSyncTool
 	  primary = fseqs.first();
 	}
 	
-	String editor = mclient.getEditorForSuffix(primary.getFilePattern().getSuffix());
- 	NodeMod mod = new NodeMod(nodeID.getName(), primary, null, toolset, editor);
+	String ename = null;
+	VersionID evid = null;
+	{
+	  String editor = mclient.getEditorForSuffix(primary.getFilePattern().getSuffix());
+	  if(editor != null) {
+	    TreeSet<VersionID> vids = PluginMgrClient.getInstance().getEditors().get(editor);
+	    if(vids != null) {
+	      ename = editor;
+	      evid  = vids.last();
+	    }
+	  }
+	}
+
+	NodeMod mod = new NodeMod(nodeID.getName(), primary, null, toolset, ename, evid);
  	mclient.register(PackageInfo.sUser, pView, mod);
       }
     }
