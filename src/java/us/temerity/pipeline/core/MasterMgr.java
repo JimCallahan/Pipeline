@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.125 2005/05/17 00:45:46 jim Exp $
+// $Id: MasterMgr.java,v 1.126 2005/05/18 14:40:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5231,10 +5231,8 @@ class MasterMgr
 	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
 	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
 	     work.getWorkingID().equals(vsn.getVersionID()) && 
-	     (work.isFrozen() == isFrozen)) {   // This causes the entire check-out to abort when the node is 
-                                                // not currently frozen and the CheckOutMethod is FrozenUpstream!
-                                                // A more sophisitcated test is needed instead of 
-	                                        // (work.isFrozen() == isFrozen).
+	     (work.isFrozen() == isFrozen) && 
+	     !((method == CheckOutMethod.FrozenUpstream) && isRoot)) {
 	    branch.removeLast();
 	    return;
 	  }
