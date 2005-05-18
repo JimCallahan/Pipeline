@@ -8,6 +8,7 @@ editor_DATA = \
 etcdir = @NODEDIR@/etc
 
 etc_DATA = \
+  action-menu-layout \
   comparator-menu-layout \
   editor-menu-layout \
   tool-menu-layout
