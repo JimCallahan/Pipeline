@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.126 2005/05/18 14:40:07 jim Exp $
+// $Id: MasterMgr.java,v 1.127 2005/05/18 15:20:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5230,11 +5230,26 @@ class MasterMgr
 	  if((details != null) && 
 	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
 	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
-	     work.getWorkingID().equals(vsn.getVersionID()) && 
-	     (work.isFrozen() == isFrozen) && 
-	     !((method == CheckOutMethod.FrozenUpstream) && isRoot)) {
-	    branch.removeLast();
-	    return;
+	     work.getWorkingID().equals(vsn.getVersionID())) {
+
+	    switch(method) {
+	    case Modifiable:
+	      break;
+
+	    case PreserveFrozen:
+	    case AllFrozen:
+	      if(work.isFrozen() == isFrozen) {
+		branch.removeLast();
+		return;
+	      }
+	      break;
+
+	    case FrozenUpstream:
+	      if(!isRoot && (work.isFrozen() == isFrozen)) {
+		branch.removeLast();
+		return;
+	      }
+	    }
 	  }
 	  break;
 
