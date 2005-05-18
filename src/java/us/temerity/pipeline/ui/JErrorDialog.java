@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.8 2005/04/03 01:54:23 jim Exp $
+// $Id: JErrorDialog.java,v 1.9 2005/05/18 15:31:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -44,6 +44,8 @@ class JErrorDialog
       {
 	JTextArea area = new JTextArea(8, 35); 
 	pMessageArea = area;
+
+	area.setName("TextArea");
 
 	area.setLineWrap(true);
 	area.setWrapStyleWord(true);
