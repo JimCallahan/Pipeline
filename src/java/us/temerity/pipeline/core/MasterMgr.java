@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.127 2005/05/18 15:20:36 jim Exp $
+// $Id: MasterMgr.java,v 1.128 2005/05/28 21:00:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2595,6 +2595,13 @@ class MasterMgr
 	return new FailureRsp(timer, ex.getMessage());
       }
       
+      /* remove the empty working area database directory */ 
+      File viewDir = new File(PackageInfo.sNodeDir, "working/" + author + "/" + view);
+      if(!viewDir.delete()) 
+	return new FailureRsp
+	  (timer, 
+	   "Unable to remove the working are view database directory (" + viewDir + ")!");
+
       /* remove view from the runtime table */ 
       views.remove(view);
       
