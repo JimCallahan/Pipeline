@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.11 2005/03/14 16:08:21 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.12 2005/05/28 22:29:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -622,6 +622,7 @@ class JNodeFilesPanel
     }
 
     /* collate the row information */ 
+    TreeMap<Integer,FileSeq> order = new TreeMap<Integer,FileSeq>();
     TreeMap<FileSeq,Integer> singles = new TreeMap<FileSeq,Integer>();	 
     TreeSet<FileSeq> enabled = new TreeSet<FileSeq>();
     TreeMap<FileSeq,FileState>  fstates = new TreeMap<FileSeq,FileState>();
@@ -684,6 +685,14 @@ class JNodeFilesPanel
 	  }
 	}
       }
+
+      for(FileSeq sfseq : singles.keySet()) {
+	int frame = -1;
+	if(sfseq.hasFrameNumbers()) 
+	  frame = sfseq.getFrameRange().getStart();
+	
+	order.put(frame, sfseq);
+      }
     }
       
     /* the file sequence component */ 
@@ -723,7 +732,7 @@ class JNodeFilesPanel
 	    TreeMap<Integer,JFilePanel> panels = new TreeMap<Integer,JFilePanel>();
 	    pFilePanels.put(fseq, panels); 
 	    
-	    for(FileSeq sfseq : singles.keySet()) {
+	    for(FileSeq sfseq : order.values()) {
 	      Integer idx = singles.get(sfseq);
 
 	      FileState fstate  = fstates.get(sfseq);
@@ -762,7 +771,7 @@ class JNodeFilesPanel
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 35)));
 	  
-	  for(FileSeq sfseq : singles.keySet()) {
+	  for(FileSeq sfseq : order.values()) {
 	    boolean hasNovel = false;
 	    {
 	      Boolean[] flags = novel.get(sfseq);
@@ -865,7 +874,7 @@ class JNodeFilesPanel
 	  /* table contents */ 
 	  {
 	    JFileSeqPanel panel = 
-	      new JFileSeqPanel(this, fseq, singles.keySet(), 
+	      new JFileSeqPanel(this, fseq, order.values(), 
 				enabled, novel, pNovelty.size());
 	      
 	    {
@@ -2369,7 +2378,7 @@ class JNodeFilesPanel
     (
      JNodeFilesPanel parent,
      FileSeq fseq, 
-     Set<FileSeq> singles,
+     Collection<FileSeq> singles,
      TreeSet<FileSeq> enabled, 
      TreeMap<FileSeq,Boolean[]> flags, 
      int numVersions
