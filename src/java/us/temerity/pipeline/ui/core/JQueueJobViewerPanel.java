@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.11 2005/03/11 06:33:44 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.12 2005/05/28 21:21:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -79,7 +79,9 @@ class JQueueJobViewerPanel
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
       pSelected       = new HashMap<JobPath,ViewerJob>();
 
-      pEditorPlugins = PluginMgrClient.getInstance().getEditors();
+      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
+      pEditorMenuLayout   = new PluginMenuLayout();
+      pRefreshEditorMenus = true; 
     }
 
     /* panel popup menu */ 
@@ -495,39 +497,51 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the given view with menu. 
+   * Update the group and job "View With" menus. 
    */ 
   private void 
-  updateViewMenu
+  updateViewMenus() 
+  {
+    if(pRefreshEditorMenus) {
+      pViewWithMenu.removeAll();
+      pGroupViewWithMenu.removeAll();
+
+      for(PluginMenuLayout pml : pEditorMenuLayout) {
+	pViewWithMenu.add(buildPluginMenu(pml, pEditorPlugins));
+	pGroupViewWithMenu.add(buildPluginMenu(pml, pEditorPlugins));
+      }
+
+      pRefreshEditorMenus = false;
+    }
+  }
+
+  /**
+   * Recursively update an editor plugin menu.
+   */ 
+  private JMenuItem
+  buildPluginMenu
   (
-   JMenu menu
+   PluginMenuLayout layout, 
+   TreeMap<String,TreeSet<VersionID>> plugins
   ) 
   {
-    menu.removeAll();
-    
-    for(String editor : pEditorPlugins.keySet()) {
-      JMenuItem item = new JMenuItem(editor);
-      item.setActionCommand("view-with:" + editor);
+    JMenuItem item = null;
+    if(layout.isMenuItem()) {
+      item = new JMenuItem(layout.getTitle());
+      item.setActionCommand("view-with:" + layout.getName() + ":" + layout.getVersionID());
       item.addActionListener(this);
-      menu.add(item);
+   
+      TreeSet<VersionID> vids = plugins.get(layout.getName());
+      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
     }
-    
-    menu.addSeparator();
-    
-    JMenu sub = new JMenu("All Versions");
-    menu.add(sub);
-    
-    for(String editor : pEditorPlugins.keySet()) {
-      JMenu esub = new JMenu(editor);
-      sub.add(esub);
-      
-      for(VersionID vid : pEditorPlugins.get(editor)) {
-	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
-	item.setActionCommand("view-with:" + editor + ":" + vid);
-	item.addActionListener(this);
-	esub.add(item);
-      }
+    else {
+      JMenu sub = new JMenu(layout.getTitle()); 
+      for(PluginMenuLayout pml : layout) 
+	sub.add(buildPluginMenu(pml, plugins));
+      item = sub;
     }
+
+    return item;
   }
 
 
@@ -661,6 +675,15 @@ class JQueueJobViewerPanel
       }
 
       pEditorPlugins = pclient.getEditors();
+
+      UIMaster master = UIMaster.getInstance(); 
+      try {
+	pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
+	pRefreshEditorMenus = true;
+      } 
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }      
     }
 
     /* get the paths to the currently collapsed jobs */ 
@@ -1353,7 +1376,7 @@ class JQueueJobViewerPanel
 	      addSelect(vunder);
 	      primarySelect(vunder);
 
-	      updateViewMenu(pViewWithMenu);
+	      updateViewMenus();
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	    else if(under instanceof ViewerJobGroup) {
@@ -1362,7 +1385,7 @@ class JQueueJobViewerPanel
 	      addSelect(vunder);
 	      primarySelect(vunder);
 	      
-	      updateViewMenu(pGroupViewWithMenu);
+	      updateViewMenus();
 	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
@@ -2748,6 +2771,16 @@ class JQueueJobViewerPanel
    * Cached names and version numbers of the loaded editor plugins. 
    */
   private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
+
+  /**
+   * The menu layout for editor plugins.
+   */ 
+  private PluginMenuLayout  pEditorMenuLayout;
+
+  /**
+   * Whether the Swing editor menus need to be rebuild from the menu layout.
+   */ 
+  private boolean pRefreshEditorMenus; 
 
 
   /*----------------------------------------------------------------------------------------*/
