@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.29 2005/05/16 19:25:32 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.30 2005/05/29 18:11:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1154,13 +1154,15 @@ class JNodeViewerPanel
    String name
   ) 
   {
-    if(root.getName().equals(name)) 
-      return root;
+    if(root != null) {
+      if(root.getName().equals(name)) 
+	return root;
 
-    for(NodeStatus status : root.getSources()) {
-      NodeStatus found = updateSubPanelsHelper(status, name);
-      if(found != null) 
-	return found;
+      for(NodeStatus status : root.getSources()) {
+	NodeStatus found = updateSubPanelsHelper(status, name);
+	if(found != null) 
+	  return found;
+      }
     }
 
     return null;
