@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.2 2005/03/11 06:33:44 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.3 2005/05/30 20:48:37 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -568,6 +568,8 @@ class JQueueJobDetailsPanel
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	  scroll.setVerticalScrollBarPolicy
 	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+	  scroll.getVerticalScrollBar().setUnitIncrement(23);
 
 	  add(scroll);
 	}

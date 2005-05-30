@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.14 2005/05/16 22:28:12 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.15 2005/05/30 20:48:37 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1235,6 +1235,7 @@ class JNodeDetailsPanel
 	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
 	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+	  scroll.getVerticalScrollBar().setUnitIncrement(23);
 
 	  add(scroll);
 	}
