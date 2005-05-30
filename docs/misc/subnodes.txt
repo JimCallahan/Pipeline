@@ -1,0 +1,64 @@
+
+SUBNODES
+
+Replace secondary sequences with a restricted kind of node which has no action or job
+requirements but is associated with a normal node for each sequence.  These nodes can be 
+the source (upstream side) of a link from a normal node but not the target (downstream side).
+
+If a node has subnodes with differing numbers of frames, the Execution Method is restricted
+to Serial.  Status, job generation and other node traversal operations use the non-subnode
+parent to determine the upstream links.
+
+Pros: 
+ 
++ Allows easy access to secondary sequences in downstream actions by simply linking to only
+  the subnodes which are needed by the action.
+
+
+Cons:
+
++ Is NOT backward compatible and would require some form of database overhaul to accomodate.
+
++ Increases link complexity.  
+
++ Requires many changes to the Node Browser, Node Viewer and details panels to display 
+  subnodes differently than normal nodes.
+
++ Requires a lot of tinkering with stable MasterMgr operations.
+
+
+
+
+SEPERATE ACTIONS FROM NODES
+
+Similar to subnodes, but uses a single type of node which does not include Action and Job 
+Requirements properties.  Instead, actions are treated as seperate 
+
+
+
+
+
+
+
+
+
+
+VARIABLE FRAME SECONDARY SEQUENCES
+
+Simply allow secondary sequences with different numbers of frames.  Whenever the sequences 
+do not have the same number of frames, the Execution Method is changed to Serial and cannot
+be modified until the frame numbers agree again.
+
+Pros: 
+
++ Minimum repercussions for the code base.  Only need to restrict nodes with variable frame
+  sequences to have a Serial execution method.  Otherwise all code acts the same.
+
+
+Cons: 
+
++ Doesn't solve the awkwardness of accessing a secondary sequence by itself in the action
+  of a downstream node.  A possible alternative is to provide a FileSeqActionParam class
+  which can be used to select a file sequence from the upstream nodes in actions.
+
++ Need to change the Renumber operation to allow renumbering individual sequences.
