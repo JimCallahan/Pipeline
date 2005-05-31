@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.16 2005/03/05 02:29:22 jim Exp $
+// $Id: QueueHost.java,v 1.17 2005/05/31 09:38:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -71,7 +71,7 @@ class QueueHost
   /**
    * Get the current operational status of the host.
    */ 
-  public Status 
+  public synchronized Status 
   getStatus() 
   {
     return pStatus;
@@ -80,7 +80,7 @@ class QueueHost
   /**
    * Set the current operational status of the host.
    */ 
-  public void
+  public synchronized void
   setStatus
   (
    Status status
@@ -102,7 +102,7 @@ class QueueHost
   /**
    * Get the timestamp of when the status was last modified.
    */ 
-  public Date
+  public synchronized Date
   getLastModified()
   {
     return pLastModified;
@@ -112,7 +112,7 @@ class QueueHost
    * Get the timestamp of when the status was last changed to Hung or <CODE>null</CODE> if 
    * the state has never been Hung since the server was started.
    */ 
-  public Date
+  public synchronized Date
   getLastHung()
   {
     return pLastHung; 
@@ -130,7 +130,7 @@ class QueueHost
    * @return 
    *   The name of the reserving user or <CODE>null</CODE> if the host is not reserved.
    */ 
-  public String
+  public synchronized String
   getReservation() 
   {
     return pReservation;
@@ -146,7 +146,7 @@ class QueueHost
    *   The name of the user who is reserving the host or <CODE>null</CODE> to clear the
    *   the reservation.
    */ 
-  public void
+  public synchronized void
   setReservation
   (
    String author
@@ -164,7 +164,7 @@ class QueueHost
    * @return 
    *   The dispatch order.
    */ 
-  public int 
+  public synchronized int 
   getOrder() 
   {
     return pOrder;
@@ -176,7 +176,7 @@ class QueueHost
    * @param order
    *   The dispatch order.
    */ 
-  public void 
+  public synchronized void 
   setOrder
   (
    int order
@@ -194,7 +194,7 @@ class QueueHost
    * @return 
    *   The number of job slots.
    */ 
-  public int 
+  public synchronized int 
   getJobSlots() 
   {
     return pJobSlots;
@@ -206,7 +206,7 @@ class QueueHost
    * @param slots
    *   The number of job slots.
    */ 
-  public void 
+  public synchronized void 
   setJobSlots
   (
    int slots
@@ -227,7 +227,7 @@ class QueueHost
    * @return 
    *   The number of processors or <CODE>null</CODE> if unknown.
    */ 
-  public Integer 
+  public synchronized Integer 
   getNumProcessors() 
   {
     return pNumProcessors;
@@ -239,7 +239,7 @@ class QueueHost
    * @param procs 
    *   The number of processors.
    */ 
-  public void
+  public synchronized void
   setNumProcessors
   (
    Integer procs
@@ -257,7 +257,7 @@ class QueueHost
    * @return 
    *   The memory size or <CODE>null</CODE> if unknown.
    */ 
-  public Long 
+  public synchronized Long 
   getTotalMemory() 
   {
     return pTotalMemory;
@@ -269,7 +269,7 @@ class QueueHost
    * @param memory 
    *   The memory size.
    */ 
-  public void
+  public synchronized void
   setTotalMemory
   (
    Long memory
@@ -287,7 +287,7 @@ class QueueHost
    * @return 
    *   The disk size or <CODE>null</CODE> if unknown.
    */ 
-  public Long 
+  public synchronized Long 
   getTotalDisk() 
   {
     return pTotalDisk;
@@ -299,7 +299,7 @@ class QueueHost
    * @param disk 
    *   The disk size.
    */ 
-  public void
+  public synchronized void
   setTotalDisk
   (
    Long disk
@@ -315,7 +315,7 @@ class QueueHost
   /**
    * Get the timestamp of when all ramp-up intervals will have expired.
    */ 
-  public Date
+  public synchronized Date
   getHold() 
   {
     Date latest = new Date(0L);
@@ -329,7 +329,7 @@ class QueueHost
   /**
    * Get the 
    */ 
-  public Set<Long> 
+  public synchronized Set<Long> 
   getHeldJobIDs() 
   {
     return Collections.unmodifiableSet(pHoldTimeStamps.keySet());
@@ -344,7 +344,7 @@ class QueueHost
    * @param interval
    *   The ramp-up interval (in seconds).
    */ 
-  public void 
+  public synchronized void 
   setHold
   (
    long jobID, 
@@ -363,7 +363,7 @@ class QueueHost
    * @param jobID
    *   The unique job identifier.
    */ 
-  public void 
+  public synchronized void 
   cancelHold
   (
    long jobID
@@ -375,7 +375,7 @@ class QueueHost
   /**
    * Cancel all holds.
    */ 
-  public void 
+  public synchronized void 
   cancelHolds() 
   {
     pHoldTimeStamps.clear();
@@ -400,7 +400,7 @@ class QueueHost
    * @return 
    *   The sample or <CODE>null</CODE> if there are no samples.
    */ 
-  public ResourceSample
+  public synchronized ResourceSample
   getLatestSample() 
   {
     if(!pSamples.isEmpty()) 
@@ -414,7 +414,7 @@ class QueueHost
    * @return 
    *   The sample or <CODE>null</CODE> if there are no samples.
    */ 
-  public List<ResourceSample> 
+  public synchronized List<ResourceSample> 
   getSamples() 
   {
     pruneSamples();
@@ -427,7 +427,7 @@ class QueueHost
    * @param sample
    *   The sample of system resources.
    */ 
-  public void 
+  public synchronized void 
   addSample
   (
    ResourceSample sample
@@ -443,7 +443,7 @@ class QueueHost
   /**
    * Remove all samples older than the sample interval.
    */ 
-  private void
+  private synchronized void
   pruneSamples()
   {
     long start = 0;
@@ -472,7 +472,7 @@ class QueueHost
   /**
    * Get the change to the number of running jobs since the last resource sample.
    */ 
-  public int 
+  public synchronized int 
   getNumJobsDelta() 
   {
     return pNumJobsDelta;
@@ -482,7 +482,7 @@ class QueueHost
    * Increment the number of running jobs since the last resource sample due to a new 
    * job being started.
    */ 
-  public void 
+  public synchronized void 
   jobStarted() 
   {
     pNumJobsDelta++;
@@ -499,7 +499,7 @@ class QueueHost
    * @param results
    *   The results of the job execution.
    */ 
-  public void 
+  public synchronized void 
   jobFinished
   (
    QueueJobResults results
@@ -524,7 +524,7 @@ class QueueHost
   /**
    * Get the names of the selection keys for the host.
    */
-  public Set<String>
+  public synchronized Set<String>
   getSelectionKeys()
   {
     return Collections.unmodifiableSet(pSelectionBiases.keySet());
@@ -539,7 +539,7 @@ class QueueHost
    * @return 
    *   The bias for the given key or <CODE>null</CODE> if the key is not defined.
    */ 
-  public Integer
+  public synchronized Integer
   getSelectionBias
   (
    String key
@@ -557,7 +557,7 @@ class QueueHost
    * @param bias 
    *   The selection bias for the key: [-100,100]
    */ 
-  public void 
+  public synchronized void 
   addSelectionKey
   (
    String key, 
@@ -576,7 +576,7 @@ class QueueHost
    * @param key 
    *    The name of the selection key to remove.
    */
-  public void
+  public synchronized void
   removeSelectionKey
   (
    String key
@@ -588,7 +588,7 @@ class QueueHost
   /** 
    * Remove all selection keys.
     */
-  public void
+  public synchronized void
   removeAllSelectionKeys() 
   {
     pSelectionBiases.clear();
@@ -609,7 +609,7 @@ class QueueHost
    *   If the server is currently on hold due to job run-up. <P>
    * </DIV>
    */
-  public int 
+  public synchronized int 
   getAvailableSlots() 
   {
     ResourceSample sample = getLatestSample();
@@ -659,7 +659,7 @@ class QueueHost
    * @return 
    *   The combined selection bias or <CODE>null</CODE> if the host fails the requirements.
    */ 
-  public Integer
+  public synchronized Integer
   computeSelectionScore
   (
    String author, 
