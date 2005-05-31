@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.23 2005/04/03 06:10:11 jim Exp $
+// $Id: QueueMgrClient.java,v 1.24 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -367,24 +367,40 @@ class QueueMgrClient
   }  
   
   /**
-   * Set the total number of licenses associated with the named license key. <P> 
+   * Set the licensing scheme and maximum number of licenses associated with a 
+   * license key. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
    * @param kname
    *   The name of the license key.
    * 
-   * @param total 
-   *   The total number of licenses.
+   * @param scheme
+   *   The scheme used to determine the number of available licenses.
+   * 
+   * @param maxSlots
+   *   The maximum number of slots running a job which requires the license key or 
+   *   <CODE>null</CODE> if the license scheme is not PerSlot.
+   * 
+   * @param maxHosts
+   *   The maximum number of hosts which may run a job which requires the license key or 
+   *   <CODE>null</CODE> if the license scheme is PerSlot.
+   * 
+   * @param maxHostSlots
+   *   The maximum number of slots which may run a job requiring the license key on a 
+   *   single host or <CODE>null</CODE> if the license scheme is not PerHostSlot.
    * 
    * @throws PipelineException
-   *   If unable to set the license total for the given license key.
+   *   If unable to set the maximum licenses for the given license key.
    */ 
   public synchronized void
-  setTotalLicenses
+  setMaxLicenses
   (
    String kname, 
-   int total   
+   LicenseScheme scheme, 
+   Integer maxSlots, 
+   Integer maxHosts, 
+   Integer maxHostSlots
   ) 
     throws PipelineException  
   {
@@ -394,8 +410,9 @@ class QueueMgrClient
 
     verifyConnection();
 
-    QueueSetTotalLicensesReq req = new QueueSetTotalLicensesReq(kname, total);
-    Object obj = performTransaction(QueueRequest.SetTotalLicenses, req); 
+    QueueSetMaxLicensesReq req =
+      new QueueSetMaxLicensesReq(kname, scheme, maxSlots, maxHosts, maxHostSlots);
+    Object obj = performTransaction(QueueRequest.SetMaxLicenses, req); 
     handleSimpleResponse(obj);    
   }
   

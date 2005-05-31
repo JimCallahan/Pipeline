@@ -1,4 +1,4 @@
-// $Id: SelectionKeysTableModel.java,v 1.4 2005/03/20 22:55:30 jim Exp $
+// $Id: SelectionKeysTableModel.java,v 1.5 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -59,7 +59,7 @@ class SelectionKeysTableModel
       }
 
       {
-	int widths[] = { 160, 450 };
+	int widths[] = { 120, 360 };
 	pColumnWidths = widths;
       }
 

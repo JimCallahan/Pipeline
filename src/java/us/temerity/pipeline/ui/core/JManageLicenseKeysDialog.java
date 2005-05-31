@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.5 2005/03/20 22:55:30 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.6 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -166,10 +166,10 @@ class JManageLicenseKeysDialog
     try {
       int wk;
       for(wk=0; wk<pTableModel.getRowCount(); wk++) {
-	String kname  = pTableModel.getName(wk);
-	Integer total = pTableModel.getTotal(wk);
-	
-	client.setTotalLicenses(kname, total);
+	LicenseKey key = pTableModel.getLicenseKey(wk);
+	if(key != null) 
+	  client.setMaxLicenses(key.getName(), key.getScheme(), 
+				key.getMaxSlots(), key.getMaxHosts(), key.getMaxHostSlots());
       }
     }
     catch(PipelineException ex) {
@@ -196,7 +196,9 @@ class JManageLicenseKeysDialog
 	UIMaster master = UIMaster.getInstance();
 	QueueMgrClient client = master.getQueueMgrClient();
 	try {
-	  client.addLicenseKey(new LicenseKey(kname, desc, 0));
+	  LicenseKey key = new LicenseKey(kname, desc, LicenseScheme.PerSlot, 0, null, null);
+	  client.addLicenseKey(key);
+			       
 	  pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
 	}
 	catch(PipelineException ex) {

@@ -166,8 +166,11 @@ ScriptOptsParser
   private TreeMap  pJobSelectionBiases;
   private TreeSet  pJobSelectionRemoves;
 
-  private String   pMessage;
-  private Integer  pTotal;
+  private String         pMessage;
+  private LicenseScheme  pLicenseScheme;
+  private Integer        pMaxSlots;
+  private Integer        pMaxHosts;
+  private Integer        pMaxHostSlots;
   
   /**
    * working node version command option temporaries
@@ -291,7 +294,12 @@ TOKEN :
 {
   /* command options */ 
   <MSG:                "--msg">                 : STRING_SEP  
-| <TOTAL:              "--total">               : INTEGER_SEP  
+| <PER_SLOT:           "--per-slot">  
+| <PER_HOST:           "--per-host">  
+| <PER_HOST_SLOT:      "--per-host-slot">
+| <MAX_SLOTS:          "--max-slots">           : INTEGER_SEP  
+| <MAX_HOSTS:          "--max-hosts">           : INTEGER_SEP  
+| <MAX_HOST_SLOTS:     "--max-host-slots">      : INTEGER_SEP  
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
 | <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr">   
 | <PATTERN:            "--pattern">         	: STRING_SEP	      
@@ -2646,26 +2654,18 @@ void
 LicenseKeyAdd() 
   throws PipelineException : 
 {
-  String kname = null;
-  pMessage     = null;
-  pTotal       = null; 
+  String kname   = null;
+  pMessage       = null;
+  pLicenseScheme = null;
+  pMaxSlots      = null;
+  pMaxHosts      = null;
+  pMaxHostSlots  = null;
 }
 {
   <KEY_ADD> EQ() kname=KeyName() AE() (LicenseKeyAddOpts())* 
   {
-    if(pMessage == null) 
-      throw new PipelineException("The --msg option is required!");
-
-    if(pTotal == null) 
-      throw new PipelineException("The --total option is required!");
-
-    LicenseKey key = new LicenseKey(kname, pMessage, pTotal);
-    pQueueMgrClient.addLicenseKey(key);
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Added license key (" + kname + ").");
-    LogMgr.getInstance().flush();
+    pApp.addLicenseKey(kname, pMessage, pLicenseScheme, pMaxSlots, pMaxHosts, pMaxHostSlots,
+		       pQueueMgrClient);
   }
 }
  
@@ -2674,7 +2674,7 @@ LicenseKeyAddOpts()
   throws PipelineException : 
 {}
 {
-  (Msg() | Total())
+  (Msg() | PerSlot() | PerHost() | PerHostSlot() | MaxSlots() | MaxHosts() | MaxHostSlots())
   {}
 }
 
@@ -2682,24 +2682,29 @@ void
 LicenseKeySet() 
   throws PipelineException : 
 {
-  String kname = null;
-  pTotal       = null; 
+  String kname   = null;
+  pLicenseScheme = null;
+  pMaxSlots      = null;
+  pMaxHosts      = null;
+  pMaxHostSlots  = null;
 }
 {
-  <KEY_SET> EQ() kname=KeyName() AE() Total() AE()
+  <KEY_SET> EQ() kname=KeyName() AE() (LicenseKeyAddOpts())* 
   {
-    if(pTotal == null) 
-      throw new PipelineException("The --total option is required!");
-
-    pQueueMgrClient.setTotalLicenses(kname, pTotal);
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "License key (" + kname + ") now has (" + pTotal + ") total licenses.");
-    LogMgr.getInstance().flush();
+    pApp.setLicenseKey(kname, pLicenseScheme, pMaxSlots, pMaxHosts, pMaxHostSlots,
+		       pQueueMgrClient);
   }
 }
  
+void
+LicenseKeySetOpts() 
+  throws PipelineException : 
+{}
+{
+  (PerSlot() | PerHost() | PerHostSlot() | MaxSlots() | MaxHosts() | MaxHostSlots())
+  {}
+}
+
 void 
 LicenseKeyRemove() 
   throws PipelineException : 
@@ -5198,19 +5203,75 @@ Msg() :
   }
 }
 
+void
+PerSlot() : 
+{}
+{
+  <PER_SLOT> AE()
+  {
+    pLicenseScheme = LicenseScheme.PerSlot;
+  }
+}
+
+void
+PerHost() : 
+{}
+{
+  <PER_HOST> AE()
+  {
+    pLicenseScheme = LicenseScheme.PerHost;
+  }
+}
+
+void
+PerHostSlot() : 
+{}
+{
+  <PER_HOST_SLOT> AE()
+  {
+    pLicenseScheme = LicenseScheme.PerHostSlot;
+  }
+}
+
 void  
-Total()
+MaxSlots()
   throws PipelineException : 
 {
-  int total;
+  int maxSlots; 
 }
 {
-  <TOTAL> EQ() total=IntegerLiteral() AE()
+  <MAX_SLOTS> EQ() maxSlots=IntegerLiteral() AE()
   {
-    pTotal = total; 
+    pMaxSlots = maxSlots; 
+  }
+}
+     
+void  
+MaxHosts()
+  throws PipelineException : 
+{
+  int maxHosts; 
+}
+{
+  <MAX_HOSTS> EQ() maxHosts=IntegerLiteral() AE()
+  {
+    pMaxHosts = maxHosts; 
   }
 }
       
+void  
+MaxHostSlots()
+  throws PipelineException : 
+{
+  int maxHostSlots; 
+}
+{
+  <MAX_HOST_SLOTS> EQ() maxHostSlots=IntegerLiteral() AE()
+  {
+    pMaxHostSlots = maxHostSlots; 
+  }
+}
+     
 void
 Author() : 
 {

@@ -212,14 +212,40 @@ Administration</span></span></a><br>
  style="font-weight: normal;"></span><span style="font-weight: bold;">--msg</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>='<span
  style="font-style: italic;">key-description</span>' <span
- style="font-weight: bold;">--total</span>=<span
- style="font-style: italic;">integer</span></span></li>
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--</span><span
+ style="font-style: italic; font-weight: bold;"></span><span
+ style="font-weight: bold;">per-slot</span> | <span
+ style="font-weight: bold;">--per-host </span>| <span
+ style="font-weight: bold;">--per-host-slot</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span>[<span
+ style="font-weight: bold;">--max-slots</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-hosts</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-host-slots</span>=<span
+ style="font-style: italic;">integer</span>]<br>
+          </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#license-key_--set"><span
  style="font-weight: bold;">--set</span></a>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">key-name</span>&nbsp;<span
- style="font-weight: bold;">--total</span>=<span
- style="font-style: italic;">integer</span></span></li>
+ style="font-weight: normal;"><span style="font-style: italic;">key-name</span>
+          </span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span><span
+ style="font-style: italic; font-weight: bold;"></span><span
+ style="font-weight: bold;">per-slot</span> | <span
+ style="font-weight: bold;">--per-host </span>| <span
+ style="font-weight: bold;">--per-host-slot</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span> [<span
+ style="font-weight: bold;">--max-slots</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-hosts</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-host-slots</span>=<span
+ style="font-style: italic;">integer</span>]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#license-key_--remove"><span
  style="font-weight: bold;">--remove</span></a>=<span
@@ -2228,15 +2254,68 @@ to performing a <a href="#license-key_--get-info"><span
 &nbsp;&nbsp;&nbsp; </span></span><span style="font-weight: bold;">--msg</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>='<span
  style="font-style: italic;">key-description</span>' <span
- style="font-weight: bold;">--total</span>=<span
- style="font-style: italic;">integer<br>
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span><span
+ style="font-style: italic; font-weight: bold;"></span><span
+ style="font-weight: bold;">per-slot</span> | <span
+ style="font-weight: bold;">--per-host </span>| <span
+ style="font-weight: bold;">--per-host-slot</span><br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--max-slots</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-hosts</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-host-slots</span>=<span
+ style="font-style: italic;">integer</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;"><br>
 </span></span>
 <div style="margin-left: 40px;"><br>
 Adds a new license key (<span style="font-style: italic;">key-name</span>)
 to the set of existing license keys. The
 description of the license key (<span style="font-style: italic;">log-message</span>)
-and the initial total number of licenses (<span
- style="font-style: italic;">total</span>) are required. <br>
+and choice of initial licensing scheme are required.&nbsp;&nbsp; The
+options used to set the licensing scheme are: <br>
+<br>
+<span style="font-weight: bold;">--per-slot<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Each job uses a single license
+regardless of which host it is running on or the number of other jobs
+on the host using a license.&nbsp; <br>
+<br>
+The <span style="font-weight: bold;">--max-slots</span> option is used
+to set the maximum number of slot licenses.<br>
+</div>
+<br>
+<span style="font-weight: bold;">--per-host<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Any number of jobs running on the same
+host use only a single license. A count is maintained of the number of
+jobs on each host using the license key. Licenses are reserved when the
+count on a machine increases from 0 to 1 and released when the count
+decreases from 1 to 0. Additional jobs on a machine already using a
+license do not require reserving additional licenses.&nbsp; <br>
+<br>
+The <span style="font-weight: bold;">--max-hosts</span> option is used
+to set the maximum number of host licenses.<br>
+</div>
+<br>
+<span style="font-weight: bold;">--per-host-slot<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Only a limited number of jobs may be
+run on a single host, but only a single license is used for each host
+regardless of the number of slots in use. Behaves identically to <span
+ style="font-weight: bold;">--per-host</span> except that there is a
+limit on the total number of slots which may used on a single machine.<br>
+<br>
+The <span style="font-weight: bold;">--max-hosts</span> option is used
+to set the maximum number of host licenses and the <span
+ style="font-weight: bold;">--max-host-slots</span> option is used to
+set the maximum number of slots which may be used at one time on a
+single licensed host.<br>
+</div>
 <br>
 <span style="font-weight: normal;">This command requires privileged
 user status.</span><br>
@@ -2246,12 +2325,31 @@ user status.</span><br>
  style="font-weight: bold;"><a name="license-key_--set"></a>license-key</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> --set</span>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">key-name</span>
-<span style="font-weight: bold;"><br>
-&nbsp;&nbsp;&nbsp; --total</span>=<span style="font-style: italic;">integer<br>
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><br>
+&nbsp;&nbsp;&nbsp; </span></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span><span
+ style="font-style: italic; font-weight: bold;"></span><span
+ style="font-weight: bold;">per-slot</span> | <span
+ style="font-weight: bold;">--per-host </span>| <span
+ style="font-weight: bold;">--per-host-slot</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--max-slots</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-hosts</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-host-slots</span>=<span
+ style="font-style: italic;">integer</span>]</span><span
+ style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span>
 <div style="margin-left: 40px;"><br>
-Sets the total number of licenses (<span style="font-style: italic;">total</span>)
-for an existing license key (<span style="font-style: italic;">key-name</span>).<br>
+Sets the licensing scheme and optionally the maximum number of licenses<span
+ style="font-style: italic;"></span>
+for an existing license key (<span style="font-style: italic;">key-name</span>).&nbsp;
+See <a href="#license-key_--add"><span style="font-weight: bold;">license-key
+--add</span></a> for details on the licensing scheme and maximum
+license count options.<br>
 <br>
 <span style="font-weight: normal;">This command requires privileged
 user status.</span><br>

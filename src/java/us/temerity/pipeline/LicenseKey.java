@@ -1,4 +1,4 @@
-// $Id: LicenseKey.java,v 1.3 2004/08/31 07:31:18 jim Exp $
+// $Id: LicenseKey.java,v 1.4 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,6 +28,7 @@ class LicenseKey
   LicenseKey() 
   {
     super();
+    pUsedPerHost = new TreeMap<String,Integer>();
   }
 
   /** 
@@ -39,19 +40,40 @@ class LicenseKey
    * @param desc 
    *   A short description of the license key.
    * 
-   * @param total
-   *   The total number of licenses.
+   * @param scheme
+   *   The scheme used to determine the number of available licenses.
+   * 
+   * @param maxSlots
+   *   The maximum number of slots running a job which requires the license key or 
+   *   <CODE>null</CODE> if the license scheme is not PerSlot.
+   * 
+   * @param maxHosts
+   *   The maximum number of hosts which may run a job which requires the license key or 
+   *   <CODE>null</CODE> if the license scheme is PerSlot.
+   * 
+   * @param maxHostSlots
+   *   The maximum number of slots which may run a job requiring the license key on a 
+   *   single host or <CODE>null</CODE> if the license scheme is not PerHostSlot.
    */ 
   public
   LicenseKey
   (
    String name,  
    String desc, 
-   int total
+   LicenseScheme scheme, 
+   Integer maxSlots, 
+   Integer maxHosts, 
+   Integer maxHostSlots
   ) 
   {
     super(name, desc);
-    setTotal(total);
+
+    pUsedPerHost = new TreeMap<String,Integer>();
+
+    setScheme(scheme);
+    setMaxSlots(maxSlots);
+    setMaxHosts(maxHosts);
+    setMaxHostSlots(maxHostSlots);
   }
 
 
@@ -61,37 +83,220 @@ class LicenseKey
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the total number of licenses.
+   * Get the licensing scheme
    */ 
-  public int 
-  getTotal() 
+  public synchronized LicenseScheme
+  getScheme()
   {
-    return pTotal;
+    return pScheme;
   }
 
   /**
-   * Set the total number of licenses.
+   * Set the licensing scheme.
    */ 
-  public void
-  setTotal
+  public synchronized void 
+  setScheme
   (
-   int total
+   LicenseScheme scheme
   ) 
   {
-    if(total < 0) 
-      throw new IllegalArgumentException
-	("The total number of licenses cannot be negative!");
-    pTotal = total;
+    pScheme = scheme;
+
+    switch(scheme) {
+    case PerSlot:
+      if(pMaxSlots == null) 
+	pMaxSlots = 0;
+      pMaxHosts = null;
+      pMaxHostSlots = null;
+      break;
+
+    case PerHost:
+      pMaxSlots = null;
+      if(pMaxHosts == null) 
+	pMaxHosts = 0; 
+      pMaxHostSlots = null;
+      break;
+
+    case PerHostSlot:
+      pMaxSlots = null;
+      if(pMaxHosts == null) 
+	pMaxHosts = 0; 
+      if(pMaxHostSlots == null)
+	pMaxHostSlots = 0;
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the maximum number of slots running a job which requires the license key.
+   * 
+   * @return 
+   *   The number of slots or <CODE>null</CODE> if the license scheme is not PerSlot.
+   */ 
+  public synchronized Integer
+  getMaxSlots() 
+  {
+    return pMaxSlots; 
+  }
+
+  /**
+   * Set the maximum number of slots running a job which requires the license key.
+   */ 
+  public synchronized void
+  setMaxSlots
+  (
+   Integer slots
+  ) 
+  {
+    switch(pScheme) {
+    case PerSlot:
+      if(slots == null) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed slots cannot be (null)!");
+      if(slots < 0) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed slots cannot be negative!");
+      break;
+      
+    default:
+      if(slots != null) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed slots is not valid for the " + pScheme.toTitle() +
+	   " license scheme!");
+    }      
+
+    pMaxSlots = slots;
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the available number of licenses.
+   * Get the maximum number of hosts which may run a job which requires the license key.
+   * 
+   * @return 
+   *   The number of hosts or <CODE>null</CODE> if the license scheme is not PerSlot.
    */ 
-  public int 
+  public synchronized Integer
+  getMaxHosts()
+  {
+    return pMaxHosts;
+  }
+
+  /**
+   * Set the maximum number of hosts which may run a job which requires the license key.
+   */ 
+  public synchronized void
+  setMaxHosts
+  (
+   Integer hosts
+  ) 
+  {
+    switch(pScheme) {
+    case PerHost: 
+    case PerHostSlot:
+      if(hosts == null)
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed hosts cannot be (null)!");
+      if(hosts < 0) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed hosts cannot be negative!");
+      break;
+      
+    default:
+      if(hosts != null) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed hosts is not valid for the " + pScheme.toTitle() +
+	   " license scheme!");
+    }      
+    
+    pMaxHosts = hosts;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the maximum number of slots which may run a job requiring the license key on a 
+   * single host.
+   * 
+   * @return
+   *   The number of host slots or <CODE>null</CODE> if the license scheme is not PerHostSlot.
+   */ 
+  public synchronized Integer
+  getMaxHostSlots()
+  {
+    return pMaxHostSlots;
+  }
+  
+  /**
+   * Set the maximum number of slots which may run a job requiring the license key on a 
+   * single host.
+   */ 
+  public synchronized void
+  setMaxHostSlots
+  (
+   Integer slots
+  ) 
+  {
+    switch(pScheme) {
+    case PerHostSlot:
+      if(slots == null)
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed slots per host cannot be (null)!");
+      if(slots < 0) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed slots per host cannot be negative!");
+      break;
+      
+    default:
+      if(slots != null) 
+	throw new IllegalArgumentException
+	  ("The maximum number of licensed slots per host is not valid for the " + 
+	   pScheme.toTitle() + " license scheme!");
+    }      
+
+    pMaxHostSlots = slots;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the number of licenses currently available number of licenses.
+   */ 
+  public synchronized int 
   getAvailable() 
   {
-    return Math.max((pTotal - pUsed), 0);
+    int avail = 0;
+    switch(pScheme) {
+    case PerSlot:
+      {
+	int totalUsed = 0;
+	for(Integer cnt : pUsedPerHost.values()) 
+	  totalUsed += cnt; 
+	
+	avail = Math.max((pMaxSlots - totalUsed), 0);
+      }
+      break;
+
+    case PerHost:
+    case PerHostSlot:
+      {
+	int hostsUsed = 0; 
+	for(Integer cnt : pUsedPerHost.values()) {
+	  if(cnt > 0) 
+	    hostsUsed++;
+	}
+	
+	avail = Math.max((pMaxHosts - hostsUsed), 0);
+      }
+    }
+    
+    return avail;
   }
 
 
@@ -103,14 +308,66 @@ class LicenseKey
   /**
    * Attempt to aquire a license.
    * 
+   * @param hostname
+   *   The name of the host where the job aquiring the license will run.
+   * 
    * @return 
    *   Whether a license was available.
    */ 
-  public boolean
-  aquire() 
+  public synchronized boolean
+  aquire
+  (
+   String hostname
+  ) 
   {
-    if((pTotal - pUsed) > 0) {
-      pUsed++;
+    Integer slotsUsed = pUsedPerHost.get(hostname);
+
+    boolean available = false;
+    switch(pScheme) {
+    case PerSlot:
+      {
+	int totalUsed = 0;
+	for(Integer cnt : pUsedPerHost.values()) 
+	  totalUsed += cnt; 
+	
+	if(totalUsed < pMaxSlots) 
+	  available = true;
+      }
+      break;
+
+    case PerHost:
+    case PerHostSlot:
+      {
+	int hostsUsed = 0;
+	for(Integer cnt : pUsedPerHost.values()) {
+	  if(cnt > 0) 
+	    hostsUsed++; 
+	}
+
+	switch(pScheme) {
+	case PerHost:
+	  available = 
+	    ((hostsUsed < pMaxHosts) || 
+	     ((hostsUsed == pMaxHosts) && 
+	      (slotsUsed != null) && (slotsUsed > 0)));
+	  break;
+
+	case PerHostSlot:
+	  available = 
+	    (((hostsUsed < pMaxHosts) && 
+	      ((slotsUsed == null) || (slotsUsed < pMaxHostSlots))) || 
+	     ((hostsUsed == pMaxHosts) && 
+	      (slotsUsed != null) && (slotsUsed < pMaxHostSlots)));
+	}
+      }
+    }
+
+    if(available) {
+      if(slotsUsed == null) 
+	pUsedPerHost.put(hostname, 1);
+      else 
+	pUsedPerHost.put(hostname, slotsUsed+1);
+
       return true;
     }
 
@@ -119,15 +376,20 @@ class LicenseKey
 
   /**
    * Release a previously aquired license.
+   *
+   * @param hostname
+   *   The name of the host where the job which aquired the license was run.
    */ 
-  public void
-  release()
+  public synchronized void
+  release
+  (
+   String hostname
+  )
   {
-    if(pUsed > 0) 
-      pUsed--;
+    Integer slotsUsed = pUsedPerHost.get(hostname);
+    if((slotsUsed != null) && (slotsUsed > 0)) 
+      pUsedPerHost.put(hostname, slotsUsed-1);
   }
-
-  
   
   
 
@@ -145,7 +407,19 @@ class LicenseKey
     super.toGlue(encoder);
     
     encoder.encode("Description", pDescription);    
-    encoder.encode("Total", pTotal);    
+    encoder.encode("LicenseScheme", pScheme);    
+    
+    switch(pScheme) {
+    case PerSlot:
+      encoder.encode("MaxSlots", pMaxSlots);
+      break;
+
+    case PerHostSlot:
+      encoder.encode("MaxHostSlots", pMaxHostSlots);
+
+    case PerHost:
+      encoder.encode("MaxHosts", pMaxHosts);
+    }
   }
   
   public void 
@@ -162,10 +436,37 @@ class LicenseKey
       throw new GlueException("The \"Description\" was missing!");
     pDescription = desc;
 
-    Integer total = (Integer) decoder.decode("Total"); 
-    if(total == null) 
-      throw new GlueException("The \"Total\" was missing!");
-    pTotal = total;
+    LicenseScheme scheme = (LicenseScheme) decoder.decode("LicenseScheme"); 
+    if(scheme == null) 
+      throw new GlueException("The \"LicenseScheme\" was missing!");
+    setScheme(scheme);
+
+    switch(pScheme) {
+    case PerSlot:
+      {
+	Integer maxSlots = (Integer) decoder.decode("MaxSlots");
+	if(maxSlots == null)
+	  throw new GlueException("The \"MaxSlots\" was missing!");
+	setMaxSlots(maxSlots);
+      }
+      break;
+      
+    case PerHostSlot:
+      {
+	Integer maxHostSlots = (Integer) decoder.decode("MaxHostSlots");
+	if(maxHostSlots == null)
+	  throw new GlueException("The \"MaxHostSlots\" was missing!");
+	setMaxHostSlots(maxHostSlots);
+      }
+
+    case PerHost:
+      {
+	Integer maxHosts = (Integer) decoder.decode("MaxHosts");
+	if(maxHosts == null)
+	  throw new GlueException("The \"MaxHosts\" was missing!");
+	setMaxHosts(maxHosts);
+      }      
+    }
   }
 
 
@@ -176,7 +477,6 @@ class LicenseKey
 
   private static final long serialVersionUID = 7616282979518347032L;
 
-
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -184,14 +484,42 @@ class LicenseKey
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The total number of licenses.
+   * The scheme used to determine the number of available licenses.
    */ 
-  private int  pTotal; 
+  private LicenseScheme  pScheme; 
 
   /**
-   * The number of licenses currently in use.
+   * The maximum number of slots running a job which requires the license key. <P> 
+   *
+   * Only used when the license scheme is PerSlot. Disabled and set to <CODE>null</CODE> for
+   * the other schemes.
    */ 
-  private int  pUsed; 
+  private Integer  pMaxSlots; 
+
+  /**
+   * The maximum number of hosts which may run a job which requires the license key. <P> 
+   * 
+   * Used by both the PerHost and PerHostSlot schemes. Disabled and set to <CODE>null</CODE> 
+   * when the license scheme is PerSlot.
+   */ 
+  private Integer  pMaxHosts; 
+
+  /**
+   * The maximum number of slots which may run a job requiring the license key on a single 
+   * host. <P>
+   * 
+   * Only used by the PerHostSlot license scheme. Disabled and set to <CODE>null</CODE> to
+   * all other schemes.
+   */ 
+  private Integer  pMaxHostSlots; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The number of licenses currently in use by each job server host.
+   */ 
+  private TreeMap<String,Integer>  pUsedPerHost; 
 
 }
 

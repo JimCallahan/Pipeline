@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.42 2005/05/16 19:25:31 jim Exp $
+// $Id: ScriptApp.java,v 1.43 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -167,9 +167,11 @@ class ScriptApp
        "      --get-info=key-name\n" +
        "      --get-info-all\n" + 
        "      --add=key-name\n" + 
-       "        --msg=\"key-description\" --total=integer\n" + 
+       "        --msg=\"key-description\" --per-slot | --per-host | --per-host-slot\n" +
+       "        [--max-slots=integer] [--max-hosts=integer] [--max-host-slots=integer]\n" +
        "      --set=key-name\n" + 
-       "        --total=integer\n" +
+       "        [--per-slot | --per-host | --per-host-slot]\n" +
+       "        [--max-slots=integer] [--max-hosts=integer] [--max-host-slots=integer]\n" +
        "      --remove=key-name\n" +
        "    selection-key\n" + 
        "      --get\n" + 
@@ -875,10 +877,25 @@ class ScriptApp
 	first = false;
 
 	buf.append
-	  ("License Key : " + key.getName() + "\n" + 
-	   "Available   : " + key.getAvailable() + "\n" + 
-	   "Total       : " + key.getTotal() + "\n" + 
-	   "Description : " + wordWrap(key.getDescription(), 14, 80));
+	  ("License Key     : " + key.getName() + "\n" + 
+	   "Available       : " + key.getAvailable() + "\n" + 
+	   "License Scheme  : " + key.getScheme().toTitle() + "\n");
+
+	switch(key.getScheme()) {
+	case PerSlot:
+	  buf.append("Max Slots       : " + key.getMaxSlots() + "\n");
+	  break;
+	
+	case PerHost:
+	  buf.append("Max Hosts       : " + key.getMaxHosts() + "\n");
+	  break;
+	  
+	case PerHostSlot:
+	  buf.append("Max Hosts       : " + key.getMaxHosts() + "\n" + 
+		     "Max Host Slots  : " + key.getMaxHostSlots() + "\n");
+	}
+
+	buf.append("Description     : " + wordWrap(key.getDescription(), 18, 80));
 
 	if(kname != null) {
 	  found = true;
@@ -894,6 +911,121 @@ class ScriptApp
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
+    LogMgr.getInstance().flush();
+  }
+
+  /**
+   * Add a new license key.
+   */ 
+  public void 
+  addLicenseKey
+  (
+   String kname, 
+   String msg, 
+   LicenseScheme scheme, 
+   Integer maxSlots, 
+   Integer maxHosts, 
+   Integer maxHostSlots,
+   QueueMgrClient client
+  )
+    throws PipelineException
+  {
+    if(msg == null) 
+      throw new PipelineException("The --msg option is required!");
+
+    if(scheme == null) 
+      throw new PipelineException
+        ("One of the following options are required: " + 
+	 "--per-slot, --per-host or --per-host-slot");
+
+    switch(scheme) {
+    case PerSlot:
+      if(maxSlots == null) 
+	throw new PipelineException
+	  ("The --max-slots option is required when the --per-host option is given!");
+      break;
+
+    case PerHostSlot:
+      if(maxHostSlots == null) 
+	throw new PipelineException
+	  ("The --max-host-slots option is required when the --per-host-slot " + 
+	   "option is given!");      
+
+    case PerHost:
+      if(maxHosts == null) 
+	throw new PipelineException
+	  ("The --max-slots option is required when the --per-host or --per-host-slot " + 
+	   "options are given!");
+    }	
+
+    LicenseKey key = null;
+    try {
+      key = new LicenseKey(kname, msg, scheme, maxSlots, maxHosts, maxHostSlots);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+    client.addLicenseKey(key);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added license key (" + kname + ").");
+    LogMgr.getInstance().flush();
+  }
+
+  /**
+   * Set the parameters of an existing license key. 
+   */ 
+  public void 
+  setLicenseKey
+  (
+   String kname, 
+   LicenseScheme scheme, 
+   Integer maxSlots, 
+   Integer maxHosts, 
+   Integer maxHostSlots,
+   QueueMgrClient client
+  )
+    throws PipelineException
+  {
+    LicenseKey key = null;
+    {
+      ArrayList<LicenseKey> keys = client.getLicenseKeys();
+      for(LicenseKey k : keys) {
+	if(k.getName().equals(kname)) {
+	  key = k;
+	  break;
+	}
+      }
+    }
+
+    if(key == null) 
+      throw new PipelineException
+	("No license key named (" + kname + ") exists!");
+
+    if(scheme != null)
+      key.setScheme(scheme);
+
+    try {
+      if(maxSlots != null) 
+	key.setMaxSlots(maxSlots);
+
+      if(maxHosts != null) 
+	key.setMaxHosts(maxHosts);
+
+      if(maxHostSlots != null) 
+	key.setMaxHostSlots(maxHostSlots);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+      
+    client.setMaxLicenses(key.getName(), key.getScheme(), 
+			  key.getMaxSlots(), key.getMaxHosts(), key.getMaxHostSlots());
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "License key (" + kname + ") updated.");
     LogMgr.getInstance().flush();
   }
 

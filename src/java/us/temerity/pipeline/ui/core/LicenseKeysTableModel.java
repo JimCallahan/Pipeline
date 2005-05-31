@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.4 2005/03/20 22:55:30 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.5 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -43,15 +43,21 @@ class LicenseKeysTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 4;
+      pNumColumns = 7;
 
       {
-	Class classes[] = { String.class, String.class, Integer.class, Integer.class }; 
+	Class classes[] = { 
+	  String.class, String.class, String.class,
+	  Integer.class, Integer.class, Integer.class, Integer.class 
+	}; 
 	pColumnClasses = classes;
       }
 
       {
-	String names[] = {"Key", "Description", "Available", "Total" };
+	String names[] = {
+	  "Key", "Description", "Scheme", 
+	  "Available", "Max Slots", "Max Hosts", "Max Host Slots"
+	};
 	pColumnNames = names;
       }
 
@@ -59,14 +65,21 @@ class LicenseKeysTableModel
 	String desc[] = {
 	  "The name of the license key.", 
 	  "A short description of the use of the key.", 
+	  "The scheme used to determine the number of available licenses.", 
 	  "The number of available license keys.", 
-	  "The total number of license keys."
+	  "The maximum number of slots running a job which requires the license key.", 
+	  "The maximum number of hosts which may run a job which requires the license key.", 
+	  "The maximum number of slots which may run a job requiring the license key on a" + 
+	  "single host."
 	};
 	pColumnDescriptions = desc;
       }
 
       {
-	int widths[] = { 160, 450, 80, 80 };
+	int widths[] = { 
+	  120, 360, 120, 
+	  120, 120, 120, 120
+	};
 	pColumnWidths = widths;
       }
 
@@ -74,6 +87,9 @@ class LicenseKeysTableModel
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.LEFT), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER)
 	};
@@ -84,8 +100,11 @@ class LicenseKeysTableModel
 	TableCellEditor editors[] = {
 	  null, 
 	  null, 
-	  null, 
-	  new JIntegerTableCellEditor(80, JLabel.CENTER)
+	  new JCollectionTableCellEditor(LicenseScheme.titles(), 120),
+	  null,
+	  new JIntegerTableCellEditor(120, JLabel.CENTER),
+	  new JIntegerTableCellEditor(120, JLabel.CENTER),
+	  new JIntegerTableCellEditor(120, JLabel.CENTER)
 	};
 	pEditors = editors;
       }
@@ -123,11 +142,30 @@ class LicenseKeysTableModel
 	break;
 
       case 2:
-	value = new Integer(key.getAvailable());
+	value = key.getScheme().toTitle();
 	break;
 
       case 3:
-	value = new Integer(key.getTotal());
+	value = new Integer(key.getAvailable());
+	break;
+
+      case 4:
+	value = key.getMaxSlots();
+	if(value == null)
+	  value = "";
+	break;
+
+      case 5:
+	value = key.getMaxHosts();
+	if(value == null)
+	  value = "";
+	break;
+
+      case 6:
+	value = key.getMaxHostSlots();
+	if(value == null)
+	  value = "";
+	break;
       }
       
       int wk;
@@ -177,19 +215,17 @@ class LicenseKeysTableModel
   }
 
   /**
-   * Get total number of licenses for the license key at the given row.
+   * Get license key at the given row.
    */
-  public Integer 
-  getTotal
+  public LicenseKey
+  getLicenseKey
   (
    int row
   ) 
   {
-    LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
-    if(key != null) 
-      return key.getTotal();
-    return null;    
+    return pLicenseKeys.get(pRowToIndex[row]);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -238,7 +274,29 @@ class LicenseKeysTableModel
    int col
   ) 
   {
-    return ((col == 3) && pIsPrivileged);
+    if(!pIsPrivileged) 
+      return false;
+
+    if(col == 2) 
+      return true;
+
+    boolean isEditable = false;
+    LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
+    switch(key.getScheme()) {
+    case PerSlot:
+      isEditable = (col == 4);
+      break;
+      
+    case PerHost:
+      isEditable = (col == 5);
+      break;
+
+    case PerHostSlot:
+      isEditable = ((col == 5) || (col == 6));
+      break;
+    }
+
+    return isEditable;
   }
 
   /**
@@ -260,16 +318,19 @@ class LicenseKeysTableModel
       return key.getDescription(); 
 
     case 2:
-      {
-	Integer available = key.getAvailable();
-	return available; 
-      }
+      return key.getScheme().toTitle();
 
     case 3:
-      {
-	Integer total = key.getTotal();
-	return total; 
-      }
+      return key.getAvailable();
+
+    case 4:
+      return key.getMaxSlots();
+
+    case 5:
+      return key.getMaxHosts();
+
+    case 6:
+      return key.getMaxHostSlots();
 
     default:
       assert(false);
@@ -288,31 +349,90 @@ class LicenseKeysTableModel
    int col
   ) 
   {
-    switch(col) {
-    case 3:
-      {
-	Integer total = (Integer) value;
-	if(total >= 0) {
-	  int vrow = pRowToIndex[row];
-	  pLicenseKeys.get(vrow).setTotal(total);
+    boolean edited = false;
 
-	  int[] selected = pTable.getSelectedRows(); 
-	  int wk;
-	  for(wk=0; wk<selected.length; wk++) {
-	    int srow = pRowToIndex[selected[wk]];
-	    if(srow != vrow) 
-	      pLicenseKeys.get(srow).setTotal(total);
-	  }
+    LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
+    switch(col) {
+    case 2:
+      {
+	LicenseScheme oldScheme = key.getScheme();
+
+	LicenseScheme newScheme = null;
+	{
+	  String str = (String) value;
+	  if(str.equals("Per Slot")) 
+	    newScheme = LicenseScheme.PerSlot;
+	  else if(str.equals("Per Host"))
+	    newScheme = LicenseScheme.PerHost; 
+	  else if(str.equals("Per Host Slot")) 
+	    newScheme = LicenseScheme.PerHostSlot;
 	}
 
-	fireTableDataChanged();
-	pParent.doEdited(); 
+	if((newScheme != null) && !oldScheme.equals(newScheme)) {
+	  Integer oldMaxHosts = null;
+	  switch(newScheme) {
+	  case PerHost:
+	  case PerHostSlot:
+	    switch(oldScheme) {
+	    case PerHost:
+	    case PerHostSlot:
+	      oldMaxHosts = key.getMaxHosts();
+	    }
+	  }
+
+	  key.setScheme(newScheme);
+	  if(oldMaxHosts != null) 
+	    key.setMaxHosts(oldMaxHosts);
+	  edited = true;
+	}
+      }
+      break;
+
+    case 4:
+      switch(key.getScheme()) {
+      case PerSlot:
+	{
+	  Integer maxSlots = (Integer) value;
+	  if((maxSlots != null) && (maxSlots >= 0)) 
+	    key.setMaxSlots(maxSlots);
+	  edited = true;
+	}
+      }
+      break;
+
+    case 5:
+      switch(key.getScheme()) {
+      case PerHost:
+      case PerHostSlot:
+	{
+	  Integer maxHosts = (Integer) value;
+	  if((maxHosts != null) && (maxHosts >= 0)) 
+	    key.setMaxHosts(maxHosts);
+	  edited = true;
+	}
+      }
+      break;
+
+    case 6:
+      switch(key.getScheme()) {
+      case PerHostSlot:
+	{
+	  Integer maxHostSlots = (Integer) value;
+	  if((maxHostSlots != null) && (maxHostSlots >= 0)) 
+	    key.setMaxHostSlots(maxHostSlots);
+	  edited = true;
+	}
       }
       break;
       
     default:
       assert(false);
     }  
+
+    if(edited) {
+      fireTableDataChanged();
+      pParent.doEdited(); 
+    }
   }
 
 

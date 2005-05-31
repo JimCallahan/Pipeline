@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.24 2005/04/03 06:10:12 jim Exp $
+// $Id: QueueMgrServer.java,v 1.25 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -319,11 +319,11 @@ class QueueMgrServer
 	      }
 	      break;
 
-	    case SetTotalLicenses:
+	    case SetMaxLicenses:
 	      {
-		QueueSetTotalLicensesReq req = 
-		  (QueueSetTotalLicensesReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.setTotalLicenses(req));
+		QueueSetMaxLicensesReq req = 
+		  (QueueSetMaxLicensesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.setMaxLicenses(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.12 2005/01/15 21:15:54 jim Exp $
+// $Id: QueueRequest.java,v 1.13 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -54,9 +54,9 @@ enum QueueRequest
   RemoveLicenseKey, 
 
   /**
-   * An instance {@link QueueSetTotalLicensesReq QueueSetTotalLicensesReq} is next.
+   * An instance {@link QueueSetMaxLicensesReq QueueSetMaxLicensesReq} is next.
    */
-  SetTotalLicenses, 
+  SetMaxLicenses, 
 
 
   /*----------------------------------------------------------------------------------------*/

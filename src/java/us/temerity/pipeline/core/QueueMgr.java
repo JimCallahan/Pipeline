@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.40 2005/04/03 06:10:12 jim Exp $
+// $Id: QueueMgr.java,v 1.41 2005/05/31 09:37:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -551,26 +551,44 @@ class QueueMgr
   }  
   
   /**
-   * Set the total number of licenses associated with the named license key. <P> 
+   * Set the licensing scheme and maximum number of licenses associated with a 
+   * license key. <P> 
    * 
    * @param req
    *   The request.
    * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to set the total licenses.
+   *   <CODE>FailureRsp</CODE> if unable to set the maximum licenses.
    */ 
   public Object
-  setTotalLicenses
+  setMaxLicenses
   (
-   QueueSetTotalLicensesReq req
+   QueueSetMaxLicensesReq req
   ) 
   {
     String kname = req.getKeyName();
-    int total = req.getTotal();
+    LicenseScheme scheme = req.getScheme();
+    Integer maxSlots = req.getMaxSlots();
+    Integer maxHosts = req.getMaxHosts();
+    Integer maxHostSlots = req.getMaxHostSlots();
+
+    String msg = null;
+    switch(scheme) {
+    case PerSlot:
+      msg = maxSlots.toString();
+      break;
+
+    case PerHost:
+      msg = maxHosts.toString();
+      break;
+
+    case PerHostSlot:
+      msg = (maxHosts + "/" + maxHostSlots);
+    }
 
     TaskTimer timer = 
-      new TaskTimer("QueueMgr.setTotalLicenses(): " + kname + "[" + total + "]"); 
+      new TaskTimer("QueueMgr.setMaxLicenses(): " + kname + "[" + scheme + ": " + msg + "]");
     timer.aquire();
     try {
       synchronized(pLicenseKeys) {
@@ -579,11 +597,14 @@ class QueueMgr
 	LicenseKey key = pLicenseKeys.get(kname);
 	if(key == null) 
 	  throw new PipelineException
-	    ("Unable to set the total number of licenses because no license key " + 
+	    ("Unable to set the maximum number of licenses because no license key " + 
 	     "named (" + kname + ") exists!");
 	
 	try {
-	  key.setTotal(total);
+	  key.setScheme(scheme);
+	  key.setMaxSlots(maxSlots);
+	  key.setMaxHosts(maxHosts);
+	  key.setMaxHostSlots(maxHostSlots);
 	}
 	catch(IllegalArgumentException ex) {
 	  throw new PipelineException(ex.getMessage());	  
@@ -2579,7 +2600,7 @@ class QueueMgr
  	    break;
  	  }
  	  else {
- 	    if(key.aquire()) 
+ 	    if(key.aquire(host.getName())) 
  	      aquiredLicenseKeys.add(kname);
  	    else {
  	      available = false; 
@@ -2590,7 +2611,7 @@ class QueueMgr
 	
  	if(!available) {
  	  for(String kname : aquiredLicenseKeys) 
- 	    pLicenseKeys.get(kname).release();
+ 	    pLicenseKeys.get(kname).release(host.getName());
  	  return false;
  	}
       }
@@ -2634,7 +2655,7 @@ class QueueMgr
  	synchronized(pLicenseKeys) {
  	  timer.resume();
  	  for(String kname : aquiredLicenseKeys) 
- 	    pLicenseKeys.get(kname).release();
+ 	    pLicenseKeys.get(kname).release(host.getName());
  	}
  	return false;
       }
@@ -3939,7 +3960,7 @@ class QueueMgr
 	
 	synchronized(pLicenseKeys) {
 	  for(String kname : aquiredLicenseKeys) 
-	    pLicenseKeys.get(kname).release();
+	    pLicenseKeys.get(kname).release(pHostname);
 	}
       }
 
