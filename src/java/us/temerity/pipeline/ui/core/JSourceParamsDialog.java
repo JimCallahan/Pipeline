@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.5 2005/06/02 22:11:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,11 +38,15 @@ class JSourceParamsDialog
    * @param title
    *   The short name of the parent node.
    * 
-   * @param stitles
-   *   The short names of the upstream nodes.
-   * 
    * @param snames
-   *   The fully resolved node names of the upstream nodes.
+   *   The fully resolved node name of the parent upstream node for each file sequence.
+   * 
+   * @param stitles
+   *   The short name of the parent upstream node for each file sequence.
+   * 
+   * @param fseq
+   *   The file sequences of the upstream nodes.  Entries which are <CODE>null</CODE> are
+   *   primary file sequences.
    * 
    * @param action
    *   The parent action of the per-source parameters.
@@ -52,8 +56,9 @@ class JSourceParamsDialog
   (
    boolean isEditable, 
    String title, 
-   ArrayList<String> stitles, 
    ArrayList<String> snames, 
+   ArrayList<String> stitles, 
+   ArrayList<FileSeq> fseqs, 
    BaseAction action    
   )    
   {
@@ -68,7 +73,7 @@ class JSourceParamsDialog
 
       {
 	SourceParamsTableModel model = 
-	  new SourceParamsTableModel(this, isEditable, stitles, snames, action);
+	  new SourceParamsTableModel(this, isEditable, snames, stitles, fseqs, action);
 	pTableModel = model;
 
 	JTablePanel tpanel = new JTablePanel(model);

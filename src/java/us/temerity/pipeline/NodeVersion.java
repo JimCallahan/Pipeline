@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.20 2005/01/22 01:36:35 jim Exp $
+// $Id: NodeVersion.java,v 1.21 2005/06/02 22:11:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -92,17 +92,37 @@ class NodeVersion
       pIsNovel.put(fseq, isNovel.get(fseq).clone());
 
     if(pAction != null) {
+      TreeSet<String> dead = new TreeSet<String>();
+
       for(String sname : pAction.getSourceNames()) {
 	if(!pSources.containsKey(sname)) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
 	     "While creating checked-in node (" + pName + ") version (" + pVersionID + "), " +
-	     "per-source action parameters for source (" + sname + ") where found for the " + 
-	     "action associated with the working version being checked-in, but there were " + 
-	     "NO upstream links to this source node!  These extra per-source parameters " + 
-	     "were ignored."); 
-	  pAction.removeSourceParams(sname); 
+	     "per-source action parameters associated with the primary file sequencs of " + 
+	     "source (" + sname + ") where found for the action associated with the " + 
+	     "working version being checked-in, but there were NO upstream links to this " + 
+	     "source node!  These extra per-source parameters were ignored."); 
+	  dead.add(sname);
 	}
+      }
+
+      for(String sname : pAction.getSecondarySourceNames()) {
+	if(!pSources.containsKey(sname)) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+	     "While creating checked-in node (" + pName + ") version (" + pVersionID + "), " +
+	     "per-source action parameters associated with a secondary file sequencs of " + 
+	     "source (" + sname + ") where found for the action associated with the " + 
+	     "working version being checked-in, but there were NO upstream links to this " + 
+	     "source node!  These extra per-source parameters were ignored."); 
+	  dead.add(sname);
+	}
+      }
+
+      for(String sname : dead) {
+	pAction.removeSourceParams(sname); 
+	pAction.removeSecondarySourceParams(sname);
       }
     }
   }

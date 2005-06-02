@@ -1,4 +1,4 @@
-// $Id: ActionInfo.java,v 1.1 2005/05/05 22:46:06 jim Exp $
+// $Id: ActionInfo.java,v 1.2 2005/06/02 22:11:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -26,8 +26,9 @@ class ActionInfo
   public
   ActionInfo()
   {
-    pSingleParams = new TreeMap<String,ActionParam>();
-    pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pSingleParams    = new TreeMap<String,ActionParam>();
+    pSourceParams    = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pSecondaryParams = new TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>>();
   }
 
   /**
@@ -62,6 +63,7 @@ class ActionInfo
     }
 
     pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();    
+    pSecondaryParams = new TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>>();
     if(action.supportsSourceParams()) {
       pSupportsSourceParams = true;
       for(String sname : action.getSourceNames()) {
@@ -69,7 +71,20 @@ class ActionInfo
 	pSourceParams.put(sname, aparams);
 	for(ActionParam aparam : action.getSourceParams(sname))
 	  aparams.put(aparam.getName(), aparam);
-      }	  
+      }	
+
+      for(String sname : action.getSecondarySourceNames()) {
+	TreeMap<FilePattern,TreeMap<String,ActionParam>> sparams = 
+	  new TreeMap<FilePattern,TreeMap<String,ActionParam>>();
+	pSecondaryParams.put(sname, sparams);
+
+	for(FilePattern fpat : action.getSecondarySequences(sname)) {
+	  TreeMap<String,ActionParam> aparams = new TreeMap<String,ActionParam>();
+	  sparams.put(fpat, aparams);
+	  for(ActionParam aparam : action.getSecondarySourceParams(sname, fpat))
+	    aparams.put(aparam.getName(), aparam);
+	}	
+      }      
     }
   }
 
@@ -179,10 +194,7 @@ class ActionInfo
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Does this action support per-source parameters?  <P> 
-   * 
-   * Subclasses MUST override this method to return <CODE>true</CODE> if per-source 
-   * paramters are allowed to be added to the action. 
+   * Does this action support per-source parameters?
    */ 
   public boolean 
   supportsSourceParams()
@@ -191,7 +203,8 @@ class ActionInfo
   }
 
   /** 
-   * Does this action have per-source parameters for the given node? 
+   * Whether this action has per-source parameters for the primary sequence of the 
+   * given node.
    * 
    * @param source  
    *   The fully resolved dependency node name.
@@ -206,7 +219,28 @@ class ActionInfo
   }
 
   /** 
-   * Get node names of the upstream nodes with per-source parameters.
+   * Whether this action has per-source parameters for a secondary sequence of the 
+   * given node.
+   * 
+   * @param source  
+   *   The fully resolved dependency node name.
+   * 
+   * @param fpat
+   *   The file pattern of the secondary sequence of the upstream node.
+   */ 
+  public boolean 
+  hasSecondarySourceParams
+  (
+   String source, 
+   FilePattern fpat
+  ) 
+  {
+    TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
+    return ((ftable != null) && ftable.containsKey(fpat));
+  }
+
+  /** 
+   * Get node names of the upstream nodes with primary file sequence per-source parameters.
    */ 
   public Set<String>
   getSourceNames()
@@ -214,8 +248,36 @@ class ActionInfo
     return Collections.unmodifiableSet(pSourceParams.keySet());
   }
 
+  /** 
+   * Get node names of the upstream nodes with secondary file sequence per-source parameters.
+   */ 
+  public Set<String>
+  getSecondarySourceNames()
+  {
+    return Collections.unmodifiableSet(pSecondaryParams.keySet());
+  }
+
+  /** 
+   * Get the file patterns of all secondary sequences with per-source parameters for the 
+   * given node. 
+   * 
+   * @param source  
+   *   The fully resolved node name of the upstream node.
+   */ 
+  public Set<FilePattern>
+  getSecondarySequences
+  (
+   String source
+  )
+  {
+    TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
+    if(ftable != null) 
+      return Collections.unmodifiableSet(ftable.keySet());
+    return new TreeSet<FilePattern>();
+  }
+
   /**
-   * Get the value of the named parameter for the given upstream node. 
+   * Get the value of the named parameter for the primary file sequence of an upstream node.
    *
    * @param source  
    *   The fully resolved node name of the upstream node.
@@ -247,7 +309,7 @@ class ActionInfo
   }
 
   /**
-   * Get the named parameter for the given upstream node.
+   * Get the named parameter for the primary file sequence of an upstream node.
    *
    * @param source  
    *   The fully resolved node name of the upstream node.
@@ -277,10 +339,11 @@ class ActionInfo
   }
 
   /**
-   * Get all of the per-source parameters for the given upstream node.  <P> 
+   * Get all of the per-source parameters associated with the primary file sequence of
+   * an upstream node.  <P> 
    * 
-   * The returned ArrayList may be empty if the given upstream node does not have any
-   * parameters.
+   * The returned <CODE>Collection</CODE> may be empty if the upstream node does 
+   * not have any parameters associated with its primary file sequence.
    * 
    * @param source  
    *   The fully resolved node name of the upstream node.
@@ -298,6 +361,122 @@ class ActionInfo
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
     TreeMap<String,ActionParam> table = pSourceParams.get(source);
+    if(table != null) 
+      return Collections.unmodifiableCollection(table.values());
+    else 
+      return new ArrayList<ActionParam>();
+  }
+
+  /**
+   * Get the value of the named parameter for a secondary file sequence of an upstream node. 
+   *
+   * @param source  
+   *   The fully resolved node name of the upstream node.
+   * 
+   * @param fpat
+   *   The secondary sequence file pattern.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no parameter with the given name exists for the given secondary file sequence of 
+   *   the upstream node.
+   */ 
+  public Comparable
+  getSecondarySourceParamValue
+  (
+   String source,
+   FilePattern fpat, 
+   String name  
+  ) 
+    throws PipelineException	
+  {
+    ActionParam param = getSecondarySourceParam(source, fpat, name);
+    if(param == null)
+      throw new PipelineException
+	("Unable to determine the value of the (" + name + ") parameter for the secondary " + 
+	 "file sequence (" + fpat + ") of the upstream node (" + source + ")!");
+
+    return param.getValue();
+  }
+
+  /**
+   * Get the named parameter for a secondary file sequence of an upstream node.
+   *
+   * @param source  
+   *   The fully resolved node name of the upstream node.
+   * 
+   * @param fpat
+   *   The secondary sequence file pattern.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   * 
+   * @return 
+   *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists
+   *   for given secondary file sequence of the upstream node.
+   */ 
+  public ActionParam
+  getSecondarySourceParam
+  (
+   String source,
+   FilePattern fpat, 
+   String name  
+  )
+  {
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
+
+    TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
+    if(ftable == null) 
+      return null;
+
+    TreeMap<String,ActionParam> table = ftable.get(fpat);
+    if(table == null) 
+      return null;
+
+    return table.get(name);
+  }
+
+  /**
+   * Get all of the per-source parameters associated with the given secondary file sequence
+   * of an upstream node.  <P> 
+   * 
+   * The returned <CODE>Collection</CODE> may be empty if the upstream node does 
+   * not have any parameters associated with the given secondary file sequence.
+   * 
+   * @param source  
+   *   The fully resolved node name of the upstream node.
+   * 
+   * @param fpat
+   *   The secondary sequence file pattern.
+   * 
+   * @return 
+   *   The set of parameters for the given upstream node.  
+   */ 
+  public Collection<ActionParam>
+  getSecondarySourceParams
+  (
+   String source,
+   FilePattern fpat
+  ) 
+  {    
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
+
+    if(fpat == null) 
+      throw new IllegalArgumentException
+	("The secondary sequence file pattern cannot be (null)!");    
+
+    TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
+    if(ftable == null) 
+      return new ArrayList<ActionParam>();
+
+    TreeMap<String,ActionParam> table = ftable.get(fpat);
     if(table != null) 
       return Collections.unmodifiableCollection(table.values());
     else 
@@ -326,8 +505,12 @@ class ActionInfo
       encoder.encode("SingleParams", pSingleParams);
       
     encoder.encode("SupportsSourceParams", pSupportsSourceParams);
+
     if(!pSourceParams.isEmpty()) 
       encoder.encode("SourceParams", pSourceParams);
+    
+    if(!pSecondaryParams.isEmpty()) 
+      encoder.encode("SecondarySourceParams", pSecondaryParams);
   }
   
   public void 
@@ -361,6 +544,12 @@ class ActionInfo
 	(TreeMap<String,TreeMap<String,ActionParam>>) decoder.decode("SourceParams");   
       if(source != null) 
 	pSourceParams.putAll(source);
+
+      TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>> secondary = 
+	(TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>>) 
+        decoder.decode("SecondarySourceParams");   
+      if(secondary != null) 
+	pSecondaryParams.putAll(secondary);
     }
   }
 
@@ -399,8 +588,16 @@ class ActionInfo
   private boolean  pSupportsSourceParams; 
 
   /** 
-   * The table of action parameters associated with each linked upstream node.
+   * The table of action parameters associated with the primary file sequence of an upstream 
+   * node.  Indexed by fully resolved node name and action parameter name.
    */
   private TreeMap<String,TreeMap<String,ActionParam>>  pSourceParams;    
+
+  /**
+   * The table of action parameters associated with a secondary file sequence of an upstream
+   * node.  Indexed by fully resolved node name, seconday sequence file pattern and action 
+   * parameter name.
+   */ 
+  private TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>>  pSecondaryParams;
 
 }

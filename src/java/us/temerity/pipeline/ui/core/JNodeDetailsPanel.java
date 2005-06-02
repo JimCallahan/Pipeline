@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.15 2005/05/30 20:48:37 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.16 2005/06/02 22:11:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1971,7 +1971,7 @@ class JNodeDetailsPanel
       {
 	JLabel label = UIFactory.createFixedLabel
 	  ("Source Parameters:", sTSize, JLabel.RIGHT, 
-	   "The Action plugin parameters associated with each source node.");
+	   "The Action plugin parameters associated with each source node file sequence.");
 	pSourceParamComponents[0] = label;
 	
 	tpanel.add(label);
@@ -2001,15 +2001,30 @@ class JNodeDetailsPanel
 	  {
 	    String title = pStatus.toString();
 	    
-	    ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
-	    
+	    ArrayList<String> snames  = new ArrayList<String>();
 	    ArrayList<String> stitles = new ArrayList<String>();
-	    for(String sname : snames) 
-	      stitles.add(pStatus.getSource(sname).toString());
+	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
+	    
+	    for(String sname : pStatus.getSourceNames()) {
+	      NodeMod lmod = pStatus.getSource(sname).getDetails().getWorkingVersion();
+
+	      FileSeq primary = lmod.getPrimarySequence();
+	      String stitle = primary.toString();
+
+	      snames.add(sname);
+	      stitles.add(stitle);
+	      sfseqs.add(null);
+
+	      for(FileSeq fseq : lmod.getSecondarySequences()) {
+		snames.add(sname);
+		stitles.add(stitle);
+		sfseqs.add(fseq);
+	      }
+	    }
 	    
 	    pEditSourceParamsDialog = 
-	      new JSourceParamsDialog(!pIsLocked && !pIsFrozen, title, stitles, 
-				      snames, waction);
+	      new JSourceParamsDialog
+	      (!pIsLocked && !pIsFrozen, title, snames, stitles, sfseqs, waction);
 	  }
 	}
 	else {
@@ -2065,14 +2080,35 @@ class JNodeDetailsPanel
 	    NodeVersion vsn = getCheckedInVersion();
 	    String title = (pStatus.toString() + " (v" + vsn.getVersionID() + ")");
 	    
-	    ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
-	    
+	    ArrayList<String> snames  = new ArrayList<String>();
 	    ArrayList<String> stitles = new ArrayList<String>();
-	    for(String sname : snames) 
-	      stitles.add(pStatus.getSource(sname).toString());
+	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 
+	    for(String sname : pStatus.getSourceNames()) {
+	      NodeCommon lcom = null;
+	      {
+		NodeDetails ldetails = pStatus.getSource(sname).getDetails();
+		lcom = ldetails.getWorkingVersion();
+		if(lcom == null) 
+		  lcom = ldetails.getLatestVersion();
+	      }
+
+	      FileSeq primary = lcom.getPrimarySequence();
+	      String stitle = primary.toString();
+
+	      snames.add(sname);
+	      stitles.add(stitle);
+	      sfseqs.add(null);
+
+	      for(FileSeq fseq : lcom.getSecondarySequences()) {
+		snames.add(sname);
+		stitles.add(stitle);
+		sfseqs.add(fseq);
+	      }
+	    }
+	    
 	    pViewSourceParamsDialog = 
-	      new JSourceParamsDialog(false, title, stitles, snames, caction);
+	      new JSourceParamsDialog(false, title, snames, stitles, sfseqs, caction);
 	  }
 	}
 	else {
@@ -4114,14 +4150,30 @@ class JNodeDetailsPanel
       {
 	String title = pStatus.toString();
 	
-	ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
-	
+	ArrayList<String> snames  = new ArrayList<String>();
 	ArrayList<String> stitles = new ArrayList<String>();
-	for(String sname : snames) 
-	  stitles.add(pStatus.getSource(sname).toString());
+	ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
+	
+	for(String sname : pStatus.getSourceNames()) {
+	  NodeMod lmod = pStatus.getSource(sname).getDetails().getWorkingVersion();
+	  
+	  FileSeq primary = lmod.getPrimarySequence();
+	  String stitle = primary.toString();
+	  
+	  snames.add(sname);
+	  stitles.add(stitle);
+	  sfseqs.add(null);
+	  
+	  for(FileSeq fseq : lmod.getSecondarySequences()) {
+	    snames.add(sname);
+	    stitles.add(stitle);
+	    sfseqs.add(fseq);
+	  }
+	}
 	
 	pEditSourceParamsDialog = 
-	  new JSourceParamsDialog(!pIsLocked && !pIsFrozen, title, stitles, snames, waction);
+	  new JSourceParamsDialog
+	  (!pIsLocked && !pIsFrozen, title, snames, stitles, sfseqs, waction);
       }
 
       doSourceParamsChanged();

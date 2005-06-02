@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.39 2005/05/16 19:25:31 jim Exp $
+// $Id: NodeMod.java,v 1.40 2005/06/02 22:11:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -994,21 +994,37 @@ class NodeMod
       BaseAction action = mod.getAction(); 
       if(action != null) {
 	TreeSet<String> dead = new TreeSet<String>();
+
 	for(String sname : action.getSourceNames()) {
 	  if(!pSources.containsKey(sname)) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
 	       "While attempting to modify the properites of working node " + 
-	       "(" + pName + "), per-source action parameters for source (" + sname + ") " + 
-	       "where found for the input action, but the node being modified did NOT " + 
-	       "have any upstream links to this source node!  These extra per-source " + 
-	       "parameters were ignored."); 
+	       "(" + pName + "), per-source action parameters associated with the primary " + 
+	       "file sequence of source (" + sname + ") where found for the input action, " + 
+	       "but the node being modified did NOT have any upstream links to this source " +
+	       "node!  These extra per-source parameters were ignored."); 
 	    dead.add(sname);
 	  }
 	}
 	
-	for(String sname : dead) 
+	for(String sname : action.getSecondarySourceNames()) {
+	  if(!pSources.containsKey(sname)) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+	       "While attempting to modify the properites of working node " + 
+	       "(" + pName + "), per-source action parameters associated with a secondary " + 
+	       "file sequence of source (" + sname + ") where found for the input action, " + 
+	       "but the node being modified did NOT have any upstream links to this source " +
+	       "node!  These extra per-source parameters were ignored."); 
+	    dead.add(sname);
+	  }
+	}
+	
+	for(String sname : dead) {
 	  action.removeSourceParams(sname); 
+	  action.removeSecondarySourceParams(sname);
+	}
       }
 
       if(!(((pAction == null) && (action == null)) || 
@@ -1200,8 +1216,10 @@ class NodeMod
 
     pSources.remove(name);
 
-    if(pAction != null) 
+    if(pAction != null) {
       pAction.removeSourceParams(name); 
+      pAction.removeSecondarySourceParams(name);
+    }
 
     updateLastCriticalMod();
   }

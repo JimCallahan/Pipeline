@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.3 2005/03/20 22:56:08 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.4 2005/06/02 22:11:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;
+import java.io.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -37,11 +38,15 @@ class SourceParamsTableModel
    * @param isEditable
    *   Should the table allow editing of parameter values?
    * 
-   * @param stitles
-   *   The short names of the upstream nodes.
-   * 
    * @param snames
-   *   The fully resolved node names of the upstream nodes.
+   *   The fully resolved node name of the parent upstream node for each file sequence.
+   * 
+   * @param stitles
+   *   The short name of the parent upstream node for each file sequence.
+   * 
+   * @param fseq
+   *   The file sequences of the upstream nodes.  Entries which are <CODE>null</CODE> are
+   *   primary file sequences.
    * 
    * @param action
    *   The parent action of the per-source parameters.
@@ -51,8 +56,9 @@ class SourceParamsTableModel
   (
    JDialog parent, 
    boolean isEditable, 
-   ArrayList<String> stitles, 
    ArrayList<String> snames, 
+   ArrayList<String> stitles, 
+   ArrayList<FileSeq> fseqs, 
    BaseAction action  
   ) 
   {
@@ -72,7 +78,7 @@ class SourceParamsTableModel
       TreeMap<String,ActionParam> params = pAction.getInitialSourceParams();
 
       {
-	pNumColumns = params.size() + 1;
+	pNumColumns = params.size() + 2;
 
 	pColumnClasses      = new Class[pNumColumns];
 	pColumnNames        = new String[pNumColumns];
@@ -87,11 +93,31 @@ class SourceParamsTableModel
       pColumnClasses[0] = String.class;
       pColumnNames[0]   = "Source Node";
       pColumnWidths[0]  = 240;
-      pRenderers[0]     = new JSimpleTableCellRenderer(JLabel.LEFT);
+      pRenderers[0]     = new JSimpleTableCellRenderer(JLabel.CENTER);
       pEditors[0]       = null;
 
+      /* source node name file pattern */ 
+      pColumnClasses[1] = String.class;
+      pColumnNames[1]   = "File Sequence";
+      pColumnWidths[1]  = 240;
+      pRenderers[1]     = new JSimpleTableCellRenderer(JLabel.CENTER);
+      pEditors[1]       = null;
+
+      /* unique node short and fully resolved names */ 
+      ArrayList<String> ntitles = new ArrayList<String>();
+      ArrayList<String> nnames = new ArrayList<String>();
+      {
+	TreeSet<String> names = new TreeSet<String>();
+	names.addAll(snames);
+	
+	for(String name : names) {
+	  nnames.add(name);
+	  ntitles.add(stitles.get(snames.indexOf(name)));
+	}
+      }
+      
       /* parameters */ 
-      int col = 1;
+      int col = 2;
       for(String pname : pAction.getSourceLayout()) {
 	ActionParam aparam = params.get(pname);
 
@@ -127,8 +153,8 @@ class SourceParamsTableModel
 	}
 	else if(aparam instanceof LinkActionParam) {
 	  pColumnWidths[col]  = 240;
-	  pRenderers[col]     = new JLinkParamTableCellRenderer(stitles, snames);
-	  pEditors[col]       = new JLinkParamTableCellEditor(parent, 240, stitles, snames);
+	  pRenderers[col]     = new JLinkParamTableCellRenderer(ntitles, nnames);
+	  pEditors[col]       = new JLinkParamTableCellEditor(parent, 240, ntitles, nnames);
 	}
 
 	col++;
@@ -137,31 +163,47 @@ class SourceParamsTableModel
 
     /* make modifiable copy of the source parameters in array form */ 
     {
-      assert(snames.size() == stitles.size());
       int numRows = snames.size();
 
       pParams = new ActionParam[numRows][];
 
-      pSourceNames  = new String[numRows];
+      pSourceNames = new String[numRows];
       snames.toArray(pSourceNames);
 
       pSourceTitles = new String[numRows];
       stitles.toArray(pSourceTitles);
 
-      Set<String> sources = pAction.getSourceNames();
+      pFileSeqs = new FileSeq[numRows];
+      fseqs.toArray(pFileSeqs);
 
       int row;
       for(row=0; row<pSourceNames.length; row++) {
 	String sname = pSourceNames[row];
+	FileSeq fseq = pFileSeqs[row];
 
-	if(sources.contains(sname)) {
-	  pParams[row] = new ActionParam[pNumColumns-1];
-
-	  int col = 0;
-	  for(String pname : pAction.getSourceLayout()) {
-	    ActionParam aparam = pAction.getSourceParam(sname, pname);
-	    pParams[row][col] = (ActionParam) aparam.clone();
-	    col++;
+	if(fseq == null) {
+	  if(pAction.hasSourceParams(sname)) {
+	    pParams[row] = new ActionParam[pNumColumns-1];
+	    
+	    int col = 0;
+	    for(String pname : pAction.getSourceLayout()) {
+	      ActionParam aparam = pAction.getSourceParam(sname, pname);
+	      pParams[row][col] = (ActionParam) aparam.clone();
+	      col++;
+	    }
+	  }
+	}
+	else {
+	  FilePattern fpat = fseq.getFilePattern();
+	  if(pAction.hasSecondarySourceParams(sname, fpat)) {
+	    pParams[row] = new ActionParam[pNumColumns-1];
+	    
+	    int col = 0;
+	    for(String pname : pAction.getSourceLayout()) {
+	      ActionParam aparam = pAction.getSecondarySourceParam(sname, fpat, pname);
+	      pParams[row][col] = (ActionParam) aparam.clone();
+	      col++;
+	    }
 	  }
 	}
       }
@@ -188,13 +230,22 @@ class SourceParamsTableModel
     for(row=0; row<pParams.length; row++) {
       Comparable value = null;
 
-      if(pSortColumn == 0) {
+      switch(pSortColumn) {
+      case 0:
 	value = pSourceTitles[row];
-      }
-      else {
-	ActionParam params[] = pParams[row];
-	if(params != null) 
-	  value = params[pSortColumn-1].getValue();
+	break;
+
+      case 1:
+	if(pFileSeqs[row] != null) 
+	  value = pFileSeqs[row].toString();
+	break;
+
+      default:
+	{
+	  ActionParam params[] = pParams[row];
+	  if(params != null) 
+	    value = params[pSortColumn-1].getValue();
+	}
       }
 
       int wk;
@@ -248,11 +299,24 @@ class SourceParamsTableModel
       String sname = pSourceNames[row];
       ActionParam params[] = pParams[row];
       if(params != null) {
-	action.initSourceParams(sname);
-	int col;
-	for(col=1; col<pNumColumns; col++) {
-	  ActionParam param = params[col-1];
-	  action.setSourceParamValue(sname, param.getName(), param.getValue());
+	FileSeq fseq = pFileSeqs[row];
+	if(fseq == null) {
+	  action.initSourceParams(sname);
+	  int col;
+	  for(col=2; col<pNumColumns; col++) {
+	    ActionParam param = params[col-2];
+	    action.setSourceParamValue(sname, param.getName(), param.getValue());
+	  }
+	}
+	else {
+	  FilePattern fpat = fseq.getFilePattern();
+	  action.initSecondarySourceParams(sname, fpat);
+	  int col;
+	  for(col=2; col<pNumColumns; col++) {
+	    ActionParam param = params[col-2];
+	    action.setSecondarySourceParamValue
+	      (sname, fpat, param.getName(), param.getValue());
+	  }
 	}
       }
     }
@@ -334,7 +398,7 @@ class SourceParamsTableModel
   ) 
   {
     int srow = pRowToIndex[row];
-    if((pParams[srow] != null) && (col > 0)) 
+    if((pParams[srow] != null) && (col > 1)) 
       return pIsEditable;
 
     return false;
@@ -352,11 +416,20 @@ class SourceParamsTableModel
   {
     int srow = pRowToIndex[row];
 
-    if(col == 0) 
+    switch(col) {
+    case 0:
       return pSourceTitles[srow];
 
-    if(pParams[srow] != null) 
-      return pParams[srow][col-1];
+    case 1:
+      if(pFileSeqs[srow] != null) 
+	return pFileSeqs[srow].toString();
+      else 
+	return null;
+
+    default:
+      if(pParams[srow] != null) 
+	return pParams[srow][col-2];
+    }
 
     return null;
   }
@@ -372,17 +445,18 @@ class SourceParamsTableModel
    int col
   ) 
   {
-    assert(col > 0);
+    assert(col > 1);
+
     Comparable val = (Comparable) value;
     int vrow = pRowToIndex[row];
-    pParams[vrow][col-1].setValue(val);
+    pParams[vrow][col-2].setValue(val);
 
     int[] selected = pTable.getSelectedRows(); 
     int wk;
     for(wk=0; wk<selected.length; wk++) {
       int srow = pRowToIndex[selected[wk]];
       if((srow != vrow) && (pParams[srow] != null)) 
-	pParams[srow][col-1].setValue(val);	
+	pParams[srow][col-2].setValue(val);	
     }
 
     fireTableDataChanged(); 
@@ -412,22 +486,30 @@ class SourceParamsTableModel
    */ 
   private BaseAction pAction; 
 
+
   /**
-   * The fully resolved names of the source nodes.
+   * The fully resolved names of the parent upstream node for each file sequence.
    */ 
   private String  pSourceNames[];
 
   /**
-   * The short source node names.
+   * The short names of the parent upstream node for each file sequence.
    */ 
   private String  pSourceTitles[];
 
   /**
-   * The source parameters indexed by: [row, col-1]. <P> 
+   * The file sequences of the upstream nodes. Entries which are <CODE>null</CODE> are
+   * primary file sequences.
+   */ 
+  private FileSeq  pFileSeqs[];
+
+  /**
+   * The source parameters indexed by: [row, col-2]. <P> 
    * 
    * The entire row may be <CODE>null</CODE> the source node for the row has no parameters.
    */ 
   private ActionParam[][]  pParams;
+
 
   /**
    * The parameter names of the columns.

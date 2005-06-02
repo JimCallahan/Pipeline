@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.30 2005/05/29 18:11:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.31 2005/06/02 22:11:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4111,18 +4111,8 @@ class JNodeViewerPanel
 			taction.setSingleParamValue(param.getName(), param.getValue());
 		    }
 		    
-		    if(pExportDialog.exportActionSourceParams()) {
-		      for(String source : saction.getSourceNames()) {
-			if(tmod.getSource(source) != null) {
-			  taction.removeSourceParams(source);
-			  taction.initSourceParams(source);
-			  for(ActionParam param : saction.getSourceParams(source)) {
-			    taction.setSourceParamValue(source, 
-							param.getName(), param.getValue());
-			  }
-			}
-		      }
-		    }
+		    if(pExportDialog.exportActionSourceParams()) 
+		      taction.setSourceParamValues(saction);
 		    
 		    tmod.setAction(taction);
 		  }

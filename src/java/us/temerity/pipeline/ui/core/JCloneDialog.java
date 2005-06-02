@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.4 2005/05/16 19:25:32 jim Exp $
+// $Id: JCloneDialog.java,v 1.5 2005/06/02 22:11:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -615,16 +615,8 @@ class JCloneDialog
 	      action.setSingleParamValue(param.getName(), param.getValue());
 	  }
 	  
-	  if(pExportPanel.exportActionSourceParams()) {
-	    for(String source : oaction.getSourceNames()) {
-	      if(mod.getSource(source) != null) {
-		action.removeSourceParams(source);
-		action.initSourceParams(source);
-		for(ActionParam param : oaction.getSourceParams(source)) 
-		  action.setSourceParamValue(source, param.getName(), param.getValue());
-	      }
-	    }
-	  }
+	  if(pExportPanel.exportActionSourceParams()) 
+	    action.setSourceParamValues(oaction);
 
 	  mod.setAction(action);
 	}

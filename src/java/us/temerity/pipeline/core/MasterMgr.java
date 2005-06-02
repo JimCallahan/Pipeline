@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.128 2005/05/28 21:00:34 jim Exp $
+// $Id: MasterMgr.java,v 1.129 2005/06/02 22:11:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4329,11 +4329,13 @@ class MasterMgr
       TreeMap<String,LinkMod> dlinks = null;
       TreeMap<String,String> singleLinkParams = null;
       TreeMap<String,Collection<ActionParam>> sourceParams = null;
+      TreeMap<String,TreeMap<FilePattern,Collection<ActionParam>>> secondaryParams = null;
       if(!name.equals(nname)) {
 	dlinks = new TreeMap<String,LinkMod>();
 	singleLinkParams = new TreeMap<String,String>();
 	sourceParams = new TreeMap<String,Collection<ActionParam>>();
-	
+	secondaryParams = new TreeMap<String,TreeMap<FilePattern,Collection<ActionParam>>>();
+
 	timer.aquire();
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
 	downstreamLock.writeLock().lock();
@@ -4359,14 +4361,33 @@ class MasterMgr
 
 		BaseAction targetAction = targetMod.getAction();
 		if(targetAction != null) {
-		  if(targetAction.getSourceNames().contains(name))
-		    sourceParams.put(target, targetAction.getSourceParams(name));
-
 		  for(ActionParam aparam : targetAction.getSingleParams()) {
 		    if(aparam instanceof LinkActionParam) {
 		      LinkActionParam lparam = (LinkActionParam) aparam;
 		      if(name.equals(lparam.getStringValue()))
 			singleLinkParams.put(target, lparam.getName());
+		    }
+		  }
+
+		  if(targetAction.getSourceNames().contains(name))
+		    sourceParams.put(target, targetAction.getSourceParams(name));
+		 
+		  if(targetAction.getSecondarySourceNames().contains(name)) {
+		    TreeMap<FilePattern,Collection<ActionParam>> sfparams = null;
+		    for(FileSeq sfseq : secondary) {
+		      FilePattern sfpat = sfseq.getFilePattern();
+		      
+		      Collection<ActionParam> sparams = 
+			targetAction.getSecondarySourceParams(name, sfpat);
+
+		      if(!sparams.isEmpty()) {
+			if(sfparams == null) {
+			  sfparams = new TreeMap<FilePattern,Collection<ActionParam>>();
+			  secondaryParams.put(target, sfparams);
+			}
+
+			sfparams.put(sfpat, sparams);
+		      }
 		    }
 		  }
 		}
@@ -4437,7 +4458,9 @@ class MasterMgr
 	    /* copy any per-source parameters from the old named node to the new named node */
 	    BaseAction oaction = omod.getAction();
 	    if((oaction != null) && 
-	       oaction.supportsSourceParams() && !oaction.getSourceNames().isEmpty()) {
+	       oaction.supportsSourceParams() && 
+	       (!oaction.getSourceNames().isEmpty() || 
+		!oaction.getSecondarySourceNames().isEmpty())) {
 	      
 	      /* relookup the new working version to get the added links */ 
 	      nmod = getWorkingBundle(nid).uVersion;
@@ -4526,14 +4549,19 @@ class MasterMgr
 	/* update downstream action parameters related to the new node name */ 
 	{
 	  TreeSet<String> targets = new TreeSet<String>();
-	  targets.addAll(sourceParams.keySet());
 	  targets.addAll(singleLinkParams.keySet());
+	  targets.addAll(sourceParams.keySet());
+	  targets.addAll(secondaryParams.keySet());
 
 	  for(String target : targets) {
 	    String lparamName = singleLinkParams.get(target);
 	    Collection<ActionParam> aparams = sourceParams.get(target);
+	    TreeMap<FilePattern,Collection<ActionParam>> sfparams = 
+	      secondaryParams.get(target);
 	    
-	    if((lparamName != null) || ((aparams != null) && !aparams.isEmpty())) {
+	    if((lparamName != null) || 
+	       ((aparams != null) && !aparams.isEmpty()) ||
+	       ((sfparams != null) && !sfparams.isEmpty())) {
 
 	      /* lookup the target working version */ 
 	      NodeID targetID = new NodeID(id, target);
@@ -4568,11 +4596,22 @@ class MasterMgr
 		action.setSingleParamValue(lparamName, nname);
 	      	      
 	      /* add per-source parameters previously set for the old name under the 
-		   new name. */ 
+		   new name */ 
 	      if((aparams != null) && !aparams.isEmpty()) {
 		action.initSourceParams(nname);
 		for(ActionParam aparam : aparams) 
 		  action.setSourceParamValue(nname, aparam.getName(), aparam.getValue());
+	      }
+
+	      /* add per-source secondary parameters previously set for the old name 
+	         under the new name */ 
+	      if((sfparams != null) && !sfparams.isEmpty()) {
+		for(FilePattern sfpat : sfparams.keySet()) {
+		  action.initSecondarySourceParams(nname, sfpat);
+		  for(ActionParam sparam : sfparams.get(sfpat)) 
+		    action.setSecondarySourceParamValue
+		      (nname, sfpat, sparam.getName(), sparam.getValue());
+		}
 	      }
 
 	      /* update the action related parameters */ 
@@ -6492,8 +6531,76 @@ class MasterMgr
 	    }
 	  }
 
+	  BaseAction action = work.getAction();
+	  {
+	    /* strip any per-source parameters from the action for nodes which are not 
+	       one of the currently linke upstream nodes */ 
+	    {
+	      // THIS CODE SHOULD BE UNECCESSARY
+
+	      TreeSet<String> dead = new TreeSet<String>();
+
+	      for(String sname : action.getSourceNames()) {
+		if(work.getSource(sname) == null) 
+		  dead.add(sname);
+	      }
+	      
+	      for(String sname : action.getSecondarySourceNames()) {
+		if(work.getSource(sname) == null) 
+		  dead.add(sname);
+	      }
+	      
+	      for(String sname : dead) {
+		action.removeSourceParams(sname); 
+		action.removeSecondarySourceParams(sname);
+		
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Net, LogMgr.Level.Warning,
+		   "The node (" + nodeID + ") has per-source parameter referencing " + 
+		   "(" + dead + ") which is no longer linked to the node!");
+		LogMgr.getInstance().flush();
+	      }
+
+	      // THIS CODE SHOULD BE UNECCESSARY
+	    }
+
+	    /* strip per-source parameters which do not correspond to secondary sequences
+	       of the currently linked upstream nodes */ 
+	    {
+	      TreeMap<String,TreeSet<FilePattern>> dead = 
+		new TreeMap<String,TreeSet<FilePattern>>();
+
+	      for(String sname : action.getSecondarySourceNames()) {
+		Set<FilePattern> fpats = action.getSecondarySequences(sname);
+		if(!fpats.isEmpty()) {
+		  NodeMod lmod = status.getSource(sname).getDetails().getWorkingVersion();
+		  
+		  TreeSet<FilePattern> live = new TreeSet<FilePattern>();
+		  for(FileSeq fseq : lmod.getSecondarySequences()) 
+		    live.add(fseq.getFilePattern());
+		  
+		  for(FilePattern fpat : fpats) {
+		    if(!live.contains(fpat)) {
+		      TreeSet<FilePattern> dpats = dead.get(sname);
+		      if(dpats == null) {
+			dpats = new TreeSet<FilePattern>();
+			dead.put(sname, dpats);
+		      }
+		      dpats.add(fpat);
+		    }
+		  }
+		}
+	      }
+
+	      for(String sname : dead.keySet()) {
+		for(FilePattern fpat : dead.get(sname)) 
+		  action.removeSecondarySourceParams(sname, fpat);
+	      }
+	    }
+	  }
+
 	  QueueJob job = 
-	    new QueueJob(agenda, work.getAction(), jreqs, sourceIDs);
+	    new QueueJob(agenda, action, jreqs, sourceIDs);
 		       
 	  jobs.put(jobID, job);
 	}
