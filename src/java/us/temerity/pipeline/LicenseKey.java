@@ -1,4 +1,4 @@
-// $Id: LicenseKey.java,v 1.4 2005/05/31 09:37:45 jim Exp $
+// $Id: LicenseKey.java,v 1.5 2005/06/03 15:44:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -357,7 +357,7 @@ class LicenseKey
 	    (((hostsUsed < pMaxHosts) && 
 	      ((slotsUsed == null) || (slotsUsed < pMaxHostSlots))) || 
 	     ((hostsUsed == pMaxHosts) && 
-	      (slotsUsed != null) && (slotsUsed < pMaxHostSlots)));
+	      (slotsUsed != null) && (slotsUsed > 0) && (slotsUsed < pMaxHostSlots)));
 	}
       }
     }
