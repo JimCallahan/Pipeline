@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.5 2005/02/04 09:24:06 jim Exp $
+// $Id: BaseSubProcess.java,v 1.6 2005/06/03 15:54:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -145,7 +145,23 @@ class BaseSubProcess
 	}
 	
 	cmd.add(file.getPath());
-	cmd.addAll(args);
+
+	int cnt = 0;
+	for(String arg : args) {
+	  if(arg == null) 
+	    throw new IllegalArgumentException
+	      ("The argument number (" + cnt + ") given for the program (" + prog + ") " + 
+	       "was (null)! Subprocess arguments cannot contain (null) values.\n");
+
+	  if(arg.length() == 0) 
+	    throw new IllegalArgumentException
+	      ("The argument number (" + cnt + ") given for the program (" + prog + ") " + 
+	       "was an empty string!  All subprocess arguments must contain at least one " + 
+	       "character.");
+
+	  cmd.add(arg);
+	  cnt++;
+	}
 	
 	procCmd = new String[cmd.size()];
 	cmd.toArray(procCmd);
