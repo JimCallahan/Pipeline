@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.2 2005/02/22 06:07:02 jim Exp $
+// $Id: JConfigDialog.java,v 1.3 2005/06/10 04:55:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -45,50 +45,6 @@ class JConfigDialog
 	{
 	  UIFactory.createTitledTextField(tpanel, "License Valid Until:", sTSize, 
 					 vpanel, PackageInfo.sLicenseEnd, sVSize);
-	}
-
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
-
-	{
-	  UIFactory.createTitledTextField(tpanel, "Operating System:", sTSize, 
-					 vpanel, PackageInfo.sOsName, sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "OS Version:", sTSize, 
-					 vpanel, PackageInfo.sOsVersion, sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "OS Architecture:", sTSize, 
-					 vpanel, PackageInfo.sOsArch, sVSize);
-	}
-
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
-
-	{
-	  UIFactory.createTitledTextField(tpanel, "Java Name:", sTSize, 
-					 vpanel, PackageInfo.sJavaName, sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "Java Vendor:", sTSize, 
-					 vpanel, PackageInfo.sJavaVendor, sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "Java Version:", sTSize, 
-					 vpanel, PackageInfo.sJavaVersion, sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "Java Class Version:", sTSize, 
-					 vpanel, PackageInfo.sJavaClassVersion, sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "Java Home:", sTSize, 
-					 vpanel, PackageInfo.sJavaHome, sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
