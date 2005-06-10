@@ -11,61 +11,38 @@ AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(Pipeline, 1.9.22)
 
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
+
 AC_MSG_RESULT([ ])
+
 
 
 dnl ------------------------------------------------------------------------------------------
 dnl   Configuration options.
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([C++ compiler vendor (version)])
+AC_MSG_CHECKING([Native OS Type])
 
-AC_ARG_WITH([compiler], 
-            [  --with-compiler=TYPE        C/C++ compiler type: GNU or SGI])
+AC_SUBST(NATIVE_OSTYPE)
+NATIVE_OSTYPE=
 
-AR="ar"
+case $build in
+  (i686-pc-linux-gnu)          
+    NATIVE_OSTYPE=Unix;;
 
-AC_SUBST(EXPORT_DYNAMIC)
-EXPORT_DYNAMIC=""
+  (powerpc-apple-darwin8.1.0)  
+    NATIVE_OSTYPE=MacOS;;
 
-AC_SUBST(DLOPEN_LIB)
-DLOPEN_LIB=""
-
-AC_SUBST(GEN_LIB)
-GEN_LIB=""
-
-CXX_BRAND=""
-
-case "$with_compiler" in 
-  (gnu | GNU | "") \
-     CC="gcc";
-     CFLAGS="-D_REENTRANT";
-     CXX="g++";
-     CXXFLAGS="-D_REENTRANT";
-     EXPORT_DYNAMIC="-Wl,-export-dynamic";
-     DLOPEN_LIB="-ldl";
-     AR="ar ";
-     CXX_VERSION=`${CXX} --version | head -1 | awk '{print $3}'`;
-     if test -z "$CXX_VERSION"; then CXX_VERSION=`${CXX} --version`; fi;
-     AC_DEFINE(USING_GNU_CXX, 1, 
-               [Define if using GNU's C++ compiler (g++).]);;
-
-  (sgi | SGI) \
-     CC="/bin/cc";
-     CFLAGS="";
-     CXX="/bin/CC";
-     CXXFLAGS="-ptnone -prelink -ptv -Wl,-LD_MSG:off=15";
-     GEN_LIB="-lgen";
-     AR="$CXX -ar -o";
-     AC_DEFINE(USING_MIPSPRO_CXX, 1, 
-               [Define if using SGI's MIPSPRO C++ compiler (CC).]);;
-
-  (*) \
-     AC_MSG_ERROR([unknown compiler type]);;
+  (*)
+    AC_MSG_ERROR(unsupported native OS type: $build_os);;
 esac
 
-AC_MSG_RESULT([$CXX ($CXX_VERSION)])
-AC_MSG_RESULT([ ])
+AC_MSG_RESULT([$NATIVE_OSTYPE])
+
+AM_CONDITIONAL(IS_UNIX, test x$NATIVE_OSTYPE = xUnix)
+AM_CONDITIONAL(IS_MAC_OS, test x$NATIVE_OSTYPE = xMacOS)
+
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -85,6 +62,55 @@ AC_SUBST(RELEASE_STAMP)
 RELEASE_STAMP=`date`
 AC_MSG_RESULT([$RELEASE_STAMP])
 
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_ARG_ENABLE([foundation], 
+              [  --enable-foundation       Build foundation libraries, docs and data files.],
+              [case "${enable_foundation}" in
+               yes) foundation=true;;
+               no)  foundation=false;;
+               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-foundation);;
+               esac], [foundation=true])
+
+AM_CONDITIONAL(FOUNDATION, test x$foundation = xtrue)
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([toolset])
+AC_SUBST(BUILD_TOOLSET)
+BUILD_TOOLSET=$TOOLSET
+AC_MSG_RESULT([$TOOLSET])
+
+
+AC_MSG_CHECKING([path])
+AC_MSG_RESULT([$PATH])
+
+
+AC_MSG_RESULT([ ])
+
+
+
+dnl -- JAVA TOOLS ----------------------------------------------------------------------------
+
+AC_MSG_RESULT([Locating the Java Development Tools:])
+
+case "$NATIVE_OSTYPE" in 
+  (Unix)  
+    JAVA_PATH=$PATH;;
+
+  (MacOS) 
+    JAVA_PATH=/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands;;
+esac
+  
+AC_PATH_PROG(JAVA,    java,    java,    $JAVA_PATH)
+AC_PATH_PROG(JAVA_C,  javac,   javac,   $JAVA_PATH)
+AC_PATH_PROG(JAVA_CC, javacc,  javacc,  $JAVA_PATH)
+AC_PATH_PROG(JAVA_H,  javah,   javah,   $JAVA_PATH)
+AC_PATH_PROG(JAVADOC, javadoc, javadoc, $JAVA_PATH)
+AC_PATH_PROG(JAR,     jar,     jar,     $JAVA_PATH)
+AC_MSG_RESULT([ ])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -169,9 +195,9 @@ AC_MSG_CHECKING([Customer Profile Version Check])
 AC_SUBST(PLCONFIG_VERSION)
 PLCONFIG_VERSION=
 
-crypto_version=`java -classpath $CRYPTO_APP_DIR CryptoApp --version`
-profile_version=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                      --lookup PlConfigVersion`
+crypto_version=`$JAVA -classpath $CRYPTO_APP_DIR CryptoApp --version`
+crypto_lookup="$JAVA -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE --lookup"
+profile_version=`$crypto_lookup PlConfigVersion`
 
 if test "$profile_version" != "$crypto_version"
 then 
@@ -188,22 +214,19 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Server Host IDs])
 
 AC_SUBST(PIPELINE_HOST_NAMES)
-PIPELINE_HOST_NAMES=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                          --lookup HostIDs \
+PIPELINE_HOST_NAMES=`$crypto_lookup HostIDs \
                      | awk '{printf("\"%s\", ",$1)}' \
                      | awk '{printf("'%s'\n",substr($0,0,length($0)-2))}'`
 
 AC_SUBST(PIPELINE_HOST_IDS)
-PIPELINE_HOST_IDS=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                        --lookup HostIDs \
+PIPELINE_HOST_IDS=`$crypto_lookup HostIDs \
                    | awk '{printf("\"%s\", ",$2)}' \
                    | awk '{printf("'%s'\n",substr($0,0,length($0)-2))}'`
 
 if test "$host_ids" != "null" 
 then
   AC_MSG_RESULT([])
-  java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE --lookup HostIDs \
-  | awk '{printf("  %s\n",$0)}'
+  $crypto_lookup HostIDs | awk '{printf("  %s\n",$0)}'
 else 
   AC_MSG_ERROR([customer profile was incomplete.])
 fi 
@@ -213,8 +236,7 @@ fi
 AC_MSG_CHECKING([License Type])
 
 AC_SUBST(LICENSE_TYPE)
-LICENSE_TYPE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup LicenseType`
+LICENSE_TYPE=`$crypto_lookup LicenseType`
 
 if test "$LICENSE_TYPE" == "null"
 then
@@ -228,8 +250,7 @@ AC_MSG_RESULT([$LICENSE_TYPE])
 AC_MSG_CHECKING([License Start Stamp])
 
 AC_SUBST(LICENSE_START_STAMP)
-LICENSE_START_STAMP=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                          --lookup LicenseStartStamp`
+LICENSE_START_STAMP=`$crypto_lookup LicenseStartStamp`
 
 if test "$LICENSE_START_STAMP" == "null"
 then
@@ -243,8 +264,7 @@ AC_MSG_RESULT([$LICENSE_START_STAMP])
 AC_MSG_CHECKING([License End Stamp])
 
 AC_SUBST(LICENSE_END_STAMP)
-LICENSE_END_STAMP=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                        --lookup LicenseEndStamp`
+LICENSE_END_STAMP=`$crypto_lookup LicenseEndStamp`
 
 if test "$LICENSE_END_STAMP" == "null"
 then
@@ -258,8 +278,7 @@ AC_MSG_RESULT([$LICENSE_END_STAMP])
 AC_MSG_CHECKING([License Valid Until])
 
 AC_SUBST(LICENSE_END)
-LICENSE_END=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                  --lookup LicenseEnd`
+LICENSE_END=`$crypto_lookup LicenseEnd`
 
 if test "$LICENSE_END" == "null"
 then
@@ -280,8 +299,7 @@ AC_MSG_CHECKING([Root Installation Directory])
 AC_SUBST(ROOT_INST_DIR)
 ROOT_INST_DIR=""
 
-root_inst_dir=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                    --lookup RootInstallDirectory`
+root_inst_dir=`$crypto_lookup RootInstallDirectory`
 
 if test "$root_inst_dir" == "null"
 then
@@ -298,8 +316,7 @@ AC_MSG_RESULT([$ROOT_INST_DIR])
 AC_MSG_CHECKING([User Home Directory])
 
 AC_SUBST(HOMEDIR)
-HOMEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup HomeDirectory`
+HOMEDIR=`$crypto_lookup HomeDirectory`
 
 if test "$HOMEDIR" == "null"
 then
@@ -310,11 +327,11 @@ AC_MSG_RESULT([$HOMEDIR])
 
 
 
+
 AC_MSG_CHECKING([Temporary Directory])
 
 AC_SUBST(TEMPDIR)
-TEMPDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup TemporaryDirectory`
+TEMPDIR=`$crypto_lookup TemporaryDirectory`
 
 if test "$TEMPDIR" == "null"
 then
@@ -330,8 +347,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Master Server Hostname])
 
 AC_SUBST(PL_MASTER_SERVER)
-PL_MASTER_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                       --lookup MasterHostname`
+PL_MASTER_SERVER=`$crypto_lookup MasterHostname`
 
 if test "$PL_MASTER_SERVER" == "null"
 then
@@ -345,8 +361,7 @@ AC_MSG_RESULT([$PL_MASTER_SERVER])
 AC_MSG_CHECKING([Pipeline Master Server Port])
 
 AC_SUBST(PL_MASTER_PORT)
-PL_MASTER_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                     --lookup MasterPort`
+PL_MASTER_PORT=`$crypto_lookup MasterPort`
 
 if test "$PL_MASTER_PORT" == "null"
 then
@@ -360,8 +375,7 @@ AC_MSG_RESULT([$PL_MASTER_PORT])
 AC_MSG_CHECKING([Pipeline Master Server Heap Size])
 
 AC_SUBST(PL_MASTER_HEAP_SIZE)
-PL_MASTER_HEAP_SIZE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                     --lookup MasterHeapSize`
+PL_MASTER_HEAP_SIZE=`$crypto_lookup MasterHeapSize`
 
 if test "$PL_MASTER_HEAP_SIZE" == "null"
 then
@@ -375,8 +389,7 @@ AC_MSG_RESULT([$PL_MASTER_HEAP_SIZE])
 AC_MSG_CHECKING([Root Node Storage Directory])
 
 AC_SUBST(NODEDIR)
-NODEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup NodeDirectory`
+NODEDIR=`$crypto_lookup NodeDirectory`
 
 if test "$NODEDIR" == "null"
 then
@@ -392,8 +405,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline File Server Hostname])
 
 AC_SUBST(PL_FILE_SERVER)
-PL_FILE_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                     --lookup FileHostname`
+PL_FILE_SERVER=`$crypto_lookup FileHostname`
 
 if test "$PL_FILE_SERVER" == "null"
 then
@@ -407,8 +419,7 @@ AC_MSG_RESULT([$PL_FILE_SERVER])
 AC_MSG_CHECKING([Pipeline File Server Port])
 
 AC_SUBST(PL_FILE_PORT)
-PL_FILE_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup FilePort`
+PL_FILE_PORT=`$crypto_lookup FilePort`
 
 if test "$PL_FILE_PORT" == "null"
 then
@@ -422,8 +433,7 @@ AC_MSG_RESULT([$PL_FILE_PORT])
 AC_MSG_CHECKING([Pipeline File Server Heap Size])
 
 AC_SUBST(PL_FILE_HEAP_SIZE)
-PL_FILE_HEAP_SIZE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                        --lookup FileHeapSize`
+PL_FILE_HEAP_SIZE=`$crypto_lookup FileHeapSize`
 
 if test "$PL_FILE_HEAP_SIZE" == "null"
 then
@@ -437,8 +447,7 @@ AC_MSG_RESULT([$PL_FILE_HEAP_SIZE])
 AC_MSG_CHECKING([Root Production Directory])
 
 AC_SUBST(PRODDIR)
-PRODDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup ProductionDirectory`
+PRODDIR=`$crypto_lookup ProductionDirectory`
 
 if test "$PRODDIR" == "null"
 then
@@ -454,8 +463,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Queue Server Hostname])
 
 AC_SUBST(PL_QUEUE_SERVER)
-PL_QUEUE_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                      --lookup QueueHostname`
+PL_QUEUE_SERVER=`$crypto_lookup QueueHostname`
 
 if test "$PL_QUEUE_SERVER" == "null"
 then
@@ -469,8 +477,7 @@ AC_MSG_RESULT([$PL_QUEUE_SERVER])
 AC_MSG_CHECKING([Pipeline Queue Server Port])
 
 AC_SUBST(PL_QUEUE_PORT)
-PL_QUEUE_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                    --lookup QueuePort`
+PL_QUEUE_PORT=`$crypto_lookup QueuePort`
 
 if test "$PL_QUEUE_PORT" == "null"
 then
@@ -484,8 +491,7 @@ AC_MSG_RESULT([$PL_QUEUE_PORT])
 AC_MSG_CHECKING([Pipeline Queue Server Heap Size])
 
 AC_SUBST(PL_QUEUE_HEAP_SIZE)
-PL_QUEUE_HEAP_SIZE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                        --lookup QueueHeapSize`
+PL_QUEUE_HEAP_SIZE=`$crypto_lookup QueueHeapSize`
 
 if test "$PL_QUEUE_HEAP_SIZE" == "null"
 then
@@ -498,8 +504,7 @@ AC_MSG_RESULT([$PL_QUEUE_HEAP_SIZE])
 AC_MSG_CHECKING([Pipeline Job Server Port])
 
 AC_SUBST(PL_JOB_PORT)
-PL_JOB_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                  --lookup JobPort`
+PL_JOB_PORT=`$crypto_lookup JobPort`
 
 if test "$PL_JOB_PORT" == "null"
 then
@@ -513,8 +518,7 @@ AC_MSG_RESULT([$PL_JOB_PORT])
 AC_MSG_CHECKING([Root Queue Storage Directory])
 
 AC_SUBST(QUEUEDIR)
-QUEUEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-               --lookup QueueDirectory`
+QUEUEDIR=`$crypto_lookup QueueDirectory`
 
 if test "$QUEUEDIR" == "null"
 then
@@ -530,8 +534,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Plugin Server Hostname])
 
 AC_SUBST(PL_PLUGIN_SERVER)
-PL_PLUGIN_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                       --lookup PluginHostname`
+PL_PLUGIN_SERVER=`$crypto_lookup PluginHostname`
 
 if test "$PL_PLUGIN_SERVER" == "null"
 then
@@ -544,8 +547,7 @@ AC_MSG_RESULT([$PL_PLUGIN_SERVER])
 AC_MSG_CHECKING([Pipeline Plugin Server Port])
 
 AC_SUBST(PL_PLUGIN_PORT)
-PL_PLUGIN_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                     --lookup PluginPort`
+PL_PLUGIN_PORT=`$crypto_lookup PluginPort`
 
 if test "$PL_PLUGIN_PORT" == "null"
 then
@@ -561,8 +563,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline User])
 
 AC_SUBST(PIPELINE_USER)
-PIPELINE_USER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                    --lookup PipelineUser`
+PIPELINE_USER=`$crypto_lookup PipelineUser`
 
 if test "$PIPELINE_USER" == "null"
 then
@@ -575,8 +576,7 @@ AC_MSG_RESULT([$PIPELINE_USER])
 AC_MSG_CHECKING([Pipeline User ID])
 
 AC_SUBST(PIPELINE_UID)
-PIPELINE_UID=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup PipelineUserID`
+PIPELINE_UID=`$crypto_lookup PipelineUserID`
 
 if test "$PIPELINE_UID" == "null"
 then
@@ -589,8 +589,7 @@ AC_MSG_RESULT([$PIPELINE_UID])
 AC_MSG_CHECKING([Pipeline Group])
 
 AC_SUBST(PIPELINE_GROUP)
-PIPELINE_GROUP=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                     --lookup PipelineGroup`
+PIPELINE_GROUP=`$crypto_lookup PipelineGroup`
 
 if test "$PIPELINE_GROUP" == "null"
 then
@@ -603,8 +602,7 @@ AC_MSG_RESULT([$PIPELINE_GROUP])
 AC_MSG_CHECKING([Pipeline Group ID])
 
 AC_SUBST(PIPELINE_GID)
-PIPELINE_GID=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup PipelineGroupID`
+PIPELINE_GID=`$crypto_lookup PipelineGroupID`
 
 if test "$PIPELINE_GID" == "null"
 then
@@ -617,11 +615,49 @@ AC_MSG_RESULT([$PIPELINE_GID])
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_SUBST(MAC_ROOT_INST_DIR)
+MAC_ROOT_INST_DIR=""
+
+AC_SUBST(MAC_PRODDIR)
+MAC_PRODDIR=""
+
+AC_SUBST(MAC_HOMEDIR)
+MAC_HOMEDIR=""
+
+mac_root_inst_dir=`$crypto_lookup MacRootInstallDirectory`
+mac_prod_dir=`$crypto_lookup MacProductionDirectory`
+mac_home_dir=`$crypto_lookup MacHomeDirectory`
+has_mac=false
+
+if test "$mac_root_inst_dir" != "null" \
+     -a "$mac_prod_dir" != "null" \
+     -a "$mac_home_dir" != "null"
+then
+  AC_MSG_CHECKING([MacOs Root Installation Directory])
+  MAC_ROOT_INST_DIR=$mac_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP
+  AC_MSG_RESULT([$MAC_ROOT_INST_DIR])
+
+  AC_MSG_CHECKING([MacOS Root Production Directory])
+  MAC_PRODDIR=$mac_prod_dir
+  AC_MSG_RESULT([$MAC_PRODDIR])
+  
+  AC_MSG_CHECKING([MacOS User Home Directory])
+  MAC_HOMEDIR=$mac_home_dir
+  AC_MSG_RESULT([$MAC_HOMEDIR])
+
+  has_mac=true
+fi 
+
+AM_CONDITIONAL(HAS_MAC, test x$has_mac = xtrue)
+
+
+
+dnl ------------------------------------------------------------------------------------------
+
 AC_MSG_CHECKING([Java Runtime])
 
 AC_SUBST(JAVA_HOME)
-JAVA_HOME=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup JavaHome`
+JAVA_HOME=`$crypto_lookup JavaHome`
 
 if test "$JAVA_HOME" == "null"
 then
@@ -634,8 +670,7 @@ AC_MSG_RESULT([$JAVA_HOME])
 AC_MSG_CHECKING([Java Vendor])
 
 AC_SUBST(JAVA_VENDOR)
-JAVA_VENDOR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                  --lookup JavaVendor`
+JAVA_VENDOR=`$crypto_lookup JavaVendor`
 
 if test "$JAVA_VENDOR" == "null"
 then
@@ -648,8 +683,7 @@ AC_MSG_RESULT([$JAVA_VENDOR])
 AC_MSG_CHECKING([Java Name])
 
 AC_SUBST(JAVA_NAME)
-JAVA_NAME=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup JavaName`
+JAVA_NAME=`$crypto_lookup JavaName`
 
 if test "$JAVA_NAME" == "null"
 then
@@ -662,8 +696,7 @@ AC_MSG_RESULT([$JAVA_NAME])
 AC_MSG_CHECKING([Java Version])
 
 AC_SUBST(JAVA_VERSION)
-JAVA_VERSION=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup JavaVersion`
+JAVA_VERSION=`$crypto_lookup JavaVersion`
 
 if test "$JAVA_VERSION" == "null"
 then
@@ -676,8 +709,7 @@ AC_MSG_RESULT([$JAVA_VERSION])
 AC_MSG_CHECKING([Java ClassVersion])
 
 AC_SUBST(JAVA_CLASS_VERSION)
-JAVA_CLASS_VERSION=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                         --lookup JavaClassVersion`
+JAVA_CLASS_VERSION=`$crypto_lookup JavaClassVersion`
 
 if test "$JAVA_CLASS_VERSION" == "null"
 then
@@ -687,73 +719,91 @@ fi
 AC_MSG_RESULT([$JAVA_CLASS_VERSION])
 
 
-dnl ------------------------------------------------------------------------------------------
-
-AC_MSG_CHECKING([OS Name])
-
-AC_SUBST(OS_NAME)
-OS_NAME=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                --lookup OS-Name`
-
-if test "$OS_NAME" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$OS_NAME])
-
-
-AC_MSG_CHECKING([OS Version])
-
-AC_SUBST(OS_VERSION)
-OS_VERSION=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup OS-Version`
-
-if test "$OS_VERSION" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$OS_VERSION])
-
-
-AC_MSG_CHECKING([OS Architecture])
-
-AC_SUBST(OS_ARCH)
-OS_ARCH=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                   --lookup OS-Arch`
-
-if test "$OS_ARCH" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$OS_ARCH])
-
 
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([toolset])
-AC_SUBST(BUILD_TOOLSET)
-BUILD_TOOLSET=$TOOLSET
-AC_MSG_RESULT([$TOOLSET])
+AC_MSG_RESULT([Javac Options:])
+
+AC_MSG_CHECKING([java includes])
+
+AC_SUBST(JAVA_INC)
+case "$NATIVE_OSTYPE" in 
+  (Unix)  
+    JAVA_INC=`dirname $JAVA`/../include;;
+
+  (MacOS) 
+    JAVA_INC=`dirname $JAVA`/../Headers;;
+esac
+
+AC_MSG_RESULT([$JAVA_INC])
 
 
-AC_MSG_CHECKING([path])
-AC_MSG_RESULT([$PATH])
+
+AC_MSG_CHECKING([java opts])
+
+AC_SUBST(JAVA_C_FLAGS)
+JAVA_C_FLAGS="-source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
+JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
+
+AC_MSG_RESULT([$JAVA_C_FLAGS])
 
 
+
+AC_SUBST(JAVA_RUNTIME)
+JAVA_RUNTIME=""
+
+AC_SUBST(PIPELINE_INST_DIR)
+PIPELINE_INST_DIR=""
+
+case "$NATIVE_OSTYPE" in 
+  (Unix)  
+    JAVA_RUNTIME="$JAVA_HOME/bin/java";
+    PIPELINE_INST_DIR="$ROOT_INST_DIR";;
+
+  (MacOS) 
+    JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
+    PIPELINE_INST_DIR="$MAC_ROOT_INST_DIR";;
+esac
+
+
+
+AC_SUBST(EXTRA_DEBUG_SUBDIRS)
+EXTRA_DEBUG_SUBDIRS=""
+
+AC_SUBST(BUILD_MODE)
+BUILD_MODE=dbg
+
+AC_ARG_ENABLE([opt], 
+              [  --enable-opt              Use optimization options.],
+              [case "${enable_opt}" in
+               yes) BUILD_MODE=opt;;
+               no)  BUILD_MODE=dbg;;
+               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-opt);;
+               esac], [BUILD_MODE=dbg])
+
+if test "$BUILD_MODE" = "opt" 
+then 
+  CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG";
+  JAVA_RUNTIME="$JAVA_RUNTIME -disableassertions -server"
+  EXTRA_DEBUG_SUBDIRS=""
+else
+  CXXFLAGS="$CXXFLAGS -g";
+  JAVA_RUNTIME="$JAVA_RUNTIME -enableassertions -server"
+  EXTRA_DEBUG_SUBDIRS="tests"
+fi
+
+AC_MSG_CHECKING([java runtime])
+AC_MSG_RESULT([$JAVA_RUNTIME])
 AC_MSG_RESULT([ ])
 
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_SUBST(JAVA_C_FLAGS)
-JAVA_C_FLAGS=""
+AC_MSG_RESULT([JNI Options:])
 
-AC_SUBST(JAVA_RUNTIME_FLAGS)
-JAVA_RUMTIME_FLAGS=""
+AC_SUBST(JNI_INCLUDES)
+JNI_INCLUDES=""
 
 AC_SUBST(JNI_LDADD)
 JNI_LDADD=""
@@ -761,72 +811,32 @@ JNI_LDADD=""
 AC_SUBST(JNI_LDFLAGS)
 JNI_LDFLAGS=""
 
-AC_SUBST(EXTRA_DEBUG_SUBDIRS)
-EXTRA_DEBUG_SUBDIRS=""
+case "$NATIVE_OSTYPE" in 
+  (Unix)  
+    JNI_INCLUDES="-I${JAVA_INC} -I${JAVA_INC}/linux";
+    JNI_LDFLAGS="-shared ";;
 
-AC_SUBST(YXXFLAGS)
-YXXFLAGS=""
+  (MacOS) 
+    JNI_INCLUDES="-I${JAVA_INC}";
+    JNI_LDFLAGS="-dynamiclib -framework JavaVM ";;
+esac
 
-AC_SUBST(BUILD_MODE)
-BUILD_MODE="dbg"
+AC_MSG_CHECKING([jni includes])
+AC_MSG_RESULT([$JNI_INCLUDES])
 
-AC_ARG_ENABLE([opt], 
-              [  --enable-opt              Use optimization options.])
+AC_MSG_CHECKING([jni ldadd])
+AC_MSG_RESULT([$JNI_LDADD])
 
-if test "$enable_opt" = "yes" 
-then 
-  case "$with_compiler" in 
-    (kai | KAI) \
-       CXXFLAGS="$CXXFLAGS +K3 -O3";;
+AC_MSG_CHECKING([jni ldflags])
+AC_MSG_RESULT([$JNI_LDFLAGS])
+AC_MSG_RESULT([ ])
 
-    (sgi | SGI) \
-       CXXFLAGS="$CXXFLAGS -O2 -OPT:Olimit=8192";;
 
-    (gnu | GNU | "") \
-       CXXFLAGS="$CXXFLAGS -O2";
-       JNI_LDFLAGS="-shared ";;
-
-    (*) \
-       CXXFLAGS="$CXXFLAGS -O2";;
-  esac
-
-  JAVA_C_FLAGS="-source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
-  JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
-
-  JAVA_RUNTIME_FLAGS="-disableassertions -server"
-
-  CXXFLAGS="$CXXFLAGS -DNDEBUG"
-  EXTRA_DEBUG_SUBDIRS=""
-  BUILD_MODE="opt"
-else
-  case "$with_compiler" in 
-    (kai | KAI) \
-       CXXFLAGS="$CXXFLAGS +K0 -g";;
-
-    (sgi | SGI) \
-       CXXFLAGS="$CXXFLAGS -g";;
-
-    (gnu | GNU | "") \
-       CXXFLAGS="$CXXFLAGS -g";
-       JNI_LDFLAGS="-shared ";;
-
-    (*) \
-       CXXFLAGS="$CXXFLAGS -g";;
-  esac
-
-  JAVA_C_FLAGS="-g -source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
-  JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
-
-  JAVA_RUNTIME_FLAGS="-enableassertions -server"
-
-  EXTRA_DEBUG_SUBDIRS="tests"
-  BUILD_MODE="dbg"
-fi
 
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Java GC Options])
+AC_MSG_RESULT([Java GC Options:])
 
 java_gc_opts="-XX:+UseParallelGC"
 
@@ -878,7 +888,7 @@ AC_MSG_RESULT([ ])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Java Debugging Options])
+AC_MSG_RESULT([Java Debugging Options:])
 
 AC_ARG_WITH([debug-base], 
             [  --with-debug-base=PORT      The base port number used for debugging.])
@@ -995,37 +1005,6 @@ AC_MSG_RESULT([ ])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_ARG_ENABLE([64], 
-              [  --enable-64               Generate 64 bit objects and executables.])
-
-if test "$enable_64" = "yes" 
-then 
-  case "$with_compiler" in 
-    (kai | KAI) \
-       CFLAGS="$CFLAGS -64 -mips4 --backend -TARG:platform=IP30";
-       CXXFLAGS="$CXXFLAGS -64 -mips4 --backend -TARG:platform=IP30";;
-
-    (sgi | SGI) \
-       CFLAGS="$CFLAGS -64 -mips4 -TARG:platform=IP30";
-       CXXFLAGS="$CXXFLAGS -64 -mips4 -TARG:platform=IP30";;
-
-    (gnu | GNU) \
-       AC_MSG_ERROR([no 64bit support for gcc]);;
-
-    (*) \
-       AC_MSG_ERROR([don't know how to support 64bit on this compiler]);;
-  esac
-else 
-  case "$with_compiler" in 
-    (kai | KAI | sgi | SGI) \
-       CFLAGS="$CFLAGS -n32 -mips3";
-       CXXFLAGS="$CXXFLAGS -n32 -mips3";;
-  esac
-fi
-
-
-dnl ------------------------------------------------------------------------------------------
-
 AC_SUBST(RPM_ROOT)
 RPM_ROOT=`pwd`/rpm
 
@@ -1047,7 +1026,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_SUBST(AR)
-AC_CANONICAL_HOST
+
 
 AC_HEADER_STDC
 AC_CHECK_HEADER([sys/types.h])    
@@ -1104,30 +1083,6 @@ AC_MSG_RESULT([ ])
 
 
 
-
-dnl -- JAVA TOOLS ----------------------------------------------------------------------------
-
-AC_MSG_RESULT([Locating the Java development tools:])
-
-AC_PATH_PROG(JAVA,    java,    $PATH)
-AC_PATH_PROG(JAVA_C,  javac,   $PATH)
-AC_PATH_PROG(JAVA_CC, javacc,  $PATH)
-AC_PATH_PROG(JAVA_H,  javah,   $PATH)
-AC_PATH_PROG(JAVADOC, javadoc, $PATH)
-AC_PATH_PROG(JAR,     jar,     $PATH)
-
-
-AC_MSG_CHECKING([java include])
-
-AC_SUBST(JAVA_INC)
-JAVA_INC=`dirname $JAVA`/../include
-
-AC_MSG_RESULT([$JAVA_INC])
-
-AC_MSG_RESULT([ ])
-
-
-
 dnl ------------------------------------------------------------------------------------------
 dnl   Checks for libraries.	
 dnl ------------------------------------------------------------------------------------------
@@ -1142,7 +1097,7 @@ AC_MSG_RESULT([Locating C system headers:])
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
 AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h utime.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
-AC_CHECK_HEADERS([sys/statfs.h])
+AC_CHECK_HEADERS([sys/statfs.h sys/mount.h])
 AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h])
 
 AC_MSG_RESULT([ ])
@@ -1256,7 +1211,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
   src/java/us/temerity/pipeline/laf/scripts/radial-menu
   src/java/us/temerity/pipeline/laf/scripts/build-web-icons
-  src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
@@ -1272,6 +1226,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plui
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
+  src/java/scripts/upgrade-toolsets-1.9.22
 
   src/java/scripts/debug/Makefile
   src/java/scripts/debug/plfilemgr
@@ -1299,11 +1254,20 @@ AC_CONFIG_FILES([
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc.src
 
+  src/mac-apps/Makefile
+  src/mac-apps/pipeline/Makefile
+  src/mac-apps/pipeline/Info.plist
+  src/mac-apps/pipeline/MacOS/Makefile
+  src/mac-apps/pipeline/MacOS/plui
+  src/mac-apps/pipeline/Resources/Makefile
+
+  src/native/Makefile
+
   rpm/Makefile
   rpm/pipeline.spec
-  rpm/plqueuemgr.spec
-  rpm/plutils.spec
   rpm/plmaster.spec
+  rpm/plqueuemgr.spec
+  rpm/plmac.spec
   rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros

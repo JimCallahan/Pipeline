@@ -1,0 +1,53 @@
+Summary: The MacOS X Pipeline Client Programs
+Name: plmac-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us/pipeline
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/plmac
+
+%description
+The launcher scripts, native binaries and libraries needed to run the Pipeline 
+client programs under MacOS X.  
+
+This RPM should be installed on the same Linux file server as the main 
+"pipeline" RPM.  The Pipeline application bundle "Pipeline.app" provided by this
+RPM may be copied to the local Applications directory or other locations for
+convienent launching of the graphical client.  Note that this applicaiton bundle
+does not contain the required Java classes or data files needed to run the 
+application.  These resources are accessed over the network via NFS using the path 
+supplied to the --mac-root-dir option to plconfig(1) during Pipeline configuration.
+
+%files
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/MacOS/bin/realpath
+@ROOT_INST_DIR@/MacOS/bin/pls
+
+@ROOT_INST_DIR@/MacOS/bin/plplugin
+@ROOT_INST_DIR@/MacOS/bin/plscript
+@ROOT_INST_DIR@/MacOS/bin/plui
+
+@ROOT_INST_DIR@/MacOS/debug/bin/plplugin
+@ROOT_INST_DIR@/MacOS/debug/bin/plscript
+@ROOT_INST_DIR@/MacOS/debug/bin/plui
+
+@ROOT_INST_DIR@/MacOS/profile/bin/plplugin
+@ROOT_INST_DIR@/MacOS/profile/bin/plscript
+@ROOT_INST_DIR@/MacOS/profile/bin/plui
+
+%defattr(4550,root,@PIPELINE_GROUP@)
+@ROOT_INST_DIR@/MacOS/sbin/plrun
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/lib/MacOS
+@ROOT_INST_DIR@/MacOS/Pipeline.app
+
+%changelog
+* @RPM_DATE@ Jim Callahan <jim@salamander>
+Latest build.
+
+
+

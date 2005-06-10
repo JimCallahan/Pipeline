@@ -1,7 +1,10 @@
 
-SUBDIRS = \
-  src \
-  docs
+if FOUNDATION
+SUBDIRS = src docs
+else 
+SUBDIRS = src
+endif
+
 
 
 EXTRA_DIST = \

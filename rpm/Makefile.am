@@ -1,13 +1,25 @@
 
+if FOUNDATION 
+
 noinst_DATA = \
   pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 
 
+if HAS_MAC 
 RPMS = \
+  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plutils-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm 
+  RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+else 
+RPMS = \
+  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+endif
+
+
+MAC_BUILD_DIR = $(patsubst /home/%,/Users/%,$(shell pwd))
 
 
 
@@ -46,13 +58,14 @@ pipeline-install: clean-rpms rpm-mkdirs
 	mkdir -p DEST/plmaster
 	mv DEST/pipeline/usr DEST/plmaster
 	mkdir -p DEST/plqueuemgr/usr/share/pipeline
-	mkdir -p DEST/plutils/@ROOT_INST_DIR@/bin DEST/plutils/@ROOT_INST_DIR@/share/docs/man
-	mv DEST/pipeline/@ROOT_INST_DIR@/bin/pls DEST/plutils/@ROOT_INST_DIR@/bin
-	mv DEST/pipeline/@ROOT_INST_DIR@/share/docs/man/pls.html \
-           DEST/plutils/@ROOT_INST_DIR@/share/docs/man
 
-rpm-mkdirs: 
-	mkdir -p BUILD DEST RPMS SPECS SOURCES SRPMS 
+
+RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
+  SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
+	rpmbuild --rcfile rpmrc -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
+
+SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
+	cp -f plmaster.spec $@
 
 
 RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
@@ -71,20 +84,19 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
 
 
-RPMS/i686/plutils-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
-  SPECS/plutils-@CUSTOMER@-@VERSION@.spec
-	rpmbuild --rcfile rpmrc -bb SPECS/plutils-@CUSTOMER@-@VERSION@.spec
+if HAS_MAC
 
-SPECS/plutils-@CUSTOMER@-@VERSION@.spec: plutils.spec
-	cp -f plutils.spec $@
+RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
+  SPECS/plmac-@CUSTOMER@-@VERSION@.spec
+	rm -rf DEST/plmac
+	ssh tadpole $(MAKE) -C $(MAC_BUILD_DIR) all
+	scp -rpq tadpole:$(MAC_BUILD_DIR)/DEST/plmac DEST/plmac
+	rpmbuild --rcfile rpmrc -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 
+SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec
+	cp -f plmac.spec $@
 
-RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
-  SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
-	rpmbuild --rcfile rpmrc -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
-
-SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
-	cp -f plmaster.spec $@
+endif
 
 
 
@@ -100,6 +112,28 @@ clean: clean-rpms
 	rm -f header pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 	$(MAKE) -C ../ clean
 
+endif
+
+
+#---------------------------------------------------------------------------------------------
+
+if IS_MAC_OS
+
+all: clean-rpms rpm-mkdirs
+	rm -rf DEST/plmac
+	DESTDIR=`pwd`/DEST/plmac $(MAKE) -C .. install
+
+clean: clean-rpms
+	rm -rf BUILD DEST RPMS SPECS SOURCES SRPMS
+	$(MAKE) -C ../ clean
+
+endif 
+
+
+#---------------------------------------------------------------------------------------------
+
+rpm-mkdirs: 
+	mkdir -p BUILD DEST RPMS SPECS SOURCES SRPMS 
+
 clean-rpms: 
 	rm -f $(RPMS)
-

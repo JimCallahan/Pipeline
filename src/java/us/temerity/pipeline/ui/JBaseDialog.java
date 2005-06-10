@@ -1,6 +1,8 @@
-// $Id: JBaseDialog.java,v 1.12 2005/01/04 12:11:54 jim Exp $
+// $Id: JBaseDialog.java,v 1.13 2005/06/10 04:55:06 jim Exp $
 
 package us.temerity.pipeline.ui;
+
+import us.temerity.pipeline.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -138,7 +140,13 @@ class JBaseDialog
     {
       JPanel panel = new JPanel();
       
-      panel.setName((body != null) ? "DialogButtonPanel" : "DialogButtonPanel2");
+      String mac = "";
+      switch(PackageInfo.sOsType) {
+      case MacOS:
+	mac = "Mac";
+      }
+      panel.setName(mac + ((body != null) ? "DialogButtonPanel" : "DialogButtonPanel2"));
+
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
       
       panel.add(Box.createHorizontalGlue());
@@ -227,8 +235,8 @@ class JBaseDialog
       panel.add(Box.createHorizontalGlue());
       
       root.add(panel);
-    }	  
-    
+    }
+
     setContentPane(root);
 
     pack();

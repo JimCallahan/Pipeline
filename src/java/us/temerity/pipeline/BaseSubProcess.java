@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.6 2005/06/03 15:54:15 jim Exp $
+// $Id: BaseSubProcess.java,v 1.7 2005/06/10 04:55:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -135,11 +135,7 @@ class BaseSubProcess
 	ArrayList<String> cmd = new ArrayList<String>();
 	
 	if(user != null) {
-	  String plrun = "plrun";
-	  if(PackageInfo.sNativeSubdir != null) 
-	    plrun = (PackageInfo.sNativeSubdir + "/plrun");
-	  cmd.add(PackageInfo.sInstDir + "/sbin/" + plrun);
-
+	  cmd.add(PackageInfo.sInstDir + "/" + PackageInfo.sOsType + "/sbin/plrun");
 	  cmd.add(user);
 	  cmd.add(lookupUserID(user).toString());
 	}

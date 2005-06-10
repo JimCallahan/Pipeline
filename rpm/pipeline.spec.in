@@ -28,42 +28,44 @@ The core features of Pipeline include:
 %files
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/bin/realpath
+@ROOT_INST_DIR@/Unix/bin/realpath
+@ROOT_INST_DIR@/Unix/bin/pls
 
-@ROOT_INST_DIR@/bin/plplugin
-@ROOT_INST_DIR@/bin/plscript
-@ROOT_INST_DIR@/bin/plui
+@ROOT_INST_DIR@/Unix/bin/plplugin
+@ROOT_INST_DIR@/Unix/bin/plscript
+@ROOT_INST_DIR@/Unix/bin/plui
 
-@ROOT_INST_DIR@/debug/bin/plplugin
-@ROOT_INST_DIR@/debug/bin/plscript
-@ROOT_INST_DIR@/debug/bin/plui
+@ROOT_INST_DIR@/Unix/debug/bin/plplugin
+@ROOT_INST_DIR@/Unix/debug/bin/plscript
+@ROOT_INST_DIR@/Unix/debug/bin/plui
 
-@ROOT_INST_DIR@/profile/bin/plplugin
-@ROOT_INST_DIR@/profile/bin/plscript
-@ROOT_INST_DIR@/profile/bin/plui
+@ROOT_INST_DIR@/Unix/profile/bin/plplugin
+@ROOT_INST_DIR@/Unix/profile/bin/plscript
+@ROOT_INST_DIR@/Unix/profile/bin/plui
 
 %defattr(4550,root,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/sbin/plrun
+@ROOT_INST_DIR@/Unix/sbin/plrun
 
 %defattr(500,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/sbin/plfilemgr
-@ROOT_INST_DIR@/sbin/pljobmgr
-@ROOT_INST_DIR@/sbin/plmaster
-@ROOT_INST_DIR@/sbin/plpluginmgr
-@ROOT_INST_DIR@/sbin/plqueuemgr
-@ROOT_INST_DIR@/sbin/plrestore
+@ROOT_INST_DIR@/Unix/sbin/plfilemgr
+@ROOT_INST_DIR@/Unix/sbin/pljobmgr
+@ROOT_INST_DIR@/Unix/sbin/plmaster
+@ROOT_INST_DIR@/Unix/sbin/plpluginmgr
+@ROOT_INST_DIR@/Unix/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix/sbin/plrestore
+@ROOT_INST_DIR@/Unix/sbin/upgrade-toolsets-1.9.22
 
-@ROOT_INST_DIR@/debug/sbin/plfilemgr
-@ROOT_INST_DIR@/debug/sbin/pljobmgr
-@ROOT_INST_DIR@/debug/sbin/plmaster
-@ROOT_INST_DIR@/debug/sbin/plpluginmgr
-@ROOT_INST_DIR@/debug/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix/debug/sbin/plfilemgr
+@ROOT_INST_DIR@/Unix/debug/sbin/pljobmgr
+@ROOT_INST_DIR@/Unix/debug/sbin/plmaster
+@ROOT_INST_DIR@/Unix/debug/sbin/plpluginmgr
+@ROOT_INST_DIR@/Unix/debug/sbin/plqueuemgr
 
-@ROOT_INST_DIR@/profile/sbin/plfilemgr
-@ROOT_INST_DIR@/profile/sbin/pljobmgr
-@ROOT_INST_DIR@/profile/sbin/plmaster
-@ROOT_INST_DIR@/profile/sbin/plpluginmgr
-@ROOT_INST_DIR@/profile/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix/profile/sbin/plfilemgr
+@ROOT_INST_DIR@/Unix/profile/sbin/pljobmgr
+@ROOT_INST_DIR@/Unix/profile/sbin/plmaster
+@ROOT_INST_DIR@/Unix/profile/sbin/plpluginmgr
+@ROOT_INST_DIR@/Unix/profile/sbin/plqueuemgr
 
 
 %defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
@@ -95,6 +97,8 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/plrestore.html 
 @ROOT_INST_DIR@/share/docs/man/plscript.html 
 @ROOT_INST_DIR@/share/docs/man/plui.html 
+
+@ROOT_INST_DIR@/share/docs/man/pls.html
 @ROOT_INST_DIR@/share/docs/man/realpath.html
 
 %dir @ROOT_INST_DIR@/plconfig

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.22 2005/05/15 19:45:35 jim Exp $
+// $Id: UIMaster.java,v 1.23 2005/06/10 04:55:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1345,7 +1345,7 @@ class UIMaster
 	  {
 	    JPanel panel = new JPanel(); 
 	    panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
-	    
+
 	    panel.add(Box.createRigidArea(new Dimension(2, 0)));
 	    
 	    {
@@ -1373,8 +1373,23 @@ class UIMaster
 	    root.add(panel);
 	  }
 	  
-	  root.add(Box.createRigidArea(new Dimension(0, 4)));
-	  
+	  switch(PackageInfo.sOsType) {
+	  case MacOS:
+	    {
+	      JPanel footer = new JPanel();
+	      footer.setName("MacFooterPanel");
+	      
+	      footer.setMinimumSize(new Dimension(0, 16));
+	      footer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+
+	      root.add(footer);
+	    }
+	    break;
+
+	  default:
+	    root.add(Box.createRigidArea(new Dimension(0, 4)));
+	  }
+
 	  frame.setContentPane(root);
 	}
 	

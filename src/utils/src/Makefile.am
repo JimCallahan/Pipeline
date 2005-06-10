@@ -1,5 +1,5 @@
 
-instbindir  = @ROOT_INST_DIR@/bin
+instbindir  = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/bin
 
 instbin_PROGRAMS = \
   pls \
@@ -10,7 +10,7 @@ pls_SOURCES = FB.cc PackageInfo.cc Pls.cc
 realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc 
 
 
-instsbindir  = @ROOT_INST_DIR@/sbin
+instsbindir  = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
 
 instsbin_PROGRAMS = \
   plrun
@@ -21,10 +21,8 @@ plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc
 EXTRA_DIST = \
   AtomicTypes.hh \
   FB.hh \
-  NativeArch.hh \
   PackageInfo.hh \
   Timer.hh
-
 
 
 INCLUDES = 

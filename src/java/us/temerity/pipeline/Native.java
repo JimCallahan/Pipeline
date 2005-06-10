@@ -1,4 +1,4 @@
-// $Id: Native.java,v 1.6 2005/01/22 06:10:09 jim Exp $
+// $Id: Native.java,v 1.7 2005/06/10 04:55:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,11 +27,23 @@ class Native
     synchronized(sLibraryLoadLock) {
       if(sIsLibraryLoaded) 
 	return;
+
+      String ext = null;
+      switch(PackageInfo.sOsType) {
+      case Unix:
+	ext = ".so";
+	break;
+
+      case MacOS:
+	ext = ".jnilib";
+	break;
+
+      case Windows:
+	assert(false);
+      }
       
-      String lib = "libNative.so";
-      if(PackageInfo.sNativeSubdir != null) 
-	lib = (PackageInfo.sNativeSubdir + "/libNative.so");
-      String path = (PackageInfo.sInstDir + "/lib/" + lib);
+      String path = 
+	(PackageInfo.sInstDir + "/lib/" + PackageInfo.sOsType + "/libNative" + ext);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Fine,

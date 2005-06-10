@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.13 2005/02/12 15:30:52 jim Exp $
+// $Id: BaseApp.java,v 1.14 2005/06/10 04:55:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -61,7 +61,7 @@ class BaseApp
   public void
   htmlHelp()
   {
-    showURL("file://" + PackageInfo.sDocsDir + "/man/" + pName + ".html");
+    showURL("file://" + PackageInfo.sInstDir + "share/docs/man/" + pName + ".html");
   }
 
   /**

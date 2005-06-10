@@ -1,4 +1,4 @@
-// $Id: JPanelFrame.java,v 1.2 2005/03/11 06:33:44 jim Exp $
+// $Id: JPanelFrame.java,v 1.3 2005/06/10 04:55:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -54,7 +54,15 @@ class JPanelFrame
     {
       JPanel panel = new JPanel(new BorderLayout());
       pRootPanel = panel;
-      panel.setName("RootPanel");
+      
+      switch(PackageInfo.sOsType) {
+      case MacOS:
+	panel.setName("MacRootPanel");
+	break;
+
+      default:
+	panel.setName("RootPanel");
+      }
       
       {
 	JManagerPanel mpanel = new JManagerPanel();
@@ -67,6 +75,9 @@ class JPanelFrame
     }
 
     setSize(520, 360);
+
+    //revalidate();
+    //repaint();
 
     {
       Rectangle bounds = getGraphicsConfiguration().getBounds();
