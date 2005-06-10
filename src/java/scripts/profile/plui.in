@@ -1,12 +1,9 @@
 #!/bin/sh
 
 cd `pwd`
-exec @JAVA_HOME@/bin/java \
-  -Djava.util.logging.config.file=@ROOT_INST_DIR@/share/logger.properties \
-  @JAVA_RUNTIME_FLAGS@ \
+exec @JAVA_RUNTIME@ \
   @PLUI_GC_OPTS@ \
-  @PLUI_DEBUG_OPTS@ \
   @PLUI_PROFILE_OPTS@ \
-  -cp @ROOT_INST_DIR@/lib/api.jar \
+  -cp @PIPELINE_INST_DIR@/lib/api.jar \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp "$@"
 

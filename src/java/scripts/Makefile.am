@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/bin
 
 instbin_SCRIPTS = \
   plplugin \
@@ -7,15 +7,20 @@ instbin_SCRIPTS = \
   plui
 
 
-instsbindir = @ROOT_INST_DIR@/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
 
-instsbin_SCRIPTS = \
+if FOUNDATION
+admin_scripts = \
   plfilemgr \
   pljobmgr \
   plmaster \
   plpluginmgr \
   plqueuemgr \
-  plrestore
+  plrestore \
+  upgrade-toolsets-1.9.22
+endif
+
+instsbin_SCRIPTS = $(admin_scripts)
 
 
 SUBDIRS = \

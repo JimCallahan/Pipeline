@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/debug/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/bin
 
 instbin_SCRIPTS = \
   plplugin \
@@ -7,12 +7,15 @@ instbin_SCRIPTS = \
   plui 
 
 
-instsbindir = @ROOT_INST_DIR@/debug/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin
 
-instsbin_SCRIPTS = \
+if FOUNDATION
+admin_scripts = \
   plfilemgr \
   pljobmgr \
   plmaster \
   plpluginmgr \
   plqueuemgr
+endif
 
+instsbin_SCRIPTS = $(admin_scripts)
