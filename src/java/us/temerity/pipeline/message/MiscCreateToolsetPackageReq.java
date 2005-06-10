@@ -1,4 +1,4 @@
-// $Id: MiscCreateToolsetPackageReq.java,v 1.1 2004/05/29 06:35:40 jim Exp $
+// $Id: MiscCreateToolsetPackageReq.java,v 1.2 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,6 +43,9 @@ class MiscCreateToolsetPackageReq
    * 
    * @param level
    *   The revision number component level to increment.
+   * 
+   * @param os
+   *   The operating system type.
    */
   public
   MiscCreateToolsetPackageReq
@@ -50,7 +53,8 @@ class MiscCreateToolsetPackageReq
    String author, 
    PackageMod mod, 
    String desc, 
-   VersionID.Level level
+   VersionID.Level level, 
+   OsType os
   )
   {
     if(author == null) 
@@ -68,6 +72,11 @@ class MiscCreateToolsetPackageReq
     pDescription = desc;
 
     pLevel = level;
+
+    if(os == null) 
+      throw new IllegalArgumentException
+	("The operating system cannot be (null)!");
+    pOsType = os;
   }
 
 
@@ -112,6 +121,14 @@ class MiscCreateToolsetPackageReq
     return pLevel;
   }
 
+  /**
+   * Gets the operating system type.
+   */ 
+  public OsType
+  getOsType() 
+  {
+    return pOsType;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -145,6 +162,11 @@ class MiscCreateToolsetPackageReq
    * The revision number component level to increment.
    */ 
   private VersionID.Level  pLevel;
+
+  /**
+   * The operating system type.
+   */
+  private OsType  pOsType;  
 
 }
   

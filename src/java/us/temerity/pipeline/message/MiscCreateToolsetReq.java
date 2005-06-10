@@ -1,4 +1,4 @@
-// $Id: MiscCreateToolsetReq.java,v 1.1 2004/05/29 06:35:40 jim Exp $
+// $Id: MiscCreateToolsetReq.java,v 1.2 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,6 +43,9 @@ class MiscCreateToolsetReq
    * 
    * @param versions
    *   The package revision numbers indexed by package name.
+   * 
+   * @param os
+   *   The operating system type.
    */
   public
   MiscCreateToolsetReq
@@ -51,7 +54,8 @@ class MiscCreateToolsetReq
    String name, 
    String desc, 
    Collection<String> packages, 
-   TreeMap<String,VersionID> versions
+   TreeMap<String,VersionID> versions, 
+   OsType os
   )
   {
     if(author == null) 
@@ -77,6 +81,11 @@ class MiscCreateToolsetReq
       throw new IllegalArgumentException
 	("The versions cannot be (null)!");
     pVersions = versions;
+    
+    if(os == null) 
+      throw new IllegalArgumentException
+	("The operating system cannot be (null)!");
+    pOsType = os;
   }
 
 
@@ -131,6 +140,17 @@ class MiscCreateToolsetReq
     return pVersions;
   }
 
+  /**
+   * Gets the operating system type.
+   */ 
+  public OsType
+  getOsType() 
+  {
+    return pOsType;
+  }
+ 
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -168,6 +188,11 @@ class MiscCreateToolsetReq
    * The package revision numbers indexed by package name.
    */ 
   private TreeMap<String,VersionID>  pVersions;
+
+  /**
+   * The operating system type.
+   */
+  private OsType  pOsType;  
 
 }
   

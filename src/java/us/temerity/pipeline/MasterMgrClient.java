@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.63 2005/05/15 19:45:34 jim Exp $
+// $Id: MasterMgrClient.java,v 1.64 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -96,7 +96,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the default toolset.
+   * Get the name of the default Unix toolset.
    * 
    * @throws PipelineException
    *   If unable to determine the default toolset name.
@@ -119,7 +119,7 @@ class MasterMgrClient
   }
 
   /**
-   * Set the default toolset name. <P> 
+   * Set the default Unix toolset name. <P> 
    * 
    * Also makes the given toolset active if not already active. <P> 
    * 
@@ -151,8 +151,10 @@ class MasterMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the names of the currently active toolsets.
+   * Get the names of the currently active Unix toolsets.
    * 
    * @throws PipelineException
    *   If unable to determine the toolset names.
@@ -175,7 +177,7 @@ class MasterMgrClient
   }
 
   /**
-   * Set the active/inactive state of the toolset with the given name. <P> 
+   * Set the active/inactive state of the Unix toolset with the given name. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
@@ -209,8 +211,10 @@ class MasterMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the names of all toolsets.
+   * Get the names of all Unix toolsets.
    * 
    * @throws PipelineException
    *   If unable to determine the toolset names.
@@ -219,9 +223,30 @@ class MasterMgrClient
   getToolsetNames() 
     throws PipelineException
   {
+    return getToolsetNames(OsType.Unix);
+  }
+
+  /**
+   * Get the names of all toolsets for the given operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the toolset names.
+   */ 
+  public synchronized TreeSet<String>
+  getToolsetNames
+  (
+   OsType os
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
 
-    Object obj = performTransaction(MasterRequest.GetToolsetNames, null);
+    MiscGetToolsetNamesReq req = new MiscGetToolsetNamesReq(os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetNames, req);
     if(obj instanceof MiscGetToolsetNamesRsp) {
       MiscGetToolsetNamesRsp rsp = (MiscGetToolsetNamesRsp) obj;
       return rsp.getNames();
@@ -232,8 +257,11 @@ class MasterMgrClient
     }    
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the toolset with the given name.
+   * Get the Unix toolset with the given name.
    * 
    * @param name
    *   The toolset name.
@@ -248,9 +276,32 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return getToolset(name, OsType.Unix);
+  }
+
+  /**
+   * Get the OS specific toolset with the given name.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  public synchronized Toolset
+  getToolset
+  (
+   String name, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
 
-    MiscGetToolsetReq req = new MiscGetToolsetReq(name);
+    MiscGetToolsetReq req = new MiscGetToolsetReq(name, os);
 
     Object obj = performTransaction(MasterRequest.GetToolset, req);
     if(obj instanceof MiscGetToolsetRsp) {
@@ -263,8 +314,11 @@ class MasterMgrClient
     }        
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the cooked toolset environment specific to the given user and working area. <P> 
+   * Get the cooked Unix toolset environment. <P> 
    * 
    * If the <CODE>author</CODE> argument is not <CODE>null</CODE>, <CODE>HOME</CODE> and 
    * <CODE>USER</CODE> environmental variables will be added to the cooked environment. <P> 
@@ -294,9 +348,48 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return getToolsetEnvironment(author, view, tname, OsType.Unix);
+  }
+
+  /**
+   * Get the cooked OS specific toolset environment.
+   * 
+   * If the <CODE>author</CODE> argument is not <CODE>null</CODE>, <CODE>HOME</CODE> and 
+   * <CODE>USER</CODE> environmental variables will be added to the cooked environment. <P> 
+   * 
+   * If the <CODE>author</CODE> and <CODE>view</CODE> arguments are both not 
+   * <CODE>null</CODE>, <CODE>HOME</CODE>, <CODE>USER</CODE> and <CODE>WORKING</CODE> 
+   * environmental variables will be added to the cooked environment. <P> 
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  public synchronized TreeMap<String,String> 
+  getToolsetEnvironment
+  (
+   String author, 
+   String view,
+   String tname, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
 
-    MiscGetToolsetEnvironmentReq req = new MiscGetToolsetEnvironmentReq(author, view, tname);
+    MiscGetToolsetEnvironmentReq req = 
+      new MiscGetToolsetEnvironmentReq(author, view, tname, os);
 
     Object obj = performTransaction(MasterRequest.GetToolsetEnvironment, req);
     if(obj instanceof MiscGetToolsetEnvironmentRsp) {
@@ -309,20 +402,24 @@ class MasterMgrClient
     }        
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Create a new toolset and possibly new package versions from the given set of 
-   * packages. <P>
+   * Create a new toolset from the given set of toolset packages. <P>
    * 
-   * New packages will only be created if the generated toolset defined by evaluating 
-   * the <CODE>packages</CODE> argument has no environment conflicts (see 
-   * {@link Toolset#hasConflicts Toolset.hasConflicts}).  If any conflicts are detected, 
-   * an exception will be thrown and no new toolset will be created. <P> 
+   * A new toolset will only be created if the environment defined by evaluating 
+   * the packages has no environment conflicts (see {@link Toolset#hasConflicts 
+   * Toolset.hasConflicts}). <P> 
    * 
    * All packages given must already exist on the master server.  Only the names and 
    * revision numbers of the given packages are passed to the server which then looks up 
    * its own copy of the toolset package (identified by the name and revision number) to 
    * generate the toolset.  This insures that the contents of the toolset package cannot 
    * be altered by client programs. <P> 
+   * 
+   * The Unix specific toolset must be create before any other operating system 
+   * specializations for the toolset can be created. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
@@ -335,6 +432,9 @@ class MasterMgrClient
    * @param packages
    *   The packages in order of evaluation.
    * 
+   * @param os
+   *   The operating system type.
+   * 
    * @return 
    *   The newly created toolset.
    * 
@@ -346,7 +446,8 @@ class MasterMgrClient
   (
    String name, 
    String desc, 
-   Collection<PackageVersion> packages
+   Collection<PackageVersion> packages,
+   OsType os   
   ) 
     throws PipelineException  
   {
@@ -364,7 +465,7 @@ class MasterMgrClient
     }
 
     MiscCreateToolsetReq req =
-      new MiscCreateToolsetReq(PackageInfo.sUser, name, desc, names, versions);
+      new MiscCreateToolsetReq(PackageInfo.sUser, name, desc, names, versions, os);
 
     Object obj = performTransaction(MasterRequest.CreateToolset, req); 
     if(obj instanceof MiscCreateToolsetRsp) {
@@ -381,7 +482,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names and revision numbers of all toolset packages.
+   * Get the names and revision numbers of all Unix toolset packages.
    * 
    * @throws PipelineException
    *   If unable to determine the package names.
@@ -390,9 +491,30 @@ class MasterMgrClient
   getToolsetPackageNames() 
     throws PipelineException    
   {
+    return getToolsetPackageNames(OsType.Unix);
+  }
+
+  /**
+   * Get the names and revision numbers of all OS specific toolset packages.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the package names.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getToolsetPackageNames
+  (
+   OsType os
+  ) 
+    throws PipelineException    
+  {
     verifyConnection();
 
-    Object obj = performTransaction(MasterRequest.GetToolsetPackageNames, null);
+    MiscGetToolsetPackageNamesReq req = new MiscGetToolsetPackageNamesReq(os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetPackageNames, req);
     if(obj instanceof MiscGetToolsetPackageNamesRsp) {
       MiscGetToolsetPackageNamesRsp rsp = (MiscGetToolsetPackageNamesRsp) obj;
       return rsp.getNames();
@@ -403,8 +525,11 @@ class MasterMgrClient
     }        
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the toolset package with the given name and revision number. 
+   * Get the Unix toolset package with the given name and revision number. 
    * 
    * @param name
    *   The toolset package name.
@@ -423,9 +548,36 @@ class MasterMgrClient
   ) 
     throws PipelineException    
   {
+    return getToolsetPackage(name, vid, OsType.Unix);
+  }
+
+  /**
+   * Get the OS specific toolset package with the given name and revision number. 
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset package.
+   */ 
+  public synchronized PackageVersion
+  getToolsetPackage
+  (
+   String name, 
+   VersionID vid, 
+   OsType os
+  ) 
+    throws PipelineException    
+  {
     verifyConnection();
 
-    MiscGetToolsetPackageReq req = new MiscGetToolsetPackageReq(name, vid);
+    MiscGetToolsetPackageReq req = new MiscGetToolsetPackageReq(name, vid, os);
 
     Object obj = performTransaction(MasterRequest.GetToolsetPackage, req);
     if(obj instanceof MiscGetToolsetPackageRsp) {
@@ -438,6 +590,9 @@ class MasterMgrClient
     }        
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Create a new read-only toolset package from the given modifiable package. <P> 
    * 
@@ -448,6 +603,9 @@ class MasterMgrClient
    * 
    * The <CODE>level</CODE> argument may be <CODE>null</CODE> if this is the first 
    * revision of the package. <P> 
+   * 
+   * The Unix specific toolset must be create before any other operating system 
+   * specializations for the toolset can be created. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
@@ -460,6 +618,9 @@ class MasterMgrClient
    * @param level
    *   The revision number component level to increment.
    * 
+   * @param os
+   *   The operating system type.
+   * 
    * @return 
    *   The newly created package.
    * 
@@ -471,7 +632,8 @@ class MasterMgrClient
   (
    PackageMod mod, 
    String desc, 
-   VersionID.Level level
+   VersionID.Level level, 
+   OsType os
   ) 
     throws PipelineException  
   {
@@ -482,7 +644,7 @@ class MasterMgrClient
     verifyConnection();
 
     MiscCreateToolsetPackageReq req =
-      new MiscCreateToolsetPackageReq(PackageInfo.sUser, mod, desc, level);
+      new MiscCreateToolsetPackageReq(PackageInfo.sUser, mod, desc, level, os);
 
     Object obj = performTransaction(MasterRequest.CreateToolsetPackage, req); 
     if(obj instanceof MiscCreateToolsetPackageRsp) {

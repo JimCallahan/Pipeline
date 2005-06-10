@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.129 2005/06/02 22:11:58 jim Exp $
+// $Id: MasterMgr.java,v 1.130 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -291,8 +291,9 @@ class MasterMgr
       pDefaultToolsetLock = new Object();
       pDefaultToolset     = null;
       pActiveToolsets     = new TreeSet<String>();
-      pToolsets           = new TreeMap<String,Toolset>();
-      pToolsetPackages    = new TreeMap<String,TreeMap<VersionID,PackageVersion>>();
+      pToolsets           = new TreeMap<String,TreeMap<OsType,Toolset>>();
+      pToolsetPackages    = 
+	new TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>();
 
       pSuffixEditors = new TreeMap<String,TreeMap<String,SuffixEditor>>();
 
@@ -541,31 +542,59 @@ class MasterMgr
     /* initialize toolset keys */ 
     {
       File dir = new File(PackageInfo.sNodeDir, "toolsets/toolsets");
-      File files[] = dir.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	if(files[wk].isFile()) 
-	  pToolsets.put(files[wk].getName(), null);
+      File tsets[] = dir.listFiles(); 
+      int tk;
+      for(tk=0; tk<tsets.length; tk++) {
+	if(tsets[tk].isDirectory()) {
+	  for(OsType os : OsType.all()) {
+	    File file = new File(tsets[tk], os.toString());
+	    if(file.isFile()) {
+	      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tsets[tk].getName());
+	      if(toolsets == null) {
+		toolsets = new TreeMap<OsType,Toolset>();
+		pToolsets.put(tsets[tk].getName(), toolsets);
+	      }
+
+	      toolsets.put(os, null);
+	    }
+	  }
+	}
       }
     }
     
     /* initialize package keys */ 
     {
       File dir = new File(PackageInfo.sNodeDir, "toolsets/packages");
-      File dirs[] = dir.listFiles(); 
-      int dk;
-      for(dk=0; dk<dirs.length; dk++) {
-	if(dirs[dk].isDirectory()) {
-	  TreeMap<VersionID,PackageVersion> versions = 
-	    new TreeMap<VersionID,PackageVersion>();
-	  
-	  pToolsetPackages.put(dirs[dk].getName(), versions);
-	  
-	  File files[] = dirs[dk].listFiles(); 
-	  int wk;
-	  for(wk=0; wk<files.length; wk++) {
-	    if(files[wk].isFile()) 
-	      versions.put(new VersionID(files[wk].getName()), null);
+      File pkgs[] = dir.listFiles(); 
+      int pk;
+      for(pk=0; pk<pkgs.length; pk++) {
+	if(pkgs[pk].isDirectory()) {
+	  for(OsType os : OsType.all()) {
+	    File osdir = new File(pkgs[pk], os.toString());
+	    if(osdir.isDirectory()) {
+	      File vsns[] = osdir.listFiles(); 
+	      int vk;
+	      for(vk=0; vk<vsns.length; vk++) {
+		if(vsns[vk].isFile()) {
+		  VersionID vid = new VersionID(vsns[vk].getName());
+		  
+		  TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = 
+		    pToolsetPackages.get(pkgs[pk].getName());
+		  if(packages == null) {
+		    packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
+		    pToolsetPackages.put(pkgs[pk].getName(), packages);
+		  }
+
+		  TreeMap<VersionID,PackageVersion> versions = packages.get(os);
+		  if(versions == null) {
+		    versions = new TreeMap<VersionID,PackageVersion>();
+		    packages.put(os, versions);
+		  }
+
+		  versions.put(vid, null);
+		}
+	      }
+	    }
 	  }
 	}
       }
@@ -1207,7 +1236,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the default toolset.
+   * Get the name of the default Unix toolset.
    * 
    * @return
    *   <CODE>MiscGetDefaultToolsetNameRsp</CODE> if successful or 
@@ -1236,7 +1265,7 @@ class MasterMgr
   }
 
   /**
-   * Set the name of the default toolset.
+   * Set the name of the default Unix toolset.
    * 
    * @param req 
    *   The request.
@@ -1260,10 +1289,14 @@ class MasterMgr
       synchronized(pToolsets) {
 	timer.resume();
 	
-	if(!pToolsets.containsKey(tname)) 
-	  return new FailureRsp
-	    (timer, 
-	     "No toolset named (" + tname + ") exists to be made the default toolset!");
+	if(pToolsets.get(tname) == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists to be made the default toolset!");
+
+	if(!pToolsets.get(tname).containsKey(OsType.Unix)) 
+	  throw new PipelineException 
+	    ("The toolset (" + tname + ") cannot be made the default toolset without a " +
+	     "Unix implementation!");
       }
       
       timer.aquire();
@@ -1271,13 +1304,7 @@ class MasterMgr
 	timer.resume();	 
 	
 	pDefaultToolset = tname;
-	
-	try {
-	  writeDefaultToolset();
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	writeDefaultToolset();
       }
       
       timer.aquire();
@@ -1286,17 +1313,14 @@ class MasterMgr
 	
 	if(!pActiveToolsets.contains(tname)) {
 	  pActiveToolsets.add(tname);
-	  
-	  try {
-	    writeActiveToolsets();
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, ex.getMessage());
-	  }
+	  writeActiveToolsets();
 	}
       }
 
       return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -1304,7 +1328,7 @@ class MasterMgr
   }
 
   /**
-   * Get the names of the currently active toolsets.
+   * Get the names of the currently active Unix toolsets.
    * 
    * @return
    *   <CODE>MiscGetActiveToolsetNamesRsp</CODE> if successful or 
@@ -1330,7 +1354,7 @@ class MasterMgr
   }
 
   /**
-   * Set the active/inactive state of the toolset with the given name. <P> 
+   * Set the active/inactive state of the Unix toolset with the given name. <P> 
    * 
    * @param req 
    *   The request.
@@ -1345,11 +1369,11 @@ class MasterMgr
    MiscSetToolsetActiveReq req 
   ) 
   {
-    String tname = req.getName();
+    String tname  = req.getName();
+    String active = (req.isActive() ? "active" : "inactive");
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.setActiveToolsetName(): " + 
-		    tname + " [" + req.isActive() + "]");
+      new TaskTimer("MasterMgr.setActiveToolsetName(): " + tname + " [" + active + "]");
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -1357,10 +1381,14 @@ class MasterMgr
       synchronized(pToolsets) {
 	timer.resume();
 	
-	if(!pToolsets.containsKey(tname)) 
-	  return new FailureRsp
-	    (timer, 
-	     "No toolset named (" + tname + ") exists to be made the active!");
+	if(pToolsets.get(tname) == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists to be made " + active + "!");
+
+	if(!pToolsets.get(tname).containsKey(OsType.Unix)) 
+	  throw new PipelineException 
+	    ("The toolset (" + tname + ") cannot be made " + active + " without a " +
+	     "Unix implementation!");
       }
       
       boolean removed = false;
@@ -1384,14 +1412,8 @@ class MasterMgr
 	  }
 	}
 	
-	if(changed) {
-	  try {
-	    writeActiveToolsets();
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, ex.getMessage());
-	  }
-	}
+	if(changed) 
+	  writeActiveToolsets();
       }
       
       if(removed) {
@@ -1405,8 +1427,8 @@ class MasterMgr
 	    File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
 	    if(file.exists()) {
 	      if(!file.delete())
-		return new FailureRsp
-		  (timer, "Unable to remove the old default toolset file (" + file + ")!");
+		throw new PipelineException
+		  ("Unable to remove the old default toolset file (" + file + ")!");
 	    }
 	  }
 	}
@@ -1414,20 +1436,29 @@ class MasterMgr
       
       return new SuccessRsp(timer);
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
   }
 
   /**
-   * Get the names of all toolsets.
+   * Get the names of all toolsets for the given operating system.
+   * 
+   * @param req 
+   *   The request.
    * 
    * @return
    *   <CODE>MiscGetToolsetNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the toolset names.
    */
   public Object
-  getToolsetNames()
+  getToolsetNames
+  ( 
+   MiscGetToolsetNamesReq req 
+  ) 
   {
     TaskTimer timer = new TaskTimer();
 
@@ -1436,8 +1467,15 @@ class MasterMgr
     try {
       synchronized(pToolsets) {
 	timer.resume();
+
+	OsType os = req.getOsType();
+	TreeSet<String> names = new TreeSet<String>();
+	for(String name : pToolsets.keySet()) {
+	  if(pToolsets.get(name).containsKey(os))
+	    names.add(name);
+	}
 	
-	return new MiscGetToolsetNamesRsp(timer, new TreeSet<String>(pToolsets.keySet()));
+	return new MiscGetToolsetNamesRsp(timer, names);
       }
     }
     finally {
@@ -1468,20 +1506,29 @@ class MasterMgr
     try {
       synchronized(pToolsets) {
 	timer.resume();
+	String tname = req.getName();
+	OsType os    = req.getOsType();
 	
-	Toolset tset = pToolsets.get(req.getName());
-	if(tset == null) {
-	  try {
-	    tset = readToolset(req.getName());
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, ex.getMessage());
-	  }
-	}
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists!");
+	    	
+	if(!toolsets.containsKey(os)) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") for the (" + os + ") " + 
+	     "operating system exists!");
+
+	Toolset tset = toolsets.get(os);
+	if(tset == null) 
+	  tset = readToolset(tname, os);
 	assert(tset != null);
 	
 	return new MiscGetToolsetRsp(timer, tset);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -1512,7 +1559,8 @@ class MasterMgr
       timer.resume();	
 
       TreeMap<String,String> env = 
-	getToolsetEnvironment(req.getAuthor(), req.getView(), req.getName(), timer);	
+	getToolsetEnvironment(req.getAuthor(), req.getView(), req.getName(), req.getOsType(), 
+			      timer);	
       
       return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
     }
@@ -1543,6 +1591,9 @@ class MasterMgr
    * @param tname
    *   The toolset name.
    * 
+   * @param os
+   *   The operating system type.
+   * 
    * @param timer
    *   The task timer.
    * 
@@ -1554,8 +1605,9 @@ class MasterMgr
   (
    String author, 
    String view,
-   String tname, 
-   TaskTimer timer 
+   String tname,
+   OsType os,
+   TaskTimer timer
   ) 
     throws PipelineException
   {
@@ -1565,9 +1617,19 @@ class MasterMgr
       synchronized(pToolsets) {
 	timer.resume();
 	
-	Toolset tset = pToolsets.get(tname);
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists!");
+	    	
+	if(!toolsets.containsKey(os)) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") for the (" + os + ") " + 
+	     "operating system exists!");
+
+	Toolset tset = toolsets.get(os);
 	if(tset == null) 
-	  tset = readToolset(tname);
+	  tset = readToolset(tname, os);
 	assert(tset != null);
 	
 	TreeMap<String,String> env = null;
@@ -1611,13 +1673,25 @@ class MasterMgr
     try {
       synchronized(pToolsets) {
 	timer.resume();
+
+	String tname = req.getName();
+	OsType os    = req.getOsType();
+
+	if((pToolsets.get(tname) != null) && pToolsets.get(tname).containsKey(os)) 
+	  throw new PipelineException 
+	    ("Unable to create the " + os + " toolset (" + tname + ") because a " + 
+	     "toolset already exists with that name!");
 	
-	if(pToolsets.containsKey(req.getName())) 
-	  return new FailureRsp
-	    (timer, 
-	     "Unable to create the toolset (" + req.getName() + ") because a toolset " + 
-	     "already exists with that name!");
-	
+	switch(os) {
+	case Windows:
+	case MacOS:
+	  if((pToolsets.get(tname) == null) || 
+	     !pToolsets.get(tname).containsKey(OsType.Unix)) 
+	    throw new PipelineException
+	      ("The Unix toolset must be created before a " + os + " toolset can be " + 
+	       "added for (" + tname + ")!");
+	}
+
 	/* lookup the packages */  
 	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
 	timer.aquire();
@@ -1627,53 +1701,38 @@ class MasterMgr
 	  for(String pname : req.getPackages()) {
 	    VersionID vid = req.getVersions().get(pname);
 	    if(vid == null) 
-	      return new FailureRsp
-		(timer, 
-		 "Unable to create the toolset (" + req.getName() + ") because the " +
-		 "revision number for package (" + pname + ") was missing!");
-	    
-	    TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
-	    if((versions == null) || !versions.containsKey(vid))
-	      return new FailureRsp
-		(timer, 
-		 "Unable to create the toolset (" + req.getName() + ") because the " +
-		 "package (" + pname + " v" + vid + ") does not exists!");
-	    
-	    PackageVersion pkg = versions.get(vid);
-	    if(pkg == null) {
-	      try {
-		pkg = readToolsetPackage(pname, vid);
-	      }
-	      catch(PipelineException ex) {
-		return new FailureRsp(timer, ex.getMessage());
-	      }
-	    }
-	    assert(pkg != null);
-	    
-	    packages.add(pkg);
+	      throw new PipelineException 
+		("Unable to create the " + os + " toolset (" + tname + ") because " +
+		 "no revision number for package (" + pname + ") was supplied!");
+
+	    packages.add(getToolsetPackage(pname, vid, os));	   
 	  }
 	}
 	
 	/* build the toolset */ 
 	Toolset tset = 
-	  new Toolset(req.getAuthor(), req.getName(), packages, req.getDescription());
+	  new Toolset(req.getAuthor(), tname, packages, req.getDescription());
 	if(tset.hasConflicts()) 
 	  return new FailureRsp
 	    (timer, 
-	     "Unable to create the toolset (" + req.getName() + ") due to conflicts " + 
+	     "Unable to create the toolset (" + tname + ") due to conflicts " + 
 	     "between the supplied packages!");
 	
-	try {
-	  writeToolset(tset);
+	writeToolset(tset, os);
+
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets == null) {
+	  toolsets = new TreeMap<OsType,Toolset>();
+	  pToolsets.put(tname, toolsets);
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());	  
-	}
-	
-	pToolsets.put(tset.getName(), tset);
+
+	toolsets.put(os, tset);
 	
 	return new MiscCreateToolsetRsp(timer, tset);
       }    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -1684,14 +1743,20 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the names and revision numbers of all toolset packages.
+   * Get the names and revision numbers of all OS specific toolset packages.
+   * 
+   * @param req 
+   *   The request.
    * 
    * @return
    *   <CODE>MiscGetToolsetPackageNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the package names.
    */
   public Object
-  getToolsetPackageNames()
+  getToolsetPackageNames
+  (
+   MiscGetToolsetPackageNamesReq req 
+  ) 
   {
     TaskTimer timer = new TaskTimer();
 
@@ -1701,9 +1766,22 @@ class MasterMgr
       synchronized(pToolsetPackages) {
 	timer.resume();
 	
+	OsType os = req.getOsType();
+
 	TreeMap<String,TreeSet<VersionID>> names = new TreeMap<String,TreeSet<VersionID>>();
-	for(String name : pToolsetPackages.keySet()) 
-	  names.put(name, new TreeSet<VersionID>(pToolsetPackages.get(name).keySet()));
+	for(String name : pToolsetPackages.keySet()) {
+	  if(pToolsetPackages.get(name).containsKey(os)) {
+	    for(VersionID vid : pToolsetPackages.get(name).get(os).keySet()) {
+	      TreeSet<VersionID> vids = names.get(name);
+	      if(vids == null) {
+		vids = new TreeSet<VersionID>();
+		names.put(name, vids);
+	      }
+	      
+	      vids.add(vid);
+	    }
+	  }
+	}
 	
 	return new MiscGetToolsetPackageNamesRsp(timer, names);
       }  
@@ -1737,29 +1815,66 @@ class MasterMgr
       synchronized(pToolsetPackages) {
 	timer.resume();
 	
-	TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(req.getName());
-	if(versions == null) 
-	  return new FailureRsp
-	    (timer, "No toolset package (" + req.getName() + " v" + req.getVersionID() + 
-	     ") exists!");
+	String pname  = req.getName();
+	VersionID vid = req.getVersionID();
+	OsType os     = req.getOsType();
 
-	PackageVersion pkg = versions.get(req.getVersionID());
-	if(pkg == null) {
-	  try {
-	    pkg = readToolsetPackage(req.getName(), req.getVersionID());
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, ex.getMessage());
-	  }
-	}
-	assert(pkg != null);
-	
-	return new MiscGetToolsetPackageRsp(timer, pkg);
+	return new MiscGetToolsetPackageRsp(timer, getToolsetPackage(pname, vid, os));
       }  
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
     }  
+  }
+
+  /**
+   * Get the OS specific toolset package with the given name and revision number. 
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset package.
+   */ 
+  private PackageVersion
+  getToolsetPackage
+  (
+   String pname, 
+   VersionID vid, 
+   OsType os
+  ) 
+    throws PipelineException 
+  {
+    TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = pToolsetPackages.get(pname);
+    if(packages == null) 
+      throw new PipelineException 
+	("No toolset package named (" + pname + ") exists!");
+    
+    TreeMap<VersionID,PackageVersion> versions = packages.get(os);	
+    if(versions == null) 
+      throw new PipelineException 
+	("No version (" + vid + ") of the toolset package (" + pname + ") exists!");
+    
+    if(!versions.containsKey(vid)) 
+      throw new PipelineException
+	("No toolset package named (" + pname + " v" + vid + ") for the (" + os + ") " + 
+	 "operating system exists!");
+
+    PackageVersion pkg = versions.get(vid);
+    if(pkg == null) 
+      pkg = readToolsetPackage(pname, vid, os);
+    assert(pkg != null);
+    
+    return pkg;
   }
 
   /**
@@ -1787,20 +1902,31 @@ class MasterMgr
 	timer.resume();
 
 	String pname = req.getPackage().getName();
-	VersionID nvid = null;
-	TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
-	if(versions == null) {
-	  nvid = new VersionID();
+	OsType os    = req.getOsType();
 
-	  versions = new TreeMap<VersionID,PackageVersion>();
-	  pToolsetPackages.put(pname, versions);
+	TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = 
+	  pToolsetPackages.get(pname);
+
+	switch(os) {
+	case Windows:
+	case MacOS:
+	  if((packages == null) || !packages.containsKey(OsType.Unix)) 
+	    throw new PipelineException
+	      ("The Unix toolset package must be created before a " + os + " toolset can " +
+	       "be added for (" + pname + ")!");
 	}
-	else {
+
+	TreeMap<VersionID,PackageVersion> versions = null;
+	if(packages != null) 
+	  versions = packages.get(os);
+
+	VersionID nvid = new VersionID();
+	if(versions != null) {
 	  assert(!versions.isEmpty());
 	  if(req.getLevel() == null) 
 	    return new FailureRsp
-	      (timer, "Unable to create the toolset package (" + pname + ") due to a " + 
-	       "missing revision number increment level!");
+	      (timer, "Unable to create the " + os + " toolset package (" + pname + ") " + 
+	       "due to a missing revision number increment level!");
 	  
 	  nvid = new VersionID(versions.lastKey(), req.getLevel());
 	}
@@ -1808,17 +1934,25 @@ class MasterMgr
 	PackageVersion pkg = 
 	  new PackageVersion(req.getAuthor(), req.getPackage(), nvid, req.getDescription());
 	
-	try {
-	  writeToolsetPackage(pkg);
+	writeToolsetPackage(pkg, os);
+
+	if(packages == null) {
+	  packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
+	  pToolsetPackages.put(pname, packages);
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());	  
+
+	if(versions == null) {
+	  versions = new TreeMap<VersionID,PackageVersion>();
+	  packages.put(os, versions);
 	}
 	
 	versions.put(pkg.getVersionID(), pkg);
 	
 	return new MiscCreateToolsetPackageRsp(timer, pkg);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -6507,7 +6641,7 @@ class MasterMgr
 
 	  TreeMap<String,String> env = 
 	    getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), 
-				  work.getToolset(), timer);
+				  work.getToolset(), OsType.Unix, timer);
 
 	  File dir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
 
@@ -11582,18 +11716,30 @@ class MasterMgr
    * @param tset
    *   The toolset.
    * 
+   * @param os
+   *   The operating system type. 
+   * 
    * @throws PipelineException
    *   If unable to write the toolset file.
    */ 
   private void 
   writeToolset
   (
-   Toolset tset
+   Toolset tset, 
+   OsType os
   ) 
     throws PipelineException
   {
     synchronized(pToolsets) {
-      File file = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + tset.getName());
+      File dir = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + tset.getName());
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdir()) 
+	    throw new PipelineException
+	      ("Unable to create toolset directory (" + dir + ")!");
+      }
+
+      File file = new File(dir, os.toString());
       if(file.exists()) {
 	throw new PipelineException
 	  ("Unable to overrite the existing toolset file(" + file + ")!");
@@ -11601,7 +11747,7 @@ class MasterMgr
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Toolset: " + tset.getName());
+	 "Writing " + os + " Toolset: " + tset.getName());
 
       try {
 	String glue = null;
@@ -11641,25 +11787,29 @@ class MasterMgr
    * @param name
    *   The toolset name.
    * 
+   * @param os
+   *   The operating system type. 
+   * 
    * @throws PipelineException
    *   If unable to read the toolset file.
    */ 
   private Toolset
   readToolset
   (
-   String name
+   String tname, 
+   OsType os
   )
     throws PipelineException
   {
     synchronized(pToolsets) {
-      File file = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + name);
+      File file = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + tname + "/" + os);
       if(!file.isFile()) 
 	throw new PipelineException
-	  ("No toolset file exists for toolset (" + name + ")!");
+	  ("No " + os + " toolset file exists for the toolset (" + tname + ")!");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Reading Toolset: " + name);
+	 "Reading " + os + " Toolset: " + tname);
 
       Toolset tset = null;
       try {
@@ -11680,9 +11830,15 @@ class MasterMgr
 	   "    " + ex.getMessage());
       }
       assert(tset != null);
-      assert(tset.getName().equals(name));
+      assert(tset.getName().equals(tname));
 
-      pToolsets.put(name, tset);      
+      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+      if(toolsets == null) {
+	toolsets = new TreeMap<OsType,Toolset>();
+	pToolsets.put(tname, toolsets);
+      }
+
+      toolsets.put(os, tset);      
 
       return tset;
     }
@@ -11696,18 +11852,23 @@ class MasterMgr
    * @param pkg
    *   The toolset package.
    * 
+   * @param os
+   *   The operating system type. 
+   * 
    * @throws PipelineException
    *   If unable to write the toolset package file.
    */ 
   private void 
   writeToolsetPackage
   (
-   PackageVersion pkg
+   PackageVersion pkg, 
+   OsType os
   ) 
     throws PipelineException
   {
     synchronized(pToolsetPackages) {
-      File dir = new File(PackageInfo.sNodeDir, "toolsets/packages/" + pkg.getName());
+      File dir = new File(PackageInfo.sNodeDir, 
+			  "toolsets/packages/" + pkg.getName() + "/" + os);
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
 	  if(!dir.mkdirs()) 
@@ -11718,12 +11879,12 @@ class MasterMgr
       File file = new File(dir, pkg.getVersionID().toString());
       if(file.exists()) {
 	throw new PipelineException
-	  ("Unable to overrite the existing toolset package file(" + file + ")!");
+	  ("Unable to overrite the existing toolset package file (" + file + ")!");
       }
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
+	 "Writing " + os + " Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
 
       try {
 	String glue = null;
@@ -11766,6 +11927,9 @@ class MasterMgr
    * @param vid
    *   The revision number.
    * 
+   * @param os
+   *   The operating system type. 
+   * 
    * @throws PipelineException
    *   If unable to read the toolset package file.
    */ 
@@ -11773,19 +11937,22 @@ class MasterMgr
   readToolsetPackage
   (
    String name, 
-   VersionID vid
+   VersionID vid, 
+   OsType os
   )
     throws PipelineException
   {
     synchronized(pToolsetPackages) {
-      File file = new File(PackageInfo.sNodeDir, "toolsets/packages/" + name + "/" + vid);
+      File file = new File(PackageInfo.sNodeDir, 
+			   "toolsets/packages/" + name + "/" + os + "/" + vid);
       if(!file.isFile()) 
 	throw new PipelineException
-	  ("No toolset package file exists for package (" + name + " v" + vid + ")!");
+	  ("No " + os + " toolset package file exists for package " + 
+	   "(" + name + " v" + vid + ")!");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Reading Toolset Package: " + name + " v" + vid);
+	 "Reading " + os + " Toolset Package: " + name + " v" + vid);
 
       PackageVersion pkg = null;
       try {
@@ -11809,10 +11976,16 @@ class MasterMgr
       assert(pkg.getName().equals(name));
       assert(pkg.getVersionID().equals(vid));
 
-      TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(name);
+      TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = pToolsetPackages.get(name);
+      if(packages == null) {
+	packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
+	pToolsetPackages.put(name, packages);
+      }
+
+      TreeMap<VersionID,PackageVersion> versions = packages.get(os);
       if(versions == null) {
 	versions = new TreeMap<VersionID,PackageVersion>();
-	pToolsetPackages.put(name, versions);
+	packages.put(os, versions);
       }
 
       versions.put(vid, pkg);
@@ -13500,24 +13673,25 @@ class MasterMgr
   private TreeSet<String> pActiveToolsets; 
 
   /**
-   * The cached table of all toolsets indexed by toolset name. <P> 
+   * The cached table of all toolsets indexed by toolset name and operating system. <P> 
    * 
-   * All existing toolsets will have a key in this table, but the value may be 
-   * null if the toolset is not currently cached.<P> 
+   * All existing toolsets will have a key in this table, but the toolset value may be 
+   * (null) if the toolset is not currently cached.<P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */
-  private TreeMap<String,Toolset>  pToolsets;
+  private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
 
   /**
-   * The cached table of all toolset packages indexed by package name and revision number. <P>
+   * The cached table of all toolset packages indexed by package name, operating system 
+   * and package revision number. <P> 
    * 
-   * All existing package names and revision numbers will be included as keys in this table,
-   * but the package value may be null if the package is not currently cached.<P> 
+   * All existing packages will be included as keys in this table, but the package value 
+   * may be (null) if the package is not currently cached.<P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private TreeMap<String,TreeMap<VersionID,PackageVersion>>  pToolsetPackages;
+  private TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>> pToolsetPackages;
 
 
   /*----------------------------------------------------------------------------------------*/

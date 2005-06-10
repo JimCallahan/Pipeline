@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.51 2005/05/15 19:45:34 jim Exp $
+// $Id: MasterMgrServer.java,v 1.52 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -274,7 +274,9 @@ class MasterMgrServer
 
 	    case GetToolsetNames:
 	      {
-		objOut.writeObject(pMasterMgr.getToolsetNames());
+		MiscGetToolsetNamesReq req = 
+		  (MiscGetToolsetNamesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetNames(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -308,7 +310,9 @@ class MasterMgrServer
 	    /*-- TOOLSET PACKAGES ----------------------------------------------------------*/
 	    case GetToolsetPackageNames:
 	      {
-		objOut.writeObject(pMasterMgr.getToolsetPackageNames());
+		MiscGetToolsetPackageNamesReq req = 
+		  (MiscGetToolsetPackageNamesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetPackageNames(req));
 		objOut.flush(); 
 	      }
 	      break;

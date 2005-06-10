@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetPackageReq.java,v 1.1 2004/05/29 06:35:40 jim Exp $
+// $Id: MiscGetToolsetPackageReq.java,v 1.2 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,12 +33,16 @@ class MiscGetToolsetPackageReq
    * 
    * @param vid
    *   The revision number of the package.
+   * 
+   * @param os
+   *   The operating system type.
    */
   public
   MiscGetToolsetPackageReq
   (
    String name, 
-   VersionID vid
+   VersionID vid,
+   OsType os
   )
   {
     if(name == null) 
@@ -50,6 +54,11 @@ class MiscGetToolsetPackageReq
       throw new IllegalArgumentException
 	("The revision number cannot be (null)!");
     pVersionID = vid;
+
+    if(os == null) 
+      throw new IllegalArgumentException
+	("The operating system cannot be (null)!");
+    pOsType = os;
   }
 
 
@@ -77,6 +86,15 @@ class MiscGetToolsetPackageReq
     return pVersionID;
   }
 
+  /**
+   * Gets the operating system type.
+   */ 
+  public OsType
+  getOsType() 
+  {
+    return pOsType;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -100,6 +118,11 @@ class MiscGetToolsetPackageReq
    * The revision number of the toolset package.
    */ 
   private VersionID  pVersionID;       
+
+  /**
+   * The operating system type.
+   */
+  private OsType  pOsType;  
 
 }
   

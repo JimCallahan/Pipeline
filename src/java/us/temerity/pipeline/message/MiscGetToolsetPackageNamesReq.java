@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetReq.java,v 1.2 2005/06/10 16:14:22 jim Exp $
+// $Id: MiscGetToolsetPackageNamesReq.java,v 1.1 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,16 +9,16 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   T O O L S E T   R E Q                                                */
+/*   M I S C   G E T   T O O L S E T   P A C K A G E   N A M E S   R E Q                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the OS specific toolset with the given name.
+ * A request to get the names and revision numbers of all OS specific toolset packages.
  * 
  * @see MasterMgr
  */
 public
-class MiscGetToolsetReq
+class MiscGetToolsetPackageNamesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,24 +28,15 @@ class MiscGetToolsetReq
   /** 
    * Constructs a new request.
    * 
-   * @param name
-   *   The toolset name.
-   * 
    * @param os
    *   The operating system type.
    */
   public
-  MiscGetToolsetReq
+  MiscGetToolsetPackageNamesReq
   (
-   String name,
    OsType os
   )
   {
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The toolset name cannot be (null)!");
-    pName = name;
-
     if(os == null) 
       throw new IllegalArgumentException
 	("The operating system cannot be (null)!");
@@ -59,42 +50,27 @@ class MiscGetToolsetReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the name of the toolset;
-   */ 
-  public String
-  getName() 
-  {
-    assert(pName != null);
-    return pName;
-  }
- 
-  /**
    * Gets the operating system type.
    */ 
   public OsType
   getOsType() 
   {
-    assert(pOsType != null);
     return pOsType;
   }
+ 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1336594084894790705L;
+  private static final long serialVersionUID = 1011403488905016797L;
 
   
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The name of the toolset.
-   */
-  private String  pName;  
 
   /**
    * The operating system type.

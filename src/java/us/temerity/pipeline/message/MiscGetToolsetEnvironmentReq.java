@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetEnvironmentReq.java,v 1.3 2004/06/28 23:03:22 jim Exp $
+// $Id: MiscGetToolsetEnvironmentReq.java,v 1.4 2005/06/10 16:14:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the cooked toolset environment with the given name.
+ * A request to get the cooked OS specific toolset environment.
  * 
  * @see MasterMgr
  */
@@ -36,13 +36,17 @@ class MiscGetToolsetEnvironmentReq
    * 
    * @param name
    *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
    */
   public
   MiscGetToolsetEnvironmentReq
   (
    String author, 
    String view,
-   String name
+   String name, 
+   OsType os
   )
   {
     pAuthor = author;
@@ -52,6 +56,11 @@ class MiscGetToolsetEnvironmentReq
       throw new IllegalArgumentException
 	("The toolset name cannot be (null)!");
     pName = name;
+
+    if(os == null) 
+      throw new IllegalArgumentException
+	("The operating system cannot be (null)!");
+    pOsType = os;
   }
 
 
@@ -84,8 +93,16 @@ class MiscGetToolsetEnvironmentReq
   public String
   getName() 
   {
-    assert(pName != null);
     return pName;
+  }
+
+  /**
+   * Gets the operating system type.
+   */ 
+  public OsType
+  getOsType() 
+  {
+    return pOsType;
   }
  
 
@@ -116,6 +133,11 @@ class MiscGetToolsetEnvironmentReq
    * The name of the toolset.
    */
   private String  pName;  
+
+  /**
+   * The operating system type.
+   */
+  private OsType  pOsType;  
 
 }
   
