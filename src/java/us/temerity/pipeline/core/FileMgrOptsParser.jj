@@ -96,9 +96,6 @@ TOKEN :
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
 
-  /* hidden options */ 
-| <NATIVE:       "--native"> : HOSTNAME_SEP
-
   /* seperators */ 
 | <AE1: (["\0"])+> 
 
@@ -217,22 +214,9 @@ CommandLine() :
   FileMgrServer s = null;
 }
 {
-  ((Native())? (InformationOpts() | s=Commands())) <EOF>
+  (InformationOpts() | s=Commands()) <EOF>
   {
     return s;
-  }
-}
-
-
-void
-Native() : 
-{
-  Token t; 
-}
-{
-  <NATIVE> EQ() t=<HOSTNAME> AE()
-  { 
-    PackageInfo.sNativeSubdir = t.image;
   }
 }
 

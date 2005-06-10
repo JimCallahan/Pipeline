@@ -96,9 +96,6 @@ TOKEN :
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
 
-  /* hidden options */ 
-| <NATIVE:       "--native"> : SUBDIR_NAME_SEP
-
   /* seperators */ 
 | <AE1: (["\0"])+> 
 
@@ -216,22 +213,9 @@ CommandLine() :
   PluginMgrServer s = null;
 }
 {
-  ((Native())? (InformationOpts() | s=Commands())) <EOF>
+  (InformationOpts() | s=Commands()) <EOF>
   {
     return s;
-  }
-}
-
-
-void
-Native() : 
-{
-  Token t; 
-}
-{
-  <NATIVE> EQ() t=<SUBDIR_NAME> AE()
-  { 
-    PackageInfo.sNativeSubdir = t.image;
   }
 }
 
