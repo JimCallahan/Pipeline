@@ -64,6 +64,26 @@
   <bind style="RootPanel" type="name" key="RootPanel"/>
 
 
+  <!--  M A C   R O O T   P A N E L  -->
+
+  <style id="MacRootPanel">
+    <imagePainter path="MacRootPanel.png" 
+                  sourceInsets="7 7 23 7"/>
+    <insets top="7" bottom="23" right="7" left="7"/>
+  </style>
+  <bind style="MacRootPanel" type="name" key="MacRootPanel"/>
+
+
+  <!--  M A C   F O O T E R  P A N E L  -->
+
+  <style id="MacFooterPanel">
+    <imagePainter path="MacFooterPanel.png" 
+                  sourceInsets="0 0 16 0"/>
+    <insets top="0" bottom="16" right="0" left="0"/>
+  </style>
+  <bind style="MacFooterPanel" type="name" key="MacFooterPanel"/>
+
+
 
   <!--  L O C K E D   L I G H T -->
 
@@ -90,6 +110,7 @@
       <insets top="4" bottom="4" right="5" left="5"/>
   </style>
   <bind style="PanelBar" type="name" key="PanelBar"/>
+
 
 
 
@@ -1654,6 +1675,21 @@
     <insets top="15" bottom="15" right="15" left="15"/>
   </style>
   <bind style="DialogButtonPanel2" type="name" key="DialogButtonPanel2"/>
+
+  <style id="MacDialogButtonPanel">
+    <imagePainter path="MacDialogButtonPanel.png"	
+                  sourceInsets="6 3 16 3"/>
+    <insets top="21" bottom="31" right="15" left="15"/>
+  </style>
+  <bind style="MacDialogButtonPanel" type="name" key="MacDialogButtonPanel"/>
+
+  <style id="MacDialogButtonPanel2">
+    <imagePainter path="MacDialogButtonPanel2.png"	
+                  sourceInsets="0 0 16 0"/>
+    <insets top="15" bottom="31" right="15" left="15"/>
+  </style>
+  <bind style="MacDialogButtonPanel2" type="name" key="MacDialogButtonPanel2"/>
+
 
 
 
