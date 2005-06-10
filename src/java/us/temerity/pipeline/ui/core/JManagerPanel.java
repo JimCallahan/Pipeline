@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.17 2005/05/15 19:45:35 jim Exp $
+// $Id: JManagerPanel.java,v 1.18 2005/06/10 04:56:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1718,12 +1718,14 @@ class JManagerPanel
     }
     else if((prefs.getShowQuickReference() != null) &&
 	    prefs.getShowQuickReference().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/quick-reference.html");
+      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+		      "/share/docs/manuals/quick-reference.html");
       return true;
     }
     else if((prefs.getShowUserManual() != null) &&
 	    prefs.getShowUserManual().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/user-manual.html");
+      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+		      "/share/docs/manuals/user-manual.html");
       return true;
     }
 
@@ -1744,7 +1746,8 @@ class JManagerPanel
     }
     else if((prefs.getShowLicenseAgreement() != null) &&
 	    prefs.getShowLicenseAgreement().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/license-agreement.html");
+      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+		      "/share/docs/license-agreement.html");
       return true;
     }
     
@@ -1908,9 +1911,11 @@ class JManagerPanel
     else if(cmd.equals("about"))
       UIMaster.getInstance().showAboutDialog();
     else if(cmd.equals("quick-reference"))
-      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/quick-reference.html");
+      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+		      "/share/docs/manuals/quick-reference.html");
     else if(cmd.equals("user-manual"))
-      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/user-manual.html");
+      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+		      "/share/docs/manuals/user-manual.html");
 
     else if(cmd.equals("home-page"))
       BaseApp.showURL("http://www.temerity.us");
@@ -1922,7 +1927,8 @@ class JManagerPanel
     else if(cmd.equals("site-configuration"))
       UIMaster.getInstance().showConfigDialog(); 
     else if(cmd.equals("license-agreement"))
-      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/license-agreement.html");
+      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+		      "/share/docs/license-agreement.html");
 
     else if(cmd.equals("quit"))
       UIMaster.getInstance().doQuit();    
