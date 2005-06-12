@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.37 2005/05/15 19:45:35 jim Exp $
+// $Id: MasterRequest.java,v 1.38 2005/06/12 17:58:00 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -40,9 +40,14 @@ enum MasterRequest
   SetToolsetActive, 
 
   /**
-   * Get the names of all toolsets.
+   * Get the names of all OS specific toolsets.
    */
   GetToolsetNames, 
+
+  /**
+   * Get the names of all toolsets for all operating systems.
+   */
+  GetAllToolsetNames, 
 
   /**
    * An instance of {@link MiscGetToolsetReq MiscGetToolsetReq} is next.
@@ -63,9 +68,14 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names and revision numbers of all toolset packages.
+   * Get the names and revision numbers of all OS specific toolset packages.
    */
   GetToolsetPackageNames, 
+
+  /**
+   * Get the names and revision numbers of all toolset packages for all operating systems.
+   */
+  GetAllToolsetPackageNames, 
 
   /**
    * An instance of {@link MiscGetToolsetPackageReq MiscGetToolsetPackageReq} is next.

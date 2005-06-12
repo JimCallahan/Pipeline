@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.64 2005/06/10 16:14:22 jim Exp $
+// $Id: MasterMgrClient.java,v 1.65 2005/06/12 17:58:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -249,6 +249,29 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.GetToolsetNames, req);
     if(obj instanceof MiscGetToolsetNamesRsp) {
       MiscGetToolsetNamesRsp rsp = (MiscGetToolsetNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Get the names of all toolsets for all operating systems.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the toolset names.
+   */ 
+  public synchronized TreeMap<String,TreeSet<OsType>>
+  getAllToolsetNames() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetAllToolsetNames, null);
+    if(obj instanceof MiscGetAllToolsetNamesRsp) {
+      MiscGetAllToolsetNamesRsp rsp = (MiscGetAllToolsetNamesRsp) obj;
       return rsp.getNames();
     }
     else {
@@ -517,6 +540,29 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.GetToolsetPackageNames, req);
     if(obj instanceof MiscGetToolsetPackageNamesRsp) {
       MiscGetToolsetPackageNamesRsp rsp = (MiscGetToolsetPackageNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the names and revision numbers of all toolset packages for all operating systems.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the package names.
+   */ 
+  public synchronized TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>>
+  getAllToolsetPackageNames()
+    throws PipelineException    
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetAllToolsetPackageNames, null);
+    if(obj instanceof MiscGetAllToolsetPackageNamesRsp) {
+      MiscGetAllToolsetPackageNamesRsp rsp = (MiscGetAllToolsetPackageNamesRsp) obj;
       return rsp.getNames();
     }
     else {

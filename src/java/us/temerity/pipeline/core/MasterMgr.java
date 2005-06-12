@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.130 2005/06/10 16:14:22 jim Exp $
+// $Id: MasterMgr.java,v 1.131 2005/06/12 17:58:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1484,6 +1484,36 @@ class MasterMgr
   }
 
   /**
+   * Get the names of all toolsets for all operating systems.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the toolset names.
+   */
+  public Object
+  getAllToolsetNames()
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+
+	TreeMap<String,TreeSet<OsType>> names = new TreeMap<String,TreeSet<OsType>>();
+	for(String name : pToolsets.keySet()) 
+	  names.put(name, new TreeSet<OsType>(pToolsets.get(name).keySet()));
+	
+	return new MiscGetAllToolsetNamesRsp(timer, names);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }    
+  }
+
+  /**
    * Get the toolset with the given name.
    * 
    * @param req 
@@ -1784,6 +1814,49 @@ class MasterMgr
 	}
 	
 	return new MiscGetToolsetPackageNamesRsp(timer, names);
+      }  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }      
+  }
+
+  /**
+   * Get the names and revision numbers of all toolset packages for all operating systems.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetPackageNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the package names.
+   */
+  public Object
+  getAllToolsetPackageNames()
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsetPackages) {
+	timer.resume();
+	
+	TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>> names = 
+	  new TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>>();
+
+	for(String name : pToolsetPackages.keySet()) {
+	  TreeMap<OsType,TreeSet<VersionID>> versions = 
+	    new TreeMap<OsType,TreeSet<VersionID>>();
+	  names.put(name, versions);
+
+	  for(OsType os : pToolsetPackages.get(name).keySet()) {
+	    TreeSet<VersionID> vids = new TreeSet<VersionID>();
+	    versions.put(os, vids);
+	    
+	    for(VersionID vid : pToolsetPackages.get(name).get(os).keySet()) 
+	      vids.add(vid);
+	  }
+	}
+	
+	return new MiscGetAllToolsetPackageNamesRsp(timer, names);
       }  
     }
     finally {
