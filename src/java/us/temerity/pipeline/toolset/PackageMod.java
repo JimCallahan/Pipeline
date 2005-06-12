@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.8 2005/01/22 06:10:10 jim Exp $
+// $Id: PackageMod.java,v 1.9 2005/06/12 17:58:37 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -57,6 +57,30 @@ class PackageMod
   ) 
   {
     super(com);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Whether the given package has the same name as this package.
+   * 
+   * @param com 
+   *   The package
+   */
+  public boolean
+  similarTo
+  (
+   PackageCommon com
+  )
+  {
+    if((com != null) && (com instanceof PackageMod)) 
+      return super.similarTo(com);
+
+    return false;
   }
 
 

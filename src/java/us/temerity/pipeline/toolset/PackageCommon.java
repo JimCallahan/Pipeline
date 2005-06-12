@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.4 2004/06/02 21:32:34 jim Exp $
+// $Id: PackageCommon.java,v 1.5 2005/06/12 17:58:37 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -59,6 +59,30 @@ class PackageCommon
   {
     super(com.getName());
     pEntries = (TreeMap<String,PackageEntry>) com.pEntries.clone();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Whether the given package has the same name as this package.
+   * 
+   * @param com 
+   *   The package
+   */
+  public boolean
+  similarTo
+  (
+   PackageCommon com
+  )
+  {
+    if(com != null) 
+      return (pName.equals(com.getName()));
+
+    return false;
   }
 
 
@@ -206,6 +230,7 @@ class PackageCommon
     return false;
   }
 
+  
 
 
   /*----------------------------------------------------------------------------------------*/

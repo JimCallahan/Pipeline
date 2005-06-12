@@ -1,4 +1,4 @@
-// $Id: PackageVersion.java,v 1.4 2004/10/30 13:42:20 jim Exp $
+// $Id: PackageVersion.java,v 1.5 2005/06/12 17:58:37 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -79,6 +79,33 @@ class PackageVersion
 
     pVersionID = vsn.getVersionID();
     pMessage   = new SimpleLogMessage(vsn.pMessage);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Whether the given package has the same name and revision number as this package.
+   * 
+   * @param com 
+   *   The package
+   */
+  public boolean
+  similarTo
+  (
+   PackageCommon com
+  )
+  {
+    if((com != null) && (com instanceof PackageVersion)) {
+      PackageVersion vsn = (PackageVersion) com;
+      return (super.similarTo(com) && 
+	      pVersionID.equals(vsn.getVersionID()));
+    }
+
+    return false;
   }
 
 
