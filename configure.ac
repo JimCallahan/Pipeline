@@ -624,14 +624,19 @@ MAC_PRODDIR=""
 AC_SUBST(MAC_HOMEDIR)
 MAC_HOMEDIR=""
 
+AC_SUBST(MAC_TEMPDIR)
+MAC_TEMPDIR=""
+
 mac_root_inst_dir=`$crypto_lookup MacRootInstallDirectory`
 mac_prod_dir=`$crypto_lookup MacProductionDirectory`
 mac_home_dir=`$crypto_lookup MacHomeDirectory`
+mac_temp_dir=`$crypto_lookup MacTemporaryDirectory`
 has_mac=false
 
 if test "$mac_root_inst_dir" != "null" \
      -a "$mac_prod_dir" != "null" \
-     -a "$mac_home_dir" != "null"
+     -a "$mac_home_dir" != "null" \
+     -a "$mac_temp_dir" != "null"
 then
   AC_MSG_CHECKING([MacOs Root Installation Directory])
   MAC_ROOT_INST_DIR=$mac_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP
@@ -644,6 +649,10 @@ then
   AC_MSG_CHECKING([MacOS User Home Directory])
   MAC_HOMEDIR=$mac_home_dir
   AC_MSG_RESULT([$MAC_HOMEDIR])
+
+  AC_MSG_CHECKING([MacOS Temporary Directory])
+  MAC_TEMPDIR=$mac_temp_dir
+  AC_MSG_RESULT([$MAC_TEMPIR])
 
   has_mac=true
 fi 
@@ -789,6 +798,7 @@ then
   EXTRA_DEBUG_SUBDIRS=""
 else
   CXXFLAGS="$CXXFLAGS -g";
+  JAVA_C_FLAGS="$JAVA_C_FLAGS -g"
   JAVA_RUNTIME="$JAVA_RUNTIME -enableassertions -server"
   EXTRA_DEBUG_SUBDIRS="tests"
 fi
