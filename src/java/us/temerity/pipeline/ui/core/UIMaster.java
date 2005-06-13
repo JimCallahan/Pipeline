@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.23 2005/06/10 04:55:06 jim Exp $
+// $Id: UIMaster.java,v 1.24 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2076,7 +2076,8 @@ class UIMaster
 		view = pViewName; 
 
 	      /* passes pAuthorName so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(pAuthorName, view, tname);
+	      env = client.getToolsetEnvironment
+		(pAuthorName, view, tname, PackageInfo.sOsType);
 
 	      /* override these since the editor will be run as the current user */ 
 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);

@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.2 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -160,7 +160,7 @@ class JToolsetDetailsDialog
 
       super.initUI("", false, body, null, "Test", null, "Close");
 
-      updateToolset(null);
+      updateToolset(null, null);
       pack();
     }
   }
@@ -187,36 +187,47 @@ class JToolsetDetailsDialog
 
   /**
    * Update the underlying toolset and UI components.
+   * 
+   * @param os
+   *   The target operating system type.
+   * 
+   * @param toolset
+   *   The toolset.
    */ 
   public void 
   updateToolset
   (
-   Toolset tset
+   OsType os,    
+   Toolset toolset
   )
   { 
-    pToolset = tset;
+    pOsType  = os;
+    pToolset = toolset;
 
     pTitlePanel.removeAll();
     pValuePanel.removeAll();
 
-    if(pToolset != null) {
-      boolean isFrozen = tset.isFrozen();
+    pApplyButton.setEnabled(false);
+    if((pToolset != null) && (pOsType != null)) {
+      pApplyButton.setEnabled(pOsType.equals(PackageInfo.sOsType));
+
+      boolean isFrozen = toolset.isFrozen();
 
       if(isFrozen) {
-	pHeaderLabel.setText("Toolset:  " + pToolset.getName());
+	pHeaderLabel.setText(os + " Toolset:  " + pToolset.getName());
 
-	pAuthorField.setText(tset.getAuthor());
-	pTimeStampField.setText(tset.getTimeStamp().toString());
-	pDescriptionArea.setText(tset.getDescription());
+	pAuthorField.setText(toolset.getAuthor());
+	pTimeStampField.setText(toolset.getTimeStamp().toString());
+	pDescriptionArea.setText(toolset.getDescription());
 	
 	pHistoryPanel.setVisible(true);
       }
       else {
-	pHeaderLabel.setText("Toolset:  " + pToolset.getName() + " (working)");
+	pHeaderLabel.setText(os + " Toolset:  " + pToolset.getName() + " (working)");
 	pHistoryPanel.setVisible(false);
       }
 
-      TreeMap<String,String> env = tset.getEnvironment();
+      TreeMap<String,String> env = toolset.getEnvironment();
       for(String ename : env.keySet()) {
 	String evalue = env.get(ename);
 	boolean conflict = (!isFrozen && pToolset.isEnvConflicted(ename));
@@ -302,6 +313,11 @@ class JToolsetDetailsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The target operating system type.
+   */ 
+  private OsType  pOsType; 
 
   /** 
    * The toolset.

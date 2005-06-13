@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.7 2005/03/11 06:33:44 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.8 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -469,6 +469,8 @@ class JBaseViewerPanel
   )
   {
     int mods = e.getModifiersEx();
+
+    //    System.out.print("MOUSE DRAGGED: " + InputEvent.getModifiersExText(mods) + "\n");
 
     boolean rb   = false;
     boolean pan  = false;

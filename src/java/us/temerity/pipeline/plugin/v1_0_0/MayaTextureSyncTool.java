@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.11 2005/05/17 00:42:47 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.12 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -954,8 +954,9 @@ class MayaTextureSyncTool
 	args.add(pTargetSceneFile.getPath());
 	
 	TreeMap<String,String> env = 
-	  mclient.getToolsetEnvironment(pTargetSceneID.getAuthor(), pTargetSceneID.getView(), 
-					pTargetSceneMod.getToolset());
+	  mclient.getToolsetEnvironment
+	  (pTargetSceneID.getAuthor(), pTargetSceneID.getView(), 
+	   pTargetSceneMod.getToolset(), PackageInfo.sOsType);
 	
 	File wdir = 
 	  new File(PackageInfo.sProdDir.getPath() + pTargetSceneID.getWorkingParent());
@@ -1449,8 +1450,8 @@ class MayaTextureSyncTool
 	args.add(pTargetSceneFile.getPath());
 	
 	TreeMap<String,String> env = 
-	  mclient.getToolsetEnvironment(PackageInfo.sUser, pView, 
-					pTargetSceneMod.getToolset());
+	  mclient.getToolsetEnvironment
+	  (PackageInfo.sUser, pView, pTargetSceneMod.getToolset(), PackageInfo.sOsType);
 	
 	File wdir = new File(PackageInfo.sProdDir.getPath() + 
 			     pTargetSceneID.getWorkingParent());

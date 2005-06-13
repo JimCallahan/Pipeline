@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.4 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -43,9 +43,10 @@ class JManageToolsetsDialog
       pIsPrivileged    = false;
       pDefaultToolset  = null;
       pActiveToolsets  = new TreeSet<String>();
-      pToolsets        = new TreeMap<String,Toolset>();
-      pPackageVersions = new TreeMap<String,TreeMap<VersionID,PackageVersion>>();
-      pPackageMods     = new TreeMap<String,PackageMod>();
+      pToolsets        = new TreeMap<String,TreeMap<OsType,Toolset>>();
+      pPackageVersions = 
+	new TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>();
+      pPackageMods     = new TreeMap<String,TreeMap<OsType,PackageMod>>();
     }
 
     /* toolsets popup menu */ 
@@ -107,13 +108,27 @@ class JManageToolsetsDialog
 
       pToolsetsPopup.addSeparator();
       
-      item = new JMenuItem("New...");
+      item = new JMenuItem("New Unix Toolset...");
       pNewToolsetItem = item;
       item.setActionCommand("new-toolset");
       item.addActionListener(this);
       pToolsetsPopup.add(item);  
 
-      item = new JMenuItem("Clone...");
+      pToolsetsPopup.addSeparator();
+
+      item = new JMenuItem("Add MacOS Toolset");
+      pAddMacOSToolsetItem = item;
+      item.setActionCommand("add-mac-toolset");
+      item.addActionListener(this);
+      pToolsetsPopup.add(item);  
+
+      item = new JMenuItem("Add Windows Toolset");
+      pAddWindowsToolsetItem = item;
+      item.setActionCommand("add-win-toolset");
+      item.addActionListener(this);
+      pToolsetsPopup.add(item);  
+
+      item = new JMenuItem("Clone Toolset...");
       pCloneToolsetItem = item;
       item.setActionCommand("clone-toolset");
       item.addActionListener(this);
@@ -187,19 +202,35 @@ class JManageToolsetsDialog
 
       pPackagesPopup.addSeparator();
 
-      item = new JMenuItem("New Package...");
+      item = new JMenuItem("New Unix Package...");
       pNewPackageItem = item;
       item.setActionCommand("new-package");
       item.addActionListener(this);
       pPackagesPopup.add(item);  
       
-      item = new JMenuItem("New Version...");
+      pPackagesPopup.addSeparator();
+
+      item = new JMenuItem("Add MacOS Package");
+      pAddMacOSPackageItem = item;
+      item.setActionCommand("add-mac-package");
+      item.addActionListener(this);
+      pPackagesPopup.add(item);  
+
+      item = new JMenuItem("Add Windows Package");
+      pAddWindowsPackageItem = item;
+      item.setActionCommand("add-win-package");
+      item.addActionListener(this);
+      pPackagesPopup.add(item);  
+      
+      pPackagesPopup.addSeparator();
+
+      item = new JMenuItem("New Package Version...");
       pNewPackageVersionItem = item;
       item.setActionCommand("new-package-version");
       item.addActionListener(this);
       pPackagesPopup.add(item);  
       
-      item = new JMenuItem("Clone Version...");
+      item = new JMenuItem("Clone Package Version...");
       pClonePackageVersionItem = item;
       item.setActionCommand("clone-package-version");
       item.addActionListener(this);
@@ -230,7 +261,7 @@ class JManageToolsetsDialog
 	  Dimension size = new Dimension(sLWidth, sLHeight);
 	  JList lst = UIFactory.createListComponents(left, "Active Toolsets:", size);
 	  pActiveToolsetsList = lst;
-	  lst.setCellRenderer(new JActiveToolsetsListCellRenderer(this));
+	  lst.setCellRenderer(new JActiveToolsetListCellRenderer(this));
 	  lst.addListSelectionListener(this);
 	  lst.addMouseListener(this);
 	}
@@ -284,30 +315,114 @@ class JManageToolsetsDialog
 	left.add(Box.createRigidArea(new Dimension(4, 0)));
 
 	{
-	  Dimension size = new Dimension(sLWidth, sLHeight);
-	  JList lst = UIFactory.createListComponents(left, "All Toolsets:", size);
-	  pToolsetsList = lst;
-	  lst.setCellRenderer(new JAllToolsetsListCellRenderer(this));
-	  lst.addListSelectionListener(this);
-	  lst.addMouseListener(this);
+	  Box vbox = new Box(BoxLayout.Y_AXIS);
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+
+	  vbox.add(UIFactory.createPanelLabel("All Toolsets:"));
+    
+	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  {
+	    ToolsetTreeData data = new ToolsetTreeData();
+	    DefaultMutableTreeNode root = new DefaultMutableTreeNode(data, true);
+	    DefaultTreeModel model = new DefaultTreeModel(root, true);
+
+	    JTree tree = new JFancyTree(model); 
+	    pToolsetsTree = tree;
+	    tree.setName("DarkTree");
+
+	    tree.setCellRenderer(new JToolsetTreeCellRenderer(this));
+	    tree.getSelectionModel().setSelectionMode
+	      (TreeSelectionModel.SINGLE_TREE_SELECTION);
+	    tree.setExpandsSelectedPaths(true);
+
+	    tree.addMouseListener(this);
+	    tree.addTreeSelectionListener(this);
+
+	    {
+	      JScrollPane scroll = new JScrollPane(tree);
+	  
+	      Dimension size = new Dimension(sLWidth, sLHeight);
+	      scroll.setMinimumSize(size);
+	      scroll.setPreferredSize(size);
+	      
+	      scroll.setHorizontalScrollBarPolicy
+		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	      scroll.setVerticalScrollBarPolicy
+		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	      
+	      vbox.add(scroll);
+	    }
+
+	    vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+	    
+	    left.add(vbox);
+	  }
 	}
 
 	left.add(Box.createRigidArea(new Dimension(20, 0)));
       }
-
       
       Box right = new Box(BoxLayout.X_AXIS);
       {
 	right.add(Box.createRigidArea(new Dimension(20, 0)));
 	
 	{
-	  Dimension size = new Dimension(sLWidth, sLHeight);
-	  JList lst = UIFactory.createListComponents(right, "Included Packages:", size);
-	  pIncludedPackagesList = lst;
-	  lst.setCellRenderer(new JPackagesListCellRenderer(this));
-	  lst.addListSelectionListener(this);
-	  lst.addMouseListener(this);
+	  Box vbox = new Box(BoxLayout.Y_AXIS);	
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+	  
+	  {
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+	
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+    
+	    {
+	      JLabel label = new JLabel("Included Packages:");
+	      pIncludedPackagesLabel = label;
+	      label.setName("PanelLabel");
+	      
+	      hbox.add(label);
+	    }
+	    
+	    hbox.add(Box.createHorizontalGlue());
+	    
+	    vbox.add(hbox);
+	  }
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  {
+	    JList lst = new JList(new DefaultListModel());
+	    pIncludedPackagesList = lst;
+
+	    lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    lst.setCellRenderer(new JPackageListCellRenderer(this));
+	    
+	    lst.addListSelectionListener(this);
+	    lst.addMouseListener(this);
+
+	    {
+	      JScrollPane scroll = new JScrollPane(lst);
+	      
+	      scroll.setMinimumSize(new Dimension(150, 150));
+	      scroll.setPreferredSize(new Dimension(sLWidth, sLHeight));
+	      
+	      scroll.setHorizontalScrollBarPolicy
+		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	      scroll.setVerticalScrollBarPolicy
+		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	      
+	      vbox.add(scroll);
+	    }
+	  }
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+	  
+	  right.add(vbox);
 	}
+
 
 	right.add(Box.createRigidArea(new Dimension(4, 0)));
 
@@ -367,14 +482,15 @@ class JManageToolsetsDialog
 	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 	  
 	  {
-	    DefaultMutableTreeNode root = new DefaultMutableTreeNode("root", true);
+	    PackageTreeData data = new PackageTreeData();	    
+	    DefaultMutableTreeNode root = new DefaultMutableTreeNode(data, true);
 	    DefaultTreeModel model = new DefaultTreeModel(root, true);
 
 	    JTree tree = new JFancyTree(model); 
 	    pPackagesTree = tree;
 	    tree.setName("DarkTree");
 
-	    tree.setCellRenderer(new JPackagesTreeCellRenderer());
+	    tree.setCellRenderer(new JPackageTreeCellRenderer());
 	    tree.getSelectionModel().setSelectionMode
 	      (TreeSelectionModel.SINGLE_TREE_SELECTION);
 	    tree.setExpandsSelectedPaths(true);
@@ -427,9 +543,136 @@ class JManageToolsetsDialog
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the toolset with the given name and operating system.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  public Toolset
+  lookupToolset
+  (
+   String tname, 
+   OsType os
+  ) 
+  {
+    if((tname != null) && (os != null)) {
+      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+      if(toolsets != null) {
+	if(toolsets.containsKey(os)) {
+	  Toolset toolset = toolsets.get(os);
+	  if(toolset == null) {
+	    UIMaster master = UIMaster.getInstance();
+	    MasterMgrClient client = master.getMasterMgrClient();
+	    try {
+	      toolset = client.getToolset(tname, os);
+	      toolsets.put(os, toolset);
+	    }
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	    }
+	  }
+
+	  return toolset; 
+	}
+      }
+    }
+
+    return null;
+  }
+ 
+  /**
+   * Get the package with the given name, operating system and revision number.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public PackageCommon
+  lookupPackage
+  (
+   String pname, 
+   OsType os, 
+   VersionID vid
+  ) 
+  {
+    if((pname != null) && (os != null)) {
+      if(vid != null) {
+	TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = 
+	  pPackageVersions.get(pname);
+	if(packages != null) {
+	  if(packages.containsKey(os)) {
+	    TreeMap<VersionID,PackageVersion> versions = packages.get(os);
+	    if(versions != null) {
+	      if(versions.containsKey(vid)) {
+		PackageVersion pkg = versions.get(vid); 
+		if(pkg == null) {
+		  UIMaster master = UIMaster.getInstance();
+		  MasterMgrClient client = master.getMasterMgrClient();
+		  try {
+		    pkg = client.getToolsetPackage(pname, vid, os);
+		    versions.put(vid, pkg);
+		  }
+		  catch(PipelineException ex) {
+		    master.showErrorDialog(ex);
+		  }
+		}
+
+		return pkg;
+	      }
+	    }
+	  }
+	}
+      }
+      else {
+	TreeMap<OsType,PackageMod> packages = pPackageMods.get(pname);
+	if(packages != null) 
+	  return packages.get(os);
+      }
+    }
+
+    return null;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether any packages for the given operating system and name exist.
+   */ 
+  public boolean
+  hasPackages
+  (
+   String pname, 
+   OsType os
+  ) 
+  {
+    if(pPackageVersions.containsKey(pname) && 
+       pPackageVersions.get(pname).containsKey(os))
+      return true;
+
+    if(pPackageMods.containsKey(pname) && 
+       pPackageMods.get(pname).containsKey(os))
+      return true;
+
+    return false;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I V E   T O O L S E T S                                                        */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -447,86 +690,380 @@ class JManageToolsetsDialog
     return ((name != null) && name.equals(pDefaultToolset));
   }
 
-  /**
-   * Is the given toolset name a working (not frozen) toolset.
-   * 
-   * @param name
-   *   The toolset name.
-   */ 
-  public boolean
-  isWorkingToolset
-  (
-   String name
-  )
-  {
-    if(name != null) {
-      Toolset tset = pToolsets.get(name);
-      if((tset != null) && !tset.isFrozen())
-	return true;
-    }
 
-    return false;
-  }
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the currently selected toolset.
+   * Get the name of the currently selected active toolset. 
    */ 
   public String
-  getSelectedToolsetName() 
+  getSelectedActiveToolsetName() 
   {
-    String name = (String) pActiveToolsetsList.getSelectedValue();
-    if(name == null) 
-      name = (String) pToolsetsList.getSelectedValue();
-    return name;
-  }
-  
-
-
-  /**
-   * Does the given working toolset have package conflicts or no packages at all?
-   * 
-   * @param name
-   *   The toolset name.
-   */ 
-  public boolean
-  hasPackageConflicts
-  (
-   String name
-  )
-  {
-    if(name != null) {
-      Toolset tset = pToolsets.get(name);
-      if((tset != null) && !tset.isFrozen() && (tset.hasConflicts() || !tset.hasPackages()))
-	return true;
-    }
-
-    return false;
+    return ((String) pActiveToolsetsList.getSelectedValue());
   }
 
   /**
-   * Does the package with the given index in the given working toolset 
-   * have environmental variable conflicts?
-   * 
-   * @param name
-   *   The toolset name.
-   * 
-   * @param idx
-   *   The index of the package within the working toolset.
+   * Get the currently selected active toolset. 
    */ 
-  public boolean 
-  hasPackageConflicts
+  public Toolset
+  getSelectedActiveToolset() 
+  {
+    String tname = getSelectedActiveToolsetName();
+    if(tname != null) 
+      return lookupToolset(tname, OsType.Unix);
+
+    return null;
+  }
+
+  /**
+   * Select the active toolset node with the given name.
+   */ 
+  public void 
+  selectActiveToolset
   (
-   String name, 
-   int idx
+   String tname
   ) 
   {
-    if(name != null) {
-      Toolset tset = pToolsets.get(name);
-      if((tset != null) && !tset.isFrozen() && tset.isPackageConflicted(idx))
-	return true;
+    pDisableToolsetButton.setEnabled(false);
+    if(tname != null) {
+      pActiveToolsetsList.setSelectedValue(tname, true);
+      pDisableToolsetButton.setEnabled(pIsPrivileged);
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A L L   T O O L S E T S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the toolset data associated with the currently selected tree node. 
+   */ 
+  public ToolsetTreeData
+  getSelectedToolsetData() 
+  {
+    TreePath tpath = pToolsetsTree.getSelectionPath();
+    if(tpath != null) {
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      return (ToolsetTreeData) tnode.getUserObject();
     }
 
-    return false;
+    return null;
+  }
+
+  /**
+   * Get the currently selected toolset. 
+   */ 
+  public Toolset
+  getSelectedToolset() 
+  {
+    ToolsetTreeData data = getSelectedToolsetData();
+    if(data != null) 
+      return lookupToolset(data.getName(), data.getOsType());
+
+    return null;
+  }
+
+  /**
+   * Select the toolset node with the given data.
+   */ 
+  public void 
+  selectToolset
+  (
+   ToolsetTreeData selected
+  ) 
+  {
+    pEnableToolsetButton.setEnabled(false);
+    if(selected == null) 
+      return;
+
+    DefaultTreeModel model = (DefaultTreeModel) pToolsetsTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
+    int wk;
+    for(wk=0; wk<root.getChildCount(); wk++) {
+      DefaultMutableTreeNode nnode = (DefaultMutableTreeNode) root.getChildAt(wk); 
+      ToolsetTreeData ndata = (ToolsetTreeData) nnode.getUserObject();
+ 
+      if(ndata.getName().equals(selected.getName())) {	  
+	int nk;
+	for(nk=0; nk<nnode.getChildCount(); nk++) {
+	  DefaultMutableTreeNode onode = (DefaultMutableTreeNode) nnode.getChildAt(nk); 
+	  ToolsetTreeData odata = (ToolsetTreeData) onode.getUserObject();
+	  if(odata.equals(selected)) {
+	    pToolsetsTree.setSelectionPath(new TreePath(onode.getPath()));
+	    pEnableToolsetButton.setEnabled(pIsPrivileged);
+	    return;
+	  }
+	}
+      }
+    }
+  }
+
+  /*
+   * Select the Unix toolset node with the given data.
+   */ 
+  public void 
+  selectToolset
+  (
+   String tname
+  ) 
+  {
+    if(tname == null) 
+      return;
+
+    DefaultTreeModel model = (DefaultTreeModel) pToolsetsTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
+    int wk;
+    for(wk=0; wk<root.getChildCount(); wk++) {
+      DefaultMutableTreeNode nnode = (DefaultMutableTreeNode) root.getChildAt(wk); 
+      ToolsetTreeData ndata = (ToolsetTreeData) nnode.getUserObject();
+ 
+      if(ndata.getName().equals(tname)) {
+	int nk;
+	for(nk=0; nk<nnode.getChildCount(); nk++) {
+	  DefaultMutableTreeNode onode = (DefaultMutableTreeNode) nnode.getChildAt(nk); 
+	  ToolsetTreeData odata = (ToolsetTreeData) onode.getUserObject();
+	  if(odata.getOsType().equals(OsType.Unix)) {
+	    pToolsetsTree.setSelectionPath(new TreePath(onode.getPath()));
+	    return;
+	  }
+	}
+      }
+    }
+  }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the names of the expanded toolset nodes.
+   */ 
+  public TreeSet<String> 
+  getExpandedToolsets() 
+  {
+    TreeSet<String> tnames = new TreeSet<String>();
+
+    DefaultTreeModel tmodel = (DefaultTreeModel) pToolsetsTree.getModel();
+    Enumeration<TreePath> e = 
+      pToolsetsTree.getExpandedDescendants(new TreePath(tmodel.getRoot()));
+    if(e != null) {
+      while(e.hasMoreElements()) {
+	TreePath tpath = e.nextElement();
+	DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+	ToolsetTreeData tdata = (ToolsetTreeData) tnode.getUserObject();
+	if(tdata.getName() != null) 
+	  tnames.add(tdata.getName());
+      }
+    }
+
+    return tnames;
+  }
+
+  /** 
+   * Expand the toolset nodes with the given names.
+   */ 
+  public void 
+  expandToolsets
+  (
+   TreeSet<String> expanded
+  ) 
+  { 
+    DefaultTreeModel model = (DefaultTreeModel) pToolsetsTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
+    int wk;
+    for(wk=0; wk<root.getChildCount(); wk++) {
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) root.getChildAt(wk); 
+      ToolsetTreeData data = (ToolsetTreeData) tnode.getUserObject();
+      if(expanded.contains(data.getName()))
+ 	pToolsetsTree.expandPath(new TreePath(tnode.getPath()));
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N C L U D E D   P A C K A G E S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the package data associatd with the currently selected included package.
+   */ 
+  public PackageListData
+  getSelectedIncludedPackageData() 
+  {
+    return ((PackageListData) pIncludedPackagesList.getSelectedValue());
+  }
+
+  /**
+   * Get the currently selected included package.
+   */ 
+  public PackageCommon
+  getSelectedIncludedPackage() 
+  {
+    PackageListData data = getSelectedIncludedPackageData();
+    if(data != null) 
+      return lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
+
+    return null;
+  }
+
+  /**
+   * Select the included package.
+   */ 
+  public void 
+  selectIncludedPackage
+  (
+   PackageListData selected
+  ) 
+  {
+    if(selected == null) 
+      return;
+    
+    pIncludedPackagesList.setSelectedValue(selected, true);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A L L   P A C K A G E S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the package data associated with the currently selected tree node. 
+   */ 
+  public PackageTreeData
+  getSelectedPackageData() 
+  {
+    TreePath tpath = pPackagesTree.getSelectionPath();
+    if(tpath != null) {
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      return (PackageTreeData) tnode.getUserObject();
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the currently selected package. 
+   */ 
+  public PackageCommon
+  getSelectedPackage() 
+  {
+    PackageTreeData data = getSelectedPackageData();
+    if(data != null) 
+      return lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
+
+    return null;
+  }
+
+  /**
+   * Select the package node with the given data.
+   */ 
+  public void 
+  selectPackage
+  (
+   PackageTreeData selected
+  ) 
+  {
+    if(selected == null) 
+      return;    
+
+    DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
+    int wk;
+    for(wk=0; wk<root.getChildCount(); wk++) {
+      DefaultMutableTreeNode nnode = (DefaultMutableTreeNode) root.getChildAt(wk); 
+      PackageTreeData ndata = (PackageTreeData) nnode.getUserObject();
+
+      if(ndata.getName().equals(selected.getName())) {	  
+	int nk;
+	for(nk=0; nk<nnode.getChildCount(); nk++) {
+	  DefaultMutableTreeNode onode = (DefaultMutableTreeNode) nnode.getChildAt(nk); 
+	  PackageTreeData odata = (PackageTreeData) onode.getUserObject();
+
+	  if(odata.getOsType().equals(selected.getOsType())) {  
+	    int vk;
+	    for(vk=0; vk<onode.getChildCount(); vk++) {
+	      DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) onode.getChildAt(vk); 
+	      PackageTreeData vdata = (PackageTreeData) vnode.getUserObject();
+	      if(vdata.equals(selected)) {
+		pPackagesTree.setSelectionPath(new TreePath(vnode.getPath()));
+		return;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the names and operating systems of the expanded package nodes.  
+   */ 
+  public TreeMap<String,TreeSet<OsType>> 
+  getExpandedPackages() 
+  {
+    TreeMap<String,TreeSet<OsType>> packages = new TreeMap<String,TreeSet<OsType>>();
+
+    DefaultTreeModel tmodel = (DefaultTreeModel) pPackagesTree.getModel();
+    Enumeration<TreePath> e = 
+      pPackagesTree.getExpandedDescendants(new TreePath(tmodel.getRoot()));
+    if(e != null) {
+      while(e.hasMoreElements()) {
+	TreePath tpath = e.nextElement();
+	DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+	PackageTreeData data = (PackageTreeData) tnode.getUserObject();
+
+	if(data.getName() != null) {
+	  TreeSet<OsType> oss = packages.get(data.getName());
+	  if(oss == null) {
+	    oss = new TreeSet<OsType>();
+	    packages.put(data.getName(), oss);
+	  }
+	  
+	  if(data.getOsType() != null) 
+	    oss.add(data.getOsType());
+	}
+      }
+    }
+
+    return packages;
+  }
+
+  /** 
+   * Expand the toolset nodes with the given names.
+   */ 
+  public void 
+  expandPackages
+  (
+    TreeMap<String,TreeSet<OsType>> expanded
+  ) 
+  { 
+    DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
+    int wk;
+    for(wk=0; wk<root.getChildCount(); wk++) {
+      DefaultMutableTreeNode nnode = (DefaultMutableTreeNode) root.getChildAt(wk); 
+      PackageTreeData ndata = (PackageTreeData) nnode.getUserObject();
+      
+      if(expanded.containsKey(ndata.getName())) {
+	pPackagesTree.expandPath(new TreePath(nnode.getPath()));
+
+	TreeSet<OsType> oss = expanded.get(ndata.getName());
+	int nk;
+	for(nk=0; nk<nnode.getChildCount(); nk++) {
+	  DefaultMutableTreeNode onode = (DefaultMutableTreeNode) nnode.getChildAt(nk); 
+	  PackageTreeData odata = (PackageTreeData) onode.getUserObject();
+      
+	  if(oss.contains(odata.getOsType())) 
+	    pPackagesTree.expandPath(new TreePath(onode.getPath()));
+	}
+      }				     
+    }
   }
    
   
@@ -554,10 +1091,10 @@ class JManageToolsetsDialog
   public void 
   showTestToolsetDialog
   (
-   Toolset tset
+   Toolset toolset
   ) 
   {
-    pTestToolsetDialog.updateToolset(tset);
+    pTestToolsetDialog.updateToolset(toolset);
     pTestToolsetDialog.setVisible(true);
   }
 
@@ -571,6 +1108,7 @@ class JManageToolsetsDialog
   public void 
   refreshPackage
   (
+   OsType os, 
    PackageMod pkg
   ) 
   {
@@ -578,32 +1116,30 @@ class JManageToolsetsDialog
       return;
 
     String rname = pkg.getName();
-    pPackageMods.put(rname, pkg);
-    
+    pPackageMods.get(rname).put(os, pkg);
+
     {
       ArrayList<String> rebuild = new ArrayList<String>();
-      for(Toolset tset : pToolsets.values()) {
-	if((tset != null) && tset.hasModifiablePackage(rname)) 
-	  rebuild.add(tset.getName());
+      for(String tname : pToolsets.keySet()) {
+	Toolset tset = pToolsets.get(tname).get(os);
+ 	if((tset != null) && tset.hasModifiablePackage(rname)) 
+ 	  rebuild.add(tset.getName());
       }
 
       for(String tname : rebuild) {
-	Toolset tset = pToolsets.get(tname);
+ 	Toolset tset = pToolsets.get(tname).get(os);
 
-	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	{
-	  int wk;
-	  for(wk=0; wk<tset.getNumPackages(); wk++) {
-	    String pname  = tset.getPackageName(wk);
-	    VersionID vid = tset.getPackageVersionID(wk);
-	    if(vid != null) 
-	      packages.add(lookupPackageVersion(pname, vid));
-	    else  
-	      packages.add(pPackageMods.get(pname));
-	  }
-	}
+ 	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+ 	{
+ 	  int wk;
+ 	  for(wk=0; wk<tset.getNumPackages(); wk++) {
+ 	    String pname  = tset.getPackageName(wk);
+ 	    VersionID vid = tset.getPackageVersionID(wk);
+	    packages.add(lookupPackage(pname, os, vid));
+ 	  }
+ 	}
 	
-	updateToolset(new Toolset(tname, packages));
+ 	updateToolset(os, new Toolset(tname, packages));
       }
     }
 
@@ -624,57 +1160,74 @@ class JManageToolsetsDialog
   public void 
   updateAll()
   { 
-    /* get the current info from the server */ 
-    UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    try {
-      pIsPrivileged = client.isPrivileged(false);
-
-      pActiveToolsets.addAll(client.getActiveToolsetNames());
+    /* update the toolset/package table keys from the server */ 
+    {
+      pDefaultToolset = null;
+      pActiveToolsets.clear();
       
-      {
-	TreeSet<String> names = client.getToolsetNames();
-	for(String name : names) {
-	  if(!pToolsets.containsKey(name))
-	    pToolsets.put(name, null);
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      try {
+	pIsPrivileged = client.isPrivileged(false);
+	
+	pDefaultToolset = client.getDefaultToolsetName();
+	pActiveToolsets.addAll(client.getActiveToolsetNames());
+      
+	{
+	  TreeMap<String,TreeSet<OsType>> tnames = 
+	    client.getAllToolsetNames();
+
+	  for(String tname : tnames.keySet()) {
+	    TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	    if(toolsets == null) {
+	      toolsets = new TreeMap<OsType,Toolset>();
+	      pToolsets.put(tname, toolsets);
+	    }
+
+	    for(OsType os : tnames.get(tname)) {
+	      if(!toolsets.containsKey(os)) 
+		toolsets.put(os, null);
+	    }
+	  }
+	}
+
+	{
+	  TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>> pnames = 
+	    client.getAllToolsetPackageNames();
+	
+	  for(String pname : pnames.keySet()) {
+	    TreeMap<OsType,TreeMap<VersionID,PackageVersion>> versions = 
+	      pPackageVersions.get(pname);
+	    if(versions == null) {
+	      versions = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
+	      pPackageVersions.put(pname, versions);
+	    }
+
+	    for(OsType os : pnames.get(pname).keySet()) {
+	      TreeMap<VersionID,PackageVersion> packages = versions.get(os);
+	      if(packages == null) {
+		packages = new TreeMap<VersionID,PackageVersion>();
+		versions.put(os, packages);
+	      }
+
+	      for(VersionID vid : pnames.get(pname).get(os)) {
+		if(!packages.containsKey(vid)) 
+		  packages.put(vid, null);
+	      }
+	    }
+	  }
 	}
       }
-
-      {
-	TreeMap<String,TreeSet<VersionID>> names = client.getToolsetPackageNames();
-	for(String name : names.keySet()) {
-	  TreeMap<VersionID,PackageVersion> table = pPackageVersions.get(name);
-	  if(table == null) {
-	    table = new TreeMap<VersionID,PackageVersion>();
-	    pPackageVersions.put(name, table);
-	  }
-
-	  for(VersionID vid : names.get(name)) {
-	    if(!table.containsKey(vid)) 
-	      table.put(vid, null);
-	  }
-	}
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	setVisible(false);
+	return;      
       }
     }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-      setVisible(false);
-      return;      
-    }
-
-    pDefaultToolset = null;
-    try {
-      pDefaultToolset = client.getDefaultToolsetName();
-    }
-    catch(PipelineException ex) {
-    }    
-
 
     /* rebuild active toolset list */ 
     {
-      String sname = (String) pActiveToolsetsList.getSelectedValue();
-
-      pDisableToolsetButton.setEnabled(false);
+      String selected = getSelectedActiveToolsetName();
 
       pActiveToolsetsList.removeListSelectionListener(this);
       {
@@ -684,101 +1237,99 @@ class JManageToolsetsDialog
 	for(String name : pActiveToolsets) 
 	  model.addElement(name);
 
-	if(sname != null) {
-	  pActiveToolsetsList.setSelectedValue(sname, true);
-	  pDisableToolsetButton.setEnabled(pIsPrivileged);
-	}
+	selectActiveToolset(selected);
       }
       pActiveToolsetsList.addListSelectionListener(this);      
     }
-
-    /* rebuild active toolset list */ 
+    
+    /* rebuild all toolsets tree */ 
     {	
-      String sname = (String) pToolsetsList.getSelectedValue();
-
-      pEnableToolsetButton.setEnabled(false);
-      //pExcludePackageButton.setEnabled(false);
-
-      pToolsetsList.removeListSelectionListener(this);
+      ToolsetTreeData selected = getSelectedToolsetData();
+      TreeSet<String> expanded = getExpandedToolsets();
+      
+      pToolsetsTree.removeTreeSelectionListener(this);
       {
-	DefaultListModel model = (DefaultListModel) pToolsetsList.getModel();
-	model.clear();
-	
-	for(String name : pToolsets.keySet()) 
-	  model.addElement(name);
-
-	if(sname != null) {
-	  pToolsetsList.setSelectedValue(sname, true);
-	  pEnableToolsetButton.setEnabled(pIsPrivileged && !isWorkingToolset(sname));	
+	{
+	  DefaultMutableTreeNode root = new DefaultMutableTreeNode(new ToolsetTreeData());
+	  for(String tname : pToolsets.keySet()) {
+	    DefaultMutableTreeNode nnode = 
+	      new DefaultMutableTreeNode(new ToolsetTreeData(tname), true);
+	    root.add(nnode);
+	    
+	    for(OsType os : pToolsets.get(tname).keySet()) {
+	      DefaultMutableTreeNode onode = 
+		new DefaultMutableTreeNode(new ToolsetTreeData(tname, os), false);
+	      nnode.add(onode);
+	    }
+	  }
+	  
+	  DefaultTreeModel model = (DefaultTreeModel) pToolsetsTree.getModel();
+	  model.setRoot(root);
 	}
+
+	selectToolset(selected);
+	expandToolsets(expanded);
       }
-      pToolsetsList.addListSelectionListener(this);
+      pToolsetsTree.addTreeSelectionListener(this);
     }
 
     /* rebuild the included packages list */  
-    TreeData isdata = rebuildIncludedPackagesList();
+    rebuildIncludedPackagesList();
 
-    /* rebuild packages tree */ 
+    /* rebuild all packages tree */ 
     {
-      pIncludePackageButton.setEnabled(false);
+      PackageTreeData selected = getSelectedPackageData();
+      TreeMap<String,TreeSet<OsType>> expanded = getExpandedPackages(); 
 
       pPackagesTree.removeTreeSelectionListener(this);
       {
-	/* get the selected package */ 
-	TreeData sdata = null;
 	{
-	  TreePath tpath = pPackagesTree.getSelectionPath();
-	  if(tpath != null) {
-	    DefaultMutableTreeNode tnode = 
-	      (DefaultMutableTreeNode) tpath.getLastPathComponent();
-	    sdata = (TreeData) tnode.getUserObject();
-	  }
-	}
-	
-	/* get the expanded package names */ 
-	ArrayList<String> expanded = getExpandedPackages();
-	
-	/* rebuild the package tree */ 
-	{
-	  TreeSet<String> pnames = new TreeSet<String>(pPackageVersions.keySet());
+	  DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PackageTreeData());
+
+	  TreeSet<String> pnames = new TreeSet<String>();
+	  pnames.addAll(pPackageVersions.keySet());
 	  pnames.addAll(pPackageMods.keySet());
-	  
-	  DefaultMutableTreeNode root = new DefaultMutableTreeNode(new TreeData());
-	  
+
 	  for(String pname : pnames) {
-	    DefaultMutableTreeNode pnode = 
-	      new DefaultMutableTreeNode(new TreeData(pname), true);
-	    root.add(pnode);
-	    
-	    TreeMap<VersionID,PackageVersion> versions = pPackageVersions.get(pname);
-	    if(versions != null) {
-	      for(VersionID vid : versions.keySet()) {
+	    DefaultMutableTreeNode nnode = 
+	      new DefaultMutableTreeNode(new PackageTreeData(pname), true);
+	    root.add(nnode);
+
+	    TreeSet<OsType> oss = new TreeSet<OsType>();
+	    if(pPackageVersions.containsKey(pname)) 
+	      oss.addAll(pPackageVersions.get(pname).keySet());
+	    if(pPackageMods.containsKey(pname)) 
+	      oss.addAll(pPackageMods.get(pname).keySet());
+
+	    for(OsType os : oss) {
+	      DefaultMutableTreeNode onode = 
+		new DefaultMutableTreeNode(new PackageTreeData(pname, os), true);
+	      nnode.add(onode);
+
+	      if(pPackageVersions.containsKey(pname) && 
+		 pPackageVersions.get(pname).containsKey(os)) {
+		for(VersionID vid : pPackageVersions.get(pname).get(os).keySet()) {
+		  DefaultMutableTreeNode vnode = 
+		    new DefaultMutableTreeNode(new PackageTreeData(pname, os, vid), false);
+		  onode.add(vnode);
+		}
+	      }
+
+	      if(pPackageMods.containsKey(pname) && 
+		 pPackageMods.get(pname).containsKey(os)) {
 		DefaultMutableTreeNode vnode = 
-		  new DefaultMutableTreeNode(new TreeData(pname, vid), false);
-		pnode.add(vnode);
+		  new DefaultMutableTreeNode(new PackageTreeData(pname, os, null), false);
+		onode.add(vnode);
 	      }
 	    }
-	    
-	    PackageMod pkg = pPackageMods.get(pname);
-	    if(pkg != null) {
-	      DefaultMutableTreeNode vnode = 
-		new DefaultMutableTreeNode(new TreeData(pkg), false);
-	      pnode.add(vnode);
-	    }
 	  }
-	  
+
 	  DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
 	  model.setRoot(root);
 	}
 	
-	/* reexpand the packages */ 
+	selectPackage(selected);
 	expandPackages(expanded);
-	
-	/* reselect package */ 
-	if(sdata != null) 
-	  selectTreePackage(sdata);
-	else if(isdata != null) 
-	  selectTreePackage(isdata);
       }
       pPackagesTree.addTreeSelectionListener(this);
     }
@@ -791,87 +1342,57 @@ class JManageToolsetsDialog
   }
 
   /**
-   * Rebeuild the included packges list.
-   * 
-   * @return 
-   *   The data used to select the package tree node or <CODE>null</CODE> if no tree 
-   *   selection should occur.
+   * Rebuild the included packages list.
    */ 
-  private TreeData
+  private void 
   rebuildIncludedPackagesList() 
   {
-    TreeData sdata = null;
-
     pIncludedPackagesList.removeListSelectionListener(this);
     {
       DefaultListModel model = (DefaultListModel) pIncludedPackagesList.getModel();
       
-      /* get the package */ 
-      PackageCommon spkg = (PackageCommon) pIncludedPackagesList.getSelectedValue();
-      int spidx = pIncludedPackagesList.getSelectedIndex();
+      /* get the currmently selected package */ 
+      PackageListData selected = getSelectedIncludedPackageData();
 
       /* rebuild the package list */ 
       {
 	model.clear();
 	
-	String tname = getSelectedToolsetName();
-	if(tname != null) {
-	  Toolset tset = lookupToolset(tname);
-	  assert(tset != null);
-	    
+	OsType os = OsType.Unix;
+	Toolset toolset = getSelectedActiveToolset();
+	if(toolset == null) {
+	  ToolsetTreeData data = getSelectedToolsetData();
+	  if(data != null) {
+	    os = data.getOsType();
+	    toolset = lookupToolset(data.getName(), os);
+	  }
+	}
+
+	if(toolset != null) {
 	  int wk;
-	  for(wk=0; wk<tset.getNumPackages(); wk++) {
-	    String pname  = tset.getPackageName(wk); 
-	    VersionID vid = tset.getPackageVersionID(wk); 
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname  = toolset.getPackageName(wk); 
+	    VersionID vid = toolset.getPackageVersionID(wk); 
+	    PackageCommon pkg = lookupPackage(pname, os, vid);
 	      
-	    PackageCommon pkg = null;
-	    if(vid != null) 
-	      pkg = lookupPackageVersion(pname, vid);
-	    else 
-	      pkg = pPackageMods.get(pname);
-	      
-	    model.addElement(pkg);
+	    model.addElement(new PackageListData(pname, os, vid));
 	  }
 	}
       }
       
       /* reselect the package */ 
-      if(spkg != null) {
-	boolean match = false;
-	if((spidx != -1) && (spidx < model.getSize())) {
-	  PackageCommon pkg = (PackageCommon) model.getElementAt(spidx);
-	  if(pkg.getName().equals(spkg.getName())) {
-	    pIncludedPackagesList.setSelectedIndex(spidx);
-	    match = true;
-	  }
-	}
-	
-	if(!match) {
-	  int wk; 
-	  for(wk=0; wk<model.getSize(); wk++) {
-	    PackageCommon pkg = (PackageCommon) model.getElementAt(wk);
-	    if(packagesMatch(spkg, pkg)) {
-	      pIncludedPackagesList.setSelectedIndex(wk);
-	      match = true;
-	      break;
-	    }
-	  }
-	}
-
- 	if(!match) {
-	  if(spkg instanceof PackageMod) {
-	    sdata = new TreeData((PackageMod) spkg);
-	  }
-	  else if(spkg instanceof PackageVersion) {
-	    PackageVersion vsn = (PackageVersion) spkg;
-	    sdata = new TreeData(vsn.getName(), vsn.getVersionID());
+      if(selected != null) {
+	int wk; 
+	for(wk=0; wk<model.getSize(); wk++) {
+	  PackageListData data = (PackageListData) model.getElementAt(wk);
+	  if(data.equals(selected)) {
+	    pIncludedPackagesList.setSelectedIndex(wk);
+	    break;
 	  }
 	}
       }
     }
     pIncludedPackagesList.addListSelectionListener(this);
-
-    return sdata;
   }
 
   /**
@@ -893,7 +1414,7 @@ class JManageToolsetsDialog
 
     if(idx != -1) {
       pActiveToolsetDetailsItem.setEnabled(true);
-      pActiveTestToolsetItem.setEnabled(true);
+      pActiveTestToolsetItem.setEnabled(PackageInfo.sOsType.equals(OsType.Unix));
       pActiveExportToolsetItem.setEnabled(true);
 
       String tname = (String) pActiveToolsetsList.getModel().getElementAt(idx);
@@ -905,39 +1426,52 @@ class JManageToolsetsDialog
   }
 
   /**
-   * Update the toolsets menu.
+   * Update the all toolsets menu.
    * 
-   * @param idx
-   *   The index of the list element under the mouse.
+   * @param tpath
+   *   The path of the tree node under the mouse.
    */ 
-  private void 
+  private void
   updateToolsetsMenu
   (
-   int idx
+   TreePath tpath
   ) 
   {
     pToolsetDetailsItem.setEnabled(false);
     pTestToolsetItem.setEnabled(false);
     pExportToolsetItem.setEnabled(false);
     pNewToolsetItem.setEnabled(pIsPrivileged);
+    pAddMacOSToolsetItem.setEnabled(false);
+    pAddWindowsToolsetItem.setEnabled(false);
     pCloneToolsetItem.setEnabled(false);
     pFreezeToolsetItem.setEnabled(false);
     pDeleteToolsetItem.setEnabled(false);
-    
-    if(idx != -1) {
-      pToolsetDetailsItem.setEnabled(true);
-      pTestToolsetItem.setEnabled(true);
-      pExportToolsetItem.setEnabled(true);
-      
-      pToolsetsList.setSelectedIndex(idx);
 
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if(isWorkingToolset(tname)) {
-	pFreezeToolsetItem.setEnabled(pIsPrivileged);
-	pDeleteToolsetItem.setEnabled(pIsPrivileged);
+    if(tpath != null) {
+      pToolsetsTree.addSelectionPath(tpath);
+
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      ToolsetTreeData data = (ToolsetTreeData) tnode.getUserObject();
+      Toolset toolset = lookupToolset(data.getName(), data.getOsType());
+      if(toolset != null) {
+	pToolsetDetailsItem.setEnabled(true);
+	pExportToolsetItem.setEnabled(true);
+	pTestToolsetItem.setEnabled(data.getOsType().equals(PackageInfo.sOsType));
+
+	if(!toolset.isFrozen()) {
+	  pFreezeToolsetItem.setEnabled(pIsPrivileged);
+	  pDeleteToolsetItem.setEnabled(pIsPrivileged);
+	}
       }
 
-      pCloneToolsetItem.setEnabled(pIsPrivileged);
+      if((data != null) && (data.getName() != null)) {
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(data.getName());
+	if(toolsets != null) {
+	  pAddMacOSToolsetItem.setEnabled(!toolsets.containsKey(OsType.MacOS));
+	  pAddWindowsToolsetItem.setEnabled(!toolsets.containsKey(OsType.Windows));
+	  pCloneToolsetItem.setEnabled(pIsPrivileged);
+	}
+      }
     }
   }
 
@@ -963,21 +1497,26 @@ class JManageToolsetsDialog
 
     if(idx != -1) {
       pIncPackageDetailsItem.setEnabled(true);
-      pIncTestPackageItem.setEnabled(true);
 
       pIncludedPackagesList.setSelectedIndex(idx);
       
-      if(isWorkingToolset((String) pToolsetsList.getSelectedValue())) {
-	pPackageEarlierItem.setEnabled(pIsPrivileged && (idx > 0));
+      Toolset toolset = getSelectedToolset();
+      if(toolset != null) {
+	ToolsetTreeData data = getSelectedToolsetData();      
+	pIncTestPackageItem.setEnabled(data.getOsType().equals(PackageInfo.sOsType));
 
-	DefaultListModel model = (DefaultListModel) pIncludedPackagesList.getModel();
-	pPackageLaterItem.setEnabled(pIsPrivileged && (idx < (model.getSize()-1)));
+	if(!toolset.isFrozen()) {
+	  pPackageEarlierItem.setEnabled(pIsPrivileged && (idx > 0));
+	  
+	  DefaultListModel model = (DefaultListModel) pIncludedPackagesList.getModel();
+	  pPackageLaterItem.setEnabled(pIsPrivileged && (idx < (model.getSize()-1)));
+	}
       }
     }
   }
 
   /**
-   * Update the packages menu.
+   * Update the all packages menu.
    *
    * @param tpath
    *   The path of the tree node under the mouse.
@@ -994,27 +1533,36 @@ class JManageToolsetsDialog
     pPackageDetailsItem.setEnabled(false);
     pTestPackageItem.setEnabled(false);
     pNewPackageItem.setEnabled(pIsPrivileged);
+    pAddMacOSPackageItem.setEnabled(false);
+    pAddWindowsPackageItem.setEnabled(false);
     pNewPackageVersionItem.setEnabled(false);
     pClonePackageVersionItem.setEnabled(false);
     pFreezePackageItem.setEnabled(false);
     pDeletePackageItem.setEnabled(false);
 
     if(tpath != null) {
-      pNewPackageVersionItem.setEnabled(pIsPrivileged);
-      pClonePackageVersionItem.setEnabled(pIsPrivileged);
 
       pPackagesTree.addSelectionPath(tpath);
 
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      TreeData data = (TreeData) tnode.getUserObject();
-      if(data.getName() != null) {
+      PackageTreeData data = (PackageTreeData) tnode.getUserObject();
+      if(data.isPackage()) {
 	pPackageDetailsItem.setEnabled(true);
-	pTestPackageItem.setEnabled(true);
+	pTestPackageItem.setEnabled(data.getOsType().equals(PackageInfo.sOsType));
 
-	if(data.getPackageMod() != null) {
+	if(data.getVersionID() == null) {
 	  pFreezePackageItem.setEnabled(pIsPrivileged);
 	  pDeletePackageItem.setEnabled(pIsPrivileged);
 	}
+	else {
+	  pClonePackageVersionItem.setEnabled(pIsPrivileged);
+	}
+      }
+      
+      if((data != null) && (data.getName() != null)) {
+	pAddMacOSPackageItem.setEnabled(!hasPackages(data.getName(), OsType.MacOS));
+	pAddWindowsPackageItem.setEnabled(!hasPackages(data.getName(), OsType.Windows));
+	pNewPackageVersionItem.setEnabled(pIsPrivileged && (data.getOsType() != null));
       }
     }
   }
@@ -1028,13 +1576,16 @@ class JManageToolsetsDialog
   {
     pIncludePackageButton.setEnabled(false);
 
-    TreePath tpath = pPackagesTree.getSelectionPath();
-    if(tpath != null) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      TreeData data = (TreeData) tnode.getUserObject();
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if((data.getName() != null) && isWorkingToolset(tname))
-	pIncludePackageButton.setEnabled(pIsPrivileged);
+    if(pIsPrivileged) {
+      ToolsetTreeData tdata = getSelectedToolsetData();
+      PackageTreeData pdata = getSelectedPackageData();
+      if((tdata != null) && (pdata != null)) {
+	Toolset toolset = lookupToolset(tdata.getName(), tdata.getOsType());
+	
+	if((toolset != null) && !toolset.isFrozen() && pdata.isPackage() && 
+	 tdata.getOsType().equals(pdata.getOsType())) 
+	  pIncludePackageButton.setEnabled(true);
+      }
     }
   }
 
@@ -1046,9 +1597,11 @@ class JManageToolsetsDialog
   {
     pExcludePackageButton.setEnabled(false);
 
-    if(pIncludedPackagesList.getSelectedValue() != null) {
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if((tname != null) && isWorkingToolset(tname))
+    Toolset toolset = getSelectedToolset();
+    PackageTreeData data = getSelectedIncludedPackageData();
+
+    if((toolset != null) && (data != null)) {
+      if(data.isPackage() && !toolset.isFrozen()) 
 	pExcludePackageButton.setEnabled(pIsPrivileged);
     }
   }
@@ -1105,62 +1658,30 @@ class JManageToolsetsDialog
     if(e.getSource() == pActiveToolsetsList) {
       pDisableToolsetButton.setEnabled(false);
 
-      if(pActiveToolsetsList.getSelectedValue() != null) {
-	pToolsetsList.removeListSelectionListener(this);
-  	  pToolsetsList.getSelectionModel().clearSelection();
+      if(getSelectedActiveToolsetName() != null) {
+	pIncludedPackagesLabel.setText("Included Unix Packages:");
+
+	pToolsetsTree.removeTreeSelectionListener(this);
+  	  pToolsetsTree.getSelectionModel().clearSelection();
 	  pEnableToolsetButton.setEnabled(false);
-	pToolsetsList.addListSelectionListener(this);
+	pToolsetsTree.addTreeSelectionListener(this);
 
 	pDisableToolsetButton.setEnabled(pIsPrivileged);
       }
 
-      TreeData sdata = rebuildIncludedPackagesList();
-      if(sdata != null) {
-	pPackagesTree.removeTreeSelectionListener(this);
-	  selectTreePackage(sdata);
-	pPackagesTree.addTreeSelectionListener(this);
-      }
-
-      updateIncludePackageButton();
-      updateExcludePackageButton();
-
+      rebuildIncludedPackagesList();
       updateDialogs();    
     }
-    else if(e.getSource() == pToolsetsList) {
-      pEnableToolsetButton.setEnabled(false);
-
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if(tname != null) {
-	pActiveToolsetsList.removeListSelectionListener(this);
-  	  pActiveToolsetsList.getSelectionModel().clearSelection();
-	  pDisableToolsetButton.setEnabled(false);
-	pActiveToolsetsList.addListSelectionListener(this);
-
-	pEnableToolsetButton.setEnabled(pIsPrivileged && !isWorkingToolset(tname));
-      }
-
-      TreeData sdata = rebuildIncludedPackagesList();
-      if(sdata != null) {
-	pPackagesTree.removeTreeSelectionListener(this);
-	  selectTreePackage(sdata);
-	pPackagesTree.addTreeSelectionListener(this);
-      }
-
-      updateIncludePackageButton();
-      updateExcludePackageButton();
-
-      updateDialogs();
-    }
     else if(e.getSource() == pIncludedPackagesList) {
-      if(pIncludedPackagesList.getSelectedValue() != null) {
+      if(getSelectedIncludedPackageData() != null) {
 	pPackagesTree.removeTreeSelectionListener(this);
 	  pPackagesTree.getSelectionModel().clearSelection();
-	  updateIncludePackageButton();
 	pPackagesTree.addTreeSelectionListener(this);
       }
-
-      updateExcludePackageButton();
     }
+
+    updateIncludePackageButton();
+    updateExcludePackageButton();
   }
 
 
@@ -1175,19 +1696,41 @@ class JManageToolsetsDialog
    TreeSelectionEvent e
   )
   { 
-    TreePath tpath = pPackagesTree.getSelectionPath();
-    if(tpath != null) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      TreeData data = (TreeData) tnode.getUserObject();
-      if(data.getName() != null) {
+    if(e.getSource() == pToolsetsTree) {
+      pEnableToolsetButton.setEnabled(false);
+
+      ToolsetTreeData data = getSelectedToolsetData();
+      if(data != null) {
+	OsType os = data.getOsType();
+	if(os != null) 
+	  pIncludedPackagesLabel.setText("Included " + os + " Packages:");
+	else 
+	  pIncludedPackagesLabel.setText("Included Packages:");
+
+	pActiveToolsetsList.removeListSelectionListener(this);
+  	  pActiveToolsetsList.getSelectionModel().clearSelection();
+	  pDisableToolsetButton.setEnabled(false);
+	pActiveToolsetsList.addListSelectionListener(this);
+
+	Toolset toolset = lookupToolset(data.getName(), os);
+	if(toolset != null) 
+	  pEnableToolsetButton.setEnabled(pIsPrivileged && toolset.isFrozen());
+      }
+
+      rebuildIncludedPackagesList();
+      updateDialogs();
+    }
+    else if(e.getSource() == pPackagesTree) {
+      PackageTreeData data = getSelectedPackageData();
+      if(data != null) {
 	pIncludedPackagesList.removeListSelectionListener(this);
 	  pIncludedPackagesList.clearSelection();
-	  updateExcludePackageButton();
 	pIncludedPackagesList.addListSelectionListener(this);
       }
     }
 
     updateIncludePackageButton();
+    updateExcludePackageButton();
   }
 
           
@@ -1220,12 +1763,17 @@ class JManageToolsetsDialog
    MouseEvent e
   )
   {
+    pDragStartIdx = -1;
+
     int mods = e.getModifiersEx();
+
+    System.out.print("MOUSE PRESSED: " + InputEvent.getModifiersExText(mods) + "\n");
+
     switch(e.getButton()) {
     case MouseEvent.BUTTON1:
       {
 	int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-	
+       
 	int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
 		    MouseEvent.BUTTON3_DOWN_MASK | 
 		    MouseEvent.SHIFT_DOWN_MASK |
@@ -1246,15 +1794,15 @@ class JManageToolsetsDialog
 	    if(idx != -1) 
 	      doToolsetDetails();
 	  }
-	  else if(comp == pToolsetsList) {
-	    int idx = pToolsetsList.locationToIndex(e.getPoint());
-	    if(idx != -1) {
-	      Rectangle bounds = pToolsetsList.getCellBounds(idx, idx);
+	  else if(comp == pToolsetsTree) {
+	    TreePath tpath = pToolsetsTree.getClosestPathForLocation(e.getX(), e.getY());
+	    if(tpath != null) {
+	      Rectangle bounds = pToolsetsTree.getPathBounds(tpath);
 	      if(!bounds.contains(e.getX(), e.getY()))
-		idx = -1;
+		tpath = null;
 	    }
-
-	    if(idx != -1) 
+	   
+	    if(tpath != null) 
 	      doToolsetDetails();
 	  }
 	  else if(comp == pIncludedPackagesList) {
@@ -1264,7 +1812,7 @@ class JManageToolsetsDialog
 	      if(!bounds.contains(e.getX(), e.getY()))
 		idx = -1;
 	    }
-	    
+	   
 	    if(idx != -1) 
 	      doPackageDetails();
 	  }
@@ -1275,9 +1823,36 @@ class JManageToolsetsDialog
 	      if(!bounds.contains(e.getX(), e.getY()))
 		tpath = null;
 	    }
-
+	   
 	    if(tpath != null) 
 	      doPackageDetails();
+	  }
+	}
+      }
+      break;
+     
+    case MouseEvent.BUTTON2:
+      {
+	int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
+       
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	/* BUTTON2: package reorder drag start */ 
+	if((mods & (on1 | off1)) == on1) {
+	  Component comp = e.getComponent();
+	  if(comp == pIncludedPackagesList) {
+	    int idx = pIncludedPackagesList.locationToIndex(e.getPoint());
+	    if(idx != -1) {
+	      Rectangle bounds = pIncludedPackagesList.getCellBounds(idx, idx);
+	      if(!bounds.contains(e.getX(), e.getY()))
+		idx = -1;
+	    }
+
+	    pDragStartIdx = idx;
 	  }
 	}
       }
@@ -1286,13 +1861,13 @@ class JManageToolsetsDialog
     case MouseEvent.BUTTON3:
       {
 	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
-	
+       
 	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
 		    MouseEvent.BUTTON2_DOWN_MASK | 
 		    MouseEvent.SHIFT_DOWN_MASK |
 		    MouseEvent.ALT_DOWN_MASK |
 		    MouseEvent.CTRL_DOWN_MASK);
-	
+       
 	/* BUTTON3: popup menu */ 
 	if((mods & (on1 | off1)) == on1) {
 	  Component comp = e.getComponent();
@@ -1303,20 +1878,20 @@ class JManageToolsetsDialog
 	      if(!bounds.contains(e.getX(), e.getY()))
 		idx = -1;
 	    }
-
+	   
 	    updateActiveToolsetsMenu(idx);
 	    pActiveToolsetsPopup.show(comp, e.getX(), e.getY());
 	  }
-	  else if(comp == pToolsetsList) {
-	    int idx = pToolsetsList.locationToIndex(e.getPoint());
-	    if(idx != -1) {
-	      Rectangle bounds = pToolsetsList.getCellBounds(idx, idx);
+	  else if(comp == pToolsetsTree) {
+	    TreePath tpath = pToolsetsTree.getClosestPathForLocation(e.getX(), e.getY());
+	    if(tpath != null) {
+	      Rectangle bounds = pToolsetsTree.getPathBounds(tpath);
 	      if(!bounds.contains(e.getX(), e.getY()))
-		idx = -1;
+		tpath = null;
 	    }
-
-	    updateToolsetsMenu(idx);
-	    pToolsetsPopup.show(comp, e.getX(), e.getY());
+	   
+ 	    updateToolsetsMenu(tpath);
+ 	    pToolsetsPopup.show(comp, e.getX(), e.getY());
 	  }
 	  else if(comp == pIncludedPackagesList) {
 	    int idx = pIncludedPackagesList.locationToIndex(e.getPoint());
@@ -1325,7 +1900,7 @@ class JManageToolsetsDialog
 	      if(!bounds.contains(e.getX(), e.getY()))
 		idx = -1;
 	    }
-
+	   
 	    updateIncludedPackagesMenu(idx);
 	    pIncludedPackagesPopup.show(comp, e.getX(), e.getY());
 	  }
@@ -1336,7 +1911,7 @@ class JManageToolsetsDialog
 	      if(!bounds.contains(e.getX(), e.getY()))
 		tpath = null;
 	    }
-
+	   
 	    updatePackagesMenu(tpath);
 	    pPackagesPopup.show(comp, e.getX(), e.getY());
 	  }
@@ -1349,7 +1924,45 @@ class JManageToolsetsDialog
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  mouseReleased(MouseEvent e) {} 
+  mouseReleased 
+  (
+   MouseEvent e
+  )
+  {
+    int mods = e.getModifiersEx();
+
+    System.out.print("MOUSE RELEASED: " + InputEvent.getModifiersExText(mods) + "\n");
+
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON2:
+      {
+	int on1  = MouseEvent.ALT_DOWN_MASK;   // THIS IS A REQUIRED AWT EVENT HACK!
+       
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	/* BUTTON2: package reorder drag stop */ 
+	if((mods & (on1 | off1)) == on1) {
+	  Component comp = e.getComponent();
+	  if(comp == pIncludedPackagesList) {
+	    int idx = pIncludedPackagesList.locationToIndex(e.getPoint());
+	    if(idx != -1) {
+	      Rectangle bounds = pIncludedPackagesList.getCellBounds(idx, idx);
+	      if(!bounds.contains(e.getX(), e.getY()))
+		idx = -1;
+	    }
+
+	    if((pDragStartIdx != -1) && (idx != -1)) 
+	      doReorderPackage(pDragStartIdx, idx);
+	  }
+	}
+      }
+    }
+  }
+
 
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
@@ -1371,6 +1984,10 @@ class JManageToolsetsDialog
       doExportToolset();
     else if(e.getActionCommand().equals("new-toolset")) 
       doNewToolset();
+    else if(e.getActionCommand().equals("add-mac-toolset")) 
+      doAddToolset(OsType.MacOS);
+    else if(e.getActionCommand().equals("add-win-toolset")) 
+      doAddToolset(OsType.Windows);
     else if(e.getActionCommand().equals("clone-toolset")) 
       doCloneToolset();
     else if(e.getActionCommand().equals("freeze-toolset")) 
@@ -1393,6 +2010,10 @@ class JManageToolsetsDialog
       doPackageLater();
     else if(e.getActionCommand().equals("new-package")) 
       doNewPackage();
+    else if(e.getActionCommand().equals("add-mac-package")) 
+      doAddPackage(OsType.MacOS);
+    else if(e.getActionCommand().equals("add-win-package")) 
+      doAddPackage(OsType.Windows);
     else if(e.getActionCommand().equals("new-package-version")) 
       doNewPackageVersion();
     else if(e.getActionCommand().equals("clone-package-version")) 
@@ -1414,16 +2035,23 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Show the details of the currently selected toolset.
    */ 
   public void 
   doToolsetDetails()
   {
-    Toolset tset = getSelectedToolset(); 
-    if(tset != null) {
-      pToolsetDetailsDialog.updateToolset(tset);
+    OsType os = OsType.Unix;
+    Toolset toolset = getSelectedActiveToolset();
+    if(toolset == null) {
+      ToolsetTreeData data = getSelectedToolsetData();
+      os = data.getOsType();
+      toolset = lookupToolset(data.getName(), os); 
+    }
+
+    if(toolset != null) {
+      pToolsetDetailsDialog.updateToolset(os, toolset);
       pToolsetDetailsDialog.setVisible(true);
     }
   }
@@ -1439,51 +2067,51 @@ class JManageToolsetsDialog
       showTestToolsetDialog(tset);
   }
 
-  /**
-   * Export the currently selected toolset as a bash(1) shell script.
-   */ 
-  public void 
-  doExportToolset()
-  {
-    Toolset tset = getSelectedToolset();    
-    if(tset != null) {
-      pExportToolsetDialog.updateTargetName(tset.getName() + ".sh");
-      pExportToolsetDialog.setVisible(true);
+   /**
+    * Export the currently selected toolset as a bash(1) shell script.
+    */ 
+   public void 
+   doExportToolset()
+   {
+//     Toolset tset = getSelectedToolset();    
+//     if(tset != null) {
+//       pExportToolsetDialog.updateTargetName(tset.getName() + ".sh");
+//       pExportToolsetDialog.setVisible(true);
       
-      if(pExportToolsetDialog.wasConfirmed()) {
-	File file = pExportToolsetDialog.getSelectedFile();
-	if(file != null) {
-	  try {
-	    StringBuffer buf = new StringBuffer();
+//       if(pExportToolsetDialog.wasConfirmed()) {
+// 	File file = pExportToolsetDialog.getSelectedFile();
+// 	if(file != null) {
+// 	  try {
+// 	    StringBuffer buf = new StringBuffer();
 	  
-	    buf.append("export TOOLSET=" + tset.getName() + "\n");
-	    buf.append("export USER=`whoami`\n");
-	    buf.append("export HOME=" + PackageInfo.sHomeDir + "/$USER\n");
-	    buf.append("export WORKING=" + PackageInfo.sWorkDir + "/$USER/default\n");
-	    buf.append("export _=/bin/env\n\n");
+// 	    buf.append("export TOOLSET=" + tset.getName() + "\n");
+// 	    buf.append("export USER=`whoami`\n");
+// 	    buf.append("export HOME=" + PackageInfo.sHomeDir + "/$USER\n");
+// 	    buf.append("export WORKING=" + PackageInfo.sWorkDir + "/$USER/default\n");
+// 	    buf.append("export _=/bin/env\n\n");
   
-	    TreeMap<String,String> env = tset.getEnvironment();
-	    for(String ename : env.keySet()) {
-	      String evalue = env.get(ename);
-	      buf.append("export " + ename + "=" + 
-			 ((evalue != null) ? (evalue + "\n") : "\n"));
-	    }
+// 	    TreeMap<String,String> env = tset.getEnvironment();
+// 	    for(String ename : env.keySet()) {
+// 	      String evalue = env.get(ename);
+// 	      buf.append("export " + ename + "=" + 
+// 			 ((evalue != null) ? (evalue + "\n") : "\n"));
+// 	    }
 	    
-	    {
-	      FileWriter out = new FileWriter(file);
-	      out.write(buf.toString());
-	      out.flush();
-	      out.close();
-	    }
-	  }
-	  catch(IOException ex) {
-	    UIMaster.getInstance().showErrorDialog(ex);
-	  }
-	}
-      }
-    }
-  }
-
+// 	    {
+// 	      FileWriter out = new FileWriter(file);
+// 	      out.write(buf.toString());
+// 	      out.flush();
+// 	      out.close();
+// 	    }
+// 	  }
+// 	  catch(IOException ex) {
+// 	    UIMaster.getInstance().showErrorDialog(ex);
+// 	  }
+// 	}
+//       }
+//     }
+   }
+  
   /**
    * Create a new modifiable toolset.
    */ 
@@ -1495,75 +2123,69 @@ class JManageToolsetsDialog
     
     if(diag.wasConfirmed()) {
       String tname = diag.getName();
-      if(tname != null) {
-	if(!pToolsets.containsKey(tname)) {
-	  updateToolset(new Toolset(tname));
-
-	  {
-	    DefaultListModel model = (DefaultListModel) pToolsetsList.getModel();
-
-	    int wk;
-	    for(wk=0; wk<model.getSize(); wk++) {
-	      String name = (String) model.elementAt(wk);
-	      if(name.compareTo(tname) > 0)
-		break;
-	    }
-	    model.insertElementAt(tname, wk);
-
-	    pToolsetsList.setSelectedIndex(wk);
-	  }
-
-	  updateDialogs();
-	}
+      if((tname != null) && !pToolsets.containsKey(tname)) {
+	updateToolset(OsType.Unix, new Toolset(tname));
+	updateAll();
+	updateDialogs();
       }
     }
   }
 
   /**
-   * Create a new modifiable toolset which contains the same packages of the currently 
-   * selected toolset.
+   * Add a non-Unix specialized toolset with a naming matching the currently selected
+   * toolset tree node.
+   */ 
+  public void 
+  doAddToolset
+  (
+   OsType os
+  ) 
+  {
+    ToolsetTreeData data = getSelectedToolsetData();
+    if((data != null) && (data.getName() != null)) {
+      String tname = data.getName();
+      if(pToolsets.containsKey(tname) && !pToolsets.get(tname).containsKey(os)) {
+	updateToolset(os, new Toolset(data.getName()));
+	updateAll();
+	updateDialogs();
+      }
+    }
+  }
+
+  /**
+   * Clone all OS specializations of the currently selected toolset.
    */ 
   public void 
   doCloneToolset()
   {
-    Toolset stset = getSelectedToolset(); 
-    if((stset != null) && pIsPrivileged) {
-      JNewToolsetDialog diag = new JNewToolsetDialog(this);
-      diag.setVisible(true);
-    
-      if(diag.wasConfirmed()) {
-	String tname = diag.getName();
-	if(tname != null) {
-	  if(!pToolsets.containsKey(tname)) {
-	    
-	    ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	    {
-	      int wk;
-	      for(wk=0; wk<stset.getNumPackages(); wk++) {
-		String pname  = stset.getPackageName(wk);
-		VersionID vid = stset.getPackageVersionID(wk);
-		if(vid != null) 
-		  packages.add(lookupPackageVersion(pname, vid));
-		else 
-		  packages.add(pPackageMods.get(pname));
+    ToolsetTreeData data = getSelectedToolsetData();
+    if((data != null) && (data.getName() != null) && (data.getOsType() == null)) {
+      String stname = data.getName();
+      TreeMap<OsType,Toolset> stoolsets = pToolsets.get(stname);
+      if((stoolsets != null) && !stoolsets.isEmpty()) {
+
+	JNewToolsetDialog diag = new JNewToolsetDialog(this);
+	diag.setVisible(true);
+	
+	if(diag.wasConfirmed()) {
+	  String tname = diag.getName();
+	  if(tname != null) {
+	    for(OsType os : stoolsets.keySet()) {
+	      Toolset stoolset = lookupToolset(stname, os); 
+	      if((stoolset != null) && pIsPrivileged) {
+		ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+		int wk;
+		for(wk=0; wk<stoolset.getNumPackages(); wk++) {
+		  String pname  = stoolset.getPackageName(wk);
+		  VersionID vid = stoolset.getPackageVersionID(wk);
+		  packages.add(lookupPackage(pname, os, vid));
+		}
+		
+		updateToolset(os, new Toolset(tname, packages));
 	      }
 	    }
-	    updateToolset(new Toolset(tname, packages));
 
-	    {
-	      DefaultListModel model = (DefaultListModel) pToolsetsList.getModel();
-	      
-	      int wk;
-	      for(wk=0; wk<model.getSize(); wk++) {
-		String name = (String) model.elementAt(wk);
-		if(name.compareTo(tname) > 0)
-		  break;
-	      }
-	      model.insertElementAt(tname, wk);
-	      
-	      pToolsetsList.setSelectedIndex(wk);
-	    }
-
+	    updateAll();
 	    updateDialogs();
 	  }
 	}
@@ -1578,82 +2200,85 @@ class JManageToolsetsDialog
   public void 
   doFreezeToolset()
   {
-    Toolset tset = getSelectedToolset(); 
-    if((tset != null) && !tset.isFrozen() && pIsPrivileged) {
-      UIMaster master = UIMaster.getInstance();
-      String tname = tset.getName();
+    ToolsetTreeData data = getSelectedToolsetData();
+    if(data != null) {
+      String tname = data.getName();
+      OsType os = data.getOsType();
 
-      if(!tset.hasPackages()) {
-	master.showErrorDialog
-	  ("Error:", 
-	   "Unable to freeze toolset (" + tname + ") which contained no packages!");
-	return;
-      }
-
-      if(tset.hasModifiablePackages()) {
-	StringBuffer buf = new StringBuffer();
-	int wk;
-	for(wk=0; wk<tset.getNumPackages(); wk++) {
-	  if(tset.getPackageVersionID(wk) == null) 
-	    buf.append("  " + tset.getPackageName(wk) + "\n");
-	}
-
-	master.showErrorDialog
-	  ("Error:", 
-	   "Unable to freeze toolset (" + tname + ") which contained the " + 
-	   "following working packages:\n\n" + 
-	   buf.toString());
-	return;
-      }
-      
-      if(tset.hasConflicts()) {
-	StringBuffer buf = new StringBuffer();
-	for(String ename : tset.getConflictedEnvNames()) 
-	  buf.append("  " + ename + "\n");
-
-	master.showErrorDialog
-	  ("Error:", 
-	   "Unable to freeze toolset (" + tname + ") which has unresolved " + 
-	   "conflicts between its packages for the following environmental variables:\n\n" + 
-	   buf.toString());
-	return;
-      }
-      assert(tset.isFreezable());
-
-      pCreateToolsetDialog.updateHeader("Create Toolset:  " + tname);
-      pCreateToolsetDialog.setVisible(true);
-
-      if(pCreateToolsetDialog.wasConfirmed()) {
-	String desc = pCreateToolsetDialog.getDescription();
-	assert((desc != null) && (desc.length() > 0));
+      Toolset toolset = lookupToolset(tname, data.getOsType());
+      if((toolset != null) && !toolset.isFrozen() && pIsPrivileged) {
+	UIMaster master = UIMaster.getInstance();
 	
-	MasterMgrClient client = master.getMasterMgrClient();
-	try {
-	  ArrayList<PackageVersion> packages = new ArrayList<PackageVersion>();
-	  int wk;
-	  for(wk=0; wk<tset.getNumPackages(); wk++) {
-	    String pname  = tset.getPackageName(wk);
-	    VersionID vid = tset.getPackageVersionID(wk);
-	    assert(vid != null);
-	    packages.add(lookupPackageVersion(pname, vid));
-	  }
-	
-	  Toolset ntset = client.createToolset(tname, desc, packages);
-	  assert(ntset != null);
-	  assert(ntset.getName().equals(tname));
-
-	  pToolsets.put(tname, ntset);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	if(!toolset.hasPackages()) {
+	  master.showErrorDialog
+	    ("Error:", 
+	     "Unable to freeze toolset (" + tname + ") which contained no packages!");
 	  return;
 	}
-	
-	/* update the UI components */ 
-	updateAll();
 
-	/* update the child dialogs */ 
-	updateDialogs();
+	if(toolset.hasModifiablePackages()) {
+	  StringBuffer buf = new StringBuffer();
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    if(toolset.getPackageVersionID(wk) == null) 
+	      buf.append("  " + toolset.getPackageName(wk) + "\n");
+	  }
+
+	  master.showErrorDialog
+	    ("Error:", 
+	     "Unable to freeze toolset (" + tname + ") which contained the " + 
+	     "following working packages:\n\n" + 
+	     buf.toString());
+	  return;
+	}
+   
+	if(toolset.hasConflicts()) {
+	  StringBuffer buf = new StringBuffer();
+	  for(String ename : toolset.getConflictedEnvNames()) 
+	    buf.append("  " + ename + "\n");
+	  
+	  master.showErrorDialog
+	    ("Error:", 
+	     "Unable to freeze toolset (" + tname + ") which has unresolved " + 
+	     "conflicts between its packages for the following environmental " + 
+	     "variables:\n\n" + 
+	     buf.toString());
+	  return;
+	}
+	assert(toolset.isFreezable());
+	
+	pCreateToolsetDialog.updateHeader("Create Toolset:  " + tname);
+	pCreateToolsetDialog.setVisible(true);
+
+	if(pCreateToolsetDialog.wasConfirmed()) {
+	  String desc = pCreateToolsetDialog.getDescription();
+	  assert((desc != null) && (desc.length() > 0));
+	
+	  MasterMgrClient client = master.getMasterMgrClient();
+	  try {
+	    ArrayList<PackageVersion> packages = new ArrayList<PackageVersion>();
+	    int wk;
+	    for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	      String pname  = toolset.getPackageName(wk);
+	      VersionID vid = toolset.getPackageVersionID(wk);
+	      assert(vid != null);
+	      packages.add((PackageVersion) lookupPackage(pname, os, vid));
+	    }
+	
+	    Toolset ntoolset = client.createToolset(tname, desc, packages, os);
+	    assert(ntoolset != null);
+	    assert(ntoolset.getName().equals(tname));
+
+	    updateToolset(os, ntoolset);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	
+	  updateAll();
+	  updateDialogs();
+	}
       }
     }
   }
@@ -1664,11 +2289,25 @@ class JManageToolsetsDialog
   public void 
   doDeleteToolset()
   {
-    Toolset tset = getSelectedToolset(); 
-    if((tset != null) && !tset.isFrozen() && pIsPrivileged) {
-      pToolsets.remove(tset.getName());
-      updateAll();    
-      updateDialogs();
+    ToolsetTreeData data = getSelectedToolsetData();
+    if(data != null) {
+      String tname = data.getName();
+      OsType os = data.getOsType();
+
+      Toolset toolset = lookupToolset(tname, os);
+      if((toolset != null) && !toolset.isFrozen() && pIsPrivileged) {
+
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets != null) {
+	  toolsets.remove(os);
+	  
+	  if(toolsets.isEmpty()) 
+	    pToolsets.remove(tname);
+	}
+
+	updateAll();    
+	updateDialogs();
+      }
     }
   }
 
@@ -1678,10 +2317,8 @@ class JManageToolsetsDialog
   public void 
   doDefaultToolset()
   {
-    String tname = (String) pActiveToolsetsList.getSelectedValue();
+    String tname = getSelectedActiveToolsetName();
     if(tname != null) {
-
-      /* make the toolset the default toolset */ 
       {
 	UIMaster master = UIMaster.getInstance();
 	MasterMgrClient client = master.getMasterMgrClient();
@@ -1696,10 +2333,7 @@ class JManageToolsetsDialog
 	pDefaultToolset = tname;
       }
 	
-      /* update the UI components */ 
       updateAll();
-
-      /* update the child dialogs */ 
       updateDialogs();
     }
   }
@@ -1710,33 +2344,32 @@ class JManageToolsetsDialog
   public void 
   doEnableToolset()
   {
-    String tname = (String) pToolsetsList.getSelectedValue();
-    if(tname != null) {
-      Toolset tset = lookupToolset(tname);
-      if(tset.isFrozen() && !pActiveToolsets.contains(tname)) {
-	/* make the toolset active */ 
-	{
-	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.getMasterMgrClient();
-	  try {
-	    client.setToolsetActive(tname, true);
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	  
-	  pActiveToolsets.add(tname);
-	}
-	
-	/* update the UI components */ 
-	updateAll();
+    ToolsetTreeData data = getSelectedToolsetData();
+    if(data != null) {
+      Toolset toolset = lookupToolset(data.getName(), data.getOsType());
+      if(toolset != null) {
+	String tname = toolset.getName();
+	if(toolset.isFrozen() && 
+	   !pActiveToolsets.contains(tname) && 
+	   data.getOsType().equals(OsType.Unix)) {
 
-	/* select the active toolset */ 
-	{
-	  DefaultListModel model = (DefaultListModel) pActiveToolsetsList.getModel();
-	  pActiveToolsetsList.setSelectedValue(tname, true);
-	}	
+	  {
+	    UIMaster master = UIMaster.getInstance();
+	    MasterMgrClient client = master.getMasterMgrClient();
+	    try {
+	      client.setToolsetActive(tname, true);
+	    }
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	      return;
+	    }
+	    
+	    pActiveToolsets.add(tname);
+	  }
+	
+	  updateAll();
+	  selectActiveToolset(tname);
+	}
       }
     }
   }
@@ -1747,11 +2380,8 @@ class JManageToolsetsDialog
   public void 
   doDisableToolset()
   {
-    String tname = (String) pActiveToolsetsList.getSelectedValue();
+    String tname = getSelectedActiveToolsetName();
     if(tname != null) {
-      Toolset tset = lookupToolset(tname);
-
-      /* make the toolset inactive */ 
       {
 	UIMaster master = UIMaster.getInstance();
 	MasterMgrClient client = master.getMasterMgrClient();
@@ -1769,14 +2399,8 @@ class JManageToolsetsDialog
 	  pDefaultToolset = null;
       }
 	
-      /* update the UI components */ 
       updateAll();
-      
-      /* select the inactive toolset */ 
-      {
-	DefaultListModel model = (DefaultListModel) pToolsetsList.getModel();
-	pToolsetsList.setSelectedValue(tname, true);
-      }
+      selectToolset(tname);
     }
   }
   
@@ -1785,8 +2409,8 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Show the details of the currently selected package.
-   */ 
+    * Show the details of the currently selected package.
+    */ 
   public void 
   doPackageDetails()
   {
@@ -1800,9 +2424,68 @@ class JManageToolsetsDialog
   public void 
   doTestPackage()
   {
-    PackageCommon com = getSelectedPackage();    
+    PackageCommon com = getSelectedPackage();
     if(com != null)
       showTestPackageDialog(com);
+  }
+
+  /**
+   * Move an included package to a different position in the evaluation order.
+   */ 
+  public void 
+  doReorderPackage
+  (
+   int oldIdx, 
+   int newIdx
+  ) 
+  {
+    if((oldIdx == newIdx) || (oldIdx < 0) || (newIdx < 0)) 
+      return;
+
+    ToolsetTreeData data = getSelectedToolsetData();
+    if(data != null) {
+      OsType os = data.getOsType();
+      Toolset toolset = getSelectedToolset();
+      if((os != null) && (toolset != null) && !toolset.isFrozen()) {
+	if((oldIdx < toolset.getNumPackages()) && (newIdx < toolset.getNumPackages())) {
+	  ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+	  {
+	    PackageCommon oldPkg = null;
+	    {
+	      String pname  = toolset.getPackageName(oldIdx);
+	      VersionID vid = toolset.getPackageVersionID(oldIdx);
+	      oldPkg = lookupPackage(pname, os, vid);
+	    }
+	    
+	    int wk, idx;
+	    for(wk=0, idx=0; wk<toolset.getNumPackages(); wk++) {
+	      if(idx == newIdx) {
+		packages.add(oldPkg);
+		idx++;
+	      }
+
+	      if(wk != oldIdx) {
+		String pname  = toolset.getPackageName(wk);
+		VersionID vid = toolset.getPackageVersionID(wk);
+		packages.add(lookupPackage(pname, os, vid));
+		idx++;
+	      }
+	    }
+
+	    if(idx == newIdx) {
+	      packages.add(oldPkg);
+	      idx++;
+	    }
+	  }
+
+	  updateToolset(os, new Toolset(toolset.getName(), packages));
+
+	  updateAll();
+	  pIncludedPackagesList.setSelectedIndex(newIdx);
+	  updateDialogs();
+	}
+      }
+    }  
   }
 
   /**
@@ -1812,55 +2495,7 @@ class JManageToolsetsDialog
   doPackageEarlier()
   {
     int idx = pIncludedPackagesList.getSelectedIndex();
-    if(idx > 0) {
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if(isWorkingToolset(tname)) {  
-
-	/* rebuild the toolset */ 
-	{
-	  Toolset tset = pToolsets.get(tname);
-	  
-	  ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	  {
-	    PackageCommon spkg = null;
-	    
-	    int wk;
-	    for(wk=0; wk<tset.getNumPackages(); wk++) {
-	      PackageCommon pkg = null;
-	      {
-		String pname  = tset.getPackageName(wk);
-		VersionID vid = tset.getPackageVersionID(wk);
-		if(vid != null) 
-		  pkg = lookupPackageVersion(pname, vid);
-		else 
-		  pkg = pPackageMods.get(pname);
-	      }
-	      
-	      if(wk == (idx-1)) 
-		spkg = pkg;
-	      else if(wk == idx) {
-		packages.add(pkg); 
-		packages.add(spkg);
-	      }
-	      else {
-		packages.add(pkg);
-	      }
-	    }
-	  }
-	  
-	  updateToolset(new Toolset(tname, packages));
-	}
-	  
-	/* update the dialog components */ 
-	updateAll();
-
-	/* shift the selection */ 
-	pIncludedPackagesList.setSelectedIndex(idx-1);
-	
-	/* update the child dialogs */ 
-	updateDialogs();
-      }
-    }
+    doReorderPackage(idx, idx-1);
   }
 
   /**
@@ -1869,57 +2504,8 @@ class JManageToolsetsDialog
   public void 
   doPackageLater()
   {
-    DefaultListModel model = (DefaultListModel) pIncludedPackagesList.getModel();
     int idx = pIncludedPackagesList.getSelectedIndex();
-    if((idx != -1) && (idx < (model.getSize()-1))) {
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if(isWorkingToolset(tname)) {  
-
-	/* rebuild the toolset */ 
-	{
-	  Toolset tset = pToolsets.get(tname);
-
-	  ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	  {
-	    PackageCommon spkg = null;
-	    
-	    int wk;
-	    for(wk=0; wk<tset.getNumPackages(); wk++) {
-	      PackageCommon pkg = null;
-	      {
-		String pname  = tset.getPackageName(wk);
-		VersionID vid = tset.getPackageVersionID(wk);
-		if(vid != null) 
-		  pkg = lookupPackageVersion(pname, vid);
-		else 
-		  pkg = pPackageMods.get(pname);
-	      }
-	      
-	      if(wk == idx) 
-		spkg = pkg;
-	      else if(wk == (idx+1)) {
-		packages.add(pkg); 
-		packages.add(spkg);
-	      }
-	      else {
-		packages.add(pkg);
-	      }
-	    }
-	  }
-	  
-	  updateToolset(new Toolset(tname, packages));	
-	}
-	  
-	/* update the UI components */ 
-	updateAll();
-
-	/* shift the selection */ 
-	pIncludedPackagesList.setSelectedIndex(idx+1);
-
-	/* update the child dialogs */ 
-	updateDialogs();
-      }
-    } 
+    doReorderPackage(idx, idx+1);
   }
   
   /**
@@ -1928,20 +2514,22 @@ class JManageToolsetsDialog
   public void 
   doNewPackageVersion()
   {
-    String pname = null;
+    PackageTreeData data = getSelectedPackageData();
+    if(data != null) {
+      String pname = data.getName();
+      OsType os = data.getOsType();
+      if((pname != null) && (os != null)) {
+	TreeMap<OsType,PackageMod> packages = pPackageMods.get(pname);
+	if(packages == null) {
+	  packages = new TreeMap<OsType,PackageMod>();
+	  pPackageMods.put(pname, packages);
+	}
+	packages.put(os, new PackageMod(pname));
 
-    TreePath tpath = pPackagesTree.getSelectionPath();
-    if(tpath != null) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      TreeData data = (TreeData) tnode.getUserObject();
-    
-      pname = data.getName();
-      if(pname == null) 
-	pname = data.getLabel();
-    }    
-    
-    if((pname != null) && (pname.length() > 0))
-      createPackage(pname);
+	updateAll();
+	updateDialogs();
+      }
+    }
   }
 
   /**
@@ -1951,11 +2539,28 @@ class JManageToolsetsDialog
   public void 
   doClonePackageVersion()
   {
-    PackageCommon com = getSelectedPackage(); 
-    if(com != null) 
-      createPackage(com.getName(), com);
-  }
+    PackageTreeData data = getSelectedPackageData();
+    if(data != null) {
+      String pname = data.getName();
+      OsType os = data.getOsType();
+      VersionID vid = data.getVersionID();
+      if((pname != null) && (os != null) && (vid != null)) {
+	PackageCommon com = lookupPackage(pname, os, vid);
+	if(com != null) {
+	  TreeMap<OsType,PackageMod> packages = pPackageMods.get(pname);
+	  if(packages == null) {
+	    packages = new TreeMap<OsType,PackageMod>();
+	    pPackageMods.put(pname, packages);
+	  }
+	  packages.put(os, new PackageMod(com));
 
+	  updateAll();
+	  updateDialogs();
+	}
+      }
+    }
+  }
+  
   /**
    * Create a new package. 
    */ 
@@ -1967,8 +2572,42 @@ class JManageToolsetsDialog
     
     if(diag.wasConfirmed()) {
       String pname = diag.getName();
-      if((pname != null) && (pname.length() > 0))
-	createPackage(pname);
+      if((pname != null) && (pname.length() > 0) && !pPackageMods.containsKey(pname)) {
+	TreeMap<OsType,PackageMod> packages = new TreeMap<OsType,PackageMod>();
+	pPackageMods.put(pname, packages);
+	packages.put(OsType.Unix, new PackageMod(pname));
+	updateAll();
+	updateDialogs();
+      }
+    }
+  }
+
+  /**
+   * Add a non-Unix specialized pacakge with a naming matching the currently selected
+   * package tree node.
+   */ 
+  public void 
+  doAddPackage
+  (
+   OsType os
+  ) 
+  {
+    PackageTreeData data = getSelectedPackageData();
+    if(data != null) {
+      String pname = data.getName();
+      if((pname != null) && (os != null)) {
+	TreeMap<OsType,PackageMod> packages = pPackageMods.get(pname);
+	if(packages == null) {
+	  packages = new TreeMap<OsType,PackageMod>();
+	  pPackageMods.put(pname, packages);
+	}
+
+	if(!packages.containsKey(os)) {
+	  packages.put(os, new PackageMod(pname));
+	  updateAll();
+	  updateDialogs();
+	}
+      }
     }
   }
 
@@ -1979,213 +2618,183 @@ class JManageToolsetsDialog
   public void 
   doFreezePackage()
   {
-    TreePath tpath = pPackagesTree.getSelectionPath();
-    DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-    TreeData data = (TreeData) tnode.getUserObject();
-    PackageMod pkg = data.getPackageMod();
-    String rname = pkg.getName();
-    if(pkg != null) {
-
-      /* query the user for the revision increment level and decription */ 
-      {
-	VersionID latest = null;
-	{
-	  TreeMap<VersionID,PackageVersion> versions = pPackageVersions.get(rname);
-	  if(versions != null) 
-	    latest = versions.lastKey();
-	}
+    PackageTreeData data = getSelectedPackageData();
+    if((data != null) && data.isPackage() && (data.getVersionID() == null)) {
+      String pname = data.getName();
+      OsType os = data.getOsType();
+      PackageCommon pcom = lookupPackage(pname, os, null);
+      if((pcom != null) && (pcom instanceof PackageMod)) {
+	PackageMod pmod = (PackageMod) pcom;
 	
-	pCreatePackageDialog.updateNameVersion("Create Package:  " + rname, latest);
+	/* query the user for the revision increment level and decription */ 
+	VersionID latest = null;
+	if(pPackageVersions.containsKey(pname) && 
+	   pPackageVersions.get(pname).containsKey(os)) 
+	  latest = pPackageVersions.get(pname).get(os).lastKey();
+	
+	pCreatePackageDialog.updateNameVersion
+	  ("Create " + os + " Package:  " + pname, latest);
+	
 	pCreatePackageDialog.setVisible(true);
-      }
-
-      if(pCreatePackageDialog.wasConfirmed()) {
-
-	/* create the read-only package */ 
-	PackageVersion npkg = null;
-	{
-	  String desc = pCreatePackageDialog.getDescription();
-	  assert((desc != null) && (desc.length() > 0));
-	  VersionID.Level level = pCreatePackageDialog.getLevel();
-
-	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.getMasterMgrClient();
-	  try {
-	    npkg = client.createToolsetPackage(pkg, desc, level);
-	    assert(npkg != null);
-	    assert(npkg.getName().equals(rname));
-
-	    TreeMap<VersionID,PackageVersion> versions = pPackageVersions.get(rname);
-	    if(versions == null) {
-	      versions = new TreeMap<VersionID,PackageVersion>();
-	      pPackageVersions.put(rname, versions);
+	if(pCreatePackageDialog.wasConfirmed()) {
+	  
+	  /* create the read-only package */ 
+	  PackageVersion pvsn = null;
+	  {
+	    String desc = pCreatePackageDialog.getDescription();
+	    assert((desc != null) && (desc.length() > 0));
+	    VersionID.Level level = pCreatePackageDialog.getLevel();
+	    
+	    UIMaster master = UIMaster.getInstance();
+	    MasterMgrClient client = master.getMasterMgrClient();
+	    try {
+	      pvsn = client.createToolsetPackage(pmod, desc, level, os);
+	      assert(pvsn != null);
+	      assert(pvsn.getName().equals(pname));
+	      
+	      TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = 
+		pPackageVersions.get(pname);
+	      if(packages == null) {
+		packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
+		pPackageVersions.put(pname, packages);
+	      }
+	      
+	      TreeMap<VersionID,PackageVersion> versions = packages.get(os);
+	      if(versions == null) {
+		versions = new TreeMap<VersionID,PackageVersion>();
+		packages.put(os, versions);
+	      }
+	      
+	      versions.put(pvsn.getVersionID(), pvsn);
 	    }
-	    versions.put(npkg.getVersionID(), npkg);
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	}
-
-	/* remove the working package */ 
-	pPackageMods.remove(rname);
-
-	/* replace the working package with the read-only package in all working toolsets */ 
-	{
-	  ArrayList<String> rebuild = new ArrayList<String>();
-	  for(Toolset tset : pToolsets.values()) {
-	    if((tset != null) && tset.hasModifiablePackage(rname)) 
-	      rebuild.add(tset.getName());
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	      return;
+	    }
 	  }
 	  
-	  for(String tname : rebuild) {
-	    Toolset tset = pToolsets.get(tname);
-	    
-	    ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	    {
-	      int wk;
-	      for(wk=0; wk<tset.getNumPackages(); wk++) {
-		String pname  = tset.getPackageName(wk);
-		VersionID vid = tset.getPackageVersionID(wk);
-		if(vid != null) 
-		  packages.add(lookupPackageVersion(pname, vid));
-		else if(pname.equals(rname)) 
-		  packages.add(npkg);
-		else 
-		  packages.add(pPackageMods.get(pname));
-	      }
+	  /* remove the working package */ 
+	  {
+	    TreeMap<OsType,PackageMod> packages = pPackageMods.get(pname);
+	    if(packages != null) {
+	      packages.remove(os);
+	      
+	      if(packages.isEmpty()) 
+		pPackageMods.remove(pname);
 	    }
-	    
-	    updateToolset(new Toolset(tname, packages));
 	  }
+	  
+	  /* replace the working package with the frozen package in all working toolsets */ 
+	  for(String tname : pToolsets.keySet()) {
+	    Toolset toolset = lookupToolset(tname, os);
+	    if((toolset != null) && !toolset.isFrozen()) {
+	      boolean modified = false;
+	      ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+	      int wk;
+	      for(wk=0; wk<toolset.getNumPackages(); wk++) {
+		String name   = toolset.getPackageName(wk);
+		VersionID vid = toolset.getPackageVersionID(wk);
+		if(pname.equals(name) && (vid == null)) {
+		  packages.add(pvsn);
+		  modified = true;
+		}
+		else {
+		  packages.add(lookupPackage(name, os, vid));
+		}
+	      }
+	      
+	      if(modified) 
+		updateToolset(os, new Toolset(tname, packages));
+	    }
+	  }
+	  
+	  updateAll();
+	  updateDialogs();
 	}
-
-	/* update the UI components */ 
-	updateAll();
-
-	/* select the frozen package */ 
-	selectTreePackage(new TreeData(npkg.getName(), npkg.getVersionID()));
-
-	/* update the child dialogs */ 
-	updateDialogs();
       }
     }
   }
 
   /**
-   * Delete the selected a modifiable package.
+   * Delete the selected modifiable package.
    */ 
   public void 
   doDeletePackage()
   {
-    TreePath tpath = pPackagesTree.getSelectionPath();
-    DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-    TreeData data = (TreeData) tnode.getUserObject();
-    PackageMod pkg = data.getPackageMod();
-    if(pkg != null) {
-
-      /* remove the working package */ 
-      String rname = pkg.getName();
-      pPackageMods.remove(rname);
-
-      /* remove the deleted package from all working toolsets */ 
-      {
-	ArrayList<String> rebuild = new ArrayList<String>();
-	for(Toolset tset : pToolsets.values()) {
-	  if((tset != null) && tset.hasModifiablePackage(rname)) 
-	    rebuild.add(tset.getName());
-	}
-
-	for(String tname : rebuild) {
-	  Toolset tset = pToolsets.get(tname);
-
-	  ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	  {
-	    int wk;
-	    for(wk=0; wk<tset.getNumPackages(); wk++) {
-	      String pname  = tset.getPackageName(wk);
-	      VersionID vid = tset.getPackageVersionID(wk);
-	      if(vid != null) 
-		packages.add(lookupPackageVersion(pname, vid));
-	      else if(!pname.equals(rname)) 
-		packages.add(pPackageMods.get(pname));
-	    }
-	  }
+    PackageTreeData data = getSelectedPackageData();
+    if(data != null) {
+      String dpname = data.getName();
+      OsType os = data.getOsType();
+      if((dpname != null) && (os != null)) {
+	/* remove the working package */ 
+	{
+	  TreeMap<OsType,PackageMod> packages = pPackageMods.get(dpname);
+	  if(packages != null) {
+	    packages.remove(os);
 	    
-	  updateToolset(new Toolset(tname, packages));
+	    if(packages.isEmpty()) 
+	      pPackageMods.remove(dpname);
+	  }
 	}
-      }
+	
+	/* remove the deleted package from all working toolsets */ 
+	for(String tname : pToolsets.keySet()) {
+	  Toolset toolset = lookupToolset(tname, os);
+	  if((toolset != null) && !toolset.isFrozen()) {
+	    boolean modified = false;
+	    ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+	    int wk;
+	    for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	      String pname  = toolset.getPackageName(wk);
+	      VersionID vid = toolset.getPackageVersionID(wk);
+	      if(!pname.equals(dpname) || (vid != null)) 
+		packages.add(lookupPackage(pname, os, vid));
+	      else 
+		modified = true;
+	    }
+	    
+	    if(modified) 
+	      updateToolset(os, new Toolset(tname, packages));
+	  }
+	}
+	
+	updateAll();
+	updateDialogs();
 
-      /* update the UI components */ 
-      updateAll();
-      
-      /* update the child dialogs */ 
-      updateDialogs();
-
-      /* hide the details dialog if its displaying the deleted package */ 
-      {
 	PackageCommon com = pPackageDetailsDialog.getPackage();
-	if((com instanceof PackageMod) && com.getName().equals(pkg.getName())) 
-	  pPackageDetailsDialog.setVisible(false);
+	if((com != null) && com.getName().equals(dpname))
+	  pPackageDetailsDialog.setVisible(false);	
       }
     }
   }
-
+     
   /**
    * Include the selected package as a package of the selected toolset.
    */ 
   public void 
   doIncludePackage()
   {
-    TreePath tpath = pPackagesTree.getSelectionPath();
-    if(tpath != null) {
-
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      TreeData data = (TreeData) tnode.getUserObject();
-      String dname = data.getName();
-      if(dname != null) {
-
-	String tname = (String) pToolsetsList.getSelectedValue();
-	if(isWorkingToolset(tname)) {  
-
-	  /* add the package to the selected toolset */ 
-	  {
-	    Toolset tset = pToolsets.get(tname);
-	    
-	    ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	    {
-	      int wk;
-	      for(wk=0; wk<tset.getNumPackages(); wk++) {
-		String pname  = tset.getPackageName(wk);
-		VersionID vid = tset.getPackageVersionID(wk);
-		if(vid != null) 
-		  packages.add(lookupPackageVersion(pname, vid));
-		else 
-		  packages.add(pPackageMods.get(pname));
-	      }
-	      
-	      if(data.getPackageMod() != null) 
-		packages.add(data.getPackageMod());
-	      else 
-		packages.add(lookupPackageVersion(data.getName(), data.getVersionID()));
-	    }
-	    
-	    updateToolset(new Toolset(tname, packages));
-	  }
-	  
-	  /* update the UI components */ 
-	  updateAll();
-
-	  /* select the newly included package */ 
-	  {
-	    DefaultListModel model = (DefaultListModel) pIncludedPackagesList.getModel();
-	    pIncludedPackagesList.setSelectedIndex(model.getSize() - 1);
-	  }
-
-	  /* update the child dialogs */ 
-	  updateDialogs();
+    Toolset toolset = getSelectedToolset();
+    PackageTreeData data = getSelectedPackageData();
+    if((data != null) && (toolset != null) && !toolset.isFrozen()) {
+      OsType os = data.getOsType();
+      PackageCommon com = lookupPackage(data.getName(), os, data.getVersionID());
+      if(com != null) {
+  
+	/* rebuild the toolset adding the new package */ 
+	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+	int wk;
+	for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	  String pname  = toolset.getPackageName(wk);
+	  VersionID vid = toolset.getPackageVersionID(wk);
+	  packages.add(lookupPackage(pname, os, vid));
 	}
+	packages.add(com);
+
+	updateToolset(os, new Toolset(toolset.getName(), packages));
+   
+	updateAll();
+	updateDialogs();
       }
     }
   }
@@ -2196,84 +2805,35 @@ class JManageToolsetsDialog
   public void 
   doExcludePackage()
   {
-    int idx = pIncludedPackagesList.getSelectedIndex();
-    if(idx != -1) {
-
-      String tname = (String) pToolsetsList.getSelectedValue();
-      if(isWorkingToolset(tname)) {  
-	
-	/* remove the package from the selected toolset */ 
-	{
-	  Toolset tset = pToolsets.get(tname);
-	
-	  ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	  {
-	    int wk;
-	    for(wk=0; wk<tset.getNumPackages(); wk++) {
-	      if(wk != idx) {
-		String pname  = tset.getPackageName(wk);
-		VersionID vid = tset.getPackageVersionID(wk);
-		if(vid != null) 
-		  packages.add(lookupPackageVersion(pname, vid));
-		else 
-		  packages.add(pPackageMods.get(pname));
-	      }
-	    }
-	  }
-	  
-	  updateToolset(new Toolset(tname, packages));
+    Toolset toolset = getSelectedToolset();
+    PackageTreeData data = getSelectedIncludedPackageData();
+    if((data != null) && (toolset != null) && !toolset.isFrozen()) {
+      OsType os = data.getOsType();
+      int idx = pIncludedPackagesList.getSelectedIndex();
+      if(idx != -1) {
+	/* rebuild the toolset removing the selected package */ 
+	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+	int wk;
+	for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	  String pname  = toolset.getPackageName(wk);
+	  VersionID vid = toolset.getPackageVersionID(wk);
+	  if(wk != idx) 
+	    packages.add(lookupPackage(pname, os, vid));
 	}
 
-	/* update the UI components */ 
+	updateToolset(os, new Toolset(toolset.getName(), packages));
+   
 	updateAll();
-	
-	/* update the child dialogs */ 
 	updateDialogs();
       }
     }
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
+  /*   T O O L S E T   T R E E   H E L P E R S                                              */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Lookup the given toolset.
-   */ 
-  private Toolset
-  lookupToolset
-  (
-   String tname
-  ) 
-  {
-    Toolset tset = pToolsets.get(tname);
-    if(tset == null) {
-      UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      try {
-	tset = client.getToolset(tname);
-	pToolsets.put(tname, tset);
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-    }
-
-    return tset;
-  }
-
-  /**
-   * Get the selected toolset.
-   */ 
-  private Toolset
-  getSelectedToolset() 
-  {
-    String tname = getSelectedToolsetName();
-    if(tname != null) 
-      return lookupToolset(tname);
-    return null;
-  }
 
   /**
    * Update the toolset and all related UI components.
@@ -2281,24 +2841,36 @@ class JManageToolsetsDialog
   private void 
   updateToolset
   (
-   Toolset tset
+   OsType os, 
+   Toolset toolset
   ) 
   {
-    pToolsets.put(tset.getName(), tset);
+    String tname = toolset.getName();
+
+    TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+    if(toolsets == null) {
+      toolsets = new TreeMap<OsType,Toolset>();
+      pToolsets.put(tname, toolsets);
+    }
+    toolsets.put(os, toolset);
 
     {
-      Toolset dtset = pToolsetDetailsDialog.getToolset();
-      if((dtset != null) && dtset.getName().equals(tset.getName())) 
-      pToolsetDetailsDialog.updateToolset(tset);
+      Toolset dtoolset = pToolsetDetailsDialog.getToolset();
+      if((dtoolset != null) && tname.equals(dtoolset.getName())) 
+	pToolsetDetailsDialog.updateToolset(os, toolset);
+      else 
+	pToolsetDetailsDialog.setVisible(false);
     }
 
     {
-      Toolset dtset = pTestToolsetDialog.getToolset();
-      if((dtset != null) && dtset.getName().equals(tset.getName())) 
-      pTestToolsetDialog.updateToolset(tset);
+      Toolset dtoolset = pTestToolsetDialog.getToolset();
+      if((dtoolset != null) && tname.equals(dtoolset.getName()) && 
+	 os.equals(PackageInfo.sOsType)) 
+	pTestToolsetDialog.updateToolset(toolset);
+      else 
+	pTestToolsetDialog.setVisible(false);
     }
   }
-
 
   /**
    * Update the dialogs.
@@ -2306,365 +2878,34 @@ class JManageToolsetsDialog
   private void 
   updateDialogs()
   {
-    Toolset tset = getSelectedToolset();
+    Toolset toolset = null;
+    OsType os = null;
+    {
+      ToolsetTreeData data = getSelectedToolsetData();
+      if(data != null) {
+	os = data.getOsType();
+	toolset = lookupToolset(data.getName(), os);
+	if(toolset != null) {
+	  pToolsetDetailsDialog.updateToolset(os, toolset);
+	  if(os.equals(PackageInfo.sOsType)) 
+	    pTestToolsetDialog.updateToolset(toolset);
+	}
+      }
+    }
+      
     int idx = pIncludedPackagesList.getSelectedIndex();
-    PackageCommon com = getSelectedPackage(); 
-
-    if(com != null) {
-      if((tset != null) && (idx != -1)) 
-	pPackageDetailsDialog.updatePackage(com, tset, idx);
-      else 
-	pPackageDetailsDialog.updatePackage(com, null, -1);
+    PackageCommon com = getSelectedIncludedPackage();	
+    if((com != null) && (idx != -1) && (toolset != null)) {
+      pPackageDetailsDialog.updatePackage(os, com, toolset, idx);
     }
     else {
-      pPackageDetailsDialog.setVisible(false);
-      pTestPackageDialog.setVisible(false);
-    }
-
-    if(tset != null) {
-      pToolsetDetailsDialog.updateToolset(tset);
-      pTestToolsetDialog.updateToolset(tset);
-    }
-    else {
-      pToolsetDetailsDialog.setVisible(false);
-      pTestToolsetDialog.setVisible(false);
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Do the given packages have the same type, name and revision number? 
-   */ 
-  private boolean
-  packagesMatch
-  (
-   PackageCommon pkg1,
-   PackageCommon pkg2
-  ) 
-  {
-    if(pkg1.getName().equals(pkg2.getName())) {
-      if((pkg1 instanceof PackageVersion) && (pkg2 instanceof PackageVersion)) {
-	PackageVersion vsn1 = (PackageVersion) pkg1;
-	PackageVersion vsn2 = (PackageVersion) pkg2;
-	if(vsn1.getVersionID().equals(vsn2.getVersionID())) 
-	  return true;
-      }
-      else if((pkg1 instanceof PackageMod) && (pkg2 instanceof PackageMod)) 
-	return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Lookup the given package version.
-   */ 
-  private PackageVersion 
-  lookupPackageVersion
-  (
-   String pname, 
-   VersionID vid
-  ) 
-  {
-    TreeMap<VersionID,PackageVersion> versions = pPackageVersions.get(pname);
-    PackageVersion pkg = versions.get(vid);
-    if(pkg == null) {
-      UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      try {
-	pkg = client.getToolsetPackage(pname, vid);
-	versions.put(vid, pkg);
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+      PackageTreeData data = getSelectedPackageData();
+      if(data != null) {
+	com = lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
+	if(com != null) 
+	  pPackageDetailsDialog.updatePackage(data.getOsType(), com, null, -1);
       }
     }
-
-    return pkg;
-  }
-
-  /**
-   * Get the selected package.
-   */ 
-  private PackageCommon 
-  getSelectedPackage() 
-  {
-    PackageCommon com = (PackageCommon) pIncludedPackagesList.getSelectedValue();
-    if(com == null) {      
-      TreePath tpath = pPackagesTree.getSelectionPath();
-      if(tpath != null) {
-	DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-	TreeData data = (TreeData) tnode.getUserObject();
-      
-	com = data.getPackageMod();
-	if(com == null) {
-	  String pname  = data.getName();
-	  VersionID vid = data.getVersionID();
-	  if((pname != null) && (vid != null)) 
-	    com = lookupPackageVersion(pname, vid);
-	}
-      }
-    }
-
-    return com;
-  }
-  
-  /** 
-   * Select the package from the package tree which matches the given package.
-   */ 
-  private void 
-  selectTreePackage
-  (
-   TreeData sdata
-  ) 
-  {
-    pPackagesTree.clearSelection();
-    if(sdata == null) 
-      return;
-
-    DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
-    int wk;
-    for(wk=0; wk<root.getChildCount(); wk++) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) root.getChildAt(wk);  
-      TreeData tdata = (TreeData) tnode.getUserObject();
-      if((tdata != null) && 
-	 (sdata.getName() != null) && sdata.getName().equals(tdata.getLabel())) {
-	int vk;
-	for(vk=0; vk<tnode.getChildCount(); vk++) {
-	  DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) tnode.getChildAt(vk);  
-	  TreeData vdata = (TreeData) vnode.getUserObject();	  
-	  TreePath vpath = new TreePath(vnode.getPath());
-
-	  assert(vdata.getName().equals(sdata.getName()));
-	  if((sdata.getPackageMod() != null) && (vdata.getPackageMod() != null)) {
-	    pPackagesTree.addSelectionPath(vpath);
-	    return;
-	  }
-	  else if((sdata.getVersionID() != null) && 
-		  sdata.getVersionID().equals(vdata.getVersionID())) {
-	    pPackagesTree.addSelectionPath(vpath);
-	    return;
-	  }
-	}
-      }
-    }
-  }
-  
-  /**
-   * Lookup the names of the expanded packages.
-   */ 
-  private ArrayList<String>
-  getExpandedPackages()
-  {
-    ArrayList<String> expanded = new ArrayList<String>();
-
-    DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
-    int wk;
-    for(wk=0; wk<root.getChildCount(); wk++) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) root.getChildAt(wk);  
-      TreeData data = (TreeData) tnode.getUserObject();
-      TreePath tpath = new TreePath(tnode.getPath());
-
-      if(pPackagesTree.isExpanded(tpath))
-	expanded.add(data.getLabel());
-    }
-
-    return expanded;
-  }
-
-  /**
-   * Lookup expand the packages with the given names.
-   */ 
-  private void 
-  expandPackages
-  (
-   ArrayList<String> expanded
-  )
-  {
-    DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
-    int wk;
-    for(wk=0; wk<root.getChildCount(); wk++) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) root.getChildAt(wk);  
-      TreeData data = (TreeData) tnode.getUserObject();
-      TreePath tpath = new TreePath(tnode.getPath());
-      if(expanded.contains(data.getLabel())) 
-	pPackagesTree.expandPath(tpath);
-    }
-  }
-
-
-  /**
-   * Create a new empty modifiable package.
-   */ 
-  private void 
-  createPackage
-  (
-   String pname
-  ) 
-  {
-    createPackage(pname, null);
-  }
-
-  /**
-   * Create a new modifiable package which is a clone of the given package.
-   * 
-   * @param pname
-   *   The name of the new package.
-   * 
-   * @param com 
-   *   The package to clone or <CODE>null</CODE> to create an empty package.
-   */ 
-  private void 
-  createPackage
-  (
-   String pname, 
-   PackageCommon com
-  ) 
-  {
-    assert(pname != null);
-    if(!pPackageMods.containsKey(pname)) {
-
-      PackageMod pkg = null;
-      {
-	if(com != null) {
-	  assert(com.getName().equals(pname));
-	  pkg = new PackageMod(com);
-	}
-	else {
-	  pkg = new PackageMod(pname);
-	}
-      }
-
-      pPackageMods.put(pname, pkg);
-      
-      DefaultMutableTreeNode pnode = null;
-      DefaultMutableTreeNode vnode = null;
-      {
-	ArrayList<String> expanded = getExpandedPackages();
-	DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
-	DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
-	int wk;
-	for(wk=0; wk<root.getChildCount(); wk++) {
-	  DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) root.getChildAt(wk);
-	  TreeData data = (TreeData) tnode.getUserObject();
-	  if(data.toString().equals(pname)) {
-	    pnode = tnode;
-	    break;
-	  }
-	  else if(data.toString().compareTo(pname) > 0) 
-	    break;
-	}
-	
-	if(pnode == null) {
-	  pnode = new DefaultMutableTreeNode(new TreeData(pname), true);
-	  root.insert(pnode, wk);
-	}
-
-	vnode = new DefaultMutableTreeNode(new TreeData(pkg), false);
-	pnode.add(vnode);
-
-	model.reload();	
-
-	expandPackages(expanded);
-      }
-      
-      TreePath tpath2 = new TreePath(vnode.getPath());
-      pPackagesTree.addSelectionPath(tpath2);
-      doPackageDetails();
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P U B L I C   C L A S S E S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * User data of tree nodes.
-   */ 
-  public
-  class TreeData
-  {
-    public 
-    TreeData() 
-    {}
-
-    public 
-    TreeData
-    ( 
-     String label
-    )
-    {
-      pLabel = label;
-    }
-
-    public 
-    TreeData
-    ( 
-     String name, 
-     VersionID vid
-    )
-    {
-      pLabel     = ("v" + vid);
-      pName      = name;
-      pVersionID = vid; 
-    }
-
-    public 
-    TreeData
-    ( 
-     PackageMod pkg
-    )
-    {
-      pLabel      = "working";
-      pName       = pkg.getName();
-      pPackageMod = pkg;
-    }
-
-    
-    public String
-    getLabel() 
-    {
-      return pLabel;
-    }
-    
-    public String
-    getName() 
-    {
-      return pName;
-    }
-
-    public VersionID
-    getVersionID()
-    {
-      return pVersionID;
-    }
-
-    public PackageMod
-    getPackageMod()
-    {
-      return pPackageMod;
-    }
-
-
-    public String
-    toString()
-    {
-      return pLabel;
-    }
-
-
-    private String      pLabel;
-    private String      pName;
-    private VersionID   pVersionID;
-    private PackageMod  pPackageMod;
   }
 
 
@@ -2703,33 +2944,36 @@ class JManageToolsetsDialog
   private TreeSet<String>  pActiveToolsets;
 
   /**
-   * The cached table of all toolsets indexed by toolset name. <P> 
+   * The cached table of all toolsets indexed by toolset name an operating system. <P> 
    * 
    * All existing toolsets will have a key in this table, but the value may be 
    * null if the toolset is not currently cached.  This table also contains temporary 
    * modifiable toolsets which have not been frozen.
    */ 
-  private TreeMap<String,Toolset>  pToolsets;
+  private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
 
   /**
-   * The cached table of read-only toolset packages indexed by package name and 
-   * revision number. <P> 
+   * The cached table of read-only toolset packages indexed by package name, operating 
+   * system and revision number. <P> 
    * 
    * All existing toolset packages will have a key in this table, but the value may be 
    * null if the toolset package is not currently cached.  
    */   
-  private TreeMap<String,TreeMap<VersionID,PackageVersion>>  pPackageVersions;
+  private TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>  pPackageVersions;
 
   /** 
-   * The modifiable toolset packages which have not yet been frozen indexed by package name.
+   * The modifiable toolset packages which have not yet been frozen indexed by package 
+   * and operating system.
    */ 
-  private TreeMap<String,PackageMod>  pPackageMods;
+  private TreeMap<String,TreeMap<OsType,PackageMod>>  pPackageMods;
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The list of active toolsets.
+   * The list of active toolsets. <P> 
+   * 
+   * Contains String (package name) instances.
    */ 
   private JList  pActiveToolsetsList;
 
@@ -2753,9 +2997,11 @@ class JManageToolsetsDialog
   private JButton  pDisableToolsetButton;
 
   /**
-   * The list of all toolsets.
+   * All toolsets grouped by toolset name and operating system type. <P> 
+   * 
+   * Contains ToolsetTreeData instances.
    */ 
-  private JList  pToolsetsList;
+  private JTree  pToolsetsTree;
 
   /**
    * The toolsets popup menu.
@@ -2769,13 +3015,24 @@ class JManageToolsetsDialog
   private JMenuItem  pTestToolsetItem;
   private JMenuItem  pExportToolsetItem;
   private JMenuItem  pNewToolsetItem;
+  private JMenuItem  pAddMacOSToolsetItem;
+  private JMenuItem  pAddWindowsToolsetItem;
   private JMenuItem  pCloneToolsetItem;
   private JMenuItem  pFreezeToolsetItem;
   private JMenuItem  pDeleteToolsetItem;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * The list of packages included in the selected toolset.
+   * The header label display above the included packages list.
+   */    
+  private JLabel  pIncludedPackagesLabel; 
+
+  /**
+   * The list of packages included in the selected toolset. <P> 
+   * 
+   * Contains PackageListData instances.
    */ 
   private JList  pIncludedPackagesList;
 
@@ -2800,7 +3057,9 @@ class JManageToolsetsDialog
 
 
   /**
-   * All package versions grouped by package name.
+   * All package versions grouped by package name, operating system and revision number. <P> 
+   * 
+   * Contains PackageTreeData instances.
    */ 
   private JTree  pPackagesTree;
 
@@ -2815,11 +3074,20 @@ class JManageToolsetsDialog
   private JMenuItem  pPackageDetailsItem;
   private JMenuItem  pTestPackageItem;
   private JMenuItem  pNewPackageItem;
+  private JMenuItem  pAddMacOSPackageItem;
+  private JMenuItem  pAddWindowsPackageItem;
   private JMenuItem  pNewPackageVersionItem;
   private JMenuItem  pClonePackageVersionItem;
   private JMenuItem  pFreezePackageItem;
   private JMenuItem  pDeletePackageItem;
 
+  /**
+   * Package reordering drag start index or <CODE>-1</CODE> if not dragging.
+   */ 
+  private int  pDragStartIdx; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Child dialogs.

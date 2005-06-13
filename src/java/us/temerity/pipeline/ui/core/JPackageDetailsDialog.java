@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.5 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -172,8 +172,9 @@ class JPackageDetailsDialog
       pLoadScriptButton   = btns[0];
       pAddEntryButton     = btns[1];
       pClearEntriesButton = btns[2];
+      pTestButton         = btns[4];
 
-      updatePackage(null, null, -1);
+      updatePackage(null, null, null, -1);
       pack();
     }
 
@@ -208,6 +209,9 @@ class JPackageDetailsDialog
    * Update the underlying package, toolset, package index and the UI components which 
    * depend upon them.
    * 
+   * @param os
+   *   The target operating system type.
+   * 
    * @param com
    *   The package.
    * 
@@ -220,6 +224,7 @@ class JPackageDetailsDialog
   public void 
   updatePackage
   (
+   OsType os,
    PackageCommon com, 
    Toolset tset, 
    int packageIndex
@@ -228,11 +233,14 @@ class JPackageDetailsDialog
     pToolset      = tset;
     pPackageIndex = packageIndex;
 
-    updatePackage(com);
+    updatePackage(os, com);
   }
 
   /**
    * Update the underlying package and the UI components which depend upon it.
+   * 
+   * @param os
+   *   The target operating system type.
    * 
    * @param com
    *   The package.
@@ -240,9 +248,12 @@ class JPackageDetailsDialog
   public void 
   updatePackage
   (
+   OsType os,
    PackageCommon com
   )
   { 
+    pOsType = os;
+
     PackageMod mod = null;
     PackageVersion vsn = null;
     {
@@ -258,17 +269,20 @@ class JPackageDetailsDialog
     pAddEntryButton.setEnabled(mod != null);
     pClearEntriesButton.setEnabled(mod != null);
     pLoadScriptButton.setEnabled(mod != null);
+    pTestButton.setEnabled(false);
 
     pTitlePanel.removeAll();
     pValuePanel.removeAll();
 
-    if(pPackage != null) {
+    if((pPackage != null) && (pOsType != null)) {
+      pTestButton.setEnabled(pOsType.equals(PackageInfo.sOsType));
+
       if(mod != null) {
-	pHeaderLabel.setText("Package:  " + pPackage.getName() + " (working)");
+	pHeaderLabel.setText(os + " Package:  " + pPackage.getName() + " (working)");
 	pHistoryPanel.setVisible(false);
       }
       else if(vsn != null) {
-	pHeaderLabel.setText("Package:  " + pPackage.getName() + 
+	pHeaderLabel.setText(os + " Package:  " + pPackage.getName() + 
 			     " (v" + vsn.getVersionID() + ")");
 
 	pAuthorField.setText(vsn.getAuthor());
@@ -472,7 +486,7 @@ class JPackageDetailsDialog
 	String name = diag.getName();
 	if(!pkg.getEnvNames().contains(name)) {
 	  pkg.createEntry(name);
-	  pParent.refreshPackage(pkg);
+	  pParent.refreshPackage(pOsType, pkg);
 	}
       }
     }
@@ -491,7 +505,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.setValue(name, value);
-      pParent.refreshPackage(pkg);
+      pParent.refreshPackage(pOsType, pkg);
     }
   }
 
@@ -508,7 +522,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.setMergePolicy(name, policy);
-      pParent.refreshPackage(pkg);
+      pParent.refreshPackage(pOsType, pkg);
     }
   }
 
@@ -524,7 +538,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.removeEntry(name);
-      pParent.refreshPackage(pkg);
+      pParent.refreshPackage(pOsType, pkg);
     }
   }
 
@@ -537,7 +551,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.removeAllEntries();
-      pParent.refreshPackage(pkg);
+      pParent.refreshPackage(pOsType, pkg);
     }
   }
 
@@ -557,7 +571,7 @@ class JPackageDetailsDialog
 	if(script != null) {
 	  try {
 	    pkg.loadShellScript(script);
-	    pParent.refreshPackage(pkg);
+	    pParent.refreshPackage(pOsType, pkg);
 	  }
 	  catch(PipelineException ex) {
 	    UIMaster.getInstance().showErrorDialog(ex);
@@ -636,6 +650,11 @@ class JPackageDetailsDialog
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The target operating system type.
+   */ 
+  private OsType  pOsType; 
+
   /** 
    * The package.
    */ 
@@ -697,6 +716,7 @@ class JPackageDetailsDialog
   private JButton  pAddEntryButton;
   private JButton  pClearEntriesButton;
   private JButton  pLoadScriptButton;
+  private JButton  pTestButton;
 
 
   /**

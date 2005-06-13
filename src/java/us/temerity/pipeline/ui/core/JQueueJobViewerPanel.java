@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.12 2005/05/28 21:21:20 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.13 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2443,7 +2443,7 @@ class JQueueJobViewerPanel
 		  ("No toolset was specified for node (" + mod.getName() + ")!");
 
 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(author, view, tname);
+	      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
 
 	      /* override these since the editor will be run as the current user */ 
 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);

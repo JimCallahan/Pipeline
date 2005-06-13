@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.43 2005/05/31 09:37:45 jim Exp $
+// $Id: ScriptApp.java,v 1.44 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2264,7 +2264,7 @@ class ScriptApp
 	author = nodeID.getAuthor();
 	view   = nodeID.getView();
       }
-      env = client.getToolsetEnvironment(author, view, tname);
+      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
       
       /* override these since the editor will be run as the current user */ 
       env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);

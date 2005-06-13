@@ -1,4 +1,4 @@
-// $Id: JTestPackageDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JTestPackageDialog.java,v 1.2 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,6 +44,9 @@ class JTestPackageDialog
 
   /**
    * Update the underlying package and UI components.
+   * 
+   * @param com
+   *   The package.
    */ 
   public void 
   updatePackage
@@ -54,9 +57,9 @@ class JTestPackageDialog
     if(com != null) {
       String header = null;
       if(com instanceof PackageMod) 
-	header = ("Test Package:  " + com.getName());
+	header = ("Test " + PackageInfo.sOsType + " Package:  " + com.getName());
       else if(com instanceof PackageVersion) 
-	header = ("Test Package:  " + com.getName() + 
+	header = ("Test " + PackageInfo.sOsType + " Package:  " + com.getName() + 
 		  " (v" + ((PackageVersion) com).getVersionID() + ")");
 
       updateEnvironment(header, com.getEnvironment(PackageInfo.sUser, "default"));

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.13 2005/05/30 20:48:37 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.14 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2705,7 +2705,7 @@ class JNodeFilesPanel
 		("No toolset was specified for node (" + name + ")!");
 	      
 	    /* passes pAuthor so that WORKING will correspond to the current view */ 
-	    env = client.getToolsetEnvironment(pAuthor, pView, tname);
+	    env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
 
 	    /* override these since the editor will be run as the current user */ 
 	    env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
@@ -2829,7 +2829,7 @@ class JNodeFilesPanel
 		  ("No toolset was specified for node (" + name + ")!");
 	      
 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(pAuthor, pView, tname);
+	      env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
 
 	      /* override these since the comparator will be run as the current user */ 
 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);

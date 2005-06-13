@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.4 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -291,7 +291,7 @@ class JTestEnvironmentDialog
   /** 
    * The environment.
    */ 
-  private Map<String,String> pEnvironment;  
+  private Map<String,String>  pEnvironment;  
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JTestToolsetDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JTestToolsetDialog.java,v 1.2 2005/06/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -60,6 +60,9 @@ class JTestToolsetDialog
 
   /**
    * Update the underlying toolset and UI components.
+   * 
+   * @param tset
+   *   The toolset
    */ 
   public void 
   updateToolset
@@ -72,9 +75,10 @@ class JTestToolsetDialog
     if(pToolset != null) {
       String header = null;
       if(pToolset.isFrozen()) 
-	header = ("Test Toolset:  " + pToolset.getName());
+	header = ("Test " + PackageInfo.sOsType + " Toolset:  " + pToolset.getName());
       else 
-	header = ("Test Toolset:  " + pToolset.getName() + " (working)");
+	header = ("Test " + PackageInfo.sOsType + " Toolset:  " + pToolset.getName() + 
+		  " (working)");
 
       updateEnvironment(header, pToolset.getEnvironment(PackageInfo.sUser, "default"));
     }
