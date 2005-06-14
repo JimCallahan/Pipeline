@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.11 2005/06/13 14:15:01 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.12 2005/06/14 13:32:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,32 +45,30 @@ class PackageInfo
     switch(os) {
     case Unix:
       sInstDir = new File("@ROOT_INST_DIR@");
-      sHomeDir = new File("@HOMEDIR@");
-      sTempDir = new File("@TEMPDIR@");
       sProdDir = new File("@PRODDIR@");
       sRepoDir = new File("@PRODDIR@/repository");
       sWorkDir = new File("@PRODDIR@/working");
+      sHomeDir = new File("@HOMEDIR@");
+      sTempDir = new File("@TEMPDIR@");
       break;
 
     case MacOS:
       sInstDir = new File("@MAC_ROOT_INST_DIR@");
-      sHomeDir = new File("@MAC_HOMEDIR@");
-      sTempDir = new File("@MAC_TEMPDIR@");
       sProdDir = new File("@MAC_PRODDIR@");
       sRepoDir = new File("@MAC_PRODDIR@/repository");
       sWorkDir = new File("@MAC_PRODDIR@/working");
+      sHomeDir = new File("@MAC_HOMEDIR@");
+      sTempDir = new File("@MAC_TEMPDIR@");
       break;
 
     case Windows:
-      assert(false);
-
     default:
       sInstDir = null;
-      sHomeDir = null;
-      sTempDir = null;
       sProdDir = null;
       sRepoDir = null;
       sWorkDir = null;
+      sHomeDir = null;
+      sTempDir = null;
     } 
   } 
 
@@ -106,11 +104,20 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The root installation directory. <P>
-   *
+   * The root installation directory for the current operating system. <P> 
+   * 
    * Set by the RootInstallDirectory customer profile entry.
    */ 
   public static final File sInstDir;
+  
+  /** 
+   * The root installation directory indexed by operating system type [OsType.ordinal()].
+   */ 
+  public static final File sOsInstDirs[] = { 
+    new File("@ROOT_INST_DIR@"), 
+    null,
+    new File("@MAC_ROOT_INST_DIR@")
+  };
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -168,28 +175,61 @@ class PackageInfo
    */
   public static final int sFilePort = @PL_FILE_PORT@;
 
+
   /** 
-   * The root directory of the file repository. <P>
+   * The root directory of the file repository for the current operating system. <P>
    *
    * Set by the ProductionDirectory customer profile entry.
    */
   public static final File sProdDir;
 
   /** 
-   * The root directory of the file repository. <P>
+   * The root directory of the file repository indexed by operating system 
+   * type [OsType.ordinal()].
+   */
+  public static final File sOsProdDirs[] = {
+    new File("@PRODDIR@"),
+    null,
+    new File("@MAC_PRODDIR@")
+  };
+
+
+  /** 
+   * The root directory of the file repository for the current operating system. <P>
    *
-   * Set by appending "/repository" to value of the ProductionDirectory customer profile 
-   * entry.
+   * Set by appending "/repository" to value of the ProductionDirectory customer 
+   * profile entry.
    */
   public static final File sRepoDir;
 
   /** 
-   * The root directory of user working areas. <P>
+   * The root directory of the file repository indexed by operating system 
+   * type [OsType.ordinal()].
+   */
+  public static final File sOsRepoDirs[] = {
+    new File("@PRODDIR@/repository"),    
+    null,
+    new File("@MAC_PRODDIR@/repository")
+  };
+
+
+  /** 
+   * The root directory of user working areas for the current operating system. <P>
    *
-   * Set by appending "/working" to value of the ProductionDirectory customer profile 
-   * entry.
+   * Set by appending "/working" to value of the ProductionDirectory customer 
+   * profile entry.
    */
   public static final File sWorkDir;
+  
+  /** 
+   * The root directory of user working areas indexed by operating system 
+   * type [OsType.ordinal()].
+   */
+  public static final File sOsWorkDirs[] = {
+    new File("@PRODDIR@/working"), 
+    null,
+    new File("@MAC_PRODDIR@/working")
+  };
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -245,18 +285,41 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The directory which contains the home directories for users for this site. <P> 
+   * The directory which contains the home directories for users for this site for 
+   * the current operating system. <P>
    *
-   * Set by the HomeDirectory customer profile entry.
+   * Set by the [Mac|Win]HomeDirectory customer profile entry.
    */ 
-  public static final File sHomeDir; 
+  public static final File sHomeDir;
+
+  /**
+   * The directory which contains the home directories for users for this site indexed 
+   * by operating system type [OsType.ordinal()].
+   */ 
+  public static final File sOsHomeDirs[] = {
+    new File("@HOMEDIR@"), 
+    null,
+    new File("@MAC_HOMEDIR@")
+  };
+
 
   /** 
-   * The directory used to store temporary files generated by Pipeline. <P> 
+   * The directory used to store temporary files generated by Pipeline for the
+   * current operating system. <P>
    *
    * Set by the TemporaryDirectory customer profile entry.
    */ 
   public static final File sTempDir;
+  
+  /**
+   * The directory used to store temporary files generated by Pipeline indexed by 
+   * operating system type [OsType.ordinal()].
+   */ 
+  public static final File sOsTempDirs[] = {
+    new File("@TEMPDIR@"), 
+    null,
+    new File("@MAC_TEMPDIR@")
+  };
 
 
   /*----------------------------------------------------------------------------------------*/
