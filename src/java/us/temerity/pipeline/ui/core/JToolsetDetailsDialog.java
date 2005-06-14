@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.2 2005/06/13 16:05:01 jim Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.3 2005/06/14 13:35:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -154,6 +154,8 @@ class JToolsetDetailsDialog
 	  scroll.setVerticalScrollBarPolicy
 	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 	  
+	  scroll.getVerticalScrollBar().setUnitIncrement(23);
+
 	  body.add(scroll);
 	}
       }
@@ -302,10 +304,10 @@ class JToolsetDetailsDialog
   protected static final int  sVSize = 400;
 
 
-  protected static Icon sConflictIcon = 
+  protected static final Icon sConflictIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ConflictIcon.png"));
   
-  protected static Icon sCheckIcon = 
+  protected static final Icon sCheckIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CheckIcon.png"));
 
 
