@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.7 2005/06/10 04:55:06 jim Exp $
+// $Id: BaseSubProcess.java,v 1.8 2005/06/14 13:31:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -434,8 +434,11 @@ class BaseSubProcess
   }
   
   /** 
-   * Scan the proc filesystem to determine the process IDs of all processes 
-   * created by the process with the given ID.
+   * Scan the /proc filesystem to determine the process IDs of all processes 
+   * created by the process with the given ID. <P> 
+   * 
+   * Due to a lack support for a /proc filesystem on Mac OS X, this method will always return
+   * a list containing only the single process ID passed as its argument.
    */ 
   private TreeSet<Integer>
   buildHitList
@@ -443,46 +446,61 @@ class BaseSubProcess
    int pid
   ) 
   {
-    /* build a table of child process IDs indexed by parent process ID */ 
-    TreeMap<Integer,TreeSet<Integer>> PIDs = new TreeMap<Integer,TreeSet<Integer>>();
-    {
-      File proc = new File("/proc");
-      String[] procs = proc.list(new ProcFilter());
-      int wk;
-      for(wk=0; wk<procs.length; wk++) {
-	try {
-	  FileReader reader = new FileReader("/proc/" + procs[wk] + "/stat");
-	  StringBuffer buf = new StringBuffer();
-	  while(true) {
-	    int next = reader.read();
-	    if(next == -1) 
-	      break;
-	    buf.append((char) next);
-	  }
-	  reader.close();
-	  
-	  String[] fields = buf.toString().split(" ");
-	  Integer cpid = new Integer(fields[0]);
-	  Integer ppid = new Integer(fields[3]);
-	  
-	  TreeSet<Integer> children = PIDs.get(ppid);
-	  if(children == null) {
-	    children = new TreeSet<Integer>();
-	    PIDs.put(ppid, children);
-	  }
+    TreeSet<Integer> dead = new TreeSet<Integer>();
 
-	  children.add(cpid);
+    switch(PackageInfo.sOsType) {
+    case Unix: 
+      {
+	/* build a table of child process IDs indexed by parent process ID */ 
+	TreeMap<Integer,TreeSet<Integer>> PIDs = new TreeMap<Integer,TreeSet<Integer>>();
+	{
+	  File proc = new File("/proc");
+	  String[] procs = proc.list(new ProcFilter());
+	  int wk;
+	  for(wk=0; wk<procs.length; wk++) {
+	    try {
+	      FileReader reader = new FileReader("/proc/" + procs[wk] + "/stat");
+	      StringBuffer buf = new StringBuffer();
+	      while(true) {
+		int next = reader.read();
+		if(next == -1) 
+		  break;
+		buf.append((char) next);
+	      }
+	      reader.close();
+	      
+	      String[] fields = buf.toString().split(" ");
+	      Integer cpid = new Integer(fields[0]);
+	      Integer ppid = new Integer(fields[3]);
+	      
+	      TreeSet<Integer> children = PIDs.get(ppid);
+	      if(children == null) {
+		children = new TreeSet<Integer>();
+		PIDs.put(ppid, children);
+	      }
+	      
+	      children.add(cpid);
+	    }
+	    catch (FileNotFoundException ex) {
+	    }
+	    catch(IOException ex) {
+	    }
+	  }
 	}
-	catch (FileNotFoundException ex) {
-	}
-	catch(IOException ex) {
-	}
+
+	/* build a list of all descendent processes from (pid) */ 
+	buildHitListHelper(pid, PIDs, dead);
       }
+      break;
+
+    case MacOS:
+      dead.add(pid);
+      break;
+      
+    case Windows:
+      assert(false);
     }
 
-    /* build a list of all descendent processes from (pid) */ 
-    TreeSet<Integer> dead = new TreeSet<Integer>();
-    buildHitListHelper(new Integer(pid), PIDs, dead);
     return dead;
   }
 
