@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.4 2005/06/13 16:05:01 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.5 2005/06/14 13:36:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1766,9 +1766,6 @@ class JManageToolsetsDialog
     pDragStartIdx = -1;
 
     int mods = e.getModifiersEx();
-
-    System.out.print("MOUSE PRESSED: " + InputEvent.getModifiersExText(mods) + "\n");
-
     switch(e.getButton()) {
     case MouseEvent.BUTTON1:
       {
@@ -1930,9 +1927,6 @@ class JManageToolsetsDialog
   )
   {
     int mods = e.getModifiersEx();
-
-    System.out.print("MOUSE RELEASED: " + InputEvent.getModifiersExText(mods) + "\n");
-
     switch(e.getButton()) {
     case MouseEvent.BUTTON2:
       {
@@ -2067,50 +2061,69 @@ class JManageToolsetsDialog
       showTestToolsetDialog(tset);
   }
 
-   /**
-    * Export the currently selected toolset as a bash(1) shell script.
-    */ 
-   public void 
-   doExportToolset()
-   {
-//     Toolset tset = getSelectedToolset();    
-//     if(tset != null) {
-//       pExportToolsetDialog.updateTargetName(tset.getName() + ".sh");
-//       pExportToolsetDialog.setVisible(true);
-      
-//       if(pExportToolsetDialog.wasConfirmed()) {
-// 	File file = pExportToolsetDialog.getSelectedFile();
-// 	if(file != null) {
-// 	  try {
-// 	    StringBuffer buf = new StringBuffer();
-	  
-// 	    buf.append("export TOOLSET=" + tset.getName() + "\n");
-// 	    buf.append("export USER=`whoami`\n");
-// 	    buf.append("export HOME=" + PackageInfo.sHomeDir + "/$USER\n");
-// 	    buf.append("export WORKING=" + PackageInfo.sWorkDir + "/$USER/default\n");
-// 	    buf.append("export _=/bin/env\n\n");
-  
-// 	    TreeMap<String,String> env = tset.getEnvironment();
-// 	    for(String ename : env.keySet()) {
-// 	      String evalue = env.get(ename);
-// 	      buf.append("export " + ename + "=" + 
-// 			 ((evalue != null) ? (evalue + "\n") : "\n"));
-// 	    }
+  /**
+   * Export the currently selected toolset as a bash(1) shell script.
+   */ 
+  public void 
+  doExportToolset()
+  {
+    Toolset toolset = getSelectedActiveToolset();
+    OsType os = OsType.Unix;
+    if(toolset == null) {
+      ToolsetTreeData data = getSelectedToolsetData();
+      if(data != null) {
+	os = data.getOsType();
+	toolset = lookupToolset(data.getName(), os);
+      }
+    }
+    
+    if((toolset != null) && (os != null)) {
+      pExportToolsetDialog.updateTargetName(toolset.getName() + "-" + os + ".sh");
+      pExportToolsetDialog.setVisible(true);    
+      if(pExportToolsetDialog.wasConfirmed()) {
+ 	File file = pExportToolsetDialog.getSelectedFile();
+ 	if(file != null) {
+ 	  try {
+ 	    StringBuffer buf = new StringBuffer();
+
+	    int osi = os.ordinal();
+	    switch(os) {
+	    case Unix:
+	    case MacOS:
+	      {
+		buf.append
+		  ("export TOOLSET=" + toolset.getName() + "\n" +
+		   "export USER=`whoami`\n" +
+		   "export HOME=" + PackageInfo.sOsHomeDirs[osi] + "/$USER\n" +
+		   "export WORKING=" + PackageInfo.sOsWorkDirs[osi] + "/$USER/default\n");
+		   
+		TreeMap<String,String> env = toolset.getEnvironment();
+		for(String ename : env.keySet()) {
+		  String evalue = env.get(ename);
+		  buf.append("export " + ename + "=" + 
+			     ((evalue != null) ? (evalue + "\n") : "\n"));
+		}  
+	      }
+	      break;
 	    
-// 	    {
-// 	      FileWriter out = new FileWriter(file);
-// 	      out.write(buf.toString());
-// 	      out.flush();
-// 	      out.close();
-// 	    }
-// 	  }
-// 	  catch(IOException ex) {
-// 	    UIMaster.getInstance().showErrorDialog(ex);
-// 	  }
-// 	}
-//       }
-//     }
-   }
+	    case Windows:
+	      assert(false);
+	    }
+
+ 	    {
+ 	      FileWriter out = new FileWriter(file);
+ 	      out.write(buf.toString());
+ 	      out.flush();
+ 	      out.close();
+ 	    }
+ 	  }
+ 	  catch(IOException ex) {
+ 	    UIMaster.getInstance().showErrorDialog(ex);
+ 	  }
+ 	}
+      }
+    }
+  }
   
   /**
    * Create a new modifiable toolset.
