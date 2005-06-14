@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.11 2005/04/02 20:57:31 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.12 2005/06/14 13:37:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2108,14 +2108,30 @@ class JResourceUsageHistoryDialog
 		  MouseEvent.CTRL_DOWN_MASK);
 
       
-      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK);
+      int on2  = 0;
+      int off2 = 0; 
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case Windows:
+	 on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		 MouseEvent.BUTTON2_DOWN_MASK | 
+		 MouseEvent.ALT_DOWN_MASK);
+	 
+	 off2 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		 MouseEvent.SHIFT_DOWN_MASK |
+		 MouseEvent.CTRL_DOWN_MASK);
+	 break;
+	 
+      case MacOS:
+	on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		MouseEvent.ALT_DOWN_MASK);
+	
+	off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		MouseEvent.BUTTON3_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);
+      }
       
-      int off2 = (MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
 
       int on3  = (MouseEvent.BUTTON3_DOWN_MASK);
       
@@ -2188,17 +2204,36 @@ class JResourceUsageHistoryDialog
       }
       
       /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
-      {
-	int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.ALT_DOWN_MASK);
-	
-	int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
-	
-	zoom = ((mods & (on1 | off1)) == on1);
-      }
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case Windows:
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  zoom = ((mods & (on1 | off1)) == on1);
+	}
+	break;
+
+      case MacOS:
+	/* See 453 - Mac OS X Viewer Zoom Unresponsive */ 
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  zoom = ((mods & (on1 | off1)) == on1);
+	}
+      }	
     }
     
     if(pDragStart != null) {

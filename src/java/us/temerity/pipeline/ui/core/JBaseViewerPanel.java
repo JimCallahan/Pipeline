@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.8 2005/06/13 16:05:01 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.9 2005/06/14 13:37:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -417,17 +417,36 @@ class JBaseViewerPanel
       }
 	
       /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
-      {
-	int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.ALT_DOWN_MASK);
-	
-	int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case Windows:
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  zoom = ((mods & (on1 | off1)) == on1);
+	}
+	break;
 
-	zoom = ((mods & (on1 | off1)) == on1);
-      }
+      case MacOS:
+	/* See 453 - Mac OS X Viewer Zoom Unresponsive */ 
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  zoom = ((mods & (on1 | off1)) == on1);
+	}
+      }	
     }
       
     if(rb) {
@@ -521,17 +540,36 @@ class JBaseViewerPanel
       }
 	
       /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
-      {
-	int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.ALT_DOWN_MASK);
-	
-	int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case Windows:
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  zoom = ((mods & (on1 | off1)) == on1);
+	}
+	break;
 
-	zoom = ((mods & (on1 | off1)) == on1);
-      }
+      case MacOS:
+	/* See 453 - Mac OS X Viewer Zoom Unresponsive */ 
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  zoom = ((mods & (on1 | off1)) == on1);
+	}
+      }	
     }
 
     if((pRbStart != null) && rb) {
