@@ -1,4 +1,4 @@
-// $Id: JToolsetTreeCellRenderer.java,v 1.1 2005/06/13 16:05:01 jim Exp $
+// $Id: JToolsetTreeCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -147,28 +147,28 @@ class JToolsetTreeCellRenderer
   private static final long serialVersionUID = -1039524329611860227L;
 
 
-  private static Icon sSpacerIcon = 
+  private static final Icon sSpacerIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png"));
 
 
-  private static Icon sNormalIcon = 
+  private static final Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  private static Icon sSelectedIcon = 
+  private static final Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
 
-  private static Icon sConflictIcon = 
+  private static final Icon sConflictIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ConflictIcon.png"));
 
-  private static Icon sConflictSelectedIcon = 
+  private static final Icon sConflictSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ConflictSelectedIcon.png"));
 
 
-  private static Icon sCheckIcon = 
+  private static final Icon sCheckIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CheckIcon.png"));
 
-  private static Icon sCheckSelectedIcon = 
+  private static final Icon sCheckSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CheckSelectedIcon.png"));
   
 }

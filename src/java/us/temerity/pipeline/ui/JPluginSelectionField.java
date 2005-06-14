@@ -1,4 +1,4 @@
-// $Id: JPluginSelectionField.java,v 1.1 2005/05/16 19:25:32 jim Exp $
+// $Id: JPluginSelectionField.java,v 1.2 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -432,10 +432,10 @@ class JPluginSelectionField
   private static final long serialVersionUID = -2880910560766850035L;
 
 
-  private static Icon sEnabledIcon = 
+  private static final Icon sEnabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CollectionFieldIcon.png"));
 
-  private static Icon sDisabledIcon = 
+  private static final Icon sDisabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CollectionFieldIconDisabled.png"));
 
 

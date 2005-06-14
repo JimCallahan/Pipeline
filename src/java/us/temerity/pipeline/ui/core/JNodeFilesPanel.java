@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.14 2005/06/13 16:05:01 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.15 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3188,28 +3188,28 @@ class JNodeFilesPanel
   private static final int  sSize = 484;
 
 
-  private static Icon sFileBarIcon = 
+  private static final Icon sFileBarIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarIcon.png"));
 
-  private static Icon sFileBarExtendIcon = 
+  private static final Icon sFileBarExtendIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIcon.png"));
 
-  private static Icon sFileBarIconSelected = 
+  private static final Icon sFileBarIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarIconSelected.png"));
 
-  private static Icon sFileBarExtendIconSelected = 
+  private static final Icon sFileBarExtendIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIconSelected.png"));
 
-  private static Icon sFrozenIcon = 
+  private static final Icon sFrozenIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FrozenIcon.png"));
 
-  private static Icon sFileArrowIcon = 
+  private static final Icon sFileArrowIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIcon.png"));
 
-  private static Icon sFileArrowIconSelected = 
+  private static final Icon sFileArrowIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIconSelected.png"));
 
-  private static Icon sFileArrowIconDisabled = 
+  private static final Icon sFileArrowIconDisabled = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIconDisabled.png"));
 
 

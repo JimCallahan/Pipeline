@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.24 2005/06/13 16:05:01 jim Exp $
+// $Id: UIMaster.java,v 1.25 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2473,16 +2473,16 @@ class UIMaster
   /**
    * Icon images.
    */ 
-  private static Icon sSplashIcon = 
+  private static final Icon sSplashIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("Splash.png"));
 
-  private static Icon sRestoreSplashIcon = 
+  private static final Icon sRestoreSplashIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("RestoreSplash.png"));
 
-  private static Icon sProgressLightIcon = 
+  private static final Icon sProgressLightIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightIcon.png"));
 
-  private static Icon sProgressLightOnIcon = 
+  private static final Icon sProgressLightOnIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightOnIcon.png"));
 
 

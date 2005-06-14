@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserFilterDialog.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: JNodeBrowserFilterDialog.java,v 1.5 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -308,7 +308,7 @@ class JNodeBrowserFilterDialog
   private static final int sTSize  = 160;
   private static final int sVSize  = 120;
 
-  private static Icon sIcons[] = {
+  private static final Icon sIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon1.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon2.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon3.png")),

@@ -1,4 +1,4 @@
-// $Id: JListCellRenderer.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: JListCellRenderer.java,v 1.4 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -79,10 +79,10 @@ class JListCellRenderer
   private static final long serialVersionUID = 9144374790563937303L;
 
 
-  private static Icon sNormalIcon = 
+  private static final Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  private static Icon sSelectedIcon = 
+  private static final Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
 }

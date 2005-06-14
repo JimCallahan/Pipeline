@@ -1,4 +1,4 @@
-// $Id: JTabbedPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JTabbedPanel.java,v 1.2 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -111,7 +111,7 @@ class JTabbedPanel
   private static final long serialVersionUID = 1073333511291732408L;
 
 
-  private static Icon sTabIcon = 
+  private static final Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
 
 }

@@ -1,4 +1,4 @@
-// $Id: JExtraListCellRenderer.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JExtraListCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -97,28 +97,28 @@ class JExtraListCellRenderer
   private static final long serialVersionUID = 6610744284537860590L;
 
 
-  private static Icon sNormalIcon = 
+  private static final Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  private static Icon sSelectedIcon = 
+  private static final Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
 
-  protected static Icon sConflictIcon = 
+  protected static final Icon sConflictIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ConflictIcon.png"));
 
-  protected static Icon sConflictSelectedIcon = 
+  protected static final Icon sConflictSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ConflictSelectedIcon.png"));
 
 
-  protected static Icon sCheckIcon = 
+  protected static final Icon sCheckIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CheckIcon.png"));
 
-  protected static Icon sCheckSelectedIcon = 
+  protected static final Icon sCheckSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CheckSelectedIcon.png"));
 
 
-  protected static Icon sBlankIcon = 
+  protected static final Icon sBlankIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("BlankIcon.png"));
 
 

@@ -1,4 +1,4 @@
-// $Id: JLayoutTreeCellRenderer.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: JLayoutTreeCellRenderer.java,v 1.3 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,13 +116,13 @@ class JLayoutTreeCellRenderer
   private static final long serialVersionUID = -5085958176505086517L;
 
 
-  private static Icon sSpacerIcon = 
+  private static final Icon sSpacerIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png"));
 
-  private static Icon sNormalIcon = 
+  private static final Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  private static Icon sSelectedIcon = 
+  private static final Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
 

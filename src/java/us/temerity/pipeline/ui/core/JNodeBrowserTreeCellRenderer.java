@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserTreeCellRenderer.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNodeBrowserTreeCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,7 +102,7 @@ class JNodeBrowserTreeCellRenderer
 
   private static final long serialVersionUID = -3097835577102260282L;
 
-  private static Icon sIcons[] = {
+  private static final Icon sIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon1.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon2.png")),
@@ -111,7 +111,7 @@ class JNodeBrowserTreeCellRenderer
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon5.png"))
   };
 
-  private static Icon sSelectedIcons[] = {
+  private static final Icon sSelectedIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon1Selected.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon2Selected.png")),

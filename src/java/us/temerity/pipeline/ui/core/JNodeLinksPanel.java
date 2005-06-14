@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.5 2005/05/30 20:48:37 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.6 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2618,42 +2618,42 @@ class JNodeLinksPanel
   private static final int  sCSize = 208;
 
   
-  private static Icon sLinkBarIcon = 
+  private static final Icon sLinkBarIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LinkBarIcon.png"));
 
-  private static Icon sLinkBarExtendIcon = 
+  private static final Icon sLinkBarExtendIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LinkBarExtendIcon.png"));
 
-  private static Icon sLinkBarIconSelected = 
+  private static final Icon sLinkBarIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LinkBarIconSelected.png"));
 
-  private static Icon sLinkBarExtendIconSelected = 
+  private static final Icon sLinkBarExtendIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LinkBarExtendIconSelected.png"));
 
 
-  private static Icon sFileBarIcon = 
+  private static final Icon sFileBarIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarIcon.png"));
 
-  private static Icon sFileBarExtendIcon = 
+  private static final Icon sFileBarExtendIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIcon.png"));
 
-  private static Icon sFileBarIconSelected = 
+  private static final Icon sFileBarIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarIconSelected.png"));
 
-  private static Icon sFileBarExtendIconSelected = 
+  private static final Icon sFileBarExtendIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIconSelected.png"));
 
 
-  private static Icon sFrozenIcon = 
+  private static final Icon sFrozenIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FrozenIcon.png"));
 
-  private static Icon sFileArrowIcon = 
+  private static final Icon sFileArrowIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIcon.png"));
 
-  private static Icon sFileArrowIconSelected = 
+  private static final Icon sFileArrowIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIconSelected.png"));
 
-  private static Icon sFileArrowIconDisabled = 
+  private static final Icon sFileArrowIconDisabled = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileArrowIconDisabled.png"));
 
 

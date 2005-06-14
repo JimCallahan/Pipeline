@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.7 2005/01/09 17:31:42 jim Exp $
+// $Id: JBooleanField.java,v 1.8 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -276,10 +276,10 @@ class JBooleanField
   private static final long serialVersionUID = -2376760029398653726L;
 
 
-  private static Icon sEnabledIcon = 
+  private static final Icon sEnabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("BooleanIcon.png"));
 
-  private static Icon sDisabledIcon = 
+  private static final Icon sDisabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("BooleanIconDisabled.png"));
 
 

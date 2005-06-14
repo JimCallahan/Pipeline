@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.10 2005/01/09 17:31:42 jim Exp $
+// $Id: JCollectionField.java,v 1.11 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -526,10 +526,10 @@ class JCollectionField
   private static final long serialVersionUID = -3098195836855262214L;
 
 
-  private static Icon sEnabledIcon = 
+  private static final Icon sEnabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CollectionFieldIcon.png"));
 
-  private static Icon sDisabledIcon = 
+  private static final Icon sDisabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CollectionFieldIconDisabled.png"));
 
 

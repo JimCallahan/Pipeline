@@ -1,4 +1,4 @@
-// $Id: JFileListCellRenderer.java,v 1.4 2005/01/03 06:56:23 jim Exp $
+// $Id: JFileListCellRenderer.java,v 1.5 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -147,16 +147,16 @@ class JFileListCellRenderer
   private static final long serialVersionUID = 9144374790563937303L;
 
 
-  protected static Icon sNormalIcon = 
+  protected static final Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  protected static Icon sSelectedIcon = 
+  protected static final Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
-  protected static Icon sDirNormalIcon = 
+  protected static final Icon sDirNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("DirectoryNormalIcon.png"));
 
-  protected static Icon sDirSelectedIcon = 
+  protected static final Icon sDirSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("DirectorySelectedIcon.png"));
 
   

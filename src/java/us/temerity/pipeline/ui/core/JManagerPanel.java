@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.18 2005/06/10 04:56:15 jim Exp $
+// $Id: JManagerPanel.java,v 1.19 2005/06/14 13:38:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3154,14 +3154,14 @@ class JManagerPanel
   private static final long serialVersionUID = -3791561567661137439L;
 
 
-  private static Icon sMenuAnchorIcon = 
+  private static final Icon sMenuAnchorIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("MenuAnchorIcon.png"));
 
-  private static Icon sMenuAnchorPressedIcon = 
+  private static final Icon sMenuAnchorPressedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("MenuAnchorPressedIcon.png"));
 
 
-  private static Icon sGroupIcons[] = {
+  private static final Icon sGroupIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("Group0.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group1.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group2.png")),
@@ -3174,7 +3174,7 @@ class JManagerPanel
     new ImageIcon(LookAndFeelLoader.class.getResource("Group9.png"))
   };
 
-  private static Icon sGroupSelectedIcons[] = {
+  private static final Icon sGroupSelectedIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("Group0Selected.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group1Selected.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group2Selected.png")),
@@ -3187,7 +3187,7 @@ class JManagerPanel
     new ImageIcon(LookAndFeelLoader.class.getResource("Group9Selected.png"))
   };
 
-  private static Icon sGroupDisabledIcons[] = {
+  private static final Icon sGroupDisabledIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("Group0Disabled.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group1Disabled.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group2Disabled.png")),
@@ -3201,10 +3201,10 @@ class JManagerPanel
   };
 
 
-  private static Icon sLockedLightIcon = 
+  private static final Icon sLockedLightIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LockedLightIcon.png"));
 
-  private static Icon sLockedLightOnIcon = 
+  private static final Icon sLockedLightOnIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("LockedLightOnIcon.png"));
 
 
