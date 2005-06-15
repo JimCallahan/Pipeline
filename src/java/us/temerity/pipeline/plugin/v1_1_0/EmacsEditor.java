@@ -1,4 +1,4 @@
-// $Id: GimpEditor.java,v 1.2 2005/06/15 12:16:55 jim Exp $
+// $Id: EmacsEditor.java,v 1.1 2005/06/15 12:16:55 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -8,14 +8,14 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   G I M P   E D I T O R                                                                  */
+/*   E M A C S   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The GNU Image Manipuation Program. 
+ * The GNU extensible, customizable, self-documenting text editor.
  */
 public
-class GimpEditor
+class EmacsEditor
   extends BaseAppleScriptEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -23,11 +23,11 @@ class GimpEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GimpEditor()
+  EmacsEditor()
   {
-    super("Gimp", new VersionID("1.1.0"), 
-	  "The GNU Image Manipulation Program.", 
-	  "Gimp");
+    super("Emacs", new VersionID("1.1.0"),
+	  "The GNU extensible, customizable, self-documenting text editor.", 
+	  "Emacs");
   }
 
 
@@ -75,7 +75,7 @@ class GimpEditor
       for(File file : fseq.getFiles()) 
 	args.add(file.getPath());
       
-      SubProcessLight proc = new SubProcessLight(getName(), "gimp", args, env, dir);
+      SubProcessLight proc = new SubProcessLight(getName(), "emacs", args, env, dir);
       proc.start();
       
       return proc;
@@ -85,8 +85,10 @@ class GimpEditor
     }
 
     throw new PipelineException
-      ("The GIMP Editor is not yet supported on the Windows operating system.");
+      ("The Emacs Editor is not yet supported on the Windows operating system.");
   }
+
+
 
 
 
@@ -94,7 +96,7 @@ class GimpEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 483224756697841093L;
+  private static final long serialVersionUID = 152200663197303643L;
 
 }
 

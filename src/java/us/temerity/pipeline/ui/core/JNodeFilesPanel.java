@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.15 2005/06/14 13:38:33 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.16 2005/06/15 12:16:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2723,7 +2723,7 @@ class JNodeFilesPanel
 	  }
 
 	  /* start the editor */ 
-	  proc = editor.launch(pFileSeq, env, dir);	   
+	  proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);	   
 	}
 	catch(Exception ex) {
 	  master.showErrorDialog(ex);

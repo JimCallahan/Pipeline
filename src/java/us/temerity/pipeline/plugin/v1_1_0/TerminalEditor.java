@@ -1,4 +1,4 @@
-// $Id: GimpEditor.java,v 1.2 2005/06/15 12:16:55 jim Exp $
+// $Id: TerminalEditor.java,v 1.1 2005/06/15 12:16:55 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -8,36 +8,34 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   G I M P   E D I T O R                                                                  */
+/*   T E R M I N A L   E D I T O R                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The GNU Image Manipuation Program. 
+ * A UNIX terminal in the node's working directory.", 
  */
 public
-class GimpEditor
-  extends BaseAppleScriptEditor
+class TerminalEditor
+  extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GimpEditor()
+  TerminalEditor()
   {
-    super("Gimp", new VersionID("1.1.0"), 
-	  "The GNU Image Manipulation Program.", 
-	  "Gimp");
+    super("Terminal", new VersionID("1.1.0"),
+	  "A UNIX terminal in the node's working directory.", 
+	  "Terminal");
   }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Launch the editor program (obtained with {@link #getName getName}) under the given 
+   * Launch the editor program (obtained with {@link #getProgram getProgram}) under the given 
    * environmant with all of the files which comprise the given file sequence as 
    * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
    * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. <P>
@@ -56,10 +54,12 @@ class GimpEditor
    *   The working directory where the editor is run.
    *
    * @return 
-   *   The controlling <CODE>SubProcess</CODE> instance. 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
    * 
    * @throws PipelineException
    *   If unable to launch the editor.
+   * 
+   * @see SubProcessLight
    */  
   public SubProcessLight
   launch
@@ -67,34 +67,48 @@ class GimpEditor
    FileSeq fseq,      
    Map<String, String> env,      
    File dir        
-  )   
+  ) 
     throws PipelineException
   {
+    ArrayList<String> args = new ArrayList<String>();
+    SubProcessLight proc = null;
     if(PackageInfo.sOsType == OsType.Unix) {
-      ArrayList<String> args = new ArrayList<String>();
-      for(File file : fseq.getFiles()) 
-	args.add(file.getPath());
+      args.add("--working-directory=" + dir);
       
-      SubProcessLight proc = new SubProcessLight(getName(), "gimp", args, env, dir);
-      proc.start();
-      
-      return proc;
+      proc = new SubProcessLight(getName(), "gnome-terminal", args, env, dir);
+      proc.start();  
     }
     else if(PackageInfo.sOsType == OsType.MacOS) {
-      return super.launch(fseq, env, dir);
+      args.add("-e");
+      args.add("tell application \"Terminal\"");
+
+      args.add("-e");
+      StringBuffer buf = new StringBuffer();
+      for(String key : env.keySet()) 
+	buf.append("export " + key + "='" + env.get(key) + "'; ");
+      buf.append("cd " + dir + "; clear");
+      args.add("do script \"" + buf + "\"");
+
+      args.add("-e");
+      args.add("end tell");
+
+      proc = new SubProcessLight(getName(), "osascript", args, env, dir);
+      proc.start();  
     }
-
-    throw new PipelineException
-      ("The GIMP Editor is not yet supported on the Windows operating system.");
+    else {
+      throw new PipelineException
+	("The Terminal Editor is not yet supported on the Windows operating system.");
+    }
+  
+    return proc;
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 483224756697841093L;
+  private static final long serialVersionUID = 3603092548622434808L;
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: GimpEditor.java,v 1.2 2005/06/15 12:16:55 jim Exp $
+// $Id: MayaEditor.java,v 1.1 2005/06/15 12:16:55 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -8,14 +8,14 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   G I M P   E D I T O R                                                                  */
+/*   M A Y A   E D I T O R                                                                  */
 /*------------------------------------------------------------------------------------------*/
 
-/**
- * The GNU Image Manipuation Program. 
+/** 
+ * The 3D modeling, animation and rendering program from Alias|Wavefront.             
  */
 public
-class GimpEditor
+class MayaEditor
   extends BaseAppleScriptEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -23,11 +23,11 @@ class GimpEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GimpEditor()
+  MayaEditor()
   {
-    super("Gimp", new VersionID("1.1.0"), 
-	  "The GNU Image Manipulation Program.", 
-	  "Gimp");
+    super("Maya", new VersionID("1.1.0"),
+	  "3D modeling and animation software from Alias|Wavefront.", 
+	  "maya");
   }
 
 
@@ -70,22 +70,61 @@ class GimpEditor
   )   
     throws PipelineException
   {
+    FrameRange range = fseq.getFrameRange(); 
+    if((range != null) && (!range.isSingle()))
+      throw new PipelineException
+	("The " + getName() + " Editor can only edit a single scene at a time!");
+
+    ArrayList<String> args = new ArrayList<String>();
+    SubProcessLight proc = null;
     if(PackageInfo.sOsType == OsType.Unix) {
-      ArrayList<String> args = new ArrayList<String>();
-      for(File file : fseq.getFiles()) 
-	args.add(file.getPath());
+      args.add(fseq.getFile(0).getPath());
       
-      SubProcessLight proc = new SubProcessLight(getName(), "gimp", args, env, dir);
+      proc = new SubProcessLight(getName(), getProgram(), args, env, dir);
       proc.start();
-      
-      return proc;
     }
     else if(PackageInfo.sOsType == OsType.MacOS) {
-      return super.launch(fseq, env, dir);
-    }
+      args.add("-e");
+      {
+	ExecPath epath = new ExecPath(env.get("PATH"));
+	File mpath = epath.which("maya");
+	if((mpath == null) || !mpath.getPath().endsWith("/Contents/bin/maya")) {
+	  StringBuffer buf = new StringBuffer();
+	  buf.append("Could not find the Maya binary in any of the directories which " + 
+		     "make up the PATH:\n");
+	  for(File edir : epath.getDirectories()) 
+	    buf.append("  " + edir + "\n");
+	  
+	  throw new PipelineException(buf.toString());
+	}
+	
+	String maya = mpath.getPath();
+	args.add("tell application \"" + 
+		 "Macintosh HD" + maya.substring(0, maya.length()-18).replace("/",":") + 
+		 "\"");
+      }
 
-    throw new PipelineException
-      ("The GIMP Editor is not yet supported on the Windows operating system.");
+      String macpath = fseq.getFile(0).getPath().substring(1).replace("/",":");
+      args.add("-e");
+      args.add("open file \"" + macpath + "\"");
+
+      for(String key : env.keySet()) {
+	args.add("-e"); 
+	args.add("execute \"putenv \\\"" + key + "\\\" \\\"" + env.get(key) + "\\\"\"");
+      }
+      
+      args.add("-e");
+      args.add("end tell");
+      
+      proc = new SubProcessLight(getName(), "osascript", args, env, dir);
+      proc.start();
+    }
+    else {
+      throw new PipelineException
+	("The Maya Editor is not yet supported on the Windows operating system.");
+    }
+     
+    return proc;
   }
 
 
@@ -94,7 +133,7 @@ class GimpEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 483224756697841093L;
+  private static final long serialVersionUID = -4813721477507193337L;
 
 }
 
