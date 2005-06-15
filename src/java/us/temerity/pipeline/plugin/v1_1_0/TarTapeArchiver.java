@@ -1,4 +1,4 @@
-// $Id: TarTapeArchiver.java,v 1.2 2005/04/02 01:01:28 jim Exp $
+// $Id: TarTapeArchiver.java,v 1.3 2005/06/15 12:16:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -68,8 +68,6 @@ class TarTapeArchiver
 
       setLayout(layout);      
     }
-
-    underDevelopment();
   }
 
 

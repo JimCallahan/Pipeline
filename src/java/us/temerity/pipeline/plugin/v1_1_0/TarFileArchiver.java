@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.2 2005/04/03 01:29:52 jim Exp $
+// $Id: TarFileArchiver.java,v 1.3 2005/06/15 12:16:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -115,8 +115,6 @@ class TarFileArchiver
 
       setLayout(layout);      
     }
-
-    underDevelopment();
   }
 
 
