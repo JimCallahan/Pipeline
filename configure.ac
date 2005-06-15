@@ -652,7 +652,7 @@ then
 
   AC_MSG_CHECKING([MacOS Temporary Directory])
   MAC_TEMPDIR=$mac_temp_dir
-  AC_MSG_RESULT([$MAC_TEMPIR])
+  AC_MSG_RESULT([$MAC_TEMPDIR])
 
   has_mac=true
 fi 
