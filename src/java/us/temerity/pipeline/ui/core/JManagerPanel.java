@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.19 2005/06/14 13:38:33 jim Exp $
+// $Id: JManagerPanel.java,v 1.20 2005/06/15 19:14:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -472,7 +472,7 @@ class JManagerPanel
 
 	item = new JMenuItem("License Agreement...");
 	pLicenseAgreementItem = item;
-	item.setEnabled(false);
+	item.setEnabled(true);
 	item.setActionCommand("license-agreement");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -1731,23 +1731,22 @@ class JManagerPanel
 
     else if((prefs.getShowHomePage() != null) &&
 	    prefs.getShowHomePage().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us/");
+      BaseApp.showURL("http://www.temerity.us/products/pipeline");
       return true; 
     }
     else if((prefs.getShowSupportForums() != null) &&
 	    prefs.getShowSupportForums().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us/forums");
+      BaseApp.showURL("http://www.temerity.us/community/forums");
       return true;
     }
     else if((prefs.getShowBugDatabase() != null) &&
 	    prefs.getShowBugDatabase().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us/bugs");  
+      BaseApp.showURL("http://www.temerity.us/community/forums/viewforum.php?f=12");  
       return true;
     }
     else if((prefs.getShowLicenseAgreement() != null) &&
 	    prefs.getShowLicenseAgreement().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
-		      "/share/docs/license-agreement.html");
+      BaseApp.showURL("http//www.temerity.us/company/license.php");
       return true;
     }
     
