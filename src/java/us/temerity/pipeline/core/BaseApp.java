@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.14 2005/06/10 04:55:06 jim Exp $
+// $Id: BaseApp.java,v 1.15 2005/06/15 19:15:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -114,7 +114,7 @@ class BaseApp
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Open the given URL in mozilla(1).
+   * Open the given URL using the default web browser for the local environment.
    */ 
   public static void
   showURL
@@ -123,55 +123,148 @@ class BaseApp
   ) 
   {
     Map<String,String> env = System.getenv();
-    File dir = PackageInfo.sTempDir;
+    switch(PackageInfo.sOsType) {
+    case Unix:
+      {
+	ExecPath epath = new ExecPath(env.get("PATH"));
+	File mozilla = epath.which("mozilla");
+	File firefox = epath.which("firefox");
 
-    boolean isRunning = false;
-    {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("-remote");
-      args.add("ping()");
-      
-      SubProcessLight proc = 
-	new SubProcessLight("CheckMozilla", "mozilla", args, env, dir);
-      try {
+	if((mozilla != null) && isBrowserRunning("mozilla", env))
+	  displayURL("mozilla", env, url);
+	else if((firefox != null) && isBrowserRunning("firefox", env))
+	  displayURL("firefox", env, url);
+	else if(mozilla != null)
+	  launchURL("mozilla", env, url);
+	else if(firefox != null)
+	  launchURL("firefox", env, url);
+	else 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sub, LogMgr.Level.Warning,
+	     "Unable to find either firefox(1) or mozilla(1) on your system to " +
+	     "display URLs!");
+      }
+      break;
+
+    case MacOS:
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("-e");
+	args.add("open location \"" + url + "\"");
+
+	SubProcessLight proc = 
+	  new SubProcessLight("OpenURL", "osascript", args, env, PackageInfo.sTempDir);
 	proc.start();
-	proc.join();
       }
-      catch(InterruptedException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
-	   ex.getMessage());
-      }
-      
-      isRunning = proc.wasSuccessful();
-    }
+      break;
 
-    if(isRunning) {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("-remote");
-      args.add("openURL(" + url + ", new-tab)");
-
-      SubProcessLight proc = 
-	new SubProcessLight("RemoteMozilla", "mozilla", args, env, dir);
-      try {      
-	proc.start();
-	proc.join();
-      }
-      catch(InterruptedException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
-	   ex.getMessage());
-      }
-    }
-    else {
-      ArrayList<String> args = new ArrayList<String>();
-      args.add(url.toString());
-
-      SubProcessLight proc = 
-	new SubProcessLight("LaunchMozilla", "mozilla", args, env, dir);
-      proc.start();
+    case Windows:
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
+	 "Sorry, web browsing is not yet supported on Winows systems!");
     }
   }
+
+  /**
+   * Returns whether a web browser is currently running.
+   * 
+   * @param browser
+   *   The browser program name (mozilla or firefox).
+   * 
+   * @param env
+   *   The shell environment.
+   */    
+  private static boolean
+  isBrowserRunning
+  (
+   String browser, 
+   Map<String,String> env
+  )
+  {
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("-remote");
+    args.add("ping()");
+
+    SubProcessLight proc = 
+      new SubProcessLight("CheckBrowser", browser, args, env, PackageInfo.sTempDir);
+    try {
+      proc.start();
+      proc.join();
+    }
+    catch(InterruptedException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
+    
+    return proc.wasSuccessful();
+  }
+
+  /**
+   * Direct a running browser to display the given URL.
+   * 
+   * @param browser
+   *   The browser program name (mozilla or firefox).
+   * 
+   * @param env
+   *   The shell environment.
+   * 
+   * @param url
+   *   The URL to display.
+   */ 
+  private static void
+  displayURL
+  (
+   String browser, 
+   Map<String,String> env,
+   String url 
+  )
+  {
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("-remote");
+    args.add("openURL(" + url + ", new-tab)");
+    
+    SubProcessLight proc = 
+      new SubProcessLight("RemoteBrowser", browser, args, env, PackageInfo.sTempDir);
+    try {      
+      proc.start();
+      proc.join();
+    }
+    catch(InterruptedException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
+  }
+  
+  /**
+   * Launch a new browser process to display the given URL.
+   * 
+   * @param browser
+   *   The browser program name (mozilla or firefox).
+   * 
+   * @param env
+   *   The shell environment.
+   * 
+   * @param url
+   *   The URL to display.
+   */ 
+  private static void
+  launchURL
+  (
+   String browser, 
+   Map<String,String> env,
+   String url 
+  )
+  {
+    ArrayList<String> args = new ArrayList<String>();
+    args.add(url.toString());
+    
+    SubProcessLight proc = 
+      new SubProcessLight("LaunchBrowser", browser, args, env, PackageInfo.sTempDir);
+    proc.start();
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/
