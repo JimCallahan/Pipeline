@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.5 2005/06/14 13:36:30 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.6 2005/06/16 17:55:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -114,6 +114,12 @@ class JManageToolsetsDialog
       item.addActionListener(this);
       pToolsetsPopup.add(item);  
 
+      item = new JMenuItem("Clone Toolset...");
+      pCloneToolsetItem = item;
+      item.setActionCommand("clone-toolset");
+      item.addActionListener(this);
+      pToolsetsPopup.add(item);  
+
       pToolsetsPopup.addSeparator();
 
       item = new JMenuItem("Add MacOS Toolset");
@@ -125,12 +131,6 @@ class JManageToolsetsDialog
       item = new JMenuItem("Add Windows Toolset");
       pAddWindowsToolsetItem = item;
       item.setActionCommand("add-win-toolset");
-      item.addActionListener(this);
-      pToolsetsPopup.add(item);  
-
-      item = new JMenuItem("Clone Toolset...");
-      pCloneToolsetItem = item;
-      item.setActionCommand("clone-toolset");
       item.addActionListener(this);
       pToolsetsPopup.add(item);  
    
@@ -792,7 +792,12 @@ class JManageToolsetsDialog
 	  ToolsetTreeData odata = (ToolsetTreeData) onode.getUserObject();
 	  if(odata.equals(selected)) {
 	    pToolsetsTree.setSelectionPath(new TreePath(onode.getPath()));
-	    pEnableToolsetButton.setEnabled(pIsPrivileged);
+
+	    Toolset toolset = lookupToolset(odata.getName(), odata.getOsType());
+	    pEnableToolsetButton.setEnabled
+	      (pIsPrivileged && (odata.getOsType() == OsType.Unix) && 
+	       (toolset != null) && toolset.isFrozen());
+
 	    return;
 	  }
 	}
@@ -801,12 +806,13 @@ class JManageToolsetsDialog
   }
 
   /*
-   * Select the Unix toolset node with the given data.
+   * Select the toolset node with the given name and operating system.
    */ 
   public void 
   selectToolset
   (
-   String tname
+   String tname, 
+   OsType os
   ) 
   {
     if(tname == null) 
@@ -824,8 +830,10 @@ class JManageToolsetsDialog
 	for(nk=0; nk<nnode.getChildCount(); nk++) {
 	  DefaultMutableTreeNode onode = (DefaultMutableTreeNode) nnode.getChildAt(nk); 
 	  ToolsetTreeData odata = (ToolsetTreeData) onode.getUserObject();
-	  if(odata.getOsType().equals(OsType.Unix)) {
-	    pToolsetsTree.setSelectionPath(new TreePath(onode.getPath()));
+	  if(odata.getOsType().equals(os)) {
+	    TreePath tpath = new TreePath(onode.getPath());
+	    pToolsetsTree.setSelectionPath(tpath);
+	    pToolsetsTree.scrollPathToVisible(tpath);
 	    return;
 	  }
 	}
@@ -998,6 +1006,52 @@ class JManageToolsetsDialog
     }
   }
 
+  /**
+   * Select the package with the given name, operating system and revision number.
+   */ 
+  public void 
+  selectPackage
+  (
+   String pname,
+   OsType os, 
+   VersionID vid
+  ) 
+  {
+    if(pname == null)
+      return; 
+
+    DefaultTreeModel model = (DefaultTreeModel) pPackagesTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
+    int wk;
+    for(wk=0; wk<root.getChildCount(); wk++) {
+      DefaultMutableTreeNode nnode = (DefaultMutableTreeNode) root.getChildAt(wk); 
+      PackageTreeData ndata = (PackageTreeData) nnode.getUserObject();
+
+      if(ndata.getName().equals(pname)) {	  
+	int nk;
+	for(nk=0; nk<nnode.getChildCount(); nk++) {
+	  DefaultMutableTreeNode onode = (DefaultMutableTreeNode) nnode.getChildAt(nk); 
+	  PackageTreeData odata = (PackageTreeData) onode.getUserObject();
+
+	  if(odata.getOsType().equals(os)) {
+	    int vk;
+	    for(vk=0; vk<onode.getChildCount(); vk++) {
+	      DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) onode.getChildAt(vk); 
+	      PackageTreeData vdata = (PackageTreeData) vnode.getUserObject();
+	      if(((vid == null) && (vdata.getVersionID() == null)) || 
+		 ((vid != null) && (vdata.getVersionID().equals(vid)))) {
+		TreePath tpath = new TreePath(vnode.getPath());
+		pPackagesTree.setSelectionPath(tpath);
+		pPackagesTree.scrollPathToVisible(tpath);
+		return;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1143,10 +1197,7 @@ class JManageToolsetsDialog
       }
     }
 
-    /* update the UI components */ 
     updateAll();
-    
-    /* update the child dialogs */ 
     updateDialogs();
   }
 
@@ -1714,7 +1765,8 @@ class JManageToolsetsDialog
 
 	Toolset toolset = lookupToolset(data.getName(), os);
 	if(toolset != null) 
-	  pEnableToolsetButton.setEnabled(pIsPrivileged && toolset.isFrozen());
+	  pEnableToolsetButton.setEnabled
+	    (pIsPrivileged && toolset.isFrozen() && (os == OsType.Unix));
       }
 
       rebuildIncludedPackagesList();
@@ -2139,6 +2191,8 @@ class JManageToolsetsDialog
       if((tname != null) && !pToolsets.containsKey(tname)) {
 	updateToolset(OsType.Unix, new Toolset(tname));
 	updateAll();
+	selectToolset(tname, OsType.Unix);
+
 	updateDialogs();
       }
     }
@@ -2160,6 +2214,8 @@ class JManageToolsetsDialog
       if(pToolsets.containsKey(tname) && !pToolsets.get(tname).containsKey(os)) {
 	updateToolset(os, new Toolset(data.getName()));
 	updateAll();
+	selectToolset(tname, os);
+
 	updateDialogs();
       }
     }
@@ -2199,6 +2255,8 @@ class JManageToolsetsDialog
 	    }
 
 	    updateAll();
+	    selectToolset(tname, OsType.Unix);
+
 	    updateDialogs();
 	  }
 	}
@@ -2413,7 +2471,7 @@ class JManageToolsetsDialog
       }
 	
       updateAll();
-      selectToolset(tname);
+      selectToolset(tname, OsType.Unix);
     }
   }
   
@@ -2492,9 +2550,9 @@ class JManageToolsetsDialog
 	  }
 
 	  updateToolset(os, new Toolset(toolset.getName(), packages));
-
 	  updateAll();
 	  pIncludedPackagesList.setSelectedIndex(newIdx);
+
 	  updateDialogs();
 	}
       }
@@ -2540,6 +2598,7 @@ class JManageToolsetsDialog
 	packages.put(os, new PackageMod(pname));
 
 	updateAll();
+	selectPackage(pname, os, null);
 	updateDialogs();
       }
     }
@@ -2568,6 +2627,7 @@ class JManageToolsetsDialog
 	  packages.put(os, new PackageMod(com));
 
 	  updateAll();
+	  selectPackage(pname, os, null);
 	  updateDialogs();
 	}
       }
@@ -2590,6 +2650,8 @@ class JManageToolsetsDialog
 	pPackageMods.put(pname, packages);
 	packages.put(OsType.Unix, new PackageMod(pname));
 	updateAll();
+	selectPackage(pname, OsType.Unix, null);
+
 	updateDialogs();
       }
     }
@@ -2618,6 +2680,8 @@ class JManageToolsetsDialog
 	if(!packages.containsKey(os)) {
 	  packages.put(os, new PackageMod(pname));
 	  updateAll();
+	  selectPackage(pname, os, null);
+
 	  updateDialogs();
 	}
       }
@@ -2837,6 +2901,7 @@ class JManageToolsetsDialog
 	updateToolset(os, new Toolset(toolset.getName(), packages));
    
 	updateAll();
+	selectPackage(data.getName(), os, data.getVersionID());
 	updateDialogs();
       }
     }
