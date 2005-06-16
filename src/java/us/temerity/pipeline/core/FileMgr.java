@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.45 2005/04/30 01:03:59 jim Exp $
+// $Id: FileMgr.java,v 1.46 2005/06/16 00:04:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -458,7 +458,10 @@ class FileMgr
 		  if(workEqLatest) {
 		    fs[wk] = FileState.Identical;
 		  }
-		  else {
+		  else if(!base.isFile()) {
+		    fs[wk] = FileState.Conflicted;
+		  }
+		  else { 
 		    if(NativeFileSys.realpath(base).equals(NativeFileSys.realpath(latest)))
 		      fs[wk] = FileState.Modified;
 		    else {
