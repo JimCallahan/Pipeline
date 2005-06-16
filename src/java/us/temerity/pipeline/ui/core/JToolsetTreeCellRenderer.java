@@ -1,4 +1,4 @@
-// $Id: JToolsetTreeCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
+// $Id: JToolsetTreeCellRenderer.java,v 1.3 2005/06/16 00:26:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -45,12 +45,12 @@ class JToolsetTreeCellRenderer
     {    
       pLabel = new JLabel();
       pLabel.setHorizontalAlignment(JLabel.LEFT);
-      pLabel.setMinimumSize(new Dimension(80, 16));
       
       add(pLabel);
     }
     
     add(Box.createRigidArea(new Dimension(16, 0)));
+    add(Box.createHorizontalGlue());
 
     {
       pExtraLabel = new JLabel();
@@ -61,6 +61,12 @@ class JToolsetTreeCellRenderer
 
       add(pExtraLabel);
     }
+
+    
+    Dimension size = new Dimension(175, 16);
+    setMinimumSize(size);
+    setPreferredSize(size);
+    setMaximumSize(size);
 
     pDialog = dialog; 
   }
