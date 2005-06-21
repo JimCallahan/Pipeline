@@ -1,4 +1,4 @@
-// $Id: AirEnvCubeAction.java,v 1.1 2005/05/14 08:32:05 jim Exp $
+// $Id: AirEnvCubeAction.java,v 1.2 2005/06/21 21:00:34 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -168,7 +168,7 @@ class AirEnvCubeAction
       ActionParam param = 
 	new BooleanActionParam
 	("Compression", 
-	 "Whther to compress the output texture maps.",
+	 "Whether to compress the output texture maps.",
 	 true);
       addSingleParam(param);
     }      
