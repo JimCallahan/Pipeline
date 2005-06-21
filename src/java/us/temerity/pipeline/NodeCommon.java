@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.23 2005/05/16 19:25:31 jim Exp $
+// $Id: NodeCommon.java,v 1.24 2005/06/21 21:23:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -310,7 +310,26 @@ class NodeCommon
   {
     return Collections.unmodifiableSortedSet(pSecondarySeqs);
   }
-  
+
+  /**
+   * Whether all primary/secondary file sequences have identical frame ranges. <P> 
+   * 
+   * Also returns <CODE>true</CODE> when the sequences don't have frame numbers.
+   */ 
+  public boolean 
+  hasIdenticalFrameRanges() 
+  {
+    FrameRange prange = pPrimarySeq.getFrameRange();
+    if(prange != null) {
+      for(FileSeq fseq : pSecondarySeqs) {
+	FrameRange srange = fseq.getFrameRange();
+	if(!prange.equals(srange)) 
+	  return false; 
+      }
+    }
+
+    return true;
+  }
   
   
   /** 

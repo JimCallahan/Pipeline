@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.40 2005/06/02 22:11:58 jim Exp $
+// $Id: NodeMod.java,v 1.41 2005/06/21 21:23:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -481,14 +481,18 @@ class NodeMod
       throw new IllegalArgumentException
 	("The new frame range cannot be (null)!");
 
-    if(pSecondarySeqs.isEmpty()) {
-      TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
+    TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
+    for(FileSeq fseq : pSecondarySeqs) {
+      dead.addAll(fseq.getFiles());
+    }
+
+    if(hasIdenticalFrameRanges()) {
       pPrimarySeq = new FileSeq(pPrimarySeq.getFilePattern(), range);
-      dead.removeAll(pPrimarySeq.getFiles());
 
-      updateLastMod();
-
-      return new ArrayList(dead);      
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      for(FileSeq fseq : pSecondarySeqs) 
+	secondary.add(new FileSeq(fseq.getFilePattern(), range));
+      pSecondarySeqs = secondary;
     }
     else {
       if(orange.getBy() != range.getBy())
@@ -504,10 +508,6 @@ class NodeMod
       
       int deltaS = (range.getStart() - orange.getStart()) / orange.getBy();
       int deltaE = (range.getEnd() - orange.getEnd()) / orange.getBy();
-      
-      TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
-      for(FileSeq fseq : pSecondarySeqs) 
-	dead.addAll(fseq.getFiles());
       
       {
 	FileSeq primary = new FileSeq(pPrimarySeq.getFilePattern(), range);
@@ -525,15 +525,15 @@ class NodeMod
 	pPrimarySeq    = primary;
 	pSecondarySeqs = secondary;
       }
-      
-      dead.removeAll(pPrimarySeq.getFiles());
-      for(FileSeq fseq : pSecondarySeqs) 
-	dead.removeAll(fseq.getFiles());
-      
-      updateLastMod();
+    }      
 
-      return new ArrayList(dead);
-    }
+    dead.removeAll(pPrimarySeq.getFiles());
+    for(FileSeq fseq : pSecondarySeqs) 
+      dead.removeAll(fseq.getFiles());
+
+    updateLastMod();
+
+    return new ArrayList(dead);
   }
   
 

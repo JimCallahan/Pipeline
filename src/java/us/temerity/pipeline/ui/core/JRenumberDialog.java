@@ -1,4 +1,4 @@
-// $Id: JRenumberDialog.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: JRenumberDialog.java,v 1.5 2005/06/21 21:23:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -176,7 +176,7 @@ class JRenumberDialog
     pEndFrameField.setValue(pOrigFrameRange.getEnd());
     pByFrameField.setValue(pOrigFrameRange.getBy());
 
-    pByFrameField.setEnabled(mod.getSecondarySequences().isEmpty());
+    pByFrameField.setEnabled(mod.hasIdenticalFrameRanges());
 
     pRemoveFilesField.setValue(false);
   }
