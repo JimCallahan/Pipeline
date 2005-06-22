@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.9 2004/05/21 18:07:30 jim Exp $
+// $Id: FrameRange.java,v 1.10 2005/06/22 18:11:09 jim Exp $
 
 package us.temerity.pipeline;
  
@@ -118,6 +118,77 @@ class FrameRange
     pNumFrames = ((end - start) / by) + 1;
   }
 
+
+  /**
+   * Construct the smallest possible frame range which includes all of the given frames. <P>
+   * 
+   * The constructed frame range will have a frame step increment which is the greatest
+   * common multiple of the frame steps between all given frames.  This may cause the 
+   * frame range to include frames additional frames in order to meet this requirement. <P> 
+   * 
+   * The frame range will always be bounded by the lowest and highest of the given frames.
+   * 
+   * @param frames
+   *   A set of frame numbers.
+   */ 
+  public 
+  FrameRange
+  ( 
+   TreeSet<Integer> frames
+  ) 
+  {
+    if(frames.isEmpty()) 
+      throw new IllegalArgumentException
+	("At least one frame must be supplied!");
+    
+    pStart = frames.first();
+    pEnd   = frames.last();
+    pBy    = 1;
+
+    switch(frames.size()) {
+    case 1:
+      break;
+
+    case 2:
+      pBy = frames.last() - frames.first();
+      break;
+
+    default:
+      {
+	TreeSet<Integer> incs = new TreeSet<Integer>();
+	Integer prev = null;
+	for(Integer frame : frames) {
+	  if(prev != null) 
+	    incs.add(frame - prev);
+	  prev = frame;
+	}
+      
+	boolean done = false;
+	int wk = 1; 
+	while(!done) {
+	  boolean multipleAll = true;
+	  for(Integer inc : incs) {
+	    if(wk > inc) {
+	      done = true;
+	      multipleAll = false;
+	      break;		
+	    }
+	    
+	    if((inc % wk) != 0)
+	      multipleAll = false;
+	  }
+	  
+	  if(multipleAll)
+	    pBy = wk;
+	  
+	  wk++;
+	}
+      }
+    }
+      
+    pNumFrames = ((pStart - pEnd) / pBy) + 1;
+  }
+  
   /**
    * Copy constructor. 
    *

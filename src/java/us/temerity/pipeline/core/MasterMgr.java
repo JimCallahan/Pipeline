@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.131 2005/06/12 17:58:00 jim Exp $
+// $Id: MasterMgr.java,v 1.132 2005/06/22 18:11:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6250,19 +6250,8 @@ class MasterMgr
 
 	if(frames.isEmpty()) 
 	  targetSeq = new FileSeq(fpat, null);
-	else {
-	  int step = Integer.MAX_VALUE;
-	  {
-	    Integer last = null;
-	    for(Integer frame : frames) {
-	      if(last != null) 
-		step = Math.min(step, frame - last);
-	      last = frame;
-	    }
-	  }
-
-	  targetSeq = new FileSeq(fpat, new FrameRange(frames.first(), frames.last(), step));
-	}
+	else 
+	  targetSeq = new FileSeq(fpat, new FrameRange(frames));
 
 	for(TreeMap<Integer,Long> frameOrder : rootOrder.values()) 
 	  orderedRootIDs.addAll(frameOrder.values());
