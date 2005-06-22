@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.5 2005/06/02 22:11:59 jim Exp $
+// $Id: JCloneDialog.java,v 1.6 2005/06/22 22:03:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -367,6 +367,17 @@ class JCloneDialog
     if(mod == null) 
       return; 
 
+    {
+      FileSeq fseq = mod.getPrimarySequence();
+      if(fseq.numFrames() > 10000) {
+	JConfirmFrameRangeDialog diag = 
+	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	diag.setVisible(true);
+	if(!diag.wasConfirmed()) 
+	  return;
+      }
+    }
+
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp("Registering Cloned Node: " + mod.getName())) {
       try {
@@ -382,7 +393,7 @@ class JCloneDialog
 	master.endPanelOp("Done.");
       }
     }
-
+    
     super.doConfirm();
   }
   
@@ -396,6 +407,17 @@ class JCloneDialog
     if(mod == null) 
       return; 
     
+    {
+      FileSeq fseq = mod.getPrimarySequence();
+      if(fseq.numFrames() > 10000) {
+	JConfirmFrameRangeDialog diag = 
+	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	diag.setVisible(true);
+	if(!diag.wasConfirmed()) 
+	  return;
+      }
+    }
+
     pConfirmButton.setEnabled(false);
     pApplyButton.setEnabled(false);
     pCancelButton.setEnabled(false);

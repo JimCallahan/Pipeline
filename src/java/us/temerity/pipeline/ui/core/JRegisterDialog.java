@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.9 2005/05/16 21:25:00 jim Exp $
+// $Id: JRegisterDialog.java,v 1.10 2005/06/22 22:03:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -461,6 +461,17 @@ class JRegisterDialog
     if(mod == null) 
       return; 
     
+    {
+      FileSeq fseq = mod.getPrimarySequence();
+      if(fseq.numFrames() > 10000) {
+	JConfirmFrameRangeDialog diag = 
+	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	diag.setVisible(true);
+	if(!diag.wasConfirmed()) 
+	  return;
+      }
+    }
+    
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp("Registering New Node: " + mod.getName())) {
       try {
@@ -476,7 +487,7 @@ class JRegisterDialog
 	master.endPanelOp("Done.");
       }
     }
-
+    
     super.doConfirm();
   }
   
@@ -490,6 +501,17 @@ class JRegisterDialog
     if(mod == null) 
       return; 
     
+    {
+      FileSeq fseq = mod.getPrimarySequence();
+      if(fseq.numFrames() > 10000) {
+	JConfirmFrameRangeDialog diag = 
+	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	diag.setVisible(true);
+	if(!diag.wasConfirmed()) 
+	  return;
+      }
+    }
+
     pConfirmButton.setEnabled(false);
     pApplyButton.setEnabled(false);
     pCancelButton.setEnabled(false);

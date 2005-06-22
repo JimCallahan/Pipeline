@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.32 2005/06/22 01:00:05 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.33 2005/06/22 22:03:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3007,8 +3007,17 @@ class JNodeViewerPanel
 	    FrameRange range    = pRenumberDialog.getFrameRange();
 	    boolean removeFiles = pRenumberDialog.removeFiles();
 
-	    RenumberTask task = new RenumberTask(mod.getName(), range, removeFiles); 
-	    task.start();
+	    boolean confirmed = true;
+	    if(range.numFrames() > 10000) {
+	      JConfirmFrameRangeDialog diag = new JConfirmFrameRangeDialog(range);
+	      diag.setVisible(true);
+	      confirmed = diag.wasConfirmed();
+	    }
+
+	    if(confirmed) {
+	      RenumberTask task = new RenumberTask(mod.getName(), range, removeFiles); 
+	      task.start();
+	    }
 	  }
 	}
       }
