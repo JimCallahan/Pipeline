@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.31 2005/06/02 22:11:59 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.32 2005/06/22 01:00:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -199,15 +199,16 @@ class JNodeViewerPanel
 	pFrozenNodePopup, pNodePopup 
       };
 
-      pUpdateDetailsItems = new JMenuItem[5];
-      pMakeRootItems      = new JMenuItem[5];
-      pAddRootItems       = new JMenuItem[5];
-      pReplaceRootItems   = new JMenuItem[5];
-      pRemoveRootItems    = new JMenuItem[5];
-      pEditItems          = new JMenuItem[4];
-      pCheckOutItems      = new JMenuItem[3];
-      pRestoreItems       = new JMenuItem[3];
-      pReleaseItems       = new JMenuItem[2];
+      pUpdateDetailsItems   = new JMenuItem[5];
+      pMakeRootItems        = new JMenuItem[5];
+      pAddRootItems         = new JMenuItem[5];
+      pReplaceRootItems     = new JMenuItem[5];
+      pRemoveRootItems      = new JMenuItem[5];
+      pEditItems            = new JMenuItem[4];
+      pEditWithDefaultItems = new JMenuItem[4];
+      pCheckOutItems        = new JMenuItem[3];
+      pRestoreItems         = new JMenuItem[3];
+      pReleaseItems         = new JMenuItem[2];
 
       int wk;
       for(wk=0; wk<menus.length; wk++) {
@@ -254,6 +255,12 @@ class JNodeViewerPanel
 	  
 	  pEditWithMenus[wk-1] = new JMenu((wk < 4) ? "View With" : "Edit With");
 	  menus[wk].add(pEditWithMenus[wk-1]);
+
+	  item = new JMenuItem((wk < 4) ? "View With Default" : "Edit With Default");
+	  pEditWithDefaultItems[wk-1] = item;
+	  item.setActionCommand("edit-with-default");
+	  item.addActionListener(this);
+	  menus[wk].add(item);
 	}
 
 	if((wk == 2) || (wk == 3)) {
@@ -825,6 +832,11 @@ class JNodeViewerPanel
       updateMenuToolTip
 	(pEditItems[wk], prefs.getEdit(), 
 	 "Edit primary file sequences of the current primary selection.");
+
+      updateMenuToolTip
+	(pEditWithDefaultItems[wk], prefs.getEditWithDefault(), 
+	 "Edit primary file sequences of the current primary selection using the default" + 
+	 "editor for the file type.");
     }
 
     for(wk=0; wk<3; wk++) {
@@ -2251,6 +2263,9 @@ class JNodeViewerPanel
       else if((prefs.getEdit() != null) &&
 	      prefs.getEdit().wasPressed(e))
 	doEdit();
+      else if((prefs.getEditWithDefault() != null) &&
+	      prefs.getEditWithDefault().wasPressed(e))
+	doEditWithDefault();
 
       else if((prefs.getNodeViewerLink() != null) &&
 	      prefs.getNodeViewerLink().wasPressed(e))
@@ -2473,6 +2488,8 @@ class JNodeViewerPanel
 
     else if(cmd.equals("edit"))
       doEdit();
+    else if(cmd.equals("edit-with-default"))
+      doEditWithDefault();
     else if(cmd.startsWith("edit-with:")) 
       doEditWith(cmd.substring(10));    
 
@@ -2678,6 +2695,30 @@ class JNodeViewerPanel
 
 	if(com != null) {
 	  EditTask task = new EditTask(com);
+	  task.start();
+	}
+      }
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Edit/View the primary selected node using the default editor for the file type.
+   */ 
+  private void 
+  doEditWithDefault() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, true);
 	  task.start();
 	}
       }
@@ -3802,7 +3843,18 @@ class JNodeViewerPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(com, pAuthor, pView);
+      UIMaster.getInstance().super(com, false, pAuthor, pView);
+      setName("JNodeViewerPanel:EditTask");
+    }
+
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     boolean useDefault
+    ) 
+    {
+      UIMaster.getInstance().super(com, useDefault, pAuthor, pView);
       setName("JNodeViewerPanel:EditTask");
     }
 
@@ -5539,6 +5591,7 @@ class JNodeViewerPanel
   private JMenuItem[]  pReplaceRootItems;
   private JMenuItem[]  pRemoveRootItems;
   private JMenuItem[]  pEditItems;
+  private JMenuItem[]  pEditWithDefaultItems;
   private JMenuItem[]  pCheckOutItems;
   private JMenuItem[]  pRestoreItems;
   private JMenuItem[]  pReleaseItems;

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.16 2005/06/15 12:16:55 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.17 2005/06/22 01:00:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -101,8 +101,9 @@ class JNodeFilesPanel
 	pWorkingPopup.addSeparator();
       }
 
-      pEditItems     = new JMenuItem[3];
-      pEditWithMenus = new JMenu[3];
+      pEditItems            = new JMenuItem[3];
+      pEditWithDefaultItems = new JMenuItem[3];
+      pEditWithMenus        = new JMenu[3];
 
       JPopupMenu menus[] = { pWorkingPopup, pFrozenPopup, pCheckedInPopup };
       int wk;
@@ -115,6 +116,12 @@ class JNodeFilesPanel
 	
 	pEditWithMenus[wk] = new JMenu((wk > 0) ? "View With" : "Edit With");
 	menus[wk].add(pEditWithMenus[wk]);
+
+	item = new JMenuItem((wk > 0) ? "View With Default" : "Edit With Default");
+	pEditWithDefaultItems[wk] = item;
+	item.setActionCommand("edit-with-default");
+	item.addActionListener(this);
+	menus[wk].add(item);
       }
       
       {
@@ -1026,6 +1033,11 @@ class JNodeFilesPanel
       updateMenuToolTip
 	(pEditItems[wk], prefs.getEdit(), 
 	 "Edit primary file sequences of the current primary selection.");
+
+      updateMenuToolTip
+	(pEditWithDefaultItems[wk], prefs.getEdit(), 
+	 "Edit primary file sequences of the current primary selection using the default" + 
+	 "editor for the file type.");
     }
 
     updateMenuToolTip
@@ -1420,7 +1432,10 @@ class JNodeFilesPanel
 
     else if((prefs.getEdit() != null) &&
 	    prefs.getEdit().wasPressed(e))
-      doEditWith(null);
+      doEditWith(null, false);
+    else if((prefs.getEditWithDefault() != null) &&
+	    prefs.getEditWithDefault().wasPressed(e))
+      doEditWith(null, true);
     
     else if((prefs.getQueueJobs() != null) &&
 	    prefs.getQueueJobs().wasPressed(e))
@@ -1491,9 +1506,11 @@ class JNodeFilesPanel
       doVersionPressed(comps[1], comps[2]);
     }
     else if(cmd.equals("edit"))
-      doEditWith(null);
+      doEditWith(null, false);
+    else if(cmd.equals("edit-with-default"))
+      doEditWith(null, true);
     else if(cmd.startsWith("edit-with:"))
-      doEditWith(cmd.substring(10)); 
+      doEditWith(cmd.substring(10), false); 
     else if(cmd.startsWith("compare-with:"))
       doCompareWith(cmd.substring(13)); 
 
@@ -1640,12 +1657,16 @@ class JNodeFilesPanel
    * Edit/View the target file with the given editor.
    * 
    * @param editor
-   *   The name of the editor plugin or <CODE>null</CODE> for the default editor.
+   *   The name of the editor plugin or <CODE>null</CODE> for the node's editor.
+   * 
+   * @param useDefault
+   *   Whether to use the default editor for the file suffix instead of the given editor.
    */ 
   private void 
   doEditWith
   (
-   String editor
+   String editor, 
+   boolean useDefault
   ) 
   {
     if(pTargetFileSeq == null) 
@@ -1671,7 +1692,7 @@ class JNodeFilesPanel
     }
 
     if(pTargetVersionID != null) {
-      EditTask task = new EditTask(ename, evid, pTargetFileSeq, pTargetVersionID);
+      EditTask task = new EditTask(ename, evid, pTargetFileSeq, pTargetVersionID, useDefault);
       task.start();
     }
     else if(!pSelected.isEmpty()) {
@@ -1705,7 +1726,7 @@ class JNodeFilesPanel
 
       for(Integer[] range : ranges) {
 	FileSeq fseq = new FileSeq(pTargetFileSeq, range[0], range[1]);
-	EditTask task = new EditTask(ename, evid, fseq, null);
+	EditTask task = new EditTask(ename, evid, fseq, null, useDefault);
 	task.start();
       }
       
@@ -2639,29 +2660,20 @@ class JNodeFilesPanel
     public 
     EditTask
     (
+     String ename, 
+     VersionID evid,
      FileSeq fseq, 
-     VersionID vid
+     VersionID vid, 
+     boolean useDefault
     ) 
     {
       super("JNodeFilesPanel:EditTask");
 
-      pFileSeq   = fseq; 
-      pVersionID = vid; 
-    }
-
-    public 
-    EditTask
-    (
-     String ename, 
-     VersionID evid,
-     FileSeq fseq, 
-     VersionID vid
-    ) 
-    {
-      this(fseq, vid); 
-
       pEditorName    = ename;
       pEditorVersion = evid; 
+      pFileSeq       = fseq; 
+      pVersionID     = vid; 
+      pUseDefault    = useDefault;
     }
 
     public void 
@@ -2687,8 +2699,16 @@ class JNodeFilesPanel
 	  BaseEditor editor = null;
 	  {
 	    String ename = pEditorName;
+	    if((ename == null) && pUseDefault) {
+	      FilePattern fpat = com.getPrimarySequence().getFilePattern();
+	      String suffix = fpat.getSuffix();
+	      if(suffix != null) 
+		ename = client.getEditorForSuffix(suffix);
+	    }
+
 	    if(ename == null) 
 	      ename = com.getEditor();
+
 	    if(ename == null) 
 	      throw new PipelineException
 		("No editor was specified for node (" + name + ")!");
@@ -2748,6 +2768,7 @@ class JNodeFilesPanel
     private VersionID  pEditorVersion; 
     private FileSeq    pFileSeq; 
     private VersionID  pVersionID; 
+    private boolean    pUseDefault; 
   }
 
 
@@ -3294,6 +3315,7 @@ class JNodeFilesPanel
    * The edit with submenus.
    */ 
   private JMenuItem[]  pEditItems;
+  private JMenuItem[]  pEditWithDefaultItems;
   private JMenu[]      pEditWithMenus; 
 
   /**

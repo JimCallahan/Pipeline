@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -547,9 +547,15 @@ class GenUserPrefsApp
 	new BasePref(),
 	
 	new HotKeyPref
-	("Edit primary file sequences of the current primary selection.",
+	("Edit primary file sequence of the current primary selection.",
 	 "Edit", "Edit:", 
 	 false, false, false, 10),  /* Enter */ 
+
+	new HotKeyPref
+	("Edit primary file sequence of the current primary selection using the default" + 
+	 "editor for the file type.",
+	 "EditWithDefault", "Edit With Default:", 
+	 true, false, false, 10),  /* SHIFT+Enter */ 
 
 	new BasePref(),
 	
@@ -802,6 +808,11 @@ class GenUserPrefsApp
 	("Edit primary file sequences of the current node.",
 	 "NodeDetailsEdit", "Edit:", "Edit"), 
 
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node using the default" + 
+	 "editor for the file type.",
+	 "NodeDetailsEditWithDefault", "Edit With Default:", "EditWithDefault"), 
+
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -845,6 +856,11 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Edit primary file sequences of the current node.",
 	 "NodeFilesEdit", "Edit:", "Edit"), 
+
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node using the default" + 
+	 "editor for the file type.",
+	 "NodeFilesEditWithDefault", "Edit With Default:", "EditWithDefault"), 
 
 	new BasePref(),
 
@@ -890,6 +906,11 @@ class GenUserPrefsApp
 	("Edit primary file sequences of the current node.",
 	 "NodeLinksEdit", "Edit:", "Edit"), 
 
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node using the default" + 
+	 "editor for the file type.",
+	 "NodeLinksEditWithDefault", "Edit With Default:", "EditWithDefault"), 
+
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -927,6 +948,11 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Edit primary file sequences of the current node.",
 	 "NodeHistoryEdit", "Edit:", "Edit"), 
+
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node using the default" + 
+	 "editor for the file type.",
+	 "NodeHistoryEditWithDefault", "Edit With Default:", "EditWithDefault"), 
 
 	new BasePref(),
 
@@ -1055,6 +1081,11 @@ class GenUserPrefsApp
 	("View the target files of the primary selected job.", 
 	 "JobView", "View:", "Edit"), 
 
+	new DuplicateHotKeyPref
+	("View the target files of the primary selected job using the default" + 
+	 "editor for the file type.", 
+	 "JobViewWithDefault", "View With Default:", "EditWithDefault"), 
+
 	new BasePref(),
 	
 	new DuplicateHotKeyPref
@@ -1092,6 +1123,11 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("View the target files of the primary selected job group.", 
 	 "JobGroupView", "View:", "Edit"), 
+
+	new DuplicateHotKeyPref
+	("View the target files of the primary selected job group using the default" + 
+	 "editor for the file type.",
+	 "JobGroupViewWithDefault", "View With Default:", "EditWithDefault"), 
 
 	new BasePref(),
 
@@ -1474,6 +1510,7 @@ class GenUserPrefsApp
       String details      = "Details";
       String update       = "Update";
       String edit         = "Edit";
+      String editDefault  = "EditWithDefault";
       String applyChanges = "ApplyChanges";
       String removeFiles  = "RemoveFiles";
       String showNode     = "ShowNode"; 
@@ -1512,6 +1549,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerReplaceRoot");
 	group.add("NodeViewerRemoveRoot");
 	group.add(edit);
+	group.add(editDefault);
 	group.add("NodeViewerLink");
 	group.add("NodeViewerUnlink");
 	group.add("NodeViewerAddSecondary");
@@ -1545,6 +1583,7 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(applyChanges);
 	group.add(edit);
+	group.add(editDefault);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -1556,6 +1595,7 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(applyChanges);
 	group.add(edit);
+	group.add(editDefault);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -1567,6 +1607,7 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(applyChanges);
 	group.add(edit);
+	group.add(editDefault);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -1577,6 +1618,7 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(edit);
+	group.add(editDefault);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -1633,6 +1675,7 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(details);
 	group.add(edit);
+	group.add(editDefault);
 	group.addAll(jobs);
 	group.add(showNode);
       }
@@ -1643,6 +1686,7 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(edit);
+	group.add(editDefault);
 	group.addAll(jobs);
 	group.add("DeleteJobGroups");
 	group.add(showNode);
@@ -1707,7 +1751,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1964,7 +2008,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3320,7 +3364,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.19 2005/05/15 19:45:35 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

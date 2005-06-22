@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.25 2005/06/14 13:38:33 jim Exp $
+// $Id: UIMaster.java,v 1.26 2005/06/22 01:00:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2005,7 +2005,8 @@ class UIMaster
     public 
     EditTask
     (
-     NodeCommon com, 
+     NodeCommon com,
+     boolean useDefault,
      String author, 
      String view
     ) 
@@ -2013,6 +2014,7 @@ class UIMaster
       super("UIMaster:EditTask", author, view);
 
       pNodeCommon = com;
+      pUseDefault = useDefault;
     }
 
     public 
@@ -2032,6 +2034,7 @@ class UIMaster
       pEditorVersion = evid; 
     }
 
+
     public void 
     run() 
     {
@@ -2040,6 +2043,8 @@ class UIMaster
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp("Launching Node Editor...")) {
 	  try {
+	    MasterMgrClient client = master.getMasterMgrClient();
+
 	    NodeMod mod = null;
 	    if(pNodeCommon instanceof NodeMod) 
 	      mod = (NodeMod) pNodeCommon;
@@ -2052,8 +2057,16 @@ class UIMaster
 	    BaseEditor editor = null;
 	    {
 	      String ename = pEditorName;
+	      if((ename == null) && pUseDefault) {
+		FilePattern fpat = pNodeCommon.getPrimarySequence().getFilePattern();
+		String suffix = fpat.getSuffix();
+		if(suffix != null) 
+		  ename = client.getEditorForSuffix(suffix);
+	      }
+
 	      if(ename == null) 
 		ename = pNodeCommon.getEditor();
+		
 	      if(ename == null) 
 		throw new PipelineException
 		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
@@ -2069,8 +2082,6 @@ class UIMaster
 		throw new PipelineException
 		  ("No toolset was specified for node (" + pNodeCommon.getName() + ")!");
 
-	      MasterMgrClient client = master.getMasterMgrClient();
-	      
 	      String view = null;
 	      if(mod != null)
 		view = pViewName; 
@@ -2138,6 +2149,7 @@ class UIMaster
     }
  
     private NodeCommon  pNodeCommon; 
+    private boolean     pUseDefault; 
     private String      pEditorName;
     private VersionID   pEditorVersion; 
   }

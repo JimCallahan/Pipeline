@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.13 2005/06/13 16:05:01 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.14 2005/06/22 01:00:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,6 +156,12 @@ class JQueueJobViewerPanel
       pViewWithMenu = new JMenu("View With");
       pJobPopup.add(pViewWithMenu);
 
+      item = new JMenuItem("View With Default");
+      pJobViewWithDefaultItem = item;
+      item.setActionCommand("view-with-default");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+      
       pJobPopup.addSeparator();
 
       item = new JMenuItem("Queue Jobs");
@@ -212,6 +218,12 @@ class JQueueJobViewerPanel
 
       pGroupViewWithMenu = new JMenu("View With");
       pGroupPopup.add(pGroupViewWithMenu);
+
+      item = new JMenuItem("View With Default");
+      pGroupViewWithDefaultItem = item;
+      item.setActionCommand("view-with-default");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
 
       pGroupPopup.addSeparator();
 
@@ -594,6 +606,10 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pJobViewItem, prefs.getEdit(), 
        "View the target files of the primary selected job.");
+    updateMenuToolTip
+      (pJobViewWithDefaultItem, prefs.getEdit(), 
+       "View the target files of the primary selected job using the default" + 
+       "editor for the file type.");
     updateMenuToolTip
       (pJobQueueJobsItem, prefs.getQueueJobs(), 
        "Resubmit all aborted and failed selected jobs.");
@@ -1587,6 +1603,9 @@ class JQueueJobViewerPanel
       else if((prefs.getEdit() != null) &&
 	 prefs.getEdit().wasPressed(e)) 
 	doView();
+      else if((prefs.getEditWithDefault() != null) &&
+	      prefs.getEditWithDefault().wasPressed(e))
+	doViewWithDefault();
 
       else if((prefs.getQueueJobs() != null) &&
 	      prefs.getQueueJobs().wasPressed(e))
@@ -1630,6 +1649,9 @@ class JQueueJobViewerPanel
       if((prefs.getEdit() != null) &&
 	 prefs.getEdit().wasPressed(e)) 
 	doView();
+      else if((prefs.getEditWithDefault() != null) &&
+	      prefs.getEditWithDefault().wasPressed(e))
+	doViewWithDefault();
 
       else if((prefs.getQueueJobs() != null) &&
 	 prefs.getQueueJobs().wasPressed(e))
@@ -1775,6 +1797,8 @@ class JQueueJobViewerPanel
 
     else if(cmd.equals("view"))
       doView();
+    else if(cmd.equals("view-with-default"))
+      doViewWithDefault();
     else if(cmd.startsWith("view-with:"))
       doViewWith(cmd.substring(10));    
 
@@ -1933,6 +1957,28 @@ class JQueueJobViewerPanel
   }
 
   /**
+   * View the target files of the primary selected job using the default editor for 
+   * the file type.
+   */ 
+  private void 
+  doViewWithDefault() 
+  {
+    if(pPrimary != null) {
+      JobStatus status = pPrimary.getJobStatus();
+      ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), true);
+      task.start();
+    }
+    else if(pPrimaryGroup != null) {
+      QueueJobGroup group = pPrimaryGroup.getGroup();
+      ViewTask task = new ViewTask(group.getNodeID(), group.getRootSequence(), true);
+      task.start();
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
    * View the target files of the primary selected job with the given editor.
    */ 
   private void 
@@ -1960,13 +2006,14 @@ class JQueueJobViewerPanel
 
     if(pPrimary != null) {
       JobStatus status = pPrimary.getJobStatus();
-      ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), 
-				   ename, evid);
+      ViewTask task = 
+	new ViewTask(status.getNodeID(), status.getTargetSequence(), false, ename, evid);
       task.start();
     }
     else if(pPrimaryGroup != null) {
       QueueJobGroup group = pPrimaryGroup.getGroup();
-      ViewTask task = new ViewTask(group.getNodeID(), group.getRootSequence(), ename, evid);
+      ViewTask task = 
+	new ViewTask(group.getNodeID(), group.getRootSequence(), false, ename, evid);
       task.start();
     }
 
@@ -2387,7 +2434,18 @@ class JQueueJobViewerPanel
      FileSeq fseq
     ) 
     {
-      this(nodeID, fseq, null, null);
+      this(nodeID, fseq, false, null, null);
+    }
+
+    public 
+    ViewTask
+    (
+     NodeID nodeID, 
+     FileSeq fseq, 
+     boolean useDefault
+    ) 
+    {
+      this(nodeID, fseq, useDefault, null, null);
     }
 
     public 
@@ -2395,6 +2453,7 @@ class JQueueJobViewerPanel
     (
      NodeID nodeID, 
      FileSeq fseq,
+     boolean useDefault,
      String ename,
      VersionID evid
     ) 
@@ -2403,99 +2462,109 @@ class JQueueJobViewerPanel
 
       pNodeID        = nodeID;
       pFileSeq       = fseq; 
+      pUseDefault    = useDefault;
       pEditorName    = ename;
       pEditorVersion = evid; 
     }
 
-    public void 
-    run() 
-    {
-      SubProcessLight proc = null;
-      {
-	UIMaster master = UIMaster.getInstance();
-	if(master.beginPanelOp("Launching Node Editor...")) {
-	  try {
-	    MasterMgrClient client = master.getMasterMgrClient();
+     public void 
+     run() 
+     {
+       SubProcessLight proc = null;
+       {
+ 	UIMaster master = UIMaster.getInstance();
+ 	if(master.beginPanelOp("Launching Node Editor...")) {
+ 	  try {
+ 	    MasterMgrClient client = master.getMasterMgrClient();
 
-	    NodeMod mod = client.getWorkingVersion(pNodeID);
-	    String author = pNodeID.getAuthor();
-	    String view = pNodeID.getView();
+ 	    NodeMod mod = client.getWorkingVersion(pNodeID);
+ 	    String author = pNodeID.getAuthor();
+ 	    String view = pNodeID.getView();
 
-	    /* create an editor plugin instance */ 
-	    BaseEditor editor = null;
-	    {
-	      String ename = pEditorName;
-	      if(ename == null) 
-		ename = mod.getEditor();
-	      if(ename == null) 
-		throw new PipelineException
-		  ("No editor was specified for node (" + mod.getName() + ")!");
-	      
-	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion);
-	    }
-
-	    /* lookup the toolset environment */ 
-	    TreeMap<String,String> env = null;
-	    {
-	      String tname = mod.getToolset();
-	      if(tname == null) 
-		throw new PipelineException
-		  ("No toolset was specified for node (" + mod.getName() + ")!");
-
-	      /* passes pAuthor so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
-
-	      /* override these since the editor will be run as the current user */ 
-	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
-	      env.put("USER", PackageInfo.sUser);
-	    }
-	    
-	    /* get the primary file sequence */ 
-	    FileSeq fseq = null;
-	    File dir = null; 
-	    {
-	      String path = null;
-	      {
-		File wpath = new File(PackageInfo.sWorkDir, 
-				      author + "/" + view + "/" + mod.getName());
-		path = wpath.getParent();
+ 	    /* create an editor plugin instance */ 
+ 	    BaseEditor editor = null;
+ 	    {
+ 	      String ename = pEditorName;
+	      if((ename == null) && pUseDefault) {
+		FilePattern fpat = mod.getPrimarySequence().getFilePattern();
+		String suffix = fpat.getSuffix();
+		if(suffix != null) 
+		  ename = client.getEditorForSuffix(suffix);
 	      }
 
-	      fseq = new FileSeq(path, pFileSeq);
-	      dir = new File(path);
-	    }
-	    
-	    /* start the editor */ 
-	    proc = editor.launch(fseq, env, dir);
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
-	}
+ 	      if(ename == null) 
+ 		ename = mod.getEditor();
 
-	/* wait for the editor to exit */ 
-	if(proc != null) {
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      master.showSubprocessFailureDialog("Editor Failure:", proc);
-	  }
-	  catch(InterruptedException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	}
-      }
-    }
- 
-    private NodeID     pNodeID;
-    private FileSeq    pFileSeq;
-    private String     pEditorName;
-    private VersionID  pEditorVersion; 
-  }
+ 	      if(ename == null) 
+ 		throw new PipelineException
+ 		  ("No editor was specified for node (" + mod.getName() + ")!");
+	      
+ 	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion);
+ 	    }
+
+ 	    /* lookup the toolset environment */ 
+ 	    TreeMap<String,String> env = null;
+ 	    {
+ 	      String tname = mod.getToolset();
+ 	      if(tname == null) 
+ 		throw new PipelineException
+ 		  ("No toolset was specified for node (" + mod.getName() + ")!");
+
+ 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+ 	      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
+
+ 	      /* override these since the editor will be run as the current user */ 
+ 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+ 	      env.put("USER", PackageInfo.sUser);
+ 	    }
+	    
+ 	    /* get the primary file sequence */ 
+ 	    FileSeq fseq = null;
+ 	    File dir = null; 
+ 	    {
+ 	      String path = null;
+ 	      {
+ 		File wpath = new File(PackageInfo.sWorkDir, 
+ 				      author + "/" + view + "/" + mod.getName());
+ 		path = wpath.getParent();
+ 	      }
+
+ 	      fseq = new FileSeq(path, pFileSeq);
+ 	      dir = new File(path);
+ 	    }
+	    
+ 	    /* start the editor */ 
+ 	    proc = editor.launch(fseq, env, dir);
+ 	  }
+ 	  catch(PipelineException ex) {
+ 	    master.showErrorDialog(ex);
+ 	    return;
+ 	  }
+ 	  finally {
+ 	    master.endPanelOp("Done.");
+ 	  }
+ 	}
+
+ 	/* wait for the editor to exit */ 
+ 	if(proc != null) {
+ 	  try {
+ 	    proc.join();
+ 	    if(!proc.wasSuccessful()) 
+ 	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+ 	  }
+ 	  catch(InterruptedException ex) {
+ 	    master.showErrorDialog(ex);
+ 	  }
+ 	}
+       }
+     }
+
+     private NodeID     pNodeID;
+     private FileSeq    pFileSeq;
+     private boolean    pUseDefault; 
+     private String     pEditorName;
+     private VersionID  pEditorVersion; 
+   }
 
 
 
@@ -2853,6 +2922,7 @@ class JQueueJobViewerPanel
    */ 
   private JMenuItem  pUpdateDetailsItem;
   private JMenuItem  pJobViewItem;
+  private JMenuItem  pJobViewWithDefaultItem;
   private JMenuItem  pJobQueueJobsItem;
   private JMenuItem  pJobQueueJobsSpecialItem;
   private JMenuItem  pJobPauseJobsItem;
@@ -2875,6 +2945,7 @@ class JQueueJobViewerPanel
    * The group popup menu items.
    */ 
   private JMenuItem  pGroupViewItem;
+  private JMenuItem  pGroupViewWithDefaultItem;
   private JMenuItem  pGroupQueueJobsItem;
   private JMenuItem  pGroupQueueJobsSpecialItem;
   private JMenuItem  pGroupPauseJobsItem;

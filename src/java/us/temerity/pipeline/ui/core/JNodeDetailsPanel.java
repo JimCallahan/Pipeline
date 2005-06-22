@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.17 2005/06/14 13:38:33 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.18 2005/06/22 01:00:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,8 +115,9 @@ class JNodeDetailsPanel
 	pWorkingPopup.addSeparator();
       }
 
-      pEditItems     = new JMenuItem[2];
-      pEditWithMenus = new JMenu[2];
+      pEditItems            = new JMenuItem[2];
+      pEditWithDefaultItems = new JMenuItem[2];
+      pEditWithMenus        = new JMenu[2];
 
       JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
       int wk;
@@ -129,6 +130,12 @@ class JNodeDetailsPanel
 	
 	pEditWithMenus[wk] = new JMenu((wk == 1) ? "View With" : "Edit With");
 	menus[wk].add(pEditWithMenus[wk]);
+
+	item = new JMenuItem((wk == 1) ? "View With Default" : "Edit With Default"); 
+	pEditWithDefaultItems[wk] = item;
+	item.setActionCommand("edit-with-default");
+	item.addActionListener(this);
+	menus[wk].add(item);
       }
       
       {
@@ -3206,6 +3213,11 @@ class JNodeDetailsPanel
       updateMenuToolTip
 	(pEditItems[wk], prefs.getEdit(), 
 	 "Edit primary file sequences of the current primary selection.");
+
+      updateMenuToolTip
+	(pEditWithDefaultItems[wk], prefs.getEdit(), 
+	 "Edit primary file sequences of the current primary selection using the default" + 
+	 "editor for the file type.");
     }
 
     updateMenuToolTip
@@ -3405,6 +3417,9 @@ class JNodeDetailsPanel
     else if((prefs.getEdit() != null) &&
 	    prefs.getEdit().wasPressed(e))
       doEdit();
+    else if((prefs.getEditWithDefault() != null) &&
+	    prefs.getEditWithDefault().wasPressed(e))
+      doEditWithDefault();
     
     else if((prefs.getQueueJobs() != null) &&
 	    prefs.getQueueJobs().wasPressed(e))
@@ -3577,6 +3592,8 @@ class JNodeDetailsPanel
 
     else if(cmd.equals("edit"))
       doEdit();
+    else if(cmd.equals("edit-with-default"))
+      doEditWithDefault();
     else if(cmd.startsWith("edit-with:"))
       doEditWith(cmd.substring(10)); 
 
@@ -4669,6 +4686,27 @@ class JNodeDetailsPanel
     }
   }
 
+  /**   
+   * Edit/View the primary selected node using the default editor for the file type.
+   */ 
+  private void 
+  doEditWithDefault() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, true);
+	  task.start();
+	}
+      }
+    }
+  }
+
   /**
    * Edit/View the current node with the given editor.
    */ 
@@ -5078,7 +5116,18 @@ class JNodeDetailsPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(com, pAuthor, pView);
+      UIMaster.getInstance().super(com, false, pAuthor, pView);
+      setName("JNodeDetailsPanel:EditTask");
+    }
+
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     boolean useDefault
+    ) 
+    {
+      UIMaster.getInstance().super(com, useDefault, pAuthor, pView);
       setName("JNodeDetailsPanel:EditTask");
     }
 
@@ -5363,6 +5412,7 @@ class JNodeDetailsPanel
    * The edit with submenus.
    */ 
   private JMenuItem[]  pEditItems;
+  private JMenuItem[]  pEditWithDefaultItems;
   private JMenu[]      pEditWithMenus; 
 
   /**
