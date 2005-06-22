@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.24 2005/05/31 09:37:45 jim Exp $
+// $Id: QueueMgrClient.java,v 1.25 2005/06/22 23:59:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,8 +44,7 @@ class QueueMgrClient
 	Enumeration addrs = net.getInetAddresses();
 	while(addrs.hasMoreElements()) {
 	  InetAddress addr = (InetAddress) addrs.nextElement();
-	  String ip = addr.getHostAddress();
-	  if(!ip.equals("127.0.0.1")) 
+	  if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
 	    pLocalHostnames.add(addr.getCanonicalHostName());
 	}
       }

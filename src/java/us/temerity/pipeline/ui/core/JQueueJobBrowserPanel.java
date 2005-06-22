@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.14 2005/05/30 20:12:08 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.15 2005/06/22 23:59:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -79,8 +79,7 @@ class JQueueJobBrowserPanel
 	  Enumeration addrs = net.getInetAddresses();
 	  while(addrs.hasMoreElements()) {
 	    InetAddress addr = (InetAddress) addrs.nextElement();
-	    String ip = addr.getHostAddress();
-	    if(!ip.equals("127.0.0.1")) 
+	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
 	      pLocalHostnames.add(addr.getCanonicalHostName());
 	  }
 	}

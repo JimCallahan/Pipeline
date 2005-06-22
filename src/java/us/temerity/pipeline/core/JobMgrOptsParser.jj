@@ -357,10 +357,9 @@ void StandardLogFile() :
 	  NetworkInterface net = (NetworkInterface) nets.nextElement();
 	  Enumeration addrs = net.getInetAddresses();
 	  while(addrs.hasMoreElements()) {
-	  InetAddress addr = (InetAddress) addrs.nextElement();
-	  String ip = addr.getHostAddress();
-	  if(!ip.equals("127.0.0.1")) 
-	    hostnames.add(addr.getCanonicalHostName());
+	    InetAddress addr = (InetAddress) addrs.nextElement();
+	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
+	      hostnames.add(addr.getCanonicalHostName());
 	  }
 	}
 	
