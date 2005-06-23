@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.18 2005/06/22 01:00:05 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.19 2005/06/23 19:38:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3983,17 +3983,9 @@ class JNodeDetailsPanel
 	pActionParamGroupsOpen.clear();
       }
       else {
-	VersionID vid = null;
-	boolean rebuild = false;
-	if((oaction == null) || !oaction.getName().equals(aname)) 
-	  rebuild = true;
-	else {
-	  vid = pWorkingActionField.getPluginVersionID();
-	  if((vid == null) || !vid.equals(oaction.getVersionID()))
-	    rebuild = true;
-	}
-
-	if(rebuild) {
+	VersionID vid = pWorkingActionField.getPluginVersionID();
+	if((oaction == null) || !oaction.getName().equals(aname) ||
+	   (vid == null) || !vid.equals(oaction.getVersionID())) {
 	  try {
 	    setWorkingAction(PluginMgrClient.getInstance().newAction(aname, vid));
 	    
