@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.3 2005/06/15 12:16:15 jim Exp $
+// $Id: TarFileArchiver.java,v 1.4 2005/06/23 00:51:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -29,8 +29,12 @@ import java.io.*;
  * 
  *   Compression Program <BR>
  *   <DIV style="margin-left: 40px;">
- *     The program to use to compress the contents of the TAR archive: none, gzip(1) or 
- *     bzip2(1).
+ *     The program to use to compress the contents of the TAR archive:<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       None - No compression.
+ *       GZip - Compress using the gzip(1) program.
+ *       BZip2 - Compress using the bzip2(1) program.
+ *     </DIV> 
  *   </DIV> 
  * 
  *   Compression Level <BR>

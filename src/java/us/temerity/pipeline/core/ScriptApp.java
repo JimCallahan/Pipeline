@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.44 2005/06/13 16:05:01 jim Exp $
+// $Id: ScriptApp.java,v 1.45 2005/06/23 00:50:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -386,10 +386,14 @@ class ScriptApp
 	  }
 	  else if(aparam instanceof EnumArchiverParam) {
 	    EnumArchiverParam eparam = (EnumArchiverParam) aparam;
-	    if(!eparam.getValues().contains(value))
-	      throw new PipelineException
-		("The value (" + value + ") is not one of the enumerations of " +
-		 "parameter (" + pname + ")!");
+	    if(!eparam.getValues().contains(value)) {
+	      StringBuffer buf = new StringBuffer();
+	      buf.append("The value (" + value + ") is not one of the enumerations of " +
+			 "parameter (" + pname + ")!  The valid values are:\n");
+	      for(String evalue : eparam.getValues()) 
+		buf.append("  " + evalue + "\n");
+	      throw new PipelineException(buf.toString());
+	    }
 	    
 	    archiver.setParamValue(pname, value);
 	  }
@@ -610,10 +614,14 @@ class ScriptApp
 	}
 	else if(aparam instanceof EnumArchiverParam) {
 	  EnumArchiverParam eparam = (EnumArchiverParam) aparam;
-	  if(!eparam.getValues().contains(value))
-	    throw new PipelineException
-	      ("The value (" + value + ") is not one of the enumerations of " +
-	       "parameter (" + pname + ")!");
+	  if(!eparam.getValues().contains(value)){
+	    StringBuffer buf = new StringBuffer();
+	    buf.append("The value (" + value + ") is not one of the enumerations of " +
+		       "parameter (" + pname + ")!  The valid values are:\n");
+	    for(String evalue : eparam.getValues()) 
+	      buf.append("  " + evalue + "\n");
+	    throw new PipelineException(buf.toString());
+	  }
 	  
 	  archiver.setParamValue(pname, value);
 	}
@@ -1965,10 +1973,14 @@ class ScriptApp
 	    }
 	    else if(aparam instanceof EnumActionParam) {
 	      EnumActionParam eparam = (EnumActionParam) aparam;
-	      if(!eparam.getValues().contains(value))
-		throw new PipelineException
-		  ("The value (" + value + ") is not one of the enumerations of " +
-		   "parameter (" + pname + ")!");
+	      if(!eparam.getValues().contains(value)) {
+		StringBuffer buf = new StringBuffer();
+		buf.append("The value (" + value + ") is not one of the enumerations of " +
+			   "parameter (" + pname + ")!  The valid values are:\n");
+		for(String evalue : eparam.getValues()) 
+		  buf.append("  " + evalue + "\n");
+		throw new PipelineException(buf.toString());
+	      }
 	      
 	      action.setSingleParamValue(pname, value);
 	    }
@@ -2026,11 +2038,16 @@ class ScriptApp
 		}
 		else if(aparam instanceof EnumActionParam) {
 		  EnumActionParam eparam = (EnumActionParam) aparam;
-		  if(!eparam.getValues().contains(value))
-		    throw new PipelineException
-		      ("The value (" + value + ") is not one of the enumerations of " +
-		       "per-source parameter (" + pname + ")!");
-		  
+		  if(!eparam.getValues().contains(value)) {
+		    StringBuffer buf = new StringBuffer();
+		    buf.append("The value (" + value + ") is not one of the enumerations " + 
+			       "of the per-source parameter (" + pname + ")!  The valid " + 
+			       "values are:\n");
+		    for(String evalue : eparam.getValues()) 
+		      buf.append("  " + evalue + "\n");
+		    throw new PipelineException(buf.toString());
+		  }
+
 		  action.setSourceParamValue(sname, pname, value);
 		}
 	      }
