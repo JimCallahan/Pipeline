@@ -1827,15 +1827,16 @@ selected.<br>
  style="font-weight: normal;"><span style="font-weight: bold;">--max-archives</span>=<span
  style="font-style: italic;">integer</span><br>
 </span>
-&lt;&gt;<span style="font-weight: normal;"><span
- style="font-weight: bold;"></span></span><br>
-The maximum allowable number of archive volumes (<span
- style="font-style: italic;">integer</span>) containing a checked-in
+<span style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
+<div style="margin-left: 40px;">The maximum allowable number of archive
+volumes (<span style="font-style: italic;">integer</span>) containing a
+checked-in
 version in order for it to be selected.&nbsp;
 By default, the maximum number of archive volumes is (2).&nbsp; Any
 checked-in versions which have already been archived more than this
 number of times will be excluded from the selected versions specified
 by the node name pattern.<br>
+</div>
 <br>
 <span style="font-weight: normal;"><span style="font-weight: bold;">--min-size</span>=<span
  style="font-style: italic;">bytes</span>[K|M|G]<br>
