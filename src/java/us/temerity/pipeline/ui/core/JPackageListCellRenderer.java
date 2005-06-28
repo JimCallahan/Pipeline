@@ -1,4 +1,4 @@
-// $Id: JPackageListCellRenderer.java,v 1.1 2005/06/13 16:05:01 jim Exp $
+// $Id: JPackageListCellRenderer.java,v 1.2 2005/06/28 20:50:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -74,6 +74,8 @@ class JPackageListCellRenderer
     Toolset toolset = pDialog.getSelectedActiveToolset();
     if(toolset == null)
       toolset = pDialog.getSelectedToolset();
+
+    boolean isDragged = (pDialog.getIncludedPackageDragIndex() == index);
     
     if(toolset.isFrozen()) {
       pExtraLabel.setIcon(sBlankIcon);
@@ -86,6 +88,10 @@ class JPackageListCellRenderer
 	pExtraLabel.setForeground(isSelected ? Color.yellow : Color.cyan);
       }
       else {
+	if(isDragged) {
+	  pLabel.setForeground(Color.cyan);
+	  pExtraLabel.setForeground(Color.cyan);
+	}
 	pExtraLabel.setIcon(isSelected ? sCheckSelectedIcon : sCheckIcon);
       }
     }

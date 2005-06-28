@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.7 2005/06/28 18:05:22 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.8 2005/06/28 20:50:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -24,7 +24,7 @@ import javax.swing.tree.*;
 public 
 class JManageToolsetsDialog
   extends JBaseDialog
-  implements ListSelectionListener, TreeSelectionListener, MouseListener
+  implements ListSelectionListener, TreeSelectionListener, MouseListener, MouseMotionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -435,6 +435,7 @@ class JManageToolsetsDialog
 	    
 	    lst.addListSelectionListener(this);
 	    lst.addMouseListener(this);
+	    lst.addMouseMotionListener(this);
 
 	    {
 	      JScrollPane scroll = new JScrollPane(lst);
@@ -1585,6 +1586,14 @@ class JManageToolsetsDialog
     pIncludedPackagesList.setSelectedValue(selected, true);
   }
 
+  /**
+   * Get the index of the current drag selection.
+   */ 
+  public int 
+  getIncludedPackageDragIndex() 
+  {
+    return pDragCurrentIdx;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2505,7 +2514,8 @@ class JManageToolsetsDialog
    MouseEvent e
   )
   {
-    pDragStartIdx = -1;
+    pDragStartIdx   = -1;
+    pDragCurrentIdx = -1;
 
     int mods = e.getModifiersEx();
     switch(e.getButton()) {
@@ -2591,6 +2601,7 @@ class JManageToolsetsDialog
 		idx = -1;
 	    }
 
+	    pIncludedPackagesList.setSelectedIndex(idx);
 	    pDragStartIdx = idx;
 	  }
 	}
@@ -2697,7 +2708,57 @@ class JManageToolsetsDialog
 	}
       }
     }
+
+    pDragCurrentIdx = -1;
+    pIncludedPackagesList.repaint();
   }
+
+
+  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
+  
+  /**
+   * Invoked when a mouse button is pressed on a component and then dragged. 
+   */ 
+  public void 	
+  mouseDragged
+  (
+   MouseEvent e
+  )
+  {
+    if(!pIsPrivileged) 
+      return;
+
+    int mods = e.getModifiersEx();
+
+    int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
+	
+    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		MouseEvent.BUTTON3_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.ALT_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);
+
+    pDragCurrentIdx = -1; 
+    if((mods & (on1 | off1)) == on1) {
+      int idx = pIncludedPackagesList.locationToIndex(e.getPoint());
+      if(idx != -1) {
+	Rectangle bounds = pIncludedPackagesList.getCellBounds(idx, idx);
+	if(!bounds.contains(e.getX(), e.getY()))
+	  idx = -1;
+      }
+
+      pDragCurrentIdx = idx;
+    }
+
+    pIncludedPackagesList.repaint();
+  }
+
+  /**
+   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
+   * been pushed. 
+   */ 
+  public void 	
+  mouseMoved(MouseEvent e) {} 
 
 
 
@@ -4135,7 +4196,7 @@ class JManageToolsetsDialog
    * Package reordering drag start index or <CODE>-1</CODE> if not dragging.
    */ 
   private int  pDragStartIdx; 
-
+  private int  pDragCurrentIdx;
 
   /*----------------------------------------------------------------------------------------*/
 
