@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.14 2005/06/22 01:00:05 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.15 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -78,10 +78,6 @@ class JQueueJobViewerPanel
 
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
       pSelected       = new HashMap<JobPath,ViewerJob>();
-
-      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
-      pEditorMenuLayout   = new PluginMenuLayout();
-      pRefreshEditorMenus = true; 
     }
 
     /* panel popup menu */ 
@@ -149,7 +145,7 @@ class JQueueJobViewerPanel
 
       item = new JMenuItem("View");
       pJobViewItem = item;
-      item.setActionCommand("view");
+      item.setActionCommand("edit");
       item.addActionListener(this);
       pJobPopup.add(item);
       
@@ -158,7 +154,7 @@ class JQueueJobViewerPanel
 
       item = new JMenuItem("View With Default");
       pJobViewWithDefaultItem = item;
-      item.setActionCommand("view-with-default");
+      item.setActionCommand("edit-with-default");
       item.addActionListener(this);
       pJobPopup.add(item);
       
@@ -212,7 +208,7 @@ class JQueueJobViewerPanel
       
       item = new JMenuItem("View");
       pGroupViewItem = item;
-      item.setActionCommand("view");
+      item.setActionCommand("edit");
       item.addActionListener(this);
       pGroupPopup.add(item);
 
@@ -221,7 +217,7 @@ class JQueueJobViewerPanel
 
       item = new JMenuItem("View With Default");
       pGroupViewWithDefaultItem = item;
-      item.setActionCommand("view-with-default");
+      item.setActionCommand("edit-with-default");
       item.addActionListener(this);
       pGroupPopup.add(item);
 
@@ -509,51 +505,33 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the group and job "View With" menus. 
+   * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
-  private void 
-  updateViewMenus() 
+  public void 
+  clearPluginCache()
   {
-    if(pRefreshEditorMenus) {
-      pViewWithMenu.removeAll();
-      pGroupViewWithMenu.removeAll();
-
-      for(PluginMenuLayout pml : pEditorMenuLayout) {
-	pViewWithMenu.add(buildPluginMenu(pml, pEditorPlugins));
-	pGroupViewWithMenu.add(buildPluginMenu(pml, pEditorPlugins));
-      }
-
-      pRefreshEditorMenus = false;
-    }
+    pEditorMenuToolset = null;
   }
 
   /**
-   * Recursively update an editor plugin menu.
+   * Update the editor plugin menus.
    */ 
-  private JMenuItem
-  buildPluginMenu
-  (
-   PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins
-  ) 
+  private void 
+  updateEditorMenus()
   {
-    JMenuItem item = null;
-    if(layout.isMenuItem()) {
-      item = new JMenuItem(layout.getTitle());
-      item.setActionCommand("view-with:" + layout.getName() + ":" + layout.getVersionID());
-      item.addActionListener(this);
-   
-      TreeSet<VersionID> vids = plugins.get(layout.getName());
-      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
-    }
-    else {
-      JMenu sub = new JMenu(layout.getTitle()); 
-      for(PluginMenuLayout pml : layout) 
-	sub.add(buildPluginMenu(pml, plugins));
-      item = sub;
-    }
+    String toolset = null;
+    if(pPrimary != null) 
+      toolset = pPrimary.getJobStatus().getToolset();
+    else if(pPrimaryGroup != null) 
+      toolset = pPrimaryGroup.getGroup().getToolset();
 
-    return item;
+    if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildEditorMenu(toolset, pViewWithMenu, this);
+      master.rebuildEditorMenu(toolset, pGroupViewWithMenu, this);
+      
+      pEditorMenuToolset = toolset;
+    }
   }
 
 
@@ -680,28 +658,6 @@ class JQueueJobViewerPanel
    boolean updateSubPanels
   )
   {  
-    /* refresh the editor plugins */ 
-    {
-      PluginMgrClient pclient = PluginMgrClient.getInstance();
-      try {
-	pclient.update();
-      } 
-      catch(PipelineException ex) {
-	UIMaster.getInstance().showErrorDialog(ex);
-      }
-
-      pEditorPlugins = pclient.getEditors();
-
-      UIMaster master = UIMaster.getInstance(); 
-      try {
-	pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
-	pRefreshEditorMenus = true;
-      } 
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }      
-    }
-
     /* get the paths to the currently collapsed jobs */ 
     TreeSet<JobPath> wasCollapsed = new TreeSet<JobPath>();
     for(ViewerJob vjob : pViewerJobs.values()) {
@@ -1392,7 +1348,7 @@ class JQueueJobViewerPanel
 	      addSelect(vunder);
 	      primarySelect(vunder);
 
-	      updateViewMenus();
+	      updateEditorMenus();
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	    else if(under instanceof ViewerJobGroup) {
@@ -1401,7 +1357,7 @@ class JQueueJobViewerPanel
 	      addSelect(vunder);
 	      primarySelect(vunder);
 	      
-	      updateViewMenus();
+	      updateEditorMenus();
 	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
@@ -1795,11 +1751,11 @@ class JQueueJobViewerPanel
     else if(cmd.equals("details"))
       doDetails();
 
-    else if(cmd.equals("view"))
+    else if(cmd.equals("edit"))
       doView();
-    else if(cmd.equals("view-with-default"))
+    else if(cmd.equals("edit-with-default"))
       doViewWithDefault();
-    else if(cmd.startsWith("view-with:"))
+    else if(cmd.startsWith("edit-with:"))
       doViewWith(cmd.substring(10));    
 
     else if(cmd.equals("queue-jobs")) 
@@ -2833,23 +2789,10 @@ class JQueueJobViewerPanel
    */ 
   private boolean  pIsPrivileged;
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Cached names and version numbers of the loaded editor plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
-
-  /**
-   * The menu layout for editor plugins.
+   * The toolset used to build the editor menu.
    */ 
-  private PluginMenuLayout  pEditorMenuLayout;
-
-  /**
-   * Whether the Swing editor menus need to be rebuild from the menu layout.
-   */ 
-  private boolean pRefreshEditorMenus; 
+  private String  pEditorMenuToolset;
 
 
   /*----------------------------------------------------------------------------------------*/

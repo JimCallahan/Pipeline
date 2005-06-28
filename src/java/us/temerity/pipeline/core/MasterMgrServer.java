@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.53 2005/06/12 17:58:00 jim Exp $
+// $Id: MasterMgrServer.java,v 1.54 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -349,6 +349,194 @@ class MasterMgrServer
 	      break;
 
 
+	    /*-- PLUGIN MENUS / LAYOUTS ----------------------------------------------------*/
+	    case GetEditorMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getEditorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetEditorMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setEditorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetEditorPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetEditorPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageEditorPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageEditorPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageEditorPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageEditorPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    /*----------------------------------*/
+
+	    case GetComparatorMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getComparatorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetComparatorMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setComparatorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetComparatorPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetComparatorPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageComparatorPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageComparatorPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageComparatorPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageComparatorPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    /*----------------------------------*/
+
+	    case GetActionMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getActionMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetActionMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setActionMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetActionPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetActionPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageActionPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageActionPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageActionPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageActionPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    /*----------------------------------*/
+
+	    case GetToolMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetToolMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setToolMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetToolPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetToolPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageToolPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageToolPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageToolPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageToolPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
 	    /*-- SUFFIX EDITORS ------------------------------------------------------------*/
 	    case GetEditorForSuffix:
 	      {
@@ -376,74 +564,6 @@ class MasterMgrServer
 	      }
 	      break;
 
-
-	    /*-- PLUGIN MENU LAYOUTS -------------------------------------------------------*/
-	    case GetEditorMenuLayout:
-	      {
-		objOut.writeObject(pMasterMgr.getEditorMenuLayout());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case SetEditorMenuLayout:
-	      {
-		MiscSetPluginMenuLayoutReq req = 
-		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.setEditorMenuLayout(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-
-	    case GetComparatorMenuLayout:
-	      {
-		objOut.writeObject(pMasterMgr.getComparatorMenuLayout());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case SetComparatorMenuLayout:
-	      {
-		MiscSetPluginMenuLayoutReq req = 
-		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.setComparatorMenuLayout(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-
-	    case GetActionMenuLayout:
-	      {
-		objOut.writeObject(pMasterMgr.getActionMenuLayout());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case SetActionMenuLayout:
-	      {
-		MiscSetPluginMenuLayoutReq req = 
-		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.setActionMenuLayout(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-
-	    case GetToolMenuLayout:
-	      {
-		objOut.writeObject(pMasterMgr.getToolMenuLayout());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case SetToolMenuLayout:
-	      {
-		MiscSetPluginMenuLayoutReq req = 
-		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.setToolMenuLayout(req));
-		objOut.flush(); 
-	      }
-	      break;
 
 
 	    /*-- PRIVILEGED USER STATUS ----------------------------------------------------*/

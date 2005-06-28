@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.65 2005/06/12 17:58:00 jim Exp $
+// $Id: MasterMgrClient.java,v 1.66 2005/06/28 18:05:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -502,6 +502,9 @@ class MasterMgrClient
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  T O O L S E T   P A C K A G E S                                                       */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -704,6 +707,1066 @@ class MasterMgrClient
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T O O L S E T   P L U G I N S  /  M E N U   L A Y O U T S                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the editor plugin menu for an operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of editor plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the editor menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getEditorMenuLayout
+  (
+   OsType os
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+
+    Object obj = performTransaction(MasterRequest.GetEditorMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the editor plugin menu.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of editor plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the editor menu layout.
+   */ 
+  public synchronized void 
+  setEditorMenuLayout
+  (
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the editor menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the editor plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of editor plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the editor menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getEditorMenuLayout
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetEditorMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the editor plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of editor plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the editor menu layout.
+   */ 
+  public synchronized void 
+  setEditorMenuLayout
+  (
+   String name, 
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the editor menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the editor plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated editor plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getToolsetEditorPlugins
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetEditorPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the editor plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated editor plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getPackageEditorPlugins
+  (
+   String name, 
+   OsType os,
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageEditorPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the editor plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the associated editor plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageEditorPlugins
+  ( 
+   String name,  
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the editor plugins associated with " + 
+	 "a toolset package!"); 
+
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageEditorPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the default layout of the comparator plugin menu for an operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of comparator plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the comparator menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getComparatorMenuLayout
+  (
+   OsType os
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+
+    Object obj = performTransaction(MasterRequest.GetComparatorMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the comparator plugin menu.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of comparator plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the comparator menu layout.
+   */ 
+  public synchronized void 
+  setComparatorMenuLayout
+  (
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the comparator menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the comparator plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of comparator plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the comparator menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getComparatorMenuLayout
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetComparatorMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Get the layout of the comparator plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of comparator plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the comparator menu layout.
+   */ 
+  public synchronized void 
+  setComparatorMenuLayout
+  (
+   String name, 
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the comparator menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the comparator plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated comparator plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getToolsetComparatorPlugins
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetComparatorPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the comparator plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated comparator plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getPackageComparatorPlugins
+  (
+   String name, 
+   OsType os,
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageComparatorPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the comparator plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the associated comparator plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageComparatorPlugins
+  ( 
+   String name,  
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the comparator plugins associated with " + 
+	 "a toolset package!"); 
+
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageComparatorPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the default layout of the action plugin menu for an operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of action plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the action menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getActionMenuLayout
+  (
+   OsType os
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+
+    Object obj = performTransaction(MasterRequest.GetActionMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the action plugin menu.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of action plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the action menu layout.
+   */ 
+  public synchronized void 
+  setActionMenuLayout
+  (
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the action menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetActionMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the action plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of action plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the action menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getActionMenuLayout
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetActionMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Get the layout of the action plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of action plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the action menu layout.
+   */ 
+  public synchronized void 
+  setActionMenuLayout
+  (
+   String name, 
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the action menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetActionMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the action plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated action plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getToolsetActionPlugins
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetActionPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the action plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated action plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getPackageActionPlugins
+  (
+   String name, 
+   OsType os,
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageActionPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the action plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the associated action plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageActionPlugins
+  ( 
+   String name,  
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the action plugins associated with " + 
+	 "a toolset package!"); 
+
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageActionPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the default layout of the tool plugin menu for an operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of tool plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the tool menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getToolMenuLayout
+  (
+   OsType os
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the tool plugin menu.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of tool plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the tool menu layout.
+   */ 
+  public synchronized void 
+  setToolMenuLayout
+  (
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the tool menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetToolMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the tool plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of tool plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the tool menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getToolMenuLayout
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Get the layout of the tool plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of tool plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the tool menu layout.
+   */ 
+  public synchronized void 
+  setToolMenuLayout
+  (
+   String name, 
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the tool menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetToolMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the tool plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated tool plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getToolsetToolPlugins
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetToolPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the tool plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The names and revision numbers of the associated tool plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getPackageToolPlugins
+  (
+   String name, 
+   OsType os,
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageToolPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the tool plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the associated tool plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageToolPlugins
+  ( 
+   String name,  
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the tool plugins associated with " + 
+	 "a toolset package!"); 
+
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageToolPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   E D I T O R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -824,224 +1887,6 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P L U G I N   M E N U   L A Y O U T                                                  */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the editor plugin selection menu.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the editor menu layout.
-   */ 
-  public synchronized PluginMenuLayout
-  getEditorMenuLayout() 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetEditorMenuLayout, null); 
-    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
-      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
-      return rsp.getLayout();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    } 
-  }
-  
-  /**
-   * Set the layout of the editor plugin selection menu.
-   * 
-   * @param layout
-   *   The heirarchical set of menus for selection of a specific editor plugin version.
-   * 
-   * @throws PipelineException
-   *   If unable to set the editor menu layout.
-   */ 
-  public synchronized void 
-  setEditorMenuLayout
-  (
-   PluginMenuLayout layout
-  ) 
-    throws PipelineException  
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the editor menu layout!");
-
-    verifyConnection();
-
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
-
-    Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
-    handleSimpleResponse(obj);    
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the comparator plugin selection menu.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the comparator menu layout.
-   */ 
-  public synchronized PluginMenuLayout
-  getComparatorMenuLayout() 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetComparatorMenuLayout, null); 
-    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
-      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
-      return rsp.getLayout();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    } 
-  }
-  
-  /**
-   * Set the layout of the comparator plugin selection menu.
-   * 
-   * @param layout
-   *   The heirarchical set of menus for selection of a specific comparator plugin version.
-   * 
-   * @throws PipelineException
-   *   If unable to set the comparator menu layout.
-   */ 
-  public synchronized void 
-  setComparatorMenuLayout
-  (
-   PluginMenuLayout layout
-  ) 
-    throws PipelineException  
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the comparator menu layout!");
-
-    verifyConnection();
-
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
-
-    Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
-    handleSimpleResponse(obj);    
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the action plugin selection menu.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the action menu layout.
-   */ 
-  public synchronized PluginMenuLayout
-  getActionMenuLayout() 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetActionMenuLayout, null); 
-    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
-      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
-      return rsp.getLayout();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    } 
-  }
-  
-  /**
-   * Set the layout of the action plugin selection menu.
-   * 
-   * @param layout
-   *   The heirarchical set of menus for selection of a specific action plugin version.
-   * 
-   * @throws PipelineException
-   *   If unable to set the action menu layout.
-   */ 
-  public synchronized void 
-  setActionMenuLayout
-  (
-   PluginMenuLayout layout
-  ) 
-    throws PipelineException  
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the action menu layout!");
-
-    verifyConnection();
-
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
-
-    Object obj = performTransaction(MasterRequest.SetActionMenuLayout, req); 
-    handleSimpleResponse(obj);    
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the tool plugin selection menu.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the tool menu layout.
-   */ 
-  public synchronized PluginMenuLayout
-  getToolMenuLayout() 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetToolMenuLayout, null); 
-    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
-      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
-      return rsp.getLayout();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    } 
-  }
-  
-  /**
-   * Set the layout of the tool plugin selection menu.
-   * 
-   * @param layout
-   *   The heirarchical set of menus for selection of a specific tool plugin version.
-   * 
-   * @throws PipelineException
-   *   If unable to set the tool menu layout.
-   */ 
-  public synchronized void 
-  setToolMenuLayout
-  (
-   PluginMenuLayout layout
-  ) 
-    throws PipelineException  
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the tool menu layout!");
-
-    verifyConnection();
-
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
-
-    Object obj = performTransaction(MasterRequest.SetToolMenuLayout, req); 
-    handleSimpleResponse(obj);    
-  }
-
   
 
   /*----------------------------------------------------------------------------------------*/

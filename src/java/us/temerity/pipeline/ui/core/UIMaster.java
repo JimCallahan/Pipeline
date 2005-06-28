@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.26 2005/06/22 01:00:05 jim Exp $
+// $Id: UIMaster.java,v 1.27 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -74,6 +74,16 @@ class UIMaster
     pQueueMgrClient  = new QueueMgrClient();
 
     pOpsLock = new ReentrantLock();
+
+    pEditorPlugins     = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();
+    pComparatorPlugins = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();
+    pActionPlugins     = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();  
+    pToolPlugins       = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();
+    
+    pEditorLayouts     = new TreeMap<String,PluginMenuLayout>();                   
+    pComparatorLayouts = new TreeMap<String,PluginMenuLayout>();                  
+    pActionLayouts     = new TreeMap<String,PluginMenuLayout>();                    
+    pToolLayouts       = new TreeMap<String,PluginMenuLayout>();                   
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
@@ -297,6 +307,483 @@ class UIMaster
   }
 
     
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  public void 
+  clearPluginCache()
+  {
+    if(pRootPanel != null) {
+      JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
+      if(mpanel != null) 
+	mpanel.clearPluginCache();
+    }
+    
+    for(JPanelFrame frame : pPanelFrames) {
+      JManagerPanel mpanel = frame.getManagerPanel();
+      if(mpanel != null) 
+	mpanel.clearPluginCache();
+    }
+
+    synchronized(pEditorPlugins) {
+      pEditorPlugins.clear();
+    }
+    synchronized(pComparatorPlugins) {
+      pComparatorPlugins.clear();
+    }
+    synchronized(pActionPlugins) {
+      pActionPlugins.clear();
+    }
+    synchronized(pToolPlugins) {
+      pToolPlugins.clear();
+    }
+
+    synchronized(pEditorLayouts) {
+      pEditorLayouts.clear();
+    }
+    synchronized(pComparatorLayouts) {
+      pComparatorLayouts.clear();
+    }
+    synchronized(pActionLayouts) {
+      pActionLayouts.clear();
+    }
+    synchronized(pToolLayouts) {
+      pToolLayouts.clear();
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Rebuild the contents of an editor plugin menu for the given toolset.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildEditorMenu
+  (
+   String tname, 
+   JMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      synchronized(pEditorPlugins) {
+	plugins = pEditorPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetEditorPlugins(tname, PackageInfo.sOsType);
+	  pEditorPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pEditorLayouts) {
+	layout = pEditorLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getEditorMenuLayout(tname, PackageInfo.sOsType);
+	  pEditorLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    menu.removeAll();
+    if(!layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+	menu.add(rebuildPluginMenuHelper(pml, "edit-with", plugins, listener));
+    }
+    else {
+      JMenuItem item = new JMenuItem("(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
+
+  /**
+   * Rebuild the contents of an comparator plugin menu for the given toolset.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildComparatorMenu
+  (
+   String tname, 
+   JMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      synchronized(pComparatorPlugins) {
+	plugins = pComparatorPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetComparatorPlugins(tname, PackageInfo.sOsType);
+	  pComparatorPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pComparatorLayouts) {
+	layout = pComparatorLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getComparatorMenuLayout(tname, PackageInfo.sOsType);
+	  pComparatorLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    menu.removeAll();
+    if(!layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+	menu.add(rebuildPluginMenuHelper(pml, "compare-with", plugins, listener));
+    }
+    else {
+      JMenuItem item = new JMenuItem("(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
+  
+  /**
+   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildToolMenu
+  (
+   String tname, 
+   JPopupMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      synchronized(pToolPlugins) {
+	plugins = pToolPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetToolPlugins(tname, PackageInfo.sOsType);
+	  pToolPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pToolLayouts) {
+	layout = pToolLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getToolMenuLayout(tname, PackageInfo.sOsType);
+	  pToolLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    menu.removeAll();
+    if(!layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+	menu.add(rebuildPluginMenuHelper(pml, "run-tool", plugins, listener));
+    }
+    else {
+      JMenuItem item = new JMenuItem("(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
+
+  /**
+   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildDefaultToolMenu
+  (
+   JPopupMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pToolPlugins) {
+	plugins = pToolPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetToolPlugins(tname, PackageInfo.sOsType);
+	  pToolPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pToolLayouts) {
+	layout = pToolLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getToolMenuLayout(tname, PackageInfo.sOsType);
+	  pToolLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    menu.removeAll();
+    if(!layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+	menu.add(rebuildPluginMenuHelper(pml, "run-tool", plugins, listener));
+    }
+    else {
+      JMenuItem item = new JMenuItem("(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
+
+  /**
+   * Recursively build a plugin menu.
+   * 
+   * @param layout
+   *   The current plugin submenu layout.
+   * 
+   * @param prefix
+   *   The action command prefix.
+   *
+   * @param plugins
+   *   The plugins supported by the current toolset.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  private JMenuItem
+  rebuildPluginMenuHelper
+  (
+   PluginMenuLayout layout, 
+   String prefix, 
+   TreeMap<String,TreeSet<VersionID>> plugins, 
+   ActionListener listener
+  ) 
+  {
+    JMenuItem item = null;
+    if(layout.isMenuItem()) {
+      item = new JMenuItem(layout.getTitle());
+      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
+      item.addActionListener(listener);
+   
+      TreeSet<VersionID> vids = plugins.get(layout.getName());
+      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
+    }
+    else {
+      JMenu sub = new JMenu(layout.getTitle()); 
+      for(PluginMenuLayout pml : layout) 
+	sub.add(rebuildPluginMenuHelper(pml, prefix, plugins, listener));
+      item = sub;
+    }
+
+    return item;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new editor plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createEditorSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pEditorPlugins) {
+	plugins = pEditorPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetEditorPlugins(tname, PackageInfo.sOsType);
+	  pEditorPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pEditorLayouts) {
+	layout = pEditorLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getEditorMenuLayout(tname, PackageInfo.sOsType);
+	  pEditorLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return UIFactory.createPluginSelectionField
+	(new PluginMenuLayout(), new TreeMap<String,TreeSet<VersionID>>(), width);
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Create a new action plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createActionSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pActionPlugins) {
+	plugins = pActionPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetActionPlugins(tname, OsType.Unix);
+	  pActionPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pActionLayouts) {
+	layout = pActionLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
+	  pActionLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return UIFactory.createPluginSelectionField
+	(new PluginMenuLayout(), new TreeMap<String,TreeSet<VersionID>>(), width);
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of an editor plugin field for the given toolset.
+   */ 
+  public void 
+  updateEditorPluginField
+  (
+   String tname, 
+   JPluginSelectionField field
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      synchronized(pEditorPlugins) {
+	plugins = pEditorPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetEditorPlugins(tname, PackageInfo.sOsType);
+	  pEditorPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pEditorLayouts) {
+	layout = pEditorLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getEditorMenuLayout(tname, PackageInfo.sOsType);
+	  pEditorLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
+  /**
+   * Update the contents of an action plugin field for the given toolset.
+   */ 
+  public void 
+  updateActionPluginField
+  (
+   String tname, 
+   JPluginSelectionField field
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    try {
+      synchronized(pActionPlugins) {
+	plugins = pActionPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetActionPlugins(tname, OsType.Unix);
+	  pActionPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pActionLayouts) {
+	layout = pActionLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
+	  pActionLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -525,45 +1012,6 @@ class UIMaster
     pManageToolsetsDialog.setVisible(true);
   }
 
-  /**
-   * Show the manage editors dialog.
-   */ 
-  public void 
-  showManageEditorMenusDialog()
-  {
-    pManageEditorMenusDialog.updateMenuLayout();
-    pManageEditorMenusDialog.setVisible(true);
-  }
-
-  /**
-   * Show the manage comparators dialog.
-   */ 
-  public void 
-  showManageComparatorMenusDialog()
-  {
-    pManageComparatorMenusDialog.updateMenuLayout();
-    pManageComparatorMenusDialog.setVisible(true);
-  }
-
-  /**
-   * Show the manage actions dialog.
-   */ 
-  public void 
-  showManageActionMenusDialog()
-  {
-    pManageActionMenusDialog.updateMenuLayout();
-    pManageActionMenusDialog.setVisible(true);
-  }
-
-  /**
-   * Show the manage tools dialog.
-   */ 
-  public void 
-  showManageToolMenusDialog()
-  {
-    pManageToolMenusDialog.updateMenuLayout();
-    pManageToolMenusDialog.setVisible(true);
-  }
 
   /**
    * Show the manage license keys dialog.
@@ -1417,10 +1865,6 @@ class UIMaster
 
 	pManageUsersDialog           = new JManageUsersDialog();
 	pManageToolsetsDialog        = new JManageToolsetsDialog();
-	pManageEditorMenusDialog     = new JManageEditorMenusDialog();
-	pManageComparatorMenusDialog = new JManageComparatorMenusDialog();
-	pManageActionMenusDialog     = new JManageActionMenusDialog();
-	pManageToolMenusDialog       = new JManageToolMenusDialog();
 	pManageLicenseKeysDialog     = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog   = new JManageSelectionKeysDialog();
 
@@ -2640,6 +3084,26 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Caches of plugin names and revision numbers indexed by toolset name.
+   */ 
+  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pEditorPlugins;
+  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pComparatorPlugins;
+  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pActionPlugins;
+  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pToolPlugins;
+
+  /** 
+   * Caches of plugin menu layouts indexed by toolset name.
+   */ 
+  private TreeMap<String,PluginMenuLayout>  pEditorLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pComparatorLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pActionLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pToolLayouts; 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The active node browser panels. <P> 
    */ 
   private PanelGroup<JNodeBrowserPanel>  pNodeBrowserPanels;
@@ -2740,26 +3204,6 @@ class UIMaster
    * The manage toolsets dialog.
    */ 
   private JManageToolsetsDialog  pManageToolsetsDialog;
-
-  /**
-   * The manage editors dialog.
-   */ 
-  private JManageEditorMenusDialog  pManageEditorMenusDialog;
-
-  /**
-   * The manage comparators dialog.
-   */ 
-  private JManageComparatorMenusDialog  pManageComparatorMenusDialog;
-
-  /**
-   * The manage actions dialog.
-   */ 
-  private JManageActionMenusDialog  pManageActionMenusDialog;
-
-  /**
-   * The manage tools dialog.
-   */ 
-  private JManageToolMenusDialog  pManageToolMenusDialog;
 
   /**
    * The manage license keys dialog.

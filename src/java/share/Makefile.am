@@ -5,13 +5,9 @@ editor_DATA = \
   pipeline
 
 
-etcdir = @NODEDIR@/etc
-
-etc_DATA = \
-  action-menu-layout \
-  comparator-menu-layout \
-  editor-menu-layout \
-  tool-menu-layout
+SUBDIRS = \
+  Unix \
+  MacOS
 
 
 install-data-hook:

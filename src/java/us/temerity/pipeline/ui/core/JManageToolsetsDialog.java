@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.6 2005/06/16 17:55:18 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.7 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,9 +44,30 @@ class JManageToolsetsDialog
       pDefaultToolset  = null;
       pActiveToolsets  = new TreeSet<String>();
       pToolsets        = new TreeMap<String,TreeMap<OsType,Toolset>>();
+
+      pFrozenToolsetEditors     = new ToolsetLayouts();
+      pFrozenToolsetComparators = new ToolsetLayouts();
+      pFrozenToolsetActions     = new ToolsetLayouts();
+      pFrozenToolsetTools       = new ToolsetLayouts();
+
+      pToolsetEditors     = new ToolsetLayouts();
+      pToolsetComparators = new ToolsetLayouts();
+      pToolsetActions     = new ToolsetLayouts();
+      pToolsetTools       = new ToolsetLayouts();
+
       pPackageVersions = 
 	new TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>();
       pPackageMods     = new TreeMap<String,TreeMap<OsType,PackageMod>>();
+
+      pFrozenPackageEditors     = new FrozenPackagePlugins();
+      pFrozenPackageComparators = new FrozenPackagePlugins();
+      pFrozenPackageActions     = new FrozenPackagePlugins();
+      pFrozenPackageTools       = new FrozenPackagePlugins();
+
+      pPackageEditors     = new PackagePlugins();
+      pPackageComparators = new PackagePlugins();
+      pPackageActions     = new PackagePlugins();
+      pPackageTools       = new PackagePlugins();
     }
 
     /* toolsets popup menu */ 
@@ -105,6 +126,12 @@ class JManageToolsetsDialog
       item.setActionCommand("export-toolset");
       item.addActionListener(this);
       pToolsetsPopup.add(item);        
+
+      item = new JMenuItem("Plugin Menus...");
+      pManagePluginMenusItem = item;
+      item.setActionCommand("manage-toolset-plugins");
+      item.addActionListener(this);
+      pToolsetsPopup.add(item);  
 
       pToolsetsPopup.addSeparator();
       
@@ -200,6 +227,12 @@ class JManageToolsetsDialog
       item.addActionListener(this);
       pPackagesPopup.add(item);    
 
+      item = new JMenuItem("Package Plugins...");
+      pManagePluginsItem = item;
+      item.setActionCommand("manage-package-plugins");
+      item.addActionListener(this);
+      pPackagesPopup.add(item);  
+
       pPackagesPopup.addSeparator();
 
       item = new JMenuItem("New Unix Package...");
@@ -248,7 +281,7 @@ class JManageToolsetsDialog
       pDeletePackageItem = item;
       item.setActionCommand("delete-package");
       item.addActionListener(this);
-      pPackagesPopup.add(item);  
+      pPackagesPopup.add(item); 
     }
 
     /* create dialog body components */ 
@@ -540,6 +573,9 @@ class JManageToolsetsDialog
       new JFileSelectDialog(this, "Export Toolset", "Export Toolset Script:", 
 			    "Export As:", 64, "Export");
     pExportToolsetDialog.updateTargetFile(null);
+
+    pToolsetPluginsDialog = new JManageToolsetPluginsDialog(this);
+    pPackagePluginsDialog = new JManagePackagePluginsDialog(this);
   }
 
 
@@ -587,7 +623,322 @@ class JManageToolsetsDialog
 
     return null;
   }
- 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the editor plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  public PluginMenuLayout
+  getToolsetEditors
+  (
+   String tname, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetEditors.get(tname, os);
+    }
+    else {
+      if(!pFrozenToolsetEditors.isCached(tname, os)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetEditors.put(tname, os, 
+				  client.getEditorMenuLayout(tname, os));
+      }
+      
+      return pFrozenToolsetEditors.get(tname, os);
+    }
+  }
+
+  /**
+   * Set the editor plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetEditors
+  ( 
+   String tname, 
+   OsType os, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetEditors.put(tname, os, layout);
+    }
+    else {
+      pFrozenToolsetEditors.put(tname, os, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setEditorMenuLayout(tname, os, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the comparator plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  public PluginMenuLayout
+  getToolsetComparators
+  (
+   String tname, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetComparators.get(tname, os);
+    }
+    else {
+      if(!pFrozenToolsetComparators.isCached(tname, os)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetComparators.put(tname, os, 
+				      client.getComparatorMenuLayout(tname, os));
+      }
+      
+      return pFrozenToolsetComparators.get(tname, os);      
+    }
+  }
+
+  /**
+   * Set the comparator plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetComparators
+  ( 
+   String tname, 
+   OsType os, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetComparators.put(tname, os, layout);
+    }
+    else {
+      pFrozenToolsetComparators.put(tname, os, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setComparatorMenuLayout(tname, os, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the action plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  public PluginMenuLayout
+  getToolsetActions
+  (
+   String tname, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetActions.get(tname, os);
+    }
+    else {
+      if(!pFrozenToolsetActions.isCached(tname, os)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetActions.put(tname, os, 
+				  client.getActionMenuLayout(tname, os));
+      }
+      
+      return pFrozenToolsetActions.get(tname, os);
+    }
+  }
+
+  /**
+   * Set the action plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetActions
+  ( 
+   String tname, 
+   OsType os, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetActions.put(tname, os, layout);
+    }
+    else {
+      pFrozenToolsetActions.put(tname, os, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setActionMenuLayout(tname, os, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the tool plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  public PluginMenuLayout
+  getToolsetTools
+  (
+   String tname, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetTools.get(tname, os);
+    }
+    else {
+      if(!pFrozenToolsetTools.isCached(tname, os)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetTools.put(tname, os, 
+				client.getToolMenuLayout(tname, os));
+      }
+      
+      return pFrozenToolsetTools.get(tname, os);
+    }
+  }
+
+  /**
+   * Set the tool plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetTools
+  ( 
+   String tname, 
+   OsType os, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetTools.put(tname, os, layout);
+    }
+    else {
+      pFrozenToolsetTools.put(tname, os, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setToolMenuLayout(tname, os, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the package with the given name, operating system and revision number.
    * 
@@ -669,6 +1020,309 @@ class JManageToolsetsDialog
 
     return false;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the editor plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
+  getPackageEditors
+  (
+   String pname, 
+   OsType os, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageEditors.get(pname, os);
+    }
+    else {
+      if(!pFrozenPackageEditors.isCached(pname, os, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageEditors.put(pname, os, vid, 
+				  client.getPackageEditorPlugins(pname, os, vid));
+      }
+
+      return pFrozenPackageEditors.get(pname, os, vid);
+    }
+  }
+
+  /**
+   * Set the editor plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageEditors
+  ( 
+   String pname, 
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageEditors.put(pname, os, plugins);
+    }
+    else {
+      pFrozenPackageEditors.put(pname, os, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageEditorPlugins(pname, os, vid, plugins);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the comparator plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
+  getPackageComparators
+  (
+   String pname, 
+   OsType os, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageComparators.get(pname, os);
+    }
+    else {
+      if(!pFrozenPackageComparators.isCached(pname, os, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageComparators.put(pname, os, vid, 
+				  client.getPackageComparatorPlugins(pname, os, vid));
+      }
+
+      return pFrozenPackageComparators.get(pname, os, vid);
+    }
+  }
+
+  /**
+   * Set the comparator plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageComparators
+  ( 
+   String pname, 
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageComparators.put(pname, os, plugins);
+    }
+    else {
+      pFrozenPackageComparators.put(pname, os, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageComparatorPlugins(pname, os, vid, plugins);
+    }    
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the action plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
+  getPackageActions
+  (
+   String pname, 
+   OsType os, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageActions.get(pname, os);
+    }
+    else {
+      if(!pFrozenPackageActions.isCached(pname, os, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageActions.put(pname, os, vid, 
+				  client.getPackageActionPlugins(pname, os, vid));
+      }
+
+      return pFrozenPackageActions.get(pname, os, vid);
+    }
+  }
+
+  /**
+   * Set the action plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageActions
+  ( 
+   String pname, 
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageActions.put(pname, os, plugins);
+    }
+    else {
+      pFrozenPackageActions.put(pname, os, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageActionPlugins(pname, os, vid, plugins);
+    }    
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the tool plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
+  getPackageTools
+  (
+   String pname, 
+   OsType os, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageTools.get(pname, os);
+    }
+    else {
+      if(!pFrozenPackageTools.isCached(pname, os, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageTools.put(pname, os, vid, 
+				  client.getPackageToolPlugins(pname, os, vid));
+      }
+
+      return pFrozenPackageTools.get(pname, os, vid);
+    }
+  }
+
+  /**
+   * Set the tool plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageTools
+  ( 
+   String pname, 
+   OsType os, 
+   VersionID vid,
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageTools.put(pname, os, plugins);
+    }
+    else {
+      pFrozenPackageTools.put(pname, os, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageToolPlugins(pname, os, vid, plugins);
+    }    
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1497,6 +2151,7 @@ class JManageToolsetsDialog
     pCloneToolsetItem.setEnabled(false);
     pFreezeToolsetItem.setEnabled(false);
     pDeleteToolsetItem.setEnabled(false);
+    pManagePluginMenusItem.setEnabled(false);
 
     if(tpath != null) {
       pToolsetsTree.addSelectionPath(tpath);
@@ -1513,6 +2168,8 @@ class JManageToolsetsDialog
 	  pFreezeToolsetItem.setEnabled(pIsPrivileged);
 	  pDeleteToolsetItem.setEnabled(pIsPrivileged);
 	}
+
+	pManagePluginMenusItem.setEnabled(true);
       }
 
       if((data != null) && (data.getName() != null)) {
@@ -1590,6 +2247,7 @@ class JManageToolsetsDialog
     pClonePackageVersionItem.setEnabled(false);
     pFreezePackageItem.setEnabled(false);
     pDeletePackageItem.setEnabled(false);
+    pManagePluginsItem.setEnabled(false);
 
     if(tpath != null) {
 
@@ -1608,6 +2266,8 @@ class JManageToolsetsDialog
 	else {
 	  pClonePackageVersionItem.setEnabled(pIsPrivileged);
 	}
+
+	pManagePluginsItem.setEnabled(true);
       }
       
       if((data != null) && (data.getName() != null)) {
@@ -1673,6 +2333,33 @@ class JManageToolsetsDialog
   )
   {
     if(!isVisible) {
+      /* clear caches */ 
+      pToolsets.clear();
+      pPackageVersions.clear();
+      pPackageMods.clear();
+      
+      pFrozenToolsetEditors.clear();
+      pFrozenToolsetComparators.clear();
+      pFrozenToolsetActions.clear();
+      pFrozenToolsetTools.clear();
+      
+      pToolsetEditors.clear();
+      pToolsetComparators.clear();
+      pToolsetActions.clear();
+      pToolsetTools.clear();
+
+      pFrozenPackageEditors.clear();
+      pFrozenPackageComparators.clear();
+      pFrozenPackageActions.clear();
+      pFrozenPackageTools.clear();
+
+      pPackageEditors.clear();
+      pPackageComparators.clear();
+      pPackageActions.clear();
+      pPackageTools.clear();
+
+      
+      /* hide child dialogs */ 
       pPackageDetailsDialog.setVisible(false);
       pCreatePackageDialog.setVisible(false);
       pTestPackageDialog.setVisible(false);
@@ -1681,6 +2368,9 @@ class JManageToolsetsDialog
       pCreateToolsetDialog.setVisible(false);
       pTestToolsetDialog.setVisible(false);
       pExportToolsetDialog.setVisible(false);
+
+      pToolsetPluginsDialog.setVisible(false);
+      pPackagePluginsDialog.setVisible(false);
     }
 
     super.setVisible(isVisible);
@@ -2072,6 +2762,10 @@ class JManageToolsetsDialog
       doIncludePackage();
     else if(e.getActionCommand().equals("exclude-package")) 
       doExcludePackage();
+    else if(e.getActionCommand().equals("manage-toolset-plugins")) 
+      doManageToolsetPlugins();
+    else if(e.getActionCommand().equals("manage-package-plugins")) 
+      doManagePackagePlugins();    
     else 
       super.actionPerformed(e);
   }
@@ -2192,8 +2886,9 @@ class JManageToolsetsDialog
 	updateToolset(OsType.Unix, new Toolset(tname));
 	updateAll();
 	selectToolset(tname, OsType.Unix);
-
 	updateDialogs();
+
+// 	pToolsetPluginsDialog.update(tname, OsType.Unix);
       }
     }
   }
@@ -2215,8 +2910,9 @@ class JManageToolsetsDialog
 	updateToolset(os, new Toolset(data.getName()));
 	updateAll();
 	selectToolset(tname, os);
-
 	updateDialogs();
+
+// 	pToolsetPluginsDialog.update(tname, os);
       }
     }
   }
@@ -2251,12 +2947,13 @@ class JManageToolsetsDialog
 		}
 		
 		updateToolset(os, new Toolset(tname, packages));
+
+		pToolsetPluginsDialog.clone(stname, tname, os);
 	      }
 	    }
 
 	    updateAll();
 	    selectToolset(tname, OsType.Unix);
-
 	    updateDialogs();
 	  }
 	}
@@ -2341,6 +3038,11 @@ class JManageToolsetsDialog
 	    assert(ntoolset.getName().equals(tname));
 
 	    updateToolset(os, ntoolset);
+
+	    setToolsetEditors(tname, os, pToolsetEditors.get(tname, os));
+	    setToolsetComparators(tname, os, pToolsetComparators.get(tname, os));
+	    setToolsetActions(tname, os, pToolsetActions.get(tname, os));
+	    setToolsetTools(tname, os, pToolsetTools.get(tname, os));
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -2375,6 +3077,8 @@ class JManageToolsetsDialog
 	  if(toolsets.isEmpty()) 
 	    pToolsets.remove(tname);
 	}
+
+	pToolsetPluginsDialog.remove(tname, os);
 
 	updateAll();    
 	updateDialogs();
@@ -2475,6 +3179,21 @@ class JManageToolsetsDialog
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Manage the set of plugin menu layouts associated with a toolset.
+   */ 
+  public void 
+  doManageToolsetPlugins() 
+  {
+    ToolsetTreeData data = getSelectedToolsetData();
+    if((data != null) && (data.getName() != null) && (data.getOsType() != null)) {
+      pToolsetPluginsDialog.update(data.getName(), data.getOsType());
+      pToolsetPluginsDialog.setVisible(true);
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2600,6 +3319,8 @@ class JManageToolsetsDialog
 	updateAll();
 	selectPackage(pname, os, null);
 	updateDialogs();
+
+	pPackagePluginsDialog.clone(pname, os, null);
       }
     }
   }
@@ -2629,6 +3350,8 @@ class JManageToolsetsDialog
 	  updateAll();
 	  selectPackage(pname, os, null);
 	  updateDialogs();
+
+	  pPackagePluginsDialog.clone(pname, os, vid);
 	}
       }
     }
@@ -2649,10 +3372,12 @@ class JManageToolsetsDialog
 	TreeMap<OsType,PackageMod> packages = new TreeMap<OsType,PackageMod>();
 	pPackageMods.put(pname, packages);
 	packages.put(OsType.Unix, new PackageMod(pname));
+
 	updateAll();
 	selectPackage(pname, OsType.Unix, null);
-
 	updateDialogs();
+
+	pPackagePluginsDialog.update(pname, OsType.Unix, null);
       }
     }
   }
@@ -2679,10 +3404,12 @@ class JManageToolsetsDialog
 
 	if(!packages.containsKey(os)) {
 	  packages.put(os, new PackageMod(pname));
+
 	  updateAll();
 	  selectPackage(pname, os, null);
-
 	  updateDialogs();
+
+	  pPackagePluginsDialog.update(pname, os, null);
 	}
       }
     }
@@ -2787,6 +3514,8 @@ class JManageToolsetsDialog
 	  
 	  updateAll();
 	  updateDialogs();
+
+	  pPackagePluginsDialog.freeze(pname, os, pvsn.getVersionID());
 	}
       }
     }
@@ -2838,9 +3567,16 @@ class JManageToolsetsDialog
 	updateAll();
 	updateDialogs();
 
+	pPackagePluginsDialog.remove(dpname, os);
+
 	PackageCommon com = pPackageDetailsDialog.getPackage();
-	if((com != null) && com.getName().equals(dpname))
-	  pPackageDetailsDialog.setVisible(false);	
+	if(com != null) {
+	  if(com.getName().equals(dpname))
+	    pPackageDetailsDialog.setVisible(false);	
+
+	  if(com.getName().equals(pPackagePluginsDialog.getPackageName()))
+	    pPackagePluginsDialog.setVisible(false);
+	}
       }
     }
   }
@@ -2908,6 +3644,22 @@ class JManageToolsetsDialog
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Manage the set of plugins associated with a toolset package.
+   */ 
+  public void 
+  doManagePackagePlugins() 
+  {
+    PackageTreeData data = getSelectedPackageData();
+    if((data != null) && data.isPackage()) {
+      pPackagePluginsDialog.update(data.getName(), data.getOsType(), data.getVersionID());
+      pPackagePluginsDialog.setVisible(true);
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   T O O L S E T   T R E E   H E L P E R S                                              */
@@ -2953,7 +3705,7 @@ class JManageToolsetsDialog
   /**
    * Update the dialogs.
    */ 
-  private void 
+  public void 
   updateDialogs()
   {
     Toolset toolset = null;
@@ -2961,12 +3713,15 @@ class JManageToolsetsDialog
     {
       ToolsetTreeData data = getSelectedToolsetData();
       if(data != null) {
+	String tname = data.getName();
 	os = data.getOsType();
-	toolset = lookupToolset(data.getName(), os);
+	toolset = lookupToolset(tname, os);
 	if(toolset != null) {
 	  pToolsetDetailsDialog.updateToolset(os, toolset);
 	  if(os.equals(PackageInfo.sOsType)) 
 	    pTestToolsetDialog.updateToolset(toolset);
+
+	  pToolsetPluginsDialog.update(tname, os);
 	}
       }
     }
@@ -2982,9 +3737,189 @@ class JManageToolsetsDialog
 	com = lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
 	if(com != null) 
 	  pPackageDetailsDialog.updatePackage(data.getOsType(), com, null, -1);
+
+	pPackagePluginsDialog.update(data.getName(), data.getOsType(), data.getVersionID());
       }
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The names and revision numbers of plugins associated with a working toolset package.
+   */ 
+  private class
+  FrozenPackagePlugins
+    extends TripleMap<String,OsType,VersionID,TreeMap<String,TreeSet<VersionID>>>
+  {
+    public FrozenPackagePlugins() 
+    {
+      super();
+    }
+
+    public boolean
+    isCached
+    (
+     String pname,
+     OsType os, 
+     VersionID vid
+    ) 
+    {
+      return (super.get(pname, os, vid) != null);
+    }
+
+    public TreeMap<String,TreeSet<VersionID>>
+    get
+    (
+     String pname,
+     OsType os, 
+     VersionID vid
+    ) 
+    {
+      TreeMap<String,TreeSet<VersionID>> plugins = super.get(pname, os, vid);
+      if(plugins != null) {
+	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
+	for(String name : plugins.keySet()) 
+	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+	return table;
+      }
+      
+      return new TreeMap<String,TreeSet<VersionID>>();
+    }
+     
+    public void 
+    put
+    (
+     String pname,
+     OsType os, 
+     VersionID vid,
+     TreeMap<String,TreeSet<VersionID>> plugins
+    ) 
+    {
+      if(plugins != null) {
+	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
+	for(String name : plugins.keySet()) 
+	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+
+	super.put(pname, os, vid, table);
+      }
+      else {
+	super.remove(pname, os, vid);
+      }
+    }
+
+    private static final long serialVersionUID = 7809754910797720803L;
+  }
+
+  /**
+   * The names and revision numbers of plugins associated with a working toolset package.
+   */ 
+  private class
+  PackagePlugins
+    extends DoubleMap<String,OsType,TreeMap<String,TreeSet<VersionID>>>
+  {
+    public PackagePlugins() 
+    {
+      super();
+    }
+
+    public TreeMap<String,TreeSet<VersionID>>
+    get
+    (
+     String pname,
+     OsType os
+    ) 
+    {
+      TreeMap<String,TreeSet<VersionID>> plugins = super.get(pname, os);
+      if(plugins != null) {
+	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
+	for(String name : plugins.keySet()) 
+	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+	return table;
+      }
+      
+      return new TreeMap<String,TreeSet<VersionID>>();
+    }
+     
+    public void 
+    put
+    (
+     String pname,
+     OsType os, 
+     TreeMap<String,TreeSet<VersionID>> plugins
+    ) 
+    {
+      if(plugins != null) {
+	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
+	for(String name : plugins.keySet()) 
+	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+
+	super.put(pname, os, table);
+      }
+      else {
+	super.remove(pname, os);
+      }
+    }
+
+    private static final long serialVersionUID = 3911049299607257455L;
+  }
+
+  /**
+   * The plugin menu layouts indexed by toolset name and operation system.
+   */ 
+  private class
+  ToolsetLayouts
+    extends DoubleMap<String,OsType,PluginMenuLayout>
+  {
+    public ToolsetLayouts() 
+    {
+      super();
+    }
+
+    public boolean
+    isCached
+    (
+     String tname,
+     OsType os
+    ) 
+    {
+      return (super.get(tname, os) != null);
+    }
+
+    public PluginMenuLayout
+    get
+    (
+     String tname,
+     OsType os
+    ) 
+    {
+      PluginMenuLayout layout = super.get(tname, os);
+      if(layout != null) 
+	return layout;
+
+      return new PluginMenuLayout();
+    }
+	     
+    public void 
+    put
+    (
+     String tname,
+     OsType os, 
+     PluginMenuLayout layout
+    ) 
+    {
+      if(layout != null) 
+	super.put(tname, os, layout);
+      else 
+	remove(tname, os);
+    }
+
+    private static final long serialVersionUID = -8290422438068739410L;
+  }
+
 
 
 
@@ -3031,6 +3966,25 @@ class JManageToolsetsDialog
   private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
 
   /**
+   * A cache of frozen toolset plugins menu layouts.
+   */ 
+  private ToolsetLayouts pFrozenToolsetEditors;
+  private ToolsetLayouts pFrozenToolsetComparators;
+  private ToolsetLayouts pFrozenToolsetActions;
+  private ToolsetLayouts pFrozenToolsetTools;
+
+  /**
+   * A cache of working (unfrozen) toolset plugins menu layouts.
+   */ 
+  private ToolsetLayouts pToolsetEditors;
+  private ToolsetLayouts pToolsetComparators;
+  private ToolsetLayouts pToolsetActions;
+  private ToolsetLayouts pToolsetTools;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The cached table of read-only toolset packages indexed by package name, operating 
    * system and revision number. <P> 
    * 
@@ -3044,6 +3998,22 @@ class JManageToolsetsDialog
    * and operating system.
    */ 
   private TreeMap<String,TreeMap<OsType,PackageMod>>  pPackageMods;
+
+  /**
+   * A cache of plugins associated with frozen packages.
+   */ 
+  private FrozenPackagePlugins pFrozenPackageEditors;
+  private FrozenPackagePlugins pFrozenPackageComparators;
+  private FrozenPackagePlugins pFrozenPackageActions;
+  private FrozenPackagePlugins pFrozenPackageTools;
+
+  /**
+   * A cache of plugins associated with working (unfrozen) packages.
+   */ 
+  private PackagePlugins pPackageEditors;
+  private PackagePlugins pPackageComparators;
+  private PackagePlugins pPackageActions;
+  private PackagePlugins pPackageTools;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3098,6 +4068,7 @@ class JManageToolsetsDialog
   private JMenuItem  pCloneToolsetItem;
   private JMenuItem  pFreezeToolsetItem;
   private JMenuItem  pDeleteToolsetItem;
+  private JMenuItem  pManagePluginMenusItem;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3158,6 +4129,7 @@ class JManageToolsetsDialog
   private JMenuItem  pClonePackageVersionItem;
   private JMenuItem  pFreezePackageItem;
   private JMenuItem  pDeletePackageItem;
+  private JMenuItem  pManagePluginsItem;
 
   /**
    * Package reordering drag start index or <CODE>-1</CODE> if not dragging.
@@ -3179,5 +4151,9 @@ class JManageToolsetsDialog
   private JCreateToolsetDialog   pCreateToolsetDialog;
   private JTestToolsetDialog     pTestToolsetDialog;
   private JFileSelectDialog      pExportToolsetDialog;
+
+
+  private JManageToolsetPluginsDialog  pToolsetPluginsDialog; 
+  private JManagePackagePluginsDialog  pPackagePluginsDialog; 
 
 }

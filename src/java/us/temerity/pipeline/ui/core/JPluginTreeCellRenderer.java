@@ -1,4 +1,4 @@
-// $Id: JPluginVersionTreeCellRenderer.java,v 1.2 2005/06/14 13:38:33 jim Exp $
+// $Id: JPluginTreeCellRenderer.java,v 1.1 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,15 +13,14 @@ import javax.swing.border.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P L U G I N   V E R S I O N   T R E E   C E L L   R E N D E R E R                      */
+/*   P L U G I N   T R E E   C E L L   R E N D E R E R                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer used for {@link JTree JTree} cells of the plugin version tree in the 
- * {@link JBaseManagePluginsDialog JBaseManagePluginsDialog}.
+ * The renderer used for {@link JTree JTree} cells containing PluginTreeData instances.
  */ 
 public
-class JPluginVersionTreeCellRenderer
+class JPluginTreeCellRenderer
   extends JLabel 
   implements TreeCellRenderer 
 {
@@ -33,7 +32,7 @@ class JPluginVersionTreeCellRenderer
    * Construct a new renderer.
    */
   public 
-  JPluginVersionTreeCellRenderer() 
+  JPluginTreeCellRenderer() 
   {
     setOpaque(true);    
     setBackground(new Color(0.45f, 0.45f, 0.45f));
@@ -61,18 +60,17 @@ class JPluginVersionTreeCellRenderer
   ) 
   {     
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
-    JBaseManagePluginsDialog.PluginVersionData data = 
-      (JBaseManagePluginsDialog.PluginVersionData) tnode.getUserObject();
+    PluginTreeData data = (PluginTreeData) tnode.getUserObject();
 
     setText(data.toString());
 
     if(isSelected) {
       setForeground(Color.yellow);
-      setIcon((data.getName() != null) ? sSelectedIcon : sSpacerIcon);
+      setIcon((data.getVersionID() != null) ? sSelectedIcon : sSpacerIcon);
     }
     else {
       setForeground(Color.white);
-      setIcon((data.getName() != null) ? sNormalIcon : sSpacerIcon);
+      setIcon((data.getVersionID() != null) ? sNormalIcon : sSpacerIcon);
     }
 
     return this;

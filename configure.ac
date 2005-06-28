@@ -1259,6 +1259,8 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plui
 
   src/java/share/Makefile
+  src/java/share/Unix/Makefile
+  src/java/share/MacOS/Makefile
 
   src/utils/Makefile
   src/utils/src/Makefile

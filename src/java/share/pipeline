@@ -5,342 +5,352 @@ SuffixEditors <TreeSet> #1 {
     Editor <String> #5 { "FCheck" }
   }
   <SuffixEditor> #6 {
-    Suffix <String> #7 { "anim" }
-    Description <String> #8 { "Maya animation file." }
+    Suffix <String> #7 { "amc" }
+    Description <String> #8 { "Acclaim motion capture animation file." }
     Editor <String> #9 { "Emacs" }
   }
   <SuffixEditor> #10 {
-    Suffix <String> #11 { "bash" }
-    Description <String> #12 { "Bash Shell script." }
-    Editor <REF> #9
+    Suffix <String> #11 { "anim" }
+    Description <String> #12 { "Maya animation file." }
+    Editor <String> #13 { "Emacs" }
   }
-  <SuffixEditor> #13 {
-    Suffix <String> #14 { "bgeo" }
-    Description <String> #15 { "Houdini geometry file (binary)." }
-    Editor <String> #16 { "GPlay" }
+  <SuffixEditor> #14 {
+    Suffix <String> #15 { "bash" }
+    Description <String> #16 { "Bash Shell script." }
+    Editor <String> #17 { "Emacs" }
   }
-  <SuffixEditor> #17 {
-    Suffix <String> #18 { "bmp" }
-    Description <String> #19 { "MS-Windows bitmap image file." }
+  <SuffixEditor> #18 {
+    Suffix <String> #19 { "bgeo" }
+    Description <String> #20 { "Houdini geometry file (binary)." }
+    Editor <String> #21 { "GPlay" }
+  }
+  <SuffixEditor> #22 {
+    Suffix <String> #23 { "bmp" }
+    Description <String> #24 { "MS-Windows bitmap image file." }
     Editor <REF> #5
   }
-  <SuffixEditor> #20 {
-    Suffix <String> #21 { "bw" }
-    Description <String> #22 { "SGI image file (grayscale)." }
+  <SuffixEditor> #25 {
+    Suffix <String> #26 { "bw" }
+    Description <String> #27 { "SGI image file (grayscale)." }
     Editor <REF> #5
   }
-  <SuffixEditor> #23 {
-    Suffix <String> #24 { "cin" }
-    Description <String> #25 { "Kodak Cineon image file." }
+  <SuffixEditor> #28 {
+    Suffix <String> #29 { "cin" }
+    Description <String> #30 { "Kodak Cineon image file." }
     Editor <REF> #5
   }
-  <SuffixEditor> #26 {
-    Suffix <String> #27 { "cmd" }
-    Description <String> #28 { "Houdini command script." }
-    Editor <String> #29 { "Houdini" }
+  <SuffixEditor> #31 {
+    Suffix <String> #32 { "cmd" }
+    Description <String> #33 { "Houdini command script." }
+    Editor <String> #34 { "Emacs" }
   }
-  <SuffixEditor> #30 {
-    Suffix <String> #31 { "csh" }
-    Description <String> #32 { "C-Shell script." }
-    Editor <REF> #9
+  <SuffixEditor> #35 {
+    Suffix <String> #36 { "csh" }
+    Description <String> #37 { "C-Shell script." }
+    Editor <REF> #13
   }
-  <SuffixEditor> #33 {
-    Suffix <String> #34 { "ds" }
-    Description <String> #35 { "Houdini dialog script." }
-    Editor <String> #36 { "Emacs" }
+  <SuffixEditor> #38 {
+    Suffix <String> #39 { "ds" }
+    Description <String> #40 { "Houdini dialog script." }
+    Editor <String> #41 { "Emacs" }
   }
-  <SuffixEditor> #37 {
-    Suffix <String> #38 { "dvi" }
-    Description <String> #39 { "TeX device independent file." }
-    Editor <String> #40 { "XDvi" }
+  <SuffixEditor> #42 {
+    Suffix <String> #43 { "dvi" }
+    Description <String> #44 { "TeX device independent file." }
+    Editor <String> #45 { "XDvi" }
   }
-  <SuffixEditor> #41 {
-    Suffix <String> #42 { "eps" }
-    Description <String> #43 { "Adobe encapulated postscript file." }
-    Editor <String> #44 { "Gimp" }
+  <SuffixEditor> #46 {
+    Suffix <String> #47 { "eps" }
+    Description <String> #48 { "Adobe encapulated postscript file." }
+    Editor <String> #49 { "Gimp" }
   }
-  <SuffixEditor> #45 {
-    Suffix <String> #46 { "fits" }
-    Description <String> #47 { "Flexible image transport system file." }
-    Editor <REF> #44
+  <SuffixEditor> #50 {
+    Suffix <String> #51 { "fits" }
+    Description <String> #52 { "Flexible image transport system file." }
+    Editor <REF> #49
   }
-  <SuffixEditor> #48 {
-    Suffix <String> #49 { "geo" }
-    Description <String> #50 { "Houdini geometry file (ascii)." }
-    Editor <REF> #16
+  <SuffixEditor> #53 {
+    Suffix <String> #54 { "geo" }
+    Description <String> #55 { "Houdini geometry file (ascii)." }
+    Editor <REF> #21
   }
-  <SuffixEditor> #51 {
-    Suffix <String> #52 { "gif" }
-    Description <String> #53 { "GIF image file." }
+  <SuffixEditor> #56 {
+    Suffix <String> #57 { "gif" }
+    Description <String> #58 { "GIF image file." }
     Editor <REF> #5
   }
-  <SuffixEditor> #54 {
-    Suffix <String> #55 { "hdr" }
-    Description <String> #56 { "The Radiance high dynamic range (HDR) image file." }
-    Editor <String> #57 { "XImage" }
+  <SuffixEditor> #59 {
+    Suffix <String> #60 { "hdr" }
+    Description <String> #61 { "The Radiance high dynamic range (HDR) image file." }
+    Editor <String> #62 { "XImage" }
   }
-  <SuffixEditor> #58 {
-    Suffix <String> #59 { "hip" }
-    Description <String> #60 { "Houdini scene file." }
-    Editor <REF> #9
-  }
-  <SuffixEditor> #61 {
-    Suffix <String> #62 { "ico" }
-    Description <String> #63 { "MS-Windows icon file." }
-    Editor <REF> #44
-  }
-  <SuffixEditor> #64 {
-    Suffix <String> #65 { "ifd" }
-    Description <String> #66 { "Houdini instantaneous frame description format file." }
-    Editor <REF> #9
+  <SuffixEditor> #63 {
+    Suffix <String> #64 { "hip" }
+    Description <String> #65 { "Houdini scene file." }
+    Editor <String> #66 { "Houdini" }
   }
   <SuffixEditor> #67 {
-    Suffix <String> #68 { "iff" }
-    Description <String> #69 { "Maya image file." }
-    Editor <REF> #5
+    Suffix <String> #68 { "ico" }
+    Description <String> #69 { "MS-Windows icon file." }
+    Editor <REF> #49
   }
   <SuffixEditor> #70 {
-    Suffix <String> #71 { "iv" }
-    Description <String> #72 { "OpenInventor scene file." }
-    Editor <String> #73 { "IvView" }
+    Suffix <String> #71 { "ifd" }
+    Description <String> #72 { "Houdini instantaneous frame description format file." }
+    Editor <REF> #13
   }
-  <SuffixEditor> #74 {
-    Suffix <String> #75 { "jpg" }
-    Description <String> #76 { "JPEG image file." }
+  <SuffixEditor> #73 {
+    Suffix <String> #74 { "iff" }
+    Description <String> #75 { "Maya image file." }
     Editor <REF> #5
   }
-  <SuffixEditor> #77 {
-    Suffix <String> #78 { "lff" }
-    Description <String> #79 { "LucasFilm image file." }
-    Editor <REF> #5
+  <SuffixEditor> #76 {
+    Suffix <String> #77 { "iv" }
+    Description <String> #78 { "OpenInventor scene file." }
+    Editor <String> #79 { "IvView" }
   }
   <SuffixEditor> #80 {
-    Suffix <String> #81 { "lif" }
-    Description <String> #82 { "LIF shader information file." }
-    Editor <String> #83 { "Emacs" }
+    Suffix <String> #81 { "jpg" }
+    Description <String> #82 { "JPEG image file." }
+    Editor <REF> #5
   }
-  <SuffixEditor> #84 {
-    Suffix <String> #85 { "ma" }
-    Description <String> #86 { "Maya scene file (ascii)." }
-    Editor <String> #87 { "Maya" }
+  <SuffixEditor> #83 {
+    Suffix <String> #84 { "lff" }
+    Description <String> #85 { "LucasFilm image file." }
+    Editor <REF> #5
   }
-  <SuffixEditor> #88 {
-    Suffix <String> #89 { "mb" }
-    Description <String> #90 { "Maya scene file (binary)." }
-    Editor <REF> #87
+  <SuffixEditor> #86 {
+    Suffix <String> #87 { "lif" }
+    Description <String> #88 { "LIF shader information file." }
+    Editor <String> #89 { "Emacs" }
   }
-  <SuffixEditor> #91 {
-    Suffix <String> #92 { "mel" }
-    Description <String> #93 { "Maya MEL script." }
-    Editor <REF> #9
+  <SuffixEditor> #90 {
+    Suffix <String> #91 { "ma" }
+    Description <String> #92 { "Maya scene file (ascii)." }
+    Editor <String> #93 { "Maya" }
   }
   <SuffixEditor> #94 {
-    Suffix <String> #95 { "mr" }
-    Description <String> #96 { "Mental Ray scene file." }
-    Editor <REF> #9
+    Suffix <String> #95 { "mb" }
+    Description <String> #96 { "Maya scene file (binary)." }
+    Editor <REF> #93
   }
   <SuffixEditor> #97 {
-    Suffix <String> #98 { "obj" }
-    Description <String> #99 { "Wavefront geometry file." }
-    Editor <REF> #16
+    Suffix <String> #98 { "mel" }
+    Description <String> #99 { "Maya MEL script." }
+    Editor <REF> #13
   }
   <SuffixEditor> #100 {
-    Suffix <String> #101 { "pcx" }
-    Description <String> #102 { "PC paintbrush image file." }
-    Editor <REF> #44
+    Suffix <String> #101 { "mr" }
+    Description <String> #102 { "Mental Ray scene file." }
+    Editor <REF> #13
   }
   <SuffixEditor> #103 {
-    Suffix <String> #104 { "pdf" }
-    Description <String> #105 { "Adobe portable document format file." }
-    Editor <String> #106 { "Acroread" }
+    Suffix <String> #104 { "obj" }
+    Description <String> #105 { "Wavefront geometry file." }
+    Editor <REF> #21
   }
-  <SuffixEditor> #107 {
-    Suffix <String> #108 { "pgm" }
-    Description <String> #109 { "Portable pixmap image file (grayscale)." }
+  <SuffixEditor> #106 {
+    Suffix <String> #107 { "pcx" }
+    Description <String> #108 { "PC paintbrush image file." }
+    Editor <REF> #49
+  }
+  <SuffixEditor> #109 {
+    Suffix <String> #110 { "pdf" }
+    Description <String> #111 { "Adobe portable document format file." }
+    Editor <String> #112 { "Acroread" }
+  }
+  <SuffixEditor> #113 {
+    Suffix <String> #114 { "pgm" }
+    Description <String> #115 { "Portable pixmap image file (grayscale)." }
     Editor <REF> #5
   }
-  <SuffixEditor> #110 {
-    Suffix <String> #111 { "pic" }
-    Description <String> #112 { "Houdini image file." }
-    Editor <String> #113 { "MPlay" }
-  }
-  <SuffixEditor> #114 {
-    Suffix <String> #115 { "pix" }
-    Description <String> #116 { "Alias|Wavefront image file." }
-    Editor <REF> #44
-  }
-  <SuffixEditor> #117 {
-    Suffix <String> #118 { "pl" }
-    Description <String> #119 { "Perl script." }
-    Editor <REF> #9
+  <SuffixEditor> #116 {
+    Suffix <String> #117 { "pic" }
+    Description <String> #118 { "Houdini image file." }
+    Editor <String> #119 { "MPlay" }
   }
   <SuffixEditor> #120 {
-    Suffix <String> #121 { "png" }
-    Description <String> #122 { "Portable network graphics image file." }
-    Editor <REF> #44
+    Suffix <String> #121 { "pix" }
+    Description <String> #122 { "Alias|Wavefront image file." }
+    Editor <REF> #49
   }
   <SuffixEditor> #123 {
-    Suffix <String> #124 { "ppm" }
-    Description <String> #125 { "Portable pixmap image file (color)." }
-    Editor <REF> #5
+    Suffix <String> #124 { "pl" }
+    Description <String> #125 { "Perl script." }
+    Editor <REF> #13
   }
   <SuffixEditor> #126 {
-    Suffix <String> #127 { "pri" }
-    Description <String> #128 { "Prisms image file." }
-    Editor <REF> #5
+    Suffix <String> #127 { "png" }
+    Description <String> #128 { "Portable network graphics image file." }
+    Editor <REF> #49
   }
   <SuffixEditor> #129 {
-    Suffix <String> #130 { "ps" }
-    Description <String> #131 { "Adobe postscript file." }
-    Editor <REF> #44
+    Suffix <String> #130 { "ppm" }
+    Description <String> #131 { "Portable pixmap image file (color)." }
+    Editor <REF> #5
   }
   <SuffixEditor> #132 {
-    Suffix <String> #133 { "psd" }
-    Description <String> #134 { "Photoshop multi-layered image format." }
-    Editor <String> #135 { "Gimp" }
-  }
-  <SuffixEditor> #136 {
-    Suffix <String> #137 { "pxb" }
-    Description <String> #138 { "Pixibox PXB image file." }
+    Suffix <String> #133 { "pri" }
+    Description <String> #134 { "Prisms image file." }
     Editor <REF> #5
   }
-  <SuffixEditor> #139 {
-    Suffix <String> #140 { "qtl" }
-    Description <String> #141 { "Quantel image file." }
-    Editor <REF> #5
+  <SuffixEditor> #135 {
+    Suffix <String> #136 { "ps" }
+    Description <String> #137 { "Adobe postscript file." }
+    Editor <REF> #49
+  }
+  <SuffixEditor> #138 {
+    Suffix <String> #139 { "psd" }
+    Description <String> #140 { "Photoshop multi-layered image format." }
+    Editor <String> #141 { "Gimp" }
   }
   <SuffixEditor> #142 {
-    Suffix <String> #143 { "ras" }
-    Description <String> #144 { "Sun raster image file." }
+    Suffix <String> #143 { "pxb" }
+    Description <String> #144 { "Pixibox PXB image file." }
     Editor <REF> #5
   }
   <SuffixEditor> #145 {
-    Suffix <String> #146 { "rat" }
-    Description <String> #147 { "Houdini texture file." }
-    Editor <REF> #113
+    Suffix <String> #146 { "qtl" }
+    Description <String> #147 { "Quantel image file." }
+    Editor <REF> #5
   }
   <SuffixEditor> #148 {
-    Suffix <String> #149 { "rgb" }
-    Description <String> #150 { "SGI image file." }
+    Suffix <String> #149 { "ras" }
+    Description <String> #150 { "Sun raster image file." }
     Editor <REF> #5
   }
   <SuffixEditor> #151 {
-    Suffix <String> #152 { "rib" }
-    Description <String> #153 { "RenderMan interface byte-stream file." }
-    Editor <REF> #9
+    Suffix <String> #152 { "rat" }
+    Description <String> #153 { "Houdini texture file." }
+    Editor <REF> #119
   }
   <SuffixEditor> #154 {
-    Suffix <String> #155 { "rla" }
-    Description <String> #156 { "Wavefront image file." }
+    Suffix <String> #155 { "rgb" }
+    Description <String> #156 { "SGI image file." }
     Editor <REF> #5
   }
   <SuffixEditor> #157 {
-    Suffix <String> #158 { "scn" }
-    Description <String> #159 { "Pixibox SCN image file." }
-    Editor <REF> #5
+    Suffix <String> #158 { "rib" }
+    Description <String> #159 { "RenderMan interface byte-stream file." }
+    Editor <REF> #13
   }
   <SuffixEditor> #160 {
-    Suffix <String> #161 { "sdl" }
-    Description <String> #162 { "3Delight compiled shader." }
-    Editor <REF> #9
+    Suffix <String> #161 { "rla" }
+    Description <String> #162 { "Wavefront image file." }
+    Editor <REF> #5
   }
   <SuffixEditor> #163 {
-    Suffix <String> #164 { "sgi" }
-    Description <String> #165 { "SGI image file." }
+    Suffix <String> #164 { "scn" }
+    Description <String> #165 { "Pixibox SCN image file." }
     Editor <REF> #5
   }
   <SuffixEditor> #166 {
-    Suffix <String> #167 { "sh" }
-    Description <String> #168 { "Borne Shell script." }
-    Editor <REF> #9
+    Suffix <String> #167 { "sdl" }
+    Description <String> #168 { "3Delight compiled shader." }
+    Editor <REF> #13
   }
   <SuffixEditor> #169 {
-    Suffix <String> #170 { "sl" }
-    Description <String> #171 { "RenderMan shading language source file." }
-    Editor <REF> #9
+    Suffix <String> #170 { "sgi" }
+    Description <String> #171 { "SGI image file." }
+    Editor <REF> #5
   }
   <SuffixEditor> #172 {
-    Suffix <String> #173 { "slb" }
-    Description <String> #174 { "AIR compilied shader." }
-    Editor <String> #175 { "Emacs" }
+    Suffix <String> #173 { "sh" }
+    Description <String> #174 { "Borne Shell script." }
+    Editor <REF> #13
   }
-  <SuffixEditor> #176 {
-    Suffix <String> #177 { "slo" }
-    Description <String> #178 { "RenderMan shader byte-code file." }
-    Editor <REF> #9
+  <SuffixEditor> #175 {
+    Suffix <String> #176 { "sl" }
+    Description <String> #177 { "RenderMan shading language source file." }
+    Editor <REF> #13
   }
-  <SuffixEditor> #179 {
-    Suffix <String> #180 { "sm" }
-    Description <String> #181 { "AIR shadow map." }
-    Editor <String> #182 { "AirShow" }
+  <SuffixEditor> #178 {
+    Suffix <String> #179 { "slb" }
+    Description <String> #180 { "AIR compilied shader." }
+    Editor <String> #181 { "Emacs" }
   }
-  <SuffixEditor> #183 {
-    Suffix <String> #184 { "tdl" }
-    Description <String> #185 { "3Delight texture or environment map." }
-    Editor <String> #186 { "I-Display" }
+  <SuffixEditor> #182 {
+    Suffix <String> #183 { "slo" }
+    Description <String> #184 { "RenderMan shader byte-code file." }
+    Editor <REF> #13
   }
-  <SuffixEditor> #187 {
-    Suffix <String> #188 { "tex" }
-    Description <String> #189 { "RenderMan texture file." }
+  <SuffixEditor> #185 {
+    Suffix <String> #186 { "sm" }
+    Description <String> #187 { "AIR shadow map." }
+    Editor <String> #188 { "AirShow" }
   }
-  <SuffixEditor> #190 {
-    Suffix <String> #191 { "tga" }
-    Description <String> #192 { "Target image file." }
-    Editor <REF> #5
+  <SuffixEditor> #189 {
+    Suffix <String> #190 { "tdl" }
+    Description <String> #191 { "3Delight texture or environment map." }
+    Editor <String> #192 { "I-Display" }
   }
   <SuffixEditor> #193 {
-    Suffix <String> #194 { "tif" }
-    Description <String> #195 { "Tagged image file." }
-    Editor <String> #196 { "I-Display" }
+    Suffix <String> #194 { "tex" }
+    Description <String> #195 { "RenderMan texture file." }
   }
-  <SuffixEditor> #197 {
-    Suffix <String> #198 { "tiff" }
-    Description <String> #199 { "Tagged image file." }
-    Editor <REF> #196
+  <SuffixEditor> #196 {
+    Suffix <String> #197 { "tga" }
+    Description <String> #198 { "Target image file." }
+    Editor <REF> #5
   }
-  <SuffixEditor> #200 {
-    Suffix <String> #201 { "tx" }
-    Description <String> #202 { "AIR texture file." }
-    Editor <REF> #182
+  <SuffixEditor> #199 {
+    Suffix <String> #200 { "tif" }
+    Description <String> #201 { "Tagged image file." }
+    Editor <String> #202 { "I-Display" }
   }
   <SuffixEditor> #203 {
-    Suffix <String> #204 { "txt" }
-    Description <String> #205 { "Plain text file." }
-    Editor <REF> #9
+    Suffix <String> #204 { "tiff" }
+    Description <String> #205 { "Tagged image file." }
+    Editor <REF> #202
   }
   <SuffixEditor> #206 {
-    Suffix <String> #207 { "vex" }
-    Description <String> #208 { "Houdini VEX byte-code file." }
-    Editor <REF> #9
+    Suffix <String> #207 { "tx" }
+    Description <String> #208 { "AIR texture file." }
+    Editor <REF> #188
   }
   <SuffixEditor> #209 {
-    Suffix <String> #210 { "vfl" }
-    Description <String> #211 { "Houdini VEX source file." }
-    Editor <REF> #9
+    Suffix <String> #210 { "txt" }
+    Description <String> #211 { "Plain text file." }
+    Editor <REF> #17
   }
   <SuffixEditor> #212 {
-    Suffix <String> #213 { "vst" }
-    Description <String> #214 { "Vista image file." }
-    Editor <REF> #5
+    Suffix <String> #213 { "vex" }
+    Description <String> #214 { "Houdini VEX byte-code file." }
+    Editor <REF> #13
   }
   <SuffixEditor> #215 {
-    Suffix <String> #216 { "xbm" }
-    Description <String> #217 { "X11 bitmap image file." }
-    Editor <REF> #44
+    Suffix <String> #216 { "vfl" }
+    Description <String> #217 { "Houdini VEX source file." }
+    Editor <REF> #13
   }
   <SuffixEditor> #218 {
-    Suffix <String> #219 { "xpm" }
-    Description <String> #220 { "X11 pixmap image file." }
-    Editor <REF> #44
+    Suffix <String> #219 { "vst" }
+    Description <String> #220 { "Vista image file." }
+    Editor <REF> #5
   }
   <SuffixEditor> #221 {
-    Suffix <String> #222 { "xwd" }
-    Description <String> #223 { "X11 window fump image file." }
-    Editor <REF> #44
+    Suffix <String> #222 { "xbm" }
+    Description <String> #223 { "X11 bitmap image file." }
+    Editor <REF> #49
   }
   <SuffixEditor> #224 {
-    Suffix <String> #225 { "yuv" }
-    Description <String> #226 { "Abekas NTSC/PAL image file." }
+    Suffix <String> #225 { "xpm" }
+    Description <String> #226 { "X11 pixmap image file." }
+    Editor <REF> #49
+  }
+  <SuffixEditor> #227 {
+    Suffix <String> #228 { "xwd" }
+    Description <String> #229 { "X11 window fump image file." }
+    Editor <REF> #49
+  }
+  <SuffixEditor> #230 {
+    Suffix <String> #231 { "yuv" }
+    Description <String> #232 { "Abekas NTSC/PAL image file." }
     Editor <REF> #5
+  }
+  <SuffixEditor> #233 {
+    Suffix <String> #234 { "z" }
+    Description <String> #235 { "RenderMan depth map." }
+    Editor <String> #236 { "I-Display" }
   }
 }

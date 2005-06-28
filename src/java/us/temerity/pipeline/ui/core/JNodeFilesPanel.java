@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.17 2005/06/22 01:00:05 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.18 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -72,14 +72,6 @@ class JNodeFilesPanel
     /* initialize fields */ 
     {
       pSelected = new TreeSet<Integer>();
-
-      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
-      pEditorMenuLayout   = new PluginMenuLayout();
-      pRefreshEditorMenus = true; 
-
-      pComparatorPlugins     = PluginMgrClient.getInstance().getComparators();
-      pComparatorMenuLayout  = new PluginMenuLayout();
-      pRefreshComparatorMenu = true; 
     }
 
     /* initialize the popup menus */ 
@@ -292,7 +284,7 @@ class JNodeFilesPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null, null, null, null);
+    updateNodeStatus(null, null, null);
   }
 
 
@@ -371,12 +363,6 @@ class JNodeFilesPanel
    * @param status
    *   The current node status.
    * 
-   * @param editorPlugins
-   *   The names of versions of the loaded editor plugins.   
-   * 
-   * @param editorLayout
-   *   The menu layout for editor plugins.
-   * 
    * @param novelty
    *   The per-file novelty flags.
    * 
@@ -389,8 +375,6 @@ class JNodeFilesPanel
    String author, 
    String view, 
    NodeStatus status, 
-   TreeMap<String,TreeSet<VersionID>> editorPlugins, 
-   PluginMenuLayout editorLayout, 
    TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty, 
    TreeSet<VersionID> offline
   ) 
@@ -398,7 +382,7 @@ class JNodeFilesPanel
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status, editorPlugins, editorLayout, novelty, offline);
+    updateNodeStatus(status, novelty, offline);
   }
 
   /**
@@ -406,12 +390,6 @@ class JNodeFilesPanel
    * 
    * @param status
    *   The current node status.
-   * 
-   * @param editorPlugins
-   *   The names of versions of the loaded editor plugins.   
-   * 
-   * @param editorLayout
-   *   The menu layout for editor plugins.
    * 
    * @param novelty
    *   The per-file novelty flags.
@@ -423,8 +401,6 @@ class JNodeFilesPanel
   updateNodeStatus
   (
    NodeStatus status, 
-   TreeMap<String,TreeSet<VersionID>> editorPlugins, 
-   PluginMenuLayout editorLayout, 
    TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
    TreeSet<VersionID> offline
   ) 
@@ -436,34 +412,6 @@ class JNodeFilesPanel
     NodeDetails details = null;
     if(pStatus != null) 
       details = pStatus.getDetails();
-
-    {
-      PluginMgrClient plg = PluginMgrClient.getInstance();
-      pComparatorPlugins = plg.getComparators();
-
-      if(editorPlugins != null) 
-	pEditorPlugins = editorPlugins;
-      else 
-	pEditorPlugins = plg.getEditors();
-
-      UIMaster master = UIMaster.getInstance(); 
-      try {
-	pComparatorMenuLayout = master.getMasterMgrClient().getComparatorMenuLayout();
-	pRefreshComparatorMenu = true;
-
-	if(editorLayout != null) {
-	  pEditorMenuLayout = editorLayout; 
-	  pRefreshEditorMenus = true;
-	}
-	else {
-	  pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
-	  pRefreshEditorMenus = true;
-	}
-      } 
-      catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-      }      
-    }
 
     /* header */ 
     {
@@ -942,67 +890,67 @@ class JNodeFilesPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  public void 
+  clearPluginCache()
+  {
+    pEditorMenuToolset = null;
+    pComparatorMenuToolset = null;
+  }
+
+  /**
    * Update the editor plugin menus.
    */ 
-  private synchronized void 
+  private void 
   updateEditorMenus()
   {
-    if(pRefreshEditorMenus) {
-      int wk;
-      for(wk=0; wk<pEditWithMenus.length; wk++) {
-	pEditWithMenus[wk].removeAll();
-	for(PluginMenuLayout pml : pEditorMenuLayout) 
-	  pEditWithMenus[wk].add(buildPluginMenu(pml, "edit-with", pEditorPlugins));
+    String toolset = null;
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	if(details.getWorkingVersion() != null) 
+	  toolset = details.getWorkingVersion().getToolset();
+	else if(details.getLatestVersion() != null) 
+	  toolset = details.getLatestVersion().getToolset();
       }
+    }
       
-      pRefreshEditorMenus = false;
+    if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      int wk;
+      for(wk=0; wk<pEditWithMenus.length; wk++) 
+	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+      
+      pEditorMenuToolset = toolset;
     }
   }
-  
+
   /**
    * Update the comparator plugin menus.
    */ 
-  private synchronized void 
-  updateComparatorMenu()
+  private void 
+  updateComparatorMenus()
   {
-    if(pRefreshComparatorMenu) {
-      pCompareWithMenu.removeAll();
-      for(PluginMenuLayout pml : pComparatorMenuLayout) 
-	pCompareWithMenu.add(buildPluginMenu(pml, "compare-with", pComparatorPlugins));
-      
-      pRefreshComparatorMenu = false;
-    }
-  }
-  
-  /**
-   * Recursively update a plugin menu.
-   */ 
-  private JMenuItem
-  buildPluginMenu
-  (
-   PluginMenuLayout layout, 
-   String prefix, 
-   TreeMap<String,TreeSet<VersionID>> plugins
-  ) 
-  {
-    JMenuItem item = null;
-    if(layout.isMenuItem()) {
-      item = new JMenuItem(layout.getTitle());
-      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
-      item.addActionListener(this);
-   
-      TreeSet<VersionID> vids = plugins.get(layout.getName());
-      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
-    }
-    else {
-      JMenu sub = new JMenu(layout.getTitle()); 
-      for(PluginMenuLayout pml : layout) 
-	sub.add(buildPluginMenu(pml, prefix, plugins));
-      item = sub;
+    String toolset = null;
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	if(details.getWorkingVersion() != null) 
+	  toolset = details.getWorkingVersion().getToolset();
+	else if(details.getLatestVersion() != null) 
+	  toolset = details.getLatestVersion().getToolset();
+      }
     }
 
-    return item;
+    if((toolset != null) && !toolset.equals(pComparatorMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildComparatorMenu(toolset, pCompareWithMenu, this);
+      
+      pComparatorMenuToolset = toolset;
+    }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1383,7 +1331,7 @@ class JNodeFilesPanel
 
 	  if((pTargetVersionID != null) && !checkedInHeader) {
 	    updateEditorMenus();
-	    updateComparatorMenu();
+	    updateComparatorMenus();
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
@@ -3254,40 +3202,15 @@ class JNodeFilesPanel
    */ 
   private TreeSet<VersionID>  pOffline; 
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Cached names and version numbers of the loaded editor plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
-
-  /**
-   * The menu layout for editor plugins.
+   * The toolset used to build the editor menu.
    */ 
-  private PluginMenuLayout  pEditorMenuLayout;
+  private String  pEditorMenuToolset;
 
   /**
-   * Whether the Swing editor menus need to be rebuild from the menu layout.
+   * The toolset used to build the comparator menu.
    */ 
-  private boolean pRefreshEditorMenus; 
-
-
-  /**
-   * Cached names and version numbers of the loaded comparator plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pComparatorPlugins; 
-
-  /**
-   * The menu layout for comparator plugins.
-   */ 
-  private PluginMenuLayout  pComparatorMenuLayout;
-
-  /**
-   * Whether the Swing comparator menu need to be rebuild from the menu layout.
-   */ 
-  private boolean pRefreshComparatorMenu; 
-
+  private String  pComparatorMenuToolset;
 
 
   /*----------------------------------------------------------------------------------------*/

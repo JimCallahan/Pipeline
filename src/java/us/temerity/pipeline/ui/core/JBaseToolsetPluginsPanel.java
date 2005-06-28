@@ -1,9 +1,10 @@
-// $Id: JBaseManagePluginsDialog.java,v 1.6 2005/05/15 17:54:56 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.1 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*; 
+import us.temerity.pipeline.toolset.*; 
 import us.temerity.pipeline.math.*; 
 
 import java.awt.*;
@@ -15,15 +16,15 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   B A S E   M A N A G E   P L U G I N S   D I A L O G                                    */
+/*   B A S E   T O O L S E T   P L U G I N S   P A N E L                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The base clase of all dialogs which edit the plugin selection menus.
+ * The base clase of all panels which edit the plugin menu layuouts associated with a toolset.
  */ 
 public abstract
-class JBaseManagePluginsDialog
-  extends JBaseDialog
+class JBaseToolsetPluginsPanel
+  extends JPanel
   implements MouseListener, MouseMotionListener, ActionListener, TreeSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -37,18 +38,21 @@ class JBaseManagePluginsDialog
    *   The title of the dialog.
    */ 
   protected
-  JBaseManagePluginsDialog
+  JBaseToolsetPluginsPanel
   (
-   String title
+   String title, 
+   JManageToolsetsDialog dialog,
+   JManageToolsetPluginsDialog parent
   ) 
   {
-    super(title, false);
-
     /* initialize fields */ 
     {
       pMenuLayout     = new PluginMenuLayout();
       pPluginVersions = new TreeMap<String,TreeSet<VersionID>>();
       pIsPrivileged   = false;
+
+      pDialog = dialog; 
+      pParent = parent;
     }
 
     /* layout popup menu */ 
@@ -94,16 +98,16 @@ class JBaseManagePluginsDialog
 
     /* create dialog body components */ 
     {
-      Box body = new Box(BoxLayout.X_AXIS);
+      setLayout(new BoxLayout(this, BoxLayout.X_AXIS));  
 
-      body.add(Box.createRigidArea(new Dimension(20, 0)));
+      add(Box.createRigidArea(new Dimension(20, 0)));
 
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	
 	vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	
-	vbox.add(UIFactory.createPanelLabel("Menu Layout:"));
+	vbox.add(UIFactory.createPanelLabel(title + " Menu Layout:"));
 	
 	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 	
@@ -129,8 +133,8 @@ class JBaseManagePluginsDialog
 	  {
 	    JScrollPane scroll = new JScrollPane(tree);
 	    
-	    scroll.setMinimumSize(new Dimension(400, 100));
-	    scroll.setPreferredSize(new Dimension(400, 500));
+	    scroll.setMinimumSize(new Dimension(500, 100));
+	    scroll.setPreferredSize(new Dimension(500, 500));
 	    
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -142,11 +146,11 @@ class JBaseManagePluginsDialog
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	  
-	  body.add(vbox);
+	  add(vbox);
 	}
       }
       
-      body.add(Box.createRigidArea(new Dimension(4, 0)));
+      add(Box.createRigidArea(new Dimension(4, 0)));
       
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -189,30 +193,30 @@ class JBaseManagePluginsDialog
 	
 	vbox.add(Box.createVerticalGlue());
 	
-	body.add(vbox);
+	add(vbox);
       }
       
-      body.add(Box.createRigidArea(new Dimension(4, 0)));
+      add(Box.createRigidArea(new Dimension(4, 0)));
 	
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	
 	vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	
-	vbox.add(UIFactory.createPanelLabel("Plugin Versions:"));
+	vbox.add(UIFactory.createPanelLabel(title + " Plugins:"));
 	
 	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 	
 	{
 	  DefaultMutableTreeNode root = 
-	    new DefaultMutableTreeNode(new PluginVersionData(), true);
+	    new DefaultMutableTreeNode(new PluginTreeData(), true);
 	  DefaultTreeModel model = new DefaultTreeModel(root, true);
 	  
 	  JTree tree = new JFancyTree(model); 
-	  pPluginVersionTree = tree;
+	  pPluginTree = tree;
 	  tree.setName("DarkTree");
 	  
- 	  tree.setCellRenderer(new JPluginVersionTreeCellRenderer());
+ 	  tree.setCellRenderer(new JPluginTreeCellRenderer());
 	  tree.getSelectionModel().setSelectionMode
 	    (TreeSelectionModel.SINGLE_TREE_SELECTION);
 	  tree.setExpandsSelectedPaths(true);
@@ -223,7 +227,7 @@ class JBaseManagePluginsDialog
 	    JScrollPane scroll = new JScrollPane(tree);
 	    
 	    scroll.setMinimumSize(new Dimension(150, 100));
-	    scroll.setPreferredSize(new Dimension(150, 500));
+	    scroll.setPreferredSize(new Dimension(250, 500));
 	    
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -235,13 +239,11 @@ class JBaseManagePluginsDialog
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	  
-	  body.add(vbox);
+	  add(vbox);
 	}
       }
 
-      body.add(Box.createRigidArea(new Dimension(20, 0)));
-
-      super.initUI(title + ":", false, body, "Confirm", "Apply", null, "Close");
+      add(Box.createRigidArea(new Dimension(20, 0)));
     }
   }
 
@@ -260,6 +262,14 @@ class JBaseManagePluginsDialog
     return pDragMenuLayoutNode;
   }
 
+  /**
+   * Get the plugin menu layout specified by the UI components.
+   */
+  public PluginMenuLayout
+  getMenuLayout() 
+  {
+    return pMenuLayout;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -267,25 +277,57 @@ class JBaseManagePluginsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the UI components to display the given plugin menu layout.
+   * Update the UI components to display the plugin menu associated with a toolset.
+   * 
+   * @param toolset
+   *   The toolset. 
+   * 
+   * @param os
+   *   The package operating system.
+   * 
+   * @param isPrivileged
+   *   Whether the current user is privileged.
+   */ 
+  public abstract void 
+  update
+  (
+   Toolset toolset, 
+   OsType os,
+   boolean isPrivileged
+  ) 
+    throws PipelineException;
+
+  /**
+   * Update the UI components to display the plugin menu associated with a toolset.
+   * 
+   * @param tname
+   *   The name of the toolset. 
+   * 
+   * @param os
+   *   The toolset operating system.
    * 
    * @param layout
    *   The current plugin menu layout.
    * 
    * @param plugins
-   *   The names of versions of the loaded plugins.
+   *   The names of versions of the supported plugins.
    * 
    * @param isPrivileged
    *   Whether the current user is privileged.
    */ 
   protected void 
-  updateMenuLayout
+  updateHelper
   (
+   String tname,
+   OsType os,
    PluginMenuLayout layout, 
    TreeMap<String,TreeSet<VersionID>> plugins, 
    boolean isPrivileged
   ) 
   {
+    pToolsetName   = tname;
+    pToolsetOsType = os; 
+
     pMenuLayout     = layout;
     pPluginVersions = plugins;
     pIsPrivileged   = isPrivileged;
@@ -294,26 +336,35 @@ class JBaseManagePluginsDialog
     expandAllTreeNodes(pMenuLayoutTree);
 
     rebuildPluginVersions();
-    expandAllTreeNodes(pPluginVersionTree);
+    expandAllTreeNodes(pPluginTree);
 
     pSetPluginButton.setEnabled(false);
     pClearPluginButton.setEnabled(false);
-
-    pConfirmButton.setEnabled(pIsPrivileged);
-    pApplyButton.setEnabled(pIsPrivileged);
   }
-  
+
   /**
-   * Get the plugin menu layout specified by the UI components.
-   */
-  protected PluginMenuLayout
-  getMenuLayout() 
+   * Update the UI components with the default menu layout. 
+   * 
+   * @param layout
+   *   The default plugin menu layout.
+   */ 
+  protected void 
+  updateDefault
+  (
+   PluginMenuLayout layout
+  ) 
   {
-    return pMenuLayout;
-  }
-  
+    pMenuLayout = layout;
+    
+    rebuildMenuLayout();
+    expandAllTreeNodes(pMenuLayoutTree);
 
-  /*----------------------------------------------------------------------------------------*/
+    rebuildPluginVersions();
+    expandAllTreeNodes(pPluginTree);
+
+    pSetPluginButton.setEnabled(false);
+    pClearPluginButton.setEnabled(false);
+  }
 
   /**
    * Update the layout menu.
@@ -345,6 +396,112 @@ class JBaseManagePluginsDialog
     }
   }
 
+  /**
+   * Copy the plugin menus associated with one toolset to initialize the plugin menus 
+   * associated with another toolset.
+   * 
+   * @param source
+   *   The name of the source toolset package.
+   * 
+   * @param target
+   *   The name of the target toolset package.
+   * 
+   * @param os
+   *   The package operating system.
+   */ 
+  public void 
+  clone
+  (
+   String source, 
+   String target, 
+   OsType os
+  )
+    throws PipelineException
+  {
+    setLayout(target, os, getLayout(source, os));
+  }
+
+  /**
+   * Remove the plugins associated with the given working toolset.
+   * 
+   * @param tname
+   *   The name of the toolset toolset.
+   * 
+   * @param os
+   *   The toolset operating system.
+   */ 
+  public void 
+  remove
+  (
+   String tname, 
+   OsType os
+  )
+    throws PipelineException
+  {
+    setLayout(tname, os, null);
+  }
+   
+  /**
+   * Replace with the default menu layout.
+   */ 
+  public abstract void 
+  setDefault() 
+    throws PipelineException;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the plugin menu layout associated with a toolset.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param os
+   *   The package operating system.
+   */ 
+  protected abstract PluginMenuLayout
+  getLayout
+  (
+   String tname, 
+   OsType os
+  )
+    throws PipelineException; 
+
+  /**
+   * Set the plugin menu layout associated with a toolset.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param os
+   *   The package operating system.
+   * 
+   * @param layout
+   *   The plugin menu layout.
+   */ 
+  protected abstract void
+  setLayout
+  (
+   String tname, 
+   OsType os, 
+   PluginMenuLayout layout
+  )
+    throws PipelineException;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Save any changes. 
+   */ 
+  public void 
+  saveChanges()
+    throws PipelineException
+  {
+    setLayout(pToolsetName, pToolsetOsType, pMenuLayout);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -363,15 +520,15 @@ class JBaseManagePluginsDialog
   )
   { 
     PluginMenuLayout pml = getSelectedPluginMenuLayout(); 
-    PluginVersionData vdata = getSelectedPluginVersionData();
+    PluginTreeData vdata = getSelectedPluginData();
 
     if(e.getSource() == pMenuLayoutTree) {
       if((pml != null) && pml.isMenuItem()) {
 	selectPluginVersion(pml.getName(), pml.getVersionID());
-	vdata = getSelectedPluginVersionData();
+	vdata = getSelectedPluginData();
 
-	pSetPluginButton.setEnabled(true);
-	pClearPluginButton.setEnabled(true);
+	pSetPluginButton.setEnabled(pIsPrivileged);
+	pClearPluginButton.setEnabled(pIsPrivileged);
       }
       else {
 	pSetPluginButton.setEnabled(false);
@@ -381,7 +538,7 @@ class JBaseManagePluginsDialog
 
     if((pml != null) && (pml.isMenuItem() || (pml.size() == 0)) &&
        (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
-      pSetPluginButton.setEnabled(true); 
+      pSetPluginButton.setEnabled(pIsPrivileged);
     }
     else {
       pSetPluginButton.setEnabled(false);
@@ -601,8 +758,6 @@ class JBaseManagePluginsDialog
       doSetPlugin();
     else if(cmd.equals("clear-plugin"))
       doClearPlugin();
-    else     
-      super.actionPerformed(e);
   }
 
 
@@ -612,26 +767,13 @@ class JBaseManagePluginsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Apply changes and close. 
-   */ 
-  public void 
-  doConfirm()
-  {
-    doApply();
-    super.doConfirm();
-  }
-
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Add a new plugin layout menu.
    */ 
   public void 
   doNewMenu()
   {
     JNewNameDialog diag = 
-      new JNewNameDialog(this, "New Menu", "New Menu Name:", null, "Add");
+      new JNewNameDialog(pParent, "New Menu", "New Menu Name:", null, "Add");
 
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
@@ -664,7 +806,7 @@ class JBaseManagePluginsDialog
     PluginMenuLayout pml = getSelectedPluginMenuLayout();
     if(pml != null) {
       JNewNameDialog diag = 
-	new JNewNameDialog(this, "Rename Menu", "Menu Name:", pml.getTitle(), "Add");
+	new JNewNameDialog(pParent, "Rename Menu", "Menu Name:", pml.getTitle(), "Add");
 
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
@@ -753,7 +895,7 @@ class JBaseManagePluginsDialog
   doSetPlugin()
   {
     PluginMenuLayout pml = getSelectedPluginMenuLayout(); 
-    PluginVersionData vdata = getSelectedPluginVersionData();
+    PluginTreeData vdata = getSelectedPluginData();
     if((pml != null) && (pml.size() == 0) && 
        (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
       pml.setPlugin(vdata.getName(), vdata.getVersionID());
@@ -1010,21 +1152,21 @@ class JBaseManagePluginsDialog
   {
     TreeSet<String> expanded = getExpandedTreeNodes(pMenuLayoutTree);
 
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PluginVersionData());
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PluginTreeData());
 
     for(String name : pPluginVersions.keySet()) {
       DefaultMutableTreeNode pnode = 
-	new DefaultMutableTreeNode(new PluginVersionData(name), true);
+	new DefaultMutableTreeNode(new PluginTreeData(name), true);
       root.add(pnode);
       
       for(VersionID vid : pPluginVersions.get(name)) {
 	DefaultMutableTreeNode vnode = 
-	  new DefaultMutableTreeNode(new PluginVersionData(name, vid), false);
+	  new DefaultMutableTreeNode(new PluginTreeData(name, vid), false);
 	pnode.add(vnode);
       }
     }
     
-    DefaultTreeModel model = (DefaultTreeModel) pPluginVersionTree.getModel();
+    DefaultTreeModel model = (DefaultTreeModel) pPluginTree.getModel();
     model.setRoot(root);
 
     rexpandTreeNodes(pMenuLayoutTree, expanded);
@@ -1040,9 +1182,9 @@ class JBaseManagePluginsDialog
    VersionID vid
   ) 
   {
-    pPluginVersionTree.clearSelection();
+    pPluginTree.clearSelection();
 
-    DefaultTreeModel model = (DefaultTreeModel) pPluginVersionTree.getModel();
+    DefaultTreeModel model = (DefaultTreeModel) pPluginTree.getModel();
     DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
     int wk;
     for(wk=0; wk<root.getChildCount(); wk++) {
@@ -1051,11 +1193,11 @@ class JBaseManagePluginsDialog
       int vk;
       for(vk=0; vk<pnode.getChildCount(); vk++) {
 	DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) pnode.getChildAt(vk); 
-	PluginVersionData vdata = (PluginVersionData) vnode.getUserObject();
+	PluginTreeData vdata = (PluginTreeData) vnode.getUserObject();
 	TreePath vpath = new TreePath(vnode.getPath());
 
 	if(name.equals(vdata.getName()) && vid.equals(vdata.getVersionID())) {
-	  pPluginVersionTree.addSelectionPath(vpath);
+	  pPluginTree.addSelectionPath(vpath);
 	  return;
 	}
       }
@@ -1069,9 +1211,9 @@ class JBaseManagePluginsDialog
    *   The node or <CODE>null</CODE> if none is selected.
    */ 
   private DefaultMutableTreeNode
-  getSelectedPluginVersionNode() 
+  getSelectedPluginNode() 
   {
-    TreePath mpath = pPluginVersionTree.getSelectionPath();
+    TreePath mpath = pPluginTree.getSelectionPath();
     if(mpath != null) 
       return ((DefaultMutableTreeNode) mpath.getLastPathComponent());
     return null;
@@ -1083,79 +1225,13 @@ class JBaseManagePluginsDialog
    * @return 
    *   The data or <CODE>null</CODE> if none is selected.
    */ 
-  private PluginVersionData
-  getSelectedPluginVersionData() 
+  private PluginTreeData
+  getSelectedPluginData() 
   {
-    DefaultMutableTreeNode mnode = getSelectedPluginVersionNode();
+    DefaultMutableTreeNode mnode = getSelectedPluginNode();
     if(mnode != null) 
-      return ((PluginVersionData) mnode.getUserObject());
+      return ((PluginTreeData) mnode.getUserObject());
     return null;
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P U B L I C   C L A S S E S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * User data of plugin version tree nodes.
-   */ 
-  public
-  class PluginVersionData
-  {
-    public 
-    PluginVersionData() 
-    {}
-
-    public 
-    PluginVersionData
-    ( 
-     String label
-    )
-    {
-      pLabel = label;
-    }
-
-    public 
-    PluginVersionData
-    ( 
-     String name, 
-     VersionID vid
-    )
-    {
-      pLabel     = ("v" + vid);
-      pName      = name;
-      pVersionID = vid; 
-    }
-
-    public String
-    getLabel() 
-    {
-      return pLabel;
-    }
-
-    public String
-    getName() 
-    {
-      return pName;
-    }
-
-    public VersionID
-    getVersionID()
-    {
-      return pVersionID;
-    }    
-
-    public String
-    toString()
-    {
-      return pLabel;
-    }
-
-    private String     pLabel;
-    private String     pName;
-    private VersionID  pVersionID; 
   }
 
 
@@ -1165,9 +1241,14 @@ class JBaseManagePluginsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The name of the current toolset.
    */ 
-  private boolean  pIsPrivileged;
+  protected String  pToolsetName; 
+  
+  /**
+   * The operating system type of the current toolset.
+   */
+  protected OsType  pToolsetOsType; 
 
   /**
    * The plugin menu layout.
@@ -1178,6 +1259,11 @@ class JBaseManagePluginsDialog
    * The plugin versions. 
    */ 
   private TreeMap<String,TreeSet<VersionID>>  pPluginVersions;
+
+  /**
+   * Does the current user have privileged status?
+   */ 
+  private boolean  pIsPrivileged;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1200,6 +1286,16 @@ class JBaseManagePluginsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The master toolsets dialog.
+   */ 
+  protected JManageToolsetsDialog  pDialog;
+
+  /**
+   * The parent dialog.
+   */ 
+  private JManageToolsetPluginsDialog  pParent; 
+
+  /**
    * The plugin menu layout tree.
    */ 
   private JTree  pMenuLayoutTree;
@@ -1218,6 +1314,6 @@ class JBaseManagePluginsDialog
   /**
    * The plugin versions tree.
    */ 
-  private JTree  pPluginVersionTree;
+  private JTree  pPluginTree;
 
 }

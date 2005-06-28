@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.19 2005/06/23 19:38:05 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.20 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -79,13 +79,6 @@ class JNodeDetailsPanel
     /* initialize fields */ 
     {
       pCheckedInVersions = new TreeMap<VersionID,NodeVersion>();
-
-      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
-      pEditorMenuLayout   = new PluginMenuLayout();
-      pRefreshEditorMenus = true; 
-      
-      pActionPlugins      = PluginMgrClient.getInstance().getActions();
-      pActionMenuLayout   = new PluginMenuLayout();
 
       pActionParamComponents = new TreeMap<String,Component[]>();
       pActionParamGroupsOpen = new TreeMap<String,Boolean>();
@@ -433,8 +426,7 @@ class JNodeDetailsPanel
 
 		{
 		  JPluginSelectionField field = 
-		    UIFactory.createPluginSelectionField
-		    (pEditorMenuLayout, pEditorPlugins, sVSize);
+		    UIMaster.getInstance().createEditorSelectionField(sVSize);
 		  pWorkingEditorField = field;
 		  
 		  field.setActionCommand("editor-changed");
@@ -545,8 +537,7 @@ class JNodeDetailsPanel
 		
 		{
 		  JPluginSelectionField field = 
-		    UIFactory.createPluginSelectionField
-		    (pActionMenuLayout, pActionPlugins, sVSize);
+		    UIMaster.getInstance().createActionSelectionField(sVSize);
 		  pWorkingActionField = field;
 		
 		  field.setActionCommand("action-changed");
@@ -1257,7 +1248,7 @@ class JNodeDetailsPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null, null);
+    updateNodeStatus(null);
   }
 
   /**
@@ -1494,27 +1485,19 @@ class JNodeDetailsPanel
    * 
    * @param status
    *   The current node status.
-   * 
-   * @param editorPlugins
-   *   The names of versions of the loaded editor plugins.   
-   * 
-   * @param editorLayout
-   *   The menu layout for editor plugins.
    */
   public synchronized void 
   updateNodeStatus
   (
    String author, 
    String view, 
-   NodeStatus status, 
-   TreeMap<String,TreeSet<VersionID>> editorPlugins, 
-   PluginMenuLayout editorLayout 
+   NodeStatus status
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status, editorPlugins, editorLayout);
+    updateNodeStatus(status);
   }
 
   /**
@@ -1522,21 +1505,15 @@ class JNodeDetailsPanel
    * 
    * @param status
    *   The current node status.
-   * 
-   * @param editorPlugins
-   *   The names of versions of the loaded editor plugins.   
-   * 
-   * @param editorLayout
-   *   The menu layout for editor plugins.
    */
   public synchronized void 
   updateNodeStatus
   (
-   NodeStatus status,
-   TreeMap<String,TreeSet<VersionID>> editorPlugins, 
-   PluginMenuLayout editorLayout   
+   NodeStatus status
   ) 
   {
+    UIMaster master = UIMaster.getInstance();
+
     pStatus = status;
 
     NodeDetails details = null;
@@ -1560,38 +1537,6 @@ class JNodeDetailsPanel
 
       if(latest != null) 
 	pCheckedInVersions.put(latest.getVersionID(), latest);
-    }
-
-    {
-      PluginMgrClient plg = PluginMgrClient.getInstance();
-      UIMaster master = UIMaster.getInstance(); 
-
-      pActionPlugins = plg.getActions();
-      try {
-	pActionMenuLayout = master.getMasterMgrClient().getActionMenuLayout();
-      } 
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-
-      if(editorPlugins != null) 
-	pEditorPlugins = editorPlugins;
-      else 
-	pEditorPlugins = plg.getEditors();
-
-      if(editorLayout != null) {
-	pEditorMenuLayout   = editorLayout; 
-	pRefreshEditorMenus = true;
-      }
-      else {
-	try {
-	  pEditorMenuLayout   = master.getMasterMgrClient().getEditorMenuLayout();
-	  pRefreshEditorMenus = true;
-	} 
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}      
-      }
     }
 
     /* header */ 
@@ -1705,7 +1650,6 @@ class JNodeDetailsPanel
 	{
 	  TreeSet<String> toolsets = new TreeSet<String>();
 	  if(work != null) {
-	    UIMaster master = UIMaster.getInstance();
 	    try {
 	      toolsets.addAll(master.getMasterMgrClient().getActiveToolsetNames());
 	      if((work.getToolset() != null) && !toolsets.contains(work.getToolset()))
@@ -1735,7 +1679,7 @@ class JNodeDetailsPanel
 	  (!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
 	
 	{
-	  if(latest != null)
+	  if(latest != null) 
 	    pCheckedInToolsetField.setText(latest.getToolset());
 	  else 
 	    pCheckedInToolsetField.setText("-");
@@ -1750,8 +1694,6 @@ class JNodeDetailsPanel
       { 
 	pWorkingEditorField.removeActionListener(this);
 	{
-	  pWorkingEditorField.updatePlugins(pEditorMenuLayout, pEditorPlugins);
-
 	  if(work != null) 
 	    pWorkingEditorField.setPlugin(work.getEditor(), work.getEditorVersionID());
 	  else
@@ -1796,8 +1738,6 @@ class JNodeDetailsPanel
     {
       pWorkingActionField.removeActionListener(this);
       { 
-	pWorkingActionField.updatePlugins(pActionMenuLayout, pActionPlugins);
-	
 	BaseAction waction = initWorkingAction();
 	if(waction != null) 
 	  pWorkingActionField.setPlugin(waction.getName(), waction.getVersionID());
@@ -3137,52 +3077,41 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the editor plugin menus.
+   * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
-  private synchronized void 
-  updateEditorMenus()
+  public void 
+  clearPluginCache()
   {
-    if(pRefreshEditorMenus) {
-      int wk;
-      for(wk=0; wk<pEditWithMenus.length; wk++) {
-	pEditWithMenus[wk].removeAll();
-	for(PluginMenuLayout pml : pEditorMenuLayout) 
-	  pEditWithMenus[wk].add(buildPluginMenu(pml, "edit-with", pEditorPlugins));
-      }
-      
-      pRefreshEditorMenus = false;
-    }
+    pEditorMenuToolset = null;
   }
 
   /**
-   * Recursively update a plugin menu.
+   * Update the editor plugin menus.
    */ 
-  private JMenuItem
-  buildPluginMenu
-  (
-   PluginMenuLayout layout, 
-   String prefix, 
-   TreeMap<String,TreeSet<VersionID>> plugins
-  ) 
+  private void 
+  updateEditorMenus()
   {
-    JMenuItem item = null;
-    if(layout.isMenuItem()) {
-      item = new JMenuItem(layout.getTitle());
-      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
-      item.addActionListener(this);
-   
-      TreeSet<VersionID> vids = plugins.get(layout.getName());
-      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
-    }
-    else {
-      JMenu sub = new JMenu(layout.getTitle()); 
-      for(PluginMenuLayout pml : layout) 
-	sub.add(buildPluginMenu(pml, prefix, plugins));
-      item = sub;
+    String toolset = null;
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	if(details.getWorkingVersion() != null) 
+	  toolset = details.getWorkingVersion().getToolset();
+	else if(details.getLatestVersion() != null) 
+	  toolset = details.getLatestVersion().getToolset();
+      }
     }
 
-    return item;
+    if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      int wk;
+      for(wk=0; wk<pEditWithMenus.length; wk++) 
+	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+      
+      pEditorMenuToolset = toolset;
+    }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3863,6 +3792,13 @@ class JNodeDetailsPanel
     pToolsetTitle.setForeground(color);
     pWorkingToolsetField.setForeground(color);
     pCheckedInToolsetField.setForeground(color);
+
+    if(hasWorking()) {
+      UIMaster master = UIMaster.getInstance();
+      String toolset = pWorkingToolsetField.getSelected();
+      master.updateActionPluginField(toolset, pWorkingActionField);
+      master.updateEditorPluginField(toolset, pWorkingEditorField);
+    }
   }
 
 
@@ -5346,35 +5282,10 @@ class JNodeDetailsPanel
    */ 
   private TreeMap<VersionID,NodeVersion>  pCheckedInVersions; 
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Cached names and version numbers of the loaded editor plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
-
-  /**
-   * The menu layout for editor plugins.
+   * The toolset used to build the editor menu.
    */ 
-  private PluginMenuLayout  pEditorMenuLayout;
-
-  /**
-   * Whether the Swing editor menus need to be rebuild from the menu layout.
-   */ 
-  private boolean pRefreshEditorMenus; 
-
-  
-  /**
-   * Cached names and version numbers of the loaded action plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pActionPlugins; 
-
-  /**
-   * The menu layout for action plugins.
-   */ 
-  private PluginMenuLayout  pActionMenuLayout;
-
+  private String  pEditorMenuToolset;
 
 
   /*----------------------------------------------------------------------------------------*/

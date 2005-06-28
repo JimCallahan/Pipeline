@@ -1,4 +1,4 @@
-// $Id: MiscSetPluginMenuLayoutReq.java,v 1.2 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscGetPackagePluginsReq.java,v 1.1 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   S E T   P L U G I N   M E N U   L A Y O U T   R E Q                          */
+/*   M I S C   G E T   P A C K A G E   P L U G I N S   R E Q                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to set the layout of a plugin menu associated with a toolset.
+ * A request to get the plugins associated with a toolset package.
  */
 public
-class MiscSetPluginMenuLayoutReq
+class MiscGetPackagePluginsReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,20 +27,20 @@ class MiscSetPluginMenuLayoutReq
    * Constructs a new request.
    * 
    * @param name
-   *   The toolset name.
+   *   The toolset package name.
    * 
    * @param os
    *   The operating system type.
    * 
-   * @param layout
-   *   The heirarchical set of editor plugin menus.
+   * @param vid
+   *   The revision number of the package.
    */
   public
-  MiscSetPluginMenuLayoutReq
+  MiscGetPackagePluginsReq
   (
    String name, 
    OsType os,
-   PluginMenuLayout layout
+   VersionID vid
   )
   {
     if(name == null) 
@@ -52,11 +52,11 @@ class MiscSetPluginMenuLayoutReq
       throw new IllegalArgumentException
 	("The operating system cannot be (null)!");
     pOsType = os;
-    
-    if(layout == null) 
+
+    if(vid == null) 
       throw new IllegalArgumentException
-	("The heirarchical set of editor plugin menus.");
-    pLayout = layout;
+	("The package revision number cannot be (null)!");
+    pVersionID = vid;
   }
 
 
@@ -82,23 +82,22 @@ class MiscSetPluginMenuLayoutReq
   {
     return pOsType; 
   }
-
-  /**
-   * Gets the heirarchical set of editor plugin menus.
-   */
-  public PluginMenuLayout
-  getLayout() 
-  {
-    return pLayout;
-  }
   
+  /**
+   * Gets the revision number of the package.
+   */
+  public VersionID
+  getVersionID() 
+  {
+    return pVersionID;
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1123581530859556634L;
+  private static final long serialVersionUID = 5134807231245004407L;
 
   
 
@@ -117,9 +116,9 @@ class MiscSetPluginMenuLayoutReq
   private OsType  pOsType; 
   
   /**
-   * The heirarchical set of editor plugin menus.
+   * The revision number of the package.
    */
-  private PluginMenuLayout pLayout;
-
+  private VersionID  pVersionID;
+  
 }
   

@@ -1,4 +1,4 @@
-// $Id: MiscGetPluginMenuLayoutRsp.java,v 1.4 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscGetPackagePluginsRsp.java,v 1.1 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   P L U G I N   M E N U   L A Y O U T   R S P                          */
+/*   M I S C   G E T   P A C K A G E   P L U G I N S   R S P                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get layout of a plugin selection menu associated with a toolset.
+ * Get the plugins associated with a toolset package.
  */
 public
-class MiscGetPluginMenuLayoutRsp
+class MiscGetPackagePluginsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,21 +29,21 @@ class MiscGetPluginMenuLayoutRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param layout
-   *   The heirarchical set of menus for selection of a specific plugin version.
+   * @param plugins
+   *   The names and revision numbers of the associated plugins.
    */ 
   public
-  MiscGetPluginMenuLayoutRsp
+  MiscGetPackagePluginsRsp
   (
    TaskTimer timer, 
-   PluginMenuLayout layout
+   TreeMap<String,TreeSet<VersionID>> plugins
   )
   { 
     super(timer);
 
-    if(layout == null) 
-      throw new IllegalArgumentException("The plugin menu layuout cannot be (null)!");
-    pLayout = layout;
+    if(plugins == null) 
+      throw new IllegalArgumentException("The associated plugins cannot be (null)!");
+    pPlugins = plugins;
     
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
@@ -59,12 +59,13 @@ class MiscGetPluginMenuLayoutRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the heirarchical set of menus for selection of a specific plugin version.
+   * Gets names and revision numbers of the associated plugins or <CODE>null</CODE>
+   * if none exist.
    */
-  public PluginMenuLayout
-  getLayout() 
+  public TreeMap<String,TreeSet<VersionID>>
+  getPlugins() 
   {
-    return pLayout;
+    return pPlugins;
   }
   
 
@@ -73,7 +74,7 @@ class MiscGetPluginMenuLayoutRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 5795847499681639558L;
+  private static final long serialVersionUID = -7867696279645229500L;
 
   
 
@@ -82,9 +83,9 @@ class MiscGetPluginMenuLayoutRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The heirarchical set of menus for selection of a specific plugin version.
+   * The names and revision numbers of the associated plugins.
    */ 
-  private PluginMenuLayout  pLayout;
+  private TreeMap<String,TreeSet<VersionID>>  pPlugins;
 
 }
   

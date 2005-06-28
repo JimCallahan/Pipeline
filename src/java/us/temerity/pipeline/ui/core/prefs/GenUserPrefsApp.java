@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -83,6 +83,11 @@ class GenUserPrefsApp
 	 "ShowDefaultEditors", "Default Editors:",
 	 false, true, false, 69),  /* ALT+E */ 
 
+	new HotKeyPref
+	("Make sure that the latest plugins and plugin menus are being used.", 
+	 "UpdatePlugins", "Update Plugins:",
+	 false, true, false, 85),  /* ALT+U */ 
+
 	new BasePref(),
 	new BasePref(),
 	
@@ -104,24 +109,6 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Manage the toolset environments.", 
 	 "ShowManageToolsets", "Toolsets:"),    
-
-	new BasePref(),
-
-	new HotKeyPref
-	("Manage the editor plugin menu layout.", 
-	 "ShowManageEditorMenus", "Editor Menus:"),    
-
-	new HotKeyPref
-	("Manage the comparator plugin menu layout.", 
-	 "ShowManageComparatorMenus", "Comparator Menus:"),    
-
-	new HotKeyPref
-	("Manage the action plugin menu layout.", 
-	 "ShowManageActionMenus", "Action Menus:"),    
-
-	new HotKeyPref
-	("Manage the tool plugin menu layout.", 
-	 "ShowManageToolMenus", "Tool Menus:"),    
 
 	new BasePref(),
 
@@ -1465,11 +1452,9 @@ class GenUserPrefsApp
 	manager.add("ShowManageLayouts");
 	manager.add("ShowUserPrefs");
 	manager.add("ShowDefaultEditors");
+	manager.add("UpdatePlugins");
 	manager.add("ShowManageUsers");
 	manager.add("ShowManageToolsets");
-	manager.add("ShowManageEditorMenus");
-	manager.add("ShowManageComparatorMenus");
-	manager.add("ShowManageToolMenus");
 	manager.add("ShowManageLicenseKeys");
 	manager.add("ShowManageSelectionKeys");
 	manager.add("Quit");
@@ -1751,7 +1736,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2008,7 +1993,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3364,7 +3349,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.20 2005/06/22 01:00:05 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

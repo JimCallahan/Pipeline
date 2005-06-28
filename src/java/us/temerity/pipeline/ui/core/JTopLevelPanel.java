@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.3 2005/01/10 16:02:01 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.4 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -257,7 +257,12 @@ class JTopLevelPanel
       item.setToolTipText(null);
   }
 
-  
+  /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  public void 
+  clearPluginCache()
+  {}
 
 
   /*----------------------------------------------------------------------------------------*/

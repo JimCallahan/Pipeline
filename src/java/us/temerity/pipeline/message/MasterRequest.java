@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.38 2005/06/12 17:58:00 jim Exp $
+// $Id: MasterRequest.java,v 1.39 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -86,7 +86,119 @@ enum MasterRequest
    * An instance of {@link MiscCreateToolsetPackageReq MiscCreateToolsetPackageReq} is next.
    */
   CreateToolsetPackage, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the editor plugin selection menu associated with a toolset.
+   */
+  GetEditorMenuLayout, 
   
+  /**
+   * Set layout of the editor plugin selection menu associated with a toolset.
+   */
+  SetEditorMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetEditorPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageEditorPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageEditorPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the comparator plugin selection menu associated with a toolset.
+   */
+  GetComparatorMenuLayout, 
+  
+  /**
+   * Set layout of the comparator plugin selection menu associated with a toolset.
+   */
+  SetComparatorMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetComparatorPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageComparatorPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageComparatorPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the action plugin selection menu associated with a toolset.
+   */
+  GetActionMenuLayout, 
+  
+  /**
+   * Set layout of the action plugin selection menu associated with a toolset.
+   */
+  SetActionMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetActionPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageActionPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageActionPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the tool plugin selection menu associated with a toolset.
+   */
+  GetToolMenuLayout, 
+  
+  /**
+   * Set layout of the tool plugin selection menu associated with a toolset.
+   */
+  SetToolMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetToolPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageToolPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageToolPlugins, 
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -104,53 +216,6 @@ enum MasterRequest
    * An instance of {@link MiscSetSuffixEditorsReq MiscSetSuffixEditorsReq} is next.
    */
   SetSuffixEditors, 
-
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the editor plugin selection menu.
-   */
-  GetEditorMenuLayout, 
-  
-  /**
-   * Set layout of the editor plugin selection menu.
-   */
-  SetEditorMenuLayout, 
-  
-
-  /**
-   * Get layout of the comparator plugin selection menu.
-   */
-  GetComparatorMenuLayout, 
-  
-  /**
-   * Set layout of the comparator plugin selection menu.
-   */
-  SetComparatorMenuLayout, 
-  
-
-  /**
-   * Get layout of the action plugin selection menu.
-   */
-  GetActionMenuLayout, 
-  
-  /**
-   * Set layout of the action plugin selection menu.
-   */
-  SetActionMenuLayout, 
-  
-
-  /**
-   * Get layout of the tool plugin selection menu.
-   */
-  GetToolMenuLayout, 
-  
-  /**
-   * Set layout of the tool plugin selection menu.
-   */
-  SetToolMenuLayout, 
-  
 
   /*----------------------------------------------------------------------------------------*/
 

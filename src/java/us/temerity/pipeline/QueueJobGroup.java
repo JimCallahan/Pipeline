@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.10 2005/04/22 18:29:43 jim Exp $
+// $Id: QueueJobGroup.java,v 1.11 2005/06/28 18:05:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,6 +40,9 @@ class QueueJobGroup
    * @param nodeID
    *   The unique working version identifier of the root target node of the job group.
    * 
+   * @param toolset 
+   *   The name of the toolset.
+   * 
    * @param rootSeq  
    *   The root primary file sequence to generate.
    *
@@ -54,6 +57,7 @@ class QueueJobGroup
   (
    long groupID, 
    NodeID nodeID, 
+   String toolset, 
    FileSeq rootSeq,
    ArrayList<Long> rootIDs,
    TreeSet<Long> externalIDs,
@@ -68,6 +72,11 @@ class QueueJobGroup
     if(nodeID == null) 
       throw new IllegalArgumentException("The node ID cannot be (null)!");
     pNodeID = nodeID;
+
+    if(toolset == null) 
+      throw new IllegalArgumentException
+	("The toolset cannot be (null)!");
+    pToolset = toolset;
 
     if(rootSeq == null) 
       throw new IllegalArgumentException("The root target file sequence cannot be (null)!");
@@ -110,6 +119,15 @@ class QueueJobGroup
   getNodeID() 
   {
     return pNodeID;
+  }
+
+  /** 
+   * Get the name of the toolset. 
+   */
+  public String
+  getToolset()
+  {
+    return pToolset;
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -231,6 +249,7 @@ class QueueJobGroup
   {
     encoder.encode("GroupID", pGroupID);
     encoder.encode("NodeID", pNodeID);
+    encoder.encode("Toolset", pToolset);
 
     encoder.encode("SubmittedStamp", pSubmittedStamp.getTime());
     if(pCompletedStamp != null)
@@ -261,6 +280,11 @@ class QueueJobGroup
     if(nodeID == null) 
       throw new GlueException("The \"NodeID\" was missing!");
     pNodeID = nodeID;    
+
+    String toolset = (String) decoder.decode("Toolset");
+    if(toolset == null) 
+      throw new GlueException("The \"Toolset\" was missing or (null)!");
+    pToolset = toolset;    
 
     {
       Long stamp = (Long) decoder.decode("SubmittedStamp");
@@ -329,6 +353,10 @@ class QueueJobGroup
    */
   private NodeID  pNodeID;
 
+  /**
+   * The name of the toolset.
+   */ 
+  private String  pToolset;           
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.20 2005/06/15 19:14:18 jim Exp $
+// $Id: JManagerPanel.java,v 1.21 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -317,13 +317,19 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
 
+      item = new JMenuItem("Update Plugins");
+      pUpdatePluginsItem = item;
+      item.setActionCommand("update-plugins");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
       pPopup.addSeparator();
 
       {
 	JMenu sub = new JMenu("Admin");   
 	pPopup.add(sub);  
 
-	item = new JMenuItem("Users...");
+	item = new JMenuItem("User Privileges...");
 	pManagerUsersItem = item;
 	item.setActionCommand("manage-users");
 	item.addActionListener(this);
@@ -332,32 +338,6 @@ class JManagerPanel
 	item = new JMenuItem("Toolsets...");
 	pManageToolsetsItem = item;
 	item.setActionCommand("manage-toolsets");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	sub.addSeparator();
-
-	item = new JMenuItem("Editor Menus...");
-	pManageEditorMenusItem = item;
-	item.setActionCommand("manage-editor-menus");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	item = new JMenuItem("Comparator Menus...");
-	pManageComparatorMenusItem = item;
-	item.setActionCommand("manage-comparator-menus");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	item = new JMenuItem("Action Menus...");
-	pManageActionMenusItem = item;
-	item.setActionCommand("manage-action-menus");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	item = new JMenuItem("Tool Menus...");
-	pManageToolMenusItem = item;
-	item.setActionCommand("manage-tool-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1028,6 +1008,9 @@ class JManagerPanel
     updateMenuToolTip
       (pDefaultEditorsItem, prefs.getShowDefaultEditors(), 
        "Manage the default editor for filename suffix.");
+    updateMenuToolTip
+      (pUpdatePluginsItem, prefs.getUpdatePlugins(), 
+       "Make sure that the latest plugins and plugin menus are being used.");
 
     updateMenuToolTip
       (pManagerUsersItem, prefs.getShowManageUsers(), 
@@ -1035,18 +1018,7 @@ class JManagerPanel
     updateMenuToolTip
       (pManageToolsetsItem, prefs.getShowManageToolsets(), 
        "Manage the toolset environments.");
-    updateMenuToolTip
-      (pManageEditorMenusItem, prefs.getShowManageEditorMenus(), 
-       "Manage the editor plugin menu layout.");
-    updateMenuToolTip
-      (pManageComparatorMenusItem, prefs.getShowManageComparatorMenus(), 
-       "Manage the comparator plugin menu layout.");
-    updateMenuToolTip
-      (pManageActionMenusItem, prefs.getShowManageActionMenus(), 
-       "Manage the action plugin menu layout.");
-    updateMenuToolTip
-      (pManageToolMenusItem, prefs.getShowManageToolMenus(), 
-       "Manage the tool plugin menu layout.");
+
     updateMenuToolTip
       (pLicenseKeysItem, prefs.getShowManageLicenseKeys(), 
        "Manage the license keys.");
@@ -1168,6 +1140,50 @@ class JManagerPanel
   }
   
 
+  /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  public void 
+  clearPluginCache()
+  {
+    Component comp = getContents();
+    if(comp != null) {
+      if(comp instanceof JHorzSplitPanel) {
+	JHorzSplitPanel panel = (JHorzSplitPanel) comp;
+
+	JManagerPanel left = (JManagerPanel) panel.getLeftComponent();
+	left.clearPluginCache();
+
+	JManagerPanel right = (JManagerPanel) panel.getRightComponent();
+	right.clearPluginCache();
+      }
+      else if(comp instanceof JVertSplitPanel) {
+	JVertSplitPanel panel = (JVertSplitPanel) comp;
+
+	JManagerPanel top = (JManagerPanel) panel.getTopComponent();
+	top.clearPluginCache();
+
+	JManagerPanel bottom = (JManagerPanel) panel.getBottomComponent();
+	bottom.clearPluginCache();
+      }
+      else if(comp instanceof JTabbedPanel) {
+	JTabbedPanel panel = (JTabbedPanel) comp;
+
+	int wk;
+	for(wk=0; wk<panel.getTabCount(); wk++) {
+	  JManagerPanel tab = (JManagerPanel) panel.getComponentAt(wk);
+	  tab.clearPluginCache();
+	}
+      }
+      else if(comp instanceof JTopLevelPanel) {
+	JTopLevelPanel panel = (JTopLevelPanel) comp;
+	panel.clearPluginCache();
+      }
+      else {
+	assert(false);
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1662,6 +1678,11 @@ class JManagerPanel
       UIMaster.getInstance().showDefaultEditorsDialog();
       return true;
     }
+    else if((prefs.getUpdatePlugins() != null) &&
+	    prefs.getUpdatePlugins().wasPressed(e)) {
+      UIMaster.getInstance().clearPluginCache();
+      return true;
+    }
 
     else if((prefs.getShowManageUsers() != null) &&
 	    prefs.getShowManageUsers().wasPressed(e)) {
@@ -1673,26 +1694,7 @@ class JManagerPanel
       UIMaster.getInstance().showManageToolsetsDialog();
       return true;
     }
-    else if((prefs.getShowManageEditorMenus() != null) &&
-	    prefs.getShowManageEditorMenus().wasPressed(e)) {
-      UIMaster.getInstance().showManageEditorMenusDialog();
-      return true;
-    }
-    else if((prefs.getShowManageComparatorMenus() != null) &&
-	    prefs.getShowManageComparatorMenus().wasPressed(e)) {
-      UIMaster.getInstance().showManageComparatorMenusDialog();
-      return true;
-    }
-    else if((prefs.getShowManageActionMenus() != null) &&
-	    prefs.getShowManageActionMenus().wasPressed(e)) {
-      UIMaster.getInstance().showManageActionMenusDialog();
-      return true;
-    }
-    else if((prefs.getShowManageToolMenus() != null) &&
-	    prefs.getShowManageToolMenus().wasPressed(e)) {
-      UIMaster.getInstance().showManageToolMenusDialog();
-      return true;
-    }
+
     else if((prefs.getShowManageLicenseKeys() != null) &&
 	    prefs.getShowManageLicenseKeys().wasPressed(e)) {
       UIMaster.getInstance().showManageLicenseKeysDialog();
@@ -1875,20 +1877,13 @@ class JManagerPanel
       UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("default-editors"))
       UIMaster.getInstance().showDefaultEditorsDialog();
+    else if(cmd.equals("update-plugins"))
+      UIMaster.getInstance().clearPluginCache();
 
     else if(cmd.equals("manage-users"))
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
-
-    else if(cmd.equals("manage-editor-menus"))
-      UIMaster.getInstance().showManageEditorMenusDialog();
-    else if(cmd.equals("manage-comparator-menus"))
-      UIMaster.getInstance().showManageComparatorMenusDialog();
-    else if(cmd.equals("manage-action-menus"))
-      UIMaster.getInstance().showManageActionMenusDialog();
-    else if(cmd.equals("manage-tool-menus"))
-      UIMaster.getInstance().showManageToolMenusDialog();
 
     else if(cmd.equals("manage-license-keys"))
       UIMaster.getInstance().showManageLicenseKeysDialog();
@@ -3279,13 +3274,10 @@ class JManagerPanel
 
   private JMenuItem  pPreferencesItem;
   private JMenuItem  pDefaultEditorsItem;
+  private JMenuItem  pUpdatePluginsItem;
 
   private JMenuItem  pManagerUsersItem;
   private JMenuItem  pManageToolsetsItem;
-  private JMenuItem  pManageEditorMenusItem;
-  private JMenuItem  pManageComparatorMenusItem;
-  private JMenuItem  pManageActionMenusItem;
-  private JMenuItem  pManageToolMenusItem;
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;
 

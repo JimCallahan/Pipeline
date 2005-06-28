@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.41 2005/05/31 09:37:45 jim Exp $
+// $Id: QueueMgr.java,v 1.42 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1235,9 +1235,10 @@ class QueueMgr
 	QueueJob job = pJobs.get(jobID);	
 	JobState state = states.get(jobID);
 	if((job != null) && (state != null)) {
+	  ActionAgenda agenda = job.getActionAgenda();
 	  JobStatus js = 
-	    new JobStatus(jobID, job.getNodeID(), state, 
-			  job.getActionAgenda().getPrimaryTarget(), job.getSourceJobIDs());
+	    new JobStatus(jobID, job.getNodeID(), state, agenda.getToolset(), 
+			  agenda.getPrimaryTarget(), job.getSourceJobIDs());
 	  status.put(jobID, js);
 	}
       }
@@ -1277,9 +1278,10 @@ class QueueMgr
       for(Long jobID : jobIDs) {
 	QueueJob job = pJobs.get(jobID);	
 	if(job != null) {
+	  ActionAgenda agenda = job.getActionAgenda();
 	  JobStatus status = 
-	    new JobStatus(jobID, job.getNodeID(), JobState.Running, 
-			  job.getActionAgenda().getPrimaryTarget(), job.getSourceJobIDs());
+	    new JobStatus(jobID, job.getNodeID(), JobState.Running, agenda.getToolset(), 
+			  agenda.getPrimaryTarget(), job.getSourceJobIDs());
 	  running.put(jobID, status);
 	}
       }

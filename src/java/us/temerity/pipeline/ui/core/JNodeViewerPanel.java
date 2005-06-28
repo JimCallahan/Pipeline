@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.33 2005/06/22 22:03:21 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.34 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -83,13 +83,7 @@ class JNodeViewerPanel
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
-      pEditorPlugins      = PluginMgrClient.getInstance().getEditors();
-      pEditorMenuLayout   = new PluginMenuLayout();
-      pRefreshEditorMenus = true; 
-
-      pToolPlugins      = PluginMgrClient.getInstance().getTools();
-      pToolMenuLayout   = new PluginMenuLayout();
-      pRefreshToolMenu  = true; 
+      pRefreshDefaultToolMenu = true; 
     }
 
     /* panel popup menu */ 
@@ -446,13 +440,13 @@ class JNodeViewerPanel
       pLinkPopup.add(item);
     }
 
-    /* link popup menu */ 
+    /* tool popup menu */ 
     {
-      JMenuItem item;
-      JMenu sub;
-      
       pToolPopup = new JPopupMenu();  
       pToolPopup.addPopupMenuListener(this);
+
+      pDefaultToolPopup = new JPopupMenu();  
+      pDefaultToolPopup.addPopupMenuListener(this);
     }
 
     updateMenuToolTips();
@@ -1020,66 +1014,86 @@ class JNodeViewerPanel
   }
 
   /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  public void 
+  clearPluginCache()
+  {
+    pEditorMenuToolset = null;
+    pToolMenuToolset = null;
+    pRefreshDefaultToolMenu = true;
+  }
+
+  /**
    * Update the editor plugin menus.
    */ 
   private synchronized void 
   updateEditorMenus()
-  {
-    if(pRefreshEditorMenus) {
-      int wk;
-      for(wk=0; wk<pEditWithMenus.length; wk++) {
-	pEditWithMenus[wk].removeAll();
-	for(PluginMenuLayout pml : pEditorMenuLayout) 
-	  pEditWithMenus[wk].add(buildPluginMenu(pml, "edit-with", pEditorPlugins));
+  {    
+    String toolset = null;
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      if(status != null) {
+	NodeDetails details = status.getDetails();
+	if(details != null) {
+	  if(details.getWorkingVersion() != null) 
+	    toolset = details.getWorkingVersion().getToolset();
+	  else if(details.getLatestVersion() != null) 
+	    toolset = details.getLatestVersion().getToolset();
+	}
       }
-      
-      pRefreshEditorMenus = false;
     }
+    
+    if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      int wk;
+      for(wk=0; wk<pEditWithMenus.length; wk++) 
+	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+      
+      pEditorMenuToolset = toolset;
+    }    
   }
 
   /**
-   * Update the tool plugin menus.
+   * Update the tool plugin menus (over a node).
    */ 
   private synchronized void 
   updateToolMenu()
   {
-    if(pRefreshToolMenu) {
-      pToolPopup.removeAll();
-      for(PluginMenuLayout pml : pToolMenuLayout)
-	pToolPopup.add(buildPluginMenu(pml, "run-tool", pToolPlugins));
-
-      pRefreshToolMenu = false;
+    String toolset = null;
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      if(status != null) {
+	NodeDetails details = status.getDetails();
+	if(details != null) {
+	  if(details.getWorkingVersion() != null) 
+	    toolset = details.getWorkingVersion().getToolset();
+	  else if(details.getLatestVersion() != null) 
+	    toolset = details.getLatestVersion().getToolset();
+	}
+      }
     }
+
+    if((toolset != null) && !toolset.equals(pToolMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildToolMenu(toolset, pToolPopup, this);
+      
+      pToolMenuToolset = toolset;
+    }    
   }
 
   /**
-   * Recursively update a plugin menu.
+   * Update the default tool plugin menus (nothing under the mouse).
    */ 
-  private JMenuItem
-  buildPluginMenu
-  (
-   PluginMenuLayout layout, 
-   String prefix, 
-   TreeMap<String,TreeSet<VersionID>> plugins
-  ) 
+  private synchronized void 
+  updateDefaultToolMenu()
   {
-    JMenuItem item = null;
-    if(layout.isMenuItem()) {
-      item = new JMenuItem(layout.getTitle());
-      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
-      item.addActionListener(this);
-
-      TreeSet<VersionID> vids = plugins.get(layout.getName());
-      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
-    }
-    else {
-      JMenu sub = new JMenu(layout.getTitle()); 
-      for(PluginMenuLayout pml : layout) 
-	sub.add(buildPluginMenu(pml, prefix, plugins));
-      item = sub;
-    }
-
-    return item;
+    if(pRefreshDefaultToolMenu) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildDefaultToolMenu(pDefaultToolPopup, this);
+      
+      pRefreshDefaultToolMenu = false; 
+    }    
   }
 
 
@@ -1218,27 +1232,6 @@ class JNodeViewerPanel
    boolean updateSubPanels
   )
   { 
-    /* refresh the plugins */    
-    {
-      UIMaster master = UIMaster.getInstance(); 
-      try {
-	PluginMgrClient pclient = PluginMgrClient.getInstance();
-	pclient.update();
-      
-	pEditorPlugins = pclient.getEditors();
-	pToolPlugins   = pclient.getTools();
-
-	pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
-	pRefreshEditorMenus = true;
-
-	pToolMenuLayout = master.getMasterMgrClient().getToolMenuLayout();
-	pRefreshToolMenu = true;
-      } 
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-    }
-
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
       pPinnedPos = null;
@@ -2080,8 +2073,8 @@ class JNodeViewerPanel
 
 	    /* BUTTON3+SHIFT: tool popup menu */ 
 	    else if((mods & (on2 | off2)) == on2) {
-	      updateToolMenu();
-	      pToolPopup.show(e.getComponent(), e.getX(), e.getY());
+	      updateDefaultToolMenu();
+	      pDefaultToolPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
 	}
@@ -5283,7 +5276,6 @@ class JNodeViewerPanel
 
       UpdateSubPanelComponentsTask task = 
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
-					 pEditorPlugins, pEditorMenuLayout, 
 					 offline, novelty, links, history, 
 					 pUpdateJobs, jobGroups, jobStatus, jobInfo, 
 					 hosts, keys);
@@ -5311,8 +5303,6 @@ class JNodeViewerPanel
      String author, 
      String view, 
      NodeStatus status, 
-     TreeMap<String,TreeSet<VersionID>> editorPlugins, 
-     PluginMenuLayout editorLayout,
      TreeSet<VersionID> offline, 
      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
      TreeMap<VersionID,TreeMap<String,LinkVersion>> links,
@@ -5331,12 +5321,6 @@ class JNodeViewerPanel
       pAuthor  = author;
       pView    = view;
       pStatus  = status;
-
-      pEditorPlugins = new TreeMap<String,TreeSet<VersionID>>();
-      for(String name : editorPlugins.keySet()) 
-	pEditorPlugins.put(name, new TreeSet<VersionID>(editorPlugins.get(name)));
-
-      pEditorMenuLayout = new PluginMenuLayout(editorLayout);
 
       pOffline = offline;
 
@@ -5361,8 +5345,7 @@ class JNodeViewerPanel
 	PanelGroup<JNodeDetailsPanel> panels = master.getNodeDetailsPanels();
 	JNodeDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
-				 pEditorPlugins, pEditorMenuLayout);
+	  panel.updateNodeStatus(pAuthor, pView, pStatus);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -5372,7 +5355,6 @@ class JNodeViewerPanel
 	JNodeFilesPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
-				 pEditorPlugins, pEditorMenuLayout, 
 				 pNovelty, pOffline);
 	  panel.updateManagerTitlePanel();
 	}
@@ -5383,7 +5365,6 @@ class JNodeViewerPanel
 	JNodeLinksPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
-				 pEditorPlugins, pEditorMenuLayout, 
 				 pLinks, pOffline);
 	  panel.updateManagerTitlePanel();
 	}
@@ -5394,7 +5375,6 @@ class JNodeViewerPanel
 	JNodeHistoryPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
-				 pEditorPlugins, pEditorMenuLayout, 
 				 pHistory, pOffline);
 	  panel.updateManagerTitlePanel();
 	}
@@ -5415,9 +5395,6 @@ class JNodeViewerPanel
     private String      pAuthor;
     private String      pView; 
     private NodeStatus  pStatus;
-
-    private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
-    private PluginMenuLayout  pEditorMenuLayout;
 
     private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
     private TreeMap<VersionID,TreeMap<String,LinkVersion>> pLinks; 
@@ -5468,38 +5445,20 @@ class JNodeViewerPanel
   private String  pLastDetailsName;
 
 
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Cached names and version numbers of the loaded editor plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
-
-  /**
-   * The menu layout for editor plugins.
+   * The toolset used to build the editor menu.
    */ 
-  private PluginMenuLayout  pEditorMenuLayout;
+  private String  pEditorMenuToolset;
 
   /**
-   * Whether the Swing editor menus need to be rebuild from the menu layout.
+   * The toolset used to build the tool menu.
    */ 
-  private boolean pRefreshEditorMenus; 
-
-
-  /**
-   * Cached names and version numbers of the loaded tool plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pToolPlugins; 
+  private String  pToolMenuToolset;
 
   /**
-   * The menu layout for tool plugins.
+   * Whether the default toolset menu needs to be rebuilt.
    */ 
-  private PluginMenuLayout  pToolMenuLayout;
-
-  /**
-   * Whether the Swing tool menus need to be rebuild from the menu layout.
-   */ 
-  private boolean pRefreshToolMenu; 
+  private boolean pRefreshDefaultToolMenu; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5575,9 +5534,10 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The tool plugin popup menu.
+   * The tool plugin popup menus.
    */ 
   private JPopupMenu  pToolPopup; 
+  private JPopupMenu  pDefaultToolPopup; 
 
 
   /*----------------------------------------------------------------------------------------*/

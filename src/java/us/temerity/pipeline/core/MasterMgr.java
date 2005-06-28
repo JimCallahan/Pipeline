@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.132 2005/06/22 18:11:09 jim Exp $
+// $Id: MasterMgr.java,v 1.133 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -292,16 +292,26 @@ class MasterMgr
       pDefaultToolset     = null;
       pActiveToolsets     = new TreeSet<String>();
       pToolsets           = new TreeMap<String,TreeMap<OsType,Toolset>>();
-      pToolsetPackages    = 
-	new TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>();
+      pToolsetPackages    = new PackageMap<PackageVersion>();
+
+      pEditorMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
+      pDefaultEditorMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
+
+      pComparatorMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
+      pDefaultComparatorMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
+
+      pActionMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
+      pDefaultActionMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
+
+      pToolMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
+      pDefaultToolMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
+  
+      pPackageEditorPlugins     = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
+      pPackageComparatorPlugins = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
+      pPackageActionPlugins     = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
+      pPackageToolPlugins       = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
 
       pSuffixEditors = new TreeMap<String,TreeMap<String,SuffixEditor>>();
-
-      pPluginMenuLayoutLock = new Object();
-      pEditorMenuLayout     = new PluginMenuLayout();
-      pComparatorMenuLayout = new PluginMenuLayout();
-      pActionMenuLayout     = new PluginMenuLayout();
-      pToolMenuLayout       = new PluginMenuLayout();
 
       pPrivilegedUsers = new TreeSet<String>();
 
@@ -324,7 +334,6 @@ class MasterMgr
     try {
       initArchives();
       initToolsets();
-      initPluginMenuLayouts();
       initPrivilegedUsers();
       initWorkingAreas();
       initDownstreamLinks();
@@ -360,6 +369,8 @@ class MasterMgr
     dirs.add(new File(PackageInfo.sNodeDir, "working"));
     dirs.add(new File(PackageInfo.sNodeDir, "toolsets/packages"));
     dirs.add(new File(PackageInfo.sNodeDir, "toolsets/toolsets"));
+    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/plugins/packages"));
+    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/plugins/toolsets"));
     dirs.add(new File(PackageInfo.sNodeDir, "etc"));
     dirs.add(new File(PackageInfo.sNodeDir, "etc/suffix-editors"));
     dirs.add(new File(PackageInfo.sNodeDir, "archives/manifests"));
@@ -539,36 +550,61 @@ class MasterMgr
     readDefaultToolset();
     readActiveToolsets();
 
-    /* initialize toolset keys */ 
+    /* initialize default plugin menu layouts */ 
+    for(OsType os : OsType.all()) {
+      readPluginMenuLayout(null, os, "editors", 
+			   pEditorMenuLayouts, pDefaultEditorMenuLayouts);
+      readPluginMenuLayout(null, os, "comparators", 
+			   pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
+      readPluginMenuLayout(null, os, "actions", 
+			   pActionMenuLayouts, pDefaultActionMenuLayouts);
+      readPluginMenuLayout(null, os, "tools", 
+			   pToolMenuLayouts, pDefaultToolMenuLayouts);
+    }
+
+    /* initialize toolsets */ 
     {
       File dir = new File(PackageInfo.sNodeDir, "toolsets/toolsets");
       File tsets[] = dir.listFiles(); 
       int tk;
       for(tk=0; tk<tsets.length; tk++) {
 	if(tsets[tk].isDirectory()) {
+	  String tname = tsets[tk].getName();
 	  for(OsType os : OsType.all()) {
 	    File file = new File(tsets[tk], os.toString());
 	    if(file.isFile()) {
-	      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tsets[tk].getName());
+	      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
 	      if(toolsets == null) {
 		toolsets = new TreeMap<OsType,Toolset>();
-		pToolsets.put(tsets[tk].getName(), toolsets);
+		pToolsets.put(tname, toolsets);
 	      }
 
 	      toolsets.put(os, null);
+
+	      readPluginMenuLayout(tname, os, "editors",     
+				   pEditorMenuLayouts, pDefaultEditorMenuLayouts);
+	      readPluginMenuLayout(tname, os, "comparators", 
+				   pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
+	      readPluginMenuLayout(tname, os, "actions",     
+				   pActionMenuLayouts, pDefaultActionMenuLayouts);
+	      readPluginMenuLayout(tname, os, "tools",       
+				   pToolMenuLayouts, pDefaultToolMenuLayouts);
 	    }
 	  }
 	}
       }
     }
     
-    /* initialize package keys */ 
+
+
+    /* initialize package keys and plugin tables */ 
     {
       File dir = new File(PackageInfo.sNodeDir, "toolsets/packages");
       File pkgs[] = dir.listFiles(); 
       int pk;
       for(pk=0; pk<pkgs.length; pk++) {
 	if(pkgs[pk].isDirectory()) {
+	  String pname = pkgs[pk].getName();
 	  for(OsType os : OsType.all()) {
 	    File osdir = new File(pkgs[pk], os.toString());
 	    if(osdir.isDirectory()) {
@@ -577,21 +613,17 @@ class MasterMgr
 	      for(vk=0; vk<vsns.length; vk++) {
 		if(vsns[vk].isFile()) {
 		  VersionID vid = new VersionID(vsns[vk].getName());
-		  
-		  TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = 
-		    pToolsetPackages.get(pkgs[pk].getName());
-		  if(packages == null) {
-		    packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
-		    pToolsetPackages.put(pkgs[pk].getName(), packages);
-		  }
 
-		  TreeMap<VersionID,PackageVersion> versions = packages.get(os);
-		  if(versions == null) {
-		    versions = new TreeMap<VersionID,PackageVersion>();
-		    packages.put(os, versions);
-		  }
+		  pToolsetPackages.put(pname, os, vid, null);
 
-		  versions.put(vid, null);
+		  readPackagePlugins(pname, os, vid, 
+				     "editors", pPackageEditorPlugins);
+		  readPackagePlugins(pname, os, vid, 
+				     "comparators", pPackageComparatorPlugins);
+		  readPackagePlugins(pname, os, vid, 
+				     "actions", pPackageActionPlugins);
+		  readPackagePlugins(pname, os, vid, 
+				     "tools", pPackageToolPlugins);
 		}
 	      }
 	    }
@@ -602,20 +634,6 @@ class MasterMgr
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Load the plugin menu layouts.
-   */ 
-  private void 
-  initPluginMenuLayouts()
-    throws PipelineException
-  {
-    pEditorMenuLayout     = readPluginMenuLayout("editor"); 
-    pComparatorMenuLayout = readPluginMenuLayout("comparator"); 
-    pActionMenuLayout     = readPluginMenuLayout("action"); 
-    pToolMenuLayout       = readPluginMenuLayout("tool"); 
-  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -1530,15 +1548,39 @@ class MasterMgr
   ) 
   {
     TaskTimer timer = new TaskTimer();
-
+    try {
+      Toolset toolset = getToolset(req.getName(), req.getOsType(), timer);
+      return new MiscGetToolsetRsp(timer, toolset);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+  
+  /**
+   * Get the toolset with the given name.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param os
+   *   The operating system type.
+   */
+  private Toolset
+  getToolset
+  ( 
+   String tname,
+   OsType os, 
+   TaskTimer timer 
+  )
+    throws PipelineException 
+  {
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       synchronized(pToolsets) {
 	timer.resume();
-	String tname = req.getName();
-	OsType os    = req.getOsType();
-	
+
 	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
 	if(toolsets == null) 
 	  throw new PipelineException 
@@ -1549,16 +1591,13 @@ class MasterMgr
 	    ("No toolset named (" + tname + ") for the (" + os + ") " + 
 	     "operating system exists!");
 
-	Toolset tset = toolsets.get(os);
-	if(tset == null) 
-	  tset = readToolset(tname, os);
-	assert(tset != null);
+	Toolset toolset = toolsets.get(os);
+	if(toolset == null) 
+	  toolset = readToolset(tname, os);
+	assert(toolset != null);
 	
-	return new MiscGetToolsetRsp(timer, tset);
+	return toolset;
       }
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -1584,21 +1623,17 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
 
       TreeMap<String,String> env = 
-	getToolsetEnvironment(req.getAuthor(), req.getView(), req.getName(), req.getOsType(), 
-			      timer);	
+	getToolsetEnvironment
+	(req.getAuthor(), req.getView(), req.getName(), req.getOsType(), timer);	
       
       return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1974,8 +2009,14 @@ class MasterMgr
       synchronized(pToolsetPackages) {
 	timer.resume();
 
-	String pname = req.getPackage().getName();
-	OsType os    = req.getOsType();
+	String pname    = req.getPackage().getName();
+	OsType os       = req.getOsType();
+	PackageMod pmod = req.getPackage();
+
+	if(pmod.isEmpty()) 
+	  throw new PipelineException 
+	    ("Unable to create the " + os + " toolset package (" + pname + ") " + 
+	     "until at least one environmental variable has been defined!"); 	
 
 	TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = 
 	  pToolsetPackages.get(pname);
@@ -1997,35 +2038,1123 @@ class MasterMgr
 	if(versions != null) {
 	  assert(!versions.isEmpty());
 	  if(req.getLevel() == null) 
-	    return new FailureRsp
-	      (timer, "Unable to create the " + os + " toolset package (" + pname + ") " + 
+	    throw new PipelineException 
+	      ("Unable to create the " + os + " toolset package (" + pname + ") " + 
 	       "due to a missing revision number increment level!");
 	  
 	  nvid = new VersionID(versions.lastKey(), req.getLevel());
 	}
 	
 	PackageVersion pkg = 
-	  new PackageVersion(req.getAuthor(), req.getPackage(), nvid, req.getDescription());
+	  new PackageVersion(req.getAuthor(), pmod, nvid, req.getDescription());
 	
 	writeToolsetPackage(pkg, os);
 
-	if(packages == null) {
-	  packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
-	  pToolsetPackages.put(pname, packages);
-	}
-
-	if(versions == null) {
-	  versions = new TreeMap<VersionID,PackageVersion>();
-	  packages.put(os, versions);
-	}
-	
-	versions.put(pkg.getVersionID(), pkg);
+	pToolsetPackages.put(pname, os, pkg.getVersionID(), pkg);
 	
 	return new MiscCreateToolsetPackageRsp(timer, pkg);
       }
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T O O L S E T   P L U G I N S  /  M E N U   L A Y O U T S                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the editor plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getEditorMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getEditorMenuLayout(): " + name + " " + os);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pEditorMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultEditorMenuLayouts.get(os);
+	else 
+	  layout = pEditorMenuLayouts.get(name, os);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the editor plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setEditorMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setEditorMenuLayout(): " + name + " " + os);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pEditorMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  if(layout == null) 
+	    pDefaultEditorMenuLayouts.remove(os);
+	  else 
+	    pDefaultEditorMenuLayouts.put(os, layout);
+	}
+	else {
+	  if(layout == null) 
+	    pEditorMenuLayouts.remove(name, os);
+	  else 
+	    pEditorMenuLayouts.put(name, os, layout);
+	}
+
+	try {
+	  writePluginMenuLayout(name, os, "editors", 
+				pEditorMenuLayouts, pDefaultEditorMenuLayouts);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the editor plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetEditorPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+    OsType os    = req.getOsType();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, os, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageEditorPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      TreeMap<String,TreeSet<VersionID>> table = 
+		pPackageEditorPlugins.get(pname, os, pvid);
+
+	      if(table != null) {
+		for(String name : table.keySet()) {
+		  TreeSet<VersionID> vids = plugins.get(name);
+		  if(vids == null) {
+		    vids = new TreeSet<VersionID>();
+		    plugins.put(name, vids);
+		  }
+		  
+		  vids.addAll(table.get(name));
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the editor plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageEditorPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageEditorPlugins) {
+	timer.resume();
+	
+	TreeMap<String,TreeSet<VersionID>> plugins = 
+	  pPackageEditorPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new TreeMap<String,TreeSet<VersionID>>();
+	
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the editor plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageEditorPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageEditorPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageEditorPlugins.remove
+	    (req.getName(), req.getOsType(), req.getVersionID());
+	else 
+	  pPackageEditorPlugins.put
+	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+
+	try {
+	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			      "editors", pPackageEditorPlugins);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the layout of the comparator plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getComparatorMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getComparatorMenuLayout(): " + name + " " + os);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pComparatorMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultComparatorMenuLayouts.get(os);
+	else 
+	  layout = pComparatorMenuLayouts.get(name, os);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the comparator plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setComparatorMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setComparatorMenuLayout(): " + name + " " + os);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pComparatorMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  if(layout == null) 
+	    pDefaultComparatorMenuLayouts.remove(os);
+	  else 
+	    pDefaultComparatorMenuLayouts.put(os, layout);
+	}
+	else {
+	  if(layout == null) 
+	    pComparatorMenuLayouts.remove(name, os);
+	  else 
+	    pComparatorMenuLayouts.put(name, os, layout);
+	}
+
+	try {
+	  writePluginMenuLayout(name, os, "comparators", 
+				pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the comparator plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetComparatorPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+    OsType os    = req.getOsType();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, os, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageComparatorPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      TreeMap<String,TreeSet<VersionID>> table = 
+		pPackageComparatorPlugins.get(pname, os, pvid);
+	      
+	      if(table != null) {
+		for(String name : table.keySet()) {
+		  TreeSet<VersionID> vids = plugins.get(name);
+		  if(vids == null) {
+		    vids = new TreeSet<VersionID>();
+		    plugins.put(name, vids);
+		  }
+		  
+		  vids.addAll(table.get(name));
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the comparator plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageComparatorPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageComparatorPlugins) {
+	timer.resume();
+	
+	TreeMap<String,TreeSet<VersionID>> plugins = 
+	  pPackageComparatorPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new TreeMap<String,TreeSet<VersionID>>();
+	
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the comparator plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageComparatorPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageComparatorPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageComparatorPlugins.remove
+	    (req.getName(), req.getOsType(), req.getVersionID());
+	else 
+	  pPackageComparatorPlugins.put
+	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+
+	try {
+	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			      "comparators", pPackageComparatorPlugins);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the action plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getActionMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getActionMenuLayout(): " + name + " " + os);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pActionMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultActionMenuLayouts.get(os);
+	else 
+	  layout = pActionMenuLayouts.get(name, os);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the action plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setActionMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setActionMenuLayout(): " + name + " " + os);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pActionMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  if(layout == null) 
+	    pDefaultActionMenuLayouts.remove(os);
+	  else 
+	    pDefaultActionMenuLayouts.put(os, layout);
+	}
+	else {
+	  if(layout == null) 
+	    pActionMenuLayouts.remove(name, os);
+	  else 
+	    pActionMenuLayouts.put(name, os, layout);
+	}
+
+	try {
+	  writePluginMenuLayout(name, os, "actions", 
+				pActionMenuLayouts, pDefaultActionMenuLayouts);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the action plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetActionPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+    OsType os    = req.getOsType();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, os, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageActionPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      TreeMap<String,TreeSet<VersionID>> table = 
+		pPackageActionPlugins.get(pname, os, pvid);
+	      
+	      if(table != null) {
+		for(String name : table.keySet()) {
+		  TreeSet<VersionID> vids = plugins.get(name);
+		  if(vids == null) {
+		    vids = new TreeSet<VersionID>();
+		    plugins.put(name, vids);
+		  }
+		  
+		  vids.addAll(table.get(name));
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the action plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageActionPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageActionPlugins) {
+	timer.resume();
+	
+	TreeMap<String,TreeSet<VersionID>> plugins = 
+	  pPackageActionPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new TreeMap<String,TreeSet<VersionID>>();
+	
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the action plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageActionPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageActionPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageActionPlugins.remove
+	    (req.getName(), req.getOsType(), req.getVersionID());
+	else 
+	  pPackageActionPlugins.put
+	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+
+	try {
+	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			      "actions", pPackageActionPlugins);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the layout of the tool plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getToolMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getToolMenuLayout(): " + name + " " + os);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultToolMenuLayouts.get(os);
+	else 
+	  layout = pToolMenuLayouts.get(name, os);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the tool plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setToolMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setToolMenuLayout(): " + name + " " + os);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  if(layout == null) 
+	    pDefaultToolMenuLayouts.remove(os);
+	  else 
+	    pDefaultToolMenuLayouts.put(os, layout);
+	}
+	else {
+	  if(layout == null) 
+	    pToolMenuLayouts.remove(name, os);
+	  else 
+	    pToolMenuLayouts.put(name, os, layout);
+	}
+
+	try {
+	  writePluginMenuLayout(name, os, "tools", 
+				pToolMenuLayouts, pDefaultToolMenuLayouts);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the tool plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetToolPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+    OsType os    = req.getOsType();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, os, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageToolPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      TreeMap<String,TreeSet<VersionID>> table = 
+		pPackageToolPlugins.get(pname, os, pvid);
+	      
+	      if(table != null) {
+		for(String name : table.keySet()) {
+		  TreeSet<VersionID> vids = plugins.get(name);
+		  if(vids == null) {
+		    vids = new TreeSet<VersionID>();
+		    plugins.put(name, vids);
+		  }
+		  
+		  vids.addAll(table.get(name));
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the tool plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageToolPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageToolPlugins) {
+	timer.resume();
+	
+	TreeMap<String,TreeSet<VersionID>> plugins = 
+	  pPackageToolPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new TreeMap<String,TreeSet<VersionID>>();
+	
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the tool plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageToolPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageToolPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageToolPlugins.remove
+	    (req.getName(), req.getOsType(), req.getVersionID());
+	else 
+	  pPackageToolPlugins.put
+	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+
+	try {
+	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			      "tools", pPackageToolPlugins);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
+	return new SuccessRsp(timer);
+      }
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -2201,296 +3330,6 @@ class MasterMgr
     }
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P L U G I N   M E N U   L A Y O U T                                                  */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get layout of the editor plugin selection menu.
-   *
-   * @return
-   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
-   */ 
-  public Object 
-  getEditorMenuLayout() 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.getEditorMenuLayout()");
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	
-	PluginMenuLayout layout = new PluginMenuLayout(pEditorMenuLayout);
-	return new MiscGetPluginMenuLayoutRsp(timer, layout);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-  /**
-   * Set the layout of the editor plugin selection menu.
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
-   */ 
-  public Object 
-  setEditorMenuLayout
-  ( 
-   MiscSetPluginMenuLayoutReq req 
-  ) 
-  {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.setEditorMenuLayout()");
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	    
-	pEditorMenuLayout = req.getLayout();
-
-	try {
-	  writePluginMenuLayout("editor", pEditorMenuLayout);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
-
-	return new SuccessRsp(timer);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the comparator plugin selection menu.
-   *
-   * @return
-   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
-   */ 
-  public Object 
-  getComparatorMenuLayout() 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.getComparatorMenuLayout()");
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	
-	PluginMenuLayout layout = new PluginMenuLayout(pComparatorMenuLayout);
-	return new MiscGetPluginMenuLayoutRsp(timer, layout);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-  /**
-   * Set the layout of the comparator plugin selection menu.
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
-   */ 
-  public Object 
-  setComparatorMenuLayout
-  ( 
-   MiscSetPluginMenuLayoutReq req 
-  ) 
-  {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.setComparatorMenuLayout()");
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	    
-	pComparatorMenuLayout = req.getLayout();
-
-	try {
-	  writePluginMenuLayout("comparator", pComparatorMenuLayout);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
-
-	return new SuccessRsp(timer);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get layout of the action plugin selection menu.
-   *
-   * @return
-   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
-   */ 
-  public Object 
-  getActionMenuLayout() 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.getActionMenuLayout()");
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	
-	PluginMenuLayout layout = new PluginMenuLayout(pActionMenuLayout);
-	return new MiscGetPluginMenuLayoutRsp(timer, layout);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-  /**
-   * Set the layout of the action plugin selection menu.
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
-   */ 
-  public Object 
-  setActionMenuLayout
-  ( 
-   MiscSetPluginMenuLayoutReq req 
-  ) 
-  {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.setActionMenuLayout()");
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	    
-	pActionMenuLayout = req.getLayout();
-
-	try {
-	  writePluginMenuLayout("action", pActionMenuLayout);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
-
-	return new SuccessRsp(timer);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get layout of the tool plugin selection menu.
-   *
-   * @return
-   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
-   */ 
-  public Object 
-  getToolMenuLayout() 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.getToolMenuLayout()");
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	
-	PluginMenuLayout layout = new PluginMenuLayout(pToolMenuLayout);
-	return new MiscGetPluginMenuLayoutRsp(timer, layout);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-  /**
-   * Set the layout of the tool plugin selection menu.
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
-   */ 
-  public Object 
-  setToolMenuLayout
-  ( 
-   MiscSetPluginMenuLayoutReq req 
-  ) 
-  {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.setToolMenuLayout()");
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPluginMenuLayoutLock) {
-	timer.resume();	
-	    
-	pToolMenuLayout = req.getLayout();
-
-	try {
-	  writePluginMenuLayout("tool", pToolMenuLayout);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
-
-	return new SuccessRsp(timer);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
 
 
 
@@ -6267,6 +7106,7 @@ class MasterMgr
       /* group the jobs */ 
       QueueJobGroup group = 
 	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
+			  status.getDetails().getWorkingVersion().getToolset(), 
 			  targetSeq, orderedRootIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
       pQueueMgrClient.groupJobs(group);
@@ -12038,21 +12878,381 @@ class MasterMgr
       assert(pkg.getName().equals(name));
       assert(pkg.getVersionID().equals(vid));
 
-      TreeMap<OsType,TreeMap<VersionID,PackageVersion>> packages = pToolsetPackages.get(name);
-      if(packages == null) {
-	packages = new TreeMap<OsType,TreeMap<VersionID,PackageVersion>>();
-	pToolsetPackages.put(name, packages);
-      }
-
-      TreeMap<VersionID,PackageVersion> versions = packages.get(os);
-      if(versions == null) {
-	versions = new TreeMap<VersionID,PackageVersion>();
-	packages.put(os, versions);
-      }
-
-      versions.put(vid, pkg);
+      pToolsetPackages.put(name, os, vid, pkg);
 
       return pkg;
+    }
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the layout of plugin menus associated with a toolset to file.
+   * 
+   * @param name
+   *   The name of the toolset.
+   * 
+   * @param os
+   *   The operating system type. 
+   * 
+   * @param ptype
+   *   The type of plugins: editors, comparators, actions or tools
+   * 
+   * @param table
+   *   The plugin menu layout table.
+   *
+   * @param defaultTable
+   *   The default menu layout table.
+   *
+   * @throws PipelineException
+   *   If unable to write the menu layuout file. 
+   */ 
+  private void 
+  writePluginMenuLayout
+  (
+   String name, 
+   OsType os, 
+   String ptype,
+   DoubleMap<String,OsType,PluginMenuLayout> table, 
+   TreeMap<OsType,PluginMenuLayout> defaultTable
+  ) 
+    throws PipelineException
+  {
+    String uptype = null;
+    {
+      char[] cs = ptype.toCharArray();
+      cs[0] = Character.toUpperCase(cs[0]);
+      uptype = new String(cs);
+    }
+
+    synchronized(table) {
+      File dir = null;
+      if(name != null) 
+	dir = new File(PackageInfo.sNodeDir, 
+		       "toolsets/plugins/toolsets/" + name + "/" + os);
+      else 
+	dir = new File(PackageInfo.sNodeDir, "etc/default-layouts/" + os);
+
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new PipelineException
+	      ("Unable to create toolset plugin menu directory (" + dir + ")!");
+      }
+
+      File file = new File(dir, ptype);
+
+      PluginMenuLayout layout = null;
+      if(name != null) 
+	layout = table.get(name, os);
+      else 
+	layout = defaultTable.get(os);
+
+      if(layout == null) {
+	if(file.exists())
+	  if(!file.delete()) 
+	    throw new PipelineException
+	      ("Unable to remove obsolete toolset plugin menu file (" + file + ")!");
+	return;
+      }
+	
+      String tname = name;
+      if(tname == null) 
+	tname = "(default layout)";
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing " + os + " Toolset Plugin Menu: " + tname + " " + uptype);
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl(uptype + "MenuLayout", layout);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the " + ptype + 
+	     " plugin menu layout associated with the toolset (" + tname + ")!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	  
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the toolset plugin menu layout file " + 
+	   "(" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the layout of plugin menus associated with a toolset from file if it exists.
+   * 
+   * @param name
+   *   The name of the toolset.
+   * 
+   * @param os
+   *   The operating system type. 
+   * 
+   * @param ptype
+   *   The type of plugins: editors, comparators, actions or tools
+   * 
+   * @param table
+   *   The plugin menu layout table.
+   * 
+   * @param defaultTable
+   *   The default menu layout table.
+   * 
+   * @throws PipelineException
+   *   If unable to read an existing package plugins file.
+   */ 
+  private void
+  readPluginMenuLayout
+  (
+   String name, 
+   OsType os, 
+   String ptype,
+   DoubleMap<String,OsType,PluginMenuLayout> table, 
+   TreeMap<OsType,PluginMenuLayout> defaultTable
+  ) 
+    throws PipelineException
+  {
+    String uptype = null;
+    {
+      char[] cs = ptype.toCharArray();
+      cs[0] = Character.toUpperCase(cs[0]);
+      uptype = new String(cs);
+    }
+
+    synchronized(table) {
+      File file = null;
+      if(name != null) 
+	file = new File(PackageInfo.sNodeDir, 
+			"toolsets/plugins/toolsets/" + name + "/" + os + "/" + ptype);  
+      else 
+	file = new File(PackageInfo.sNodeDir, "etc/default-layouts/" + os + "/" + ptype);
+
+      if(!file.isFile())
+	return;
+
+      String tname = name;
+      if(tname == null) 
+	tname = "(default layout)";
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading " + os + " Toolset Plugin Menu: " + tname + " " + uptype);
+
+      PluginMenuLayout layout = null;
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	layout = (PluginMenuLayout) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The toolset plugin menu file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the toolset plugin menu file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      assert(layout != null);
+
+      if(name != null) 
+	table.put(name, os, layout);
+      else 
+	defaultTable.put(os, layout);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the table of plugins associated with a toolset package to file.
+   * 
+   * @param name
+   *   The name of the toolset package.
+   * 
+   * @param os
+   *   The operating system type. 
+   * 
+   * @param vid
+   *   The package revision number
+   * 
+   * @param ptype
+   *   The type of plugins: editors, comparators, actions or tools
+   * 
+   * @param table
+   *   The plugins table.
+   * 
+   * @throws PipelineException
+   *   If unable to write the plugins file. 
+   */ 
+  private void 
+  writePackagePlugins
+  (
+   String name, 
+   OsType os, 
+   VersionID vid, 
+   String ptype,
+   PackageMap<TreeMap<String,TreeSet<VersionID>>> table 
+  ) 
+    throws PipelineException
+  {
+    String uptype = null;
+    {
+      char[] cs = ptype.toCharArray();
+      cs[0] = Character.toUpperCase(cs[0]);
+      uptype = new String(cs);
+    }
+
+    synchronized(table) {
+      File dir = new File(PackageInfo.sNodeDir, 
+			  "toolsets/plugins/packages/" + name + "/" + os + "/" + vid);
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new PipelineException
+	      ("Unable to create toolset plugins directory (" + dir + ")!");
+      }
+
+      File file = new File(dir, ptype);
+
+      TreeMap<String,TreeSet<VersionID>> plugins = table.get(name, os, vid);
+      if((plugins == null) || plugins.isEmpty()) {
+	if(file.exists())
+	  if(!file.delete()) 
+	    throw new PipelineException
+	      ("Unable to remove obsolete toolset plugins file (" + file + ")!");
+	return;
+      }
+	
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing " + os + " Toolset Package Plugins: " + name + " v" + vid + " " + ptype);
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Package" + uptype + "Plugins", plugins);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the " + ptype + 
+	     " plugins associated with the toolset package (" + name + " v" + vid +")!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	  
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the toolset package plugins file " + 
+	   "(" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the table of plugins associated with a toolset package from file if it exists.
+   * 
+   * @param name
+   *   The name of the toolset package.
+   * 
+   * @param os
+   *   The operating system type. 
+   * 
+   * @param vid
+   *   The package revision number
+   * 
+   * @param ptype
+   *   The type of plugins: editors, comparators, actions or tools
+   * 
+   * @param table
+   *   The plugins table.
+   * 
+   * @throws PipelineException
+   *   If unable to read an existing package plugins file.
+   */ 
+  private void
+  readPackagePlugins
+  (
+   String name, 
+   OsType os, 
+   VersionID vid, 
+   String ptype,
+   PackageMap<TreeMap<String,TreeSet<VersionID>>> table 
+  )
+    throws PipelineException
+  {
+    String uptype = null;
+    {
+      char[] cs = ptype.toCharArray();
+      cs[0] = Character.toUpperCase(cs[0]);
+      uptype = new String(cs);
+    }
+
+    synchronized(table) {
+      File file = 
+	new File(PackageInfo.sNodeDir, 
+		 "toolsets/plugins/packages/" + name + "/" + os + "/" + vid + "/" + ptype);
+      if(!file.isFile())
+	return;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading " + os + " Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
+
+      TreeMap<String,TreeSet<VersionID>> plugins = null;
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	plugins = (TreeMap<String,TreeSet<VersionID>>) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The package plugins file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the package plugins file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+
+      assert(plugins != null);
+      table.put(name, os, vid, plugins);
     }
   }
 
@@ -12178,140 +13378,6 @@ class MasterMgr
     }
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Write the a plugin menu layout to disk. <P> 
-   * 
-   * @param title
-   *   The title of the layout.
-   * 
-   * @param layout
-   *   The layout to write.
-   * 
-   * @throws PipelineException
-   *   If unable to write the menu layout file.
-   */ 
-  private void 
-  writePluginMenuLayout
-  (
-   String title, 
-   PluginMenuLayout layout
-  ) 
-    throws PipelineException
-  {
-    synchronized(pPluginMenuLayoutLock) {
-      String utitle = null;
-      {
-	char cs[] = title.toCharArray();
-	cs[0] = Character.toUpperCase(cs[0]);
-	utitle = new String(cs);
-      }
-
-      File file = new File(PackageInfo.sNodeDir, "etc/" + title + "-menu-layout");
-      if(file.exists()) {
-	if(!file.delete())
-	  throw new PipelineException
-	    ("Unable to remove the old " + title + " menu layout file (" + file + ")!");
-      }
-      
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing " + utitle + " Menu Layout.");
-
-      try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl(utitle + "MenuLayout", layout);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the " + title + 
-	     " menu layout!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
-      }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the " + title + " menu layout file " + 
-	   "(" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
-    }
-  }
-  
-  /**
-   * Read the layout of the editor plugin selection menu from disk. <P> 
-   * 
-   * @param title
-   *   The title of the layout.
-   * 
-   * @throws PipelineException
-   *   If unable to read the menu layout file.
-   */ 
-  private  PluginMenuLayout
-  readPluginMenuLayout
-  (
-   String title 
-  ) 
-    throws PipelineException
-  {
-    synchronized(pPluginMenuLayoutLock) {
-      String utitle = null;
-      {
-	char cs[] = title.toCharArray();
-	cs[0] = Character.toUpperCase(cs[0]);
-	utitle = new String(cs);
-      }
-
-      File file = new File(PackageInfo.sNodeDir, "etc/" + title + "-menu-layout");
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading " + utitle + " Menu Layout.");
-
-	PluginMenuLayout layout = null;
-	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  layout = (PluginMenuLayout) gd.getObject();
-	  in.close();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The " + title + " menu layout file (" + file + ") appears to be corrupted!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the " + title + " menu layout file " + 
-	     "(" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-	assert(layout != null);
-	
-	return layout; 
-      }
-      else {
-	return new PluginMenuLayout();
-      }
-    }
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -13676,6 +14742,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
+  //private DoubleMap<String,VersionID,TreeSet<String>>  pArchivedIn;
 
   /**
    * The timestamps of when each archive volume was created indexed by unique archive 
@@ -13714,6 +14781,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */  
   private TreeMap<String,TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
+  //private DoubleMap<String,VersionID,RestoreRequest>  pRestoreReqs;  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -13743,6 +14811,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
+  //private DoubleMap<String,OsType,Toolset>  pToolsets;
 
   /**
    * The cached table of all toolset packages indexed by package name, operating system 
@@ -13753,7 +14822,42 @@ class MasterMgr
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>> pToolsetPackages;
+  private PackageMap<PackageVersion>  pToolsetPackages;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The cached tables of plugin menu layouts associated with toolsets indexed by 
+   * toolset name and operating system. <P> 
+   * 
+   * The cached tables of default layouts for these operating systems.<P> 
+   * 
+   * Access to these fields should be protected by a synchronized block.  Access to the
+   * default tables should synchronize on the non-default tables.
+   */ 
+  private DoubleMap<String,OsType,PluginMenuLayout>  pEditorMenuLayouts;
+  private TreeMap<OsType,PluginMenuLayout>           pDefaultEditorMenuLayouts;
+
+  private DoubleMap<String,OsType,PluginMenuLayout>  pComparatorMenuLayouts;
+  private TreeMap<OsType,PluginMenuLayout>           pDefaultComparatorMenuLayouts;
+
+  private DoubleMap<String,OsType,PluginMenuLayout>  pActionMenuLayouts;
+  private TreeMap<OsType,PluginMenuLayout>           pDefaultActionMenuLayouts;
+
+  private DoubleMap<String,OsType,PluginMenuLayout>  pToolMenuLayouts;
+  private TreeMap<OsType,PluginMenuLayout>           pDefaultToolMenuLayouts;
+  
+  /**
+   * The cached tables of the names and versions of all plugins associated with a 
+   * package indexed by package name, operating system and package revision number. <P> 
+   * 
+   * Access to these fields should be protected by a synchronized block.
+   */ 
+  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageEditorPlugins; 
+  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageComparatorPlugins; 
+  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageActionPlugins; 
+  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageToolPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -13764,41 +14868,6 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,TreeMap<String,SuffixEditor>>  pSuffixEditors;
-
-
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * The plugin menu layouts lock.
-   * 
-   * Access to the <CODE>pEditorMenuLayout</CODE> and <CODE>pToolMenuLayout</CODE> fields 
-   * should be protected by a synchronized block on this field.
-   */ 
-  private Object pPluginMenuLayoutLock; 
-
-  /**
-   * The cached layout of the editor plugin selection menu or <CODE>null</CODE> if none 
-   * is defined.
-   */ 
-  private PluginMenuLayout  pEditorMenuLayout;
-   
-  /**
-   * The cached layout of the comparator plugin selection menu or <CODE>null</CODE> if none 
-   * is defined.
-   */ 
-  private PluginMenuLayout  pComparatorMenuLayout;
-   
-  /**
-   * The cached layout of the action plugin selection menu or <CODE>null</CODE> if none 
-   * is defined.
-   */ 
-  private PluginMenuLayout  pActionMenuLayout;
-
-  /**
-   * The cached layout of the tool plugin selection menu or <CODE>null</CODE> if none 
-   * is defined.
-   */ 
-  private PluginMenuLayout  pToolMenuLayout;
 
 
   /*----------------------------------------------------------------------------------------*/

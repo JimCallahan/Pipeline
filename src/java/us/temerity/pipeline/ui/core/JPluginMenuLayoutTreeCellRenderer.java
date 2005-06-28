@@ -1,4 +1,4 @@
-// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.3 2005/06/14 13:38:33 jim Exp $
+// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.4 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,7 +35,7 @@ class JPluginMenuLayoutTreeCellRenderer
   public 
   JPluginMenuLayoutTreeCellRenderer
   (
-   JBaseManagePluginsDialog parent
+   JBaseToolsetPluginsPanel parent
   ) 
   {
     super();
@@ -99,7 +99,7 @@ class JPluginMenuLayoutTreeCellRenderer
     }
 
     int depth = tnode.getPath().length;
-    Dimension size = new Dimension(400-23*depth, 23);
+    Dimension size = new Dimension(500-23*depth, 23);
     setMinimumSize(size);
     setPreferredSize(size); 
     setMaximumSize(size); 
@@ -142,8 +142,8 @@ class JPluginMenuLayoutTreeCellRenderer
   private JLabel  pPluginLabel;
 
   /**
-   * The parent dialog.
+   * The parent panel.
    */ 
-  private JBaseManagePluginsDialog  pParent;
+  private JBaseToolsetPluginsPanel  pParent;
 
 }

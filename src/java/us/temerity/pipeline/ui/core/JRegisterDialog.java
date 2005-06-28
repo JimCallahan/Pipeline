@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.10 2005/06/22 22:03:21 jim Exp $
+// $Id: JRegisterDialog.java,v 1.11 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -305,7 +305,10 @@ class JRegisterDialog
       try {
 	pclient.update();
 	pEditorPlugins = pclient.getEditors();
-	pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
+
+	MasterMgrClient client = master.getMasterMgrClient();
+	pEditorMenuLayout = 
+	  client.getEditorMenuLayout(PackageInfo.sOsType); // FIX THIS!!!
 	pEditorField.updatePlugins(pEditorMenuLayout, pEditorPlugins);
       } 
       catch(PipelineException ex) {

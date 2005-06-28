@@ -1,4 +1,4 @@
-// $Id: MiscSetPluginMenuLayoutReq.java,v 1.2 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscGetPluginMenuLayoutReq.java,v 1.1 2005/06/28 18:05:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   S E T   P L U G I N   M E N U   L A Y O U T   R E Q                          */
+/*   M I S C   G E T   P L U G I N   M E N U   L A Y O U T   R E Q                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to set the layout of a plugin menu associated with a toolset.
+ * A request to get the layout of a plugin menu associated with a toolset.
  */
 public
-class MiscSetPluginMenuLayoutReq
+class MiscGetPluginMenuLayoutReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,36 +27,24 @@ class MiscSetPluginMenuLayoutReq
    * Constructs a new request.
    * 
    * @param name
-   *   The toolset name.
+   *   The toolset name or <CODE>null</CODE> for default layout.
    * 
    * @param os
    *   The operating system type.
-   * 
-   * @param layout
-   *   The heirarchical set of editor plugin menus.
    */
   public
-  MiscSetPluginMenuLayoutReq
+  MiscGetPluginMenuLayoutReq
   (
    String name, 
-   OsType os,
-   PluginMenuLayout layout
+   OsType os
   )
   {
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The package name cannot be (null)!");
     pName = name;
 
     if(os == null) 
       throw new IllegalArgumentException
 	("The operating system cannot be (null)!");
     pOsType = os;
-    
-    if(layout == null) 
-      throw new IllegalArgumentException
-	("The heirarchical set of editor plugin menus.");
-    pLayout = layout;
   }
 
 
@@ -66,7 +54,7 @@ class MiscSetPluginMenuLayoutReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the toolset package name.
+   * Gets the toolset package name or <CODE>null</CODE> for default layout.
    */
   public String
   getName() 
@@ -82,15 +70,6 @@ class MiscSetPluginMenuLayoutReq
   {
     return pOsType; 
   }
-
-  /**
-   * Gets the heirarchical set of editor plugin menus.
-   */
-  public PluginMenuLayout
-  getLayout() 
-  {
-    return pLayout;
-  }
   
   
 
@@ -98,7 +77,7 @@ class MiscSetPluginMenuLayoutReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1123581530859556634L;
+  private static final long serialVersionUID = -2452786191881324286L;
 
   
 
@@ -116,10 +95,5 @@ class MiscSetPluginMenuLayoutReq
    */
   private OsType  pOsType; 
   
-  /**
-   * The heirarchical set of editor plugin menus.
-   */
-  private PluginMenuLayout pLayout;
-
 }
   

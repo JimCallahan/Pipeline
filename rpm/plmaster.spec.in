@@ -25,14 +25,23 @@ The plmaster(1) program is distributed in the main Pipeline RPM:
 
 %defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @NODEDIR@
+%dir @NODEDIR@/etc
+%dir @NODEDIR@/etc/default-layouts
+%dir @NODEDIR@/etc/default-layouts/Unix
+%dir @NODEDIR@/etc/default-layouts/MacOS
 
 %defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
 
-%config @NODEDIR@/etc/action-menu-layout 
-%config @NODEDIR@/etc/comparator-menu-layout 
-%config @NODEDIR@/etc/editor-menu-layout     
-%config @NODEDIR@/etc/tool-menu-layout       
+%config @NODEDIR@/etc/default-layouts/Unix/actions
+%config @NODEDIR@/etc/default-layouts/Unix/comparators
+%config @NODEDIR@/etc/default-layouts/Unix/editors
+%config @NODEDIR@/etc/default-layouts/Unix/tools
+
+%config @NODEDIR@/etc/default-layouts/MacOS/actions
+%config @NODEDIR@/etc/default-layouts/MacOS/comparators
+%config @NODEDIR@/etc/default-layouts/MacOS/editors
+%config @NODEDIR@/etc/default-layouts/MacOS/tools
 
 %changelog
 * @RPM_DATE@ Jim Callahan <jim@salamander>

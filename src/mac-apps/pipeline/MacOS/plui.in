@@ -1,8 +1,10 @@
 #!/bin/sh
 
 @JAVA_RUNTIME@ \
-  -Xdock:name=Pipeline @PLUI_GC_OPTS@ \
+  -Xdock:name=Pipeline \
   -Xdock:icon=@PIPELINE_INST_DIR@/MacOS/Pipeline.app/Contents/Resources/pipeline.icns \
+  @PLUI_GC_OPTS@ \
+  @PLUI_DEBUG_OPTS@ \
   -cp @PIPELINE_INST_DIR@/lib/api.jar \
-  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp --no-layout
+  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp
 

@@ -1,4 +1,4 @@
-// $Id: TripleMap.java,v 1.1 2005/06/27 07:16:54 jim Exp $
+// $Id: TripleMap.java,v 1.2 2005/06/28 18:05:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -97,13 +97,13 @@ class TripleMap<A,B,C,V>
    * Returns the value to which this map maps the specified set of keys.
    * 
    * @param keyA
-   *   The keyA of the toolset package.
+   *   The first key.
    * 
-   * @param os
-   *   The operating system type.
+   * @param keyB
+   *   The second key. 
    * 
-   * @param vid 
-   *   The package revision number.
+   * @param keyC
+   *   The third key. 
    * 
    * @return
    *   The value or <CODE>null</CODE> if no entry exists.
@@ -131,13 +131,13 @@ class TripleMap<A,B,C,V>
    * Removes the mapping for the specified set of keys if present.
    * 
    * @param keyA
-   *   The keyA of the toolset package.
+   *   The first key.
    * 
-   * @param os
-   *   The operating system type.
+   * @param keyB
+   *   The second key. 
    * 
-   * @param vid 
-   *   The package revision number.
+   * @param keyC
+   *   The third key. 
    */ 
   public void
   remove

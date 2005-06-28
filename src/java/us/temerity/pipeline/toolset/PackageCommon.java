@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.5 2005/06/12 17:58:37 jim Exp $
+// $Id: PackageCommon.java,v 1.6 2005/06/28 18:05:21 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -66,6 +66,16 @@ class PackageCommon
   /*----------------------------------------------------------------------------------------*/
   /*   P R E D I C A T E S                                                                  */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether this package has no environmental variable definitions.
+   */ 
+  public boolean
+  isEmpty()
+  {
+    return pEntries.isEmpty();
+  }
+  
 
   /** 
    * Whether the given package has the same name as this package.
