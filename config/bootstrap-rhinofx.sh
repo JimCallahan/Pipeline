@@ -9,23 +9,15 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/050525
+plprofile=$plsrcdir/plconfig/customers/rhinofx/050628
+
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
+    --enable-foundation \
     --disable-opt \
     --with-debug-base=43000 \
     --with-prof-base=43100 \
-    --with-compiler=GNU \
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=rhinofx \
     --with-customer-profile=$plprofile
 popd
-
-# pushd i686-pc-linux-gnu-opt
-#  $plsrcdir/configure \
-#     --ensable-opt \
-#     --with-compiler=GNU \
-#     --with-crypto-app=$plsrcdir/plconfig \
-#     --with-customer=rhinofx \
-#     --with-customer-profile=$plprofile
-# popd
