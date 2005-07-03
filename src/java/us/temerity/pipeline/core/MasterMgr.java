@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.133 2005/06/28 18:05:22 jim Exp $
+// $Id: MasterMgr.java,v 1.134 2005/07/03 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7389,11 +7389,8 @@ class MasterMgr
       }
     }
     
-    /* no batches to generate, collect upstream jobs */ 
+    /* no batches to generate, skip processing upstream nodes */ 
     if(batches.isEmpty()) {
-      collectNoActionJobs(status, isRoot, 
-			  extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-			  jobs, timer);
       return; 
     }
 
