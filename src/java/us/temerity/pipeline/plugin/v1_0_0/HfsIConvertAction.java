@@ -1,4 +1,4 @@
-// $Id: HfsIConvertAction.java,v 1.1 2005/07/02 00:50:28 jim Exp $
+// $Id: HfsIConvertAction.java,v 1.2 2005/07/03 19:14:04 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -16,7 +16,7 @@ import java.io.*;
  * Convert the images files which make up the primary file sequence of one of the source
  * nodes into the image format of the primary file sequence of this node. <P> 
  * 
- * See the <A href="http://www.sidefx.com">Houdini</A> documentation for details on the
+ * See the <A href="http://www.sidefx.com"><B>Houdini</B></A> documentation for details on the
  * usage and behavior of iconvert(1).<P> 
  * 
  * This action defines the following single valued parameters: <BR>
@@ -30,7 +30,7 @@ import java.io.*;
  *   Color Depth <BR>
  *   <DIV style="margin-left: 40px;">
  *     Specifies the bit-depth of pixels in the output image:<BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Natural - Use the natural bit depth of the target image format. <BR>
  *       8-Bit (byte) - Integer 8-bits per channel. <BR>
  *       16-Bit (short) - Integer 16-bits per channel. <BR>

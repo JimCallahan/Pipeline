@@ -1,4 +1,4 @@
-// $Id: HfsMantraAction.java,v 1.1 2005/07/02 00:50:28 jim Exp $
+// $Id: HfsMantraAction.java,v 1.2 2005/07/03 19:14:04 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -48,7 +48,7 @@ import java.io.*;
  *   Output Format <BR>
  *   <DIV style="margin-left: 40px;">
  *     Specifies the type of files generated:<BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Color Image - Renders standard image formats. <BR> 
  *       Z-Depth - Renders z-depth maps. <BR> 
  *       Average Z-Depth - Integer 16-bits per channel. <BR>
@@ -58,7 +58,7 @@ import java.io.*;
  *   Color Depth <BR>
  *   <DIV style="margin-left: 40px;">
  *     Specifies the bit-depth of pixels in the output image (color only):<BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Natural - Use the natural bit depth of the target image format. <BR>
  *       8-Bit (byte) - Integer 8-bits per channel. <BR>
  *       16-Bit (short) - Integer 16-bits per channel. <BR>
@@ -72,7 +72,7 @@ import java.io.*;
  *   Render Fields <BR>
  *   <DIV style="margin-left: 40px;">
  *     Render field mode:<BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Full - Renders as full field. <BR> 
  *       Odd - Renders as odd field. <BR> 
  *       Even - Render as even field. <BR> 
@@ -82,9 +82,9 @@ import java.io.*;
  *   <I>Rendering Methods</I> <BR>
  *   <DIV style="margin-left: 40px;">
  *     Rendering Mode <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The fundamental rendering technique: <BR> 
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         MicroPolygon - Use micro-polygon rendering only. <BR>
  *         RayTraced - Use pure ray-tracing only. <BR>
  *         Mixed - Use mixed ray tracing and micro-polygon rendering. <BR>
@@ -92,14 +92,14 @@ import java.io.*;
  *     </DIV> <BR>
  * 
  *     AntiAliasing <BR> 
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Whether to turn on anti-aliasing. <BR>
  *     </DIV> <BR>
  * 
  *     Motion Blur <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The technique used for motion blur: <BR> 
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         None - No motion blur. <BR> 
  *         No RayTraced - Turn off ray-traced motion blur. <BR>
  *         All - Use all motion blur techniques. <BR>
@@ -107,12 +107,12 @@ import java.io.*;
  *     </DIV> <BR>
  *     
  *     Depth Of Field <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Whether to render depth-of-field. <BR>
  *     </DIV> <BR>
  * 
  *     Global Illumination <BR> 
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Whether to compute irradiance and occulsion. <BR> 
  *     </DIV> <BR>
  *   </DIV> <BR>
@@ -120,24 +120,24 @@ import java.io.*;
  *   <I>Render Quality</I> <BR>
  *   <DIV style="margin-left: 40px;">
  *     Shading Quality <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The shading quality multiplier.<BR> 
  *     </DIV> <BR>
  * 
  *     AntiAliasing Threshold <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The variance anti-aliasing threshold.<BR> 
  *     </DIV> <BR>
  * 
  *     Jitter Scale <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The jitter scale.<BR> 
  *     </DIV> <BR>
  * 
  *     Coving Method <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Methods for dealing with patch cracks:<BR> 
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         None - No coving of patch cracks. <BR> 
  *         Default - Cove displaced and sub-division surfaces. <BR>
  *         All - Forced coving of all primitives. <BR>
@@ -145,27 +145,27 @@ import java.io.*;
  *     </DIV> <BR>
  * 
  *     <I>MicroPolygon Rendering</I> <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       MicroPolygon Cache Size <BR>
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         The size of the micro-polygon cache.<BR> 
  *       </DIV> <BR>
  * 
  *       MicroPolygon Max Splits <BR>
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         The maxmum number of micro-polygon splits.<BR> 
  *       </DIV> <BR>
  *     </DIV> <BR>
  * 
  *     <I>Ray Tracing</I> <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       Ray Mesh Cache Size <BR>
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         The size of the ray mesh cache.<BR> 
  *       </DIV> <BR>
  * 
  *       Ray Shading Rate <BR>
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         Global ray-tracing level of detail factor.<BR> 
  *       </DIV> <BR>
  *     </DIV> <BR>
@@ -174,14 +174,14 @@ import java.io.*;
  *   <I>Messages</I> <BR>
  *   <DIV style="margin-left: 40px;">
  *     Verbosity <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The level of verbosity of rendering statistics. <BR> 
  *     </DIV> <BR>
  * 
  *     Profiling <BR>
- *     <DIV style="margin-left: 80px;">
+ *     <DIV style="margin-left: 40px;">
  *       The fundamental rendering technique: <BR> 
- *       <DIV style="margin-left: 120px;">
+ *       <DIV style="margin-left: 40px;">
  *         None - No profiling. <BR>
  *         VEX - VEX profiling only. <BR>
  *         VEX and NaN - VEX profiling and NaN detection. <BR> 
