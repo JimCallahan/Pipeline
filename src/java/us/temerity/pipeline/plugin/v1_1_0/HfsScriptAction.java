@@ -1,6 +1,6 @@
-// $Id: HfsScriptAction.java,v 1.2 2005/07/13 13:52:07 jim Exp $
+// $Id: HfsScriptAction.java,v 1.1 2005/07/13 13:52:07 jim Exp $
 
-package us.temerity.pipeline.plugin.v1_0_0;
+package us.temerity.pipeline.plugin.v1_1_0;
 
 import us.temerity.pipeline.*; 
 
@@ -25,6 +25,17 @@ import java.io.*;
  * See the <A href="http://www.sidefx.com"><B>Houdini</B></A> documentation for details about
  * hscript(1). <P> 
  *  
+ * This action defines the following single valued parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Use Graphical License<BR> 
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to use an interactive graphical Houdini license when running hscript(1).  
+ *     Normally, hscript(1) is run using a non-graphical license (-R option).  A graphical 
+ *     license may be required if the site has not obtained any non-graphical licenses.
+ *   </DIV> 
+ * </DIV> <P> 
+ * 
  * This action defines the following per-source parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
@@ -48,8 +59,17 @@ class HfsScriptAction
   public
   HfsScriptAction() 
   {
-    super("HfsScript", new VersionID("1.0.0"), 
+    super("HfsScript", new VersionID("1.1.0"), 
 	  "Loads or executes set of Houdini scenes, OTLs and command scripts.");
+
+    {
+      ActionParam param = 
+	new BooleanActionParam
+	("UseGraphicalLicense",
+	 "Whether to use an interactive graphical Houdini license when running hscript(1).",
+	 false);
+      addSingleParam(param);
+    }
   }
 
   
@@ -158,12 +178,20 @@ class HfsScriptAction
       } 
     }
 
+    /* license type */ 
+    String licopt = " -R";
+    {
+      Boolean tf = (Boolean) getSingleParamValue("UseGraphicalLicense"); 
+      if((tf != null) && tf)
+	licopt = "";
+    }
+
     /* create the wrapper shell script */ 
     File script = createTemp(agenda, 0755, "bash");
     try {      
       FileWriter out = new FileWriter(script);
       out.write("#!/bin/bash\n\n" +
-		"hscript");      
+		"hscript" + licopt);      
       for(File file : sourceFiles) 
 	out.write(" " + file);
       out.write("\n");
@@ -234,7 +262,7 @@ class HfsScriptAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7656316980741547323L;
+  private static final long serialVersionUID = 2982916981706767601L;
 
 }
 

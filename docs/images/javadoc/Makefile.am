@@ -10,6 +10,7 @@ images_DATA = \
   CoordSysUScale.gif \
   CoordSysXformPoint.gif \
   CoordSysXformVector.gif \
+  EnvMapCross.gif \
   Matrix33Array.gif \
   Matrix33ArrayIndex.gif \
   Matrix33Identity.gif \

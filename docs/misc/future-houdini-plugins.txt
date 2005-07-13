@@ -1,0 +1,25 @@
+
+Investigate whether additional Action plugins should be built for the following Houdini command line programs:
+  hexpand/hcollapse - HIP file unpacker/packer.
+  hotl - OTL manipulation program.
+  i3dconvert - 3D texture/geometry two-way converter.
+  i3dgen - Generates a 3D texture using a VEX function.
+  i3diso - Creates iso-surface geometry from a 3D texture.
+  ibumpmap - Generates a bump map from a PIC image.
+  icomposite - A fast and simple resizing/filtering image compositer.
+  icurve - Simulates lens distoration of images.
+  idof - Generate an image with depth of field blurring using a depth map image.
+  ifilter - A fast and simple image filterer.
+  ihot - Fixes unsafe "hot" pixels in a image.
+  ilut - Generates a lookup table from channel data.
+  iquantize - Generates reduces color space images.
+  izg - Converts depth maps into grayscale images.
+  mcacclaim - Converts Acclaim motion file to a Houdini script and channel file.
+  mcbiovision - Converts BioVision motion file to a Houdini script and channel file.
+  mcmotanal - Converts Motion Analysis motion file to a Houdini script and channel file.
+
+And Editor plugins for the following graphical programs:
+  hmvplay - Houdini movie player.
+  ipaint - A simple image paint program.
+  redit - A simple ramp image editor.
+  spy - a text based graphical shell program.
