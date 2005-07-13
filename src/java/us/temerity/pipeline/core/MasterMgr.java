@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.134 2005/07/03 21:30:08 jim Exp $
+// $Id: MasterMgr.java,v 1.135 2005/07/13 18:15:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6543,7 +6543,7 @@ class MasterMgr
 	    throw new PipelineException
 	      ("The files associated with frozen node (" + nodeID + ") cannot be reverted!");
 
-	  writeable = mod.isActionEnabled();
+	  writeable = !mod.isActionEnabled();
 	}
 	finally {
 	  lock.readLock().unlock();
