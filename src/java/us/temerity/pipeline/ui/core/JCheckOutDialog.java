@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.4 2005/03/14 16:08:21 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.5 2005/07/13 18:08:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -230,7 +230,7 @@ class JCheckOutDialog
    TreeMap<String,TreeSet<VersionID>> versions, 
    TreeMap<String,TreeSet<VersionID>> offline
   )
-  { 
+  {
     pVersionIDs.clear(); 
     pLatestVersionFields.clear(); 
     pVersionFields.clear(); 
@@ -238,6 +238,9 @@ class JCheckOutDialog
     pMethodFields.clear(); 
 
     pVersionBox.removeAll();
+
+    pMasterModeField.setSelectedIndex(2);
+    pMasterMethodField.setSelectedIndex(0);
 
     if((versions == null) || (versions.isEmpty()))  {
       pMasterBox.setVisible(false);
