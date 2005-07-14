@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.20 2005/06/28 18:05:22 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.21 2005/07/14 23:28:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2079,13 +2079,13 @@ class JNodeDetailsPanel
     /* single valued parameters */ 
     if((action != null) && action.hasSingleParams()) {
       pLinkActionParamValues.clear();
+      pLinkActionParamValues.add("-");
       for(String sname : pStatus.getSourceNames()) 
 	pLinkActionParamValues.add(pStatus.getSource(sname).toString());
-      pLinkActionParamValues.add("-");
       
       pLinkActionParamNodeNames.clear();
-      pLinkActionParamNodeNames.addAll(pStatus.getSourceNames());
       pLinkActionParamNodeNames.add(null);
+      pLinkActionParamNodeNames.addAll(pStatus.getSourceNames());
 
       {
 	Box hbox = new Box(BoxLayout.X_AXIS);
