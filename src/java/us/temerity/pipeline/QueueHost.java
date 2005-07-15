@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.17 2005/05/31 09:38:53 jim Exp $
+// $Id: QueueHost.java,v 1.18 2005/07/15 23:41:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -92,6 +92,7 @@ class QueueHost
     switch(pStatus) {
     case Shutdown:
       pSamples.clear();
+      pNumJobs = null;
       break;
 
     case Hung:
@@ -436,8 +437,12 @@ class QueueHost
     assert(pSamples.isEmpty() || 
 	   (pSamples.getFirst().getTimeStamp().compareTo(sample.getTimeStamp()) < 0));
 
+    if(pNumJobs != null) 
+      sample.setNumJobs(pNumJobs);
+    else 
+      pNumJobs = sample.getNumJobs();
+
     pSamples.addFirst(sample);
-    pNumJobsDelta = 0;
   }
 
   /**
@@ -470,51 +475,35 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the change to the number of running jobs since the last resource sample.
-   */ 
-  public synchronized int 
-  getNumJobsDelta() 
-  {
-    return pNumJobsDelta;
-  }
-
-  /**
-   * Increment the number of running jobs since the last resource sample due to a new 
-   * job being started.
+   * Increment the number of running jobs.
    */ 
   public synchronized void 
   jobStarted() 
   {
-    pNumJobsDelta++;
+    assert(pNumJobs != null);
+    assert(pNumJobs >= 0);
+    pNumJobs++;
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Started [" + getName() + "]:  Delta = " + pNumJobsDelta);
+       "Job Started [" + getName() + "]:  Jobs = " + pNumJobs);
     LogMgr.getInstance().flush();
   }
 
   /**
-   * Decrement the number of running jobs since the last resource sample due to a 
-   * previously running job finishing.
-   * 
-   * @param results
-   *   The results of the job execution.
+   * Decrement the number of running jobs.
    */ 
   public synchronized void 
-  jobFinished
-  (
-   QueueJobResults results
-  ) 
+  jobFinished()
   {
-    if(results == null) 
-      return;
-
-    ResourceSample sample = getLatestSample();
-    if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0)) 
-      pNumJobsDelta--;
+    if(pNumJobs != null) {
+      pNumJobs--;
+      assert(pNumJobs >= 0);
+    }
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Finished [" + getName() + "]:  Delta = " + pNumJobsDelta);
+       "Job Finished [" + getName() + "]:  Jobs = " + pNumJobs);
     LogMgr.getInstance().flush();
   }
 
@@ -613,24 +602,35 @@ class QueueHost
   getAvailableSlots() 
   {
     ResourceSample sample = getLatestSample();
-    if(sample == null) 
+    if(sample == null) {
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       "Available Slots [" + getName() + "]:  No Samples Yet.  Jobs = " + pNumJobs);      
+
       return 0;
+    }
 
     Date now = Dates.now();
     if(((now.getTime() - sample.getTimeStamp().getTime()) > sSampleInterval) ||
-       (getHold().compareTo(now) > 0))
+       (getHold().compareTo(now) > 0)) {
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       "Available Slots [" + getName() + "]:  On Hold.  Jobs = " + pNumJobs);      
+
       return 0;
+    }
+
+    assert(pNumJobs != null);
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
        "Available Slots [" + getName() + "]:  " + 
-       "Jobs = " + sample.getNumJobs() + "  " + 
-       "Delta = " + pNumJobsDelta + "  " + 
-       "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
-       "Slots = " + pJobSlots);
+       "Jobs = " + pNumJobs + "  " + 
+       "Slots = " + pJobSlots + "  " + 
+       "Free = " + (pJobSlots - pNumJobs));
     LogMgr.getInstance().flush();
 
-    return (pJobSlots - (sample.getNumJobs() + pNumJobsDelta));
+    return Math.max(pJobSlots - pNumJobs, 0);
   }
 
 
@@ -902,9 +902,9 @@ class QueueHost
   private LinkedList<ResourceSample>  pSamples;
 
   /**
-   * The change to the number of running jobs since the last resource sample.
+   * The number of job currently running on the host or <CODE>null</CODE> if unknown.
    */ 
-  private int  pNumJobsDelta;
+  private Integer  pNumJobs;
 
 
   /*----------------------------------------------------------------------------------------*/

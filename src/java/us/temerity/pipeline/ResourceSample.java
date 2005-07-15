@@ -1,4 +1,4 @@
-// $Id: ResourceSample.java,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: ResourceSample.java,v 1.6 2005/07/15 23:41:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,6 +82,18 @@ class ResourceSample
   getNumJobs() 
   {
     return pNumJobs; 
+  }
+
+  /**
+   * Set the number of jobs running on the host.
+   */ 
+  public void
+  setNumJobs
+  (
+   int jobs
+  ) 
+  {
+    pNumJobs = jobs;
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.43 2005/07/15 20:10:45 jim Exp $
+// $Id: QueueMgr.java,v 1.44 2005/07/15 23:41:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1889,10 +1889,6 @@ class QueueMgr
 	ResourceSample sample = client.getResources();
 	samples.put(hname, sample);
 
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-	   "Collector - Jobs = " + sample.getNumJobs());
-
  	if(needsTotals.contains(hname)) {
 	  numProcs.put(hname, client.getNumProcessors());
  	  totalMemory.put(hname, client.getTotalMemory());
@@ -2262,7 +2258,7 @@ class QueueMgr
 
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-		 "Initial Slots [" + hostname + "] = " + slots + "\n");
+		 "Initial Slots [" + hostname + "]: Free = " + slots + "\n");
 	      LogMgr.getInstance().flush();
     
 	      while(slots > 0) {
@@ -2429,7 +2425,7 @@ class QueueMgr
 
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-		   "Updated Slots [" + hostname + "] = " + slots + "\n");
+		   "Updated Slots [" + hostname + "]:  Free = " + slots + "\n");
 		LogMgr.getInstance().flush();
 	      }
 	    }
@@ -3988,7 +3984,7 @@ class QueueMgr
       synchronized(pHosts) {
 	QueueHost host = pHosts.get(pHostname);
 	if(host != null) {
-	  host.jobFinished(results);
+	  host.jobFinished();
 	  host.cancelHold(pJobID);
 	}
       }      
