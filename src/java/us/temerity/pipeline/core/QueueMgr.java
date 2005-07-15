@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.42 2005/06/28 18:05:22 jim Exp $
+// $Id: QueueMgr.java,v 1.43 2005/07/15 20:10:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -846,6 +846,7 @@ class QueueMgr
 	    case Shutdown:
 	    case Hung:
 	      pHosts.remove(hname);
+	      JobMgrControlClient.serverUnreachable(hname);
 	      break;
 
 	    default:
@@ -959,7 +960,7 @@ class QueueMgr
 		  }	    
 		}
 		
-		host.setStatus(status);
+		setHostStatus(host, status);
 	      }
 	    }
 	  }
@@ -1039,6 +1040,23 @@ class QueueMgr
     return new SuccessRsp(timer);
   }
 
+  /**
+   * Helper for setting host status which interrupts any tasks waiting on the host.
+   */ 
+  private void 
+  setHostStatus
+  (
+   QueueHost host, 
+   QueueHost.Status status
+  ) 
+  {
+    switch(status) {
+    case Shutdown:
+      JobMgrControlClient.serverUnreachable(host.getName());
+    }
+    
+    host.setStatus(status);
+  }
 
   /**
    * Get the full system resource usage history of the given host.
@@ -1912,7 +1930,7 @@ class QueueMgr
       for(String hname : dead) {
 	QueueHost host = pHosts.get(hname);
 	if(host != null) 
-	  host.setStatus(QueueHost.Status.Shutdown);
+	  setHostStatus(host, QueueHost.Status.Shutdown);
       }
 
       for(String hname : hung) {
@@ -1921,9 +1939,9 @@ class QueueMgr
 	  Date lastHung = host.getLastHung();
 	  if((lastHung == null) || 
 	     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-	    host.setStatus(QueueHost.Status.Hung);
+	    setHostStatus(host, QueueHost.Status.Hung);
 	  else 
-	    host.setStatus(QueueHost.Status.Disabled);
+	    setHostStatus(host, QueueHost.Status.Disabled);
 	}
       }
 
@@ -1989,7 +2007,7 @@ class QueueMgr
 	switch(host.getStatus()) {
 	case Hung:
 	  if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
-	    host.setStatus(QueueHost.Status.Enabled);	      
+	    setHostStatus(host, QueueHost.Status.Enabled);	      
 	}
       }
     }
@@ -2648,9 +2666,9 @@ class QueueMgr
 	  Date lastHung = host.getLastHung();
 	  if((lastHung == null) || 
 	     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-	    host.setStatus(QueueHost.Status.Hung);
+	    setHostStatus(host, QueueHost.Status.Hung);
 	  else 
-	    host.setStatus(QueueHost.Status.Disabled);
+	    setHostStatus(host, QueueHost.Status.Disabled);
 	}
       
  	timer.aquire();

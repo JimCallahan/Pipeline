@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.18 2005/03/15 19:08:49 jim Exp $
+// $Id: BaseMgrClient.java,v 1.19 2005/07/15 20:10:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -414,6 +414,8 @@ class BaseMgrClient
   ) 
     throws PipelineException 
   {
+    pLongTransactionStart = new Date();
+
     try {
       pSocket.setSoTimeout(reqTimeout);
 
@@ -435,7 +437,7 @@ class BaseMgrClient
 	  rsp = objIn.readObject();
 	}
 	catch(SocketTimeoutException ex) {
-	  if(ex.bytesTransferred > 0) 
+	  if(isServerUnreachable() || (ex.bytesTransferred > 0)) 
 	    throw ex;
 	}
       }
@@ -456,6 +458,18 @@ class BaseMgrClient
 	("Illegal object encountered on port (" + pPort + "):\n" + 
 	 ex.getMessage());  
     }
+  }
+
+  /**
+   * Whether the server is no longer reachable communication should no longer be attempted.<P>
+   * 
+   * Subclasses which wish to force performLongTransaction() to give up before receiving
+   * a response should override this method to return <CODE>true</CODE>.
+   */ 
+  protected boolean 
+  isServerUnreachable() 
+  {
+    return false;
   }
 
   /**
@@ -529,10 +543,14 @@ class BaseMgrClient
   protected int  pPort;
 
   /**
+   * The timestamp of when a long transaction was started.
+   */ 
+  protected Date  pLongTransactionStart;
+
+  /**
    * The network socket connection.
    */
   private Socket  pSocket;
-
 
   /** 
    * The disconnect request.

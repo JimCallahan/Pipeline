@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.15 2005/04/03 06:10:12 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.16 2005/07/15 20:10:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -263,6 +263,41 @@ class JobMgrControlClient
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S E R V E R   M A N A G E M E N T                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the server is no longer reachable communication should no longer be attempted.<P>
+   * 
+   * Subclasses which wish to force performLongTransaction() to give up before receiving
+   * a response should override this method to return <CODE>true</CODE>.
+   */ 
+  protected boolean 
+  isServerUnreachable() 
+  {
+    Date stamp = sUnreachableServers.lastUnreachable(pHostname);
+    return ((stamp != null) && (pLongTransactionStart != null) && 
+	    (pLongTransactionStart.compareTo(stamp) < 0));
+  }
+
+  /**
+   * Mark a server has being unreachable().
+   * 
+   * @param hostname
+   *   The fully resolved name of the server host.
+   */ 
+  public static void 
+  serverUnreachable
+  (
+   String hostname
+  ) 
+  {
+    sUnreachableServers.unreachable(hostname);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
@@ -275,6 +310,13 @@ class JobMgrControlClient
     return ("Unable to contact the the pljobmgr(1) daemon running on " +
 	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static UnreachableServers  sUnreachableServers = new UnreachableServers();
 
 }
 
