@@ -1,4 +1,4 @@
-// $Id: MiscSetPluginMenuLayoutReq.java,v 1.2 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscSetPluginMenuLayoutReq.java,v 1.3 2005/07/15 02:15:05 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -43,11 +43,6 @@ class MiscSetPluginMenuLayoutReq
    PluginMenuLayout layout
   )
   {
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The package name cannot be (null)!");
-    pName = name;
-
     if(os == null) 
       throw new IllegalArgumentException
 	("The operating system cannot be (null)!");
