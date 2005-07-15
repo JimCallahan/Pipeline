@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.27 2005/06/28 18:05:22 jim Exp $
+// $Id: UIMaster.java,v 1.28 2005/07/15 06:48:03 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1497,6 +1497,33 @@ class UIMaster
   public void 
   doQuit()
   {
+    /* autosave layouts */ 
+    {
+      UserPrefs prefs = UserPrefs.getInstance();
+      String choice = prefs.getAutoSaveLayout();
+      if(choice.equals("Save Only") || choice.equals("Save & Make Default")) {
+	try {
+	  if(pLayoutName != null) 
+	    saveLayoutHelper();
+	  else {
+	    pSaveLayoutDialog.updateLayouts(pLayoutName);
+	    pSaveLayoutDialog.setVisible(true);
+	    if(pSaveLayoutDialog.wasConfirmed()) {
+	      String name = pSaveLayoutDialog.getSelectedName();
+	      if((name != null) && (name.length() > 0)) {
+		setLayoutName(name);	    
+		saveLayoutHelper();
+	      }
+	    }
+	  }
+
+	  if(choice.equals("Save & Make Default"))
+	    doDefaultLayout();
+	}
+	catch(Exception ex) {}
+      }
+    }
+
     if(pMasterMgrClient != null) 
       pMasterMgrClient.disconnect();
 

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -423,6 +423,21 @@ class GenUserPrefsApp
       };
 
       pPrefs.put("Main Menu|Tool Tips", prefs);
+    }
+
+    {
+      LinkedList<String> options = new LinkedList();
+      options.add("Disabled");
+      options.add("Save Only");
+      options.add("Save & Make Default");
+
+      BasePref prefs[] = {
+	new ChoicePref
+	("Whether to automatically save the current layout on exit.",
+	 "AutoSaveLayout", "Auto Save Layout:", options, "Disabled")
+      };
+
+      pPrefs.put("Main Menu|General", prefs);
     }
 
     {
@@ -1355,7 +1370,8 @@ class GenUserPrefsApp
     /* panel ordering */ 
     {
       pPrefPanels = new LinkedList<String>();
-      
+
+      pPrefPanels.add("Main Menu|General");
       pPrefPanels.add("Main Menu|Tool Tips");
       pPrefPanels.add("Main Menu|Hot Keys");
       pPrefPanels.add("Main Menu|Admin|Hot Keys");
@@ -1736,7 +1752,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1993,7 +2009,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3349,7 +3365,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.21 2005/06/28 18:05:22 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
