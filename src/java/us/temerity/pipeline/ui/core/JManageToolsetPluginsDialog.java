@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.2 2005/07/15 02:16:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -52,15 +52,32 @@ class JManageToolsetPluginsDialog
       pPluginPanels.add(new JToolsetActionPluginsPanel(parent, this));
       pPluginPanels.add(new JToolsetToolPluginsPanel(parent, this));
       
-      JTabbedPanel tab = new JTabbedPanel();
+      pTab = new JTabbedPanel();
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	tab.add(panel);
+	pTab.add(panel);
       
       String extra[][] = {
-	{ "Default", "default" }
+	null,
+	{ "Default",      "default" },
+	{ "Save Default", "save-default" }
       };
 
-      super.initUI("", false, tab, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = 
+	super.initUI("", false, pTab, "Confirm", "Apply", extra, "Close");
+
+      pDefaultButton     = btns[1];
+      pSaveDefaultButton = btns[2];
+
+      pConfirmButton.setToolTipText(UIFactory.formatToolTip
+        ("Save the current plugin menu layouts and close the dialog."));
+      pApplyButton.setToolTipText(UIFactory.formatToolTip
+        ("Save the current plugin menu layouts."));
+      pDefaultButton.setToolTipText(UIFactory.formatToolTip 				  
+        ("Replace the current plugin menu layout for the selected tab with the default " + 
+	 "menu layout for that plugin type."));
+      pSaveDefaultButton.setToolTipText(UIFactory.formatToolTip 			   
+        ("Save the current plugin menu layout for the selected tab as the default menu " + 
+	 "layout for that plugin type."));
     }
   }
 
@@ -122,6 +139,8 @@ class JManageToolsetPluginsDialog
 
       pConfirmButton.setEnabled(isPrivileged);
       pApplyButton.setEnabled(isPrivileged);
+      pDefaultButton.setEnabled(isPrivileged);
+      pSaveDefaultButton.setEnabled(isPrivileged);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -211,7 +230,9 @@ class JManageToolsetPluginsDialog
   {
     String cmd = e.getActionCommand();
     if(cmd.equals("default")) 
-      doDefault();
+      doDefaultLayout();
+    else if(cmd.equals("save-default")) 
+      doSaveDefaultLayout();
     else 
       super.actionPerformed(e);
   }
@@ -248,20 +269,35 @@ class JManageToolsetPluginsDialog
   }
   
   /**
-   * Replace with the default menu layouts.
+   * Reset the layout of the selected tab to the default menu layout.
    */ 
   public 
   void
-  doDefault() 
+  doDefaultLayout() 
   {
     try {
-      for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	panel.setDefault();
+      pPluginPanels.get(pTab.getSelectedIndex()).defaultLayout();
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
     }
   }
+
+  /**
+   * Save the current menu layout of the selected tab as the default layout.
+   */ 
+  public 
+  void
+  doSaveDefaultLayout() 
+  {
+    try {
+      pPluginPanels.get(pTab.getSelectedIndex()).saveDefaultLayout();
+    }
+    catch(PipelineException ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+    }
+  }
+
 
 
 
@@ -288,9 +324,19 @@ class JManageToolsetPluginsDialog
   private String pToolsetName;
 
   /**
+   * The container of the plugin tabs.
+   */ 
+  private JTabbedPanel  pTab; 
+
+  /**
    * The panels for each plugin type.
    */
   private ArrayList<JBaseToolsetPluginsPanel>  pPluginPanels; 
 
+  /**
+   * Footer buttons.
+   */ 
+  private JButton  pDefaultButton;
+  private JButton  pSaveDefaultButton;
 
 }

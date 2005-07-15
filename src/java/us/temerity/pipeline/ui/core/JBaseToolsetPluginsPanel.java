@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.2 2005/07/15 02:16:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -271,6 +271,20 @@ class JBaseToolsetPluginsPanel
     return pMenuLayout;
   }
 
+  /**
+   * Is the given plugin version supported by the toolset?
+   */ 
+  public boolean
+  isPluginSupported
+  (
+   String name,
+   VersionID vid
+  ) 
+  {
+    TreeSet<VersionID> vids = pPluginVersions.get(name);
+    return ((vids != null) && vids.contains(vid));
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -442,10 +456,17 @@ class JBaseToolsetPluginsPanel
   }
    
   /**
-   * Replace with the default menu layout.
+   * Reset the layout to the default menu lauyout.
    */ 
   public abstract void 
-  setDefault() 
+  defaultLayout() 
+    throws PipelineException;
+
+  /**
+   * Save the current menu layout as the default layout.
+   */ 
+  public abstract void 
+  saveDefaultLayout() 
     throws PipelineException;
 
   

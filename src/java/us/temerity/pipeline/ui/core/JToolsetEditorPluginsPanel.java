@@ -1,4 +1,4 @@
-// $Id: JToolsetEditorPluginsPanel.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: JToolsetEditorPluginsPanel.java,v 1.2 2005/07/15 02:16:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -91,10 +91,10 @@ class JToolsetEditorPluginsPanel
   }
 
   /**
-   * Replace with the default menu layout.
+   * Reset the layout to the default menu lauyout.
    */ 
   public void 
-  setDefault() 
+  defaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
@@ -102,6 +102,18 @@ class JToolsetEditorPluginsPanel
     PluginMenuLayout layout = client.getEditorMenuLayout(pToolsetOsType);
     setLayout(pToolsetName, pToolsetOsType, layout);
     updateDefault(layout);
+  }
+
+  /**
+   * Save the current menu layout as the default layout.
+   */ 
+  public void 
+  saveDefaultLayout() 
+    throws PipelineException
+  {
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
+    client.setEditorMenuLayout(pToolsetOsType, getLayout(pToolsetName, pToolsetOsType));
   }
 
 

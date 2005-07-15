@@ -1,4 +1,4 @@
-// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.4 2005/06/28 18:05:22 jim Exp $
+// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.5 2005/07/15 02:16:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -84,19 +84,25 @@ class JPluginMenuLayoutTreeCellRenderer
 
     pLabel.setText(pml.getTitle()); 
 
-    if(tnode == pParent.getDragMenuLayoutNode())
-      pLabel.setForeground(Color.cyan);
-    else 
-      pLabel.setForeground(isSelected ? Color.yellow : Color.white);
-
+    Color itemColor = Color.white;
     if(pml.isMenuItem()) {
       pLabel.setIcon(isSelected ? sSelectedIcon : sNormalIcon);
       pPluginLabel.setText(pml.getName() + " (v" + pml.getVersionID() + ")");      
+      
+      if(!pParent.isPluginSupported(pml.getName(), pml.getVersionID()))
+	itemColor = new Color(0.8f, 0.8f, 0.8f);
     }
     else {
       pLabel.setIcon(sSpacerIcon);
       pPluginLabel.setText(null);
     }
+
+    pPluginLabel.setForeground(itemColor);
+
+    if(tnode == pParent.getDragMenuLayoutNode())
+      pLabel.setForeground(Color.cyan);
+    else 
+      pLabel.setForeground(isSelected ? Color.yellow : itemColor);
 
     int depth = tnode.getPath().length;
     Dimension size = new Dimension(500-23*depth, 23);
