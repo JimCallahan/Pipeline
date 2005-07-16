@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.34 2005/06/28 18:05:22 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.35 2005/07/16 22:42:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1319,6 +1319,7 @@ class JNodeViewerPanel
       }
    
       /* preserve the current layout */ 
+      pExpandDepth  = null; 
       pLayoutPolicy = LayoutPolicy.Preserve;
     }
 
@@ -1381,26 +1382,34 @@ class JNodeViewerPanel
      UIMaster master = UIMaster.getInstance();
      if((upstream && status.hasSources()) || 
 	(!upstream && status.hasTargets() && !isRoot)) {
-       switch(pLayoutPolicy) {
-       case Preserve:
-	 vnode.setCollapsed(master.wasNodeCollapsed(path.toString()));
-	 break;
+
+       if(pExpandDepth != null) {
+	 boolean collapsed = (path.getNumNodes() >= pExpandDepth);
+	 vnode.setCollapsed(collapsed); 
+	 master.setNodeCollapsed(path.toString(), collapsed);
+       }
+       else {
+	 switch(pLayoutPolicy) {
+	 case Preserve:
+	   vnode.setCollapsed(master.wasNodeCollapsed(path.toString()));
+	   break;
+	   
+	 case AutomaticExpand:
+	   {
+	     boolean collapsed = seen.contains(status.getName());
+	     vnode.setCollapsed(collapsed);
+	     master.setNodeCollapsed(path.toString(), collapsed);
+	   }
+	   break;
 	 
-       case AutomaticExpand:
-	 {
-	   boolean collapsed = seen.contains(status.getName());
-	   vnode.setCollapsed(collapsed);
-	   master.setNodeCollapsed(path.toString(), collapsed);
+	 case CollapseAll:
+	   vnode.setCollapsed(true);
+	   master.setNodeCollapsed(path.toString(), true);
+	   break;
+	   
+	 case ExpandAll:
+	   master.setNodeCollapsed(path.toString(), false);	   
 	 }
-	 break;
-	 
-       case CollapseAll:
-	 vnode.setCollapsed(true);
-	 master.setNodeCollapsed(path.toString(), true);
-	 break;
-	 
-       case ExpandAll:
-	 master.setNodeCollapsed(path.toString(), false);	   
        }
      }
        
@@ -2382,6 +2391,34 @@ class JNodeViewerPanel
       else if((prefs.getExpandAll() != null) &&
 	      prefs.getExpandAll().wasPressed(e))
 	doExpandAll();
+
+      else if((prefs.getExpand1Level() != null) &&
+	      prefs.getExpand1Level().wasPressed(e))
+	doExpandDepth(1);
+      else if((prefs.getExpand2Levels() != null) &&
+	      prefs.getExpand2Levels().wasPressed(e))
+	doExpandDepth(2);
+      else if((prefs.getExpand3Levels() != null) &&
+	      prefs.getExpand3Levels().wasPressed(e))
+	doExpandDepth(3);
+      else if((prefs.getExpand4Levels() != null) &&
+	      prefs.getExpand4Levels().wasPressed(e))
+	doExpandDepth(4);
+      else if((prefs.getExpand5Levels() != null) &&
+	      prefs.getExpand5Levels().wasPressed(e))
+	doExpandDepth(5);
+      else if((prefs.getExpand6Levels() != null) &&
+	      prefs.getExpand6Levels().wasPressed(e))
+	doExpandDepth(6);
+      else if((prefs.getExpand7Levels() != null) &&
+	      prefs.getExpand7Levels().wasPressed(e))
+	doExpandDepth(7);
+      else if((prefs.getExpand8Levels() != null) &&
+	      prefs.getExpand8Levels().wasPressed(e))
+	doExpandDepth(8);
+      else if((prefs.getExpand9Levels() != null) &&
+	      prefs.getExpand9Levels().wasPressed(e))
+	doExpandDepth(9);
       
       else if((prefs.getNodeViewerShowHideDownstreamNodes() != null) &&
 		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
@@ -3667,12 +3704,26 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Set a fixed node expansion depth.
+   */
+  private void 
+  doExpandDepth
+  (
+   int depth
+  ) 
+  {
+    pExpandDepth = depth;
+    updateUniverse();
+  }
+
+  /**
    * Change to layout policy to <CODE>AutomaticExpand</CODE> and relayout the nodes.
    */ 
   private void
   doAutomaticExpand()
   {
     clearSelection();
+    pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
     updateUniverse();
   }
@@ -3684,6 +3735,7 @@ class JNodeViewerPanel
   doExpandAll()
   {
     clearSelection();
+    pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
     updateUniverse();
   }
@@ -3695,6 +3747,7 @@ class JNodeViewerPanel
   doCollapseAll()
   {
     clearSelection();
+    pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
     updateUniverse();
   }

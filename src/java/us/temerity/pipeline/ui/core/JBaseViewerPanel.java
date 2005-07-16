@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.9 2005/06/14 13:37:55 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.10 2005/07/16 22:42:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -760,6 +760,12 @@ class JBaseViewerPanel
    */ 
   protected boolean  pRefreshScene;
 
+
+  /**
+   * A fixed depth of nodes to expand or <CODE>null</CODE> to use the LayoutPolicy to 
+   * determine whether to expand/collapse.
+   */ 
+  protected Integer  pExpandDepth; 
 
   /**
    * The expand/collapse policy to use during layout.

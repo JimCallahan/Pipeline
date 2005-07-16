@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.15 2005/06/28 18:05:22 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.16 2005/07/16 22:42:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -719,6 +719,7 @@ class JQueueJobViewerPanel
       }
 	
       /* preserve the current layout */ 
+      pExpandDepth  = null; 
       pLayoutPolicy = LayoutPolicy.Preserve;
     }
    
@@ -778,17 +779,22 @@ class JQueueJobViewerPanel
     created.add(vjob);
 
     if(status.hasSources() && !vjob.isExternal()) {
-      switch(pLayoutPolicy) {
-      case Preserve:
-	vjob.setCollapsed(wasCollapsed.contains(path));
-	break;
-	
-      case AutomaticExpand:
-	vjob.setCollapsed(seen.contains(status.getJobID()));
-	break;
-	
-      case CollapseAll:
-	vjob.setCollapsed(true);
+      if(pExpandDepth != null) {
+	vjob.setCollapsed(path.getNumJobs() >= pExpandDepth);
+      }
+      else {
+	switch(pLayoutPolicy) {
+	case Preserve:
+	  vjob.setCollapsed(wasCollapsed.contains(path));
+	  break;
+	  
+	case AutomaticExpand:
+	  vjob.setCollapsed(seen.contains(status.getJobID()));
+	  break;
+	  
+	case CollapseAll:
+	  vjob.setCollapsed(true);
+	}
       }
     }
 
@@ -1660,6 +1666,34 @@ class JQueueJobViewerPanel
 	      prefs.getExpandAll().wasPressed(e))
 	doExpandAll();
 
+      else if((prefs.getExpand1Level() != null) &&
+	      prefs.getExpand1Level().wasPressed(e))
+	doExpandDepth(1);
+      else if((prefs.getExpand2Levels() != null) &&
+	      prefs.getExpand2Levels().wasPressed(e))
+	doExpandDepth(2);
+      else if((prefs.getExpand3Levels() != null) &&
+	      prefs.getExpand3Levels().wasPressed(e))
+	doExpandDepth(3);
+      else if((prefs.getExpand4Levels() != null) &&
+	      prefs.getExpand4Levels().wasPressed(e))
+	doExpandDepth(4);
+      else if((prefs.getExpand5Levels() != null) &&
+	      prefs.getExpand5Levels().wasPressed(e))
+	doExpandDepth(5);
+      else if((prefs.getExpand6Levels() != null) &&
+	      prefs.getExpand6Levels().wasPressed(e))
+	doExpandDepth(6);
+      else if((prefs.getExpand7Levels() != null) &&
+	      prefs.getExpand7Levels().wasPressed(e))
+	doExpandDepth(7);
+      else if((prefs.getExpand8Levels() != null) &&
+	      prefs.getExpand8Levels().wasPressed(e))
+	doExpandDepth(8);
+      else if((prefs.getExpand9Levels() != null) &&
+	      prefs.getExpand9Levels().wasPressed(e))
+	doExpandDepth(9);      
+
       else
 	undefined = true;
     } 
@@ -1840,12 +1874,26 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Set a fixed job expansion depth.
+   */
+  private void 
+  doExpandDepth
+  (
+   int depth
+  ) 
+  {
+    pExpandDepth = depth;
+    updateUniverse();
+  }
+
+  /**
    * Change to layout policy to <CODE>AutomaticExpand</CODE> and relayout the jobs.
    */ 
   private void
   doAutomaticExpand()
   {
     clearSelection();
+    pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
     updateUniverse();
   }
@@ -1857,6 +1905,7 @@ class JQueueJobViewerPanel
   doExpandAll()
   {
     clearSelection();
+    pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
     updateUniverse();
   }
@@ -1868,6 +1917,7 @@ class JQueueJobViewerPanel
   doCollapseAll()
   {
     clearSelection();
+    pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
     updateUniverse();
   }

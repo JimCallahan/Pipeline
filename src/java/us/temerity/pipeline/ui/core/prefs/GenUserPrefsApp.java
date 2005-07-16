@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -783,6 +783,53 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
+	("Expand 1 level of nodes.",
+	 "Expand1Level", "Expand 1 Level:", 
+	 false, true, false, 49),  /* ALT+1 */
+
+	new HotKeyPref
+	("Expand the first 2 levels of nodes.",
+	 "Expand2Levels", "Expand 2 Levels:", 
+	 false, true, false, 50),  /* ALT+2 */
+
+	new HotKeyPref
+	("Expand the first 3 levels of nodes.",
+	 "Expand3Levels", "Expand 3 Levels:", 
+	 false, true, false, 51),  /* ALT+3 */
+
+	new HotKeyPref
+	("Expand the first 4 levels of nodes.",
+	 "Expand4Levels", "Expand 4 Levels:", 
+	 false, true, false, 52),  /* ALT+4 */
+
+	new HotKeyPref
+	("Expand the first 5 levels of nodes.",
+	 "Expand5Levels", "Expand 5 Levels:", 
+	 false, true, false, 53),  /* ALT+5 */
+
+	new HotKeyPref
+	("Expand the first 6 levels of nodes.",
+	 "Expand6Levels", "Expand 6 Levels:", 
+	 false, true, false, 54),  /* ALT+6 */
+
+	new HotKeyPref
+	("Expand the first 7 levels of nodes.",
+	 "Expand7Levels", "Expand 7 Levels:", 
+	 false, true, false, 55),  /* ALT+7 */
+
+	new HotKeyPref
+	("Expand the first 8 levels of nodes.",
+	 "Expand8Levels", "Expand 8 Levels:", 
+	 false, true, false, 56),  /* ALT+8 */
+
+	new HotKeyPref
+	("Expand the first 9 levels of nodes.",
+	 "Expand9Levels", "Expand 9 Levels:", 
+	 false, true, false, 57),  /* ALT+9 */
+
+	new BasePref(),
+
+	new HotKeyPref
 	("Show/hide nodes downstream of the focus node.",
 	 "NodeViewerShowHideDownstreamNodes", "Show/Hide Downstream:", 
 	 false, false, false, 68),  /* D */
@@ -1217,6 +1264,45 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Collapse all jobs.",
 	 "JobViewerCollapseAll", "Collapse All:", "CollapseAll"), 
+
+	new BasePref(),
+
+	new DuplicateHotKeyPref
+	("Expand 1 level of jobs.",
+	 "JobViewerExpand1Level", "Expand 1 Level:", "Expand1Level"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 2 levels of jobs.",
+	 "JobViewerExpand2Levels", "Expand 2 Levels:", "Expand2Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 3 levels of jobs.",
+	 "JobViewerExpand3Levels", "Expand 3 Levels:", "Expand3Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 4 levels of jobs.",
+	 "JobViewerExpand4Levels", "Expand 4 Levels:", "Expand4Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 5 levels of jobs.",
+	 "JobViewerExpand5Levels", "Expand 5 Levels:", "Expand5Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 6 levels of jobs.",
+	 "JobViewerExpand6Levels", "Expand 6 Levels:", "Expand6Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 7 levels of jobs.",
+	 "JobViewerExpand7Levels", "Expand 7 Levels:", "Expand7Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 8 levels of jobs.",
+	 "JobViewerExpand8Levels", "Expand 8 Levels:", "Expand8Levels"), 
+
+	new DuplicateHotKeyPref
+	("Expand the first 9 levels of jobs.",
+	 "JobViewerExpand9Levels", "Expand 9 Levels:", "Expand9Levels"), 
+	
       };
 
       pPrefs.put("Panels|Job Viewer|Hot Keys", prefs);
@@ -1506,6 +1592,15 @@ class GenUserPrefsApp
 	camera.add("AutomaticExpand");
 	camera.add("CollapseAll");
 	camera.add("ExpandAll");	
+	camera.add("Expand1Level");	
+	camera.add("Expand2Levels");	
+	camera.add("Expand3Levels");	
+	camera.add("Expand4Levels");	
+	camera.add("Expand5Levels");	
+	camera.add("Expand6Levels");	
+	camera.add("Expand7Levels");	
+	camera.add("Expand8Levels");	
+	camera.add("Expand9Levels");	
       }
       
       String details      = "Details";
@@ -1752,7 +1847,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2009,7 +2104,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3365,7 +3460,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.22 2005/07/15 06:48:03 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
