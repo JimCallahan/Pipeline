@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.21 2005/06/28 18:05:22 jim Exp $
+// $Id: JManagerPanel.java,v 1.22 2005/07/16 22:42:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2691,6 +2691,7 @@ class JManagerPanel
 
     if(diag.wasConfirmed()) {
       UIMaster master = UIMaster.getInstance();
+      master.doUponExit();
       master.getQueueMgrClient().disconnect();
 
       try {

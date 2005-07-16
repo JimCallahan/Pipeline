@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.28 2005/07/15 06:48:03 jim Exp $
+// $Id: UIMaster.java,v 1.29 2005/07/16 22:42:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1492,10 +1492,10 @@ class UIMaster
   }
 
   /**
-   * Close the network connection and exit.
+   * Perform any tasks which should occur before exiting.
    */ 
-  public void 
-  doQuit()
+  public void
+  doUponExit()
   {
     /* autosave layouts */ 
     {
@@ -1524,14 +1524,6 @@ class UIMaster
       }
     }
 
-    if(pMasterMgrClient != null) 
-      pMasterMgrClient.disconnect();
-
-    if(pQueueMgrClient != null) 
-      pQueueMgrClient.disconnect();
-
-    PluginMgrClient.getInstance().disconnect();
-
     /* save the collapsed node paths */ 
     synchronized(pCollapsedNodePaths) {
       File file = new File(PackageInfo.sHomeDir, 
@@ -1551,6 +1543,23 @@ class UIMaster
 	}
       }
     }
+  }
+
+  /**
+   * Close the network connection and exit.
+   */ 
+  public void 
+  doQuit()
+  {
+    doUponExit();
+
+    if(pMasterMgrClient != null) 
+      pMasterMgrClient.disconnect();
+
+    if(pQueueMgrClient != null) 
+      pQueueMgrClient.disconnect();
+
+    PluginMgrClient.getInstance().disconnect();
 
     /* give the sockets time to disconnect cleanly */ 
     try {
