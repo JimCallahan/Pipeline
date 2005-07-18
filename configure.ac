@@ -852,45 +852,48 @@ java_gc_opts="-XX:+UseParallelGC"
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_GC_OPTS)
-pl_master_min_heap_size=$(($PL_MASTER_HEAP_SIZE / 4))
-PLMASTER_GC_OPTS="${java_gc_opts} -Xms${pl_master_min_heap_size} -Xmx${PL_MASTER_HEAP_SIZE}"
+max_heap_size=$(($PL_MASTER_HEAP_SIZE / (1024*1024) ))
+min_heap_size=$(($max_heap_size / 16))
+PLMASTER_GC_OPTS="${java_gc_opts} -Xms${min_heap_size}M -Xmx${max_heap_size}M"
 AC_MSG_RESULT([$PLMASTER_GC_OPTS])
 
 AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_GC_OPTS)
-pl_file_min_heap_size=$(($PL_FILE_HEAP_SIZE / 4))
-PLFILEMGR_GC_OPTS="${java_gc_opts} -Xms${pl_file_min_heap_size} -Xmx${PL_FILE_HEAP_SIZE}"
+max_heap_size=$(($PL_FILE_HEAP_SIZE / (1024*1024) ))
+min_heap_size=$(($max_heap_size / 16))
+PLFILEMGR_GC_OPTS="${java_gc_opts} -Xms${min_heap_size}M -Xmx${max_heap_size}M"
 AC_MSG_RESULT([$PLFILEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plplugin])
 AC_SUBST(PLPLUGIN_GC_OPTS)
-PLPLUGIN_GC_OPTS="${java_gc_opts} -Xms32M -Xmx128M"
+PLPLUGIN_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
 AC_MSG_RESULT([$PLPLUGIN_GC_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
 AC_SUBST(PLQUEUEMGR_GC_OPTS)
-pl_queue_min_heap_size=$(($PL_QUEUE_HEAP_SIZE / 4))
-PLQUEUEMGR_GC_OPTS="${java_gc_opts} -Xms${pl_queue_min_heap_size} -Xmx${PL_QUEUE_HEAP_SIZE}"
+max_heap_size=$(($PL_QUEUE_HEAP_SIZE / (1024*1024) ))
+min_heap_size=$(($max_heap_size / 16))
+PLQUEUEMGR_GC_OPTS="${java_gc_opts} -Xms${min_heap_size}M -Xmx${max_heap_size}M"
 AC_MSG_RESULT([$PLQUEUEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([pljobmgr])
 AC_SUBST(PLJOBMGR_GC_OPTS)
-PLJOBMGR_GC_OPTS="${java_gc_opts} -Xms32M -Xmx128M"
+PLJOBMGR_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
 AC_MSG_RESULT([$PLJOBMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_GC_OPTS)
-PLUI_GC_OPTS="${java_gc_opts} -Xms64M -Xmx512M"
+PLUI_GC_OPTS="${java_gc_opts} -Xms32M -Xmx512M"
 AC_MSG_RESULT([$PLUI_GC_OPTS])
 
 AC_MSG_CHECKING([plscript])
 AC_SUBST(PLSCRIPT_GC_OPTS)
-PLSCRIPT_GC_OPTS="${java_gc_opts} -Xms32M -Xmx256M"
+PLSCRIPT_GC_OPTS="${java_gc_opts} -Xms16M -Xmx256M"
 AC_MSG_RESULT([$PLSCRIPT_GC_OPTS])
 
 AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_GC_OPTS)
-PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms32M -Xmx128M"
+PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms16M -Xmx128M"
 AC_MSG_RESULT([$PLPLUGINMGR_GC_OPTS])
 
 AC_MSG_RESULT([ ])
