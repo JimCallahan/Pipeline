@@ -1,4 +1,4 @@
-EditorMenuLayout <PluginMenuLayout> #1 {
+EditorsMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
@@ -53,89 +53,75 @@ EditorMenuLayout <PluginMenuLayout> #1 {
             RevisionNumber <String> #41 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #42 {
-          Title <String> #43 { "Preview" }
-          Name <String> #44 { "Preview" }
-          VersionID <VersionID> #45 {
-            RevisionNumber <String> #46 { "1.0.0" }
-          }
-        }
       }
     }
-    <PluginMenuLayout> #47 {
-      Title <String> #48 { "3D Apps" }
-      Children <LinkedList> #49 {
+    <PluginMenuLayout> #42 {
+      Title <String> #43 { "3D Apps" }
+      Children <LinkedList> #44 {
+        <PluginMenuLayout> #45 {
+          Title <String> #46 { "Maya" }
+          Name <String> #47 { "Maya" }
+          VersionID <VersionID> #48 {
+            RevisionNumber <String> #49 { "1.1.0" }
+          }
+        }
         <PluginMenuLayout> #50 {
-          Title <String> #51 { "Maya" }
-          Name <String> #52 { "Maya" }
+          Title <String> #51 { "Houdini" }
+          Name <String> #52 { "Houdini" }
           VersionID <VersionID> #53 {
-            RevisionNumber <String> #54 { "1.1.0" }
+            RevisionNumber <String> #54 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #55 {
-          Title <String> #56 { "Houdini" }
-          Name <String> #57 { "Houdini" }
+          Title <String> #56 { "Open Inventor" }
+          Name <String> #57 { "IvView" }
           VersionID <VersionID> #58 {
             RevisionNumber <String> #59 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #60 {
-          Title <String> #61 { "Open Inventor" }
-          Name <String> #62 { "IvView" }
-          VersionID <VersionID> #63 {
-            RevisionNumber <String> #64 { "1.0.0" }
-          }
-        }
       }
     }
-    <PluginMenuLayout> #65 {
-      Title <String> #66 { "Documents" }
-      Children <LinkedList> #67 {
+    <PluginMenuLayout> #60 {
+      Title <String> #61 { "Documents" }
+      Children <LinkedList> #62 {
+        <PluginMenuLayout> #63 {
+          Title <String> #64 { "Emacs" }
+          Name <String> #65 { "Emacs" }
+          VersionID <VersionID> #66 {
+            RevisionNumber <String> #67 { "1.1.0" }
+          }
+        }
         <PluginMenuLayout> #68 {
-          Title <String> #69 { "Emacs" }
-          Name <String> #70 { "Emacs" }
+          Title <String> #69 { "GEdit" }
+          Name <String> #70 { "GEdit" }
           VersionID <VersionID> #71 {
-            RevisionNumber <String> #72 { "1.1.0" }
+            RevisionNumber <String> #72 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #73 {
-          Title <String> #74 { "GEdit" }
-          Name <String> #75 { "GEdit" }
+          Title <String> #74 { "XDvi" }
+          Name <String> #75 { "XDvi" }
           VersionID <VersionID> #76 {
             RevisionNumber <String> #77 { "1.0.0" }
           }
         }
         <PluginMenuLayout> #78 {
-          Title <String> #79 { "XDvi" }
-          Name <String> #80 { "XDvi" }
+          Title <String> #79 { "Acroread" }
+          Name <String> #80 { "Acroread" }
           VersionID <VersionID> #81 {
             RevisionNumber <String> #82 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #83 {
-          Title <String> #84 { "Acroread" }
-          Name <String> #85 { "Acroread" }
-          VersionID <VersionID> #86 {
-            RevisionNumber <String> #87 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #88 {
-          Title <String> #89 { "Text Edit" }
-          Name <String> #90 { "TextEdit" }
-          VersionID <VersionID> #91 {
-            RevisionNumber <String> #92 { "1.0.0" }
-          }
-        }
       }
     }
-    <PluginMenuLayout> #93 {
-      Title <String> #94 { "Utils" }
-      Children <LinkedList> #95 {
-        <PluginMenuLayout> #96 {
-          Title <String> #97 { "Terminal" }
-          Name <String> #98 { "Terminal" }
-          VersionID <VersionID> #99 {
-            RevisionNumber <String> #100 { "1.1.0" }
+    <PluginMenuLayout> #83 {
+      Title <String> #84 { "Utils" }
+      Children <LinkedList> #85 {
+        <PluginMenuLayout> #86 {
+          Title <String> #87 { "Terminal" }
+          Name <String> #88 { "Terminal" }
+          VersionID <VersionID> #89 {
+            RevisionNumber <String> #90 { "1.1.0" }
           }
         }
       }

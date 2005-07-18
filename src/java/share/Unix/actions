@@ -1,4 +1,4 @@
-ActionMenuLayout <PluginMenuLayout> #1 {
+ActionsMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
@@ -73,212 +73,289 @@ ActionMenuLayout <PluginMenuLayout> #1 {
           }
         }
         <PluginMenuLayout> #55 {
-          Title <String> #56 { "HfsGEO" }
-          Name <String> #57 { "HfsGEO" }
+          Title <String> #56 { "HfsBuild" }
+          Name <String> #57 { "HfsBuild" }
           VersionID <VersionID> #58 {
-            RevisionNumber <String> #59 { "1.0.0" }
+            RevisionNumber <String> #59 { "1.1.0" }
           }
         }
         <PluginMenuLayout> #60 {
-          Title <String> #61 { "HfsRender" }
-          Name <String> #62 { "HfsRender" }
+          Title <String> #61 { "HfsScript" }
+          Name <String> #62 { "HfsScript" }
           VersionID <VersionID> #63 {
-            RevisionNumber <String> #64 { "1.0.0" }
+            RevisionNumber <String> #64 { "1.1.0" }
+          }
+        }
+        <PluginMenuLayout> #65 {
+          Title <String> #66 { "HfsClip" }
+          Name <String> #67 { "HfsClip" }
+          VersionID <VersionID> #68 {
+            RevisionNumber <String> #69 { "1.1.0" }
+          }
+        }
+        <PluginMenuLayout> #70 {
+          Title <String> #71 { "HfsGEO" }
+          Name <String> #72 { "HfsGEO" }
+          VersionID <VersionID> #73 {
+            RevisionNumber <String> #74 { "1.2.0" }
+          }
+        }
+        <PluginMenuLayout> #75 {
+          Title <String> #76 { "HfsGConvert" }
+          Name <String> #77 { "HfsGConvert" }
+          VersionID <VersionID> #78 {
+            RevisionNumber <String> #79 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #80 {
+          Title <String> #81 { "HfsEnvCube" }
+          Name <String> #82 { "HfsEnvCube" }
+          VersionID <VersionID> #83 {
+            RevisionNumber <String> #84 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #85 {
+          Title <String> #86 { "HfsEnvMap" }
+          Name <String> #87 { "HfsEnvMap" }
+          VersionID <VersionID> #88 {
+            RevisionNumber <String> #89 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #90 {
+          Title <String> #91 { "HfsRender" }
+          Name <String> #92 { "HfsRender" }
+          VersionID <VersionID> #93 {
+            RevisionNumber <String> #94 { "1.1.0" }
+          }
+        }
+        <PluginMenuLayout> #95 {
+          Title <String> #96 { "HfsGenerate" }
+          Name <String> #97 { "HfsGenerate" }
+          VersionID <VersionID> #98 {
+            RevisionNumber <String> #99 { "1.1.0" }
+          }
+        }
+        <PluginMenuLayout> #100 {
+          Title <String> #101 { "HfsMantra" }
+          Name <String> #102 { "HfsMantra" }
+          VersionID <VersionID> #103 {
+            RevisionNumber <String> #104 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #105 {
+          Title <String> #106 { "HfsIConvert" }
+          Name <String> #107 { "HfsIConvert" }
+          VersionID <VersionID> #108 {
+            RevisionNumber <String> #109 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #110 {
+          Title <String> #111 { "HfsComposite" }
+          Name <String> #112 { "HfsComposite" }
+          VersionID <VersionID> #113 {
+            RevisionNumber <String> #114 { "1.1.0" }
+          }
+        }
+        <PluginMenuLayout> #115 {
+          Title <String> #116 { "HfsComposite OLD" }
+          Name <String> #117 { "HfsComposite" }
+          VersionID <VersionID> #118 {
+            RevisionNumber <String> #119 { "1.0.0" }
           }
         }
       }
     }
-    <PluginMenuLayout> #65 {
-      Title <String> #66 { "AIR" }
-      Children <LinkedList> #67 {
-        <PluginMenuLayout> #68 {
-          Title <String> #69 { "AirRender" }
-          Name <String> #70 { "AirRender" }
-          VersionID <VersionID> #71 {
-            RevisionNumber <String> #72 { "1.0.0" }
+    <PluginMenuLayout> #120 {
+      Title <String> #121 { "AIR" }
+      Children <LinkedList> #122 {
+        <PluginMenuLayout> #123 {
+          Title <String> #124 { "AirRender" }
+          Name <String> #125 { "AirRender" }
+          VersionID <VersionID> #126 {
+            RevisionNumber <String> #127 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #73 {
-          Title <String> #74 { "AirTexture" }
-          Name <String> #75 { "AirTexture" }
-          VersionID <VersionID> #76 {
-            RevisionNumber <String> #77 { "1.0.0" }
+        <PluginMenuLayout> #128 {
+          Title <String> #129 { "AirTexture" }
+          Name <String> #130 { "AirTexture" }
+          VersionID <VersionID> #131 {
+            RevisionNumber <String> #132 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #78 {
-          Title <String> #79 { "AirShadow" }
-          Name <String> #80 { "AirShadow" }
-          VersionID <VersionID> #81 {
-            RevisionNumber <String> #82 { "1.0.0" }
+        <PluginMenuLayout> #133 {
+          Title <String> #134 { "AirShadow" }
+          Name <String> #135 { "AirShadow" }
+          VersionID <VersionID> #136 {
+            RevisionNumber <String> #137 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #83 {
-          Title <String> #84 { "AirEnvMap" }
-          Name <String> #85 { "AirEnvMap" }
-          VersionID <VersionID> #86 {
-            RevisionNumber <String> #87 { "1.0.0" }
+        <PluginMenuLayout> #138 {
+          Title <String> #139 { "AirEnvMap" }
+          Name <String> #140 { "AirEnvMap" }
+          VersionID <VersionID> #141 {
+            RevisionNumber <String> #142 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #88 {
-          Title <String> #89 { "AirEnvCube" }
-          Name <String> #90 { "AirEnvCube" }
-          VersionID <VersionID> #91 {
-            RevisionNumber <String> #92 { "1.0.0" }
+        <PluginMenuLayout> #143 {
+          Title <String> #144 { "AirEnvCube" }
+          Name <String> #145 { "AirEnvCube" }
+          VersionID <VersionID> #146 {
+            RevisionNumber <String> #147 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #93 {
-          Title <String> #94 { "AirShader" }
-          Name <String> #95 { "AirShader" }
-          VersionID <VersionID> #96 {
-            RevisionNumber <String> #97 { "1.0.0" }
+        <PluginMenuLayout> #148 {
+          Title <String> #149 { "AirShader" }
+          Name <String> #150 { "AirShader" }
+          VersionID <VersionID> #151 {
+            RevisionNumber <String> #152 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #98 {
-          Title <String> #99 { "AirShaderDS" }
-          Name <String> #100 { "AirShaderDS" }
-          VersionID <VersionID> #101 {
-            RevisionNumber <String> #102 { "1.0.0" }
+        <PluginMenuLayout> #153 {
+          Title <String> #154 { "AirShaderDS" }
+          Name <String> #155 { "AirShaderDS" }
+          VersionID <VersionID> #156 {
+            RevisionNumber <String> #157 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #103 {
-          Title <String> #104 { "AirShaderLIF" }
-          Name <String> #105 { "AirShaderLIF" }
-          VersionID <VersionID> #106 {
-            RevisionNumber <String> #107 { "1.0.0" }
+        <PluginMenuLayout> #158 {
+          Title <String> #159 { "AirShaderLIF" }
+          Name <String> #160 { "AirShaderLIF" }
+          VersionID <VersionID> #161 {
+            RevisionNumber <String> #162 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #108 {
-          Title <String> #109 { "AirShaderRIB" }
-          Name <String> #110 { "AirShaderRIB" }
-          VersionID <VersionID> #111 {
-            RevisionNumber <String> #112 { "1.0.0" }
-          }
-        }
-      }
-    }
-    <PluginMenuLayout> #113 {
-      Title <String> #114 { "3Delight" }
-      Children <LinkedList> #115 {
-        <PluginMenuLayout> #116 {
-          Title <String> #117 { "DLRender" }
-          Name <String> #118 { "DLRender" }
-          VersionID <VersionID> #119 {
-            RevisionNumber <String> #120 { "1.1.0" }
-          }
-        }
-        <PluginMenuLayout> #121 {
-          Title <String> #122 { "DLCatRib" }
-          Name <String> #123 { "DLCatRIB" }
-          VersionID <VersionID> #124 {
-            RevisionNumber <String> #125 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #126 {
-          Title <String> #127 { "DLTexture" }
-          Name <String> #128 { "DLTexture" }
-          VersionID <VersionID> #129 {
-            RevisionNumber <String> #130 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #131 {
-          Title <String> #132 { "DLShadow" }
-          Name <String> #133 { "DLShadow" }
-          VersionID <VersionID> #134 {
-            RevisionNumber <String> #135 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #136 {
-          Title <String> #137 { "DLEnvMap" }
-          Name <String> #138 { "DLEnvMap" }
-          VersionID <VersionID> #139 {
-            RevisionNumber <String> #140 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #141 {
-          Title <String> #142 { "DLEnvCube" }
-          Name <String> #143 { "DLEnvCube" }
-          VersionID <VersionID> #144 {
-            RevisionNumber <String> #145 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #146 {
-          Title <String> #147 { "DLShader" }
-          Name <String> #148 { "DLShader" }
-          VersionID <VersionID> #149 {
-            RevisionNumber <String> #150 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #151 {
-          Title <String> #152 { "DsmToTif" }
-          Name <String> #153 { "DsmToTif" }
-          VersionID <VersionID> #154 {
-            RevisionNumber <String> #155 { "1.0.0" }
-          }
-        }
-        <PluginMenuLayout> #156 {
-          Title <String> #157 { "HdrToTif" }
-          Name <String> #158 { "HdrToTif" }
-          VersionID <VersionID> #159 {
-            RevisionNumber <String> #160 { "1.0.0" }
+        <PluginMenuLayout> #163 {
+          Title <String> #164 { "AirShaderRIB" }
+          Name <String> #165 { "AirShaderRIB" }
+          VersionID <VersionID> #166 {
+            RevisionNumber <String> #167 { "1.0.0" }
           }
         }
       }
     }
-    <PluginMenuLayout> #161 {
-      Title <String> #162 { "Images" }
-      Children <LinkedList> #163 {
-        <PluginMenuLayout> #164 {
-          Title <String> #165 { "ImgCvt" }
-          Name <String> #166 { "ImgCvt" }
-          VersionID <VersionID> #167 {
-            RevisionNumber <String> #168 { "1.0.0" }
+    <PluginMenuLayout> #168 {
+      Title <String> #169 { "3Delight" }
+      Children <LinkedList> #170 {
+        <PluginMenuLayout> #171 {
+          Title <String> #172 { "DLRender" }
+          Name <String> #173 { "DLRender" }
+          VersionID <VersionID> #174 {
+            RevisionNumber <String> #175 { "1.1.0" }
           }
         }
-        <PluginMenuLayout> #169 {
-          Title <String> #170 { "Composite" }
-          Name <String> #171 { "Composite" }
-          VersionID <VersionID> #172 {
-            RevisionNumber <String> #173 { "1.0.0" }
+        <PluginMenuLayout> #176 {
+          Title <String> #177 { "DLCatRib" }
+          Name <String> #178 { "DLCatRIB" }
+          VersionID <VersionID> #179 {
+            RevisionNumber <String> #180 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #174 {
-          Title <String> #175 { "CatSequence" }
-          Name <String> #176 { "CatSequence" }
-          VersionID <VersionID> #177 {
-            RevisionNumber <String> #178 { "1.0.0" }
+        <PluginMenuLayout> #181 {
+          Title <String> #182 { "DLTexture" }
+          Name <String> #183 { "DLTexture" }
+          VersionID <VersionID> #184 {
+            RevisionNumber <String> #185 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #186 {
+          Title <String> #187 { "DLShadow" }
+          Name <String> #188 { "DLShadow" }
+          VersionID <VersionID> #189 {
+            RevisionNumber <String> #190 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #191 {
+          Title <String> #192 { "DLEnvMap" }
+          Name <String> #193 { "DLEnvMap" }
+          VersionID <VersionID> #194 {
+            RevisionNumber <String> #195 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #196 {
+          Title <String> #197 { "DLEnvCube" }
+          Name <String> #198 { "DLEnvCube" }
+          VersionID <VersionID> #199 {
+            RevisionNumber <String> #200 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #201 {
+          Title <String> #202 { "DLShader" }
+          Name <String> #203 { "DLShader" }
+          VersionID <VersionID> #204 {
+            RevisionNumber <String> #205 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #206 {
+          Title <String> #207 { "DsmToTif" }
+          Name <String> #208 { "DsmToTif" }
+          VersionID <VersionID> #209 {
+            RevisionNumber <String> #210 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #211 {
+          Title <String> #212 { "HdrToTif" }
+          Name <String> #213 { "HdrToTif" }
+          VersionID <VersionID> #214 {
+            RevisionNumber <String> #215 { "1.0.0" }
           }
         }
       }
     }
-    <PluginMenuLayout> #179 {
-      Title <String> #180 { "Utils" }
-      Children <LinkedList> #181 {
-        <PluginMenuLayout> #182 {
-          Title <String> #183 { "Script" }
-          Name <String> #184 { "Script" }
-          VersionID <VersionID> #185 {
-            RevisionNumber <String> #186 { "1.0.0" }
+    <PluginMenuLayout> #216 {
+      Title <String> #217 { "Images" }
+      Children <LinkedList> #218 {
+        <PluginMenuLayout> #219 {
+          Title <String> #220 { "ImgCvt" }
+          Name <String> #221 { "ImgCvt" }
+          VersionID <VersionID> #222 {
+            RevisionNumber <String> #223 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #187 {
-          Title <String> #188 { "Switch" }
-          Name <String> #189 { "Switch" }
-          VersionID <VersionID> #190 {
-            RevisionNumber <String> #191 { "1.0.0" }
+        <PluginMenuLayout> #224 {
+          Title <String> #225 { "Composite" }
+          Name <String> #226 { "Composite" }
+          VersionID <VersionID> #227 {
+            RevisionNumber <String> #228 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #192 {
-          Title <String> #193 { "Touch" }
-          Name <String> #194 { "Touch" }
-          VersionID <VersionID> #195 {
-            RevisionNumber <String> #196 { "1.0.0" }
+        <PluginMenuLayout> #229 {
+          Title <String> #230 { "CatSequence" }
+          Name <String> #231 { "CatSequence" }
+          VersionID <VersionID> #232 {
+            RevisionNumber <String> #233 { "1.0.0" }
           }
         }
-        <PluginMenuLayout> #197 {
-          Title <String> #198 { "Patch" }
-          Name <String> #199 { "Patch" }
-          VersionID <VersionID> #200 {
-            RevisionNumber <String> #201 { "1.0.0" }
+      }
+    }
+    <PluginMenuLayout> #234 {
+      Title <String> #235 { "Utils" }
+      Children <LinkedList> #236 {
+        <PluginMenuLayout> #237 {
+          Title <String> #238 { "Script" }
+          Name <String> #239 { "Script" }
+          VersionID <VersionID> #240 {
+            RevisionNumber <String> #241 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #242 {
+          Title <String> #243 { "Switch" }
+          Name <String> #244 { "Switch" }
+          VersionID <VersionID> #245 {
+            RevisionNumber <String> #246 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #247 {
+          Title <String> #248 { "Touch" }
+          Name <String> #249 { "Touch" }
+          VersionID <VersionID> #250 {
+            RevisionNumber <String> #251 { "1.0.0" }
+          }
+        }
+        <PluginMenuLayout> #252 {
+          Title <String> #253 { "Patch" }
+          Name <String> #254 { "Patch" }
+          VersionID <VersionID> #255 {
+            RevisionNumber <String> #256 { "1.0.0" }
           }
         }
       }
