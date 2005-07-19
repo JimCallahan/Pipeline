@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.35 2005/07/16 22:42:38 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.36 2005/07/19 00:48:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3713,7 +3713,7 @@ class JNodeViewerPanel
   ) 
   {
     pExpandDepth = depth;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   /**
@@ -3725,7 +3725,7 @@ class JNodeViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   /**
@@ -3737,7 +3737,7 @@ class JNodeViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   /**
@@ -3749,7 +3749,7 @@ class JNodeViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   
@@ -3761,7 +3761,7 @@ class JNodeViewerPanel
   {
     clearSelection();
     pShowDownstream = !pShowDownstream;
-    updateUniverse();
+    updateUniverse(false);
   }
 
 

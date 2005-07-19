@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.16 2005/07/16 22:42:38 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.17 2005/07/19 00:48:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1883,7 +1883,7 @@ class JQueueJobViewerPanel
   ) 
   {
     pExpandDepth = depth;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   /**
@@ -1895,7 +1895,7 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   /**
@@ -1907,7 +1907,7 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
-    updateUniverse();
+    updateUniverse(false);
   }
 
   /**
@@ -1919,7 +1919,7 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
-    updateUniverse();
+    updateUniverse(false);
   }
 
 
