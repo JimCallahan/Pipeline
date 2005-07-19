@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.5 2005/01/10 16:34:08 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.6 2005/07/19 01:25:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -539,6 +539,31 @@ class JNodeBrowserPanel
        "Show the node filter dialog."); 
   }
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Update the root nodes of the viewer panel.
+   */ 
+  private void 
+  updateViewerPanel()
+  {
+    UIMaster master = UIMaster.getInstance();
+    if(pGroupID > 0) {
+      PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+      JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+      if(viewer != null) {
+	viewer.setRoots(pAuthor, pView, pSelected);
+	viewer.updateManagerTitlePanel();
+	pSelectionModified = false;
+	return;
+      }
+    }
+	
+    clearSelection();
+    repaint();
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -600,6 +625,9 @@ class JNodeBrowserPanel
   ) 
   {
     KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+
+    if(pSelectionModified) 
+      updateViewerPanel();
   }
   
   /**
@@ -696,51 +724,36 @@ class JNodeBrowserPanel
 		
 		
 		String sname = treePathToNodeName(tpath);
-		boolean update = false;
 		
 		/* BUTTON1: replace selection */ 
 		if((mods & (on1 | off1)) == on1) {
 		  pSelected.clear();
 		  pSelected.add(sname);
 		  repaint();
-		  update = true;
+		  
+		  updateViewerPanel();
 		}
 		
 		/* BUTTON1+SHIFT: toggle selection */ 
 		else if((mods & (on2 | off2)) == on2) {
 		  if(pSelected.contains(sname))
 		    pSelected.remove(sname);
-		else 
-		  pSelected.add(sname);
+		  else 
+		    pSelected.add(sname);
 		  repaint();
-		  update = true;
+		  pSelectionModified = true;
 		}
 		
 		/* BUTTON1+SHIFT+CTRL: add to the selection */ 
 		else if((mods & (on3 | off3)) == on3) {
 		  pSelected.add(sname);
 		  repaint();
-		  update = true;
+		  pSelectionModified = true;
 		}
 		
-		/* update any associated node viewer */ 
-		if(update) {
-		  UIMaster master = UIMaster.getInstance();
-		  if(pGroupID > 0) {
-		    PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-		    JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-		    if(viewer != null) {
-		      viewer.setRoots(pAuthor, pView, pSelected);
-		      viewer.updateManagerTitlePanel();
-		      return;
-		    }
-		  }
-		  
-		  clearSelection();
-		  repaint();
+		else {
+		  Toolkit.getDefaultToolkit().beep();
 		}
-		
-		Toolkit.getDefaultToolkit().beep();
 	      }
 	    }
 	  }
@@ -804,10 +817,10 @@ class JNodeBrowserPanel
     else {
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
-      case KeyEvent.VK_ALT:
       case KeyEvent.VK_CONTROL:
+      case KeyEvent.VK_ALT:
 	break;
-      
+
       default:
 	Toolkit.getDefaultToolkit().beep();
       }
@@ -818,7 +831,29 @@ class JNodeBrowserPanel
    * Invoked when a key has been released.
    */ 
   public void 	
-  keyReleased(KeyEvent e) {}
+  keyReleased
+  (
+   KeyEvent e
+  ) 
+  {
+    int mods = e.getModifiersEx();
+
+    if(pSelectionModified) {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_CONTROL:
+	{
+	  int on1  = 0;
+	  
+	  int off1 = (MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+	  if((mods & (on1 | off1)) == on1) 
+	    updateViewerPanel();
+	}      
+      }
+    }
+  }
 
   /**
    * Invoked when a key has been typed.
@@ -954,6 +989,12 @@ class JNodeBrowserPanel
    */ 
   private TreeMap<NodeTreeComp.State, Boolean>  pFilter;
 
+  /**
+   * Whether the selection was modified since the first SHIFT or CTRL key down event.
+   */ 
+  private boolean  pSelectionModified;  
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
 
