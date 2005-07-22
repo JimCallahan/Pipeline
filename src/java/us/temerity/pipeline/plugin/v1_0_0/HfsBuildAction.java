@@ -1,4 +1,4 @@
-// $Id: HfsBuildAction.java,v 1.1 2005/07/03 19:13:41 jim Exp $
+// $Id: HfsBuildAction.java,v 1.2 2005/07/22 21:36:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -238,8 +238,7 @@ class HfsBuildAction
 	for(FileSeq fseq : agenda.getSecondarySources(sname)) {
 	  FilePattern fpat = fseq.getFilePattern();
 	  if(hasSecondarySourceParams(sname, fpat)) {
-	    Integer order = 
-	      (Integer) getSecondarySourceParamValue(sname, fpat, "Order");
+	    Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, "Order");
 	    addSourceSeq(order, sname, fseq, sources);
 	  }
 	}
