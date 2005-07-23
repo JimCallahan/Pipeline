@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.22 2005/07/16 22:42:31 jim Exp $
+// $Id: JManagerPanel.java,v 1.23 2005/07/23 21:56:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1914,9 +1914,9 @@ class JManagerPanel
     else if(cmd.equals("home-page"))
       BaseApp.showURL("http://www.temerity.us");
     else if(cmd.equals("support-forums"))
-      BaseApp.showURL("http://www.temerity.us/forums");
+      BaseApp.showURL("http://www.temerity.us/community/forums");
     else if(cmd.equals("bug-database"))
-      BaseApp.showURL("http://www.temerity.us/bugs");  
+      BaseApp.showURL("http://www.temerity.us/community/forums/viewforum.php?f=12");  
 
     else if(cmd.equals("site-configuration"))
       UIMaster.getInstance().showConfigDialog(); 
