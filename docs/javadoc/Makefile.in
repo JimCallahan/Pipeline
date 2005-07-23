@@ -307,7 +307,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
   PLUGIN_SOURCES = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/plugin \
-                                -type f -path "*/v*_*_*/*.java")
+                                -type f -path "*/@PLUGIN_VERSION_PATTERN@/*.java")
+
      PLUGIN_DIRS = $(patsubst $(top_srcdir)/src/java/%.java,%,$(PLUGIN_SOURCES))
  PLUGIN_PACKAGES = $(sort $(subst /,.,$(patsubst %/,%,$(dir $(PLUGIN_DIRS)))))
 
@@ -315,8 +316,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
   MAIN_PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.math \
-                  us.temerity.pipeline.toolset
-#                  us.temerity.pipeline.ui
+                  us.temerity.pipeline.toolset \
+                  us.temerity.pipeline.ui
 
 
        PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES)

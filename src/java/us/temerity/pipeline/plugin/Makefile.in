@@ -239,7 +239,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../../.. -classpath ../api.jar		
 
-    JAVA_SOURCES = $(shell find $(srcdir) -type f -path "*/v*_*_*/*.java")
+    JAVA_SOURCES = $(shell find $(srcdir) -type f -path "*/@PLUGIN_VERSION_PATTERN@/*.java")
     JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
       PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin

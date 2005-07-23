@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.9.23)
+AM_INIT_AUTOMAKE(Pipeline, 2.0.0)
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -658,6 +658,23 @@ then
 fi 
 
 AM_CONDITIONAL(HAS_MAC, test x$has_mac = xtrue)
+
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Plugin Version Pattern])
+legacy_plugins=`$crypto_lookup LegacyPlugins`
+
+AC_SUBST(PLUGIN_VERSION_PATTERN)
+PLUGIN_VERSION_PATTERN='v2_*_*'
+
+if test x$legacy_plugins = xtrue
+then
+  PLUGIN_VERSION_PATTERN='v*_*_*'
+fi 
+
+AC_MSG_RESULT([$PLUGIN_VERSION_PATTERN])
 
 
 
