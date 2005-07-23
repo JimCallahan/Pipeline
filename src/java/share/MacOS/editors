@@ -8,21 +8,21 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #8 { "Preview" }
           Name <String> #9 { "Preview" }
           VersionID <VersionID> #10 {
-            RevisionNumber <String> #11 { "1.0.0" }
+            RevisionNumber <String> #11 { "2.0.0" }
           }
         }
         <PluginMenuLayout> #12 {
           Title <String> #13 { "FCheck" }
           Name <String> #14 { "FCheck" }
           VersionID <VersionID> #15 {
-            RevisionNumber <String> #16 { "1.1.0" }
+            RevisionNumber <String> #16 { "2.0.0" }
           }
         }
         <PluginMenuLayout> #17 {
           Title <String> #18 { "Gimp" }
           Name <String> #19 { "Gimp" }
           VersionID <VersionID> #20 {
-            RevisionNumber <String> #21 { "1.1.0" }
+            RevisionNumber <String> #21 { "2.0.0" }
           }
         }
       }
@@ -34,7 +34,7 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #26 { "Maya" }
           Name <String> #27 { "Maya" }
           VersionID <VersionID> #28 {
-            RevisionNumber <String> #29 { "1.1.0" }
+            RevisionNumber <String> #29 { "2.0.0" }
           }
         }
       }
@@ -46,14 +46,14 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #34 { "Emacs" }
           Name <String> #35 { "Emacs" }
           VersionID <VersionID> #36 {
-            RevisionNumber <String> #37 { "1.1.0" }
+            RevisionNumber <String> #37 { "2.0.0" }
           }
         }
         <PluginMenuLayout> #38 {
           Title <String> #39 { "Text Edit" }
           Name <String> #40 { "TextEdit" }
           VersionID <VersionID> #41 {
-            RevisionNumber <String> #42 { "1.0.0" }
+            RevisionNumber <String> #42 { "2.0.0" }
           }
         }
       }

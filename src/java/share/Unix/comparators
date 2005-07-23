@@ -5,14 +5,14 @@ ComparatorsMenuLayout <PluginMenuLayout> #1 {
       Title <String> #5 { "GimpDiff" }
       Name <String> #6 { "GimpDiff" }
       VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "1.0.0" }
+        RevisionNumber <String> #8 { "2.0.0" }
       }
     }
     <PluginMenuLayout> #9 {
       Title <String> #10 { "XDiff" }
       Name <String> #11 { "XDiff" }
       VersionID <VersionID> #12 {
-        RevisionNumber <String> #13 { "1.0.0" }
+        RevisionNumber <String> #13 { "2.0.0" }
       }
     }
   }
