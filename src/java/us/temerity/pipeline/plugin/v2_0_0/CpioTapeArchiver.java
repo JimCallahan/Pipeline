@@ -1,4 +1,4 @@
-// $Id: CpioTapeArchiver.java,v 1.1 2005/07/23 21:57:58 jim Exp $
+// $Id: CpioTapeArchiver.java,v 1.2 2005/07/26 04:58:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -263,7 +263,7 @@ class CpioTapeArchiver
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //  private static final long serialVersionUID = 
+  private static final long serialVersionUID = 1902846812959896662L;
 
 }
 

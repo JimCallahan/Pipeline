@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.1 2005/07/23 21:57:58 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.2 2005/07/26 04:58:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -1730,7 +1730,7 @@ class MayaTextureSyncTool
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 2645047202995702095L;
 
   private static final int sTSize  = 150;
   private static final int sVSize  = 400;
