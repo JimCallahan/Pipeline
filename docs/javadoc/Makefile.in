@@ -329,7 +329,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
    JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java \
                   -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
-                  -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#000000;">TEMERITY</SPAN><SPAN style="color: \#7a7f7f;">SOFTWARE</SPAN></A></BIG><EM>' \
+                  -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#ffffff;"><B>TEMERITY</B></SPAN></A></BIG><EM>' \
                   -stylesheetfile $(srcdir)/stylesheet.css
 
 
