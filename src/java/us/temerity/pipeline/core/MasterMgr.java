@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.135 2005/07/13 18:15:24 jim Exp $
+// $Id: MasterMgr.java,v 1.136 2005/08/12 23:17:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5512,23 +5512,10 @@ class MasterMgr
 	      nmod = getWorkingBundle(nid).uVersion;
 	      
 	      /* get the current action related parameters */ 
-	      BaseAction naction        = nmod.getAction(); 
-	      boolean enabled           = nmod.isActionEnabled();
-	      JobReqs jreqs             = nmod.getJobRequirements();
-	      OverflowPolicy policy     = nmod.getOverflowPolicy();
-	      ExecutionMethod execution = nmod.getExecutionMethod();
-	      Integer batchSize         = nmod.getBatchSize();
-	      
-	      naction.setSourceParamValues(oaction);
-
-	      nmod.setAction(naction);
-	      nmod.setActionEnabled(enabled);
-	      nmod.setJobRequirements(jreqs);
-	      nmod.setOverflowPolicy(policy);
-	      nmod.setExecutionMethod(execution);
-	      switch(execution) {
-	      case Parallel: 
-		nmod.setBatchSize(batchSize);
+	      {
+		BaseAction naction = nmod.getAction(); 
+		naction.setSourceParamValues(oaction);
+		nmod.setAction(naction);
 	      }
 	      
 	      /* update the new working version */ 
@@ -5629,12 +5616,7 @@ class MasterMgr
 	      }
 	      
 	      /* get the current action related parameters */ 
-	      BaseAction action         = targetMod.getAction(); 
-	      boolean enabled           = targetMod.isActionEnabled();
-	      JobReqs jreqs             = targetMod.getJobRequirements();
-	      OverflowPolicy policy     = targetMod.getOverflowPolicy();
-	      ExecutionMethod execution = targetMod.getExecutionMethod();
-	      Integer batchSize         = targetMod.getBatchSize();
+	      BaseAction action = targetMod.getAction(); 
 
 	      /* set the value of the single link parameters to the new name if their 
 		   previous value was the old name. */ 
@@ -5663,14 +5645,6 @@ class MasterMgr
 	      /* update the action related parameters */ 
 	      try {
 		targetMod.setAction(action);
-		targetMod.setActionEnabled(enabled);
-		targetMod.setJobRequirements(jreqs);
-		targetMod.setOverflowPolicy(policy);
-		targetMod.setExecutionMethod(execution);
-		switch(execution) {
-		case Parallel: 
-		  targetMod.setBatchSize(batchSize);
-		}
 	      }
 	      catch(PipelineException ex) {
 		return new FailureRsp(timer, ex.getMessage());	      

@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.41 2005/06/21 21:23:35 jim Exp $
+// $Id: NodeMod.java,v 1.42 2005/08/12 23:17:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -711,12 +711,15 @@ class NodeMod
 	("Frozen working versions cannot be modified!");
 
     if(action != null) {
-      pAction          = (BaseAction) action.clone();
-      pIsActionEnabled = true;
-      pJobReqs         = JobReqs.defaultJobReqs();
-      pOverflow        = OverflowPolicy.Abort;
-      pExecution       = ExecutionMethod.Serial;
-      pBatchSize       = null;
+      if(pAction == null) {
+	pIsActionEnabled = true;
+	pJobReqs         = JobReqs.defaultJobReqs();
+	pOverflow        = OverflowPolicy.Abort;
+	pExecution       = ExecutionMethod.Serial;
+	pBatchSize       = null;
+      }
+
+      pAction = (BaseAction) action.clone();
     }
     else {
       pAction          = null;
