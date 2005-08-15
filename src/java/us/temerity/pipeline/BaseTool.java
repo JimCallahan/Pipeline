@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.5 2005/02/23 05:54:34 jim Exp $
+// $Id: BaseTool.java,v 1.6 2005/08/15 01:11:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -192,6 +192,21 @@ class BaseTool
     return false;
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to perform a node status update upon successfully executing the tool. <P> 
+   * 
+   * By default this method returns <CODE>true</CODE>.  Subclasses which which to skip
+   * node status update should override this method to return <CODE>false</CODE>.
+   */ 
+  public boolean
+  updateOnExit() 
+  {
+    return true;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

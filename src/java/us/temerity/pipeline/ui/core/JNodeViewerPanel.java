@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.36 2005/07/19 00:48:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.37 2005/08/15 01:11:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5172,7 +5172,7 @@ class JNodeViewerPanel
 	try {
 	  if(pTool.executePhase(master.getMasterMgrClient(), master.getQueueMgrClient())) 
 	    SwingUtilities.invokeLater(new ToolInputTask(pTool));
-	  else 
+	  else if(pTool.updateOnExit()) 
 	    updateRoots();
 	}
 	catch(Exception ex) {
