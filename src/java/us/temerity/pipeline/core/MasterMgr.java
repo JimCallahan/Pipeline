@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.136 2005/08/12 23:17:28 jim Exp $
+// $Id: MasterMgr.java,v 1.137 2005/08/15 01:02:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -200,6 +200,9 @@ class MasterMgr
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
+   * @param nodeCacheLimit
+   *   The maximum number of node versions to cache in memory.
+   * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
    */
@@ -207,12 +210,14 @@ class MasterMgr
   MasterMgr
   (
    boolean rebuildCache, 
-   boolean internalFileMgr
+   boolean internalFileMgr, 
+   long nodeCacheLimit
   )
     throws PipelineException 
   {
     pRebuildCache    = rebuildCache;
     pInternalFileMgr = internalFileMgr;
+    pNodeCacheLimit  = nodeCacheLimit;
 
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
@@ -784,7 +789,7 @@ class MasterMgr
       if(path.length() > 0) {
 	TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(path);
 	for(CheckedInBundle bundle : table.values()) 
-	  addCheckedInNodeTreePath(bundle.uVersion);
+	  addCheckedInNodeTreePath(bundle.getVersion());
       }
     }
     else if(allDirs) {
@@ -983,7 +988,7 @@ class MasterMgr
       
       TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
       for(VersionID vid : table.keySet()) {
-	NodeVersion vsn = table.get(vid).uVersion;
+	NodeVersion vsn = table.get(vid).getVersion();
 	  
 	{
 	  DownstreamLinks dsl = pDownstream.get(name); 
@@ -3933,7 +3938,7 @@ class MasterMgr
     try {
       timer.resume();	
       
-      NodeMod mod = new NodeMod(getWorkingBundle(req.getNodeID()).uVersion);
+      NodeMod mod = new NodeMod(getWorkingBundle(req.getNodeID()).getVersion());
       return new NodeGetWorkingRsp(timer, req.getNodeID(), mod);
     }
     catch(PipelineException ex) {
@@ -3987,7 +3992,7 @@ class MasterMgr
 
       /* get the working version */ 
       WorkingBundle bundle = getWorkingBundle(nodeID);
-      NodeMod mod = new NodeMod(bundle.uVersion);
+      NodeMod mod = new NodeMod(bundle.getVersion());
       if(mod.isFrozen()) 
 	throw new PipelineException
 	  ("The node properties of frozen node (" + nodeID + ") cannot be modified!");
@@ -4008,7 +4013,7 @@ class MasterMgr
 	writeWorkingVersion(nodeID, mod);
 
 	/* update the bundle */ 
-	bundle.uVersion = mod;
+	bundle.setVersion(mod);
 
 	/* change working file write permissions? */ 
 	if(wasActionEnabled != mod.isActionEnabled()) {
@@ -4072,7 +4077,7 @@ class MasterMgr
 	  ("Only working versions of nodes can be linked!\n" + 
 	   "No working version (" + targetID + ") exists for the downstream node.");
 
-      NodeMod mod = new NodeMod(bundle.uVersion);
+      NodeMod mod = new NodeMod(bundle.getVersion());
       if(mod.isFrozen()) 
 	throw new PipelineException
 	  ("The upstream links of frozen node (" + targetID + ") cannot be modified!");
@@ -4093,7 +4098,7 @@ class MasterMgr
       writeWorkingVersion(req.getTargetID(), mod);
       
       /* update the bundle */ 
-      bundle.uVersion = mod;
+      bundle.setVersion(mod);
 
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
@@ -4150,7 +4155,7 @@ class MasterMgr
 	  ("Only working versions of nodes can be unlinked!\n" + 
 	   "No working version (" + targetID + ") exists for the downstream node.");
 
-      NodeMod mod = new NodeMod(bundle.uVersion);
+      NodeMod mod = new NodeMod(bundle.getVersion());
       if(mod.isFrozen()) 
 	throw new PipelineException
 	  ("The upstream links of frozen node (" + targetID + ") cannot be modified!");
@@ -4168,7 +4173,7 @@ class MasterMgr
       writeWorkingVersion(req.getTargetID(), mod);
       
       /* update the bundle */ 
-      bundle.uVersion = mod;
+      bundle.setVersion(mod);
 
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
@@ -4244,7 +4249,7 @@ class MasterMgr
 	    ("Secondary file sequences can only be added to working versions of nodes!\n" + 
 	     "No working version (" + nodeID + ") exists.");
 
-	NodeMod mod = new NodeMod(bundle.uVersion);
+	NodeMod mod = new NodeMod(bundle.getVersion());
 	if(mod.isFrozen()) 
 	  throw new PipelineException
 	    ("The secondary sequences of frozen node (" + nodeID + ") cannot be modified!");
@@ -4262,7 +4267,7 @@ class MasterMgr
 	writeWorkingVersion(nodeID, mod);
 	
 	/* update the bundle */ 
-	bundle.uVersion = mod;
+	bundle.setVersion(mod);
 	
 	return new SuccessRsp(timer);
       }
@@ -4316,7 +4321,7 @@ class MasterMgr
 	  ("Secondary file sequences can only be remove from working versions of nodes!\n" + 
 	   "No working version (" + nodeID + ") exists.");
 
-      NodeMod mod = new NodeMod(bundle.uVersion);
+      NodeMod mod = new NodeMod(bundle.getVersion());
       if(mod.isFrozen()) 
 	throw new PipelineException
 	  ("The secondary sequences of frozen node (" + nodeID + ") cannot be modified!");
@@ -4334,7 +4339,7 @@ class MasterMgr
       writeWorkingVersion(nodeID, mod);
       
       /* update the bundle */ 
-      bundle.uVersion = mod;
+      bundle.setVersion(mod);
 
       /* remove the sequence from the node tree */ 
       removeSecondaryWorkingNodeTreePath(nodeID, fseq);
@@ -4434,7 +4439,7 @@ class MasterMgr
 	throw new PipelineException 
 	  ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
 
-      return new NodeGetCheckedInRsp(timer, new NodeVersion(bundle.uVersion));
+      return new NodeGetCheckedInRsp(timer, new NodeVersion(bundle.getVersion()));
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -4476,7 +4481,7 @@ class MasterMgr
       TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
       TreeMap<VersionID,LogMessage> history = new TreeMap<VersionID,LogMessage>();
       for(VersionID vid : checkedIn.keySet()) 
-	history.put(vid, checkedIn.get(vid).uVersion.getLogMessage());
+	history.put(vid, checkedIn.get(vid).getVersion().getLogMessage());
 
       return new NodeGetHistoryRsp(timer, name, history);
     }
@@ -4530,7 +4535,7 @@ class MasterMgr
 
       if(checkedIn != null) {
 	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  NodeVersion vsn = checkedIn.get(vid).getVersion();
 	  
 	  TreeMap<FileSeq,boolean[]> table = new TreeMap<FileSeq,boolean[]>();
 	  for(FileSeq fseq : vsn.getSequences()) 
@@ -4587,7 +4592,7 @@ class MasterMgr
 
       if(checkedIn != null) {
 	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  NodeVersion vsn = checkedIn.get(vid).getVersion();
 	  
 	  TreeMap<String,LinkVersion> table = new TreeMap<String,LinkVersion>();
 	  for(LinkVersion link : vsn.getSources()) 
@@ -4847,7 +4852,7 @@ class MasterMgr
 	if(bundle == null) 
 	  throw new PipelineException
 	    ("No working version (" + id + ") exists to be released.");
-	NodeMod mod = bundle.uVersion;
+	NodeMod mod = bundle.getVersion();
 	
 	/* kill any active jobs associated with the node */
 	killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
@@ -5056,7 +5061,7 @@ class MasterMgr
 
 	/* remove the downstream links to this node from the checked-in source nodes */ 
 	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  NodeVersion vsn = checkedIn.get(vid).getVersion();
 	  for(LinkVersion link : vsn.getSources()) {
 	    DownstreamLinks ldsl = getDownstreamLinks(link.getName());
 	    ldsl.deleteCheckedIn(link.getVersionID(), name);
@@ -5160,7 +5165,7 @@ class MasterMgr
 	timer.resume();
 	
 	WorkingBundle bundle = getWorkingBundle(nodeID);
-	NodeMod mod = bundle.uVersion;
+	NodeMod mod = bundle.getVersion();
 	if(mod.isFrozen()) 
 	  throw new PipelineException
 	    ("The files associated with frozen node (" + nodeID + ") cannot be removed!");
@@ -5299,7 +5304,7 @@ class MasterMgr
 	  timer.resume();
 
 	  WorkingBundle bundle = getWorkingBundle(id);
-	  NodeMod mod = bundle.uVersion;
+	  NodeMod mod = bundle.getVersion();
 
 	  /* make sure its not frozen */ 
 	  if(mod.isFrozen()) 
@@ -5400,7 +5405,7 @@ class MasterMgr
 	    try {
 	      timer.resume();
 	      
-	      NodeMod targetMod = getWorkingBundle(targetID).uVersion;
+	      NodeMod targetMod = getWorkingBundle(targetID).getVersion();
 	      LinkMod dlink = targetMod.getSource(name);
 	      if(dlink != null) {
 		dlinks.put(target, dlink);
@@ -5466,7 +5471,7 @@ class MasterMgr
 	  timer.resume();
 	  
 	  WorkingBundle bundle = getWorkingBundle(id);
-	  NodeMod omod = bundle.uVersion;
+	  NodeMod omod = bundle.getVersion();
 	  NodeMod nmod = new NodeMod(omod);
 	  
 	  nmod.rename(npat);
@@ -5476,7 +5481,7 @@ class MasterMgr
 	    writeWorkingVersion(id, nmod);
 	    
 	    /* update the bundle */ 
-	    bundle.uVersion = nmod;
+	    bundle.setVersion(nmod);
 	  }	
 	  else {
 	    nmod.removeAllSources();
@@ -5509,7 +5514,7 @@ class MasterMgr
 		!oaction.getSecondarySourceNames().isEmpty())) {
 	      
 	      /* relookup the new working version to get the added links */ 
-	      nmod = getWorkingBundle(nid).uVersion;
+	      nmod = getWorkingBundle(nid).getVersion();
 	      
 	      /* get the current action related parameters */ 
 	      {
@@ -5605,7 +5610,7 @@ class MasterMgr
 		lock.readLock().lock();
 		try {
 		  timer.resume();
-		  targetMod = new NodeMod(getWorkingBundle(targetID).uVersion);
+		  targetMod = new NodeMod(getWorkingBundle(targetID).getVersion());
 		}
 		catch(PipelineException ex) {
 		  return new FailureRsp(timer, ex.getMessage());
@@ -5710,7 +5715,7 @@ class MasterMgr
 	  ("Only working versions of nodes may have their frame ranges renumbered!\n" + 
 	   "No working version (" + nodeID + ") exists.");
 
-      NodeMod mod = new NodeMod(bundle.uVersion);
+      NodeMod mod = new NodeMod(bundle.getVersion());
       if(mod.isFrozen()) 
 	throw new PipelineException
 	  ("The frozen node (" + nodeID + ") cannot be renumbered!");
@@ -5722,7 +5727,7 @@ class MasterMgr
       writeWorkingVersion(nodeID, mod);
       
       /* update the bundle */ 
-      bundle.uVersion = mod;
+      bundle.setVersion(mod);
 
       /* remove obsolete files... */ 
       if(req.removeFiles()) {
@@ -6026,21 +6031,21 @@ class MasterMgr
       NodeVersion vsn = null;
       {
 	if(working != null)
-	  work = new NodeMod(working.uVersion);
+	  work = new NodeMod(working.getVersion());
 
 	if(vid != null) {
 	  CheckedInBundle bundle = checkedIn.get(vid);
 	  if(bundle == null) 
 	    throw new PipelineException 
 	      ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
-	  vsn = new NodeVersion(bundle.uVersion);
+	  vsn = new NodeVersion(bundle.getVersion());
 	}
 	else {
 	  if(checkedIn.isEmpty())
 	    throw new PipelineException
 	      ("Somehow no checked-in versions of node (" + name + ") exist!"); 
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
-	  vsn = new NodeVersion(bundle.uVersion);
+	  vsn = new NodeVersion(bundle.getVersion());
 	}
 	assert(vsn != null);
       }
@@ -6247,21 +6252,21 @@ class MasterMgr
       NodeVersion vsn = null;
       {
 	if(working != null)
-	  work = new NodeMod(working.uVersion);
+	  work = new NodeMod(working.getVersion());
 
 	if(vid != null) {
 	  CheckedInBundle bundle = checkedIn.get(vid);
 	  if(bundle == null) 
 	    throw new PipelineException 
 	      ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
-	  vsn = new NodeVersion(bundle.uVersion);
+	  vsn = new NodeVersion(bundle.getVersion());
 	}
 	else {
 	  if(checkedIn.isEmpty())
 	    throw new PipelineException
 	      ("Somehow no checked-in versions of node (" + name + ") exist!"); 
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
-	  vsn = new NodeVersion(bundle.uVersion);
+	  vsn = new NodeVersion(bundle.getVersion());
 	}
 	assert(vsn != null);
       }
@@ -6418,7 +6423,7 @@ class MasterMgr
       /* update existing working version */ 
       else {
 	/* update the working bundle */ 
-	working.uVersion = nwork;
+	working.setVersion(nwork);
 
 	/* remove the downstream links from any obsolete upstream nodes */ 
 	for(LinkMod link : work.getSources()) {
@@ -6512,7 +6517,7 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Only nodes with working versions can have their files reverted!");
 
-	  NodeMod mod = bundle.uVersion;
+	  NodeMod mod = bundle.getVersion();
 	  if(mod.isFrozen()) 
 	    throw new PipelineException
 	      ("The files associated with frozen node (" + nodeID + ") cannot be reverted!");
@@ -6639,7 +6644,7 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Only nodes with working versions can have their files cloned!");
 
-	  NodeMod mod = bundle.uVersion;
+	  NodeMod mod = bundle.getVersion();
 	  sourceSeq = mod.getPrimarySequence();
 	}
 	finally {
@@ -6661,7 +6666,7 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Only nodes with working versions can have their files replaced!");
 
-	  NodeMod mod = bundle.uVersion;
+	  NodeMod mod = bundle.getVersion();
 	  if(mod.isFrozen()) 
 	    throw new PipelineException
 	      ("The files associated with frozen node (" + targetID + ") " + 
@@ -6818,7 +6823,7 @@ class MasterMgr
 
 	/* set the revision number */ 
 	WorkingBundle bundle = getWorkingBundle(nodeID);
-	NodeMod mod = new NodeMod(bundle.uVersion);
+	NodeMod mod = new NodeMod(bundle.getVersion());
 	if(mod.isFrozen()) 
 	  throw new PipelineException
 	    ("The frozen node (" + nodeID + ") cannot be evolved!");
@@ -6828,7 +6833,7 @@ class MasterMgr
 	writeWorkingVersion(nodeID, mod);
 
 	/* update the bundle */ 
-	bundle.uVersion = mod;
+	bundle.setVersion(mod);
 
 	return new SuccessRsp(timer);
       }
@@ -8004,7 +8009,7 @@ class MasterMgr
 	    timer.resume();	
 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
 	    for(VersionID vid : checkedIn.keySet()) 
-	      stamps.put(vid, checkedIn.get(vid).uVersion.getTimeStamp());
+	      stamps.put(vid, checkedIn.get(vid).getVersion().getTimeStamp());
 	  }
 	  catch(PipelineException ex) {
 	    return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
@@ -8124,7 +8129,7 @@ class MasterMgr
 
 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
 	    for(VersionID vid : versions.get(name)) 
-	      vfseqs.put(vid, checkedIn.get(vid).uVersion.getSequences());
+	      vfseqs.put(vid, checkedIn.get(vid).getVersion().getSequences());
 	  }
 	  finally {
 	    lock.readLock().unlock();
@@ -8235,7 +8240,7 @@ class MasterMgr
 	      fseqs.put(name, fvsns);
 	    }
 	    
-	    fvsns.put(vid, bundle.uVersion.getSequences());
+	    fvsns.put(vid, bundle.getVersion().getSequences());
 	  }
 	}
 
@@ -8483,7 +8488,7 @@ class MasterMgr
 		    timer.resume();	
 
 		    WorkingBundle bundle = getWorkingBundle(nodeID);
-		    NodeMod mod = bundle.uVersion;
+		    NodeMod mod = bundle.getVersion();
 		    if(vid.equals(mod.getWorkingID())) {
 		      if((checkedOut == null) || 
 			 (checkedOut.compareTo(mod.getTimeStamp()) < 0)) {
@@ -8634,7 +8639,7 @@ class MasterMgr
 		if(bundle == null) 
 		  throw new PipelineException 
 		    ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-		NodeVersion vsn = checkedIn.get(vid).uVersion;
+		NodeVersion vsn = checkedIn.get(vid).getVersion();
 		int vidx = vids.indexOf(vid);
 		
 		/* determine which files contributes to the offlined size */ 
@@ -8762,7 +8767,7 @@ class MasterMgr
 	    if(bundle == null) 
 	      throw new PipelineException 
 		("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-	    NodeVersion vsn = checkedIn.get(vid).uVersion;
+	    NodeVersion vsn = checkedIn.get(vid).getVersion();
 	    int vidx = vids.indexOf(vid);
 	    
 	    /* make sure at lease one archive volume contains the version */ 
@@ -8787,7 +8792,7 @@ class MasterMgr
 	      for(String author : views.keySet()) {
 		for(String view : views.get(author)) {
 		  NodeID nodeID = new NodeID(author, view, name);
-		  NodeMod mod = getWorkingBundle(nodeID).uVersion;
+		  NodeMod mod = getWorkingBundle(nodeID).getVersion();
 		  if(vid.equals(mod.getWorkingID())) 
 		    throw new PipelineException
 		      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
@@ -8905,7 +8910,7 @@ class MasterMgr
     int numVersions = checkedIn.keySet().size();
     int vk = 0;
     for(VersionID vid : checkedIn.keySet()) {
-      NodeVersion vsn = checkedIn.get(vid).uVersion;
+      NodeVersion vsn = checkedIn.get(vid).getVersion();
       for(FileSeq fseq : vsn.getSequences()) {
 	boolean isNovel[] = vsn.isNovel(fseq);
 	int fk = 0;
@@ -9400,7 +9405,7 @@ class MasterMgr
 	    fseqs.put(name, fvsns);
 	  }
 	    
-	  fvsns.put(vid, bundle.uVersion.getSequences());
+	  fvsns.put(vid, bundle.getVersion().getSequences());
 	}
       }
 
@@ -10254,7 +10259,7 @@ class MasterMgr
       
       checked.add(name);
       branch.push(name);
-      for(LinkMod link : bundle.uVersion.getSources()) 
+      for(LinkMod link : bundle.getVersion().getSources()) 
 	checkForCircularity(timer, link.getName(), targetID, checked, branch);
       branch.pop();      
     }
@@ -10455,13 +10460,13 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Somehow no checked-in versions of node (" + name + ") exist!"); 
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
-	  latest = new NodeVersion(bundle.uVersion);
+	  latest = new NodeVersion(bundle.getVersion());
 
 	  versionIDs.addAll(checkedIn.keySet());
 	}
 
 	if(working != null) {
-	  work = new NodeMod(working.uVersion);
+	  work = new NodeMod(working.getVersion());
 
 	  VersionID workID = work.getWorkingID();
 	  if(workID != null) {
@@ -10472,7 +10477,7 @@ class MasterMgr
 		("Somehow the checked-in version (" + workID + ") of node (" + name + 
 		 ") used as the basis for working version (" + nodeID + ") did " + 
 		 "not exist!");
-	    base = new NodeVersion(bundle.uVersion);
+	    base = new NodeVersion(bundle.getVersion());
 
 	    if(base.getVersionID().equals(latest.getVersionID())) 
 	      versionState = VersionState.Identical;
@@ -11709,6 +11714,251 @@ class MasterMgr
 
     return links;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   B U N D L E   G A R B A G E   C O L L E C T O R                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * If the node cache limit has been exceeded, set the oldest working/checked-in bundles 
+   * to (null) so that the JVM garbage collector will clean them up.
+   */ 
+  public void 
+  nodeGC() 
+  {
+    TaskTimer timer = new TaskTimer();
+    long cached = 0;
+    long freed = 0;
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      /* sort the cached versions by last access time */ 
+      TreeMap<Long,String> sorted = new TreeMap<Long,String>();
+      synchronized(pNodeTreeRoot) {
+	timer.resume();
+	for(NodeTreeEntry entry : pNodeTreeRoot.values()) 
+	  cached += sortNodesByLastAccess("", entry, sorted, timer);
+      }
+      
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+	for(Long stamp : sorted.keySet()) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	     "Cached: " + stamp + " " + sorted.get(stamp));
+	}
+      }
+
+      /* collect versions until the total is below the limit */ 
+      for(String name : sorted.values()) {
+ 	if((cached-freed) < pNodeCacheLimit) 
+ 	  break;
+
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest))
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	     "Freed: " + name);
+	
+	/* free working versions */ 
+	{
+	  TreeSet<NodeID> nodeIDs = null;
+	  {
+	    timer.aquire();
+	    synchronized(pWorkingBundles) {
+	      timer.resume();
+	      
+	      HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	      if(table != null) 
+		nodeIDs = new TreeSet<NodeID>(table.keySet());
+	    }
+	  }
+
+	  if(nodeIDs != null) {
+	    for(NodeID nodeID : nodeIDs) {
+	      timer.aquire();
+	      ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+	      workingLock.writeLock().lock(); 
+	      try {
+		synchronized(pWorkingBundles) {
+		  timer.resume();
+		  
+		  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+		  if(table != null) {
+		    freed += table.size();
+		    pWorkingBundles.remove(name);
+		  }
+		}
+	      }
+	      finally {
+		workingLock.writeLock().unlock();
+	      }    
+	    }
+	  }
+	}
+
+	/* free checked-in versions */ 
+	{
+	  timer.aquire();
+	  ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+	  checkedInLock.writeLock().lock();	
+	  try {
+	    synchronized(pCheckedInBundles) {
+	      timer.resume();
+	      
+	      synchronized(pCheckedInBundles) {
+		TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
+		if(table != null) {
+		  freed += table.size();
+		  pCheckedInBundles.remove(name);
+		}
+	      }
+	    }
+	  }
+	  finally {
+	    checkedInLock.writeLock().unlock();
+	  }    
+	}
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
+    
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finer,
+	 "MasterMgr.nodeGC(): " + cached + "/" + freed + "/" + pNodeCacheLimit + 
+	 " (cached/freed/limit)\n" + timer); 
+      LogMgr.getInstance().flush();
+    }
+
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      timer.suspend();
+      long nap = sNodeGCInterval - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+  }
+  
+      
+  /**
+   * Build a table of working/checked-in versions of nodes sorted by the newest last access 
+   * timestamp among the node versions by recursively walking the node tree.
+   *
+   * @param path
+   *   The fully resolved node path up to the current entry.
+   * 
+   * @param entry
+   *   The current node tree entry.
+   * 
+   * @param sorted
+   *   A table of fully resolved node named indexed by last access time.
+   * 
+   * @param timer
+   *   The shared task timer.
+   *
+   * @return 
+   *   The total count of all node versions.
+   */ 
+  private long
+  sortNodesByLastAccess
+  (
+   String path, 
+   NodeTreeEntry entry,
+   TreeMap<Long,String> sorted,  
+   TaskTimer timer
+  ) 
+  {
+    String name = (path + "/" + entry.getName());
+    long total = 0;
+
+    if(entry.isLeaf()) {
+      long newest = 0;
+    
+      if(entry.hasWorking()) {
+	TreeSet<NodeID> nodeIDs = null;
+	{
+	  timer.aquire();
+	  synchronized(pWorkingBundles) {
+	    timer.resume();
+	    
+	    HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	    if(table != null) 
+	      nodeIDs = new TreeSet<NodeID>(table.keySet());
+	  }
+	}
+
+	if(nodeIDs != null) {
+	  for(NodeID nodeID : nodeIDs) {
+	    timer.aquire();
+	    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+	    workingLock.readLock().lock(); 
+	    try {
+	      WorkingBundle bundle = null;
+	      synchronized(pWorkingBundles) {
+		timer.resume();
+
+		HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+		if(table != null) {
+		  bundle = table.get(nodeID);
+		}
+	      }
+
+	      newest = Math.max(newest, bundle.getLastAccess());
+	      total++;
+	    }
+	    finally {
+	      workingLock.readLock().unlock();
+	    }    
+	  }
+	}
+      }
+
+      if(entry.isCheckedIn()) {
+	timer.aquire();
+	ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+	checkedInLock.readLock().lock();	
+	try {
+	  synchronized(pCheckedInBundles) {
+	    timer.resume();
+
+	    TreeMap<VersionID,CheckedInBundle> table = null;
+	    synchronized(pCheckedInBundles) {
+	      table = pCheckedInBundles.get(name);
+	    }
+
+	    if(table != null) {
+	      for(CheckedInBundle bundle : table.values()) {
+		newest = Math.max(newest, bundle.getLastAccess());
+		total++;
+	      }
+	    }
+	  }
+	}
+	finally {
+	  checkedInLock.readLock().unlock();
+	}    
+      }
+
+      if(total > 0) 
+	sorted.put(newest, name);
+    }
+    else {
+      for(NodeTreeEntry child : entry.values()) 
+	total += sortNodesByLastAccess(name, child, sorted, timer);
+    }
+
+    return total;
+  }
+      
+   
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -14381,7 +14631,7 @@ class MasterMgr
 	  }
 
 	  WorkingBundle working = getWorkingBundle(nodeID);
-	  NodeMod work = working.uVersion;
+	  NodeMod work = working.getVersion();
 
 	  if(work.isFrozen()) 
 	    throw new PipelineException
@@ -14507,12 +14757,12 @@ class MasterMgr
 	  writeWorkingVersion(nodeID, nwork);
 
 	  /* update the working bundle */ 
-	  working.uVersion    = nwork;
+	  working.setVersion(nwork);
 
 	  /* update the node status details */ 
 	  NodeDetails ndetails = 
 	    new NodeDetails(name, 
-			    nwork, vsn, checkedIn.get(checkedIn.lastKey()).uVersion,
+			    nwork, vsn, checkedIn.get(checkedIn.lastKey()).getVersion(),
 			    checkedIn.keySet(), 
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
@@ -14604,13 +14854,51 @@ class MasterMgr
      NodeMod mod
     ) 
     {
-      uVersion = mod;
+      pVersion    = mod;
+      pLastAccess = System.currentTimeMillis();
+    }
+
+    /**
+     * Get the working version.
+     */
+    public NodeMod
+    getVersion()
+    {
+      pLastAccess = System.currentTimeMillis();
+      return pVersion;
+    }
+   
+    /**
+     * Set the working version.
+     */
+    public void
+    setVersion
+    (
+     NodeMod mod
+    )
+    {
+      pLastAccess = System.currentTimeMillis();
+      pVersion    = mod; 
+    }
+   
+    /**
+     * Get the timestamp of when the version was last accessed.
+     */
+    public long
+    getLastAccess()
+    {
+      return pLastAccess;
     }
 
     /**
      * The working version of a node. 
      */ 
-    public NodeMod  uVersion;
+    private NodeMod  pVersion;
+
+    /**
+     * The timestamp of when the version was last accessed.
+     */ 
+    private long  pLastAccess; 
   }
 
 
@@ -14631,17 +14919,51 @@ class MasterMgr
      NodeVersion vsn
     ) 
     {
-      uVersion = vsn;
+      pVersion    = vsn;
+      pLastAccess = System.currentTimeMillis();
+    }
+
+    /**
+     * Get the checked-in version.
+     */
+    public NodeVersion
+    getVersion()
+    {
+      pLastAccess = System.currentTimeMillis();
+      return pVersion;
+    }
+   
+    /**
+     * Set the checked-in version.
+     */
+    public void
+    setVersion
+    (
+     NodeVersion vsn
+    )
+    {
+      pLastAccess = System.currentTimeMillis();
+      pVersion    = vsn; 
+    }
+   
+    /**
+     * Get the timestamp of when the version was last accessed.
+     */
+    public long
+    getLastAccess()
+    {
+      return pLastAccess;
     }
 
     /**
      * The checked-in version of a node.
      */ 
-    public NodeVersion  uVersion;
+    public NodeVersion  pVersion;
 
-    
-    // Add Task related stuff here later... 
-
+    /**
+     * The timestamp of when the version was last accessed.
+     */ 
+    private long  pLastAccess; 
   }
 
 
@@ -14656,6 +14978,12 @@ class MasterMgr
    */ 
   private static final long  sRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
   
+  /**
+   * The minimum time a cycle of the node cache garbage collector loop should 
+   * take (in milliseconds).
+   */ 
+  private static final long  sNodeGCInterval = 10800000L;  /* 90-minutes */
+
  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -14869,6 +15197,12 @@ class MasterMgr
 
   
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The maximum number of node versions to cache in memory.
+   */ 
+  private long  pNodeCacheLimit;
+
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 

@@ -47,7 +47,8 @@ MasterOptsParser
   private void 
   init()
   {
-    pLogBackups  = 10;
+    pNodeCacheLimit = PackageInfo.sDefaultNodeCacheLimit;
+    pLogBackups     = 10;
   }
  
 
@@ -70,6 +71,11 @@ MasterOptsParser
    * Whether the file manager should be run as a thread of plmaster(1).
    */ 
   private boolean  pInternalFileMgr; 
+
+  /**
+   * Override of the node cache limit.
+   */ 
+  private long  pNodeCacheLimit; 
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -103,6 +109,7 @@ TOKEN :
   /* global options */	
 | <REBUILD:           "--rebuild"> 
 | <FILE_MGR:          "--file-mgr">   
+| <NODE_CACHE_LIMIT:  "--node-cache-limit">        : INTEGER_SEP  
 | <LOG_FILE:          "--log-file">                : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
@@ -196,6 +203,7 @@ TOKEN :
 | <LOG_ARG: 	     "arg">      
 | <LOG_GLU: 	     "glu">        
 | <LOG_OPS: 	     "ops">     
+| <LOG_MEM: 	     "mem">      
 | <LOG_NET: 	     "net">     
 | <LOG_PLG: 	     "plg">    
 | <LOG_SUB: 	     "sub">    
@@ -264,7 +272,7 @@ Commands()
 	 "host (" + PackageInfo.sMasterServer + ")!");
 
     /* create the server */ 
-    return (new MasterMgrServer(pRebuildCache, pInternalFileMgr));
+    return (new MasterMgrServer(pRebuildCache, pInternalFileMgr, pNodeCacheLimit));
   }
 }
     
@@ -352,7 +360,8 @@ void
 GlobalOpts() :
 {}
 {
-  (Rebuild() | FileMgr() | Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Rebuild() | FileMgr() | NodeCacheLimit() | 
+   Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
 
@@ -373,6 +382,22 @@ void FileMgr() :
     pInternalFileMgr = true; 
   }
 }
+
+void NodeCacheLimit() : 
+{
+  Token t;
+}
+{
+  <NODE_CACHE_LIMIT> EQ() t=<INTEGER>
+  { 
+    pNodeCacheLimit = Long.parseLong(t.image);
+
+    if(pNodeCacheLimit < 100)
+      throw new ParseException
+        ("The node cache limit must be at least (100) node versions!");
+  }
+}
+
 
 void LogFile() : 
 {
@@ -447,7 +472,8 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=PlgKind() | g=GluKind())
+  (g=ArgKind() | g=OpsKind() | g=MemKind() | g=NetKind() | 
+   g=SubKind() | g=PlgKind() | g=GluKind())
   {
     return g;
   }
@@ -468,6 +494,15 @@ LogMgr.Kind OpsKind() :
   <LOG_OPS>
   {
     return LogMgr.Kind.Ops;
+  }
+}
+
+LogMgr.Kind MemKind() : 
+{}
+{
+  <LOG_MEM>
+  {
+    return LogMgr.Kind.Mem;
   }
 }
 

@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.1 2005/01/22 01:36:35 jim Exp $
+// $Id: LogMgr.java,v 1.2 2005/08/15 01:02:03 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -441,6 +441,11 @@ class LogMgr
     Job,
 
     /**
+     * Memory management.
+     */
+    Mem, 
+
+    /**
      * Network communication.
      */
     Net, 
@@ -500,6 +505,7 @@ class LogMgr
     "SUM", 
     "GLU", 
     "JOB", 
+    "MEM",
     "NET", 
     "OPS", 
     "PLG", 

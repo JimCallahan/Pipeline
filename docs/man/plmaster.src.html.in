@@ -107,9 +107,21 @@ is not possible or desirable to run <a href="plfilemgr.html"><span
 server, the next best option is to run the file manager internally
 using this option.<br>
 <br>
-<br>
 </div>
-<span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
+<span style="font-weight: bold;"><a name="--node-cache-limit"></a>--node-cache-limit</span>=<span
+ style="font-style: italic;">size </span><br>
+<div style="margin-left: 40px;"><br>
+Overrides the limit (<span style="font-style: italic;">size</span>) on
+the number of node versions cached in memory.&nbsp; By default, the
+limit is automatically calculated based on the maximum heap size of the
+Java
+VM set by the <span style="font-weight: bold;">--master-heap-size</span>
+option to <a
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
+</div>
+<span style="font-weight: bold;"><br>
+<a name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename<br>
 <br>
 </span>
@@ -174,11 +186,12 @@ at once.<br>
 <div style="margin-left: 40px;"><br>
 <span style="font-weight: bold;">arg</span><br>
 <span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs errors related to parsing the
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">Logs errors related to parsing the
 command-line options.<br>
-<br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">glu<br>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">glu<br>
 </span>
 <div style="margin-left: 40px;">Logs the I/O activity related to <a
  style="font-weight: bold;"
@@ -192,7 +205,13 @@ ops</span><br>
 by the <span style="font-weight: bold;">plmaster</span>(1). <br>
 <br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">mem<br>
+</span>
+<div style="margin-left: 40px;">Logs the activity of the node cache
+garbage collector.<br>
+<br>
+</div>
+<span style="font-weight: bold;">net</span><br>
 <span style="font-weight: bold;"></span></div>
 <div style="margin-left: 80px;">Logs network connections and activity. <br>
 <br>

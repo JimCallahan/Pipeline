@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.54 2005/06/28 18:05:22 jim Exp $
+// $Id: MasterMgrServer.java,v 1.55 2005/08/15 01:02:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,6 +42,9 @@ class MasterMgrServer
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
+   * @param nodeCacheLimit
+   *   The maximum number of node versions to cache in memory.
+   * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
    */
@@ -49,13 +52,14 @@ class MasterMgrServer
   MasterMgrServer
   (
    boolean rebuildCache, 
-   boolean internalFileMgr
+   boolean internalFileMgr, 
+   long nodeCacheLimit
   )
     throws PipelineException 
   { 
     super("MasterMgrServer");
 
-    pMasterMgr = new MasterMgr(rebuildCache, internalFileMgr);
+    pMasterMgr = new MasterMgr(rebuildCache, internalFileMgr, nodeCacheLimit);
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
@@ -91,6 +95,9 @@ class MasterMgrServer
 	 "Server Ready.");
       LogMgr.getInstance().flush();
 
+      NodeGCTask nodeGC = new NodeGCTask();
+      nodeGC.start();
+
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
 	SocketChannel channel = schannel.accept();
@@ -109,6 +116,8 @@ class MasterMgrServer
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	   "Shutting Down -- Waiting for tasks to complete...");
 	LogMgr.getInstance().flush();
+
+	nodeGC.join();
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -1121,6 +1130,47 @@ class MasterMgrServer
     private Socket         pSocket;
   }
   
+  /**
+   * Node cache garbage collector. 
+   */
+  private 
+  class NodeGCTask
+    extends Thread
+  {
+    public 
+    NodeGCTask() 
+    {
+      super("MasterMgrServer:NodeGCTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "Node Garbage Collector Started.");	
+	LogMgr.getInstance().flush();
+
+	while(!pShutdown.get()) {
+	  pMasterMgr.nodeGC();
+	}
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+	   "Node Garbage Collector Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();	
+      }
+      finally {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "Node Garbage Collector Finished.");	
+	LogMgr.getInstance().flush();
+      }
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
