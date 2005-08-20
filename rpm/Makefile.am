@@ -19,6 +19,7 @@ RPMS = \
 endif
 
 
+MAC_SRC_DIR   = $(patsubst /home/%,/Users/%,$(top_srcdir))
 MAC_BUILD_DIR = $(patsubst /home/%,/Users/%,$(shell pwd))
 
 
@@ -89,6 +90,7 @@ if HAS_MAC
 RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 	rm -rf DEST/plmac
+	rsync -av $(top_srcdir)/ tadpole:$(MAC_SRC_DIR)
 	ssh tadpole $(MAKE) -C $(MAC_BUILD_DIR) all
 	scp -rpq tadpole:$(MAC_BUILD_DIR)/DEST/plmac DEST/plmac
 	rpmbuild --rcfile rpmrc -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec

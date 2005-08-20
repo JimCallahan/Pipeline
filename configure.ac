@@ -756,7 +756,8 @@ AC_MSG_CHECKING([java includes])
 AC_SUBST(JAVA_INC)
 case "$NATIVE_OSTYPE" in 
   (Unix)  
-    JAVA_INC=`dirname $JAVA`/../include;;
+    fulljava=`readlink -f $JAVA`;
+    JAVA_INC=`dirname $fulljava`/../include;;
 
   (MacOS) 
     JAVA_INC=`dirname $JAVA`/../Headers;;
