@@ -1,4 +1,4 @@
-// $Id: NodeReleaseReq.java,v 1.1 2004/07/18 21:38:18 jim Exp $
+// $Id: NodeReleaseReq.java,v 1.2 2005/08/21 00:49:46 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,8 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to release the given working version.
+ * A request to release working versions of nodes and optionally remove the associated 
+ * working area files.
  * 
  * @see MasterMgr
  */
@@ -28,8 +29,14 @@ class NodeReleaseReq
   /** 
    * Constructs a new request.
    * 
-   * @param id 
-   *   The unique working version identifier.
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param names 
+   *   The fully resolved names of the nodes to release.
    * 
    * @param removeFiles
    *   Should the files associated with the working version be deleted?
@@ -37,15 +44,27 @@ class NodeReleaseReq
   public
   NodeReleaseReq
   (
-   NodeID id,
+   String author, 
+   String view, 
+   TreeSet<String> names, 
    boolean removeFiles
   )
   { 
-    if(id == null) 
-      throw new IllegalArgumentException
-	("The working version ID cannot be (null)!");
-    pNodeID = id;
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    pAuthor = author;
 
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+    pView = view;
+
+    if(names == null) 
+      throw new IllegalArgumentException("The node names cannot be (null)!");
+    if(names.isEmpty()) 
+      throw new IllegalArgumentException
+	("At least one name of a node to release must be specified!");
+    pNames = names;
+    
     pRemoveFiles = removeFiles;
   }
 
@@ -55,13 +74,31 @@ class NodeReleaseReq
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Gets the unique working version identifier.
-   */
-  public NodeID
-  getNodeID() 
+  /** 
+   * Get the name of user which owens the working area.
+   */ 
+  public String
+  getAuthor() 
   {
-    return pNodeID;
+    return pAuthor;
+  }
+
+  /** 
+   * Get the name of the working area view.
+   */
+  public String
+  getView()
+  {
+    return pView;
+  }
+
+  /**
+   * Gets fully resolved names of the nodes to release.
+   */
+  public TreeSet<String> 
+  getNames() 
+  {
+    return pNames; 
   }
   
   /**
@@ -86,10 +123,20 @@ class NodeReleaseReq
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * The name of user which owens the working version.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view.
+   */
+  private String  pView;
+
   /**
-   * The unique working version identifier.
+   * The fully resolved names of the nodes to release.
    */ 
-  private NodeID  pNodeID;
+  private TreeSet<String>  pNames; 
 
   /**
    * Should the files associated with the working version be deleted?

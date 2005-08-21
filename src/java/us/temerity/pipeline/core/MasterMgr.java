@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.137 2005/08/15 01:02:03 jim Exp $
+// $Id: MasterMgr.java,v 1.138 2005/08/21 00:49:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4780,7 +4780,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Release the working version of a node and optionally remove the associated 
+   * Release the working versions of nodes and optionally remove the associated 
    * working area files. <P> 
    * 
    * @param req 
@@ -4796,164 +4796,263 @@ class MasterMgr
    NodeReleaseReq req
   ) 
   {
-    assert(req != null);
-    NodeID id = req.getNodeID();
-    String name = id.getName();
-
-    TaskTimer timer = new TaskTimer("MasterMgr.release(): " + id);
-
+    TaskTimer timer = new TaskTimer("MasterMgr.release()");
+    
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
-
-      /* unlink the downstream working versions from the to be released working version */ 
+    
+      /* determine the link relationships between the nodes being released */ 
+      TreeMap<String,NodeLinks> all = new TreeMap<String,NodeLinks>();
       {
-	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
-	  
-	  DownstreamLinks links = getDownstreamLinks(name); 
-	  if(links != null) {
-	    TreeSet<String> targets = links.getWorking(id);
-	    if(targets != null) {
-	      for(String target : targets) {
-		NodeID targetID = new NodeID(id, target);
-		
-		timer.suspend();
-		Object obj = unlink(new NodeUnlinkReq(targetID, name));
-		timer.accum(((TimedRsp) obj).getTimer());
-		
-		if(obj instanceof FailureRsp)  {
-		  FailureRsp rsp = (FailureRsp) obj;
-		  return new FailureRsp(timer, rsp.getMessage());
-		}
-	      }
-	    }
-	  }
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}
-      }
-      
-      timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(id);
-      lock.writeLock().lock();
-      try {
-	timer.resume();
+	for(String name : req.getNames()) 
+	  all.put(name, new NodeLinks(name));
 
-	WorkingBundle bundle = getWorkingBundle(id);
-	if(bundle == null) 
-	  throw new PipelineException
-	    ("No working version (" + id + ") exists to be released.");
-	NodeMod mod = bundle.getVersion();
-	
-	/* kill any active jobs associated with the node */
-	killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
-	
-	/* remove the bundle */ 
-	synchronized(pWorkingBundles) {
-	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	  table.remove(id);
-	}
-	
-	/* remove the working version node file(s) */ 
-	{
-	  File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
-	  File backup = new File(file + ".backup");
+	for(String name : all.keySet()) {
+	  NodeLinks links = all.get(name);
+	  NodeID nodeID = new NodeID(req.getAuthor(), req.getView(), name);
 	  
-	  if(file.isFile()) {
-	    if(!file.delete())
-	      throw new PipelineException
-		("Unable to remove the working version file (" + file + ")!");
-	  }
-	  else {
-	    throw new PipelineException
-	      ("Somehow the working version file (" + file + ") did not exist!");
-	  }
-	  
-	  if(backup.isFile()) {
-	    if(!backup.delete())
-	      throw new PipelineException      
-		("Unable to remove the backup working version file (" + backup + ")!");
-	  }
-
-	  File root = new File(PackageInfo.sNodeDir, 
-			       "working/" + id.getAuthor() + "/" + id.getView());
-
-	  deleteEmptyParentDirs(root, new File(PackageInfo.sNodeDir, 
-					       id.getWorkingParent().toString()));
-	}
-	
-	/* update the downstream links of this node */ 
-	{
-	  boolean isRevoked = false;
-	  
-	  timer.aquire();	
-	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	  downstreamLock.writeLock().lock();
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+	  lock.readLock().lock(); 
 	  try {
 	    timer.resume();
 	    
-	    DownstreamLinks links = getDownstreamLinks(name); 
-	    links.releaseWorking(id);
-	  }  
-	  finally {
-	    downstreamLock.writeLock().unlock();
-	  } 
-	}
-	
-	/* update the downstream links of the source nodes */ 
-	for(LinkMod link : mod.getSources()) {
-	  String source = link.getName();
-	  
-	  timer.aquire();	
-	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	  downstreamLock.writeLock().lock();
-	  try {
-	    timer.resume();
-
-	    NodeID sourceID = new NodeID(id, source);
-	    DownstreamLinks links = getDownstreamLinks(source); 
-	    links.removeWorking(sourceID, name);
-	  }  
-	  finally {
-	    downstreamLock.writeLock().unlock();
-	  }    
-	}
-	
-	/* remove the node tree path */ 
-	removeWorkingNodeTreePath(id);
-
-	/* remove the associated files */ 
-	if(req.removeFiles()) {
-	  FileMgrClient fclient = getFileMgrClient();
-	  try {
-	    fclient.removeAll(id, mod.getSequences());
+	    WorkingBundle bundle = getWorkingBundle(nodeID);
+	    if(bundle == null) 
+	      throw new PipelineException
+		("No working version (" + nodeID + ") exists to be released.");
+	    
+	    for(String sname : bundle.getVersion().getSourceNames()) {
+	      NodeLinks slinks = all.get(sname);
+	      if(slinks != null) {
+		links.addSource(slinks);
+		slinks.addTarget(links);
+	      }
+	    }
 	  }
 	  finally {
-	    freeFileMgrClient(fclient);
-	  }	
+	    lock.readLock().unlock();
+	  }    
+	}
+      }
+      
+      /* get the initial tree roots */ 
+      TreeSet<String> roots = new TreeSet<String>();
+      for(String name : all.keySet()) {
+	NodeLinks links = all.get(name);
+	if(!links.hasTargets()) 
+	  roots.add(name);
+      }
+
+      /* release the nodes, roots first */ 
+      TreeSet<String> failures = new TreeSet<String>();
+      while(!roots.isEmpty()) {
+	String name = roots.first();
+	NodeLinks links = all.get(name);
+
+	// DEBUG
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	   "Releasing: " + links);
+	// DEBUG
+
+	try {
+	  releaseHelper(new NodeID(req.getAuthor(), req.getView(), name), 
+			req.removeFiles(), timer);
+	}
+	catch(PipelineException ex) {
+	  failures.add(ex.getMessage());
+	}
+
+	for(String sname : links.getSourceNames()) {
+	  NodeLinks slinks = all.get(sname);
+	  slinks.removeTarget(links);
+	  if(!slinks.hasTargets()) 
+	    roots.add(sname);
 	}
 	
-	return new SuccessRsp(timer);
+	roots.remove(name);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
+      
+      if(!failures.isEmpty()) {
+	StringBuffer buf = new StringBuffer();
+	buf.append("Unable to release all of the selected nodes!");
+	for(String msg : failures) 
+	  buf.append("\n\n" + msg);
+	return new FailureRsp(timer, buf.toString());
       }
-      finally {
-	lock.writeLock().unlock();
-      }   
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
     } 
+  }
+
+  /**
+   * Release a single working version of a node and optionally remove the associated 
+   * working area files. <P> 
+   * 
+   * This method should only be called from inside a pDatabaseLock synchronized block
+   * of code.
+   *
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param removeFiles
+   *   Should the files associated with the working version be deleted?
+   */
+  private void 
+  releaseHelper
+  (
+   NodeID id, 
+   boolean removeFiles, 
+   TaskTimer timer
+  )
+    throws PipelineException 
+  {
+    String name = id.getName();
+
+    /* unlink the downstream working versions from the to be released working version */ 
+    {
+      timer.aquire();
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+      downstreamLock.writeLock().lock();
+      try {
+	timer.resume();
+	  
+	DownstreamLinks links = getDownstreamLinks(name); 
+	if(links != null) {
+	  TreeSet<String> targets = links.getWorking(id);
+	  if(targets != null) {
+	    for(String target : targets) {
+	      NodeID targetID = new NodeID(id, target);
+		
+	      timer.suspend();
+	      Object obj = unlink(new NodeUnlinkReq(targetID, name));
+	      timer.accum(((TimedRsp) obj).getTimer());
+		
+	      if(obj instanceof FailureRsp)  {
+		FailureRsp rsp = (FailureRsp) obj;
+		throw new PipelineException(rsp.getMessage());
+	      }
+	    }
+	  }
+	}
+      }
+      finally {
+	downstreamLock.writeLock().unlock();
+      }
+    }
+      
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+
+      WorkingBundle bundle = getWorkingBundle(id);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("No working version (" + id + ") exists to be released.");
+      NodeMod mod = bundle.getVersion();
+	
+      /* kill any active jobs associated with the node */
+      killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
+	
+      /* remove the bundle */ 
+      synchronized(pWorkingBundles) {
+	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	table.remove(id);
+      }
+	
+      /* remove the working version node file(s) */ 
+      {
+	File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
+	File backup = new File(file + ".backup");
+	  
+	if(file.isFile()) {
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the working version file (" + file + ")!");
+	}
+	else {
+	  throw new PipelineException
+	    ("Somehow the working version file (" + file + ") did not exist!");
+	}
+	  
+	if(backup.isFile()) {
+	  if(!backup.delete())
+	    throw new PipelineException      
+	      ("Unable to remove the backup working version file (" + backup + ")!");
+	}
+
+	File root = new File(PackageInfo.sNodeDir, 
+			     "working/" + id.getAuthor() + "/" + id.getView());
+
+	deleteEmptyParentDirs(root, new File(PackageInfo.sNodeDir, 
+					     id.getWorkingParent().toString()));
+      }
+	
+      /* update the downstream links of this node */ 
+      {
+	boolean isRevoked = false;
+	  
+	timer.aquire();	
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	    
+	  DownstreamLinks links = getDownstreamLinks(name); 
+	  links.releaseWorking(id);
+	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	} 
+      }
+	
+      /* update the downstream links of the source nodes */ 
+      for(LinkMod link : mod.getSources()) {
+	String source = link.getName();
+	  
+	timer.aquire();	
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+
+	  NodeID sourceID = new NodeID(id, source);
+	  DownstreamLinks links = getDownstreamLinks(source); 
+	  links.removeWorking(sourceID, name);
+	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}    
+      }
+	
+      /* remove the node tree path */ 
+      removeWorkingNodeTreePath(id);
+
+      /* remove the associated files */ 
+      if(removeFiles) {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.removeAll(id, mod.getSequences());
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}	
+      }
+    }
+    finally {
+      lock.writeLock().unlock();
+    }  
   }
 
   
@@ -5041,14 +5140,7 @@ class MasterMgr
 	}
 
 	for(NodeID nodeID : dead) {
-	  timer.suspend();
-	  Object obj = release(new NodeReleaseReq(nodeID, req.removeFiles()));
-	  timer.accum(((TimedRsp) obj).getTimer());
-	  if(obj instanceof FailureRsp) {
-	    FailureRsp rsp = (FailureRsp) obj;
-	    throw new PipelineException(rsp.getMessage());	
-	  }
-
+	  releaseHelper(nodeID, req.removeFiles(), timer);
 	  pWorkingLocks.remove(nodeID);
 	}
 	
@@ -5534,15 +5626,7 @@ class MasterMgr
 	    }
 	    
 	    /* release the old named node */ 
-	    {
-	      timer.suspend();
-	      Object obj = release(new NodeReleaseReq(id, false));
-	      timer.accum(((TimedRsp) obj).getTimer());
-	      if(obj instanceof FailureRsp) {
-		FailureRsp rsp = (FailureRsp) obj;
-		throw new PipelineException(rsp.getMessage());	
-	      }
-	    }
+	    releaseHelper(id, false, timer);
 	  }
 	  
 	  /* rename the files */ 

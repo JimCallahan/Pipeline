@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.55 2005/08/15 01:02:03 jim Exp $
+// $Id: MasterMgrServer.java,v 1.56 2005/08/21 00:49:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -117,6 +117,7 @@ class MasterMgrServer
 	   "Shutting Down -- Waiting for tasks to complete...");
 	LogMgr.getInstance().flush();
 
+	nodeGC.interrupt();
 	nodeGC.join();
 
 	synchronized(pTasks) {

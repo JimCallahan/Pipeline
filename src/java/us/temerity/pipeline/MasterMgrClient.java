@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.66 2005/06/28 18:05:21 jim Exp $
+// $Id: MasterMgrClient.java,v 1.67 2005/08/21 00:49:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3257,11 +3257,14 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    release(new NodeID(author, view, name), removeFiles);
+    TreeSet<String> names = new TreeSet<String>();
+    names.add(name);
+
+    release(author, view, names, removeFiles);
   } 
 
   /**
-   * Release the working version of a node and optionally remove the associated 
+   * Release the working versions of nodes and optionally remove the associated 
    * working area files. <P> 
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
@@ -3284,13 +3287,51 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
+    TreeSet<String> names = new TreeSet<String>();
+    names.add(nodeID.getName());
+
+    release(nodeID.getAuthor(), nodeID.getView(), names, removeFiles);
+  } 
+
+  /**
+   * Release the working version of a node and optionally remove the associated 
+   * working area files. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param names 
+   *   The fully resolved names of the nodes to release.
+   *
+   * @param removeFiles 
+   *   Should the files associated with the working version be deleted?
+   *
+   * @throws PipelineException 
+   *   If unable to release the given node.
+   */ 
+  public synchronized void 
+  release
+  ( 
+   String author, 
+   String view, 
+   TreeSet<String> names, 
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may release nodes owned by another user!");
 
     verifyConnection();
 
-    NodeReleaseReq req = new NodeReleaseReq(nodeID, removeFiles);
+    NodeReleaseReq req = new NodeReleaseReq(author, view, names, removeFiles);
 
     Object obj = performTransaction(MasterRequest.Release, req);
     handleSimpleResponse(obj);

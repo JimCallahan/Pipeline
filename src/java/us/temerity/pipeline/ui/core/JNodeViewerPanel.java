@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.37 2005/08/15 01:11:52 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.38 2005/08/21 00:49:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4550,13 +4550,10 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
+      if(master.beginPanelOp("Releasing Nodes...")) {
 	MasterMgrClient client = master.getMasterMgrClient();
 	try {
-	  for(String name : pNames) {
-	    master.updatePanelOp("Releasing Node: " + name);	
-	    client.release(pAuthor, pView, name, pRemoveFiles);
-	  }
+	  client.release(pAuthor, pView, pNames, pRemoveFiles);
 
 	  if(pRemoveArea) 
 	    client.removeWorkingArea(pAuthor, pView);
