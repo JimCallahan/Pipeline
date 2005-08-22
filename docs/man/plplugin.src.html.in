@@ -31,8 +31,8 @@ written using the <a href="../javadoc/index.html"><span
  style="font-weight: bold;">Pipeline API</span></a>.&nbsp; This tool is
 used to install new plugins or update existing plugins in a safe manner
 so that running Pipeline daemons and client programs will properly load
-and use the newly installed plugins.&nbsp; All Pipeline programs which
-use plugins are capable of reloading plugins on the fly.&nbsp; This is
+and use the newly installed plugins.&nbsp; All Pipeline programs are
+capable of reloading plugins on the fly.&nbsp; This is
 important when developing and testing new plugins, but it requires that
 care be taken so that Pipeline maintains a consistent state.&nbsp; <br>
   <span style="color: rgb(153, 0, 0);"></span><span
@@ -46,7 +46,7 @@ This program must be run by the
  style="font-weight: bold;">plplugin</span>(1) inspects the compiled
 Java class files to make sure they will be loaded properly by Pipeline
 programs before performing the installation.&nbsp; Due to the dynamic
-nature of how Pipeline programs load plugins, there are some
+nature of how Pipeline loads plugins, there are some
 restrictions on what plugins may contain and how they are named and
 versioned.<br>
   <br>
@@ -64,7 +64,7 @@ plugin base classes: <a
  style="font-weight: bold;">BaseArchiver</span></a>.&nbsp; Each of
 these classes has a protected constructor which should be called from
 your plugin's single no-arg constructor with constant values for the
-following three parameters:<br>
+following four parameters:<br>
 </blockquote>
 <div style="margin-left: 40px;"><code>String name</code><br>
 </div>
@@ -83,6 +83,18 @@ contain whitespace or other non-printable characters.<br>
 Pipeline allows multiple versions of the same plugin to be used
 simultaneously and this revision number is used to distinguish between
 the various versions.&nbsp; <br>
+</div>
+<br>
+<code>String vendor</code><br>
+<div style="margin-left: 40px;"><br>
+The short name of the organization which created the
+plugin.&nbsp;&nbsp; This name will also be displayed in the UI and
+should be fairly short. The plugins which are part of the Pipeline
+release all have a vendor name of "Temerity".&nbsp;&nbsp; When choosing
+a vendor name for your site, it would be prudent to consult Support &lt;<a
+ href="mailto:support@temerity.us">support@temerity.us</a>&gt; to make
+sure your choice is unique.&nbsp; In particular, you should NEVER use
+the "Temerity" vendor name for your plugins.<br>
 </div>
 <br>
 <code>String desc</code><br>
@@ -124,7 +136,7 @@ class EmacsEditor<br style="font-family: monospace;">
 &nbsp; EmacsEditor()<br style="font-family: monospace;">
 &nbsp; {<br style="font-family: monospace;">
 &nbsp;&nbsp;&nbsp;
-super("Emacs", new VersionID("1.0.0"),<br
+super("Emacs", new VersionID("1.0.0"), "Temerity", <br
  style="font-family: monospace;">
 &nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU text editor.", <br
@@ -143,8 +155,7 @@ long serialVersionUID = <br>
   </div>
 You could use a shorter package name, but the general Java convention
 of prefixing the package with the company domain in reverse order is
-advisable to facilitate sharing of Pipeline plugins between
-sites.&nbsp; <br>
+advisable to reduce the possiblity of Java class name clashes.<br>
   <br>
 Notice that the Java class name is "EmacsEditor" and not "Emacs".&nbsp;
 There is no requirement that Editor plugins have "Editor" in their
@@ -360,17 +371,6 @@ all loggers and is used for normal output from <b>plplugin</b>(1). <br>
 <div style="margin-left: 80px;">These three levels are used for
 increasingly more detailed command tracing messages. <br>
 </div>
-<br>
-Logging can also be controlled on a system-wide basis by modifying the <a
- href="#logger_properties"><span style="font-weight: bold;">logger.properties</span></a>
-file installed as part of the Pipeline distribution. <span
- style="font-weight: bold;"></span>See the Java
-API documentation for the class<span style="font-weight: bold;">
-java.util.logging.Logger</span> for more information about the format
-of this file.&nbsp; Settings from the <a href="#--log"><span
- style="font-weight: bold;">--log</span></a> option will override
-settings from the <span style="font-weight: bold;">logger.properties</span>
-file.<br>
 </div>
 </div>
 <h3><a name="Action_Options"></a>Action Options</h3>
@@ -461,15 +461,6 @@ Software</span><br>
 <div style="margin-left: 40px;">The directory containing the installed
 plugin class files.<br>
 </div>
-</div>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="logger_properties"></a><a href="../../logger.properties">logger.properties</a></span><br>
-<div style="margin-left: 40px;"><br>
-The site configuration for output loggers used by Pipeline
-programs.&nbsp;
-See the <a href="#--log"><span style="font-weight: bold;">--log </span></a>option
-for details about the individual loggers.</div>
 </div>
 <h3><a name="Author"></a>Author</h3>
 <div style="margin-left: 40px;">Created by <span

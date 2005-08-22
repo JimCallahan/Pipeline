@@ -1237,17 +1237,6 @@ all loggers and is used for normal output from <b>pui</b>(1). <br>
 <div style="margin-left: 80px;">These three levels are used for
 increasingly more detailed command tracing messages. <br>
 </div>
-<span style="font-weight: bold;"></span><br>
-Logging can also be controlled on a system-wide basis by modifying the <a
- href="#logger_properties"><span style="font-weight: bold;">logger.properties</span></a>
-file installed as part of the Pipeline distribution. <span
- style="font-weight: bold;"></span>See the Java
-API document ion for the class<span style="font-weight: bold;">
-java.util.logging.Logger</span> for more information about the format
-of this file.&nbsp; Settings from the <a href="#--logging"><span
- style="font-weight: bold;">--log</span></a> option will override
-settings from the <span style="font-weight: bold;">logger.properties</span>
-file.<br>
 </div>
 </div>
 <blockquote>
@@ -4226,16 +4215,6 @@ Software</span><br>
     <blockquote> </blockquote>
   </blockquote>
 </blockquote>
-<h3><a name="Files"></a>Files</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="logger_properties"></a></span><span style="font-weight: bold;">
-<a href="../../logger.properties">logger.properties</a></span><br>
-<div style="margin-left: 40px;"><br>
-The site configuration for output loggers used by Pipeline
-programs.&nbsp;
-See the <a href="#--log"><span style="font-weight: bold;">--log </span></a>option
-for details about the individual loggers.</div>
-</div>
 <h3><a name="Author"></a>Author</h3>
 <div style="margin-left: 40px;">Created by <span
  style="font-weight: bold;">Jim Callahan</span> of <a
