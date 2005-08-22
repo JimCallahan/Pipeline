@@ -1257,7 +1257,6 @@ AC_CONFIG_FILES([
   src/java/scripts/plui
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
-  src/java/scripts/upgrade-toolsets-1.9.22
 
   src/java/scripts/debug/Makefile
   src/java/scripts/debug/plfilemgr
