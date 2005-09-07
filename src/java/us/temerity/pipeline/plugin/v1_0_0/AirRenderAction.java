@@ -1,4 +1,4 @@
-// $Id: AirRenderAction.java,v 1.1 2005/05/14 08:32:05 jim Exp $
+// $Id: AirRenderAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -85,7 +85,7 @@ class AirRenderAction
   public
   AirRenderAction() 
   {
-    super("AirRender", new VersionID("1.0.0"), 
+    super("AirRender", new VersionID("1.0.0"), "Temerity", 
 	  "The AIR RenderMan compliant renderer.");
 
     {

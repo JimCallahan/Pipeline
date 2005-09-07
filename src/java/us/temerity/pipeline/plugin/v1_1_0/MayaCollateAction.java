@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.8 2004/12/01 23:02:21 jim Exp $
+// $Id: MayaCollateAction.java,v 1.9 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -139,7 +139,7 @@ class MayaCollateAction
   public
   MayaCollateAction() 
   {
-    super("MayaCollate", new VersionID("1.1.0"), 
+    super("MayaCollate", new VersionID("1.1.0"), "Temerity", 
 	  "Builds a Maya scene from component scenes and animation files.");
     
     {

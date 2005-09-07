@@ -1,4 +1,4 @@
-// $Id: XDviEditor.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: XDviEditor.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -22,7 +22,7 @@ class XDviEditor
   public
   XDviEditor()
   {
-    super("XDvi", new VersionID("2.0.0"), 
+    super("XDvi", new VersionID("2.0.0"), "Temerity", 
 	  "The DVI previewer for the X Window System.", 
 	  "xdvi");
   }

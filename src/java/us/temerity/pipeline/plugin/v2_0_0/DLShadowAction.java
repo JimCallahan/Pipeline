@@ -1,4 +1,4 @@
-// $Id: DLShadowAction.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: DLShadowAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -43,7 +43,7 @@ class DLShadowAction
   public
   DLShadowAction() 
   {
-    super("DLShadow", new VersionID("2.0.0"), 
+    super("DLShadow", new VersionID("2.0.0"), "Temerity", 
 	  "Convert ZFile depth maps into optimized 3Delight shadow maps.");
     
     {

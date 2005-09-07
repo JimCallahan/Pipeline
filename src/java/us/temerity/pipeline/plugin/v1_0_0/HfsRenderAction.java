@@ -1,4 +1,4 @@
-// $Id: HfsRenderAction.java,v 1.2 2005/07/02 00:50:28 jim Exp $
+// $Id: HfsRenderAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -87,7 +87,7 @@ class HfsRenderAction
   public
   HfsRenderAction() 
   {
-    super("HfsRender", new VersionID("1.0.0"), 
+    super("HfsRender", new VersionID("1.0.0"), "Temerity", 
 	  "Renders a sequences of images directly from a Houdini scene.");
 
     {

@@ -1,4 +1,4 @@
-// $Id: ImgCvtAction.java,v 1.6 2004/11/11 00:35:26 jim Exp $
+// $Id: ImgCvtAction.java,v 1.7 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -36,7 +36,7 @@ class ImgCvtAction
   public
   ImgCvtAction() 
   {
-    super("ImgCvt", new VersionID("1.0.0"), 
+    super("ImgCvt", new VersionID("1.0.0"), "Temerity", 
 	  "Converts images files from another format.");
     
     {

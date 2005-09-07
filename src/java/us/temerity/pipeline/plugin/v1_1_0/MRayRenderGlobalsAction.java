@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.1 2005/02/23 08:03:45 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -447,7 +447,7 @@ class MRayRenderGlobalsAction
   public
   MRayRenderGlobalsAction() 
   {
-    super("MRayRenderGlobals", new VersionID("1.1.0"), 
+    super("MRayRenderGlobals", new VersionID("1.1.0"), "Temerity", 
 	  "Creates a MEL script which sets the Mental Ray render globals of a Maya scene.");
 
     /* image resolution */ 

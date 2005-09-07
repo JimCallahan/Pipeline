@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -72,7 +72,7 @@ class DLCatRIBAction
   public
   DLCatRIBAction() 
   {
-    super("DLCatRIB", new VersionID("1.0.0"), 
+    super("DLCatRIB", new VersionID("1.0.0"), "Temerity", 
 	  "Processes RIB files to generate binary, compressed and/or evaluated RIBs.");
     
     {

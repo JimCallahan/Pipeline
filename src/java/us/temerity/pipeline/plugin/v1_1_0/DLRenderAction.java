@@ -1,4 +1,4 @@
-// $Id: DLRenderAction.java,v 1.1 2005/06/02 22:22:24 jim Exp $
+// $Id: DLRenderAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -45,7 +45,7 @@ class DLRenderAction
   public
   DLRenderAction() 
   {
-    super("DLRender", new VersionID("1.1.0"), 
+    super("DLRender", new VersionID("1.1.0"), "Temerity", 
 	  "The 3Delight RenderMan compliant renderer.");
   }
 

@@ -1,4 +1,4 @@
-// $Id: HfsMRayDSAction.java,v 1.1 2005/07/13 13:52:07 jim Exp $
+// $Id: HfsMRayDSAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -30,7 +30,7 @@ class HfsMRayDSAction
   public
   HfsMRayDSAction() 
   {
-    super("HfsMRayDS", new VersionID("1.0.0"), 
+    super("HfsMRayDS", new VersionID("1.0.0"), "Temerity", 
 	  "Generates an OTL containing Houdini dialog scripts for a set of " + 
 	  "MentalRay shaders."); 
 

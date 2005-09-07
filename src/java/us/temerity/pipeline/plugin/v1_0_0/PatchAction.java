@@ -1,4 +1,4 @@
-// $Id: PatchAction.java,v 1.4 2004/11/11 00:35:26 jim Exp $
+// $Id: PatchAction.java,v 1.5 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -49,7 +49,7 @@ class PatchAction
   public
   PatchAction() 
   {
-    super("Patch", new VersionID("1.0.0"), 
+    super("Patch", new VersionID("1.0.0"), "Temerity", 
 	  "Applies a series of diff(1) generated patches to original file.");
     
     {

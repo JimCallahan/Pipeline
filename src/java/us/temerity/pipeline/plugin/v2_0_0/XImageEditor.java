@@ -1,4 +1,4 @@
-// $Id: XImageEditor.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: XImageEditor.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -26,7 +26,7 @@ class XImageEditor
   public
   XImageEditor() 
   {
-    super("XImage", new VersionID("2.0.0"), 
+    super("XImage", new VersionID("2.0.0"), "Temerity",
 	  "The Radiance HDR image viewer.", 
 	  "ximage"); 
   }

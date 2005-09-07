@@ -1,4 +1,4 @@
-// $Id: TarTapeArchiver.java,v 1.3 2005/06/15 12:16:15 jim Exp $
+// $Id: TarTapeArchiver.java,v 1.4 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -40,7 +40,7 @@ class TarTapeArchiver
   public
   TarTapeArchiver()
   {
-    super("TarTape", new VersionID("1.1.0"),
+    super("TarTape", new VersionID("1.1.0"), "Temerity", 
 	  "Archive to magnetic tape using the tar(1) utility.");
 
     {

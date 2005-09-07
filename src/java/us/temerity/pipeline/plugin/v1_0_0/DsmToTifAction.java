@@ -1,4 +1,4 @@
-// $Id: DsmToTifAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
+// $Id: DsmToTifAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -88,7 +88,7 @@ class DsmToTifAction
   public
   DsmToTifAction() 
   {
-    super("DsmToTif", new VersionID("1.0.0"), 
+    super("DsmToTif", new VersionID("1.0.0"), "Temerity", 
 	  "Converts a depth slice from a deep shadow map (DSM) into a TIF image " + 
 	  "suitable for display.");
     

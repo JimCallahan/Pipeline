@@ -1,4 +1,4 @@
-// $Id: DLEnvMapAction.java,v 1.2 2005/05/13 10:57:12 jim Exp $
+// $Id: DLEnvMapAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -118,7 +118,7 @@ class DLEnvMapAction
   public
   DLEnvMapAction() 
   {
-    super("DLEnvMap", new VersionID("1.0.0"), 
+    super("DLEnvMap", new VersionID("1.0.0"), "Temerity", 
 	  "Generates optimized 3Delight latitude/longitude environment maps from " + 
 	  "source images.");
     

@@ -1,4 +1,4 @@
-// $Id: XDiffComparator.java,v 1.1 2004/09/08 18:31:28 jim Exp $
+// $Id: XDiffComparator.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -22,7 +22,7 @@ class XDiffComparator
   public
   XDiffComparator()
   {
-    super("XDiff", new VersionID("1.0.0"), 
+    super("XDiff", new VersionID("1.0.0"), "Temerity", 
 	  "The X11 based text file comparator and merge tool.", 
 	  "xdiff");
   }

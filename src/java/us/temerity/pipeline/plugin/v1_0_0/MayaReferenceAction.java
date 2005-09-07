@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.7 2004/11/21 18:39:56 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.8 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -57,7 +57,7 @@ class MayaReferenceAction
   public
   MayaReferenceAction() 
   {
-    super("MayaReference", new VersionID("1.0.0"), 
+    super("MayaReference", new VersionID("1.0.0"), "Temerity", 
 	  "Builds a Maya scene from component scenes.");
     
     {

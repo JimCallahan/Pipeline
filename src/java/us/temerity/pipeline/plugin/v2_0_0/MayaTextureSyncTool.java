@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -31,7 +31,7 @@ class MayaTextureSyncTool
   public
   MayaTextureSyncTool()
   {
-    super("MayaTextureSync", new VersionID("2.0.0"),
+    super("MayaTextureSync", new VersionID("2.0.0"), "Temerity",
 	  "Synchronizes the texture files referenced by a Maya scene with Pipeline.");
 
     pPhase = 1; 
@@ -1335,20 +1335,8 @@ class MayaTextureSyncTool
 	  primary = fseqs.first();
 	}
 	
-	String ename = null;
-	VersionID evid = null;
-	{
-	  String editor = mclient.getEditorForSuffix(primary.getFilePattern().getSuffix());
-	  if(editor != null) {
-	    TreeSet<VersionID> vids = PluginMgrClient.getInstance().getEditors().get(editor);
-	    if(vids != null) {
-	      ename = editor;
-	      evid  = vids.last();
-	    }
-	  }
-	}
-
-	NodeMod mod = new NodeMod(nodeID.getName(), primary, null, toolset, ename, evid);
+	BaseEditor editor = mclient.getEditorForSuffix(primary.getFilePattern().getSuffix());
+	NodeMod mod = new NodeMod(nodeID.getName(), primary, null, toolset, editor);
  	mclient.register(PackageInfo.sUser, pView, mod);
       }
     }

@@ -1,4 +1,4 @@
-// $Id: HfsVEXAction.java,v 1.1 2005/06/28 20:51:10 jim Exp $
+// $Id: HfsVEXAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -50,7 +50,7 @@ class HfsVEXAction
   public
   HfsVEXAction() 
   {
-    super("HfsVEX", new VersionID("1.0.0"), 
+    super("HfsVEX", new VersionID("1.0.0"), "Temerity", 
 	  "Generates an OTL by compiling a set of VEX based Houdini OPs/Shaders.");
    
     {

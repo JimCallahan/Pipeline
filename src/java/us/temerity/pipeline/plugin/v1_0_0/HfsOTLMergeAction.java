@@ -1,4 +1,4 @@
-// $Id: HfsOTLMergeAction.java,v 1.1 2005/06/28 20:51:10 jim Exp $
+// $Id: HfsOTLMergeAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -34,7 +34,7 @@ class HfsOTLMergeAction
   public
   HfsOTLMergeAction() 
   {
-    super("HfsOTLMerge", new VersionID("1.0.0"), 
+    super("HfsOTLMerge", new VersionID("1.0.0"), "Temerity", 
 	  "Generates an OTL containing all operator definitions from a set of source OTLs.");
   }
 

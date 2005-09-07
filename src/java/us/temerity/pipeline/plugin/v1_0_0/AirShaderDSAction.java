@@ -1,4 +1,4 @@
-// $Id: AirShaderDSAction.java,v 1.1 2005/05/14 08:32:05 jim Exp $
+// $Id: AirShaderDSAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -42,7 +42,7 @@ class AirShaderDSAction
   public
   AirShaderDSAction() 
   {
-    super("AirShaderDS", new VersionID("1.0.0"), 
+    super("AirShaderDS", new VersionID("1.0.0"), "Temerity", 
 	  "Generates a Houdini dialog script for a compliled AIR shader.");
     
     {

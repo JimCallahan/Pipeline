@@ -1,4 +1,4 @@
-// $Id: ImfDispEditor.java,v 1.3 2004/10/28 15:55:24 jim Exp $
+// $Id: ImfDispEditor.java,v 1.4 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -25,7 +25,7 @@ class ImfDispEditor
   public
   ImfDispEditor()
   {
-    super("ImfDisp", new VersionID("1.0.0"),
+    super("ImfDisp", new VersionID("1.0.0"), "Temerity", 
 	  "An alternative Maya image viewer.", 
 	  "imf_disp");
   }

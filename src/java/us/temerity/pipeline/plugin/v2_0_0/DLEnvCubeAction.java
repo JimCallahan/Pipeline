@@ -1,4 +1,4 @@
-// $Id: DLEnvCubeAction.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: DLEnvCubeAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -108,7 +108,7 @@ class DLEnvCubeAction
   public
   DLEnvCubeAction() 
   {
-    super("DLEnvCube", new VersionID("2.0.0"), 
+    super("DLEnvCube", new VersionID("2.0.0"), "Temerity",
 	  "Generate an optimized 3Delight cubic environment map from six direction " + 
 	  "source images.");
     

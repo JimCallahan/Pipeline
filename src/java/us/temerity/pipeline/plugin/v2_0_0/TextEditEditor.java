@@ -1,4 +1,4 @@
-// $Id: TextEditEditor.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: TextEditEditor.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -25,7 +25,7 @@ class TextEditEditor
   public
   TextEditEditor()
   {
-    super("TextEdit", new VersionID("2.0.0"), 
+    super("TextEdit", new VersionID("2.0.0"), "Temerity", 
 	  "The Mac OS X Text Editor.", 
 	  "TextEdit");
   }

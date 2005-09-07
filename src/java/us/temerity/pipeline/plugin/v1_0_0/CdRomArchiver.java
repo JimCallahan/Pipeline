@@ -1,4 +1,4 @@
-// $Id: CdRomArchiver.java,v 1.4 2005/04/02 01:01:13 jim Exp $
+// $Id: CdRomArchiver.java,v 1.5 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -43,7 +43,7 @@ class CdRomArchiver
   public
   CdRomArchiver()
   {
-    super("CD-ROM", new VersionID("1.0.0"),
+    super("CD-ROM", new VersionID("1.0.0"), "Temerity", 
 	  "Archive to removable CD-ROM media.");
 
     {

@@ -1,4 +1,4 @@
-// $Id: AirEnvCubeAction.java,v 1.2 2005/07/26 04:58:30 jim Exp $
+// $Id: AirEnvCubeAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -69,7 +69,7 @@ class AirEnvCubeAction
   public
   AirEnvCubeAction() 
   {
-    super("AirEnvCube", new VersionID("2.0.0"), 
+    super("AirEnvCube", new VersionID("2.0.0"), "Temerity", 
 	  "Generate an optimized AIR cubic environment map from six direction " + 
 	  "source images.");
     

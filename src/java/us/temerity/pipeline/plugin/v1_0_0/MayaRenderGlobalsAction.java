@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.5 2004/11/21 18:39:56 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.6 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -198,7 +198,7 @@ class MayaRenderGlobalsAction
   public
   MayaRenderGlobalsAction() 
   {
-    super("MayaRenderGlobals", new VersionID("1.0.0"), 
+    super("MayaRenderGlobals", new VersionID("1.0.0"), "Temerity", 
 	  "Creates a MEL script which sets the render globals of a Maya scene.");
 
     /* image resolution */ 

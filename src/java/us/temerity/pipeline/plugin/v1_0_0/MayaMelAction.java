@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.8 2004/11/11 00:35:26 jim Exp $
+// $Id: MayaMelAction.java,v 1.9 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -57,7 +57,7 @@ class MayaMelAction
   public
   MayaMelAction() 
   {
-    super("MayaMEL", new VersionID("1.0.0"), 
+    super("MayaMEL", new VersionID("1.0.0"), "Temerity", 
 	  "Opens a Maya scene, runs the MEL script(s) and optionally saves the scene.");
     
     {

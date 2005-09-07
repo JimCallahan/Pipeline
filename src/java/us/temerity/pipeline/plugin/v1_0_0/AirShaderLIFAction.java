@@ -1,4 +1,4 @@
-// $Id: AirShaderLIFAction.java,v 1.1 2005/05/14 08:32:05 jim Exp $
+// $Id: AirShaderLIFAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -43,7 +43,7 @@ class AirShaderLIFAction
   public
   AirShaderLIFAction() 
   {
-    super("AirShaderLIF", new VersionID("1.0.0"), 
+    super("AirShaderLIF", new VersionID("1.0.0"), "Temerity", 
 	  "Generates a LIF shader information file used by RhinoMan, PaxRendus and Liquid " + 
 	  "for a compiled AIR shader.");
     

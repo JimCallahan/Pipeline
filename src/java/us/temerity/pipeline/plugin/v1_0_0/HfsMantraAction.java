@@ -1,4 +1,4 @@
-// $Id: HfsMantraAction.java,v 1.2 2005/07/03 19:14:04 jim Exp $
+// $Id: HfsMantraAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -201,7 +201,7 @@ class HfsMantraAction
   public
   HfsMantraAction() 
   {
-    super("HfsMantra", new VersionID("1.0.0"), 
+    super("HfsMantra", new VersionID("1.0.0"), "Temerity", 
 	  "Renders a sequence of images using standalone Mantra from IFD files.");
 
     {

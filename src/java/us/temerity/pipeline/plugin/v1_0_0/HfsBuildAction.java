@@ -1,4 +1,4 @@
-// $Id: HfsBuildAction.java,v 1.2 2005/07/22 21:36:45 jim Exp $
+// $Id: HfsBuildAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -84,7 +84,7 @@ class HfsBuildAction
   public
   HfsBuildAction() 
   {
-    super("HfsBuild", new VersionID("1.0.0"), 
+    super("HfsBuild", new VersionID("1.0.0"), "Temerity", 
 	  "Builds a new Houdini scene from a set of component Houdini Scenes.");
 
     {

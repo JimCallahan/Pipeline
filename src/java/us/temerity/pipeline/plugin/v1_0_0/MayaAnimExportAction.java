@@ -1,4 +1,4 @@
-// $Id: MayaAnimExportAction.java,v 1.1 2005/07/22 21:37:21 jim Exp $
+// $Id: MayaAnimExportAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -132,7 +132,7 @@ class MayaAnimExportAction
   public
   MayaAnimExportAction() 
   {
-    super("MayaAnimExport", new VersionID("1.0.0"), 
+    super("MayaAnimExport", new VersionID("1.0.0"), "Temerity", 
 	  "Exports animation channels from a Maya scene.");
 
     {

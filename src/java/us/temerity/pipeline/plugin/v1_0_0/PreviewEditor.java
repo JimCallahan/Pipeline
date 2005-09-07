@@ -1,4 +1,4 @@
-// $Id: PreviewEditor.java,v 1.1 2005/06/15 12:16:55 jim Exp $
+// $Id: PreviewEditor.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -22,7 +22,7 @@ class PreviewEditor
   public
   PreviewEditor()
   {
-    super("Preview", new VersionID("1.0.0"), 
+    super("Preview", new VersionID("1.0.0"), "Temerity", 
 	  "The Mac OS X Image Viewer.", 
 	  "Preview");
   }

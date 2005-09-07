@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.8 2004/11/21 18:39:56 jim Exp $
+// $Id: TestAction.java,v 1.9 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -25,7 +25,7 @@ class TestAction
   public
   TestAction() 
   {
-    super("Test",  new VersionID("1.0.0"),
+    super("Test",  new VersionID("1.0.0"), "Temerity", 
 	  "A test action with at lease one of each type of parameter.");
 
     {

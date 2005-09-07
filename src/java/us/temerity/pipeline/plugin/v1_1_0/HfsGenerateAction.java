@@ -1,4 +1,4 @@
-// $Id: HfsGenerateAction.java,v 1.1 2005/07/13 13:52:07 jim Exp $
+// $Id: HfsGenerateAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -105,7 +105,7 @@ class HfsGenerateAction
   public
   HfsGenerateAction() 
   {
-    super("HfsGenerate", new VersionID("1.1.0"), 
+    super("HfsGenerate", new VersionID("1.1.0"), "Temerity", 
 	  "Generates a sequences of renderer input files from a Houdini scene.");
 
     {

@@ -1,4 +1,4 @@
-// $Id: TerminalEditor.java,v 1.1 2005/06/15 12:16:55 jim Exp $
+// $Id: TerminalEditor.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -25,7 +25,7 @@ class TerminalEditor
   public
   TerminalEditor()
   {
-    super("Terminal", new VersionID("1.1.0"),
+    super("Terminal", new VersionID("1.1.0"), "Temerity", 
 	  "A UNIX terminal in the node's working directory.", 
 	  "Terminal");
   }

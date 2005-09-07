@@ -1,4 +1,4 @@
-// $Id: HfsCompositeAction.java,v 1.1 2005/07/02 00:50:28 jim Exp $
+// $Id: HfsCompositeAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -73,7 +73,7 @@ class HfsCompositeAction
   public
   HfsCompositeAction() 
   {
-    super("HfsComposite", new VersionID("1.0.0"), 
+    super("HfsComposite", new VersionID("1.0.0"), "Temerity", 
 	  "Generates a sequence of composited images by evaluating a COP in a " + 
 	  "Houdini scene.");
 

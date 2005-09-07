@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.4 2005/06/23 00:51:30 jim Exp $
+// $Id: TarFileArchiver.java,v 1.5 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -54,7 +54,7 @@ class TarFileArchiver
   public
   TarFileArchiver()
   {
-    super("TarFile", new VersionID("1.1.0"),
+    super("TarFile", new VersionID("1.1.0"), "Temerity", 
 	  "Archive to tar(1) file.");
 
     {

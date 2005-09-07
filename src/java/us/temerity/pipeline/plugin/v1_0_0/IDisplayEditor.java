@@ -1,4 +1,4 @@
-// $Id: IDisplayEditor.java,v 1.1 2005/05/11 01:10:10 jim Exp $
+// $Id: IDisplayEditor.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -26,7 +26,7 @@ class IDisplayEditor
   public
   IDisplayEditor()
   {
-    super("I-Display", new VersionID("1.0.0"), 
+    super("I-Display", new VersionID("1.0.0"), "Temerity", 
 	  "The 3Delight image viewer.", 
 	  "i-display"); 
   }

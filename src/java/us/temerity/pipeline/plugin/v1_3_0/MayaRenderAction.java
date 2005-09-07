@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2005/06/03 15:54:15 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_3_0;
 
@@ -74,7 +74,7 @@ class MayaRenderAction
   public
   MayaRenderAction() 
   {
-    super("MayaRender", new VersionID("1.3.0"), 
+    super("MayaRender", new VersionID("1.3.0"), "Temerity", 
 	  "Renders a Maya scene.");
     
     {

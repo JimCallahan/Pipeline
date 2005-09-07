@@ -1,4 +1,4 @@
-// $Id: SwitchAction.java,v 1.4 2004/11/11 00:35:26 jim Exp $
+// $Id: SwitchAction.java,v 1.5 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -40,7 +40,7 @@ class SwitchAction
   public
   SwitchAction() 
   {
-    super("Switch", new VersionID("1.0.0"), 
+    super("Switch", new VersionID("1.0.0"), "Temerity", 
 	  "Copies the files associated with a selected source node.");
     
     {

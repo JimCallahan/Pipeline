@@ -1,4 +1,4 @@
-// $Id: HfsEnvCubeAction.java,v 1.1 2005/07/13 13:52:07 jim Exp $
+// $Id: HfsEnvCubeAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -48,7 +48,7 @@ class HfsEnvCubeAction
   public
   HfsEnvCubeAction() 
   {
-    super("HfsEnvCube", new VersionID("1.0.0"), 
+    super("HfsEnvCube", new VersionID("1.0.0"), "Temerity", 
 	  "Generates an optimized Houdini cubic environment map from six directional " + 
 	  "source images or a single vertical cross cube format image.");
     
