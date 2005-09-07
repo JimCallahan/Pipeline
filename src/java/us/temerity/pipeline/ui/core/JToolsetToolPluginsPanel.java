@@ -1,4 +1,4 @@
-// $Id: JToolsetToolPluginsPanel.java,v 1.2 2005/07/15 02:16:46 jim Exp $
+// $Id: JToolsetToolPluginsPanel.java,v 1.3 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -64,24 +64,27 @@ class JToolsetToolPluginsPanel
   )
     throws PipelineException
   {
-    TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+      new DoubleMap<String,String,TreeSet<VersionID>>();
     {
       int wk;
       for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	String pname = toolset.getPackageName(wk);
 	VersionID pvid = toolset.getPackageVersionID(wk);
 	
-	TreeMap<String,TreeSet<VersionID>> table = 
+	DoubleMap<String,String,TreeSet<VersionID>> table = 
 	  pDialog.getPackageTools(pname, os, pvid);
 
-	for(String name : table.keySet()) {
-	  TreeSet<VersionID> vids = plugins.get(name);
-	  if(vids == null) {
-	    vids = new TreeSet<VersionID>();
-	    plugins.put(name, vids);
-	  }
+	for(String vendor : table.keySet()) {
+	  for(String name : table.get(vendor).keySet()) {
+	    TreeSet<VersionID> vids = plugins.get(vendor, name);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      plugins.put(vendor, name, vids);
+	    }
 	  
-	  vids.addAll(table.get(name));
+	    vids.addAll(table.get(vendor, name));
+	  }
 	}
       }
     }

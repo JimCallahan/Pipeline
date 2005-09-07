@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.8 2005/06/28 18:05:22 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.9 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1530,22 +1530,12 @@ class JNodeLinksPanel
    String editor
   ) 
   {
-    String ename = null;
-    VersionID evid = null;
     String parts[] = editor.split(":");
-    switch(parts.length) {
-    case 1:
-      ename = editor;
-      break;
-
-    case 2:
-      ename = parts[0];
-      evid = new VersionID(parts[1]);
-      break;
-
-    default:
-      assert(false);
-    }
+    assert(parts.length == 3);
+    
+    String ename   = parts[0];
+    VersionID evid = new VersionID(parts[1]);
+    String evendor = parts[2];
 
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
@@ -1555,7 +1545,7 @@ class JNodeLinksPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, ename, evid);
+	  EditTask task = new EditTask(com, ename, evid, evendor);
 	  task.start();
 	}
       }
@@ -2412,10 +2402,11 @@ class JNodeLinksPanel
     (
      NodeCommon com, 
      String ename, 
-     VersionID evid
+     VersionID evid, 
+     String evendor
     ) 
     {
-      UIMaster.getInstance().super(com, ename, evid, pAuthor, pView);
+      UIMaster.getInstance().super(com, ename, evid, evendor, pAuthor, pView);
       setName("JNodeLinksPanel:EditTask");
     }
   }

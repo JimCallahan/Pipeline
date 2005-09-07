@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.18 2005/06/28 18:05:22 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.19 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1619,28 +1619,22 @@ class JNodeFilesPanel
   {
     if(pTargetFileSeq == null) 
       return;
-
-    String ename = null;
+    
+    String ename   = null;
     VersionID evid = null;
+    String evendor = null;
     if(editor != null) {
       String parts[] = editor.split(":");
-      switch(parts.length) {
-      case 1:
-	ename = editor;
-	break;
-	
-      case 2:
-	ename = parts[0];
-	evid = new VersionID(parts[1]);
-	break;
-	
-      default:
-	assert(false);
-      }
+      assert(parts.length == 3);
+      
+      ename   = parts[0];
+      evid    = new VersionID(parts[1]);
+      evendor = parts[2];
     }
 
     if(pTargetVersionID != null) {
-      EditTask task = new EditTask(ename, evid, pTargetFileSeq, pTargetVersionID, useDefault);
+      EditTask task = new EditTask(ename, evid, evendor, 
+				   pTargetFileSeq, pTargetVersionID, useDefault);
       task.start();
     }
     else if(!pSelected.isEmpty()) {
@@ -1674,7 +1668,8 @@ class JNodeFilesPanel
 
       for(Integer[] range : ranges) {
 	FileSeq fseq = new FileSeq(pTargetFileSeq, range[0], range[1]);
-	EditTask task = new EditTask(ename, evid, fseq, null, useDefault);
+	EditTask task = new EditTask(ename, evid, evendor, 
+				     fseq, null, useDefault);
 	task.start();
       }
       
@@ -1683,8 +1678,6 @@ class JNodeFilesPanel
   }
 
    
-
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1698,25 +1691,16 @@ class JNodeFilesPanel
    String comparator
   ) 
   {
-    String cname = null;
-    VersionID cvid = null;
     String parts[] = comparator.split(":");
-    switch(parts.length) {
-    case 1:
-      cname = comparator;
-      break;
-
-    case 2:
-      cname = parts[0];
-      cvid = new VersionID(parts[1]);
-      break;
-
-    default:
-      assert(false);
-    }
+    assert(parts.length == 3);
+    
+    String cname   = parts[0];
+    VersionID cvid = new VersionID(parts[1]);
+    String cvendor = parts[2];
 
     if((pTargetFileSeq != null) && (pTargetVersionID != null)) {
-      CompareTask task = new CompareTask(cname, cvid, pTargetFileSeq, pTargetVersionID);
+      CompareTask task = new CompareTask(cname, cvid, cvendor, 
+					 pTargetFileSeq, pTargetVersionID);
       task.start();
     }
   }
@@ -2610,6 +2594,7 @@ class JNodeFilesPanel
     (
      String ename, 
      VersionID evid,
+     String evendor, 
      FileSeq fseq, 
      VersionID vid, 
      boolean useDefault
@@ -2619,6 +2604,7 @@ class JNodeFilesPanel
 
       pEditorName    = ename;
       pEditorVersion = evid; 
+      pEditorVendor  = evendor; 
       pFileSeq       = fseq; 
       pVersionID     = vid; 
       pUseDefault    = useDefault;
@@ -2646,22 +2632,23 @@ class JNodeFilesPanel
 	  /* create an editor plugin instance */ 
 	  BaseEditor editor = null;
 	  {
-	    String ename = pEditorName;
-	    if((ename == null) && pUseDefault) {
+	    if(pEditorName != null) {
+	      PluginMgrClient pclient = PluginMgrClient.getInstance();
+	      editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
+	    }
+	    else if(pUseDefault) {
 	      FilePattern fpat = com.getPrimarySequence().getFilePattern();
 	      String suffix = fpat.getSuffix();
 	      if(suffix != null) 
-		ename = client.getEditorForSuffix(suffix);
+		editor = client.getEditorForSuffix(suffix);
 	    }
-
-	    if(ename == null) 
-	      ename = com.getEditor();
-
-	    if(ename == null) 
+	    
+	    if(editor == null) 
+	      editor = com.getEditor();
+	    
+	    if(editor == null) 
 	      throw new PipelineException
-		("No editor was specified for node (" + name + ")!");
-	      
-	    editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion); 
+		("No editor was specified for node (" + com.getName() + ")!");
 	  }
 
 	  /* lookup the toolset environment */ 
@@ -2714,6 +2701,7 @@ class JNodeFilesPanel
 
     private String     pEditorName;
     private VersionID  pEditorVersion; 
+    private String     pEditorVendor; 
     private FileSeq    pFileSeq; 
     private VersionID  pVersionID; 
     private boolean    pUseDefault; 
@@ -2735,6 +2723,7 @@ class JNodeFilesPanel
     (
      String cname,   
      VersionID cvid,
+     String cvendor, 
      FileSeq fseq, 
      VersionID vid
     ) 
@@ -2743,6 +2732,7 @@ class JNodeFilesPanel
 
       pComparatorName    = cname;
       pComparatorVersion = cvid; 
+      pComparatorVendor  = cvendor; 
       pFileSeq           = fseq; 
       pVersionID         = vid; 
     }
@@ -2768,9 +2758,9 @@ class JNodeFilesPanel
 	    }
 
 	    /* create an comparator plugin instance */ 
+	    PluginMgrClient pclient = PluginMgrClient.getInstance();
 	    BaseComparator comparator = 
-	      PluginMgrClient.getInstance().newComparator
-	      (pComparatorName, pComparatorVersion);
+	      pclient.newComparator(pComparatorName, pComparatorVersion, pComparatorVendor);
 
 	    /* the checked-in file */  
 	    File fileB = null;
@@ -2833,6 +2823,7 @@ class JNodeFilesPanel
 
     private String     pComparatorName;
     private VersionID  pComparatorVersion; 
+    private String     pComparatorVendor; 
     private FileSeq    pFileSeq; 
     private VersionID  pVersionID; 
   }

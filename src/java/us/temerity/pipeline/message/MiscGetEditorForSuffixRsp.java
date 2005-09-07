@@ -1,4 +1,4 @@
-// $Id: MiscGetEditorForSuffixRsp.java,v 1.4 2005/01/22 06:10:09 jim Exp $
+// $Id: MiscGetEditorForSuffixRsp.java,v 1.5 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -31,14 +31,14 @@ class MiscGetEditorForSuffixRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param editor
-   *   The editor name.
+   * @param editor 
+   *   The editor plugin instance or <CODE>null</CODE> if undefined.
    */ 
   public
   MiscGetEditorForSuffixRsp
   (
    TaskTimer timer, 
-   String editor
+   BaseEditor editor
   )
   { 
     super(timer);
@@ -59,14 +59,66 @@ class MiscGetEditorForSuffixRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the editor name.
+   * Gets the editor plugin instance or <CODE>null</CODE> if undefined.
    */
-  public String
+  public BaseEditor
   getEditor() 
   {
     return pEditor;
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseAction instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    if(pEditor != null)
+      out.writeObject(new BaseEditor(pEditor));
+    else 
+      out.writeObject((BaseEditor) null);
+  }  
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance from 
+   * the generic staticly loaded BaseAction instance in the object stream. 
+   */ 
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+    BaseEditor editor = (BaseEditor) in.readObject();
+    if(editor != null) {
+      try {
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+      }
+      catch(PipelineException ex) {
+	throw new IOException(ex.getMessage());
+      }
+    }
+    else {
+      pEditor = null;
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -83,9 +135,9 @@ class MiscGetEditorForSuffixRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The editor name.
+   * The editor plugin instance or <CODE>null</CODE> if undefined.
    */ 
-  private String  pEditor;
+  private BaseEditor  pEditor;
 
 }
   

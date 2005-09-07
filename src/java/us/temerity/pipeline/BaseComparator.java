@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.4 2005/01/15 02:50:46 jim Exp $
+// $Id: BaseComparator.java,v 1.5 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -35,13 +35,16 @@ class BaseComparator
   }
 
   /** 
-   * Construct with a name and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the comparator.
    * 
    * @param vid
    *   The comparator plugin revision number.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    * 
    * @param desc 
    *   A short description of the comparator.
@@ -54,11 +57,12 @@ class BaseComparator
   (
    String name, 
    VersionID vid, 
+   String vendor, 
    String desc, 
    String program
   ) 
   {
-    super(name, vid, desc);
+    super(name, vid, vendor, desc);
     
     if(program == null)
       throw new IllegalArgumentException("The program cannot be (null)!");

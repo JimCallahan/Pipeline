@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.4 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -57,11 +57,11 @@ class PluginUpdateRsp
   (
    TaskTimer timer, 
    Long cycleID, 
-   TreeMap<String,TreeMap<VersionID,Object[]>> editors,
-   TreeMap<String,TreeMap<VersionID,Object[]>> actions,
-   TreeMap<String,TreeMap<VersionID,Object[]>> comparators,
-   TreeMap<String,TreeMap<VersionID,Object[]>> tools,
-   TreeMap<String,TreeMap<VersionID,Object[]>> archivers
+   TripleMap<String,String,VersionID,Object[]> editors,
+   TripleMap<String,String,VersionID,Object[]> actions,
+   TripleMap<String,String,VersionID,Object[]> comparators,
+   TripleMap<String,String,VersionID,Object[]> tools,
+   TripleMap<String,String,VersionID,Object[]> archivers
   )
   { 
     super(timer);
@@ -120,7 +120,7 @@ class PluginUpdateRsp
    * Gets the new or updated Editor plugin class [name, bytes] indexed by class name 
    * and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Object[]>>
+  public TripleMap<String,String,VersionID,Object[]>
   getEditors() 
   {
     return pEditors; 
@@ -130,7 +130,7 @@ class PluginUpdateRsp
    * Gets the new or updated Action plugin class [name, bytes] indexed by class name 
    * and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Object[]>>
+  public TripleMap<String,String,VersionID,Object[]>
   getActions() 
   {
     return pActions; 
@@ -140,7 +140,7 @@ class PluginUpdateRsp
    * Gets the new or updated Comparator plugin class [name, bytes] indexed by class name  
    * and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Object[]>>
+  public TripleMap<String,String,VersionID,Object[]>
   getComparators() 
   {
     return pComparators; 
@@ -150,7 +150,7 @@ class PluginUpdateRsp
    * Gets the new or updated Tool plugin class [name, bytes] indexed by class name 
    * and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Object[]>>
+  public TripleMap<String,String,VersionID,Object[]>
   getTools() 
   {
     return pTools; 
@@ -160,7 +160,7 @@ class PluginUpdateRsp
    * Gets the new or updated Archiver plugin class [name, bytes] indexed by class name 
    * and revision number.
    */
-  public TreeMap<String,TreeMap<VersionID,Object[]>>
+  public TripleMap<String,String,VersionID,Object[]>
   getArchivers() 
   {
     return pArchivers; 
@@ -192,31 +192,31 @@ class PluginUpdateRsp
    * The new or updated Editor plugin class [name, bytes] indexed by class name 
    * and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Object[]>>  pEditors; 
+  private TripleMap<String,String,VersionID,Object[]>  pEditors; 
 
   /**
    * The new or updated Action plugin class [name, bytes] indexed by class name 
    * and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Object[]>>  pActions; 
+  private TripleMap<String,String,VersionID,Object[]>  pActions; 
 
   /**
    * The new or updated Comparator plugin class [name, bytes] indexed by class name 
    * and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Object[]>>  pComparators; 
+  private TripleMap<String,String,VersionID,Object[]>  pComparators; 
 
   /**
    * The new or updated Tool plugin class [name, bytes] indexed by class name 
    * and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Object[]>>  pTools; 
+  private TripleMap<String,String,VersionID,Object[]>  pTools; 
 
   /**
    * The new or updated Archiver plugin class [name, bytes] indexed by class name 
    * and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Object[]>>  pArchivers; 
+  private TripleMap<String,String,VersionID,Object[]>  pArchivers; 
 
 }
   

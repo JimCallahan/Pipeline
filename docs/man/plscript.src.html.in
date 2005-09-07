@@ -92,12 +92,15 @@ Users</a></li>
  style="font-style: italic;">archiver-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><span
+ style="font-style: italic;">micro</span>][:<span
+ style="font-style: italic;">vendor-name</span>]</span><span
  style="font-weight: normal;">] [<a href="#--param"><span
  style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] [<span
- style="font-weight: bold;">--auto-start</span>]<br>
+ style="font-weight: bold;">--auto-start</span>] [<span
+ style="font-weight: bold;">--toolset</span>=<span
+ style="font-style: italic;">toolset-name</span>]<br>
           </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a style="color: rgb(0, 0, 0);"
@@ -121,6 +124,8 @@ Users</a></li>
  style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--toolset</span>=<span
+ style="font-style: italic;">toolset-name</span>] </span><span
  style="font-weight: normal;">[<span style="font-weight: bold;">--vsn</span>=<span
  style="font-style: italic;">node-name</span>[:</span><span
  style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro</span>]<span
@@ -326,7 +331,9 @@ Administration</span></span></a><br>
  style="font-weight: normal;">=<span style="font-style: italic;">editor-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span></li>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><a href="#editor_--get-info-all">--get-info-all</a><br>
         </li>
       </ul>
@@ -337,7 +344,9 @@ Administration</span></span></a><br>
  style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span></li>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><a href="#action_--get-info-all">--get-info-all</a><br>
         </li>
       </ul>
@@ -350,7 +359,9 @@ Administration</span></span></a><br>
  style="font-weight: normal;">=<span style="font-style: italic;">comparator-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span></li>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
         <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
  style="font-weight: normal;"><a href="#comparator_--get-info-all"><span
  style="font-weight: bold;">--get-info-all</span></a></span></li>
@@ -364,7 +375,9 @@ Administration</span></span></a><br>
  style="font-weight: normal;">=<span style="font-style: italic;">tool-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span></li>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
         <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
  style="font-weight: normal;"><a href="#tool_--get-info-all"><span
  style="font-weight: bold;">--get-info-all</span></a></span></li>
@@ -379,7 +392,9 @@ Administration</span></span></a><br>
  style="font-weight: normal;">=<span style="font-style: italic;">archiver-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span></li>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
         <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
  style="font-weight: normal;"><a href="#archiver_--get-info-all"><span
  style="font-weight: bold;">--get-info-all</span></a></span></li>
@@ -413,6 +428,10 @@ Preferences</a><br>
           </span></span><span style="font-weight: normal;"><a
  href="#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><span
@@ -488,13 +507,15 @@ Node Versions</a></li>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]
-[<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
- style="font-weight: bold;"><a href="#--action">--action</a></span>=<span
- style="font-style: italic;">action-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;">] [<a href="#--no-action"><span
+ style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
+ href="#--action">--action</a></span>=<span style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;">] [<a href="#--action-enabled"><span
  style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
  href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
@@ -561,6 +582,8 @@ Node Versions</a></li>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 [<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
  style="font-weight: bold;"></span></span><a href="#--action"><span
@@ -573,9 +596,10 @@ Node Versions</a></li>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] [<a href="#--action-enabled"><span
- style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
- href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">]
+[<a href="#--action-enabled"><span style="font-weight: bold;">--action-enabled</span></a>=true|false]
+[<a href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] [<a href="#--no-param"><span
  style="font-weight: bold;">--no-param</span></a></span><span
@@ -733,8 +757,9 @@ Node Versions</a></li>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] [</span><span
- style="font-weight: normal;"><a href="#--frame"><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">]
+[</span><span style="font-weight: normal;"><a href="#--frame"><span
  style="font-weight: bold;">--frame</span></a>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
@@ -871,8 +896,9 @@ Node Versions</a></li>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] [</span><span
- style="font-weight: normal;"><a href="#--frame"><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">]
+[</span><span style="font-weight: normal;"><a href="#--frame"><span
  style="font-weight: bold;">--frame</span></a>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
@@ -1327,15 +1353,17 @@ the <span style="font-weight: bold;">toolset</span> command. <br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">
-  </span>
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"> </span>
   <div style="margin-left: 40px;"><br>
 Specifies the name (editor-name)<span style="font-weight: normal;"> </span>and
 optionally the specific version number (<span
  style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>) </span><span
- style="font-weight: normal;">of
+ style="font-weight: normal;">and vendor (<span
+ style="font-style: italic;">vendor-name</span>) of
 the default Editor plugin
 associated with the target node.&nbsp; The default Editor of a node is
 used to launch an external program to
@@ -1357,14 +1385,19 @@ requirements are also removed.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">]<br>
-  <br>
+ style="font-weight: normal;">]</span><span style="font-weight: normal;">[<span
+ style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span><br>
+  <span style="font-weight: normal;"> <br>
   </span>
   <div style="margin-left: 40px;">Specifies the name (action-name) and
 optionally the specific version number (<span
  style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) of the Action plugin
+ style="font-style: italic;">micro</span>) </span><span
+ style="font-weight: normal;">and vendor (<span
+ style="font-style: italic;">vendor-name</span>) </span><span
+ style="font-weight: normal;">of the Action plugin
 associated with the target node.&nbsp; </span>Any existing action
 parameters, overflow policy, execution method, job batch size and job
 requirements are reinitialized to default values when the Action is
@@ -1779,12 +1812,15 @@ printed when the backup is complete.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;">] [<a href="#--param"><span
  style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] </span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
 &nbsp; </span>[<span style="font-weight: bold;">--auto-start</span>]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--toolset</span>=<span
+ style="font-style: italic;">toolset-name</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
  style="font-weight: bold;">
 </span></span>
@@ -1848,8 +1884,9 @@ following options control how the archive volume is created.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">]<br>
-<span style="font-weight: bold;">--param</span>=<span
+ style="font-weight: normal;">]</span><span style="font-weight: normal;">[<span
+ style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"><span style="font-weight: bold;">--param</span>=<span
  style="font-style: italic;">name:value</span><br>
 <br>
 </span>
@@ -1857,7 +1894,9 @@ following options control how the archive volume is created.<br>
 optionally the specific version number (<span
  style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) of the Archiver plugin used
+ style="font-style: italic;">micro</span>) and vendor (<span
+ style="font-style: italic;">vendor-name</span>) of the Archiver plugin
+used
 to create the archive volume.&nbsp; Archiver parameters can be
 specified using <span style="font-weight: bold;">--param</span>
 options.&nbsp; <br>
@@ -1897,8 +1936,13 @@ administrator might load a blank tape and then rely on a <span
 delayed execution to later run <span style="font-weight: bold;">plscript</span>(1)
 to perform the archive later.&nbsp; If the Archiver plugin is
 automatic, the <span style="font-weight: bold;">--auto-start</span>
-option is ignored.</span><br>
-<span style="font-weight: normal;"></span></div>
+option is ignored.<br>
+<br>
+If the <span style="font-weight: bold;">--toolset </span>option is
+specified, the archiver plugin will be run under that toolset
+environment.&nbsp; Otherwise, the archiver plugin will be run under the
+default toolset environment.<br>
+</span><span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"><br>
 </span></div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
@@ -1971,6 +2015,8 @@ volumes.&nbsp; By default, the minimum number of archives is (2).<br>
  href="plscript.src.html.in#--param"><span style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--toolset</span>=<span
+ style="font-style: italic;">toolset-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp; [<span style="font-weight: bold;">--node</span>=<span
  style="font-style: italic;">node-name</span></span><span
@@ -2016,11 +2062,18 @@ be restored.&nbsp; If no <span style="font-weight: bold;">--node</span>
 options are specified, the entire contents of the archive volume will
 be restored.<br>
 <br>
-<br>
 </span></div>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="archive-volume_--get"></a>archive-volume --get</span><br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: normal;">If
+the <span style="font-weight: bold;">--toolset </span>option
+is specified, the archiver plugin will be run under that toolset
+environment.&nbsp; Otherwise, the archiver plugin will be run under the
+original toolset environment used to create the archive volume.<br>
+<br>
+</span></div>
+<span style="font-weight: bold;"><a name="archive-volume_--get"></a>archive-volume
+--get</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names of all archive volumes
 containing copies of the files associated with checked-in nodes.&nbsp;
@@ -2631,14 +2684,16 @@ Editor plugins.<br>
  style="font-style: italic;">editor-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]<br>
-<br>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"><br>
 </span>
 <div style="margin-left: 40px;">Prints a summary of information about
 the given version (<span style="font-weight: normal;"><span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) of an Editor plugin.&nbsp;
+ style="font-style: italic;">micro</span>) of an Editor plugin created
+by the given vendor (<span style="font-style: italic;">vendor-name</span>).&nbsp;
 The information includes a description of the plugin, the name of the
 associated Java class and the timestamp of when the plugin was
 installed.<br>
@@ -2667,14 +2722,18 @@ Action plugins.<br>
  style="font-style: italic;">action-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]<br>
-<br>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"><br>
 </span>
 <div style="margin-left: 40px;">Prints a summary of information about
 the given version (<span style="font-weight: normal;"><span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) of an Action plugin.&nbsp;
+ style="font-style: italic;">micro</span>) of an Action plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.&nbsp;
 The information includes a description of the plugin, the name of the
 associated Java class and the timestamp of when the plugin was
 installed.<br>
@@ -2703,15 +2762,19 @@ Comparator plugins.<br>
  style="font-style: italic;">comparator-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]<br>
-<br>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"><br>
 </span>
 <div style="margin-left: 40px;">Prints a summary of information about
 the given version (<span style="font-weight: normal;"><span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>) of an Comparator
-plugin.&nbsp; The information includes a description of the plugin, the
+plugin </span><span style="font-weight: normal;">created by the given
+vendor (<span style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.&nbsp; The information includes a
+description of the plugin, the
 name of the
 associated Java class and the timestamp of when the plugin was
 installed.<br>
@@ -2741,14 +2804,19 @@ Tool plugins.<br>
  style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><br>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span></div>
 <div style="margin-left: 80px;">Prints a summary of information about
 the given version (<span style="font-weight: normal;"><span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) of an Tool plugin.&nbsp;
+ style="font-style: italic;">micro</span>) of an Tool plugin </span><span
+ style="font-weight: normal;">created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">.&nbsp;
 The information includes a description of the plugin, the name of the
 associated Java class and the timestamp of when the plugin was
 installed.<br>
@@ -2778,7 +2846,8 @@ Archiver plugins.<br>
  style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><br>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span></div>
 <div style="margin-left: 80px;">Prints a summary of information about
@@ -2786,7 +2855,10 @@ the given version (<span style="font-weight: normal;"><span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>) of an </span>Archiver<span
- style="font-weight: normal;"> plugin.&nbsp;
+ style="font-weight: normal;"> plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.</span><span style="font-weight: normal;">&nbsp;
 The information includes a description of the plugin, the name of the
 associated Java class and the timestamp of when the plugin was
 installed.<br>
@@ -2850,16 +2922,23 @@ filename suffixes.&nbsp; Equivalent to performing a <a
 </span><span style="font-weight: normal;"><a href="#--editor"><span
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;"><br>
 <br>
 </span>
-<div style="margin-left: 40px;">Set (or replace) the name (<span
- style="font-style: italic;">editor-name</span>) <span
- style="font-weight: normal;">of the default Editor plugin
+<div style="margin-left: 40px;">Set (or replace)<span
+ style="font-weight: normal;"> the default Editor plugin
 used to edit files with the given filename suffix (<span
  style="font-style: italic;">suffix</span>) for the current user.&nbsp;
-A short description of the file type using the suffix (<span
- style="font-style: italic;">suffix-description</span>) is required.<br>
+The name of the Editor plugin (edit-name) must be specified.&nbsp; An
+optional revision number (<span style="font-style: italic;">major.minor.micro</span>)
+and plugin vendor (<span style="font-style: italic;">vendor-name</span>)
+may also be given.&nbsp; A short description of the file type using the
+suffix (<span style="font-style: italic;">suffix-description</span>) is
+required.<br>
 </span></div>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><br>
@@ -3022,18 +3101,20 @@ links.<br>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]
-<br>
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;">]<br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
  style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
  href="#--action">--action</a></span>=<span style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--action-enabled"><span
- style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
- href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-style: italic;">,vendor-name</span>]]</span><br>
+<span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; [<a
+ href="#--action-enabled"><span style="font-weight: bold;">--action-enabled</span></a>=true|false]
+[<a href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] <br>
 &nbsp;&nbsp;&nbsp; [</span><span style="font-weight: normal;"><a
@@ -3129,7 +3210,9 @@ with the working version.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;">]
 <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
  style="font-weight: bold;">--no-action</span></a> | <a
@@ -3139,6 +3222,7 @@ with the working version.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;">] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--action-enabled"><span
  style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
@@ -3442,6 +3526,7 @@ longer included in the new frame range will be deleted.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;">] <br>
 &nbsp;&nbsp;&nbsp; [</span><span style="font-weight: normal;"><a
  href="#--frame"><span style="font-weight: bold;">--frame</span></a>=<span
@@ -3739,6 +3824,7 @@ log messages of all checked-in versions will be printed.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
  style="font-weight: normal;">] [</span><span
  style="font-weight: normal;"><a href="#--frame"><span
  style="font-weight: bold;">--frame</span></a>=<span

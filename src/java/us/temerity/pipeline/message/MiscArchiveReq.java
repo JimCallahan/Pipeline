@@ -1,4 +1,4 @@
-// $Id: MiscArchiveReq.java,v 1.3 2005/03/10 08:07:27 jim Exp $
+// $Id: MiscArchiveReq.java,v 1.4 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,13 +37,18 @@ class MiscArchiveReq
    * 
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
+   * 
+   * @param toolset
+   *   The name of the toolset environment under which the archiver is executed or
+   *   <CODE>null</CODE> to use the default toolset.
    */
   public
   MiscArchiveReq
   (
    String prefix, 
    TreeMap<String,TreeSet<VersionID>> versions, 
-   BaseArchiver archiver
+   BaseArchiver archiver, 
+   String toolset
   )
   {
     if(prefix == null) 
@@ -60,6 +65,8 @@ class MiscArchiveReq
       throw new IllegalArgumentException
 	("The archiver cannot be (null)!");
     pArchiver = archiver;
+
+    pToolset = toolset;
   }
 
 
@@ -95,6 +102,16 @@ class MiscArchiveReq
     return pArchiver;
   }
 
+  /**
+   * Get the name of the toolset environment under which the archiver is executed or
+   *   <CODE>null</CODE> to use the default toolset.
+   */ 
+  public String
+  getToolset()
+  {
+    return pToolset;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -117,6 +134,7 @@ class MiscArchiveReq
     out.writeObject(pPrefix);
     out.writeObject(pVersions);
     out.writeObject(new BaseArchiver(pArchiver));
+    out.writeObject(pToolset);
   }  
 
   /**
@@ -136,15 +154,17 @@ class MiscArchiveReq
     pPrefix = (String) in.readObject();
     pVersions = (TreeMap<String,TreeSet<VersionID>>) in.readObject();
     
-    BaseArchiver archiver = (BaseArchiver) in.readObject();
+    BaseArchiver arch = (BaseArchiver) in.readObject();
     try {
       PluginMgrClient client = PluginMgrClient.getInstance();
-      pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-      pArchiver.setParamValues(archiver);
+      pArchiver = client.newArchiver(arch.getName(), arch.getVersionID(), arch.getVendor());
+      pArchiver.setParamValues(arch);
     }
     catch(PipelineException ex) {
       throw new IOException(ex.getMessage());
     }
+
+    pToolset = (String) in.readObject();
   }
 
 
@@ -176,5 +196,10 @@ class MiscArchiveReq
    */ 
   private BaseArchiver  pArchiver;
 
+  /**
+   * The name of the toolset environment under which the archiver is executed or
+   * <CODE>null</CODE> to use the default toolset.
+   */
+  private String  pToolset; 
 }
   

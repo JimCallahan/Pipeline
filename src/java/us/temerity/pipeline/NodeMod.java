@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.42 2005/08/12 23:17:28 jim Exp $
+// $Id: NodeMod.java,v 1.43 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,8 +36,7 @@ class NodeMod
    * secondary file sequences associated with the node. <P> 
    * 
    * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
-   * editor associated with the node.  The <CODE>editorVID</CODE> may be <CODE>null</CODE>
-   * to specify the latest version of the editor plugin. <P> 
+   * editor associated with the node. <P> 
    * 
    * If there is no regeneration action for this node then the <CODE>action</CODE> and 
    * <CODE>jobReqs</CODE> must both be <CODE>null</CODE>.  If there is a regeneration
@@ -60,11 +59,7 @@ class NodeMod
    *   The named execution environment under which editor and action are run.
    * 
    * @param editor 
-   *   The name of the editor plugin used to editing/viewing the files associated with 
-   *   the node.
-   * 
-   * @param editorVID
-   *   The revision number of the editor plugin or <CODE>null</CODE> for the latest version.
+   *   The editor plugin instance used to edit the files associated with the node.
    * 
    * @param action 
    *   The action plugin instance used to regeneration the files associated the node. 
@@ -93,8 +88,7 @@ class NodeMod
    FileSeq primary,
    Set<FileSeq> secondary, 
    String toolset, 
-   String editor, 
-   VersionID editorVID, 
+   BaseEditor editor, 
    BaseAction action, 
    boolean isActionEnabled, 
    JobReqs jobReqs,  
@@ -105,8 +99,7 @@ class NodeMod
   {
     super(name, 
 	  primary, secondary, 
-	  toolset, editor, editorVID, 
-	  action, isActionEnabled, jobReqs, overflow, execution, batchSize);
+	  toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
     
     pSources = new TreeMap<String,LinkMod>();
 
@@ -121,8 +114,7 @@ class NodeMod
    * secondary file sequences associated with the node. <P> 
    * 
    * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
-   * editor associated with the node. The <CODE>editorVID</CODE> may be <CODE>null</CODE>
-   * to specify the latest version of the editor plugin. <P> 
+   * editor associated with the node. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -137,11 +129,7 @@ class NodeMod
    *   The named execution environment under which editor and action are run.
    * 
    * @param editor 
-   *   The name of the editor plugin used to editing/viewing the files associated with 
-   *   the node.
-   *
-   * @param editorVID
-   *   The revision number of the editor plugin or <CODE>null</CODE> for the latest version.
+   *   The editor plugin instance used to edit the files associated with the node.
    */
   public
   NodeMod
@@ -150,13 +138,12 @@ class NodeMod
    FileSeq primary,
    Set<FileSeq> secondary, 
    String toolset, 
-   String editor,
-   VersionID editorVID
+   BaseEditor editor
   ) 
   {
     super(name, 
 	  primary, secondary, 
-	  toolset, editor, editorVID);
+	  toolset, editor);
     
     pSources = new TreeMap<String,LinkMod>();
 
@@ -661,19 +648,18 @@ class NodeMod
 
   /** 
    * Set editor plugin used to editing/viewing the files associated with this 
-   * working version of the node.
+   * working version of the node. <P> 
    * 
-   * @param name 
-   *   The name of the editor or <CODE>null</CODE> for no editor.
+   * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
+   * editor associated with the node. <P> 
    * 
-   * @param vid 
-   *   The revision number of the editor plugin or <CODE>null</CODE> for the latest version.
+   * @param editor 
+   *   The editor plugin instance used to edit the files associated with the node.
    */
   public void 
   setEditor
   (
-   String name, 
-   VersionID vid
+   BaseEditor editor
   ) 
     throws PipelineException
   {
@@ -681,8 +667,10 @@ class NodeMod
       throw new IllegalArgumentException
 	("Frozen working versions cannot be modified!");
 
-    pEditor = name;
-    pEditorVersionID = (name != null) ? vid : null;
+    if(editor != null) 
+      pEditor = (BaseEditor) editor.clone();
+    else
+      pEditor = null;
 
     updateLastMod();
   }
@@ -750,7 +738,7 @@ class NodeMod
     if((pAction != null) && pAction.isUnderDevelopment()) {
       BaseAction action = pAction;
       PluginMgrClient pclient = PluginMgrClient.getInstance();
-      pAction = pclient.newAction(action.getName(), action.getVersionID());
+      pAction = pclient.newAction(action.getName(), action.getVersionID(), action.getVendor());
       pAction.setSingleParamValues(action);
       pAction.setSourceParamValues(action);
     }
@@ -978,17 +966,10 @@ class NodeMod
     }
 
     {
-      String editor = mod.getEditor(); 
+      BaseEditor editor = mod.getEditor(); 
       if(!(((pEditor == null) && (editor == null)) || 
 	   ((pEditor != null) && pEditor.equals(editor)))) {
 	pEditor = editor;
-	modified = true;
-      }
-
-      VersionID vid = mod.getEditorVersionID();
-      if(!(((pEditorVersionID == null) && (vid == null)) || 
-	   ((pEditorVersionID != null) && pEditorVersionID.equals(vid)))) {
-	pEditorVersionID = (pEditor != null) ? vid : null;
 	modified = true;
       }
     }

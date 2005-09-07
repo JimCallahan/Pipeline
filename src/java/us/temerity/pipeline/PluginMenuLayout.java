@@ -1,4 +1,4 @@
-// $Id: PluginMenuLayout.java,v 1.4 2005/01/07 07:08:54 jim Exp $
+// $Id: PluginMenuLayout.java,v 1.5 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,13 +61,17 @@ class PluginMenuLayout
    * 
    * @param vid
    *   The revision number of the plugin version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    */ 
   public 
   PluginMenuLayout
   (
    String title, 
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
   {
     if(title == null) 
@@ -81,6 +85,10 @@ class PluginMenuLayout
     if(vid == null) 
       throw new IllegalArgumentException("The plugin revision number cannot be (null)!");
     pVersionID = vid;
+
+    if(vendor == null) 
+      throw new IllegalArgumentException("The plugin vendor name cannot be (null)!");
+    pVendor = vendor;
   }
 
   /**
@@ -98,6 +106,7 @@ class PluginMenuLayout
     pTitle     = layout.getTitle();
     pName      = layout.getName();
     pVersionID = layout.getVersionID(); 
+    pVendor    = layout.getVendor();
 
     for(PluginMenuLayout pml : layout) 
       add(new PluginMenuLayout(pml));
@@ -183,13 +192,26 @@ class PluginMenuLayout
   }
 
   /**
+   * Get the name of the plugin vendor. 
+   * 
+   * @return 
+   *   The vendor name or <CODE>null</CODE> if this is not a menu item.
+   */ 
+  public String
+  getVendor()
+  {
+    return pVendor; 
+  }
+  
+  /**
    * Sets the name and version of the plugin associated with the menu item.
    */ 
   public void
   setPlugin
   (
    String name,
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
   {
     if(name == null)
@@ -200,8 +222,13 @@ class PluginMenuLayout
       throw new IllegalArgumentException
 	("The plugin revision number cannot be (null)!");
 
+    if(vendor == null)
+      throw new IllegalArgumentException
+	("The plugin vendor name cannot be (null)!");
+
     pName      = name;
     pVersionID = vid;
+    pVendor    = vendor;
   }
 
   /**
@@ -212,6 +239,7 @@ class PluginMenuLayout
   { 
     pName      = null; 
     pVersionID = null;
+    pVendor    = null;
   }
 
 
@@ -254,12 +282,12 @@ class PluginMenuLayout
   {
     encoder.encode("Title", pTitle);
 
-    if(pName != null) 
+    if(pName != null) {
       encoder.encode("Name", pName);
-
-    if(pVersionID != null)
       encoder.encode("VersionID", pVersionID);
-
+      encoder.encode("Vendor", pVersionID);
+    }
+    
     if(!isEmpty()) 
       encoder.encode("Children", new LinkedList<PluginMenuLayout>(this));
   }
@@ -277,12 +305,19 @@ class PluginMenuLayout
     pTitle = title;
 
     String name = (String) decoder.decode("Name"); 
-    if(name != null) 
+    if(name != null) {
       pName = name;
 
-    VersionID vid = (VersionID) decoder.decode("VersionID"); 
-    if(vid != null) 
+      VersionID vid = (VersionID) decoder.decode("VersionID"); 
+      if(vid == null) 
+	throw new GlueException("The \"VersionID\" was missing!");
       pVersionID = vid; 
+
+      String vendor = (String) decoder.decode("Vendor"); 
+      if(vendor == null) 
+	throw new GlueException("The \"Vendor\" was missing!");
+      pVendor = vendor; 
+    }
 
     LinkedList<PluginMenuLayout> children = 
       (LinkedList<PluginMenuLayout>) decoder.decode("Children"); 
@@ -318,5 +353,10 @@ class PluginMenuLayout
    * The revision number of the plugin version.
    */
   private VersionID  pVersionID; 
+
+  /**
+   * The name of the plugin vendor. 
+   */
+  private String  pVendor; 
 
 }

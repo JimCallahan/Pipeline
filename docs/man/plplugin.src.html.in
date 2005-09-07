@@ -111,12 +111,12 @@ Java package specifications a "v" must be prepended to the version
 number and the version number component must be separated by "_"
 instead of "." characters.&nbsp; <br>
   <br>
-For example, here is complete source code of the 1.0.0 version of the
+For example, here is complete source code of the 2.0.0 version of the
 simple Emacs editor plugin distributed with Pipeline:<code><br>
   </code>
   <div style="margin-left: 40px;"><code><br>
   <a name="emacs"></a>package
-us.temerity.pipeline.plugin.v1_0_0;<br style="font-family: monospace;">
+us.temerity.pipeline.plugin.v2_0_0;<br style="font-family: monospace;">
   <br style="font-family: monospace;">
 import
 us.temerity.pipeline.BaseEditor; <br style="font-family: monospace;">
@@ -136,7 +136,7 @@ class EmacsEditor<br style="font-family: monospace;">
 &nbsp; EmacsEditor()<br style="font-family: monospace;">
 &nbsp; {<br style="font-family: monospace;">
 &nbsp;&nbsp;&nbsp;
-super("Emacs", new VersionID("1.0.0"), "Temerity", <br
+super("Emacs", new VersionID("2.0.0"), "Temerity", <br
  style="font-family: monospace;">
 &nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "The GNU text editor.", <br

@@ -1,4 +1,4 @@
-// $Id: JPackageActionPluginsPanel.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: JPackageActionPluginsPanel.java,v 1.2 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,7 +67,7 @@ class JPackageActionPluginsPanel
   ) 
     throws PipelineException
   {
-    TreeMap<String,TreeSet<VersionID>> includedPlugins = getPlugins(pname, os, vid);
+    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins = getPlugins(pname, os, vid);
     
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     pclient.update();
@@ -90,7 +90,7 @@ class JPackageActionPluginsPanel
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
-  protected TreeMap<String,TreeSet<VersionID>>
+  protected DoubleMap<String,String,TreeSet<VersionID>>
   getPlugins
   (
    String pname, 
@@ -115,7 +115,7 @@ class JPackageActionPluginsPanel
    *   The revision number of the package or <CODE>null</CODE> for working package.
    * 
    * @param plugins
-   *   The names and revision numbers of the plugins or <CODE>null</CODE> to remove.
+   *   The vendors, names and revision numbers of the plugins or <CODE>null</CODE> to remove.
    */
   protected void
   setPlugins
@@ -123,7 +123,7 @@ class JPackageActionPluginsPanel
    String pname, 
    OsType os, 
    VersionID vid, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
     throws PipelineException
   {

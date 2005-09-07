@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.2 2005/04/02 00:32:55 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.3 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -58,7 +58,18 @@ class JRestoreParamsDialog
 	{
 	  ArrayList<String> values = new ArrayList<String>();
 	  values.add("-");
-	    
+
+	  JCollectionField field = 
+	    UIFactory.createTitledCollectionField
+	    (tpanel, "Toolset:", sTSize, 
+	     vpanel, values, sVSize, 
+	     "The name of the shell environment under which the Archiver plugin is run.");
+	  pToolsetField = field;
+	}
+	  
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
 	  JTextField field = 
 	    UIFactory.createTitledTextField
 	    (tpanel, "Archiver:", sTSize, 
@@ -70,15 +81,23 @@ class JRestoreParamsDialog
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	{
-	  ArrayList<String> values = new ArrayList<String>();
-	  values.add("-");
-	    
 	  JTextField field = 
 	    UIFactory.createTitledTextField
 	    (tpanel, "Version:", sTSize, 
 	     vpanel, null, sVSize, 
 	     "The revision number of the Archiver plugin.");
 	  pArchiverVersionField = field;
+	}
+	  
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	{
+	  JTextField field = 
+	    UIFactory.createTitledTextField
+	    (tpanel, "Vendor:", sTSize, 
+	     vpanel, null, sVSize, 
+	     "The name of the Archiver plugin vendor.");
+	  pArchiverVendorField = field;
 	}
 	  
 	body.add(comps[2]);
@@ -134,22 +153,12 @@ class JRestoreParamsDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Set the archiver plugin instance to use to restore the nodes.
+   * Get the name of the toolset environment under which the archiver plugin is run.
    */ 
-  public void
-  setArchive
-  (
-   ArchiveVolume volume
-  ) 
+  public String
+  getToolset()
   {
-    pHeaderLabel.setText("Restore:  " + volume.getName());
-
-    pArchiver = volume.getArchiver();
-
-    pArchiverField.setText(pArchiver.getName());
-    pArchiverVersionField.setText("v" + pArchiver.getVersionID());
-
-    updateArchiverParams();
+    return pToolsetField.getSelected();
   }
 
   /**
@@ -207,6 +216,48 @@ class JRestoreParamsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the archive volume being restored. 
+   */ 
+  public void
+  updateArchiveVolume
+  (
+   ArchiveVolume volume
+  ) 
+  {
+    pHeaderLabel.setText("Restore:  " + volume.getName());
+
+    {
+      String tname = volume.getToolset();
+
+      TreeSet<String> toolsets = new TreeSet<String>();
+      UIMaster master = UIMaster.getInstance();
+      try {
+	MasterMgrClient client = master.getMasterMgrClient();
+	toolsets.addAll(client.getActiveToolsetNames());
+      }
+      catch(PipelineException ex) {
+      }
+
+      if((tname != null) && !toolsets.contains(tname))
+	toolsets.add(tname);
+
+      LinkedList<String> vlist = new LinkedList<String>(toolsets);
+      Collections.reverse(vlist);	 
+      pToolsetField.setValues(vlist);
+    
+      pToolsetField.setSelected(tname);
+    }
+
+    pArchiver = volume.getArchiver();
+
+    pArchiverField.setText(pArchiver.getName());
+    pArchiverVersionField.setText("v" + pArchiver.getVersionID());
+    pArchiverVendorField.setText(pArchiver.getVendor());
+
+    updateArchiverParams();
+  }
 
   /**
    * Update the UI components associated archiver parameters.
@@ -323,6 +374,8 @@ class JRestoreParamsDialog
     UIFactory.addVerticalGlue(tpanel, vpanel);
 
     pArchiverParamsDrawer.setContents((JComponent) comps[2]);
+    pArchiverParamsDrawer.revalidate();
+    pArchiverParamsDrawer.repaint();
   }
 
 
@@ -352,6 +405,12 @@ class JRestoreParamsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The name of the toolset environment.  
+   */ 
+  private JCollectionField  pToolsetField; 
+
+
+  /**
    * The name of the archiver plugin. 
    */ 
   private JTextField  pArchiverField; 
@@ -360,6 +419,12 @@ class JRestoreParamsDialog
    * The revision number of the archiver plugin.
    */ 
   private JTextField  pArchiverVersionField;
+
+  /**
+   * The name of the archiver plugin vendor. 
+   */ 
+  private JTextField  pArchiverVendorField; 
+
 
   /**
    * The drawer containing archver parameter components.

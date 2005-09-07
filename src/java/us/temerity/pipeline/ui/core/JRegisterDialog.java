@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.11 2005/06/28 18:05:22 jim Exp $
+// $Id: JRegisterDialog.java,v 1.12 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -179,9 +179,14 @@ class JRegisterDialog
 	{
 	  ArrayList<String> values = new ArrayList<String>();
 	  values.add("-");
-	  pToolsetField = 
+
+	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField(tpanel, "Toolset:", sTSize, 
 						 vpanel, values, this, sVSize, null);
+	  pToolsetField = field;
+
+	  field.setActionCommand("toolset-changed");
+	  field.addActionListener(this);	  
 	}
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -206,6 +211,16 @@ class JRegisterDialog
 	    (tpanel, "Version:", sTSize, 
 	     vpanel, "-", sVSize, 
 	     "The revision number of the Editor plugin.");
+	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	{
+	  pEditorVendorField = 
+	    UIFactory.createTitledTextField
+	    (tpanel, "Vendor:", sTSize, 
+	     vpanel, "-", sVSize, 
+	     "The name of the vendor of the Editor plugin.");
 	}
 
 	UIFactory.addVerticalGlue(tpanel, vpanel);
@@ -370,35 +385,6 @@ class JRegisterDialog
     pSuffixField.setText(fpat.getSuffix());
   }
 
-  /**
-   * Update the editor based on the current filename suffix.
-   */ 
-  private void 
-  doUpdateEditor()
-  {
-    String ename = null;
-    VersionID evid = null;
-
-    String suffix = pSuffixField.getText();
-    if((suffix != null) && (suffix.length() > 0)) {
-      UIMaster master = UIMaster.getInstance();
-      try {
-	String editor = master.getMasterMgrClient().getEditorForSuffix(suffix);
-	if(editor != null) {
-	  TreeSet<VersionID> vids = pEditorPlugins.get(editor);
-	  if(vids != null) {
-	    ename = editor;
-	    evid = vids.last();
-	  }
-	}
-      }
-      catch(PipelineException ex) {
-      }
-    }
-
-    pEditorField.setPlugin(ename, evid);
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   O V E R R I D E S                                                */
@@ -442,6 +428,8 @@ class JRegisterDialog
       doUpdateFrameFields();
     else if(cmd.equals("update-editor")) 
       doUpdateEditor();
+    else if(cmd.equals("toolset-changed")) 
+      doToolsetChanged();
     else if(cmd.equals("editor-changed")) 
       doEditorChanged();
     else 
@@ -633,16 +621,52 @@ class JRegisterDialog
   }
   
   /**
+   * Update the editor based on the current filename suffix.
+   */ 
+  private void 
+  doUpdateEditor()
+  {
+    BaseEditor editor = null;
+    String suffix = pSuffixField.getText();
+    if((suffix != null) && (suffix.length() > 0)) {
+      UIMaster master = UIMaster.getInstance();
+      try {
+	editor = master.getMasterMgrClient().getEditorForSuffix(suffix);
+      }
+      catch(PipelineException ex) {
+      }
+    }
+
+    pEditorField.setPlugin(editor);
+  }
+
+  /**
    * Update the editor version field when the editor plugin changes.
    */ 
   private void 
   doEditorChanged() 
   {
-    VersionID evid = pEditorField.getPluginVersionID();
-    if(evid == null) 
+    if(pEditorField.getPluginName() != null) {
+      pEditorVersionField.setText("v" + pEditorField.getPluginVersionID());
+      pEditorVendorField.setText(pEditorField.getPluginVendor());
+    }
+    else {
       pEditorVersionField.setText("-");
-    else 
-      pEditorVersionField.setText("v" + evid);
+      pEditorVendorField.setText("-");
+    }
+  }
+
+  /**
+   * Update the editor plugins available in the current toolset.
+   */ 
+  private void 
+  doToolsetChanged()
+  {
+    String toolset = pToolsetField.getSelected();
+    if(toolset.equals("-")) 
+      toolset = null;
+
+    UIMaster.getInstance().updateEditorPluginField(toolset, pEditorField);    
   }
 
 
@@ -744,10 +768,16 @@ class JRegisterDialog
 	throw new PipelineException
 	  ("Unable to register node (" + name + ") with an unspecified toolset!");
 
-      String editor  = pEditorField.getPluginName();
-      VersionID evid = pEditorField.getPluginVersionID();
+      BaseEditor editor = null;
+      {
+	String ename   = pEditorField.getPluginName();
+	VersionID evid = pEditorField.getPluginVersionID();
+	String evendor = pEditorField.getPluginVendor();
+	if(ename != null) 
+	  editor = PluginMgrClient.getInstance().newEditor(ename, evid, evendor);
+      }
 
-      pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor, evid);
+      pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
     }
     catch(Exception ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -868,7 +898,7 @@ class JRegisterDialog
   /**
    * Cached names and version numbers of the loaded editor plugins. 
    */
-  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
+  private DoubleMap<String,String,TreeSet<VersionID>>  pEditorPlugins; 
 
   /**
    * The menu layout for editor plugins.
@@ -953,6 +983,11 @@ class JRegisterDialog
    * The editor revision number. 
    */ 
   private JTextField pEditorVersionField;
+
+  /**
+   * The editor vendor name. 
+   */ 
+  private JTextField pEditorVendorField;
 
 
   

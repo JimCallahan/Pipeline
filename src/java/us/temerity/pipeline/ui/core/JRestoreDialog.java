@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.6 2005/04/03 01:53:18 jim Exp $
+// $Id: JRestoreDialog.java,v 1.7 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1004,7 +1004,7 @@ class JRestoreDialog
     run() 
     {  
       String aname = pNames.get(pIndex);
-      pRestoreParamsDialog.setArchive(pArchiveVolumes.get(aname));
+      pRestoreParamsDialog.updateArchiveVolume(pArchiveVolumes.get(aname));
       pRestoreParamsDialog.setVisible(true);
       if(pRestoreParamsDialog.wasConfirmed()) {
 	BaseArchiver archiver = pRestoreParamsDialog.getArchiver();
@@ -1027,7 +1027,9 @@ class JRestoreDialog
 	  }	      
 	}
 	
-	RestoreTask task = new RestoreTask(pIndex, pNames, pVersions, archiver);
+	String toolset = pRestoreParamsDialog.getToolset();
+
+	RestoreTask task = new RestoreTask(pIndex, pNames, pVersions, archiver, toolset);
 	task.start();
       }
       else {
@@ -1058,7 +1060,8 @@ class JRestoreDialog
      int idx, 
      ArrayList<String> names,
      TreeMap<String,TreeMap<String,TreeSet<VersionID>>> versions,
-     BaseArchiver archiver
+     BaseArchiver archiver, 
+     String toolset
     )
     {
       super("JRestoreDialog:RestoreTask");
@@ -1067,6 +1070,7 @@ class JRestoreDialog
       pNames    = names;
       pVersions = versions; 
       pArchiver = archiver;
+      pToolset  = toolset;
     }
     
 
@@ -1078,49 +1082,50 @@ class JRestoreDialog
 
       String aname = pNames.get(pIndex);
       synchronized(pUpdateLock) {
-	if(master.beginPanelOp("Restoring from: " + aname)) { 
-	  TreeMap<String,TreeSet<VersionID>> versions = pVersions.get(aname);
+ 	if(master.beginPanelOp("Restoring from: " + aname)) { 
+ 	  TreeMap<String,TreeSet<VersionID>> versions = pVersions.get(aname);
 	  
-	  try {
-	    client.restore(aname, versions, pArchiver);
-	  }
-	  catch(PipelineException ex) {
-	    StringBuffer buf = new StringBuffer();
-	    buf.append(ex.getMessage() + "\n\n" + 
-		       "Restore operation aborted early without restoring:\n");
+ 	  try {
+ 	    client.restore(aname, versions, pArchiver, pToolset);
+ 	  }
+ 	  catch(PipelineException ex) {
+ 	    StringBuffer buf = new StringBuffer();
+ 	    buf.append(ex.getMessage() + "\n\n" + 
+ 		       "Restore operation aborted early without restoring:\n");
 	    
-	    int wk;
-	    for(wk=pIndex; wk<pNames.size(); wk++) 
-	      buf.append("  " + pNames.get(wk) + "\n");	    
+ 	    int wk;
+ 	    for(wk=pIndex; wk<pNames.size(); wk++) 
+ 	      buf.append("  " + pNames.get(wk) + "\n");	    
 	    
-	    UIMaster.getInstance().showErrorDialog
-	      ("Error:", buf.toString());
-	    return;
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
+ 	    UIMaster.getInstance().showErrorDialog
+ 	      ("Error:", buf.toString());
+ 	    return;
+ 	  }
+ 	  finally {
+ 	    master.endPanelOp("Done.");
+ 	  }
 	  
-	  RemoveTask task = new RemoveTask(versions);
-	  SwingUtilities.invokeLater(task);      
-	}
-      }
+ 	  RemoveTask task = new RemoveTask(versions);
+ 	  SwingUtilities.invokeLater(task);      
+ 	}
+       }
 
-      int next = pIndex+1;
-      if(next < pNames.size()) {
-	RestoreParamsTask task = new RestoreParamsTask(next, pNames, pVersions); 
-	SwingUtilities.invokeLater(task);     
-      }
-      else {
-	GetRequestsTask task = new GetRequestsTask();
-	task.start();
-      }
+       int next = pIndex+1;
+       if(next < pNames.size()) {
+ 	RestoreParamsTask task = new RestoreParamsTask(next, pNames, pVersions); 
+ 	SwingUtilities.invokeLater(task);     
+       }
+       else {
+ 	GetRequestsTask task = new GetRequestsTask();
+ 	task.start();
+       }
     }
 
     private int                                                 pIndex; 
     private ArrayList<String>                                   pNames; 
     private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pVersions;
     private BaseArchiver                                        pArchiver; 
+    private String                                              pToolset; 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.1 2005/04/03 21:54:41 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.2 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -496,6 +496,9 @@ class FileMgrDirectClient
    * @param archiver
    *   The archiver plugin to use to create the archive volume.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -504,11 +507,12 @@ class FileMgrDirectClient
   (
    String name, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
-   BaseArchiver archiver
+   BaseArchiver archiver,
+   Map<String,String> env
   ) 
     throws PipelineException 
   {
-    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
+    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver, env);
 
     Object obj = pFileMgr.archive(req);
     if(obj instanceof FileArchiverRsp) {
@@ -622,6 +626,9 @@ class FileMgrDirectClient
    * @param archiver
    *   The archiver plugin to use to restore the versions from the archive volume.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param size
    *   The required temporary disk space needed for the restore operation.
    * 
@@ -635,11 +642,12 @@ class FileMgrDirectClient
    Date stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
+   Map<String,String> env, 
    long size
   ) 
     throws PipelineException 
   {
-    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, size);
+    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size);
 
     Object obj = pFileMgr.extract(req);
     if(obj instanceof FileArchiverRsp) {

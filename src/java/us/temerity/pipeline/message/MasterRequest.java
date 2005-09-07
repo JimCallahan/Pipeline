@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.39 2005/06/28 18:05:22 jim Exp $
+// $Id: MasterRequest.java,v 1.40 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -198,6 +198,34 @@ enum MasterRequest
    * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
    */
   SetPackageToolPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the archiver plugin selection menu associated with a toolset.
+   */
+  GetArchiverMenuLayout, 
+  
+  /**
+   * Set layout of the archiver plugin selection menu associated with a toolset.
+   */
+  SetArchiverMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetArchiverPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageArchiverPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageArchiverPlugins, 
 
 
   /*----------------------------------------------------------------------------------------*/

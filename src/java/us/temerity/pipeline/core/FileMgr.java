@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.46 2005/06/16 00:04:42 jim Exp $
+// $Id: FileMgr.java,v 1.47 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2170,6 +2170,7 @@ class FileMgr
     String archiveName = req.getArchiveName();	
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
     BaseArchiver archiver = req.getArchiver();
+    Map<String,String> env = req.getEnvironment();
 
     TaskTimer timer = new TaskTimer("FileMgr.archive: " + archiveName);
 
@@ -2209,7 +2210,7 @@ class FileMgr
       }	  
 
       SubProcessHeavy proc = 
-	archiver.archive(archiveName, files, PackageInfo.sRepoDir, outFile, errFile);
+	archiver.archive(archiveName, files, env, PackageInfo.sRepoDir, outFile, errFile);
 
       FileCleaner.add(outFile);
       FileCleaner.add(errFile);
@@ -2677,6 +2678,7 @@ class FileMgr
     String archiveName = req.getArchiveName();	
     Date stamp = req.getTimeStamp(); 
     BaseArchiver archiver = req.getArchiver();
+    Map<String,String> env = req.getEnvironment();    
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
     
     File restoreDir = new File(PackageInfo.sProdDir, 
@@ -2734,7 +2736,7 @@ class FileMgr
       /* run the archiver */ 
       {
 	SubProcessHeavy proc = 
-	  archiver.restore(archiveName, stamp, files, restoreDir, outFile, errFile);
+	  archiver.restore(archiveName, stamp, files, env, restoreDir, outFile, errFile);
 	
 	FileCleaner.add(outFile);
 	FileCleaner.add(errFile);

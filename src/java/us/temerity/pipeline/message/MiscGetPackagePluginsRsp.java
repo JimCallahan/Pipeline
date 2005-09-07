@@ -1,4 +1,4 @@
-// $Id: MiscGetPackagePluginsRsp.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscGetPackagePluginsRsp.java,v 1.2 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,13 +30,13 @@ class MiscGetPackagePluginsRsp
    *   The timing statistics for a task.
    * 
    * @param plugins
-   *   The names and revision numbers of the associated plugins.
+   *   The vendors, names and revision numbers of the associated plugins.
    */ 
   public
   MiscGetPackagePluginsRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
   { 
     super(timer);
@@ -59,10 +59,10 @@ class MiscGetPackagePluginsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets names and revision numbers of the associated plugins or <CODE>null</CODE>
-   * if none exist.
+   * Gets vendors, names and revision numbers of the associated plugins 
+   * or <CODE>null</CODE> if none exist.
    */
-  public TreeMap<String,TreeSet<VersionID>>
+  public DoubleMap<String,String,TreeSet<VersionID>>
   getPlugins() 
   {
     return pPlugins;
@@ -83,9 +83,9 @@ class MiscGetPackagePluginsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names and revision numbers of the associated plugins.
+   * The vendors, names and revision numbers of the associated plugins.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pPlugins;
+  private DoubleMap<String,String,TreeSet<VersionID>>  pPlugins;
 
 }
   

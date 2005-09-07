@@ -1,4 +1,4 @@
-// $Id: BaseAppleScriptEditor.java,v 1.1 2005/06/15 12:16:54 jim Exp $
+// $Id: BaseAppleScriptEditor.java,v 1.2 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -52,6 +52,9 @@ class BaseAppleScriptEditor
    * @param vid
    *   The editor plugin revision number. 
    * 
+   * @param vendor
+   *   The name of the plugin vendor.
+   * 
    * @param desc 
    *   A short description of the editor.
    *
@@ -63,11 +66,12 @@ class BaseAppleScriptEditor
   (
    String name, 
    VersionID vid,
+   String vendor, 
    String desc, 
    String program
   ) 
   {
-    super(name, vid, desc, program);
+    super(name, vid, vendor, desc, program);
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MiscRestoreReq.java,v 1.2 2005/03/21 07:04:36 jim Exp $
+// $Id: MiscRestoreReq.java,v 1.3 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,14 +37,19 @@ class MiscRestoreReq
    * 
    * @param archiver
    *   The alternative archiver plugin instance used to perform the restore operation
-   *   or <CODE>null</CODE> to use the default archiver.
+   *   or <CODE>null</CODE> to use the original archiver.
+   * 
+   * @param toolset
+   *   The name of the toolset environment under which the archiver is executed
+   *   or <CODE>null</CODE> to use the original toolset. 
    */
   public
   MiscRestoreReq
   (
     String name,
     TreeMap<String,TreeSet<VersionID>> versions, 
-    BaseArchiver archiver
+    BaseArchiver archiver, 
+    String toolset
   )
   {
     if(name == null) 
@@ -58,6 +63,7 @@ class MiscRestoreReq
     pVersions = versions;
 
     pArchiver = archiver;
+    pToolset  = toolset; 
   }
 
 
@@ -87,13 +93,24 @@ class MiscRestoreReq
 
   /**
    * Get the alternative archiver plugin instance used to perform the restore operation
-   * or <CODE>null</CODE> to use the default archiver.
+   * or <CODE>null</CODE> to use the original archiver.
    */ 
   public BaseArchiver
   getArchiver()
   {
     return pArchiver;
   }
+
+  /**
+   * Get the name of the toolset environment under which the archiver is executed
+   * or <CODE>null</CODE> to use the original toolset.
+   */ 
+  public String
+  getToolset()
+  {
+    return pToolset;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -103,8 +120,8 @@ class MiscRestoreReq
   /**
    * Write the serializable fields to the object stream. <P> 
    * 
-   * This enables the node to convert a dynamically loaded action plugin instance into a 
-   * generic staticly loaded BaseAction instance before serialization.
+   * This enables the node to convert a dynamically loaded archiver plugin instance into a 
+   * generic staticly loaded BaseArchiver instance before serialization.
    */ 
   private void 
   writeObject
@@ -119,13 +136,14 @@ class MiscRestoreReq
       out.writeObject(new BaseArchiver(pArchiver));
     else 
       out.writeObject((BaseArchiver) null);
+    out.writeObject(pToolset);
   }  
 
   /**
    * Read the serializable fields from the object stream. <P> 
    * 
-   * This enables the node to dynamically instantiate an action plugin instance and copy
-   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * This enables the node to dynamically instantiate an archiver plugin instance and copy
+   * its parameters from the generic staticly loaded BaseArchiver instance in the object 
    * stream. 
    */ 
   private void 
@@ -138,12 +156,12 @@ class MiscRestoreReq
     pName = (String) in.readObject();
     pVersions = (TreeMap<String,TreeSet<VersionID>>) in.readObject();
     
-    BaseArchiver archiver = (BaseArchiver) in.readObject();
-    if(archiver != null) {
+    BaseArchiver arch = (BaseArchiver) in.readObject();
+    if(arch != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-	pArchiver.setParamValues(archiver);
+	pArchiver = client.newArchiver(arch.getName(), arch.getVersionID(), arch.getVendor());
+	pArchiver.setParamValues(arch);
       }
       catch(PipelineException ex) {
 	throw new IOException(ex.getMessage());
@@ -152,6 +170,8 @@ class MiscRestoreReq
     else {
       pArchiver = null;
     }
+
+    pToolset = (String) in.readObject();
   }
 
 
@@ -180,9 +200,14 @@ class MiscRestoreReq
 
   /**
    * The alternative archiver plugin instance used to perform the restore operation
-   * or <CODE>null</CODE> to use the default archiver.
+   * or <CODE>null</CODE> to use the original archiver.
    */ 
   private BaseArchiver  pArchiver;
 
+  /**
+   * The name of the toolset environment under which the archiver is executed
+   * or <CODE>null</CODE> to use the original toolset.
+   */
+  private String  pToolset; 
 }
   

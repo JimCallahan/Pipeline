@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.44 2005/07/15 23:41:47 jim Exp $
+// $Id: QueueMgr.java,v 1.45 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2925,7 +2925,8 @@ class QueueMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The license keys file (" + file + ") appears to be corrupted!");
+	     "The license keys file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -3030,7 +3031,8 @@ class QueueMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The selection keys file (" + file + ") appears to be corrupted!");
+	     "The selection keys file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -3133,7 +3135,8 @@ class QueueMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The hosts file (" + file + ") appears to be corrupted!");
+	     "The hosts file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -3292,7 +3295,8 @@ class QueueMgr
 	  catch(Exception ex) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	      "The resource samples file (" + file + ") appears to be corrupted!");
+	       "The resource samples file (" + file + ") appears to be corrupted:\n" + 
+	       "  " + ex.getMessage());
 	    LogMgr.getInstance().flush();
 	    
 	    throw new PipelineException
@@ -3485,7 +3489,8 @@ class QueueMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The job file (" + file + ") appears to be corrupted!");
+	     "The job file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -3656,7 +3661,8 @@ class QueueMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The job information file (" + file + ") appears to be corrupted!");
+	     "The job information file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -3822,7 +3828,8 @@ class QueueMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The job group file (" + file + ") appears to be corrupted!");
+	     "The job group file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException

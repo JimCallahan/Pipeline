@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.6 2005/08/15 01:11:52 jim Exp $
+// $Id: BaseTool.java,v 1.7 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -58,13 +58,16 @@ class BaseTool
   }
 
   /** 
-   * Construct with the given name, version and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the tool.
    * 
    * @param vid
    *   The tool plugin revision number. 
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    * 
    * @param desc 
    *   A short description of the tool.
@@ -74,10 +77,11 @@ class BaseTool
   (
    String name, 
    VersionID vid,
+   String vendor, 
    String desc
   ) 
   {
-    super(name, vid, desc);
+    super(name, vid, vendor, desc);
   }
 
 

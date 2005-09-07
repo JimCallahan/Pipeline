@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.138 2005/08/21 00:49:46 jim Exp $
+// $Id: MasterMgr.java,v 1.139 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -311,12 +311,16 @@ class MasterMgr
       pToolMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
       pDefaultToolMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
   
-      pPackageEditorPlugins     = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
-      pPackageComparatorPlugins = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
-      pPackageActionPlugins     = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
-      pPackageToolPlugins       = new PackageMap<TreeMap<String,TreeSet<VersionID>>>();
+      pArchiverMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
+      pDefaultArchiverMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
 
-      pSuffixEditors = new TreeMap<String,TreeMap<String,SuffixEditor>>();
+      pPackageEditorPlugins     = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageComparatorPlugins = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageActionPlugins     = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageToolPlugins       = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageArchiverPlugins   = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+
+      pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
 
       pPrivilegedUsers = new TreeSet<String>();
 
@@ -565,6 +569,8 @@ class MasterMgr
 			   pActionMenuLayouts, pDefaultActionMenuLayouts);
       readPluginMenuLayout(null, os, "tools", 
 			   pToolMenuLayouts, pDefaultToolMenuLayouts);
+      readPluginMenuLayout(null, os, "archiver", 
+			   pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
     }
 
     /* initialize toolsets */ 
@@ -594,13 +600,13 @@ class MasterMgr
 				   pActionMenuLayouts, pDefaultActionMenuLayouts);
 	      readPluginMenuLayout(tname, os, "tools",       
 				   pToolMenuLayouts, pDefaultToolMenuLayouts);
+	      readPluginMenuLayout(tname, os, "archivers",     
+				   pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
 	    }
 	  }
 	}
       }
     }
-    
-
 
     /* initialize package keys and plugin tables */ 
     {
@@ -629,6 +635,8 @@ class MasterMgr
 				     "actions", pPackageActionPlugins);
 		  readPackagePlugins(pname, os, vid, 
 				     "tools", pPackageToolPlugins);
+		  readPackagePlugins(pname, os, vid, 
+				     "archivers", pPackageArchiverPlugins);
 		}
 	      }
 	    }
@@ -2225,7 +2233,8 @@ class MasterMgr
 	}
       }
 
-      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
       {
 	timer.aquire();
 	synchronized(pPackageEditorPlugins) {
@@ -2234,18 +2243,20 @@ class MasterMgr
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
 	      
-	      TreeMap<String,TreeSet<VersionID>> table = 
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
 		pPackageEditorPlugins.get(pname, os, pvid);
 
 	      if(table != null) {
-		for(String name : table.keySet()) {
-		  TreeSet<VersionID> vids = plugins.get(name);
-		  if(vids == null) {
-		    vids = new TreeSet<VersionID>();
-		    plugins.put(name, vids);
-		  }
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
 		  
-		  vids.addAll(table.get(name));
+		    vids.addAll(table.get(vendor, name));
+		  }
 		}
 	      }
 	    }
@@ -2284,11 +2295,11 @@ class MasterMgr
       synchronized(pPackageEditorPlugins) {
 	timer.resume();
 	
-	TreeMap<String,TreeSet<VersionID>> plugins = 
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
 	  pPackageEditorPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new TreeMap<String,TreeSet<VersionID>>();
-	
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
     }
@@ -2346,7 +2357,7 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-
+ 
   /**
    * Get the layout of the comparator plugin menu associated with a toolset.
    *
@@ -2499,7 +2510,8 @@ class MasterMgr
 	}
       }
 
-      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
       {
 	timer.aquire();
 	synchronized(pPackageComparatorPlugins) {
@@ -2508,18 +2520,20 @@ class MasterMgr
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
 	      
-	      TreeMap<String,TreeSet<VersionID>> table = 
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
 		pPackageComparatorPlugins.get(pname, os, pvid);
-	      
+
 	      if(table != null) {
-		for(String name : table.keySet()) {
-		  TreeSet<VersionID> vids = plugins.get(name);
-		  if(vids == null) {
-		    vids = new TreeSet<VersionID>();
-		    plugins.put(name, vids);
-		  }
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
 		  
-		  vids.addAll(table.get(name));
+		    vids.addAll(table.get(vendor, name));
+		  }
 		}
 	      }
 	    }
@@ -2558,11 +2572,11 @@ class MasterMgr
       synchronized(pPackageComparatorPlugins) {
 	timer.resume();
 	
-	TreeMap<String,TreeSet<VersionID>> plugins = 
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
 	  pPackageComparatorPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new TreeMap<String,TreeSet<VersionID>>();
-	
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
     }
@@ -2773,7 +2787,8 @@ class MasterMgr
 	}
       }
 
-      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
       {
 	timer.aquire();
 	synchronized(pPackageActionPlugins) {
@@ -2782,18 +2797,20 @@ class MasterMgr
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
 	      
-	      TreeMap<String,TreeSet<VersionID>> table = 
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
 		pPackageActionPlugins.get(pname, os, pvid);
-	      
+
 	      if(table != null) {
-		for(String name : table.keySet()) {
-		  TreeSet<VersionID> vids = plugins.get(name);
-		  if(vids == null) {
-		    vids = new TreeSet<VersionID>();
-		    plugins.put(name, vids);
-		  }
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
 		  
-		  vids.addAll(table.get(name));
+		    vids.addAll(table.get(vendor, name));
+		  }
 		}
 	      }
 	    }
@@ -2832,11 +2849,11 @@ class MasterMgr
       synchronized(pPackageActionPlugins) {
 	timer.resume();
 	
-	TreeMap<String,TreeSet<VersionID>> plugins = 
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
 	  pPackageActionPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new TreeMap<String,TreeSet<VersionID>>();
-	
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
     }
@@ -2894,7 +2911,7 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-
+ 
   /**
    * Get the layout of the tool plugin menu associated with a toolset.
    *
@@ -3047,7 +3064,8 @@ class MasterMgr
 	}
       }
 
-      TreeMap<String,TreeSet<VersionID>> plugins = new TreeMap<String,TreeSet<VersionID>>();
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
       {
 	timer.aquire();
 	synchronized(pPackageToolPlugins) {
@@ -3056,18 +3074,20 @@ class MasterMgr
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
 	      
-	      TreeMap<String,TreeSet<VersionID>> table = 
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
 		pPackageToolPlugins.get(pname, os, pvid);
-	      
+
 	      if(table != null) {
-		for(String name : table.keySet()) {
-		  TreeSet<VersionID> vids = plugins.get(name);
-		  if(vids == null) {
-		    vids = new TreeSet<VersionID>();
-		    plugins.put(name, vids);
-		  }
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
 		  
-		  vids.addAll(table.get(name));
+		    vids.addAll(table.get(vendor, name));
+		  }
 		}
 	      }
 	    }
@@ -3106,11 +3126,11 @@ class MasterMgr
       synchronized(pPackageToolPlugins) {
 	timer.resume();
 	
-	TreeMap<String,TreeSet<VersionID>> plugins = 
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
 	  pPackageToolPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new TreeMap<String,TreeSet<VersionID>>();
-	
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
     }
@@ -3167,7 +3187,284 @@ class MasterMgr
   }
 
 
-  
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the archiver plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getArchiverMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getArchiverMenuLayout(): " + name + " " + os);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pArchiverMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultArchiverMenuLayouts.get(os);
+	else 
+	  layout = pArchiverMenuLayouts.get(name, os);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the archiver plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setArchiverMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+    OsType os = req.getOsType();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setArchiverMenuLayout(): " + name + " " + os);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pArchiverMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  if(layout == null) 
+	    pDefaultArchiverMenuLayouts.remove(os);
+	  else 
+	    pDefaultArchiverMenuLayouts.put(os, layout);
+	}
+	else {
+	  if(layout == null) 
+	    pArchiverMenuLayouts.remove(name, os);
+	  else 
+	    pArchiverMenuLayouts.put(name, os, layout);
+	}
+
+	try {
+	  writePluginMenuLayout(name, os, "archivers", 
+				pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the archiver plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetArchiverPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+    OsType os    = req.getOsType();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, os, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageArchiverPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
+		pPackageArchiverPlugins.get(pname, os, pvid);
+
+	      if(table != null) {
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
+		  
+		    vids.addAll(table.get(vendor, name));
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the archiver plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageArchiverPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageArchiverPlugins) {
+	timer.resume();
+	
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	  pPackageArchiverPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the archiver plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageArchiverPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageArchiverPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageArchiverPlugins.remove
+	    (req.getName(), req.getOsType(), req.getVersionID());
+	else 
+	  pPackageArchiverPlugins.put
+	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+
+	try {
+	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			      "archivers", pPackageArchiverPlugins);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   E D I T O R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -3200,12 +3497,12 @@ class MasterMgr
 	  String author = req.getAuthor();
 	  TreeMap<String,SuffixEditor> editors = getSuffixEditors(author);
 	  
-	  String ename = null;
+	  BaseEditor editor = null;
 	  SuffixEditor se = editors.get(req.getSuffix());
 	  if(se != null) 
-	    ename = se.getEditor();
+	    editor = se.getEditor();
 	  
-	  return new MiscGetEditorForSuffixRsp(timer, ename); 
+	  return new MiscGetEditorForSuffixRsp(timer, editor); 
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -3258,7 +3555,8 @@ class MasterMgr
   }
 
   /**
-   * Get the filename suffix to default editor mappings for the given user. 
+   * Get the filename suffix to default editor mappings for the given user are 
+   * already loaded and cached.
    */ 
   private TreeMap<String,SuffixEditor> 
   getSuffixEditors
@@ -8335,6 +8633,24 @@ class MasterMgr
 	     "(" + archiver.getCapacity() + " bytes)!");
       }
 
+      /* get the toolset environment */ 
+      String tname = req.getToolset();
+      if(tname == null) {
+	synchronized(pDefaultToolsetLock) {
+	  timer.resume();	
+	  
+	  if(pDefaultToolset != null) 
+	    tname = pDefaultToolset;
+	  else 
+	    throw new PipelineException
+	      ("No toolset was specified and no default toolset is defined!");
+	}
+      }
+
+      TreeMap<String,String> env = 
+	getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
+      
+
       /* the archive name and time stamp */ 
       Date stamp = new Date();
       String archiveName = (req.getPrefix() + "-" + stamp.getTime());
@@ -8348,7 +8664,7 @@ class MasterMgr
 	{
 	  FileMgrClient fclient = getFileMgrClient();
 	  try {
-	    output = fclient.archive(archiveName, fseqs, archiver);
+	    output = fclient.archive(archiveName, fseqs, archiver, env);
 	  }
 	  finally {
 	    freeFileMgrClient(fclient);
@@ -8375,7 +8691,7 @@ class MasterMgr
 
       /* register the newly created archive */ 
       {
-	ArchiveVolume vol = new ArchiveVolume(archiveName, stamp, fseqs, sizes, archiver);
+	ArchiveVolume vol = new ArchiveVolume(archiveName, stamp, fseqs, sizes, archiver, tname);
 	writeArchive(vol);
 	pArchivedOn.put(archiveName, stamp);
       }
@@ -9493,6 +9809,14 @@ class MasterMgr
 	}
       }
 
+      /* get the toolset environment */ 
+      String tname = req.getToolset();
+      if(tname == null) 
+	tname = vol.getToolset();
+
+      TreeMap<String,String> env = 
+	getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
+
       /* extract the versions from the archive volume by running the archiver plugin and 
 	 save any STDOUT output */
       {
@@ -9500,7 +9824,7 @@ class MasterMgr
 	{
 	  FileMgrClient fclient = getFileMgrClient();
 	  try {
-	    output = fclient.extract(archiveName, stamp, fseqs, archiver, total);
+	    output = fclient.extract(archiveName, stamp, fseqs, archiver, env, total);
 	  }
 	  finally {
 	    freeFileMgrClient(fclient);
@@ -12190,7 +12514,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The archive file (" + file + ") appears to be corrupted!");
+	   "The archive file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -12291,7 +12616,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The archived in cache file (" + file + ") appears to be corrupted!");
+	   "The archived in cache file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -12394,7 +12720,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The archived on cache file (" + file + ") appears to be corrupted!");
+	   "The archived on cache file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -12507,7 +12834,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The restored on cache file (" + file + ") appears to be corrupted!");
+	   "The restored on cache file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -12602,7 +12930,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The offlined cache file (" + file + ") appears to be corrupted!");
+	   "The offlined cache file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -12701,7 +13030,8 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The restore requests file (" + file + ") appears to be corrupted!");
+	     "The restore requests file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -12801,7 +13131,8 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The default toolset file (" + file + ") appears to be corrupted!");
+	     "The default toolset file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -12900,7 +13231,8 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The active toolsets file (" + file + ") appears to be corrupted!");
+	     "The active toolsets file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
@@ -13028,7 +13360,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The toolset file (" + file + ") appears to be corrupted!");
+	   "The toolset file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -13171,7 +13504,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The toolset package file (" + file + ") appears to be corrupted!");
+	   "The toolset package file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -13370,7 +13704,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The toolset plugin menu file (" + file + ") appears to be corrupted!");
+	   "The toolset plugin menu file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -13418,7 +13753,7 @@ class MasterMgr
    OsType os, 
    VersionID vid, 
    String ptype,
-   PackageMap<TreeMap<String,TreeSet<VersionID>>> table 
+   PackageMap<DoubleMap<String,String,TreeSet<VersionID>>> table 
   ) 
     throws PipelineException
   {
@@ -13441,7 +13776,7 @@ class MasterMgr
 
       File file = new File(dir, ptype);
 
-      TreeMap<String,TreeSet<VersionID>> plugins = table.get(name, os, vid);
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = table.get(name, os, vid);
       if((plugins == null) || plugins.isEmpty()) {
 	if(file.exists())
 	  if(!file.delete()) 
@@ -13515,7 +13850,7 @@ class MasterMgr
    OsType os, 
    VersionID vid, 
    String ptype,
-   PackageMap<TreeMap<String,TreeSet<VersionID>>> table 
+   PackageMap<DoubleMap<String,String,TreeSet<VersionID>>> table 
   )
     throws PipelineException
   {
@@ -13537,17 +13872,18 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading " + os + " Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
 
-      TreeMap<String,TreeSet<VersionID>> plugins = null;
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
       try {
 	FileReader in = new FileReader(file);
 	GlueDecoder gd = new GlueDecoderImpl(in);
-	plugins = (TreeMap<String,TreeSet<VersionID>>) gd.getObject();
+	plugins = (DoubleMap<String,String,TreeSet<VersionID>>) gd.getObject();
 	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The package plugins file (" + file + ") appears to be corrupted!");
+	   "The package plugins file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -13663,7 +13999,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The suffix editors file (" + file + ") appears to be corrupted!");
+	   "The suffix editors file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -13771,13 +14108,14 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The privileged users file (" + file + ") appears to be corrupted!");
+	     "The privileged users file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the privileged users file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 	assert(users != null);
 	
@@ -13878,7 +14216,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The job/group IDs file (" + file + ") appears to be corrupted!");
+	   "The job/group IDs file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -14021,7 +14360,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The checked-in version file (" + files[wk] + ") appears to be corrupted!");
+	   "The checked-in version file (" + files[wk] + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
@@ -14168,7 +14508,8 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	    "The working version file (" + file + ") appears to be corrupted!");
+	    "The working version file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	  
 	  if(backup.exists()) {
@@ -14186,7 +14527,8 @@ class MasterMgr
 	    catch(Exception ex2) {
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
-		"The backup working version file (" + backup + ") appears to be corrupted!");
+		"The backup working version file (" + backup + ") appears to be corrupted:\n" + 
+		 "  " + ex.getMessage());
 	      LogMgr.getInstance().flush();
 	      
 	      throw ex;
@@ -14357,7 +14699,8 @@ class MasterMgr
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
-	    "The downstream links file (" + file + ") appears to be corrupted!");
+	    "The downstream links file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
 	  LogMgr.getInstance().flush();
 	
 	  throw ex;
@@ -14448,7 +14791,8 @@ class MasterMgr
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
-	   "The node tree cache file (" + file + ") appears to be corrupted!");
+	   "The node tree cache file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	
 	throw ex;
@@ -15231,26 +15575,31 @@ class MasterMgr
   private DoubleMap<String,OsType,PluginMenuLayout>  pToolMenuLayouts;
   private TreeMap<OsType,PluginMenuLayout>           pDefaultToolMenuLayouts;
   
+  private DoubleMap<String,OsType,PluginMenuLayout>  pArchiverMenuLayouts;
+  private TreeMap<OsType,PluginMenuLayout>           pDefaultArchiverMenuLayouts;
+
   /**
-   * The cached tables of the names and versions of all plugins associated with a 
+   * The cached tables of the vendors, names and versions of all plugins associated with a 
    * package indexed by package name, operating system and package revision number. <P> 
    * 
    * Access to these fields should be protected by a synchronized block.
    */ 
-  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageEditorPlugins; 
-  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageComparatorPlugins; 
-  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageActionPlugins; 
-  private PackageMap<TreeMap<String,TreeSet<VersionID>>>  pPackageToolPlugins; 
+  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageEditorPlugins; 
+  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageComparatorPlugins; 
+  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageActionPlugins; 
+  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageToolPlugins; 
+  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageArchiverPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The cached table of filename suffix to editor mappings indexed by author user name. <P> 
+   * The cached table of filename suffix to editor mappings indexed by author user name
+   * and file suffix. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private TreeMap<String,TreeMap<String,SuffixEditor>>  pSuffixEditors;
+  private DoubleMap<String,String,SuffixEditor>  pSuffixEditors;
 
 
   /*----------------------------------------------------------------------------------------*/

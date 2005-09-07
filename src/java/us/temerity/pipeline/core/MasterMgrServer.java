@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.56 2005/08/21 00:49:46 jim Exp $
+// $Id: MasterMgrServer.java,v 1.57 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -542,6 +542,53 @@ class MasterMgrServer
 		MiscSetPackagePluginsReq req = 
 		  (MiscSetPackagePluginsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.setPackageToolPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    /*----------------------------------*/
+	      
+	    case GetArchiverMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getArchiverMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetArchiverMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setArchiverMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetArchiverPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetArchiverPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageArchiverPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageArchiverPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageArchiverPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageArchiverPlugins(req));
 		objOut.flush(); 
 	      }
 	      break;

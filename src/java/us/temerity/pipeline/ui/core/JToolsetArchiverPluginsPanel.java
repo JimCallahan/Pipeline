@@ -1,4 +1,4 @@
-// $Id: JToolsetActionPluginsPanel.java,v 1.3 2005/09/07 21:11:17 jim Exp $
+// $Id: JToolsetArchiverPluginsPanel.java,v 1.1 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -10,14 +10,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   T O O L S E T   A C T I O N   P L U G I N S   P A N E L                                */
+/*   T O O L S E T   A R C H I V E R   P L U G I N S   P A N E L                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * 
  */ 
 public 
-class JToolsetActionPluginsPanel
+class JToolsetArchiverPluginsPanel
   extends JBaseToolsetPluginsPanel
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,13 +28,13 @@ class JToolsetActionPluginsPanel
    * Construct a new panel
    */ 
   public 
-  JToolsetActionPluginsPanel
+  JToolsetArchiverPluginsPanel
   (
    JManageToolsetsDialog dialog,
    JManageToolsetPluginsDialog parent
   )
   {
-    super("Action", dialog, parent); 
+    super("Archiver", dialog, parent); 
   }
 
 
@@ -73,7 +73,7 @@ class JToolsetActionPluginsPanel
 	VersionID pvid = toolset.getPackageVersionID(wk);
 	
 	DoubleMap<String,String,TreeSet<VersionID>> table = 
-	  pDialog.getPackageActions(pname, os, pvid);
+	  pDialog.getPackageArchivers(pname, os, pvid);
 
 	for(String vendor : table.keySet()) {
 	  for(String name : table.get(vendor).keySet()) {
@@ -102,7 +102,7 @@ class JToolsetActionPluginsPanel
   {
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getActionMenuLayout(pToolsetOsType);
+    PluginMenuLayout layout = client.getArchiverMenuLayout(pToolsetOsType);
     setLayout(pToolsetName, pToolsetOsType, layout);
     updateDefault(layout);
   }
@@ -116,7 +116,7 @@ class JToolsetActionPluginsPanel
   {
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
-    client.setActionMenuLayout(pToolsetOsType, getLayout(pToolsetName, pToolsetOsType));
+    client.setArchiverMenuLayout(pToolsetOsType, getLayout(pToolsetName, pToolsetOsType));
   }
 
 
@@ -140,7 +140,7 @@ class JToolsetActionPluginsPanel
   )
     throws PipelineException
   {
-    return pDialog.getToolsetActions(tname, os);
+    return pDialog.getToolsetArchivers(tname, os);
   }
 
   /**
@@ -164,7 +164,7 @@ class JToolsetActionPluginsPanel
   )
     throws PipelineException
   {
-    pDialog.setToolsetActions(tname, os, layout);
+    pDialog.setToolsetArchivers(tname, os, layout);
   }
 
 
@@ -173,7 +173,7 @@ class JToolsetActionPluginsPanel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -6224774382039341101L;
+  private static final long serialVersionUID = -1374074545288637483L;
 
 
 }

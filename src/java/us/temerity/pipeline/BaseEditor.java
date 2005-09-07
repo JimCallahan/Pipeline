@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.9 2005/01/15 02:50:46 jim Exp $
+// $Id: BaseEditor.java,v 1.10 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,20 +28,27 @@ class BaseEditor
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
  
-  protected
+  /**
+   * This constructor is only used during GLUE decoding and should not be 
+   * used in user code.
+   */ 
+  public
   BaseEditor() 
   {
     super();
   }
 
   /** 
-   * Construct with the given name, version and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the editor.
    * 
    * @param vid
    *   The editor plugin revision number. 
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    * 
    * @param desc 
    *   A short description of the editor.
@@ -54,11 +61,12 @@ class BaseEditor
   (
    String name, 
    VersionID vid,
+   String vendor, 
    String desc, 
    String program
   ) 
   {
-    super(name, vid, desc);
+    super(name, vid, vendor, desc);
     
     if(program == null)
       throw new IllegalArgumentException("The program cannot be (null)!");
@@ -77,7 +85,7 @@ class BaseEditor
    BaseEditor editor
   ) 
   {
-    super(editor.pName, editor.pVersionID, editor.pDescription);
+    super(editor.pName, editor.pVersionID, editor.pVendor, editor.pDescription);
 
     pProgram = editor.pProgram;
   }
@@ -184,6 +192,24 @@ class BaseEditor
 	      pProgram.equals(editor.pProgram));
     }
     return false;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+  {
+    BaseEditor clone = (BaseEditor) super.clone();
+    clone.pProgram = pProgram;
+    
+    return clone;
   }
 
 

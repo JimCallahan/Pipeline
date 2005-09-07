@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.29 2005/06/02 22:11:58 jim Exp $
+// $Id: BaseAction.java,v 1.30 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,7 +39,7 @@ class BaseAction
   
   /**
    * This constructor is only used during GLUE decoding and should not be 
-   * used in user plugin code.
+   * used in user code.
    */ 
   public 
   BaseAction() 
@@ -54,13 +54,16 @@ class BaseAction
   }
 
   /** 
-   * Construct with the given name, version and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the action.  
    * 
    * @param vid
    *   The action plugin revision number.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    * 
    * @param desc 
    *   A short description of the action.
@@ -70,10 +73,11 @@ class BaseAction
   (
    String name,  
    VersionID vid,
+   String vendor, 
    String desc
   ) 
   {
-    super(name, vid, desc);
+    super(name, vid, vendor, desc);
 
     pSingleParams    = new TreeMap<String,ActionParam>();
     pSourceParams    = new TreeMap<String,TreeMap<String,ActionParam>>();
@@ -94,7 +98,7 @@ class BaseAction
    BaseAction action
   ) 
   {
-    super(action.pName, action.pVersionID, action.pDescription);
+    super(action.pName, action.pVersionID, action.pVendor, action.pDescription);
 
     pSingleParams    = action.pSingleParams;
     pSourceParams    = action.pSourceParams; 

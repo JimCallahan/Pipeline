@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.8 2005/06/28 20:50:45 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.9 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -49,11 +49,13 @@ class JManageToolsetsDialog
       pFrozenToolsetComparators = new ToolsetLayouts();
       pFrozenToolsetActions     = new ToolsetLayouts();
       pFrozenToolsetTools       = new ToolsetLayouts();
+      pFrozenToolsetArchivers   = new ToolsetLayouts();
 
       pToolsetEditors     = new ToolsetLayouts();
       pToolsetComparators = new ToolsetLayouts();
       pToolsetActions     = new ToolsetLayouts();
       pToolsetTools       = new ToolsetLayouts();
+      pToolsetArchivers   = new ToolsetLayouts();
 
       pPackageVersions = 
 	new TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>();
@@ -63,11 +65,13 @@ class JManageToolsetsDialog
       pFrozenPackageComparators = new FrozenPackagePlugins();
       pFrozenPackageActions     = new FrozenPackagePlugins();
       pFrozenPackageTools       = new FrozenPackagePlugins();
+      pFrozenPackageArchivers   = new FrozenPackagePlugins();
 
       pPackageEditors     = new PackagePlugins();
       pPackageComparators = new PackagePlugins();
       pPackageActions     = new PackagePlugins();
       pPackageTools       = new PackagePlugins();
+      pPackageArchivers   = new PackagePlugins();
     }
 
     /* toolsets popup menu */ 
@@ -607,8 +611,8 @@ class JManageToolsetsDialog
 	  Toolset toolset = toolsets.get(os);
 	  if(toolset == null) {
 	    UIMaster master = UIMaster.getInstance();
-	    MasterMgrClient client = master.getMasterMgrClient();
 	    try {
+	      MasterMgrClient client = master.getMasterMgrClient();
 	      toolset = client.getToolset(tname, os);
 	      toolsets.put(os, toolset);
 	    }
@@ -941,6 +945,84 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the archiver plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  public PluginMenuLayout
+  getToolsetArchivers
+  (
+   String tname, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetArchivers.get(tname, os);
+    }
+    else {
+      if(!pFrozenToolsetArchivers.isCached(tname, os)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetArchivers.put(tname, os, 
+				  client.getArchiverMenuLayout(tname, os));
+      }
+      
+      return pFrozenToolsetArchivers.get(tname, os);
+    }
+  }
+
+  /**
+   * Set the archiver plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetArchivers
+  ( 
+   String tname, 
+   OsType os, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, os);
+    if(toolset == null) 
+      throw new PipelineException
+	("No " + os + " toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetArchivers.put(tname, os, layout);
+    }
+    else {
+      pFrozenToolsetArchivers.put(tname, os, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setArchiverMenuLayout(tname, os, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the package with the given name, operating system and revision number.
    * 
    * @param pname
@@ -1037,7 +1119,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
+  public DoubleMap<String,String,TreeSet<VersionID>>
   getPackageEditors
   (
    String pname, 
@@ -1074,7 +1156,7 @@ class JManageToolsetsDialog
    *   The package revision number or <CODE>null</CODE> for working packages.
    * 
    * @param plugins
-   *   The names and revision numbers of the plugins.
+   *   The vendors, names and revision numbers of the plugins.
    */ 
   public void
   setPackageEditors
@@ -1082,7 +1164,7 @@ class JManageToolsetsDialog
    String pname, 
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException
   {
@@ -1113,7 +1195,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
+  public DoubleMap<String,String,TreeSet<VersionID>>
   getPackageComparators
   (
    String pname, 
@@ -1150,7 +1232,7 @@ class JManageToolsetsDialog
    *   The package revision number or <CODE>null</CODE> for working packages.
    * 
    * @param plugins
-   *   The names and revision numbers of the plugins.
+   *   The vendors, names and revision numbers of the plugins.
    */ 
   public void
   setPackageComparators
@@ -1158,7 +1240,7 @@ class JManageToolsetsDialog
    String pname, 
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException
   {
@@ -1188,7 +1270,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
+  public DoubleMap<String,String,TreeSet<VersionID>>
   getPackageActions
   (
    String pname, 
@@ -1225,7 +1307,7 @@ class JManageToolsetsDialog
    *   The package revision number or <CODE>null</CODE> for working packages.
    * 
    * @param plugins
-   *   The names and revision numbers of the plugins.
+   *   The vendors, names and revision numbers of the plugins.
    */ 
   public void
   setPackageActions
@@ -1233,7 +1315,7 @@ class JManageToolsetsDialog
    String pname, 
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException
   {
@@ -1263,7 +1345,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
+  public DoubleMap<String,String,TreeSet<VersionID>>
   getPackageTools
   (
    String pname, 
@@ -1300,7 +1382,7 @@ class JManageToolsetsDialog
    *   The package revision number or <CODE>null</CODE> for working packages.
    * 
    * @param plugins
-   *   The names and revision numbers of the plugins.
+   *   The vendors, names and revision numbers of the plugins.
    */ 
   public void
   setPackageTools
@@ -1308,7 +1390,7 @@ class JManageToolsetsDialog
    String pname, 
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException
   {
@@ -1324,6 +1406,80 @@ class JManageToolsetsDialog
     }    
   }
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the archiver plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public DoubleMap<String,String,TreeSet<VersionID>>
+  getPackageArchivers
+  (
+   String pname, 
+   OsType os, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageArchivers.get(pname, os);
+    }
+    else {
+      if(!pFrozenPackageArchivers.isCached(pname, os, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageArchivers.put(pname, os, vid, 
+				  client.getPackageArchiverPlugins(pname, os, vid));
+      }
+
+      return pFrozenPackageArchivers.get(pname, os, vid);
+    }
+  }
+
+  /**
+   * Set the archiver plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageArchivers
+  ( 
+   String pname, 
+   OsType os, 
+   VersionID vid,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageArchivers.put(pname, os, plugins);
+    }
+    else {
+      pFrozenPackageArchivers.put(pname, os, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageArchiverPlugins(pname, os, vid, plugins);
+    }    
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2351,21 +2507,25 @@ class JManageToolsetsDialog
       pFrozenToolsetComparators.clear();
       pFrozenToolsetActions.clear();
       pFrozenToolsetTools.clear();
+      pFrozenToolsetArchivers.clear();
       
       pToolsetEditors.clear();
       pToolsetComparators.clear();
       pToolsetActions.clear();
       pToolsetTools.clear();
+      pToolsetArchivers.clear();
 
       pFrozenPackageEditors.clear();
       pFrozenPackageComparators.clear();
       pFrozenPackageActions.clear();
       pFrozenPackageTools.clear();
+      pFrozenPackageArchivers.clear();
 
       pPackageEditors.clear();
       pPackageComparators.clear();
       pPackageActions.clear();
       pPackageTools.clear();
+      pPackageArchivers.clear();
 
       
       /* hide child dialogs */ 
@@ -3814,7 +3974,7 @@ class JManageToolsetsDialog
    */ 
   private class
   FrozenPackagePlugins
-    extends TripleMap<String,OsType,VersionID,TreeMap<String,TreeSet<VersionID>>>
+    extends TripleMap<String,OsType,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>
   {
     public FrozenPackagePlugins() 
     {
@@ -3832,7 +3992,7 @@ class JManageToolsetsDialog
       return (super.get(pname, os, vid) != null);
     }
 
-    public TreeMap<String,TreeSet<VersionID>>
+    public DoubleMap<String,String,TreeSet<VersionID>>
     get
     (
      String pname,
@@ -3840,15 +4000,18 @@ class JManageToolsetsDialog
      VersionID vid
     ) 
     {
-      TreeMap<String,TreeSet<VersionID>> plugins = super.get(pname, os, vid);
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = super.get(pname, os, vid);
       if(plugins != null) {
-	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
-	for(String name : plugins.keySet()) 
-	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+	DoubleMap<String,String,TreeSet<VersionID>> table = 
+	  new DoubleMap<String,String,TreeSet<VersionID>>();
+	for(String vendor : plugins.keySet()) {
+	  for(String name : plugins.get(vendor).keySet()) 
+	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
+	}
 	return table;
       }
       
-      return new TreeMap<String,TreeSet<VersionID>>();
+      return new DoubleMap<String,String,TreeSet<VersionID>>();
     }
      
     public void 
@@ -3857,13 +4020,16 @@ class JManageToolsetsDialog
      String pname,
      OsType os, 
      VersionID vid,
-     TreeMap<String,TreeSet<VersionID>> plugins
+     DoubleMap<String,String,TreeSet<VersionID>> plugins
     ) 
     {
       if(plugins != null) {
-	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
-	for(String name : plugins.keySet()) 
-	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+	DoubleMap<String,String,TreeSet<VersionID>> table = 
+	  new DoubleMap<String,String,TreeSet<VersionID>>();
+	for(String vendor : plugins.keySet()) {
+	  for(String name : plugins.get(vendor).keySet()) 
+	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
+	}
 
 	super.put(pname, os, vid, table);
       }
@@ -3880,29 +4046,33 @@ class JManageToolsetsDialog
    */ 
   private class
   PackagePlugins
-    extends DoubleMap<String,OsType,TreeMap<String,TreeSet<VersionID>>>
+    extends DoubleMap<String,OsType,DoubleMap<String,String,TreeSet<VersionID>>>
   {
     public PackagePlugins() 
     {
       super();
     }
 
-    public TreeMap<String,TreeSet<VersionID>>
+    public DoubleMap<String,String,TreeSet<VersionID>>
     get
     (
      String pname,
      OsType os
     ) 
     {
-      TreeMap<String,TreeSet<VersionID>> plugins = super.get(pname, os);
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = super.get(pname, os);
       if(plugins != null) {
-	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
-	for(String name : plugins.keySet()) 
-	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+	DoubleMap<String,String,TreeSet<VersionID>> table = 
+	  new DoubleMap<String,String,TreeSet<VersionID>>();
+	for(String vendor : plugins.keySet()) {
+	  for(String name : plugins.get(vendor).keySet()) 
+	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
+	}
+
 	return table;
       }
       
-      return new TreeMap<String,TreeSet<VersionID>>();
+      return new DoubleMap<String,String,TreeSet<VersionID>>();
     }
      
     public void 
@@ -3910,13 +4080,16 @@ class JManageToolsetsDialog
     (
      String pname,
      OsType os, 
-     TreeMap<String,TreeSet<VersionID>> plugins
+     DoubleMap<String,String,TreeSet<VersionID>> plugins
     ) 
     {
       if(plugins != null) {
-	TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
-	for(String name : plugins.keySet()) 
-	  table.put(name, new TreeSet<VersionID>(plugins.get(name)));
+	DoubleMap<String,String,TreeSet<VersionID>> table = 
+	  new DoubleMap<String,String,TreeSet<VersionID>>();
+	for(String vendor : plugins.keySet()) {
+	  for(String name : plugins.get(vendor).keySet()) 
+	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
+	}
 
 	super.put(pname, os, table);
       }
@@ -4033,6 +4206,7 @@ class JManageToolsetsDialog
   private ToolsetLayouts pFrozenToolsetComparators;
   private ToolsetLayouts pFrozenToolsetActions;
   private ToolsetLayouts pFrozenToolsetTools;
+  private ToolsetLayouts pFrozenToolsetArchivers;
 
   /**
    * A cache of working (unfrozen) toolset plugins menu layouts.
@@ -4041,6 +4215,7 @@ class JManageToolsetsDialog
   private ToolsetLayouts pToolsetComparators;
   private ToolsetLayouts pToolsetActions;
   private ToolsetLayouts pToolsetTools;
+  private ToolsetLayouts pToolsetArchivers;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4067,6 +4242,7 @@ class JManageToolsetsDialog
   private FrozenPackagePlugins pFrozenPackageComparators;
   private FrozenPackagePlugins pFrozenPackageActions;
   private FrozenPackagePlugins pFrozenPackageTools;
+  private FrozenPackagePlugins pFrozenPackageArchivers;
 
   /**
    * A cache of plugins associated with working (unfrozen) packages.
@@ -4075,6 +4251,7 @@ class JManageToolsetsDialog
   private PackagePlugins pPackageComparators;
   private PackagePlugins pPackageActions;
   private PackagePlugins pPackageTools;
+  private PackagePlugins pPackageArchivers;
 
 
   /*----------------------------------------------------------------------------------------*/

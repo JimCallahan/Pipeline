@@ -10,51 +10,57 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           VersionID <VersionID> #10 {
             RevisionNumber <String> #11 { "2.0.0" }
           }
+          Vendor <String> #12 { "Temerity" }
         }
-        <PluginMenuLayout> #12 {
-          Title <String> #13 { "FCheck" }
-          Name <String> #14 { "FCheck" }
-          VersionID <VersionID> #15 {
-            RevisionNumber <String> #16 { "2.0.0" }
+        <PluginMenuLayout> #13 {
+          Title <String> #14 { "FCheck" }
+          Name <String> #15 { "FCheck" }
+          VersionID <VersionID> #16 {
+            RevisionNumber <String> #17 { "2.0.0" }
           }
+          Vendor <REF> #12
         }
-        <PluginMenuLayout> #17 {
-          Title <String> #18 { "Gimp" }
-          Name <String> #19 { "Gimp" }
-          VersionID <VersionID> #20 {
-            RevisionNumber <String> #21 { "2.0.0" }
+        <PluginMenuLayout> #18 {
+          Title <String> #19 { "Gimp" }
+          Name <String> #20 { "Gimp" }
+          VersionID <VersionID> #21 {
+            RevisionNumber <String> #22 { "2.0.0" }
           }
-        }
-      }
-    }
-    <PluginMenuLayout> #22 {
-      Title <String> #23 { "3D Apps" }
-      Children <LinkedList> #24 {
-        <PluginMenuLayout> #25 {
-          Title <String> #26 { "Maya" }
-          Name <String> #27 { "Maya" }
-          VersionID <VersionID> #28 {
-            RevisionNumber <String> #29 { "2.0.0" }
-          }
+          Vendor <REF> #12
         }
       }
     }
-    <PluginMenuLayout> #30 {
-      Title <String> #31 { "Documents" }
-      Children <LinkedList> #32 {
-        <PluginMenuLayout> #33 {
-          Title <String> #34 { "Emacs" }
-          Name <String> #35 { "Emacs" }
-          VersionID <VersionID> #36 {
-            RevisionNumber <String> #37 { "2.0.0" }
+    <PluginMenuLayout> #23 {
+      Title <String> #24 { "3D Apps" }
+      Children <LinkedList> #25 {
+        <PluginMenuLayout> #26 {
+          Title <String> #27 { "Maya" }
+          Name <String> #28 { "Maya" }
+          VersionID <VersionID> #29 {
+            RevisionNumber <String> #30 { "2.0.0" }
           }
+          Vendor <REF> #12
         }
-        <PluginMenuLayout> #38 {
-          Title <String> #39 { "Text Edit" }
-          Name <String> #40 { "TextEdit" }
-          VersionID <VersionID> #41 {
-            RevisionNumber <String> #42 { "2.0.0" }
+      }
+    }
+    <PluginMenuLayout> #31 {
+      Title <String> #32 { "Documents" }
+      Children <LinkedList> #33 {
+        <PluginMenuLayout> #34 {
+          Title <String> #35 { "Emacs" }
+          Name <String> #36 { "Emacs" }
+          VersionID <VersionID> #37 {
+            RevisionNumber <String> #38 { "2.0.0" }
           }
+          Vendor <String> #39 { "Temerity" }
+        }
+        <PluginMenuLayout> #40 {
+          Title <String> #41 { "Text Edit" }
+          Name <String> #42 { "TextEdit" }
+          VersionID <VersionID> #43 {
+            RevisionNumber <String> #44 { "2.0.0" }
+          }
+          Vendor <REF> #12
         }
       }
     }

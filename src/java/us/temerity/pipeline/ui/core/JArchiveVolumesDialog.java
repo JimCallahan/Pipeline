@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.2 2005/04/04 23:36:55 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.3 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -112,6 +112,14 @@ class JArchiveVolumesDialog
 		JPanel tpanel = (JPanel) comps[0];
 		JPanel vpanel = (JPanel) comps[1];
 		
+		pToolsetField = 
+		  UIFactory.createTitledTextField
+		  (tpanel, "Toolset:", sTSize, 
+		   vpanel, "-", sVSize, 
+		   "The name of the shell environment under which the Archiver plugin is run.");
+
+		UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
 		pArchiverField = 
 		  UIFactory.createTitledTextField
 		  (tpanel, "Archiver:", sTSize, 
@@ -125,6 +133,15 @@ class JArchiveVolumesDialog
 		  (tpanel, "Version:", sTSize, 
 		   vpanel, "", sVSize, 
 		   "The revision number of the Archiver plugin associated with the " + 
+		   "archive volume.");
+		
+		UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+		
+		pArchiverVendorField = 
+		  UIFactory.createTitledTextField
+		  (tpanel, "Vendor:", sTSize, 
+		   vpanel, "", sVSize, 
+		   "The name of the vendor of the Archiver plugin associated with the " + 
 		   "archive volume.");
 		
 		rbox.add(comps[2]);
@@ -303,6 +320,12 @@ class JArchiveVolumesDialog
       pVolumeLabel.setText("None Selected:");
     }
 
+    /* toolset environment */ 
+    if(volume != null) 
+      pToolsetField.setText(volume.getToolset());
+    else 
+      pToolsetField.setText("-");
+
     /* archiver fields */ 
     BaseArchiver archiver = null;
     if(volume != null) 
@@ -311,10 +334,12 @@ class JArchiveVolumesDialog
     if(archiver != null) {
       pArchiverField.setText(archiver.getName());
       pArchiverVersionField.setText("v" + archiver.getVersionID());
+      pArchiverVendorField.setText(archiver.getVendor());
     }
     else {
       pArchiverField.setText("-");
       pArchiverVersionField.setText("-");
+      pArchiverVendorField.setText("-");
     }
     
     /* archiver parameters */ 
@@ -1185,6 +1210,13 @@ class JArchiveVolumesDialog
    */ 
   private JLabel  pVolumeLabel; 
 
+
+  /**
+   * The name of the toolset environment. 
+   */ 
+  private JTextField  pToolsetField; 
+
+
   /**
    * The name of the archiver plugin.
    */ 
@@ -1194,6 +1226,12 @@ class JArchiveVolumesDialog
    * The revision number of the archiver plugin.
    */ 
   private JTextField  pArchiverVersionField;
+
+  /**
+   * The name of the vendor of the archiver plugin.
+   */ 
+  private JTextField  pArchiverVendorField;
+
 
   /**
    * The archiver plugin parameters drawer.

@@ -1,0 +1,60 @@
+ArchiversMenuLayout <PluginMenuLayout> #1 {
+  Title <String> #2 { "Plugin Menu" }
+  Children <LinkedList> #3 {
+    <PluginMenuLayout> #4 {
+      Title <String> #5 { "File" }
+      Children <LinkedList> #6 {
+        <PluginMenuLayout> #7 {
+          Title <String> #8 { "TarFile" }
+          Name <String> #9 { "TarFile" }
+          VersionID <VersionID> #10 {
+            RevisionNumber <String> #11 { "2.0.0" }
+          }
+          Vendor <REF> #10
+        }
+        <PluginMenuLayout> #12 {
+          Title <String> #13 { "CpioFile" }
+          Name <String> #14 { "CpioFile" }
+          VersionID <VersionID> #15 {
+            RevisionNumber <String> #16 { "2.0.0" }
+          }
+          Vendor <REF> #15
+        }
+      }
+    }
+    <PluginMenuLayout> #17 {
+      Title <String> #18 { "Tape" }
+      Children <LinkedList> #19 {
+        <PluginMenuLayout> #20 {
+          Title <String> #21 { "TarTape" }
+          Name <String> #22 { "TarTape" }
+          VersionID <VersionID> #23 {
+            RevisionNumber <String> #24 { "2.0.0" }
+          }
+          Vendor <REF> #23
+        }
+        <PluginMenuLayout> #25 {
+          Title <String> #26 { "CpioTape" }
+          Name <String> #27 { "CpioTape" }
+          VersionID <VersionID> #28 {
+            RevisionNumber <String> #29 { "2.0.0" }
+          }
+          Vendor <REF> #28
+        }
+      }
+    }
+    <PluginMenuLayout> #30 {
+      Title <String> #31 { "CD/DVD" }
+      Children <LinkedList> #32 {
+        <PluginMenuLayout> #33 {
+          Title <String> #34 { "CD-ROM" }
+          Name <String> #35 { "CD-ROM" }
+          VersionID <VersionID> #36 {
+            RevisionNumber <String> #37 { "2.0.0" }
+          }
+          Vendor <REF> #36
+        }
+      }
+    }
+  }
+}

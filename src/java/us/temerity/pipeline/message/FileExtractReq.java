@@ -1,4 +1,4 @@
-// $Id: FileExtractReq.java,v 1.1 2005/03/23 00:35:23 jim Exp $
+// $Id: FileExtractReq.java,v 1.2 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -41,6 +41,9 @@ class FileExtractReq
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param size
    *   The required temporary disk space needed for the restore operation.
    */
@@ -51,6 +54,7 @@ class FileExtractReq
    Date stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
+   Map<String,String> env, 
    Long size
   )
   {
@@ -73,6 +77,11 @@ class FileExtractReq
       throw new IllegalArgumentException
 	("The archiver cannot be (null)!");
     pArchiver = archiver;
+
+    if(env == null) 
+      throw new IllegalArgumentException
+	("The toolset environment cannot be (null)!");
+    pEnvironment = env;
 
     pSize = size;
   }
@@ -121,6 +130,15 @@ class FileExtractReq
   }
 
   /**
+   * Get the environment under which the action is executed.
+   */ 
+  public Map<String,String>
+  getEnvironment()
+  {
+    return pEnvironment;
+  }
+
+  /**
    * Get the archiver plugin instance used to perform the restore operation.
    */ 
   public Long
@@ -151,8 +169,9 @@ class FileExtractReq
     out.writeObject(pArchiveName);
     out.writeObject(pTimeStamp);
     out.writeObject(pFileSeqs);
-    out.writeObject(pSize);
     out.writeObject(new BaseArchiver(pArchiver));
+    out.writeObject(pSize);
+    out.writeObject(pEnvironment);
   }  
 
   /**
@@ -172,17 +191,19 @@ class FileExtractReq
     pArchiveName = (String) in.readObject();
     pTimeStamp = (Date) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
-    pSize = (Long) in.readObject();
     
-    BaseArchiver archiver = (BaseArchiver) in.readObject();
+    BaseArchiver arch = (BaseArchiver) in.readObject();
     try {
       PluginMgrClient client = PluginMgrClient.getInstance();
-      pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-      pArchiver.setParamValues(archiver);
+      pArchiver = client.newArchiver(arch.getName(), arch.getVersionID(), arch.getVendor());
+      pArchiver.setParamValues(arch);
     }
     catch(PipelineException ex) {
       throw new IOException(ex.getMessage());
     }
+
+    pEnvironment = (Map<String,String>) in.readObject();
+    pSize = (Long) in.readObject();
   }
 
 
@@ -219,6 +240,11 @@ class FileExtractReq
    */ 
   private BaseArchiver  pArchiver;
 
+  /**
+   * The environment under which the action is executed.
+   */
+  private Map<String,String> pEnvironment;
+ 
   /**
    * The archiver plugin instance used to perform the restore operation.
    */ 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.17 2005/07/19 00:48:10 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.18 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1993,33 +1993,25 @@ class JQueueJobViewerPanel
    String editor
   ) 
   {
-    String ename = null;
-    VersionID evid = null;
     String parts[] = editor.split(":");
-    switch(parts.length) {
-    case 1:
-      ename = editor;
-      break;
-
-    case 2:
-      ename = parts[0];
-      evid = new VersionID(parts[1]);
-      break;
-
-    default:
-      assert(false);
-    }
+    assert(parts.length == 3);
+    
+    String ename   = parts[0];
+    VersionID evid = new VersionID(parts[1]);
+    String evendor = parts[2];
 
     if(pPrimary != null) {
       JobStatus status = pPrimary.getJobStatus();
       ViewTask task = 
-	new ViewTask(status.getNodeID(), status.getTargetSequence(), false, ename, evid);
+	new ViewTask(status.getNodeID(), status.getTargetSequence(), false, 
+		     ename, evid, evendor);
       task.start();
     }
     else if(pPrimaryGroup != null) {
       QueueJobGroup group = pPrimaryGroup.getGroup();
       ViewTask task = 
-	new ViewTask(group.getNodeID(), group.getRootSequence(), false, ename, evid);
+	new ViewTask(group.getNodeID(), group.getRootSequence(), false, 
+		     ename, evid, evendor);
       task.start();
     }
 
@@ -2440,7 +2432,7 @@ class JQueueJobViewerPanel
      FileSeq fseq
     ) 
     {
-      this(nodeID, fseq, false, null, null);
+      this(nodeID, fseq, false, null, null, null);
     }
 
     public 
@@ -2451,7 +2443,7 @@ class JQueueJobViewerPanel
      boolean useDefault
     ) 
     {
-      this(nodeID, fseq, useDefault, null, null);
+      this(nodeID, fseq, useDefault, null, null, null);
     }
 
     public 
@@ -2461,7 +2453,8 @@ class JQueueJobViewerPanel
      FileSeq fseq,
      boolean useDefault,
      String ename,
-     VersionID evid
+     VersionID evid, 
+     String evendor
     ) 
     {
       super("JQueueJobViewerPanel:ViewTask");
@@ -2471,6 +2464,7 @@ class JQueueJobViewerPanel
       pUseDefault    = useDefault;
       pEditorName    = ename;
       pEditorVersion = evid; 
+      pEditorVendor  = evendor;       
     }
 
      public void 
@@ -2490,22 +2484,23 @@ class JQueueJobViewerPanel
  	    /* create an editor plugin instance */ 
  	    BaseEditor editor = null;
  	    {
- 	      String ename = pEditorName;
-	      if((ename == null) && pUseDefault) {
+	      if(pEditorName != null) {
+		PluginMgrClient pclient = PluginMgrClient.getInstance();
+		editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
+	      }
+	      else if (pUseDefault) {
 		FilePattern fpat = mod.getPrimarySequence().getFilePattern();
 		String suffix = fpat.getSuffix();
 		if(suffix != null) 
-		  ename = client.getEditorForSuffix(suffix);
+		  editor = client.getEditorForSuffix(suffix);
 	      }
 
- 	      if(ename == null) 
- 		ename = mod.getEditor();
-
- 	      if(ename == null) 
- 		throw new PipelineException
- 		  ("No editor was specified for node (" + mod.getName() + ")!");
-	      
- 	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion);
+	      if(editor == null) 
+		editor = mod.getEditor();
+		
+	      if(editor == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + mod.getName() + ")!");
  	    }
 
  	    /* lookup the toolset environment */ 
@@ -2570,6 +2565,7 @@ class JQueueJobViewerPanel
      private boolean    pUseDefault; 
      private String     pEditorName;
      private VersionID  pEditorVersion; 
+     private String     pEditorVendor; 
    }
 
 

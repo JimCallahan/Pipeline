@@ -1,4 +1,4 @@
-// $Id: JPluginSelectionField.java,v 1.2 2005/06/14 13:38:33 jim Exp $
+// $Id: JPluginSelectionField.java,v 1.3 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -35,13 +35,13 @@ class JPluginSelectionField
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin names and revision numbers.
+   *   The legal plugin vendors, names and revision numbers.
    */ 
   public 
   JPluginSelectionField
   (
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
   {
     super();  
@@ -100,13 +100,13 @@ class JPluginSelectionField
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin names and revision numbers.
+   *   The legal plugin vendors, names and revision numbers.
    */ 
   public void 
   updatePlugins
   (
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
   {
     if(layout == null) 
@@ -115,14 +115,14 @@ class JPluginSelectionField
 
     if(plugins == null) 
       throw new IllegalArgumentException
-	("The set of legal plugin name/versions cannot be (null)!");
+	("The set of legal plugin vendors/names/versions cannot be (null)!");
     pPlugins = plugins;
 
     pPopup.removeAll();
 
     {
       JMenuItem item = new JMenuItem("-");
-      item.setActionCommand("-:-");
+      item.setActionCommand("-:-:-");
       item.addActionListener(this);
       pPopup.add(item);
     }
@@ -137,20 +137,34 @@ class JPluginSelectionField
   public void
   setPlugin
   (
-   String name, 
-   VersionID vid
+   BasePlugin plugin
   ) 
   {
-    pPluginName      = null;
-    pPluginVersionID = null;
+    if(plugin != null) 
+      setPlugin(plugin.getName(), plugin.getVersionID(), plugin.getVendor());
+    else 
+      setPlugin(null, null, null);
+  }
 
-    if(name != null) {
-      TreeSet<VersionID> vids = pPlugins.get(name);
-      if(vids != null) {
-	pPluginName = name;
-	if((vid != null) && vids.contains(vid)) 
-	  pPluginVersionID = vid;
-      }
+  /**
+   * Set the selected plugin name and revision number.
+   */ 
+  public void
+  setPlugin
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+  {
+    pPluginName = name; 
+    if(pPluginName != null) {
+      pPluginVersionID = vid; 
+      pPluginVendor    = vendor; 
+    }
+    else {
+      pPluginVersionID = null;
+      pPluginVendor    = null;
     }
 
     pLabel.setText((pPluginName != null) ? pPluginName : "-");
@@ -180,6 +194,18 @@ class JPluginSelectionField
   getPluginVersionID() 
   {
     return pPluginVersionID; 
+  }
+
+  /**
+   * Get the name of the plugin vendor. 
+   * 
+   * @return 
+   *   The vendor name or <CODE>null</CODE> if undefined.
+   */ 
+  public String
+  getPluginVendor()
+  {
+    return pPluginVendor; 
   }
 
 
@@ -318,7 +344,11 @@ class JPluginSelectionField
       if(!parts[1].equals("-")) 
 	vid = new VersionID(parts[1]);
 
-      setPlugin(name, vid);
+      String vendor = null;
+      if(!parts[2].equals("-")) 
+	vendor = parts[2];
+      
+      setPlugin(name, vid, vendor);
     }
   }
 
@@ -401,16 +431,17 @@ class JPluginSelectionField
   buildPluginMenu
   (
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
   {
     JMenuItem item = null;
     if(layout.isMenuItem()) {
       item = new JMenuItem(layout.getTitle());
-      item.setActionCommand(layout.getName() + ":" + layout.getVersionID());
+      item.setActionCommand
+	(layout.getName() + ":" + layout.getVersionID() + ":" + layout.getVendor());
       item.addActionListener(this);
    
-      TreeSet<VersionID> vids = plugins.get(layout.getName());
+      TreeSet<VersionID> vids = plugins.get(layout.getVendor(), layout.getName());
       item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
     }
     else {
@@ -454,11 +485,16 @@ class JPluginSelectionField
    */ 
   private VersionID  pPluginVersionID; 
 
+  /**
+   * The name of the vendor of the selected plugin or <CODE>null</CODE> if unspecified.
+   */ 
+  private String  pPluginVendor; 
+
 
   /**
    * The names and revision numbers of all legal plugins.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pPlugins; 
+  private DoubleMap<String,String,TreeSet<VersionID>>  pPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

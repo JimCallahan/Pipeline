@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.7 2004/10/28 15:55:23 jim Exp $
+// $Id: SingleEditor.java,v 1.8 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -35,6 +35,9 @@ class SingleEditor
    * @param vid
    *   The action plugin revision number. 
    * 
+   * @param vendor
+   *   The name of the plugin vendor.
+   * 
    * @param desc 
    *   A short description used in tooltips.
    * 
@@ -46,11 +49,12 @@ class SingleEditor
   (
    String name,  
    VersionID vid, 
+   String vendor, 
    String desc,
    String program
   ) 
   {
-    super(name, vid, desc, program);
+    super(name, vid, vendor, desc, program);
   }
 
 

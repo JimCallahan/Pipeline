@@ -27,7 +27,7 @@ The plqueuemgr(1) program is distributed in the main Pipeline RPM:
 %dir @QUEUEDIR@
 
 %changelog
-* @RPM_DATE@ Jim Callahan <jim@salamander>
+* @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.
 
 

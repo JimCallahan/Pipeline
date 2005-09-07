@@ -34,17 +34,19 @@ The plmaster(1) program is distributed in the main Pipeline RPM:
 %config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
 
 %config @NODEDIR@/etc/default-layouts/Unix/actions
+%config @NODEDIR@/etc/default-layouts/Unix/archivers
 %config @NODEDIR@/etc/default-layouts/Unix/comparators
 %config @NODEDIR@/etc/default-layouts/Unix/editors
 %config @NODEDIR@/etc/default-layouts/Unix/tools
 
 %config @NODEDIR@/etc/default-layouts/MacOS/actions
+%config @NODEDIR@/etc/default-layouts/MacOS/archivers
 %config @NODEDIR@/etc/default-layouts/MacOS/comparators
 %config @NODEDIR@/etc/default-layouts/MacOS/editors
 %config @NODEDIR@/etc/default-layouts/MacOS/tools
 
 %changelog
-* @RPM_DATE@ Jim Callahan <jim@salamander>
+* @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.
 
 

@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.6 2005/03/11 06:33:44 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.7 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -41,15 +41,17 @@ class SuffixEditorTableModel
     
     /* initialize the columns */ 
     { 
-      pNumColumns = 3;
+      pNumColumns = 5;
 
       {
-	Class classes[] = { String.class, String.class, String.class }; 
+	Class classes[] = { 
+	  String.class, String.class, BaseEditor.class, String.class, String.class 
+	}; 
 	pColumnClasses = classes;
       }
 
       {
-	String names[] = {"Suffix", "Format Description", "Editor" };
+	String names[] = { "Suffix", "Format Description", "Editor", "Version", "Vendor" };
 	pColumnNames = names;
       }
 
@@ -57,13 +59,15 @@ class SuffixEditorTableModel
 	String desc[] = {
 	  "The filename suffix.", 
 	  "A short description of the file format.", 
-	  "The name of the default Editor plugin for this file format."
+	  "The name of the default Editor plugin for this file format.",
+	  "The revision number of the Editor plugin.", 
+	  "The name of the Editor plugin vendor."
 	};
 	pColumnDescriptions = desc;
       }
 
       {
-	int widths[] = { 80, 600, 130 };
+	int widths[] = { 80, 600, 120, 120, 120 };
 	pColumnWidths = widths;
       }
 
@@ -71,33 +75,22 @@ class SuffixEditorTableModel
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.LEFT), 
+	  new JPluginTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER)
 	};
 	pRenderers = renderers;
       }
 
       {
-	JCollectionTableCellEditor editor = null;
-	{
-	  PluginMgrClient pclient = PluginMgrClient.getInstance();
-	  try {
-	    pclient.update();
-	  } 
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	       ex.getMessage());
-	  }
+	pPluginCellEditor = new JEditorSelectionTableCellEditor(120);
 
-	  ArrayList<String> values = new ArrayList<String>(pclient.getEditors().keySet());
-	  values.add("-");
-	  editor = new JCollectionTableCellEditor(values, parent, 130);
-	}
-	
 	TableCellEditor editors[] = {
 	  null, 
 	  new JStringTableCellEditor(200, JLabel.LEFT), 
-	  editor
+	  pPluginCellEditor,
+	  null, 
+	  null
 	};
 	pEditors = editors;
       }
@@ -122,6 +115,7 @@ class SuffixEditorTableModel
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
     for(SuffixEditor se : pSuffixEditors) {
+      BaseEditor editor = se.getEditor();
       Comparable value = null;
       switch(pSortColumn) {
       case 0:
@@ -135,9 +129,25 @@ class SuffixEditorTableModel
 	break;
 
       case 2:
-	value = se.getEditor();
-	if(value == null)
+	if(editor != null)
+	  value = editor.getName();
+	else 
 	  value = "-";
+	break;
+
+      case 3:
+	if(editor != null)
+	  value = editor.getVersionID().toString();
+	else 
+	  value = "-";
+	break;
+
+      case 4:
+	if(editor != null)
+	  value = editor.getVendor();
+	else 
+	  value = "-";
+	break;
       }
       
       int wk;
@@ -193,6 +203,8 @@ class SuffixEditorTableModel
     pSuffixEditors.addAll(editors);
 
     sort();
+
+    pPluginCellEditor.updateMenus();
   }
 
 
@@ -266,7 +278,7 @@ class SuffixEditorTableModel
    int col
   ) 
   {
-    return (col != 0);
+    return ((col > 0) && (col < 3));
   }
 
   /**
@@ -280,6 +292,7 @@ class SuffixEditorTableModel
   )
   {
     SuffixEditor se = pSuffixEditors.get(pRowToIndex[row]);
+    BaseEditor editor = se.getEditor();
     switch(col) {
     case 0:
       return se.getSuffix();
@@ -294,12 +307,22 @@ class SuffixEditorTableModel
       }
 
     case 2:
+      return editor; 
+	
+    case 3:
       {
-	String editor = se.getEditor();
 	if(editor == null)
 	  return "-";
 	else 
-	  return editor;
+	  return editor.getVersionID().toString();
+      }
+
+    case 4:
+      {
+	if(editor == null)
+	  return "-";
+	else 
+	  return editor.getVendor();
       }
 
     default:
@@ -319,17 +342,15 @@ class SuffixEditorTableModel
    int col
   ) 
   {
-    String str = (String) value;
-
     int vrow = pRowToIndex[row];
-    setValueAtHelper(str, vrow, col);
+    setValueAtHelper(value, vrow, col);
 
     int[] selected = pTable.getSelectedRows(); 
     int wk;
     for(wk=0; wk<selected.length; wk++) {
       int srow = pRowToIndex[selected[wk]];
       if(srow != vrow)
-	setValueAtHelper(str, srow, col);
+	setValueAtHelper(value, srow, col);
     }
 
     fireTableDataChanged();
@@ -338,7 +359,7 @@ class SuffixEditorTableModel
   public void 
   setValueAtHelper
   (
-   String str, 
+   Object value, 
    int srow, 
    int col
   ) 
@@ -346,17 +367,17 @@ class SuffixEditorTableModel
     SuffixEditor se = pSuffixEditors.get(srow);
     switch(col) {
     case 1:
-      if(str.length() == 0)
-	se.setDescription(null);
-      else 
-	se.setDescription(str);
+      {
+	String str = (String) value;
+	if(str.length() == 0)
+	  se.setDescription(null);
+	else 
+	  se.setDescription(str);
+      }
       break;
 
     case 2:
-      if(str.equals("-")) 
-	se.setEditor(null);
-      else 
-	se.setEditor(str);
+      se.setEditor((BaseEditor) value);
       break;
       
     default:
@@ -383,6 +404,8 @@ class SuffixEditorTableModel
    */ 
   private ArrayList<SuffixEditor> pSuffixEditors;
 
-
-
+  /**
+   * The cell editor used to select the Editor plugins.
+   */ 
+  private JEditorSelectionTableCellEditor  pPluginCellEditor; 
 }

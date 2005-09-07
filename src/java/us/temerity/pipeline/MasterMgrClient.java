@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.67 2005/08/21 00:49:45 jim Exp $
+// $Id: MasterMgrClient.java,v 1.68 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -862,12 +862,12 @@ class MasterMgrClient
    *   The operating system type.
    * 
    * @return 
-   *   The names and revision numbers of the associated editor plugins.
+   *   The vendors, names and revision numbers of the associated editor plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetEditorPlugins
   (
    String name, 
@@ -903,12 +903,12 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @return 
-   *   The names and revision numbers of the associated editor plugins.
+   *   The vendors, names and revision numbers of the associated editor plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getPackageEditorPlugins
   (
    String name, 
@@ -945,7 +945,7 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @param plugins
-   *   The names and revision numbers of the associated editor plugins.
+   *   The vendors, names and revision numbers of the associated editor plugins.
    * 
    * @throws PipelineException
    *   If unable to set the plugins.
@@ -956,7 +956,7 @@ class MasterMgrClient
    String name,  
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException  
   {
@@ -1126,12 +1126,12 @@ class MasterMgrClient
    *   The operating system type.
    * 
    * @return 
-   *   The names and revision numbers of the associated comparator plugins.
+   *   The vendors, names and revision numbers of the associated comparator plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetComparatorPlugins
   (
    String name, 
@@ -1167,12 +1167,12 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @return 
-   *   The names and revision numbers of the associated comparator plugins.
+   *   The vendors, names and revision numbers of the associated comparator plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getPackageComparatorPlugins
   (
    String name, 
@@ -1209,7 +1209,7 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @param plugins
-   *   The names and revision numbers of the associated comparator plugins.
+   *   The vendors, names and revision numbers of the associated comparator plugins.
    * 
    * @throws PipelineException
    *   If unable to set the plugins.
@@ -1220,7 +1220,7 @@ class MasterMgrClient
    String name,  
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException  
   {
@@ -1390,12 +1390,12 @@ class MasterMgrClient
    *   The operating system type.
    * 
    * @return 
-   *   The names and revision numbers of the associated action plugins.
+   *   The vendors, names and revision numbers of the associated action plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetActionPlugins
   (
    String name, 
@@ -1431,12 +1431,12 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @return 
-   *   The names and revision numbers of the associated action plugins.
+   *   The vendors, names and revision numbers of the associated action plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getPackageActionPlugins
   (
    String name, 
@@ -1473,7 +1473,7 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @param plugins
-   *   The names and revision numbers of the associated action plugins.
+   *   The vendors, names and revision numbers of the associated action plugins.
    * 
    * @throws PipelineException
    *   If unable to set the plugins.
@@ -1484,7 +1484,7 @@ class MasterMgrClient
    String name,  
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException  
   {
@@ -1654,12 +1654,12 @@ class MasterMgrClient
    *   The operating system type.
    * 
    * @return 
-   *   The names and revision numbers of the associated tool plugins.
+   *   The vendors, names and revision numbers of the associated tool plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetToolPlugins
   (
    String name, 
@@ -1695,12 +1695,12 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @return 
-   *   The names and revision numbers of the associated tool plugins.
+   *   The vendors, names and revision numbers of the associated tool plugins.
    * 
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getPackageToolPlugins
   (
    String name, 
@@ -1737,7 +1737,7 @@ class MasterMgrClient
    *   The revision number of the package.
    * 
    * @param plugins
-   *   The names and revision numbers of the associated tool plugins.
+   *   The vendors, names and revision numbers of the associated tool plugins.
    * 
    * @throws PipelineException
    *   If unable to set the plugins.
@@ -1748,7 +1748,7 @@ class MasterMgrClient
    String name,  
    OsType os, 
    VersionID vid,
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
     throws PipelineException  
   {
@@ -1766,24 +1766,288 @@ class MasterMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the archiver plugin menu for an operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of archiver plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the archiver menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getArchiverMenuLayout
+  (
+   OsType os
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+
+    Object obj = performTransaction(MasterRequest.GetArchiverMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the archiver plugin menu.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of archiver plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the archiver menu layout.
+   */ 
+  public synchronized void 
+  setArchiverMenuLayout
+  (
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the archiver menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetArchiverMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the archiver plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The heirarchical set of archiver plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the archiver menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getArchiverMenuLayout
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetArchiverMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the archiver plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param layout
+   *   The heirarchical set of archiver plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the archiver menu layout.
+   */ 
+  public synchronized void 
+  setArchiverMenuLayout
+  (
+   String name, 
+   OsType os,
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the archiver menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+
+    Object obj = performTransaction(MasterRequest.SetArchiverMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the archiver plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated archiver plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  getToolsetArchiverPlugins
+  (
+   String name, 
+   OsType os
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetArchiverPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the archiver plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated archiver plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  getPackageArchiverPlugins
+  (
+   String name, 
+   OsType os,
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageArchiverPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the archiver plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the associated archiver plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageArchiverPlugins
+  ( 
+   String name,  
+   OsType os, 
+   VersionID vid,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the archiver plugins associated with " + 
+	 "a toolset package!"); 
+
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageArchiverPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   E D I T O R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get default editor name for the given filename suffix and current user. <P> 
+   * Get default editor plugin for the given filename suffix and current user. <P> 
    * 
    * @param suffix
    *   The filename suffix.
    * 
    * @return 
-   *   The editor name of <CODE>null</CODE> if undefined.
+   *   The editor plugin instance or <CODE>null</CODE> if undefined.
    * 
    * @throws PipelineException
    *   If unable to determine the editor name.
    */ 
-  public synchronized String
+  public synchronized BaseEditor
   getEditorForSuffix
   (
    String suffix
@@ -4294,6 +4558,10 @@ class MasterMgrClient
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
    * 
+   * @param toolset
+   *   The name of the toolset environment under which the archiver is executed or 
+   *   <CODE>null</CODE> to use the default toolset.
+   * 
    * @return 
    *   The unique name given to the newly created archive. 
    * 
@@ -4305,7 +4573,8 @@ class MasterMgrClient
   (
    String prefix, 
    TreeMap<String,TreeSet<VersionID>> versions, 
-   BaseArchiver archiver
+   BaseArchiver archiver, 
+   String toolset
   ) 
     throws PipelineException
   {
@@ -4315,7 +4584,7 @@ class MasterMgrClient
 
     verifyConnection();
 
-    MiscArchiveReq req = new MiscArchiveReq(prefix, versions, archiver);
+    MiscArchiveReq req = new MiscArchiveReq(prefix, versions, archiver, toolset);
     Object obj = performLongTransaction(MasterRequest.Archive, req, 15000, 60000);  
     if(obj instanceof MiscArchiveRsp) {
       MiscArchiveRsp rsp = (MiscArchiveRsp) obj;
@@ -4646,7 +4915,11 @@ class MasterMgrClient
    * 
    * @param archiver
    *   The alternative archiver plugin instance used to perform the restore operation
-   *   or <CODE>null</CODE> to use the default archiver.
+   *   or <CODE>null</CODE> to use the original archiver.
+   * 
+   * @param toolset
+   *   The name of the toolset environment under which the archiver is executed
+   *   or <CODE>null</CODE> to use the original toolset. 
    * 
    * @throws PipelineException
    *   If unable to restore the checked-in versions.
@@ -4656,7 +4929,8 @@ class MasterMgrClient
   (
    String name, 
    TreeMap<String,TreeSet<VersionID>> versions, 
-   BaseArchiver archiver
+   BaseArchiver archiver, 
+   String toolset
   ) 
     throws PipelineException
   {
@@ -4666,7 +4940,7 @@ class MasterMgrClient
 
     verifyConnection();
 
-    MiscRestoreReq req = new MiscRestoreReq(name, versions, archiver);
+    MiscRestoreReq req = new MiscRestoreReq(name, versions, archiver, toolset);
     Object obj = performLongTransaction(MasterRequest.Restore, req, 15000, 60000);  
     handleSimpleResponse(obj);    
   }

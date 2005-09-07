@@ -16,8 +16,7 @@ admin_scripts = \
   plmaster \
   plpluginmgr \
   plqueuemgr \
-  plrestore \
-  upgrade-toolsets-1.9.22
+  plrestore
 endif
 
 instsbin_SCRIPTS = $(admin_scripts)

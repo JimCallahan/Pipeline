@@ -1,4 +1,4 @@
-// $Id: SuffixEditor.java,v 1.2 2005/01/22 06:10:09 jim Exp $
+// $Id: SuffixEditor.java,v 1.3 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,14 +53,14 @@ class SuffixEditor
    *   The description text.
    * 
    * @param editor
-   *   The default editor name.
+   *   The default editor plugin to use for files with the given suffix. 
    */ 
   public 
   SuffixEditor
   (
    String suffix, 
    String desc,
-   String editor
+   BaseEditor editor
   ) 
   {
     if(suffix == null) 
@@ -116,28 +116,30 @@ class SuffixEditor
   }
   
 
-  /**
-   * Gets the name of the default editor to use for files having this filename suffix.
+  /** 
+   * Gets the editor plugin instance used to as the default editor for files having 
+   * this filename suffix.
    * 
    * @return 
-   *   The editor name or <CODE>null</CODE> if undefined.
+   *   The editor or <CODE>null</CODE> if undefined.
    */ 
-  public String
+  public BaseEditor
   getEditor() 
   {
     return pEditor;
   }
 
   /**
-   * Sets the name of the default editor to use for files having this filename suffix.
+   * Sets the editor plugin instance used to as the default editor for files having 
+   * this filename suffix.
    * 
    * @param editor
-   *   The default editor name.
+   *   The default editor plugin or <CODE>null</CODE> for no editor.
    */ 
   public void
   setEditor
   (
-   String editor
+   BaseEditor editor
   ) 
   {
     pEditor = editor;
@@ -215,6 +217,66 @@ class SuffixEditor
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseAction instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    out.writeObject(pSuffix);
+    out.writeObject(pDescription);
+    
+    BaseEditor editor = null;
+    if(pEditor != null) 
+      editor = new BaseEditor(pEditor);
+    out.writeObject(editor);
+  }
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * stream. 
+   */ 
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+    pSuffix = (String) in.readObject();
+    pDescription = (String) in.readObject();
+
+    BaseEditor editor = (BaseEditor) in.readObject();
+    if(editor != null) {
+      try {
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+      }
+      catch(PipelineException ex) {
+	throw new IOException(ex.getMessage());
+      }
+    }
+    else {
+      pEditor = null;
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -247,7 +309,17 @@ class SuffixEditor
     pSuffix = suffix;
 
     pDescription = (String) decoder.decode("Description");     
-    pEditor      = (String) decoder.decode("Editor");     
+
+    BaseEditor editor = (BaseEditor) decoder.decode("Editor");     
+    if(editor != null) {
+      try {
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+      }
+      catch(PipelineException ex) {
+	throw new GlueException(ex.getMessage());
+      }
+    }
   }
 
 
@@ -273,8 +345,10 @@ class SuffixEditor
    */
   private String  pDescription;        
 
-  /**
-   * The default editor name.
+  /** 
+   * The editor plugin instance used to as the default editor for files having this
+   * filename suffix.
    */
-  private String  pEditor;        
+  private BaseEditor  pEditor; 
+
 }

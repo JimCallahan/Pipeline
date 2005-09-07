@@ -1,0 +1,3 @@
+ArchiversMenuLayout <PluginMenuLayout> #1 {
+  Title <String> #2 { "Plugin Menu" }
+}

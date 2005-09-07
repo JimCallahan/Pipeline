@@ -1,4 +1,4 @@
-// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.5 2005/07/15 02:16:46 jim Exp $
+// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.6 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -89,7 +89,7 @@ class JPluginMenuLayoutTreeCellRenderer
       pLabel.setIcon(isSelected ? sSelectedIcon : sNormalIcon);
       pPluginLabel.setText(pml.getName() + " (v" + pml.getVersionID() + ")");      
       
-      if(!pParent.isPluginSupported(pml.getName(), pml.getVersionID()))
+      if(!pParent.isPluginSupported(pml.getName(), pml.getVersionID(), pml.getVendor()))
 	itemColor = new Color(0.8f, 0.8f, 0.8f);
     }
     else {

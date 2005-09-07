@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.3 2005/05/05 22:45:40 jim Exp $
+// $Id: BasePlugin.java,v 1.4 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,13 +29,16 @@ class BasePlugin
   }
 
   /** 
-   * Construct with the given name, version and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the plugin
    * 
    * @param vid
    *   The plugin revision number.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    * 
    * @param desc 
    *   A short description of the plugin.
@@ -45,6 +48,7 @@ class BasePlugin
   (
    String name,  
    VersionID vid,
+   String vendor, 
    String desc
   ) 
   {
@@ -53,6 +57,10 @@ class BasePlugin
     if(vid == null) 
       throw new IllegalArgumentException("The plugin version cannot be (null)");
     pVersionID = vid;
+
+    if(vendor == null) 
+      throw new IllegalArgumentException("The plugin vendor cannot be (null)");
+    pVendor = vendor;
   }
 
 
@@ -68,6 +76,15 @@ class BasePlugin
   getVersionID()
   {
     return pVersionID;
+  }
+  
+  /**
+   * Get the name of the plugin vendor. 
+   */ 
+  public String
+  getVendor()
+  {
+    return pVendor; 
   }
   
 
@@ -133,7 +150,8 @@ class BasePlugin
     if((obj != null) && (obj instanceof BasePlugin)) {
       BasePlugin plg = (BasePlugin) obj;
       return (super.equals(obj) && 
-	      pVersionID.equals(plg.pVersionID));
+	      pVersionID.equals(plg.pVersionID) && 
+	      pVendor.equals(plg.pVendor));
     }
     return false;
   }
@@ -147,6 +165,7 @@ class BasePlugin
     return 
      ("Name        : " + getName() + "\n" + 
       "Version     : " + getVersionID() + "\n" + 
+      "Vendor      : " + getVendor() + "\n" + 
       "Description : " + wordWrap(getDescription(), 14, 80) + "\n" + 
       "Catagory    : " + getPluginCatagory() + "\n" +
       "Status      : " + (isUnderDevelopment() ? "Under Development" : "Permanent") + "\n" + 
@@ -169,6 +188,7 @@ class BasePlugin
     super.toGlue(encoder);
     
     encoder.encode("VersionID", pVersionID);
+    encoder.encode("Vendor", pVendor);
   }
   
   public void 
@@ -184,6 +204,11 @@ class BasePlugin
     if(vid == null) 
       throw new GlueException("The \"VersionID\" was missing!");
     pVersionID = vid; 
+    
+    String vendor = (String)  decoder.decode("Vendor");
+    if(vendor == null) 
+      throw new GlueException("The \"Vendor\" was missing!");
+    pVendor = vendor;      
   }
 
 
@@ -273,6 +298,11 @@ class BasePlugin
    * The revision number of the plugin. 
    */ 
   protected VersionID  pVersionID;
+
+  /**
+   * The name of the plugin vendor.
+   */ 
+  protected String  pVendor; 
 
   /**
    * Whether this version of the plugin in currently being modified and tested by the 

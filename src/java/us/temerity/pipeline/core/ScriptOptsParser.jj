@@ -145,8 +145,11 @@ ScriptOptsParser
   private String     pArchivePattern; 
   private Integer    pMaxArchives; 
   private Long       pMinSize; 
+
   private String     pArchiverName;
   private VersionID  pArchiverVersionID;
+  private String     pArchiverVendor; 
+
   private boolean    pAutoStart; 
 
   private Integer    pExcludeLatest; 
@@ -181,16 +184,19 @@ ScriptOptsParser
   private Integer    pPadding; 
   private Boolean    pWait; 
 
-  private String    pAuthor; 
-  private String    pView; 
-  private TreeSet   pSections; 
-  private String    pToolset;
-  private String    pEditorName;
-  private VersionID pEditorVersionID;
+  private String     pAuthor; 
+  private String     pView; 
+  private TreeSet    pSections; 
+  private String     pToolset;
+
+  private String     pEditorName;
+  private VersionID  pEditorVersionID; 
+  private String     pEditorVendor; 
 
   private Boolean    pNoAction; 
   private String     pActionName;
   private VersionID  pActionVersionID; 
+  private String     pActionVendor; 
   private Boolean    pActionEnabled;
   private TreeMap    pParams;
   private TreeMap    pSourceParams;
@@ -720,7 +726,8 @@ TOKEN :
 {
   <EDITOR_NAME:      (["a"-"z","A"-"Z"]) 
 	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON3:           ":">                                     : REVISION_NUMBER_STATE 
+| <COLON3:           ":">                                     : REVISION_NUMBER_STATE2 
+| <COMMA11:          ",">                                     : VENDOR_NAME_STATE 
 | <AE10:             ["\0"]>                                  : OPTIONS
 | <ILLEGAL_EDITOR:   (~[":","\0"])+>                          : IGNORE_STATE
 }
@@ -739,7 +746,8 @@ TOKEN :
 {
   <ACTION_NAME:      (["a"-"z","A"-"Z"]) 
 	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON4:           ":">                                     : REVISION_NUMBER_STATE
+| <COLON4:           ":">                                     : REVISION_NUMBER_STATE2 
+| <COMMA12:          ",">                                     : VENDOR_NAME_STATE 
 | <AE11:             ["\0"]>                                  : OPTIONS
 | <ILLEGAL_ACTION:   (~[":","\0"])+>                          : IGNORE_STATE
 }
@@ -758,7 +766,8 @@ TOKEN :
 {
   <COMPARATOR_NAME:      (["a"-"z","A"-"Z"]) 
 	                   (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON5:               ":">                                     : REVISION_NUMBER_STATE
+| <COLON5:               ":">                                     : REVISION_NUMBER_STATE2 
+| <COMMA13:              ",">                                     : VENDOR_NAME_STATE 
 | <AE12:                 ["\0"]>                                  : OPTIONS
 | <ILLEGAL_COMPARATOR:   (~[":","\0"])+>                          : IGNORE_STATE
 }
@@ -777,7 +786,8 @@ TOKEN :
 {
   <TOOL_NAME:      (["a"-"z","A"-"Z"]) 
 	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON8:         ":">                                     : REVISION_NUMBER_STATE
+| <COLON8:         ":">                                     : REVISION_NUMBER_STATE2 
+| <COMMA14:        ",">                                     : VENDOR_NAME_STATE 
 | <AE42:           ["\0"]>                                  : OPTIONS
 | <ILLEGAL_TOOL:   (~[":","\0"])+>                          : IGNORE_STATE
 }
@@ -796,7 +806,8 @@ TOKEN :
 {
   <ARCHIVER_NAME:      (["a"-"z","A"-"Z"]) 
 	                 (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON9:             ":">                                     : REVISION_NUMBER_STATE
+| <COLON9:             ":">                                     : REVISION_NUMBER_STATE2 
+| <COMMA15:            ",">                                     : VENDOR_NAME_STATE 
 | <AE43:               ["\0"]>                                  : OPTIONS
 | <ILLEGAL_ARCHIVER:   (~[":","\0"])+>                          : IGNORE_STATE
 }
@@ -855,6 +866,28 @@ TOKEN :
 | <#REVNUM:                    (["0"-"9"])+>
 | <AE13:                       ["\0"]>                       : OPTIONS
 | <ILLEGAL_REVISION_NUMBER:    (~["\0"])+>                   : IGNORE_STATE
+}
+
+<REVISION_NUMBER_STATE2> 
+TOKEN :
+{
+  <REVISION_NUMBER2:           (<IREVNUM2> "." <REVNUM2> "." <REVNUM2>)>  
+| <#IREVNUM2:                  ["1"-"9"] (["0"-"9"])*>
+| <#REVNUM2:                   (["0"-"9"])+>
+| <COMMA16:                    ",">                          : VENDOR_NAME_STATE 
+| <AE50:                       ["\0"]>                       : OPTIONS
+| <ILLEGAL_REVISION_NUMBER2:   (~["\0"])+>                   : IGNORE_STATE
+}
+
+
+/* vendor name arguments */ 
+<VENDOR_NAME_STATE> 
+TOKEN :
+{
+  <VENDOR_NAME:      (["a"-"z","A"-"Z"]) 
+	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <AE49:             ["\0"]>                                  : OPTIONS
+| <ILLEGAL_VENDOR:   (~["\0"])+>                              : IGNORE_STATE
 }
 
 
@@ -2086,8 +2119,10 @@ AdminArchive()
   pMinSize           = 1073741824L;
   pArchiverName      = null; 
   pArchiverVersionID = null; 
+  pArchiverVendor    = null;
   pParams            = new TreeMap();
   pAutoStart         = false;
+  pToolset           = null; 
 }
 {
   <ARCHIVE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminArchiveOpts())*
@@ -2107,7 +2142,7 @@ AdminArchive()
         ("The --min-size cannot be negative!"); 
     
     pApp.archive(prefix, pArchivePattern, pMaxArchives, pMinSize, 
-		 pArchiverName, pArchiverVersionID, pParams, pAutoStart, 
+		 pArchiverName, pArchiverVersionID, pArchiverVendor, pParams, pAutoStart, pToolset,
 		 pMasterMgrClient);
   }
 }
@@ -2117,7 +2152,7 @@ AdminArchiveOpts()
   throws PipelineException : 
 {}
 {
-  (Pattern() | MaxArchives() | MinSize() | Archiver() | Param() | AutoStart()) 
+  (Pattern() | MaxArchives() | MinSize() | Archiver() | Param() | AutoStart() | Toolset()) 
   {}
 }
 
@@ -2166,12 +2201,15 @@ Archiver()
 {
   String aname  = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <ARCHIVER2> EQ() aname=ArchiverName() (COLON() vid=RevisionNumber())? AE()
+  <ARCHIVER2> EQ() aname=ArchiverName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
     pArchiverName      = aname; 
     pArchiverVersionID = vid; 
+    pArchiverVendor    = vendor; 
   }
 }
 
@@ -2257,12 +2295,13 @@ AdminRestore()
 
   pParams            = new TreeMap();
   pCheckedInVersions = new TreeMap(); 
+  pToolset           = null; 
 }
 {
   <RESTORE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminRestoreOpts())*
   {
     String prefix = t.image;
-    pApp.restore(prefix, pParams, pCheckedInVersions, pMasterMgrClient);
+    pApp.restore(prefix, pParams, pCheckedInVersions, pToolset, pMasterMgrClient);
   }
 }
 
@@ -2271,7 +2310,7 @@ AdminRestoreOpts()
   throws PipelineException : 
 {}
 {
-  (Param() | CheckedInVersion()) 
+  (Param() | CheckedInVersion() | Toolset()) 
   {}
 }
 
@@ -3106,11 +3145,13 @@ EditorGetInfo()
 {
   String name = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <EDITOR_GET_INFO> EQ() name=EditorName() (COLON() vid=RevisionNumber())? AE()
+  <EDITOR_GET_INFO> EQ() name=EditorName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
-    BaseEditor plg = PluginMgrClient.getInstance().newEditor(name, vid);
+    BaseEditor plg = PluginMgrClient.getInstance().newEditor(name, vid, vendor);
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        plg.toString());
@@ -3174,11 +3215,13 @@ ActionGetInfo()
 {
   String name = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <ACTION_GET_INFO> EQ() name=ActionName() (COLON() vid=RevisionNumber())? AE()
+  <ACTION_GET_INFO> EQ() name=ActionName()
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
-    BaseAction plg = PluginMgrClient.getInstance().newAction(name, vid);
+    BaseAction plg = PluginMgrClient.getInstance().newAction(name, vid, vendor);
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        plg.toString());
@@ -3242,11 +3285,13 @@ ComparatorGetInfo()
 {
   String name = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <COMPARATOR_GET_INFO> EQ() name=ComparatorName() (COLON() vid=RevisionNumber())? AE()
+  <COMPARATOR_GET_INFO> EQ() name=ComparatorName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
-    BaseComparator plg = PluginMgrClient.getInstance().newComparator(name, vid);
+    BaseComparator plg = PluginMgrClient.getInstance().newComparator(name, vid, vendor);
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        plg.toString());
@@ -3310,11 +3355,13 @@ ToolGetInfo()
 {
   String name = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <TOOL_GET_INFO> EQ() name=ToolName() (COLON() vid=RevisionNumber())? AE()
+  <TOOL_GET_INFO> EQ() name=ToolName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
-    BaseTool plg = PluginMgrClient.getInstance().newTool(name, vid);
+    BaseTool plg = PluginMgrClient.getInstance().newTool(name, vid, vendor);
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        plg.toString());
@@ -3378,11 +3425,13 @@ ArchiverGetInfo()
 {
   String name = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <ARCHIVER_GET_INFO> EQ() name=ArchiverName() (COLON() vid=RevisionNumber())? AE()
+  <ARCHIVER_GET_INFO> EQ() name=ArchiverName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
-    BaseArchiver plg = PluginMgrClient.getInstance().newArchiver(name, vid);
+    BaseArchiver plg = PluginMgrClient.getInstance().newArchiver(name, vid, vendor);
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        plg.toString());
@@ -3467,8 +3516,10 @@ SuffixEditorSet()
 {
   String suffix = null;
 
-  pEditorName = null;
-  pMessage    = null; 
+  pEditorName      = null;
+  pEditorVersionID = null;
+  pEditorVendor    = null; 
+  pMessage         = null; 
 }
 {
   <SUFFIX_EDITOR_SET> EQ() suffix=Suffix() AE() (SuffixEditorSetOpts())* 
@@ -3479,8 +3530,9 @@ SuffixEditorSet()
     if(pMessage == null) 
       throw new PipelineException("The --msg option is required!");
 
-    SuffixEditor se = new SuffixEditor(suffix, pMessage, pEditorName);
-    pApp.addSuffixEditor(se, pMasterMgrClient);
+    pApp.addSuffixEditor(suffix, pMessage, 
+			 pEditorName, pEditorVersionID, pEditorVendor, 
+			 pMasterMgrClient);
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -3702,9 +3754,11 @@ WorkingRegister()
 
   pEditorName      = null;
   pEditorVersionID = null;
+  pEditorVendor    = null;
   pNoAction        = null;
   pActionName      = null;
   pActionVersionID = null; 
+  pActionVendor    = null; 
   pActionEnabled   = null;
   pParams          = new TreeMap();
   pSourceParams    = new TreeMap();
@@ -3727,8 +3781,10 @@ WorkingRegister()
         ("The --fseq option is required!");
 
     pApp.workingVersionRegister
-     (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditorName, pEditorVersionID, 
-      pNoAction, pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+     (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, 
+      pEditorName, pEditorVersionID, pEditorVendor, 
+      pNoAction, pActionName, pActionVersionID, pActionVendor, 
+      pActionEnabled, pParams, pSourceParams, 
       pOverflowPolicy, pExecutionMethod, pBatchSize, 
       pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
       pLicenseKeys, pSelectionKeys,
@@ -3746,7 +3802,7 @@ WorkingRegisterOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | FSeq() | Toolset() | EditorVersion() | 
+  (Author() | View() | FSeq() | Toolset() | Editor() | 
    Action() | ActionEnabled() | Param() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
@@ -3803,9 +3859,11 @@ WorkingSet()
 
   pEditorName      = null;
   pEditorVersionID = null;
+  pEditorVendor    = null;
   pNoAction        = null;
   pActionName      = null;
   pActionVersionID = null; 
+  pActionVendor    = null;
   pActionEnabled   = null;
   pParams          = new TreeMap();
   pSourceParams    = new TreeMap();
@@ -3824,8 +3882,10 @@ WorkingSet()
   <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
   {
     pApp.workingVersionSet
-      (new NodeID(pAuthor, pView, name), pToolset, pEditorName, pEditorVersionID, 
-       pNoAction, pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+      (new NodeID(pAuthor, pView, name), pToolset, 
+       pEditorName, pEditorVersionID, pEditorVendor, 
+       pNoAction, pActionName, pActionVersionID, pActionVendor, 
+       pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
        pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
        pLicenseKeys, pSelectionKeys,
@@ -3843,7 +3903,7 @@ WorkingSetOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | Toolset() | EditorVersion() | 
+  (Author() | View() | Toolset() | Editor() | 
    NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
@@ -4203,14 +4263,17 @@ WorkingEdit()
 {
   String name = null;
   
-  pAuthor          = PackageInfo.sUser;
-  pView            = "default";
+  pAuthor     = PackageInfo.sUser;
+  pView       = "default";
+
   pEditorName      = null;
   pEditorVersionID = null;
-  pFrames          = new ArrayList();
-  pIndices         = new ArrayList();
-  pFileSeq         = null;  
-  pWait            = false;
+  pEditorVendor    = null;
+
+  pFrames     = new ArrayList();
+  pIndices    = new ArrayList();
+  pFileSeq    = null;  
+  pWait       = false;
 }
 {
   <WORKING_EDIT> EQ() name=NodeName() AE() (WorkingEditOpts())* 
@@ -4220,7 +4283,8 @@ WorkingEdit()
       throw new PipelineException
         ("The --frame, --index and --fseq options are mutually exclusive!");
 
-     pApp.workingEdit(new NodeID(pAuthor, pView, name), pEditorName, pEditorVersionID, 
+     pApp.workingEdit(new NodeID(pAuthor, pView, name), 
+		      pEditorName, pEditorVersionID, pEditorVendor, 
 		      pFrames, pIndices, pFileSeq, pWait, pMasterMgrClient);
   }
 }
@@ -4230,7 +4294,7 @@ WorkingEditOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | EditorVersion() | Frame() | Index() | FSeq() | Wait())
+  (Author() | View() | Editor() | Frame() | Index() | FSeq() | Wait())
   {}
 }
 
@@ -4451,13 +4515,16 @@ CheckedInView()
 {
   String name = null;
   
-  pVersionIDs      = new TreeSet();
+  pVersionIDs = new TreeSet();
+  
   pEditorName      = null;
   pEditorVersionID = null;
-  pFrames          = new ArrayList();
-  pIndices         = new ArrayList();
-  pFileSeq         = null;  
-  pWait            = false;
+  pEditorVendor    = null;
+
+  pFrames     = new ArrayList();
+  pIndices    = new ArrayList();
+  pFileSeq    = null;  
+  pWait       = false;
 }
 {
   <CHECKED_IN_VIEW> EQ() name=NodeName() AE() (CheckedInViewOpts())* 
@@ -4476,7 +4543,8 @@ CheckedInView()
       vid = (VersionID) pVersionIDs.first();
     }
 
-    pApp.checkedInView(name, vid, pEditorName, pEditorVersionID, 
+    pApp.checkedInView(name, vid, 
+		       pEditorName, pEditorVersionID, pEditorVendor, 
 		       pFrames, pIndices, pFileSeq, pWait, pMasterMgrClient);
   }
 }
@@ -4486,7 +4554,7 @@ CheckedInViewOpts()
   throws PipelineException : 
 {}
 {
-  (VersionOption() | EditorVersion() | Frame() | Index() | FSeq() | Wait())
+  (VersionOption() | Editor() | Frame() | Index() | FSeq() | Wait())
   {}
 }
 
@@ -5475,29 +5543,20 @@ Toolset() :
 }
 
 void
-Editor() : 
-{
-  String ename = null;
-}
-{
-  <EDITOR2> EQ() ename=EditorName() AE()
-  {
-    pEditorName = ename;
-  }
-}
-
-void
-EditorVersion()
+Editor()
   throws PipelineException : 
 {
-  String ename  = null;
+  String name   = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <EDITOR2> EQ() ename=EditorName() (COLON() vid=RevisionNumber())? AE()
+  <EDITOR2> EQ() name=EditorName() 
+   (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
-    pEditorName      = ename; 
+    pEditorName      = name; 
     pEditorVersionID = vid; 
+    pEditorVendor    = vendor; 
   }
 }
 
@@ -5511,6 +5570,7 @@ NoAction() :
 
     pActionName      = null;
     pActionVersionID = null; 
+    pActionVendor    = null; 
     pActionEnabled   = null;
     pParams          = new TreeMap();
     pSourceParams    = new TreeMap();
@@ -5533,12 +5593,15 @@ Action()
 {
   String aname  = null;
   VersionID vid = null;
+  String vendor = null;
 }
 {
-  <ACTION2> EQ() aname=ActionName() (COLON() vid=RevisionNumber())? AE()
+  <ACTION2> EQ() aname=ActionName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
   {
     pActionName      = aname; 
     pActionVersionID = vid; 
+    pActionVendor    = vendor; 
   }
 }
   
@@ -5966,6 +6029,18 @@ FilePatSuffix() :
 }
 
 String
+VendorName() : 
+{
+  Token t;
+}
+{
+  t=<VENDOR_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
 EditorName() : 
 {
   Token t;
@@ -6307,7 +6382,7 @@ AE() :
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
-   t=<AE46> | t=<AE47> | t=<AE48>)
+   t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50>)
   { 
     return t; 
   }
@@ -6380,8 +6455,10 @@ COMMA() :
   Token t;
 }
 {
-  (t=<COMMA1> | t=<COMMA2> | t=<COMMA3> | t=<COMMA4> | t=<COMMA5> | 
-   t=<COMMA6> | t=<COMMA7> | t=<COMMA8> | t=<COMMA9> | t=<COMMA10>)
+  (t=<COMMA1>  | t=<COMMA2>  | t=<COMMA3>  | t=<COMMA4>  | t=<COMMA5>  | 
+   t=<COMMA6>  | t=<COMMA7>  | t=<COMMA8>  | t=<COMMA9>  | t=<COMMA10> |
+   t=<COMMA11> | t=<COMMA12> | t=<COMMA13> | t=<COMMA14> | t=<COMMA15> |
+   t=<COMMA16>)
   { 
     return t; 
   }

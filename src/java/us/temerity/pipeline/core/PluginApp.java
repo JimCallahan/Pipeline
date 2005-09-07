@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.7 2005/01/22 06:10:09 jim Exp $
+// $Id: PluginApp.java,v 1.8 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -103,95 +103,105 @@ class PluginApp
     throws PipelineException 
   {
     {
-      TreeMap<String,TreeSet<VersionID>> versions = client.getEditors();
+      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getEditors();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   tbar(80) + "\n" + 
 	   "  E D I T O R S");
 	
-	for(String name : versions.keySet()) {
-	  for(VersionID vid : versions.get(name)) {
-	      BaseEditor plg = client.newEditor(name, vid);
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name)) {
+	      BaseEditor plg = client.newEditor(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
 		 bar(80) + "\n\n" + plg + "\n");
+	    }
 	  }
 	}
       }
     }
     
     {
-      TreeMap<String,TreeSet<VersionID>> versions = client.getActions();
+      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getActions();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   tbar(80) + "\n" + 
 	   "  A C T I O N S");
 	
-	for(String name : versions.keySet()) {
-	  for(VersionID vid : versions.get(name)) {
-	      BaseAction plg = client.newAction(name, vid);
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name)) {
+	      BaseAction plg = client.newAction(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
 		 bar(80) + "\n\n" + plg + "\n");
+	    }
 	  }
 	}
       }
     }
     
     {
-      TreeMap<String,TreeSet<VersionID>> versions = client.getComparators();
+      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getComparators();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   tbar(80) + "\n" + 
 	   "  C O M P A R A T O R S");
 	
-	for(String name : versions.keySet()) {
-	  for(VersionID vid : versions.get(name)) {
-	      BaseComparator plg = client.newComparator(name, vid);
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name)) {
+	      BaseComparator plg = client.newComparator(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
 		 bar(80) + "\n\n" + plg + "\n");
+	    }
 	  }
 	}
       }
     }
     
     {
-      TreeMap<String,TreeSet<VersionID>> versions = client.getTools();
+      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getTools();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   tbar(80) + "\n" + 
 	   "  T O O L S"); 
 	
-	for(String name : versions.keySet()) {
-	  for(VersionID vid : versions.get(name)) {
-	      BaseTool plg = client.newTool(name, vid);
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name)) {
+	      BaseTool plg = client.newTool(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
 		 bar(80) + "\n\n" + plg + "\n");
+	    }
 	  }
 	}
       }
     }
     
     {
-      TreeMap<String,TreeSet<VersionID>> versions = client.getArchivers();
+      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getArchivers();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	   tbar(80) + "\n" + 
 	   "  A R C H I V E R S");
 	
-	for(String name : versions.keySet()) {
-	  for(VersionID vid : versions.get(name)) {
-	      BaseArchiver plg = client.newArchiver(name, vid);
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name)) {
+	      BaseArchiver plg = client.newArchiver(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
 		 bar(80) + "\n\n" + plg + "\n");
+	    }
 	  }
 	}
       }

@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.1 2005/04/03 06:08:17 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.2 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -529,6 +529,9 @@ class FileMgrNetClient
    * @param archiver
    *   The archiver plugin to use to create the archive volume.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -537,13 +540,14 @@ class FileMgrNetClient
   (
    String name, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
-   BaseArchiver archiver
+   BaseArchiver archiver,
+   Map<String,String> env
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
+    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver, env);
 
     Object obj = performLongTransaction(FileRequest.Archive, req, 15000, 60000);  
     if(obj instanceof FileArchiverRsp) {
@@ -663,6 +667,9 @@ class FileMgrNetClient
    * @param archiver
    *   The archiver plugin to use to restore the versions from the archive volume.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param size
    *   The required temporary disk space needed for the restore operation.
    * 
@@ -676,13 +683,14 @@ class FileMgrNetClient
    Date stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
+   Map<String,String> env, 
    long size
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, size);
+    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size);
 
     Object obj = performTransaction(FileRequest.Extract, req);
     if(obj instanceof FileArchiverRsp) {

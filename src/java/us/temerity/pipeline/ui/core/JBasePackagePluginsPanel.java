@@ -1,4 +1,4 @@
-// $Id: JBasePackagePluginsPanel.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: JBasePackagePluginsPanel.java,v 1.2 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,8 +44,8 @@ class JBasePackagePluginsPanel
   {
     /* initialize fields */ 
     {
-      pIncludedVersions = new TreeMap<String,TreeSet<VersionID>>();
-      pAllVersions      = new TreeMap<String,TreeSet<VersionID>>();
+      pIncludedVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
+      pAllVersions      = new DoubleMap<String,String,TreeSet<VersionID>>();
 
       pIsPrivileged = false;
     }
@@ -245,10 +245,10 @@ class JBasePackagePluginsPanel
    *   The revision number of the package.
    * 
    * @param includedPlugins
-   *   The names and versions of the plugins associated with the package. 
+   *   The vendors, names and versions of the plugins associated with the package. 
    * 
    * @param allPlugins
-   *   The names and versions of all currently loaded plugins.
+   *   The vendors, names and versions of all currently loaded plugins.
    * 
    * @param isPrivileged
    *   Whether the current user is privileged.
@@ -259,8 +259,8 @@ class JBasePackagePluginsPanel
    String pname, 
    OsType os, 
    VersionID vid, 
-   TreeMap<String,TreeSet<VersionID>> includedPlugins,
-   TreeMap<String,TreeSet<VersionID>> allPlugins,
+   DoubleMap<String,String,TreeSet<VersionID>> includedPlugins,
+   DoubleMap<String,String,TreeSet<VersionID>> allPlugins,
    boolean isPrivileged
   ) 
   {
@@ -368,7 +368,7 @@ class JBasePackagePluginsPanel
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
-  protected abstract TreeMap<String,TreeSet<VersionID>>
+  protected abstract DoubleMap<String,String,TreeSet<VersionID>>
   getPlugins
   (
    String pname, 
@@ -398,7 +398,7 @@ class JBasePackagePluginsPanel
    String pname, 
    OsType os, 
    VersionID vid, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
     throws PipelineException;
 
@@ -476,11 +476,14 @@ class JBasePackagePluginsPanel
   doIncludePlugin()
   {
     PluginTreeData vdata = getSelectedPluginData(pAllTree);
-    if((vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
-      TreeSet<VersionID> versions = pIncludedVersions.get(vdata.getName());
+    if((vdata != null) && 
+       (vdata.getVendor() != null) && 
+       (vdata.getName() != null) && 
+       (vdata.getVersionID() != null)) {
+      TreeSet<VersionID> versions = pIncludedVersions.get(vdata.getVendor(), vdata.getName());
       if(versions == null) {
 	versions = new TreeSet<VersionID>();
-	pIncludedVersions.put(vdata.getName(), versions);
+	pIncludedVersions.put(vdata.getVendor(), vdata.getName(), versions);
       }
       versions.add(vdata.getVersionID());
 
@@ -497,12 +500,15 @@ class JBasePackagePluginsPanel
   doExcludePlugin()
   {
     PluginTreeData vdata = getSelectedPluginData(pIncludedTree);
-    if((vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
-      TreeSet<VersionID> versions = pIncludedVersions.get(vdata.getName());
+    if((vdata != null) && 
+       (vdata.getVendor() != null) && 
+       (vdata.getName() != null) && 
+       (vdata.getVersionID() != null)) {
+      TreeSet<VersionID> versions = pIncludedVersions.get(vdata.getVendor(), vdata.getName());
       if(versions != null) {
 	versions.remove(vdata.getVersionID());
 	if(versions.isEmpty()) 
-	  pIncludedVersions.remove(vdata.getName()); 
+	  pIncludedVersions.remove(vdata.getVendor(), vdata.getName()); 
       }
 
       pExcludeButton.setEnabled(false);
@@ -523,21 +529,27 @@ class JBasePackagePluginsPanel
   private void 
   rebuildPluginTree
   (
-   TreeMap<String,TreeSet<VersionID>> versions,
+   DoubleMap<String,String,TreeSet<VersionID>> versions,
    JTree tree
   )
   {
     DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PluginTreeData());
 
-    for(String name : versions.keySet()) {
-      DefaultMutableTreeNode pnode = 
-	new DefaultMutableTreeNode(new PluginTreeData(name), true);
-      root.add(pnode);
-      
-      for(VersionID vid : versions.get(name)) {
-	DefaultMutableTreeNode vnode = 
-	  new DefaultMutableTreeNode(new PluginTreeData(name, vid), false);
-	pnode.add(vnode);
+    for(String vendor : versions.keySet()) {
+      DefaultMutableTreeNode rnode = 
+	new DefaultMutableTreeNode(new PluginTreeData(vendor), true);
+      root.add(rnode);
+
+      for(String name : versions.get(vendor).keySet()) {
+	DefaultMutableTreeNode pnode = 
+	  new DefaultMutableTreeNode(new PluginTreeData(name), true);
+	rnode.add(pnode);
+	
+	for(VersionID vid : versions.get(vendor).get(name)) {
+	  DefaultMutableTreeNode vnode = 
+	    new DefaultMutableTreeNode(new PluginTreeData(name, vid, vendor), false);
+	  pnode.add(vnode);
+	}
       }
     }
     
@@ -574,21 +586,28 @@ class JBasePackagePluginsPanel
 
       DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
       DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
-      int wk;
-      for(wk=0; wk<root.getChildCount(); wk++) {
-	DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) root.getChildAt(wk);  
+     
+      int rk;
+      for(rk=0; rk<root.getChildCount(); rk++) {
+	DefaultMutableTreeNode rnode = (DefaultMutableTreeNode) root.getChildAt(rk);  
+
+	int wk;
+	for(wk=0; wk<rnode.getChildCount(); wk++) {
+	  DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) rnode.getChildAt(wk);  
 	
-	int vk;
-	for(vk=0; vk<pnode.getChildCount(); vk++) {
-	  DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) pnode.getChildAt(vk); 
-	  PluginTreeData vdata = (PluginTreeData) vnode.getUserObject();
-	  TreePath vpath = new TreePath(vnode.getPath());
-	  
-	  if(data.getName().equals(vdata.getName()) && 
-	     data.getVersionID().equals(vdata.getVersionID())) {
-	    tree.addSelectionPath(vpath);
-	    button.setEnabled(true);
-	    return;
+	  int vk;
+	  for(vk=0; vk<pnode.getChildCount(); vk++) {
+	    DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) pnode.getChildAt(vk); 
+	    PluginTreeData vdata = (PluginTreeData) vnode.getUserObject();
+	    TreePath vpath = new TreePath(vnode.getPath());
+	    
+	    if(data.getName().equals(vdata.getName()) && 
+	       data.getVersionID().equals(vdata.getVersionID()) &&
+	       data.getVendor().equals(vdata.getVendor())) {
+	      tree.addSelectionPath(vpath);
+	      button.setEnabled(true);
+	      return;
+	    }
 	  }
 	}
       }
@@ -659,12 +678,12 @@ class JBasePackagePluginsPanel
   /**
    * The names and versions of the plugins associated with the package. 
    */ 
-  protected TreeMap<String,TreeSet<VersionID>>  pIncludedVersions;
+  protected DoubleMap<String,String,TreeSet<VersionID>>  pIncludedVersions;
 
   /**
    * The names and versions of all currently loaded plugins.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pAllVersions;
+  private DoubleMap<String,String,TreeSet<VersionID>>  pAllVersions;
 
 
   /**

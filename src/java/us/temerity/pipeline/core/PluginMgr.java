@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.5 2005/05/11 11:22:28 jim Exp $
+// $Id: PluginMgr.java,v 1.6 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,11 +40,11 @@ class PluginMgr
       
       pLoadCycleID = 1L;
       
-      pEditors     = new TreeMap<String,TreeMap<VersionID,Plugin>>();
-      pActions     = new TreeMap<String,TreeMap<VersionID,Plugin>>();
-      pComparators = new TreeMap<String,TreeMap<VersionID,Plugin>>(); 
-      pTools 	   = new TreeMap<String,TreeMap<VersionID,Plugin>>();  
-      pArchivers   = new TreeMap<String,TreeMap<VersionID,Plugin>>();
+      pEditors     = new TripleMap<String,String,VersionID,Plugin>();  
+      pActions     = new TripleMap<String,String,VersionID,Plugin>();  
+      pComparators = new TripleMap<String,String,VersionID,Plugin>();  
+      pTools  	   = new TripleMap<String,String,VersionID,Plugin>();   
+      pArchivers   = new TripleMap<String,String,VersionID,Plugin>();  
     }
 
     loadAllPlugins(); 
@@ -80,19 +80,19 @@ class PluginMgr
       
       Long cycleID = req.getCycleID();
 
-      TreeMap<String,TreeMap<VersionID,Object[]>> editors = 
+      TripleMap<String,String,VersionID,Object[]> editors = 
 	collectUpdated(cycleID, pEditors);
 
-      TreeMap<String,TreeMap<VersionID,Object[]>> actions = 
+      TripleMap<String,String,VersionID,Object[]> actions = 
 	collectUpdated(cycleID, pActions);
 
-      TreeMap<String,TreeMap<VersionID,Object[]>> comparators =
+      TripleMap<String,String,VersionID,Object[]> comparators =
 	collectUpdated(cycleID, pComparators);
 
-      TreeMap<String,TreeMap<VersionID,Object[]>> tools =
+      TripleMap<String,String,VersionID,Object[]> tools =
 	collectUpdated(cycleID, pTools);
 
-      TreeMap<String,TreeMap<VersionID,Object[]>> archivers = 
+      TripleMap<String,String,VersionID,Object[]> archivers = 
 	collectUpdated(cycleID, pArchivers);
 
       return new PluginUpdateRsp(timer, pLoadCycleID, 
@@ -112,50 +112,44 @@ class PluginMgr
    * @param plugins
    *   The loaded plugins.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Object[]>>
+  private TripleMap<String,String,VersionID,Object[]>
   collectUpdated
   (
    Long cycleID, 
-   TreeMap<String,TreeMap<VersionID,Plugin>> plugins
+   TripleMap<String,String,VersionID,Plugin> plugins
   ) 
   {
-    TreeMap<String,TreeMap<VersionID,Object[]>> updated = 
-      new TreeMap<String,TreeMap<VersionID,Object[]>>(); 
+    TripleMap<String,String,VersionID,Object[]> updated = 
+      new TripleMap<String,String,VersionID,Object[]>(); 
     
     if(cycleID == null) {
-      for(String name : plugins.keySet()) {
-	TreeMap<VersionID,Object[]> cvsn = new TreeMap<VersionID,Object[]>();
-	updated.put(name, cvsn);
-
-	TreeMap<VersionID,Plugin> pvsn = plugins.get(name);
-	for(VersionID vid : pvsn.keySet()) {	
-	  Plugin plg = pvsn.get(vid);
-
-	  Object[] objs = new Object[2];
-	  objs[0] = plg.getClassName();
-	  objs[1] = plg.getBytes();
-
-	  cvsn.put(vid, objs);
-	}
-      }
-    }
-    else {  
-      for(String name : plugins.keySet()) {
-	TreeMap<VersionID,Object[]> cvsn = null;
-	TreeMap<VersionID,Plugin> pvsn = plugins.get(name);
-	for(VersionID vid : pvsn.keySet()) {
-	  Plugin plg = pvsn.get(vid);
-	  if(cycleID < plg.getCycleID()) {
-	    if(cvsn == null) {
-	      cvsn = new TreeMap<VersionID,Object[]>();
-	      updated.put(name, cvsn);
-	    }
+      for(String vendor : plugins.keySet()) {
+	for(String name : plugins.get(vendor).keySet()) {
+	  for(VersionID vid : plugins.get(vendor).get(name).keySet()) {
+	    Plugin plg = plugins.get(vendor, name, vid);
 	    
 	    Object[] objs = new Object[2];
 	    objs[0] = plg.getClassName();
 	    objs[1] = plg.getBytes();
-	    
-	    cvsn.put(vid, objs);
+
+	    updated.put(vendor, name, vid, objs);
+	  }
+	}
+      }
+    }
+    else {  
+      for(String vendor : plugins.keySet()) {
+	for(String name : plugins.get(vendor).keySet()) {
+	  for(VersionID vid : plugins.get(vendor).get(name).keySet()) {
+      	    Plugin plg = plugins.get(vendor, name, vid);
+
+	    if(cycleID < plg.getCycleID()) {
+	      Object[] objs = new Object[2];
+	      objs[0] = plg.getClassName();
+	      objs[1] = plg.getBytes();
+
+	      updated.put(vendor, name, vid, objs);
+	    }
 	  }
 	}
       }
@@ -533,26 +527,18 @@ class PluginMgr
    BasePlugin plg,
    String cname, 
    byte[] bytes, 
-   TreeMap<String,TreeMap<VersionID,Plugin>> table
+   TripleMap<String,String,VersionID,Plugin> table
   ) 
     throws PipelineException 
   {
-    String name = plg.getName();
-    TreeMap<VersionID,Plugin> versions = table.get(name);
-    if(versions == null) {
-      versions = new TreeMap<VersionID,Plugin>();
-      table.put(name, versions);
-    }
-    else {
-      Plugin plugin = versions.get(plg.getVersionID());
-      if((plugin != null) && (!plugin.isUnderDevelopment())) 
-	throw new PipelineException 
-	  ("Cannot install the plugin (" + cname + ") because a previously installed " + 
-	   "version of this plugin exists which is no longer under development!");
-    }
+    Plugin plugin = table.get(plg.getVendor(), plg.getName(), plg.getVersionID());
+    if((plugin != null) && (!plugin.isUnderDevelopment())) 
+      throw new PipelineException 
+	("Cannot install the plugin (" + cname + ") because a previously installed " + 
+	 "version of this plugin exists which is no longer under development!");
 
-    versions.put(plg.getVersionID(), 
-		 new Plugin(pLoadCycleID, cname, plg.isUnderDevelopment(), bytes));
+    table.put(plg.getVendor(), plg.getName(), plg.getVersionID(), 
+	      new Plugin(pLoadCycleID, cname, plg.isUnderDevelopment(), bytes));
   }
 
 
@@ -639,27 +625,27 @@ class PluginMgr
   /**
    * The loaded Editor plugins indexed by plugin name and revision number.
    */
-  private TreeMap<String,TreeMap<VersionID,Plugin>>  pEditors; 
+  private TripleMap<String,String,VersionID,Plugin>  pEditors; 
 
   /**
    * The loaded Action plugins indexed by plugin name and revision number.
    */
-  private TreeMap<String,TreeMap<VersionID,Plugin>>  pActions; 
+  private TripleMap<String,String,VersionID,Plugin>  pActions; 
 
   /**
    * The loaded Comparator plugins indexed by plugin name and revision number.
    */
-  private TreeMap<String,TreeMap<VersionID,Plugin>>  pComparators; 
+  private TripleMap<String,String,VersionID,Plugin>  pComparators; 
 
   /**
    * The loaded Tool plugins indexed by plugin name and revision number.
    */
-  private TreeMap<String,TreeMap<VersionID,Plugin>>  pTools; 
+  private TripleMap<String,String,VersionID,Plugin>  pTools; 
 
   /**
    * The loaded Archiver plugins indexed by plugin name and revision number.
    */
-  private TreeMap<String,TreeMap<VersionID,Plugin>>  pArchivers; 
+  private TripleMap<String,String,VersionID,Plugin>  pArchivers; 
 
 }
 

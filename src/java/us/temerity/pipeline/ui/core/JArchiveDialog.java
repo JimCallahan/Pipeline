@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.8 2005/04/02 01:04:01 jim Exp $
+// $Id: JArchiveDialog.java,v 1.9 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -500,7 +500,6 @@ class JArchiveDialog
       versions.put(name, new TreeSet<VersionID>(data.get(name).keySet()));
 
     if(!versions.isEmpty()) {
-      pArchiveParamsDialog.updateArchiver();
       pArchiveParamsDialog.setVisible(true);
       if(pArchiveParamsDialog.wasConfirmed()) {
 	String prefix = pArchiveParamsDialog.getPrefix();
@@ -511,10 +510,12 @@ class JArchiveDialog
 	if(minSize == null)
 	  minSize = 0L;
 
+	String toolset = pArchiveParamsDialog.getToolset();
 	BaseArchiver archiver = pArchiveParamsDialog.getArchiver();
-	if(archiver != null) {
+
+	if((toolset != null) && (archiver != null)) {
 	  AssignVersionsToArchivesTask task = 
-	    new AssignVersionsToArchivesTask(prefix, minSize, versions, archiver);
+	    new AssignVersionsToArchivesTask(prefix, minSize, versions, toolset, archiver);
 	  task.start();
 	}
       }
@@ -754,6 +755,7 @@ class JArchiveDialog
      String prefix,
      long minSize, 
      TreeMap<String,TreeSet<VersionID>> versions, 
+     String toolset, 
      BaseArchiver archiver
     )     
     {
@@ -762,6 +764,7 @@ class JArchiveDialog
       pPrefix   = prefix; 
       pMinSize  = minSize; 
       pVersions = versions;
+      pToolset  = toolset; 
       pArchiver = archiver;
     }
 
@@ -875,7 +878,7 @@ class JArchiveDialog
       if(!archives.isEmpty()) {
 	if(pArchiver.isManual()) {
 	    ManualArchiveConfirmTask task = 
-	      new ManualArchiveConfirmTask(null, 0, pPrefix, archives, pArchiver);
+	      new ManualArchiveConfirmTask(null, 0, pPrefix, archives, pToolset, pArchiver);
 	    SwingUtilities.invokeLater(task);
 	}
 	else {  
@@ -886,7 +889,7 @@ class JArchiveDialog
 		master.updatePanelOp
 		  ("Archiving Volume (" + (idx+1) + " of " + archives.size() + ")...");
 		lastIdx = idx;
-		client.archive(pPrefix, archives.get(idx), pArchiver);
+		client.archive(pPrefix, archives.get(idx), pArchiver, pToolset);
 	      }
 	    }
 	    catch(PipelineException ex) {
@@ -909,10 +912,10 @@ class JArchiveDialog
       }
     }
 
-
     private String                              pPrefix;
     private long                                pMinSize; 
     private TreeMap<String,TreeSet<VersionID>>  pVersions;
+    private String                              pToolset; 
     private BaseArchiver                        pArchiver; 
   }
 
@@ -930,6 +933,7 @@ class JArchiveDialog
      int idx, 
      String prefix,
      TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives, 
+     String toolset, 
      BaseArchiver archiver
     )     
     {
@@ -940,6 +944,7 @@ class JArchiveDialog
       pIndex    = idx; 
       pPrefix   = prefix; 
       pArchives = archives; 
+      pToolset  = toolset; 
       pArchiver = archiver;
     }
 
@@ -961,7 +966,7 @@ class JArchiveDialog
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
 	ManualArchiveTask task = 
-	  new ManualArchiveTask(pIndex, pPrefix, pArchives, pArchiver);
+	  new ManualArchiveTask(pIndex, pPrefix, pArchives, pToolset, pArchiver);
 	task.start();
       }
       else {
@@ -977,6 +982,7 @@ class JArchiveDialog
     private int                                                  pIndex; 
     private String                                               pPrefix;
     private TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>  pArchives; 
+    private String                                               pToolset;
     private BaseArchiver                                         pArchiver; 
   }
 
@@ -993,6 +999,7 @@ class JArchiveDialog
      int idx, 
      String prefix,
      TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives, 
+     String toolset, 
      BaseArchiver archiver
     )     
     {
@@ -1001,6 +1008,7 @@ class JArchiveDialog
       pIndex    = idx; 
       pPrefix   = prefix; 
       pArchives = archives; 
+      pToolset  = toolset; 
       pArchiver = archiver;
     }
 
@@ -1015,7 +1023,7 @@ class JArchiveDialog
 	TreeMap<String,TreeSet<VersionID>> versions = pArchives.get(pIndex);
 
 	try {
-	  archiveName = client.archive(pPrefix, versions, pArchiver);
+	  archiveName = client.archive(pPrefix, versions, pArchiver, pToolset);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog
@@ -1035,13 +1043,15 @@ class JArchiveDialog
       }
 
       ManualArchiveConfirmTask task = 
-	new ManualArchiveConfirmTask(archiveName, pIndex+1, pPrefix, pArchives, pArchiver);
+	new ManualArchiveConfirmTask(archiveName, pIndex+1, pPrefix, pArchives, 
+				     pToolset, pArchiver);
       SwingUtilities.invokeLater(task);
     }
 
     private int                                                  pIndex; 
     private String                                               pPrefix;
     private TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>  pArchives; 
+    private String                                               pToolset; 
     private BaseArchiver                                         pArchiver; 
   }
 

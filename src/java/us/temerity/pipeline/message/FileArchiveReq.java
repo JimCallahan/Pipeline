@@ -1,4 +1,4 @@
-// $Id: FileArchiveReq.java,v 1.2 2005/03/23 00:35:23 jim Exp $
+// $Id: FileArchiveReq.java,v 1.3 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,13 +36,17 @@ class FileArchiveReq
    * 
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
+   * 
+   * @param env
+   *   The cooked toolset environment.
    */
   public
   FileArchiveReq
   (
    String archiveName, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
-   BaseArchiver archiver
+   BaseArchiver archiver,
+   Map<String,String> env
   )
   {
     if(archiveName == null) 
@@ -59,6 +63,11 @@ class FileArchiveReq
       throw new IllegalArgumentException
 	("The archiver cannot be (null)!");
     pArchiver = archiver;
+
+    if(env == null) 
+      throw new IllegalArgumentException
+	("The toolset environment cannot be (null)!");
+    pEnvironment = env;
   }
 
 
@@ -95,6 +104,14 @@ class FileArchiveReq
     return pArchiver;
   }
 
+  /**
+   * Get the environment under which the action is executed.
+   */ 
+  public Map<String,String>
+  getEnvironment()
+  {
+    return pEnvironment;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -117,6 +134,7 @@ class FileArchiveReq
     out.writeObject(pArchiveName);
     out.writeObject(pFileSeqs);
     out.writeObject(new BaseArchiver(pArchiver));
+    out.writeObject(pEnvironment);
   }  
 
   /**
@@ -136,15 +154,17 @@ class FileArchiveReq
     pArchiveName = (String) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
     
-    BaseArchiver archiver = (BaseArchiver) in.readObject();
+    BaseArchiver arch = (BaseArchiver) in.readObject();
     try {
       PluginMgrClient client = PluginMgrClient.getInstance();
-      pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-      pArchiver.setParamValues(archiver);
+      pArchiver = client.newArchiver(arch.getName(), arch.getVersionID(), arch.getVendor());
+      pArchiver.setParamValues(arch);
     }
     catch(PipelineException ex) {
       throw new IOException(ex.getMessage());
     }
+
+    pEnvironment = (Map<String,String>) in.readObject();
   }
 
 
@@ -177,5 +197,9 @@ class FileArchiveReq
    */ 
   private BaseArchiver  pArchiver;
 
+  /**
+   * The environment under which the action is executed.
+   */
+  private Map<String,String> pEnvironment;
 }
   

@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.6 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueJob.java,v 1.7 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -178,7 +178,7 @@ class QueueJob
     if(action != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pAction = client.newAction(action.getName(), action.getVersionID());
+	pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
@@ -232,7 +232,7 @@ class QueueJob
       throw new GlueException("The \"Action\" was missing!");
     try {
       PluginMgrClient client = PluginMgrClient.getInstance();
-      pAction = client.newAction(action.getName(), action.getVersionID());
+      pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
       pAction.setSingleParamValues(action);
       pAction.setSourceParamValues(action);
     }

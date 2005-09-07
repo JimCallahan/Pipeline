@@ -1,4 +1,4 @@
-// $Id: PluginInputStream.java,v 1.7 2005/03/23 00:35:23 jim Exp $
+// $Id: PluginInputStream.java,v 1.8 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -41,6 +41,7 @@ class PluginInputStream
   {
     super(in);
   }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -57,25 +58,43 @@ class PluginInputStream
   )
     throws IOException, ClassNotFoundException
   {
-    if(desc.getName().equals("us.temerity.pipeline.NodeCommon") ||
-       desc.getName().equals("us.temerity.pipeline.QueueJob") ||
-       desc.getName().equals("us.temerity.pipeline.Archive") ||
-       desc.getName().equals("us.temerity.pipeline.message.MiscArchiveReq") ||
-       desc.getName().equals("us.temerity.pipeline.message.FileArchiveReq") ||
-       desc.getName().equals("us.temerity.pipeline.message.MiscRestoreReq") ||
-       desc.getName().equals("us.temerity.pipeline.message.FileExtractReq")) {
-      try {
-	PluginMgrClient.getInstance().update();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	   ex.getMessage());
+    String name = desc.getName();
+    int wk;
+    for(wk=0; wk<sClassNames.length; wk++) {
+      if(name.equals(sClassNames[wk])) {
+	try {
+	  PluginMgrClient.getInstance().update();
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	     ex.getMessage());
+	}
+
+	break;
       }
     }
 
     return super.resolveClass(desc);
   }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final String sClassNames[] = {
+    "us.temerity.pipeline.NodeCommon",
+    "us.temerity.pipeline.QueueJob",
+    "us.temerity.pipeline.Archive",
+    "us.temerity.pipeline.SuffixEditor",
+    "us.temerity.pipeline.message.MiscArchiveReq",
+    "us.temerity.pipeline.message.FileArchiveReq",
+    "us.temerity.pipeline.message.MiscRestoreReq", 
+    "us.temerity.pipeline.message.FileExtractReq"
+  };
+
 }
 
 

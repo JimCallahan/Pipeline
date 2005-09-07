@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.24 2005/06/21 21:23:35 jim Exp $
+// $Id: NodeCommon.java,v 1.25 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,8 +40,7 @@ class NodeCommon
    * secondary file sequences associated with the node. <P> 
    * 
    * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
-   * editor associated with the node.  The <CODE>editorVID</CODE> may be <CODE>null</CODE>
-   * to specify the latest version of the editor plugin. <P> 
+   * editor associated with the node. <P> 
    * 
    * If there is no regeneration action for this node then the <CODE>action</CODE>, 
    * <CODE>jobReqs</CODE>, <CODE>overflow</CODE>, <CODE>execution</CODE> and 
@@ -68,11 +67,7 @@ class NodeCommon
    *   The named execution environment under which editor and action are run.
    * 
    * @param editor 
-   *   The name of the editor plugin used to editing/viewing the files associated with 
-   *   the node.
-   * 
-   * @param editorVID
-   *   The revision number of the editor plugin or <CODE>null</CODE> for the latest version.
+   *   The editor plugin instance used to edit the files associated with the node.
    * 
    * @param action 
    *   The action plugin instance used to regeneration the files associated the node. 
@@ -101,8 +96,7 @@ class NodeCommon
    FileSeq primary,
    Set<FileSeq> secondary, 
    String toolset, 
-   String editor, 
-   VersionID editorVID, 
+   BaseEditor editor, 
    BaseAction action, 
    boolean isActionEnabled, 
    JobReqs jobReqs,     
@@ -114,8 +108,7 @@ class NodeCommon
     super(name);
 
     init(primary, secondary, 
-	 toolset, editor, editorVID, 
-	 action, isActionEnabled, jobReqs, overflow, execution, batchSize);
+	 toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
   }
 
   /**
@@ -126,8 +119,7 @@ class NodeCommon
    * secondary file sequences associated with the node. <P> 
    * 
    * The <CODE>editor</CODE> argument may be <CODE>null</CODE> if there is no default 
-   * editor associated with the node. The <CODE>editorVID</CODE> may be <CODE>null</CODE>
-   * to specify the latest version of the editor plugin. <P> 
+   * editor associated with the node. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -142,11 +134,7 @@ class NodeCommon
    *   The named execution environment under which editor and action are run.
    * 
    * @param editor 
-   *   The name of the editor plugin used to editing/viewing the files associated with 
-   *   the node.
-   * 
-   * @param editorVID
-   *   The revision number of the editor plugin or <CODE>null</CODE> for the latest version.
+   *   The editor plugin instance used to edit the files associated with the node.
    */
   protected 
   NodeCommon
@@ -155,15 +143,13 @@ class NodeCommon
    FileSeq primary,
    Set<FileSeq> secondary, 
    String toolset, 
-   String editor, 
-   VersionID editorVID
+   BaseEditor editor
   ) 
   {
     super(name);
 
     init(primary, secondary, 
-	 toolset, editor, editorVID, 
-	 null, false, null, null, null, null);
+	 toolset, editor, null, false, null, null, null, null);
   }
 
 
@@ -183,10 +169,7 @@ class NodeCommon
     pSecondarySeqs = new TreeSet(com.getSecondarySequences());
     
     pToolset         = com.getToolset();
-
-    pEditor          = com.getEditor();
-    pEditorVersionID = com.getEditorVersionID();
-    
+    pEditor          = com.getEditor();    
     pAction          = com.getAction();
     pIsActionEnabled = com.isActionEnabled();
     pJobReqs         = com.getJobRequirements();
@@ -204,8 +187,7 @@ class NodeCommon
    FileSeq primary,
    Set<FileSeq> secondary, 
    String toolset, 
-   String editor, 
-   VersionID editorVID, 
+   BaseEditor editor,
    BaseAction action, 
    boolean isActionEnabled, 
    JobReqs jobReqs,     
@@ -248,8 +230,8 @@ class NodeCommon
 	("The toolset cannot be (null)!");
     pToolset = toolset;
 
-    pEditor          = editor;
-    pEditorVersionID = (editor != null) ? editorVID : null;
+    if(editor != null) 
+      pEditor = (BaseEditor) editor.clone();
 
     if((action != null) && (jobReqs != null) && 
        (overflow != null) && (execution != null) && (batchSize != null)) {
@@ -344,29 +326,18 @@ class NodeCommon
 
 
   /** 
-   * Get name of the editor plugin used to editing/viewing the files associated with this 
-   * version of the node.
+   * Get editor plugin instance used to edit the files associated with the node.
    * 
    * @return 
-   *   The name of the editor or <CODE>null</CODE> if there is no editor for this version 
+   *   The editor or <CODE>null</CODE> if there is no editor for this version 
    *   of the node.
    */
-  public String
+  public BaseEditor
   getEditor()
   {
-    return pEditor;
-  }
-
-  /** 
-   * Get revision number of the editor plugin.
-   * 
-   * @return 
-   *   The name of the editor or <CODE>null</CODE> for the latest version.
-   */
-  public VersionID
-  getEditorVersionID()
-  {
-    return pEditorVersionID;
+    if(pEditor != null) 
+      return (BaseEditor) pEditor.clone();
+    return null;
   }
 
 
@@ -473,8 +444,6 @@ class NodeCommon
 	    pToolset.equals(com.pToolset) && 
 	    (((pEditor == null) && (com.pEditor == null)) || 
 	     ((pEditor != null) && pEditor.equals(com.pEditor))) &&
-	    (((pEditorVersionID == null) && (com.pEditorVersionID == null)) || 
-	     ((pEditorVersionID != null) && pEditorVersionID.equals(com.pEditorVersionID))) &&
 	    (((pAction == null) && (com.pAction == null)) || 
 	     ((pAction != null) && pAction.equals(com.pAction))) &&
 	    (pIsActionEnabled == com.pIsActionEnabled) && 
@@ -549,8 +518,11 @@ class NodeCommon
     out.writeObject(pPrimarySeq);
     out.writeObject(pSecondarySeqs);
     out.writeObject(pToolset);
-    out.writeObject(pEditor);
-    out.writeObject(pEditorVersionID);
+    
+    BaseEditor editor = null;
+    if(pEditor != null) 
+      editor = new BaseEditor(pEditor);
+    out.writeObject(editor);
 
     BaseAction action = null;
     if(pAction != null) 
@@ -581,14 +553,26 @@ class NodeCommon
     pPrimarySeq = (FileSeq) in.readObject();
     pSecondarySeqs = (TreeSet<FileSeq>) in.readObject();
     pToolset = (String) in.readObject();
-    pEditor = (String) in.readObject();
-    pEditorVersionID = (VersionID) in.readObject();
+
+    BaseEditor editor = (BaseEditor) in.readObject();
+    if(editor != null) {
+      try {
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+      }
+      catch(PipelineException ex) {
+	throw new IOException(ex.getMessage());
+      }
+    }
+    else {
+      pEditor = null;
+    }
 
     BaseAction action = (BaseAction) in.readObject();
     if(action != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pAction = client.newAction(action.getName(), action.getVersionID());
+	pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
@@ -630,10 +614,7 @@ class NodeCommon
     encoder.encode("Toolset", pToolset);
 
     if(pEditor != null) 
-      encoder.encode("Editor", pEditor);
-    
-    if(pEditorVersionID != null) 
-      encoder.encode("EditorVersionID", pEditorVersionID);
+      encoder.encode("Editor", new BaseEditor(pEditor));
 
     if(pAction != null) {
       encoder.encode("Action", new BaseAction(pAction));
@@ -679,14 +660,22 @@ class NodeCommon
       throw new GlueException("The \"Toolset\" was missing or (null)!");
     pToolset = toolset;
     
-    pEditor = (String) decoder.decode("Editor");
-    pEditorVersionID = (VersionID) decoder.decode("EditorVersionID");
+    BaseEditor editor = (BaseEditor) decoder.decode("Editor");
+    if(editor != null) {
+      try {
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+      }
+      catch(PipelineException ex) {
+	throw new GlueException(ex.getMessage());
+      }
+    }
 
     BaseAction action = (BaseAction) decoder.decode("Action");
     if(action != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pAction = client.newAction(action.getName(), action.getVersionID());
+	pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
@@ -869,17 +858,11 @@ class NodeCommon
   protected String  pToolset;            
 
   /**
-   * The name of the editor plugin used to edit/view the files associated with this
+   * The editor plugin instance used to edit/view the files associated with this
    * version of the node. If <CODE>null</CODE>, there is no editor for this version 
    * of the node.
    */ 
-  protected String  pEditor;         
-
-  /**
-   * The revision number of the editor plugin or <CODE>null</CODE> for the latest version.
-   */ 
-  protected VersionID  pEditorVersionID;
-
+  protected BaseEditor  pEditor;         
 
   /** 
    * The action plugin instance used to regeneration the files associated with this 

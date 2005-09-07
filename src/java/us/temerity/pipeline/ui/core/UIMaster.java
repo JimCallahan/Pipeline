@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.29 2005/07/16 22:42:31 jim Exp $
+// $Id: UIMaster.java,v 1.30 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -75,15 +75,17 @@ class UIMaster
 
     pOpsLock = new ReentrantLock();
 
-    pEditorPlugins     = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();
-    pComparatorPlugins = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();
-    pActionPlugins     = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();  
-    pToolPlugins       = new TreeMap<String,TreeMap<String,TreeSet<VersionID>>>();
+    pEditorPlugins     = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
+    pComparatorPlugins = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
+    pActionPlugins     = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();  
+    pToolPlugins       = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
+    pArchiverPlugins   = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
     
     pEditorLayouts     = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts = new TreeMap<String,PluginMenuLayout>();                  
     pActionLayouts     = new TreeMap<String,PluginMenuLayout>();                    
     pToolLayouts       = new TreeMap<String,PluginMenuLayout>();                   
+    pArchiverLayouts   = new TreeMap<String,PluginMenuLayout>();                   
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
@@ -340,6 +342,9 @@ class UIMaster
     synchronized(pToolPlugins) {
       pToolPlugins.clear();
     }
+    synchronized(pArchiverPlugins) {
+      pArchiverPlugins.clear();
+    }
 
     synchronized(pEditorLayouts) {
       pEditorLayouts.clear();
@@ -352,6 +357,9 @@ class UIMaster
     }
     synchronized(pToolLayouts) {
       pToolLayouts.clear();
+    }  
+    synchronized(pArchiverLayouts) {
+      pArchiverLayouts.clear();
     }    
   }
 
@@ -379,7 +387,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
@@ -403,7 +411,7 @@ class UIMaster
     }
 
     menu.removeAll();
-    if(!layout.isEmpty()) {
+    if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
 	menu.add(rebuildPluginMenuHelper(pml, "edit-with", plugins, listener));
     }
@@ -435,7 +443,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       synchronized(pComparatorPlugins) {
 	plugins = pComparatorPlugins.get(tname);
@@ -455,11 +463,10 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
-      return;
     }
 
     menu.removeAll();
-    if(!layout.isEmpty()) {
+    if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
 	menu.add(rebuildPluginMenuHelper(pml, "compare-with", plugins, listener));
     }
@@ -491,7 +498,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
@@ -511,11 +518,10 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
-      return;
     }
 
     menu.removeAll();
-    if(!layout.isEmpty()) {
+    if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
 	menu.add(rebuildPluginMenuHelper(pml, "run-tool", plugins, listener));
     }
@@ -543,7 +549,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       String tname = pMasterMgrClient.getDefaultToolsetName();
 
@@ -565,11 +571,10 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
-      return;
     }
 
     menu.removeAll();
-    if(!layout.isEmpty()) {
+    if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
 	menu.add(rebuildPluginMenuHelper(pml, "run-tool", plugins, listener));
     }
@@ -600,17 +605,18 @@ class UIMaster
   (
    PluginMenuLayout layout, 
    String prefix, 
-   TreeMap<String,TreeSet<VersionID>> plugins, 
+   DoubleMap<String,String,TreeSet<VersionID>> plugins, 
    ActionListener listener
   ) 
   {
     JMenuItem item = null;
     if(layout.isMenuItem()) {
       item = new JMenuItem(layout.getTitle());
-      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
+      item.setActionCommand
+	(prefix + ":" + layout.getName() + ":" + layout.getVersionID() + ":" + layout.getVendor());
       item.addActionListener(listener);
    
-      TreeSet<VersionID> vids = plugins.get(layout.getName());
+      TreeSet<VersionID> vids = plugins.get(layout.getVendor(), layout.getName());
       item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
     }
     else {
@@ -639,7 +645,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       String tname = pMasterMgrClient.getDefaultToolsetName();
 
@@ -661,50 +667,9 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
-      return UIFactory.createPluginSelectionField
-	(new PluginMenuLayout(), new TreeMap<String,TreeSet<VersionID>>(), width);
-    }
 
-    return UIFactory.createPluginSelectionField(layout, plugins, width);
-  }
-
-  /**
-   * Create a new action plugin selection field based on the default toolset.
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public JPluginSelectionField
-  createActionSelectionField
-  (
-   int width  
-  ) 
-  {
-    PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
-    try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
-
-      synchronized(pActionPlugins) {
-	plugins = pActionPlugins.get(tname);
-	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetActionPlugins(tname, OsType.Unix);
-	  pActionPlugins.put(tname, plugins);
-	}
-      }
-      
-      synchronized(pActionLayouts) {
-	layout = pActionLayouts.get(tname);
-	if(layout == null) {
-	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
-	  pActionLayouts.put(tname, layout);
-	}
-      }
-    }
-    catch(PipelineException ex) {
-      showErrorDialog(ex);
-      return UIFactory.createPluginSelectionField
-	(new PluginMenuLayout(), new TreeMap<String,TreeSet<VersionID>>(), width);
+      layout = new PluginMenuLayout();
+      plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
     }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
@@ -721,7 +686,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
@@ -747,6 +712,52 @@ class UIMaster
     field.updatePlugins(layout, plugins);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new action plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createActionSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pActionPlugins) {
+	plugins = pActionPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetActionPlugins(tname, OsType.Unix);
+	  pActionPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pActionLayouts) {
+	layout = pActionLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
+	  pActionLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
   /**
    * Update the contents of an action plugin field for the given toolset.
    */ 
@@ -758,7 +769,7 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TreeMap<String,TreeSet<VersionID>> plugins = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
@@ -773,6 +784,89 @@ class UIMaster
 	if(layout == null) {
 	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
 	  pActionLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new archiver plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createArchiverSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pArchiverPlugins) {
+	plugins = pArchiverPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetArchiverPlugins(tname, PackageInfo.sOsType);
+	  pArchiverPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pArchiverLayouts) {
+	layout = pArchiverLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getArchiverMenuLayout(tname, PackageInfo.sOsType);
+	  pArchiverLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of an archiver plugin field for the given toolset.
+   */ 
+  public void 
+  updateArchiverPluginField
+  (
+   String tname, 
+   JPluginSelectionField field
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    try {
+      synchronized(pArchiverPlugins) {
+	plugins = pArchiverPlugins.get(tname);
+	if(plugins == null) {
+	  plugins = pMasterMgrClient.getToolsetArchiverPlugins(tname, PackageInfo.sOsType);
+	  pArchiverPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pArchiverLayouts) {
+	layout = pArchiverLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getArchiverMenuLayout(tname, PackageInfo.sOsType);
+	  pArchiverLayouts.put(tname, layout);
 	}
       }
     }
@@ -1178,6 +1272,9 @@ class UIMaster
   /**
    * Try to aquire a panel operation lock. <P> 
    * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
    * @return
    *   Whether the panel operation should proceed.
    */ 
@@ -1236,6 +1333,7 @@ class UIMaster
   {
     endPanelOp("");
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2503,6 +2601,7 @@ class UIMaster
      NodeCommon com, 
      String ename, 
      VersionID evid, 
+     String evendor, 
      String author, 
      String view
     ) 
@@ -2512,6 +2611,7 @@ class UIMaster
       pNodeCommon    = com;
       pEditorName    = ename;
       pEditorVersion = evid; 
+      pEditorVendor  = evendor; 
     }
 
 
@@ -2536,22 +2636,23 @@ class UIMaster
 	    /* create an editor plugin instance */ 
 	    BaseEditor editor = null;
 	    {
-	      String ename = pEditorName;
-	      if((ename == null) && pUseDefault) {
+	      if(pEditorName != null) {
+		PluginMgrClient pclient = PluginMgrClient.getInstance();
+		editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
+	      }
+	      else if (pUseDefault) {
 		FilePattern fpat = pNodeCommon.getPrimarySequence().getFilePattern();
 		String suffix = fpat.getSuffix();
 		if(suffix != null) 
-		  ename = client.getEditorForSuffix(suffix);
+		  editor = client.getEditorForSuffix(suffix);
 	      }
 
-	      if(ename == null) 
-		ename = pNodeCommon.getEditor();
+	      if(editor == null) 
+		editor = pNodeCommon.getEditor();
 		
-	      if(ename == null) 
+	      if(editor == null) 
 		throw new PipelineException
 		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
-	      
-	      editor = PluginMgrClient.getInstance().newEditor(ename, pEditorVersion);
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -2632,6 +2733,7 @@ class UIMaster
     private boolean     pUseDefault; 
     private String      pEditorName;
     private VersionID   pEditorVersion; 
+    private String      pEditorVendor; 
   }
 
   /** 
@@ -3122,10 +3224,11 @@ class UIMaster
   /**
    * Caches of plugin names and revision numbers indexed by toolset name.
    */ 
-  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pEditorPlugins;
-  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pComparatorPlugins;
-  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pActionPlugins;
-  private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pToolPlugins;
+  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pEditorPlugins;
+  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pComparatorPlugins;
+  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pActionPlugins;
+  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pToolPlugins;
+  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pArchiverPlugins;
 
   /** 
    * Caches of plugin menu layouts indexed by toolset name.
@@ -3134,6 +3237,7 @@ class UIMaster
   private TreeMap<String,PluginMenuLayout>  pComparatorLayouts; 
   private TreeMap<String,PluginMenuLayout>  pActionLayouts; 
   private TreeMap<String,PluginMenuLayout>  pToolLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pArchiverLayouts; 
 
 
 

@@ -46,7 +46,7 @@ supplied to the --mac-root-dir option to plconfig(1) during Pipeline configurati
 @ROOT_INST_DIR@/MacOS/Pipeline.app
 
 %changelog
-* @RPM_DATE@ Jim Callahan <jim@salamander>
+* @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.
 
 

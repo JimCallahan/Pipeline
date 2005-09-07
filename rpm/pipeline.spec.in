@@ -53,7 +53,6 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix/sbin/plqueuemgr
 @ROOT_INST_DIR@/Unix/sbin/plrestore
-@ROOT_INST_DIR@/Unix/sbin/upgrade-toolsets-1.9.22
 
 @ROOT_INST_DIR@/Unix/debug/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix/debug/sbin/pljobmgr
@@ -104,7 +103,7 @@ The core features of Pipeline include:
 %dir @ROOT_INST_DIR@/plconfig
 
 %changelog
-* @RPM_DATE@ Jim Callahan <jim@salamander>
+* @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.
 
 

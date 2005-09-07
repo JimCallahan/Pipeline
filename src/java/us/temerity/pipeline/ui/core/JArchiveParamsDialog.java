@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.3 2005/04/02 00:32:55 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.4 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -42,10 +42,8 @@ class JArchiveParamsDialog
 
     /* initialize fields */ 
     {
-      pArchiverPlugins = PluginMgrClient.getInstance().getArchivers(); 
       pArchiverParamComponents = new TreeMap<String,Component>();
     }
-    
 
     /* create dialog body components */ 
     {
@@ -82,33 +80,58 @@ class JArchiveParamsDialog
 	{
 	  ArrayList<String> values = new ArrayList<String>();
 	  values.add("-");
-	    
+
 	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField
-	    (tpanel, "Archiver:", sTSize, 
+	    (tpanel, "Toolset:", sTSize, 
 	     vpanel, values, sVSize, 
-	     "The name of the Archiver plugin to use when archiving nodes.");
+	     "The name of the shell environment under which the Archiver plugin is run.");
+	  pToolsetField = field;
+
+	  field.setActionCommand("toolset-changed");
+	  field.addActionListener(this);
+	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
+	  JLabel label = 
+	    UIFactory.createFixedLabel
+	    ("Archiver:", sTSize, JLabel.RIGHT, 
+	     "The name of the Archiver plugin used to archive/restore node versions.");
+
+	  tpanel.add(label);
+
+	  JPluginSelectionField field = 
+	    UIMaster.getInstance().createArchiverSelectionField(sVSize);
 	  pArchiverField = field;
-	    
+	  
 	  field.setActionCommand("archiver-changed");
 	  field.addActionListener(this);
+	  
+	  vpanel.add(field);
 	}
 	  
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	{
-	  ArrayList<String> values = new ArrayList<String>();
-	  values.add("-");
-	    
-	  JCollectionField field = 
-	    UIFactory.createTitledCollectionField
+	  JTextField field = 
+	    UIFactory.createTitledTextField
 	    (tpanel, "Version:", sTSize, 
-	     vpanel, values, sVSize, 
+	     vpanel, "-", sVSize, 
 	     "The revision number of the Archiver plugin.");
 	  pArchiverVersionField = field;
-	    
-	  field.setActionCommand("archiver-changed");
-	  field.addActionListener(this);
+	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	{
+	  JTextField field = 
+	    UIFactory.createTitledTextField
+	    (tpanel, "Vendor:", sTSize, 
+	     vpanel, "-", sVSize, 
+	     "The name of the Archiver plugin vendor.");
+	  pArchiverVendorField = field;
 	}
 	  
 	body.add(comps[2]);
@@ -155,6 +178,8 @@ class JArchiveParamsDialog
       super.initUI("Create Archive Volumes:", true, scroll, "Archive", null, null, "Cancel");
       pack();
     }  
+
+    updateArchiver();
   }
 
 
@@ -179,6 +204,15 @@ class JArchiveParamsDialog
   getMinSize() 
   {
     return pMinSizeField.getValue();
+  }
+
+  /**
+   * Get the name of the toolset environment under which the archiver plugin is run.
+   */ 
+  public String
+  getToolset()
+  {
+    return pToolset;
   }
 
   /**
@@ -236,40 +270,73 @@ class JArchiveParamsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Update the UI components.
    */
-  public void 
+  private void 
   updateArchiver() 
-  {
-    try {
-      PluginMgrClient mgr = PluginMgrClient.getInstance();
-      mgr.update();
+  { 
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
 
-      pArchiverPlugins = mgr.getArchivers();
-    }
-    catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
-    }
-
-    pArchiverField.removeActionListener(this);
+    pToolsetField.removeActionListener(this);
     {
-      TreeSet<String> values = new TreeSet<String>();
-      values.addAll(pArchiverPlugins.keySet());
-      values.add("-");
-      pArchiverField.setValues(values);
+      TreeSet<String> toolsets = new TreeSet<String>();
+      try {
+	if(pToolset == null) 
+	  pToolset = client.getDefaultToolsetName();
+	
+	toolsets.addAll(client.getActiveToolsetNames());
+	if((pToolset != null) && !toolsets.contains(pToolset))
+	  toolsets.add(pToolset);
+      }
+      catch(PipelineException ex) {
+      }
 
-      if((pArchiver != null) && (values.contains(pArchiver.getName()))) 
-	pArchiverField.setSelected(pArchiver.getName());
+      if(toolsets.isEmpty())
+	toolsets.add("-");
+	  
+      LinkedList<String> vlist = new LinkedList<String>(toolsets);
+      Collections.reverse(vlist);	 
+      pToolsetField.setValues(vlist);
+    
+      if(pToolset != null) 
+	pToolsetField.setSelected(pToolset);
       else 
-	pArchiverField.setSelected("-");
+	pToolsetField.setSelected("-");
     }
-    pArchiverField.addActionListener(this);
+    pToolsetField.addActionListener(this);
+    
+    master.updateArchiverPluginField(pToolset, pArchiverField);
 
-    doArchiverChanged(true);
+    updateArchiverFields();
+    updateArchiverParams();
+
+    updateButton();
   }
 
+  /**
+   * Update the archiver name, version and vendor fields.
+   */ 
+  private void 
+  updateArchiverFields()
+  {
+    pArchiverField.removeActionListener(this);
+    {
+      pArchiverField.setPlugin(pArchiver);
+      if(pArchiver != null) {
+	pArchiverVersionField.setText("v" + pArchiver.getVersionID());
+	pArchiverVendorField.setText(pArchiver.getVendor());
+      }
+      else {
+	pArchiverVersionField.setText("-");
+	pArchiverVendorField.setText("-");
+      }
+    }
+    pArchiverField.addActionListener(this);
+  }
+  
   /**
    * Update the UI components associated archiver parameters.
    */ 
@@ -385,37 +452,19 @@ class JArchiveParamsDialog
     UIFactory.addVerticalGlue(tpanel, vpanel);
 
     pArchiverParamsDrawer.setContents((JComponent) comps[2]);
+    pArchiverParamsDrawer.revalidate();
+    pArchiverParamsDrawer.repaint();
   }
 
   /**
-   * Update the archiver version field.
+   * Update the enable status of the archive button.
    */ 
   private void 
-  updateArchiverVersionField()
+  updateButton()
   {
-    pArchiverVersionField.removeActionListener(this);
-    {
-      if(pArchiver != null) {
-	TreeSet<String> vstr = new TreeSet<String>();
-	TreeSet<VersionID> vids = pArchiverPlugins.get(pArchiver.getName());
-	for(VersionID vid : vids)
-	  vstr.add("v" + vid.toString());
-	pArchiverVersionField.setValues(vstr);
-	
-	pArchiverVersionField.setSelected("v" + pArchiver.getVersionID().toString());
-	pArchiverVersionField.setEnabled(true);
-      }
-      else {
-	TreeSet<String> vstr = new TreeSet<String>();
-	vstr.add("-");
-	pArchiverVersionField.setValues(vstr);
-	pArchiverVersionField.setSelected("-");
-	pArchiverVersionField.setEnabled(false);
-      }
-    }
-    pArchiverVersionField.addActionListener(this);
+    pConfirmButton.setEnabled((pToolset != null) && (pArchiver != null));
   }
-  
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -435,7 +484,9 @@ class JArchiveParamsDialog
   {
     String cmd = e.getActionCommand();
     if(cmd.equals("archiver-changed")) 
-      doArchiverChanged(false);
+      doArchiverChanged();
+    else if(cmd.equals("toolset-changed")) 
+      doToolsetChanged();
     else
       super.actionPerformed(e);
   }
@@ -448,55 +499,77 @@ class JArchiveParamsDialog
 
   /**
    * Update the appearance of the archiver fields after a change of value.
-   * 
-   * @param forceRebuild
-   *   Whether the action should be rebuilt regardless of whether it has changed.
    */ 
   private void 
-  doArchiverChanged
-  (
-   boolean forceRebuild
-  ) 
+  doArchiverChanged()
   {
-    BaseArchiver oarchiver = pArchiver;
-    {
-      String aname = pArchiverField.getSelected();
-      if(aname.equals("-")) {
-	pArchiver = null;
-      }
-      else {
-	VersionID vid = null;
-	boolean rebuild = false;
-	if(forceRebuild || (oarchiver == null) || !oarchiver.getName().equals(aname)) 
-	  rebuild = true;
-	else {
-	  String vstr = pArchiverVersionField.getSelected();
-	  if(vstr.equals("-")) 
-	    rebuild = true;
-	  else {
-	    vid = new VersionID(vstr.substring(1));
-	    if(!vid.equals(oarchiver.getVersionID()))
-	      rebuild = true;
-	  }
-	}
+    BaseArchiver oarchiver = getArchiver();
 
-	if(rebuild) {
-	  try {
-	    pArchiver = PluginMgrClient.getInstance().newArchiver(aname, vid);
-	    if((oarchiver != null) && oarchiver.getName().equals(pArchiver.getName()))
-	      pArchiver.setParamValues(oarchiver);
-	  }
-	  catch(PipelineException ex) {
-	    UIMaster.getInstance().showErrorDialog(ex);
-	    pArchiver = null;	    
-	  }
-	}
-      }
-
-      updateArchiverVersionField();
-      updateArchiverParams();
+    String aname = pArchiverField.getPluginName();
+    if(aname == null) {
+      pArchiver = null;
     }
+    else {
+      VersionID avid = pArchiverField.getPluginVersionID();
+      String avendor = pArchiverField.getPluginVendor();
+
+      if((oarchiver == null) || 
+	 !oarchiver.getName().equals(aname) ||
+	 !oarchiver.getVersionID().equals(avid) ||
+	 !oarchiver.getVendor().equals(avendor)) {
+	try {
+	  pArchiver = PluginMgrClient.getInstance().newArchiver(aname, avid, avendor);
+	  if(oarchiver != null)
+	    pArchiver.setParamValues(oarchiver);
+	}
+	catch(PipelineException ex) {
+	  UIMaster.getInstance().showErrorDialog(ex);
+	  pArchiver = null;	    
+	}
+      }
+    }
+    
+    updateArchiverFields();
+    updateArchiverParams();
+    updateButton();
   }
+
+  /**
+   * Update the archiver plugins available in the current toolset.
+   */ 
+  private void 
+  doToolsetChanged()
+  {
+    String toolset = pToolsetField.getSelected();
+    if(toolset.equals("-")) 
+      pToolset = null;
+    else
+      pToolset = toolset;
+
+    UIMaster.getInstance().updateArchiverPluginField(pToolset, pArchiverField);    
+
+    updateButton();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Shows or hides this component.
+   */ 
+  public void 
+  setVisible
+  (
+   boolean isVisible
+  )
+  {
+    updateArchiver();
+    super.setVisible(isVisible);
+  }
+    
 
 
 
@@ -516,14 +589,14 @@ class JArchiveParamsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The name of the toolset environment.
+   */ 
+  private String  pToolset; 
+
+  /**
    * The current archiver instance.
    */ 
   private BaseArchiver  pArchiver; 
-
-  /**
-   * Cached names and version numbers of the loaded action plugins. 
-   */
-  private TreeMap<String,TreeSet<VersionID>>  pArchiverPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -538,15 +611,27 @@ class JArchiveParamsDialog
    */ 
   private JByteSizeField  pMinSizeField; 
 
+
+  /**
+   * The name of the toolset environment. 
+   */ 
+  private JCollectionField  pToolsetField; 
+
   /**
    * The name of the archiver plugin. 
    */ 
-  private JCollectionField  pArchiverField; 
+  private JPluginSelectionField  pArchiverField; 
 
   /**
    * The revision number of the archiver plugin.
    */ 
-  private JCollectionField  pArchiverVersionField;
+  private JTextField  pArchiverVersionField;
+
+  /**
+   * The name of the archiver plugin vendor. 
+   */ 
+  private JTextField  pArchiverVendorField; 
+
 
   /**
    * The drawer containing archver parameter components.

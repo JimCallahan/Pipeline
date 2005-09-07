@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.6 2005/06/22 22:03:21 jim Exp $
+// $Id: JCloneDialog.java,v 1.7 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -559,16 +559,11 @@ class JCloneDialog
       UIMaster master = UIMaster.getInstance();
 
       /* node properties */ 
-      String editor = null;
-      VersionID evid = null;
-      if(pExportPanel.exportEditor()) {
+      BaseEditor editor = null;
+      if(pExportPanel.exportEditor()) 
 	editor = pNodeMod.getEditor();
-	evid   = pNodeMod.getEditorVersionID();
-      }
-      else {
+      else 
 	editor = master.getMasterMgrClient().getEditorForSuffix(suffix);
-	evid   = PluginMgrClient.getInstance().getEditors().get(editor).last();
-      }
 
       String toolset = null;
       if(pExportPanel.exportToolset()) 
@@ -576,7 +571,7 @@ class JCloneDialog
       else 
 	toolset = master.getMasterMgrClient().getDefaultToolsetName();
       
-      mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor, evid);
+      mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
     }
     catch(Exception ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -630,7 +625,7 @@ class JCloneDialog
 	/* the action and parameters */ 
 	{
 	  PluginMgrClient mgr = PluginMgrClient.getInstance();
-	  action = mgr.newAction(oaction.getName(), oaction.getVersionID()); 
+	  action = mgr.newAction(oaction.getName(), oaction.getVersionID(), oaction.getVendor()); 
 	  
 	  for(ActionParam param : oaction.getSingleParams()) {
 	    if(pExportPanel.exportActionSingleParam(param.getName())) 

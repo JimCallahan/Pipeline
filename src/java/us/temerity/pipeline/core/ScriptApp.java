@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.45 2005/06/23 00:50:50 jim Exp $
+// $Id: ScriptApp.java,v 1.46 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -141,10 +141,10 @@ class ScriptApp
        "      --backup=dir\n" +
        "      --archive=archive-prefix [--pattern='node-regex'] [--max-archives=integer]\n" +
        "        [--min-size=bytes] --archiver=archiver-name[:major.minor.micro]]\n" + 
-       "        [--param=name:value ...] [--auto-start]\n" + 
+       "        [--param=name:value ...] [--auto-start] [--toolset=...]\n" + 
        "      --offline [--pattern='node-regex'] [--exclude-latest=integer]\n" + 
        "        [--min-archives=integer]\n" + 
-       "      --restore=archive-name [--param=name:value ...]\n" + 
+       "      --restore=archive-name [--param=name:value ...] [--toolset=...]\n" + 
        "        [--vsn=node-name:major.minor.micro ...]\n" + 
        "\n" + 
        "  Toolset Administration\n" + 
@@ -341,9 +341,11 @@ class ScriptApp
    Integer maxArchives, 
    Long minSize, 
    String archiverName, 
-   VersionID archiverVersion,
+   VersionID archiverVersionID,
+   String archiverVendor, 
    TreeMap params, 
    boolean autoStart, 
+   String toolset, 
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -356,7 +358,7 @@ class ScriptApp
 
     /* instantiate the Archiver plugin and set its parameters */ 
     BaseArchiver archiver = 
-      PluginMgrClient.getInstance().newArchiver(archiverName, archiverVersion);
+      PluginMgrClient.getInstance().newArchiver(archiverName, archiverVersionID, archiverVendor);
     {
       TreeMap<String,String> aparams = (TreeMap<String,String>) params;
       for(String pname : aparams.keySet()) {
@@ -508,7 +510,7 @@ class ScriptApp
 	 buf.toString());
       LogMgr.getInstance().flush();   
 
-      String archiveName = client.archive(prefix, selected, archiver);
+      String archiveName = client.archive(prefix, selected, archiver, toolset);
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -580,6 +582,7 @@ class ScriptApp
    String archiveName, 
    TreeMap params,
    TreeMap versions, 
+   String toolset, 
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -643,7 +646,7 @@ class ScriptApp
       archiver.setParamValue(pname, value);
     }
 
-    client.restore(archiveName, aversions, archiver);
+    client.restore(archiveName, aversions, archiver, toolset);
   }
   
   
@@ -1249,19 +1252,21 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    TreeMap<String,TreeSet<VersionID>> versions = client.getEditors();
+    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getEditors();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 tbar(80) + "\n" + 
 	 "  E D I T O R S");
-      
-      for(String name : versions.keySet()) {
-	for(VersionID vid : versions.get(name)) {
-	  BaseEditor plg = client.newEditor(name, vid);
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     bar(80) + "\n\n" + plg + "\n");
+	
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name)) {
+	    BaseEditor plg = client.newEditor(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
 	}
       }
     }
@@ -1277,19 +1282,21 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    TreeMap<String,TreeSet<VersionID>> versions = client.getActions();
+    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getActions();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 tbar(80) + "\n" + 
 	 "  A C T I O N S");
       
-      for(String name : versions.keySet()) {
-	for(VersionID vid : versions.get(name)) {
-	  BaseAction plg = client.newAction(name, vid);
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     bar(80) + "\n\n" + plg + "\n");
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name)) {
+	    BaseAction plg = client.newAction(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
 	}
       }
     }
@@ -1305,19 +1312,21 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    TreeMap<String,TreeSet<VersionID>> versions = client.getComparators();
+    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getComparators();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 tbar(80) + "\n" + 
-	 "  C O M P A R A T O R S ");
+	 "  C O M P A R A T O R S");
       
-      for(String name : versions.keySet()) {
-	for(VersionID vid : versions.get(name)) {
-	  BaseComparator plg = client.newComparator(name, vid);
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     bar(80) + "\n\n" + plg + "\n");
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name)) {
+	    BaseComparator plg = client.newComparator(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
 	}
       }
     }
@@ -1333,19 +1342,21 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    TreeMap<String,TreeSet<VersionID>> versions = client.getTools();
+    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getTools();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 tbar(80) + "\n" + 
-		    "  T O O L S"); 
+	 "  T O O L S"); 
       
-      for(String name : versions.keySet()) {
-	for(VersionID vid : versions.get(name)) {
-	  BaseTool plg = client.newTool(name, vid);
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     bar(80) + "\n\n" + plg + "\n");
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name)) {
+	    BaseTool plg = client.newTool(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
 	}
       }
     }
@@ -1361,19 +1372,21 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    TreeMap<String,TreeSet<VersionID>> versions = client.getArchivers();
+    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getArchivers();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 tbar(80) + "\n" + 
-		    "  A R C H I V E R S");
+	 "  A R C H I V E R S");
       
-      for(String name : versions.keySet()) {
-	for(VersionID vid : versions.get(name)) {
-	  BaseArchiver plg = client.newArchiver(name, vid);
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     bar(80) + "\n\n" + plg + "\n");
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name)) {
+	    BaseArchiver plg = client.newArchiver(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
 	}
       }
     }
@@ -1438,11 +1451,19 @@ class ScriptApp
   public void
   addSuffixEditor
   (
-   SuffixEditor se, 
+   String suffix, 
+   String msg, 
+   String editorName, 
+   VersionID editorVersionID, 
+   String editorVendor, 
    MasterMgrClient client
   ) 
     throws PipelineException
   {
+    BaseEditor editor = 
+      PluginMgrClient.getInstance().newEditor(editorName, editorVersionID, editorVendor);
+    SuffixEditor se = new SuffixEditor(suffix, msg, editor);
+
     TreeSet<SuffixEditor> editors = client.getSuffixEditors();
     editors.add(se);
     client.setSuffixEditors(editors);
@@ -1717,11 +1738,13 @@ class ScriptApp
    NodeID nodeID, 
    FileSeq primary, 
    String toolset, 
-   String editor, 
-   VersionID editorVID, 
+   String editorName, 
+   VersionID editorVersionID, 
+   String editorVendor, 
    Boolean noAction, 
    String actionName, 
    VersionID actionVersionID, 
+   String actionVendor, 
    Boolean actionEnabled, 
    TreeMap params, 
    TreeMap sourceParams, 
@@ -1751,33 +1774,23 @@ class ScriptApp
 	tset = client.getDefaultToolsetName();
 
 
-      TreeMap<String,TreeSet<VersionID>> editorPlugins = 
-	PluginMgrClient.getInstance().getEditors();
-
-      if((editor != null) && !editorPlugins.keySet().contains(editor))
-	throw new PipelineException 
-	  ("No Editor plugin named (" + editor + ") exists!");
-
-      String edit = editor;
-      if(edit == null) {
-	String suffix = primary.getFilePattern().getSuffix();
-	if(suffix != null) 
-	  edit = client.getEditorForSuffix(suffix);
+      BaseEditor editor = null;
+      {
+	if(editorName == null) {
+	  String suffix = primary.getFilePattern().getSuffix();
+	  if(suffix != null) 
+	    editor = client.getEditorForSuffix(suffix);
+	}
+	else {
+	  PluginMgrClient pclient = PluginMgrClient.getInstance();
+	  editor = pclient.newEditor(editorName, editorVersionID, editorVendor);
+	}
       }
       
-      VersionID evid = editorVID;
-      if(edit != null) {
-	if(evid == null) 
-	  evid = editorPlugins.get(edit).last();
-	else if(!editorPlugins.get(edit).contains(evid)) 
-	  throw new PipelineException 
-	    ("No version (" + evid + ") of Editor plugin (" + editor + ") exists!");
-      }
-
-      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), tset, edit, evid);
+      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), tset, editor);
 
       setActionProperties
-	(mod, noAction, actionName, actionVersionID, actionEnabled, 
+	(mod, noAction, actionName, actionVersionID, actionVendor, actionEnabled, 
 	 (TreeMap<String,String>) params, 
 	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
 	 overflowPolicy, executionMethod, batchSize,
@@ -1801,11 +1814,13 @@ class ScriptApp
   (
    NodeID nodeID, 
    String toolset, 
-   String editor, 
-   VersionID editorVID, 
+   String editorName, 
+   VersionID editorVersionID, 
+   String editorVendor, 
    Boolean noAction, 
    String actionName, 
    VersionID actionVersionID, 
+   String actionVendor, 
    Boolean actionEnabled, 
    TreeMap params, 
    TreeMap sourceParams, 
@@ -1834,22 +1849,14 @@ class ScriptApp
 	  mod.setToolset(toolset);
 	}
 	
-	TreeMap<String,TreeSet<VersionID>> editorPlugins = 
-	  PluginMgrClient.getInstance().getEditors();
-	
-	if(editor != null) {
-	  if(!editorPlugins.keySet().contains(editor))
-	    throw new PipelineException 
-	      ("No Editor plugin named (" + editor + ") exists!");
-      
-	  VersionID evid = editorVID;
-	  if(evid == null) 
-	    evid = editorPlugins.get(editor).last();
-	  else if(!editorPlugins.get(editor).contains(evid)) 
-	    throw new PipelineException 
-	      ("No version (" + evid + ") of Editor plugin (" + editor + ") exists!");
+	{
+	  BaseEditor editor = null;
+	  if(editorName != null) {
+	    PluginMgrClient pclient = PluginMgrClient.getInstance();
+	    editor = pclient.newEditor(editorName, editorVersionID, editorVendor);
+	  }
 	  
-	  mod.setEditor(editor, evid);
+	  mod.setEditor(editor); 
 	}
       }
 
@@ -1861,7 +1868,7 @@ class ScriptApp
 
       /* actions and related properties */ 
       setActionProperties
-	(mod, noAction, actionName, actionVersionID, actionEnabled, 
+	(mod, noAction, actionName, actionVersionID, actionVendor, actionEnabled, 
 	 (TreeMap<String,String>) params, 
 	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
 	 overflowPolicy, executionMethod, batchSize,
@@ -1887,6 +1894,7 @@ class ScriptApp
    Boolean noAction, 
    String actionName, 
    VersionID actionVersionID, 
+   String actionVendor, 
    Boolean actionEnabled, 
    TreeMap<String,String> params, 
    TreeMap<String,TreeMap<String,String>> sourceParams, 
@@ -1915,18 +1923,7 @@ class ScriptApp
     else {
       if(actionName != null) {
 	PluginMgrClient pclient = PluginMgrClient.getInstance();
-
-	TreeSet<VersionID> table = pclient.getActions().get(actionName);
-	if(table == null) 
-	  throw new PipelineException 
-	    ("No Action plugin named (" + actionName + ") exists!");
-	
-	if((actionVersionID != null) && !table.contains(actionVersionID)) 
-	  throw new PipelineException 
-	    ("No version (v" + actionVersionID + ") of Action plugin " + 
-	     "(" + actionName + ") exists!");
-	
-	BaseAction action = pclient.newAction(actionName, actionVersionID);
+	BaseAction action = pclient.newAction(actionName, actionVersionID, actionVendor);
 	mod.setAction(action);
       }
 	
@@ -2138,6 +2135,7 @@ class ScriptApp
    NodeID nodeID, 
    String editorName, 
    VersionID editorVersionID, 
+   String editorVendor, 
    ArrayList frames, 
    ArrayList indices, 
    FileSeq fseq, 
@@ -2147,7 +2145,8 @@ class ScriptApp
     throws PipelineException
   {
     NodeMod mod = client.getWorkingVersion(nodeID);
-    editCommon(nodeID, mod, editorName, editorVersionID, frames, indices, fseq, wait, client);
+    editCommon(nodeID, mod, editorName, editorVersionID, editorVendor, 
+	       frames, indices, fseq, wait, client);
   }  
 
   /**
@@ -2160,6 +2159,7 @@ class ScriptApp
    NodeCommon com, 
    String editorName, 
    VersionID editorVersionID, 
+   String editorVendor, 
    ArrayList frames, 
    ArrayList indices, 
    FileSeq fseq, 
@@ -2257,14 +2257,14 @@ class ScriptApp
     /* create an editor plugin instance */ 
     BaseEditor editor = null;
     {
-      String ename = editorName;
-      if(ename == null) 
-	ename = com.getEditor();
-      if(ename == null) 
+      if(editorName != null) 
+	editor = PluginMgrClient.getInstance().newEditor(editorName, editorVersionID, editorVendor);
+      else 
+	editor = com.getEditor();
+
+      if(editor == null) 
 	throw new PipelineException
 	  ("No editor was specified for node (" + com.getName() + ")!");
-      
-      editor = PluginMgrClient.getInstance().newEditor(ename, editorVersionID);
     }
     
     /* lookup the toolset environment */ 
@@ -2701,6 +2701,7 @@ class ScriptApp
    VersionID vid, 
    String editorName, 
    VersionID editorVersionID, 
+   String editorVendor, 
    ArrayList frames, 
    ArrayList indices, 
    FileSeq fseq, 
@@ -2710,7 +2711,8 @@ class ScriptApp
     throws PipelineException
   { 
     NodeVersion vsn = client.getCheckedInVersion(name, vid);
-    editCommon(null, vsn, editorName, editorVersionID, frames, indices, fseq, wait, client);
+    editCommon(null, vsn, editorName, editorVersionID, editorVendor, 
+	       frames, indices, fseq, wait, client);
   }  
 
 
@@ -2843,14 +2845,14 @@ class ScriptApp
       
 	if(sections.contains("prop")) {
 	  String mToolset = "-";
-	  String mEditor  = "-";
+	  BaseEditor mEditor = null;
 	  if(mod != null) {
 	    mToolset = mod.getToolset();
 	    mEditor  = mod.getEditor();
 	  }
 
 	  String vToolset = "-";
-	  String vEditor  = "-";
+	  BaseEditor vEditor = null; 
 	  if(vsn != null) {
 	    vToolset = vsn.getToolset();
 	    vEditor  = vsn.getEditor();
@@ -2860,8 +2862,33 @@ class ScriptApp
 	    ("\n\n" + 
 	     pad("-- Properties ", '-', 80) + "\n" +
 	     "Property State    : " + details.getPropertyState().toTitle() + "\n" +
-	     "Toolset           : " + pad(mToolset, ' ', 30) + " : " + vToolset + "\n" +
-	     "Editor            : " + pad(mEditor, ' ', 30) + " : " + vEditor);
+	     "Toolset           : " + pad(mToolset, ' ', 30) + " : " + vToolset);
+
+	  if((mEditor != null) || (vEditor != null)) {
+	    String mname = "-";
+	    String mvstr = "-";
+	    String mvend = "-";
+	    if(mEditor != null) {
+	      mname = mEditor.getName();
+	      mvstr = mEditor.getVersionID().toString();
+	      mvend = mEditor.getVendor();
+	    }
+
+	    String vname = "-";
+	    String vvstr = "-";
+	    String vvend = "-";
+	    if(vEditor != null) {
+	      vname = vEditor.getName();
+	      vvstr = vEditor.getVersionID().toString();
+	      vvend = vEditor.getVendor();
+	    }
+
+	    buf.append
+	      ("\n\n" + 
+	       "Editor            : " + pad(mname, ' ', 30) + " : " + vname + "\n" +
+	       "Version           : " + pad(mvstr, ' ', 30) + " : " + vvstr + "\n" +
+	       "Vendor            : " + pad(mvend, ' ', 30) + " : " + vvend);
+	  }
 	}
 
 
@@ -2881,10 +2908,12 @@ class ScriptApp
 	  if((mAction != null) || (vAction != null)) {
 	    String mname    = "-";
 	    String mvstr    = "-";
+	    String mvend    = "-";
 	    String menabled = "-";
 	    if(mAction != null) {
 	      mname = mAction.getName();
 	      mvstr = mAction.getVersionID().toString();
+	      mvend = mAction.getVendor();
 
 	      if(mod != null) 
 		menabled = (mod.isActionEnabled() ? "YES" : "no");
@@ -2892,10 +2921,12 @@ class ScriptApp
 
 	    String vname    = "-";
 	    String vvstr    = "-";
+	    String vvend    = "-";
 	    String venabled = "-";
 	    if(vAction != null) {
 	      vname = vAction.getName();
 	      vvstr = vAction.getVersionID().toString();
+	      vvend = vAction.getVendor();
 
 	      if(vsn != null) 
 		venabled = (vsn.isActionEnabled() ? "YES" : "no");
@@ -2904,7 +2935,8 @@ class ScriptApp
 	    buf.append
 	      ("Action            : " + pad(mname, ' ', 30) + " : " + vname + "\n" +
 	       "Version           : " + pad(mvstr, ' ', 30) + " : " + vvstr + "\n" +
-	       "Enabled           : " + pad(menabled, ' ', 30) + " : "  + venabled);
+	       "Vendor            : " + pad(mvend, ' ', 30) + " : " + vvend + "\n" +
+	       "Enabled           : " + pad(menabled, ' ', 30) + " : " + venabled);
 	    
 	    if(((mAction != null) && mAction.hasSingleParams()) || 
 	       ((vAction != null) && vAction.hasSingleParams())) {
@@ -3527,6 +3559,9 @@ class ScriptApp
 
     case ScriptOptsParserConstants.REVISION_NUMBER:
       return "a revision number";
+
+    case ScriptOptsParserConstants.VENDOR_NAME: 
+      return "a plugin vendor name";
 
     case ScriptOptsParserConstants.VIEW_NAME:
       return "a working area view name";

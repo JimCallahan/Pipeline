@@ -1,4 +1,4 @@
-// $Id: ArchiveVolume.java,v 1.3 2005/03/24 03:48:33 jim Exp $
+// $Id: ArchiveVolume.java,v 1.4 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,6 +45,9 @@ class ArchiveVolume
    * 
    * @param archiver 
    *   The archiver plugin instance used to create the archive.
+   * 
+   * @param toolset 
+   *   The name of the toolset environment under which the archiver is executed.
    */
   public 
   ArchiveVolume
@@ -53,7 +56,8 @@ class ArchiveVolume
    Date stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs,
    TreeMap<String,TreeMap<VersionID,Long>> sizes,
-   BaseArchiver archiver
+   BaseArchiver archiver, 
+   String toolset
   ) 
   {
     super(name);
@@ -92,6 +96,11 @@ class ArchiveVolume
       throw new IllegalArgumentException
 	("The archiver plugin instance cannot be (null)!");
     pArchiver = archiver;
+    
+    if(toolset == null) 
+      throw new IllegalArgumentException
+	("The toolset cannot be (null)!");
+    pToolset = toolset;
   }
 
 
@@ -272,6 +281,17 @@ class ArchiveVolume
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the toolset environment.
+   */ 
+  public String
+  getToolset()
+  {
+    return pToolset;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E R I A L I Z A B L E                                                              */
@@ -294,6 +314,7 @@ class ArchiveVolume
     out.writeObject(pFileSeqs);
     out.writeObject(pSizes);
     out.writeObject(new BaseArchiver(pArchiver));
+    out.writeObject(pToolset);
   }
 
   /**
@@ -315,16 +336,18 @@ class ArchiveVolume
     pSizes = (TreeMap<String,TreeMap<VersionID,Long>>) in.readObject();
 
     {
-      BaseArchiver archiver = (BaseArchiver) in.readObject();
+      BaseArchiver arch = (BaseArchiver) in.readObject();
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-	pArchiver.setParamValues(archiver);
+	pArchiver = client.newArchiver(arch.getName(), arch.getVersionID(), arch.getVendor());
+	pArchiver.setParamValues(arch);
       }
       catch(PipelineException ex) {
 	throw new IOException(ex.getMessage());
       }
     }
+    
+    pToolset = (String) in.readObject();
   }
  
 
@@ -346,6 +369,7 @@ class ArchiveVolume
     encoder.encode("FileSeqs", pFileSeqs);
     encoder.encode("Sizes", pSizes);
     encoder.encode("Archiver", new BaseArchiver(pArchiver));
+    encoder.encode("Toolset", pToolset);
   }
 
   public void 
@@ -381,19 +405,24 @@ class ArchiveVolume
     }
     
     {
-      BaseArchiver archiver = (BaseArchiver) decoder.decode("Archiver");
-      if(archiver == null) 
+      BaseArchiver arch = (BaseArchiver) decoder.decode("Archiver");
+      if(arch == null) 
  	throw new GlueException("The \"Archiver\" was missing!");
 
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-	pArchiver.setParamValues(archiver);
+	pArchiver = client.newArchiver(arch.getName(), arch.getVersionID(), arch.getVendor());
+	pArchiver.setParamValues(arch);
       }
       catch(PipelineException ex) {
 	throw new GlueException(ex.getMessage());
       }
     }
+
+    String toolset = (String) decoder.decode("Toolset");
+    if(toolset == null) 
+      throw new GlueException("The \"Toolset\" was missing!");
+    pToolset = toolset;
   }
 
 
@@ -446,6 +475,11 @@ class ArchiveVolume
    * The archiver plugin instance used to create the archive.
    */
   private BaseArchiver  pArchiver;
+
+  /**
+   * The name of the toolset environment under which the archiver is executed.
+   */
+  private String  pToolset; 
 
 }
 

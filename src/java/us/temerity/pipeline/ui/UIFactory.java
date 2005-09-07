@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.5 2005/05/16 19:25:32 jim Exp $
+// $Id: UIFactory.java,v 1.6 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -880,7 +880,7 @@ class UIFactory
   createPluginSelectionField
   (
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins,
    int width
   ) 
   {
@@ -2541,7 +2541,7 @@ class UIFactory
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin names and revision numbers.
+   *   The legal plugin vendors, names and revision numbers.
    * 
    * @param vwidth
    *   The minimum and preferred width of the value field.
@@ -2554,7 +2554,7 @@ class UIFactory
    int twidth,
    JPanel vpanel,
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins,
    int vwidth
   ) 
   {
@@ -2581,7 +2581,7 @@ class UIFactory
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin names and revision numbers.
+   *   The legal plugin vendors, names and revision numbers.
    * 
    * @param vwidth
    *   The minimum and preferred width of the value field.
@@ -2597,7 +2597,7 @@ class UIFactory
    int twidth,
    JPanel vpanel,
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins,
    int vwidth, 
    String tooltip
   ) 

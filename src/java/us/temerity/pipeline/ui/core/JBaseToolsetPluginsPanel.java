@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.2 2005/07/15 02:16:46 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.3 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -48,7 +48,7 @@ class JBaseToolsetPluginsPanel
     /* initialize fields */ 
     {
       pMenuLayout     = new PluginMenuLayout();
-      pPluginVersions = new TreeMap<String,TreeSet<VersionID>>();
+      pPluginVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
       pIsPrivileged   = false;
 
       pDialog = dialog; 
@@ -278,10 +278,11 @@ class JBaseToolsetPluginsPanel
   isPluginSupported
   (
    String name,
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
   {
-    TreeSet<VersionID> vids = pPluginVersions.get(name);
+    TreeSet<VersionID> vids = pPluginVersions.get(vendor, name);
     return ((vids != null) && vids.contains(vid));
   }
 
@@ -324,7 +325,7 @@ class JBaseToolsetPluginsPanel
    *   The current plugin menu layout.
    * 
    * @param plugins
-   *   The names of versions of the supported plugins.
+   *   The vendors, names of versions of the supported plugins.
    * 
    * @param isPrivileged
    *   Whether the current user is privileged.
@@ -335,7 +336,7 @@ class JBaseToolsetPluginsPanel
    String tname,
    OsType os,
    PluginMenuLayout layout, 
-   TreeMap<String,TreeSet<VersionID>> plugins, 
+   DoubleMap<String,String,TreeSet<VersionID>> plugins, 
    boolean isPrivileged
   ) 
   {
@@ -545,7 +546,7 @@ class JBaseToolsetPluginsPanel
 
     if(e.getSource() == pMenuLayoutTree) {
       if((pml != null) && pml.isMenuItem()) {
-	selectPluginVersion(pml.getName(), pml.getVersionID());
+	selectPluginVersion(pml.getName(), pml.getVersionID(), pml.getVendor());
 	vdata = getSelectedPluginData();
 
 	pSetPluginButton.setEnabled(pIsPrivileged);
@@ -919,7 +920,7 @@ class JBaseToolsetPluginsPanel
     PluginTreeData vdata = getSelectedPluginData();
     if((pml != null) && (pml.size() == 0) && 
        (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
-      pml.setPlugin(vdata.getName(), vdata.getVersionID());
+      pml.setPlugin(vdata.getName(), vdata.getVersionID(), vdata.getVendor());
       rebuildMenuLayout();
     }
   }
@@ -1064,8 +1065,9 @@ class JBaseToolsetPluginsPanel
     if(layout.isMenuItem()) {
       String name = layout.getName();
       VersionID vid = layout.getVersionID();
+      String vendor = layout.getVendor();
 
-      TreeSet<VersionID> vids = pPluginVersions.get(name);
+      TreeSet<VersionID> vids = pPluginVersions.get(vendor, name);
       if((vids == null) || !vids.contains(vid)) {
 	name = null;
 	vid = null;
@@ -1174,16 +1176,22 @@ class JBaseToolsetPluginsPanel
     TreeSet<String> expanded = getExpandedTreeNodes(pMenuLayoutTree);
 
     DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PluginTreeData());
+    
+    for(String vendor : pPluginVersions.keySet()) {
+      DefaultMutableTreeNode rnode = 
+	new DefaultMutableTreeNode(new PluginTreeData(vendor), true);
+      root.add(rnode);
 
-    for(String name : pPluginVersions.keySet()) {
-      DefaultMutableTreeNode pnode = 
-	new DefaultMutableTreeNode(new PluginTreeData(name), true);
-      root.add(pnode);
-      
-      for(VersionID vid : pPluginVersions.get(name)) {
-	DefaultMutableTreeNode vnode = 
-	  new DefaultMutableTreeNode(new PluginTreeData(name, vid), false);
-	pnode.add(vnode);
+      for(String name : pPluginVersions.get(vendor).keySet()) {
+	DefaultMutableTreeNode pnode = 
+	  new DefaultMutableTreeNode(new PluginTreeData(name), true);
+	rnode.add(pnode);
+	
+	for(VersionID vid : pPluginVersions.get(vendor).get(name)) {
+	  DefaultMutableTreeNode vnode = 
+	    new DefaultMutableTreeNode(new PluginTreeData(name, vid, vendor), false);
+	  pnode.add(vnode);
+	}
       }
     }
     
@@ -1200,29 +1208,38 @@ class JBaseToolsetPluginsPanel
   selectPluginVersion
   (
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
   {
     pPluginTree.clearSelection();
 
     DefaultTreeModel model = (DefaultTreeModel) pPluginTree.getModel();
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();	  
-    int wk;
-    for(wk=0; wk<root.getChildCount(); wk++) {
-      DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) root.getChildAt(wk);  
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 
-      int vk;
-      for(vk=0; vk<pnode.getChildCount(); vk++) {
-	DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) pnode.getChildAt(vk); 
-	PluginTreeData vdata = (PluginTreeData) vnode.getUserObject();
-	TreePath vpath = new TreePath(vnode.getPath());
-
-	if(name.equals(vdata.getName()) && vid.equals(vdata.getVersionID())) {
-	  pPluginTree.addSelectionPath(vpath);
-	  return;
+    int rk;
+    for(rk=0; rk<root.getChildCount(); rk++) {
+      DefaultMutableTreeNode rnode = (DefaultMutableTreeNode) root.getChildAt(rk);  
+	  
+      int wk;
+      for(wk=0; wk<rnode.getChildCount(); wk++) {
+	DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) rnode.getChildAt(wk);  
+	
+	int vk;
+	for(vk=0; vk<pnode.getChildCount(); vk++) {
+	  DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) pnode.getChildAt(vk); 
+	  PluginTreeData vdata = (PluginTreeData) vnode.getUserObject();
+	  TreePath vpath = new TreePath(vnode.getPath());
+	  
+	  if(name.equals(vdata.getName()) && 
+	     vid.equals(vdata.getVersionID()) && 
+	     vendor.equals(vdata.getVendor())) {
+	    pPluginTree.addSelectionPath(vpath);
+	    return;
+	  }
 	}
-      }
-    }    
+      }    
+    }
   }
 
   /**
@@ -1279,7 +1296,7 @@ class JBaseToolsetPluginsPanel
   /**
    * The plugin versions. 
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pPluginVersions;
+  private DoubleMap<String,String,TreeSet<VersionID>>  pPluginVersions;
 
   /**
    * Does the current user have privileged status?

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.21 2005/07/14 23:28:41 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.22 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -500,6 +500,41 @@ class JNodeDetailsPanel
 		vpanel.add(hbox);
 	      }
 	    }
+
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    /* editor vendor */ 
+	    { 
+	      {
+		JLabel label = UIFactory.createFixedLabel
+		  ("Vendor:", sTSize, JLabel.RIGHT, 
+		   "The name of the vendor of the Editor plugin.");
+		pEditorVendorTitle = label;
+		tpanel.add(label);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pWorkingEditorVendorField = field;
+		  
+		  hbox.add(field);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+		
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pCheckedInEditorVendorField = field;
+		  
+		  hbox.add(field);
+		}
+		
+		vpanel.add(hbox);
+	      }
+	    }
 	  }
 	    
 	  JDrawer drawer = new JDrawer("Properties:", (JComponent) comps[2], true);
@@ -605,6 +640,41 @@ class JNodeDetailsPanel
 		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
 		  pCheckedInActionVersionField = field;
 
+		  hbox.add(field);
+		}
+		
+		vpanel.add(hbox);
+	      }
+	    }
+
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    /* action vendor */ 
+	    { 
+	      {
+		JLabel label = UIFactory.createFixedLabel
+		  ("Vendor:", sTSize, JLabel.RIGHT, 
+		   "The name of the vendor of the Action plugin.");
+		pActionVendorTitle = label;
+		tpanel.add(label);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pWorkingActionVendorField = field;
+		  
+		  hbox.add(field);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+		
+		{
+		  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		  pCheckedInActionVendorField = field;
+		  
 		  hbox.add(field);
 		}
 		
@@ -1687,24 +1757,20 @@ class JNodeDetailsPanel
 	  pCheckedInToolsetField.setEnabled(latest != null);
 	}
 
-	doToolsetChanged();
+	updateToolsetColors();
       }
 
       /* editor */ 
       { 
 	pWorkingEditorField.removeActionListener(this);
 	{
+	  BaseEditor editor = null;
 	  if(work != null) 
-	    pWorkingEditorField.setPlugin(work.getEditor(), work.getEditorVersionID());
-	  else
-	    pWorkingEditorField.setPlugin(null, null);
+	    editor = work.getEditor();
+	  pWorkingEditorField.setPlugin(editor);
 
-	  VersionID evid = pWorkingEditorField.getPluginVersionID();
-	  if(evid != null) 
-	    pWorkingEditorVersionField.setText("v" + evid);
-	  else
-	    pWorkingEditorVersionField.setText("-");
-
+	  updateEditorFields();
+	  
 	  pWorkingEditorField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
 	}
 	pWorkingEditorField.addActionListener(this);
@@ -1713,24 +1779,27 @@ class JNodeDetailsPanel
 	  (!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
 	
 	{
-	  if((latest != null) && (latest.getEditor() != null)) {
-	    pCheckedInEditorField.setText(latest.getEditor());
-	    
-	    if(latest.getEditorVersionID() != null) 
-	      pCheckedInEditorVersionField.setText("v" + latest.getEditorVersionID());
-	    else
-	      pCheckedInEditorVersionField.setText("-");
+	  BaseEditor editor = null;
+	  if(latest != null) 
+	    editor = latest.getEditor();
+
+	  if(editor != null) {
+	    pCheckedInEditorField.setText(editor.getName());
+	    pCheckedInEditorVersionField.setText("v" + editor.getVersionID());
+	    pCheckedInEditorVendorField.setText(editor.getVendor());
 	  }
 	  else {
 	    pCheckedInEditorField.setText("-");
 	    pCheckedInEditorVersionField.setText("-");
+	    pCheckedInEditorVendorField.setText("-");	
 	  }
 	  
 	  pCheckedInEditorField.setEnabled(latest != null);
 	  pCheckedInEditorVersionField.setEnabled(latest != null);
+	  pCheckedInEditorVendorField.setEnabled(latest != null);
 	}
 
-	doEditorChanged();
+	updateEditorColors();
       }
     }
     
@@ -1740,13 +1809,11 @@ class JNodeDetailsPanel
       { 
 	BaseAction waction = initWorkingAction();
 	if(waction != null) 
-	  pWorkingActionField.setPlugin(waction.getName(), waction.getVersionID());
+	  pWorkingActionField.setPlugin(waction);
 	else
-	  pWorkingActionField.setPlugin(null, null);
+	  pWorkingActionField.setPlugin(null);
 	
-	pWorkingActionField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
-	
-	updateActionVersionFields();
+	pWorkingActionField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));	
       }
       pWorkingActionField.addActionListener(this);
 
@@ -1754,11 +1821,20 @@ class JNodeDetailsPanel
 	(!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
 
       {
-	BaseAction caction = getCheckedInAction();	
-	if(caction != null) 
+	BaseAction caction = null;
+	if(latest != null) 
+	  caction = latest.getAction();
+
+	if(caction != null) {
 	  pCheckedInActionField.setText(caction.getName());
-	else 
+	  pCheckedInActionVersionField.setText("v" + caction.getVersionID());
+	  pCheckedInActionVendorField.setText(caction.getVendor());
+	}
+	else {
 	  pCheckedInActionField.setText("-");
+	  pCheckedInActionVersionField.setText("-");
+	  pCheckedInActionVendorField.setText("-");
+	}
       }
 
       if((work != null) && (getWorkingAction() != null)) {
@@ -1771,15 +1847,17 @@ class JNodeDetailsPanel
       }
 
       {
-	NodeVersion cvsn = getCheckedInVersion(); 
-	if((cvsn != null) && (cvsn.getAction() != null)) 
-	  pCheckedInActionEnabledField.setText(cvsn.isActionEnabled() ? "YES" : "no");
+	if((latest != null) && (latest.getAction() != null)) 
+	  pCheckedInActionEnabledField.setText(latest.isActionEnabled() ? "YES" : "no");
 	else 
 	  pCheckedInActionEnabledField.setText("-");
       }
 
       pActionParamComponents.clear();
-      doActionChanged();
+
+      updateActionFields();
+      updateActionParams();
+      updateActionColors();
     }
 
     /* job requirements panel */ 
@@ -1811,39 +1889,50 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInToolsetField.setText("-");
 
-	doToolsetChanged();
+	updateToolsetColors();
       }
 
       /* editor */ 
       {
-	if(vsn.getEditor() != null)
-	  pCheckedInEditorField.setText(vsn.getEditor());
-	else 
+	BaseEditor editor = vsn.getEditor();
+	if(editor != null) {
+	  pCheckedInEditorField.setText(editor.getName());
+	  pCheckedInEditorVersionField.setText("v" + editor.getVersionID());
+	  pCheckedInEditorVendorField.setText(editor.getVendor());
+	}
+	else {
 	  pCheckedInEditorField.setText("-");
-
-	if(vsn.getEditorVersionID() != null) 
-	  pCheckedInEditorVersionField.setText("v" + vsn.getEditorVersionID());
-	else
 	  pCheckedInEditorVersionField.setText("-");
+	  pCheckedInEditorVendorField.setText("-");
+	}
 
-	doEditorChanged();
+	updateEditorColors();
       }
     }
     
     /* actions panel */ 
     {
       BaseAction action = vsn.getAction();	
-      if(action != null) 
+      if(action != null) {
 	pCheckedInActionField.setText(action.getName());
-      else 
+	pCheckedInActionVersionField.setText("v" + action.getVersionID());
+	pCheckedInActionVendorField.setText(action.getVendor());
+      }
+      else {
 	pCheckedInActionField.setText("-");
+	pCheckedInActionVersionField.setText("-");
+	pCheckedInActionVendorField.setText("-");
+      }
 
       if(action != null) 
 	pCheckedInActionEnabledField.setText(vsn.isActionEnabled() ? "YES" : "no");
       else 
 	pCheckedInActionEnabledField.setText("-");
 
-      doActionChanged();    
+      pActionParamComponents.clear();
+
+      updateActionParams();
+      updateActionColors();
     }
 
     /* job requirements panel */ 
@@ -1854,33 +1943,103 @@ class JNodeDetailsPanel
     pApplyItem.setEnabled(isEnabled);
   }
 
+
   /**
-   * Update the action versions fields.
+   * Update the appearance of the toolset fields after a change of value.
    */ 
   private void 
-  updateActionVersionFields()
+  updateToolsetColors() 
   {
-    pWorkingActionVersionField.removeActionListener(this);
-    {
-      BaseAction waction = getWorkingAction();
-      if(waction != null) {
-	VersionID vid = waction.getVersionID();
-	if(vid != null) 
-	  pWorkingActionVersionField.setText("v" + vid);
-	else
-	  pWorkingActionVersionField.setText("-");
-      }
-      else {
-	pWorkingActionVersionField.setText("-");
-      }
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wtset = pWorkingToolsetField.getSelected();
+      String ctset = pCheckedInToolsetField.getText();
+      if(!ctset.equals(wtset))
+	color = Color.cyan;
     }
-    pWorkingActionVersionField.addActionListener(this);
 
-    BaseAction caction = getCheckedInAction();	
-    if(caction != null) 
-      pCheckedInActionVersionField.setText("v" + caction.getVersionID());
-    else 
-      pCheckedInActionVersionField.setText("-");    
+    pToolsetTitle.setForeground(color);
+    pWorkingToolsetField.setForeground(color);
+    pCheckedInToolsetField.setForeground(color);
+
+    if(hasWorking()) {
+      UIMaster master = UIMaster.getInstance();
+      String toolset = pWorkingToolsetField.getSelected();
+      master.updateActionPluginField(toolset, pWorkingActionField);
+      master.updateEditorPluginField(toolset, pWorkingEditorField);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the editor version and vendor fields. 
+   */
+  private void 
+  updateEditorFields()
+  {
+    if(pWorkingEditorField.getPluginName() != null) {
+      pWorkingEditorVersionField.setText("v" + pWorkingEditorField.getPluginVersionID());
+      pWorkingEditorVendorField.setText(pWorkingEditorField.getPluginVendor());
+    }
+    else {
+      pWorkingEditorVersionField.setText("-");
+      pWorkingEditorVendorField.setText("-");
+    }
+  }
+
+  /**
+   * Update the appearance of the editor fields after a change of value.
+   */ 
+  private void 
+  updateEditorColors() 
+  {
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String weditor = pWorkingEditorField.getPluginName();
+      String wvsn    = pWorkingEditorVersionField.getText();
+      String wvend   = pWorkingEditorVendorField.getText();
+
+      String ceditor = pCheckedInEditorField.getText();
+      String cvsn    = pCheckedInEditorVersionField.getText();
+      String cvend   = pCheckedInEditorVendorField.getText();
+
+      if(!ceditor.equals(weditor) || !cvsn.equals(wvsn) || !cvend.equals(wvend))
+	color = Color.cyan;
+    }
+
+    pEditorTitle.setForeground(color);
+    pWorkingEditorField.setForeground(color);
+    pCheckedInEditorField.setForeground(color);
+
+    pEditorVersionTitle.setForeground(color);
+    pWorkingEditorVersionField.setForeground(color);
+    pCheckedInEditorVersionField.setForeground(color);
+
+    pEditorVendorTitle.setForeground(color);
+    pWorkingEditorVendorField.setForeground(color);
+    pCheckedInEditorVendorField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the action version and vendor fields.
+   */ 
+  private void 
+  updateActionFields()
+  {
+    BaseAction waction = getWorkingAction();
+    if(waction != null) {
+      pWorkingActionVersionField.setText("v" + waction.getVersionID());
+      pWorkingActionVendorField.setText(waction.getVendor());
+    }
+    else {
+      pWorkingActionVersionField.setText("-");
+      pWorkingActionVendorField.setText("-");
+    }
   }
 
   /**
@@ -2943,7 +3102,8 @@ class JNodeDetailsPanel
       if(!(((waction == null) && (caction == null)) ||
 	   ((waction != null) && (caction != null) && 
 	    waction.getName().equals(caction.getName()) && 
-	    waction.getVersionID().equals(caction.getVersionID()))))
+	    waction.getVersionID().equals(caction.getVersionID()) && 
+	    waction.getVendor().equals(caction.getVendor()))))
 	color = Color.cyan;
       else 
 	color = null;
@@ -2960,6 +3120,10 @@ class JNodeDetailsPanel
     pActionVersionTitle.setForeground(fg);
     pWorkingActionVersionField.setForeground(fg);
     pCheckedInActionVersionField.setForeground(fg);
+
+    pActionVendorTitle.setForeground(fg);
+    pWorkingActionVendorField.setForeground(fg);
+    pCheckedInActionVendorField.setForeground(fg);
 
     updateActionEnabledColors();
 
@@ -3570,8 +3734,15 @@ class JNodeDetailsPanel
 	    if((toolset != null) && !toolset.equals("-"))
 	      mod.setToolset(toolset);
 	    
-	    mod.setEditor(pWorkingEditorField.getPluginName(), 
-			  pWorkingEditorField.getPluginVersionID());
+	    try {
+	      PluginMgrClient pclient = PluginMgrClient.getInstance();
+	      mod.setEditor(pclient.newEditor(pWorkingEditorField.getPluginName(), 
+					      pWorkingEditorField.getPluginVersionID(),
+					      pWorkingEditorField.getPluginVendor()));
+	    }
+	    catch(PipelineException ex) {
+	      mod.setEditor(null);
+	    }
 	  }
 	
 	  /* action panel */ 
@@ -3781,26 +3952,10 @@ class JNodeDetailsPanel
     pApplyButton.setEnabled(true);
     pApplyItem.setEnabled(true);
 
-    Color color = Color.white;
-    if(hasWorking() && hasCheckedIn()) {
-      String wtset = pWorkingToolsetField.getSelected();
-      String ctset = pCheckedInToolsetField.getText();
-      if(!ctset.equals(wtset))
-	color = Color.cyan;
-    }
-
-    pToolsetTitle.setForeground(color);
-    pWorkingToolsetField.setForeground(color);
-    pCheckedInToolsetField.setForeground(color);
-
-    if(hasWorking()) {
-      UIMaster master = UIMaster.getInstance();
-      String toolset = pWorkingToolsetField.getSelected();
-      master.updateActionPluginField(toolset, pWorkingActionField);
-      master.updateEditorPluginField(toolset, pWorkingEditorField);
-    }
+    updateToolsetColors();
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3813,11 +3968,12 @@ class JNodeDetailsPanel
     pWorkingEditorField.removeActionListener(this);
     {
       NodeVersion vsn = getCheckedInVersion();
-      pWorkingEditorField.setPlugin(vsn.getEditor(), vsn.getEditorVersionID());
+      pWorkingEditorField.setPlugin(vsn.getEditor());
     }
     pWorkingEditorField.addActionListener(this);
 
-    doEditorChanged();
+    updateEditorFields();
+    updateEditorColors();
   }
 
   /**
@@ -3829,29 +3985,8 @@ class JNodeDetailsPanel
     pApplyButton.setEnabled(true);
     pApplyItem.setEnabled(true);
 
-    VersionID evid = pWorkingEditorField.getPluginVersionID();
-    if(evid == null) 
-      pWorkingEditorVersionField.setText("-");
-    else 
-      pWorkingEditorVersionField.setText("v" + evid);
-
-    Color color = Color.white;
-    if(hasWorking() && hasCheckedIn()) {
-      String weditor = pWorkingEditorField.getPluginName();
-      String ceditor = pCheckedInEditorField.getText();
-      String wvsn = pWorkingEditorVersionField.getText();
-      String cvsn = pCheckedInEditorVersionField.getText();
-      if(!ceditor.equals(weditor) || !cvsn.equals(wvsn))
-	color = Color.cyan;
-    }
-
-    pEditorTitle.setForeground(color);
-    pWorkingEditorField.setForeground(color);
-    pCheckedInEditorField.setForeground(color);
-
-    pEditorVersionTitle.setForeground(color);
-    pWorkingEditorVersionField.setForeground(color);
-    pCheckedInEditorVersionField.setForeground(color);
+    updateEditorFields();
+    updateEditorColors();
   }
   
 
@@ -3873,13 +4008,13 @@ class JNodeDetailsPanel
 	action = vsn.getAction();
       
       if(action != null) {
-	pWorkingActionField.setPlugin(action.getName(), action.getVersionID());
+	pWorkingActionField.setPlugin(action);
 
 	pWorkingActionEnabledField.setValue(vsn.isActionEnabled());
 	pWorkingActionEnabledField.setEnabled(true);	  
       }
       else {
-	pWorkingActionField.setPlugin(null, null);
+	pWorkingActionField.setPlugin(null);
 	
 	pWorkingActionEnabledField.setValue(null);
 	pWorkingActionEnabledField.setEnabled(false);
@@ -3888,9 +4023,9 @@ class JNodeDetailsPanel
     }
     pWorkingActionField.addActionListener(this);
 
-    updateActionVersionFields();
-
     pActionParamComponents.clear();
+
+    updateActionFields();
     updateActionParams();
     updateActionColors();
 
@@ -3920,10 +4055,12 @@ class JNodeDetailsPanel
       }
       else {
 	VersionID vid = pWorkingActionField.getPluginVersionID();
+	String vendor = pWorkingActionField.getPluginVendor();
 	if((oaction == null) || !oaction.getName().equals(aname) ||
-	   (vid == null) || !vid.equals(oaction.getVersionID())) {
+	   (vid == null) || !vid.equals(oaction.getVersionID()) ||
+	   (vendor == null) || !vendor.equals(oaction.getVendor())) {
 	  try {
-	    setWorkingAction(PluginMgrClient.getInstance().newAction(aname, vid));
+	    setWorkingAction(PluginMgrClient.getInstance().newAction(aname, vid, vendor));
 	    
 	    BaseAction waction = getWorkingAction();
 	    if(oaction != null) {
@@ -3944,7 +4081,7 @@ class JNodeDetailsPanel
 	    pWorkingActionEnabledField.setEnabled(false);
 	    
 	    pWorkingActionField.removeActionListener(this);
-  	    pWorkingActionField.setPlugin(null, null);
+  	    pWorkingActionField.setPlugin(null);
 	    pWorkingActionField.addActionListener(this);
 	  }
 
@@ -3953,7 +4090,7 @@ class JNodeDetailsPanel
 	}
       }
 
-      updateActionVersionFields();
+      updateActionFields();
       updateActionParams();
       updateActionColors();
     }
@@ -4644,22 +4781,12 @@ class JNodeDetailsPanel
    String editor
   ) 
   {
-    String ename = null;
-    VersionID evid = null;
     String parts[] = editor.split(":");
-    switch(parts.length) {
-    case 1:
-      ename = editor;
-      break;
-
-    case 2:
-      ename = parts[0];
-      evid = new VersionID(parts[1]);
-      break;
-
-    default:
-      assert(false);
-    }
+    assert(parts.length == 3);
+    
+    String ename   = parts[0];
+    VersionID evid = new VersionID(parts[1]);
+    String evendor = parts[2];
 
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
@@ -4669,7 +4796,7 @@ class JNodeDetailsPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, ename, evid);
+	  EditTask task = new EditTask(com, ename, evid, evendor);
 	  task.start();
 	}
       }
@@ -5064,10 +5191,11 @@ class JNodeDetailsPanel
     (
      NodeCommon com, 
      String ename, 
-     VersionID evid
+     VersionID evid, 
+     String evendor
     ) 
     {
-      UIMaster.getInstance().super(com, ename, evid, pAuthor, pView);
+      UIMaster.getInstance().super(com, ename, evid, evendor, pAuthor, pView);
       setName("JNodeDetailsPanel:EditTask");
     }
   }
@@ -5440,6 +5568,22 @@ class JNodeDetailsPanel
 
 
   /**
+   * The editor vendor title label.
+   */ 
+  private JLabel  pEditorVendorTitle;
+
+  /**
+   * The working editor revision number field.
+   */ 
+  private JTextField pWorkingEditorVendorField;
+
+  /**
+   * The checked-in editor vendor field.
+   */ 
+  private JTextField pCheckedInEditorVendorField;
+
+
+  /**
    * The drawer containing the property components.
    */ 
   private JDrawer  pPropertyDrawer;
@@ -5488,6 +5632,22 @@ class JNodeDetailsPanel
    * The checked-in action version field.
    */ 
   private JTextField pCheckedInActionVersionField;
+
+
+  /**
+   * The action vendor title label.
+   */ 
+  private JLabel  pActionVendorTitle;
+
+  /**
+   * The working action vendor field.
+   */ 
+  private JTextField pWorkingActionVendorField;
+
+  /**
+   * The checked-in action vendor field.
+   */ 
+  private JTextField pCheckedInActionVendorField;
 
 
 

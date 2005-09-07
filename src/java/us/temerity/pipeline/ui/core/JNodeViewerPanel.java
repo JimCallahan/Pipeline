@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.38 2005/08/21 00:49:46 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.39 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2767,22 +2767,12 @@ class JNodeViewerPanel
    String editor
   ) 
   {
-    String ename = null;
-    VersionID evid = null;
     String parts[] = editor.split(":");
-    switch(parts.length) {
-    case 1:
-      ename = editor;
-      break;
-
-    case 2:
-      ename = parts[0];
-      evid = new VersionID(parts[1]);
-      break;
-
-    default:
-      assert(false);
-    }
+    assert(parts.length == 3);
+    
+    String ename   = parts[0];
+    VersionID evid = new VersionID(parts[1]);
+    String evendor = parts[2];
 
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
@@ -2792,7 +2782,7 @@ class JNodeViewerPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, ename, evid);
+	  EditTask task = new EditTask(com, ename, evid, evendor);
 	  task.start();
 	}
       }
@@ -3777,25 +3767,15 @@ class JNodeViewerPanel
    String name 
   ) 
   {
-    String tname = null;
-    VersionID tvid = null;
     String parts[] = name.split(":");
-    switch(parts.length) {
-    case 1:
-      tname = name;
-      break;
-
-    case 2:
-      tname = parts[0];
-      tvid = new VersionID(parts[1]);
-      break;
-
-    default:
-      assert(false);
-    }
+    assert(parts.length == 3);
+    
+    String tname   = parts[0];
+    VersionID tvid = new VersionID(parts[1]);
+    String tvendor = parts[2];
     
     try {
-      BaseTool tool = PluginMgrClient.getInstance().newTool(tname, tvid);
+      BaseTool tool = PluginMgrClient.getInstance().newTool(tname, tvid, tvendor);
 
       String primary = null;
       if(pPrimary != null) 
@@ -3918,10 +3898,11 @@ class JNodeViewerPanel
     (
      NodeCommon com, 
      String ename, 
-     VersionID evid
+     VersionID evid, 
+     String evendor
     ) 
     {
-      UIMaster.getInstance().super(com, ename, evid, pAuthor, pView);
+      UIMaster.getInstance().super(com, ename, evid, evendor, pAuthor, pView);
       setName("JNodeViewerPanel:EditTask");
     }
   }
@@ -4196,7 +4177,7 @@ class JNodeViewerPanel
 		  tmod.setToolset(smod.getToolset());
 
 		if(pExportDialog.exportEditor()) 
-		  tmod.setEditor(smod.getEditor(), smod.getEditorVersionID());
+		  tmod.setEditor(smod.getEditor());
 	      }
 
 	      /* actions */ 
@@ -4210,8 +4191,11 @@ class JNodeViewerPanel
 		    PluginMgrClient mgr = PluginMgrClient.getInstance();
 		    if((taction == null) || 
 		       !taction.getName().equals(saction.getName()) || 
-		       !taction.getVersionID().equals(saction.getVersionID()))
-		      taction = mgr.newAction(saction.getName(), saction.getVersionID()); 
+		       !taction.getVersionID().equals(saction.getVersionID()) ||
+		       !taction.getVendor().equals(saction.getVendor()))
+		      taction = mgr.newAction(saction.getName(), 
+					      saction.getVersionID(), 
+					      saction.getVendor()); 
 		    
 		    for(ActionParam param : saction.getSingleParams()) {
 		      if(pExportDialog.exportActionSingleParam(param.getName())) 

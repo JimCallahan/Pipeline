@@ -7,6 +7,7 @@ ToolsMenuLayout <PluginMenuLayout> #1 {
       VersionID <VersionID> #7 {
         RevisionNumber <String> #8 { "2.0.0" }
       }
+      Vendor <String> #9 { "Temerity" }
     }
   }
 }

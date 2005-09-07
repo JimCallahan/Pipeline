@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.4 2005/01/22 06:10:09 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.5 2005/09/07 21:11:16 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -39,11 +39,11 @@ class BasePluginMgrClient
     super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, 
 	  PluginRequest.Disconnect, PluginRequest.Shutdown);
 
-    pEditors     = new TreeMap<String,TreeMap<VersionID,Class>>();  
-    pActions     = new TreeMap<String,TreeMap<VersionID,Class>>();  
-    pComparators = new TreeMap<String,TreeMap<VersionID,Class>>();  
-    pTools  	 = new TreeMap<String,TreeMap<VersionID,Class>>();   
-    pArchivers   = new TreeMap<String,TreeMap<VersionID,Class>>();  
+    pEditors     = new TripleMap<String,String,VersionID,Class>();  
+    pActions     = new TripleMap<String,String,VersionID,Class>();  
+    pComparators = new TripleMap<String,String,VersionID,Class>();  
+    pTools  	 = new TripleMap<String,String,VersionID,Class>();   
+    pArchivers   = new TripleMap<String,String,VersionID,Class>();  
   }
 
 
@@ -67,7 +67,7 @@ class BasePluginMgrClient
 
     Object obj = performTransaction(PluginRequest.Update, req);
     if(obj instanceof PluginUpdateRsp) {
-      PluginUpdateRsp  rsp = (PluginUpdateRsp) obj;
+      PluginUpdateRsp rsp = (PluginUpdateRsp) obj;
      
       updatePlugins(rsp.getEditors(), pEditors);     
       updatePlugins(rsp.getActions(), pActions);     
@@ -88,31 +88,29 @@ class BasePluginMgrClient
   private void 
   updatePlugins
   (
-   TreeMap<String,TreeMap<VersionID,Object[]>> source, 
-   TreeMap<String,TreeMap<VersionID,Class>> target
+   TripleMap<String,String,VersionID,Object[]> source, 
+   TripleMap<String,String,VersionID,Class> target
   ) 
     throws PipelineException
   {
-    for(String name : source.keySet()) {
-      TreeMap<VersionID,Object[]> sversions = source.get(name);
-      TreeMap<VersionID,Class> tversions = target.get(name);
-      if(tversions == null) {
-	tversions = new TreeMap<VersionID,Class>();
-	target.put(name, tversions);
-      }
-
-      for(VersionID vid : sversions.keySet()) {
-	Object[] objs = sversions.get(vid);
-	String cname = (String) objs[0];
-	byte[] bytes = (byte[]) objs[1];
-	
+    for(String vendor : source.keySet()) {
+      for(String name : source.get(vendor).keySet()) {
+	for(VersionID vid : source.get(vendor).get(name).keySet()) {
+	  Object[] objs = source.get(vendor).get(name).get(vid);
+	  String cname = (String) objs[0];
+	  byte[] bytes = (byte[]) objs[1];
+	  
 	ClassLoader loader = new PluginClassLoader(bytes);
 	try {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Plg, LogMgr.Level.Finer,
-	     "Updating: " + cname);
+	     "Updating Plugin Class: " + cname + "\n" + 
+	     "     Name = " + name + "\n" + 
+	     "  Version = " + vid + "\n" + 
+	     "   Vendor = " + vendor);
+
 	  Class cls = loader.loadClass(cname);
-	  tversions.put(vid, cls);
+	  target.put(vendor, name, vid, cls);
 	}
 	catch(LinkageError ex) {
 	throw new PipelineException
@@ -128,69 +126,75 @@ class BasePluginMgrClient
 	  LogMgr.getInstance().flush();
 	}
       }
+      }
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the names and version numbers of all available editor plugins. <P> 
+   * Get the vender, names and version numbers of all available editor plugins. <P> 
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getEditors() 
   {
     return getPlugins(pEditors);
   }
 
   /**
-   * Get the names and version numbers of all available action plugins.
+   * Get the vender, names and version numbers of all available action plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getActions()
   {
     return getPlugins(pActions);
   }
 
   /**
-   * Get the names and version numbers of all available comparator plugins.
+   * Get the vender, names and version numbers of all available comparator plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getComparators()
   {
     return getPlugins(pComparators);
   }
 
   /**
-   * Get the names and version numbers of all available tool plugins.
+   * Get the vender, names and version numbers of all available tool plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getTools()
   {
     return getPlugins(pTools);
   }
 
   /**
-   * Get the names and version numbers of all available archiver plugins.
+   * Get the vender, names and version numbers of all available archiver plugins.
    */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getArchivers()
   {
     return getPlugins(pArchivers);
   }
 
   /**
-   * Get the names and version numbers of all plugins in the given table.
+   * Get the vender, names and version numbers of all plugins in the given table.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>
+  private DoubleMap<String,String,TreeSet<VersionID>>
   getPlugins
   (
-   TreeMap<String,TreeMap<VersionID,Class>> plugins
+   TripleMap<String,String,VersionID,Class> plugins
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
-    for(String name : plugins.keySet()) 
-      table.put(name, new TreeSet<VersionID>(plugins.get(name).keySet()));
+    DoubleMap<String,String,TreeSet<VersionID>> table = 
+      new DoubleMap<String,String,TreeSet<VersionID>>();
+
+    for(String vendor : plugins.keySet()) {
+      for(String name : plugins.get(vendor).keySet()) 
+	table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name).keySet()));
+    }
 
     return table;
   }
@@ -199,12 +203,12 @@ class BasePluginMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a new editor plugin instance with the given name and version. <P> 
+   * Create a new editor plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
    * name obtained by calling {@link BaseEditor#getName BaseEditor.getName} for the returned 
    * editor.
-   * 
+   *
    * @param name 
    *   The name of the editor plugin to instantiate.  
    * 
@@ -212,27 +216,31 @@ class BasePluginMgrClient
    *   The revision number of the editor to instantiate or <CODE>null</CODE> for the 
    *   latest version.
    * 
-   * @throws  PipelineException
-   *   If no editor plugin can be found for the given or instantiation fails for some reason.
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no editor plugin can be found or instantiation fails for some reason.
    */
   public synchronized BaseEditor
   newEditor
   (
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
     throws PipelineException
   {
-    return (BaseEditor) newPlugin("Editor", pEditors, name, vid);
+    return (BaseEditor) newPlugin("Editor", pEditors, name, vid, vendor);
   }
-  
+
   /**
-   * Create a new action plugin instance with the given name and version. <P> 
+   * Create a new action plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
    * name obtained by calling {@link BaseAction#getName BaseAction.getName} for the returned 
    * action.
-   * 
+   *
    * @param name 
    *   The name of the action plugin to instantiate.  
    * 
@@ -240,27 +248,31 @@ class BasePluginMgrClient
    *   The revision number of the action to instantiate or <CODE>null</CODE> for the 
    *   latest version.
    * 
-   * @throws  PipelineException
-   *   If no action plugin can be found for the given or instantiation fails for some reason.
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no action plugin can be found or instantiation fails for some reason.
    */
   public synchronized BaseAction
   newAction
   (
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
     throws PipelineException
   {
-    return (BaseAction) newPlugin("Action", pActions, name, vid);
+    return (BaseAction) newPlugin("Action", pActions, name, vid, vendor);
   }
-  
+
   /**
-   * Create a new comparator plugin instance with the given name and version. <P> 
+   * Create a new comparator plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
    * name obtained by calling {@link BaseComparator#getName BaseComparator.getName} for the 
    * returned comparator.
-   * 
+   *
    * @param name 
    *   The name of the comparator plugin to instantiate.  
    * 
@@ -268,57 +280,31 @@ class BasePluginMgrClient
    *   The revision number of the comparator to instantiate or <CODE>null</CODE> for the 
    *   latest version.
    * 
-   * @throws  PipelineException
-   *   If no comparator plugin can be found for the given or instantiation fails for some 
-   *   reason.
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no comparator plugin can be found or instantiation fails for some reason.
    */
   public synchronized BaseComparator
   newComparator
   (
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
     throws PipelineException
   {
-    return (BaseComparator) newPlugin("Comparator", pComparators, name, vid);
+    return (BaseComparator) newPlugin("Comparator", pComparators, name, vid, vendor);
   }
 
   /**
-   * Create a new archiver plugin instance with the given name and version. <P> 
+   * Create a new tool plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseArchiver#getName BaseArchiver.getName} for the 
-   * returned archiver.
-   * 
-   * @param name 
-   *   The name of the archiver plugin to instantiate.  
-   * 
-   * @param vid
-   *   The revision number of the archiver to instantiate or <CODE>null</CODE> for the 
-   *   latest version.
-   * 
-   * @throws  PipelineException
-   *   If no archiver plugin can be found for the given or instantiation fails for some 
-   *   reason.
-   */
-  public synchronized BaseArchiver
-  newArchiver
-  (
-   String name, 
-   VersionID vid
-  ) 
-    throws PipelineException
-  {
-    return (BaseArchiver) newPlugin("Archiver", pArchivers, name, vid);
-  }
-
-  /**
-   * Create a new tool plugin instance with the given name and version. <P> 
-   * 
-   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseTool#getName BaseTool.getName} for the 
-   * returned tool.
-   * 
+   * name obtained by calling {@link BaseTool#getName BaseTool.getName} for the returned 
+   * tool.
+   *
    * @param name 
    *   The name of the tool plugin to instantiate.  
    * 
@@ -326,23 +312,58 @@ class BasePluginMgrClient
    *   The revision number of the tool to instantiate or <CODE>null</CODE> for the 
    *   latest version.
    * 
-   * @throws  PipelineException
-   *   If no tool plugin can be found for the given or instantiation fails for some 
-   *   reason.
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no tool plugin can be found or instantiation fails for some reason.
    */
   public synchronized BaseTool
   newTool
   (
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
     throws PipelineException
   {
-    return (BaseTool) newPlugin("Tool", pTools, name, vid);
+    return (BaseTool) newPlugin("Tool", pTools, name, vid, vendor);
   }
 
   /**
-   * Create a new plugin instance with the given name and version. <P> 
+   * Create a new archiver plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseArchiver#getName BaseArchiver.getName} for the returned 
+   * archiver.
+   *
+   * @param name 
+   *   The name of the archiver plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the archiver to instantiate or <CODE>null</CODE> for the 
+   *   latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no archiver plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseArchiver
+  newArchiver
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    return (BaseArchiver) newPlugin("Archiver", pArchivers, name, vid, vendor);
+  }
+  
+  /**
+   * Create a new plugin instance. <P> 
    * 
    * @param ptype 
    *   The kind of plugin being instantiated: Editor, Comparator, Action, Tool or Archiver
@@ -357,6 +378,9 @@ class BasePluginMgrClient
    *   The revision number of the plugin to instantiate or <CODE>null</CODE> for the 
    *   latest version.
    * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
    * @throws  PipelineException
    *   If no plugin can be found for the given <CODE>name</CODE> or instantiation fails.
    */
@@ -364,16 +388,27 @@ class BasePluginMgrClient
   newPlugin
   (
    String ptype,
-   TreeMap<String,TreeMap<VersionID,Class>> table, 
+   TripleMap<String,String,VersionID,Class> table, 
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   ) 
     throws PipelineException
   {
-    TreeMap<VersionID,Class> versions = table.get(name);
+    String vend = vendor;
+    if(vend == null) 
+      vend = "Temerity";
+
+    TreeMap<String,TreeMap<VersionID,Class>> plugins = table.get(vend);
+    if(plugins == null) 
+      throw new PipelineException
+	("No plugins created by the (" + vend + ") vendor exist!");
+
+    TreeMap<VersionID,Class> versions = plugins.get(name);
     if(versions == null) 
       throw new PipelineException
-	("No " + ptype + " plugin named (" + name + ") exists!");
+	("No " + ptype + " plugin named (" + name + ") created by the (" + vend + ") " + 
+	 "vendor exists!");
 
     VersionID pvid = vid;
     if(pvid == null) 
@@ -382,7 +417,8 @@ class BasePluginMgrClient
     Class cls = versions.get(pvid);
     if(cls == null) {
       throw new PipelineException
-	("Unable to find the " + ptype + " plugin (" + name + " v" + pvid + ")!");
+	("Unable to find the " + ptype + " plugin (" + name + " v" + pvid + ") " + 
+	 "created by the (" + vend + ") vendor!");
     }
 
     try {
@@ -390,11 +426,13 @@ class BasePluginMgrClient
     }
     catch (IllegalAccessException ex) {
       throw new PipelineException
-	("Unable to access the constructor for plugin class (" + name + " v" + pvid + ")!");
+	("Unable to access the constructor for plugin (" + name + " v" + pvid + ") " +
+	 "created by the (" + vend + ") vendor!");
     }
     catch (InstantiationException ex) { 
       throw new PipelineException
-	("Unable to instantiate the plugin class (" + name + " v" + pvid + "):\n\n" +
+	("Unable to instantiate the plugin (" + name + " v" + pvid + ")" +
+	 "created by the (" + vend + ") vendor:\n" +
 	 ex.getMessage());
     }
   }  
@@ -430,29 +468,29 @@ class BasePluginMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The cached Editor plugin classes indexed by class name and revision number.
+   * The cached Editor plugin classes indexed by vendor, class name and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Class>>  pEditors; 
+  private TripleMap<String,String,VersionID,Class>  pEditors; 
 
   /**
-   * The cached Action plugin classes indexed by class name and revision number.
+   * The cached Action plugin classes indexed by vendor, class name and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Class>>  pActions; 
+  private TripleMap<String,String,VersionID,Class>  pActions; 
 
   /**
-   * The cached Comparator plugin classes indexed by class name and revision number.
+   * The cached Comparator plugin classes indexed by vendor, class name and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Class>>  pComparators; 
+  private TripleMap<String,String,VersionID,Class>  pComparators; 
 
   /**
-   * The cached Tool plugin classes indexed by class name and revision number.
+   * The cached Tool plugin classes indexed by vendor, class name and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Class>>  pTools; 
+  private TripleMap<String,String,VersionID,Class>  pTools; 
 
   /**
-   * The cached Archiver plugin classes indexed by class name and revision number.
+   * The cached Archiver plugin classes indexed by vendor, class name and revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,Class>>  pArchivers; 
+  private TripleMap<String,String,VersionID,Class>  pArchivers; 
 
 }
 

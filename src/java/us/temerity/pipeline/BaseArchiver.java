@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.9 2005/03/23 22:43:11 jim Exp $
+// $Id: BaseArchiver.java,v 1.10 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,13 +44,16 @@ class BaseArchiver
   }
 
   /** 
-   * Construct with the given name, version and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the archiver.
    * 
    * @param vid
    *   The archiver plugin revision number. 
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    * 
    * @param desc 
    *   A short description of the archiver.
@@ -60,10 +63,11 @@ class BaseArchiver
   (
    String name, 
    VersionID vid,
+   String vendor, 
    String desc
   ) 
   {
-    super(name, vid, desc);
+    super(name, vid, vendor, desc);
 
     pParams = new TreeMap<String,ArchiverParam>();
   }
@@ -80,7 +84,7 @@ class BaseArchiver
    BaseArchiver archiver
   ) 
   {
-    super(archiver.pName, archiver.pVersionID, archiver.pDescription);
+    super(archiver.pName, archiver.pVersionID, archiver.pVendor, archiver.pDescription);
 
     pParams = archiver.pParams;
   }
@@ -393,7 +397,10 @@ class BaseArchiver
    *   The name of the archive volume to create.
    * 
    * @param files
-   *   The names of the files to archive relative to the base production directory.
+   *   The names of the files to archive relative to the base repository directory.
+   * 
+   * @param env
+   *   The cooked toolset environment.
    * 
    * @param dir
    *   The base repository directory.
@@ -415,9 +422,10 @@ class BaseArchiver
   (
    String name, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir, 
    File outFile, 
-   File errFile 
+   File errFile
   ) 
     throws PipelineException
   {
@@ -452,7 +460,10 @@ class BaseArchiver
    *   The timestamp of the start of the restore operation.
    * 
    * @param files
-   *   The names of the files to restore relative to the base production directory.
+   *   The names of the files to restore relative to the base repository directory.
+   * 
+   * @param env
+   *   The cooked toolset environment.
    * 
    * @param dir
    *   The base repository directory.
@@ -475,6 +486,7 @@ class BaseArchiver
    String name, 
    Date stamp, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir,
    File outFile, 
    File errFile  

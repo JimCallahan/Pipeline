@@ -1,4 +1,4 @@
-// $Id: MiscSetPackagePluginsReq.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscSetPackagePluginsReq.java,v 1.2 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,7 +36,7 @@ class MiscSetPackagePluginsReq
    *   The revision number of the package.
    * 
    * @param plugins
-   *   The names and revision numbers of the associated editor plugins.
+   *   The vendors, names and revision numbers of the associated editor plugins.
    */
   public
   MiscSetPackagePluginsReq
@@ -44,7 +44,7 @@ class MiscSetPackagePluginsReq
    String name, 
    OsType os, 
    VersionID vid, 
-   TreeMap<String,TreeSet<VersionID>> plugins
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
   {
     if(name == null) 
@@ -101,9 +101,9 @@ class MiscSetPackagePluginsReq
   }
   
   /**
-   * Gets names and revision numbers of the associated plugins.
+   * Gets the vendors, names and revision numbers of the associated plugins.
    */
-  public TreeMap<String,TreeSet<VersionID>>
+  public DoubleMap<String,String,TreeSet<VersionID>>
   getPlugins() 
   {
     return pPlugins;
@@ -139,9 +139,9 @@ class MiscSetPackagePluginsReq
   private VersionID  pVersionID;
   
   /**
-   * The names and revision numbers of the associated plugins.
+   * The vendors, names and revision numbers of the associated plugins.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pPlugins;
+  private DoubleMap<String,String,TreeSet<VersionID>>  pPlugins;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: PluginTreeData.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: PluginTreeData.java,v 1.2 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -48,16 +48,21 @@ class PluginTreeData
    * 
    * @param vid
    *   The revision number.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
    */ 
   public 
   PluginTreeData
   ( 
    String name, 
-   VersionID vid
+   VersionID vid, 
+   String vendor
   )
   {
     pName      = name;
-    pVersionID = vid; 
+    pVersionID = vid;
+    pVendor    = vendor;
   }
 
 
@@ -84,6 +89,18 @@ class PluginTreeData
     return pVersionID; 
   }
 
+  /**
+   * Get the name of the plugin vendor. 
+   * 
+   * @return 
+   *   The vendor name or <CODE>null</CODE> if name node.
+   */ 
+  public String
+  getVendor()
+  {
+    return pVendor; 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -106,7 +123,9 @@ class PluginTreeData
       PluginTreeData data = (PluginTreeData) obj; 
       return (pName.equals(data.pName) && 
 	      (((pVersionID == null) && (data.pVersionID == null)) || 
-	       ((pVersionID != null) && pVersionID.equals(data.pVersionID))));
+	       ((pVersionID != null) && pVersionID.equals(data.pVersionID))) ||
+	      (((pVendor == null) && (data.pVendor == null)) || 
+	       ((pVendor != null) && pVendor.equals(data.pVendor))));
     }
 
     return false;
@@ -142,6 +161,10 @@ class PluginTreeData
    */ 
   private VersionID pVersionID; 
 
-}
+  /**
+   * The name of the plugin vendor or <CODE>null</CODE> if name node.
+   */
+  private String  pVendor; 
 
+}
 

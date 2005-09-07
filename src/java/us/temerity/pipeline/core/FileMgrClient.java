@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.35 2005/04/03 21:54:41 jim Exp $
+// $Id: FileMgrClient.java,v 1.36 2005/09/07 21:11:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -378,6 +378,9 @@ interface FileMgrClient
    * @param archiver
    *   The archiver plugin to use to create the archive volume.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -386,7 +389,8 @@ interface FileMgrClient
   (
    String name, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
-   BaseArchiver archiver
+   BaseArchiver archiver,
+   Map<String,String> env
   ) 
     throws PipelineException;
 
@@ -461,6 +465,9 @@ interface FileMgrClient
    * @param archiver
    *   The archiver plugin to use to restore the versions from the archive volume.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param size
    *   The required temporary disk space needed for the restore operation.
    * 
@@ -474,6 +481,7 @@ interface FileMgrClient
    Date stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
+   Map<String,String> env, 
    long size
   ) 
     throws PipelineException;

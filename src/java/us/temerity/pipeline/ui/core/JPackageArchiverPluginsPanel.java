@@ -1,4 +1,4 @@
-// $Id: JPackageComparatorPluginsPanel.java,v 1.2 2005/09/07 21:11:17 jim Exp $
+// $Id: JPackageArchiverPluginsPanel.java,v 1.1 2005/09/07 21:11:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P A C K A G E   C O M P A R A T O R   P L U G I N S   P A N E L                        */
+/*   P A C K A G E   A R C H I V E R   P L U G I N S   P A N E L                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Edits the comparator plugins associated with a toolset package .
+ * Edits the archiver plugins associated with a toolset package .
  */ 
 public 
-class JPackageComparatorPluginsPanel
+class JPackageArchiverPluginsPanel
   extends JBasePackagePluginsPanel
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,12 +27,12 @@ class JPackageComparatorPluginsPanel
    * Construct a new panel
    */ 
   public 
-  JPackageComparatorPluginsPanel
+  JPackageArchiverPluginsPanel
   (
    JManageToolsetsDialog parent
   )
   {
-    super("Comparator"); 
+    super("Archiver"); 
     pParent = parent;
   }
 
@@ -72,7 +72,7 @@ class JPackageComparatorPluginsPanel
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     pclient.update();
       
-    updateHelper(pname, os, vid, includedPlugins, pclient.getComparators(), isPrivileged);
+    updateHelper(pname, os, vid, includedPlugins, pclient.getArchivers(), isPrivileged);
   }
 
 
@@ -99,7 +99,7 @@ class JPackageComparatorPluginsPanel
   )
     throws PipelineException
   {
-    return pParent.getPackageComparators(pname, os, vid);
+    return pParent.getPackageArchivers(pname, os, vid);
   }
 
   /**
@@ -127,7 +127,7 @@ class JPackageComparatorPluginsPanel
   )
     throws PipelineException
   {
-    pParent.setPackageComparators(pname, os, vid, plugins);
+    pParent.setPackageArchivers(pname, os, vid, plugins);
   }
 
   
@@ -136,7 +136,7 @@ class JPackageComparatorPluginsPanel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7055441412737237098L;
+  private static final long serialVersionUID = 1592069310531552605L;
 
 
 
