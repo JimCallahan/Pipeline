@@ -1,4 +1,4 @@
-// $Id: PluginMenuLayout.java,v 1.5 2005/09/07 21:11:16 jim Exp $
+// $Id: PluginMenuLayout.java,v 1.6 2005/09/09 21:22:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -285,7 +285,7 @@ class PluginMenuLayout
     if(pName != null) {
       encoder.encode("Name", pName);
       encoder.encode("VersionID", pVersionID);
-      encoder.encode("Vendor", pVersionID);
+      encoder.encode("Vendor", pVendor);
     }
     
     if(!isEmpty()) 

@@ -1,4 +1,4 @@
-// $Id: SuffixEditor.java,v 1.3 2005/09/07 21:11:16 jim Exp $
+// $Id: SuffixEditor.java,v 1.4 2005/09/09 21:22:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -293,7 +293,7 @@ class SuffixEditor
       encoder.encode("Description", pDescription);
 
     if(pEditor != null) 
-      encoder.encode("Editor", pEditor);		     
+      encoder.encode("Editor", new BaseEditor(pEditor));		     
   }
   
   public void 
