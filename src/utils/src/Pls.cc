@@ -1,4 +1,4 @@
-// $Id: Pls.cc,v 1.6 2004/04/05 05:53:20 jim Exp $
+// $Id: Pls.cc,v 1.7 2005/09/09 21:23:02 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -59,8 +59,8 @@ usage()
 	    << "  pls --license\n" 
 	    << "\n" 
 	    << "OPTIONS:\n" 
-	    << "  [--fcheck][--fcheck-exec][--zero][--size=bytes]\n" 
-	    << "  [--stats=LEVEL][--warnings=LEVEL]\n" 
+	    << "  [--fcheck] [--fcheck-exec] [--zero] [--size=bytes]\n" 
+	    << "  [--stats=LEVEL] [--warnings=LEVEL]\n" 
 	    << "\n"
 	    << "\n"
 	    << "Use \"pls --html-help\" to browse the full documentation.\n" 
