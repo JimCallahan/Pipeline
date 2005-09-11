@@ -7,6 +7,7 @@ License: Commercial
 Vendor: Temerity Software, Inc
 Group: Applications/Productivity
 BuildRoot: @RPM_ROOT@/DEST/plmac
+AutoReq: no
 
 %description
 The launcher scripts, native binaries and libraries needed to run the Pipeline 
