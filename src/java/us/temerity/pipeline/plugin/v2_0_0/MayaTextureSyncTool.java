@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.4 2005/09/17 23:26:47 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -206,7 +206,7 @@ class MayaTextureSyncTool
     
     /* query the user */ 
     JToolDialog diag = 
-      new JToolDialog("Maya Texture Synch: Target Nodes", body, "Continue");
+      new JToolDialog("Maya Texture Sync: Target Nodes", body, "Continue");
     
     pRelocateDialog = 
       new JFileSelectDialog(diag, "Select Directory", 
@@ -437,7 +437,7 @@ class MayaTextureSyncTool
 
     /* query the user */ 
     JToolDialog diag = 
-      new JToolDialog("Maya Texture Synch: Texture Changes", scroll, "Continue");
+      new JToolDialog("Maya Texture Sync: Texture Changes", scroll, "Continue");
     
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
@@ -746,7 +746,7 @@ class MayaTextureSyncTool
 
     /* query the user */ 
     JToolDialog diag = 
-      new JToolDialog("Maya Texture Synch: Node Changes", scroll, "Confirm");
+      new JToolDialog("Maya Texture Sync: Node Changes", scroll, "Confirm");
     
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
