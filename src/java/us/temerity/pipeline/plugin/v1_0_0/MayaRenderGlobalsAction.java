@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.6 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.7 2005/09/17 23:25:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -1170,7 +1170,7 @@ class MayaRenderGlobalsAction
 
 	out.write
 	  ("// MOTION BLUR \n" +
-	   "setAttr \"defaultRenderGlobals.\" " + useBlur + ";\n" +
+	   "setAttr \"defaultRenderGlobals.motionBlur\" " + useBlur + ";\n" +
 	   "setAttr \"defaultRenderGlobals.motionBlurType\" " + blurType + ";\n" + 
 	   "setAttr \"defaultRenderGlobals.motionBlurByFrame\" " + byFrame + ";\n" +
 	   "setAttr \"defaultRenderGlobals.blurLength\" " + length + ";\n" +
