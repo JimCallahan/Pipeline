@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.19 2005/09/07 21:11:17 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.20 2005/09/20 05:09:13 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2665,6 +2665,7 @@ class JNodeFilesPanel
 	    /* override these since the editor will be run as the current user */ 
 	    env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
 	    env.put("USER", PackageInfo.sUser);
+	    env.put("WORKING", PackageInfo.sWorkDir + "/" + pAuthor + "/" + pView);
 	  }
 
 	  /* working directory */ 
@@ -2793,6 +2794,7 @@ class JNodeFilesPanel
 	      /* override these since the comparator will be run as the current user */ 
 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
 	      env.put("USER", PackageInfo.sUser);
+	      env.put("WORKING", PackageInfo.sWorkDir + "/" + pAuthor + "/" + pView);
 	    }
 	    
 	    /* start the comparator */ 

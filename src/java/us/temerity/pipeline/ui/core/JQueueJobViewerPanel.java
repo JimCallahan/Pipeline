@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.18 2005/09/07 21:11:17 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.19 2005/09/20 05:09:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2517,6 +2517,7 @@ class JQueueJobViewerPanel
  	      /* override these since the editor will be run as the current user */ 
  	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
  	      env.put("USER", PackageInfo.sUser);
+	      env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
  	    }
 	    
  	    /* get the primary file sequence */ 
