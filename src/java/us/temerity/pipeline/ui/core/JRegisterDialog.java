@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.12 2005/09/07 21:11:17 jim Exp $
+// $Id: JRegisterDialog.java,v 1.13 2005/09/20 04:14:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,9 +38,6 @@ class JRegisterDialog
 
     /* initialize fields */ 
     {
-      pEditorPlugins    = PluginMgrClient.getInstance().getEditors();
-      pEditorMenuLayout = new PluginMenuLayout();
-
       pRegistered = new TreeSet<String>();
     }
 
@@ -195,7 +192,8 @@ class JRegisterDialog
 	  JPluginSelectionField field = 
 	    UIFactory.createTitledPluginSelectionField
 	    (tpanel, "Editor:", sTSize, 
-	     vpanel, pEditorMenuLayout, pEditorPlugins, sVSize, 
+	     vpanel, new PluginMenuLayout(), 
+	     new DoubleMap<String,String,TreeSet<VersionID>>(), sVSize, 
 	     "The Editor plugin used to edit/view the files associated with the node.");
 	  pEditorField = field;
 
@@ -313,22 +311,8 @@ class JRegisterDialog
 	pToolsetField.setSelected(toolset);
       else 
 	pToolsetField.setSelected(defaultToolset);
-    }
 
-    {
-      PluginMgrClient pclient = PluginMgrClient.getInstance();
-      try {
-	pclient.update();
-	pEditorPlugins = pclient.getEditors();
-
-	MasterMgrClient client = master.getMasterMgrClient();
-	pEditorMenuLayout = 
-	  client.getEditorMenuLayout(PackageInfo.sOsType); // FIX THIS!!!
-	pEditorField.updatePlugins(pEditorMenuLayout, pEditorPlugins);
-      } 
-      catch(PipelineException ex) {
-	UIMaster.getInstance().showErrorDialog(ex);
-      }    
+      master.updateEditorPluginField(pToolsetField.getSelected(), pEditorField);
     }
 
     pFileSeqDialog.updateHeader(author, view);
@@ -894,16 +878,6 @@ class JRegisterDialog
    * The names of the registered nodes.
    */ 
   private TreeSet<String>  pRegistered; 
-
-  /**
-   * Cached names and version numbers of the loaded editor plugins. 
-   */
-  private DoubleMap<String,String,TreeSet<VersionID>>  pEditorPlugins; 
-
-  /**
-   * The menu layout for editor plugins.
-   */ 
-  private PluginMenuLayout  pEditorMenuLayout;
 
 
   /*----------------------------------------------------------------------------------------*/
