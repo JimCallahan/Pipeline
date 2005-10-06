@@ -1,5 +1,5 @@
 %_topdir	@RPM_ROOT@
 %_signature 	gpg
-%_gpg_path 	/home/jim/.gnupg
-%_gpg_name 	James Michael Callahan <jim@polaris.net>
+%_gpg_path 	/home/jim/code/src/temerity/gnupg
+%_gpg_name 	Temerity Software <support@temerity.us>
 %_gpgbin 	/usr/bin/gpg
