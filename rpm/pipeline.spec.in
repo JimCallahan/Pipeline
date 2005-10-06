@@ -12,7 +12,7 @@ AutoReq: no
 
 %description
 Pipeline consists of a suite of programs which use a high-level node 
-based representation of the production process to peform a wide range of 
+based representation of the production process to perform a wide range of 
 visualization, automation and administrative services.
 
 The core features of Pipeline include: 

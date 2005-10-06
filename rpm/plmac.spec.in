@@ -11,12 +11,12 @@ AutoReq: no
 
 %description
 The launcher scripts, native binaries and libraries needed to run the Pipeline 
-client programs under MacOS X.  
+client programs under Mac OS X.  
 
 This RPM should be installed on the same Linux file server as the main 
 "pipeline" RPM.  The Pipeline application bundle "Pipeline.app" provided by this
 RPM may be copied to the local Applications directory or other locations for
-convienent launching of the graphical client.  Note that this applicaiton bundle
+convenient launching of the graphical client.  Note that this application bundle
 does not contain the required Java classes or data files needed to run the 
 application.  These resources are accessed over the network via NFS using the path 
 supplied to the --mac-root-dir option to plconfig(1) during Pipeline configuration.
