@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.9 2005/01/22 06:10:09 jim Exp $
+// $Id: ExecPath.java,v 1.10 2005/10/06 17:06:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,16 +45,7 @@ class ExecPath
     int wk;
     for(wk=0; wk<dirs.length; wk++) {
       File dir = new File(dirs[wk]);
-
-      if(!dir.isDirectory()) 
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	   "A component of execution path (" + dir + ") was NOT a directory!");
-      else if(!dir.isAbsolute()) 
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	   "A component of execution path (" + dir + ") was NOT absolute!");
-      else 	
+      if(dir.isDirectory() && dir.isAbsolute()) 
 	pDirs.add(dir);
     }
   }
