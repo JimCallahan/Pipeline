@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: TarFileArchiver.java,v 1.4 2005/10/06 17:06:33 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -264,8 +264,7 @@ class TarFileArchiver
       
     try {
       return new SubProcessHeavy
-	(getName(), script.getPath(), new ArrayList<String>(), 
-	 env, dir, outFile, errFile);
+	(getName(), script.getPath(), new ArrayList<String>(), env, dir, outFile, errFile);
     }
     catch(Exception ex) {
       throw new PipelineException
@@ -384,8 +383,7 @@ class TarFileArchiver
       
     try {
       return new SubProcessHeavy
-	(getName(), script.getPath(), new ArrayList<String>(), 
-	 env, dir, outFile, errFile);
+	(getName(), script.getPath(), new ArrayList<String>(), env, dir, outFile, errFile);
     }
     catch(Exception ex) {
       throw new PipelineException

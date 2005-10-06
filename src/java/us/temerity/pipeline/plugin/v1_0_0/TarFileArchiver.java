@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.4 2005/09/07 19:17:08 jim Exp $
+// $Id: TarFileArchiver.java,v 1.5 2005/10/06 17:06:33 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -122,6 +122,9 @@ class TarFileArchiver
    * @param files
    *   The names of the files to archive relative to the base production directory.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param dir
    *   The base repository directory.
    * 
@@ -142,6 +145,7 @@ class TarFileArchiver
   (
    String name, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir, 
    File outFile, 
    File errFile 
@@ -163,8 +167,6 @@ class TarFileArchiver
 	("The compression flag cannot be (null)");
 
     File tarball = new File(adir, name + (compress ? ".tgz" : ".tar"));
-
-    Map<String,String> env = System.getenv();
 
     ArrayList<String> args = new ArrayList<String>();
     args.add("--verbose");
@@ -200,6 +202,9 @@ class TarFileArchiver
    * @param files
    *   The names of the files to restore relative to the base production directory.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param dir
    *   The base repository directory.
    * 
@@ -221,6 +226,7 @@ class TarFileArchiver
    String name, 
    Date stamp, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir,
    File outFile, 
    File errFile  
@@ -242,8 +248,6 @@ class TarFileArchiver
 	("The compression flag cannot be (null)");
 
     File tarball = new File(adir, name + (compress ? ".tgz" : ".tar"));
-
-    Map<String,String> env = System.getenv();
 
     ArrayList<String> args = new ArrayList<String>();   
     args.add("--verbose");

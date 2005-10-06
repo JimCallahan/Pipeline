@@ -1,4 +1,4 @@
-// $Id: TarTapeArchiver.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: TarTapeArchiver.java,v 1.4 2005/10/06 17:06:33 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -121,6 +121,9 @@ class TarTapeArchiver
    * @param files
    *   The names of the files to archive relative to the base production directory.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param dir
    *   The base repository directory.
    * 
@@ -141,6 +144,7 @@ class TarTapeArchiver
   (
    String name, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir, 
    File outFile, 
    File errFile 
@@ -166,8 +170,6 @@ class TarTapeArchiver
     if(device == null) 
       throw new PipelineException
 	("The tape device cannot be (null)");
-
-    Map<String,String> env = System.getenv();
 
     ArrayList<String> args = new ArrayList<String>();
     args.add("--verbose");
@@ -202,6 +204,9 @@ class TarTapeArchiver
    * @param files
    *   The names of the files to restore relative to the base production directory.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param dir
    *   The base repository directory.
    * 
@@ -223,6 +228,7 @@ class TarTapeArchiver
    String name, 
    Date stamp, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir,
    File outFile, 
    File errFile  
@@ -248,8 +254,6 @@ class TarTapeArchiver
     if(device == null) 
       throw new PipelineException
 	("The tape device cannot be (null)");
-
-    Map<String,String> env = System.getenv();
 
     ArrayList<String> args = new ArrayList<String>();   
     args.add("--verbose");

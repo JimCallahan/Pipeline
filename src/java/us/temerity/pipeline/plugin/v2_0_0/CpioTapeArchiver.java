@@ -1,4 +1,4 @@
-// $Id: CpioTapeArchiver.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: CpioTapeArchiver.java,v 1.4 2005/10/06 17:06:33 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -121,6 +121,9 @@ class CpioTapeArchiver
    * @param files
    *   The names of the files to archive relative to the base production directory.
    * 
+   * @param env
+   *   The cooked toolset environment.
+   * 
    * @param dir
    *   The base repository directory.
    * 
@@ -141,6 +144,7 @@ class CpioTapeArchiver
   (
    String name, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir, 
    File outFile, 
    File errFile 
@@ -179,8 +183,7 @@ class CpioTapeArchiver
 
     try {
       return new SubProcessHeavy
-	(getName(), script.getPath(), new ArrayList<String>(), System.getenv(), 
-	 dir, outFile, errFile);
+	(getName(), script.getPath(), new ArrayList<String>(), env, dir, outFile, errFile);
     }
     catch(Exception ex) {
       throw new PipelineException
@@ -200,6 +203,9 @@ class CpioTapeArchiver
    * 
    * @param files
    *   The names of the files to restore relative to the base production directory.
+   * 
+   * @param env
+   *   The cooked toolset environment.
    * 
    * @param dir
    *   The base repository directory.
@@ -222,6 +228,7 @@ class CpioTapeArchiver
    String name, 
    Date stamp, 
    Collection<File> files, 
+   Map<String,String> env, 
    File dir,
    File outFile, 
    File errFile  
@@ -237,8 +244,6 @@ class CpioTapeArchiver
       device = new File(path);
     }
     
-    Map<String,String> env = System.getenv();
-
     ArrayList<String> args = new ArrayList<String>();   
     args.add("--extract");
     args.add("--file=" + device);
