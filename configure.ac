@@ -92,6 +92,31 @@ AC_MSG_RESULT([ ])
 
 
 
+dnl -- SHAKE --------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Root Shake Directory])
+
+AC_ARG_WITH([shake], 
+            [  --with-shake=DIR               The root directory of the Shake installation.])
+
+AC_SUBST(NR_SHAKE_LOCATION)
+NR_SHAKE_LOCATION=
+
+if test "$with_shake"
+then 
+  NR_SHAKE_LOCATION=$with_shake
+else
+  if test "$NATIVE_OSTYPE" = "Unix" 
+  then
+    AC_MSG_ERROR([the --with-shake option is required for Unix builds.])
+  fi
+fi
+
+AC_MSG_RESULT([$NR_SHAKE_LOCATION])
+AC_MSG_RESULT([ ])
+
+
+
 dnl -- JAVA TOOLS ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating the Java Development Tools:])
@@ -1285,6 +1310,7 @@ AC_CONFIG_FILES([
   src/utils/Makefile
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc.src
+  src/utils/src/plshakeio
 
   src/mac-apps/Makefile
   src/mac-apps/pipeline/Makefile

@@ -20,5 +20,6 @@ pushd i686-pc-linux-gnu-dbg
     --with-prof-base=45100 \
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=salamander \
-    --with-customer-profile=$plprofile
+    --with-customer-profile=$plprofile \
+    --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd
