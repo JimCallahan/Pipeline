@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.3 2005/09/07 21:11:17 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.4 2005/10/07 12:44:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -265,6 +265,8 @@ class JRestoreParamsDialog
   private void 
   updateArchiverParams() 
   {
+    pArchiverParamComponents.clear();
+
     Component comps[] = UIFactory.createTitledPanels();
     JPanel tpanel = (JPanel) comps[0];
     JPanel vpanel = (JPanel) comps[1];

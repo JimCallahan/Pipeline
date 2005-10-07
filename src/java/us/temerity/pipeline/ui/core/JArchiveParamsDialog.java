@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.4 2005/09/07 21:11:17 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.5 2005/10/07 12:44:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -343,6 +343,8 @@ class JArchiveParamsDialog
   private void 
   updateArchiverParams() 
   {
+    pArchiverParamComponents.clear();
+
     Component comps[] = UIFactory.createTitledPanels();
     JPanel tpanel = (JPanel) comps[0];
     JPanel vpanel = (JPanel) comps[1];
@@ -566,7 +568,9 @@ class JArchiveParamsDialog
    boolean isVisible
   )
   {
-    updateArchiver();
+    if(isVisible) 
+      updateArchiver();
+
     super.setVisible(isVisible);
   }
     
