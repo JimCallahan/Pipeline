@@ -11,6 +11,7 @@ html_DATA = \
   plrestore.html \
   pls.html \
   plscript.html \
+  plshakeio.html \
   plui.html \
   realpath.html
 
