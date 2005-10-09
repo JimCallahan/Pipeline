@@ -9,9 +9,10 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/050628
+plprofile=$plsrcdir/plconfig/customers/rhinofx/051009
 
 pushd i686-pc-linux-gnu-dbg
+  CC=/usr/bin/gcc33 CXX=/usr/bin/g++33 \
   $plsrcdir/configure \
     --enable-foundation \
     --disable-opt \
@@ -19,5 +20,6 @@ pushd i686-pc-linux-gnu-dbg
     --with-prof-base=43100 \
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=rhinofx \
-    --with-customer-profile=$plprofile
+    --with-customer-profile=$plprofile \
+    --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd

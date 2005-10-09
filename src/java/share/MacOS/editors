@@ -5,8 +5,8 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
       Title <String> #5 { "Images" }
       Children <LinkedList> #6 {
         <PluginMenuLayout> #7 {
-          Title <String> #8 { "Preview" }
-          Name <String> #9 { "Preview" }
+          Title <String> #8 { "Shake" }
+          Name <String> #9 { "Shake" }
           VersionID <VersionID> #10 {
             RevisionNumber <String> #11 { "2.0.0" }
           }
@@ -18,47 +18,92 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           VersionID <VersionID> #16 {
             RevisionNumber <String> #17 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <String> #18 { "Temerity" }
         }
-        <PluginMenuLayout> #18 {
-          Title <String> #19 { "Gimp" }
-          Name <String> #20 { "Gimp" }
-          VersionID <VersionID> #21 {
-            RevisionNumber <String> #22 { "2.0.0" }
+        <PluginMenuLayout> #19 {
+          Title <String> #20 { "Gimp" }
+          Name <String> #21 { "Gimp" }
+          VersionID <VersionID> #22 {
+            RevisionNumber <String> #23 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
       }
     }
-    <PluginMenuLayout> #23 {
-      Title <String> #24 { "3D Apps" }
-      Children <LinkedList> #25 {
-        <PluginMenuLayout> #26 {
-          Title <String> #27 { "Maya" }
-          Name <String> #28 { "Maya" }
-          VersionID <VersionID> #29 {
-            RevisionNumber <String> #30 { "2.0.0" }
+    <PluginMenuLayout> #24 {
+      Title <String> #25 { "Adobe CS2" }
+      Children <LinkedList> #26 {
+        <PluginMenuLayout> #27 {
+          Title <String> #28 { "Photoshop" }
+          Name <String> #29 { "Photoshop" }
+          VersionID <VersionID> #30 {
+            RevisionNumber <String> #31 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <String> #32 { "Temerity" }
+        }
+        <PluginMenuLayout> #33 {
+          Title <String> #34 { "Illustrator" }
+          Name <String> #35 { "Illustrator" }
+          VersionID <VersionID> #36 {
+            RevisionNumber <String> #37 { "2.0.0" }
+          }
+          Vendor <REF> #32
+        }
+        <PluginMenuLayout> #38 {
+          Title <String> #39 { "Acrobat" }
+          Name <String> #40 { "Acrobat" }
+          VersionID <VersionID> #41 {
+            RevisionNumber <String> #42 { "2.0.0" }
+          }
+          Vendor <REF> #32
+        }
+        <PluginMenuLayout> #43 {
+          Title <String> #44 { "InDesign" }
+          Name <String> #45 { "InDesign" }
+          VersionID <VersionID> #46 {
+            RevisionNumber <String> #47 { "2.0.0" }
+          }
+          Vendor <REF> #32
         }
       }
     }
-    <PluginMenuLayout> #31 {
-      Title <String> #32 { "Documents" }
-      Children <LinkedList> #33 {
-        <PluginMenuLayout> #34 {
-          Title <String> #35 { "Emacs" }
-          Name <String> #36 { "Emacs" }
-          VersionID <VersionID> #37 {
-            RevisionNumber <String> #38 { "2.0.0" }
+    <PluginMenuLayout> #48 {
+      Title <String> #49 { "3D Apps" }
+      Children <LinkedList> #50 {
+        <PluginMenuLayout> #51 {
+          Title <String> #52 { "Maya" }
+          Name <String> #53 { "Maya" }
+          VersionID <VersionID> #54 {
+            RevisionNumber <String> #55 { "2.0.0" }
           }
-          Vendor <String> #39 { "Temerity" }
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #40 {
-          Title <String> #41 { "Text Edit" }
-          Name <String> #42 { "TextEdit" }
-          VersionID <VersionID> #43 {
-            RevisionNumber <String> #44 { "2.0.0" }
+      }
+    }
+    <PluginMenuLayout> #56 {
+      Title <String> #57 { "Documents" }
+      Children <LinkedList> #58 {
+        <PluginMenuLayout> #59 {
+          Title <String> #60 { "Emacs" }
+          Name <String> #61 { "Emacs" }
+          VersionID <VersionID> #62 {
+            RevisionNumber <String> #63 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #64 {
+          Title <String> #65 { "Text Edit" }
+          Name <String> #66 { "TextEdit" }
+          VersionID <VersionID> #67 {
+            RevisionNumber <String> #68 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #69 {
+          Title <String> #70 { "Preview" }
+          Name <String> #71 { "Preview" }
+          VersionID <VersionID> #72 {
+            RevisionNumber <String> #73 { "2.0.0" }
           }
           Vendor <REF> #12
         }

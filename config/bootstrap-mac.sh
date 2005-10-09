@@ -9,7 +9,7 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/salamander/050820
+plprofile=$plsrcdir/plconfig/customers/salamander/051009
 
 pushd i686-pc-linux-gnu-dbg
   PATH=$HOME/local/bin:$PATH \

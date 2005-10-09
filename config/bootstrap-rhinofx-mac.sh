@@ -9,9 +9,10 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/050628
+plprofile=$plsrcdir/plconfig/customers/rhinofx/051009
 
 pushd i686-pc-linux-gnu-dbg
+  PATH=$HOME/local/bin:$PATH \
   $plsrcdir/configure \
     --disable-foundation \
     --disable-opt \

@@ -5,139 +5,155 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
       Title <String> #5 { "Images" }
       Children <LinkedList> #6 {
         <PluginMenuLayout> #7 {
-          Title <String> #8 { "AirShow" }
-          Name <String> #9 { "AirShow" }
+          Title <String> #8 { "Shake" }
+          Name <String> #9 { "Shake" }
           VersionID <VersionID> #10 {
             RevisionNumber <String> #11 { "2.0.0" }
           }
           Vendor <String> #12 { "Temerity" }
         }
         <PluginMenuLayout> #13 {
-          Title <String> #14 { "I-Display" }
-          Name <String> #15 { "I-Display" }
+          Title <String> #14 { "AirShow" }
+          Name <String> #15 { "AirShow" }
           VersionID <VersionID> #16 {
             RevisionNumber <String> #17 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <String> #18 { "Temerity" }
         }
-        <PluginMenuLayout> #18 {
-          Title <String> #19 { "Gimp" }
-          Name <String> #20 { "Gimp" }
-          VersionID <VersionID> #21 {
-            RevisionNumber <String> #22 { "2.0.0" }
+        <PluginMenuLayout> #19 {
+          Title <String> #20 { "I-Display" }
+          Name <String> #21 { "I-Display" }
+          VersionID <VersionID> #22 {
+            RevisionNumber <String> #23 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #23 {
-          Title <String> #24 { "FCheck" }
-          Name <String> #25 { "FCheck" }
-          VersionID <VersionID> #26 {
-            RevisionNumber <String> #27 { "2.0.0" }
+        <PluginMenuLayout> #24 {
+          Title <String> #25 { "Gimp" }
+          Name <String> #26 { "Gimp" }
+          VersionID <VersionID> #27 {
+            RevisionNumber <String> #28 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #28 {
-          Title <String> #29 { "ImfDisp" }
-          Name <String> #30 { "ImfDisp" }
-          VersionID <VersionID> #31 {
-            RevisionNumber <String> #32 { "2.0.0" }
+        <PluginMenuLayout> #29 {
+          Title <String> #30 { "FCheck" }
+          Name <String> #31 { "FCheck" }
+          VersionID <VersionID> #32 {
+            RevisionNumber <String> #33 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #33 {
-          Title <String> #34 { "MPlay" }
-          Name <String> #35 { "MPlay" }
-          VersionID <VersionID> #36 {
-            RevisionNumber <String> #37 { "2.0.0" }
+        <PluginMenuLayout> #34 {
+          Title <String> #35 { "ImfDisp" }
+          Name <String> #36 { "ImfDisp" }
+          VersionID <VersionID> #37 {
+            RevisionNumber <String> #38 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #38 {
-          Title <String> #39 { "XImage" }
-          Name <String> #40 { "XImage" }
-          VersionID <VersionID> #41 {
-            RevisionNumber <String> #42 { "2.0.0" }
+        <PluginMenuLayout> #39 {
+          Title <String> #40 { "MPlay" }
+          Name <String> #41 { "MPlay" }
+          VersionID <VersionID> #42 {
+            RevisionNumber <String> #43 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #44 {
+          Title <String> #45 { "XImage" }
+          Name <String> #46 { "XImage" }
+          VersionID <VersionID> #47 {
+            RevisionNumber <String> #48 { "2.0.0" }
+          }
+          Vendor <REF> #18
         }
       }
     }
-    <PluginMenuLayout> #43 {
-      Title <String> #44 { "3D Apps" }
-      Children <LinkedList> #45 {
-        <PluginMenuLayout> #46 {
-          Title <String> #47 { "Maya" }
-          Name <String> #48 { "Maya" }
-          VersionID <VersionID> #49 {
-            RevisionNumber <String> #50 { "2.0.0" }
+    <PluginMenuLayout> #49 {
+      Title <String> #50 { "3D Apps" }
+      Children <LinkedList> #51 {
+        <PluginMenuLayout> #52 {
+          Title <String> #53 { "Maya" }
+          Name <String> #54 { "Maya" }
+          VersionID <VersionID> #55 {
+            RevisionNumber <String> #56 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #51 {
-          Title <String> #52 { "Houdini" }
-          Name <String> #53 { "Houdini" }
-          VersionID <VersionID> #54 {
-            RevisionNumber <String> #55 { "2.0.0" }
+        <PluginMenuLayout> #57 {
+          Title <String> #58 { "Houdini" }
+          Name <String> #59 { "Houdini" }
+          VersionID <VersionID> #60 {
+            RevisionNumber <String> #61 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #56 {
-          Title <String> #57 { "Open Inventor" }
-          Name <String> #58 { "IvView" }
-          VersionID <VersionID> #59 {
-            RevisionNumber <String> #60 { "2.0.0" }
+        <PluginMenuLayout> #62 {
+          Title <String> #63 { "Open Inventor" }
+          Name <String> #64 { "IvView" }
+          VersionID <VersionID> #65 {
+            RevisionNumber <String> #66 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
       }
     }
-    <PluginMenuLayout> #61 {
-      Title <String> #62 { "Documents" }
-      Children <LinkedList> #63 {
-        <PluginMenuLayout> #64 {
-          Title <String> #65 { "Emacs" }
-          Name <String> #66 { "Emacs" }
-          VersionID <VersionID> #67 {
-            RevisionNumber <String> #68 { "2.0.0" }
-          }
-          Vendor <String> #69 { "Temerity" }
-        }
+    <PluginMenuLayout> #67 {
+      Title <String> #68 { "Documents" }
+      Children <LinkedList> #69 {
         <PluginMenuLayout> #70 {
-          Title <String> #71 { "GEdit" }
-          Name <String> #72 { "GEdit" }
+          Title <String> #71 { "Emacs" }
+          Name <String> #72 { "Emacs" }
           VersionID <VersionID> #73 {
             RevisionNumber <String> #74 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
         <PluginMenuLayout> #75 {
-          Title <String> #76 { "XDvi" }
-          Name <String> #77 { "XDvi" }
+          Title <String> #76 { "GEdit" }
+          Name <String> #77 { "GEdit" }
           VersionID <VersionID> #78 {
             RevisionNumber <String> #79 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
         <PluginMenuLayout> #80 {
-          Title <String> #81 { "Acroread" }
-          Name <String> #82 { "Acroread" }
+          Title <String> #81 { "XDvi" }
+          Name <String> #82 { "XDvi" }
           VersionID <VersionID> #83 {
             RevisionNumber <String> #84 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #85 {
+          Title <String> #86 { "Acroread" }
+          Name <String> #87 { "Acroread" }
+          VersionID <VersionID> #88 {
+            RevisionNumber <String> #89 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #90 {
+          Title <String> #91 { "Evince" }
+          Name <String> #92 { "Evince" }
+          VersionID <VersionID> #93 {
+            RevisionNumber <String> #94 { "2.0.0" }
           }
           Vendor <REF> #12
         }
       }
     }
-    <PluginMenuLayout> #85 {
-      Title <String> #86 { "Utils" }
-      Children <LinkedList> #87 {
-        <PluginMenuLayout> #88 {
-          Title <String> #89 { "Terminal" }
-          Name <String> #90 { "Terminal" }
-          VersionID <VersionID> #91 {
-            RevisionNumber <String> #92 { "2.0.0" }
+    <PluginMenuLayout> #95 {
+      Title <String> #96 { "Utils" }
+      Children <LinkedList> #97 {
+        <PluginMenuLayout> #98 {
+          Title <String> #99 { "Terminal" }
+          Name <String> #100 { "Terminal" }
+          VersionID <VersionID> #101 {
+            RevisionNumber <String> #102 { "2.0.0" }
           }
-          Vendor <REF> #12
+          Vendor <REF> #18
         }
       }
     }

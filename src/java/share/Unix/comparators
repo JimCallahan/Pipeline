@@ -2,20 +2,28 @@ ComparatorsMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
-      Title <String> #5 { "GimpDiff" }
-      Name <String> #6 { "GimpDiff" }
+      Title <String> #5 { "ShakeDiff" }
+      Name <String> #6 { "ShakeDiff" }
       VersionID <VersionID> #7 {
         RevisionNumber <String> #8 { "2.0.0" }
       }
       Vendor <String> #9 { "Temerity" }
     }
     <PluginMenuLayout> #10 {
-      Title <String> #11 { "XDiff" }
-      Name <String> #12 { "XDiff" }
+      Title <String> #11 { "GimpDiff" }
+      Name <String> #12 { "GimpDiff" }
       VersionID <VersionID> #13 {
         RevisionNumber <String> #14 { "2.0.0" }
       }
-      Vendor <REF> #9
+      Vendor <String> #15 { "Temerity" }
+    }
+    <PluginMenuLayout> #16 {
+      Title <String> #17 { "XDiff" }
+      Name <String> #18 { "XDiff" }
+      VersionID <VersionID> #19 {
+        RevisionNumber <String> #20 { "2.0.0" }
+      }
+      Vendor <REF> #15
     }
   }
 }
