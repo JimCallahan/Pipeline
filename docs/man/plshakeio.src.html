@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>plshakeio(1)</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<h3><a name="Name"></a>Name
+</h3>
+<blockquote><b>plshakeio</b> - lists information about the
+FileIn/SFileIn and FileOut nodes in a Shake script<br>
+</blockquote>
+<h3><a name="Synopsis"></a>Synopsis</h3>
+<blockquote><b>plshakeio</b> [<a href="#Global_Options"><span
+ style="font-style: italic;">options</span></a>] script.shk<br>
+  <br>
+  <b>plshakeio</b> <a style="font-weight: bold;" href="#--help">--help</a><b><br>
+plshakeio</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
+  <b>plshakeio</b> <b><a href="#--version">--version</a><br>
+plshakeio</b><span style="font-weight: bold;"> <a
+ href="#--release-date">--release-date</a></span><b><br>
+plshakeio</b><span style="font-weight: bold;"> <a href="#--copyright">--copyright</a><br>
+plshakeio <a href="#--license">--license</a><br>
+  </span></blockquote>
+<h3><a name="Description"></a>Description</h3>
+<div style="margin-left: 40px;">This utility loads a Shake script and
+prints a line of information for each file I/O node found.&nbsp; This
+information is used by the ShakeSync Tool plugin to verify that the
+files read and written by a Shake script correspond to the Pipeline
+nodes associated with the script.<br>
+<br>
+The format of the information printed for these Shake file I/O nodes is:<br>
+<div style="margin-left: 40px;"><br>
+<span style="font-family: monospace;">FileIn</span> <span
+ style="font-style: italic;">shake-node-name pipeline-file-sequence
+time-shift speed in-point in-mode out-point out-mode<br>
+</span></div>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">FileOut</span>
+<span style="font-style: italic;">shake-node-name pipeline-file-sequence</span><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span><span
+ style="font-style: italic;"></span></div>
+<span style="font-style: italic;"><span style="font-style: italic;"></span></span><span
+ style="font-style: italic;"></span></div>
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span><code></code></div>
+<div style="margin-left: 40px;"></div>
+<br>
+<div style="margin-left: 40px;">The file sequence is printed using the
+Pipeline specification directly readable by plscript(1) and the FileSeq
+class from Pipeline's Java API.&nbsp; If missing, the file sequence
+will be printed as "<span style="font-family: monospace;">-</span>".&nbsp;
+The remaining fields printed for FileIn/SFileIn nodes is identical to
+values for the Shake plugs of the same name.<br>
+</div>
+<h3><a name="Information_Options"></a>Information Options</h3>
+<blockquote>The following options provide information about <b>plshakeio</b>(1)
+and then immediately exit:<br>
+  <br>
+  <b><a name="--help"></a>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b><a name="--html-help"></a>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser. <br>
+  </blockquote>
+  <b><a name="--version"></a>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b><a name="--release-date"></a>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<b><br>
+    </b></blockquote>
+  <b><a name="--copyright"></a>--copyright</b><br>
+  <blockquote> Prints the <a href="#Copyright"><span
+ style="font-weight: bold;">copyright notice</span></a> for this
+software and exits.<br>
+  </blockquote>
+  <b><a name="--license"></a>--license</b><br>
+  <div style="margin-left: 40px;"><b> </b><br>
+Prints the <a style="font-weight: bold;" href="#License_Agreement">license
+agreement</a> for this software and exits. </div>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<h3><a name="Global_Options"></a>Global Options</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--stats"></a>--stats</span>=<span style="font-style: italic;">level
+<br>
+<br>
+</span></div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">Print stage statistics with the given
+level of vebosity (<span style="font-style: italic;">level</span>).&nbsp;
+<br>
+<br>
+By default, stage statistics are disabled.<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--warnings"></a>--warnings</span>=<span
+ style="font-style: italic;">level</span><br>
+<div style="margin-left: 40px;"><br>
+Print warning messages with the given level of vebosity (<span
+ style="font-style: italic;">level</span>). <br>
+<br>
+By default, warning messages are disabled.</div>
+</div>
+<h3><a name="See_Also"></a>See Also<br>
+</h3>
+<blockquote><span style="font-weight: bold;"><span
+ style="font-weight: bold;"></span></span> <span
+ style="font-weight: bold;">Pipeline Programs</span><br>
+  <div style="margin-left: 40px;"><a href="plui.html"><span
+ style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
+ style="font-weight: bold;">plscript</span></a>(1), <a
+ href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1)<br>
+  <a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
+  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
+  <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
+  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
+  <span style="font-weight: bold;"></span><a
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1)<br>
+  <br>
+  </div>
+  <span style="font-weight: bold;">Other Software<br>
+  </span>
+  <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1), <br>
+  </div>
+</blockquote>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<blockquote> </blockquote>
+<h3><a name="Author"></a>Author</h3>
+<div style="margin-left: 40px;">Created by <span
+ style="font-weight: bold;">Jim Callahan</span> of <a
+ href="http://temerity.us/"><span style="font-weight: bold;">Temerity
+Software, Inc</span></a>.</div>
+<span style="font-weight: bold;">
+</span>
+<h3><a name="Copyright"></a>Copyright</h3>
+<div style="margin-left: 40px;">
+@COPYRIGHT@
+<br>
+</div>
+<h3><a name="License_Agreement"></a>License Agreement</h3>
+<div style="margin-left: 40px;">
+@LICENSE@
+</div>
+<br>
+<br>
+</body>
+</html>

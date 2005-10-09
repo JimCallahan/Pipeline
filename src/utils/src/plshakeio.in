@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ ! "$NR_SHAKE_LOCATION" ]
+then
+  echo 'Unable to locate the Shake installation!'
+  echo 'The $NR_SHAKE_LOCATION environmental variable was not set...'
+  exit 1
+fi
+
+export NR_INCLUDE_PATH=${NR_SHAKE_LOCATION}/include:${NR_SHAKE_LOCATION}/include/startup
+export LD_LIBRARY_PATH=${NR_SHAKE_LOCATION}/lib
+export LM_LICENSE_FILE=${NR_SHAKE_LOCATION}/keys/key.dat
+
+exec @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin/plshakeio_exec $*
+
