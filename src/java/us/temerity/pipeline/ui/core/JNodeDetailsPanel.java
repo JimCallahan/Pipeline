@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.22 2005/09/07 21:11:17 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.23 2005/10/10 21:31:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3734,14 +3734,19 @@ class JNodeDetailsPanel
 	    if((toolset != null) && !toolset.equals("-"))
 	      mod.setToolset(toolset);
 	    
-	    try {
-	      PluginMgrClient pclient = PluginMgrClient.getInstance();
-	      mod.setEditor(pclient.newEditor(pWorkingEditorField.getPluginName(), 
-					      pWorkingEditorField.getPluginVersionID(),
-					      pWorkingEditorField.getPluginVendor()));
-	    }
-	    catch(PipelineException ex) {
+	    if(pWorkingEditorField.getPluginName() == null) {
 	      mod.setEditor(null);
+	    }
+	    else {
+	      try {
+		PluginMgrClient pclient = PluginMgrClient.getInstance();
+		mod.setEditor(pclient.newEditor(pWorkingEditorField.getPluginName(), 
+						pWorkingEditorField.getPluginVersionID(),
+						pWorkingEditorField.getPluginVendor()));
+	      }
+	      catch(PipelineException ex) {
+		mod.setEditor(null);
+	      }
 	    }
 	  }
 	
