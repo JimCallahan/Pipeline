@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.68 2005/09/07 21:11:16 jim Exp $
+// $Id: MasterMgrClient.java,v 1.69 2005/10/11 20:44:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3592,6 +3592,10 @@ class MasterMgrClient
     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may release nodes owned by another user!");
+
+    if(names.isEmpty()) 
+      throw new PipelineException
+	("At least one name of a node to release must be specified!");
 
     verifyConnection();
 
