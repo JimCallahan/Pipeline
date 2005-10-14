@@ -63,6 +63,14 @@ images_DATA = \
   ModifiedLinks-Running.gif \
   ModifiedLinks-Stale.gif \
   ModifiedLinks-Undefined.gif \
+  ModifiedLocks-Aborted.gif \
+  ModifiedLocks-Failed.gif \
+  ModifiedLocks-Finished.gif \
+  ModifiedLocks-Paused.gif \
+  ModifiedLocks-Queued.gif \
+  ModifiedLocks-Running.gif \
+  ModifiedLocks-Stale.gif \
+  ModifiedLocks-Undefined.gif \
   Modified-Paused.gif \
   Modified-Queued.gif \
   Modified-Running.gif \
