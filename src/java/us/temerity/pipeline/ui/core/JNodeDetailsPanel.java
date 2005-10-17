@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.23 2005/10/10 21:31:01 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.24 2005/10/17 06:23:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1665,9 +1665,12 @@ class JNodeDetailsPanel
     /* frozen node? */
     {
       pIsFrozen = false;
-      if((details != null) && (details.getWorkingVersion() != null))
-	pIsFrozen = details.getWorkingVersion().isFrozen();
-
+      if((details != null) && (details.getWorkingVersion() != null)) {
+	NodeMod mod = details.getWorkingVersion();
+	pIsFrozen = mod.isFrozen();
+	pFrozenLabel.setIcon(mod.isLocked() ? sLockedIcon : sFrozenIcon);
+      }
+      
       pFrozenLabel.setVisible(pIsFrozen);
       pApplyButton.setVisible(!pIsFrozen);
     }
@@ -5399,6 +5402,9 @@ class JNodeDetailsPanel
 
   private static final Icon sFrozenIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FrozenIcon.png"));
+
+  private static final Icon sLockedIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("LockedIcon.png"));
 
 
   /*----------------------------------------------------------------------------------------*/

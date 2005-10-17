@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.5 2005/07/13 18:08:42 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.6 2005/10/17 06:23:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,8 +39,6 @@ class JCheckOutDialog
     /* initialize fields */ 
     {
       pVersionIDs = new TreeMap<String,ArrayList<VersionID>>();
-
-      pLatestVersionFields = new TreeMap<String,JTextField>();
 
       pVersionFields = new TreeMap<String,JCollectionField>();
       pModeFields    = new TreeMap<String,JCollectionField>();
@@ -232,7 +230,6 @@ class JCheckOutDialog
   )
   {
     pVersionIDs.clear(); 
-    pLatestVersionFields.clear(); 
     pVersionFields.clear(); 
     pModeFields.clear(); 
     pMethodFields.clear(); 
@@ -257,16 +254,12 @@ class JCheckOutDialog
 	  JPanel tpanel = (JPanel) comps[0];
 	  JPanel vpanel = (JPanel) comps[1];
 	
-	  {
-	    JTextField field = 
-	      UIFactory.createTitledTextField
-	      (tpanel, "Latest Version:", sTSize, 
-	       vpanel, "v" +  vids.get(0), sVSize, 
-	       "The revision number of the latest version.");
 
-	    pLatestVersionFields.put(name, field);
-	  }
-	    
+	  UIFactory.createTitledTextField
+	    (tpanel, "Latest Version:", sTSize, 
+	     vpanel, "v" +  vids.get(0), sVSize, 
+	     "The revision number of the latest version.");
+
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	  
 	  {
@@ -442,11 +435,6 @@ class JCheckOutDialog
    * The box containing the node version components.
    */ 
   private Box  pVersionBox; 
-
-  /**
-   * The latest revision number field.
-   */ 
-  private TreeMap<String,JTextField>  pLatestVersionFields;
 
   /**
    * The field for selecting the revision number to check-out.

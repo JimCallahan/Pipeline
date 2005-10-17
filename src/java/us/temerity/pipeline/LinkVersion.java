@@ -1,4 +1,4 @@
-// $Id: LinkVersion.java,v 1.7 2005/01/03 00:05:31 jim Exp $
+// $Id: LinkVersion.java,v 1.8 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -35,12 +35,16 @@ class LinkVersion
    * @param vid 
    *   The the revision number of the upstream node version upon which the downstream 
    *   node depends.
+   * 
+   * @param isLocked
+   *   Whether the link to the source node is locked.
    */ 
   public 
   LinkVersion
   (
    LinkMod link, 
-   VersionID vid 
+   VersionID vid, 
+   boolean isLocked
   ) 
   {
     super(link);
@@ -49,6 +53,8 @@ class LinkVersion
       throw new IllegalArgumentException
 	("The node version ID cannot be (null)!");
     pVersionID = vid;
+
+    pIsLocked = isLocked; 
   }
 
   /**
@@ -63,6 +69,7 @@ class LinkVersion
     super(link);
 
     pVersionID = link.getVersionID();
+    pIsLocked  = link.isLocked();
   }
 
 
@@ -79,6 +86,15 @@ class LinkVersion
   getVersionID()
   {
     return pVersionID;
+  }
+
+  /**
+   * Get whether the link to the source node is locked.
+   */ 
+  public boolean
+  isLocked()
+  {
+    return pIsLocked;
   }
 
 
@@ -103,7 +119,7 @@ class LinkVersion
       if(obj instanceof LinkVersion) {
 	LinkVersion vsn = (LinkVersion) obj;
 	if(super.equals(obj)) 
-	  return pVersionID.equals(vsn.pVersionID);
+	  return pVersionID.equals(vsn.pVersionID); 
 	return false; 
       }
       else if(obj instanceof LinkMod) {
@@ -129,6 +145,7 @@ class LinkVersion
     super.toGlue(encoder);
 
     encoder.encode("VersionID", pVersionID);
+    encoder.encode("IsLocked", pIsLocked);
   }
 
   public void 
@@ -145,6 +162,12 @@ class LinkVersion
       if(vid == null) 
 	throw new GlueException("The \"VersionID\" was missing!");
       pVersionID = vid;
+    }
+
+    {
+      Boolean tf = (Boolean) decoder.decode("IsLocked");
+      if(tf != null) 
+	pIsLocked = tf;
     }
   }
 
@@ -168,6 +191,10 @@ class LinkVersion
    */ 
   private VersionID  pVersionID;  
 
+  /**
+   * Whether the link to the source node is locked.
+   */ 
+  private boolean  pIsLocked;
 }
 
 

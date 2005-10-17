@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.4 2005/02/09 18:22:33 jim Exp $
+// $Id: ViewerNode.java,v 1.5 2005/10/17 06:23:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -64,7 +64,13 @@ class ViewerNode
 
     if(status == null) 
       throw new IllegalArgumentException("The node status cannot be (null)!");
-    pStatus = status; 
+    pStatus = status;
+
+    NodeDetails details = pStatus.getDetails();
+    if(details != null) {
+      NodeMod mod = details.getWorkingVersion();
+      pIsLocked = ((mod != null) && mod.isLocked());
+    }
   }
 
   
@@ -250,6 +256,9 @@ class ViewerNode
       
       if(pCollapsedDL == null) 
 	pCollapsedDL = mgr.getNodeIconDL(gl, "Collapsed");
+
+      if(pLockedDL == null) 
+	pLockedDL = mgr.getNodeIconDL(gl, "Locked");
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
@@ -278,7 +287,12 @@ class ViewerNode
       {
 	NodeDetails details = pStatus.getDetails();
 
-	if(pIsCollapsed) {
+	if(pIsLocked) {
+	  gl.glTranslated(0.7, 0.0, 0.0);
+	  gl.glCallList(pLockedDL);
+	  gl.glTranslated(-0.7, 0.0, 0.0);
+	}
+	else if(pIsCollapsed) {
 	  double dx = (details == null) ? -0.8 : 0.8;
 	  gl.glTranslated(dx, 0.0, 0.0);
 	  gl.glCallList(pCollapsedDL);
@@ -381,6 +395,11 @@ class ViewerNode
    */ 
   private NodeStatus  pStatus;
 
+  /**
+   * Whether to display the locked icon. 
+   */
+  protected boolean  pIsLocked;
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -401,5 +420,10 @@ class ViewerNode
    * The OpenGL display list handle for the collapsed icon geometry.
    */ 
   private Integer  pCollapsedDL; 
+
+  /**
+   * The OpenGL display list handle for the locked icon geometry.
+   */ 
+  private Integer  pLockedDL; 
 
 }

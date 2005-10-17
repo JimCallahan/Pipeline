@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.69 2005/10/11 20:44:11 jim Exp $
+// $Id: MasterMgrClient.java,v 1.70 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -177,7 +177,7 @@ class MasterMgrClient
   }
 
   /**
-   * Set the active/inactive state of the Unix toolset with the given name. <P> 
+   * Set the active/inactive state of a Unix toolset. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
@@ -227,7 +227,7 @@ class MasterMgrClient
   }
 
   /**
-   * Get the names of all toolsets for the given operating system.
+   * Get the names of all toolsets for an operating system.
    * 
    * @param os
    *   The operating system type.
@@ -284,7 +284,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the Unix toolset with the given name.
+   * Get a Unix toolset.
    * 
    * @param name
    *   The toolset name.
@@ -303,7 +303,7 @@ class MasterMgrClient
   }
 
   /**
-   * Get the OS specific toolset with the given name.
+   * Get a OS specific toolset.
    * 
    * @param name
    *   The toolset name.
@@ -429,7 +429,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a new toolset from the given set of toolset packages. <P>
+   * Create a new toolset from a set of toolset packages. <P>
    * 
    * A new toolset will only be created if the environment defined by evaluating 
    * the packages has no environment conflicts (see {@link Toolset#hasConflicts 
@@ -578,7 +578,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the Unix toolset package with the given name and revision number. 
+   * Get a Unix toolset package. 
    * 
    * @param name
    *   The toolset package name.
@@ -601,7 +601,7 @@ class MasterMgrClient
   }
 
   /**
-   * Get the OS specific toolset package with the given name and revision number. 
+   * Get an OS specific toolset package. 
    * 
    * @param name
    *   The toolset package name.
@@ -643,7 +643,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a new read-only toolset package from the given modifiable package. <P> 
+   * Create a new read-only toolset package from a modifiable package. <P> 
    * 
    * Once created, the read-only package can not be altered and will remain accessable
    * forever.  Only read-only toolset packages can be used to create toolset, therefore
@@ -2036,7 +2036,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get default editor plugin for the given filename suffix and current user. <P> 
+   * Get the current user's default editor plugin for a filename suffix. <P> 
    * 
    * @param suffix
    *   The filename suffix.
@@ -2071,7 +2071,7 @@ class MasterMgrClient
   }
   
   /**
-   * Get the filename suffix to default editor mappings for the current user. <P> 
+   * Get the current user's filename suffix to default editor mappings. <P> 
    * 
    * @return 
    *   The suffix/editor mappings.
@@ -2127,7 +2127,7 @@ class MasterMgrClient
   }
 
   /**
-   * Set the filename suffix to default editor mappings for the current user. <P> 
+   * Set the current user's filename suffix to default editor mappings. <P> 
    * 
    * @param editors
    *   The suffix/editor mappings.
@@ -2315,7 +2315,7 @@ class MasterMgrClient
   
 
   /**
-   * Grant the given user privileged access status. <P> 
+   * Grant a user privileged access status. <P> 
    * 
    * This method may only be called by the "pipeline" user.  An exception will be thrown
    * if called by any other user.
@@ -2349,7 +2349,7 @@ class MasterMgrClient
   }
    
   /**
-   * Remove the given user's privileged access status. <P> 
+   * Remove a user's privileged access status. <P> 
    * 
    * This method may only be called by the "pipeline" user.  An exception will be thrown
    * if called by any other user.
@@ -2389,7 +2389,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the table of current working area authors and views
+   * Get the table of current working area authors and views.
    *
    * @return 
    *   The table of working area view names indexed by author user name.
@@ -2415,7 +2415,7 @@ class MasterMgrClient
   }
 
   /**
-   * Create a new empty working area for the given user and view. <P> 
+   * Create a new empty working area. <P> 
    * 
    * If the working area already exists, the operation is successful even though 
    * nothing is actually done.
@@ -2450,7 +2450,7 @@ class MasterMgrClient
   }
 
   /**
-   * Remove the entire working area for the given user and view. <P> 
+   * Remove an entire working area. <P> 
    * 
    * This method will only succeed there are no working versions of any node currently
    * checked-out in the given working area.  All nodes must be released prior to removing 
@@ -2489,8 +2489,7 @@ class MasterMgrClient
   }
 
   /**
-   * Get the names of the nodes in a working area for which have a name matching the 
-   * given search pattern.
+   * Get the names of the nodes in a working matching the given search pattern.
    * 
    * @param pattern
    *   A regular expression {@link Pattern pattern} used to match the fully resolved 
@@ -2648,7 +2647,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the working version of the node for the given user. <P> 
+   * Get the working version of a node. <P> 
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -2675,7 +2674,7 @@ class MasterMgrClient
   }  
 
   /** 
-   * Get the working version of the node for the given user. <P> 
+   * Get the working version of a node. <P> 
    * 
    * @param nodeID 
    *   The unique working version identifier. 
@@ -2709,7 +2708,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Set the node properties of the working version of the node for the given user. <P> 
+   * Set the node properties of the working version of a node. <P> 
    * 
    * Node properties include: <BR>
    * 
@@ -2861,7 +2860,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add a secondary file sequence to the given working version.
+   * Add a secondary file sequence to a working version.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -2892,7 +2891,7 @@ class MasterMgrClient
   } 
   
   /**
-   * Add a secondary file sequence to the given working version.
+   * Add a secondary file sequence to a working version.
    * 
    * @param nodeID 
    *   The unique working version identifier. 
@@ -2921,7 +2920,7 @@ class MasterMgrClient
 
 
   /**
-   * Remove a secondary file sequence from the given working version.
+   * Remove a secondary file sequence from a working version.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -2952,7 +2951,7 @@ class MasterMgrClient
   } 
     
   /**
-   * Remove a secondary file sequence from the given working version.
+   * Remove a secondary file sequence from a working version.
    * 
    * @param nodeID 
    *   The unique working version identifier. 
@@ -2983,8 +2982,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Rename a working version of a node owned by the given user which has never 
-   * been checked-in. <P> 
+   * Rename a working version of a node which has never been checked-in. <P> 
    * 
    * This operation allows a user to change the name, frame number padding and suffix of a 
    * previously registered node before it is checked-in. If a working version is successfully 
@@ -3038,8 +3036,7 @@ class MasterMgrClient
   } 
 
   /**
-   * Rename a working version of a node owned by the given user which has never 
-   * been checked-in. <P> 
+   * Rename a working version of a node which has never been checked-in. <P> 
    * 
    * This operation allows a user to change the name, frame number padding and suffix of a 
    * previously registered node before it is checked-in. If a working version is successfully 
@@ -3097,7 +3094,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Renumber the frame ranges of the file sequences associated with the given node. <P> 
+   * Renumber the frame ranges of the file sequences associated with a node. <P> 
    * 
    * See {@link NodeMod#adjustFrameRange adjustFrameRange} for the constraints on legal 
    * values for the given new frame range argument <CODE>range</CODE>.
@@ -3139,7 +3136,7 @@ class MasterMgrClient
   } 
 
   /**
-   * Renumber the frame ranges of the file sequences associated with the given node. <P> 
+   * Renumber the frame ranges of the file sequences associated with a node. <P> 
    * 
    * See {@link NodeMod#adjustFrameRange adjustFrameRange} for the constraints on legal 
    * values for the given new frame range argument <CODE>range</CODE>.
@@ -3188,7 +3185,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the revision numbers of all checked-in versions of the given node. <P> 
+   * Get the revision numbers of all checked-in versions of a node. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -3219,7 +3216,7 @@ class MasterMgrClient
   }  
 
   /** 
-   * Get the checked-in version of the node with the given revision number. <P> 
+   * Get the checked-in version of a node. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -3255,7 +3252,7 @@ class MasterMgrClient
   }  
 
   /** 
-   * Get the log messages associated with all checked-in versions of the given node.
+   * Get the log messages associated with all checked-in versions of a node.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -3289,7 +3286,7 @@ class MasterMgrClient
   }  
 
   /**
-   * Get whether each file associated with each checked-in version of the given node 
+   * Get whether each file associated with each checked-in version of a node 
    * contains new data not present in the previous checked-in versions. <P> 
    * 
    * @param name 
@@ -3324,7 +3321,7 @@ class MasterMgrClient
   }    
   
   /**
-   * Get the upstream links of all checked-in versions of the given node.
+   * Get the upstream links of all checked-in versions of a node.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -3363,7 +3360,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the status of the tree of nodes rooted at the given node. <P> 
+   * Get the status of the tree of nodes rooted at a node. <P> 
    * 
    * In addition to providing node status information for the given node, the returned 
    * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
@@ -3396,7 +3393,7 @@ class MasterMgrClient
   } 
 
   /** 
-   * Get the status of the tree of nodes rooted at the given node. <P> 
+   * Get the status of the tree of nodes rooted at a node. <P> 
    * 
    * In addition to providing node status information for the given node, the returned 
    * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
@@ -3438,7 +3435,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Register an initial working version of a node owned by the given user. <P> 
+   * Register an initial working version of a node. <P> 
    * 
    * The <CODE>mod</CODE> argument must have a node name which does not already exist and
    * does not match any of the path components of any existing node.  <P> 
@@ -3648,18 +3645,12 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Check-In the tree of nodes owned by the given user rooted at the given working 
-   * version. <P> 
+   * Check-In the tree of nodes rooted at a working version. <P> 
    * 
    * The check-in operation proceeds in a depth-first manner checking-in the most upstream
    * nodes first.  The check-in operation aborts at the first failure of a particular node. 
    * It is therefore possible for the overall check-in to fail after already succeeding for 
    * some set of upstream nodes. <P> 
-   * 
-   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
-   * nodes (both upstream and downstream) linked to the given node.  The status information 
-   * for the upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -3697,18 +3688,12 @@ class MasterMgrClient
   } 
 
   /** 
-   * Check-In the tree of nodes owned by the given user rooted at the given working 
-   * version. <P> 
+   * Check-In the tree of nodes rooted at a working version. <P> 
    * 
    * The check-in operation proceeds in a depth-first manner checking-in the most upstream
    * nodes first.  The check-in operation aborts at the first failure of a particular node. 
    * It is therefore possible for the overall check-in to fail after already succeeding for 
    * some set of upstream nodes. <P> 
-   * 
-   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
-   * nodes (both upstream and downstream) linked to the given node.  The status information 
-   * for the upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -3750,16 +3735,10 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Check-Out the tree of nodes owned by the given user rooted at the given working 
-   * version. <P> 
+   * Check-Out the tree of nodes rooted at a working version. <P> 
    * 
    * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
    * version. <P>
-   * 
-   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
-   * nodes (both upstream and downstream) linked to the given node.  The status information 
-   * for the upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -3802,16 +3781,10 @@ class MasterMgrClient
   } 
 
   /** 
-   * Check-Out the tree of nodes owned by the given user rooted at the given working 
-   * version. <P> 
+   * Check-Out the tree of nodes rooted at a working version. <P> 
    * 
    * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
    * version. <P>
-   * 
-   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
-   * nodes (both upstream and downstream) linked to the given node.  The status information 
-   * for the upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -3851,6 +3824,84 @@ class MasterMgrClient
     NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode, method);
 
     Object obj = performLongTransaction(MasterRequest.CheckOut, req, 15000, 60000);  
+    handleSimpleResponse(obj);
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Lock the working version of a node to a specific checked-in version. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then lock to the base checked-in
+   * version. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param vid 
+   *   The revision number of the checked-in version to which the working version is being locked.
+   * 
+   * @throws PipelineException
+   *   If unable to lock the nodes.
+   */ 
+  public synchronized void
+  lock
+  ( 
+   String author, 
+   String view, 
+   String name,
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    lock(new NodeID(author, view, name), vid);
+  } 
+
+  /** 
+   * Lock the working version of a node to a specific checked-in version. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then lock to the base checked-in
+   * version. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param vid 
+   *   The revision number of the checked-in version to which the working version is being locked.
+   * 
+   * @throws PipelineException
+   *   If unable to lock the nodes.
+   */ 
+  public synchronized void
+  lock
+  ( 
+   NodeID nodeID,
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may lock nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeLockReq req = new NodeLockReq(nodeID, vid);
+
+    Object obj = performLongTransaction(MasterRequest.Lock, req, 15000, 60000);  
     handleSimpleResponse(obj);
   } 
 
@@ -3930,7 +3981,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Replace the primary files associated one node with the primary files of another node. <P>
+   * Replace the primary files associated with one node with the primary files of another node. <P>
    * 
    * The two nodes must have exactly the same number of files in their primary file sequences
    * or the operation will fail. <P> 
@@ -4058,7 +4109,7 @@ class MasterMgrClient
 
   /**
    * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
-   * files associated with the tree of nodes rooted at the given node. <P> 
+   * files associated with a tree of nodes rooted at the given node. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -4346,7 +4397,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Remove the working area files associated with the given node. <P>  
+   * Remove the working area files associated with a node. <P>  
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -4381,7 +4432,7 @@ class MasterMgrClient
   }
 
   /**
-   * Remove the working area files associated with the given node. <P>  
+   * Remove the working area files associated with a node. <P>  
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.

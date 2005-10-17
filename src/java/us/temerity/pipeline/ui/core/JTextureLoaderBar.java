@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.7 2005/02/09 18:21:47 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.8 2005/10/17 06:23:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -169,6 +169,7 @@ class JTextureLoaderBar
 	pTextures.add("Blank-" + mode);
 
       pTextures.add("Collapsed");
+      pTextures.add("Locked");
       pTextures.add("ColorCircle");
 
       for(LinkRelationship rel : LinkRelationship.all())

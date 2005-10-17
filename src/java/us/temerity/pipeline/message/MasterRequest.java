@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.40 2005/09/07 21:11:16 jim Exp $
+// $Id: MasterRequest.java,v 1.41 2005/10/17 06:23:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -429,6 +429,11 @@ enum MasterRequest
    * An instance of {@link NodeCheckOutReq NodeCheckOutReq} is next.
    */
   CheckOut, 
+
+  /**
+   * An instance of {@link NodeLockReq NodeLockReq} is next.
+   */
+  Lock, 
 
   /**
    * An instance of {@link NodeRevertFilesReq NodeRevertFilesReq} is next.

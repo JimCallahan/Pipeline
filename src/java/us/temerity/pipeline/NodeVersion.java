@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.21 2005/06/02 22:11:58 jim Exp $
+// $Id: NodeVersion.java,v 1.22 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -41,6 +41,9 @@ class NodeVersion
    * @param lvids
    *   The revision numbers of the checked-in upstream node versions.
    * 
+   * @param locked
+   *   Whether the upstream working versions are locked.
+   * 
    * @param isNovel
    *   Whether each file associated with the version contains new data not present in the
    *   previous checked-in version.
@@ -64,6 +67,7 @@ class NodeVersion
    NodeMod mod, 
    VersionID vid, 
    TreeMap<String,VersionID> lvids,
+   TreeMap<String,Boolean> locked,
    TreeMap<FileSeq,boolean[]> isNovel,
    String author, 
    String msg, 
@@ -83,7 +87,8 @@ class NodeVersion
 
     pSources = new TreeMap<String,LinkVersion>();
     for(LinkMod link : mod.getSources()) 
-      pSources.put(link.getName(), new LinkVersion(link, lvids.get(link.getName())));
+      pSources.put(link.getName(), 
+		   new LinkVersion(link, lvids.get(link.getName()), locked.get(link.getName())));
 
     if(isNovel == null) 
       throw new IllegalArgumentException("The file novelty table cannot be (null)!");      

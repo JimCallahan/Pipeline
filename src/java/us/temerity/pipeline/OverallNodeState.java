@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.12 2005/02/08 13:13:38 jim Exp $
+// $Id: OverallNodeState.java,v 1.13 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -63,6 +63,24 @@ enum OverallNodeState
    * 
    * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> 
    * and individual <CODE>FileState</CODE> of each file associated with the node are all 
+   * <CODE>Identical</CODE>.  However, the IsLocked property of one or more of the upstream
+   * working versions is different than the IsLocked property of the base checked-in link to 
+   * the node. This means that one of the nodes upstream has been Locked or Unlocked since
+   * the current node was checked-out. <P> 
+   * 
+   * Alternatively, one or more of the upstream nodes has an <CODE>OverallNodeState</CODE> state 
+   * of <CODE>Modified Locks</CODE>. <P> 
+   * 
+   * This state has lower precendence than <CODE>Modified</CODE> or <CODE>ModifiedLinks</CODE>.
+   */
+  ModifiedLocks, 
+
+  /**
+   * The working version of the node exists, is based on the latest checked-in version 
+   * and is identical to that version. <P>
+   * 
+   * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> 
+   * and individual <CODE>FileState</CODE> of each file associated with the node are all 
    * <CODE>Identical</CODE>. However, one or more of the linked upstream nodes have 
    * an <CODE>OverallNodeState</CODE> equal to <CODE>Modified</CODE>, 
    * <CODE>ModifiedLinks</CODE> or <CODE>Conflicted</CODE>. <P> 
@@ -74,7 +92,7 @@ enum OverallNodeState
   ModifiedLinks, 
 
   /**
-   * The working version is based on the latest checked-in version, but is node identical
+   * The working version is based on the latest checked-in version, but is not identical
    * to that version. <P> 
    * 
    * The <CODE>VersionState</CODE> is <CODE>Identical</CODE>. One or more of the 
@@ -187,6 +205,7 @@ enum OverallNodeState
     "Pending", 
     "Checked-In", 
     "Identical", 
+    "Modified Locks",
     "Modified Links",
     "Modified", 
     "Needs Check-Out", 
@@ -199,6 +218,7 @@ enum OverallNodeState
     "P", 
     "I", 
     "=", 
+    "K",
     "L",
     "M", 
     "O",

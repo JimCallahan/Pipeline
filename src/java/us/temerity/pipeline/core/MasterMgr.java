@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.140 2005/10/07 12:44:40 jim Exp $
+// $Id: MasterMgr.java,v 1.141 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6237,7 +6237,7 @@ class MasterMgr
 
       /* get the current status of the nodes */ 
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), 
+      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, 
 			    new LinkedList<String>(), table, timer);
 
 
@@ -6246,7 +6246,7 @@ class MasterMgr
 	new TreeMap<String,TreeSet<VersionID>>();
       {
 	collectRequiredVersions
-	  (true, nodeID, req.getVersionID(), req.getMode(), req.getMethod(), 
+	  (true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
 	   table, requiredVersions, new LinkedList<String>(), new HashSet<String>(), 
 	   timer);
       }
@@ -6316,7 +6316,7 @@ class MasterMgr
 	}
 
 	/* check-out the nodes */ 
-	performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), req.getMethod(), 
+	performCheckOut(true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
 			table, new LinkedList<String>(), new HashSet<String>(), 
 			new HashSet<String>(), timer);
       }
@@ -6351,6 +6351,9 @@ class MasterMgr
    * @param vid 
    *   The revision number of the node to check-out.
    * 
+   * @param isLocked
+   *   Whether the current node should be checked-out locked.
+   * 
    * @param mode
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
@@ -6383,6 +6386,7 @@ class MasterMgr
    boolean isRoot, 
    NodeID nodeID, 
    VersionID vid, 
+   boolean isLocked, 
    CheckOutMode mode,
    CheckOutMethod method, 
    HashMap<String,NodeStatus> stable,
@@ -6410,7 +6414,7 @@ class MasterMgr
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
-	performUpstreamNodeOp(new NodeOp(), nodeID, 
+	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, 
 			      new LinkedList<String>(), stable, timer);
 	status = stable.get(name);
       }
@@ -6515,10 +6519,13 @@ class MasterMgr
       }
 
       /* process the upstream nodes */
-      for(LinkVersion link : vsn.getSources()) {
-	NodeID lnodeID = new NodeID(nodeID, link.getName());
-	collectRequiredVersions(false, lnodeID, link.getVersionID(), mode, checkOutMethod, 
-				stable, requiredVersions, branch, seen, timer);
+      if(!isLocked) {
+	for(LinkVersion link : vsn.getSources()) {
+	  NodeID lnodeID = new NodeID(nodeID, link.getName());
+	  collectRequiredVersions(false, lnodeID, link.getVersionID(), link.isLocked(), 
+				  mode, checkOutMethod, 
+				  stable, requiredVersions, branch, seen, timer);
+	}
       }
 
       /* add checked-in version to the required versions */ 
@@ -6555,6 +6562,9 @@ class MasterMgr
    * @param vid 
    *   The revision number of the node to check-out.
    * 
+   * @param isLocked
+   *   Whether the current node should be checked-out locked.
+   * 
    * @param mode
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
@@ -6588,6 +6598,7 @@ class MasterMgr
    boolean isRoot, 
    NodeID nodeID, 
    VersionID vid, 
+   boolean isLocked, 
    CheckOutMode mode,
    CheckOutMethod method, 
    HashMap<String,NodeStatus> stable,
@@ -6615,7 +6626,7 @@ class MasterMgr
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
-	performUpstreamNodeOp(new NodeOp(), nodeID, 
+	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, 
 			      new LinkedList<String>(), stable, timer);
 	status = stable.get(name);
       }
@@ -6695,21 +6706,26 @@ class MasterMgr
  
       /* determine whether working files or links should be created */ 
       boolean isFrozen = false;
-      CheckOutMethod checkOutMethod = method;      
-      switch(method) {
-      case PreserveFrozen:
-	if((work != null) && work.isFrozen()) {
-	  checkOutMethod = CheckOutMethod.AllFrozen;
+      CheckOutMethod checkOutMethod = method;   
+      if(isLocked) {
+	isFrozen = true;   
+      }
+      else {
+	switch(method) {
+	case PreserveFrozen:
+	  if((work != null) && work.isFrozen()) {
+	    checkOutMethod = CheckOutMethod.AllFrozen;
+	    isFrozen = true;
+	  }
+	  break;
+	  
+	case FrozenUpstream:
+	  isFrozen = !isRoot;
+	  break;
+	  
+	case AllFrozen:
 	  isFrozen = true;
 	}
-	break;
-
-      case FrozenUpstream:
-	isFrozen = !isRoot;
-	break;
-
-      case AllFrozen:
-	isFrozen = true;
       }
 
       /* see if the check-out should be skipped, 
@@ -6728,7 +6744,7 @@ class MasterMgr
 
 	    case PreserveFrozen:
 	    case AllFrozen:
-	      if(work.isFrozen() == isFrozen) {
+	      if((work.isFrozen() == isFrozen) && (work.isLocked() == isLocked)) {
 		branch.removeLast();
 		return;
 	      }
@@ -6760,17 +6776,19 @@ class MasterMgr
 	}
       }
 
-      /* process the upstream nodes */
-      for(LinkVersion link : vsn.getSources()) {
-	NodeID lnodeID = new NodeID(nodeID, link.getName());
-	performCheckOut(false, lnodeID, link.getVersionID(), mode, checkOutMethod, stable, 
-			branch, seen, dirty, timer);
-
-	/* if any of the upstream nodes are dirty, 
+      /* process the upstream nodes */ 
+      if(!isLocked) {
+	for(LinkVersion link : vsn.getSources()) {
+	  NodeID lnodeID = new NodeID(nodeID, link.getName());
+	  performCheckOut(false, lnodeID, link.getVersionID(), link.isLocked(), 
+			  mode, checkOutMethod, stable, branch, seen, dirty, timer);
+	  
+	  /* if any of the upstream nodes are dirty, 
   	     mark this node as dirty and make sure it isn't frozen */ 
-	if(dirty.contains(link.getName())) {
-	  dirty.add(name);
-	  isFrozen = false;
+	  if(dirty.contains(link.getName())) {
+	    dirty.add(name);
+	    isFrozen = false;
+	  }
 	}
       }
 
@@ -6800,7 +6818,7 @@ class MasterMgr
       }
 
       /* create a new working version and write it to disk */ 
-      NodeMod nwork = new NodeMod(vsn, timestamp, isFrozen);
+      NodeMod nwork = new NodeMod(vsn, timestamp, isFrozen, isLocked);
       writeWorkingVersion(nodeID, nwork);
 
       /* initialize new working version */ 
@@ -6846,7 +6864,8 @@ class MasterMgr
 
 	/* remove the downstream links from any obsolete upstream nodes */ 
 	for(LinkMod link : work.getSources()) {
-	  if(!nwork.getSourceNames().contains(link.getName())) {
+	  if(isLocked || 
+	     !nwork.getSourceNames().contains(link.getName())) {
 	    String source = link.getName();
 	    
 	    timer.aquire();
@@ -6866,21 +6885,23 @@ class MasterMgr
       }
 
       /* set the working downstream links from the upstream nodes to this node */ 
-      for(LinkMod link : nwork.getSources()) {
-	String lname = link.getName();
-	
-	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
+      if(!isLocked) {
+	for(LinkMod link : nwork.getSources()) {
+	  String lname = link.getName();
 	  
-	  DownstreamLinks dsl = getDownstreamLinks(lname);
-	  dsl.addWorking(new NodeID(nodeID, lname), name);
-	}  
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}     
+	  timer.aquire();
+	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
+	  downstreamLock.writeLock().lock();
+	  try {
+	    timer.resume();
+	    
+	    DownstreamLinks dsl = getDownstreamLinks(lname);
+	    dsl.addWorking(new NodeID(nodeID, lname), name);
+	  }  
+	  finally {
+	    downstreamLock.writeLock().unlock();
+	  }     
+	}
       }
     }
     finally {
@@ -6890,6 +6911,250 @@ class MasterMgr
 
     /* pop the current node off of the end of the branch */ 
     branch.removeLast();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Lock the working version of a node to a specific checked-in version. <P> 
+   * 
+   * @param req 
+   *   The node lock request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to the lock the node.
+   */ 
+  public Object
+  lock
+  ( 
+   NodeLockReq req 
+  ) 
+  {
+    assert(req != null);
+    NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName();
+    VersionID vid = req.getVersionID();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.lock(): " + nodeID);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      /* lock online/offline status of the node to lock */ 
+      timer.aquire();
+      ReentrantReadWriteLock onOffLock = getOnlineOfflineLock(name);
+      onOffLock.readLock().lock();
+      try {
+	timer.resume();
+
+	/* check if the target version is currently offline */ 
+	boolean isOffline = false;
+	{
+	  timer.aquire();
+	  synchronized(pOfflined) {
+	    timer.resume();
+	    TreeSet<VersionID> offline = pOfflined.get(name);
+	    if((offline != null) && offline.contains(vid)) 
+	      isOffline = true;
+	  }
+	}
+	
+	/* abort if the target version is offline */ 
+	if(isOffline) {
+	  StringBuffer buf = new StringBuffer();
+	  buf.append
+	    ("Unable to lock node (" + name + ") to checked-in version (" + vid + ") because " + 
+	     "that version is currently offline!\n\n");
+
+	  TreeSet<VersionID> ovids = new TreeSet<VersionID>();
+	  ovids.add(vid);
+	  
+	  TreeMap<String,TreeSet<VersionID>> ovsns = new TreeMap<String,TreeSet<VersionID>>();
+	  ovsns.put(name, ovids);
+
+	  Object obj = requestRestore(new MiscRequestRestoreReq(ovsns));
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    buf.append
+	      ("The request to restore this offline version also failed:\n\n" + 
+	       rsp.getMessage());	    
+	  }
+	  else {
+	    buf.append
+	      ("However, a request has been submitted to restore this offline version " + 
+	       "so that it may be used once it has been brought back online.");
+	  }
+	  
+	  throw new PipelineException(buf.toString());
+	}
+
+	/* lock the node */ 
+	timer.aquire();
+	ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+	workingLock.readLock().lock();
+	ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+	checkedInLock.readLock().lock();
+	try {
+	  timer.resume();	
+
+	  /* lookup versions */ 
+	  WorkingBundle working = null;
+	  TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+	  {
+	    try {
+	      working = getWorkingBundle(nodeID);
+	    }
+	    catch(PipelineException ex) {
+	    }
+	  
+	    try {
+	      checkedIn = getCheckedInBundles(name);
+	    }
+	    catch(PipelineException ex) {
+	      throw new PipelineException
+		("There are no checked-in versions of node (" + name + ") to lock!");
+	    }
+	    assert(checkedIn != null);
+	  }
+	
+	  /* extract the working and the checked-in versions */ 
+	  NodeMod work = null;
+	  NodeVersion vsn = null;
+	  {
+	    if(working != null)
+	      work = new NodeMod(working.getVersion());
+	  
+	    if(vid == null) {
+	      if(work == null) 
+		throw new PipelineException
+		  ("No working version of node (" + name + ") exists and no revision number " + 
+		   "was specified for the lock operation!");
+	      vid = work.getWorkingID();
+	    }
+	    assert(vid != null);
+
+	    CheckedInBundle bundle = checkedIn.get(vid);
+	    if(bundle == null) 
+	      throw new PipelineException
+		("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+	    vsn = new NodeVersion(bundle.getVersion());
+	    assert(vsn != null);
+	  }
+
+	  /* make sure the checked-in version has no Reference links */ 
+	  for(LinkVersion link : vsn.getSources()) {
+	    if(link.getPolicy() == LinkPolicy.Reference) 
+	      throw new PipelineException
+		("Unable to lock node (" + name + ") because the checked-in version of the " + 
+		 "node had a Reference link to node (" + link.getName() + ")!");
+	  }
+
+	  /* get the current timestamp */ 
+	  Date timestamp = Dates.now(); 
+
+	  {
+	    FileMgrClient fclient = getFileMgrClient();
+	    try {
+	      /* remove the existing working area files before the check-out */ 
+	      if(work != null) 
+		fclient.removeAll(nodeID, work.getSequences());	
+
+	      /* check-out the links to the checked-in files */
+	      fclient.checkOut(nodeID, vsn, true);
+	    }
+	    finally {
+	      freeFileMgrClient(fclient);
+	    }
+	  }
+
+	  /* create a new working version and write it to disk */ 
+	  NodeMod nwork = new NodeMod(vsn, timestamp, true, true);
+	  writeWorkingVersion(nodeID, nwork);
+	
+	  /* initialize new working version */ 
+	  if(working == null) {
+	    /* register the node name */ 
+	    timer.aquire();
+	    synchronized(pNodeTreeRoot) {
+	      timer.resume();
+	      addWorkingNodeTreePath(nodeID, nwork.getSequences());
+	    }
+	  
+	    /* create a new working bundle */ 
+	    synchronized(pWorkingBundles) {
+	      HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	      if(table == null) {
+		table = new HashMap<NodeID,WorkingBundle>();
+		pWorkingBundles.put(name, table);
+	      }
+	      table.put(nodeID, new WorkingBundle(nwork));
+	    }
+	  
+	    /* initialize the working downstream links */ 
+	    {
+	      timer.aquire();
+	      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	      downstreamLock.writeLock().lock();
+	      try {
+		timer.resume();
+	      
+		DownstreamLinks links = getDownstreamLinks(name); 
+		links.createWorking(nodeID);
+	      }
+	      finally {
+		downstreamLock.writeLock().unlock();
+	      }      
+	    }
+	  }
+	
+	  /* update existing working version */ 
+	  else {
+	    /* update the working bundle */ 
+	    working.setVersion(nwork);
+
+	    /* remove the downstream links from all upstream nodes */ 
+	    for(LinkMod link : work.getSources()) {
+	      String source = link.getName();
+	      
+	      timer.aquire();
+	      ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+	      downstreamLock.writeLock().lock();  
+	      try {
+		timer.resume();
+	      
+		DownstreamLinks links = getDownstreamLinks(source); 
+		links.removeWorking(new NodeID(nodeID, source), name);
+	      }
+	      finally {
+		downstreamLock.writeLock().unlock();
+	      }
+	    }
+	  }
+	  
+	  return new SuccessRsp(timer);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+	finally {
+	  checkedInLock.readLock().unlock();  
+	  workingLock.readLock().unlock();
+	}
+      }
+      finally {
+	onOffLock.readLock().unlock();
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, "Lock operation aborted!\n\n" + ex.getMessage());
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
 
@@ -11007,7 +11272,7 @@ class MasterMgr
     NodeStatus root = null;
     {
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(nodeOp, nodeID, new LinkedList<String>(), table, timer);
+      performUpstreamNodeOp(nodeOp, nodeID, false, new LinkedList<String>(), table, timer);
 
       root = table.get(nodeID.getName());
       assert(root != null);
@@ -11043,6 +11308,9 @@ class MasterMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
+   * @param isTargetLinkLocked
+   *   Whether a locked link from a checked-in target node to this node exists.
+   * 
    * @param branch
    *   The names of the nodes from the root to this node.
    * 
@@ -11060,6 +11328,7 @@ class MasterMgr
   (
    NodeOp nodeOp,
    NodeID nodeID, 
+   boolean isTargetLinkLocked, 
    LinkedList<String> branch, 
    HashMap<String,NodeStatus> table, 
    TaskTimer timer
@@ -11198,37 +11467,45 @@ class MasterMgr
       NodeStatus status = new NodeStatus(nodeID);
       table.put(name, status);
 
-      /* process the upstream nodes */ 
+      /* determine if the current working version is locked */ 
+      boolean workIsLocked = ((work != null) && work.isLocked());
+
+      /* if not locked, process the upstream nodes */ 
       Date missingStamp = new Date();
       switch(versionState) {
       case CheckedIn:
-	for(LinkVersion link : latest.getSources()) {
-	  NodeID lnodeID = new NodeID(nodeID, link.getName());
-
-	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
-	  NodeStatus lstatus = table.get(link.getName());
-	      
-	  status.addSource(lstatus);
-	  lstatus.addTarget(status);
+	if(!isTargetLinkLocked) {
+	  for(LinkVersion link : latest.getSources()) {
+	    NodeID lnodeID = new NodeID(nodeID, link.getName());
+	    
+	    performUpstreamNodeOp(nodeOp, lnodeID, link.isLocked(), branch, table, timer);
+	    NodeStatus lstatus = table.get(link.getName());
+	    
+	    status.addSource(lstatus);
+	    lstatus.addTarget(status);
+	  }
 	}
 	break;
-
+	
       default:
-	for(LinkMod link : work.getSources()) {
-	  NodeID lnodeID = new NodeID(nodeID, link.getName());
-
-	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
-	  NodeStatus lstatus = table.get(link.getName());
-
-	  status.addSource(lstatus);
-	  lstatus.addTarget(status);
+	if(!workIsLocked) {
+	  for(LinkMod link : work.getSources()) {
+	    NodeID lnodeID = new NodeID(nodeID, link.getName());
+	    
+	    performUpstreamNodeOp(nodeOp, lnodeID, false, branch, table, timer);
+	    NodeStatus lstatus = table.get(link.getName());
+	    
+	    status.addSource(lstatus);
+	    lstatus.addTarget(status);
+	  }
 	}
       }
 
-      /* compute link state and 
-	 whether the source node can be ignore when propogating staleness */ 
+      /* compute link state, whether the source node can be ignored when propogating staleness 
+	 and whether the locked state of any of the common source nodes have changed */ 
       LinkState linkState = null;
       TreeSet<String> nonIgnoredSources = new TreeSet<String>();
+      boolean modifiedLocks = false;
       switch(versionState) {
       case Pending:
 	linkState = LinkState.Pending;
@@ -11236,27 +11513,37 @@ class MasterMgr
 	
       case CheckedIn:
 	linkState = LinkState.CheckedIn;
-	  break;
-	  
+	break;
+	
       case Identical:
       case NeedsCheckOut:
 	{
 	  boolean workEqBase = true;
-	  for(LinkMod link : work.getSources()) {
-	    String lname = link.getName(); 
-	    LinkVersion blink = base.getSource(lname); 
-
-	    if((blink == null) || !link.equals(blink)) {
-	      workEqBase = false;
-	      nonIgnoredSources.add(lname);
-	    }
-	    else {
-	      NodeDetails ldetails = table.get(link.getName()).getDetails();
-	      VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-	      if(!blink.getVersionID().equals(lvid)) {
+	  if(!workIsLocked) {
+	    for(LinkMod link : work.getSources()) {
+	      String lname = link.getName(); 
+	      LinkVersion blink = base.getSource(lname); 
+	      NodeDetails ldetails = table.get(lname).getDetails();
+	   
+	      if((blink == null) || !link.equals(blink)) {
 		workEqBase = false;
 		nonIgnoredSources.add(lname);
 	      }
+	      else {
+		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+		if(!blink.getVersionID().equals(lvid)) {
+		  workEqBase = false;
+		  nonIgnoredSources.add(lname);
+		}
+	      }
+	     
+ 	      if(ldetails.getOverallNodeState() == OverallNodeState.ModifiedLocks) 
+ 		nonIgnoredSources.remove(lname);
+	      
+	      if(((blink != null) && 
+		  (ldetails.getWorkingVersion().isLocked() != blink.isLocked())) ||
+		 (ldetails.getOverallNodeState() == OverallNodeState.ModifiedLocks))
+		modifiedLocks = true;
 	    }
 	  }
 
@@ -11454,29 +11741,32 @@ class MasterMgr
 	  if(anyMissingFs) 	    
 	    overallNodeState = 
 	      (anyNeedsCheckOut ? OverallNodeState.MissingNewer : OverallNodeState.Missing);
-	  else if(anyConflicted || (anyNeedsCheckOut && anyModified))
+	  else if(anyConflicted || (anyNeedsCheckOut && (anyModified || modifiedLocks)))
 	    overallNodeState = OverallNodeState.Conflicted;
 	  else if(anyModified) 
 	    overallNodeState = OverallNodeState.Modified;
 	  else if(anyNeedsCheckOut) {
-	    for(LinkMod link : work.getSources()) {
-	      NodeDetails ldetails = table.get(link.getName()).getDetails();
-	      VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-
-	      switch(ldetails.getOverallNodeState()) {
-	      case Modified:
-	      case ModifiedLinks:
-	      case Conflicted:	
-	      case Missing:
-	      case MissingNewer:
-		overallNodeState = OverallNodeState.Conflicted;
-
- 	      case Identical:
- 	      case NeedsCheckOut:
-		{
-		  LinkVersion blink = base.getSource(link.getName());
-		  if((blink == null) || !blink.getVersionID().equals(lvid)) 
-		    overallNodeState = OverallNodeState.Conflicted;
+	    if(!workIsLocked) {
+	      for(LinkMod link : work.getSources()) {
+		NodeDetails ldetails = table.get(link.getName()).getDetails();
+		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+		
+		switch(ldetails.getOverallNodeState()) {
+		case ModifiedLocks:
+		case ModifiedLinks:
+		case Modified:		  
+		case Conflicted:	
+		case Missing:
+		case MissingNewer:
+		  overallNodeState = OverallNodeState.Conflicted;
+		  
+		case Identical:
+		case NeedsCheckOut:
+		  {
+		    LinkVersion blink = base.getSource(link.getName());
+		    if((blink == null) || !blink.getVersionID().equals(lvid)) 
+		      overallNodeState = OverallNodeState.Conflicted;
+		  }
 		}
 	      }
 	    }
@@ -11494,28 +11784,34 @@ class MasterMgr
 
 	    /* the work and base version have the same set of links 
 		 because (linkState == Identical) */
-	    for(LinkVersion link : base.getSources()) {
-	      NodeDetails ldetails = table.get(link.getName()).getDetails();
-	      VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-	      
-	      switch(ldetails.getOverallNodeState()) {
-	      case Modified:
-	      case ModifiedLinks:
-	      case Conflicted:	
-	      case Missing:
-	      case MissingNewer:
-		overallNodeState = OverallNodeState.ModifiedLinks;
-		break;
+	    if(!workIsLocked) {
+	      for(LinkVersion link : base.getSources()) {
+		NodeDetails ldetails = table.get(link.getName()).getDetails();
+		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 		
- 	      case Identical:
- 	      case NeedsCheckOut:
- 		if(!link.getVersionID().equals(lvid)) 
- 		  overallNodeState = OverallNodeState.ModifiedLinks;
+		switch(ldetails.getOverallNodeState()) {
+		case Modified:
+		case ModifiedLinks:
+		case Conflicted:	
+		case Missing:
+		case MissingNewer:
+		  overallNodeState = OverallNodeState.ModifiedLinks;
+		  break;
+		  
+		case Identical:
+		case NeedsCheckOut:
+		  if(!link.getVersionID().equals(lvid)) 
+		    overallNodeState = OverallNodeState.ModifiedLinks;
+		}
 	      }
 	    }
 
-	    if(overallNodeState == null)
-	      overallNodeState = OverallNodeState.Identical;
+	    if(overallNodeState == null) {
+	      if(modifiedLocks) 
+		overallNodeState = OverallNodeState.ModifiedLocks;
+	      else
+		overallNodeState = OverallNodeState.Identical;
+	    }
 	  }
 	}
       }
@@ -11537,7 +11833,16 @@ class MasterMgr
 	break;
 
       default:
-	{	    
+	if(workIsLocked) {
+	  int numFrames = work.getPrimarySequence().numFrames();
+	  jobIDs      = new Long[numFrames];
+	  queueStates = new QueueState[numFrames];
+
+	  int wk;
+	  for(wk=0; wk<queueStates.length; wk++) 
+	    queueStates[wk] = QueueState.Finished;
+	}
+	else {
 	  int numFrames = work.getPrimarySequence().numFrames();
 	  jobIDs      = new Long[numFrames];
 	  queueStates = new QueueState[numFrames];
@@ -11598,6 +11903,7 @@ class MasterMgr
 	      if(queueStates[wk] == null) {
 		switch(overallNodeState) {
 		case Identical: 
+		case ModifiedLocks: 
 		  queueStates[wk] = QueueState.Finished;
 		  break;
 		  
@@ -11616,59 +11922,70 @@ class MasterMgr
 			NodeStatus lstatus = status.getSource(link.getName());
 			NodeDetails ldetails = lstatus.getDetails();
 			
-			QueueState lqs[] = ldetails.getQueueState();
-			Date lstamps[] = ldetails.getFileTimeStamps();
-		      
-			boolean lanyMissing[] = null;
-			for(FileSeq lfseq : ldetails.getFileStateSequences()) {
-			  FileState lfs[] = ldetails.getFileState(lfseq);
-	    
-			  if(lanyMissing == null) 
-			    lanyMissing = new boolean[lfs.length];
-			  
-			  int mk;
-			  for(mk=0; mk<lanyMissing.length; mk++) {
-			    if(lfs[mk] == FileState.Missing) 
-			      lanyMissing[mk] = true;
-			  }
-			}
-
-			switch(link.getRelationship()) {
-			case OneToOne:
-			  {
-			    Integer offset = link.getFrameOffset();
-			    int idx = wk+offset;
-			    if(((idx >= 0) && (idx < lqs.length)) &&
-			       ((lqs[idx] != QueueState.Finished) || 
-				lanyMissing[idx] || 
-				((lstamps[idx] != null) &&
-				 (oldestStamps[wk].compareTo(lstamps[idx]) < 0))))
-			      queueStates[wk] = QueueState.Stale;
-			  }
+			switch(ldetails.getOverallNodeState()) {
+			case ModifiedLocks: 
 			  break;
-			
-		      case All:
-			{
-			  int fk;
-			  for(fk=0; fk<lqs.length; fk++) {
-			    if((lqs[fk] != QueueState.Finished) || 
-			       lanyMissing[fk] || 
-			       ((lstamps[fk] != null) &&
-				(oldestStamps[wk].compareTo(lstamps[fk]) < 0))) {
-			      queueStates[wk] = QueueState.Stale;
-			      break;
+			  
+			default:
+			  {
+			    QueueState lqs[]   = ldetails.getQueueState();
+			    Date lstamps[]     = ldetails.getFileTimeStamps();
+			    boolean lignored[] = ldetails.ignoreTimeStamps();
+
+			    boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+
+			    boolean lanyMissing[] = null;
+			    for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+			      FileState lfs[] = ldetails.getFileState(lfseq);
+			      
+			      if(lanyMissing == null) 
+				lanyMissing = new boolean[lfs.length];
+			      
+			      int mk;
+			      for(mk=0; mk<lanyMissing.length; mk++) {
+				if(lfs[mk] == FileState.Missing) 
+				  lanyMissing[mk] = true;
+			      }
 			    }
+			    
+			    switch(link.getRelationship()) {
+			    case OneToOne:
+			      {
+				Integer offset = link.getFrameOffset();
+				int idx = wk+offset;
+				if(((idx >= 0) && (idx < lqs.length)) &&
+				   ((lqs[idx] != QueueState.Finished) || 
+				    lanyMissing[idx] || 
+				    ((!lignored[idx] || nonIgnored) && (lstamps[idx] != null) &&
+				     (oldestStamps[wk].compareTo(lstamps[idx]) < 0))))
+				  queueStates[wk] = QueueState.Stale;
+			      }
+			      break;
+			      
+			    case All:
+			      {
+				int fk;
+				for(fk=0; fk<lqs.length; fk++) {
+				  if((lqs[fk] != QueueState.Finished) || 
+				     lanyMissing[fk] || 
+				     ((!lignored[fk] || nonIgnored) && (lstamps[fk] != null) &&
+				      (oldestStamps[wk].compareTo(lstamps[fk]) < 0))) {
+				    queueStates[wk] = QueueState.Stale;
+				    break;
+				  }
+				}
+			      }
+			    }		    
 			  }
 			}
-		      }		    
+		      }
+		      
+		      if(queueStates[wk] != null) 
+			break;
 		    }
-		    
-		    if(queueStates[wk] != null) 
-		      break;
-		  }
 		  
-		  if(queueStates[wk] == null) 
-		    queueStates[wk] = QueueState.Finished;
+		    if(queueStates[wk] == null) 
+		      queueStates[wk] = QueueState.Finished;
 		  }
 		}
 	      }
@@ -11749,7 +12066,7 @@ class MasterMgr
 	break;
 
       default:
-	{
+	if(!workIsLocked) {
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
 	    for(LinkMod link : work.getSources()) {
@@ -11868,7 +12185,14 @@ class MasterMgr
 	break;
 
       default:
-	{
+	if(workIsLocked) {
+	  int wk;
+	  for(wk=0; wk<queueStates.length; wk++) {
+	    fileStamps[wk] = newestStamps[wk];
+	    ignoreStamps[wk] = true;
+	  }
+	}
+	else {
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
 	    if(anyMissing[wk]) 
@@ -11883,7 +12207,9 @@ class MasterMgr
 	    switch(overallNodeState) {
 	    case Identical:
 	    case NeedsCheckOut:
+	    case ModifiedLocks:
 	      ignoreStamps[wk] = true;
+	      break;
 	    }
 
 	    for(LinkMod link : work.getSources()) { 
@@ -15409,8 +15735,22 @@ class MasterMgr
       case Pending:
       case Modified:
       case ModifiedLinks:
+      case ModifiedLocks:
 	{	
 	  NodeID nodeID = status.getNodeID();
+
+	  /* get working bundle */ 
+	  WorkingBundle working = getWorkingBundle(nodeID);
+	  NodeMod work = working.getVersion();
+	  {
+	    if(work.isLocked())
+	      return;
+	    
+	    if(work.isFrozen()) 
+	      throw new PipelineException
+		("Somehow a frozen node (" + name + ") was erroneously " + 
+		 "submitted for check-in!");
+	  }
 
 	  /* lookup bundles and determine the new revision number */ 
 	  VersionID vid = null;
@@ -15430,14 +15770,6 @@ class MasterMgr
 	    vid = new VersionID(latestID, level);
 	  }
 
-	  WorkingBundle working = getWorkingBundle(nodeID);
-	  NodeMod work = working.getVersion();
-
-	  if(work.isFrozen()) 
-	    throw new PipelineException
-	      ("Somehow a frozen node (" + name + ") was erroneously " + 
-	       "submitted for check-in!");
-
 	  /* make sure the action is NOT under development */ 
 	  {
 	    work.updateAction();
@@ -15451,11 +15783,13 @@ class MasterMgr
 	    }
 	  }
 
-	  /* determine the checked-in revision numbers of the upstream nodes */ 
+	  /* determine the checked-in revision numbers and locked status of the upstream nodes */ 
 	  TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
+	  TreeMap<String,Boolean> locked = new TreeMap<String,Boolean>();
 	  for(NodeStatus lstatus : status.getSources()) {
-	    VersionID lvid = lstatus.getDetails().getBaseVersion().getVersionID();
-	    lvids.put(lstatus.getName(), lvid);
+	    NodeDetails ldetails = lstatus.getDetails();
+	    lvids.put(lstatus.getName(), ldetails.getBaseVersion().getVersionID());
+	    locked.put(lstatus.getName(), ldetails.getWorkingVersion().isLocked());
 	  }
 	  
 	  /* build the file novelty table */ 
@@ -15501,7 +15835,7 @@ class MasterMgr
 
 	  /* create a new checked-in version and write it disk */ 
 	  NodeVersion vsn = 
-	    new NodeVersion(work, vid, lvids, isNovel, 
+	    new NodeVersion(work, vid, lvids, locked, isNovel, 
 			    pRequest.getNodeID().getAuthor(), pRequest.getMessage(), 
 			    pRequest.getNodeID().getName(), pRootVersionID);
 
@@ -15553,7 +15887,7 @@ class MasterMgr
 	  }
 
 	  /* create a new working version and write it to disk */ 
-	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false);
+	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false, false);
 	  writeWorkingVersion(nodeID, nwork);
 
 	  /* update the working bundle */ 

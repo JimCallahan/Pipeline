@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -612,6 +612,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Check-out the current primary selection.",
 	 "NodeViewerCheckOut", "Check-Out:"), 
+
+	new HotKeyPref
+	("Lock the current primary selection to a specific checked-in version.",
+	 "NodeViewerLock", "Lock:"), 
 
 	new HotKeyPref
 	("Evolve the current primary selection.",
@@ -1652,6 +1656,7 @@ class GenUserPrefsApp
 	group.addAll(jobs);
 	group.add("NodeViewerCheckIn");
 	group.add("NodeViewerCheckOut");
+	group.add("NodeViewerLock");
 	group.add("NodeViewerEvolve");
 	group.add("NodeViewerClone");
 	group.add("NodeViewerRelease");
@@ -1847,7 +1852,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2104,7 +2109,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3460,7 +3465,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.23 2005/07/16 22:42:38 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

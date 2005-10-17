@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.43 2005/09/07 21:11:16 jim Exp $
+// $Id: NodeMod.java,v 1.44 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -162,23 +162,36 @@ class NodeMod
    * 
    * @param isFrozen
    *   Whether the working version is frozen initially.
+   * 
+   * @param isLocked
+   *   Whether the working version is locked.
    */ 
   public 
   NodeMod
   (
    NodeVersion vsn, 
    Date timestamp, 
-   boolean isFrozen 
+   boolean isFrozen, 
+   boolean isLocked
   ) 
   {
     super(vsn);
 
     pIsFrozen  = isFrozen;
+    pIsLocked  = isLocked; 
     pWorkingID = vsn.getVersionID();
 
+    if(pIsLocked && !pIsFrozen) 
+      throw new IllegalArgumentException
+	("All locked nodes must also be frozen!");
+
     pSources = new TreeMap<String,LinkMod>();
-    for(LinkVersion link : vsn.getSources()) 
+    for(LinkVersion link : vsn.getSources()) {
+      if(pIsLocked && (link.getPolicy() == LinkPolicy.Reference))
+	throw new IllegalArgumentException
+	  ("Locked nodes must cannot have any Reference links!");
       pSources.put(link.getName(), new LinkMod(link));
+    }
 
     pTimeStamp       = Dates.now();
     pLastMod         = timestamp;
@@ -201,6 +214,7 @@ class NodeMod
     super(mod);
 
     pIsFrozen  = mod.isFrozen();
+    pIsLocked  = mod.isLocked();
     pWorkingID = mod.getWorkingID();
 
     pSources = new TreeMap<String,LinkMod>();
@@ -226,6 +240,17 @@ class NodeMod
   isFrozen()
   {
     return pIsFrozen;
+  }
+
+  /**
+   * Get whether the working version is locked to a specific checked-in version.  <P> 
+   *    
+   * Locked nodes must also be frozen and any links must have a Dependency LinkPolicy.
+   */ 
+  public boolean
+  isLocked()
+  {
+    return pIsLocked;
   }
   
 
@@ -1326,6 +1351,7 @@ class NodeMod
     super.toGlue(encoder);
 
     encoder.encode("IsFrozen", pIsFrozen);
+    encoder.encode("IsLocked", pIsLocked);
 
     if(pWorkingID != null) 
       encoder.encode("WorkingID", pWorkingID);
@@ -1352,6 +1378,12 @@ class NodeMod
       Boolean tf = (Boolean) decoder.decode("IsFrozen");
       if(tf != null) 
 	pIsFrozen = tf;
+    }
+
+    {
+      Boolean tf = (Boolean) decoder.decode("IsLocked");
+      if(tf != null) 
+	pIsLocked = tf;
     }
 
     pWorkingID = (VersionID) decoder.decode("WorkingID");
@@ -1402,6 +1434,12 @@ class NodeMod
    * associated files are symlinks to the repository instead of copies.
    */ 
   private boolean  pIsFrozen;
+
+  /**
+   * Whether the working version is locked to a specific checked-in version.  Locked nodes
+   * must also be frozen and any links must have a Dependency LinkPolicy.
+   */ 
+  private boolean  pIsLocked;
 
   /**
    * The revision number of the <CODE>NodeVersion</CODE> upon which this <CODE>NodeMod</CODE> 

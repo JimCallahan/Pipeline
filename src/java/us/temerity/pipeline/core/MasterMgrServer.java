@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.57 2005/09/07 21:11:16 jim Exp $
+// $Id: MasterMgrServer.java,v 1.58 2005/10/17 06:23:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -865,6 +865,14 @@ class MasterMgrServer
 	      {
 		NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.checkOut(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Lock:
+	      {
+		NodeLockReq req = (NodeLockReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.lock(req));
 		objOut.flush(); 
 	      }
 	      break;

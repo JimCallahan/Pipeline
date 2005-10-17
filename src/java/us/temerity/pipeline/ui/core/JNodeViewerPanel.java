@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.39 2005/09/07 21:11:17 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.40 2005/10/17 06:23:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -201,6 +201,7 @@ class JNodeViewerPanel
       pEditItems            = new JMenuItem[4];
       pEditWithDefaultItems = new JMenuItem[4];
       pCheckOutItems        = new JMenuItem[3];
+      pLockItems            = new JMenuItem[2];
       pRestoreItems         = new JMenuItem[3];
       pReleaseItems         = new JMenuItem[2];
 
@@ -265,6 +266,14 @@ class JNodeViewerPanel
 	  item.setActionCommand("check-out");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
+
+	  if(wk == 3) {
+	    item = new JMenuItem("Lock...");
+	    pLockItems[0] = item;
+	    item.setActionCommand("lock");
+	    item.addActionListener(this);
+	    menus[wk].add(item);
+	  }
 
 	  item = new JMenuItem("Request Restore...");
 	  pRestoreItems[wk-2] = item;
@@ -356,6 +365,12 @@ class JNodeViewerPanel
 	item = new JMenuItem("Check-Out...");
 	pCheckOutItems[2] = item;
 	item.setActionCommand("check-out");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+
+	item = new JMenuItem("Lock...");
+	pLockItems[1] = item;
+	item.setActionCommand("lock");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
@@ -469,6 +484,7 @@ class JNodeViewerPanel
       pDeleteDialog       = new JDeleteDialog();
       pCheckInDialog      = new JCheckInDialog();
       pCheckOutDialog     = new JCheckOutDialog();
+      pLockDialog         = new JLockDialog();
       pEvolveDialog       = new JEvolveDialog();
       pRestoreDialog      = new JRequestRestoreDialog();
       pCreateLinkDialog   = new JCreateLinkDialog();
@@ -839,6 +855,12 @@ class JNodeViewerPanel
 	 "Check-out the current primary selection.");
     }
 
+    for(wk=0; wk<2; wk++) {
+      updateMenuToolTip
+	(pLockItems[wk], prefs.getNodeViewerLock(), 
+	 "Lock the current primary selection to a specific checked-in version.");
+    }
+
     for(wk=0; wk<3; wk++) {
       updateMenuToolTip
 	(pRestoreItems[wk], prefs.getNodeViewerCheckOut(), 
@@ -971,6 +993,7 @@ class JNodeViewerPanel
     pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers());
     
     pCheckOutItems[2].setEnabled(hasCheckedIn);
+    pLockItems[1].setEnabled(hasCheckedIn);
     pEvolveItem.setEnabled(hasCheckedIn);
     pRestoreItems[2].setEnabled(hasCheckedIn);
     
@@ -2302,6 +2325,9 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerCheckOut() != null) &&
 	      prefs.getNodeViewerCheckOut().wasPressed(e))
 	doCheckOut();
+      else if((prefs.getNodeViewerLock() != null) &&
+	      prefs.getNodeViewerLock().wasPressed(e))
+	doLock();
       else if((prefs.getNodeViewerEvolve() != null) &&
 	      prefs.getNodeViewerEvolve().wasPressed(e))
 	doEvolve();
@@ -2548,6 +2574,8 @@ class JNodeViewerPanel
       doCheckIn();
     else if(cmd.equals("check-out"))
       doCheckOut();
+    else if(cmd.equals("lock"))
+      doLock();
     else if(cmd.equals("evolve"))
       doEvolve();
     else if(cmd.equals("restore"))
@@ -3501,11 +3529,8 @@ class JNodeViewerPanel
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
 
-    TreeMap<String,TreeSet<VersionID>> versions = 
-      new TreeMap<String,TreeSet<VersionID>>();
-    
-    TreeMap<String,TreeSet<VersionID>> offline = 
-      new TreeMap<String,TreeSet<VersionID>>();
+    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();    
+    TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
 
     for(String name : getSelectedRootNames()) {
       if(!versions.containsKey(name)) {
@@ -3527,6 +3552,53 @@ class JNodeViewerPanel
 	new CheckOutTask(pCheckOutDialog.getVersionIDs(), 
 			 pCheckOutDialog.getModes(), 
 			 pCheckOutDialog.getMethods());
+      task.start();
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Lock the primary selected node to specific checked-in version.
+   */ 
+  private void 
+  doLock() 
+  {
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
+
+    TreeMap<String,VersionID> base = new TreeMap<String,VersionID>();
+    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();    
+    TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
+
+    for(String name : getSelectedRootNames()) {
+      if(!base.containsKey(name)) {
+	try {
+	  NodeMod mod = client.getWorkingVersion(pAuthor, pView, name);
+	  VersionID vid = mod.getWorkingID();
+	  if(vid != null) {
+	    base.put(name, vid);
+	    versions.put(name, client.getCheckedInVersionIDs(name));
+	    offline.put(name, client.getOfflineVersionIDs(name));
+	  }
+	}
+	catch (PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+      }
+    }
+    
+    if(base.isEmpty()) {
+      master.showErrorDialog("Error:", "None of the selected nodes can be locked!");
+      return;
+    }
+
+    pLockDialog.updateVersions(base, versions, offline);
+    pLockDialog.setVisible(true);	
+    if(pLockDialog.wasConfirmed()) {
+      LockTask task = new LockTask(pLockDialog.getVersionIDs());
       task.start();
     }
 
@@ -4861,6 +4933,51 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Check-out a given node.
+   */ 
+  private
+  class LockTask
+    extends Thread
+  {
+    public 
+    LockTask
+    (
+     TreeMap<String,VersionID> versions
+    ) 
+    {
+      super("JNodeViewerPanel:LockTask");
+      
+      pVersions = versions;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp()) {
+	try {
+	  for(String name : pVersions.keySet()) {
+	    master.updatePanelOp("Locking: " + name);
+
+	    master.getMasterMgrClient().lock(pAuthor, pView, name, pVersions.get(name));
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private TreeMap<String,VersionID>  pVersions;
+  }
+
+  /** 
    * Evolve a given node.
    */ 
   private
@@ -5596,6 +5713,7 @@ class JNodeViewerPanel
   private JMenuItem[]  pEditItems;
   private JMenuItem[]  pEditWithDefaultItems;
   private JMenuItem[]  pCheckOutItems;
+  private JMenuItem[]  pLockItems;
   private JMenuItem[]  pRestoreItems;
   private JMenuItem[]  pReleaseItems;
 
@@ -5704,6 +5822,11 @@ class JNodeViewerPanel
    * The check-out node dialog.
    */ 
   private JCheckOutDialog  pCheckOutDialog;
+
+  /** 
+   * The lock node dialog.
+   */ 
+  private JLockDialog  pLockDialog;
 
   /** 
    * The evolve node dialog.

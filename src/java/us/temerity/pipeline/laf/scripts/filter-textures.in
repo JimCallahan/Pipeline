@@ -11,6 +11,11 @@ echo '(load "'$src/../../../scripts/scale-convert.scm'")' >> $tmpfile
 
 anynewer=0
 
+
+#---------------------------------------------------------------------------------------------------
+#   H E L P E R   F U N C T I O N S 
+#---------------------------------------------------------------------------------------------------
+
 function mkmipmaps {
   frame=$1
   mode=$2
@@ -81,12 +86,21 @@ function mkicon {
   fi
 }
 
+
+#---------------------------------------------------------------------------------------------------
+#   N O D E   I C O N S 
+#---------------------------------------------------------------------------------------------------
+
 for mode in Normal Selected Primary
 do
+  #-------------------------------------------------------------------------------------------------
+  # Unfrozen Node/Queue State Icons
+  #-------------------------------------------------------------------------------------------------
+ 
   frame=0
   for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
                 Conflicted ModifiedLinks Missing Added Obsolete \
-                NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer
+                NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer ModifiedLocks
   do
     for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
     do
@@ -99,17 +113,16 @@ do
     done
   done
 
-  frame=104
-  for extra in Blank Collapsed
-  do 
-    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
 
-    if [ $extra == "Collapsed" ]
-    then 
-      dir=`echo $dest/$extra`
-    else 
-      dir=`echo $dest/$extra-$mode`
-    fi
+  #-------------------------------------------------------------------------------------------------
+  # Unfrozen Undefined Icons
+  #-------------------------------------------------------------------------------------------------
+
+  frame=112
+  for extra in Blank
+  do
+    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+    dir=`echo $dest/$extra-$mode`
 
     if [ ! -d $dir ]
     then 
@@ -126,7 +139,7 @@ do
 
       if [ $simg -nt $dimg ] 
       then
-        filter=1
+	filter=1
       fi
     done
 
@@ -135,21 +148,12 @@ do
       printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
       anynewer=1
     fi
-
-    frame=$(($frame + 1))
   done
 
-  frame=104
-  for extra in Blank Collapsed
-  do 
+  for extra in Blank
+  do
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-
-    if [ $extra == "Collapsed" ]
-    then 
-      dir=`echo $dest/$extra`
-    else 
-      dir=`echo $dest/$extra-$mode`
-    fi
+    dir=`echo $dest/$extra-$mode`
 
     if [ ! -d $dir ]
     then 
@@ -162,10 +166,76 @@ do
       printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
       anynewer=1
     fi
+  done
 
-    frame=$(($frame + 1))	
-  done  
 
+  #-------------------------------------------------------------------------------------------------
+  # Collapsed and Locked Icons
+  #-------------------------------------------------------------------------------------------------
+
+  if [ $mode == "Normal" ]
+  then
+    frame=113
+    for extra in Collapsed Locked
+    do 
+      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+      dir=`echo $dest/$extra`
+
+      if [ ! -d $dir ]
+      then 
+        mkdir -p $dir
+      fi
+
+      filter=0
+      size=128
+      while [ $size -gt 1 ]
+      do
+	size=$(($size / 2)) 
+
+	dimg=$dir/texture.$size.png
+
+	if [ $simg -nt $dimg ] 
+	then
+	  filter=1
+	fi
+      done
+
+      if [ $filter -eq 1 ]
+      then 
+	printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
+	anynewer=1
+      fi
+
+      frame=$(($frame + 1))
+    done
+
+    frame=113
+    for extra in Collapsed Locked
+    do 
+      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+      dir=`echo $dest/$extra-$mode`
+      
+      if [ ! -d $dir ]
+      then 
+	mkdir -p $dir
+      fi
+
+      dimg=$dir/texture.21.png
+      if [ $simg -nt $dimg ] 
+      then
+	printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
+	anynewer=1
+      fi
+
+      frame=$(($frame + 1))	
+    done  
+  fi
+
+
+  #-------------------------------------------------------------------------------------------------
+  # Frozen Node/Queue State Icons
+  #-------------------------------------------------------------------------------------------------
+ 
   nstate=Identical
 
   qstate=Finished
@@ -188,6 +258,19 @@ do
 
   qstate=Stale
   frame=48
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+
+  nstate=ModifiedLocks
+
+  qstate=Finished
+  frame=109
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+  qstate=Stale
+  frame=104
   mkmipmaps $frame $mode $nstate $qstate 1
   mkicon $frame $mode $nstate $qstate 1
 
@@ -254,6 +337,11 @@ do
   mkicon 72 $mode $nstate Stale 1
 done
 
+
+#---------------------------------------------------------------------------------------------------
+#   L I N K  I C O N S
+#---------------------------------------------------------------------------------------------------
+
 frame=0
 for rel in None OneToOne All
 do
@@ -288,6 +376,11 @@ do
   frame=$(($frame + 1))
 done
 
+
+#---------------------------------------------------------------------------------------------------
+#   C O L O R   C I R C L E   I C O N S
+#---------------------------------------------------------------------------------------------------
+
 for extra in ColorCircle
 do
   simg=`echo $src/$extra.sgi`
@@ -318,6 +411,12 @@ do
     anynewer=1
   fi
 done
+
+
+
+#---------------------------------------------------------------------------------------------------
+#   J O B   I C O N S
+#---------------------------------------------------------------------------------------------------
 
 frame=0
 for mode in Normal Selected Primary
@@ -390,6 +489,12 @@ do
   done
 done
 
+
+
+#---------------------------------------------------------------------------------------------------
+#   H I S T O R Y   I C O N S 
+#---------------------------------------------------------------------------------------------------
+
 for name in Cpu Mem Disk Job
 do
   simg=`printf "%s/%s.sgi" $src $name`
@@ -421,6 +526,12 @@ do
 
   frame=$(($frame + 1))
 done
+
+
+
+#---------------------------------------------------------------------------------------------------
+#   R U N   G I M P                 
+#---------------------------------------------------------------------------------------------------
 
 if [ $anynewer -eq 1 ]
 then 

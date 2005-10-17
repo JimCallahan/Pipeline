@@ -18,7 +18,7 @@ anynewer=0
 frame=0
 for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
               Conflicted ModifiedLinks Missing Added Obsolete \
-              NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer
+              NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer ModifiedLocks
 do
   for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
   do
@@ -35,8 +35,8 @@ do
   done
 done
 
-frame=104
-for extra in Blank Collapsed
+frame=112
+for extra in Blank Collapsed Locked
 do 
   simg=`printf "%s.%04d.sgi" $src/Normal $frame`
 
