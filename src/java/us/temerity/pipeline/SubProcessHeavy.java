@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.6 2005/10/25 10:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -455,10 +455,14 @@ class SubProcessHeavy
     /* run the process... */ 
     String extraErrors = null;
     StatsTask stats = new StatsTask(getName());
+    CloseStdInTask closeStdin = new CloseStdInTask(getName());
     try {
       /* start the output collection task */ 
       stats.start();
-      
+
+      /* start a task to close the STDIN task */ 
+      closeStdin.start();
+
       /* launch the process wait for it to exit */ 
       try {
 	pExitCode = new Integer(pProc.exec());
@@ -475,6 +479,9 @@ class SubProcessHeavy
 	assert(pExitCode != null);
 	pIsFinished.set(true);
       }
+
+      /* wait on theclose the STDIN task to finish... */ 
+      closeStdin.join();
       
       /* wait on the collection task to finish... */ 
       stats.join();
@@ -488,15 +495,7 @@ class SubProcessHeavy
       pExitCode = -2;
     }
 
-    try {
-      ((NativeProcessHeavy) pProc).closeStdIn();
-    }
-    catch(IOException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	 getName() + " [close STDIN]: " + ex.getMessage());
-    }
-    
+    assert(!closeStdin.isAlive());
     assert(!stats.isAlive());
     
     /* append any IOException messages to the STDERR output */ 
@@ -618,6 +617,79 @@ class SubProcessHeavy
     private String  pName;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A thread which waits for the process to start and then closes the STDIN pipe.
+   */ 
+  protected 
+  class CloseStdInTask
+    extends Thread
+  {
+    CloseStdInTask
+    (
+      String name
+    ) 
+    {
+      super(name);
+
+      if(name == null)
+	throw new IllegalArgumentException("The thread name cannot be (null)!");
+      pName = name;
+    }
+
+    public void 
+    run()
+    {
+      if(pIsFinished == null) 
+	throw new IllegalStateException("The subprocess was never initialized!");
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	 pName + " [stdin]: thread started.");
+
+      try {
+	while(!pIsFinished.get() && !pProc.isRunning()) {
+	  try {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	       pName + " [stdin]: waiting (" + 
+	       sCollectionDelay + ") milliseconds to close STDIN.");
+	    sleep(sCollectionDelay);
+	  }
+	  catch(InterruptedException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	       pName + " [stdin]: thread was interrupted while " + 
+	       "waiting to close STDIN!");
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	       pName + " [stdin]: thread finished.");
+	    return;
+	  }
+	}
+
+	((NativeProcessHeavy) pProc).closeStdIn();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	   pName + " [stdin]: closed.");
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   pName + " [stdin]:\n" + 
+	   ex.getMessage());
+      }
+      
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	 pName + " [stdin]: thread finished.");
+    }
+    
+    private String  pName;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
