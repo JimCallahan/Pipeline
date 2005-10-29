@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.4 2005/10/29 10:27:10 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -185,7 +185,7 @@ class MayaReferenceAction
 	FileSeq fseq = agenda.getPrimarySource(sname);
 	String suffix = fseq.getFilePattern().getSuffix();
 	if(fseq.isSingle() && (suffix != null)) {
-	  if(suffix.equals("ma") || suffix.equals("mb")) {
+	  if(suffix.equals("ma") || suffix.equals("mb") || suffix.equals("obj")) {
 	    File path = new File(sname);
 	    File file = new File(path.getParent() + "/" + fseq.getFile(0));
 	    modelFiles.put(sname, file);
@@ -249,6 +249,8 @@ class MayaReferenceAction
 	  format = "  -type \"mayaAscii\"\n";
 	else if(file.toString().endsWith("mb")) 
 	  format = "  -type \"mayaBinary\"\n";
+	else if(file.toString().endsWith("obj")) 
+	  format = "  -type \"OBJ\"\n";
 
 	out.write
 	  ("// MODEL: " + mname + "\n" + 
