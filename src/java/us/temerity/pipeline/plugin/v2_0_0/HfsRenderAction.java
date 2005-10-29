@@ -1,4 +1,4 @@
-// $Id: HfsRenderAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsRenderAction.java,v 1.4 2005/10/29 10:25:19 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -275,7 +275,7 @@ class HfsRenderAction
 	}
       }
 	
-	/* the full name of the geometry output operator */ 
+      /* the full name of the output operator */ 
       {
 	String name = (String) getSingleParamValue("OutputOperator"); 
 	if((name == null) || (name.length() == 0))
