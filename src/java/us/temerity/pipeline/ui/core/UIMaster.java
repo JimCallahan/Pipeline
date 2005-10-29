@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.31 2005/09/20 05:09:14 jim Exp $
+// $Id: UIMaster.java,v 1.32 2005/10/29 10:27:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2533,7 +2533,7 @@ class UIMaster
     public void 
     run() 
     {
-      pSubProcessFailureDialog.updateProc(pHeader, pProc);
+      pSubProcessFailureDialog.updateProc(pHeader + " [code " + pProc.getExitCode() + "]", pProc);
       pSubProcessFailureDialog.setVisible(true);
     }
 
