@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.45 2005/09/07 21:11:16 jim Exp $
+// $Id: QueueMgr.java,v 1.46 2005/10/30 10:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1411,82 +1411,69 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Submit a job to be executed by the queue. <P> 
+   * Submit a set of jobs to be executed by the queue. <P> 
    * 
    * @param req 
    *   The job submission request.
    *    
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable submit the job.
+   *   <CODE>FailureRsp</CODE> if unable submit the jobs.
    */ 
   public Object
-  submitJob
+  submitJobs
   (
-   QueueSubmitJobReq req
+   QueueSubmitJobsReq req
   )
   {
-    // DEBUGGING
-    try {
-      GlueEncoder ge = new GlueEncoderImpl("QueueJob", req.getJob());
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finest,
-	 ge.getText());
-    }
-    catch(GlueException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Severe, 
-	 "Unable to generate a Glue format representation of the job!");
-    }
-    LogMgr.getInstance().flush();
-    // DEBUGGING
-    
-    QueueJob job = req.getJob();
-    long jobID = job.getJobID();
-    QueueJobInfo info = new QueueJobInfo(jobID);
+    TaskTimer timer = new TaskTimer("QueueMgr.submitJobs():");
 
-    TaskTimer timer = new TaskTimer("QueueMgr.submitJob(): " + jobID);
     try {
-      timer.aquire();
-      synchronized(pJobs) {
-	timer.resume();
-	writeJob(job);
-	pJobs.put(jobID, job);
-      }
-
-      timer.aquire();
-      synchronized(pJobInfo) {
-	timer.resume();
-	writeJobInfo(info);
+      for(QueueJob job : req.getJobs()) {
+	long jobID = job.getJobID();
+	QueueJobInfo info = new QueueJobInfo(jobID);
+	
+	timer.aquire();
+	synchronized(pJobs) {
+	  timer.resume();
+	  writeJob(job);
+	  pJobs.put(jobID, job);
+	}
+	
+	timer.aquire();
+	synchronized(pJobInfo) {
+	  timer.resume();
+	  writeJobInfo(info);
 	pJobInfo.put(jobID, info);
+	} 
+	
+	{
+	  ActionAgenda agenda = job.getActionAgenda();
+	  NodeID nodeID = agenda.getNodeID();
+	  FileSeq fseq = agenda.getPrimaryTarget();
+	  
+	  timer.aquire();
+	  synchronized(pNodeJobIDs) {
+	    timer.resume();
+	    TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+	    if(table == null) {
+	      table = new TreeMap<File,Long>();
+	      pNodeJobIDs.put(nodeID, table);
+	    }
+	    
+	    for(File file : fseq.getFiles()) 
+	      table.put(file, jobID);
+	  }
+	}
+	
+	pWaiting.add(jobID);
       }
+
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
-    }   
-    
-    {
-      ActionAgenda agenda = job.getActionAgenda();
-      NodeID nodeID = agenda.getNodeID();
-      FileSeq fseq = agenda.getPrimaryTarget();
-      
-      timer.aquire();
-      synchronized(pNodeJobIDs) {
-	timer.resume();
-	TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-	if(table == null) {
-	  table = new TreeMap<File,Long>();
-	  pNodeJobIDs.put(nodeID, table);
-	}
-	
-	for(File file : fseq.getFiles()) 
-	  table.put(file, jobID);
-      }
-    }
-    
-    pWaiting.add(jobID);
-
-    return new SuccessRsp(timer);
+    }     
   }
 
   /**

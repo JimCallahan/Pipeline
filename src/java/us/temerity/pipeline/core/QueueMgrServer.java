@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.25 2005/05/31 09:37:45 jim Exp $
+// $Id: QueueMgrServer.java,v 1.26 2005/10/30 10:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -453,10 +453,10 @@ class QueueMgrServer
 	      break;
 
 
-	    case SubmitJob:
+	    case SubmitJobs:
 	      {
-		QueueSubmitJobReq req = (QueueSubmitJobReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.submitJob(req));
+		QueueSubmitJobsReq req = (QueueSubmitJobsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.submitJobs(req));
 		objOut.flush(); 
 	      }
 	      break;

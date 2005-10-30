@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.11 2005/04/03 06:10:12 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.12 2005/10/30 10:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -128,25 +128,25 @@ class QueueMgrControlClient
   }
 
   /**
-   * Submit a job to be executed by the queue. <P> 
+   * Submit a set of jobs to be executed by the queue. <P> 
    * 
-   * @param job
-   *   The queue job.
+   * @param jobs
+   *   The queue jobs.
    * 
    * @throws PipelineException
-   *   If unable to submit the job.
+   *   If unable to submit the jobs.
    */ 
   public synchronized void 
-  submitJob
+  submitJobs
   (
-   QueueJob job
+   Collection<QueueJob> jobs
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueSubmitJobReq req = new QueueSubmitJobReq(job);
-    Object obj = performTransaction(QueueRequest.SubmitJob, req); 
+    QueueSubmitJobsReq req = new QueueSubmitJobsReq(new ArrayList<QueueJob>(jobs));
+    Object obj = performTransaction(QueueRequest.SubmitJobs, req); 
     handleSimpleResponse(obj);
   }
 

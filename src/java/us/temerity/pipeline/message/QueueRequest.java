@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.13 2005/05/31 09:37:45 jim Exp $
+// $Id: QueueRequest.java,v 1.14 2005/10/30 10:01:32 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -145,9 +145,9 @@ enum QueueRequest
 
 
   /**
-   * An instance {@link QueueSubmitJobReq QueueSubmitJobReq} is next.
+   * An instance {@link QueueSubmitJobsReq QueueSubmitJobsReq} is next.
    */
-  SubmitJob, 
+  SubmitJobs, 
 
   /**
    * An instance {@link QueueKillJobsReq QueueKillJobsReq} is next.

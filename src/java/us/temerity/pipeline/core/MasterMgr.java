@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.141 2005/10/17 06:23:38 jim Exp $
+// $Id: MasterMgr.java,v 1.142 2005/10/30 10:01:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7788,17 +7788,19 @@ class MasterMgr
 	  if(!jobs.containsKey(jobID)) 
 	    externalIDs.add(jobID);
       
-      /* group the jobs */ 
+      /* create the job group */ 
       QueueJobGroup group = 
 	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
 			  status.getDetails().getWorkingVersion().getToolset(), 
 			  targetSeq, orderedRootIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
-      pQueueMgrClient.groupJobs(group);
+
+      /* update the job and group IDs file */ 
+      writeNextIDs();
       
-      /* submit the jobs */ 
-      for(QueueJob job : jobs.values()) 
-	pQueueMgrClient.submitJob(job);
+      /* submit the jobs and job group */ 
+      pQueueMgrClient.groupJobs(group);
+      pQueueMgrClient.submitJobs(jobs.values());
       
       return new NodeSubmitJobsRsp(timer, group);
     }
