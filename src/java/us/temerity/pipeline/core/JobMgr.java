@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.25 2005/03/11 06:34:39 jim Exp $
+// $Id: JobMgr.java,v 1.26 2005/10/31 14:46:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -914,7 +914,7 @@ class JobMgr
       pJob = job;
     }
 
-    public QueueJobResults
+    public synchronized QueueJobResults
     getResults()
     {
       return pResults;
@@ -1021,25 +1021,48 @@ class JobMgr
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     "Job Prep Failed: " + jobID);
 
-	  pResults = new QueueJobResults(ex);
+	  String msg = ("Job Prep Failed!\n\n" + getFullMessage(ex));
 
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	     "Appending the exception stack to the STDERR file (" + outFile + ") of " + 
-	     "job (" + jobID + ")...");
-
-	  try {
-	    FileWriter out = new FileWriter(errFile, true);
-	    out.write("Job Prep Failed!\n\n" + getFullMessage(ex));
-	    out.flush();
-	    out.close();
-	  }
-	  catch(IOException ex2) {
+	  {
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
-	       "Could not append the Exception message to STDERR file (" + errFile + ")!");
-	  }
+	      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	       "Appending the exception stack to the STDOUT file (" + outFile + ") of " + 
+	       "job (" + jobID + ")...");
 	    
+	    try {
+	      FileWriter out = new FileWriter(outFile, true);
+	      out.write(msg);
+	      out.flush();
+	      out.close();
+	    }
+	    catch(IOException ex2) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+		 "Could not append the Exception message to STDOUT file (" + outFile + ")!");
+	    }
+	  }	  
+
+	  {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	       "Appending the exception stack to the STDERR file (" + errFile + ") of " + 
+	       "job (" + jobID + ")...");
+	    
+	    try {
+	      FileWriter out = new FileWriter(errFile, true);
+	      out.write(msg);
+	      out.flush();
+	      out.close();
+	    }
+	    catch(IOException ex2) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+		 "Could not append the Exception message to STDERR file (" + errFile + ")!");
+	    }
+	  }
+
+	  recordResults(new QueueJobResults(ex), dir);
+	    	  
 	  return;
 	}
 
@@ -1123,37 +1146,7 @@ class JobMgr
 				pProc.getVirtualSize(), pProc.getResidentSize(), 
 				pProc.getSwappedSize(), pProc.getPageFaults());
 
-	  File file = new File(dir, "results");
-	  try {
-	    String glue = null;
-	    try {
-	      GlueEncoder ge = new GlueEncoderImpl("Results", results);
-	      glue = ge.getText();
-	    }
-	    catch(GlueException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Glu, LogMgr.Level.Severe, 
-		 "Unable to generate a Glue format representation of the job results!");
-	      LogMgr.getInstance().flush();
-	      
-	      throw new IOException(ex.getMessage());
-	    }
-	  
-	    {
-	      FileWriter out = new FileWriter(file);
-	      out.write(glue);
-	      out.flush();
-	      out.close();
-	    }
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
-	       "  While attempting to write the job results file (" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
-
-	  pResults = results;
+	  recordResults(results, dir);
 	}
       }
       catch(Exception ex2) {
@@ -1167,7 +1160,7 @@ class JobMgr
     getFullMessage
     (
      Throwable ex
-     ) 
+    ) 
     {
       StringBuffer buf = new StringBuffer();
       
@@ -1184,6 +1177,49 @@ class JobMgr
       
       return (buf.toString());
     }
+
+    private synchronized void 
+    recordResults
+    (
+     QueueJobResults results, 
+     File dir
+    ) 
+      throws PipelineException
+    {
+      File file = new File(dir, "results");
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Results", results);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+	     "Unable to generate a Glue format representation of the job results!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the job results file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      finally {
+	pResults = results;
+      }
+    }
+
 
     private QueueJob         pJob; 
     private SubProcessHeavy  pProc; 

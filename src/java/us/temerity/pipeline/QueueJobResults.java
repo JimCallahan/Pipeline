@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueJobResults.java,v 1.6 2005/10/31 14:46:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,7 +36,8 @@ class QueueJobResults
   )
   {
     pTimeStamp = new Date(); 
-    pCommand   = ("Job Prep Failed: " + ex);
+    pCommand   = ("Job Prep Failed: " + ex.getMessage() + "\n" + 
+		  "(see Error log for details)");
     pExitCode  = 666;
   }
 
