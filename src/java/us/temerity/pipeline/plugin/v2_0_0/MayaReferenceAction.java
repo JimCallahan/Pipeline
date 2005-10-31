@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.4 2005/10/29 10:27:10 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.5 2005/10/31 13:45:14 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -44,6 +44,15 @@ import java.text.*;
  *      The source node containing the MEL script to evaluate after saving the generated 
  *      Maya scene. <BR> 
  *   </DIV> 
+ * </DIV> <P> 
+ * 
+ * This action defines the following per-source parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Prefix Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *      The namespace prefix for the referenced scene in Maya instead of the filename.
+ *   </DIV> <BR> 
  * </DIV> <P> 
  */
 public
@@ -185,7 +194,7 @@ class MayaReferenceAction
 	FileSeq fseq = agenda.getPrimarySource(sname);
 	String suffix = fseq.getFilePattern().getSuffix();
 	if(fseq.isSingle() && (suffix != null)) {
-	  if(suffix.equals("ma") || suffix.equals("mb") || suffix.equals("obj")) {
+	  if(suffix.equals("ma") || suffix.equals("mb")) {
 	    File path = new File(sname);
 	    File file = new File(path.getParent() + "/" + fseq.getFile(0));
 	    modelFiles.put(sname, file);
@@ -249,8 +258,6 @@ class MayaReferenceAction
 	  format = "  -type \"mayaAscii\"\n";
 	else if(file.toString().endsWith("mb")) 
 	  format = "  -type \"mayaBinary\"\n";
-	else if(file.toString().endsWith("obj")) 
-	  format = "  -type \"OBJ\"\n";
 
 	out.write
 	  ("// MODEL: " + mname + "\n" + 
