@@ -1,4 +1,4 @@
-// $Id: HfsRenderAction.java,v 1.4 2005/10/29 10:25:19 jim Exp $
+// $Id: HfsRenderAction.java,v 1.5 2005/10/31 13:44:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -402,7 +402,7 @@ class HfsRenderAction
       }
       else {
 	out.write("opparm " + opname + " trange off\n" +
-		  "opparm " + opname + " " + fseq + "\n");
+		  "opparm " + opname + " picture '" + fseq + "'\n");
       }
 
       if(preRender != null) 

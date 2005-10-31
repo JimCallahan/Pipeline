@@ -1,4 +1,4 @@
-// $Id: HfsCompositeAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsCompositeAction.java,v 1.4 2005/10/31 13:44:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -375,7 +375,7 @@ class HfsCompositeAction
       }
       else {
 	out.write("opparm " + opname + " trange off\n" +
-		  "opparm " + opname + " " + fseq + "\n");
+		  "opparm " + opname + " copoutput '" + fseq + "'\n");
       }
 
       if(preRender != null) 

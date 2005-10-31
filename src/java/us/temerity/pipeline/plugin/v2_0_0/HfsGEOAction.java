@@ -1,4 +1,4 @@
-// $Id: HfsGEOAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsGEOAction.java,v 1.4 2005/10/31 13:44:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -253,16 +253,6 @@ class HfsGEOAction
 	opname = ("/out/" + name);
       }
 
-      /* validate the target file sequence */ 
-      {
-	FileSeq fseq = agenda.getPrimaryTarget();
-	String suffix = fseq.getFilePattern().getSuffix();
-	if((suffix == null) || !(suffix.equals("geo") || suffix.equals("bgeo"))) 
-	  throw new PipelineException
-	    ("The HfsGEO Action requires that the primary target file sequence must " + 
-	     "contain Houdini geometry (.geo/.bgeo) files!");
-      }
-
       /* command script files */
       {
 	String sname = (String) getSingleParamValue("PreRenderScript"); 
@@ -372,11 +362,12 @@ class HfsGEOAction
 	if(fpat.getPadding() > 1) 
 	  out.write(String.valueOf(fpat.getPadding()));
 	
-	out.write("." + fpat.getSuffix() + "'\n");
+	if(fpat.getSuffix() != null) 
+	  out.write("." + fpat.getSuffix() + "'\n");
       }
       else {
 	out.write("opparm " + opname + " trange off\n" +
-		  "opparm " + opname + " " + fseq + "\n");
+		  "opparm " + opname + " sopoutput '" + fseq + "'\n");
       }
 
       if(preRender != null) 
