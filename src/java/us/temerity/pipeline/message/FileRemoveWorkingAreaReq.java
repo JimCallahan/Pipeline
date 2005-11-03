@@ -1,4 +1,4 @@
-// $Id: FileRemoveWorkingAreaReq.java,v 1.1 2005/02/22 18:20:03 jim Exp $
+// $Id: FileRemoveWorkingAreaReq.java,v 1.2 2005/11/03 15:47:52 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,7 +30,7 @@ class FileRemoveWorkingAreaReq
    *   The name of the user which owns the working area.
    * 
    * @param view 
-   *   The name of the user's working area view. 
+   *   The name of the user's working area view or (null) for all views.
    */
   public
   FileRemoveWorkingAreaReq
@@ -43,8 +43,6 @@ class FileRemoveWorkingAreaReq
       throw new IllegalArgumentException("The author cannot be (null)!");
     pAuthor = author;
 
-    if(view == null) 
-      throw new IllegalArgumentException("The view cannot be (null)!");
     pView = view;
   }
 

@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.2 2005/03/18 16:33:53 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.3 2005/11/03 15:47:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -142,7 +142,7 @@ class JOwnerViewDialog
 	DefaultListModel model = (DefaultListModel) pViewList.getModel();
 	model.clear();
 
-	if(view != null) {
+	if(pTable.containsKey(author) && (view != null)) {
 	  for(String name : pTable.get(author))
 	    model.addElement(name);
 	  

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.47 2005/09/07 21:11:16 jim Exp $
+// $Id: FileMgr.java,v 1.48 2005/11/03 15:47:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -276,7 +276,8 @@ class FileMgr
       timer.resume();	
 
       try {
-	File wdir = new File(PackageInfo.sProdDir, "working/" + author + "/" + view);
+	File wdir = new File(PackageInfo.sProdDir, 
+			     "working/" + author + ((view != null) ? ("/" + view) : ""));
 	if(wdir.exists()) {
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("--recursive");
