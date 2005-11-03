@@ -9,7 +9,7 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/051009
+plprofile=$plsrcdir/plconfig/customers/rhinofx/051102
 
 pushd i686-pc-linux-gnu-dbg
   CC=/usr/bin/gcc33 CXX=/usr/bin/g++33 \
