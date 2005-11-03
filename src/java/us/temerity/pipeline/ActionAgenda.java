@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.7 2005/11/03 22:02:14 jim Exp $
+// $Id: ActionAgenda.java,v 1.8 2005/11/03 22:27:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -54,7 +54,7 @@ class ActionAgenda
    * @param toolset 
    *   The name of the toolset environment under which the action is executed.
    * 
-   * @param env  
+   * @param envs  
    *   The cooked toolset environments indexed by operating system type.
    */
   public
