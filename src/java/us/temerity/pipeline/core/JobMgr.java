@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.26 2005/10/31 14:46:14 jim Exp $
+// $Id: JobMgr.java,v 1.27 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -85,65 +85,10 @@ class JobMgr
       }
 
       /* system load (1-minute average) */ 
-      float load = 0.0f;
-      {
-	FileReader reader = new FileReader("/proc/loadavg");
-	
-	char[] buf = new char[4];
-	if(reader.read(buf, 0, 4) == 4) 
-	  load = Float.parseFloat(String.valueOf(buf));
-	
-	reader.close();
-      } 
+      float load = NativeOS.getLoadAverage();
       
       /* free memory (unused + file cache) */ 
-      long memory = 0;
-      {
-	long free   = 0;
-	long cached = 0;
-	
-	FileReader reader = new FileReader("/proc/meminfo");
-	while(true) {
-	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
-	  while(true) {
-	    int next = reader.read();
-	    if(next == -1) 
-	      break;
-
-	    char c = (char) next;
-	    if(c == '\n') 
-	      break;
-
-	    buf.append(c);
-	  }
-	  
-	  String[] fields = buf.toString().split(" ");
-	  if(fields[0].equals("MemFree:")) {
-	    int wk;
-	    for(wk=1; wk<fields.length; wk++) {
-	      if(fields[wk].length() > 0) {
-		free = Long.parseLong(fields[wk]);
-		break;
-	      }
-	    }
-	  }
-	  else if(fields[0].equals("Cached:")) {
-	    int wk;
-	    for(wk=1; wk<fields.length; wk++) {
-	      if(fields[wk].length() > 0) {
-		cached = Long.parseLong(fields[wk]);
-		break;
-	      }
-	    }
-	    
-	    break;
-	  }
-	}
-	reader.close();
-	
-	memory = (free + cached) * 1024L;
-      } 
+      long memory = NativeOS.getFreeMemory();
       
       /* free temporary disk space */ 
       long disk = NativeFileSys.freeDiskSpace(PackageInfo.sTempDir);
@@ -156,6 +101,19 @@ class JobMgr
     catch(IOException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }
+  }
+
+  /**
+   * Get the operating system type.
+   * 
+   * @return
+   *   <CODE>JobGetOsTypeRsp</CODE> always.
+   */ 
+  public Object
+  getOsType() 
+  {
+    TaskTimer timer = new TaskTimer();
+    return new JobGetOsTypeRsp(timer, PackageInfo.sOsType); 
   }
 
   /**
@@ -172,36 +130,8 @@ class JobMgr
     timer.aquire();
     try {
       timer.resume();
-  
-      int procs = 0;
-      {
-	FileReader reader = new FileReader("/proc/cpuinfo");
-	boolean done = false;
-	while(!done) {
-	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
-	  while(true) {
-	    int next = reader.read();
-	    if(next == -1) {
-	      done = true;
-	      break;
-	    }
-
-	    char c = (char) next;
-	    if(c == '\n') 
-	      break;
-
-	    buf.append(c);
-	  }
-
-	  String line = buf.toString();
-	  if(line.startsWith("processor")) 
-	    procs++;
-	}
-	reader.close();	
-      }
-      
-      return new JobGetNumProcessorsRsp(timer, procs);
+      int procs = NativeOS.getNumProcessors();
+      return new JobGetNumProcessorsRsp(timer, procs); 
     }
     catch(IOException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
@@ -222,43 +152,8 @@ class JobMgr
     timer.aquire();
     try {
       timer.resume();
-
-      /* free memory (unused + file cache) */ 
-      long memory = 0;
-      {      
-	FileReader reader = new FileReader("/proc/meminfo");
-	while(true) {
-	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
-	  while(true) {
-	    int next = reader.read();
-	    if(next == -1) 
-	      break;
-
-	    char c = (char) next;
-	    if(c == '\n') 
-	      break;
-
-	    buf.append(c);
-	  }
-	  
-	  String[] fields = buf.toString().split(" ");
-	  if(fields[0].equals("MemTotal:")) {
-	    int wk;
-	    for(wk=1; wk<fields.length; wk++) {
-	      if(fields[wk].length() > 0) {
-		memory = Long.parseLong(fields[wk]) * 1024L;
-		break;
-	      }
-	    }
-
-	    break;
-	  }
-	}
-	reader.close();
-      }
-
-      return new JobGetTotalMemoryRsp(timer, memory);
+      long total = NativeOS.getTotalMemory();
+      return new JobGetTotalMemoryRsp(timer, total);
     }
     catch(IOException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
@@ -488,6 +383,9 @@ class JobMgr
       return new JobWaitRsp(req.getJobID(), timer, results);
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());	  
     }
   }
@@ -523,8 +421,7 @@ class JobMgr
     Map<String,String> env = System.getenv();
 
     ArrayList<String> args = new ArrayList<String>();
-    args.add("--recursive");
-    args.add("--force");
+    args.add("-rf");
 
     boolean removeFiles = false;
     {
@@ -954,8 +851,9 @@ class JobMgr
 	  /* make sure the target directory exists */ 
 	  if(!wdir.isDirectory()) {
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--parents");
-	    args.add("--mode=755");
+	    args.add("-p");
+	    args.add("-m");
+	    args.add("755");
 	    args.add(wdir.getPath());
 	    
 	    SubProcessLight proc = 
@@ -978,7 +876,7 @@ class JobMgr
 	  /* remove the target primary and secondary files */ 
 	  {
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
+	    args.add("-f");
 
 	    for(File file : agenda.getPrimaryTarget().getFiles()) {
 	      File path = new File(wdir, file.getPath());

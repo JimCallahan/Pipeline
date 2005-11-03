@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.16 2005/07/15 20:10:44 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.17 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -70,6 +70,29 @@ class JobMgrControlClient
       handleFailure(obj);
       return null;
     } 
+  }
+
+  /**
+   * Get the operating system type.
+   * 
+   * @throws PipelineException 
+   *   If unable to contact the server.
+   */ 
+  public synchronized OsType
+  getOsType() 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(JobRequest.GetOsType, null, 15000);
+    if(obj instanceof JobGetOsTypeRsp) {
+      JobGetOsTypeRsp rsp = (JobGetOsTypeRsp) obj;
+      return rsp.getOsType();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.19 2005/04/03 06:10:12 jim Exp $
+// $Id: JobMgrServer.java,v 1.20 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -77,8 +77,11 @@ class JobMgrServer
 	 "Server Ready.");
       LogMgr.getInstance().flush();
 
-      CollectorTask collector = new CollectorTask();
-      collector.start();
+      CollectorTask collector = null;
+      if(PackageInfo.sOsType == OsType.Unix) {
+	collector = new CollectorTask();
+	collector.start();
+      }
 
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
@@ -101,7 +104,8 @@ class JobMgrServer
 	   "Shutting Down -- Waiting for tasks to complete...");
 	LogMgr.getInstance().flush();
 
-	collector.join();
+	if(collector != null) 
+	  collector.join();
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -272,6 +276,13 @@ class JobMgrServer
 	    case GetResources:
 	      {
 		objOut.writeObject(pJobMgr.getResources());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetOsType:
+	      {
+		objOut.writeObject(pJobMgr.getOsType());
 		objOut.flush(); 
 	      }
 	      break;
@@ -480,6 +491,8 @@ class JobMgrServer
     public void 
     run() 
     {
+      assert(PackageInfo.sOsType == OsType.Unix);
+
       try {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,

@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.2 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -222,17 +222,23 @@ class JExecDetailsDialog
       command = results.getCommand();
     
     String dir = "-";
-    if(agenda != null) 
-      dir = agenda.getWorkingDir().toString();
-    
-    SortedMap<String,String> env = new TreeMap<String,String>();
-    if(agenda != null) 
-      env = agenda.getEnvironment();
+    if((agenda != null) && (info.getOsType() != null))
+      dir = agenda.getWorkingDir(info.getOsType()).toString();
     
     String hostname = "";
     if(info.getHostname() != null)
       hostname = ("    [" + info.getHostname() + "]");
 
+    String osname = "";
+    SortedMap<String,String> env = new TreeMap<String,String>();
+    if((agenda != null) && (info.getOsType() != null)) {
+      SortedMap<String,String> oenv = agenda.getEnvironment(info.getOsType());
+      if(oenv != null) 
+	env = oenv;
+
+      osname = (" (" + info.getOsType().toString() + ")");
+    }
+    
     pHeaderLabel.setText("Execution Details -" + jheader + hostname);
       
     BaseAction action = job.getAction();

@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.8 2005/06/14 13:31:55 jim Exp $
+// $Id: BaseSubProcess.java,v 1.9 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -229,7 +229,7 @@ class BaseSubProcess
 
       /* lookup the UID for the user */ 
       ArrayList<String> args = new ArrayList<String>();
-      args.add("--user");
+      args.add("-u");
       args.add(user);
 
       SubProcessLight proc = 

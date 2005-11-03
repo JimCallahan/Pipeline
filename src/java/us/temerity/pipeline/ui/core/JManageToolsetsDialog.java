@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.9 2005/09/07 21:11:17 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.10 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3053,7 +3053,6 @@ class JManageToolsetsDialog
  	  try {
  	    StringBuffer buf = new StringBuffer();
 
-	    int osi = os.ordinal();
 	    switch(os) {
 	    case Unix:
 	    case MacOS:
@@ -3061,8 +3060,8 @@ class JManageToolsetsDialog
 		buf.append
 		  ("export TOOLSET=" + toolset.getName() + "\n" +
 		   "export USER=`whoami`\n" +
-		   "export HOME=" + PackageInfo.sOsHomeDirs[osi] + "/$USER\n" +
-		   "export WORKING=" + PackageInfo.sOsWorkDirs[osi] + "/$USER/default\n");
+		   "export HOME=" + PackageInfo.getHomeDir(os) + "/$USER\n" +
+		   "export WORKING=" + PackageInfo.getWorkDir(os) + "/$USER/default\n");
 		   
 		TreeMap<String,String> env = toolset.getEnvironment();
 		for(String ename : env.keySet()) {

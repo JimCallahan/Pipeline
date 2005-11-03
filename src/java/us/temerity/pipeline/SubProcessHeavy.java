@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.6 2005/10/25 10:56:01 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.7 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -281,7 +281,8 @@ class SubProcessHeavy
   public static void 
   collectStats()
   {
-    sProcStats.collect();
+    if(sProcStats != null) 
+      sProcStats.collect();
   }
 
   /**
@@ -291,7 +292,8 @@ class SubProcessHeavy
   public void 
   freeStats() 
   {
-    sProcStats.unmonitor(pProc.getPid());
+    if(sProcStats != null)     
+      sProcStats.unmonitor(pProc.getPid());
   }
 
 
@@ -308,7 +310,7 @@ class SubProcessHeavy
   getUserTime() 
   {
     double timeA = 0.0;
-    {
+    if(sProcStats != null) {  
       Double time = sProcStats.getUserTime(pProc.getPid());
       if(time != null)
 	timeA = time;
@@ -329,14 +331,13 @@ class SubProcessHeavy
    * kernel mode.
    * 
    * @return 
-   *   The time in seconds or <CODE>null</CODE> if no statistics have been collected 
-   *   for the given process.
+   *   The time in seconds.
    */
   public Double
   getSystemTime() 
   {
     double timeA = 0.0;
-    {
+    if(sProcStats != null) { 
       Double time = sProcStats.getSystemTime(pProc.getPid());
       if(time != null)
 	timeA = time;
@@ -357,52 +358,104 @@ class SubProcessHeavy
    * have required loading a memory page from disk.
    * 
    * @return 
-   *   The number of faults or <CODE>null</CODE> if no statistics have been collected 
-   *   for the given process.
+   *   The number of faults.
    */
   public Long
   getPageFaults() 
-  {
-    return sProcStats.getPageFaults(pProc.getPid());
+  { 
+    long faultsA = 0L;
+    if(sProcStats != null) {
+      Long faults = sProcStats.getPageFaults(pProc.getPid());
+      if(faults != null) 
+	faultsA = faults;
+    }
+
+    long faultsB = 0L;
+    {
+      Long faults = pProc.getPageFaults();
+      if(faults != null) 
+	faultsB = faults;
+    }
+
+    return Math.max(faultsA, faultsB);
   }
 
   /**
    * Get the maximum virtual memory size of the process and its children in bytes.
    * 
    * @return 
-   *   The size in bytes or <CODE>null</CODE> if no statistics have been collected 
-   *   for the given process.
+   *   The size in bytes.
    */
   public Long
   getVirtualSize() 
   {
-    return sProcStats.getVirtualSize(pProc.getPid());
+    long sizeA = 0L;
+    if(sProcStats != null) {
+      Long size = sProcStats.getVirtualSize(pProc.getPid());
+      if(size != null) 
+	sizeA = size;
+    }
+
+    long sizeB = 0L;
+    {
+      Long size = pProc.getVirtualSize();
+      if(size != null) 
+	sizeB = size;
+    }
+
+    return Math.max(sizeA, sizeB);
   }
 
   /**
    * Get the maximum resident memory size of the process and its children in bytes.
    * 
    * @return 
-   *   The size in bytes or <CODE>null</CODE> if no statistics have been collected 
-   *   for the given process.
+   *   The size in bytes.
    */
   public Long
   getResidentSize() 
   {
-    return sProcStats.getResidentSize(pProc.getPid());
+    long sizeA = 0L;
+    if(sProcStats != null) {
+      Long size = sProcStats.getResidentSize(pProc.getPid());
+      if(size != null) 
+	sizeA = size;
+    }
+
+    long sizeB = 0L;
+    {
+      Long size = pProc.getResidentSize();
+      if(size != null) 
+	sizeB = size;
+    }
+
+    return Math.max(sizeA, sizeB);
   }
 
   /**
    * Get the cumilative amount of memory swapped by the process and its children in bytes.
    * 
    * @return 
-   *   The size in bytes or <CODE>null</CODE> if no statistics have been collected 
-   *   for the given process.
+   *   The size in bytes.
    */
   public Long
   getSwappedSize()  
   {
-    return sProcStats.getSwappedSize(pProc.getPid());
+    long sizeA = 0L;
+    if(sProcStats != null) {
+      Long size = sProcStats.getSwappedSize(pProc.getPid());
+      if(size != null) 
+	sizeA = size;
+    }
+
+    long sizeB = 0L;
+    {
+      Long size = pProc.getSwappedSize();
+      if(size != null) 
+	sizeB = size;
+    }
+
+    return Math.max(sizeA, sizeB);
   }
 
 
@@ -451,14 +504,21 @@ class SubProcessHeavy
 	
       LogMgr.getInstance().flush();
     }
-      
+
+    /* the process collection task */ 
+    StatsTask stats = null;
+    switch(PackageInfo.sOsType) {
+    case Unix:
+      stats = new StatsTask(getName());
+    }
+
     /* run the process... */ 
     String extraErrors = null;
-    StatsTask stats = new StatsTask(getName());
     CloseStdInTask closeStdin = new CloseStdInTask(getName());
     try {
-      /* start the output collection task */ 
-      stats.start();
+      /* start the process collection task */ 
+      if(stats != null) 
+	stats.start();
 
       /* start a task to close the STDIN task */ 
       closeStdin.start();
@@ -480,23 +540,24 @@ class SubProcessHeavy
 	pIsFinished.set(true);
       }
 
-      /* wait on theclose the STDIN task to finish... */ 
+      /* wait for the tasks to finish... */ 
       closeStdin.join();
-      
-      /* wait on the collection task to finish... */ 
-      stats.join();
+      if(stats != null) 
+	stats.join();
     }
     catch (InterruptedException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
 	 getName() + " [interrupted]: " + ex.getMessage());
 
-      stats.interrupt();
+      if(stats != null)
+	stats.interrupt();
+
       pExitCode = -2;
     }
 
     assert(!closeStdin.isAlive());
-    assert(!stats.isAlive());
+    assert((stats == null) || !stats.isAlive());
     
     /* append any IOException messages to the STDERR output */ 
     if(extraErrors != null) {
@@ -564,6 +625,8 @@ class SubProcessHeavy
     public void 
     run()
     {
+      assert(PackageInfo.sOsType == OsType.Unix);
+
       if(pIsFinished == null) 
 	throw new IllegalStateException("The subprocess was never initialized!");
 
@@ -699,7 +762,8 @@ class SubProcessHeavy
   /**
    * The per-process resource usage statistics collector.
    */ 
-  private static NativeProcessStats  sProcStats = new NativeProcessStats();
+  private static NativeProcessStats sProcStats = 
+    ((PackageInfo.sOsType == OsType.Unix) ? new NativeProcessStats() : null);
 
 
 

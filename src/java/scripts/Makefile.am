@@ -12,14 +12,15 @@ instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
 if FOUNDATION
 admin_scripts = \
   plfilemgr \
-  pljobmgr \
   plmaster \
   plpluginmgr \
   plqueuemgr \
   plrestore
 endif
 
-instsbin_SCRIPTS = $(admin_scripts)
+instsbin_SCRIPTS = \
+  pljobmgr \
+  $(admin_scripts)
 
 
 SUBDIRS = \

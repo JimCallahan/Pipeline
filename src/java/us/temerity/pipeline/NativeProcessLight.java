@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.java,v 1.2 2004/11/09 06:01:32 jim Exp $
+// $Id: NativeProcessLight.java,v 1.3 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -222,7 +222,63 @@ class NativeProcessLight
       return null;
     return (((double) pSTime) / 100.0);
   }
+
+  /**
+   * Get the number of major faults which occured for the process which have required 
+   * loading a memory page from disk.
+   * 
+   * @return 
+   *   The number of faults or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getPageFaults() 
+  { 
+    if(pIsRunning.get()) 
+      return null;
+    return pPageFaults;
+  }
+
+  /**
+   * Get the maximum virtual memory size of the process.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getVirtualSize() 
+  {
+    if(pIsRunning.get()) 
+      return null;
+    return pVirtualSize;
+  }
   
+  /**
+   * Get the maximum resident memory size of the process (in bytes).
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getResidentSize() 
+  {
+    if(pIsRunning.get()) 
+      return null;
+    return pResidentSize;
+  }
+
+  /**
+   * Get the cumilative amount of memory swapped by the process (in bytes).
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if unknown.
+   */
+  public Long
+  getSwappedSize()  
+  {
+    if(pIsRunning.get()) 
+      return null;
+    return pSwappedSize;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -496,4 +552,24 @@ class NativeProcessLight
    */
   private long  pSTime;
   
+  /**
+   * The number of major faults the process has made which have required loading a 
+   * memory page from disk.
+   */
+  private long  pPageFaults;      
+
+  /**
+   * The virtual memory size of the process in bytes.
+   */ 
+  private long  pVirtualSize;
+
+  /**
+   * The resident memory set size of the process in bytes.
+   */ 
+  private long pResidentSize;
+
+  /**
+   * The cumilative amount of memory swapped by the process in bytes.
+   */ 
+  private long pSwappedSize;
 }

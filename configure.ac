@@ -29,10 +29,12 @@ NATIVE_OSTYPE=
 
 case $build in
   (i686-pc-linux-gnu)          
-    NATIVE_OSTYPE=Unix;;
+    NATIVE_OSTYPE=Unix;
+    AC_DEFINE([OS_IS_UNIX], [], [The OS is a standard UNIX variant.]);;
 
   (powerpc-apple-darwin8.1.0)  
-    NATIVE_OSTYPE=MacOS;;
+    NATIVE_OSTYPE=MacOS;
+    AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Mac OS X (Darwin).]);;
 
   (*)
     AC_MSG_ERROR(unsupported native OS type: $build_os);;
@@ -1154,7 +1156,9 @@ AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h]
 AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h utime.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
 AC_CHECK_HEADERS([sys/statfs.h sys/mount.h])
-AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h])
+AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h]) 
+AC_CHECK_HEADERS([sys/sysctl.h])
+
 
 AC_MSG_RESULT([ ])
 

@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.6 2005/10/25 10:56:01 jim Exp $
+// $Id: SubProcessLight.java,v 1.7 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -217,6 +217,54 @@ class SubProcessLight
     return ((NativeProcessLight) pProc).getSystemTime();
   }
 
+  /**
+   * Get the number of major faults which occured for the process which have required 
+   * loading a memory page from disk.
+   * 
+   * @return 
+   *   The number of faults or <CODE>null</CODE> if the process is still running.
+   */
+  public Long
+  getPageFaults() 
+  { 
+    return ((NativeProcessLight) pProc).getPageFaults();
+  }
+
+  /**
+   * Get the maximum virtual memory size of the process.
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if the process is still running.
+   */
+  public Long
+  getVirtualSize() 
+  {
+    return ((NativeProcessLight) pProc).getVirtualSize();
+  }
+  
+  /**
+   * Get the maximum resident memory size of the process (in bytes).
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if the process is still running.
+   */
+  public Long
+  getResidentSize() 
+  {
+    return ((NativeProcessLight) pProc).getResidentSize();
+  }
+
+  /**
+   * Get the cumilative amount of memory swapped by the process (in bytes).
+   * 
+   * @return 
+   *   The size in bytes or <CODE>null</CODE> if the process is still running.
+   */
+  public Long
+  getSwappedSize()  
+  {
+    return ((NativeProcessLight) pProc).getSwappedSize();
+  }
   
 
   /*----------------------------------------------------------------------------------------*/

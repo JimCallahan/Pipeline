@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cc,v 1.1 2005/06/10 04:49:58 jim Exp $
+// $Id: NativeProcessLight.cc,v 1.2 2005/11/03 22:02:14 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -449,6 +449,30 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
     return -1;
   }  
   
+  jfieldID pPageFaults = env->GetFieldID(NativeProcessLightClass, "pPageFaults", "J");
+  if(pPageFaults == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pPageFaults");
+    return -1;
+  }
+  
+  jfieldID pVirtualSize = env->GetFieldID(NativeProcessLightClass, "pVirtualSize", "J");
+  if(pVirtualSize == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pVirtualSize");
+    return -1;
+  }
+  
+  jfieldID pResidentSize = env->GetFieldID(NativeProcessLightClass, "pResidentSize", "J");
+  if(pResidentSize == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pResidentSize");
+    return -1;
+  }
+  
+  jfieldID pSwappedSize = env->GetFieldID(NativeProcessLightClass, "pSwappedSize", "J");
+  if(pSwappedSize == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pSwappedSize");
+    return -1;
+  }
+
   jmethodID setPid = env->GetMethodID(NativeProcessLightClass, "setPid", "(I)V");
   if(setPid == 0) {
     env->ThrowNew(IOException, "unable to access: NativeProcessLight.setPid()");
@@ -710,7 +734,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	ru.ru_utime.tv_usec = -1;
 	ru.ru_stime.tv_sec  = -1;
 	ru.ru_stime.tv_usec = -1;
-	
+	ru.ru_majflt = -1;
+	ru.ru_maxrss = -1;
+	ru.ru_nswap  = -1;
+
 	pid_t epid = wait4(pid, &status, 0, &ru);
 
 	/* let Java know that the process has exited */ 
@@ -727,6 +754,20 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 			    ru.ru_utime.tv_sec*100 + ru.ru_utime.tv_usec/10000);
 	  env->SetLongField(obj, pSTime, 
 			    ru.ru_stime.tv_sec*100 + ru.ru_stime.tv_usec/10000);
+
+	  long psize = (long) getpagesize(); 
+	  if(psize <= 0) 
+	    psize = 0L;
+
+	  env->SetLongField(obj, pPageFaults, ru.ru_majflt);
+	  env->SetLongField(obj, pVirtualSize, 0L); // FOR NOW...
+	  env->SetLongField(obj, pResidentSize, ru.ru_maxrss * 1000L);
+	  env->SetLongField(obj, pSwappedSize, ru.ru_nswap * psize);
+
+// 	  printf("Page Faults: %ld\n", ru.ru_majflt);
+// 	  printf("Resident Size: %ld (bytes)\n", ru.ru_maxrss * 1000L);
+// 	  printf("Swapped Size: %ld (pages) %ld (bytes)\n", ru.ru_nswap, ru.ru_nswap * psize);
+
 	  return WEXITSTATUS(status);
 	}
 	else if(WIFSIGNALED(status)) {

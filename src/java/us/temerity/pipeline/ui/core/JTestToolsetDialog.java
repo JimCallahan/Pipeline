@@ -1,4 +1,4 @@
-// $Id: JTestToolsetDialog.java,v 1.2 2005/06/13 16:05:01 jim Exp $
+// $Id: JTestToolsetDialog.java,v 1.3 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,7 +80,10 @@ class JTestToolsetDialog
 	header = ("Test " + PackageInfo.sOsType + " Toolset:  " + pToolset.getName() + 
 		  " (working)");
 
-      updateEnvironment(header, pToolset.getEnvironment(PackageInfo.sUser, "default"));
+      TreeMap<String,String> env = 
+	pToolset.getEnvironment(PackageInfo.sUser, "default", PackageInfo.sOsType);
+
+      updateEnvironment(header, env);
     }
   }
 

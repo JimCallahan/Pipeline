@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.8 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueJobInfo.java,v 1.9 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -123,6 +123,18 @@ class QueueJobInfo
   }
   
   /**
+   * The operating system type of the host assigned to execute the job.
+   * 
+   * @return 
+   *   The OS or <CODE>null</CODE> if the job was never assigned to a specific host.
+   */ 
+  public synchronized OsType 
+  getOsType() 
+  {
+    return pOsType;   
+  }
+  
+  /**
    * The results of executing the job's regeneration action.
    * 
    * @return 
@@ -163,17 +175,26 @@ class QueueJobInfo
    * 
    * @param hostname
    *   The full name of the host executing the job.
+   * 
+   * @param os
+   *   The operating system of the executing host.
    */ 
   public synchronized void 
   started
   (
-   String hostname
+   String hostname, 
+   OsType os
   ) 
   {
     if(hostname == null) 
       throw new IllegalArgumentException
 	("The hostname cannot be (null)!");
     pHostname = hostname; 
+
+    if(os == null) 
+      throw new IllegalArgumentException
+	("The operating system cannot be (null)!");
+    pOsType = os; 
 
     pStartedStamp = new Date();
     pState = JobState.Running;
@@ -242,6 +263,9 @@ class QueueJobInfo
     if(pHostname != null)
       encoder.encode("Hostname", pHostname);
 
+    if(pOsType != null)
+      encoder.encode("OsType", pOsType);
+
     if(pResults != null) 
       encoder.encode("Results", pResults);
   }
@@ -286,6 +310,12 @@ class QueueJobInfo
       String host = (String) decoder.decode("Hostname"); 
       if(host != null) 
 	pHostname = host;
+    }
+
+    {
+      OsType os = (OsType) decoder.decode("OsType"); 
+      if(os != null) 
+	pOsType = os; 
     }
 
     {
@@ -348,6 +378,12 @@ class QueueJobInfo
    * job was never assigned to a specific host.
    */ 
   private String pHostname;   
+
+  /**
+   * The operating system type of the host assigned to execute the job or <CODE>null</CODE> 
+   * if the job was never assigned to a specific host.
+   */ 
+  private OsType pOsType; 
 
   /**
    * The results of executing the job's regeneration action or <CODE>null</CODE> if the 

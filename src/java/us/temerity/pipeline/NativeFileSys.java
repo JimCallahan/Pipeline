@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.6 2004/08/29 09:22:06 jim Exp $
+// $Id: NativeFileSys.java,v 1.7 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6,7 +6,7 @@ import java.io.*;
 import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N A T I V E   P R O C E S S                                                            */
+/*   N A T I V E   F I L E   S Y S                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**

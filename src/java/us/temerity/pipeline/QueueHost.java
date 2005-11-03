@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.18 2005/07/15 23:41:47 jim Exp $
+// $Id: QueueHost.java,v 1.19 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -223,6 +223,36 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the operating system of the host.
+   * 
+   * @return 
+   *   The operating system or <CODE>null</CODE> if unknown.
+   */ 
+  public synchronized OsType
+  getOsType() 
+  {
+    return pOsType; 
+  }
+
+  /**
+   * Set the operating system of the host.
+   * 
+   * @param os 
+   *   The operating system.
+   */ 
+  public synchronized void
+  setOsType
+  (
+   OsType os
+  ) 
+  {
+    pOsType = os;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the number of processors on the host.
    * 
    * @return 
@@ -235,7 +265,7 @@ class QueueHost
   }
 
   /**
-   * Set the the number of processors on the host.
+   * Set the number of processors on the host.
    * 
    * @param procs 
    *   The number of processors.
@@ -642,8 +672,8 @@ class QueueHost
    * <DIV style="margin-left: 40px;">
    *   The host is reserved for another user. <P>
    *   The host has a higher system load than the job requires.<P> 
-   *   The host has less than the requiremed amount of free memory.<P>
-   *   The host has less than the requiremed amount of free temporary disk space.<P>
+   *   The host has less than the required amount of free memory.<P>
+   *   The host has less than the required amount of free temporary disk space.<P>
    *   The host does not support all of the selection keys required.<P>
    * </DIV>
    * 
@@ -871,6 +901,11 @@ class QueueHost
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The operating system type.
+   */ 
+  private OsType  pOsType; 
 
   /**
    * The number of processors on the host.

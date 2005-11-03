@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.4 2004/10/28 15:55:24 jim Exp $
+// $Id: JobRequest.java,v 1.5 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -24,6 +24,11 @@ enum JobRequest
    * Get a point sample of the currently available system resources.
    */ 
   GetResources, 
+
+  /**
+   * Get the operating system type. 
+   */ 
+  GetOsType,  
 
   /**
    * Get the number of processors (CPUs).

@@ -1,4 +1,4 @@
-// $Id: NativeProcessStats.cc,v 1.1 2005/06/10 04:49:58 jim Exp $
+// $Id: NativeProcessStats.cc,v 1.2 2005/11/03 22:02:14 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -141,6 +141,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessStats_collectStatsNative
     return false;
   }
 
+#ifdef OS_IS_UNIX
   /* determine the size of memory pages */ 
   long psize = (long) getpagesize(); 
   if(psize <= 0) {
@@ -186,7 +187,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessStats_collectStatsNative
     env->SetLongField(obj, pVirtualSize, vmem);
     env->SetLongField(obj, pResidentSize, rss * psize);
     env->SetLongField(obj, pSwappedSize, cnswap * psize);
-  }    
+  }  
+#endif  
 
   return true;
 }

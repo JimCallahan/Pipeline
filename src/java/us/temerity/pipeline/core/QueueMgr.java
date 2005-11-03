@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.46 2005/10/30 10:01:32 jim Exp $
+// $Id: QueueMgr.java,v 1.47 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1867,6 +1867,7 @@ class QueueMgr
     TreeSet<String> dead = new TreeSet<String>();
     TreeSet<String> hung = new TreeSet<String>();
     TreeMap<String,ResourceSample> samples = new TreeMap<String,ResourceSample>();
+    TreeMap<String,OsType> osTypes = new TreeMap<String,OsType>();
     TreeMap<String,Integer> numProcs = new TreeMap<String,Integer>();
     TreeMap<String,Long> totalMemory = new TreeMap<String,Long>();
     TreeMap<String,Long> totalDisk = new TreeMap<String,Long>();
@@ -1877,6 +1878,7 @@ class QueueMgr
 	samples.put(hname, sample);
 
  	if(needsTotals.contains(hname)) {
+	  osTypes.put(hname, client.getOsType());
 	  numProcs.put(hname, client.getNumProcessors());
  	  totalMemory.put(hname, client.getTotalMemory());
  	  totalDisk.put(hname, client.getTotalDisk());
@@ -1969,6 +1971,10 @@ class QueueMgr
 		  dump.put(hname, block);
 		}
 	      }
+
+	      OsType os = osTypes.get(hname);
+	      if(os != null) 
+		host.setOsType(os); 
 
 	      Integer procs = numProcs.get(hname);
 	      if(procs != null) 
@@ -2264,9 +2270,11 @@ class QueueMgr
 			timer.resume();
 			QueueJob job = pJobs.get(jobID);
 			if(job != null) {
-			  String author = job.getActionAgenda().getNodeID().getAuthor();
+			  ActionAgenda jagenda = job.getActionAgenda();
+			  String author = jagenda.getNodeID().getAuthor();
 			  JobReqs jreqs = job.getJobRequirements();
-			  score = host.computeSelectionScore(author, jreqs, keys);
+			  if(jagenda.supportsOsType(host.getOsType())) 
+			    score = host.computeSelectionScore(author, jreqs, keys);
 			}
 		      }
 		    
@@ -2630,7 +2638,7 @@ class QueueMgr
  	timer.aquire();
  	synchronized(pJobInfo) {
  	  timer.resume();
- 	  info.started(host.getName());
+ 	  info.started(host.getName(), host.getOsType());
  	  writeJobInfo(info);
  	}
 	

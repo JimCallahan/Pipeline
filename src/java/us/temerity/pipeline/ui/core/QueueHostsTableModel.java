@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.5 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -58,11 +58,11 @@ class QueueHostsTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 8;
+      pNumColumns = 9;
 
       {
 	Class classes[] = { 
-	  String.class, String.class, Integer.class, 
+	  String.class, String.class, String.class, Integer.class, 
 	  QueueHost.class, QueueHost.class, QueueHost.class,
 	  QueueHost.class, Integer.class 
 	}; 
@@ -71,7 +71,7 @@ class QueueHostsTableModel
 
       {
 	String names[] = {
-	  "Status", "Reservation", "Order", 
+	  "Status", "OS", "Reservation", "Order", 
 	  "System Load", "Free Memory", "Free Disk Space", 
 	  "Jobs", "Slots" 
 	};
@@ -80,7 +80,7 @@ class QueueHostsTableModel
 
       {
 	String colors[] = {
-	  "", "", "", 
+	  "", "", "", "", 
 	  "Blue", "Blue", "Blue", 
 	  "Green", "Green"
 	};
@@ -90,6 +90,7 @@ class QueueHostsTableModel
       {
 	String desc[] = {
 	  "The current status of the job server.", 
+	  "The operating system type of the job server.", 
 	  "The name of the user holding the server reservation.", 
 	  "The order in which jobs are dispatched to the servers.", 
 	  "The system load of the server.", 
@@ -102,7 +103,7 @@ class QueueHostsTableModel
       }
 
       {
-	int widths[] = { 120, 120, 90, 135, 135, 135, 135, 60 };
+	int widths[] = { 120, 90, 120, 90, 135, 135, 135, 135, 60 };
 	pColumnWidths = widths;
       }
 
@@ -112,6 +113,7 @@ class QueueHostsTableModel
 
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JResourceSamplesTableCellRenderer
@@ -135,6 +137,7 @@ class QueueHostsTableModel
 
 	TableCellEditor editors[] = {
 	  editor, 
+	  null,
 	  new JIdentifierTableCellEditor(120, JLabel.CENTER), 
 	  new JIntegerTableCellEditor(90, JLabel.CENTER), 
 	  null, 
@@ -172,58 +175,68 @@ class QueueHostsTableModel
 	break;
 
       case 1:
+	{
+	  OsType os = host.getOsType();
+	  if(os != null) 
+	    value = os.toString();
+	  else 
+	    value = "";
+	}
+	break;
+
+      case 2:
 	value = host.getReservation();
 	if(value == null)
 	  value = "";
 	break;
 	
-      case 2:
+      case 3:
 	value = new Integer(host.getOrder());
 	break;
 
-      case 3:
       case 4:
       case 5:
       case 6:
+      case 7:
 	{
 	  ResourceSample sample = host.getLatestSample();
 	  if(sample == null) {
 	    switch(pSortColumn) {
-	    case 3:
+	    case 4:
 	      value = new Float(0.0f);
 	      break;
 
-	    case 4:
 	    case 5:
+	    case 6:
 	      value = new Long(0);
 	      break;
 	      
-	    case 6:
+	    case 7:
 	      value = new Integer(0);
 	    }
 	  }
 	  else {
 	    switch(pSortColumn) {
-	    case 3:
+	    case 4:
 	      value = new Float(sample.getLoad());
 	      break;
 
-	    case 4:
+	    case 5:
 	      value = new Long(sample.getMemory());
 	      break;
 
-	    case 5:
+	    case 6:
 	      value = new Long(sample.getDisk());
 	      break;
 	      
-	    case 6:
+	    case 7:
 	      value = new Integer(sample.getNumJobs());
 	    }
 	  }
 	}
 	break;
 
-      case 7:
+      case 8:
 	value = new Integer(host.getJobSlots());
 	break;
 	
@@ -656,9 +669,9 @@ class QueueHostsTableModel
       
     switch(col) {
     case 0: 
-    case 1: 
     case 2: 
-    case 7:
+    case 3: 
+    case 8:
       return true;
 
     default:
@@ -682,18 +695,21 @@ class QueueHostsTableModel
       return host.getStatus().toString();
 
     case 1:
-      return host.getReservation();
+      return host.getOsType();
 
     case 2:
-      return host.getOrder();
+      return host.getReservation();
 
     case 3:
+      return host.getOrder();
+
     case 4:
     case 5:
     case 6:
+    case 7:
       return host;
       
-    case 7:
+    case 8:
       return host.getJobSlots();
 
     default:
@@ -757,7 +773,7 @@ class QueueHostsTableModel
 	return true;
       }
 
-    case 1:
+    case 2:
       {
 	String author = (String) value;
 	if((author != null) && (author.length() == 0)) 
@@ -768,7 +784,7 @@ class QueueHostsTableModel
 	return true;
       }
 
-    case 2:
+    case 3:
       {
 	Integer order = (Integer) value;
 	if((order != null) && (order >= 0)) 
@@ -778,7 +794,7 @@ class QueueHostsTableModel
 	return true; 
       }
 
-    case 7:
+    case 8:
       {
 	Integer slots = (Integer) value;
 	if((slots != null) && (slots >= 0)) 

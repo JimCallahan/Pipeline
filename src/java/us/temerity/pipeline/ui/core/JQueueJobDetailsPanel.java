@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.3 2005/05/30 20:48:37 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.4 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -231,10 +231,20 @@ class JQueueJobDetailsPanel
 
 	    /* hostname */ 
 	    { 
-	      pHostnameField =UIFactory.createTitledTextField
+	      pHostnameField = UIFactory.createTitledTextField
 		(tpanel, "Hostname:", sTSize, 
 		 vpanel, null, sVSize, 
 		 "The fully resolved name of the host where the job was executed.");
+	    }
+	    
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    /* operating system type */ 
+	    { 
+	      pOsTypeField = UIFactory.createTitledTextField
+		(tpanel, "Operating System:", sTSize, 
+		 vpanel, null, sVSize, 
+		 "The operating system type of the host where the job was executed.");
 	    }
 	    
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -818,6 +828,14 @@ class JQueueJobDetailsPanel
 	  text = pJobInfo.getHostname();
 
 	pHostnameField.setText(text);
+      }
+
+      {
+	String text = "-";
+	if((pJobInfo != null) && (pJobInfo.getOsType() != null)) 
+	  text = pJobInfo.getOsType().toString();
+
+	pOsTypeField.setText(text);
       }
 
       {
@@ -1604,6 +1622,11 @@ class JQueueJobDetailsPanel
    * The hostname field.
    */ 
   private JTextField pHostnameField; 
+  
+  /**
+   * The operating system type field.
+   */ 
+  private JTextField pOsTypeField; 
   
   /**
    * The exit code field.

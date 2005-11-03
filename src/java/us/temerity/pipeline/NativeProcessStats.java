@@ -1,4 +1,4 @@
-// $Id: NativeProcessStats.java,v 1.2 2005/01/22 01:36:35 jim Exp $
+// $Id: NativeProcessStats.java,v 1.3 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,8 +27,8 @@ class NativeProcessStats
   public 
   NativeProcessStats() 
   {
+    assert(PackageInfo.sOsType == OsType.Unix);
     loadLibrary();
-    
     pStats = new TreeMap<Integer,ProcStats>();
   }
 

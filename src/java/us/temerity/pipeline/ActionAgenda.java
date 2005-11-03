@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.6 2005/05/05 22:46:06 jim Exp $
+// $Id: ActionAgenda.java,v 1.7 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,10 +55,7 @@ class ActionAgenda
    *   The name of the toolset environment under which the action is executed.
    * 
    * @param env  
-   *   The cooked toolset environment.
-   * 
-   * @param dir
-   *   The execution working directory.
+   *   The cooked toolset environments indexed by operating system type.
    */
   public
   ActionAgenda
@@ -71,8 +68,7 @@ class ActionAgenda
    Map<String,Set<FileSeq>> secondarySources,  
    Map<String,ActionInfo> actionInfo, 
    String toolset, 
-   Map<String,String> env, 
-   File dir
+   DoubleMap<OsType,String,String> envs
   ) 
   {
     if(jobID < 0) 
@@ -116,15 +112,10 @@ class ActionAgenda
 	("The toolset cannot be (null)!");
     pToolset = toolset;
     
-    if(env == null) 
+    if(envs == null) 
       throw new IllegalArgumentException
 	("The execution environment cannot be (null)!");
-    pEnvironment = new TreeMap<String,String>(env);
- 
-    if(dir == null) 
-      throw new IllegalArgumentException
-	("The execution working directory cannot be (null)!");
-    pWorkingDir = dir;;
+    pEnvironment = new DoubleMap<OsType,String,String>(envs);
   }
 
 
@@ -250,21 +241,74 @@ class ActionAgenda
   }
 
   /**
-   * Get the environment under which the action is executed.
+   * Whether the given operating system is supported by the toolset.
    */ 
-  public SortedMap<String,String>
-  getEnvironment()
+  public boolean
+  supportsOsType
+  (
+   OsType os
+  ) 
   {
-    return Collections.unmodifiableSortedMap(pEnvironment);
+    return ((os != null) && pEnvironment.containsKey(os));
   }
 
   /**
-   * Get the execution working directory.
+   * Get the environment for the current operating system under which the action is executed.
+   * 
+   * @throws PipelineException
+   *   If the current operating system is not supported by the toolset.
+   */ 
+  public SortedMap<String,String>
+  getEnvironment()
+    throws PipelineException
+  {
+    TreeMap<String,String> env = pEnvironment.get(PackageInfo.sOsType);
+    if(env == null) 
+      throw new PipelineException
+	("The toolset (" + pToolset + ") does not support the " + PackageInfo.sOsType + 
+	 " operating system.");
+    return Collections.unmodifiableSortedMap(env);
+  }
+
+  /**
+   * Get the environment for a specific operating system under which the action is executed.
+   * 
+   * @return
+   *   The environment or <CODE>null</CODE> if not supported by the toolset.
+   */ 
+  public SortedMap<String,String>
+  getEnvironment
+  (
+   OsType os
+  ) 
+  {
+    TreeMap<String,String> env = pEnvironment.get(os);
+    if(env != null) 
+      return Collections.unmodifiableSortedMap(env);
+    return null;
+  }
+
+  /**
+   * Get the execution working directory for the current operating system.
    */ 
   public File
   getWorkingDir() 
   {
-    return pWorkingDir;
+    return new File(PackageInfo.sProdDir, 
+		    pNodeID.getWorkingParent().getPath());
+  }
+  
+  /**
+   * Get the execution working directory for the given operating system.
+   */ 
+  public File
+  getWorkingDir
+  (
+   OsType os
+  ) 
+  {
+    return new File(PackageInfo.getProdDir(os), 
+		    pNodeID.getWorkingParent().getPath());
   }
   
 
@@ -300,8 +344,6 @@ class ActionAgenda
     
     encoder.encode("Toolset", pToolset);
     encoder.encode("Environment", pEnvironment);
-
-    encoder.encode("WorkingDir", pWorkingDir.toString());
   }
   
   public void 
@@ -368,15 +410,11 @@ class ActionAgenda
       throw new GlueException("The \"Toolset\" was missing!");
     pToolset = toolset;
 
-    TreeMap<String,String> env = (TreeMap<String,String>) decoder.decode("Environment"); 
+    DoubleMap<OsType,String,String> env = 
+      (DoubleMap<OsType,String,String>) decoder.decode("Environment"); 
     if(env == null) 
       throw new GlueException("The \"Environment\" was missing!");
     pEnvironment = env;
-
-    String dir = (String) decoder.decode("WorkingDir"); 
-    if(dir == null) 
-      throw new GlueException("The \"WorkingDir\" was missing!");
-    pWorkingDir = new File(dir);
   }
 
 
@@ -434,14 +472,9 @@ class ActionAgenda
   private String  pToolset; 
 
   /**
-   * The environment under which the action is executed.
+   * The environment under which the action is executed indexed by operating system type.
    */
-  private TreeMap<String,String> pEnvironment;
- 
-  /**
-   * The execution working directory.
-   */
-  private File  pWorkingDir;
+  private DoubleMap<OsType,String,String> pEnvironment;
  
 }
 

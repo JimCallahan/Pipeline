@@ -42,6 +42,10 @@ supplied to the --mac-root-dir option to plconfig(1) during Pipeline configurati
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/MacOS/sbin/plrun
 
+@ROOT_INST_DIR@/MacOS/sbin/pljobmgr
+@ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
+@ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
+
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS
 @ROOT_INST_DIR@/MacOS/Pipeline.app

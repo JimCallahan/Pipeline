@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.3 2004/10/30 13:42:20 jim Exp $
+// $Id: Toolset.java,v 1.4 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -469,15 +469,20 @@ class Toolset
   }
   
   /**
-   * Get the cooked toolset environment specific to the given user.
+   * Get the cooked toolset environment specialized for a specific user and 
+   * operating system.
    * 
    * @param author
    *   The user owning the generated environment.
+   * 
+   * @param os
+   *   The operating system type.
    */ 
   public TreeMap<String,String>
   getEnvironment
   (
-   String author
+   String author, 
+   OsType os
   )
   {
     if(author == null) 
@@ -485,26 +490,31 @@ class Toolset
 
     TreeMap<String,String> env = getEnvironment();
     
-    env.put("HOME", PackageInfo.sHomeDir + "/" + author);
+    env.put("HOME", PackageInfo.getHomeDir(os) + "/" + author);
     env.put("USER", author);
 
     return env;
   }
 
   /**
-   * Get the cooked toolset environment specific to the given user and working area.
+   * Get the cooked toolset environment specialized for a specific user, working area and
+   * operating system.
    * 
    * @param author
    *   The user owning the generated environment.
    * 
    * @param view 
    *   The name of the user's working area view. 
+   * 
+   * @param os
+   *   The operating system type.
    */ 
   public TreeMap<String,String>
   getEnvironment
   (
    String author, 
-   String view
+   String view, 
+   OsType os
   )
   {
     if(author == null) 
@@ -513,13 +523,12 @@ class Toolset
     if(view == null) 
       throw new IllegalArgumentException("The view cannot be (null)!");
 
-    TreeMap<String,String> env = getEnvironment(author);
+    TreeMap<String,String> env = getEnvironment(author, os);
 
-    env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
+    env.put("WORKING", PackageInfo.getWorkDir(os) + "/" + author + "/" + view);
 
     return env;
   }
-
 
 
 

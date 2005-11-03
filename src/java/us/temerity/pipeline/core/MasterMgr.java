@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.143 2005/11/03 15:47:52 jim Exp $
+// $Id: MasterMgr.java,v 1.144 2005/11/03 22:02:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1651,6 +1651,83 @@ class MasterMgr
     }
   }
 
+
+  /**
+   * Get the cooked toolset environments for all operating systems specific to the given user 
+   * and working area. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is not <CODE>null</CODE>, <CODE>HOME</CODE> and 
+   * <CODE>USER</CODE> environmental variables will be added to the cooked environment. <P> 
+   * 
+   * If the <CODE>author</CODE> and <CODE>view</CODE> arguments are both not 
+   * <CODE>null</CODE>, <CODE>HOME</CODE>, <CODE>USER</CODE> and <CODE>WORKING</CODE> 
+   * environmental variables will be added to the cooked environment. <P> 
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param timer
+   *   The task timer.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  private DoubleMap<OsType,String,String>
+  getToolsetEnvironments
+  (
+   String author, 
+   String view,
+   String tname,
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+	
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists!");
+	   
+	DoubleMap<OsType,String,String> envs = new DoubleMap<OsType,String,String>();
+ 	
+	for(OsType os : toolsets.keySet()) {
+	  Toolset tset = toolsets.get(os);
+	  if(tset == null) 
+	    tset = readToolset(tname, os);
+	  assert(tset != null);
+	  
+	  TreeMap<String,String> env = null;
+	  if((author != null) && (view != null)) 
+	    env = tset.getEnvironment(author, view, os);
+	  else if(author != null)
+	    env = tset.getEnvironment(author, os);
+	  else 
+	    env = tset.getEnvironment();
+	  
+	  assert(env != null);
+	  envs.put(os, env);
+	}
+
+	return envs;
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
   /**
    * Get the cooked toolset environment specific to the given user and working area. <P> 
    * 
@@ -1713,12 +1790,12 @@ class MasterMgr
 	
 	TreeMap<String,String> env = null;
 	if((author != null) && (view != null)) 
-	  env = tset.getEnvironment(author, view);
+	  env = tset.getEnvironment(author, view, PackageInfo.sOsType);
 	else if(author != null)
-	  env = tset.getEnvironment(author);
+	  env = tset.getEnvironment(author, PackageInfo.sOsType);
 	else 
 	  env = tset.getEnvironment();
-	
+ 	
 	assert(env != null);
 	return env;
       }
@@ -8241,17 +8318,14 @@ class MasterMgr
 	    }
 	  }
 
-	  TreeMap<String,String> env = 
-	    getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), 
-				  work.getToolset(), OsType.Unix, timer);
-
-	  File dir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
+	  DoubleMap<OsType,String,String> envs = 
+	    getToolsetEnvironments(nodeID.getAuthor(), nodeID.getView(), work.getToolset(), timer);
 
 	  ActionAgenda agenda = 
 	    new ActionAgenda(jobID, nodeID, 
 			     primaryTarget, secondaryTargets, 
 			     primarySources, secondarySources, actionInfos,  
-			     work.getToolset(), env, dir);
+			     work.getToolset(), envs);
 	  
 	  JobReqs jreqs = work.getJobRequirements();
 	  {

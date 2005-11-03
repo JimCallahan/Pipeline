@@ -1,0 +1,332 @@
+
+sysctl(3)     /usr/include/sysctl.h
+
+----- example -----
+ int i, mib[4];
+  size_t len;
+  struct kinfo_proc kp;
+
+  /* Fill out the first three components of the mib */
+  len = 4;
+  sysctlnametomib("kern.proc.pid", mib, &len);
+
+  /* Fetch and print entries for pid's < 100 */
+  for (i = 0; i < 100; i++) {
+          mib[3] = i;
+          len = sizeof(kp);
+          if (sysctl(mib, 4, &kp, &len, NULL, 0) == -1)
+                  perror("sysctl");
+          else if (len > 0)
+                  printkproc(&kp);
+  }
+----- example -----
+
+
+
+----------------------------------------------------------------------------------
+  MIB = "kern.proc.pid" 
+----------------------------------------------------------------------------------
+
+  int i, mib[4];
+  size_t len;
+  struct kinfo_proc kp;
+
+  /* Fill out the first three components of the mib */
+  len = 4;
+  sysctlnametomib("kern.proc.pid", mib, &len);
+
+  /* Fetch and print entries for pid's < 100 */
+  for (i = 0; i < 100; i++) {
+          mib[3] = i;
+          len = sizeof(kp);
+          if (sysctl(mib, 4, &kp, &len, NULL, 0) == -1)
+                  perror("sysctl");
+          else if (len > 0)
+                  printkproc(&kp);
+  }
+
+--- /usr/include/sysctl.h --------------------------------------------------------
+
+struct kinfo_proc {
+        struct  extern_proc kp_proc;            /* proc structure */
+        struct  eproc {
+                struct  proc *e_paddr;          /* address of proc */
+                struct  session *e_sess;        /* session pointer */
+                struct  _pcred e_pcred;         /* process credentials */
+                struct  _ucred e_ucred;         /* current credentials */
+                struct   vmspace e_vm;          /* address space */
+                pid_t   e_ppid;                 /* parent process id */
+                pid_t   e_pgid;                 /* process group id */
+                short   e_jobc;                 /* job control counter */
+                dev_t   e_tdev;                 /* controlling tty dev */
+                pid_t   e_tpgid;                /* tty process group id */
+                struct  session *e_tsess;       /* tty session pointer */
+                char    e_wmesg[8];             /* wchan message */
+                segsz_t e_xsize;                /* text size */
+                short   e_xrssize;              /* text rss */
+                short   e_xccount;              /* text references */
+                short   e_xswrss;
+                int32_t e_flag;
+                char    e_login[12];            /* short setlogin() name */
+                int32_t e_spare[4];
+        } kp_eproc;
+};
+
+----------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------
+  MIB = "vm.vmmeter"
+----------------------------------------------------------------------------------
+
+  int mib[4];
+  size_t len;
+  struct vmmeter vmm; 
+
+  len = 2;
+  sysctlnametomib("vm.vmmeter", mib, &len);
+
+  if(sysctl(mib, 2, &vmm, &len, NULL, 0) == -1)
+    perror("sysctl");
+
+--- /usr/include/vmmeter.h --------------------------------------------------------
+
+struct vmmeter {
+        /*
+         * General system activity.
+         */
+        u_int v_swtch;          /* context switches */
+        u_int v_trap;           /* calls to trap */
+        u_int v_syscall;        /* calls to syscall() */
+        u_int v_intr;           /* device interrupts */
+        u_int v_soft;           /* software interrupts */
+        u_int v_faults;         /* total faults taken */
+        /*
+         * Virtual memory activity.
+         */
+        u_int v_lookups;        /* object cache lookups */
+        u_int v_hits;           /* object cache hits */
+        u_int v_vm_faults;      /* number of address memory faults */
+        u_int v_cow_faults;     /* number of copy-on-writes */
+        u_int v_swpin;          /* swapins */
+        u_int v_swpout;         /* swapouts */
+        u_int v_pswpin;         /* pages swapped in */
+        u_int v_pswpout;        /* pages swapped out */
+        u_int v_pageins;        /* number of pageins */
+        u_int v_pageouts;       /* number of pageouts */
+        u_int v_pgpgin;         /* pages paged in */
+        u_int v_pgpgout;        /* pages paged out */
+        u_int v_intrans;        /* intransit blocking page faults */
+        u_int v_reactivated;    /* number of pages reactivated from free list */
+        u_int v_rev;            /* revolutions of the hand */
+        u_int v_scan;           /* scans in page out daemon */
+        u_int v_dfree;          /* pages freed by daemon */
+        u_int v_pfree;          /* pages freed by exiting processes */
+        u_int v_zfod;           /* pages zero filled on demand */
+        u_int v_nzfod;          /* number of zfod's created */
+        /*
+         * Distribution of page usages.
+         */
+        u_int v_page_size;      /* page size in bytes */
+        u_int v_kernel_pages;   /* number of pages in use by kernel */
+        u_int v_free_target;    /* number of pages desired free */
+        u_int v_free_min;       /* minimum number of pages desired free */
+        u_int v_free_count;     /* number of pages free */
+        u_int v_wire_count;     /* number of pages wired down */
+        u_int v_active_count;   /* number of pages active */
+        u_int v_inactive_target; /* number of pages desired inactive */
+        u_int v_inactive_count;  /* number of pages inactive */
+};
+
+----------------------------------------------------------------------------------
+
+These are the support HW selectors for sysctlbyname.  Parameters that are byte counts or 
+frequencies are 64 bit numbers. All other parameters are 32 bit numbers.
+
+hw.memsize     - The number of bytes of physical memory in the system.
+
+hw.activecpu   - The number of processors currently available for executing threads.
+                 Use this number to determine the number threads to create in SMP aware 
+	         applications.  This number can change when power management modes are 
+	         changed.
+
+hw.pagesize    - Gives the size in bytes of the pages used by the processor and VM system.
+
+
+
+**********************************************************************************************
+**********************************************************************************************
+
+----------------------------------------------------------------------------------
+getloadavg(3) 
+
+NAME
+     getloadavg -- get system load averages
+
+LIBRARY
+     Standard C Library (libc, -lc)
+
+SYNOPSIS
+     #include <stdlib.h>
+
+     int
+     getloadavg(double loadavg[], int nelem);
+
+DESCRIPTION
+     The getloadavg() function returns the number of processes in the system
+     run queue averaged over various periods of time.  Up to nelem samples are
+     retrieved and assigned to successive elements of loadavg[].  The system
+     imposes a maximum of 3 samples, representing averages over the last 1, 5,
+     and 15 minutes, respectively.
+
+DIAGNOSTICS
+     If the load average was unobtainable, -1 is returned; otherwise, the num-
+     ber of samples actually retrieved is returned.
+
+SEE ALSO
+     uptime(1), kvm_getloadavg(3), sysctl(3)
+
+HISTORY
+     The getloadavg() function appeared in 4.3BSD-Reno.
+----------------------------------------------------------------------------------
+
+
+
+
+----------------------------------------------------------------------------------
+NAME
+     statfs -- get file system statistics
+
+SYNOPSIS
+     #include <sys/param.h>
+     #include <sys/mount.h>
+
+     int
+     statfs(const char *path, struct statfs *buf);
+
+     int
+     fstatfs(int fd, struct statfs *buf);
+
+DESCRIPTION
+     Statfs() returns information about a mounted file system.  Path is the
+     path name of any file within the mounted file system.  Buf is a pointer
+     to a statfs structure defined as follows:
+
+     typedef struct { int32_t val[2]; } fsid_t;
+
+     #define MFSNAMELEN   15 /* length of fs type name, not inc. nul */
+     #define MNAMELEN     90 /* length of buffer for returned name */
+
+     struct statfs {
+         short   f_otype;    /* type of file system (reserved: zero) */
+         short   f_oflags;   /* copy of mount flags (reserved: zero) */
+         long    f_bsize;    /* fundamental file system block size */
+         long    f_iosize;   /* optimal transfer block size */
+         long    f_blocks;   /* total data blocks in file system */
+         long    f_bfree;    /* free blocks in fs */
+         long    f_bavail;   /* free blocks avail to non-superuser */
+         long    f_files;    /* total file nodes in file system */
+         long    f_ffree;    /* free file nodes in fs */
+         fsid_t  f_fsid;     /* file system id (super-user only) */
+         uid_t   f_owner;    /* user that mounted the file system */
+         short   f_reserved1;        /* reserved for future use */
+         short   f_type;     /* type of file system (reserved) */
+         long    f_flags;    /* copy of mount flags (reserved) */
+         long    f_reserved2[2];     /* reserved for future use */
+         char    f_fstypename[MFSNAMELEN]; /* fs type name */
+         char    f_mntonname[MNAMELEN];    /* directory on which mounted */
+         char    f_mntfromname[MNAMELEN];  /* mounted file system */
+         char    f_reserved3;        /* reserved for future use */
+         long    f_reserved4[4];     /* reserved for future use */
+     };
+
+     Fields that are undefined for a particular file system are set to -1.
+     Fstatfs() returns the same information about an open file referenced by
+     descriptor fd.
+
+RETURN VALUES
+     Upon successful completion, a value of 0 is returned.  Otherwise, -1 is
+     returned and the global variable errno is set to indicate the error.
+----------------------------------------------------------------------------------
+
+
+
+     No    Name         Default Action       Description
+     1     SIGHUP       terminate process    terminal line hangup
+     2     SIGINT       terminate process    interrupt program
+     3     SIGQUIT      create core image    quit program
+     4     SIGILL       create core image    illegal instruction
+     5     SIGTRAP      create core image    trace trap
+     6     SIGABRT      create core image    abort program (formerly SIGIOT)
+     7     SIGEMT       create core image    emulate instruction executed
+     8     SIGFPE       create core image    floating-point exception
+     9     SIGKILL      terminate process    kill program
+     10    SIGBUS       create core image    bus error
+     11    SIGSEGV      create core image    segmentation violation
+     12    SIGSYS       create core image    non-existent system call invoked
+     13    SIGPIPE      terminate process    write on a pipe with no reader
+     14    SIGALRM      terminate process    real-time timer expired
+     15    SIGTERM      terminate process    software termination signal
+     16    SIGURG       discard signal       urgent condition present on
+                                             socket
+     17    SIGSTOP      stop process         stop (cannot be caught or
+                                             ignored)
+     18    SIGTSTP      stop process         stop signal generated from
+                                             keyboard
+     19    SIGCONT      discard signal       continue after stop
+     20    SIGCHLD      discard signal       child status has changed
+     21    SIGTTIN      stop process         background read attempted from
+                                             control terminal
+     22    SIGTTOU      stop process         background write attempted to
+                                             control terminal
+     23    SIGIO        discard signal       I/O is possible on a descriptor
+                                             (see fcntl(2))
+     24    SIGXCPU      terminate process    cpu time limit exceeded (see
+                                             setrlimit(2))
+     25    SIGXFSZ      terminate process    file size limit exceeded (see
+                                             setrlimit(2))
+     26    SIGVTALRM    terminate process    virtual time alarm (see
+                                             setitimer(2))
+     27    SIGPROF      terminate process    profiling timer alarm (see
+                                             setitimer(2))
+     28    SIGWINCH     discard signal       Window size change
+     29    SIGINFO      discard signal       status request from keyboard
+     30    SIGUSR1      terminate process    User defined signal 1
+     31    SIGUSR2      terminate process    User defined signal 2
+     32    SIGTHR       terminate process    thread interrupt
+
+
+
+
+----------------------------------------------------------------------------------
+
+struct  rusage {
+        struct timeval ru_utime;        /* user time used */
+        struct timeval ru_stime;        /* system time used */
+#ifdef _POSIX_C_SOURCE
+        long    ru_opaque[14];          /* implementation defined */
+#else   /* !_POSIX_C_SOURCE */
+        /*
+         * Informational aliases for source compatibility with programs
+         * that need more information than that provided by standards,
+         * and which do not mind being OS-dependent.
+         */
+        long    ru_maxrss;              /* max resident set size */
+#define ru_first        ru_ixrss        /* internal: ruadd() range start */
+        long    ru_ixrss;               /* integral shared memory size */
+        long    ru_idrss;               /* integral unshared data " */
+        long    ru_isrss;               /* integral unshared stack " */
+        long    ru_minflt;              /* page reclaims */
+        long    ru_majflt;              /* page faults */
+        long    ru_nswap;               /* swaps */
+        long    ru_inblock;             /* block input operations */
+        long    ru_oublock;             /* block output operations */
+        long    ru_msgsnd;              /* messages sent */
+        long    ru_msgrcv;              /* messages received */
+        long    ru_nsignals;            /* signals received */
+        long    ru_nvcsw;               /* voluntary context switches */
+        long    ru_nivcsw;              /* involuntary " */
+#define ru_last         ru_nivcsw       /* internal: ruadd() range end */
+#endif  /* !_POSIX_C_SOURCE */
+};
