@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.14 2005/11/03 22:02:14 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.15 2005/11/03 22:15:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -232,7 +232,7 @@ class PackageInfo
   /**
    * The default maximum number of node versions to cache in memory. <P> 
    */ 
-  public static final long sDefaultNodeCacheLimit = (@PL_MASTER_HEAP_SIZE@ / 12288);
+  public static final long sDefaultNodeCacheLimit = (@PL_MASTER_HEAP_SIZE@L / 12288L);
 
 
   /*----------------------------------------------------------------------------------------*/
