@@ -1,5 +1,9 @@
 #!/bin/sh
 
+echo "-------------------------------------------------------------------------------------------"
+echo "  CONFIGURING: $HOSTNAME"
+echo "-------------------------------------------------------------------------------------------"
+
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
@@ -23,3 +27,14 @@ pushd i686-pc-linux-gnu-dbg
     --with-customer-profile=$plprofile \
     --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd
+
+
+MAC_HOSTNAME=tadpole
+
+echo "-------------------------------------------------------------------------------------------"
+echo "  UPDATING: $MAC_HOSTNAME"
+echo "-------------------------------------------------------------------------------------------"
+
+rsync -av $plsrcdir/ --cvs-exclude $MAC_HOSTNAME:/Users/$USER/code/src/pipeline
+
+ssh tadpole "source .bash_profile; cd code/build/pipeline; ./bootstrap.sh"
