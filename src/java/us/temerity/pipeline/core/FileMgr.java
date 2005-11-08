@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.48 2005/11/03 15:47:52 jim Exp $
+// $Id: FileMgr.java,v 1.49 2005/11/08 16:39:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2610,7 +2610,12 @@ class FileMgr
       TreeMap<String,TreeSet<VersionID>> offlined = new TreeMap<String,TreeSet<VersionID>>();
 
       File dir = new File(PackageInfo.sProdDir, "repository");
-      getOfflinedHelper(dir, offlined);
+      File files[] = dir.listFiles(); 
+      if(files != null) {
+	int wk;
+	for(wk=0; wk<files.length; wk++) 
+	  getOfflinedHelper(files[wk], offlined);
+      }
 
       return new FileGetOfflinedRsp(timer, offlined);
     }
