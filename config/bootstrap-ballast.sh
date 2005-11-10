@@ -35,6 +35,9 @@ echo "--------------------------------------------------------------------------
 echo "  UPDATING: $MAC_HOSTNAME"
 echo "-------------------------------------------------------------------------------------------"
 
-rsync -av $plsrcdir/ --cvs-exclude $MAC_HOSTNAME:/Users/$USER/code-ballast/src/pipeline
+ssh tadpole "rm -rf cd code-ballast/src/pipeline"
+
+rsync -av --exclude-from=$plsrcdir/config/excluded \
+  $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-ballast/src/pipeline
 
 ssh tadpole "source .bash_profile; cd code-ballast/build/pipeline; ./bootstrap.sh"

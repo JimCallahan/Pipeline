@@ -1,5 +1,9 @@
 #!/bin/sh
 
+echo "-------------------------------------------------------------------------------------------"
+echo "  CONFIGURING: $HOSTNAME"
+echo "-------------------------------------------------------------------------------------------"
+
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
@@ -23,3 +27,17 @@ pushd i686-pc-linux-gnu-dbg
     --with-customer-profile=$plprofile \
     --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd
+
+
+MAC_HOSTNAME=tadpole
+
+echo "-------------------------------------------------------------------------------------------"
+echo "  UPDATING: $MAC_HOSTNAME"
+echo "-------------------------------------------------------------------------------------------"
+
+ssh tadpole "rm -rf cd code-rhinofx/src/pipeline"
+
+rsync -av --exclude-from=$plsrcdir/config/excluded \
+  $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-rhinofx/src/pipeline
+
+ssh tadpole "source .bash_profile; cd code-rhinofx/build/pipeline; ./bootstrap.sh"
