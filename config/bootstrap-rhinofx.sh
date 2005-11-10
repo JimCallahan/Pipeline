@@ -35,7 +35,7 @@ echo "--------------------------------------------------------------------------
 echo "  UPDATING: $MAC_HOSTNAME"
 echo "-------------------------------------------------------------------------------------------"
 
-ssh tadpole "rm -rf cd code-rhinofx/src/pipeline"
+ssh tadpole "rm -rf code-rhinofx/src/pipeline"
 
 rsync -av --exclude-from=$plsrcdir/config/excluded \
   $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-rhinofx/src/pipeline
