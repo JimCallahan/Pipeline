@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.144 2005/11/03 22:02:14 jim Exp $
+// $Id: MasterMgr.java,v 1.145 2005/11/16 02:41:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6863,7 +6863,8 @@ class MasterMgr
 	case KeepModified:
 	  if(!isRoot && (work.getWorkingID().compareTo(vsn.getVersionID()) >= 0)) {
 	    branch.removeLast();
-	    dirty.add(name);
+	    if(work.getWorkingID().compareTo(vsn.getVersionID()) > 0)
+	      dirty.add(name);
 	    return;
 	  }
 	}
