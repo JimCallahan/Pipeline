@@ -1,4 +1,4 @@
-// $Id: AirRenderAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: AirRenderAction.java,v 1.4 2005/11/16 02:12:16 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -15,9 +15,19 @@ import java.io.*;
 /** 
  * The AIR RenderMan compliant renderer. <P> 
  * 
- * The RIB file (.rib) which is the single member of the primary file sequence of each 
- * source node which sets the Order per-source parameter will be processed.  One or more 
- * images, depthmaps or deep shadow maps may be generated in one rendering pass. <P> 
+ * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
+ * sequence parameter will be processed.  The frame range rendered will be limited by frame 
+ * numbers of the target images.  In most cases, an Execution Method of (Parallel) and a Batch Size 
+ * of (1) should be used with this action so that each image frame is rendered by a seperate 
+ * invocation of air(1) which is only passed the RIBs required for the frame being rendered.  It is 
+ * also possible to render multi-frame RIBs or even multiple single frame RIBs at one time by using 
+ * a larger Batch Size.  Depending on the RIBs processed, one or more images, depthmaps or deep 
+ * shadow maps may be generated in one rendering pass. <P> 
+ * 
+ * If the Generate Animation parameter is set, all RIB file sequences specified by the Order 
+ * per-source sequence parameters must contain single RIB files. This parameter causes automatic
+ * generation of frame blocks which subdivide the motion blocks within the RIBs in order to 
+ * specify the scene rendered for each output image frame. <P>  
  * 
  * See the <A href="http://www.sitexgraphics.com/html/air.html">AIR</A> documentation for 
  * <A href="http://www.sitexgraphics.com/air.pdf"><B>air</B></A>(1) for details. <P>
@@ -245,40 +255,34 @@ class AirRenderAction
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 
+    boolean generate = false;
     FrameRange range = null;
     TreeMap<Integer,LinkedList<File>> sourceRIBs = new TreeMap<Integer,LinkedList<File>>();
     {
-      for(String sname : getSourceNames()) {
-	Integer order = (Integer) getSourceParamValue(sname, "Order");
-	FileSeq fseq = agenda.getPrimarySource(sname);
-	if(fseq == null) 
-	  throw new PipelineException
-	    ("Somehow an per-source Order parameter exists for a node (" + sname + ") " + 
-	     "which was not one of the source nodes!");
-	
-	String suffix = fseq.getFilePattern().getSuffix();
-	if(!fseq.isSingle() || 
-	   (suffix == null) || !suffix.equals("rib"))
-	  throw new PipelineException
-	    ("The source node (" + sname + ") with per-source Order parameter must have a " + 
-	     "a primary file sequence (" + fseq + ") which contains a single RIB file!");
-	
-	NodeID snodeID = new NodeID(nodeID, sname);
-	File source = new File(PackageInfo.sProdDir,
-			       snodeID.getWorkingParent() + "/" + fseq.getFile(0));
-
-	LinkedList<File> ribs = sourceRIBs.get(order);
-	if(ribs == null) {
-	  ribs = new LinkedList<File>();
-	  sourceRIBs.put(order, ribs);
-	}
-	
-	ribs.add(source);
+      {
+	Boolean tf = (Boolean) getSingleParamValue("GenerateAnimation");
+	generate = ((tf != null) && tf);
       }
-      
+
+      for(String sname : agenda.getSourceNames()) {
+	if(hasSourceParams(sname)) {
+	  FileSeq fseq = agenda.getPrimarySource(sname);
+	  Integer order = (Integer) getSourceParamValue(sname, "Order");
+	  addSourceRIBs(generate, nodeID, sname, fseq, order, sourceRIBs);
+	}
+
+	for(FileSeq fseq : agenda.getSecondarySources(sname)) {
+	  FilePattern fpat = fseq.getFilePattern();
+	  if(hasSecondarySourceParams(sname, fpat)) {
+	    Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, "Order");
+	    addSourceRIBs(generate, nodeID, sname, fseq, order, sourceRIBs);
+	  }
+	}
+      }
+
       if(sourceRIBs.isEmpty()) 
 	throw new PipelineException
-	  ("No source RIB files where specified!");
+	  ("No source RIB files where specified using the per-source Order parameter!");
 
       {
 	FileSeq fseq = agenda.getPrimaryTarget();
@@ -299,8 +303,7 @@ class AirRenderAction
       args.add(gamma.toString());
     }
 
-    Boolean anim = (Boolean) getSingleParamValue("GenerateAnimation");
-    if((anim != null) && anim) {
+    if(generate) {
       Integer frames = (Integer) getSingleParamValue("FrameBlocks");
       if(frames == null) 
 	throw new PipelineException
@@ -362,6 +365,47 @@ class AirRenderAction
     }
   }
 
+  /**
+   * A helper method for generating source RIB filenames.
+   */ 
+  private void 
+  addSourceRIBs
+  (
+   boolean generate, 
+   NodeID nodeID, 
+   String sname, 
+   FileSeq fseq, 
+   Integer order, 
+   TreeMap<Integer,LinkedList<File>> sourceRIBs
+  )
+    throws PipelineException 
+  {
+    String suffix = fseq.getFilePattern().getSuffix();
+    if((suffix == null) || !suffix.equals("rib"))
+      throw new PipelineException
+	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
+	 "must have contain RIB files!");
+    
+    if(generate && !fseq.isSingle()) 
+      throw new PipelineException
+	("When the Generate Animation parameter is set, the source node (" + sname + ") with " + 
+	 "per-source Order parameter must have a primary file sequence (" + fseq + ") which " +
+	 "contains a single RIB file!");
+
+    NodeID snodeID = new NodeID(nodeID, sname);
+    for(File file : fseq.getFiles()) {
+      File source = new File(PackageInfo.sProdDir,
+			     snodeID.getWorkingParent() + "/" + file);
+    
+      LinkedList<File> ribs = sourceRIBs.get(order);
+      if(ribs == null) {
+	ribs = new LinkedList<File>();
+	sourceRIBs.put(order, ribs);
+      }
+      
+      ribs.add(source);
+    }      
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
