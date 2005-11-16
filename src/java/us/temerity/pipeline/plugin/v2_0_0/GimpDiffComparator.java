@@ -1,4 +1,4 @@
-// $Id: GimpDiffComparator.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: GimpDiffComparator.java,v 1.4 2005/11/16 02:11:32 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -12,7 +12,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The 
+ * Displays the difference between two versions of an image using GIMP.
  */
 public
 class GimpDiffComparator

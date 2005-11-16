@@ -1,4 +1,4 @@
-// $Id: DLRenderAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: DLRenderAction.java,v 1.4 2005/11/16 02:12:39 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -15,9 +15,14 @@ import java.io.*;
 /** 
  * The 3Delight RenderMan compliant renderer. <P> 
  * 
- * The RIB file (.rib) which is the single member of the primary file sequence of each 
- * source node which sets the Order per-source parameter will be processed.  One or more 
- * images, depthmaps or deep shadow maps may be generated in one rendering pass. <P> 
+ * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
+ * sequence parameter will be processed.  The frame range rendered will be limited by frame 
+ * numbers of the target images.  In most cases, an Execution Method of (Parallel) and a Batch Size 
+ * of (1) should be used with this action so that each image frame is rendered by a seperate 
+ * invocation of air(1) which is only passed the RIBs required for the frame being rendered.  It is 
+ * also possible to render multi-frame RIBs or even multiple single frame RIBs at one time by using 
+ * a larger Batch Size.  Depending on the RIBs processed, one or more images, depthmaps or deep 
+ * shadow maps may be generated in one rendering pass. <P> 
  * 
  * See the <A href="http://www.3delight.com">3Delight</A> documentation for
  * <A href="http://www.3delight.com/ZDoc/3delight_10.html"><B>renderdl</B></A>(1) for 
@@ -28,9 +33,9 @@ import java.io.*;
  * <DIV style="margin-left: 40px;">
  *   Order <BR>
  *   <DIV style="margin-left: 40px;">
- *     Each source node which sets this parameter should have a RIB file as its primary
- *     file sequence.  This parameter determines the order in which the input RIB files are
- *     processed. If this parameter is not set for a source node, it will be ignored.
+ *     Each source node sequence which sets this parameter should contain RIB files. This 
+ *     parameter determines the order in which the input RIB files are processed. If this 
+ *     parameter is not set for a source node file sequence, it will be ignored.
  *   </DIV> 
  * </DIV> <P> 
  */
@@ -75,7 +80,7 @@ class DLRenderAction
       ActionParam param = 
 	new IntegerActionParam
 	("Order", 
-	 "Processes the RIB file in this order.",
+	 "Process the RIB file in this order.",
 	 100);
       params.put(param.getName(), param);
     }
