@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.32 2005/10/29 10:27:49 jim Exp $
+// $Id: UIMaster.java,v 1.33 2005/11/17 23:38:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -685,6 +685,9 @@ class UIMaster
    JPluginSelectionField field
   ) 
   {
+    if(tname == null) 
+      return;
+
     PluginMenuLayout layout = null;
     DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
@@ -768,6 +771,9 @@ class UIMaster
    JPluginSelectionField field
   ) 
   {
+    if(tname == null) 
+      return;
+
     PluginMenuLayout layout = null;
     DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {
@@ -851,6 +857,9 @@ class UIMaster
    JPluginSelectionField field
   ) 
   {
+    if(tname == null) 
+      return;
+
     PluginMenuLayout layout = null;
     DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
     try {

@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.10 2005/11/03 22:02:14 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.11 2005/11/17 23:38:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2038,9 +2038,13 @@ class JManageToolsetsDialog
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       try {
-	pIsPrivileged = client.isPrivileged(false);
-	
 	pDefaultToolset = client.getDefaultToolsetName();
+      }
+      catch(PipelineException ex){
+      }
+
+      try {
+	pIsPrivileged = client.isPrivileged(false);
 	pActiveToolsets.addAll(client.getActiveToolsetNames());
       
 	{
