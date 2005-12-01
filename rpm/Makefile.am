@@ -56,9 +56,9 @@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS)
 pipeline-install: clean-rpms rpm-mkdirs
 	rm -rf DEST/pipeline DEST/plmaster DEST/plqueuemgr
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
-	mkdir -p DEST/plmaster
-	mv DEST/pipeline/usr DEST/plmaster
-	mkdir -p DEST/plqueuemgr/usr/share/pipeline
+	mkdir -p DEST/plmaster/@NODEDIR@
+	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
+	mkdir -p DEST/plqueuemgr/@NODEDIR@
 
 
 RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
