@@ -1,4 +1,4 @@
-// $Id: AirRenderAction.java,v 1.4 2005/11/16 02:12:16 jim Exp $
+// $Id: AirRenderAction.java,v 1.5 2005/12/02 20:05:37 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -13,7 +13,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * The AIR RenderMan compliant renderer. <P> 
+ * The AIR (3.1+) RenderMan compliant renderer. <P> 
  * 
  * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
  * sequence parameter will be processed.  The frame range rendered will be limited by frame 

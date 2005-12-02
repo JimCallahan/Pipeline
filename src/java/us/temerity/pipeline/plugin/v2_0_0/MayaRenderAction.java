@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaRenderAction.java,v 1.4 2005/12/02 20:05:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -15,7 +15,7 @@ import java.io.*;
 /**
  * Renders a series of images from a source Maya scene source node. <P> 
  * 
- * This version supports Maya(v6) rendering command options and pre/post MEL scripts. <P> 
+ * This version supports Maya (6.5) rendering command options and pre/post MEL scripts. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
