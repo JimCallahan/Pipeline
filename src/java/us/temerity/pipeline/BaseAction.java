@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.30 2005/09/07 21:11:16 jim Exp $
+// $Id: BaseAction.java,v 1.31 2005/12/03 06:41:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1368,7 +1368,7 @@ class BaseAction
   {
     File tmp = null;
     try {
-      tmp = File.createTempFile(pName + "-" + agenda.getJobID(), "." + suffix, 
+      tmp = File.createTempFile(pName + "_" + agenda.getJobID(), "." + suffix, 
 				getTempDir(agenda));
       chmod(mode, tmp);
     }
