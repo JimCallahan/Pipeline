@@ -1,4 +1,4 @@
-// $Id: AirLightdomeAction.java,v 1.1 2005/12/03 23:09:46 jim Exp $
+// $Id: AirLightdomeAction.java,v 1.2 2005/12/04 05:49:49 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -200,8 +200,6 @@ class AirLightdomeAction
 
       setSingleLayout(layout);   
     }
-
-    underDevelopment();
   }
 
   

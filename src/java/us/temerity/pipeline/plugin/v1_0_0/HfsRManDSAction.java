@@ -1,4 +1,4 @@
-// $Id: HfsRManDSAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsRManDSAction.java,v 1.3 2005/12/04 05:51:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -35,8 +35,6 @@ class HfsRManDSAction
     super("HfsRManDS", new VersionID("1.0.0"), "Temerity", 
 	  "Generates an OTL containing Houdini dialog scripts for a set of compiled " +
 	  "RenderMan shaders.");
-
-    underDevelopment();
   }
 
 

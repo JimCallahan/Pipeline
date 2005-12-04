@@ -1,4 +1,4 @@
-// $Id: HfsGEOAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsGEOAction.java,v 1.3 2005/12/04 05:51:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_2_0;
 
@@ -174,8 +174,6 @@ class HfsGEOAction
 
       setSingleLayout(layout);
     }
-
-    underDevelopment();
   }
 
   

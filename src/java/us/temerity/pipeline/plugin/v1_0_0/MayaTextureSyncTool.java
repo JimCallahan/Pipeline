@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.14 2005/09/17 23:26:04 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.15 2005/12/04 05:51:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -72,8 +72,6 @@ class MayaTextureSyncTool
     pCheckOutFields = new TreeMap<NodeID,JBooleanField>(); 
     pLinkFields     = new TreeMap<NodeID,JBooleanField>(); 
     pUnlinkFields   = new TreeMap<NodeID,JBooleanField>(); 
-
-    underDevelopment();
   }
 
 
