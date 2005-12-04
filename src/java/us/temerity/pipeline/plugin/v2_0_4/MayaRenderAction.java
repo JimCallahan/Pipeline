@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2005/12/03 06:50:03 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2005/12/04 05:51:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_4;
 
@@ -38,6 +38,11 @@ import java.io.*;
  *   Maya Scene <BR>
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains the Maya scene file to render. <BR> 
+ *   </DIV> <BR>
+ * 
+ *   Extra Options <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Additional command-line arguments. <BR> 
  *   </DIV> <BR>
  * 
  *   Pre Render MEL <BR>
@@ -133,6 +138,15 @@ class MayaRenderAction
 
     {
       ActionParam param = 
+	new StringActionParam
+	("ExtraOptions",
+	 "Additional command-line arguments.", 
+	 null);
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
 	new LinkActionParam
 	("PreRenderMEL",
 	 "The pre-render MEL script.", 
@@ -194,6 +208,8 @@ class MayaRenderAction
       layout.addSeparator();
       layout.addSeparator();
       layout.addEntry("MayaScene");
+      layout.addSeparator();
+      layout.addEntry("ExtraOptions");
 
       {
 	LayoutGroup mel = new LayoutGroup
@@ -214,8 +230,6 @@ class MayaRenderAction
 
       setSingleLayout(layout);
     }
-
-    underDevelopment();
   }
 
   
@@ -569,6 +583,8 @@ class MayaRenderAction
 	args.add("3");
       }
 
+      addExtraOptions(args);
+
       args.add(scene.getPath());
 
       return new SubProcessHeavy
@@ -621,6 +637,29 @@ class MayaRenderAction
 
     return script.getName();
   }
+
+  /**
+   * Append any additional command-line arguments.
+   */ 
+  private void 
+  addExtraOptions
+  (
+   ArrayList<String> args
+  ) 
+    throws PipelineException
+  {
+    String extra = (String) getSingleParamValue("ExtraOptions");
+    if(extra == null) 
+      return;
+
+    String parts[] = extra.split("\\p{Space}");
+    int wk;
+    for(wk=0; wk<parts.length; wk++) {
+      if(parts[wk].length() > 0) 
+	args.add(parts[wk]);
+    }
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/

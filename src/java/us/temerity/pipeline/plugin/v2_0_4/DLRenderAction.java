@@ -1,4 +1,4 @@
-// $Id: AirRenderAction.java,v 1.2 2005/12/04 05:51:21 jim Exp $
+// $Id: DLRenderAction.java,v 1.1 2005/12/04 05:51:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_4;
 
@@ -9,11 +9,11 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A I R   R E N D E R   A C T I O N                                                      */
+/*   D L   R E N D E R   A C T I O N                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * The AIR (4.0+) RenderMan compliant renderer. <P> 
+ * The 3Delight RenderMan compliant renderer. <P> 
  * 
  * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
  * sequence parameter will be processed.  The frame range rendered will be limited by frame 
@@ -24,73 +24,30 @@ import java.io.*;
  * a larger Batch Size.  Depending on the RIBs processed, one or more images, depthmaps or deep 
  * shadow maps may be generated in one rendering pass. <P> 
  * 
- * If the Generate Animation parameter is set, all RIB file sequences specified by the Order 
- * per-source sequence parameters must contain single RIB files. This parameter causes automatic
- * generation of frame blocks which subdivide the motion blocks within the RIBs in order to 
- * specify the scene rendered for each output image frame. <P>  
- * 
- * See the <A href="http://www.sitexgraphics.com/html/air.html">AIR</A> documentation for 
- * <A href="http://www.sitexgraphics.com/air.pdf"><B>air</B></A>(1) for details. <P>
+ * See the <A href="http://www.3delight.com">3Delight</A> documentation for
+ * <A href="http://www.3delight.com/ZDoc/3delight_10.html"><B>renderdl</B></A>(1) for 
+ * details. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
- * 
- * <DIV style="margin-left: 40px;">
- *   Gamma <BR>
- *   <DIV style="margin-left: 40px;">
- *     Sets the default display gamma. 
- *   </DIV> <BR>
- * 
- *   Spiral Buckets <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether to render buckets in a spiral order.
- *   </DIV> <BR>
  * 
  *   Extra Options <BR>
  *   <DIV style="margin-left: 40px;">
  *     Additional command-line arguments. <BR> 
  *   </DIV> <BR>
  * 
- * 
- *   Generate Animation <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether to generate frame blocks for animation time-varying RIBs.
- *   </DIV> <BR>
- *   
- *   Frame Blocks <BR>
- *   <DIV style="margin-left: 40px;">
- *     The number of animation frame blocks to generate.
- *   </DIV> <BR>
- * 
- *   Start Time <BR>
- *   <DIV style="margin-left: 40px;">
- *     The animation start time.
- *   </DIV> <BR>
- * 
- *   End Time <BR>
- *   <DIV style="margin-left: 40px;">
- *     The animation end time.
- *   </DIV> <BR>
- * 
- *   Shutter Open <BR>
- *   <DIV style="margin-left: 40px;">
- *     The fraction of the animation frame time that the shutter is open.
- *   </DIV> <BR>
- * 
- * </DIV>
- * 
  * This action defines the following per-source parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
  *   Order <BR>
  *   <DIV style="margin-left: 40px;">
- *     Each source node which sets this parameter should have a RIB file as its primary
- *     file sequence.  This parameter determines the order in which the input RIB files are
- *     processed. If this parameter is not set for a source node, it will be ignored.
+ *     Each source node sequence which sets this parameter should contain RIB files. This 
+ *     parameter determines the order in which the input RIB files are processed. If this 
+ *     parameter is not set for a source node file sequence, it will be ignored.
  *   </DIV> 
  * </DIV> <P> 
  */
 public
-class AirRenderAction
+class DLRenderAction
   extends BaseAction
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -98,38 +55,11 @@ class AirRenderAction
   /*----------------------------------------------------------------------------------------*/
   
   public
-  AirRenderAction() 
+  DLRenderAction() 
   {
-    super("AirRender", new VersionID("2.0.4"), "Temerity", 
-	  "The AIR RenderMan compliant renderer.");
-
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	("Gamma", 
-	 "Sets the default display gamma.", 
-	 1.0);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param = 
-	new BooleanActionParam
-	("SpiralBuckets", 
-	 "Whether to render buckets in a spiral order.",
-	 false);
-      addSingleParam(param);
-    } 
-
-    {
-      ActionParam param = 
-	new BooleanActionParam
-	("ProgressStats", 
-	 "Whether to print detailed render progress statistics.",
-	 false);
-      addSingleParam(param);
-    } 
-
+    super("DLRender", new VersionID("2.0.4"), "Temerity",
+	  "The 3Delight RenderMan compliant renderer.");
+    
     {
       ActionParam param = 
 	new StringActionParam
@@ -137,75 +67,6 @@ class AirRenderAction
 	 "Additional command-line arguments.", 
 	 null);
       addSingleParam(param);
-    }
-
-    {
-      ActionParam param = 
-	new BooleanActionParam
-	("GenerateAnimation", 
-	 "Whether to generate frame blocks for animation time-varying RIBs.", 
-	 false);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	("FrameBlocks", 
-	 "The number of animation frame blocks to generate.", 
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	("StartTime", 
-	 "The animation start time.", 
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	("EndTime", 
-	 "The animation end time.", 
-	 null);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	("ShutterOpen", 
-	 "The fraction of the animation frame time that the shutter is open.", 
-	 null);
-      addSingleParam(param);
-    }
-
-    {  
-      LayoutGroup layout = new LayoutGroup(true);
-      layout.addEntry("Gamma");
-      layout.addEntry("SpiralBuckets"); 
-      layout.addEntry("ProgressStats");   
-      layout.addSeparator();
-      layout.addEntry("ExtraOptions");
-
-      {
-	LayoutGroup anim = new LayoutGroup
-	  ("Animation", "Animation generation controls.", false);
-	anim.addEntry("GenerateAnimation");
-	anim.addSeparator();
-	anim.addEntry("FrameBlocks");
-	anim.addEntry("StartTime");
-	anim.addEntry("EndTime");
-	anim.addEntry("ShutterOpen");
-
-	layout.addSubGroup(anim);
-      }
-
-      setSingleLayout(layout);   
     }
   }
 
@@ -235,7 +96,7 @@ class AirRenderAction
       ActionParam param = 
 	new IntegerActionParam
 	("Order", 
-	 "Processes the RIB file in this order.",
+	 "Process the RIB file in this order.",
 	 100);
       params.put(param.getName(), param);
     }
@@ -281,27 +142,21 @@ class AirRenderAction
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 
-    boolean generate = false;
     FrameRange range = null;
     TreeMap<Integer,LinkedList<File>> sourceRIBs = new TreeMap<Integer,LinkedList<File>>();
     {
-      {
-	Boolean tf = (Boolean) getSingleParamValue("GenerateAnimation");
-	generate = ((tf != null) && tf);
-      }
-
       for(String sname : agenda.getSourceNames()) {
 	if(hasSourceParams(sname)) {
 	  FileSeq fseq = agenda.getPrimarySource(sname);
 	  Integer order = (Integer) getSourceParamValue(sname, "Order");
-	  addSourceRIBs(generate, nodeID, sname, fseq, order, sourceRIBs);
+	  addSourceRIBs(nodeID, sname, fseq, order, sourceRIBs);
 	}
 
 	for(FileSeq fseq : agenda.getSecondarySources(sname)) {
 	  FilePattern fpat = fseq.getFilePattern();
 	  if(hasSecondarySourceParams(sname, fpat)) {
 	    Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, "Order");
-	    addSourceRIBs(generate, nodeID, sname, fseq, order, sourceRIBs);
+	    addSourceRIBs(nodeID, sname, fseq, order, sourceRIBs);
 	  }
 	}
       }
@@ -316,70 +171,19 @@ class AirRenderAction
       }
     }
 
-    ArrayList<String> args = new ArrayList<String>(); 
-    args.add("-stats");
-    
-    Boolean progress = (Boolean) getSingleParamValue("ProgressStats");
-    if((progress != null) && progress) 
-      args.add("-Progress");
-    
-    Boolean spiral = (Boolean) getSingleParamValue("SpiralBuckets");
-    if((spiral != null) && spiral) 
-      args.add("-spiral");
-    
-    Double gamma = (Double) getSingleParamValue("Gamma");
-    if(gamma != null) {
-      args.add("-g");
-      args.add(gamma.toString());
-    }
-
-    if(generate) {
-      Integer frames = (Integer) getSingleParamValue("FrameBlocks");
-      if(frames == null) 
-	throw new PipelineException
-	  ("The number of Frame Blocks to generate must be specified!");	
-
-      args.add("-anim");
-      args.add(frames.toString());
-
-      Double startTime = (Double) getSingleParamValue("StartTime");
-      Double endTime = (Double) getSingleParamValue("EndTime");
-      Double shutter = (Double) getSingleParamValue("ShutterOpen");
-
-      if((startTime != null) || (endTime != null)) {
-	if(startTime == null) 
-	  throw new PipelineException
-	    ("A Start Time must be specified if an End Time is given!");
-
-	if(endTime == null) 
-	  throw new PipelineException
-	    ("A End Time must be specified if an Start Time is given!");
-	
-	args.add(startTime.toString());
-	args.add(endTime.toString());
-
-	if(shutter != null) 
-	  args.add(shutter.toString());
-      }
-      else if(shutter != null) {
-	throw new PipelineException
-	  ("Start/End Times must be specified if the Shutter Open fraction is given!");
-      }
-    }
-
     /* create the process to run the action */ 
     try {
+      ArrayList<String> args = new ArrayList<String>(); 
+      args.add("-noinit");
+      args.add("-stats");
       
       if(range != null) {
 	args.add("-frames");
 	args.add(String.valueOf(range.getStart()));
 	args.add(String.valueOf(range.getEnd()));
-	
-	args.add("-step");
-	args.add(String.valueOf(range.getBy()));
       }
 
-      addExtraOptions(args);
+      addExtraOptions(args);      
 
       for(LinkedList<File> ribs : sourceRIBs.values()) 
 	for(File file : ribs) 
@@ -387,7 +191,7 @@ class AirRenderAction
 
       return new SubProcessHeavy
 	(agenda.getNodeID().getAuthor(), getName() + "-" + agenda.getJobID(), 
-	 "air", args,agenda.getEnvironment(), agenda.getWorkingDir(), 
+	 "renderdl", args,agenda.getEnvironment(), agenda.getWorkingDir(), 
 	 outFile, errFile);
     }
     catch(Exception ex) {
@@ -403,7 +207,6 @@ class AirRenderAction
   private void 
   addSourceRIBs
   (
-   boolean generate, 
    NodeID nodeID, 
    String sname, 
    FileSeq fseq, 
@@ -418,12 +221,6 @@ class AirRenderAction
 	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
 	 "must have contain RIB files!");
     
-    if(generate && !fseq.isSingle()) 
-      throw new PipelineException
-	("When the Generate Animation parameter is set, the source node (" + sname + ") with " + 
-	 "per-source Order parameter must have a primary file sequence (" + fseq + ") which " +
-	 "contains a single RIB file!");
-
     NodeID snodeID = new NodeID(nodeID, sname);
     for(File file : fseq.getFiles()) {
       File source = new File(PackageInfo.sProdDir,
@@ -467,7 +264,7 @@ class AirRenderAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -2801351838959947989L;
+  private static final long serialVersionUID = -4092918547245369658L;
 
 }
 
