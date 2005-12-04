@@ -1540,17 +1540,6 @@ Batch()
     }
   }
   
-  /* initialize the plugins */ 
-  try {
-    PluginMgrClient.init();
-  }
-  catch(PipelineException ex) {
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Severe,
-       ex.getMessage());
-    System.exit(1);
-  }
-
   /* create the network clients */ 
   pMasterMgrClient = new MasterMgrClient();
   pQueueMgrClient  = new QueueMgrClient();
