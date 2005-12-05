@@ -13,7 +13,7 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/MacGuff/051201
+plprofile=$plsrcdir/plconfig/customers/MacGuff/051205
 
 pushd i686-pc-linux-gnu-dbg
   PATH=$HOME/local/bin:$PATH \
