@@ -1,10 +1,11 @@
-// $Id: GlueEncoderImpl.java,v 1.3 2005/03/11 06:34:39 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.4 2005/12/06 18:44:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.glue.*;
 
 import java.lang.reflect.*;
+import java.text.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -175,9 +176,12 @@ class GlueEncoderImpl
        (cls == sShortClass) ||
        (cls == sIntegerClass) ||
        (cls == sLongClass) ||
-       (cls == sFloatClass) ||
-       (cls == sDoubleClass)) {
+       (cls == sFloatClass)) {
       pBuf.append(cshort + "> #" + objID + " { " + obj + " }\n");
+    }
+    else if(cls == sDoubleClass) {
+      DecimalFormat fmt = new DecimalFormat("#.#####");
+      pBuf.append(cshort + "> #" + objID + " { " + fmt.format((Double) obj) + " }\n");
     }
     else if(cls == sCharacterClass) {
       Character c = (Character) obj;
