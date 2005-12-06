@@ -1,11 +1,13 @@
-// $Id: JDoubleField.java,v 1.3 2004/06/23 22:31:07 jim Exp $
+// $Id: JDoubleField.java,v 1.4 2005/12/06 09:23:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.text.*;
 import javax.swing.*;
 import javax.swing.text.*;
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   D O U B L E   F I E L D                                                                */
@@ -70,8 +72,9 @@ class JDoubleField
    Double value
   ) 
   {
+    DecimalFormat fmt = new DecimalFormat("#.#####");
     if(value != null) 
-      setText(value.toString());
+      setText(fmt.format(value));
     else 
       setText("-");
   }
