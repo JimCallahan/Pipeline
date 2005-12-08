@@ -1,4 +1,4 @@
-// $Id: AirShadowAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: AirShadowAction.java,v 1.4 2005/12/08 15:29:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -89,7 +89,7 @@ class AirShadowAction
       ActionParam param = 
 	new BooleanActionParam
 	("Compression", 
-	 "Whther to compress the output texture maps.",
+	 "Whether to compress the output texture maps.",
 	 true);
       addSingleParam(param);
     }

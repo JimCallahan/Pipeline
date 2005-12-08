@@ -1,4 +1,4 @@
-// $Id: DLRenderAction.java,v 1.4 2005/11/16 02:12:39 jim Exp $
+// $Id: DLRenderAction.java,v 1.5 2005/12/08 15:30:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -19,10 +19,10 @@ import java.io.*;
  * sequence parameter will be processed.  The frame range rendered will be limited by frame 
  * numbers of the target images.  In most cases, an Execution Method of (Parallel) and a Batch Size 
  * of (1) should be used with this action so that each image frame is rendered by a seperate 
- * invocation of air(1) which is only passed the RIBs required for the frame being rendered.  It is 
- * also possible to render multi-frame RIBs or even multiple single frame RIBs at one time by using 
- * a larger Batch Size.  Depending on the RIBs processed, one or more images, depthmaps or deep 
- * shadow maps may be generated in one rendering pass. <P> 
+ * invocation of renderdl(1) which is only passed the RIBs required for the frame being rendered. 
+ * It is also possible to render multi-frame RIBs or even multiple single frame RIBs at one time 
+ * by using a larger Batch Size.  Depending on the RIBs processed, one or more images, depthmaps 
+ * or deep shadow maps may be generated in one rendering pass. <P> 
  * 
  * See the <A href="http://www.3delight.com">3Delight</A> documentation for
  * <A href="http://www.3delight.com/ZDoc/3delight_10.html"><B>renderdl</B></A>(1) for 
