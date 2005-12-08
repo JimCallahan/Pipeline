@@ -11,6 +11,13 @@ images_DATA = \
   CoordSysXformPoint.gif \
   CoordSysXformVector.gif \
   EnvMapCross.gif \
+  EnvCross.jpg \
+  EnvCube.0001.jpg \
+  EnvCube.0002.jpg \
+  EnvCube.0003.jpg \
+  EnvCube.0004.jpg \
+  EnvCube.0005.jpg \
+  EnvCube.0006.jpg \
   Matrix33Array.gif \
   Matrix33ArrayIndex.gif \
   Matrix33Identity.gif \
