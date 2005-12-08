@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.4 2005/12/06 18:44:28 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.5 2005/12/08 15:27:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -175,13 +175,14 @@ class GlueEncoderImpl
        (cls == sByteClass) ||
        (cls == sShortClass) ||
        (cls == sIntegerClass) ||
-       (cls == sLongClass) ||
-       (cls == sFloatClass)) {
+       (cls == sLongClass)) {
       pBuf.append(cshort + "> #" + objID + " { " + obj + " }\n");
     }
+    else if(cls == sFloatClass) {
+      pBuf.append(cshort + "> #" + objID + " { " + sFloatFormat.format((Float) obj) + " }\n");
+    }
     else if(cls == sDoubleClass) {
-      DecimalFormat fmt = new DecimalFormat("#.#####");
-      pBuf.append(cshort + "> #" + objID + " { " + fmt.format((Double) obj) + " }\n");
+      pBuf.append(cshort + "> #" + objID + " { " + sDoubleFormat.format((Double) obj) + " }\n");
     }
     else if(cls == sCharacterClass) {
       Character c = (Character) obj;
@@ -569,6 +570,13 @@ class GlueEncoderImpl
     "java.util", 
     "us.temerity.pipeline"
   };
+
+  /** 
+   * Floating point text formatters.
+   */ 
+  private static final DecimalFormat sFloatFormat  = new DecimalFormat("0.000");
+  private static final DecimalFormat sDoubleFormat = new DecimalFormat("0.00000");
+
 
 
   /*----------------------------------------------------------------------------------------*/
