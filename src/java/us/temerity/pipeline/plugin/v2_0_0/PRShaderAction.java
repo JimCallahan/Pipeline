@@ -1,4 +1,4 @@
-// $Id: PRShaderAction.java,v 1.1 2005/12/09 09:25:12 jim Exp $
+// $Id: PRShaderAction.java,v 1.2 2005/12/09 12:45:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -48,11 +48,6 @@ import java.io.*;
  *   Defined Symbols <BR>
  *   <DIV style="margin-left: 40px;">
  *     Whitespace seperated preprocessor symbol definitions.
- *   </DIV> <BR>
- * 
- *   Undefined Symbols <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whitespace seperated preprocessor symbols to undefine.
  *   </DIV> <BR>
  * </DIV>
  */
@@ -115,15 +110,6 @@ class PRShaderAction
       addSingleParam(param);
     }
 
-    {
-      ActionParam param = 
-	new StringActionParam
-	("UndefinedSymbols",
-	 "Whitespace seperated preprocessor symbols to undefine.", 
-	 null);
-      addSingleParam(param);
-    }
-
     {  
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("ShaderSource");
@@ -132,7 +118,6 @@ class PRShaderAction
       layout.addEntry("Verbose");
       layout.addEntry("IncludePaths");
       layout.addEntry("DefinedSymbols");
-      layout.addEntry("UndefinedSymbols");
 
       setSingleLayout(layout);   
     }
@@ -251,18 +236,6 @@ class PRShaderAction
 	for(wk=0; wk<symbols.length; wk++) {
 	  if((symbols[wk] != null) && (symbols[wk].length() > 0))
 	    args.add("-D" + symbols[wk]);
-	}
-      }
-    }
-
-    {
-      String value = (String) getSingleParamValue("UndefinedSymbols");
-      if(value != null) {
-	String[] symbols = value.split("\\p{Space}");
-	int wk;
-	for(wk=0; wk<symbols.length; wk++) {
-	  if((symbols[wk] != null) && (symbols[wk].length() > 0))
-	    args.add("-U" + symbols[wk]);
 	}
       }
     }
