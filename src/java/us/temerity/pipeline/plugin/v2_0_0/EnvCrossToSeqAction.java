@@ -1,4 +1,4 @@
-// $Id: EnvCrossToSeqAction.java,v 1.1 2005/12/08 11:46:35 jim Exp $
+// $Id: EnvCrossToSeqAction.java,v 1.2 2005/12/09 09:25:31 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -23,8 +23,6 @@ import java.io.*;
  * <DIV style="margin-left: 40px;">
  *   <IMG alt="" src="../../../../../images/EnvCross.jpg">
  * </DIV> <P>
- * 
- * Each of these directional images 
  * 
  * This action will split this vertical cross images into a sequence of six cube face images
  * with the following order and orientation: <BR> 
