@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.4 2005/12/10 15:37:03 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -13,11 +13,10 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Processes RIB files to generate binary, compressed and/or evaluated RIBs. <P> 
+ * Concatenates and converts RIB files. <P> 
  * 
- * The RIB file (.rib) which is the single member of the primary file sequence of each 
- * source node which sets the Order per-source parameter will be processed to generate the 
- * output RIB which is he single member of the primary file sequence of this node. <P> 
+ * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
+ * sequence parameter will be processed to produce the target RIB file(s). <P> 
  * 
  * See the <A href="http://www.3delight.com">3Delight</A> documentation for
  * <A href="http://www.3delight.com/ZDoc/3delight_10.html"><B>renderdl</B></A>(1) for 
@@ -55,9 +54,9 @@ import java.io.*;
  * <DIV style="margin-left: 40px;">
  *   Order <BR>
  *   <DIV style="margin-left: 40px;">
- *     Each source node which sets this parameter should have a RIB file as its primary
- *     file sequence.  This parameter determines the order in which the input RIB files are
- *     processed. If this parameter is not set for a source node, it will be ignored.
+ *     Each source node sequence which sets this parameter should contain RIB files. This 
+ *     parameter determines the order in which the input RIB files are processed. If this 
+ *     parameter is not set for a source node file sequence, it will be ignored.
  *   </DIV> 
  * </DIV> <P> 
  */
@@ -73,7 +72,7 @@ class DLCatRIBAction
   DLCatRIBAction() 
   {
     super("DLCatRIB", new VersionID("2.0.0"), "Temerity", 
-	  "Processes RIB files to generate binary, compressed and/or evaluated RIBs.");
+	  "Concatenates and converts RIB files.");
     
     {
       ActionParam param = 
@@ -147,7 +146,7 @@ class DLCatRIBAction
       ActionParam param = 
 	new IntegerActionParam
 	("Order", 
-	 "Processes the RIB file in this order.",
+	 "The order in which the input RIB files are processed.", 
 	 100);
       params.put(param.getName(), param);
     }
@@ -193,65 +192,37 @@ class DLCatRIBAction
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 
-    File target = null; 
-    TreeMap<Integer,LinkedList<File>> sourceRIBs = new TreeMap<Integer,LinkedList<File>>();
+    TreeMap<Integer,ArrayList<File>> sourceRIBs = new TreeMap<Integer,ArrayList<File>>();
     {
-      for(String sname : getSourceNames()) {
-	Integer order = (Integer) getSourceParamValue(sname, "Order");
-	FileSeq fseq = agenda.getPrimarySource(sname);
-	if(fseq == null) 
-	  throw new PipelineException
-	    ("Somehow an per-source Order parameter exists for a node (" + sname + ") " + 
-	     "which was not one of the source nodes!");
-	
-	String suffix = fseq.getFilePattern().getSuffix();
-	if(!fseq.isSingle() || 
-	   (suffix == null) || !suffix.equals("rib"))
-	  throw new PipelineException
-	    ("The source node (" + sname + ") with per-source Order parameter must have a " + 
-	     "a primary file sequence (" + fseq + ") which contains a single RIB file!");
-	
-	NodeID snodeID = new NodeID(nodeID, sname);
-	File source = new File(PackageInfo.sProdDir,
-			       snodeID.getWorkingParent() + "/" + fseq.getFile(0));
-
-	LinkedList<File> ribs = sourceRIBs.get(order);
-	if(ribs == null) {
-	  ribs = new LinkedList<File>();
-	  sourceRIBs.put(order, ribs);
+      int numFrames = agenda.getPrimaryTarget().numFrames();
+      for(String sname : agenda.getSourceNames()) {
+	if(hasSourceParams(sname)) {
+	  FileSeq fseq = agenda.getPrimarySource(sname);
+	  Integer order = (Integer) getSourceParamValue(sname, "Order");
+	  addSourceRIBs(nodeID, numFrames, sname, fseq, order, sourceRIBs);
 	}
-	
-	ribs.add(source);
+
+	for(FileSeq fseq : agenda.getSecondarySources(sname)) {
+	  FilePattern fpat = fseq.getFilePattern();
+	  if(hasSecondarySourceParams(sname, fpat)) {
+	    Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, "Order");
+	    addSourceRIBs(nodeID, numFrames, sname, fseq, order, sourceRIBs);
+	  }
+	}
       }
-      
+
       if(sourceRIBs.isEmpty()) 
 	throw new PipelineException
-	  ("No source RIB files where specified!");
-
-      {
-	FileSeq fseq = agenda.getPrimaryTarget();
-	String suffix = fseq.getFilePattern().getSuffix();
-	if(!fseq.isSingle() || 
-	   (suffix == null) || !suffix.equals("rib")) 
-	  throw new PipelineException
-	    ("The target primary file sequence (" + fseq + ") must contain a single " + 
-	     "RIB file (.rib) file.");
-	  
-	target = fseq.getFile(0);
-      }
+	  ("No source RIB files where specified using the per-source Order parameter!");
     }
 
-    /* create a temporary MEL script file */ 
-    File script = createTemp(agenda, 0755, "bash");
-    try {      
-      FileWriter out = new FileWriter(script);
-
-      out.write("#!/bin/bash\n\n" + 
-		"renderdl -noinit -catrib");
+    String options = null;
+    {
+      StringBuffer buf = new StringBuffer(); 
 
       Boolean eval = (Boolean) getSingleParamValue("EvaluateProcedurals");
       if((eval != null) && eval)
-	out.write(" -callprocedurals");
+	buf.append(" -callprocedurals");
       
       {
 	EnumActionParam param = (EnumActionParam) getSingleParam("OutputFormat");
@@ -260,7 +231,7 @@ class DLCatRIBAction
 	  break;
 	  
 	case 1:
-	  out.write(" -binary");
+	  buf.append(" -binary");
 	  break;
 
 	default:
@@ -276,7 +247,7 @@ class DLCatRIBAction
 	  break;
 	  
 	case 1:
-	  out.write(" -gzip");
+	  buf.append(" -gzip");
 	break;
 	
 	default:
@@ -284,12 +255,32 @@ class DLCatRIBAction
 	    ("Illegal Compression value!");
 	}
       }
-      
-      for(LinkedList<File> ribs : sourceRIBs.values()) 
-	for(File file : ribs) 
-	  out.write(" " + file);
-      
-      out.write(" > " + target + "\n");
+
+      options = buf.toString();
+    }
+
+
+    /* create a temporary MEL script file */ 
+    File script = createTemp(agenda, 0755, "bash");
+    try {      
+      FileWriter out = new FileWriter(script);
+
+      out.write("#!/bin/bash\n\n");
+
+      int wk=0;
+      for(File target : agenda.getPrimaryTarget().getFiles()) {
+	out.write("renderdl -noinit -catrib" + options);
+
+	for(ArrayList<File> ribs : sourceRIBs.values()) {
+	  if(ribs.size() == 1)
+	    out.write(" " + ribs.get(0));
+	  else 
+	    out.write(" " + ribs.get(wk));
+	}
+	
+	out.write(" > " + target + "\n");
+	wk++;
+      }
       
       out.close();
     }
@@ -313,6 +304,48 @@ class DLCatRIBAction
 	("Unable to generate the SubProcess to perform this Action!\n" +
 	 ex.getMessage());
     }
+  }
+
+  /**
+   * A helper method for generating source RIB filenames.
+   */ 
+  private void 
+  addSourceRIBs
+  (
+   NodeID nodeID, 
+   int numFrames, 
+   String sname, 
+   FileSeq fseq, 
+   Integer order, 
+   TreeMap<Integer,ArrayList<File>> sourceRIBs
+  )
+    throws PipelineException 
+  {
+    String suffix = fseq.getFilePattern().getSuffix();
+    if((suffix == null) || !suffix.equals("rib"))
+      throw new PipelineException
+	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
+	 "must have contain RIB files!");
+
+    if((fseq.numFrames() != 1) && (fseq.numFrames() != numFrames))
+      throw new PipelineException
+	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
+	 "must have the contain the same number of RIB files as the target sequence or exactly " + 
+	 "one RIB file.");
+    
+    NodeID snodeID = new NodeID(nodeID, sname);
+    for(File file : fseq.getFiles()) {
+      File source = new File(PackageInfo.sProdDir,
+			     snodeID.getWorkingParent() + "/" + file);
+    
+      ArrayList<File> ribs = sourceRIBs.get(order);
+      if(ribs == null) {
+	ribs = new ArrayList<File>();
+	sourceRIBs.put(order, ribs);
+      }
+      
+      ribs.add(source);
+    }      
   }
 
 
