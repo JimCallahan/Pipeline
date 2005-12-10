@@ -78,32 +78,40 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           }
           Vendor <REF> #18
         }
+        <PluginMenuLayout> #56 {
+          Title <String> #57 { "RealFlow" }
+          Name <String> #58 { "RealFlow" }
+          VersionID <VersionID> #59 {
+            RevisionNumber <String> #60 { "2.0.0" }
+          }
+          Vendor <String> #61 { "Temerity" }
+        }
       }
     }
-    <PluginMenuLayout> #56 {
-      Title <String> #57 { "Documents" }
-      Children <LinkedList> #58 {
-        <PluginMenuLayout> #59 {
-          Title <String> #60 { "Emacs" }
-          Name <String> #61 { "Emacs" }
-          VersionID <VersionID> #62 {
-            RevisionNumber <String> #63 { "2.0.0" }
+    <PluginMenuLayout> #62 {
+      Title <String> #63 { "Documents" }
+      Children <LinkedList> #64 {
+        <PluginMenuLayout> #65 {
+          Title <String> #66 { "Emacs" }
+          Name <String> #67 { "Emacs" }
+          VersionID <VersionID> #68 {
+            RevisionNumber <String> #69 { "2.0.0" }
           }
           Vendor <REF> #18
         }
-        <PluginMenuLayout> #64 {
-          Title <String> #65 { "Text Edit" }
-          Name <String> #66 { "TextEdit" }
-          VersionID <VersionID> #67 {
-            RevisionNumber <String> #68 { "2.0.0" }
+        <PluginMenuLayout> #70 {
+          Title <String> #71 { "Text Edit" }
+          Name <String> #72 { "TextEdit" }
+          VersionID <VersionID> #73 {
+            RevisionNumber <String> #74 { "2.0.0" }
           }
           Vendor <REF> #18
         }
-        <PluginMenuLayout> #69 {
-          Title <String> #70 { "Preview" }
-          Name <String> #71 { "Preview" }
-          VersionID <VersionID> #72 {
-            RevisionNumber <String> #73 { "2.0.0" }
+        <PluginMenuLayout> #75 {
+          Title <String> #76 { "Preview" }
+          Name <String> #77 { "Preview" }
+          VersionID <VersionID> #78 {
+            RevisionNumber <String> #79 { "2.0.0" }
           }
           Vendor <REF> #12
         }

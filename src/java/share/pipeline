@@ -55,142 +55,142 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #36 {
-    Suffix <String> #37 { "bmp" }
-    Description <String> #38 { "MS-Windows bitmap image file." }
+    Suffix <String> #37 { "bkm" }
+    Description <String> #38 { "Pixar brick map file." }
     Editor <BaseEditor> #39 {
-      Name <REF> #6
-      VersionID <VersionID> #40 {
-        RevisionNumber <String> #41 { "2.0.0" }
+      Name <String> #40 { "BrickViewer" }
+      VersionID <VersionID> #41 {
+        RevisionNumber <String> #42 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #42 {
-    Suffix <String> #43 { "bw" }
-    Description <String> #44 { "SGI image file (grayscale)." }
-    Editor <BaseEditor> #45 {
-      Name <REF> #6
-      VersionID <VersionID> #46 {
-        RevisionNumber <String> #47 { "2.0.0" }
+  <SuffixEditor> #43 {
+    Suffix <String> #44 { "bmp" }
+    Description <String> #45 { "MS-Windows bitmap image file." }
+    Editor <BaseEditor> #46 {
+      Name <String> #47 { "Shake" }
+      VersionID <VersionID> #48 {
+        RevisionNumber <String> #49 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #48 {
-    Suffix <String> #49 { "cin" }
-    Description <String> #50 { "Kodak Cineon image file." }
-    Editor <BaseEditor> #51 {
-      Name <REF> #6
-      VersionID <VersionID> #52 {
-        RevisionNumber <String> #53 { "2.0.0" }
+  <SuffixEditor> #50 {
+    Suffix <String> #51 { "bw" }
+    Description <String> #52 { "SGI image file (grayscale)." }
+    Editor <BaseEditor> #53 {
+      Name <REF> #47
+      VersionID <VersionID> #54 {
+        RevisionNumber <String> #55 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #54 {
-    Suffix <String> #55 { "cmd" }
-    Description <String> #56 { "Houdini command script." }
-    Editor <BaseEditor> #57 {
+  <SuffixEditor> #56 {
+    Suffix <String> #57 { "cin" }
+    Description <String> #58 { "Kodak Cineon image file." }
+    Editor <BaseEditor> #59 {
+      Name <REF> #47
+      VersionID <VersionID> #60 {
+        RevisionNumber <String> #61 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #62 {
+    Suffix <String> #63 { "cmd" }
+    Description <String> #64 { "Houdini command script." }
+    Editor <BaseEditor> #65 {
       Name <REF> #14
-      VersionID <VersionID> #58 {
-        RevisionNumber <String> #59 { "2.0.0" }
+      VersionID <VersionID> #66 {
+        RevisionNumber <String> #67 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #60 {
-    Suffix <String> #61 { "csh" }
-    Description <String> #62 { "C-Shell script." }
-    Editor <BaseEditor> #63 {
+  <SuffixEditor> #68 {
+    Suffix <String> #69 { "csh" }
+    Description <String> #70 { "C-Shell script." }
+    Editor <BaseEditor> #71 {
       Name <REF> #14
-      VersionID <VersionID> #64 {
-        RevisionNumber <String> #65 { "2.0.0" }
+      VersionID <VersionID> #72 {
+        RevisionNumber <String> #73 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #66 {
-    Suffix <String> #67 { "ds" }
-    Description <String> #68 { "Houdini dialog script." }
-    Editor <BaseEditor> #69 {
+  <SuffixEditor> #74 {
+    Suffix <String> #75 { "ds" }
+    Description <String> #76 { "Houdini dialog script." }
+    Editor <BaseEditor> #77 {
       Name <REF> #14
-      VersionID <VersionID> #70 {
-        RevisionNumber <String> #71 { "2.0.0" }
+      VersionID <VersionID> #78 {
+        RevisionNumber <String> #79 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #72 {
-    Suffix <String> #73 { "dvi" }
-    Description <String> #74 { "TeX device independent file." }
-    Editor <BaseEditor> #75 {
-      Name <String> #76 { "XDvi" }
-      VersionID <VersionID> #77 {
-        RevisionNumber <String> #78 { "2.0.0" }
+  <SuffixEditor> #80 {
+    Suffix <String> #81 { "dvi" }
+    Description <String> #82 { "TeX device independent file." }
+    Editor <BaseEditor> #83 {
+      Name <String> #84 { "XDvi" }
+      VersionID <VersionID> #85 {
+        RevisionNumber <String> #86 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #79 {
-    Suffix <String> #80 { "eps" }
-    Description <String> #81 { "Adobe encapulated postscript file." }
-    Editor <BaseEditor> #82 {
-      Name <String> #83 { "Gimp" }
-      VersionID <VersionID> #84 {
-        RevisionNumber <String> #85 { "2.0.0" }
+  <SuffixEditor> #87 {
+    Suffix <String> #88 { "eps" }
+    Description <String> #89 { "Adobe encapulated postscript file." }
+    Editor <BaseEditor> #90 {
+      Name <String> #91 { "Gimp" }
+      VersionID <VersionID> #92 {
+        RevisionNumber <String> #93 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #86 {
-    Suffix <String> #87 { "exr" }
-    Description <String> #88 { "OpenEXR image file." }
-    Editor <BaseEditor> #89 {
-      Name <String> #90 { "Shake" }
-      VersionID <VersionID> #91 {
-        RevisionNumber <String> #92 { "2.0.0" }
+  <SuffixEditor> #94 {
+    Suffix <String> #95 { "exr" }
+    Description <String> #96 { "OpenEXR image file." }
+    Editor <BaseEditor> #97 {
+      Name <REF> #47
+      VersionID <VersionID> #98 {
+        RevisionNumber <String> #99 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #93 {
-    Suffix <String> #94 { "fits" }
-    Description <String> #95 { "Flexible image transport system file." }
-    Editor <BaseEditor> #96 {
-      Name <REF> #83
-      VersionID <VersionID> #97 {
-        RevisionNumber <String> #98 { "2.0.0" }
+  <SuffixEditor> #100 {
+    Suffix <String> #101 { "fits" }
+    Description <String> #102 { "Flexible image transport system file." }
+    Editor <BaseEditor> #103 {
+      Name <REF> #91
+      VersionID <VersionID> #104 {
+        RevisionNumber <String> #105 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #99 {
-    Suffix <String> #100 { "geo" }
-    Description <String> #101 { "Houdini geometry file (ascii)." }
-    Editor <BaseEditor> #102 {
+  <SuffixEditor> #106 {
+    Suffix <String> #107 { "geo" }
+    Description <String> #108 { "Houdini geometry file (ascii)." }
+    Editor <BaseEditor> #109 {
       Name <REF> #33
-      VersionID <VersionID> #103 {
-        RevisionNumber <String> #104 { "2.0.0" }
+      VersionID <VersionID> #110 {
+        RevisionNumber <String> #111 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #105 {
-    Suffix <String> #106 { "gif" }
-    Description <String> #107 { "GIF image file." }
-    Editor <BaseEditor> #108 {
-      Name <REF> #6
-      VersionID <VersionID> #109 {
-        RevisionNumber <String> #110 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #111 {
-    Suffix <String> #112 { "hdr" }
-    Description <String> #113 { "The Radiance high dynamic range (HDR) image file." }
-    Editor <BaseEditor> #114 {
-      Name <String> #115 { "XImage" }
+  <SuffixEditor> #112 {
+    Suffix <String> #113 { "gif" }
+    Description <String> #114 { "GIF image file." }
+    Editor <BaseEditor> #115 {
+      Name <REF> #47
       VersionID <VersionID> #116 {
         RevisionNumber <String> #117 { "2.0.0" }
       }
@@ -198,10 +198,10 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #118 {
-    Suffix <String> #119 { "hip" }
-    Description <String> #120 { "Houdini scene file." }
+    Suffix <String> #119 { "hdr" }
+    Description <String> #120 { "The Radiance high dynamic range (HDR) image file." }
     Editor <BaseEditor> #121 {
-      Name <String> #122 { "Houdini" }
+      Name <String> #122 { "XImage" }
       VersionID <VersionID> #123 {
         RevisionNumber <String> #124 { "2.0.0" }
       }
@@ -209,43 +209,43 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #125 {
-    Suffix <String> #126 { "ico" }
-    Description <String> #127 { "MS-Windows icon file." }
+    Suffix <String> #126 { "hip" }
+    Description <String> #127 { "Houdini scene file." }
     Editor <BaseEditor> #128 {
-      Name <REF> #83
-      VersionID <VersionID> #129 {
-        RevisionNumber <String> #130 { "2.0.0" }
+      Name <String> #129 { "Houdini" }
+      VersionID <VersionID> #130 {
+        RevisionNumber <String> #131 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #131 {
-    Suffix <String> #132 { "ifd" }
-    Description <String> #133 { "Houdini instantaneous frame description format file." }
-    Editor <BaseEditor> #134 {
+  <SuffixEditor> #132 {
+    Suffix <String> #133 { "ico" }
+    Description <String> #134 { "MS-Windows icon file." }
+    Editor <BaseEditor> #135 {
+      Name <REF> #91
+      VersionID <VersionID> #136 {
+        RevisionNumber <String> #137 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #138 {
+    Suffix <String> #139 { "ifd" }
+    Description <String> #140 { "Houdini instantaneous frame description format file." }
+    Editor <BaseEditor> #141 {
       Name <REF> #14
-      VersionID <VersionID> #135 {
-        RevisionNumber <String> #136 { "2.0.0" }
+      VersionID <VersionID> #142 {
+        RevisionNumber <String> #143 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #137 {
-    Suffix <String> #138 { "iff" }
-    Description <String> #139 { "Maya image file." }
-    Editor <BaseEditor> #140 {
+  <SuffixEditor> #144 {
+    Suffix <String> #145 { "iff" }
+    Description <String> #146 { "Maya image file." }
+    Editor <BaseEditor> #147 {
       Name <REF> #6
-      VersionID <VersionID> #141 {
-        RevisionNumber <String> #142 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #143 {
-    Suffix <String> #144 { "iv" }
-    Description <String> #145 { "OpenInventor scene file." }
-    Editor <BaseEditor> #146 {
-      Name <String> #147 { "IvView" }
       VersionID <VersionID> #148 {
         RevisionNumber <String> #149 { "2.0.0" }
       }
@@ -253,43 +253,43 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #150 {
-    Suffix <String> #151 { "jpg" }
-    Description <String> #152 { "JPEG image file." }
+    Suffix <String> #151 { "iv" }
+    Description <String> #152 { "OpenInventor scene file." }
     Editor <BaseEditor> #153 {
-      Name <REF> #6
-      VersionID <VersionID> #154 {
-        RevisionNumber <String> #155 { "2.0.0" }
+      Name <String> #154 { "IvView" }
+      VersionID <VersionID> #155 {
+        RevisionNumber <String> #156 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #156 {
-    Suffix <String> #157 { "lff" }
-    Description <String> #158 { "LucasFilm image file." }
-    Editor <BaseEditor> #159 {
-      Name <REF> #6
-      VersionID <VersionID> #160 {
-        RevisionNumber <String> #161 { "2.0.0" }
+  <SuffixEditor> #157 {
+    Suffix <String> #158 { "jpg" }
+    Description <String> #159 { "JPEG image file." }
+    Editor <BaseEditor> #160 {
+      Name <REF> #47
+      VersionID <VersionID> #161 {
+        RevisionNumber <String> #162 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #162 {
-    Suffix <String> #163 { "lif" }
-    Description <String> #164 { "LIF shader information file." }
-    Editor <BaseEditor> #165 {
+  <SuffixEditor> #163 {
+    Suffix <String> #164 { "lff" }
+    Description <String> #165 { "LucasFilm image file." }
+    Editor <BaseEditor> #166 {
+      Name <REF> #47
+      VersionID <VersionID> #167 {
+        RevisionNumber <String> #168 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #169 {
+    Suffix <String> #170 { "lif" }
+    Description <String> #171 { "LIF shader information file." }
+    Editor <BaseEditor> #172 {
       Name <REF> #14
-      VersionID <VersionID> #166 {
-        RevisionNumber <String> #167 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #168 {
-    Suffix <String> #169 { "ma" }
-    Description <String> #170 { "Maya scene file (ascii)." }
-    Editor <BaseEditor> #171 {
-      Name <String> #172 { "Maya" }
       VersionID <VersionID> #173 {
         RevisionNumber <String> #174 { "2.0.0" }
       }
@@ -297,65 +297,65 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #175 {
-    Suffix <String> #176 { "mb" }
-    Description <String> #177 { "Maya scene file (binary)." }
+    Suffix <String> #176 { "ma" }
+    Description <String> #177 { "Maya scene file (ascii)." }
     Editor <BaseEditor> #178 {
-      Name <REF> #172
-      VersionID <VersionID> #179 {
-        RevisionNumber <String> #180 { "2.0.0" }
+      Name <String> #179 { "Maya" }
+      VersionID <VersionID> #180 {
+        RevisionNumber <String> #181 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #181 {
-    Suffix <String> #182 { "mel" }
-    Description <String> #183 { "Maya MEL script." }
-    Editor <BaseEditor> #184 {
+  <SuffixEditor> #182 {
+    Suffix <String> #183 { "mb" }
+    Description <String> #184 { "Maya scene file (binary)." }
+    Editor <BaseEditor> #185 {
+      Name <REF> #179
+      VersionID <VersionID> #186 {
+        RevisionNumber <String> #187 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #188 {
+    Suffix <String> #189 { "mel" }
+    Description <String> #190 { "Maya MEL script." }
+    Editor <BaseEditor> #191 {
       Name <REF> #14
-      VersionID <VersionID> #185 {
-        RevisionNumber <String> #186 { "2.0.0" }
+      VersionID <VersionID> #192 {
+        RevisionNumber <String> #193 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #187 {
-    Suffix <String> #188 { "mr" }
-    Description <String> #189 { "Mental Ray scene file." }
-    Editor <BaseEditor> #190 {
+  <SuffixEditor> #194 {
+    Suffix <String> #195 { "mr" }
+    Description <String> #196 { "Mental Ray scene file." }
+    Editor <BaseEditor> #197 {
       Name <REF> #14
-      VersionID <VersionID> #191 {
-        RevisionNumber <String> #192 { "2.0.0" }
+      VersionID <VersionID> #198 {
+        RevisionNumber <String> #199 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #193 {
-    Suffix <String> #194 { "obj" }
-    Description <String> #195 { "Wavefront geometry file." }
-    Editor <BaseEditor> #196 {
+  <SuffixEditor> #200 {
+    Suffix <String> #201 { "obj" }
+    Description <String> #202 { "Wavefront geometry file." }
+    Editor <BaseEditor> #203 {
       Name <REF> #33
-      VersionID <VersionID> #197 {
-        RevisionNumber <String> #198 { "2.0.0" }
+      VersionID <VersionID> #204 {
+        RevisionNumber <String> #205 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #199 {
-    Suffix <String> #200 { "pcx" }
-    Description <String> #201 { "PC paintbrush image file." }
-    Editor <BaseEditor> #202 {
-      Name <REF> #83
-      VersionID <VersionID> #203 {
-        RevisionNumber <String> #204 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #205 {
-    Suffix <String> #206 { "pdf" }
-    Description <String> #207 { "Adobe portable document format file." }
-    Editor <BaseEditor> #208 {
-      Name <String> #209 { "Acroread" }
+  <SuffixEditor> #206 {
+    Suffix <String> #207 { "pcx" }
+    Description <String> #208 { "PC paintbrush image file." }
+    Editor <BaseEditor> #209 {
+      Name <REF> #91
       VersionID <VersionID> #210 {
         RevisionNumber <String> #211 { "2.0.0" }
       }
@@ -363,21 +363,21 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #212 {
-    Suffix <String> #213 { "pgm" }
-    Description <String> #214 { "Portable pixmap image file (grayscale)." }
+    Suffix <String> #213 { "pdf" }
+    Description <String> #214 { "Adobe portable document format file." }
     Editor <BaseEditor> #215 {
-      Name <REF> #6
-      VersionID <VersionID> #216 {
-        RevisionNumber <String> #217 { "2.0.0" }
+      Name <String> #216 { "Acroread" }
+      VersionID <VersionID> #217 {
+        RevisionNumber <String> #218 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #218 {
-    Suffix <String> #219 { "pic" }
-    Description <String> #220 { "Houdini image file." }
-    Editor <BaseEditor> #221 {
-      Name <String> #222 { "MPlay" }
+  <SuffixEditor> #219 {
+    Suffix <String> #220 { "pgm" }
+    Description <String> #221 { "Portable pixmap image file (grayscale)." }
+    Editor <BaseEditor> #222 {
+      Name <REF> #47
       VersionID <VersionID> #223 {
         RevisionNumber <String> #224 { "2.0.0" }
       }
@@ -385,289 +385,285 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #225 {
-    Suffix <String> #226 { "pix" }
-    Description <String> #227 { "Alias|Wavefront image file." }
+    Suffix <String> #226 { "pic" }
+    Description <String> #227 { "Houdini image file." }
     Editor <BaseEditor> #228 {
-      Name <REF> #83
-      VersionID <VersionID> #229 {
-        RevisionNumber <String> #230 { "2.0.0" }
+      Name <String> #229 { "MPlay" }
+      VersionID <VersionID> #230 {
+        RevisionNumber <String> #231 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #231 {
-    Suffix <String> #232 { "pl" }
-    Description <String> #233 { "Perl script." }
-    Editor <BaseEditor> #234 {
+  <SuffixEditor> #232 {
+    Suffix <String> #233 { "pix" }
+    Description <String> #234 { "Alias|Wavefront image file." }
+    Editor <BaseEditor> #235 {
+      Name <REF> #91
+      VersionID <VersionID> #236 {
+        RevisionNumber <String> #237 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #238 {
+    Suffix <String> #239 { "pl" }
+    Description <String> #240 { "Perl script." }
+    Editor <BaseEditor> #241 {
       Name <REF> #14
-      VersionID <VersionID> #235 {
-        RevisionNumber <String> #236 { "2.0.0" }
+      VersionID <VersionID> #242 {
+        RevisionNumber <String> #243 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #237 {
-    Suffix <String> #238 { "png" }
-    Description <String> #239 { "Portable network graphics image file." }
-    Editor <BaseEditor> #240 {
-      Name <REF> #83
-      VersionID <VersionID> #241 {
-        RevisionNumber <String> #242 { "2.0.0" }
+  <SuffixEditor> #244 {
+    Suffix <String> #245 { "png" }
+    Description <String> #246 { "Portable network graphics image file." }
+    Editor <BaseEditor> #247 {
+      Name <REF> #91
+      VersionID <VersionID> #248 {
+        RevisionNumber <String> #249 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #243 {
-    Suffix <String> #244 { "ppm" }
-    Description <String> #245 { "Portable pixmap image file (color)." }
-    Editor <BaseEditor> #246 {
-      Name <REF> #6
-      VersionID <VersionID> #247 {
-        RevisionNumber <String> #248 { "2.0.0" }
+  <SuffixEditor> #250 {
+    Suffix <String> #251 { "ppm" }
+    Description <String> #252 { "Portable pixmap image file (color)." }
+    Editor <BaseEditor> #253 {
+      Name <REF> #47
+      VersionID <VersionID> #254 {
+        RevisionNumber <String> #255 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #249 {
-    Suffix <String> #250 { "pri" }
-    Description <String> #251 { "Prisms image file." }
-    Editor <BaseEditor> #252 {
-      Name <REF> #6
-      VersionID <VersionID> #253 {
-        RevisionNumber <String> #254 { "2.0.0" }
+  <SuffixEditor> #256 {
+    Suffix <String> #257 { "pri" }
+    Description <String> #258 { "Prisms image file." }
+    Editor <BaseEditor> #259 {
+      Name <REF> #47
+      VersionID <VersionID> #260 {
+        RevisionNumber <String> #261 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #255 {
-    Suffix <String> #256 { "ps" }
-    Description <String> #257 { "Adobe postscript file." }
-    Editor <BaseEditor> #258 {
-      Name <REF> #83
-      VersionID <VersionID> #259 {
-        RevisionNumber <String> #260 { "2.0.0" }
+  <SuffixEditor> #262 {
+    Suffix <String> #263 { "ps" }
+    Description <String> #264 { "Adobe postscript file." }
+    Editor <BaseEditor> #265 {
+      Name <String> #266 { "Evince" }
+      VersionID <VersionID> #267 {
+        RevisionNumber <String> #268 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #261 {
-    Suffix <String> #262 { "psd" }
-    Description <String> #263 { "Photoshop multi-layered image format." }
-    Editor <BaseEditor> #264 {
-      Name <REF> #83
-      VersionID <VersionID> #265 {
-        RevisionNumber <String> #266 { "2.0.0" }
+  <SuffixEditor> #269 {
+    Suffix <String> #270 { "psd" }
+    Description <String> #271 { "Photoshop multi-layered image format." }
+    Editor <BaseEditor> #272 {
+      Name <REF> #91
+      VersionID <VersionID> #273 {
+        RevisionNumber <String> #274 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #267 {
-    Suffix <String> #268 { "pxb" }
-    Description <String> #269 { "Pixibox PXB image file." }
-    Editor <BaseEditor> #270 {
-      Name <REF> #6
-      VersionID <VersionID> #271 {
-        RevisionNumber <String> #272 { "2.0.0" }
+  <SuffixEditor> #275 {
+    Suffix <String> #276 { "ptc" }
+    Description <String> #277 { "Pixar 3D point cloud file." }
+    Editor <BaseEditor> #278 {
+      Name <String> #279 { "PtViewer" }
+      VersionID <VersionID> #280 {
+        RevisionNumber <String> #281 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #273 {
-    Suffix <String> #274 { "qtl" }
-    Description <String> #275 { "Quantel image file." }
-    Editor <BaseEditor> #276 {
-      Name <REF> #6
-      VersionID <VersionID> #277 {
-        RevisionNumber <String> #278 { "2.0.0" }
+  <SuffixEditor> #282 {
+    Suffix <String> #283 { "pxb" }
+    Description <String> #284 { "Pixibox PXB image file." }
+    Editor <BaseEditor> #285 {
+      Name <REF> #47
+      VersionID <VersionID> #286 {
+        RevisionNumber <String> #287 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #279 {
-    Suffix <String> #280 { "ras" }
-    Description <String> #281 { "Sun raster image file." }
-    Editor <BaseEditor> #282 {
-      Name <REF> #6
-      VersionID <VersionID> #283 {
-        RevisionNumber <String> #284 { "2.0.0" }
+  <SuffixEditor> #288 {
+    Suffix <String> #289 { "qtl" }
+    Description <String> #290 { "Quantel image file." }
+    Editor <BaseEditor> #291 {
+      Name <REF> #47
+      VersionID <VersionID> #292 {
+        RevisionNumber <String> #293 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #285 {
-    Suffix <String> #286 { "rat" }
-    Description <String> #287 { "Houdini texture file." }
-    Editor <BaseEditor> #288 {
-      Name <REF> #222
-      VersionID <VersionID> #289 {
-        RevisionNumber <String> #290 { "2.0.0" }
+  <SuffixEditor> #294 {
+    Suffix <String> #295 { "ras" }
+    Description <String> #296 { "Sun raster image file." }
+    Editor <BaseEditor> #297 {
+      Name <REF> #47
+      VersionID <VersionID> #298 {
+        RevisionNumber <String> #299 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #291 {
-    Suffix <String> #292 { "rgb" }
-    Description <String> #293 { "SGI image file." }
-    Editor <BaseEditor> #294 {
-      Name <REF> #6
-      VersionID <VersionID> #295 {
-        RevisionNumber <String> #296 { "2.0.0" }
+  <SuffixEditor> #300 {
+    Suffix <String> #301 { "rat" }
+    Description <String> #302 { "Houdini texture file." }
+    Editor <BaseEditor> #303 {
+      Name <REF> #229
+      VersionID <VersionID> #304 {
+        RevisionNumber <String> #305 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #297 {
-    Suffix <String> #298 { "rib" }
-    Description <String> #299 { "RenderMan interface byte-stream file." }
-    Editor <BaseEditor> #300 {
+  <SuffixEditor> #306 {
+    Suffix <String> #307 { "rgb" }
+    Description <String> #308 { "SGI image file." }
+    Editor <BaseEditor> #309 {
+      Name <REF> #47
+      VersionID <VersionID> #310 {
+        RevisionNumber <String> #311 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #312 {
+    Suffix <String> #313 { "rib" }
+    Description <String> #314 { "RenderMan interface byte-stream file." }
+    Editor <BaseEditor> #315 {
       Name <REF> #14
-      VersionID <VersionID> #301 {
-        RevisionNumber <String> #302 { "2.0.0" }
+      VersionID <VersionID> #316 {
+        RevisionNumber <String> #317 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #303 {
-    Suffix <String> #304 { "rla" }
-    Description <String> #305 { "Wavefront image file." }
-    Editor <BaseEditor> #306 {
-      Name <REF> #6
-      VersionID <VersionID> #307 {
-        RevisionNumber <String> #308 { "2.0.0" }
+  <SuffixEditor> #318 {
+    Suffix <String> #319 { "rla" }
+    Description <String> #320 { "Wavefront image file." }
+    Editor <BaseEditor> #321 {
+      Name <REF> #47
+      VersionID <VersionID> #322 {
+        RevisionNumber <String> #323 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #309 {
-    Suffix <String> #310 { "scn" }
-    Description <String> #311 { "Pixibox SCN image file." }
-    Editor <BaseEditor> #312 {
-      Name <REF> #6
-      VersionID <VersionID> #313 {
-        RevisionNumber <String> #314 { "2.0.0" }
+  <SuffixEditor> #324 {
+    Suffix <String> #325 { "scn" }
+    Description <String> #326 { "Pixibox SCN image file." }
+    Editor <BaseEditor> #327 {
+      Name <REF> #47
+      VersionID <VersionID> #328 {
+        RevisionNumber <String> #329 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #315 {
-    Suffix <String> #316 { "sdl" }
-    Description <String> #317 { "3Delight compiled shader." }
-    Editor <BaseEditor> #318 {
+  <SuffixEditor> #330 {
+    Suffix <String> #331 { "sdl" }
+    Description <String> #332 { "3Delight compiled shader." }
+    Editor <BaseEditor> #333 {
       Name <REF> #14
-      VersionID <VersionID> #319 {
-        RevisionNumber <String> #320 { "2.0.0" }
+      VersionID <VersionID> #334 {
+        RevisionNumber <String> #335 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #321 {
-    Suffix <String> #322 { "sgi" }
-    Description <String> #323 { "SGI image file." }
-    Editor <BaseEditor> #324 {
-      Name <REF> #6
-      VersionID <VersionID> #325 {
-        RevisionNumber <String> #326 { "2.0.0" }
+  <SuffixEditor> #336 {
+    Suffix <String> #337 { "sgi" }
+    Description <String> #338 { "SGI image file." }
+    Editor <BaseEditor> #339 {
+      Name <REF> #47
+      VersionID <VersionID> #340 {
+        RevisionNumber <String> #341 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #327 {
-    Suffix <String> #328 { "sh" }
-    Description <String> #329 { "Borne Shell script." }
-    Editor <BaseEditor> #330 {
+  <SuffixEditor> #342 {
+    Suffix <String> #343 { "sh" }
+    Description <String> #344 { "Borne Shell script." }
+    Editor <BaseEditor> #345 {
       Name <REF> #14
-      VersionID <VersionID> #331 {
-        RevisionNumber <String> #332 { "2.0.0" }
+      VersionID <VersionID> #346 {
+        RevisionNumber <String> #347 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #333 {
-    Suffix <String> #334 { "shk" }
-    Description <String> #335 { "Shake script." }
-    Editor <BaseEditor> #336 {
-      Name <REF> #90
-      VersionID <VersionID> #337 {
-        RevisionNumber <String> #338 { "2.0.0" }
+  <SuffixEditor> #348 {
+    Suffix <String> #349 { "shd" }
+    Description <String> #350 { "Photorealistic RenderMan shadow map file." }
+    Editor <BaseEditor> #351 {
+      Name <String> #352 { "Sho" }
+      VersionID <VersionID> #353 {
+        RevisionNumber <String> #354 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #339 {
-    Suffix <String> #340 { "sl" }
-    Description <String> #341 { "RenderMan shading language source file." }
-    Editor <BaseEditor> #342 {
+  <SuffixEditor> #355 {
+    Suffix <String> #356 { "shk" }
+    Description <String> #357 { "Shake script." }
+    Editor <BaseEditor> #358 {
+      Name <REF> #47
+      VersionID <VersionID> #359 {
+        RevisionNumber <String> #360 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #361 {
+    Suffix <String> #362 { "sl" }
+    Description <String> #363 { "RenderMan shading language source file." }
+    Editor <BaseEditor> #364 {
       Name <REF> #14
-      VersionID <VersionID> #343 {
-        RevisionNumber <String> #344 { "2.0.0" }
+      VersionID <VersionID> #365 {
+        RevisionNumber <String> #366 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #345 {
-    Suffix <String> #346 { "slb" }
-    Description <String> #347 { "AIR compilied shader." }
-    Editor <BaseEditor> #348 {
+  <SuffixEditor> #367 {
+    Suffix <String> #368 { "slb" }
+    Description <String> #369 { "AIR compilied shader." }
+    Editor <BaseEditor> #370 {
       Name <REF> #14
-      VersionID <VersionID> #349 {
-        RevisionNumber <String> #350 { "2.0.0" }
+      VersionID <VersionID> #371 {
+        RevisionNumber <String> #372 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #351 {
-    Suffix <String> #352 { "slo" }
-    Description <String> #353 { "RenderMan shader byte-code file." }
-    Editor <BaseEditor> #354 {
+  <SuffixEditor> #373 {
+    Suffix <String> #374 { "slo" }
+    Description <String> #375 { "RenderMan shader byte-code file." }
+    Editor <BaseEditor> #376 {
       Name <REF> #14
-      VersionID <VersionID> #355 {
-        RevisionNumber <String> #356 { "2.0.0" }
+      VersionID <VersionID> #377 {
+        RevisionNumber <String> #378 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #357 {
-    Suffix <String> #358 { "sm" }
-    Description <String> #359 { "AIR shadow map." }
-    Editor <BaseEditor> #360 {
-      Name <String> #361 { "AirShow" }
-      VersionID <VersionID> #362 {
-        RevisionNumber <String> #363 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #364 {
-    Suffix <String> #365 { "tdl" }
-    Description <String> #366 { "3Delight texture or environment map." }
-    Editor <BaseEditor> #367 {
-      Name <String> #368 { "I-Display" }
-      VersionID <VersionID> #369 {
-        RevisionNumber <String> #370 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #371 {
-    Suffix <String> #372 { "tex" }
-    Description <String> #373 { "RenderMan texture file." }
-  }
-  <SuffixEditor> #374 {
-    Suffix <String> #375 { "tga" }
-    Description <String> #376 { "Target image file." }
-    Editor <BaseEditor> #377 {
-      Name <REF> #6
-      VersionID <VersionID> #378 {
-        RevisionNumber <String> #379 { "2.0.0" }
-      }
-      Vendor <REF> #9
-    }
-  }
-  <SuffixEditor> #380 {
-    Suffix <String> #381 { "tif" }
-    Description <String> #382 { "Tagged image file." }
-    Editor <BaseEditor> #383 {
-      Name <REF> #368
+  <SuffixEditor> #379 {
+    Suffix <String> #380 { "sm" }
+    Description <String> #381 { "AIR shadow map." }
+    Editor <BaseEditor> #382 {
+      Name <String> #383 { "AirShow" }
       VersionID <VersionID> #384 {
         RevisionNumber <String> #385 { "2.0.0" }
       }
@@ -675,122 +671,166 @@ SuffixEditors <TreeSet> #1 {
     }
   }
   <SuffixEditor> #386 {
-    Suffix <String> #387 { "tiff" }
-    Description <String> #388 { "Tagged image file." }
+    Suffix <String> #387 { "tdl" }
+    Description <String> #388 { "3Delight texture or environment map." }
     Editor <BaseEditor> #389 {
-      Name <REF> #368
-      VersionID <VersionID> #390 {
-        RevisionNumber <String> #391 { "2.0.0" }
+      Name <String> #390 { "I-Display" }
+      VersionID <VersionID> #391 {
+        RevisionNumber <String> #392 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #392 {
-    Suffix <String> #393 { "tx" }
-    Description <String> #394 { "AIR texture file." }
-    Editor <BaseEditor> #395 {
-      Name <REF> #361
-      VersionID <VersionID> #396 {
-        RevisionNumber <String> #397 { "2.0.0" }
+  <SuffixEditor> #393 {
+    Suffix <String> #394 { "tex" }
+    Description <String> #395 { "Photorealistic RenderMan texture file." }
+    Editor <BaseEditor> #396 {
+      Name <REF> #352
+      VersionID <VersionID> #397 {
+        RevisionNumber <String> #398 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #398 {
-    Suffix <String> #399 { "txt" }
-    Description <String> #400 { "Plain text file." }
-    Editor <BaseEditor> #401 {
+  <SuffixEditor> #399 {
+    Suffix <String> #400 { "tga" }
+    Description <String> #401 { "Target image file." }
+    Editor <BaseEditor> #402 {
+      Name <REF> #47
+      VersionID <VersionID> #403 {
+        RevisionNumber <String> #404 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #405 {
+    Suffix <String> #406 { "tif" }
+    Description <String> #407 { "Tagged image file." }
+    Editor <BaseEditor> #408 {
+      Name <REF> #47
+      VersionID <VersionID> #409 {
+        RevisionNumber <String> #410 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #411 {
+    Suffix <String> #412 { "tiff" }
+    Description <String> #413 { "Tagged image file." }
+    Editor <BaseEditor> #414 {
+      Name <REF> #47
+      VersionID <VersionID> #415 {
+        RevisionNumber <String> #416 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #417 {
+    Suffix <String> #418 { "tx" }
+    Description <String> #419 { "AIR texture file." }
+    Editor <BaseEditor> #420 {
+      Name <REF> #383
+      VersionID <VersionID> #421 {
+        RevisionNumber <String> #422 { "2.0.0" }
+      }
+      Vendor <REF> #9
+    }
+  }
+  <SuffixEditor> #423 {
+    Suffix <String> #424 { "txt" }
+    Description <String> #425 { "Plain text file." }
+    Editor <BaseEditor> #426 {
       Name <REF> #14
-      VersionID <VersionID> #402 {
-        RevisionNumber <String> #403 { "2.0.0" }
+      VersionID <VersionID> #427 {
+        RevisionNumber <String> #428 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #404 {
-    Suffix <String> #405 { "vex" }
-    Description <String> #406 { "Houdini VEX byte-code file." }
-    Editor <BaseEditor> #407 {
+  <SuffixEditor> #429 {
+    Suffix <String> #430 { "vex" }
+    Description <String> #431 { "Houdini VEX byte-code file." }
+    Editor <BaseEditor> #432 {
       Name <REF> #14
-      VersionID <VersionID> #408 {
-        RevisionNumber <String> #409 { "2.0.0" }
+      VersionID <VersionID> #433 {
+        RevisionNumber <String> #434 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #410 {
-    Suffix <String> #411 { "vfl" }
-    Description <String> #412 { "Houdini VEX source file." }
-    Editor <BaseEditor> #413 {
+  <SuffixEditor> #435 {
+    Suffix <String> #436 { "vfl" }
+    Description <String> #437 { "Houdini VEX source file." }
+    Editor <BaseEditor> #438 {
       Name <REF> #14
-      VersionID <VersionID> #414 {
-        RevisionNumber <String> #415 { "2.0.0" }
+      VersionID <VersionID> #439 {
+        RevisionNumber <String> #440 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #416 {
-    Suffix <String> #417 { "vst" }
-    Description <String> #418 { "Vista image file." }
-    Editor <BaseEditor> #419 {
-      Name <REF> #6
-      VersionID <VersionID> #420 {
-        RevisionNumber <String> #421 { "2.0.0" }
+  <SuffixEditor> #441 {
+    Suffix <String> #442 { "vst" }
+    Description <String> #443 { "Vista image file." }
+    Editor <BaseEditor> #444 {
+      Name <REF> #47
+      VersionID <VersionID> #445 {
+        RevisionNumber <String> #446 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #422 {
-    Suffix <String> #423 { "xbm" }
-    Description <String> #424 { "X11 bitmap image file." }
-    Editor <BaseEditor> #425 {
-      Name <REF> #83
-      VersionID <VersionID> #426 {
-        RevisionNumber <String> #427 { "2.0.0" }
+  <SuffixEditor> #447 {
+    Suffix <String> #448 { "xbm" }
+    Description <String> #449 { "X11 bitmap image file." }
+    Editor <BaseEditor> #450 {
+      Name <REF> #91
+      VersionID <VersionID> #451 {
+        RevisionNumber <String> #452 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #428 {
-    Suffix <String> #429 { "xpm" }
-    Description <String> #430 { "X11 pixmap image file." }
-    Editor <BaseEditor> #431 {
-      Name <REF> #83
-      VersionID <VersionID> #432 {
-        RevisionNumber <String> #433 { "2.0.0" }
+  <SuffixEditor> #453 {
+    Suffix <String> #454 { "xpm" }
+    Description <String> #455 { "X11 pixmap image file." }
+    Editor <BaseEditor> #456 {
+      Name <REF> #91
+      VersionID <VersionID> #457 {
+        RevisionNumber <String> #458 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #434 {
-    Suffix <String> #435 { "xwd" }
-    Description <String> #436 { "X11 window fump image file." }
-    Editor <BaseEditor> #437 {
-      Name <REF> #83
-      VersionID <VersionID> #438 {
-        RevisionNumber <String> #439 { "2.0.0" }
+  <SuffixEditor> #459 {
+    Suffix <String> #460 { "xwd" }
+    Description <String> #461 { "X11 window fump image file." }
+    Editor <BaseEditor> #462 {
+      Name <REF> #91
+      VersionID <VersionID> #463 {
+        RevisionNumber <String> #464 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #440 {
-    Suffix <String> #441 { "yuv" }
-    Description <String> #442 { "Abekas NTSC/PAL image file." }
-    Editor <BaseEditor> #443 {
-      Name <REF> #6
-      VersionID <VersionID> #444 {
-        RevisionNumber <String> #445 { "2.0.0" }
+  <SuffixEditor> #465 {
+    Suffix <String> #466 { "yuv" }
+    Description <String> #467 { "Abekas NTSC/PAL image file." }
+    Editor <BaseEditor> #468 {
+      Name <REF> #47
+      VersionID <VersionID> #469 {
+        RevisionNumber <String> #470 { "2.0.0" }
       }
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #446 {
-    Suffix <String> #447 { "z" }
-    Description <String> #448 { "RenderMan depth map." }
-    Editor <BaseEditor> #449 {
-      Name <REF> #368
-      VersionID <VersionID> #450 {
-        RevisionNumber <String> #451 { "2.0.0" }
+  <SuffixEditor> #471 {
+    Suffix <String> #472 { "z" }
+    Description <String> #473 { "RenderMan depth map." }
+    Editor <BaseEditor> #474 {
+      Name <REF> #390
+      VersionID <VersionID> #475 {
+        RevisionNumber <String> #476 { "2.0.0" }
       }
       Vendor <REF> #9
     }
