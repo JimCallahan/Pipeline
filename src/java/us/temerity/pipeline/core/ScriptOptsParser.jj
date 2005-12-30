@@ -166,8 +166,11 @@ ScriptOptsParser
   private boolean  pSetJobReserve;
   private Integer  pJobOrder;
   private Integer  pJobSlots;
-  private TreeMap  pJobSelectionBiases;
-  private TreeSet  pJobSelectionRemoves;
+  private String   pJobSelectionSchedule;
+  private boolean  pJobNoSelectionSchedule;
+  private String   pJobSelectionGroup;
+  private boolean  pJobNoSelectionGroup;
+
 
   private String         pMessage;
   private LicenseScheme  pLicenseScheme;
@@ -322,8 +325,10 @@ TOKEN :
 | <OPEN:               "--open">  	    				      
 | <SLOTS:              "--slots">           	: INTEGER_SEP  	      
 | <ORDER:              "--order">           	: INTEGER_SEP  	      
-| <SELECTION_BIAS:     "--selection-bias">  	: KEY_BIAS_SEP  	      
-| <REMOVE_KEY:         "--remove-key">      	: KEY_NAME_SEP   	      
+| <SEL_SCHEDULE:       "--selection-schedule">  : SCHEDULE_NAME_SEP
+| <NO_SEL_SCHEDULE:    "--no-selection-schedule">  	      
+| <SEL_GROUP:          "--selection-group">     : GROUP_NAME_SEP
+| <NO_SEL_GROUP:       "--no-selection-group">  	      
 | <EDITOR2:            "--editor">          	: EDITOR_NAME_SEP 	      
 | <VERSION2:           "--version">         	: REVISION_NUMBER_SEP     
 | <LATEST:             "--latest"> 	    		    		      
@@ -366,7 +371,6 @@ TOKEN :
 | <MINOR:              "--minor">					
 | <MICRO:              "--micro">					
 | <OVERWRITE_ALL:      "--overwrite-all">				
-| <KEEP_NEWER:         "--keep-newer">				
 | <KEEP_MODIFIED:      "--keep-modified">				
 | <MODIFIABLE:         "--modifiable">				
 | <FROZEN_UPSTREAM:    "--frozen-upstream">			
@@ -639,11 +643,45 @@ TOKEN :
 }
 
 
+/* schedule arguments */ 
+<SCHEDULE_NAME_SEP> 
+TOKEN :
+{
+  <EQ14:                   "=">   : SCHEDULE_NAME_STATE
+| <MISSING_SCHEDULE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<SCHEDULE_NAME_STATE> 
+TOKEN :
+{
+  <SCHEDULE_NAME:      (["a"-"z","A"-"Z"]) 
+	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <AE6:                ["\0"]>                                  : OPTIONS
+| <ILLEGAL_SCHEDULE:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+/* group arguments */ 
+<GROUP_NAME_SEP> 
+TOKEN :
+{
+  <EQ15:                "=">   : GROUP_NAME_STATE
+| <MISSING_GROUP_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<GROUP_NAME_STATE> 
+TOKEN :
+{
+  <GROUP_NAME:      (["a"-"z","A"-"Z"]) 
+	              (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <AE7:             ["\0"]>                                  : OPTIONS
+| <ILLEGAL_GROUP:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
 /* key name arguments */ 
 <KEY_NAME_SEP> 
 TOKEN :
 {
-  <EQ14:                   "=">   : KEY_NAME_STATE
+  <EQ40:                   "=">   : KEY_NAME_STATE
 | <MISSING_KEY_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -652,30 +690,9 @@ TOKEN :
 {
   <KEY_NAME1:          (["a"-"z","A"-"Z"]) 
 		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <AE6:                ["\0"]>                                   : OPTIONS
+| <AE51:                ["\0"]>                                   : OPTIONS
 | <ILLEGAL_KEY_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
-
-
-/* key bias arguments */ 
-<KEY_BIAS_SEP> 
-TOKEN :
-{
-  <EQ15:                   "=">   : KEY_BIAS_STATE
-| <MISSING_KEY_BIAS_ARG: ~["="]>  : IGNORE_STATE
-}
-
-<KEY_BIAS_STATE> 
-TOKEN :
-{
-  <KEY_BIAS_NAME:      (["a"-"z","A"-"Z"]) 
-		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <COLON1:             ":">      
-| <KEY_BIAS:           (["0"-"9"])+>                             : OPTIONS  
-| <AE7:                ["\0"]>                                   : OPTIONS
-| <ILLEGAL_KEY_BIAS:   (~[":","\0"])+>                           : IGNORE_STATE
-}
-
 
 /* key toggle arguments */ 
 <KEY_TOGGLE_SEP> 
@@ -2930,20 +2947,31 @@ JobServerSet()
 {
   String hname = null;
 
-  pJobStatus           = null;
-  pJobReserve          = null;
-  pSetJobReserve       = false;
-  pJobOrder            = null;
-  pJobSlots            = null;
-  pJobSelectionBiases  = new TreeMap();
-  pJobSelectionRemoves = new TreeSet();
+  pJobStatus              = null;
+  pJobReserve             = null;
+  pSetJobReserve          = false;
+  pJobOrder               = null;
+  pJobSlots               = null;
+  pJobSelectionSchedule   = null;
+  pJobNoSelectionSchedule = false;
+  pJobSelectionGroup      = null;
+  pJobNoSelectionGroup    = false;
 }
 {
   <JOB_SET> EQ() hname=HostName() AE() (JobServerSetOption())+
   {
+    if((pJobSelectionSchedule != null) && pJobNoSelectionSchedule) 
+      throw new PipelineException
+        ("The --selection-schedule and --no-selection-schedule options are mutually exclusive!");
+    
+    if((pJobSelectionGroup != null) && pJobNoSelectionGroup) 
+      throw new PipelineException
+        ("The --selection-group and --no-selection-group options are mutually exclusive!");
+    
     pApp.editHost(hname, 
 		  pJobStatus, pJobReserve, pSetJobReserve, pJobOrder, pJobSlots,
-		  pJobSelectionBiases, pJobSelectionRemoves, 
+		  pJobSelectionSchedule, pJobNoSelectionSchedule, 
+		  pJobSelectionGroup, pJobNoSelectionGroup, 
 		  pQueueMgrClient);
 
     LogMgr.getInstance().log
@@ -2960,7 +2988,8 @@ JobServerSetOption()
 {
   (JobServerShutdown() | JobServerEnable() | JobServerDisable() | 
    JobServerReserve() | JobServerOrder() | JobServerSlots() | 
-   JobServerSelectionBias() | JobServerSelectionRemoveKey())
+   JobServerSelectionSchedule() | JobServerNoSelectionSchedule() |
+   JobServerSelectionGroup() | JobServerNoSelectionGroup())
   {}
 }
 
@@ -3043,28 +3072,48 @@ JobServerSlots()
 }
 
 void 
-JobServerSelectionBias()
+JobServerSelectionSchedule()
   throws PipelineException : 
 {
-  String kname;
-  Integer bias; 
+  String sname;
 }
 {
-  <SELECTION_BIAS> EQ() kname=KeyBiasName() COLON() bias=KeyBias() AE()
+  <SEL_SCHEDULE> EQ() sname=SelectionScheduleName() AE()
   {
-    pJobSelectionBiases.put(kname, bias);
+    pJobSelectionSchedule = sname; 
   }  
 }
 
 void 
-JobServerSelectionRemoveKey() : 
+JobServerNoSelectionSchedule() : 
+{}
 {
-  String kname;
+  <NO_SEL_SCHEDULE> AE()
+  {
+    pJobNoSelectionSchedule = true; 
+  }
+}
+  
+void 
+JobServerSelectionGroup()
+  throws PipelineException : 
+{
+  String sname;
 }
 {
-  <REMOVE_KEY> EQ() kname=KeyName() AE()
+  <SEL_GROUP> EQ() sname=SelectionGroupName() AE()
   {
-    pJobSelectionRemoves.add(kname);
+    pJobSelectionGroup = sname; 
+  }  
+}
+
+void 
+JobServerNoSelectionGroup() : 
+{}
+{
+  <NO_SEL_GROUP> AE()
+  {
+    pJobNoSelectionGroup = true; 
   }
 }
   
@@ -4819,7 +4868,7 @@ NodeCheckOutOpts()
 {}
 {
   (Author() | View() | VersionOption() | 
-   OverwriteAll() | KeepNewer() | KeepModified() | 
+   OverwriteAll() | KeepModified() | 
    Modifiable() | FrozenUpstream() | AllFrozen())
   {}
 }
@@ -4832,16 +4881,6 @@ OverwriteAll() :
   <OVERWRITE_ALL> AE()
   {
     pCheckOutMode = CheckOutMode.OverwriteAll; 
-  }
-}
-
-void
-KeepNewer() : 
-{}
-{
-  <KEEP_NEWER> AE()
-  {
-    pCheckOutMode = CheckOutMode.KeepNewer; 
   }
 }
 
@@ -5939,19 +5978,31 @@ KeyName() :
   Token t;
 }
 {
-  (t=<KEY_NAME1> | t=<KEY_NAME2>)
+  (t=<KEY_NAME2>)
   {
     return t.image;
   }
 }
 
 String
-KeyBiasName() : 
+SelectionScheduleName() : 
 {
   Token t;
 }
 {
-  t=<KEY_BIAS_NAME>
+  t=<SCHEDULE_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+SelectionGroupName() : 
+{
+  Token t;
+}
+{
+  t=<GROUP_NAME>
   {
     return t.image;
   }
@@ -6315,24 +6366,6 @@ PortNumber()
   }
 }
 
-int
-KeyBias() 
-  throws PipelineException : 
-{
-  Token t;
-}
-{
-  t=<KEY_BIAS>
-  { 
-    try {
-      return Integer.parseInt(t.image);
-    }
-    catch(NumberFormatException ex) {
-      throw new PipelineException(ex.getMessage());
-    }
-  }
-}
-
 VersionID
 RevisionNumber() 
   throws PipelineException : 
@@ -6371,7 +6404,8 @@ AE() :
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
-   t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50>)
+   t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50> | 
+   t=<AE51>)
   { 
     return t; 
   }
@@ -6431,7 +6465,7 @@ COLON() :
   Token t;
 }
 {
-  (t=<COLON1>  | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
+  (/*t=<COLON1> |*/ t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
    t=<COLON6>  | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10>)
   { 
     return t; 
@@ -6466,7 +6500,7 @@ EQ() :
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
-   t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39>)
+   t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40>)
   { 
     return t; 
   }

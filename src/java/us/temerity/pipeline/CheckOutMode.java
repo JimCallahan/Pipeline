@@ -1,4 +1,4 @@
-// $Id: CheckOutMode.java,v 1.2 2004/11/02 19:11:56 jim Exp $
+// $Id: CheckOutMode.java,v 1.3 2005/12/30 23:28:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,12 +21,6 @@ enum CheckOutMode
    */
   OverwriteAll, 
   
-  /**
-   * Skip the check-out if there exists a working version which is based on a version 
-   * which is newer than the version being checked-out.
-   */ 
-  KeepNewer, 
-
   /**
    * Skip the check-out if there exists a working version which is based on the version 
    * being checked-out or on a version which is newer than the version being checked-out. <P> 

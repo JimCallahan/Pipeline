@@ -310,11 +310,17 @@ Administration</span></span></a><br>
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--slots</span>=<span
  style="font-style: italic;">integer</span>] [<span
- style="font-weight: bold;">--selection-bias</span>=<span
- style="font-style: italic;">key-name</span>:<span
- style="font-style: italic;">bias</span>]</span><span
- style="font-weight: normal;"> [</span><span style="font-weight: bold;">--remove-key</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">key-name</span>]</span></li>
+ style="font-weight: bold;">--selection-schedule</span>=<span
+ style="font-style: italic;">schedule-name</span><span
+ style="font-style: italic;"></span>]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--no-selection-schedule</span><span
+ style="font-style: italic;"></span><span style="font-style: italic;"></span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
+[</span><span style="font-weight: bold;">--selection-group</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span>]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--no-selection-group</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
+          </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#job-server_--remove"><span
  style="font-weight: bold;">--remove</span></a>=<span
@@ -989,8 +995,7 @@ Operations</span></span></a></li>
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"> [<span style="font-weight: bold;">--overwrite-all</span>
-| <span style="font-weight: bold;">--keep-newer</span> | <span
- style="font-weight: bold;">--keep-modified</span>] <span
+| <span style="font-weight: bold;">--keep-modified</span>] <span
  style="color: rgb(0, 0, 0);">[</span><span
  style="font-weight: bold; color: rgb(0, 0, 0);">--modifiable</span><span
  style="color: rgb(0, 0, 0);"> | </span><span
@@ -2549,15 +2554,20 @@ This command requires privileged user status.</span></div>
  style="font-style: italic;">user-name</span> | <span
  style="font-weight: bold;">--open</span>] [<span
  style="font-weight: bold;">--order</span>=<span
- style="font-style: italic;">integer</span>]<br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--slots</span>=<span
  style="font-style: italic;">integer</span>] [<span
- style="font-weight: bold;">--selection-bias</span>=<span
- style="font-style: italic;">key-name</span>:<span
- style="font-style: italic;">bias</span>] [</span><span
- style="font-weight: bold;">--remove-key</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">key-name</span>]</span><br>
-<span style="font-weight: normal;"><br>
+ style="font-weight: bold;">--slots</span>=<span
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--selection-schedule</span>=<span
+ style="font-style: italic;">schedule-name</span><span
+ style="font-style: italic;"></span>]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--no-selection-schedule</span><span
+ style="font-style: italic;"></span><span style="font-style: italic;"></span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
+[</span><span style="font-weight: bold;">--selection-group</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span>]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--no-selection-group</span>]</span><span
+ style="font-weight: normal;">
 </span>
 <div style="margin-left: 40px;">Sets various properties of a job server
 (host-name) which is part of the Pipeline queue.<br>
@@ -2629,30 +2639,34 @@ runs is in practice also limited by the available resources and job
 requirements.<br>
 </div>
 <span style="font-weight: normal;"><br>
-<span style="font-weight: bold;">--selection-bias</span>=<span
- style="font-style: italic;">key-name</span>:<span
- style="font-style: italic;">bias</span></span><br>
-<span style="font-weight: bold;"><br>
+<span style="font-weight: bold;">--selection-schedule</span>=<span
+ style="font-style: italic;">schedule-name<span
+ style="font-style: italic;"><br>
+</span></span><span style="font-weight: bold;">--no-selection-schedule</span><span
+ style="font-style: italic;"><span style="font-style: italic;"><br>
+</span></span></span><span style="font-weight: bold;"><br>
 </span>
-<div style="margin-left: 40px;">Sets the selection bias (bias) on the
-job server for the given selection key (key-name).&nbsp; Jobs which
-require the selection key will only run on servers which set the
-selection bias for that key.&nbsp; The Pipeline queue uses the total
-selection bias for the set of selection keys required by a job to
-determine which server runs the job.&nbsp; Selection biases may be
-positive or negative integers.<br>
+<div style="margin-left: 40px;">Sets or clears the selection schedule
+for the job server.&nbsp; If a selection schedule is specified for a
+job server, the selection group will automatically be changed over the
+course of the week as specified by the schedule.&nbsp; If the job
+server has no schedule, the selection group will be controlled
+manually. <br>
 <br>
 </div>
-<span style="font-weight: bold;">--remove-key</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">key-name</span></span><br>
+<span style="font-weight: bold;">--</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">selection-group</span>=<span
+ style="font-style: italic;">group-name<span style="font-style: italic;"><br>
+</span></span><span style="font-weight: bold;">--no-selection-group</span><span
+ style="font-style: italic;"><span style="font-style: italic;"><br>
+</span></span></span>
 <span style="font-weight: bold;"><br>
 </span>
-<div style="margin-left: 40px;">Removes any previously existing
-selection bias for the given selection key (<span
- style="font-style: italic;">key-name</span>) on the job server.&nbsp;
-Future jobs which require this key will not be assigned to this server
-by the Pipeline queue.<br>
-</div>
+<div style="margin-left: 40px;">Sets or clears the selection group
+for the job server.&nbsp; A job servers in a selection group share a
+common set of selection biases and preemption flags.&nbsp; If no
+selection group is specified for a job server, it will behave as if it
+was a member of a selection group with no selection keys defined. </div>
 <span style="font-weight: normal;"><br>
 This command requires privileged user status.</span></div>
 <span style="font-weight: normal;"></span><span
@@ -4073,9 +4087,9 @@ target node prior to checking-in the target node. <br>
  style="font-style: italic;">micro</span>] </span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--overwrite-all</span>
-| <span style="font-weight: bold;">--keep-newer</span> | <span
- style="font-weight: bold;">--keep-modified</span>]<br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--modifiable |
+|&nbsp;<span style="font-weight: bold;"></span><span
+ style="font-weight: bold;">--keep-modified</span>] [<span
+ style="font-weight: bold;">--modifiable |
 --frozen-upstream | --all-frozen</span>]<br>
 </span><span style="font-weight: normal;"><br>
 </span>
@@ -4096,13 +4110,7 @@ will be skipped if there exists a modified
 working
 version which is based on the version being checked-out or on a version
 which is newer than the version being checked-out.&nbsp; </span><span
- style="font-weight: normal;">If the <span style="font-weight: bold;">--keep-newer</span>
-option is
-specified,
-nodes which are based on a newer version than the version being
-checked-out will be skipped, but modified nodes based on the version
-being checked out or older versions will be overwritten.&nbsp; If the <span
- style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;">If the <span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--overwrite-all</span></span><span
  style="font-weight: normal;"> option
 is specified, all
