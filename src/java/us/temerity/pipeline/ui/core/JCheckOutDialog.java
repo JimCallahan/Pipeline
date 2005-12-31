@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.6 2005/10/17 06:23:39 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.7 2005/12/31 20:16:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,7 +66,7 @@ class JCheckOutDialog
 	       vpanel, CheckOutMode.titles(), sVSize, 
 	       "The criteria used to determine whether working versions should be replaced.");
 	    
-	    field.setSelectedIndex(2);
+	    field.setSelectedIndex(1);
 	    
 	    field.addActionListener(this);
 	    field.setActionCommand("mode-changed");
@@ -236,7 +236,7 @@ class JCheckOutDialog
 
     pVersionBox.removeAll();
 
-    pMasterModeField.setSelectedIndex(2);
+    pMasterModeField.setSelectedIndex(1);
     pMasterMethodField.setSelectedIndex(0);
 
     if((versions == null) || (versions.isEmpty()))  {
@@ -295,7 +295,7 @@ class JCheckOutDialog
 	       vpanel, CheckOutMode.titles(), sVSize, 
 	       "The criteria used to determine whether working versions should be replaced.");
 	    
-	    field.setSelectedIndex(2);
+	    field.setSelectedIndex(1);
 	    
 	    pModeFields.put(name, field);
 	  }
