@@ -1,4 +1,4 @@
-// $Id: CheckOutMode.java,v 1.3 2005/12/30 23:28:44 jim Exp $
+// $Id: CheckOutMode.java,v 1.4 2005/12/31 18:56:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -84,7 +84,6 @@ enum CheckOutMode
 
   private static String sTitles[] = {
     "Overwrite All", 
-    "Keep Newer",
     "Keep Modified"
   };
 }
