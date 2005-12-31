@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.47 2005/11/03 22:02:14 jim Exp $
+// $Id: QueueMgr.java,v 1.48 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -56,18 +56,22 @@ class QueueMgr
 
       pPrivilegedUsers = new TreeSet<String>();
 
-      pLicenseKeys   = new TreeMap<String,LicenseKey>();
-      pSelectionKeys = new TreeMap<String,SelectionKey>();
+      pLicenseKeys = new TreeMap<String,LicenseKey>();
+
+      pSelectionKeys      = new TreeMap<String,SelectionKey>();
+      pSelectionGroups    = new TreeMap<String,SelectionGroup>();
+      pSelectionSchedules = new TreeMap<String,SelectionSchedule>();
 
       pHosts           = new TreeMap<String,QueueHost>(); 
       pLastSampleWrite = new Date();
       pSampleFileLock  = new Object();
 
-      pHitList   = new ConcurrentLinkedQueue<Long>();
-      pPaused    = new TreeSet<Long>();
+      pPreemptList = new ConcurrentLinkedQueue<Long>();
+      pHitList     = new ConcurrentLinkedQueue<Long>();
+      pPaused      = new TreeSet<Long>();
 
-      pWaiting = new ConcurrentLinkedQueue<Long>();
-      pReady   = new TreeSet<Long>();
+      pWaiting       = new ConcurrentLinkedQueue<Long>();
+      pReady         = new TreeSet<Long>();
 
       pJobFileLocks = new TreeMap<Long,Object>();
       pJobs         = new TreeMap<Long,QueueJob>(); 
@@ -106,8 +110,10 @@ class QueueMgr
       /* load the license keys if any exist */ 
       readLicenseKeys();
 
-      /* load the selection keys if any exist */ 
+      /* load the selection keys, groups and schedules if any exist */ 
       readSelectionKeys();
+      readSelectionGroups();
+      readSelectionSchedules();
 
       /* load the hosts if any exist */ 
       readHosts();
@@ -195,6 +201,7 @@ class QueueMgr
 	    /* determine if the job is still active */ 
 	    switch(info.getState()) {
 	    case Queued:
+	    case Preempted:
 	      pWaiting.add(jobID);
 	      break;
 	      
@@ -623,7 +630,7 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   L I C E N S E   K E Y S                                                              */
+  /*   S E L E C T I O N   K E Y S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -729,17 +736,405 @@ class QueueMgr
     try {
       synchronized(pSelectionKeys) {
 	timer.resume();
-	
 	pSelectionKeys.remove(kname);
 	writeSelectionKeys();
+      }
+
+      timer.aquire();
+      synchronized(pSelectionGroups) {
+	timer.resume();
+	
+	boolean modified = false;
+	for(SelectionGroup sg : pSelectionGroups.values()) {
+	  if(sg.getBias(kname) != null) {
+	    sg.removeBias(kname);
+	    modified = true;
+	  }
+	}
+
+	if(modified) 
+	  writeSelectionGroups();
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing selection groups. 
+   * 
+   * @return
+   *   <CODE>QueueGetSelectionGroupNamesRsp</CODE> if successful.
+   */ 
+  public Object
+  getSelectionGroupNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionGroups) {
+      timer.resume();
+
+      TreeSet<String> names = new TreeSet<String>(pSelectionGroups.keySet());
+      return new QueueGetSelectionGroupNamesRsp(timer, names);
+    }
+  }
+  
+  /**
+   * Get the current selection biases for all existing selection groups. 
+   * 
+   * @return
+   *   <CODE>QueueGetSelectionGroupsRsp</CODE> if successful.
+   */ 
+  public Object
+  getSelectionGroups() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionGroups) {
+      timer.resume();
+      
+      return new QueueGetSelectionGroupsRsp(timer, pSelectionGroups);
+    }
+  }
+  
+  /**
+   * Add a new selection group. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the host.
+   */ 
+  public Object
+  addSelectionGroup
+  (
+   QueueAddSelectionGroupReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("QueueMgr.addSelectionGroup(): " + name);
+    timer.aquire();
+    try {
+      synchronized(pSelectionGroups) {
+	timer.resume();
+	
+	if(pSelectionGroups.containsKey(name)) 
+	  throw new PipelineException
+	    ("A selection group named (" + name + ") already exists!");
+	pSelectionGroups.put(name, new SelectionGroup(name));
+
+	writeSelectionGroups();
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  /**
+   * Remove the given existing selection group. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the selection group.
+   */ 
+  public Object
+  removeSelectionGroups
+  (
+   QueueRemoveSelectionGroupsReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionGroups():");
+    timer.aquire();
+    try {
+      synchronized(pSelectionGroups) {
+	timer.resume();
+	
+	for(String name : names)
+	  pSelectionGroups.remove(name);
+
+	writeSelectionGroups();
+      }
+
+      timer.aquire();
+      synchronized(pHosts) {
+	timer.resume();
+	
+	boolean modified = false;
+	for(QueueHost host : pHosts.values()) {
+	  String gname = host.getSelectionGroup();
+	  if((gname != null) && names.contains(gname)) {
+	    host.setSelectionGroup(null);
+	    modified = true;
+	  }
+	}
+
+	if(modified) 
+	  writeHosts();
+      }
+      
+      return new SuccessRsp(timer);
     }
-  }  
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  
+  /**
+   * Change the selection key biases for the given selection groups. <P> 
+   * 
+   * For an detailed explanation of how selection keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the selection groups.
+   */ 
+  public Object
+  editSelectionGroups
+  (
+   QueueEditSelectionGroupsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.editSelectionGroups()");
+
+    TreeSet<String> keys = null;
+    timer.aquire();
+    synchronized(pSelectionKeys) {
+      timer.resume();
+      keys = new TreeSet<String>(pSelectionKeys.keySet());
+    }
+
+    timer.aquire();
+    try {
+      synchronized(pSelectionGroups) {
+	timer.resume();
+	
+	for(SelectionGroup sg : req.getSelectionGroups()) {
+	  /* strip any obsolete selection keys */ 
+	  TreeSet<String> dead = new TreeSet<String>();
+	  for(String key : sg.getKeys()) {
+	    if(!keys.contains(key)) 
+	      dead.add(key);
+	  }
+	  for(String key : dead) 
+	    sg.removeBias(key);
+
+	  /* update the group */ 
+	  pSelectionGroups.put(sg.getName(), sg);
+	}
+      
+	writeSelectionGroups();
+      }
+    
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing selection schedules. 
+   * 
+   * @return
+   *   <CODE>QueueGetSelectionScheduleNamesRsp</CODE> if successful.
+   */ 
+  public Object
+  getSelectionScheduleNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionSchedules) {
+      timer.resume();
+
+      TreeSet<String> names = new TreeSet<String>(pSelectionSchedules.keySet());
+      return new QueueGetSelectionScheduleNamesRsp(timer, names);
+    }
+  }
+  
+  /**
+   * Get the existing selection schedules. 
+   * 
+   * @return
+   *   <CODE>QueueGetSelectionSchedulesRsp</CODE> if successful.
+   */ 
+  public Object
+  getSelectionSchedules() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionSchedules) {
+      timer.resume();
+      
+      return new QueueGetSelectionSchedulesRsp(timer, pSelectionSchedules);
+    }
+  }
+  
+  /**
+   * Add a new selection schedule. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the host.
+   */ 
+  public Object
+  addSelectionSchedule
+  (
+   QueueAddSelectionScheduleReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("QueueMgr.addSelectionSchedule(): " + name);
+    timer.aquire();
+    try {
+      synchronized(pSelectionSchedules) {
+	timer.resume();
+	
+	if(pSelectionSchedules.containsKey(name)) 
+	  throw new PipelineException
+	    ("A selection schedule named (" + name + ") already exists!");
+	pSelectionSchedules.put(name, new SelectionSchedule(name));
+
+	writeSelectionSchedules();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  /**
+   * Remove the given existing selection schedule. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the selection schedule.
+   */ 
+  public Object
+  removeSelectionSchedules
+  (
+   QueueRemoveSelectionSchedulesReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionSchedules():");
+    timer.aquire();
+    try {
+      synchronized(pSelectionSchedules) {
+	timer.resume();
+	
+	for(String name : names)
+	  pSelectionSchedules.remove(name);
+
+	writeSelectionSchedules();
+      }
+
+      timer.aquire();
+      synchronized(pHosts) {
+	timer.resume();
+	
+	boolean modified = false;
+	for(QueueHost host : pHosts.values()) {
+	  String gname = host.getSelectionSchedule();
+	  if((gname != null) && names.contains(gname)) {
+	    host.setSelectionSchedule(null);
+	    modified = true;
+	  }
+	}
+
+	if(modified) 
+	  writeHosts();
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  
+  /**
+   * Modify the given selection schedules. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the selection schedules.
+   */ 
+  public Object
+  editSelectionSchedules
+  (
+   QueueEditSelectionSchedulesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.editSelectionSchedules()");
+
+    TreeSet<String> groups = null;
+    timer.aquire();
+    synchronized(pSelectionGroups) {
+      timer.resume();
+      groups = new TreeSet<String>(pSelectionGroups.keySet());
+    }
+
+    timer.aquire();
+    try {
+      synchronized(pSelectionSchedules) {
+	timer.resume();
+	
+	for(SelectionSchedule ss : req.getSelectionSchedules()) {
+
+
+	  // remove schedule rules which use one of the obsolete selection groups here... 
+
+
+	  /* update the schedule */ 
+	  pSelectionSchedules.put(ss.getName(), ss);
+	}
+      
+	writeSelectionSchedules();
+      }
+    
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
 
 
      
@@ -893,13 +1288,6 @@ class QueueMgr
    * be negative and probably should not be set considerably higher than the number of 
    * CPUs on the host.  A good value is probably (1.5 * number of CPUs). <P>
    * 
-   * For the given hosts, the selection key biases are set to the values passed in the 
-   * <CODE>biases</CODE> argument and all selection key biases not mentioned will be removed.
-   * Hosts not mention in the <CODE>biases</CODE> argument will be unaltered. <P> 
-   * 
-   * For an detailed explanation of how selection keys are used to determine the assignment
-   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
-   * 
    * @param req 
    *   The edit hosts request.
    *    
@@ -915,11 +1303,18 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
 
-    TreeSet<String> keys = null;
+    TreeSet<String> scheds = null;
     timer.aquire();
-    synchronized(pSelectionKeys) {
+    synchronized(pSelectionSchedules) {
       timer.resume();
-      keys = new TreeSet<String>(pSelectionKeys.keySet());
+      scheds = new TreeSet<String>(pSelectionSchedules.keySet());
+    }
+
+    TreeSet<String> groups = null;
+    timer.aquire();
+    synchronized(pSelectionGroups) {
+      timer.resume();
+      groups = new TreeSet<String>(pSelectionGroups.keySet());
     }
 
     timer.aquire();
@@ -1007,27 +1402,41 @@ class QueueMgr
 	    }
 	  }
 	}
-	
-	/* selection key biases */ 
+      
+	/* selection schedules */ 
 	{
-	  TreeMap<String,TreeMap<String,Integer>> table = req.getBiases();
+	  TreeMap<String,String> table = req.getSelectionSchedules();
 	  if(table != null) {
 	    for(String hname : table.keySet()) {
 	      QueueHost host = pHosts.get(hname);
 	      if(host != null) {
-		host.removeAllSelectionKeys();
-		
-		TreeMap<String,Integer> biases = table.get(hname);
-		for(String kname : biases.keySet()) 
-		  if(keys.contains(kname)) 
-		    host.addSelectionKey(kname, biases.get(kname));
-		
-		modified = true;	      
+		String name = table.get(hname);
+		if((name == null) || scheds.contains(name)) {
+		  host.setSelectionSchedule(name);
+		  modified = true;
+		}
 	      }
 	    }
 	  }
 	}
       
+	/* selection groups */ 
+	{
+	  TreeMap<String,String> table = req.getSelectionGroups();
+	  if(table != null) {
+	    for(String hname : table.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		String name = table.get(hname);
+		if((name == null) || groups.contains(name)) {
+		  host.setSelectionGroup(name);
+		  modified = true;
+		}
+	      }
+	    }
+	  }
+	}
+
 	/* write changes to disk */ 
 	if(modified) 
 	  writeHosts();
@@ -1444,7 +1853,7 @@ class QueueMgr
 	synchronized(pJobInfo) {
 	  timer.resume();
 	  writeJobInfo(info);
-	pJobInfo.put(jobID, info);
+	  pJobInfo.put(jobID, info);
 	} 
 	
 	{
@@ -1474,6 +1883,30 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }     
+  }
+
+  /**
+   * Preempt the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The preempt jobs request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable preempt the jobs. 
+   */ 
+  public Object
+  preemptJobs
+  (
+   QueuePreemptJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.preemptJobs()");
+
+    for(Long jobID : req.getJobIDs())
+      pPreemptList.add(jobID);
+
+    return new SuccessRsp(timer);
   }
 
   /**
@@ -1814,6 +2247,7 @@ class QueueMgr
 	if(info != null) {
 	  switch(info.getState()) {
 	  case Queued:
+	  case Preempted:
 	  case Paused:
 	  case Running:
 	    throw new PipelineException
@@ -2067,6 +2501,7 @@ class QueueMgr
       if(info != null) {
 	switch(info.getState()) {
 	case Queued:
+	case Preempted:
 	case Paused:
 	  info.aborted();
 	  try {
@@ -2083,6 +2518,43 @@ class QueueMgr
 	case Running:
 	  {
 	    KillTask task = new KillTask(info.getHostname(), jobID);
+	    task.start();
+	  }
+	}
+      }
+    }
+    
+    /* kill and requeue running jobs on the preempt list */  
+    while(true) {
+      Long jobID = pPreemptList.poll();
+      if(jobID == null) 
+	break;
+
+      QueueJobInfo info = null;
+      timer.aquire();
+      synchronized(pJobInfo) {
+	timer.resume();
+	info = pJobInfo.get(jobID);
+      }
+
+      if(info != null) {
+	switch(info.getState()) {
+	case Running:
+	  {
+	    String hostname = info.getHostname();
+
+	    info.preempted();
+	    try {
+	      writeJobInfo(info);
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Severe,
+		 ex.getMessage()); 
+	      LogMgr.getInstance().flush();
+	    }
+	  
+	    KillTask task = new KillTask(hostname, jobID);
 	    task.start();
 	  }
 	}
@@ -2106,7 +2578,8 @@ class QueueMgr
 	
 	if(info != null) {
 	  switch(info.getState()) {
-	  case Queued:
+	  case Queued:	     
+	  case Preempted:
 	    {
 	      /* pause waiting jobs marked to be paused */  
 	      if(pPaused.contains(jobID)) {
@@ -2150,8 +2623,9 @@ class QueueMgr
 		  }
 		  
 		  if(sinfo != null) {
-		    switch(sinfo.getState()) {
+		    switch(sinfo.getState()) {	   
 		    case Queued:
+		    case Preempted:
 		    case Paused:
 		    case Running:
 		      waiting.add(jobID);
@@ -2273,8 +2747,24 @@ class QueueMgr
 			  ActionAgenda jagenda = job.getActionAgenda();
 			  String author = jagenda.getNodeID().getAuthor();
 			  JobReqs jreqs = job.getJobRequirements();
-			  if(jagenda.supportsOsType(host.getOsType())) 
-			    score = host.computeSelectionScore(author, jreqs, keys);
+			  if(jagenda.supportsOsType(host.getOsType()) && 
+			     host.isEligible(author, jreqs)) {
+
+			    if(jreqs.getSelectionKeys().isEmpty()) 
+			      score = 0;
+			    else {
+			      String gname = host.getSelectionGroup();
+			      if(gname != null) {
+				synchronized(pSelectionGroups) {
+				  SelectionGroup sg = pSelectionGroups.get(gname);
+				  if(sg == null) 
+				    score = 0;
+				  else 
+				    score = sg.computeSelectionScore(jreqs, keys);
+				}
+			      }
+			    }
+			  }
 			}
 		      }
 		    
@@ -2364,13 +2854,14 @@ class QueueMgr
 			info = pJobInfo.get(jobID);
 		      }
 		    }
-		    
+
 		    if((job == null) || (info == null)) {
 		      processed.add(jobID);
 		    }
 		    else {
 		      switch(info.getState()) {
 		      case Queued:
+		      case Preempted:
 			/* pause ready jobs marked to be paused */ 
 			if(pPaused.contains(jobID)) {
 			  timer.aquire();
@@ -2444,6 +2935,7 @@ class QueueMgr
 	  else {
 	    switch(info.getState()) {
 	    case Queued:
+	    case Preempted:
 	      /* pause ready jobs marked to be paused */ 
 	      if(pPaused.contains(jobID)) {
 		info.paused();
@@ -2496,6 +2988,7 @@ class QueueMgr
 	    if(info != null) {
 	      switch(info.getState()) {
 	      case Queued:
+	      case Preempted:
 	      case Paused:
 	      case Running:
 		done = false;
@@ -3039,6 +3532,218 @@ class QueueMgr
 	
 	for(SelectionKey key : keys) 
 	  pSelectionKeys.put(key.getName(), key);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the selection groups to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the selection groups file.
+   */ 
+  private void 
+  writeSelectionGroups() 
+    throws PipelineException
+  {
+    synchronized(pSelectionGroups) {
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/selection-groups");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old selection groups file (" + file + ")!");
+      }
+      
+      if(!pSelectionGroups.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Selection Groups.");
+
+	try {
+	  String glue = null;
+	  try {
+	    ArrayList<SelectionGroup> groups = 
+	      new ArrayList<SelectionGroup>(pSelectionGroups.values());
+	    GlueEncoder ge = new GlueEncoderImpl("SelectionGroups", groups);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the selection groups!");
+	    LogMgr.getInstance().flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the selection groups file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the selection groups from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the selection groups file.
+   */ 
+  private void 
+  readSelectionGroups() 
+    throws PipelineException
+  {
+    synchronized(pSelectionGroups) {
+      pSelectionGroups.clear();
+
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/selection-groups");
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Selection Groups.");
+
+	ArrayList<SelectionGroup> groups = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  groups = (ArrayList<SelectionGroup>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The selection groups file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+	  LogMgr.getInstance().flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the selection groups file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+	assert(groups != null);
+	
+	for(SelectionGroup key : groups) 
+	  pSelectionGroups.put(key.getName(), key);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the selection schedules to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the selection schedules file.
+   */ 
+  private void 
+  writeSelectionSchedules() 
+    throws PipelineException
+  {
+    synchronized(pSelectionSchedules) {
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/selection-schedules");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old selection schedules file (" + file + ")!");
+      }
+      
+      if(!pSelectionSchedules.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Selection Schedules.");
+
+	try {
+	  String glue = null;
+	  try {
+	    ArrayList<SelectionSchedule> schedules = 
+	      new ArrayList<SelectionSchedule>(pSelectionSchedules.values());
+	    GlueEncoder ge = new GlueEncoderImpl("SelectionSchedules", schedules);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the selection schedules!");
+	    LogMgr.getInstance().flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the selection schedules file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the selection schedules from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the selection schedules file.
+   */ 
+  private void 
+  readSelectionSchedules() 
+    throws PipelineException
+  {
+    synchronized(pSelectionSchedules) {
+      pSelectionSchedules.clear();
+
+      File file = new File(PackageInfo.sQueueDir, "queue/etc/selection-schedules");
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Selection Schedules.");
+
+	ArrayList<SelectionSchedule> schedules = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  schedules = (ArrayList<SelectionSchedule>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The selection schedules file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+	  LogMgr.getInstance().flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the selection schedules file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+	assert(schedules != null);
+	
+	for(SelectionSchedule key : schedules) 
+	  pSelectionSchedules.put(key.getName(), key);
       }
     }
   }
@@ -3954,10 +4659,18 @@ class QueueMgr
       }
 
       /* update job information */ 
+      boolean preempted = false;
       synchronized(pJobInfo) {
 	try {
 	  QueueJobInfo info = pJobInfo.get(pJobID);
-	  info.exited(results);
+	  switch(info.getState()) {
+	  case Preempted: 
+	    preempted = true;
+	    break;
+	    
+	  default:
+	    info.exited(results);
+	  }
 	  writeJobInfo(info);
 	}
 	catch (PipelineException ex) {
@@ -3990,6 +4703,29 @@ class QueueMgr
 	  host.cancelHold(pJobID);
 	}
       }      
+
+      /* if the job was preempted, 
+	   clean up the obsolete data files on the jobs server and 
+	   put job back on the list of jobs waiting to be run */ 
+      if(preempted) {
+	JobMgrControlClient client = null;
+	try {
+	  client = new JobMgrControlClient(pHostname);	
+	  client.cleanupPreemptedResources(pJobID);
+
+	  pWaiting.add(pJobID);
+	}
+	catch (Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	     ex.getMessage()); 
+	  LogMgr.getInstance().flush();
+	}
+	finally {
+	  if(client != null)
+	    client.disconnect();
+	}
+      }
     }
 
     private String  pHostname; 
@@ -4014,7 +4750,7 @@ class QueueMgr
       super("QueueMgr:KillTask");
 
       pHostname = hostname; 
-      pJobID = jobID;
+      pJobID    = jobID;
     }
 
     public void 
@@ -4037,8 +4773,8 @@ class QueueMgr
       }
     }
 
-    private String  pHostname; 
-    private long    pJobID; 
+    private String   pHostname; 
+    private long     pJobID; 
   }
 
   /**
@@ -4188,6 +4924,20 @@ class QueueMgr
    */ 
   private TreeMap<String,SelectionKey>  pSelectionKeys; 
 
+  /**
+   * The cached table of selection groups indexed by group name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,SelectionGroup>  pSelectionGroups; 
+
+  /**
+   * The cached table of selection groups indexed by schedule name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,SelectionSchedule>  pSelectionSchedules; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -4214,6 +4964,13 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * The IDs of jobs which should be preempted as soon as possible. 
+   * 
+   * No locking is required.
+   */
+  private ConcurrentLinkedQueue<Long>  pPreemptList;
+  
+  /**
    * The IDs of jobs which should be killed as soon as possible. 
    * 
    * No locking is required.
@@ -4237,8 +4994,8 @@ class QueueMgr
   private ConcurrentLinkedQueue<Long>  pWaiting;
 
   /**
-   * The IDs of the jobs which are ready to be run <P> 
-   * . 
+   * The IDs of the jobs which are ready to be run. <P> 
+   * 
    * If a ready job has any source (upstream) jobs, they all must have a JobState of 
    * Finished before the job will be added to this table. <P> 
    * 

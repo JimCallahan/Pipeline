@@ -324,23 +324,43 @@
 
 
 
-  <!--  D S P   B U T T O N  -->
+  <!--  S T A T   B U T T O N  -->
 
-  <style id="DspButton"> 
+  <style id="StatButton"> 
     <state>
-      <imagePainter path="DspButton.png"
+      <imagePainter path="StatButton.png"
                     sourceInsets="0 0 0 0"/>
     </state>
     <state value="PRESSED">
-      <imagePainter path="DspButtonPressed.png"
+      <imagePainter path="StatButtonPressed.png"
                     sourceInsets="0 0 0 0"/>
     </state>
     <state value="SELECTED">
-      <imagePainter path="DspButtonSelected.png"
+      <imagePainter path="StatButtonSelected.png"
                     sourceInsets="0 0 0 0"/>
     </state>
   </style>
-  <bind style="DspButton" type="name" key="DspButton"/>
+  <bind style="StatButton" type="name" key="StatButton"/>
+
+
+
+  <!--  S E L   B U T T O N  -->
+
+  <style id="SelButton"> 
+    <state>
+      <imagePainter path="SelButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="SelButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="SelButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="SelButton" type="name" key="SelButton"/>
 
 
 
@@ -364,23 +384,23 @@
 
 
 
-  <!--  K E Y   B U T T O N  -->
+  <!--  D S P   B U T T O N  -->
 
-  <style id="KeyButton"> 
+  <style id="DspButton"> 
     <state>
-      <imagePainter path="KeyButton.png"
+      <imagePainter path="DspButton.png"
                     sourceInsets="0 0 0 0"/>
     </state>
     <state value="PRESSED">
-      <imagePainter path="KeyButtonPressed.png"
+      <imagePainter path="DspButtonPressed.png"
                     sourceInsets="0 0 0 0"/>
     </state>
     <state value="SELECTED">
-      <imagePainter path="KeyButtonSelected.png"
+      <imagePainter path="DspButtonSelected.png"
                     sourceInsets="0 0 0 0"/>
     </state>
   </style>
-  <bind style="KeyButton" type="name" key="KeyButton"/>
+  <bind style="DspButton" type="name" key="DspButton"/>
 
 
 
@@ -878,6 +898,30 @@
 
 
 
+  <!--  P R E E M P T   C H E C K  -->
+
+  <style id="PreemptCheck">
+    <state>
+      <imageIcon id="PreemptUncheckedIcon" path="PreemptCheckIcon.png"/>
+      <property key="CheckBox.icon" value="PreemptUncheckedIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="PreemptCheckedIcon" path="PreemptCheckSelectedIcon.png"/>
+      <property key="CheckBox.icon" value="PreemptCheckedIcon"/>   	
+    </state>
+    <state value="DISABLED">
+      <imageIcon id="PreemptCheckedIconDisabled" path="PreemptCheckDisabledIcon.png"/>
+      <property key="CheckBox.icon" value="PreemptCheckedIconDisabled"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="PreemptCheck" type="name" key="PreemptCheck"/>
+
+
+
   <!--  T E X T   F I E L D  -->
 
   <style id="TextField">
@@ -916,7 +960,7 @@
   <style id="GreenEditableTextField">
     <state value="SELECTED">
        <color value="#ffff00" type="TEXT_FOREGROUND"/>
-       <color value="#727272" type="TEXT_BACKGROUND"/>
+       <color value="#006d00" type="TEXT_BACKGROUND"/>
     </state>
     <state value="DISABLED"> 
       <imagePainter path="GreenValuePanel.png"
@@ -936,7 +980,7 @@
   <style id="PurpleEditableTextField">
     <state value="SELECTED">
        <color value="#ffff00" type="TEXT_FOREGROUND"/>
-       <color value="#727272" type="TEXT_BACKGROUND"/>
+       <color value="#7c0074" type="TEXT_BACKGROUND"/>
     </state>
     <state value="DISABLED"> 
       <imagePainter path="PurpleValuePanel.png"

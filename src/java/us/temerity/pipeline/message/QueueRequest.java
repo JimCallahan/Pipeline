@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.14 2005/10/30 10:01:32 jim Exp $
+// $Id: QueueRequest.java,v 1.15 2005/12/31 20:42:59 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -85,6 +85,62 @@ enum QueueRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the names of all existing selection groups. 
+   */ 
+  GetSelectionGroupNames, 
+
+  /**
+   * Get the current selection biases for all existing selection groups. 
+   */ 
+  GetSelectionGroups, 
+
+  /**
+   * An instance {@link QueueAddSelectionGroupReq QueueAddSelectionGroupReq} is next.
+   */
+  AddSelectionGroup, 
+
+  /**
+   * An instance {@link QueueRemoveSelectionGroupsReq QueueRemoveSelectionGroupsReq} is next.
+   */
+  RemoveSelectionGroups, 
+
+  /**
+   * An instance {@link QueueEditSelectionGroupsReq QueueEditSelectionGroupsReq} is next.
+   */
+  EditSelectionGroups, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all existing selection schedules. 
+   */ 
+  GetSelectionScheduleNames, 
+
+  /**
+   * Get the existing selection schedules. 
+   */ 
+  GetSelectionSchedules, 
+
+  /**
+   * An instance {@link QueueAddSelectionScheduleReq QueueAddSelectionScheduleReq} is next.
+   */
+  AddSelectionSchedule, 
+
+  /**
+   * An instance {@link QueueRemoveSelectionSchedulesReq QueueRemoveSelectionSchedulesReq} is next.
+   */
+  RemoveSelectionSchedules, 
+
+  /**
+   * An instance {@link QueueEditSelectionSchedulesReq QueueEditSelectionSchedulesReq} is next.
+   */
+  EditSelectionSchedules, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the current state of the hosts capable of executing jobs for the Pipeline queue.
    */ 
   GetHosts, 
@@ -148,6 +204,11 @@ enum QueueRequest
    * An instance {@link QueueSubmitJobsReq QueueSubmitJobsReq} is next.
    */
   SubmitJobs, 
+
+  /**
+   * An instance {@link QueuePreemptJobsReq QueuePreemptJobsReq} is next.
+   */
+  PreemptJobs, 
 
   /**
    * An instance {@link QueueKillJobsReq QueueKillJobsReq} is next.

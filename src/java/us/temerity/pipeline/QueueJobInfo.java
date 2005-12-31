@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.9 2005/11/03 22:02:14 jim Exp $
+// $Id: QueueJobInfo.java,v 1.10 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -201,6 +201,24 @@ class QueueJobInfo
   }
   
   /**
+   * Records that the job was aborted, but then resubmitted. 
+   */ 
+  public synchronized void 
+  preempted() 
+  {
+    pSubmittedStamp = new Date();
+
+    // RECORD TIMING AND OTHER STATS FOR PREEMPTED JOB BEFORE RESETING 
+    // AS IF NEWLY QUEUED... 
+
+    pHostname = null;
+    pStartedStamp = null;
+    pOsType = null;
+
+    pState = JobState.Preempted;
+  }
+
+  /**
    * Records that the job was aborted (cancelled) before it could be assigned to a 
    * host for execution.
    */ 
@@ -224,9 +242,10 @@ class QueueJobInfo
   ) 
   {
     pResults = results; 
-
+    
     pCompletedStamp = new Date();
-
+    
+    assert(pState != JobState.Preempted);
     if((pResults != null) && (pResults.getExitCode() == BaseSubProcess.SUCCESS))
       pState = JobState.Finished;
     else 

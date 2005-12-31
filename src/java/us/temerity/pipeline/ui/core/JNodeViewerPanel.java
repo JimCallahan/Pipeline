@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.41 2005/11/03 15:47:52 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.42 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -344,6 +344,12 @@ class JNodeViewerPanel
 	item = new JMenuItem("Resume Jobs");
 	pResumeJobsItem = item;
 	item.setActionCommand("resume-jobs");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+
+	item = new JMenuItem("Preempt Jobs");
+	pPreemptJobsItem = item;
+	item.setActionCommand("preempt-jobs");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
@@ -895,6 +901,9 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pResumeJobsItem, prefs.getResumeJobs(), 
        "Resume execution of all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pPreemptJobsItem, prefs.getPreemptJobs(), 
+       "Preempt all jobs associated with the selected nodes.");
     updateMenuToolTip
       (pKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected nodes.");
@@ -2567,6 +2576,8 @@ class JNodeViewerPanel
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
       doResumeJobs();
+    else if(cmd.equals("preempt-jobs"))
+      doPreemptJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
 
@@ -3415,6 +3426,43 @@ class JNodeViewerPanel
 
     if(!resumed.isEmpty()) {
       ResumeJobsTask task = new ResumeJobsTask(resumed);
+      task.start();
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Preempt all jobs associated with the selected nodes.
+   */ 
+  private void 
+  doPreemptJobs() 
+  {
+    TreeSet<Long> dead = new TreeSet<Long>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    assert(jobIDs[wk] != null);
+	    dead.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!dead.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(dead);
       task.start();
     }
 
@@ -4800,6 +4848,34 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Preempt the given jobs.
+   */ 
+  private
+  class PreemptJobsTask
+    extends UIMaster.PreemptJobsTask
+  {
+    public 
+    PreemptJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeViewerPanel:PreemptJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    protected void
+    postOp() 
+    {
+      updateRoots();
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -5331,7 +5407,8 @@ class JNodeViewerPanel
       TreeMap<Long,JobStatus> jobStatus = null; 
       TreeMap<Long,QueueJobInfo> jobInfo = null;
       TreeMap<String,QueueHost> hosts = null;
-      TreeMap<String,String> keys = null;
+      TreeSet<String> selectionGroups = null;
+      TreeSet<String> selectionSchedules = null;
       
       if(pStatus != null) {
 	{
@@ -5412,9 +5489,8 @@ class JNodeViewerPanel
 	      jobInfo   = client.getRunningJobInfo();
 	      hosts     = client.getHosts(); 
 
-	      keys = new TreeMap<String,String>();
-	      for(SelectionKey key : client.getSelectionKeys()) 
-		keys.put(key.getName(), key.getDescription());
+	      selectionGroups    = client.getSelectionGroupNames();
+	      selectionSchedules = client.getSelectionScheduleNames();
 	    }
 	    catch(PipelineException ex) {
 	      master.showErrorDialog(ex);
@@ -5430,7 +5506,7 @@ class JNodeViewerPanel
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
 					 offline, novelty, links, history, 
 					 pUpdateJobs, jobGroups, jobStatus, jobInfo, 
-					 hosts, keys);
+					 hosts, selectionGroups, selectionSchedules);
       SwingUtilities.invokeLater(task);
     }
     
@@ -5464,7 +5540,8 @@ class JNodeViewerPanel
      TreeMap<Long,JobStatus> jobStatus,
      TreeMap<Long,QueueJobInfo> jobInfo, 
      TreeMap<String,QueueHost> hosts, 
-     TreeMap<String,String> keys
+     TreeSet<String> selectionGroups, 
+     TreeSet<String> selectionSchedules
     )
     {      
       super("JNodeViewerPanel:UpdateSubPanelComponentsTask");
@@ -5485,7 +5562,9 @@ class JNodeViewerPanel
       pJobStatus  = jobStatus;
       pJobInfo    = jobInfo;
       pHosts      = hosts; 
-      pKeys       = keys;
+
+      pSelectionGroups    = selectionGroups; 
+      pSelectionSchedules = selectionSchedules; 
     }
 
     public void 
@@ -5537,7 +5616,8 @@ class JNodeViewerPanel
 	JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateJobs(pAuthor, pView, 
-			   pJobGroups, pJobStatus, pJobInfo, pHosts, pKeys);
+			   pJobGroups, pJobStatus, pJobInfo, pHosts, 
+			   pSelectionGroups, pSelectionSchedules);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -5559,7 +5639,9 @@ class JNodeViewerPanel
     private TreeMap<Long,JobStatus>      pJobStatus; 
     private TreeMap<Long,QueueJobInfo>   pJobInfo; 
     private TreeMap<String,QueueHost>    pHosts;
-    private TreeMap<String,String>       pKeys;
+
+    private TreeSet<String>  pSelectionGroups; 
+    private TreeSet<String>  pSelectionSchedules;
   }
 
 
@@ -5725,6 +5807,7 @@ class JNodeViewerPanel
   private JMenuItem  pQueueJobsSpecialItem;
   private JMenuItem  pPauseJobsItem;
   private JMenuItem  pResumeJobsItem;
+  private JMenuItem  pPreemptJobsItem;
   private JMenuItem  pKillJobsItem;
   private JMenuItem  pCheckInItem;
   private JMenuItem  pEvolveItem;

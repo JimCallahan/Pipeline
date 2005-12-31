@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.20 2005/11/03 22:02:14 jim Exp $
+// $Id: JobMgrServer.java,v 1.21 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -340,6 +340,15 @@ class JobMgrServer
 	      {
 		JobCleanupResourcesReq req = (JobCleanupResourcesReq) objIn.readObject();
 		objOut.writeObject(pJobMgr.cleanupResources(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CleanupPreemptedResources:
+	      {
+		JobCleanupPreemptedResourcesReq req = 
+		  (JobCleanupPreemptedResourcesReq) objIn.readObject();
+		objOut.writeObject(pJobMgr.cleanupPreemptedResources(req));
 		objOut.flush(); 
 	      }
 	      break;

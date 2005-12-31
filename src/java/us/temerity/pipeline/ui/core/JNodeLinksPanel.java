@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.10 2005/10/17 06:23:39 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.11 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -145,6 +145,12 @@ class JNodeLinksPanel
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
+	item = new JMenuItem("Preempt Jobs");
+	pPreemptJobsItem = item;
+	item.setActionCommand("preempt-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
 	item = new JMenuItem("Kill Jobs");
 	pKillJobsItem = item;
 	item.setActionCommand("kill-jobs");
@@ -887,6 +893,9 @@ class JNodeLinksPanel
       (pResumeJobsItem, prefs.getResumeJobs(), 
        "Resume execution of all jobs associated with the selected nodes.");
     updateMenuToolTip
+      (pPreemptJobsItem, prefs.getPreemptJobs(), 
+       "Preempt all jobs associated with the selected nodes.");
+    updateMenuToolTip
       (pKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected nodes.");
 
@@ -1081,6 +1090,8 @@ class JNodeLinksPanel
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
       doResumeJobs();
+    else if(cmd.equals("preempt-jobs"))
+      doPreemptJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
 
@@ -1678,6 +1689,42 @@ class JNodeLinksPanel
 
     if(!resumed.isEmpty()) {
       ResumeJobsTask task = new ResumeJobsTask(resumed);
+      task.start();
+    }
+  }
+
+  /**
+   * Preempt all jobs associated with the current node.
+   */ 
+  private void 
+  doPreemptJobs() 
+  {
+    if(pIsFrozen) 
+      return;
+
+    TreeSet<Long> dead = new TreeSet<Long>();
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    assert(jobIDs[wk] != null);
+	    dead.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!dead.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(dead);
       task.start();
     }
   }
@@ -2527,6 +2574,39 @@ class JNodeLinksPanel
   }
 
   /** 
+   * Preempt the given jobs.
+   */ 
+  private
+  class PreemptJobsTask
+    extends UIMaster.PreemptJobsTask
+  {
+    public 
+    PreemptJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeLinksPanel:PreemptJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    protected void
+    postOp() 
+    {
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) 
+	  viewer.updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -2687,6 +2767,7 @@ class JNodeLinksPanel
   private JMenuItem  pQueueJobsSpecialItem;
   private JMenuItem  pPauseJobsItem;
   private JMenuItem  pResumeJobsItem;
+  private JMenuItem  pPreemptJobsItem;
   private JMenuItem  pKillJobsItem;
   private JMenuItem  pRemoveFilesItem;  
 

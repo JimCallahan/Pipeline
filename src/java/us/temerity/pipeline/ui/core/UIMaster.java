@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.33 2005/11/17 23:38:20 jim Exp $
+// $Id: UIMaster.java,v 1.34 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1127,12 +1127,12 @@ class UIMaster
   }
 
   /**
-   * Show the manage selection keys dialog.
+   * Show the manage selection keys, groups and schedules dialog.
    */ 
   public void 
   showManageSelectionKeysDialog()
   {
-    pManageSelectionKeysDialog.updateSelectionKeys();
+    pManageSelectionKeysDialog.updateAll();
     pManageSelectionKeysDialog.setVisible(true);
   }
 
@@ -2006,10 +2006,10 @@ class UIMaster
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
 
-	pManageUsersDialog           = new JManageUsersDialog();
-	pManageToolsetsDialog        = new JManageToolsetsDialog();
-	pManageLicenseKeysDialog     = new JManageLicenseKeysDialog();
-	pManageSelectionKeysDialog   = new JManageSelectionKeysDialog();
+	pManageUsersDialog         = new JManageUsersDialog();
+	pManageToolsetsDialog      = new JManageToolsetsDialog();
+	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
+	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog();
 	
@@ -2478,6 +2478,7 @@ class UIMaster
 	}
 
 	pResourceUsageHistoryDialog.updateUserPrefs();
+	pManageSelectionKeysDialog.updateUserPrefs();
 
 	{
 	  ToolTipManager mgr = ToolTipManager.sharedInstance();
@@ -2900,6 +2901,49 @@ class UIMaster
       if(master.beginPanelOp("Resuming Paused Jobs...")) {
 	try {
 	  master.getQueueMgrClient().resumeJobs(pAuthorName, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Preempt the given jobs.
+   */ 
+  public
+  class PreemptJobsTask
+    extends BaseNodeTask
+  {
+    public 
+    PreemptJobsTask
+    (
+     TreeSet<Long> jobIDs,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:PreemptJobsTask", author, view);
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Preempting Jobs...")) {
+	try {
+	  master.getQueueMgrClient().preemptJobs(pAuthorName, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3361,7 +3405,7 @@ class UIMaster
   private JManageLicenseKeysDialog  pManageLicenseKeysDialog;
 
   /**
-   * The manage selection keys dialog.
+   * The manage selection keys, groups and schedules dialog.
    */ 
   private JManageSelectionKeysDialog  pManageSelectionKeysDialog;
 

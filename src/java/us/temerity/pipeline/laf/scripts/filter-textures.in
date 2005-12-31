@@ -414,14 +414,14 @@ done
 
 
 
-#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------
 #   J O B   I C O N S
-#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------
 
 frame=0
 for mode in Normal Selected Primary
 do
-  for qstate in Queued Running Aborted Failed Finished Paused Undefined
+  for qstate in Queued Preempted Running Aborted Failed Finished Paused Undefined
   do
     simg=`printf "%s/JobIcons.%04d.sgi" $src $frame`
     dir=`echo $dest/Job-$qstate-$mode`
@@ -456,7 +456,7 @@ done
 
 for mode in Normal Selected Primary
 do
-  for qstate in Queued Running Aborted Failed Finished Paused
+  for qstate in Queued Preempted Running Aborted Failed Finished Paused
   do
     simg=`printf "%s/JobIcons.%04d.sgi" $src $frame`
     dir=`echo $dest/ExternalJob-$qstate-$mode`

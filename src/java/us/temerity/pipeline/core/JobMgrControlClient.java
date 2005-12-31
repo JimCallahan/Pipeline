@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.17 2005/11/03 22:02:14 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.18 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -280,6 +280,30 @@ class JobMgrControlClient
     JobCleanupResourcesReq req = new JobCleanupResourcesReq(jobIDs);
     
     Object obj = performTransaction(JobRequest.CleanupResources, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Clean up the resources associated with a preempted job. <P> 
+   * 
+   * @param jobID
+   *   The ID of the preempted job. 
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the cleanup.
+   */ 
+  public synchronized void
+  cleanupPreemptedResources
+  (
+   long jobID
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    JobCleanupPreemptedResourcesReq req = new JobCleanupPreemptedResourcesReq(jobID);
+    
+    Object obj = performTransaction(JobRequest.CleanupPreemptedResources, req); 
     handleSimpleResponse(obj);    
   }
 

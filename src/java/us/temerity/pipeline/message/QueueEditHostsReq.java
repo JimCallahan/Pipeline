@@ -1,4 +1,4 @@
-// $Id: QueueEditHostsReq.java,v 1.2 2005/03/04 09:17:58 jim Exp $
+// $Id: QueueEditHostsReq.java,v 1.3 2005/12/31 20:42:59 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,8 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to change the status, user reservations, job slots and/or selection key biases
-   * of the given hosts. <P> 
+ * A request to change the editable properties of the given hosts. <P> 
  */
 public
 class QueueEditHostsReq
@@ -39,8 +38,11 @@ class QueueEditHostsReq
    * @param slots 
    *   The number of job slots indexed by fully resolved names of the hosts.
    * 
-   * @param biases
-   *   The selection key biases indexed by fully resolved host name and selection key name.
+   * @param groups
+   *   The names of the selection groups indexed by fully resolved names of the hosts.
+   * 
+   * @param schedules
+   *   The names of the selection schedules indexed by fully resolved names of the hosts.
    */
   public
   QueueEditHostsReq
@@ -49,14 +51,16 @@ class QueueEditHostsReq
    TreeMap<String,String> reservations, 
    TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
-   TreeMap<String,TreeMap<String,Integer>> biases
+   TreeMap<String,String> groups,
+   TreeMap<String,String> schedules
   )
   { 
     pStatus       = status;
     pReservations = reservations;
     pJobOrders    = orders;
     pJobSlots     = slots; 
-    pBiases       = biases; 
+    pGroups       = groups; 
+    pSchedules    = schedules;
   }
 
 
@@ -102,13 +106,23 @@ class QueueEditHostsReq
   }
 
   /**
-   * Gets the selection key biases indexed by fully resolved host name and selection key name.
+   * Gets the names of the selection groups indexed by fully resolved names of the hosts.
    */
-  public TreeMap<String,TreeMap<String,Integer>>
-  getBiases() 
+  public TreeMap<String,String>
+  getSelectionGroups() 
   {
-    return pBiases;
+    return pGroups;
   }
+
+  /**
+   * Gets the names of the selection schedules indexed by fully resolved names of the hosts.
+   */
+  public TreeMap<String,String>
+  getSelectionSchedules() 
+  {
+    return pSchedules;
+  }
+
 
   
 
@@ -145,9 +159,14 @@ class QueueEditHostsReq
   private TreeMap<String,Integer>  pJobSlots;
 
   /**
-   * The selection key biases indexed by fully resolved host name and selection key name.
+   * The names of the selection groups indexed by fully resolved names of the hosts.
    */ 
-  private TreeMap<String,TreeMap<String,Integer>>  pBiases;
+  private TreeMap<String,String>  pGroups;
+
+  /**
+   * The names of the selection schedules indexed by fully resolved names of the hosts.
+   */ 
+  private TreeMap<String,String>  pSchedules;
 
 }
   

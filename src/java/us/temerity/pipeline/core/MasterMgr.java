@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.146 2005/12/30 23:28:44 jim Exp $
+// $Id: MasterMgr.java,v 1.147 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5667,6 +5667,7 @@ class MasterMgr
 	    if((state != null) && (jobID != null)) {
 	      switch(state) {
 	      case Queued:
+	      case Preempted:
 	      case Paused:
 	      case Running:
 		activeIDs.add(jobID);
@@ -5685,6 +5686,7 @@ class MasterMgr
 	    if((state != null) && (jobID != null)) {
 	      switch(state) {
 	      case Queued:
+	      case Preempted:
 	      case Paused:
 	      case Running:
 		activeIDs.add(jobID);
@@ -8536,7 +8538,8 @@ class MasterMgr
    * Get the IDs of all active jobs associated with the given working version. <P> 
    * 
    * A job is considered active if it is {@link JobState#Queued Queued}, 
-   * {@link JobState#Paused Paused} or {@link JobState#Running Running}.
+   * {@link JobState#Preempted Preempted}, {@link JobState#Paused Paused} or 
+   * {@link JobState#Running Running}.
    * 
    * @param nodeID
    *   The unique working version identifier. 
@@ -8568,7 +8571,8 @@ class MasterMgr
       Long jobID = jobIDs.get(wk);
       if((state != null) && (jobID != null)) {
 	switch(state) {
-	case Queued:
+	case Queued:     
+	case Preempted:
 	case Paused:
 	case Running:
 	  return true;
@@ -8585,7 +8589,8 @@ class MasterMgr
    * Kill any active jobs associated with the given working version. <P> 
    * 
    * A job is considered active if it is {@link JobState#Queued Queued}, 
-   * {@link JobState#Paused Paused} or {@link JobState#Running Running}.
+   * {@link JobState#Preempted Preempted}, {@link JobState#Paused Paused} or 
+   * {@link JobState#Running Running}.
    * 
    * @param nodeID
    *   The unique working version identifier. 
@@ -8619,6 +8624,7 @@ class MasterMgr
       if((state != null) && (jobID != null)) {
 	switch(state) {
 	case Queued:
+	case Preempted:
 	case Paused:
 	case Running:
 	  activeIDs.add(jobID);
@@ -11954,6 +11960,7 @@ class MasterMgr
 	      if(js[wk] != null) {
 		switch(js[wk]) {
 		case Queued:
+		case Preempted:
 		  queueStates[wk] = QueueState.Queued;
 		  break;
 

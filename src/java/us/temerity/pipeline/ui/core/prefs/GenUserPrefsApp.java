@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -118,7 +118,7 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Manage the selection keys.", 
-	 "ShowManageSelectionKeys", "Selection Keys:")
+	 "ShowManageSelectionKeys", "Selection Keys:"),
       };
 
       pPrefs.put("Main Menu|Admin|Hot Keys", prefs);
@@ -599,6 +599,10 @@ class GenUserPrefsApp
 	 false, false, false, 61),  /* Equals */ 
 
 	new HotKeyPref
+	("Preempt all jobs associated with the selected nodes.",
+	 "PreemptJobs", "Preempt Jobs:"), 
+
+	new HotKeyPref
 	("Kill all jobs associated with the selected nodes.",
 	 "KillJobs", "Kill Jobs:", 
 	 false, false, false, 8),  /* Backspace */ 
@@ -885,6 +889,10 @@ class GenUserPrefsApp
 	 "NodeDetailsResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt all jobs associated with the current node.",
+	 "NodeDetailsPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
 	 "NodeDetailsKillJobs", "Kill Jobs:", "KillJobs"), 
 
@@ -932,6 +940,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Resume execution of all jobs associated with the current node.",
 	 "NodeFilesResumeJobs", "Resume Jobs:", "ResumeJobs"), 
+
+	new DuplicateHotKeyPref
+	("Preempt all jobs associated with the current node.",
+	 "NodeFilesPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
 
 	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
@@ -983,6 +995,10 @@ class GenUserPrefsApp
 	 "NodeLinksResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt all jobs associated with the current node.",
+	 "NodeLinksPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
 	 "NodeLinksKillJobs", "Kill Jobs:", "KillJobs"), 
 
@@ -1026,6 +1042,10 @@ class GenUserPrefsApp
 	 "NodeHistoryResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
 	new DuplicateHotKeyPref
+	("Preempt all jobs associated with the current node.",
+	 "NodeHistoryPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
 	 "NodeHistoryKillJobs", "Kill Jobs:", "KillJobs"), 
 
@@ -1065,10 +1085,13 @@ class GenUserPrefsApp
 	
 	new BasePref(),
 	
-	new HotKeyPref
+	new DuplicateHotKeyPref
+	("Preempt the jobs running on the selected job server slots.", 
+	 "JobBrowserSlotsPreemptJobs", "Preempt Slot Jobs:", "PreemptJobs"), 
+	
+	new DuplicateHotKeyPref
 	("Kill the jobs running on the selected job server slots.", 
-	 "JobBrowserSlotsKillJobs", "Kill Slot Jobs:", 
-	 false, false, false, 8),  /* Backspace */
+	 "JobBrowserSlotsKillJobs", "Kill Slot Jobs:", "KillJobs"), 
 	
 	new BasePref(),
 
@@ -1106,6 +1129,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Resume execution of all jobs associated with the selected groups.",
 	 "JobBrowserGroupsResumeJobs", "Resume Jobs:", "ResumeJobs"), 
+
+	new DuplicateHotKeyPref
+	("Preempt all jobs associated with the selected groups.",
+	 "JobBrowserGroupsPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
 
 	new DuplicateHotKeyPref
 	("Kill all jobs associated with the selected groups.",
@@ -1158,6 +1185,10 @@ class GenUserPrefsApp
 	 "JobResumeJobs", "Resume Jobs:", "ResumeJobs"), 
       
 	new DuplicateHotKeyPref
+	("Preempt all selected jobs.", 
+	 "JobPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
+	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
 	 "JobKillJobs", "Kill Jobs:", "KillJobs"), 
 
@@ -1200,6 +1231,10 @@ class GenUserPrefsApp
 	("Resume execution of all selected jobs.",
 	 "JobGroupResumeJobs", "Resume Jobs:", "ResumeJobs"), 
       
+	new DuplicateHotKeyPref
+	("Preempt all selected jobs.", 
+	 "JobGroupPreemptJobs", "Preempt Jobs:", "PreemptJobs"), 
+
 	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
 	 "JobGroupKillJobs", "Kill Jobs:", "KillJobs"), 
@@ -1457,6 +1492,44 @@ class GenUserPrefsApp
       pPrefs.put("Dialogs|Resource Usage History|Appearance", prefs);
     }
 
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Add a new selection key.", 
+	 "SelectionKeysAdd", "Add Key:"), 
+
+	new HotKeyPref
+	("Remove the selected selection keys.", 
+	 "SelectionKeysRemove", "Remove Key:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Add a new selection group.", 
+	 "SelectionGroupsAdd", "Add Group:"), 
+
+	new HotKeyPref
+	("Remove the selected selection groups.", 
+	 "SelectionGroupsRemove", "Remove Group:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Show the selection schedule details.", 
+	 "SelectionSchedulesDetails", "Schedule Details:"), 
+
+	new HotKeyPref
+	("Add a new selection schedule.", 
+	 "SelectionSchedulesAdd", "Add Schedule:"), 
+
+	new HotKeyPref
+	("Remove the selected selection schedules.", 
+	 "SelectionSchedulesRemove", "Remove Schedule:"), 
+      };
+
+      pPrefs.put("Dialogs|Selection Keys|Hot Keys", prefs);
+    }
+
     /* panel ordering */ 
     {
       pPrefPanels = new LinkedList<String>();
@@ -1497,6 +1570,8 @@ class GenUserPrefsApp
 
       pPrefPanels.add("Dialogs|Resource Usage History|Appearance");
       pPrefPanels.add("Dialogs|Resource Usage History|Hot Keys");
+
+      pPrefPanels.add("Dialogs|Selection Keys|Hot Keys");
     }
 
     /* hot key groups */ 
@@ -1586,6 +1661,7 @@ class GenUserPrefsApp
 	jobs.add("QueueJobsSpecial");
 	jobs.add("PauseJobs");
 	jobs.add("ResumeJobs");
+	jobs.add("PreemptJobs");
 	jobs.add("KillJobs");
       }
       
@@ -1742,6 +1818,7 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(update);
+	group.add("JobBrowserSlotsPreemptJobs");
 	group.add("JobBrowserSlotsKillJobs");
       }
     
@@ -1810,6 +1887,21 @@ class GenUserPrefsApp
 	group.add("Update");
 	group.add("FrameAll");
       }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("SelectionKeys", group);
+      
+	group.add("SelectionKeysAdd");
+	group.add("SelectionKeysRemove");
+
+	group.add("SelectionGroupsAdd");
+	group.add("SelectionGroupsRemove");
+
+	group.add("SelectionSchedulesDetails");
+	group.add("SelectionSchedulesAdd");
+	group.add("SelectionSchedulesRemove");
+      }
     }
   }
 
@@ -1852,7 +1944,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2109,7 +2201,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3465,7 +3557,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.24 2005/10/17 06:23:39 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

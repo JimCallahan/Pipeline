@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.15 2005/06/22 23:59:09 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.16 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -144,6 +144,12 @@ class JQueueJobBrowserPanel
 
 	pSlotsPopup.addSeparator();
 
+	item = new JMenuItem("Preempt Jobs");
+	pSlotsPreemptItem = item;
+	item.setActionCommand("slots-preempt-jobs");
+	item.addActionListener(this);
+	pSlotsPopup.add(item);
+
 	item = new JMenuItem("Kill Jobs");
 	pSlotsKillItem = item;
 	item.setActionCommand("slots-kill-jobs");
@@ -209,6 +215,12 @@ class JQueueJobBrowserPanel
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
 	
+	item = new JMenuItem("Preempt Jobs");
+	pGroupsPreemptItem = item;
+	item.setActionCommand("groups-preempt-jobs");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+	
 	item = new JMenuItem("Kill Jobs");
 	pGroupsKillItem = item;
 	item.setActionCommand("groups-kill-jobs");
@@ -269,8 +281,8 @@ class JQueueJobBrowserPanel
 
 	  {
 	    JToggleButton btn = new JToggleButton();		
-	    pDspButton = btn;
-	    btn.setName("DspButton");
+	    pStatButton = btn;
+	    btn.setName("StatButton");
 	    
 	    Dimension size = new Dimension(30, 10);
 	    btn.setMinimumSize(size);
@@ -278,11 +290,11 @@ class JQueueJobBrowserPanel
 	    btn.setPreferredSize(size);
 	    
 	    btn.setSelected(true);
-	    btn.setActionCommand("toggle-dsp-columns");
+	    btn.setActionCommand("toggle-stat-columns");
 	    btn.addActionListener(this);
 	    
 	    btn.setToolTipText(UIFactory.formatToolTip
-	     ("Toggle display of the Status, Reservation and Order columns."));
+	     ("Toggle display of the Status and OS columns."));
 	    
 	    panel.add(btn);
 	  } 
@@ -335,8 +347,8 @@ class JQueueJobBrowserPanel
 
 	  {
 	    JToggleButton btn = new JToggleButton();		
-	    pKeyButton = btn;
-	    btn.setName("KeyButton");
+	    pDspButton = btn;
+	    btn.setName("DspButton");
 	    
 	    Dimension size = new Dimension(30, 10);
 	    btn.setMinimumSize(size);
@@ -344,11 +356,11 @@ class JQueueJobBrowserPanel
 	    btn.setPreferredSize(size);
 	    
 	    btn.setSelected(true);
-	    btn.setActionCommand("toggle-key-columns");
+	    btn.setActionCommand("toggle-dsp-columns");
 	    btn.addActionListener(this);
 	    
 	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Toggle display of the selection key bias columns."));
+	      ("Toggle display of the Reservation, Order, Group and Schedule columns."));
 	    
 	    panel.add(btn);
 	  } 
@@ -664,7 +676,7 @@ class JQueueJobBrowserPanel
       add(tab);
     } 
  
-    updateJobs(null, null, null, null, null);
+    updateJobs(null, null, null, null, null, null);
   }
 
 
@@ -860,8 +872,11 @@ class JQueueJobBrowserPanel
    * @param hosts
    *   The job server hosts indexex by fully resolved hostnames.
    * 
-   * @param keys
-   *   The valid selection key descriptions indexed by key name.
+   * @param selectionGroups
+   *   The valid selection group names. 
+   * 
+   * @param selectionSchedules
+   *   The valid selection schedule names. 
    */ 
   public synchronized void
   updateJobs
@@ -872,13 +887,14 @@ class JQueueJobBrowserPanel
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo, 
    TreeMap<String,QueueHost> hosts, 
-   TreeMap<String,String> keys
+   TreeSet<String> selectionGroups, 
+   TreeSet<String> selectionSchedules
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateJobs(groups, jobStatus, jobInfo, hosts, keys);
+    updateJobs(groups, jobStatus, jobInfo, hosts, selectionGroups, selectionSchedules);
   }
 
   /**
@@ -896,8 +912,11 @@ class JQueueJobBrowserPanel
    * @param hosts
    *   The job server hosts indexex by fully resolved hostnames.
    * 
-   * @param keys
-   *   The valid selection key descriptions indexed by key name.
+   * @param selectionGroups
+   *   The valid selection group names. 
+   * 
+   * @param selectionSchedules
+   *   The valid selection schedule names. 
    */ 
   public synchronized void
   updateJobs
@@ -906,7 +925,8 @@ class JQueueJobBrowserPanel
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo, 
    TreeMap<String,QueueHost> hosts, 
-   TreeMap<String,String> keys
+   TreeSet<String> selectionGroups, 
+   TreeSet<String> selectionSchedules
   ) 
   {
     /* update the groups and job status */ 
@@ -964,13 +984,14 @@ class JQueueJobBrowserPanel
     }
 
     /* job server panel */ 
-    if((hosts != null) && (keys != null)) {
+    if((hosts != null) && (selectionGroups != null) && (selectionSchedules != null)) {
       pHostnamesTableModel.setHostnames(hosts.keySet());
 
-      TreeSet<String> obsolete = pHostsTableModel.setQueueHosts(hosts, keys, pIsPrivileged);
-      pHostsTablePanel.refilterColumns(obsolete); 
+      pHostsTableModel.setQueueHosts
+	(hosts, selectionGroups, selectionSchedules, pIsPrivileged);
 
       updateHostsHeaderButtons();
+      pHostsTablePanel.tableStructureChanged();  
       pHostsTablePanel.adjustmentValueChanged(null);
 
       pHostsApplyItem.setEnabled(false);
@@ -1042,6 +1063,7 @@ class JQueueJobBrowserPanel
   updateSlotsMenu() 
   {
     boolean selected = (pSlotsTablePanel.getTable().getSelectedRowCount() > 0);
+    pSlotsPreemptItem.setEnabled(selected);
     pSlotsKillItem.setEnabled(selected);
   }
 
@@ -1056,6 +1078,7 @@ class JQueueJobBrowserPanel
     pGroupsQueueSpecialItem.setEnabled(selected); 
     pGroupsPauseItem.setEnabled(selected); 
     pGroupsResumeItem.setEnabled(selected);
+    pGroupsPreemptItem.setEnabled(selected);
     pGroupsKillItem.setEnabled(selected);
 
     switch(pViewFilter) {
@@ -1113,8 +1136,7 @@ class JQueueJobBrowserPanel
     {
       TreeSet<String> cnames = new TreeSet<String>();
       cnames.add("Status");
-      cnames.add("Reservation");
-      cnames.add("Order");
+      cnames.add("OS");
     
       boolean selected = true;
       for(String cname : cnames) {
@@ -1124,7 +1146,7 @@ class JQueueJobBrowserPanel
 	}
       }
       
-      pDspButton.setSelected(selected);
+      pStatButton.setSelected(selected);
     }
 
     {
@@ -1161,21 +1183,21 @@ class JQueueJobBrowserPanel
     }
 
     {
-      TreeSet<String> cnames = pHostsTableModel.getSelectionKeys();
+      TreeSet<String> cnames = new TreeSet<String>();
+      cnames.add("Reservation");
+      cnames.add("Order");
+      cnames.add("Group");
+      cnames.add("Schedule");
 
       boolean selected = true;
-      if(cnames.isEmpty()) 
-	selected = false;
-      else {
-	for(String cname : cnames) {
-	  if(!pHostsTablePanel.isColumnVisible(cname)) {
-	    selected = false;
-	    break;
-	  }
+      for(String cname : cnames) {
+	if(!pHostsTablePanel.isColumnVisible(cname)) {
+	  selected = false;
+	  break;
 	}
       }
 
-      pKeyButton.setSelected(selected);
+      pDspButton.setSelected(selected);
     }
   }
 
@@ -1264,7 +1286,10 @@ class JQueueJobBrowserPanel
       (pSlotsUpdateItem, prefs.getUpdate(),
        "Update the job servers, slots and groups.");
     updateMenuToolTip
-      (pSlotsKillItem, prefs.getJobBrowserSlotsKillJobs(), 
+      (pSlotsPreemptItem, prefs.getPreemptJobs(), 
+       "Preempt all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pSlotsKillItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected groups.");
 
     updateMenuToolTip
@@ -1292,6 +1317,9 @@ class JQueueJobBrowserPanel
     updateMenuToolTip
       (pGroupsResumeItem, prefs.getResumeJobs(), 
        "Resume execution of all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pGroupsPreemptItem, prefs.getPreemptJobs(), 
+       "Preempt all jobs associated with the selected groups.");
     updateMenuToolTip
       (pGroupsKillItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected groups.");
@@ -1429,8 +1457,8 @@ class JQueueJobBrowserPanel
 	break;
 
       case 1:
-	if((prefs.getJobBrowserSlotsKillJobs() != null) &&
-	   prefs.getJobBrowserSlotsKillJobs().wasPressed(e))
+	if((prefs.getKillJobs() != null) &&
+	   prefs.getKillJobs().wasPressed(e))
 	  doSlotsKillJobs();
 	else 
 	  unsupported = true;
@@ -1527,15 +1555,17 @@ class JQueueJobBrowserPanel
     else if(cmd.equals("hosts-remove")) 
       doHostsRemove();
 
-    else if(cmd.equals("toggle-dsp-columns"))
-      doHostsToggleDspColumns();
+    else if(cmd.equals("toggle-stat-columns"))
+      doHostsToggleStatColumns();
     else if(cmd.equals("toggle-dyn-columns"))
       doHostsToggleDynColumns();
     else if(cmd.equals("toggle-job-columns"))
       doHostsToggleJobColumns();
-    else if(cmd.equals("toggle-key-columns"))
-      doHostsToggleKeyColumns();
+    else if(cmd.equals("toggle-dsp-columns"))
+      doHostsToggleDspColumns();
 
+    else if(cmd.equals("slots-preempt-jobs")) 
+      doSlotsPreemptJobs();
     else if(cmd.equals("slots-kill-jobs")) 
       doSlotsKillJobs();
 
@@ -1558,6 +1588,8 @@ class JQueueJobBrowserPanel
       doGroupsPauseJobs();
     else if(cmd.equals("groups-resume-jobs")) 
       doGroupsResumeJobs();
+    else if(cmd.equals("groups-preempt-jobs")) 
+      doGroupsPreemptJobs();
     else if(cmd.equals("groups-kill-jobs")) 
       doGroupsKillJobs();
 
@@ -1673,12 +1705,11 @@ class JQueueJobBrowserPanel
    * Toggle display of the Status, Reservation and Order columns."
    */ 
   public void 
-  doHostsToggleDspColumns()
+  doHostsToggleStatColumns()
   { 
     TreeSet<String> cnames = new TreeSet<String>();
     cnames.add("Status");
-    cnames.add("Reservation");
-    cnames.add("Order");
+    cnames.add("OS");
     
     boolean isVisible = false;
     for(String cname : cnames) {
@@ -1738,9 +1769,13 @@ class JQueueJobBrowserPanel
    * Toggle display of the selection key bias columns.
    */ 
   public void 
-  doHostsToggleKeyColumns()
+  doHostsToggleDspColumns()
   {
-    TreeSet<String> cnames = pHostsTableModel.getSelectionKeys();
+    TreeSet<String> cnames = new TreeSet<String>();
+      cnames.add("Reservation");
+      cnames.add("Order");
+      cnames.add("Group");
+      cnames.add("Schedule");
 
     boolean isVisible = false;
     for(String cname : cnames) {
@@ -1755,6 +1790,35 @@ class JQueueJobBrowserPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Preempt the jobs running on the selected job server slots.
+   */ 
+  public void 
+  doSlotsPreemptJobs()
+  {
+    TreeMap<String,TreeSet<Long>> jobs = new TreeMap<String,TreeSet<Long>>();
+    for(Long jobID : getSelectedSlotJobIDs()) {
+      JobStatus status = pJobStatus.get(jobID);
+      String author = null;
+      if(status != null) 
+	author = status.getNodeID().getAuthor();
+      
+      if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+	TreeSet<Long> dead = jobs.get(author);
+	if(dead == null) {
+	  dead = new TreeSet<Long>();
+	  jobs.put(author, dead);
+	}
+	dead.add(jobID);
+      }
+    }
+
+    if(!jobs.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(jobs);
+      task.start();
+    }
+  }
 
   /**
    * Kill the jobs running on the selected job server slots.
@@ -1947,6 +2011,7 @@ class JQueueJobBrowserPanel
 	  if(status != null) {
 	    switch(status.getState()) {
 	    case Queued:
+	    case Preempted:
 	      author = status.getNodeID().getAuthor();
 	    }
 	  }
@@ -2008,6 +2073,47 @@ class JQueueJobBrowserPanel
   }
 
   /**
+   * Preempt all jobs associated with the selected groups.
+   */ 
+  public void 
+  doGroupsPreemptJobs()
+  {
+    TreeMap<String,TreeSet<Long>> jobs = new TreeMap<String,TreeSet<Long>>();
+    for(Long groupID : getSelectedGroupIDs()) {
+      QueueJobGroup group = pJobGroups.get(groupID);
+      if(group != null) {
+	for(Long jobID : group.getJobIDs()) {
+	  JobStatus status = pJobStatus.get(jobID);
+	  String author = null;
+	  if(status != null) {
+	    switch(status.getState()) {
+	    case Paused:
+	    case Queued:
+	    case Preempted:
+	    case Running:
+	      author = status.getNodeID().getAuthor();
+	    }
+	  }
+      
+	  if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+	    TreeSet<Long> dead = jobs.get(author);
+	    if(dead == null) {
+	      dead = new TreeSet<Long>();
+	      jobs.put(author, dead);
+	    }
+	    dead.add(jobID);
+	  }
+	}
+      }
+    }
+
+    if(!jobs.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(jobs);
+      task.start();
+    }
+  }
+
+  /**
    * Kill all jobs associated with the selected groups.
    */ 
   public void 
@@ -2024,6 +2130,7 @@ class JQueueJobBrowserPanel
 	    switch(status.getState()) {
 	    case Paused:
 	    case Queued:
+	    case Preempted:
 	    case Running:
 	      author = status.getNodeID().getAuthor();
 	    }
@@ -2530,7 +2637,8 @@ class JQueueJobBrowserPanel
       TreeMap<Long,JobStatus> jobStatus = null;
       TreeMap<Long,QueueJobInfo> jobInfo = null;
       TreeMap<String,QueueHost> hosts = null;
-      TreeMap<String,String> keys = null;
+      TreeSet<String> selectionGroups = null;
+      TreeSet<String> selectionSchedules = null;
 
       if(master.beginPanelOp("Updating...")) {
 	try {
@@ -2543,9 +2651,8 @@ class JQueueJobBrowserPanel
 	  jobInfo   = client.getRunningJobInfo();
 	  hosts     = client.getHosts(); 
 
-	  keys = new TreeMap<String,String>();
-	  for(SelectionKey key : client.getSelectionKeys()) 
-	    keys.put(key.getName(), key.getDescription());
+	  selectionGroups    = client.getSelectionGroupNames();
+	  selectionSchedules = client.getSelectionScheduleNames();
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2555,7 +2662,8 @@ class JQueueJobBrowserPanel
 	}
       }
 	
-      UpdateTask task = new UpdateTask(groups, jobStatus, jobInfo, hosts, keys);
+      UpdateTask task = new UpdateTask(groups, jobStatus, jobInfo, 
+				       hosts, selectionGroups, selectionSchedules); 
       SwingUtilities.invokeLater(task);
     }
   }
@@ -2574,7 +2682,8 @@ class JQueueJobBrowserPanel
      TreeMap<Long,JobStatus> jobStatus, 
      TreeMap<Long,QueueJobInfo> jobInfo, 
      TreeMap<String,QueueHost> hosts, 
-     TreeMap<String,String> keys
+     TreeSet<String> selectionGroups, 
+     TreeSet<String> selectionSchedules
     ) 
     {
       super("JQueueJobBrowserPanel:UpdateTask");
@@ -2583,7 +2692,9 @@ class JQueueJobBrowserPanel
       pStatus = jobStatus; 
       pInfo   = jobInfo;
       pHosts  = hosts; 
-      pKeys   = keys;
+
+      pSelectionGroups    = selectionGroups; 
+      pSelectionSchedules = selectionSchedules; 
     }
 
     public void 
@@ -2601,16 +2712,18 @@ class JQueueJobBrowserPanel
       }
 
       /* update the panels */ 
-      updateJobs(pGroups, pStatus, pInfo, pHosts, pKeys);
+      updateJobs(pGroups, pStatus, pInfo, pHosts, pSelectionGroups, pSelectionSchedules);
     }
     
     private TreeMap<Long,QueueJobGroup>  pGroups; 
     private TreeMap<Long,JobStatus>      pStatus; 
     private TreeMap<Long,QueueJobInfo>   pInfo; 
     private TreeMap<String,QueueHost>    pHosts;
-    private TreeMap<String,String>       pKeys;
-  }
 
+    private TreeSet<String>  pSelectionGroups; 
+    private TreeSet<String>  pSelectionSchedules;
+  }
+  
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -2709,7 +2822,9 @@ class JQueueJobBrowserPanel
       pReservations = pHostsTableModel.getHostReservations();
       pOrders       = pHostsTableModel.getHostOrders();
       pSlots   	    = pHostsTableModel.getHostSlots(); 
-      pBiases       = pHostsTableModel.getHostBiases(); 
+
+      pSelectionGroups    = pHostsTableModel.getHostSelectionGroups();
+      pSelectionSchedules = pHostsTableModel.getHostSelectionSchedules();
     }
 
     public void 
@@ -2720,7 +2835,8 @@ class JQueueJobBrowserPanel
       if(master.beginPanelOp("Modifying Servers...")) {
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient();
-	  client.editHosts(pStatus, pReservations, pOrders, pSlots, pBiases); 
+	  client.editHosts(pStatus, pReservations, pOrders, pSlots, 
+			   pSelectionGroups, pSelectionSchedules);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2734,11 +2850,12 @@ class JQueueJobBrowserPanel
       task.start();
     }
 
-    private TreeMap<String,QueueHost.Status>         pStatus; 
-    private TreeMap<String,String>                   pReservations; 
-    private TreeMap<String,Integer>                  pOrders;  
-    private TreeMap<String,Integer>                  pSlots;  
-    private TreeMap<String,TreeMap<String,Integer>>  pBiases;       
+    private TreeMap<String,QueueHost.Status>  pStatus; 
+    private TreeMap<String,String>            pReservations; 
+    private TreeMap<String,Integer>           pOrders;  
+    private TreeMap<String,Integer>           pSlots;  
+    private TreeMap<String,String>            pSelectionGroups; 
+    private TreeMap<String,String>            pSelectionSchedules; 
   }
 
   /** 
@@ -2984,6 +3101,50 @@ class JQueueJobBrowserPanel
   }
 
   /** 
+   * Preempt the given jobs.
+   */ 
+  private
+  class PreemptJobsTask
+    extends Thread
+  {
+    public 
+    PreemptJobsTask
+    (
+     TreeMap<String,TreeSet<Long>> jobs
+    ) 
+    {
+      super("JQueueJobsBrowserPanel:PreemptJobsTask");
+
+      pJobs = jobs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Preempting Jobs...")) {
+	try {
+	  for(String author : pJobs.keySet()) {
+	    TreeSet<Long> jobIDs = pJobs.get(author);
+	    master.getQueueMgrClient().preemptJobs(author, jobIDs);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateAll();
+      }
+    }
+
+    private TreeMap<String,TreeSet<Long>>  pJobs; 
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -3200,10 +3361,10 @@ class JQueueJobBrowserPanel
   /** 
    * Column display buttons.
    */ 
-  private JToggleButton  pDspButton;
+  private JToggleButton  pStatButton;
   private JToggleButton  pDynButton;
   private JToggleButton  pJobButton;
-  private JToggleButton  pKeyButton;
+  private JToggleButton  pDspButton;
 
   /**
    * The button used to apply changes to the host properties.
@@ -3250,6 +3411,7 @@ class JQueueJobBrowserPanel
    * The slots popup menu items.
    */ 
   private JMenuItem  pSlotsUpdateItem;
+  private JMenuItem  pSlotsPreemptItem;
   private JMenuItem  pSlotsKillItem;
 
 
@@ -3292,6 +3454,7 @@ class JQueueJobBrowserPanel
   private JMenuItem  pGroupsQueueSpecialItem; 
   private JMenuItem  pGroupsPauseItem; 
   private JMenuItem  pGroupsResumeItem; 
+  private JMenuItem  pGroupsPreemptItem;
   private JMenuItem  pGroupsKillItem;
   private JMenuItem  pGroupsDeleteItem;
   private JMenuItem  pGroupsDeleteCompletedItem;

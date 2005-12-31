@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.25 2005/06/22 23:59:09 jim Exp $
+// $Id: QueueMgrClient.java,v 1.26 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -529,6 +529,275 @@ class QueueMgrClient
   }  
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing selection groups. 
+   * 
+   * @return
+   *   The selection group names. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeSet<String> 
+  getSelectionGroupNames() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetSelectionGroupNames, null);
+    if(obj instanceof QueueGetSelectionGroupNamesRsp) {
+      QueueGetSelectionGroupNamesRsp rsp = (QueueGetSelectionGroupNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the current selection biases for all existing selection groups. 
+   * 
+   * @return
+   *   The selection groups indexed by group name. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeMap<String,SelectionGroup> 
+  getSelectionGroups() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetSelectionGroups, null);
+    if(obj instanceof QueueGetSelectionGroupsRsp) {
+      QueueGetSelectionGroupsRsp rsp = (QueueGetSelectionGroupsRsp) obj;
+      return rsp.getSelectionGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Add a new selection group. <P> 
+   * 
+   * @param gname
+   *   The name of the new selection group. 
+   * 
+   * @throws PipelineException
+   *   If a selection group already exists with the given name. 
+   */ 
+  public synchronized void
+  addSelectionGroup
+  (
+   String gname
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may add selection groups!"); 
+
+    verifyConnection();
+    
+    QueueAddSelectionGroupReq req = new QueueAddSelectionGroupReq(gname);
+    Object obj = performTransaction(QueueRequest.AddSelectionGroup, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the given existing selection group. <P> 
+   * 
+   * @param gnames
+   *   The names of the selection groups. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the selection groups.
+   */ 
+  public synchronized void
+  removeSelectionGroups
+  (
+   TreeSet<String> gnames
+  ) 
+    throws PipelineException 
+  {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may remove selection groups!"); 
+
+    verifyConnection();
+    
+    QueueRemoveSelectionGroupsReq req = new QueueRemoveSelectionGroupsReq(gnames);
+    Object obj = performTransaction(QueueRequest.RemoveSelectionGroups, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Change the selection key biases and preemption flags for the given selection groups. <P> 
+   * 
+   * For an detailed explanation of how selection keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param groups
+   *   The selection groups to modify.
+   */ 
+  public synchronized void
+  editSelectionGroups
+  (
+   Collection<SelectionGroup> groups
+  ) 
+    throws PipelineException 
+  {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may edit selection keys!");
+    
+    verifyConnection();
+    
+    QueueEditSelectionGroupsReq req = new QueueEditSelectionGroupsReq(groups);
+    Object obj = performTransaction(QueueRequest.EditSelectionGroups, req); 
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing selection schedules. 
+   * 
+   * @return
+   *   The selection schedule names. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeSet<String> 
+  getSelectionScheduleNames() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetSelectionScheduleNames, null);
+    if(obj instanceof QueueGetSelectionScheduleNamesRsp) {
+      QueueGetSelectionScheduleNamesRsp rsp = (QueueGetSelectionScheduleNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the existing selection schedules. 
+   * 
+   * @return
+   *   The selection schedules indexed by schedule name. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeMap<String,SelectionSchedule> 
+  getSelectionSchedules() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetSelectionSchedules, null);
+    if(obj instanceof QueueGetSelectionSchedulesRsp) {
+      QueueGetSelectionSchedulesRsp rsp = (QueueGetSelectionSchedulesRsp) obj;
+      return rsp.getSelectionSchedules();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Add a new selection schedule. <P> 
+   * 
+   * @param sname
+   *   The name of the new selection schedule. 
+   * 
+   * @throws PipelineException
+   *   If a selection schedule already exists with the given name.
+   */ 
+  public synchronized void
+  addSelectionSchedule
+  (
+   String sname
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may add selection schedules!"); 
+
+    verifyConnection();
+    
+    QueueAddSelectionScheduleReq req = new QueueAddSelectionScheduleReq(sname);
+    Object obj = performTransaction(QueueRequest.AddSelectionSchedule, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the given existing selection schedule. <P> 
+   * 
+   * @param snames
+   *   The names of the selection schedules. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the selection schedules.
+   */ 
+  public synchronized void
+  removeSelectionSchedule
+  (
+   TreeSet<String> snames
+  ) 
+    throws PipelineException 
+  {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may remove selection schedules!"); 
+
+    verifyConnection();
+    
+    QueueRemoveSelectionSchedulesReq req = new QueueRemoveSelectionSchedulesReq(snames);
+    Object obj = performTransaction(QueueRequest.RemoveSelectionSchedules, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Modify the given selection schedules. <P> 
+   * 
+   * @param schedules
+   *   The selection schedules to modify.
+   */ 
+  public synchronized void
+  editSelectionSchedules
+  (
+   Collection<SelectionSchedule> schedules
+  ) 
+    throws PipelineException 
+  {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may edit selection keys!");
+    
+    verifyConnection();
+    
+    QueueEditSelectionSchedulesReq req = new QueueEditSelectionSchedulesReq(schedules);
+    Object obj = performTransaction(QueueRequest.EditSelectionSchedules, req); 
+    handleSimpleResponse(obj);
+  }
+
+
    
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   M A N A G E R   H O S T S                                                    */
@@ -584,6 +853,10 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may add hosts!"); 
+
     verifyConnection();
     
     QueueAddHostReq req = new QueueAddHostReq(hostname);
@@ -611,6 +884,10 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
+    if(!isPrivileged())
+      throw new PipelineException
+	("Only privileged users may remove hosts!"); 
+
     verifyConnection();
     
     QueueRemoveHostsReq req = new QueueRemoveHostsReq(hostnames);
@@ -619,8 +896,7 @@ class QueueMgrClient
   }
 
   /**
-   * Change the status, user reservations, job slots and/or selection key biases
-   * of the given hosts. <P> 
+   * Change the editable properties of the given hosts. <P> 
    * 
    * Any of the arguments may be <CODE>null</CODE> if no changes are do be made for
    * the type of host property the argument controls. <P> 
@@ -644,9 +920,15 @@ class QueueMgrClient
    * be negative and probably should not be set considerably higher than the number of 
    * CPUs on the host.  A good value is probably (1.5 * number of CPUs). <P>
    * 
-   * For the given hosts, the selection key biases are set to the values passed in the 
-   * <CODE>biases</CODE> argument and all selection key biases not mentioned will be removed.
-   * Hosts not mention in the <CODE>biases</CODE> argument will be unaltered. <P> 
+   * The selection group contains the selection key biases and preemption flags used to 
+   * compute the total selection score on the host.  If <CODE>null</CODE> is passed as the 
+   * selection group for a host, then the host will behave as if a member of a selection 
+   * group with no selection keys defined. <P> 
+   * 
+   * The selection schedule determines how selection groups are automatically changed based 
+   * on a predefined schedule.  If <CODE>null</CODE> is passed as the name of the schedule for
+   * a host, then the selection schedule will be cleared and the selection group will be 
+   * specified manually. <P> 
    * 
    * For an detailed explanation of how selection keys are used to determine the assignment
    * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
@@ -665,8 +947,11 @@ class QueueMgrClient
    * @param slots 
    *   The number of job slots indexed by fully resolved names of the hosts.
    * 
-   * @param biases
-   *   The selection key biases indexed by fully resolved host name and selection key name.
+   * @param groups
+   *   The names of the selection groups indexed by fully resolved names of the hosts.
+   * 
+   * @param schedules
+   *   The names of the selection schedules indexed by fully resolved names of the hosts.
    * 
    * @throws PipelineException 
    *   If unable to change the status of the hosts.
@@ -678,22 +963,11 @@ class QueueMgrClient
    TreeMap<String,String> reservations, 
    TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
-   TreeMap<String,TreeMap<String,Integer>> biases
+   TreeMap<String,String> groups,
+   TreeMap<String,String> schedules
   ) 
     throws PipelineException  
   {
-    if(biases != null) {
-      for(TreeMap<String,Integer> table : biases.values()) {
-	for(String kname : table.keySet()) {
-	  Integer bias = table.get(kname);
-	  if((bias < -100) || (bias > 100)) 
-	    throw new PipelineException
-	      ("The selection bias (" + bias + ") for key (" + kname + ") must " + 
-	       "be in the range: [-100,100]!");
-	}
-      }
-    }
-    
     if(!isPrivileged()) {      
       TreeSet<String> hostnames = new TreeSet<String>();
       if(status != null) 
@@ -704,8 +978,10 @@ class QueueMgrClient
 	hostnames.addAll(slots.keySet());
       if(orders != null) 
 	hostnames.addAll(orders.keySet());
-      if(biases != null) 
-	hostnames.addAll(biases.keySet());
+      if(groups != null) 
+	hostnames.addAll(groups.keySet());
+      if(schedules != null) 
+	hostnames.addAll(schedules.keySet());
 
       for(String hname : hostnames) {
 	if(!pLocalHostnames.contains(hname)) 
@@ -718,7 +994,7 @@ class QueueMgrClient
     verifyConnection();
 
     QueueEditHostsReq req = 
-      new QueueEditHostsReq(status, reservations, orders, slots, biases);
+      new QueueEditHostsReq(status, reservations, orders, slots, groups, schedules);
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);
   }
@@ -908,6 +1184,45 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Kill and requeue the jobs with the given IDs. <P> 
+   * 
+   * If successful, the jobs will be killed but instead of failing, the jobs will be
+   * automatically requeued and will be rerun at the next available opportunity. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to preempt the jobs.
+   */  
+  public synchronized void
+  preemptJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may preempt jobs owned by another user!");
+
+    verifyConnection();
+
+    QueuePreemptJobsReq req = new QueuePreemptJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.PreemptJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
    * Kill the jobs with the given IDs. <P> 
    * 
    * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
@@ -934,7 +1249,7 @@ class QueueMgrClient
   {
     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
       throw new PipelineException
-	("Only privileged users may jobs owned by another user!");
+	("Only privileged users may kill jobs owned by another user!");
 
     verifyConnection();
 

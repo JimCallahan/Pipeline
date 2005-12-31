@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.19 2005/09/20 05:09:14 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.20 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -184,6 +184,12 @@ class JQueueJobViewerPanel
       item.addActionListener(this);
       pJobPopup.add(item);
       
+      item = new JMenuItem("Preempt Jobs");
+      pJobPreemptJobsItem = item;
+      item.setActionCommand("preempt-jobs");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+
       item = new JMenuItem("Kill Jobs");
       pJobKillJobsItem = item;
       item.setActionCommand("kill-jobs");
@@ -244,6 +250,12 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Resume Jobs");
       pGroupResumeJobsItem = item;
       item.setActionCommand("resume-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Preempt Jobs");
+      pGroupPreemptJobsItem = item;
+      item.setActionCommand("preempt-jobs");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
@@ -601,6 +613,9 @@ class JQueueJobViewerPanel
       (pJobResumeJobsItem, prefs.getResumeJobs(), 
        "Resume execution of all jobs associated with the selected jobs.");
     updateMenuToolTip
+      (pJobPreemptJobsItem, prefs.getPreemptJobs(), 
+       "Preempt all jobs associated with the selected jobs."); 
+    updateMenuToolTip
       (pJobKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
     updateMenuToolTip
@@ -623,6 +638,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pGroupResumeJobsItem, prefs.getResumeJobs(), 
        "Resume execution of all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupPreemptJobsItem, prefs.getPreemptJobs(), 
+       "Preempt all jobs associated with the selected jobs.");
     updateMenuToolTip
       (pGroupKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
@@ -1581,6 +1599,9 @@ class JQueueJobViewerPanel
       else if((prefs.getResumeJobs() != null) &&
 	      prefs.getResumeJobs().wasPressed(e))
 	doResumeJobs();
+      else if((prefs.getPreemptJobs() != null) &&
+	      prefs.getPreemptJobs().wasPressed(e))
+	doPreemptJobs();
       else if((prefs.getKillJobs() != null) &&
 	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
@@ -1627,6 +1648,9 @@ class JQueueJobViewerPanel
       else if((prefs.getResumeJobs() != null) &&
 	      prefs.getResumeJobs().wasPressed(e))
 	doResumeJobs();
+      else if((prefs.getPreemptJobs() != null) &&
+	      prefs.getPreemptJobs().wasPressed(e))
+	doPreemptJobs();
       else if((prefs.getKillJobs() != null) &&
 	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
@@ -1800,6 +1824,8 @@ class JQueueJobViewerPanel
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
       doResumeJobs();
+    else if(cmd.equals("preempt-jobs"))
+      doPreemptJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
     else if(cmd.equals("delete-group"))
@@ -2222,6 +2248,39 @@ class JQueueJobViewerPanel
   }
 
   /**
+   * Preempt all jobs associated with the selected nodes.
+   */ 
+  private void 
+  doPreemptJobs() 
+  {
+    TreeMap<String,TreeSet<Long>> preempt = new TreeMap<String,TreeSet<Long>>();
+    for(ViewerJob vjob : pSelected.values()) {
+      JobStatus status = vjob.getJobStatus();
+      switch(status.getState()) {
+      case Running:
+	{
+	  String author = status.getNodeID().getAuthor();
+	  TreeSet<Long> ids = preempt.get(author);
+	  if(ids == null) {
+	    ids = new TreeSet<Long>();
+	    preempt.put(author, ids);
+	  }  
+	  
+	  ids.add(status.getJobID());
+	}
+      }
+    }
+
+    if(!preempt.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(preempt);
+      task.start();
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
    * Kill all jobs associated with the selected nodes.
    */ 
   private void 
@@ -2232,6 +2291,7 @@ class JQueueJobViewerPanel
       JobStatus status = vjob.getJobStatus();
       switch(status.getState()) {
       case Queued:
+      case Preempted:
       case Paused:
       case Running:
 	{
@@ -2725,6 +2785,48 @@ class JQueueJobViewerPanel
   }
 
   /** 
+   * Preempt the given jobs.
+   */ 
+  private
+  class PreemptJobsTask
+    extends Thread
+  {
+    public 
+    PreemptJobsTask
+    (
+     TreeMap<String,TreeSet<Long>> jobs     
+    ) 
+    {
+      super("JQueueJobsViewerPanel:PreemptJobsTask");
+
+      pJobs = jobs;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Preempting Jobs...")) {
+	try {
+	  for(String author : pJobs.keySet()) 
+	    master.getQueueMgrClient().preemptJobs(author, pJobs.get(author));
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeMap<String,TreeSet<Long>>  pJobs; 
+  }
+
+  /** 
    * Kill the given jobs.
    */ 
   private
@@ -2917,6 +3019,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pJobQueueJobsSpecialItem;
   private JMenuItem  pJobPauseJobsItem;
   private JMenuItem  pJobResumeJobsItem;
+  private JMenuItem  pJobPreemptJobsItem;
   private JMenuItem  pJobKillJobsItem;
   private JMenuItem  pJobShowNodeItem;
 
@@ -2940,6 +3043,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupQueueJobsSpecialItem;
   private JMenuItem  pGroupPauseJobsItem;
   private JMenuItem  pGroupResumeJobsItem;
+  private JMenuItem  pGroupPreemptJobsItem;
   private JMenuItem  pGroupKillJobsItem;
   private JMenuItem  pGroupDeleteGroupsItem;
   private JMenuItem  pGroupShowNodeItem;

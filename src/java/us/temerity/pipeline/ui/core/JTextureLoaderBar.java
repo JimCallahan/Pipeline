@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.8 2005/10/17 06:23:39 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.9 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -177,6 +177,7 @@ class JTextureLoaderBar
 
       for(SelectionMode mode : SelectionMode.all()) {
 	pTextures.add("Job-Queued-" + mode);
+	pTextures.add("Job-Preempted-" + mode);
 	pTextures.add("Job-Running-" + mode);
 	pTextures.add("Job-Aborted-" + mode);
 	pTextures.add("Job-Failed-" + mode);
@@ -187,6 +188,7 @@ class JTextureLoaderBar
 
       for(SelectionMode mode : SelectionMode.all()) {
 	pTextures.add("ExternalJob-Queued-" + mode);
+	pTextures.add("ExternalJob-Preempted-" + mode);
 	pTextures.add("ExternalJob-Running-" + mode);
 	pTextures.add("ExternalJob-Aborted-" + mode);
 	pTextures.add("ExternalJob-Failed-" + mode);

@@ -1,44 +1,51 @@
-// $Id: JSelectionBiasTableCellEditor.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JCreateSelectionGroupDialog.java,v 1.1 2005/12/31 20:40:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
+import java.io.*;
 import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.tree.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S E L E C T I O N   B I A S   T A B L E   C E L L   E D I T O R                        */
+/*   C R E A T E   S E L E C T I O N   G R O U P   D I A L O G                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The editor for {@link JTable JTable} cells selection biases. 
+ * Queries the user for the name and description of a new selection group.
  */ 
-public
-class JSelectionBiasTableCellEditor
-  extends JIntegerTableCellEditor
+public 
+class JCreateSelectionGroupDialog
+  extends JNewIdentifierDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
-   * Construct a new editor.
+   * Construct a new dialog.
    */ 
   public 
-  JSelectionBiasTableCellEditor() 
+  JCreateSelectionGroupDialog
+  (
+   Dialog owner        
+  )
   {
-    super(135, JLabel.CENTER);
-    pField.setName("PurpleEditableTextField");
+    super(owner, "New Selection Group", "New Group Name:", null, "Add");
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C    I N T E R N A L S                                                     */
+  /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1509229509476352325L;
+  private static final long serialVersionUID = 3413948737235985793L;
 
 }

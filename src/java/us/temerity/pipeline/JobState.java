@@ -1,4 +1,4 @@
-// $Id: JobState.java,v 1.2 2004/08/30 01:30:27 jim Exp $
+// $Id: JobState.java,v 1.3 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -20,6 +20,11 @@ enum JobState
    * The queue job has been submitted, but has not started running. 
    */
   Queued,
+  
+  /**
+   * The queue job has been killed, but then resubmitted. 
+   */
+  Preempted, 
   
   /**
    * The queue job has been submitted, but was paused by the user before if began execution.

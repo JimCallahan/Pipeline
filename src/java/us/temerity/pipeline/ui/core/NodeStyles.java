@@ -1,4 +1,4 @@
-// $Id: NodeStyles.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: NodeStyles.java,v 1.2 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -114,6 +114,7 @@ class NodeStyles
    */ 
   private static final Color[] sJobStateColors = {
     new Color(0.00f, 0.49f, 0.49f),  /* Queued */ 
+    new Color(0.75f, 0.00f, 0.75f),  /* Preempted */ 
     new Color(0.90f, 0.90f, 0.00f),  /* Paused */ 
     new Color(0.75f, 0.49f, 0.00f),  /* Aborted */ 
     new Color(0.00f, 0.49f, 0.00f),  /* Running */ 

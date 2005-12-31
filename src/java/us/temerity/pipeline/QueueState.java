@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.11 2004/08/30 01:30:27 jim Exp $
+// $Id: QueueState.java,v 1.12 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,7 +53,8 @@ enum QueueState
 
   /**
    * A queue job has been submitted which will regenerate the primary/secondary files, but 
-   * has not started running. <P> 
+   * has not started running.  Alternatively, a job has been preempted causing it to be 
+   * automatically resubmitted. <P> 
    * 
    * This state has precedence over the <CODE>Stale</CODE> state.
    */

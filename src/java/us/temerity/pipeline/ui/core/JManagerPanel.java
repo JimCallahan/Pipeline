@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.23 2005/07/23 21:56:48 jim Exp $
+// $Id: JManagerPanel.java,v 1.24 2005/12/31 20:40:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1024,7 +1024,7 @@ class JManagerPanel
        "Manage the license keys.");
     updateMenuToolTip
       (pSelectionKeysItem, prefs.getShowManageSelectionKeys(), 
-       "Manage the selection keys.");
+       "Manage the selection keys, groups and schedules.");
 
     updateMenuToolTip
       (pBackupDatabaseItem, null, 

@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.19 2005/11/03 22:02:14 jim Exp $
+// $Id: QueueHost.java,v 1.20 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -59,7 +59,6 @@ class QueueHost
 
     pHoldTimeStamps = new TreeMap<Long,Date>();
     pSamples = new LinkedList<ResourceSample>();
-    pSelectionBiases = new TreeMap<String,Integer>();
   }
 
 
@@ -508,7 +507,7 @@ class QueueHost
    * Increment the number of running jobs.
    */ 
   public synchronized void 
-  jobStarted() 
+  jobStarted()
   {
     assert(pNumJobs != null);
     assert(pNumJobs >= 0);
@@ -537,85 +536,65 @@ class QueueHost
     LogMgr.getInstance().flush();
   }
 
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the selection keys for the host.
-   */
-  public synchronized Set<String>
-  getSelectionKeys()
-  {
-    return Collections.unmodifiableSet(pSelectionBiases.keySet());
-  }
-
-  /**
-   * Get the bias for the given selection key.
-   * 
-   * @param key
-   *   The name of the selection key.
-   * 
-   * @return 
-   *   The bias for the given key or <CODE>null</CODE> if the key is not defined.
-   */ 
-  public synchronized Integer
-  getSelectionBias
-  (
-   String key
-  ) 
-  {
-    return pSelectionBiases.get(key);
-  }
-  
-  /**
-   * Add (or replace) the bias for the given selection key.
-   * 
-   * @param key
-   *   The name of the selection key.
-   * 
-   * @param bias 
-   *   The selection bias for the key: [-100,100]
-   */ 
-  public synchronized void 
-  addSelectionKey
-  (
-   String key, 
-   int bias
-  ) 
-  {
-    if((bias < -100) || (bias > 100)) 
-      throw new IllegalArgumentException
-	("The selection bias (" + bias + ") must be in the range: [-100,100]!");
-    pSelectionBiases.put(key, bias);
-  }
-  
-  /** 
-   * Remove the selection key and bias for the named key.
-   *
-   * @param key 
-   *    The name of the selection key to remove.
-   */
-  public synchronized void
-  removeSelectionKey
-  (
-   String key
-  ) 
-  {
-    pSelectionBiases.remove(key);
-  }
-  
-  /** 
-   * Remove all selection keys.
-    */
-  public synchronized void
-  removeAllSelectionKeys() 
-  {
-    pSelectionBiases.clear();
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   S E L E C T I O N                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the current selection schedule.
+   * 
+   * @return
+   *   The schedule name or <CODE>null</CODE> if the choice of selection group is currently 
+   *   manual.
+   */ 
+  public synchronized String
+  getSelectionSchedule() 
+  {
+    return pSelectionSchedule;
+  }
+
+  /**
+   * Set the name of the current selection schedule or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setSelectionSchedule
+  (
+   String name
+  ) 
+  {
+    pSelectionSchedule = name;
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of the current selection group. 
+   * 
+   * @return
+   *   The selection group or <CODE>null</CODE> not a member of any selection group.
+   */ 
+  public synchronized String
+  getSelectionGroup() 
+  {
+    return pSelectionGroup;
+  }
+
+  /**
+   * Set the name of the current selection group or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setSelectionGroup
+  (
+   String name
+  ) 
+  {
+    pSelectionGroup = name;
+  }
+
+  
   /*----------------------------------------------------------------------------------------*/
   
   /** 
@@ -663,18 +642,17 @@ class QueueHost
     return Math.max(pJobSlots - pNumJobs, 0);
   }
 
-
   /**
-   * Get the selection score for a job with the given job requirements. <P> 
+   * Determine whether a job with the given job requirements is eligible to run on this 
+   * host. <P> 
    * 
-   * This method will return <CODE>null</CODE> under the following conditions: <P> 
+   * This method will return <CODE>false</CODE> under the following conditions: <P> 
    * 
    * <DIV style="margin-left: 40px;">
    *   The host is reserved for another user. <P>
    *   The host has a higher system load than the job requires.<P> 
    *   The host has less than the required amount of free memory.<P>
    *   The host has less than the required amount of free temporary disk space.<P>
-   *   The host does not support all of the selection keys required.<P>
    * </DIV>
    * 
    * @param author
@@ -683,46 +661,32 @@ class QueueHost
    * @param jreqs
    *   The requirements that this host must meet in order to be eligable to run the job. 
    * 
-   * @param keys 
-   *   The names of the valid selection keys.
-   * 
    * @return 
    *   The combined selection bias or <CODE>null</CODE> if the host fails the requirements.
    */ 
-  public synchronized Integer
-  computeSelectionScore
+  public synchronized boolean
+  isEligible
   (
    String author, 
-   JobReqs jreqs, 
-   TreeSet<String> keys
+   JobReqs jreqs
   )
   {
     if((pReservation != null) && (!pReservation.equals(author)))
-      return null;
+      return false;
 
     ResourceSample sample = getLatestSample();
     if(sample == null) 
-      return null;
+      return false;
 
     if((sample.getLoad() > jreqs.getMaxLoad()) ||
        (sample.getMemory() < jreqs.getMinMemory()) || 
        (sample.getDisk() < jreqs.getMinDisk()))
-      return null;
+      return false;
 
-    int total = 0;
-    for(String key : jreqs.getSelectionKeys()) {
-      if(keys.contains(key)) {
-	Integer bias = pSelectionBiases.get(key);
-	if(bias == null) 
-	  return null;
-      
-	total += bias;
-      }
-    }
-
-    return total;
+    return true;
   }
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -743,8 +707,8 @@ class QueueHost
     encoder.encode("Order", pOrder);
     encoder.encode("JobSlots", pJobSlots);
 
-    if(!pSelectionBiases.isEmpty()) 
-      encoder.encode("SelectionBiases", pSelectionBiases);
+    encoder.encode("SelectionSchedule", pSelectionSchedule);
+    encoder.encode("SelectionGroup", pSelectionGroup);
   }
 
   public void 
@@ -771,10 +735,8 @@ class QueueHost
       throw new GlueException("The \"JobSlots\" was missing!");
     pJobSlots = slots;
 
-    TreeMap<String,Integer> biases = 
-      (TreeMap<String,Integer>) decoder.decode("SelectionBiases"); 
-    if(biases != null) 
-      pSelectionBiases = biases;
+    pSelectionSchedule = (String) decoder.decode("SelectionSchedule"); 
+    pSelectionGroup    = (String) decoder.decode("SelectionGroup"); 
   }
   
   
@@ -945,8 +907,15 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The selection key biases of the host indexed by selection key name.
+   * The name of the current selection schedule or <CODE>null</CODE> if the choice of 
+   * selection group is currently manual.
    */ 
-  private TreeMap<String,Integer>  pSelectionBiases; 
+  private String pSelectionSchedule; 
+
+  /**
+   * The name of the current selection group or <CODE>null</CODE> not a member of any 
+   * selection group. 
+   */ 
+  private String pSelectionGroup; 
 
 }

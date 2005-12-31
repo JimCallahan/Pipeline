@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.26 2005/10/30 10:01:32 jim Exp $
+// $Id: QueueMgrServer.java,v 1.27 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -363,6 +363,90 @@ class QueueMgrServer
 	      break;
 
 
+	    /*-- SELECTION GROUPS ----------------------------------------------------------*/
+	    case GetSelectionGroupNames:
+	      {
+		objOut.writeObject(pQueueMgr.getSelectionGroupNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetSelectionGroups:
+	      {
+		objOut.writeObject(pQueueMgr.getSelectionGroups());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddSelectionGroup:
+	      {
+		QueueAddSelectionGroupReq req = (QueueAddSelectionGroupReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addSelectionGroup(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveSelectionGroups:
+	      {
+		QueueRemoveSelectionGroupsReq req = 
+		  (QueueRemoveSelectionGroupsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeSelectionGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case EditSelectionGroups:
+	      {
+		QueueEditSelectionGroupsReq req = (QueueEditSelectionGroupsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.editSelectionGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- SELECTION SCHEDULES -------------------------------------------------------*/
+	    case GetSelectionScheduleNames:
+	      {
+		objOut.writeObject(pQueueMgr.getSelectionScheduleNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetSelectionSchedules:
+	      {
+		objOut.writeObject(pQueueMgr.getSelectionSchedules());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddSelectionSchedule:
+	      {
+		QueueAddSelectionScheduleReq req = 
+		  (QueueAddSelectionScheduleReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addSelectionSchedule(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveSelectionSchedules:
+	      {
+		QueueRemoveSelectionSchedulesReq req = 
+		  (QueueRemoveSelectionSchedulesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeSelectionSchedules(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case EditSelectionSchedules:
+	      {
+		QueueEditSelectionSchedulesReq req = 
+		  (QueueEditSelectionSchedulesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.editSelectionSchedules(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
 	    /*-- JOB MANAGER HOSTS ---------------------------------------------------------*/
 	    case GetHosts:
 	      {
@@ -461,6 +545,14 @@ class QueueMgrServer
 	      }
 	      break;
 	    
+	    case PreemptJobs:
+	      {
+		QueuePreemptJobsReq req = (QueuePreemptJobsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.preemptJobs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
 	    case KillJobs:
 	      {
 		QueueKillJobsReq req = (QueueKillJobsReq) objIn.readObject();

@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.4 2005/11/03 22:02:14 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.5 2005/12/31 20:40:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1528,6 +1528,7 @@ class JQueueJobDetailsPanel
    */ 
   private static final Icon[] sIcons = {
     new ImageIcon(LookAndFeelLoader.class.getResource("QueuedIcon.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("PreemptedIcon.png")), 
     new ImageIcon(LookAndFeelLoader.class.getResource("PausedIcon.png")), 
     new ImageIcon(LookAndFeelLoader.class.getResource("AbortedIcon.png")), 
     new ImageIcon(LookAndFeelLoader.class.getResource("RunningIcon.png")), 

@@ -1,45 +1,51 @@
-// $Id: JSelectionBiasTableCellRenderer.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JCreateSelectionScheduleDialog.java,v 1.1 2005/12/31 20:40:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
+import java.io.*;
 import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.tree.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S E L E C T I O N   B I A S   T A B L E   C E L L   R E N D E R E R                    */
+/*   C R E A T E   S E L E C T I O N   S C H E D U L E   D I A L O G                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer for {@link JTable JTable} cell containing selection biases. 
+ * Queries the user for the name and description of a new selection schedule.
  */ 
-public
-class JSelectionBiasTableCellRenderer
-  extends JSimpleTableCellRenderer
+public 
+class JCreateSelectionScheduleDialog
+  extends JNewIdentifierDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
-   * Construct a new renderer.
+   * Construct a new dialog.
    */ 
   public 
-  JSelectionBiasTableCellRenderer() 
+  JCreateSelectionScheduleDialog
+  (
+   Dialog owner        
+  )
   {
-    super(JLabel.CENTER);
-
-    setName("PurpleTableCellRenderer");
+    super(owner, "New Selection Schedule", "New Schedule Name:", null, "Add");
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C    I N T E R N A L S                                                     */
+  /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -780227815814676657L;
+  private static final long serialVersionUID = 6310118431973005403L;
 
 }

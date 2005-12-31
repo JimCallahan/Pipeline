@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.27 2005/11/03 22:02:14 jim Exp $
+// $Id: JobMgr.java,v 1.28 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -476,6 +476,60 @@ class JobMgr
 	    throw new PipelineException
 	    ("Unable to remove the output files:\n\n" + 
 	     "  " + proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while removing the output files!");
+	}
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage());
+	return new FailureRsp(timer, ex.getMessage());
+      }
+    }
+    
+    return new SuccessRsp(timer);
+  }
+
+  /**
+   * Clean up the resources associated with a preempted job. <P> 
+   * 
+   * @param req
+   *   The cleanup request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to cleanup.
+   */ 
+  public synchronized Object
+  cleanupPreemptedResources
+  (
+   JobCleanupPreemptedResourcesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("JobMgr.cleanupPreemptedResources()");
+
+    File dir = new File(pJobDir, String.valueOf(req.getJobID()));
+    if(dir.isDirectory()) {
+      
+      Map<String,String> env = System.getenv();
+      
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("-rf");
+      args.add(dir.toString());
+
+      try {
+	SubProcessLight proc = 
+	  new SubProcessLight("Remove-PreemptedJobFiles", "rm", args, env, pJobDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to remove the output files:\n\n" + 
+	       "  " + proc.getStdErr());	
 	}
 	catch(InterruptedException ex) {
 	  throw new PipelineException

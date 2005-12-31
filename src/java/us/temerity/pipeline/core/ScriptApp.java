@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.46 2005/09/07 21:11:16 jim Exp $
+// $Id: ScriptApp.java,v 1.47 2005/12/31 20:42:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1112,9 +1112,9 @@ class ScriptApp
       first = false;
 
       buf.append
-	("Job Server     : " + host.getName() + "\n" + 
-	 "Status         : " + host.getStatus() + "\n" + 
-	 "Reservation    : ");
+	("Job Server         : " + host.getName() + "\n" + 
+	 "Status             : " + host.getStatus() + "\n" + 
+	 "Reservation        : ");
       
       String reserve = host.getReservation();
       if(reserve != null) 
@@ -1126,28 +1126,23 @@ class ScriptApp
       if(sample != null) {
 	buf.append
 	  ("\n" + 
-	   "Jobs           : " + (sample.getNumJobs() + 
+	   "Jobs               : " + (sample.getNumJobs() + 
 				  " (slots " + host.getJobSlots() + ")") + "\n" + 
-	   "System Load    : " + (String.format("%1$.2f", sample.getLoad()) + 
+	   "System Load        : " + (String.format("%1$.2f", sample.getLoad()) + 
 				  " (procs " + host.getNumProcessors()) + ")\n" +
-	   "Free Memory    : " + (formatLong(sample.getMemory()) + " (total " + 
+	   "Free Memory        : " + (formatLong(sample.getMemory()) + " (total " + 
 				  formatLong(host.getTotalMemory()) + ")") + "\n" +
-	   "Free Disk      : " + (formatLong(sample.getDisk()) + " (total " +
-				  formatLong(host.getTotalDisk()) + ")"));
+	   "Free Disk          : " + (formatLong(sample.getDisk()) + " (total " +
+				      formatLong(host.getTotalDisk()) + ")"));
+
       }
 
-
-      buf.append("\n" + 
-		 "Selection Bias :");
-      Set<String> keys = host.getSelectionKeys();
-      if(keys.isEmpty()) {
-	buf.append(" -");
-      }
-      else {
-	StringBuffer kbuf = new StringBuffer();
-	for(String kname : keys) 
-	  kbuf.append(" " + kname + "[" + host.getSelectionBias(kname) + "]");
-	buf.append(wordWrap(kbuf.toString(), 17, 80));
+      {
+	String sgroup = host.getSelectionGroup();
+	String sched  = host.getSelectionSchedule();
+	buf.append
+	  ("Selection Schedule : " + ((sgroup != null) ? sgroup : "-") + "\n" + 
+	   "Selection Group    : " + ((sched != null) ? sched : "-") + "\n");
       }
     }
 
@@ -1169,8 +1164,10 @@ class ScriptApp
    boolean setReserve, 
    Integer order, 
    Integer slots, 
-   TreeMap biases, 
-   TreeSet removes, 
+   String  selectionSchedule,
+   boolean noSelectionSchedule,
+   String  selectionGroup,
+   boolean noSelectionGroup,
    QueueMgrClient client
   )
     throws PipelineException 
@@ -1178,46 +1175,36 @@ class ScriptApp
     TreeMap<String,QueueHost> hosts = client.getHosts();
     QueueHost host = hosts.get(hname);
     if(host != null) {
-      TreeMap<String,QueueHost.Status> statusTable = 
-	new TreeMap<String,QueueHost.Status>();
-      TreeMap<String,String> reserveTable = 
-	new TreeMap<String,String>();
-      TreeMap<String,Integer> orderTable = 
-	new TreeMap<String,Integer>();
-      TreeMap<String,Integer> slotsTable = 
-	new TreeMap<String,Integer>();
-      TreeMap<String,TreeMap<String,Integer>> biasesTable = 
-	new TreeMap<String,TreeMap<String,Integer>>();
-    
+      TreeMap<String,QueueHost.Status> statusTable = new TreeMap<String,QueueHost.Status>();
       if(status != null) 
 	statusTable.put(hname, status);
 
+      TreeMap<String,String> reserveTable = new TreeMap<String,String>();
       if(setReserve) 
 	reserveTable.put(hname, reserve);
 
+      TreeMap<String,Integer> orderTable = new TreeMap<String,Integer>();
       if(order != null) 
 	orderTable.put(hname, order);
 
+      TreeMap<String,Integer> slotsTable = new TreeMap<String,Integer>();
       if(slots != null) 
 	slotsTable.put(hname, slots);
 
-      if(!biases.isEmpty() || !removes.isEmpty()) {
-	TreeMap<String,Integer> table = new TreeMap<String,Integer>();
-	for(String kname : host.getSelectionKeys()) {
-	  if(!removes.contains(kname)) 
-	    table.put(kname, host.getSelectionBias(kname));
-	}
-	
-	for(Object obj : biases.keySet()) {
-	  String kname = (String) obj;
-	  Integer bias = (Integer) biases.get(kname);
-	  table.put(kname, bias);
-	}
-	
-	biasesTable.put(hname, table);
-      }
-      
-      client.editHosts(statusTable, reserveTable, orderTable, slotsTable, biasesTable);
+      TreeMap<String,String> schedulesTable = new TreeMap<String,String>();
+      if(selectionSchedule != null) 
+	schedulesTable.put(hname, selectionSchedule);
+      else if(noSelectionSchedule) 
+	schedulesTable.put(hname, null);
+
+      TreeMap<String,String> groupsTable = new TreeMap<String,String>();
+      if(selectionGroup != null) 
+	groupsTable.put(hname, selectionGroup);
+      else if(noSelectionGroup) 
+	groupsTable.put(hname, null);
+	        
+      client.editHosts(statusTable, reserveTable, orderTable, slotsTable, 
+		       schedulesTable, groupsTable);
     }
   }
   
@@ -2391,6 +2378,7 @@ class ScriptApp
 	for(JobStatus status : table.values()) {
 	  switch(status.getState()) {
 	  case Queued: 
+	  case Preempted:
 	  case Paused:
 	  case Running:
 	    done = false;
@@ -3531,13 +3519,15 @@ class ScriptApp
     case ScriptOptsParserConstants.USER_NAME:
       return "a user name";
 
-    case ScriptOptsParserConstants.KEY_BIAS_NAME:
+    case ScriptOptsParserConstants.SCHEDULE_NAME:
+      return "a selection schedule name";
+
+    case ScriptOptsParserConstants.GROUP_NAME:
+      return "a selection group name";
+
     case ScriptOptsParserConstants.KEY_NAME1:
     case ScriptOptsParserConstants.KEY_NAME2:
       return "a key name";
-
-    case ScriptOptsParserConstants.KEY_BIAS:
-      return "a selection bias";
 
     case ScriptOptsParserConstants.SUFFIX1:
       return "a filename suffix";
