@@ -1,4 +1,4 @@
-// $Id: PRTextureAction.java,v 1.1 2005/12/09 09:25:12 jim Exp $
+// $Id: PRTextureAction.java,v 1.2 2005/12/31 20:41:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -82,7 +82,7 @@ import java.io.*;
  *     <UL>
  *       <LI>Black - Use black for all values outside [0,1] range.
  *       <LI>Clamp - Use border texel color for values outside [0,1] range.
- *       <LI>Peridoc - Tiles texture outside [0,1] range.
+ *       <LI>Periodic - Tiles texture outside [0,1] range.
  *     </UL>
  *   </DIV> <BR>
  * 

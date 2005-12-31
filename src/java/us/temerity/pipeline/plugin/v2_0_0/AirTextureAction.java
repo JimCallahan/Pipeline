@@ -1,4 +1,4 @@
-// $Id: AirTextureAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: AirTextureAction.java,v 1.4 2005/12/31 20:41:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -37,7 +37,7 @@ import java.io.*;
  *     <UL>
  *       <LI>Black - Use black for all values outside [0,1] range.
  *       <LI>Clamp - Use border texel color for values outside [0,1] range.
- *       <LI>Peridoc - Tiles texture outside [0,1] range.
+ *       <LI>Periodic - Tiles texture outside [0,1] range.
  *     </UL>
  *   </DIV> <BR>
  * 
