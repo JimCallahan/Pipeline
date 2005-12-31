@@ -1,0 +1,24 @@
+
+
+Issues that need to be addressed for auto-preemption:
+
+
++ Preempting jobs should not be started until preempted jobs have exited.  This means that
+  starting the new preempting job must be done after an indeterminate delay after killing 
+  the existing preempted job.
+
+
++ The preempted job may hold license keys required by the preempting job.  These keys are 
+  not released until the preempted job exits.  
+
+  - The condition that the license keys are available needs to be relaxed to consider whether 
+    the preempted job can supply these license keys.
+
+  - Once the decision to preempt has been made, all license keys required by the preempting
+    job must be aquired (or reserved in the case where the preempted job currently holds
+    the key) so that normally dispatched jobs cannot steal the requird keys before the 
+    preempting job is started.
+
+
++ The dynamic job requirements (load average, memory, disk) of the preempting job cannot 
+  be known before preempting the exising jobs.  
