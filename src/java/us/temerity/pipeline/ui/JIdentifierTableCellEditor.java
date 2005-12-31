@@ -1,4 +1,4 @@
-// $Id: JIdentifierTableCellEditor.java,v 1.2 2005/01/03 06:56:23 jim Exp $
+// $Id: JIdentifierTableCellEditor.java,v 1.3 2005/12/31 20:18:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,6 +47,24 @@ class JIdentifierTableCellEditor
   {
     pField = UIFactory.createIdentifierField(null, width, align);
     pField.addActionListener(this);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the name of the component to the specified string.
+   */
+  public void 
+  setName
+  (
+   String name
+  )
+  {
+    pField.setName(name);
   }
 
 

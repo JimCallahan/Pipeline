@@ -1,4 +1,4 @@
-// $Id: JCollectionTableCellEditor.java,v 1.3 2004/12/10 10:26:21 jim Exp $
+// $Id: JCollectionTableCellEditor.java,v 1.4 2005/12/31 20:17:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -73,6 +73,24 @@ class JCollectionTableCellEditor
     pField.setPreferredSize(size);
 
     pField.addActionListener(this);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the name of the component to the specified string.
+   */
+  public void 
+  setName
+  (
+   String name
+  )
+  {
+    pField.setName(name);
   }
 
 
