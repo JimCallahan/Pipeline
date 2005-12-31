@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.13 2005/03/28 21:51:59 jim Exp $
+// $Id: JTablePanel.java,v 1.14 2005/12/31 20:18:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -302,6 +302,17 @@ class JTablePanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Notify the table that the structure of the table model has changed.
+   */ 
+  public void 
+  tableStructureChanged() 
+  {
+    pTableModel.fireTableStructureChanged();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -562,7 +573,7 @@ class JTablePanel
   /**
    * Make all columns visible.
    */ 
-  private void 
+  public void 
   doShowAllColumns() 
   {
     pTableModel.setAllColumnsVisible();
