@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.6 2005/12/31 20:40:44 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.7 2006/01/02 20:47:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -402,7 +402,7 @@ class QueueHostsTableModel
 	choices.addAll(pSelectionGroups);
 
 	JCollectionTableCellEditor editor = new JCollectionTableCellEditor(choices, 120);
-	//editor.setName("PurpleEditableTextField");
+	editor.setSynthPrefix("Purple");
 
 	return editor;
       }
@@ -414,7 +414,7 @@ class QueueHostsTableModel
 	choices.addAll(pSelectionSchedules); 
 
 	JCollectionTableCellEditor editor = new JCollectionTableCellEditor(choices, 120);
-	//editor.setName("PurpleEditableTextField");
+	editor.setSynthPrefix("Purple");
 
 	return editor;
       }
