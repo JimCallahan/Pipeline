@@ -1,4 +1,4 @@
-// $Id: JCollectionTableCellEditor.java,v 1.4 2005/12/31 20:17:40 jim Exp $
+// $Id: JCollectionTableCellEditor.java,v 1.5 2006/01/02 20:45:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -78,19 +78,19 @@ class JCollectionTableCellEditor
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*   L O O K  &  F E E L                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets the name of the component to the specified string.
+   * Sets the prefix prepended to the name of the component.
    */
   public void 
-  setName
+  setSynthPrefix
   (
-   String name
-  )
+   String prefix
+  ) 
   {
-    pField.setName(name);
+    pField.setSynthPrefix(prefix);
   }
 
 

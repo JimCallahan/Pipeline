@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.11 2005/06/14 13:38:33 jim Exp $
+// $Id: JCollectionField.java,v 1.12 2006/01/02 20:45:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -134,6 +134,23 @@ class JCollectionField
     setSelectedIndex(0);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O O K  &  F E E L                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the prefix prepended to the name of the component.
+   */
+  public void 
+  setSynthPrefix
+  (
+   String prefix
+  ) 
+  {
+    setName(prefix + "CollectionField");
+    pLabel.setName(prefix + "CollectionValueTextField");
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
