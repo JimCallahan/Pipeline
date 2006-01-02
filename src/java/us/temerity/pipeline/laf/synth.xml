@@ -1178,7 +1178,7 @@
 
   <style id="CollectionValueTextField">
     <state value="SELECTED">
-       <color value="#ffffff" type="TEXT_FOREGROUND"/>
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
        <color value="#727272" type="TEXT_BACKGROUND"/>
     </state>
     <imagePainter path="DarkGrey.png"
@@ -1187,6 +1187,33 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="CollectionValueTextField" type="name" key="CollectionValueTextField"/>
+
+  <style id="PurpleCollectionField">
+    <state value="DISABLED"> 
+      <imagePainter path="PurpleValuePanel.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="PurpleEditableValuePanel.png"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleCollectionField" type="name" key="PurpleCollectionField"/>
+
+  <style id="PurpleCollectionValueTextField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#7c0074" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="DarkPurple.png"
+                  method="textFieldBackgroud"
+                  sourceInsets="0 0 0 0"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleCollectionValueTextField" type="name" 
+        key="PurpleCollectionValueTextField"/>
 
 
 
