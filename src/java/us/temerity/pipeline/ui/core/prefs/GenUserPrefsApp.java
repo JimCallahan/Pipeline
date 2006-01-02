@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1509,6 +1509,10 @@ class GenUserPrefsApp
 	 "SelectionGroupsAdd", "Add Group:"), 
 
 	new HotKeyPref
+	("Add a new selection group which is a copy of the selected group.", 
+	 "SelectionGroupsClone", "Add Group:"), 
+
+	new HotKeyPref
 	("Remove the selected selection groups.", 
 	 "SelectionGroupsRemove", "Remove Group:"), 
 
@@ -1896,6 +1900,7 @@ class GenUserPrefsApp
 	group.add("SelectionKeysRemove");
 
 	group.add("SelectionGroupsAdd");
+	group.add("SelectionGroupsClone");
 	group.add("SelectionGroupsRemove");
 
 	group.add("SelectionSchedulesDetails");
@@ -1944,7 +1949,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2201,7 +2206,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3557,7 +3562,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.25 2005/12/31 20:40:44 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

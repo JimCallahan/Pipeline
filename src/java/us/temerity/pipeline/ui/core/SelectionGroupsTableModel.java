@@ -1,4 +1,4 @@
-// $Id: SelectionGroupsTableModel.java,v 1.1 2005/12/31 20:40:44 jim Exp $
+// $Id: SelectionGroupsTableModel.java,v 1.2 2006/01/02 20:46:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -291,6 +291,18 @@ class SelectionGroupsTableModel
     if(group != null) 
       return group.getName();
     return null;
+  }
+
+  /** 
+   * Get the selection group on the given row.
+   */
+  public SelectionGroup
+  getGroup
+  (
+   int row
+  ) 
+  { 
+    return pSelectionGroups.get(pRowToIndex[row]);
   }
 
   /** 

@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.6 2005/12/31 20:40:43 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.7 2006/01/02 20:46:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,6 +63,12 @@ class JManageSelectionKeysDialog
 	item = new JMenuItem("Add Group");
 	pGroupsAddItem = item;
 	item.setActionCommand("group-add");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+	
+	item = new JMenuItem("Clone Group");
+	pGroupsCloneItem = item;
+	item.setActionCommand("group-clone");
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
 	
@@ -477,9 +483,10 @@ class JManageSelectionKeysDialog
   public void 
   updateGroupsMenu() 
   {
-    boolean selected = (pGroupsTablePanel.getTable().getSelectedRowCount() > 0);
+    int numSelected = pGroupsTablePanel.getTable().getSelectedRowCount();
     pGroupsAddItem.setEnabled(pIsPrivileged); 
-    pGroupsRemoveItem.setEnabled(pIsPrivileged && selected); 
+    pGroupsCloneItem.setEnabled(pIsPrivileged && (numSelected == 1)); 
+    pGroupsRemoveItem.setEnabled(pIsPrivileged && (numSelected > 0)); 
   }
 
   /**
@@ -524,6 +531,9 @@ class JManageSelectionKeysDialog
     updateMenuToolTip
       (pGroupsAddItem, prefs.getSelectionGroupsAdd(),
        "Add a new selection group.");
+    updateMenuToolTip
+      (pGroupsCloneItem, prefs.getSelectionGroupsClone(),
+       "Add a new selection group which is a copy of the selected group.");
     updateMenuToolTip
       (pGroupsRemoveItem, prefs.getSelectionGroupsRemove(),
        "Remove the selected selection groups.");
@@ -679,6 +689,9 @@ class JManageSelectionKeysDialog
       if((prefs.getSelectionGroupsAdd() != null) &&
 	 prefs.getSelectionGroupsAdd().wasPressed(e))
 	doGroupsAdd();
+      else if((prefs.getSelectionGroupsClone() != null) &&
+	 prefs.getSelectionGroupsClone().wasPressed(e))
+	doGroupsClone();
       else if((prefs.getSelectionGroupsRemove() != null) &&
 	      prefs.getSelectionGroupsRemove().wasPressed(e))
 	doGroupsRemove();
@@ -745,6 +758,8 @@ class JManageSelectionKeysDialog
 
     else if(cmd.equals("group-add")) 
       doGroupsAdd();
+    else if(cmd.equals("group-clone")) 
+      doGroupsClone();
     else if(cmd.equals("group-remove")) 
       doGroupsRemove();
 
@@ -945,6 +960,54 @@ class JManageSelectionKeysDialog
       }
     }
 
+    if(modified) {
+      updateAll();
+      updateJobBrowsers();
+    }
+  }
+  
+  /**
+   * Add a selection group to the table which is a copy of the currently selected group.
+   */ 
+  private void 
+  doGroupsClone()
+  {
+    pGroupsTablePanel.stopEditing();
+
+    boolean modified = false;
+    {
+      pGroupsCreateDialog.setVisible(true);
+
+      SelectionGroup group = null;
+      {
+	int rows[] = pGroupsTablePanel.getTable().getSelectedRows();
+	int wk;
+	for(wk=0; wk<rows.length; wk++) {
+	  group = pGroupsTableModel.getGroup(rows[wk]);
+	  if(group != null) 
+	    break;
+	}
+      }
+      
+      if(group != null) {
+	if(pGroupsCreateDialog.wasConfirmed()) {
+	  String gname = pGroupsCreateDialog.getName();
+	  if((gname != null) && (gname.length() > 0)) {
+	    UIMaster master = UIMaster.getInstance();
+	    QueueMgrClient client = master.getQueueMgrClient();
+	    try {
+	      client.addSelectionGroup(gname);
+	      client.editSelectionGroup(new SelectionGroup(gname, group));
+	      modified = true;
+	    }
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	    }
+	  }
+	}
+      }
+    }
+      
     if(modified) {
       updateAll();
       updateJobBrowsers();
@@ -1171,6 +1234,7 @@ class JManageSelectionKeysDialog
    * The selection groups popup menu items.
    */ 
   private JMenuItem  pGroupsAddItem;
+  private JMenuItem  pGroupsCloneItem;
   private JMenuItem  pGroupsRemoveItem;
 
 
