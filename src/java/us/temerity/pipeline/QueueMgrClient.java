@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.26 2005/12/31 20:42:58 jim Exp $
+// $Id: QueueMgrClient.java,v 1.27 2006/01/02 20:48:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -638,7 +638,29 @@ class QueueMgrClient
   }
   
   /**
-   * Change the selection key biases and preemption flags for the given selection groups. <P> 
+   * Change the selection key biases for the given selection group. <P> 
+   * 
+   * For an detailed explanation of how selection keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param group
+   *   The selection group to modify.
+   */ 
+  public synchronized void
+  editSelectionGroup
+  (
+   SelectionGroup group
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<SelectionGroup> groups = new ArrayList<SelectionGroup>();
+    groups.add(group);
+
+    editSelectionGroups(groups);
+  }
+
+  /**
+   * Change the selection key biases for the given selection groups. <P> 
    * 
    * For an detailed explanation of how selection keys are used to determine the assignment
    * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
@@ -655,7 +677,7 @@ class QueueMgrClient
   {
     if(!isPrivileged())
       throw new PipelineException
-	("Only privileged users may edit selection keys!");
+	("Only privileged users may edit selection groups!");
     
     verifyConnection();
     
@@ -773,6 +795,25 @@ class QueueMgrClient
     handleSimpleResponse(obj);
   }
   
+  /**
+   * Modify the given selection schedule. <P> 
+   * 
+   * @param schedule
+   *   The selection schedule to modify.
+   */ 
+  public synchronized void
+  editSelectionSchedules
+  (
+   SelectionSchedule schedule
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<SelectionSchedule> schedules = new ArrayList<SelectionSchedule>();
+    schedules.add(schedule);
+
+    editSelectionSchedules(schedules);
+  }
+
   /**
    * Modify the given selection schedules. <P> 
    * 
