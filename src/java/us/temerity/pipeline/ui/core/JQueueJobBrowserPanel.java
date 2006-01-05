@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.16 2005/12/31 20:40:44 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.17 2006/01/05 22:46:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.net.*;
+import java.io.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -139,6 +140,23 @@ class JQueueJobBrowserPanel
 	item = new JMenuItem("Update");
 	pSlotsUpdateItem = item;
 	item.setActionCommand("update");
+	item.addActionListener(this);
+	pSlotsPopup.add(item);
+
+	pSlotsPopup.addSeparator();
+	
+	item = new JMenuItem("View");
+	pSlotsViewItem = item;
+	item.setActionCommand("slots-edit");
+	item.addActionListener(this);
+	pSlotsPopup.add(item);
+	
+	pSlotsViewWithMenu = new JMenu("View With");
+	pSlotsPopup.add(pSlotsViewWithMenu);
+	
+	item = new JMenuItem("View With Default");
+	pSlotsViewWithDefaultItem = item;
+	item.setActionCommand("slots-edit-with-default");
 	item.addActionListener(this);
 	pSlotsPopup.add(item);
 
@@ -797,6 +815,19 @@ class JQueueJobBrowserPanel
   }
 
   /**
+   * Get ID of job running on the singly selected job server slot.
+   */ 
+  public Long
+  getSelectedSlotJobID()
+  {
+    int rows[] = pSlotsTablePanel.getTable().getSelectedRows();
+    if(rows.length == 1) 
+      return pSlotsTableModel.getJobID(rows[0]);
+    return null;
+  }
+  
+
+  /**
    * Get IDs of the selected job groups. 
    */ 
   public TreeSet<Long> 
@@ -813,6 +844,47 @@ class JQueueJobBrowserPanel
     return groupIDs;
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Reset the caches of toolset plugins and plugin menu layouts.
+   */ 
+  public void 
+  clearPluginCache()
+  {
+    pSlotsEditorMenuToolset = null;
+  }
+
+  /**
+   * Update the slots editor plugin menus.
+   */ 
+  private void 
+  updateSlotsEditorMenus()
+  {
+    String toolset = null;
+    {
+      int row = pSlotsTablePanel.getTable().getSelectedRow();
+      if(row != -1) {
+	Long jobID = pSlotsTableModel.getJobID(row);
+	if(jobID != null) {
+	  JobStatus status = pJobStatus.get(jobID);
+	  if(status != null) 
+	    toolset = status.getToolset();
+	}
+      }
+    }
+	  
+    if((toolset != null) && !toolset.equals(pSlotsEditorMenuToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildEditorMenu(toolset, pSlotsViewWithMenu, this);
+      
+      pSlotsEditorMenuToolset = toolset;
+    }
+  }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1062,7 +1134,14 @@ class JQueueJobBrowserPanel
   public void 
   updateSlotsMenu() 
   {
-    boolean selected = (pSlotsTablePanel.getTable().getSelectedRowCount() > 0);
+    boolean single = (getSelectedSlotJobID() != null); 
+    pSlotsViewItem.setEnabled(single); 
+    pSlotsViewWithMenu.setEnabled(single); 
+    if(single) 
+      updateSlotsEditorMenus();
+    pSlotsViewWithDefaultItem.setEnabled(single); 
+
+    boolean selected = (!getSelectedSlotJobIDs().isEmpty()); 
     pSlotsPreemptItem.setEnabled(selected);
     pSlotsKillItem.setEnabled(selected);
   }
@@ -1286,6 +1365,13 @@ class JQueueJobBrowserPanel
       (pSlotsUpdateItem, prefs.getUpdate(),
        "Update the job servers, slots and groups.");
     updateMenuToolTip
+      (pSlotsViewItem, prefs.getEdit(), 
+       "View the target files of the selected job server slot.");
+    updateMenuToolTip
+      (pSlotsViewWithDefaultItem, prefs.getEdit(), 
+       "View the target files of the selected job server slot using the default" + 
+       "editor for the file type.");
+    updateMenuToolTip
       (pSlotsPreemptItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected groups.");
     updateMenuToolTip
@@ -1460,6 +1546,13 @@ class JQueueJobBrowserPanel
 	if((prefs.getKillJobs() != null) &&
 	   prefs.getKillJobs().wasPressed(e))
 	  doSlotsKillJobs();
+
+	else if((prefs.getEdit() != null) &&
+		prefs.getEdit().wasPressed(e)) 
+	  doSlotsView();
+	else if((prefs.getEditWithDefault() != null) &&
+		prefs.getEditWithDefault().wasPressed(e))
+	  doSlotsViewWithDefault();
 	else 
 	  unsupported = true;
 	break;
@@ -1566,6 +1659,14 @@ class JQueueJobBrowserPanel
 
     else if(cmd.equals("slots-preempt-jobs")) 
       doSlotsPreemptJobs();
+
+    else if(cmd.equals("slots-edit"))
+      doSlotsView();
+    else if(cmd.equals("slots-edit-with-default"))
+      doSlotsViewWithDefault();
+    else if(cmd.startsWith("slots-edit-with:"))
+      doSlotsViewWith(cmd.substring(10));    
+
     else if(cmd.equals("slots-kill-jobs")) 
       doSlotsKillJobs();
 
@@ -1819,6 +1920,72 @@ class JQueueJobBrowserPanel
       task.start();
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * View the target files of the job running on the selected slot.
+   */ 
+  private void 
+  doSlotsView() 
+  {
+    Long jobID = getSelectedSlotJobID();
+    if(jobID != null) {
+      JobStatus status = pJobStatus.get(jobID);
+      if(status != null) {
+	ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence());
+	task.start();
+      }
+    }
+  }
+
+  /**
+   * View the target files of the job running on the selected slot using the default 
+   * editor for the file type.
+   */ 
+  private void 
+  doSlotsViewWithDefault() 
+  {
+    Long jobID = getSelectedSlotJobID();
+    if(jobID != null) {
+      JobStatus status = pJobStatus.get(jobID);
+      if(status != null) {
+	ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), true);
+	task.start();
+      }
+    }
+  }
+
+  /**
+   * View the target files of the job running on the selected slot with the given editor.
+   */ 
+  private void 
+  doSlotsViewWith
+  (
+   String editor
+  ) 
+  {
+    String parts[] = editor.split(":");
+    assert(parts.length == 3);
+    
+    String ename   = parts[0];
+    VersionID evid = new VersionID(parts[1]);
+    String evendor = parts[2];
+
+    Long jobID = getSelectedSlotJobID();
+    if(jobID != null) {
+      JobStatus status = pJobStatus.get(jobID);
+      if(status != null) {
+	ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), false, 
+				     ename, evid, evendor);
+	task.start();
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Kill the jobs running on the selected job server slots.
@@ -2942,6 +3109,161 @@ class JQueueJobBrowserPanel
     private TreeSet<String>  pHostnames; 
   }
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * View the given working file sequence with the given editor.
+   */ 
+  private
+  class ViewTask
+    extends Thread
+  {
+    public 
+    ViewTask
+    (
+     NodeID nodeID, 
+     FileSeq fseq
+    ) 
+    {
+      this(nodeID, fseq, false, null, null, null);
+    }
+
+    public 
+    ViewTask
+    (
+     NodeID nodeID, 
+     FileSeq fseq, 
+     boolean useDefault
+    ) 
+    {
+      this(nodeID, fseq, useDefault, null, null, null);
+    }
+
+    public 
+    ViewTask
+    (
+     NodeID nodeID, 
+     FileSeq fseq,
+     boolean useDefault,
+     String ename,
+     VersionID evid, 
+     String evendor
+    ) 
+    {
+      super("JQueueJobBrowserPanel:ViewTask");
+
+      pNodeID        = nodeID;
+      pFileSeq       = fseq; 
+      pUseDefault    = useDefault;
+      pEditorName    = ename;
+      pEditorVersion = evid; 
+      pEditorVendor  = evendor;       
+    }
+
+     public void 
+     run() 
+     {
+       SubProcessLight proc = null;
+       {
+ 	UIMaster master = UIMaster.getInstance();
+ 	if(master.beginPanelOp("Launching Node Editor...")) {
+ 	  try {
+ 	    MasterMgrClient client = master.getMasterMgrClient();
+
+ 	    NodeMod mod = client.getWorkingVersion(pNodeID);
+ 	    String author = pNodeID.getAuthor();
+ 	    String view = pNodeID.getView();
+
+ 	    /* create an editor plugin instance */ 
+ 	    BaseEditor editor = null;
+ 	    {
+	      if(pEditorName != null) {
+		PluginMgrClient pclient = PluginMgrClient.getInstance();
+		editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
+	      }
+	      else if (pUseDefault) {
+		FilePattern fpat = mod.getPrimarySequence().getFilePattern();
+		String suffix = fpat.getSuffix();
+		if(suffix != null) 
+		  editor = client.getEditorForSuffix(suffix);
+	      }
+
+	      if(editor == null) 
+		editor = mod.getEditor();
+		
+	      if(editor == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + mod.getName() + ")!");
+ 	    }
+
+ 	    /* lookup the toolset environment */ 
+ 	    TreeMap<String,String> env = null;
+ 	    {
+ 	      String tname = mod.getToolset();
+ 	      if(tname == null) 
+ 		throw new PipelineException
+ 		  ("No toolset was specified for node (" + mod.getName() + ")!");
+
+ 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+ 	      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
+
+ 	      /* override these since the editor will be run as the current user */ 
+ 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+ 	      env.put("USER", PackageInfo.sUser);
+	      env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
+ 	    }
+	    
+ 	    /* get the primary file sequence */ 
+ 	    FileSeq fseq = null;
+ 	    File dir = null; 
+ 	    {
+ 	      String path = null;
+ 	      {
+ 		File wpath = new File(PackageInfo.sWorkDir, 
+ 				      author + "/" + view + "/" + mod.getName());
+ 		path = wpath.getParent();
+ 	      }
+
+ 	      fseq = new FileSeq(path, pFileSeq);
+ 	      dir = new File(path);
+ 	    }
+	    
+ 	    /* start the editor */ 
+ 	    proc = editor.launch(fseq, env, dir);
+ 	  }
+ 	  catch(PipelineException ex) {
+ 	    master.showErrorDialog(ex);
+ 	    return;
+ 	  }
+ 	  finally {
+ 	    master.endPanelOp("Done.");
+ 	  }
+ 	}
+
+ 	/* wait for the editor to exit */ 
+ 	if(proc != null) {
+ 	  try {
+ 	    proc.join();
+ 	    if(!proc.wasSuccessful()) 
+ 	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+ 	  }
+ 	  catch(InterruptedException ex) {
+ 	    master.showErrorDialog(ex);
+ 	  }
+ 	}
+       }
+     }
+
+     private NodeID     pNodeID;
+     private FileSeq    pFileSeq;
+     private boolean    pUseDefault; 
+     private String     pEditorName;
+     private VersionID  pEditorVersion; 
+     private String     pEditorVendor; 
+   }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3323,6 +3645,12 @@ class JQueueJobBrowserPanel
   private boolean  pIsPrivileged;
 
   /**
+   * The toolset used to build the editor menus.
+   */ 
+  private String  pGroupsEditorMenuToolset;
+  private String  pSlotsEditorMenuToolset;
+
+  /**
    * The working area view filter.
    */
   private ViewFilter  pViewFilter; 
@@ -3411,8 +3739,15 @@ class JQueueJobBrowserPanel
    * The slots popup menu items.
    */ 
   private JMenuItem  pSlotsUpdateItem;
+  private JMenuItem  pSlotsViewItem;
+  private JMenuItem  pSlotsViewWithDefaultItem;
   private JMenuItem  pSlotsPreemptItem;
   private JMenuItem  pSlotsKillItem;
+
+  /**
+   * The view with submenu.
+   */ 
+  private JMenu  pSlotsViewWithMenu; 
 
 
   /**

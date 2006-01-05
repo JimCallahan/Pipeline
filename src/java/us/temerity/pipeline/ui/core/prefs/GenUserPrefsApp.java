@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1094,6 +1094,17 @@ class GenUserPrefsApp
 	 "JobBrowserSlotsKillJobs", "Kill Slot Jobs:", "KillJobs"), 
 	
 	new BasePref(),
+	
+	new DuplicateHotKeyPref
+	("View the target files of the selected job server slot.", 
+	 "JobBrowserSlotsView", "View:", "Edit"), 
+
+	new DuplicateHotKeyPref
+	("View the target files of the selected job server slot using the default" + 
+	 "editor for the file type.", 
+	 "JobBrowserSlotsViewWithDefault", "View With Default:", "EditWithDefault"), 
+
+	new BasePref(),
 
 	new HotKeyPref
 	("Toggle the view filter between single view, owned views and all views.", 
@@ -1836,6 +1847,8 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(update);
+	group.add("JobBrowserSlotsView");
+	group.add("JobBrowserSlotsViewWithDefault");
 	group.add("JobBrowserSlotsPreemptJobs");
 	group.add("JobBrowserSlotsKillJobs");
       }
@@ -1967,7 +1980,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2224,7 +2237,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3580,7 +3593,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
