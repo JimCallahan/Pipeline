@@ -1,102 +1,18 @@
 
-ACTIONS:
 
-- Port the old Pipeline actions to work with the new Pipeline.
-  + DelightShaderAction
-  + DelightShopAction
-  + DsTableAction
-  + HScriptAction
-  + IConvertAction
-  + MergeTableAction
-  + VexAction
-  + VexTableAction
+NEXT BUGS/FEATURES: 
 
-- Write Action classes for the remaining common CG tasks:
-  + Houdini Output OP
-  + Maya/MentalRay Render
-  + Maya Simulation: particle systems, dynamics, cloth, fluid dynamics.    
-  + Add 3Delight Render.  
+560 	Wrong Status after breaking, restoring link.
 
+474 	Group Administrator.
 
+539 	MentalRay Standalone Plugins
 
+548 	View Version Trees
+549 	Determine owner of unchecked in node
 
+        Gelato Plugins
 
-----------------------------------------------------------------------------------------------
+        Liquid/Pixie Plugins
 
-DOCUMENTATION: 
-
-+ Write Pipeline User Manual
-
-+ Write Pipeline Whitepaper for manager types.
-
-+ Write Pipeline Glossy Brochure suitable for printing and web page.
-
-
-
-WEB PAGE:
-
-+ Company Info
-
-  - Bio of Jim Callahan
-
-  - Mission Statement / Philosophy
-
-
-+ Pipeline 
-
-  - Intro Page
-
-  - Walkthrough of Features (with screen shots)
-
-  - News: press releases, articles, announcements
-
-  - Customer Testimonials
-  
-
-  - Documentation
-
-  - Tutorials
-
-  - Forums
-
-  - Bug Database
-
-
-
-----------------------------------------------------------------------------------------------
-
-UPCOMING CONFERENCES: 
-
-- E3
-
-- NAB 
-
-- Game Developers Conference
-
-- SIGGRAPH 2005
-
-
-
-----------------------------------------------------------------------------------------------
-
-CONTACTS: 
-
-Massive Software:
-  - Stephen Regelous
-
-Charlex: 
-  - Bryan Godwin (techy animator)
-  - Steve Mann
-
-Weta:
-  - Matt Aitken (Digital FX Supervisor)
-
-Box Rocket: 
-  - Bay Raitt
-
-Dreamworks: 
-  - Nathan Wilson
-
-???
-  - Josh Richards 
-
+        XSI Plugins
