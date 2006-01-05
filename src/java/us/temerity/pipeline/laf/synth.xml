@@ -898,27 +898,119 @@
 
 
 
-  <!--  P R E E M P T   C H E C K  -->
+  <!--  W E E K L Y   C H E C K  -->
 
-  <style id="PreemptCheck">
+  <style id="WeeklyCheck0">
     <state>
-      <imageIcon id="PreemptUncheckedIcon" path="PreemptCheckIcon.png"/>
-      <property key="CheckBox.icon" value="PreemptUncheckedIcon"/>   	
+      <imageIcon id="WeeklyUncheckedIcon0" path="WeeklyCheckIcon0.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon0"/>   	
     </state>
     <state value="SELECTED">
-      <imageIcon id="PreemptCheckedIcon" path="PreemptCheckSelectedIcon.png"/>
-      <property key="CheckBox.icon" value="PreemptCheckedIcon"/>   	
-    </state>
-    <state value="DISABLED">
-      <imageIcon id="PreemptCheckedIconDisabled" path="PreemptCheckDisabledIcon.png"/>
-      <property key="CheckBox.icon" value="PreemptCheckedIconDisabled"/>   	
+      <imageIcon id="WeeklyCheckedIcon0" path="WeeklyCheckSelectedIcon0.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon0"/>   	
     </state>
     <imagePainter path="Grey.png"
                   method="checkBoxBackground"
                   sourceInsets="0 0 0 0"/>
     <insets top="0" bottom="0" right="0" left="0"/>
   </style>
-  <bind style="PreemptCheck" type="name" key="PreemptCheck"/>
+  <bind style="WeeklyCheck0" type="name" key="WeeklyCheck0"/>
+
+  <style id="WeeklyCheck1">
+    <state>
+      <imageIcon id="WeeklyUncheckedIcon1" path="WeeklyCheckIcon1.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon1"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="WeeklyCheckedIcon1" path="WeeklyCheckSelectedIcon1.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon1"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="WeeklyCheck1" type="name" key="WeeklyCheck1"/>
+
+  <style id="WeeklyCheck2">
+    <state>
+      <imageIcon id="WeeklyUncheckedIcon2" path="WeeklyCheckIcon2.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon2"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="WeeklyCheckedIcon2" path="WeeklyCheckSelectedIcon2.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon2"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="WeeklyCheck2" type="name" key="WeeklyCheck2"/>
+
+  <style id="WeeklyCheck3">
+    <state>
+      <imageIcon id="WeeklyUncheckedIcon3" path="WeeklyCheckIcon3.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon3"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="WeeklyCheckedIcon3" path="WeeklyCheckSelectedIcon3.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon3"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="WeeklyCheck3" type="name" key="WeeklyCheck3"/>
+
+  <style id="WeeklyCheck4">
+    <state>
+      <imageIcon id="WeeklyUncheckedIcon4" path="WeeklyCheckIcon4.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon4"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="WeeklyCheckedIcon4" path="WeeklyCheckSelectedIcon4.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon4"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="WeeklyCheck4" type="name" key="WeeklyCheck4"/>
+
+  <style id="WeeklyCheck5">
+    <state>
+      <imageIcon id="WeeklyUncheckedIcon5" path="WeeklyCheckIcon5.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon5"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="WeeklyCheckedIcon5" path="WeeklyCheckSelectedIcon5.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon5"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="WeeklyCheck5" type="name" key="WeeklyCheck5"/>
+
+  <style id="WeeklyCheck6">
+    <state>
+      <imageIcon id="WeeklyUncheckedIcon6" path="WeeklyCheckIcon0.png"/>
+      <property key="CheckBox.icon" value="WeeklyUncheckedIcon6"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="WeeklyCheckedIcon6" path="WeeklyCheckSelectedIcon0.png"/>
+      <property key="CheckBox.icon" value="WeeklyCheckedIcon6"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="WeeklyCheck6" type="name" key="WeeklyCheck6"/>
 
 
 

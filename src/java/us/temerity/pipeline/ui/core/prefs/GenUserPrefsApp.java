@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1519,16 +1519,30 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("Show the selection schedule details.", 
-	 "SelectionSchedulesDetails", "Schedule Details:"), 
-
-	new HotKeyPref
 	("Add a new selection schedule.", 
 	 "SelectionSchedulesAdd", "Add Schedule:"), 
 
 	new HotKeyPref
+	("Add a new selection schedule which is a copy of the selected schedule.", 
+	 "SelectionSchedulesClone", "Clone Schedule:"), 
+
+	new HotKeyPref
 	("Remove the selected selection schedules.", 
 	 "SelectionSchedulesRemove", "Remove Schedule:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Add a new selection schedule rule.", 
+	 "SelectionRulesAdd", "Add Rule:"), 
+
+	new HotKeyPref
+	("Add a new selection schedule rule which is a copy of the selected rule.", 
+	 "SelectionRulesClone", "Clone Rule:"), 
+
+	new HotKeyPref
+	("Remove the selected selection schedule rules.", 
+	 "SelectionRulesRemove", "Remove Rule:"), 
       };
 
       pPrefs.put("Dialogs|Selection Keys|Hot Keys", prefs);
@@ -1903,9 +1917,13 @@ class GenUserPrefsApp
 	group.add("SelectionGroupsClone");
 	group.add("SelectionGroupsRemove");
 
-	group.add("SelectionSchedulesDetails");
 	group.add("SelectionSchedulesAdd");
+	group.add("SelectionSchedulesClone");
 	group.add("SelectionSchedulesRemove");
+
+	group.add("SelectionRulesAdd");
+	group.add("SelectionRulesClone");
+	group.add("SelectionRulesRemove");
       }
     }
   }
@@ -1949,7 +1967,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2206,7 +2224,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3562,7 +3580,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.26 2006/01/02 20:48:00 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.27 2006/01/05 16:54:44 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.27 2005/12/31 20:42:58 jim Exp $
+// $Id: QueueMgrServer.java,v 1.28 2006/01/05 16:54:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -82,6 +82,9 @@ class QueueMgrServer
       DispatcherTask dispatcher = new DispatcherTask();
       dispatcher.start();
 
+      SchedulerTask scheduler = new SchedulerTask();
+      scheduler.start();
+
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
 	SocketChannel channel = schannel.accept();
@@ -103,6 +106,7 @@ class QueueMgrServer
 
 	collector.join();
 	dispatcher.join();
+	scheduler.join();
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -380,7 +384,8 @@ class QueueMgrServer
 
 	    case AddSelectionGroup:
 	      {
-		QueueAddSelectionGroupReq req = (QueueAddSelectionGroupReq) objIn.readObject();
+		QueueAddSelectionGroupReq req = 
+		  (QueueAddSelectionGroupReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.addSelectionGroup(req));
 		objOut.flush(); 
 	      }
@@ -397,7 +402,8 @@ class QueueMgrServer
 
 	    case EditSelectionGroups:
 	      {
-		QueueEditSelectionGroupsReq req = (QueueEditSelectionGroupsReq) objIn.readObject();
+		QueueEditSelectionGroupsReq req = 
+		  (QueueEditSelectionGroupsReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.editSelectionGroups(req));
 		objOut.flush(); 
 	      }
@@ -805,6 +811,47 @@ class QueueMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Dispatcher Finished.");	
+	LogMgr.getInstance().flush();
+      }
+    }
+  }
+
+  /**
+   * Assigns selection groups to hosts. 
+   */
+  private 
+  class SchedulerTask
+    extends Thread
+  {
+    public 
+    SchedulerTask() 
+    {
+      super("QueueMgrServer:SchedulerTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Scheduler Started.");	
+	LogMgr.getInstance().flush();
+
+	while(!pShutdown.get()) {
+	  pQueueMgr.scheduler();
+	}
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Scheduler Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();
+      }
+      finally {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Scheduler Finished.");	
 	LogMgr.getInstance().flush();
       }
     }

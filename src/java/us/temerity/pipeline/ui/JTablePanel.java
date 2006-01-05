@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.14 2005/12/31 20:18:52 jim Exp $
+// $Id: JTablePanel.java,v 1.15 2006/01/05 16:54:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -613,6 +613,10 @@ class JTablePanel
       for(col=0; col<pModel.getColumnCount(); col++) 
 	pVisibleColumns.add(pModel.getColumnName(col));
 
+      if(pVisibleColumns.size() < pModel.getColumnCount()) 
+	throw new IllegalArgumentException
+	  ("The names of the table model columns must be unique!");
+      
       refilter();
     }
 

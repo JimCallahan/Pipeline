@@ -1,4 +1,4 @@
-// $Id: SelectionGroup.java,v 1.2 2006/01/02 20:48:56 jim Exp $
+// $Id: SelectionGroup.java,v 1.3 2006/01/05 16:54:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,7 +48,7 @@ class SelectionGroup
    * Construct a new selection group with the same selection key biases as the given group.
    * 
    * @param name
-   *   The name of the group.
+   *   The name of the new group.
    * 
    * @param group
    *   Copy selection key biases from this group.

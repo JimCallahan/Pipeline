@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.48 2005/12/31 20:42:58 jim Exp $
+// $Id: QueueMgr.java,v 1.49 2006/01/05 16:54:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -734,21 +734,22 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionKey(): " + kname); 
     timer.aquire();
     try {
-      synchronized(pSelectionKeys) {
-	timer.resume();
-	pSelectionKeys.remove(kname);
-	writeSelectionKeys();
-      }
-
       timer.aquire();
       synchronized(pSelectionGroups) {
-	timer.resume();
-	
 	boolean modified = false;
-	for(SelectionGroup sg : pSelectionGroups.values()) {
-	  if(sg.getBias(kname) != null) {
-	    sg.removeBias(kname);
-	    modified = true;
+	synchronized(pSelectionKeys) {
+	  timer.resume();
+	
+	  {
+	    pSelectionKeys.remove(kname);
+	    writeSelectionKeys();
+	  }
+	  
+	  for(SelectionGroup sg : pSelectionGroups.values()) {
+	    if(sg.getBias(kname) != null) {
+	      sg.removeBias(kname);
+	      modified = true;
+	    }
 	  }
 	}
 
@@ -862,32 +863,44 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionGroups():");
     timer.aquire();
     try {
-      synchronized(pSelectionGroups) {
-	timer.resume();
-	
-	for(String name : names)
-	  pSelectionGroups.remove(name);
-
-	writeSelectionGroups();
-      }
-
-      timer.aquire();
       synchronized(pHosts) {
-	timer.resume();
+	synchronized(pSelectionSchedules) {
+	  synchronized(pSelectionGroups) {
+	    timer.resume();
 	
-	boolean modified = false;
-	for(QueueHost host : pHosts.values()) {
-	  String gname = host.getSelectionGroup();
-	  if((gname != null) && names.contains(gname)) {
-	    host.setSelectionGroup(null);
-	    modified = true;
+	    {
+	      for(String name : names)
+		pSelectionGroups.remove(name);
+	      
+	      writeSelectionGroups();
+	    }
+	    
+	    {
+	      boolean modified = false;
+	      for(QueueHost host : pHosts.values()) {
+		String gname = host.getSelectionGroup();
+		if((gname != null) && names.contains(gname)) {
+		  host.setSelectionGroup(null);
+		  modified = true;
+		}
+	      }
+	      
+	      if(modified) 
+		writeHosts();
+	    }
+
+	    {
+	      boolean modified = false;
+	      for(SelectionSchedule schedule : pSelectionSchedules.values()) 
+		modified = schedule.clearInvalidGroups(names);
+	      
+	      if(modified) 
+		writeSelectionSchedules();
+	    }
 	  }
 	}
-
-	if(modified) 
-	  writeHosts();
       }
-      
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -895,7 +908,6 @@ class QueueMgr
     }    
   }
 
-  
   /**
    * Change the selection key biases for the given selection groups. <P> 
    * 
@@ -917,30 +929,25 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.editSelectionGroups()");
 
-    TreeSet<String> keys = null;
-    timer.aquire();
-    synchronized(pSelectionKeys) {
-      timer.resume();
-      keys = new TreeSet<String>(pSelectionKeys.keySet());
-    }
-
     timer.aquire();
     try {
       synchronized(pSelectionGroups) {
-	timer.resume();
+	synchronized(pSelectionKeys) {
+	  timer.resume();
 	
-	for(SelectionGroup sg : req.getSelectionGroups()) {
-	  /* strip any obsolete selection keys */ 
-	  TreeSet<String> dead = new TreeSet<String>();
-	  for(String key : sg.getKeys()) {
-	    if(!keys.contains(key)) 
-	      dead.add(key);
-	  }
-	  for(String key : dead) 
-	    sg.removeBias(key);
+	  for(SelectionGroup sg : req.getSelectionGroups()) {
+	    /* strip any obsolete selection keys */ 
+	    TreeSet<String> dead = new TreeSet<String>();
+	    for(String key : sg.getKeys()) {
+	      if(!pSelectionKeys.containsKey(key)) 
+		dead.add(key);
+	    }
+	    for(String key : dead) 
+	      sg.removeBias(key);
 
-	  /* update the group */ 
-	  pSelectionGroups.put(sg.getName(), sg);
+	    /* update the group */ 
+	    pSelectionGroups.put(sg.getName(), sg);
+	  }
 	}
       
 	writeSelectionGroups();
@@ -1052,25 +1059,25 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionSchedules():");
     timer.aquire();
     try {
-      synchronized(pSelectionSchedules) {
-	timer.resume();
-	
-	for(String name : names)
-	  pSelectionSchedules.remove(name);
-
-	writeSelectionSchedules();
-      }
-
       timer.aquire();
       synchronized(pHosts) {
-	timer.resume();
-	
 	boolean modified = false;
-	for(QueueHost host : pHosts.values()) {
-	  String gname = host.getSelectionSchedule();
-	  if((gname != null) && names.contains(gname)) {
-	    host.setSelectionSchedule(null);
-	    modified = true;
+	synchronized(pSelectionSchedules) {
+	  timer.resume();
+
+	  {
+	    for(String name : names)
+	      pSelectionSchedules.remove(name);
+	    
+	    writeSelectionSchedules();
+	  }
+	
+	  for(QueueHost host : pHosts.values()) {
+	    String sname = host.getSelectionSchedule();
+	    if((sname != null) && names.contains(sname)) {
+	      host.setSelectionSchedule(null);
+	      modified = true;
+	    }
 	  }
 	}
 
@@ -1085,7 +1092,6 @@ class QueueMgr
     }    
   }
 
-  
   /**
    * Modify the given selection schedules. <P> 
    * 
@@ -1104,26 +1110,16 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.editSelectionSchedules()");
 
-    TreeSet<String> groups = null;
-    timer.aquire();
-    synchronized(pSelectionGroups) {
-      timer.resume();
-      groups = new TreeSet<String>(pSelectionGroups.keySet());
-    }
-
     timer.aquire();
     try {
       synchronized(pSelectionSchedules) {
-	timer.resume();
-	
-	for(SelectionSchedule ss : req.getSelectionSchedules()) {
+	synchronized(pSelectionGroups) {
+	  timer.resume();
 
-
-	  // remove schedule rules which use one of the obsolete selection groups here... 
-
-
-	  /* update the schedule */ 
-	  pSelectionSchedules.put(ss.getName(), ss);
+	  for(SelectionSchedule schedule : req.getSelectionSchedules()) {
+	    schedule.validateGroups(pSelectionGroups.keySet());
+	    pSelectionSchedules.put(schedule.getName(), schedule);
+	  }
 	}
       
 	writeSelectionSchedules();
@@ -1303,134 +1299,123 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
 
-    TreeSet<String> scheds = null;
-    timer.aquire();
-    synchronized(pSelectionSchedules) {
-      timer.resume();
-      scheds = new TreeSet<String>(pSelectionSchedules.keySet());
-    }
-
-    TreeSet<String> groups = null;
-    timer.aquire();
-    synchronized(pSelectionGroups) {
-      timer.resume();
-      groups = new TreeSet<String>(pSelectionGroups.keySet());
-    }
-
     timer.aquire();
     try {
       synchronized(pHosts) {
-	timer.resume();
-	
 	boolean modified = false;
-	
-	/* status */ 
-	{
-	  TreeMap<String,QueueHost.Status> table = req.getStatus();
-	  if(table != null) {
-	    for(String hname : table.keySet()) {
-	      QueueHost.Status status = table.get(hname);
-	      QueueHost host = pHosts.get(hname);
-	      if((status != null) && (host != null) && (status != host.getStatus())) {
-		switch(status) {
-		case Disabled:
-		case Enabled:
-		  try {
-		    JobMgrControlClient client = new JobMgrControlClient(hname);
-		    client.verifyConnection();
-		    client.disconnect();
+	synchronized(pSelectionSchedules) {
+	  synchronized(pSelectionGroups) {
+	    timer.resume();
+	    
+	    /* status */ 
+	    {
+	      TreeMap<String,QueueHost.Status> table = req.getStatus();
+	      if(table != null) {
+		for(String hname : table.keySet()) {
+		  QueueHost.Status status = table.get(hname);
+		  QueueHost host = pHosts.get(hname);
+		  if((status != null) && (host != null) && (status != host.getStatus())) {
+		    switch(status) {
+		    case Disabled:
+		    case Enabled:
+		      try {
+			JobMgrControlClient client = new JobMgrControlClient(hname);
+			client.verifyConnection();
+			client.disconnect();
+		      }
+		      catch(PipelineException ex) {
+			status = QueueHost.Status.Shutdown;
+		      }	    	    
+		    }
+		    
+		    switch(status) {
+		    case Shutdown:
+		      try {
+			JobMgrControlClient client = new JobMgrControlClient(hname);
+			client.shutdown();
+		      }
+		      catch(PipelineException ex) {
+		      }	    
+		    }
+		    
+		    setHostStatus(host, status);
 		  }
-		  catch(PipelineException ex) {
-		    status = QueueHost.Status.Shutdown;
-		  }	    	    
 		}
-		
-		switch(status) {
-		case Shutdown:
-		  try {
-		    JobMgrControlClient client = new JobMgrControlClient(hname);
-		    client.shutdown();
+	      }
+	    }
+	    
+	    /* user reservations */ 
+	    {
+	      TreeMap<String,String> table = req.getReservations();
+	      if(table != null) {
+		for(String hname : table.keySet()) {
+		  QueueHost host = pHosts.get(hname);
+		  if(host != null) {
+		    host.setReservation(table.get(hname));
+		    modified = true;
 		  }
-		  catch(PipelineException ex) {
-		  }	    
-		}
-		
-		setHostStatus(host, status);
-	      }
-	    }
-	  }
-	}
-	
-	/* user reservations */ 
-	{
-	  TreeMap<String,String> table = req.getReservations();
-	  if(table != null) {
-	    for(String hname : table.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		host.setReservation(table.get(hname));
-		modified = true;
-	      }
-	    }
-	  }
-	}
-
-	/* job orders */ 
-	{
-	  TreeMap<String,Integer> table = req.getJobOrders();
-	  if(table != null) {
-	    for(String hname : table.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		host.setOrder(table.get(hname));
-		modified = true;
-	      }
-	    }
-	  }
-	}	
-
-	/* job slots */ 
-	{
-	  TreeMap<String,Integer> table = req.getJobSlots();
-	  if(table != null) {
-	    for(String hname : table.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		host.setJobSlots(table.get(hname));
-		modified = true;
-	      }
-	    }
-	  }
-	}
-      
-	/* selection schedules */ 
-	{
-	  TreeMap<String,String> table = req.getSelectionSchedules();
-	  if(table != null) {
-	    for(String hname : table.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		String name = table.get(hname);
-		if((name == null) || scheds.contains(name)) {
-		  host.setSelectionSchedule(name);
-		  modified = true;
 		}
 	      }
 	    }
-	  }
-	}
-      
-	/* selection groups */ 
-	{
-	  TreeMap<String,String> table = req.getSelectionGroups();
-	  if(table != null) {
-	    for(String hname : table.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		String name = table.get(hname);
-		if((name == null) || groups.contains(name)) {
-		  host.setSelectionGroup(name);
-		  modified = true;
+	    
+	    /* job orders */ 
+	    {
+	      TreeMap<String,Integer> table = req.getJobOrders();
+	      if(table != null) {
+		for(String hname : table.keySet()) {
+		  QueueHost host = pHosts.get(hname);
+		  if(host != null) {
+		    host.setOrder(table.get(hname));
+		    modified = true;
+		  }
+		}
+	      }
+	    }	
+	    
+	    /* job slots */ 
+	    {
+	      TreeMap<String,Integer> table = req.getJobSlots();
+	      if(table != null) {
+		for(String hname : table.keySet()) {
+		  QueueHost host = pHosts.get(hname);
+		  if(host != null) {
+		    host.setJobSlots(table.get(hname));
+		    modified = true;
+		  }
+		}
+	      }
+	    }
+	    
+	    /* selection schedules */ 
+	    {
+	      TreeMap<String,String> table = req.getSelectionSchedules();
+	      if(table != null) {
+		for(String hname : table.keySet()) {
+		  QueueHost host = pHosts.get(hname);
+		  if(host != null) {
+		    String name = table.get(hname);
+		    if((name == null) || pSelectionSchedules.containsKey(name)) {
+		      host.setSelectionSchedule(name);
+		      modified = true;
+		    }
+		  }
+		}
+	      }
+	    }
+	    
+	    /* selection groups */ 
+	    {
+	      TreeMap<String,String> table = req.getSelectionGroups();
+	      if(table != null) {
+		for(String hname : table.keySet()) {
+		  QueueHost host = pHosts.get(hname);
+		  if(host != null) {
+		    String name = table.get(hname);
+		    if((name == null) || pSelectionGroups.containsKey(name)) {
+		      host.setSelectionGroup(name);
+		      modified = true;
+		    }
+		  }
 		}
 	      }
 	    }
@@ -3324,6 +3309,92 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S C H E D U L E R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform one round of sheduling the assignment of selection groups to job servers. 
+   */ 
+  public void 
+  scheduler()
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.scheduler()");
+
+    /* precompute current groups for each schedule */ 
+    TreeMap<String,String> scheduledGroups = new TreeMap<String,String>();
+    {
+      timer.aquire();
+      synchronized(pSelectionSchedules) {
+	timer.resume();
+	
+	Date now = new Date();
+	for(SelectionSchedule sched : pSelectionSchedules.values()) 
+	  scheduledGroups.put(sched.getName(), sched.activeGroup(now));
+      }
+    }
+    
+    /* update the hosts */ 
+    timer.aquire();
+    synchronized(pHosts) {
+      boolean modified = false;
+      synchronized(pSelectionGroups) {
+	timer.resume();
+	
+	for(String hname : pHosts.keySet()) {
+	  QueueHost host = pHosts.get(hname);
+	  
+	  String sname = host.getSelectionSchedule();
+	  String gname = host.getSelectionGroup();
+	  if(sname != null) {
+	    String name = scheduledGroups.get(sname);
+	    if(!pSelectionGroups.containsKey(name)) 
+	      name = null;
+	    
+	    if(!(((name == null) && (gname == null)) ||
+		 ((name != null) && (name.equals(gname))))) {
+	      host.setSelectionGroup(name);
+	      modified = true;
+
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+		 "Scheduler [" + hname + "]: Selection Group = " + name + 
+		 " (" + gname + ")\n");
+	      LogMgr.getInstance().flush();
+	    }
+	  }
+	}
+      }
+
+      /* write changes to disk */ 
+      if(modified) {
+	try {
+	  writeHosts();
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     ex.getMessage());
+	}
+      }
+    }
+
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      timer.suspend();
+      long nap = sSchedulerInterval - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
   /*----------------------------------------------------------------------------------------*/
 
@@ -4853,12 +4924,12 @@ class QueueMgr
   /**
    * The interval between attempts to automatically enable Hung job servers. 
    */ 
-  private static final long  sUnhangInterval = 600000L; //600000L;  /* 10-minutes */ 
+  private static final long  sUnhangInterval = 600000L;  /* 10-minutes */ 
 
   /**
    * Job servers Hung more than once within this interval will be Disabled.
    */ 
-  private static final long  sDisableInterval = 3600000L; //3600000L;  /* 60-minutes */ 
+  private static final long  sDisableInterval = 3600000L;  /* 60-minutes */ 
 
   /**
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
@@ -4869,6 +4940,11 @@ class QueueMgr
    * The number of dispatcher cycles between garbage collection of jobs.
    */ 
   private static final int  sGarbageCollectAfter = 600;  /* 10-minutes */ 
+
+  /**
+   * The minimum time a cycle of the scheduler loop should take (in milliseconds).
+   */ 
+  private static final long  sSchedulerInterval = 60000L;  /* 1-minute */ 
 
   /**
    * The maximum number of times to attempt to reconnect to a job server while waiting
@@ -5080,6 +5156,40 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<Long,QueueJobGroup>  pJobGroups; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Lock Nesting Order (to prevent deadlock):
+   * 
+   * synchronized(pHosts) {
+   *   synchronized(pJobs) {
+   *     synchronized(pSelectionSchedules) {
+   *       synchronized(pSelectionGroups) {
+   *         synchronized(pSelectionKeys) {
+   *           ...
+   *         }
+   *       }
+   *     }
+   *   }
+   *   synchronized(pJobInfo) {
+   *     ...
+   *   }
+   * }
+   * 
+   * synchronized(pJobGroups) {
+   *   synchronized(pJobInfo) {
+   *     ...
+   *   }
+   * }
+   * 
+   * synchronized(pSampleFileLock) { 
+   *   synchronized(pMakeDirLock) {
+   *     ...
+   *   }
+   * }
+   */
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.7 2006/01/02 20:47:42 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.8 2006/01/05 16:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -337,55 +337,6 @@ class QueueHostsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the width of the given column.
-   */ 
-  public int
-  getColumnWidth
-  (
-   int col   
-  )
-  {
-    return pColumnWidths[col];
-  }
-
-  /**
-   * Returns the color prefix used to determine the synth style of the header button for 
-   * the given column.
-   */ 
-  public String 	
-  getColumnColorPrefix
-  (
-   int col
-  )
-  {
-    return pColumnColorPrefix[col];
-  }  
-  
-  /**
-   * Returns the description of the column columnIndex used in tool tips.
-   */ 
-  public String 	
-  getColumnDescription
-  (
-   int col
-  ) 
-  {
-    return pColumnDescriptions[col];
-  }
-  
-  /**
-   * Get the renderer for the given column. 
-   */ 
-  public TableCellRenderer
-  getRenderer
-  (
-   int col   
-  )
-  {
-    return pRenderers[col];
-  }
-
-  /**
    * Get the editor for the given column. 
    */ 
   public TableCellEditor
@@ -691,21 +642,22 @@ class QueueHostsTableModel
   ) 
   {
     boolean editable = false;
+    QueueHost host = pQueueHosts.get(pRowToIndex[row]);
     if(pIsPrivileged) 
       editable = true;
-    else {
-      QueueHost host = pQueueHosts.get(pRowToIndex[row]);
+    else 
       editable = pLocalHostnames.contains(host.getName());
-    }
       
     switch(col) {
     case 0:
     case 6: 
     case 7: 
-    case 8: 
-    case 9:
+    case 8:
     case 10:
       return editable;
+ 
+    case 9:
+      return ((host != null) && (host.getSelectionSchedule() == null));
 
     default:
       return false;
@@ -778,8 +730,31 @@ class QueueHostsTableModel
    int col
   ) 
   {
+    String newGroup = null;
+    boolean modifyGroup = false;
+    if(col == 10) {
+      UIMaster master = UIMaster.getInstance();
+      QueueMgrClient client = master.getQueueMgrClient();
+      try {
+	String sname = (String) value;
+	if(!sname.equals("-")) {
+	  TreeMap<String,SelectionSchedule> schedules = client.getSelectionSchedules();
+	  if(schedules != null) {
+	    SelectionSchedule sched = schedules.get(sname);
+	    if(sched != null) {
+	      newGroup = sched.activeGroup(new Date());
+	      modifyGroup = true;
+	    }
+	  }
+	}
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+    }
+
     int vrow = pRowToIndex[row];
-    boolean edited = setValueAtHelper(value, vrow, col);
+    boolean edited = setValueAtHelper(value, vrow, col, newGroup, modifyGroup);
     
     if(pIsPrivileged) {
       int[] selected = pTable.getSelectedRows(); 
@@ -787,7 +762,7 @@ class QueueHostsTableModel
       for(wk=0; wk<selected.length; wk++) {
 	int srow = pRowToIndex[selected[wk]];
 	if(srow != vrow)
-	  setValueAtHelper(value, srow, col);
+	  setValueAtHelper(value, srow, col, newGroup, modifyGroup);
       }
     }
       
@@ -802,7 +777,9 @@ class QueueHostsTableModel
   (
    Object value, 
    int srow, 
-   int col
+   int col, 
+   String newGroup, 
+   boolean modifyGroup 
   ) 
   {
     QueueHost host = pQueueHosts.get(srow);
@@ -865,6 +842,12 @@ class QueueHostsTableModel
 	host.setSelectionSchedule(sched);
 
 	pEditedScheduleIndices.add(srow);
+
+	if(modifyGroup) {
+	  host.setSelectionGroup(newGroup);
+	  pEditedGroupIndices.add(srow);
+	}
+
 	return true; 
       }
 

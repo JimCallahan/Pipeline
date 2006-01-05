@@ -1,5 +1,4 @@
 
-
 NEXT BUGS/FEATURES: 
 
 560 	Wrong Status after breaking, restoring link.
@@ -10,6 +9,8 @@ NEXT BUGS/FEATURES:
 
 548 	View Version Trees
 549 	Determine owner of unchecked in node
+
+554 	Node Bundles
 
         Gelato Plugins
 

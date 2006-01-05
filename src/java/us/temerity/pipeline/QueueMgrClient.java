@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.27 2006/01/02 20:48:36 jim Exp $
+// $Id: QueueMgrClient.java,v 1.28 2006/01/05 16:54:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -613,6 +613,28 @@ class QueueMgrClient
   /**
    * Remove the given existing selection group. <P> 
    * 
+   * @param gname
+   *   The name of the selection group. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the selection group.
+   */ 
+  public synchronized void
+  removeSelectionGroup
+  (
+   String gname
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<String> gnames = new TreeSet<String>();
+    gnames.add(gname);
+    
+    removeSelectionGroups(gnames);
+  }
+  
+  /**
+   * Remove the given existing selection groups. <P> 
+   * 
    * @param gnames
    *   The names of the selection groups. 
    * 
@@ -771,6 +793,28 @@ class QueueMgrClient
   /**
    * Remove the given existing selection schedule. <P> 
    * 
+   * @param sname
+   *   The name of the selection schedule. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the selection schedule.
+   */ 
+  public synchronized void
+  removeSelectionSchedule
+  (
+   String sname
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<String> snames = new TreeSet<String>();
+    snames.add(sname);
+
+    removeSelectionSchedules(snames);
+  }
+
+  /**
+   * Remove the given existing selection schedules. <P> 
+   * 
    * @param snames
    *   The names of the selection schedules. 
    * 
@@ -778,7 +822,7 @@ class QueueMgrClient
    *   If unable to remove the selection schedules.
    */ 
   public synchronized void
-  removeSelectionSchedule
+  removeSelectionSchedules
   (
    TreeSet<String> snames
   ) 
@@ -802,7 +846,7 @@ class QueueMgrClient
    *   The selection schedule to modify.
    */ 
   public synchronized void
-  editSelectionSchedules
+  editSelectionSchedule
   (
    SelectionSchedule schedule
   ) 

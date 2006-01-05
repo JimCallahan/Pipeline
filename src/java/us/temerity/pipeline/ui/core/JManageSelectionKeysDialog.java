@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.7 2006/01/02 20:46:53 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.8 2006/01/05 16:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,8 @@ import javax.swing.border.*;
 public 
 class JManageSelectionKeysDialog
   extends JBaseDialog
-  implements MouseListener, KeyListener, ActionListener, AdjustmentListener
+  implements ListSelectionListener, MouseListener, KeyListener, ActionListener, 
+             AdjustmentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -36,6 +37,9 @@ class JManageSelectionKeysDialog
   JManageSelectionKeysDialog() 
   {
     super("Manage Selection Keys, Groups and Schedules", false);
+
+    pGroupNames = new TreeSet<String>(); 
+    pSchedules  = new TreeMap<String,SelectionSchedule>();
 
     /* initialize the popup menus */ 
     {
@@ -82,17 +86,15 @@ class JManageSelectionKeysDialog
       {
 	pSchedulesPopup = new JPopupMenu();
 
-	item = new JMenuItem("Details...");
-	pSchedulesDetailsItem = item;
-	item.setActionCommand("schedule-details");
-	item.addActionListener(this);
-	pSchedulesPopup.add(item);
-	
-	pSchedulesPopup.addSeparator();
-
 	item = new JMenuItem("Add Schedule");
 	pSchedulesAddItem = item;
 	item.setActionCommand("schedule-add");
+	item.addActionListener(this);
+	pSchedulesPopup.add(item);
+	
+	item = new JMenuItem("Clone Schedule");
+	pSchedulesCloneItem = item;
+	item.setActionCommand("schedule-clone");
 	item.addActionListener(this);
 	pSchedulesPopup.add(item);
 	
@@ -101,6 +103,28 @@ class JManageSelectionKeysDialog
 	item.setActionCommand("schedule-remove");
 	item.addActionListener(this);
 	pSchedulesPopup.add(item);
+      }
+
+      {
+	pRulesPopup = new JPopupMenu();
+
+	item = new JMenuItem("Add Rule");
+	pRulesAddItem = item;
+	item.setActionCommand("rule-add");
+	item.addActionListener(this);
+	pRulesPopup.add(item);
+	
+	item = new JMenuItem("Clone Rule");
+	pRulesCloneItem = item;
+	item.setActionCommand("rule-clone");
+	item.addActionListener(this);
+	pRulesPopup.add(item);
+	
+	item = new JMenuItem("Remove Rule");
+	pRulesRemoveItem = item;
+	item.setActionCommand("rule-remove");
+	item.addActionListener(this);
+	pRulesPopup.add(item);
       }
 
       updateMenuToolTips(); 
@@ -120,15 +144,9 @@ class JManageSelectionKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  //pKeysHeaderPanel = panel;
 	  panel.setName("DialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-// 	  panel.addMouseListener(new KeyFocuser(panel));
 	  
 	  {
 	    JLabel label = new JLabel("Manage Selection Keys:");
@@ -150,7 +168,6 @@ class JManageSelectionKeysDialog
 	  panel.addMouseListener(this); 
 	  panel.setFocusable(true);
 	  panel.addKeyListener(this);
-// 	  panel.addMouseListener(new KeyFocuser(panel));
 
 	  {
 	    SelectionKeysTableModel model = new SelectionKeysTableModel();
@@ -164,7 +181,6 @@ class JManageSelectionKeysDialog
 	      scroll.addMouseListener(this); 
 	      scroll.setFocusable(true);
 	      scroll.addKeyListener(this);
-	      // 		scroll.addMouseListener(new KeyFocuser(scroll));
 	    }
 	    
 	    {
@@ -172,7 +188,6 @@ class JManageSelectionKeysDialog
 	      table.addMouseListener(this); 
 	      table.setFocusable(true);
 	      table.addKeyListener(this);
-	      // 		table.addMouseListener(new KeyFocuser(table));
 	    }
 
 	    panel.add(tpanel);
@@ -191,15 +206,9 @@ class JManageSelectionKeysDialog
 
 	{
 	  JPanel panel = new JPanel();
-	  //pGroupsHeaderPanel = panel;
 	  panel.setName("DialogHeader");	
 	  
 	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-// 	  panel.addMouseListener(new KeyFocuser(panel));
 	  
 	  {
 	    JLabel label = new JLabel("Manage Selection Groups:");
@@ -221,7 +230,6 @@ class JManageSelectionKeysDialog
 	  panel.addMouseListener(this); 
 	  panel.setFocusable(true);
 	  panel.addKeyListener(this);
-// 	  panel.addMouseListener(new KeyFocuser(panel));
 
 	  {	
 	    Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -242,7 +250,6 @@ class JManageSelectionKeysDialog
 		scroll.addMouseListener(this); 
 		scroll.setFocusable(true);
 		scroll.addKeyListener(this);
-// 		scroll.addMouseListener(new KeyFocuser(scroll));
 	      }
 	      
 	      {
@@ -250,7 +257,6 @@ class JManageSelectionKeysDialog
 		table.addMouseListener(this); 
 		table.setFocusable(true);
 		table.addKeyListener(this);
-// 		table.addMouseListener(new KeyFocuser(table));
 	      }
 	      
 	      vbox.add(tpanel);
@@ -284,7 +290,6 @@ class JManageSelectionKeysDialog
 	      scroll.addMouseListener(this); 
 	      scroll.setFocusable(true);
 	      scroll.addKeyListener(this);
-// 	      scroll.addMouseListener(new KeyFocuser(scroll));
 	    }
 	    
 	    {
@@ -292,7 +297,6 @@ class JManageSelectionKeysDialog
 	      table.addMouseListener(this); 
 	      table.setFocusable(true);
 	      table.addKeyListener(this);
-// 	      table.addMouseListener(new KeyFocuser(table));
 	    }
 	    
 	    panel.add(tpanel);
@@ -318,9 +322,92 @@ class JManageSelectionKeysDialog
 
       /* selection schedule panel */ 
       {
+	JPanel body = new JPanel();
+	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
 
-	  // ...
+	{
+	  JPanel panel = new JPanel();
+	  panel.setName("DialogHeader");	
+	  
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	  
+	  {
+	    JLabel label = new JLabel("Manage Selection Schedules:");
+	    label.setName("DialogHeaderLabel");	
+	    
+	    panel.add(label);	  
+	  }
+	  
+	  panel.add(Box.createHorizontalGlue());
 
+	  body.add(panel);
+	}
+
+	{
+	  JPanel panel = new JPanel();
+	  panel.setName("MainPanel");
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	   
+	  panel.addMouseListener(this); 
+	  panel.setFocusable(true);
+	  panel.addKeyListener(this);
+
+	  {
+	    JList lst = new JList(new DefaultListModel());
+	    pScheduleNamesList = lst;
+
+	    lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    lst.setCellRenderer(new JListCellRenderer());
+
+	    lst.addListSelectionListener(this);
+	    lst.addMouseListener(this);
+
+	    {
+	      JScrollPane scroll = new JScrollPane(lst);
+	      
+	      scroll.setMinimumSize(new Dimension(150, 50));
+	      scroll.setMaximumSize(new Dimension(150, Integer.MAX_VALUE));
+	      scroll.setPreferredSize(new Dimension(150, 300));
+	      
+	      scroll.setHorizontalScrollBarPolicy
+		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	      scroll.setVerticalScrollBarPolicy
+		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	      
+	      panel.add(scroll);
+	    }
+	  }
+	  
+	  panel.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	  {
+	    SelectionRulesTableModel model = new SelectionRulesTableModel(this);
+	    pRulesTableModel = model;
+	    
+	    JTablePanel tpanel = new JTablePanel(model);
+	    pRulesTablePanel = tpanel;
+	    
+	    {
+	      JScrollPane scroll = tpanel.getTableScroll();
+	      scroll.addMouseListener(this); 
+	      scroll.setFocusable(true);
+	      scroll.addKeyListener(this);
+	    }
+	    
+	    {
+	      JTable table = tpanel.getTable();
+	      table.addMouseListener(this); 
+	      table.setFocusable(true);
+	      table.addKeyListener(this);
+	    }
+
+	    panel.add(tpanel);
+	  }
+
+	  body.add(panel);
+	}
+
+	tab.addTab(body);
       }
 
       String extra[][] = {
@@ -335,14 +422,13 @@ class JManageSelectionKeysDialog
         "Update the selection keys, groups and schedules."));
 
       pConfirmButton.setToolTipText(UIFactory.formatToolTip(
-       "Apply the changes to selection biases and schedule details and close."));
+       "Apply the changes and close."));
       pApplyButton.setToolTipText(UIFactory.formatToolTip(
-       "Apply the changes to selection biases and schedule details."));
+       "Apply the changes."));
 
       updateAll();
       pack();
     }
-
 
     pKeysCreateDialog      = new JCreateSelectionKeyDialog(this);
     pGroupsCreateDialog    = new JCreateSelectionGroupDialog(this);
@@ -368,7 +454,12 @@ class JManageSelectionKeysDialog
 
       ArrayList<SelectionKey> keys = client.getSelectionKeys();
       TreeMap<String,SelectionGroup> groups = client.getSelectionGroups();
-      TreeMap<String,SelectionSchedule> schedules = client.getSelectionSchedules();
+
+      pGroupNames.clear();
+      pGroupNames.addAll(groups.keySet());
+
+      pSchedules.clear();
+      pSchedules.putAll(client.getSelectionSchedules());
       
       TreeMap<String,String> keyDesc = new TreeMap<String,String>();
       for(SelectionKey key : keys) 
@@ -378,7 +469,7 @@ class JManageSelectionKeysDialog
       pKeysTableModel.setSelectionKeys(keys);
 
       /* update selection groups */ 
-      pGroupNamesTableModel.setNames(groups.keySet());
+      pGroupNamesTableModel.setNames(pGroupNames);
       TreeSet<String> obsolete = 
 	pGroupsTableModel.setSelectionGroups(groups, keyDesc, pIsPrivileged);
       pGroupsTablePanel.refilterColumns(obsolete);
@@ -386,7 +477,27 @@ class JManageSelectionKeysDialog
       pGroupsTablePanel.doShowAllColumns();  // ???
 
       /* update selection schedules */ 
-      // ...
+      {
+	String selected = (String) pScheduleNamesList.getSelectedValue(); 
+	
+	pScheduleNamesList.removeListSelectionListener(this);
+	{
+	  DefaultListModel model = (DefaultListModel) pScheduleNamesList.getModel();
+	  model.clear();
+	  
+	  for(String name : pSchedules.keySet()) 
+	    model.addElement(name);
+
+	  if((selected == null) && (pSchedules.size() > 0)) 
+	    selected = pSchedules.firstKey();
+	  
+	  if(selected != null) 
+	    pScheduleNamesList.setSelectedValue(selected, true);
+	}
+	pScheduleNamesList.addListSelectionListener(this);      
+
+	rebuildSelectionRulesTable();
+      }
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -395,6 +506,7 @@ class JManageSelectionKeysDialog
     updateKeysMenu();
     updateGroupsMenu();
     updateSchedulesMenu();
+    updateRulesMenu();
 
     pConfirmButton.setEnabled(false);
     pApplyButton.setEnabled(false);
@@ -410,19 +522,17 @@ class JManageSelectionKeysDialog
     QueueMgrClient client = master.getQueueMgrClient();
     if(master.beginPanelOp("Updating...")) {
       try {
-	for(JQueueJobBrowserPanel panel : master.getQueueJobBrowserPanels().getPanels()) {
-	  
-	  TreeMap<Long,QueueJobGroup> groups = client.getJobGroups(); 
-	  TreeMap<Long,JobStatus> jobStatus = 
-	    client.getJobStatus(new TreeSet<Long>(groups.keySet()));
-	  TreeMap<Long,QueueJobInfo> jobInfo = client.getRunningJobInfo();
-	  TreeMap<String,QueueHost> hosts = client.getHosts(); 
-	  TreeSet<String> selectionGroups = client.getSelectionGroupNames();
-	  TreeSet<String> selectionSchedules = client.getSelectionScheduleNames();
+	TreeMap<Long,QueueJobGroup> groups = client.getJobGroups(); 
+	TreeMap<Long,JobStatus> jobStatus = 
+	  client.getJobStatus(new TreeSet<Long>(groups.keySet()));
+	TreeMap<Long,QueueJobInfo> jobInfo = client.getRunningJobInfo();
+	TreeMap<String,QueueHost> hosts = client.getHosts(); 
+	TreeSet<String> selectionGroups = client.getSelectionGroupNames();
+	TreeSet<String> selectionSchedules = client.getSelectionScheduleNames();
 
+	for(JQueueJobBrowserPanel panel : master.getQueueJobBrowserPanels().getPanels()) 
 	  panel.updateJobs(groups, jobStatus, jobInfo, 
 			   hosts, selectionGroups, selectionSchedules); 
-	}
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
@@ -433,6 +543,24 @@ class JManageSelectionKeysDialog
     }
   }
 
+  /**
+   * Rebuild the contents of the selection rules table to display the rules of the currently
+   * selection selection schedule.
+   */ 
+  private void 
+  rebuildSelectionRulesTable()
+  {
+    String selected = (String) pScheduleNamesList.getSelectedValue(); 
+    if(selected != null) {
+      SelectionSchedule schedule = pSchedules.get(selected);
+      if(schedule != null) {
+	pRulesTableModel.setSelectionRules
+	  (schedule.getRules(), pGroupNames, pIsPrivileged);
+	
+	pRulesTablePanel.tableStructureChanged();  
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -495,10 +623,22 @@ class JManageSelectionKeysDialog
   public void 
   updateSchedulesMenu() 
   {
-//     boolean selected = (pSchedulesTablePanel.getTable().getSelectedRowCount() > 0);
-//     pSchedulesDetailsItem.setEnabled(selected); 
-//     pSchedulesAddItem.setEnabled(pIsPrivileged); 
-//     pSchedulesRemoveItem.setEnabled(pIsPrivileged && selected); 
+    boolean selected = (pScheduleNamesList.getSelectedValue() != null);
+    pSchedulesAddItem.setEnabled(pIsPrivileged); 
+    pSchedulesCloneItem.setEnabled(pIsPrivileged && selected); 
+    pSchedulesRemoveItem.setEnabled(pIsPrivileged && selected); 
+  }
+
+  /**
+   * Update the selection schedule rules menu.
+   */ 
+  public void 
+  updateRulesMenu() 
+  {
+    int numSelected = pRulesTablePanel.getTable().getSelectedRowCount();
+    pRulesAddItem.setEnabled(pIsPrivileged); 
+    pRulesCloneItem.setEnabled(pIsPrivileged && (numSelected == 1)); 
+    pRulesRemoveItem.setEnabled(pIsPrivileged && (numSelected > 0)); 
   }
 
 
@@ -539,14 +679,24 @@ class JManageSelectionKeysDialog
        "Remove the selected selection groups.");
     
     updateMenuToolTip
-      (pSchedulesDetailsItem, prefs.getSelectionSchedulesDetails(),
-       "Show the selection schedule details.");
-    updateMenuToolTip
       (pSchedulesAddItem, prefs.getSelectionSchedulesAdd(),
        "Add a new selection schedule.");
     updateMenuToolTip
+      (pSchedulesCloneItem, prefs.getSelectionSchedulesClone(),
+       "Add a new selection schedule which is a copy of the selected schedule.");
+    updateMenuToolTip
       (pSchedulesRemoveItem, prefs.getSelectionSchedulesRemove(),
        "Remove the selected selection schedules.");
+
+    updateMenuToolTip
+      (pRulesAddItem, prefs.getSelectionRulesAdd(),
+       "Add a new selection schedule rule.");
+    updateMenuToolTip
+      (pRulesCloneItem, prefs.getSelectionRulesClone(),
+       "Add a new selection schedule rule which is a copy of the selected rule.");
+    updateMenuToolTip
+      (pRulesRemoveItem, prefs.getSelectionRulesRemove(),
+       "Remove the selected selection schedule rules.");
   }
 
   /**
@@ -585,6 +735,25 @@ class JManageSelectionKeysDialog
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /*-- LIST SELECTION LISTENER METHODS -----------------------------------------------------*/
+
+  /**
+   * Called whenever the value of the selection changes.
+   */ 
+  public void 	
+  valueChanged
+  (
+   ListSelectionEvent e
+  )
+  {
+    if(e.getValueIsAdjusting()) 
+      return;
+
+    if(e.getSource() == pScheduleNamesList)
+      rebuildSelectionRulesTable();
+  }
+
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
 
@@ -641,8 +810,14 @@ class JManageSelectionKeysDialog
 	    break;
 	    
 	  case 2:
-	    updateSchedulesMenu();
-	    pSchedulesPopup.show(e.getComponent(), e.getX(), e.getY());      
+	    if(e.getComponent() == pScheduleNamesList) {
+	      updateSchedulesMenu();
+	      pSchedulesPopup.show(e.getComponent(), e.getX(), e.getY());      
+	    }
+	    else {
+	      updateRulesMenu();
+	      pRulesPopup.show(e.getComponent(), e.getX(), e.getY());      	      
+	    }
 	  }
 	}
 	else {
@@ -700,15 +875,24 @@ class JManageSelectionKeysDialog
       break;
       
     case 2:
-      if((prefs.getSelectionSchedulesDetails() != null) &&
-	 prefs.getSelectionSchedulesDetails().wasPressed(e))
-	doSchedulesDetails();
-      else if((prefs.getSelectionSchedulesAdd() != null) &&
+      if((prefs.getSelectionSchedulesAdd() != null) &&
 	      prefs.getSelectionSchedulesAdd().wasPressed(e))
 	doSchedulesAdd();
+      else if((prefs.getSelectionSchedulesClone() != null) &&
+	      prefs.getSelectionSchedulesClone().wasPressed(e))
+	doSchedulesClone();
       else if((prefs.getSelectionSchedulesRemove() != null) &&
 	      prefs.getSelectionSchedulesRemove().wasPressed(e))
 	doSchedulesRemove();
+      else if((prefs.getSelectionRulesAdd() != null) &&
+	      prefs.getSelectionRulesAdd().wasPressed(e))
+	doRulesAdd();
+      else if((prefs.getSelectionRulesClone() != null) &&
+	      prefs.getSelectionRulesClone().wasPressed(e))
+	doRulesClone();
+      else if((prefs.getSelectionRulesRemove() != null) &&
+	      prefs.getSelectionRulesRemove().wasPressed(e))
+	doRulesRemove();
       else 
 	unsupported = true;
     }
@@ -763,12 +947,19 @@ class JManageSelectionKeysDialog
     else if(cmd.equals("group-remove")) 
       doGroupsRemove();
 
-    else if(cmd.equals("schedule-details")) 
-      doSchedulesDetails();
     else if(cmd.equals("schedule-add")) 
       doSchedulesAdd();
+    else if(cmd.equals("schedule-clone")) 
+      doSchedulesClone();
     else if(cmd.equals("schedule-remove")) 
       doSchedulesRemove();
+
+    else if(cmd.equals("rule-add")) 
+      doRulesAdd();
+    else if(cmd.equals("rule-clone")) 
+      doRulesClone();
+    else if(cmd.equals("rule-remove")) 
+      doRulesRemove();
 
     else if(cmd.equals("update")) 
       doUpdate();
@@ -823,19 +1014,27 @@ class JManageSelectionKeysDialog
   public void 
   doApply()
   {
-    ArrayList<SelectionGroup> groups = pGroupsTableModel.getModifiedGroups();
-    if(groups != null) {
-      UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.getQueueMgrClient();
-      try {
+    UIMaster master = UIMaster.getInstance();
+    QueueMgrClient client = master.getQueueMgrClient();
+    try {
+      ArrayList<SelectionGroup> groups = pGroupsTableModel.getModifiedGroups();
+      if(groups != null) 
 	client.editSelectionGroups(groups);
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
 
-      updateAll();
+      String selected = (String) pScheduleNamesList.getSelectedValue(); 
+      if(selected != null) {
+	SelectionSchedule schedule = pSchedules.get(selected);
+	if(schedule != null) {
+	  schedule.setRules(pRulesTableModel.getSelectionRules());
+	  client.editSelectionSchedule(schedule);
+	}
+      }
     }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+    }
+    
+    updateAll();
   }
 
   /*
@@ -976,8 +1175,6 @@ class JManageSelectionKeysDialog
 
     boolean modified = false;
     {
-      pGroupsCreateDialog.setVisible(true);
-
       SelectionGroup group = null;
       {
 	int rows[] = pGroupsTablePanel.getTable().getSelectedRows();
@@ -990,6 +1187,7 @@ class JManageSelectionKeysDialog
       }
       
       if(group != null) {
+	pGroupsCreateDialog.setVisible(true);
 	if(pGroupsCreateDialog.wasConfirmed()) {
 	  String gname = pGroupsCreateDialog.getName();
 	  if((gname != null) && (gname.length() > 0)) {
@@ -1055,24 +1253,175 @@ class JManageSelectionKeysDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Show the schedule details dialog.
-   */ 
-  private void 
-  doSchedulesDetails()
-  {
-
-  }
-  
-  /**
    * Add a selection schedule to the table.
    */ 
   private void 
   doSchedulesAdd()
   {
     boolean modified = false;
+    {
+      pSchedulesCreateDialog.setVisible(true);
 
-    // ...
+      if(pSchedulesCreateDialog.wasConfirmed()) {
+	String gname = pSchedulesCreateDialog.getName();
+	if((gname != null) && (gname.length() > 0)) {
+	  UIMaster master = UIMaster.getInstance();
+	  QueueMgrClient client = master.getQueueMgrClient();
+	  try {
+	    client.addSelectionSchedule(gname);
+	    modified = true;
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	}
+      }
+    }
+    
+    if(modified) {
+      updateAll();
+      updateJobBrowsers();
+    }
+  }
+  
+  /**
+   * Add a selection schedule which is a copy of the currently selected schedule.
+   */ 
+  private void 
+  doSchedulesClone()
+  {
+    boolean modified = false;
+    {
+      String selected = (String) pScheduleNamesList.getSelectedValue(); 
+      if(selected != null) {
+	SelectionSchedule schedule = pSchedules.get(selected);
+	if(schedule != null) {
+	  pSchedulesCreateDialog.setVisible(true);
+	  if(pSchedulesCreateDialog.wasConfirmed()) {
+	    String sname = pSchedulesCreateDialog.getName();
+	    if((sname != null) && (sname.length() > 0)) {
+	      UIMaster master = UIMaster.getInstance();
+	      QueueMgrClient client = master.getQueueMgrClient();
+	      try {
+		client.addSelectionSchedule(sname);
+		client.editSelectionSchedule(new SelectionSchedule(sname, schedule));
+		modified = true;
+	      }
+	      catch(PipelineException ex) {
+		master.showErrorDialog(ex);
+	      }
+	    }
+	  }
+	}
+      }
+    }
 
+    if(modified) {
+      updateAll();
+      updateJobBrowsers();
+    }
+  }
+
+  /**
+   * Remove the selected rows from the selection schedules table.
+   */ 
+  private void 
+  doSchedulesRemove() 
+  {
+    boolean modified = false;
+    {
+      String selected = (String) pScheduleNamesList.getSelectedValue(); 
+      if(selected != null) {
+	UIMaster master = UIMaster.getInstance();
+	QueueMgrClient client = master.getQueueMgrClient();
+	try {
+	  client.removeSelectionSchedule(selected);
+	  modified = true;
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	}
+      }
+    }
+
+    if(modified) {
+      updateAll();
+      updateJobBrowsers();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Add a selection schedule to the table.
+   */ 
+  private void 
+  doRulesAdd()
+  {
+    pRulesTablePanel.stopEditing();
+
+    boolean modified = false;
+    {
+      String selected = (String) pScheduleNamesList.getSelectedValue(); 
+      if(selected != null) {
+	SelectionSchedule schedule = pSchedules.get(selected);
+	if(schedule != null) {
+	  UIMaster master = UIMaster.getInstance();
+	  QueueMgrClient client = master.getQueueMgrClient();
+	  try {
+	    schedule.addRule(new SelectionRule());
+	    client.editSelectionSchedule(schedule);
+	    modified = true;
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	}
+      }
+    }
+    
+
+    if(modified) {
+      updateAll();
+      updateJobBrowsers();
+    }
+  }
+
+  /**
+   * Add a selection schedule rule which is a copy of the currently selected rule.
+   */ 
+  private void 
+  doRulesClone()
+  {
+    pRulesTablePanel.stopEditing();
+
+    boolean modified = false;
+    {
+      String selected = (String) pScheduleNamesList.getSelectedValue(); 
+      if(selected != null) {
+	SelectionSchedule schedule = pSchedules.get(selected);
+	if(schedule != null) {
+	  int rows[] = pRulesTablePanel.getTable().getSelectedRows();
+	  if(rows.length == 1) {
+	    SelectionRule selectedRule = pRulesTableModel.getSelectionRule(rows[0]);
+	    if(selectedRule != null) {
+	      UIMaster master = UIMaster.getInstance();
+	      QueueMgrClient client = master.getQueueMgrClient();
+	      try {
+		schedule.addRule((SelectionRule) selectedRule.clone());
+		client.editSelectionSchedule(schedule);
+		modified = true;
+	      }
+	      catch(PipelineException ex) {
+		master.showErrorDialog(ex);
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    
     if(modified) {
       updateAll();
       updateJobBrowsers();
@@ -1083,11 +1432,32 @@ class JManageSelectionKeysDialog
    * Remove the selected rows from the selection schedules table.
    */ 
   private void 
-  doSchedulesRemove() 
+  doRulesRemove() 
   {
-    boolean modified = false;
+    pRulesTablePanel.stopEditing();
 
-    // ...
+    boolean modified = false;
+    {
+      String selected = (String) pScheduleNamesList.getSelectedValue(); 
+      if(selected != null) {
+	SelectionSchedule schedule = pSchedules.get(selected);
+	if(schedule != null) {
+	  int rows[] = pRulesTablePanel.getTable().getSelectedRows();
+	  if(rows.length > 0) {
+	    UIMaster master = UIMaster.getInstance();
+	    QueueMgrClient client = master.getQueueMgrClient();
+	    try {
+	      schedule.setRules(pRulesTableModel.getSelectionRules(rows));
+	      client.editSelectionSchedule(schedule);
+	      modified = true;
+	    }
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	    }
+	  }
+	}
+      }
+    }
 
     if(modified) {
       updateAll();
@@ -1177,6 +1547,16 @@ class JManageSelectionKeysDialog
    * Does the current user have privileged status?
    */ 
   private boolean  pIsPrivileged;
+
+  /**
+   * Cache of valid selection group names. 
+   */ 
+  private TreeSet<String>  pGroupNames; 
+
+  /**
+   * Cache of the currently defined selection schedules.
+   */ 
+  private TreeMap<String,SelectionSchedule>  pSchedules; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1276,15 +1656,42 @@ class JManageSelectionKeysDialog
   /**
    * The selection schedules popup menu items.
    */ 
-  private JMenuItem  pSchedulesDetailsItem;
   private JMenuItem  pSchedulesAddItem;
+  private JMenuItem  pSchedulesCloneItem;
   private JMenuItem  pSchedulesRemoveItem;
 
+  /**
+   * The selection schedyke names list.
+   */ 
+  private JList  pScheduleNamesList;
 
-  // ... 
 
   /**
-   * The new selection group creation dialog.
+   * The selection schedule rules popup menu.
+   */ 
+  private JPopupMenu  pRulesPopup;
+  
+  /**
+   * The selection schedule rules popup menu items.
+   */ 
+  private JMenuItem  pRulesAddItem;
+  private JMenuItem  pRulesCloneItem;
+  private JMenuItem  pRulesRemoveItem;
+
+  
+  /**
+   * The selection schedules table model.
+   */ 
+  private SelectionRulesTableModel  pRulesTableModel;
+
+  /**
+   * The selection schedules table panel.
+   */ 
+  private JTablePanel  pRulesTablePanel;
+
+
+  /**
+   * The new selection schedule creation dialog.
    */ 
   private JCreateSelectionScheduleDialog pSchedulesCreateDialog; 
 
