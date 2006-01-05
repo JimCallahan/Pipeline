@@ -1,7 +1,7 @@
 
 NEXT BUGS/FEATURES: 
 
-560 	Wrong Status after breaking, restoring link.
+484 	'View' Menu item in the slots view
 
 474 	Group Administrator.
 
@@ -17,3 +17,11 @@ NEXT BUGS/FEATURES:
         Liquid/Pixie Plugins
 
         XSI Plugins
+
+
+
+
+
+483 	Multiple Threads
+
+477 	Check-Out and Running Jobs
