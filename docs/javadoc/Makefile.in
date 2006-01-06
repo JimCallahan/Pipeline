@@ -294,11 +294,16 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   V A R I A B L E S                                                                        #
 #--------------------------------------------------------------------------------------------#
 
-  EXTERNAL_DIRS = j2se/1.5.0/docs/api \
-                  products/java-media/jai/forDevelopers/jai-imageio-1_0-docs \
-                  products/java-media/jai/forDevelopers/jai-apidocs            
-
-  EXTERNAL_URLS = $(patsubst %,-link http://java.sun.com/%,$(EXTERNAL_DIRS))
+  EXTERNAL_URLS = \
+      -linkoffline \
+        http://java.sun.com/j2se/1.5.0/docs/api \
+        $(srcdir)/package-lists/jdk \
+      -linkoffline \
+        http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio-1_0-docs \
+        $(srcdir)/package-lists/jai-imageio \
+      -linkoffline \
+        http://java.sun.com/products/java-media/jai/forDevelopers/jai-apidocs \
+        $(srcdir)/package-lists/jai
 
 
      LOCAL_DIRS = /usr/java/jdk1.5.0/docs/api
