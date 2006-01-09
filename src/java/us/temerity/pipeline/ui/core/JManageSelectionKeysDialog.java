@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.8 2006/01/05 16:54:44 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.9 2006/01/09 12:05:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -430,9 +430,9 @@ class JManageSelectionKeysDialog
       pack();
     }
 
-    pKeysCreateDialog      = new JCreateSelectionKeyDialog(this);
-    pGroupsCreateDialog    = new JCreateSelectionGroupDialog(this);
-    pSchedulesCreateDialog = new JCreateSelectionScheduleDialog(this);
+    pKeysCreateDialog   = new JCreateSelectionKeyDialog(this);
+    pGroupsNewDialog    = new JNewSelectionGroupDialog(this);
+    pSchedulesNewDialog = new JNewSelectionScheduleDialog(this);
   }
 
   
@@ -1141,10 +1141,10 @@ class JManageSelectionKeysDialog
 
     boolean modified = false;
     {
-      pGroupsCreateDialog.setVisible(true);
+      pGroupsNewDialog.setVisible(true);
 
-      if(pGroupsCreateDialog.wasConfirmed()) {
-	String gname = pGroupsCreateDialog.getName();
+      if(pGroupsNewDialog.wasConfirmed()) {
+	String gname = pGroupsNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
 	  QueueMgrClient client = master.getQueueMgrClient();
@@ -1187,9 +1187,9 @@ class JManageSelectionKeysDialog
       }
       
       if(group != null) {
-	pGroupsCreateDialog.setVisible(true);
-	if(pGroupsCreateDialog.wasConfirmed()) {
-	  String gname = pGroupsCreateDialog.getName();
+	pGroupsNewDialog.setVisible(true);
+	if(pGroupsNewDialog.wasConfirmed()) {
+	  String gname = pGroupsNewDialog.getName();
 	  if((gname != null) && (gname.length() > 0)) {
 	    UIMaster master = UIMaster.getInstance();
 	    QueueMgrClient client = master.getQueueMgrClient();
@@ -1260,10 +1260,10 @@ class JManageSelectionKeysDialog
   {
     boolean modified = false;
     {
-      pSchedulesCreateDialog.setVisible(true);
+      pSchedulesNewDialog.setVisible(true);
 
-      if(pSchedulesCreateDialog.wasConfirmed()) {
-	String gname = pSchedulesCreateDialog.getName();
+      if(pSchedulesNewDialog.wasConfirmed()) {
+	String gname = pSchedulesNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
 	  QueueMgrClient client = master.getQueueMgrClient();
@@ -1296,9 +1296,9 @@ class JManageSelectionKeysDialog
       if(selected != null) {
 	SelectionSchedule schedule = pSchedules.get(selected);
 	if(schedule != null) {
-	  pSchedulesCreateDialog.setVisible(true);
-	  if(pSchedulesCreateDialog.wasConfirmed()) {
-	    String sname = pSchedulesCreateDialog.getName();
+	  pSchedulesNewDialog.setVisible(true);
+	  if(pSchedulesNewDialog.wasConfirmed()) {
+	    String sname = pSchedulesNewDialog.getName();
 	    if((sname != null) && (sname.length() > 0)) {
 	      UIMaster master = UIMaster.getInstance();
 	      QueueMgrClient client = master.getQueueMgrClient();
@@ -1643,7 +1643,7 @@ class JManageSelectionKeysDialog
   /**
    * The new selection group creation dialog.
    */ 
-  private JCreateSelectionGroupDialog pGroupsCreateDialog; 
+  private JNewSelectionGroupDialog pGroupsNewDialog; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1693,7 +1693,7 @@ class JManageSelectionKeysDialog
   /**
    * The new selection schedule creation dialog.
    */ 
-  private JCreateSelectionScheduleDialog pSchedulesCreateDialog; 
+  private JNewSelectionScheduleDialog pSchedulesNewDialog; 
 
 }
 

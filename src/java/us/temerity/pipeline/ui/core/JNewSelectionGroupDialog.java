@@ -1,4 +1,4 @@
-// $Id: JCreateSelectionScheduleDialog.java,v 1.1 2005/12/31 20:40:43 jim Exp $
+// $Id: JNewSelectionGroupDialog.java,v 1.1 2006/01/09 12:05:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -14,14 +14,14 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   C R E A T E   S E L E C T I O N   S C H E D U L E   D I A L O G                        */
+/*   N E W   S E L E C T I O N   G R O U P   D I A L O G                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Queries the user for the name and description of a new selection schedule.
+ * Queries the user for the name and description of a new selection group.
  */ 
 public 
-class JCreateSelectionScheduleDialog
+class JNewSelectionGroupDialog
   extends JNewIdentifierDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,12 +32,12 @@ class JCreateSelectionScheduleDialog
    * Construct a new dialog.
    */ 
   public 
-  JCreateSelectionScheduleDialog
+  JNewSelectionGroupDialog
   (
    Dialog owner        
   )
   {
-    super(owner, "New Selection Schedule", "New Schedule Name:", null, "Add");
+    super(owner, "New Selection Group", "New Group Name:", null, "Add");
   }
 
 
@@ -46,6 +46,6 @@ class JCreateSelectionScheduleDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6310118431973005403L;
+  private static final long serialVersionUID = 3413948737235985793L;
 
 }
