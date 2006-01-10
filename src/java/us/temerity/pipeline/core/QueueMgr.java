@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.49 2006/01/05 16:54:43 jim Exp $
+// $Id: QueueMgr.java,v 1.50 2006/01/10 10:42:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -734,7 +734,6 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionKey(): " + kname); 
     timer.aquire();
     try {
-      timer.aquire();
       synchronized(pSelectionGroups) {
 	boolean modified = false;
 	synchronized(pSelectionKeys) {
@@ -1059,7 +1058,6 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionSchedules():");
     timer.aquire();
     try {
-      timer.aquire();
       synchronized(pHosts) {
 	boolean modified = false;
 	synchronized(pSelectionSchedules) {
