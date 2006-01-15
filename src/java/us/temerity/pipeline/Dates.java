@@ -1,4 +1,4 @@
-// $Id: Dates.java,v 1.3 2004/11/14 02:02:40 jim Exp $
+// $Id: Dates.java,v 1.4 2006/01/15 08:22:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,6 +53,9 @@ class Dates
    long interval
   ) 
   {
+    if(interval < 0) 
+      return "-";
+
     long time = interval;
 
     long h = time / 3600000L;
