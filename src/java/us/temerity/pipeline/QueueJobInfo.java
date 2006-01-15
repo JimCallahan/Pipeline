@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.10 2005/12/31 20:42:58 jim Exp $
+// $Id: QueueJobInfo.java,v 1.11 2006/01/15 08:10:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -206,11 +206,6 @@ class QueueJobInfo
   public synchronized void 
   preempted() 
   {
-    pSubmittedStamp = new Date();
-
-    // RECORD TIMING AND OTHER STATS FOR PREEMPTED JOB BEFORE RESETING 
-    // AS IF NEWLY QUEUED... 
-
     pHostname = null;
     pStartedStamp = null;
     pOsType = null;
