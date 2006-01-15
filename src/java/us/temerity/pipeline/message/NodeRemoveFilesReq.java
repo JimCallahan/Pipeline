@@ -1,4 +1,4 @@
-// $Id: NodeRemoveFilesReq.java,v 1.2 2004/09/03 11:00:48 jim Exp $
+// $Id: NodeRemoveFilesReq.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class NodeRemoveFilesReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -42,6 +42,8 @@ class NodeRemoveFilesReq
    TreeSet<Integer> indices
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

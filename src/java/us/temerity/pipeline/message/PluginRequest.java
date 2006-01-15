@@ -1,4 +1,4 @@
-// $Id: PluginRequest.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginRequest.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,6 +19,14 @@ package us.temerity.pipeline.message;
 public
 enum PluginRequest
 {
+  /**
+   * An instance of {@link MiscUpdateAdminPrivilegesReq MiscUpdateAdminPrivilegesReq} is next.
+   */
+  UpdateAdminPrivileges, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * An instance of {@link PluginUpdateReq PluginUpdateReq} is next.
    */

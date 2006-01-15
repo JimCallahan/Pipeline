@@ -36,21 +36,79 @@ Options</a></li>
 Execution</a></li>
   <li style="font-weight: bold;"><a href="#Commands">Commands</a></li>
   <ul>
-    <li style="font-weight: bold;"><a href="#Privileged_Users">Privileged
-Users</a></li>
+    <li style="font-weight: bold;"><a href="#User_Privileges">User
+Privileges<br>
+      </a></li>
     <ul>
-      <li style="font-weight: bold;">privileged</li>
+      <li style="font-weight: bold;">user<br>
+      </li>
       <ul>
-        <li style="font-weight: bold;"><a href="#privileged_--get">--get</a></li>
+        <li style="font-weight: bold;"><a href="#user_--get">--get</a></li>
+        <li style="font-weight: bold;"><a href="#user_--add">--add</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span></span></li>
+        <li style="font-weight: bold;"><a href="#user_--remove">--remove</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span></span></li>
+      </ul>
+      <li style="font-weight: bold;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">work-group</span></span></li>
+      <ul>
+        <li style="font-weight: bold;"><a href="#work-group_--get">--get</a></li>
+        <li style="font-weight: bold;"><a href="#work-group_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#privileged_--grant"><span
- style="font-weight: bold;">--grant</span></a>=<span
+ style="font-weight: normal;"><a href="#work-group_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a><span
+ style="font-style: italic;"><br>
+          </span></span></li>
+        <li style="font-weight: bold;"><a href="#work-group_--add">--add</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;"><br>
+          </span></span></li>
+        <li style="font-weight: bold;"><a href="#work-group_--remove">--remove</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span></span></li>
+        <li style="font-weight: bold;"><a href="#work-group_--set">--set</a>=<span
+ style="font-weight: normal;"><span style="font-style: italic;">group-name</span><span
+ style="font-weight: bold;"> --manager | --member | --not-member --user=</span><span
+ style="font-style: italic;">user-name </span>[</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--user=</span><span
+ style="font-style: italic;">user-name</span> ...]<span
+ style="font-style: italic;"><br>
+          </span></span></li>
+      </ul>
+      <li style="font-weight: bold;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">privilege</span></span></li>
+      <ul>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#privilege_--get-info"><span
+ style="font-weight: bold;">--get-info</span></a>=<span
  style="font-style: italic;">user-name</span></span></li>
+        <li style="font-weight: bold;"><a
+ href="#privilege_--get-info-all"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-info-all</span></span></a></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#privileged_--revoke"><span
- style="font-weight: bold;">--revoke</span></a>=<span
- style="font-style: italic;">user-name</span><br>
+ style="font-weight: normal;"><a href="#privilege_--grant"><span
+ style="font-weight: bold;">--grant</span></a>=<span
+ style="font-style: italic;">user-name</span> <span
+ style="font-weight: bold;">--master-admin</span> | <span
+ style="font-weight: bold;">--developer</span> | <span
+ style="font-weight: bold;">--queue-admin</span> | <span
+ style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--node-mananger</span><br>
           </span></li>
+        <li style="font-weight: bold;"><a href="#privilege_--revoke"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--revoke</span></span></a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>
+          <span style="font-weight: bold;">--master-admin</span> | <span
+ style="font-weight: bold;">--developer</span> | <span
+ style="font-weight: bold;">--queue-admin</span> | <span
+ style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--node-mananger</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;"><br>
+          </span></span></li>
+      </ul>
+      <ul>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Administration">Administration</a></li>
@@ -1703,50 +1761,299 @@ option was specified.<br>
 </div>
 <h2><a name="Commands"></a>Commands<br>
 </h2>
-<h3><a name="Privileged_Users"></a>Privileged Users<br>
-</h3>
+<h3><a name="User_Privileges"></a>User Privileges</h3>
+<div style="margin-left: 40px;">The following commands manage the
+administrative privileges and work group memberships of Pipeline
+users<span style="font-weight: normal;"> (see <a
+ style="font-weight: bold;"
+ href="../javadoc/us/temerity/pipeline/WorkGroups.html">WorkGroups</a>
+and <a style="font-weight: bold;"
+ href="../javadoc/us/temerity/pipeline/Privileges.html">Privileges</a>)</span>.&nbsp;
+<br>
+</div>
+<br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="privileged_--get"></a>privileged
---get<br>
-<br>
-</span><span style="font-weight: bold;"></span>
-<div style="margin-left: 40px;">Prints the names of the privileged
-users.&nbsp; Privileged users are allowed to perform administrative
-commands which alter the overall behavior of Pipeline.&nbsp; In
-addition, privileged users can perform commands which modify nodes
-owned by another.<br>
+ name="user_--get"></a>user --get<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Print the names of all users registered with Pipeline.<br>
 <br>
 </div>
-<span style="font-weight: bold;"><a name="privileged_--grant"></a>privileged
--</span><span style="font-weight: bold;">-grant</span>=<span
- style="font-style: italic;">user-name</span><br>
+<span style="font-weight: bold;"><a name="user_--add"></a>user --add</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Register a new user with Pipeline.</div>
+<span style="font-weight: bold;"><br>
+<a name="user_--remove"></a>user --remove</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Remove an existing registered user, its work group memberships and
+administrative privileges.<br>
 <br>
-<div style="margin-left: 40px;">Grants privileged user status to the
-given
-user (<span style="font-style: italic;">user-name</span>).&nbsp; <br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;">This command requires Master Admin
+privileges.</span><br>
+</div>
 <br>
-This
-command can only be run by the (@PIPELINE_USER@) user.<br>
+<span style="font-weight: normal;"><span style="font-style: italic;"></span></span></div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="work-group_--get"></a>work-group</span></span><span
+ style="font-weight: bold;"> --get<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Print the names of all Pipeline work groups.<br>
+</div>
+<span style="font-weight: bold;"><br style="font-weight: bold;">
+</span></div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="work-group_--get-info"></a>work-group
+</span></span><span style="font-weight: bold;">--get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Print the membership status of the users which make up the given work
+group.<br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
+</span></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="work-group_--get-info-all"></a>work-group
+</span></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-info-all<br>
+</span><span style="font-style: italic;"></span></span><br>
+<span style="font-weight: normal;"><span style="font-style: italic;"> </span></span>
+<div style="margin-left: 40px;">Print the membership status of all
+users in all work groups.<br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="work-group_--add"></a>work-group </span></span><span
+ style="font-weight: bold;">--add</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;"></span></span><br>
+<span style="font-weight: normal;"><span style="font-style: italic;"> </span></span>
+<div style="margin-left: 40px;"><br>
+Create a new work group.&nbsp; Work groups determine the scope of Queue
+Manager and Node Manager privileges.&nbsp; Users which have one of
+these privileges and Manager status in a work group are given enhanced
+privileges over all users which are Members of the work group.<br>
+<br>
+<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;">
+This command requires Master Admin privileges.</span><br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="work-group_--remove"></a>work-group </span></span><span
+ style="font-weight: bold;">--remove</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">group-name</span></span><br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;">
+This command requires Master Admin privileges.<br>
+<br>
+</span></div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="work-group_--set"></a>work-group </span></span><span
+ style="font-weight: bold;">--set</span>=<span
+ style="font-weight: normal;"><span style="font-style: italic;">group-name</span><span
+ style="font-weight: bold;"> --manager | --member | --not-member --user=</span><span
+ style="font-style: italic;">user-name </span>[</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--user=</span><span
+ style="font-style: italic;">user-name</span> ...]<span
+ style="font-style: italic;"></span></span><br>
+<span style="font-weight: normal;"><span style="font-style: italic;"></span></span></div>
+<span style="font-weight: normal;"><span style="font-style: italic;"> </span></span><br>
+<div style="margin-left: 80px;"><span style="font-weight: normal;"><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"></span>Work groups determine the scope of
+Queue Manager and Node Manager
+privileges.&nbsp; Users which have one of these privileges and Manager
+status in a work group are given enhanced privileges over all users
+which are Members of the work group.<br>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">--manager</span><br
+ style="font-weight: bold;">
+<div style="margin-left: 40px;"><br>
+Makes the following users Mangers of the work group.<br>
+<br>
+</div>
+<span style="font-weight: bold;">--member <br>
+</span>
+<div style="margin-left: 40px;"><br>
+Makes the following users Members of the work group.<br>
+</div>
+<span style="font-weight: bold;"><br>
+--not-member<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Removes the following users from the work group.<br>
 <br>
 </div>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;"></span></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="privileged_--revoke"></a>privileged
--</span><span style="font-weight: bold;">-revoke</span>=<span
- style="font-style: italic;">user-name</span><br>
+<div style="margin-left: 80px;"><span style="font-weight: normal;">This
+command requires Master Admin privileges.</span> <br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="privilege_--get-info"></a>privilege</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">
+--get-info</span>=<span style="font-style: italic;">user-name</span></span><br>
+<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><br>
+<div style="margin-left: 40px;">Print the administrative privileges of
+a user.<br>
 </div>
 <br>
-<div style="margin-left: 80px;">Remokes the privileged user status of
-the given
-user (<span style="font-style: italic;">user-name</span>).&nbsp; <br>
-<br>
-This
-command can only be run by the (@PIPELINE_USER@) user.
+<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="privilege_--get-info-all"></a>privilege</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--get-info-all</span></span><br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
+<div style="margin-left: 40px;">Print the administrative privileges of
+all users.<br>
 </div>
+<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="privilege_--grant"></a>privilege</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--grant</span>=<span
+ style="font-style: italic;">user-name</span> <span
+ style="font-weight: bold;">--master-admin</span> | <span
+ style="font-weight: bold;">--developer</span> | <span
+ style="font-weight: bold;">--queue-admin</span> | <span
+ style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--node-mananger</span></span><br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="privilege_--revoke"></a>privilege</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--revoke</span></span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>
+<span style="font-weight: bold;">--master-admin</span> | <span
+ style="font-weight: bold;">--developer</span> | <span
+ style="font-weight: bold;">--queue-admin</span> | <span
+ style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--node-mananger</span></span><br>
+</div>
+<br>
+<div style="margin-left: 80px;"><span style="font-weight: normal;"><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span>Grant
+or revoke specific administrative privileges to the the given user.<br>
+<span class="postbody"><br>
+<span style="font-weight: bold;">--master-admin</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;"><span class="postbody">Master Admin
+privileges provide access to the following operations (over all users):</span></div>
+<span class="postbody">
+<ul>
+  <ul>
+Manage Work Groups and Privileges <br>
+Archive, Offline and Restore Nodes <br>
+Database Backup <br>
+Manage Toolsets and Toolset Packages <br>
+Delete Nodes <br>
+  </ul>
+  <br>
+Also includes the privileges granted to:<br>
+  <br>
+  <ul>
+Developer <br>
+Queue Admin <br>
+Queue Manager (over all users) <br>
+Node Manager (over all users)
+  </ul>
+</ul>
+</span><span class="postbody"><span style="font-weight: bold;">--developer</span><br>
+</span>
+<div style="margin-left: 40px;"><span class="postbody"><br>
+Developer privileges provide access to the following operations (over
+all users):</span><br>
+<br>
+<div style="margin-left: 40px;">Installing plugins using plplugin(1).<br>
+</div>
+</div>
+<div style="margin-left: 80px;">Manage Editor, Action, Comparator and
+Tool Plugin Menus<span class="postbody"></span></div>
+<span class="postbody"><br>
+<span style="font-weight: bold;">--queue-admin</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;"><span class="postbody">Queue Admin
+privileges provide access to the following operations (over all users)</span></div>
+<span class="postbody">
+<ul>
+  <ul>
+Manage License Keys <br>
+Manage Selection Keys, Groups and Schedules <br>
+Add and Remove Job Servers <br>
+Edit Job Server Status, Reservations, Slots, Order <br>
+  </ul>
+</ul>
+</span>
+<div style="margin-left: 40px;"><span class="postbody"><span
+ class="postbody">Also includes the privileges granted to:<br>
+<br>
+</span></span></div>
+<div style="margin-left: 80px;">Queue Manager (over all users) </div>
+<span class="postbody"><br>
+<span style="font-weight: bold;">--queue-manager</span><br>
+</span>
+<div style="margin-left: 40px;"><span class="postbody"><br>
+Queue Manager privileges provide access to the follow operations (over
+users in managed work groups):</span><br>
+<br>
+<div style="margin-left: 40px;">Queue, Pause, Resume, Preempt and Kill
+Jobs</div>
+</div>
+<div style="margin-left: 80px;">Remove Files<span class="postbody"></span></div>
+<span class="postbody"><br>
+<span style="font-weight: bold;">--node-manager</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;"><span class="postbody">Node Manager
+privileges provide access to the following operations (over users in
+managed groups):<br>
+<br>
+</span></div>
+<div style="margin-left: 80px;">Creating and Removing Working Areas</div>
+</div>
+<div style="margin-left: 120px;">
+<div style="margin-left: 80px;">Check-In, Check-Out, Lock and Evolve
+Nodes
+<span class="postbody"></span><br>
+Link and Unlink Nodes <br>
+Add and Remove Secondary Sequences
+<span class="postbody"></span><br>
+Register, Clone, Export, Rename and Renumber Nodes
+<span class="postbody"></span><br>
+Release Nodes and Add/Release Views
+<span class="postbody"></span><br>
+Apply changes to nodes using the Node Details, Node Files and Node
+Links panels<span class="postbody"></span><br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">This command requires Master Admin
+privileges.<br>
+<br>
+</div>
+</div>
+<span style="font-weight: normal;"></span>
 <h3><a name="Administration"></a>Administration</h3>
-<div style="margin-left: 40px;">The following commands require
-privileged user status.<br>
+<div style="margin-left: 40px;">The following commands require Master
+Admin privileges. <br>
 <br>
 <span style="font-weight: bold;"><a name="admin_--shutdown"></a>admin
 --shutdown </span><span style="font-weight: normal;">[<span
@@ -2165,7 +2472,7 @@ currently active toolsets (see <a href="#active-toolsets_--get"><span
  style="font-weight: bold;">active-toolsets</span></a>).<span
  style="font-weight: normal;"> <br>
 <br>
-This command requires privileged user status.</span><br>
+This command requires Master Admin privileges.</span><br>
 </div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 <br>
@@ -2197,7 +2504,7 @@ given toolset must have been previously created
 (see <a href="#toolset_--create"><span style="font-weight: bold;">toolset
 --create</span></a>).<span style="font-weight: normal;"><br>
 <br>
-This command requires privileged user status.<br>
+This command requires Master Admin privileges.<br>
 <br>
 </span></div>
 <span style="font-weight: bold;"></span></div>
@@ -2215,7 +2522,7 @@ given toolset must have been previously created
 <span style="font-weight: normal;"><br>
 </span>
 <div style="margin-left: 40px;"><span style="font-weight: normal;">This
-command requires privileged user status.<br>
+command requires Master Admin privileges.<br>
 <br>
 </span><span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"></span><br>
@@ -2365,8 +2672,9 @@ set the maximum number of slots which may be used at one time on a
 single licensed host.<br>
 </div>
 <br>
-<span style="font-weight: normal;">This command requires privileged
-user status.</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: normal;">This
+command requires Queue Admin privileges.</span><br>
+</div>
 </div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
@@ -2399,8 +2707,8 @@ See <a href="#license-key_--add"><span style="font-weight: bold;">license-key
 --add</span></a> for details on the licensing scheme and maximum
 license count options.<br>
 <br>
-<span style="font-weight: normal;">This command requires privileged
-user status.</span><br>
+<span style="font-weight: normal;">This command requires Queue Admin
+privileges.</span><br>
 </div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
@@ -2415,7 +2723,7 @@ user status.</span><br>
 license keys.<span style="font-weight: normal;">
 <br>
 <br>
-This command requires privileged user status.</span></div>
+This command requires Queue Admin privileges.</span></div>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span></div>
 <span style="font-weight: normal;"><span style="font-style: italic;">
 </span></span><br>
@@ -2471,8 +2779,7 @@ is required. <br>
 </div>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: normal;">This
-command requires privileged
-user status.<br>
+command requires Queue Admin privileges.<br>
 <br>
 </span></div>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2490,8 +2797,8 @@ from the set of existing selection keys.<span
  style="font-weight: normal;">
 </span><br>
 <span style="font-weight: normal;"></span><br>
-<span style="font-weight: normal;">This command requires privileged
-user status.<br>
+<span style="font-weight: normal;">This command requires Queue Admin
+privileges.<br>
 <br>
 </span></div>
 <br>
@@ -2541,7 +2848,7 @@ before jobs will be executed by the new server.<span
  style="font-weight: normal;">
 <br>
 <br>
-This command requires privileged user status.</span></div>
+This command requires Queue Admin privileges.</span></div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="job-server_--set"></a>job-server </span></span><span
@@ -2668,7 +2975,7 @@ common set of selection biases and preemption flags.&nbsp; If no
 selection group is specified for a job server, it will behave as if it
 was a member of a selection group with no selection keys defined. </div>
 <span style="font-weight: normal;"><br>
-This command requires privileged user status.</span></div>
+This command requires Queue Admin privileges.</span></div>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
 <a name="job-server_--remove"></a>job-server
@@ -2683,7 +2990,7 @@ currently running a <a href="pljobmgr.html"><span
 daemon, it will be shutdown immeadiately.<span
  style="font-weight: normal;"><br>
 <br>
-This command requires privileged user status.</span></div>
+This command requires Queue Admin privileges.</span></div>
 </div>
 <h3><a name="Plugins"></a>Plugins</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a

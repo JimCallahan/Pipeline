@@ -1,4 +1,4 @@
-// $Id: NodeCloneFilesReq.java,v 1.1 2005/03/30 20:37:29 jim Exp $
+// $Id: NodeCloneFilesReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class NodeCloneFilesReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -39,6 +39,8 @@ class NodeCloneFilesReq
    NodeID targetID
   )
   { 
+    super();
+
     if(sourceID == null) 
       throw new IllegalArgumentException
 	("The source node ID cannot be (null)!");

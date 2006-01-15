@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.11 2005/12/31 20:40:44 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.12 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -360,6 +360,19 @@ class JNodeLinksPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
@@ -417,6 +430,8 @@ class JNodeLinksPanel
    TreeSet<VersionID> offline
   ) 
   {
+    updatePrivileges();
+
     pStatus = status;
     pOffline = offline;
 
@@ -808,6 +823,26 @@ class JNodeLinksPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Update the node menu.
+   */ 
+  public void 
+  updateNodeMenu() 
+  {
+    boolean privileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
+
+    pQueueJobsItem.setEnabled(privileged);
+    pQueueJobsSpecialItem.setEnabled(privileged);
+    pPauseJobsItem.setEnabled(privileged);
+    pResumeJobsItem.setEnabled(privileged);
+    pPreemptJobsItem.setEnabled(privileged);
+    pKillJobsItem.setEnabled(privileged);
+    pRemoveFilesItem.setEnabled(privileged);  
+
+    updateEditorMenus();
+  }
+
+  /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
   public void 
@@ -968,11 +1003,11 @@ class JNodeLinksPanel
       NodeMod work = details.getWorkingVersion();
       NodeVersion latest = details.getLatestVersion();
       if((work != null) && !pIsFrozen) {
-	updateEditorMenus();
+	updateNodeMenu();
 	pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
       }
       else if(latest != null) {
-	updateEditorMenus();
+	updateNodeMenu();	
 	pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
       }
     }

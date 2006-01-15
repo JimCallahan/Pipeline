@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.15 2006/01/05 16:54:44 jim Exp $
+// $Id: JTablePanel.java,v 1.16 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -263,16 +263,32 @@ class JTablePanel
  
   /**
    * Rebuild the table model to show only the visible columns.
+   * 
+   * @param modified
+   *   Modify whether a column should be visible indexed by column name. 
    */ 
   public void 
   refilterColumns
   (
-   TreeSet<String> obsolete
+   TreeMap<String,Boolean> modified
   ) 
   {
-    pTableModel.refilter(obsolete);
+    pTableModel.refilter(modified);
   }
 
+  /**
+   * Get the column index in the underlying unfiltered model which corresponds to the 
+   * given index in the filtered table model.
+   */ 
+  public int 
+  getColumnIndex 
+  (
+   int col
+  ) 
+  {
+    return pTableModel.getColumnIndex(col); 
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
  
@@ -636,15 +652,24 @@ class JTablePanel
 
     /**
      * Rebuild the table model to show only the visible columns.
+     * 
+     * @param modified
+     *   Modify whether a column should be visible indexed by column name. 
      */ 
     public void 
     refilter
     (
-     TreeSet<String> obsolete
+     TreeMap<String,Boolean> modified
     ) 
     {
-      if(obsolete != null) 
-	pVisibleColumns.removeAll(obsolete);
+      if(modified != null) {
+	for(String name : modified.keySet()) {
+	  if(modified.get(name)) 
+	    pVisibleColumns.add(name);
+	  else 
+	    pVisibleColumns.remove(name);
+	}
+      }
 
       pColumnIndices = new int[pVisibleColumns.size()];
 

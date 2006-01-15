@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.42 2005/12/31 20:40:44 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.43 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -560,6 +560,15 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
+  }
+  
+  /**
    * Set the author and view.
    */ 
   public synchronized void 
@@ -972,8 +981,8 @@ class JNodeViewerPanel
   public void 
   updatePanelMenu() 
   {
-    pRegisterItem.setEnabled(!pIsLocked);
-    pReleaseViewItem.setEnabled(!pIsLocked);
+    pRegisterItem.setEnabled(!isLocked());
+    pReleaseViewItem.setEnabled(!isLocked());
 
     pShowHideDownstreamItem.setText
       ((pShowDownstream ? "Hide" : "Show") + " Downstream");
@@ -1006,23 +1015,14 @@ class JNodeViewerPanel
     pEvolveItem.setEnabled(hasCheckedIn);
     pRestoreItems[2].setEnabled(hasCheckedIn);
     
-    {
-      UIMaster master = UIMaster.getInstance();
-      try {
-	boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
-	pDeleteItem.setEnabled(isPrivileged);
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-    }
+    pDeleteItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
 
     pRemoveSecondaryMenu.setEnabled(false);
 
     updateEditorMenus();
 
     /* rebuild remove secondary items */ 
-    if(!pIsLocked) {
+    if(!isLocked()) {
       JMenuItem item;
 
       pRemoveSecondaryMenu.removeAll();
@@ -1264,6 +1264,9 @@ class JNodeViewerPanel
    boolean updateSubPanels
   )
   { 
+    /* get current user privileges */ 
+    updatePrivileges();
+
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
       pPinnedPos = null;
@@ -2021,7 +2024,7 @@ class JNodeViewerPanel
 	    
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
-		if(pIsLocked) {
+		if(isLocked()) {
 		  updateEditorMenus();
 		  pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
@@ -2656,6 +2659,7 @@ class JNodeViewerPanel
   private void
   doUpdate()
   { 
+    UIMaster.getInstance().getMasterMgrClient().invalidateCachedPrivilegeDetails();
     clearSelection();
     updateRoots();
   }
@@ -5577,7 +5581,6 @@ class JNodeViewerPanel
 	JNodeDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus);
-	  panel.updateManagerTitlePanel();
 	}
       }
 
@@ -5587,7 +5590,6 @@ class JNodeViewerPanel
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
 				 pNovelty, pOffline);
-	  panel.updateManagerTitlePanel();
 	}
       }
       
@@ -5597,7 +5599,6 @@ class JNodeViewerPanel
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
 				 pLinks, pOffline);
-	  panel.updateManagerTitlePanel();
 	}
       }
 
@@ -5607,7 +5608,6 @@ class JNodeViewerPanel
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
 				 pHistory, pOffline);
-	  panel.updateManagerTitlePanel();
 	}
       }
 
@@ -5618,7 +5618,6 @@ class JNodeViewerPanel
 	  panel.updateJobs(pAuthor, pView, 
 			   pJobGroups, pJobStatus, pJobInfo, pHosts, 
 			   pSelectionGroups, pSelectionSchedules);
-	  panel.updateManagerTitlePanel();
 	}
       }
     }

@@ -1,4 +1,4 @@
-// $Id: QueueSetMaxLicensesReq.java,v 1.1 2005/05/31 09:37:45 jim Exp $
+// $Id: QueueSetMaxLicensesReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,7 +18,7 @@ import java.util.*;
  */
 public
 class QueueSetMaxLicensesReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -55,6 +55,8 @@ class QueueSetMaxLicensesReq
    Integer maxHostSlots
   )
   { 
+    super();
+
     if(kname == null) 
       throw new IllegalArgumentException
 	("The license key name cannot be (null)!");

@@ -1,4 +1,4 @@
-// $Id: SelectionRulesTableModel.java,v 1.1 2006/01/05 16:54:44 jim Exp $
+// $Id: SelectionRulesTableModel.java,v 1.2 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,10 +39,16 @@ class SelectionRulesTableModel
   {
     super();
     
-    pParent = parent;
-    pRules = new ArrayList<SelectionRule>();
-    pOrder = new ArrayList<Integer>();
-    pSelectionGroups = new TreeSet<String>();
+    /* initialize the fields */ 
+    {
+      pParent = parent;
+      
+      pPrivilegeDetails = new PrivilegeDetails();    
+      
+      pRules = new ArrayList<SelectionRule>();
+      pOrder = new ArrayList<Integer>();
+      pSelectionGroups = new TreeSet<String>();
+    }
 
     /* initialize the columns */ 
     { 
@@ -301,7 +307,7 @@ class SelectionRulesTableModel
   (
    LinkedList<SelectionRule> rules, 
    TreeSet<String> groups, 
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
   {
     pRules.clear();
@@ -317,7 +323,7 @@ class SelectionRulesTableModel
     pSelectionGroups.clear();
     pSelectionGroups.addAll(groups);
 
-    pIsPrivileged = isPrivileged;
+    pPrivilegeDetails = privileges; 
 
     sort();
   }
@@ -379,7 +385,7 @@ class SelectionRulesTableModel
    int col
   ) 
   {
-    if(!pIsPrivileged) 
+    if(!pPrivilegeDetails.isQueueAdmin()) 
       return false;
 
     SelectionRule rule = pRules.get(pRowToIndex[row]);
@@ -492,7 +498,7 @@ class SelectionRulesTableModel
     int vrow = pRowToIndex[row];
     boolean edited = setValueAtHelper(value, vrow, col);
     
-    if(pIsPrivileged) {
+    if(pPrivilegeDetails.isQueueAdmin()) {
       int[] selected = pTable.getSelectedRows(); 
       int wk;
       for(wk=0; wk<selected.length; wk++) {
@@ -635,9 +641,9 @@ class SelectionRulesTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * The underlying selection rules.

@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.9 2005/09/07 21:11:17 jim Exp $
+// $Id: JArchiveDialog.java,v 1.10 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -34,6 +34,8 @@ class JArchiveDialog
   JArchiveDialog() 
   {
     super("Archive Tool", false);
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     /* create dialog body components */ 
     {
@@ -293,8 +295,9 @@ class JArchiveDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
     try {
-      pIsPrivileged = master.getMasterMgrClient().isPrivileged(false);
+      pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -309,7 +312,8 @@ class JArchiveDialog
   private void 
   updateButtons() 
   {
-    pArchiveButton.setEnabled(pIsPrivileged && !pArchiveTableModel.getData().isEmpty());
+    pArchiveButton.setEnabled
+      (pPrivilegeDetails.isMasterAdmin() && !pArchiveTableModel.getData().isEmpty());
   }
 
 
@@ -1128,9 +1132,9 @@ class JArchiveDialog
   /*----------------------------------------------------------------------------------------*/
     
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
 
   /*----------------------------------------------------------------------------------------*/

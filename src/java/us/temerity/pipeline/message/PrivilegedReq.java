@@ -1,4 +1,4 @@
-// $Id: MiscRemovePrivilegesReq.java,v 1.1 2004/05/23 20:01:27 jim Exp $
+// $Id: PrivilegedReq.java,v 1.1 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,16 +9,16 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   R E M O V E   P R I V I L E G E S   R E Q                                    */
+/*   P R I V I L E G E D   R E Q                                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to Remove the given user's privileged access status. <P> 
+ * The base class of all requests which require administrative privileges. 
  * 
  * @see MasterMgr
  */
 public
-class MiscRemovePrivilegesReq
+class PrivilegedReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,21 +26,12 @@ class MiscRemovePrivilegesReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request. <P> 
-   * 
-   * @param author
-   *   The user to remove priviledges from.
+   * Constructs a new request.
    */
   public
-  MiscRemovePrivilegesReq
-  (
-   String author
-   )
-  { 
-    if(author == null) 
-      throw new IllegalArgumentException
-	("The author cannot be (null)!");
-    pAuthor = author;
+  PrivilegedReq() 
+  {
+    pRequestor = PackageInfo.sUser; 
   }
 
 
@@ -50,32 +41,32 @@ class MiscRemovePrivilegesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the user to remove priviledges from.
-   */
+   * Gets the name of user making the request.
+   */ 
   public String
-  getAuthor() 
+  getRequestor() 
   {
-    return pAuthor;
+    return pRequestor; 
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 4309763776266908757L;
+  private static final long serialVersionUID = -5257552895120364689L;
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The user to remove priviledges from.
-   */ 
-  private String  pAuthor;
+   * The name of user making the request.
+   */
+  private String  pRequestor; 
 
 }
   

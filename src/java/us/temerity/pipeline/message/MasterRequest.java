@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.41 2005/10/17 06:23:39 jim Exp $
+// $Id: MasterRequest.java,v 1.42 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,7 +18,37 @@ package us.temerity.pipeline.message;
  */
 public
 enum MasterRequest
-{  
+{ 
+  /**
+   * Get the work groups used to determine the scope of administrative privileges.
+   */
+  GetWorkGroups, 
+  
+  /**
+   * An instance of {@link MiscSetWorkGroupsReq MiscSetWorkGroupsReq} is next.
+   */
+  SetWorkGroups, 
+
+
+  /**
+   * Get the administrative privileges for all users.
+   */  
+  GetPrivileges,
+
+  /**
+   * An instance of {@link MiscEditPrivilegesReq MiscEditPrivilegesReq} is next.
+   */
+  EditPrivileges, 
+
+  
+  /**
+   * Get the privileges granted to a specific user with respect to all other users.
+   */ 
+  GetPrivilegeDetails, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the name of the default toolset.
    */
@@ -245,6 +275,7 @@ enum MasterRequest
    */
   SetSuffixEditors, 
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -262,24 +293,6 @@ enum MasterRequest
    */
   SetTotalLicenses, 
   
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the privileged users.
-   */
-  GetPrivilegedUsers, 
-
-  /**
-   * An instance of {@link MiscGrantPrivilegesReq MiscGrantPrivilegesReq} is next.
-   */
-  GrantPrivileges, 
-
-  /**
-   * An instance of {@link MiscRemovePrivilegesReq MiscRemovePrivilegesReq} is next.
-   */
-  RemovePrivileges, 
-
 
   /*----------------------------------------------------------------------------------------*/
 

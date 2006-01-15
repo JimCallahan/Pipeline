@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.5 2005/12/31 20:40:44 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.6 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -675,6 +675,18 @@ class JQueueJobDetailsPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isQueueManaged(pAuthor));
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -726,6 +738,8 @@ class JQueueJobDetailsPanel
    QueueJobInfo info
   ) 
   {
+    updatePrivileges();
+
     pJob     = job;
     pJobInfo = info;
 

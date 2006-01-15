@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.5 2005/03/21 07:01:57 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.6 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -247,17 +247,13 @@ class QueueSlotsTableModel
    * 
    * @param jobInfo
    *   The information about all running jobs indexed by job ID.
-   * 
-   * @param isPrivileged
-   *   Does the current user have privileged status?
    */ 
   public void
   setSlots
   (
    TreeMap<String,QueueHost> hosts, 
    TreeMap<Long,JobStatus> jobStatus, 
-   TreeMap<Long,QueueJobInfo> jobInfo,
-   boolean isPrivileged
+   TreeMap<Long,QueueJobInfo> jobInfo
   ) 
   {
     int cnt = 0;
@@ -325,8 +321,6 @@ class QueueSlotsTableModel
 	}
       }
     }
-
-    pIsPrivileged = isPrivileged;
     
     sort();
   }
@@ -461,11 +455,6 @@ class QueueSlotsTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Does the current user have privileged status?
-   */ 
-  private boolean  pIsPrivileged;
 
   /**
    * Whether the host owning each slot is enabled.

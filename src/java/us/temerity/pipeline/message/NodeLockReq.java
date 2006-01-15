@@ -1,4 +1,4 @@
-// $Id: NodeLockReq.java,v 1.1 2005/10/17 06:23:39 jim Exp $
+// $Id: NodeLockReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class NodeLockReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,7 +35,8 @@ class NodeLockReq
    *   The unique working version identifier.
    * 
    * @param vid 
-   *   The revision number of the checked-in version to which the working version is being locked.
+   *   The revision number of the checked-in version to which the working version is 
+   *   being locked.
    */
   public
   NodeLockReq
@@ -44,6 +45,8 @@ class NodeLockReq
    VersionID vid
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

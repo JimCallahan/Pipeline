@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.12 2005/10/30 10:01:32 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.13 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -59,6 +59,35 @@ class QueueMgrControlClient
 
     QueueShutdownOptionsReq req = new QueueShutdownOptionsReq(shutdownJobMgrs);
     shutdownTransaction(QueueRequest.ShutdownOptions, req); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the work groups and administrative privileges from the MasterMgr.
+   * 
+   * @param privs
+   *   The privileges. 
+   * 
+   * @throws PipelineException
+   *   If unable to update the privileges.
+   */ 
+  public synchronized void 
+  updateAdminPrivileges
+  (
+   AdminPrivileges privs
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscUpdateAdminPrivilegesReq req = privs.getUpdateRequest();
+    Object obj = performTransaction(QueueRequest.UpdateAdminPrivileges, req); 
+    handleSimpleResponse(obj);
   }
 
 

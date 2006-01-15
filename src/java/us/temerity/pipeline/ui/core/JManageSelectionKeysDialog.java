@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.9 2006/01/09 12:05:34 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.10 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -37,6 +37,8 @@ class JManageSelectionKeysDialog
   JManageSelectionKeysDialog() 
   {
     super("Manage Selection Keys, Groups and Schedules", false);
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     pGroupNames = new TreeSet<String>(); 
     pSchedules  = new TreeMap<String,SelectionSchedule>();
@@ -450,7 +452,7 @@ class JManageSelectionKeysDialog
     UIMaster master = UIMaster.getInstance();
     QueueMgrClient client = master.getQueueMgrClient();
     try {
-      pIsPrivileged = client.isPrivileged(false);
+      pPrivilegeDetails = master.getMasterMgrClient().getPrivilegeDetails();
 
       ArrayList<SelectionKey> keys = client.getSelectionKeys();
       TreeMap<String,SelectionGroup> groups = client.getSelectionGroups();
@@ -470,11 +472,9 @@ class JManageSelectionKeysDialog
 
       /* update selection groups */ 
       pGroupNamesTableModel.setNames(pGroupNames);
-      TreeSet<String> obsolete = 
-	pGroupsTableModel.setSelectionGroups(groups, keyDesc, pIsPrivileged);
-      pGroupsTablePanel.refilterColumns(obsolete);
-
-      pGroupsTablePanel.doShowAllColumns();  // ???
+      TreeMap<String,Boolean> modified = 
+	pGroupsTableModel.setSelectionGroups(groups, keyDesc, pPrivilegeDetails);
+      pGroupsTablePanel.refilterColumns(modified);
 
       /* update selection schedules */ 
       {
@@ -555,7 +555,7 @@ class JManageSelectionKeysDialog
       SelectionSchedule schedule = pSchedules.get(selected);
       if(schedule != null) {
 	pRulesTableModel.setSelectionRules
-	  (schedule.getRules(), pGroupNames, pIsPrivileged);
+	  (schedule.getRules(), pGroupNames, pPrivilegeDetails);
 	
 	pRulesTablePanel.tableStructureChanged();  
       }
@@ -601,8 +601,8 @@ class JManageSelectionKeysDialog
   updateKeysMenu() 
   {
     boolean selected = (pKeysTablePanel.getTable().getSelectedRowCount() > 0);
-    pKeysAddItem.setEnabled(pIsPrivileged); 
-    pKeysRemoveItem.setEnabled(pIsPrivileged && selected); 
+    pKeysAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
+    pKeysRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && selected); 
   }
 
   /**
@@ -612,9 +612,9 @@ class JManageSelectionKeysDialog
   updateGroupsMenu() 
   {
     int numSelected = pGroupsTablePanel.getTable().getSelectedRowCount();
-    pGroupsAddItem.setEnabled(pIsPrivileged); 
-    pGroupsCloneItem.setEnabled(pIsPrivileged && (numSelected == 1)); 
-    pGroupsRemoveItem.setEnabled(pIsPrivileged && (numSelected > 0)); 
+    pGroupsAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
+    pGroupsCloneItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && (numSelected == 1)); 
+    pGroupsRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && (numSelected > 0)); 
   }
 
   /**
@@ -624,9 +624,9 @@ class JManageSelectionKeysDialog
   updateSchedulesMenu() 
   {
     boolean selected = (pScheduleNamesList.getSelectedValue() != null);
-    pSchedulesAddItem.setEnabled(pIsPrivileged); 
-    pSchedulesCloneItem.setEnabled(pIsPrivileged && selected); 
-    pSchedulesRemoveItem.setEnabled(pIsPrivileged && selected); 
+    pSchedulesAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
+    pSchedulesCloneItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && selected); 
+    pSchedulesRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && selected); 
   }
 
   /**
@@ -636,9 +636,9 @@ class JManageSelectionKeysDialog
   updateRulesMenu() 
   {
     int numSelected = pRulesTablePanel.getTable().getSelectedRowCount();
-    pRulesAddItem.setEnabled(pIsPrivileged); 
-    pRulesCloneItem.setEnabled(pIsPrivileged && (numSelected == 1)); 
-    pRulesRemoveItem.setEnabled(pIsPrivileged && (numSelected > 0)); 
+    pRulesAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
+    pRulesCloneItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && (numSelected == 1)); 
+    pRulesRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && (numSelected > 0)); 
   }
 
 
@@ -1544,9 +1544,9 @@ class JManageSelectionKeysDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * Cache of valid selection group names. 

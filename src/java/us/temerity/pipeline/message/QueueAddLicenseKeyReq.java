@@ -1,4 +1,4 @@
-// $Id: QueueAddLicenseKeyReq.java,v 1.2 2004/07/25 03:07:33 jim Exp $
+// $Id: QueueAddLicenseKeyReq.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class QueueAddLicenseKeyReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueAddLicenseKeyReq
    LicenseKey key
   )
   { 
+    super();
+    
     if(key == null) 
       throw new IllegalArgumentException
 	("The license key cannot be (null)!");

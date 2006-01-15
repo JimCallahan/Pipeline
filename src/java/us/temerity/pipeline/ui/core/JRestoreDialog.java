@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.7 2005/09/07 21:11:17 jim Exp $
+// $Id: JRestoreDialog.java,v 1.8 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -37,6 +37,8 @@ class JRestoreDialog
 
     /* initialize fields */ 
     {
+      pPrivilegeDetails = new PrivilegeDetails();
+
       pArchiveVolumes = new TreeMap<String,ArchiveVolume>();
       pUpdateLock = new Object();
     }
@@ -387,8 +389,9 @@ class JRestoreDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
     try {
-      pIsPrivileged = master.getMasterMgrClient().isPrivileged(false);
+      pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -404,8 +407,8 @@ class JRestoreDialog
   updateButtons() 
   {
     int chosen = pArchiveTableModel.getChosenCount();
-    pRestoreButton.setEnabled(pIsPrivileged && (chosen > 0));
-    pDenyButton.setEnabled(pIsPrivileged);
+    pRestoreButton.setEnabled(pPrivilegeDetails.isQueueAdmin() && (chosen > 0));
+    pDenyButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
   }
 
   /**
@@ -1184,9 +1187,9 @@ class JRestoreDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
   
   /**
    * A cache of archive volumes indexed by volume name.

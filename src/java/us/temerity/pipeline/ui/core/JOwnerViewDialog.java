@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.3 2005/11/03 15:47:52 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.4 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -52,6 +52,7 @@ class JOwnerViewDialog
     if(view == null)
       throw new IllegalArgumentException("The view cannot be (null)!");
 
+    pPrivilegeDetails = new PrivilegeDetails();
 
     /* create dialog body components */ 
     {
@@ -111,10 +112,10 @@ class JOwnerViewDialog
   )
   {
     UIMaster master = UIMaster.getInstance();
-
+    MasterMgrClient client = master.getMasterMgrClient();
     try {
-      pTable = master.getMasterMgrClient().getWorkingAreas(); 
-      pIsPrivileged = master.getMasterMgrClient().isPrivileged(false);
+      pPrivilegeDetails = client.getPrivilegeDetails();
+      pTable = client.getWorkingAreas(); 
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -216,8 +217,9 @@ class JOwnerViewDialog
     String view = (String) pViewList.getSelectedValue();
     pConfirmButton.setEnabled((author != null) && (view != null));
 
-    pAddViewButton.setEnabled((author != null) && 
-			      (pIsPrivileged || author.equals(PackageInfo.sUser)));
+    pAddViewButton.setEnabled
+      ((author != null) && 
+       (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isNodeManaged(author)));
   }
 
 
@@ -294,6 +296,14 @@ class JOwnerViewDialog
   /*----------------------------------------------------------------------------------------*/
  
   /**
+   * The details of the administrative privileges granted to the current user. 
+   */ 
+  private PrivilegeDetails  pPrivilegeDetails; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The table of valid working area view names indexed by author user name.
    */ 
   private TreeMap<String,TreeSet<String>>  pTable;
@@ -309,11 +319,6 @@ class JOwnerViewDialog
    */ 
   private JList  pViewList;
 
-
-  /**
-   * Does the current user have privileged status?
-   */ 
-  private boolean  pIsPrivileged;
 
   /**
    * The add view button.

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.50 2006/01/10 10:42:37 jim Exp $
+// $Id: QueueMgr.java,v 1.51 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -54,7 +54,9 @@ class QueueMgr
     {
       pMakeDirLock = new Object(); 
 
-      pPrivilegedUsers = new TreeSet<String>();
+      pAdminPrivileges = new AdminPrivileges();
+
+      pPrivilegedUsers = new TreeSet<String>();  // OBSOLETE
 
       pLicenseKeys = new TreeMap<String,LicenseKey>();
 
@@ -381,6 +383,34 @@ class QueueMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the work groups and administrative privileges from the MasterMgr.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to update the privileges.
+   */ 
+  public Object
+  updateAdminPrivileges
+  (
+   MiscUpdateAdminPrivilegesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.updateAdminPrivileges()");
+
+    timer.aquire();
+    pAdminPrivileges.updateAdminPrivileges(timer, req);
+    return new SuccessRsp(timer);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P R I V I L E G E D   U S E R S                                                      */
@@ -508,6 +538,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.addLicenseKey(): " + key.getName());
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add license keys!");
+
       synchronized(pLicenseKeys) {
 	timer.resume();
 
@@ -543,6 +577,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeLicenseKey(): " + kname); 
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove license keys!");
+
       synchronized(pLicenseKeys) {
 	timer.resume();
 	
@@ -598,6 +636,10 @@ class QueueMgr
       new TaskTimer("QueueMgr.setMaxLicenses(): " + kname + "[" + scheme + ": " + msg + "]");
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may modify the number of license keys!");
+
       synchronized(pLicenseKeys) {
 	timer.resume();
 	
@@ -699,6 +741,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionKey(): " + key.getName());
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add selection keys!");
+
       synchronized(pSelectionKeys) {
 	timer.resume();
 
@@ -734,6 +780,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionKey(): " + kname); 
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove selection keys!");
+
       synchronized(pSelectionGroups) {
 	boolean modified = false;
 	synchronized(pSelectionKeys) {
@@ -823,6 +873,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionGroup(): " + name);
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add selection groups!"); 
+
       synchronized(pSelectionGroups) {
 	timer.resume();
 	
@@ -862,6 +916,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionGroups():");
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove selection groups!"); 
+
       synchronized(pHosts) {
 	synchronized(pSelectionSchedules) {
 	  synchronized(pSelectionGroups) {
@@ -930,6 +988,10 @@ class QueueMgr
 
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may edit selection groups!");
+
       synchronized(pSelectionGroups) {
 	synchronized(pSelectionKeys) {
 	  timer.resume();
@@ -1019,6 +1081,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.addSelectionSchedule(): " + name);
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add selection schedules!"); 
+
       synchronized(pSelectionSchedules) {
 	timer.resume();
 	
@@ -1058,6 +1124,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionSchedules():");
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove selection schedules!"); 
+
       synchronized(pHosts) {
 	boolean modified = false;
 	synchronized(pSelectionSchedules) {
@@ -1110,6 +1180,10 @@ class QueueMgr
 
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may edit selection keys!");
+
       synchronized(pSelectionSchedules) {
 	synchronized(pSelectionGroups) {
 	  timer.resume();
@@ -1178,6 +1252,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.addHost(): " + hname);
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add hosts!"); 
+
       synchronized(pHosts) {
 	timer.resume();
 	
@@ -1225,6 +1303,10 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.removeHosts():");
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove hosts!"); 
+
       synchronized(pHosts) {
 	timer.resume();
 	
@@ -1299,6 +1381,42 @@ class QueueMgr
 
     timer.aquire();
     try {
+      if(!pAdminPrivileges.isQueueAdmin(req)) {
+	TreeSet<String> hostnames = new TreeSet<String>();
+
+	TreeMap<String,QueueHost.Status> status = req.getStatus();
+	if(status != null) 
+	  hostnames.addAll(status.keySet());
+
+	TreeMap<String,String> reservations = req.getReservations();
+	if(reservations != null) 
+	  hostnames.addAll(reservations.keySet());
+
+	TreeMap<String,Integer> slots = req.getJobSlots();
+	if(slots != null) 
+	  hostnames.addAll(slots.keySet());
+
+	TreeMap<String,Integer> orders = req.getJobOrders();
+	if(orders != null) 
+	  hostnames.addAll(orders.keySet());
+
+	TreeMap<String,String> groups = req.getSelectionGroups();
+	if(groups != null) 
+	  hostnames.addAll(groups.keySet());
+
+	TreeMap<String,String> schedules = req.getSelectionSchedules();
+	if(schedules != null) 
+	  hostnames.addAll(schedules.keySet());
+
+	TreeSet<String> localHostnames = req.getLocalHostnames();
+	for(String hname : hostnames) {
+	  if(!localHostnames.contains(hname)) 
+	    throw new PipelineException
+	      ("Only a user with Queue Admin privileges may may edit the properties of a " + 
+	       "job server (" + hname + ") which is not the local host!");
+	}
+      }	
+
       synchronized(pHosts) {
 	boolean modified = false;
 	synchronized(pSelectionSchedules) {
@@ -1886,10 +2004,19 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.preemptJobs()");
 
-    for(Long jobID : req.getJobIDs())
-      pPreemptList.add(jobID);
+    try {
+      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may preempt jobs owned by another user!");
 
-    return new SuccessRsp(timer);
+      for(Long jobID : req.getJobIDs())
+	pPreemptList.add(jobID);
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
   }
 
   /**
@@ -1910,10 +2037,19 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.killJobs()");
 
-    for(Long jobID : req.getJobIDs())
-      pHitList.add(jobID);
+    try {
+      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may kill jobs owned by another user!");
 
-    return new SuccessRsp(timer);
+      for(Long jobID : req.getJobIDs())
+	pHitList.add(jobID);
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
   }
 
   /**
@@ -1934,14 +2070,23 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.pauseJobs()");
 
-    timer.aquire();
-    synchronized(pPaused) {
-      timer.resume();
-      for(Long jobID : req.getJobIDs())
-	pPaused.add(jobID);
-    }
+    try {
+      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may pause jobs owned by another user!");
 
-    return new SuccessRsp(timer);
+      timer.aquire();
+      synchronized(pPaused) {
+	timer.resume();
+	for(Long jobID : req.getJobIDs())
+	  pPaused.add(jobID);
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
   }
 
   /**
@@ -1962,14 +2107,23 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.resumeJobs()");
 
-    timer.aquire();
-    synchronized(pPaused) {
-      timer.resume();
-      for(Long jobID : req.getJobIDs())
-	pPaused.remove(jobID);
-    }
+    try {
+      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may resume jobs owned by another user!");
 
-    return new SuccessRsp(timer);
+      timer.aquire();
+      synchronized(pPaused) {
+	timer.resume();
+	for(Long jobID : req.getJobIDs())
+	  pPaused.remove(jobID);
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
   }
 
 
@@ -1991,21 +2145,6 @@ class QueueMgr
    QueueGroupJobsReq req
   )
   {
-    // DEBUGGING
-    try {
-      GlueEncoder ge = new GlueEncoderImpl("QueueJobGroup", req.getJobGroup());
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finest,
-	 ge.getText());
-    }
-    catch(GlueException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Severe, 
-	 "Unable to generate a Glue format representation of the job group!");
-    }
-    LogMgr.getInstance().flush();
-    // DEBUGGING
-
     QueueJobGroup group = req.getJobGroup();
     long groupID = group.getGroupID();
     
@@ -2102,11 +2241,21 @@ class QueueMgr
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.deleteJobGroups()");
-    timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      try {
-	TreeMap<Long,String> groupAuthors = req.getGroupAuthors();
+    try {
+      TreeMap<Long,String> groupAuthors = req.getGroupAuthors();
+      
+      TreeSet<String> authors = new TreeSet<String>(groupAuthors.values());
+      for(String author : authors) {
+	if(!pAdminPrivileges.isQueueManaged(req, author))
+	  throw new PipelineException
+	    ("Only a user with Queue Manager privileges may delete job groups owned " + 
+	     "by another user!");
+      }
+
+      timer.aquire();
+      synchronized(pJobGroups) {
+	timer.resume();
+
 	for(Long groupID : groupAuthors.keySet()) {
 	  QueueJobGroup group = pJobGroups.get(groupID);
 	  if(group == null) 
@@ -2124,10 +2273,10 @@ class QueueMgr
 
 	return new SuccessRsp(timer);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }   
   }
 
   /**
@@ -2147,63 +2296,83 @@ class QueueMgr
   ) 
   {
     TaskTimer timer = new TaskTimer("QueueMgr.deleteViewJobGroups()");
-    timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      
-      ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
-      {
-	String author = req.getAuthor();
-	String view   = req.getView();
-	for(Long groupID : pJobGroups.keySet()) {
-	  QueueJobGroup group = pJobGroups.get(groupID);
-	  NodeID nodeID = group.getNodeID();
-	  if(nodeID.getAuthor().equals(author) && nodeID.getView().equals(view)) 
-	    dead.add(group);
+
+    try {
+      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Manager privileges may delete job groups owned " + 
+	   "by another user!");
+
+      timer.aquire();
+      synchronized(pJobGroups) {
+	timer.resume();
+	
+	ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
+	{
+	  String author = req.getAuthor();
+	  String view   = req.getView();
+	  for(Long groupID : pJobGroups.keySet()) {
+	    QueueJobGroup group = pJobGroups.get(groupID);
+	    NodeID nodeID = group.getNodeID();
+	    if(nodeID.getAuthor().equals(author) && nodeID.getView().equals(view)) 
+	      dead.add(group);
+	  }
+	}
+	
+	for(QueueJobGroup group : dead) {
+	  try {
+	    deleteCompletedJobGroup(timer, group);
+	  }
+	  catch(PipelineException ex) {
+	  }
 	}
       }
 
-      for(QueueJobGroup group : dead) {
-	try {
-	  deleteCompletedJobGroup(timer, group);
-	  }
-	catch(PipelineException ex) {
-	}
-      }
-      
       return new SuccessRsp(timer);
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }   
   }
 
   /**
    * Delete all of the completed job groups in all working areas. <P> 
+   * 
+   * @param req 
+   *   The request.
    * 
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to delete the job groups.
    */ 
   public Object
-  deleteAllJobGroups() 
+  deleteAllJobGroups
+  (
+   PrivilegedReq req
+  ) 
   {
     TaskTimer timer = new TaskTimer("QueueMgr.deleteAllJobGroups()");
+
     timer.aquire();
     synchronized(pJobGroups) {
       timer.resume();
-
+      
       ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
       for(Long groupID : pJobGroups.keySet()) 
 	dead.add(pJobGroups.get(groupID));
-
-      for(QueueJobGroup group : dead) {      
-	try {
-	  deleteCompletedJobGroup(timer, group);
-	}
-	catch(PipelineException ex) {
+	
+      for(QueueJobGroup group : dead) {   
+	if(!pAdminPrivileges.isQueueManaged(req, group.getNodeID())) {
+	  try {
+	    deleteCompletedJobGroup(timer, group);
+	  }
+	  catch(PipelineException ex) {
+	  }
 	}
       }
-
-      return new SuccessRsp(timer);
-    } 
+    }
+	
+    return new SuccessRsp(timer);
   }
 
   /**
@@ -4970,13 +5139,21 @@ class QueueMgr
  
 
   /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The combined work groups and adminstrative privileges.
+   */ 
+  private AdminPrivileges  pAdminPrivileges; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The cached names of the privileged users. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private TreeSet<String>  pPrivilegedUsers;
+  private TreeSet<String>  pPrivilegedUsers;  // OBSOLETE 
 
 
   /*----------------------------------------------------------------------------------------*/

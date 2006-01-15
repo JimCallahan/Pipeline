@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.6 2005/07/19 01:25:45 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.7 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -192,6 +192,15 @@ class JNodeBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
+  }
+  
+  /**
    * Set the author and view.
    */ 
   public void 
@@ -210,10 +219,8 @@ class JNodeBrowserPanel
       if((pGroupID > 0) && !master.isRestoring()) {
 	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
 	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) {
+	if(viewer != null) 
 	  viewer.setRoots(pAuthor, pView, pSelected);
-	  viewer.updateManagerTitlePanel();
-	}
       }
     }
   }
@@ -338,11 +345,12 @@ class JNodeBrowserPanel
     if(pTree == null) 
       return;
 
-    UIMaster master = UIMaster.getInstance();
+    updatePrivileges();
 
     /* get the updated node tree */ 
     NodeTreeComp comp = null;
     {
+      UIMaster master = UIMaster.getInstance();
       if(!master.beginPanelOp()) 
 	return;
       try { 
@@ -554,7 +562,6 @@ class JNodeBrowserPanel
       JNodeViewerPanel viewer = panels.getPanel(pGroupID);
       if(viewer != null) {
 	viewer.setRoots(pAuthor, pView, pSelected);
-	viewer.updateManagerTitlePanel();
 	pSelectionModified = false;
 	return;
       }
@@ -902,8 +909,8 @@ class JNodeBrowserPanel
 	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
 	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
 	if(viewer != null) {
+	  master.getMasterMgrClient().invalidateCachedPrivilegeDetails();
 	  viewer.setRoots(pAuthor, pView, pSelected);
-	  viewer.updateManagerTitlePanel();
 	  return;
 	}
       }

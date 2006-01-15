@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.147 2005/12/31 20:42:58 jim Exp $
+// $Id: MasterMgr.java,v 1.148 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -286,6 +286,8 @@ class MasterMgr
     {
       pDatabaseLock = new ReentrantReadWriteLock();
 
+      pAdminPrivileges = new AdminPrivileges();
+
       pArchiveFileLock    = new Object();
       pArchivedIn         = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
       pArchivedOn         = new TreeMap<String,Date>();
@@ -315,15 +317,18 @@ class MasterMgr
       pArchiverMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
       pDefaultArchiverMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
 
-      pPackageEditorPlugins     = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageComparatorPlugins = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageActionPlugins     = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageToolPlugins       = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageArchiverPlugins   = new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageEditorPlugins = 
+	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageComparatorPlugins = 
+	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageActionPlugins = 
+	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageToolPlugins = 
+	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageArchiverPlugins = 
+	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
 
       pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
-
-      pPrivilegedUsers = new TreeSet<String>();
 
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
       pNodeTreeRoot     = new NodeTreeEntry();
@@ -342,9 +347,9 @@ class MasterMgr
 
     /* perform startup I/O operations */ 
     try {
+      initPrivileges();
       initArchives();
       initToolsets();
-      initPrivilegedUsers();
       initWorkingAreas();
       initDownstreamLinks();
       initNodeTree();
@@ -360,6 +365,38 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Load the work group and administrative privileges.
+   */ 
+  private void 
+  initPrivileges()
+    throws PipelineException
+  {
+    pAdminPrivileges.readAll();
+    updateAdminPrivileges();
+  }
+
+  /**
+   * Update the other servers with the latest copy of the administrative privileges.
+   */ 
+  private void 
+  updateAdminPrivileges() 
+    throws PipelineException
+  {
+    pQueueMgrClient.updateAdminPrivileges(pAdminPrivileges);    
+
+    PluginMgrControlClient client = new PluginMgrControlClient();
+    try {
+      client.updateAdminPrivileges(pAdminPrivileges);
+    }
+    finally {
+      client.disconnect();
+    }
+  }
+    
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -646,23 +683,6 @@ class MasterMgr
       }
     }
   }
-
-
-  
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Load the privileged users if any exist.
-   */ 
-  private void 
-  initPrivilegedUsers()
-    throws PipelineException
-  {
-    readPrivilegedUsers();	 
-    pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1261,6 +1281,160 @@ class MasterMgr
     }
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the work groups used to determine the scope of administrative privileges.
+   * 
+   * @return
+   *   <CODE>MiscGetWorkGroupsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the work groups.
+   */ 
+  public Object
+  getWorkGroups()
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getWorkGroups()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      return pAdminPrivileges.getWorkGroups(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
+   * Set the work groups used to determine the scope of administrative privileges. <P> 
+   * 
+   * This operation requires Master Admin privileges 
+   * (see {@link Privileges#isMasterAdmin isMasterAdmin 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the work groups.
+   */ 
+  public Object
+  setWorkGroups
+  (
+   MiscSetWorkGroupsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.setWorkGroups()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      pAdminPrivileges.setWorkGroups(timer, req);
+      updateAdminPrivileges();
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the administrative privileges for all users.
+   * 
+   * @return
+   *   <CODE>MiscGetPrivilegesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the privileges.
+   */ 
+  public Object
+  getPrivileges()
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getPrivileges()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      return pAdminPrivileges.getPrivileges(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }    
+  }
+
+  /**
+   * Change the administrative privileges for the given users. <P> 
+   * 
+   * This operation requires Master Admin privileges.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the privileges.
+   */ 
+  public Object
+  editPrivileges
+  (
+   MiscEditPrivilegesReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.editPrivileges()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      pAdminPrivileges.editPrivileges(timer, req);
+      updateAdminPrivileges();
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the privileges granted to a specific user with respect to all other users. 
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPrivilegeDetailsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the privileges.
+   */
+  public Object
+  getPrivilegeDetails
+  (
+   MiscGetPrivilegeDetailsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getPrivilegesDetails()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      return pAdminPrivileges.getPrivilegeDetails(timer, req);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }    
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1318,6 +1492,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may set the default toolset!");
+
       synchronized(pToolsets) {
 	timer.resume();
 	
@@ -1410,6 +1588,11 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may change the active status " + 
+	   "of a toolset!");
+
       synchronized(pToolsets) {
 	timer.resume();
 	
@@ -1827,6 +2010,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may create new toolsets!");
+
       synchronized(pToolsets) {
 	timer.resume();
 
@@ -2091,12 +2278,16 @@ class MasterMgr
   (
    MiscCreateToolsetPackageReq req
   ) 
-  {
+  {    
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may create new toolset packages!");
+
       synchronized(pToolsetPackages) {
 	timer.resume();
 
@@ -2229,6 +2420,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the editor menu layout!");
+
       synchronized(pEditorMenuLayouts) {
 	timer.resume();	
 
@@ -2247,16 +2442,14 @@ class MasterMgr
 	    pEditorMenuLayouts.put(name, os, layout);
 	}
 
-	try {
-	  writePluginMenuLayout(name, os, "editors", 
-				pEditorMenuLayouts, pDefaultEditorMenuLayouts);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	writePluginMenuLayout(name, os, "editors", 
+			      pEditorMenuLayouts, pDefaultEditorMenuLayouts);
 
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -2407,6 +2600,11 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the editor plugins associated " +
+	   "with a toolset package!"); 
+
       synchronized(pPackageEditorPlugins) {
 	timer.resume();
 	
@@ -2417,16 +2615,14 @@ class MasterMgr
 	  pPackageEditorPlugins.put
 	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
 
-	try {
-	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
-			      "editors", pPackageEditorPlugins);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			    "editors", pPackageEditorPlugins);
 
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -2506,6 +2702,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the comparator menu layout!");
+
       synchronized(pComparatorMenuLayouts) {
 	timer.resume();	
 
@@ -2524,17 +2724,15 @@ class MasterMgr
 	    pComparatorMenuLayouts.put(name, os, layout);
 	}
 
-	try {
-	  writePluginMenuLayout(name, os, "comparators", 
-				pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	writePluginMenuLayout(name, os, "comparators", 
+			      pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
 
 	return new SuccessRsp(timer);
       }
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    } 
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -2684,6 +2882,11 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the comparator plugins " + 
+	   "associated with a toolset package!"); 
+ 
       synchronized(pPackageComparatorPlugins) {
 	timer.resume();
 	
@@ -2694,16 +2897,14 @@ class MasterMgr
 	  pPackageComparatorPlugins.put
 	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
 
-	try {
-	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
-			      "comparators", pPackageComparatorPlugins);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			    "comparators", pPackageComparatorPlugins);
 
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -2783,6 +2984,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the action menu layout!");
+
       synchronized(pActionMenuLayouts) {
 	timer.resume();	
 
@@ -2801,17 +3006,15 @@ class MasterMgr
 	    pActionMenuLayouts.put(name, os, layout);
 	}
 
-	try {
-	  writePluginMenuLayout(name, os, "actions", 
-				pActionMenuLayouts, pDefaultActionMenuLayouts);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	writePluginMenuLayout(name, os, "actions", 
+			      pActionMenuLayouts, pDefaultActionMenuLayouts);
 
 	return new SuccessRsp(timer);
       }
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }   
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -2961,6 +3164,11 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the action plugins associated " +
+	   "with a toolset package!"); 
+
       synchronized(pPackageActionPlugins) {
 	timer.resume();
 	
@@ -2971,16 +3179,14 @@ class MasterMgr
 	  pPackageActionPlugins.put
 	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
 
-	try {
-	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
-			      "actions", pPackageActionPlugins);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			    "actions", pPackageActionPlugins);
 
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -3060,6 +3266,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the tool menu layout!");
+
       synchronized(pToolMenuLayouts) {
 	timer.resume();	
 
@@ -3078,17 +3288,15 @@ class MasterMgr
 	    pToolMenuLayouts.put(name, os, layout);
 	}
 
-	try {
-	  writePluginMenuLayout(name, os, "tools", 
-				pToolMenuLayouts, pDefaultToolMenuLayouts);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	writePluginMenuLayout(name, os, "tools", 
+			      pToolMenuLayouts, pDefaultToolMenuLayouts);
 
 	return new SuccessRsp(timer);
       }
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }   
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -3238,6 +3446,11 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the tool plugins associated " +
+	   "with a toolset package!"); 
+
       synchronized(pPackageToolPlugins) {
 	timer.resume();
 	
@@ -3248,16 +3461,14 @@ class MasterMgr
 	  pPackageToolPlugins.put
 	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
 
-	try {
-	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
-			      "tools", pPackageToolPlugins);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			    "tools", pPackageToolPlugins);
 
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -3337,6 +3548,10 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the archiver menu layout!");
+
       synchronized(pArchiverMenuLayouts) {
 	timer.resume();	
 
@@ -3355,17 +3570,15 @@ class MasterMgr
 	    pArchiverMenuLayouts.put(name, os, layout);
 	}
 
-	try {
-	  writePluginMenuLayout(name, os, "archivers", 
-				pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	writePluginMenuLayout(name, os, "archivers", 
+			      pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
 
 	return new SuccessRsp(timer);
       }
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }      
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -3514,7 +3727,12 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
-    try {
+    try {    
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the archiver plugins " + 
+	   "associated with a toolset package!"); 
+
       synchronized(pPackageArchiverPlugins) {
 	timer.resume();
 	
@@ -3525,16 +3743,14 @@ class MasterMgr
 	  pPackageArchiverPlugins.put
 	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
 
-	try {
-	  writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
-			      "archivers", pPackageArchiverPlugins);
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+			    "archivers", pPackageArchiverPlugins);
 
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -3712,128 +3928,6 @@ class MasterMgr
   }
 
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P R I V I L E G E D   U S E R S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get the names of the privileged users. <P> 
-   * 
-   * @return
-   *   <CODE>MiscGetPrivilegedUsersRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the privileged users.
-   */ 
-  public Object 
-  getPrivilegedUsers()
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.getPrivilegedUsers()");
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPrivilegedUsers) {
-	timer.resume();	
-	
-	TreeSet<String> users = new TreeSet<String>(pPrivilegedUsers);
-	return new MiscGetPrivilegedUsersRsp(timer, users);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-  
-  /**
-   * Grant the given user privileged access status. <P> 
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to grant the given user privileged status.
-   */ 
-  public Object 
-  grantPrivileges
-  ( 
-   MiscGrantPrivilegesReq req 
-  ) 
-  {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.grantPrivileges(): " + req.getAuthor());
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPrivilegedUsers) {
-	timer.resume();	
-	
-	if(!pPrivilegedUsers.contains(req.getAuthor())) {      
-	  pPrivilegedUsers.add(req.getAuthor());
-	  try {
-	    writePrivilegedUsers();
-	    pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, ex.getMessage());
-	  }      
-	}
-	
-	return new SuccessRsp(timer);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-  /**
-   *  Remove the given user's privileged access status. <P> 
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to to remove the given user's privileges.
-   */ 
-  public Object 
-  removePrivileges
-  ( 
-   MiscRemovePrivilegesReq req 
-  ) 
-  {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.removePrivileges(): " + req.getAuthor());
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pPrivilegedUsers) {
-	timer.resume();	
-	
-	if(pPrivilegedUsers.contains(req.getAuthor())) {      
-	  pPrivilegedUsers.remove(req.getAuthor());
-	  try {
-	    writePrivilegedUsers();
-	    pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, ex.getMessage());
-	  }      
-	}
-	
-	return new SuccessRsp(timer);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-
  
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   A R E A S                                                            */
@@ -3895,12 +3989,17 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      String author = req.getAuthor();
+      String view   = req.getView();
+      
+      if(!pAdminPrivileges.isNodeManaged(req, author)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may create working areas owned " +
+	   "by another user!");
+
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
-	
-	String author = req.getAuthor();
-	String view   = req.getView();
-	
+
 	/* make sure it doesn't already exist */ 
 	TreeSet<String> views = pWorkingAreaViews.get(author);
 	if((views != null) && views.contains(view))
@@ -3918,17 +4017,12 @@ class MasterMgr
 	}
 
 	/* create the working area files directory */ 
+	FileMgrClient fclient = getFileMgrClient();
 	try {
-	  FileMgrClient fclient = getFileMgrClient();
-	  try {
-	    fclient.createWorkingArea(author, view);
-	  }
-	  finally {
-	    freeFileMgrClient(fclient);
-	  }
+	  fclient.createWorkingArea(author, view);
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
+	finally {
+	  freeFileMgrClient(fclient);
 	}
 	
 	/* add the view to the runtime table */ 
@@ -3940,6 +4034,9 @@ class MasterMgr
 	
 	return new SuccessRsp(timer);
       }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -3977,6 +4074,11 @@ class MasterMgr
       String author = req.getAuthor();
       String view   = req.getView();
 	
+      if(!pAdminPrivileges.isNodeManaged(req, author)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may remove working areas owned " +
+	   "by another user!");
+
       /* abort if it doesn't exist */ 
       TreeSet<String> views = pWorkingAreaViews.get(author);
       if((views == null) || !views.contains(view))
@@ -4016,14 +4118,12 @@ class MasterMgr
       }
 
       /* remove the working area files directory */ 
-      {
-	FileMgrClient fclient = getFileMgrClient();
-	try {
-	  fclient.removeWorkingArea(author, removeUser ? null : view);
-	}
-	finally {
-	  freeFileMgrClient(fclient);
-	}
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+	fclient.removeWorkingArea(author, removeUser ? null : view);
+      }
+      finally {
+	freeFileMgrClient(fclient);
       }
       
       /* remove the empty working area database directory */ 
@@ -4135,8 +4235,6 @@ class MasterMgr
    NodeUpdatePathsReq req
   ) 
   {
-    assert(req != null);
-
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
@@ -4230,8 +4328,6 @@ class MasterMgr
    NodeGetNodeOwningReq req
   ) 
   {
-    assert(req != null);
-
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
@@ -4320,7 +4416,6 @@ class MasterMgr
    NodeGetWorkingReq req
   ) 
   {	 
-    assert(req != null);
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
@@ -4381,6 +4476,11 @@ class MasterMgr
     lock.writeLock().lock();
     try {
       timer.resume();
+      
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may modify nodes owned by " + 
+	   "another user!");
 
       /* get the working version */ 
       WorkingBundle bundle = getWorkingBundle(nodeID);
@@ -4446,8 +4546,6 @@ class MasterMgr
    NodeLinkReq req 
   ) 
   {
-    assert(req != null);
-
     NodeID targetID = req.getTargetID();
     String source   = req.getSourceLink().getName();
     NodeID sourceID = new NodeID(targetID, source);
@@ -4462,6 +4560,11 @@ class MasterMgr
     downstreamLock.writeLock().lock();
     try {
       timer.resume();
+
+      if(!pAdminPrivileges.isNodeManaged(req, targetID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may create links between nodes in " + 
+	   "working areas owned by another user!");
 
       WorkingBundle bundle = getWorkingBundle(targetID);
       if(bundle == null) 
@@ -4524,8 +4627,6 @@ class MasterMgr
    NodeUnlinkReq req 
   ) 
   {
-    assert(req != null);
-   
     NodeID targetID = req.getTargetID();
     String source   = req.getSourceName();
     NodeID sourceID = new NodeID(targetID, source);
@@ -4540,6 +4641,11 @@ class MasterMgr
     downstreamLock.writeLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, targetID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may remove links between nodes in " + 
+	   "working areas owned by another user!");
 
       WorkingBundle bundle = getWorkingBundle(targetID);
       if(bundle == null) 
@@ -4602,8 +4708,6 @@ class MasterMgr
    NodeAddSecondaryReq req 
   ) 
   {
-    assert(req != null);
-    
     NodeID nodeID = req.getNodeID();
     FileSeq fseq  = req.getFileSequence();
 
@@ -4612,8 +4716,16 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may add secondary file sequences " + 
+	   "to nodes in working areas owned by another user!");
+
       /* reserve the node name, 
            after verifying that it doesn't conflict with existing nodes */ 
+      timer.aquire();
       synchronized(pNodeTreeRoot) {
 	timer.resume();
 	
@@ -4672,6 +4784,9 @@ class MasterMgr
 	lock.writeLock().unlock();
       }    
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -4693,8 +4808,6 @@ class MasterMgr
    NodeRemoveSecondaryReq req 
   ) 
   {
-    assert(req != null);
-    
     NodeID nodeID = req.getNodeID();
     FileSeq fseq  = req.getFileSequence();
 
@@ -4706,6 +4819,11 @@ class MasterMgr
     lock.writeLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may remove secondary file sequences " + 
+	   "from nodes in working areas owned by another user!");
 
       WorkingBundle bundle = getWorkingBundle(nodeID);
       if(bundle == null) 
@@ -4747,992 +4865,6 @@ class MasterMgr
     }    
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K E D - I N   V E R S I O N S                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the revision numbers of all checked-in versions of the given node. <P> 
-   * 
-   * @param req 
-   *   The get checked-in version request.
-   * 
-   * @return
-   *   <CODE>NodeGetCheckedInVersionIDsRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
-   */
-  public Object
-  getCheckedInVersionIDs
-  ( 
-   NodeGetCheckedInVersionIDsReq req
-  ) 
-  {
-    String name = req.getName();
-    TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): " + name);
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      timer.resume();	
-
-      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-      TreeSet<VersionID> vids = new TreeSet<VersionID>(checkedIn.keySet());
-
-      return new NodeGetCheckedInVersionIDsRsp(timer, vids);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
-    }  
-  }  
-      
-  /** 
-   * Get the checked-in version of the node with the given revision number. <P> 
-   * 
-   * @param req 
-   *   The get checked-in version request.
-   * 
-   * @return
-   *   <CODE>NodeGetCheckedInRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
-   */
-  public Object
-  getCheckedInVersion
-  ( 
-   NodeGetCheckedInReq req
-  ) 
-  {	 
-    TaskTimer timer = new TaskTimer();
-
-    String name = req.getName();
-    VersionID vid = req.getVersionID();
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      timer.resume();	
-
-      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-
-      if(vid == null) 
-	vid = checkedIn.lastKey();
-
-      CheckedInBundle bundle = checkedIn.get(vid);
-      if(bundle == null) 
-	throw new PipelineException 
-	  ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
-
-      return new NodeGetCheckedInRsp(timer, new NodeVersion(bundle.getVersion()));
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
-    }  
-  }  
-
-  /** 
-   * Get the log messages associated with all checked-in versions of the given node.
-   * 
-   * @param req 
-   *   The get history request.
-   * 
-   * @return
-   *   <CODE>NodeGetHistoryRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to retrieve the log messages.
-   */
-  public Object
-  getHistory
-  ( 
-   NodeGetHistoryReq req
-  ) 
-  {	 
-    assert(req != null);
-    TaskTimer timer = new TaskTimer();
-  
-    String name = req.getName();
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      timer.resume();	
-
-      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-      TreeMap<VersionID,LogMessage> history = new TreeMap<VersionID,LogMessage>();
-      for(VersionID vid : checkedIn.keySet()) 
-	history.put(vid, checkedIn.get(vid).getVersion().getLogMessage());
-
-      return new NodeGetHistoryRsp(timer, name, history);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
-    }  
-  }  
-
-  /** 
-   * Get whether each file associated with each checked-in version of the given node 
-   * contains new data not present in the previous checked-in versions. <P> 
-   * 
-   * @param req 
-   *   The get file novelty request.
-   * 
-   * @return
-   *   <CODE>NodeGetCheckedInFileNoveltyRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to retrieve the per-file novelty flags.
-   */
-  public Object
-  getCheckedInFileNovelty
-  ( 
-   NodeGetCheckedInFileNoveltyReq req
-  ) 
-  {	 
-    assert(req != null);
-    TaskTimer timer = new TaskTimer();
-  
-    String name = req.getName();
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      timer.resume();	
-
-      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
-      try {
-	checkedIn = getCheckedInBundles(name);
-      }
-      catch(PipelineException ex) {
-      }
-
-      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty = 
-	new TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>();
-
-      if(checkedIn != null) {
-	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).getVersion();
-	  
-	  TreeMap<FileSeq,boolean[]> table = new TreeMap<FileSeq,boolean[]>();
-	  for(FileSeq fseq : vsn.getSequences()) 
-	    table.put(fseq, vsn.isNovel(fseq));
-	  
-	  novelty.put(vid, table);
-	}
-      }
-	
-      return new NodeGetCheckedInFileNoveltyRsp(timer, name, novelty);
-    }
-    finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
-    }  
-  }  
-
-  /** 
-   * Get the upstream links of all checked-in versions of the given node.
-   * 
-   * @param req 
-   *   The links request.
-   * 
-   * @return
-   *   <CODE>NodeGetCheckedInLinksRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in links.
-   */
-  public Object
-  getCheckedInLinks
-  ( 
-   NodeGetCheckedInLinksReq req
-  ) 
-  {	 
-    TaskTimer timer = new TaskTimer();
-  
-    String name = req.getName();
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getCheckedInLock(name);
-    lock.readLock().lock();
-    try {
-      timer.resume();	
-
-      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
-      try {
-	checkedIn = getCheckedInBundles(name);
-      }
-      catch(PipelineException ex) {
-      }
-
-      TreeMap<VersionID,TreeMap<String,LinkVersion>> links = 
-	new TreeMap<VersionID,TreeMap<String,LinkVersion>>();
-
-      if(checkedIn != null) {
-	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).getVersion();
-	  
-	  TreeMap<String,LinkVersion> table = new TreeMap<String,LinkVersion>();
-	  for(LinkVersion link : vsn.getSources()) 
-	    table.put(link.getName(), link);
-
-	  links.put(vid, table);
-	}
-      }
-	
-      return new NodeGetCheckedInLinksRsp(timer, links);
-    }
-    finally {
-      lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
-    }  
-  }  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   S T A T U S                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the status of the tree of nodes rooted at the given node. <P> 
-   * 
-   * In addition to providing node status information for the given node, the returned 
-   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
-   * upstream and downstream) linked to the given node.  The status information for the 
-   * upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
-   * 
-   * @param req 
-   *   The node status request.
-   *
-   * @return
-   *   <CODE>NodeStatusRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to get the status of the node.
-   */ 
-  public Object
-  status
-  ( 
-   NodeStatusReq req 
-  ) 
-  {
-    TaskTimer timer = new TaskTimer();
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      timer.resume();
-
-      NodeID nodeID = req.getNodeID();
-      NodeStatus root = 
-	performNodeOperation(new NodeOp(), nodeID, timer);
-      return new NodeStatusRsp(timer, nodeID, root);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   R E V I S I O N   C O N T R O L                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Register an initial working version of a node. <P> 
-   * 
-   * @param req 
-   *   The node register request.
-   *
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
-   */
-  public Object
-  register
-  (
-   NodeRegisterReq req
-  ) 
-  {
-    return register(req, true);
-  }
-
-  /**
-   * Register an initial working version of a node. <P> 
-   * 
-   * @param req 
-   *   The node register request.
-   *
-   * @param checkName
-   *   Whether to verify that the name of the new node is not already in use.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
-   */
-  private Object
-  register
-  (
-   NodeRegisterReq req, 
-   boolean checkName
-  ) 
-  {
-    /* node identifiers */ 
-    String name   = req.getNodeMod().getName();
-    NodeID nodeID = req.getNodeID();
-
-    TaskTimer timer = new TaskTimer("MasterMgr.register(): " + nodeID);
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      timer.resume();	
-
-      /* reserve the node name, 
-         after verifying that it doesn't conflict with existing nodes */ 
-      if(checkName) {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  timer.resume();
-	  
-	  if(!isNodePathUnused(name, req.getNodeMod().getPrimarySequence(), false)) 
-	    return new FailureRsp
-	      (timer, "Cannot register node (" + name + ") because its name conflicts " + 
-	       "with an existing node or one of its associated file sequences!");
-	
-	  addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
-	}
-      }
-      
-      timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-      lock.writeLock().lock();
-      try {
-	timer.resume();
-	
-	/* write the new working version to disk */
-	writeWorkingVersion(nodeID, req.getNodeMod());	
-	
-	/* create a working bundle for the new working version */ 
-	synchronized(pWorkingBundles) {
-	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	  if(table == null) {
-	    table = new HashMap<NodeID,WorkingBundle>();
-	    pWorkingBundles.put(name, table);
-	  }
-	  table.put(nodeID, new WorkingBundle(req.getNodeMod()));
-	}
-	
-	/* initialize the working downstream links */ 
-	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
-	  
-	  DownstreamLinks links = getDownstreamLinks(nodeID.getName()); 
-	  links.createWorking(nodeID);
-	}
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}      
-	
-	return new SuccessRsp(timer);
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-      finally {
-	lock.writeLock().unlock();
-      }  
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Release the working versions of nodes and optionally remove the associated 
-   * working area files. <P> 
-   * 
-   * @param req 
-   *   The node release request.
-   *
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to release the working version.
-   */
-  public Object
-  release
-  (
-   NodeReleaseReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.release()");
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      timer.resume();	
-    
-      /* determine the link relationships between the nodes being released */ 
-      TreeMap<String,NodeLinks> all = new TreeMap<String,NodeLinks>();
-      {
-	for(String name : req.getNames()) 
-	  all.put(name, new NodeLinks(name));
-
-	for(String name : all.keySet()) {
-	  NodeLinks links = all.get(name);
-	  NodeID nodeID = new NodeID(req.getAuthor(), req.getView(), name);
-	  
-	  timer.aquire();
-	  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-	  lock.readLock().lock(); 
-	  try {
-	    timer.resume();
-	    
-	    WorkingBundle bundle = getWorkingBundle(nodeID);
-	    if(bundle == null) 
-	      throw new PipelineException
-		("No working version (" + nodeID + ") exists to be released.");
-	    
-	    for(String sname : bundle.getVersion().getSourceNames()) {
-	      NodeLinks slinks = all.get(sname);
-	      if(slinks != null) {
-		links.addSource(slinks);
-		slinks.addTarget(links);
-	      }
-	    }
-	  }
-	  finally {
-	    lock.readLock().unlock();
-	  }    
-	}
-      }
-      
-      /* get the initial tree roots */ 
-      TreeSet<String> roots = new TreeSet<String>();
-      for(String name : all.keySet()) {
-	NodeLinks links = all.get(name);
-	if(!links.hasTargets()) 
-	  roots.add(name);
-      }
-
-      /* release the nodes, roots first */ 
-      TreeSet<String> failures = new TreeSet<String>();
-      while(!roots.isEmpty()) {
-	String name = roots.first();
-	NodeLinks links = all.get(name);
-
-	// DEBUG
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	   "Releasing: " + links);
-	// DEBUG
-
-	try {
-	  releaseHelper(new NodeID(req.getAuthor(), req.getView(), name), 
-			req.removeFiles(), timer);
-	}
-	catch(PipelineException ex) {
-	  failures.add(ex.getMessage());
-	}
-
-	for(String sname : links.getSourceNames()) {
-	  NodeLinks slinks = all.get(sname);
-	  slinks.removeTarget(links);
-	  if(!slinks.hasTargets()) 
-	    roots.add(sname);
-	}
-	
-	roots.remove(name);
-      }
-      
-      if(!failures.isEmpty()) {
-	StringBuffer buf = new StringBuffer();
-	buf.append("Unable to release all of the selected nodes!");
-	for(String msg : failures) 
-	  buf.append("\n\n" + msg);
-	return new FailureRsp(timer, buf.toString());
-      }
-
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    } 
-  }
-
-  /**
-   * Release a single working version of a node and optionally remove the associated 
-   * working area files. <P> 
-   * 
-   * This method should only be called from inside a pDatabaseLock synchronized block
-   * of code.
-   *
-   * @param id 
-   *   The unique working version identifier.
-   * 
-   * @param removeFiles
-   *   Should the files associated with the working version be deleted?
-   */
-  private void 
-  releaseHelper
-  (
-   NodeID id, 
-   boolean removeFiles, 
-   TaskTimer timer
-  )
-    throws PipelineException 
-  {
-    String name = id.getName();
-
-    /* unlink the downstream working versions from the to be released working version */ 
-    {
-      timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-      downstreamLock.writeLock().lock();
-      try {
-	timer.resume();
-	  
-	DownstreamLinks links = getDownstreamLinks(name); 
-	if(links != null) {
-	  TreeSet<String> targets = links.getWorking(id);
-	  if(targets != null) {
-	    for(String target : targets) {
-	      NodeID targetID = new NodeID(id, target);
-		
-	      timer.suspend();
-	      Object obj = unlink(new NodeUnlinkReq(targetID, name));
-	      timer.accum(((TimedRsp) obj).getTimer());
-		
-	      if(obj instanceof FailureRsp)  {
-		FailureRsp rsp = (FailureRsp) obj;
-		throw new PipelineException(rsp.getMessage());
-	      }
-	    }
-	  }
-	}
-      }
-      finally {
-	downstreamLock.writeLock().unlock();
-      }
-    }
-      
-    timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(id);
-    lock.writeLock().lock();
-    try {
-      timer.resume();
-
-      WorkingBundle bundle = getWorkingBundle(id);
-      if(bundle == null) 
-	throw new PipelineException
-	  ("No working version (" + id + ") exists to be released.");
-      NodeMod mod = bundle.getVersion();
-	
-      /* kill any active jobs associated with the node */
-      killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
-	
-      /* remove the bundle */ 
-      synchronized(pWorkingBundles) {
-	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	table.remove(id);
-      }
-	
-      /* remove the working version node file(s) */ 
-      {
-	File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
-	File backup = new File(file + ".backup");
-	  
-	if(file.isFile()) {
-	  if(!file.delete())
-	    throw new PipelineException
-	      ("Unable to remove the working version file (" + file + ")!");
-	}
-	else {
-	  throw new PipelineException
-	    ("Somehow the working version file (" + file + ") did not exist!");
-	}
-	  
-	if(backup.isFile()) {
-	  if(!backup.delete())
-	    throw new PipelineException      
-	      ("Unable to remove the backup working version file (" + backup + ")!");
-	}
-
-	File root = new File(PackageInfo.sNodeDir, 
-			     "working/" + id.getAuthor() + "/" + id.getView());
-
-	deleteEmptyParentDirs(root, new File(PackageInfo.sNodeDir, 
-					     id.getWorkingParent().toString()));
-      }
-	
-      /* update the downstream links of this node */ 
-      {
-	boolean isRevoked = false;
-	  
-	timer.aquire();	
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
-	    
-	  DownstreamLinks links = getDownstreamLinks(name); 
-	  links.releaseWorking(id);
-	}  
-	finally {
-	  downstreamLock.writeLock().unlock();
-	} 
-      }
-	
-      /* update the downstream links of the source nodes */ 
-      for(LinkMod link : mod.getSources()) {
-	String source = link.getName();
-	  
-	timer.aquire();	
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
-
-	  NodeID sourceID = new NodeID(id, source);
-	  DownstreamLinks links = getDownstreamLinks(source); 
-	  links.removeWorking(sourceID, name);
-	}  
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}    
-      }
-	
-      /* remove the node tree path */ 
-      removeWorkingNodeTreePath(id);
-
-      /* remove the associated files */ 
-      if(removeFiles) {
-	FileMgrClient fclient = getFileMgrClient();
-	try {
-	  fclient.removeAll(id, mod.getSequences());
-	}
-	finally {
-	  freeFileMgrClient(fclient);
-	}	
-      }
-    }
-    finally {
-      lock.writeLock().unlock();
-    }  
-  }
-
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Delete all working and checked-in versions of a node and optionally remove all  
-   * associated working area files. <P> 
-   * 
-   * @param req 
-   *   The node delete request.
-   *
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to delete the node.
-   */
-  public Object
-  delete
-  (
-   NodeDeleteReq req
-  ) 
-  {
-    assert(req != null);
-    String name = req.getName();
-    
-    TaskTimer timer = new TaskTimer("MasterMgr.delete(): " + name);
-    timer.aquire();
-    pDatabaseLock.writeLock().lock();
-    try {
-      timer.resume();	
-
-      /* get the checked-in versions  */ 
-      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
-      try {
-	checkedIn = getCheckedInBundles(name);
-      }
-      catch(PipelineException ex) {
-	checkedIn = new TreeMap<VersionID,CheckedInBundle>();
-      }
-
-      /* get the downstream links */ 
-      DownstreamLinks dsl = getDownstreamLinks(name);
-
-      /* make sure none of the checked-in versions are the source node of a link of 
-           another node */ 
-      {
-	boolean failed = false;
-	StringBuffer buf = new StringBuffer();
-	for(VersionID vid : checkedIn.keySet()) {
-	  TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
-	  if(dlinks == null) 
-	    throw new PipelineException
-	      ("Somehow there was no downstream links entry for checked-in version " + 
-	       "(" + vid + ") of node (" + name + ")!");
-	  
-	  if(!dlinks.isEmpty()) {
-	    failed = true;
-	    buf.append("\nChecked-in versions downstream of the (" + vid + ") version:\n");
-	    for(String dname : dlinks.keySet()) 
-	      buf.append("  " + dname + "  (" + dlinks.get(dname) + ")\n");
-	  }
-	}
-
-	if(failed) {
-	  throw new PipelineException
-	    ("Cannot delete node (" + name + ") because links to the following " +
-	     "checked-in versions exist in the repository:\n" + 
-	     buf.toString());
-	}
-      } 
-
-      /* release all working versions of the node */ 
-      {
-	ArrayList<NodeID> dead = new ArrayList<NodeID>();
-	for(String author : pWorkingAreaViews.keySet()) {
-	  for(String view : pWorkingAreaViews.get(author)) {
-	    NodeID nodeID = new NodeID(author, view, name);
-	    try {
-	      getWorkingBundle(nodeID);
-	      dead.add(nodeID);
-	    }
-	    catch(PipelineException ex) {
-	    }
-	  }
-	}
-
-	for(NodeID nodeID : dead) {
-	  releaseHelper(nodeID, req.removeFiles(), timer);
-	  pWorkingLocks.remove(nodeID);
-	}
-	
-	assert(pWorkingBundles.get(name).isEmpty());
-	pWorkingBundles.remove(name);
-      }
-	
-      /* delete the checked-in versions */ 
-      if(!checkedIn.isEmpty()) {
-
-	/* remove the downstream links to this node from the checked-in source nodes */ 
-	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).getVersion();
-	  for(LinkVersion link : vsn.getSources()) {
-	    DownstreamLinks ldsl = getDownstreamLinks(link.getName());
-	    ldsl.deleteCheckedIn(link.getVersionID(), name);
-	  }
-	}
-
-	/* delete files associated with all checked-in versions of the node */ 
-	{
-	  FileMgrClient fclient = getFileMgrClient();
-	  try {
-	    fclient.deleteCheckedIn(name);
-	  }
-	  finally {
-	    freeFileMgrClient(fclient);
-	  }
-	}
-	
-	/* remove the checked-in version files */ 
-	for(VersionID vid : checkedIn.keySet()) {
-	  File file = new File(PackageInfo.sNodeDir, "repository" + name + "/" + vid);
-	  if(!file.delete())
-	    throw new PipelineException
-	      ("Unable to remove the checked-in version file (" + file + ")!");
-	}
-
-	/* remove the checked-in version node directory */
-	{
-	  File dir = new File(PackageInfo.sNodeDir, "repository" + name);
-	  File parent =  dir.getParentFile();
-	  if(!dir.delete())
-	    throw new PipelineException
-	      ("Unable to remove the checked-in version directory (" + dir + ")!");
-	  
-	  deleteEmptyParentDirs(new File(PackageInfo.sNodeDir, "repository"), parent);
-	}	    
-	
-	/* remove the checked-in version entries */ 
-	pCheckedInLocks.remove(name);
-	pCheckedInBundles.remove(name);
-      }
-
-      /* remove the downstream links file and entry */ 
-      {
-	File file = new File(PackageInfo.sNodeDir, "downstream" + name);
-	if(file.isFile()) {
-	  if(!file.delete())
-	    throw new PipelineException
-	      ("Unable to remove the downstream links file (" + file + ")!");
-	}
-
-	pDownstream.remove(name);
-      }
-
-      /* remove the leaf node tree entry */ 
-      removeNodeTreePath(name);
-
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      pDatabaseLock.writeLock().unlock();
-    }
-  }
-
-    
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Remove the working area files associated with the given node. <P>  
-   * 
-   * @param req 
-   *   The submit jobs request.
-   * 
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
-   */ 
-  public Object
-  removeFiles
-  (
-   NodeRemoveFilesReq req
-  ) 
-  {
-    NodeID nodeID = req.getNodeID();
-    TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      timer.resume();	
-
-      TreeSet<Long> activeIDs = new TreeSet<Long>();
-      TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
-      
-      timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-      lock.readLock().lock();
-      try {
-	timer.resume();
-	
-	WorkingBundle bundle = getWorkingBundle(nodeID);
-	NodeMod mod = bundle.getVersion();
-	if(mod.isFrozen()) 
-	  throw new PipelineException
-	    ("The files associated with frozen node (" + nodeID + ") cannot be removed!");
-	
-	ArrayList<Long> jobIDs = new ArrayList<Long>();
-	ArrayList<JobState> jobStates = new ArrayList<JobState>();
-	pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
-				     jobIDs, jobStates);
-	
-	TreeSet<Integer> indices = req.getIndices();
-	if(indices == null) {
-	  int wk = 0;
-	  for(JobState state : jobStates) {
-	    Long jobID = jobIDs.get(wk);
-	    if((state != null) && (jobID != null)) {
-	      switch(state) {
-	      case Queued:
-	      case Preempted:
-	      case Paused:
-	      case Running:
-		activeIDs.add(jobID);
-	      }
-	    }
-	    
-	    wk++;
-	  }
-	  
-	  fseqs.addAll(mod.getSequences());
-	}
-	else {
-	  for(Integer idx : indices) {
-	    JobState state = jobStates.get(idx);
-	    Long jobID = jobIDs.get(idx);
-	    if((state != null) && (jobID != null)) {
-	      switch(state) {
-	      case Queued:
-	      case Preempted:
-	      case Paused:
-	      case Running:
-		activeIDs.add(jobID);
-	      }
-	    }
-	  }
-	  
-	  for(FileSeq fseq : mod.getSequences()) {
-	    for(Integer idx : indices) 
-	      fseqs.add(new FileSeq(fseq, idx));
-	  }
-	}
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }    
-      finally {
-	lock.readLock().unlock();
-      }    
-      assert(fseqs != null);
-      
-      try {
-	if(!activeIDs.isEmpty()) 
-	  pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
-
-	{
-	  FileMgrClient fclient = getFileMgrClient();
-	  try {
-	    fclient.removeAll(nodeID, fseqs);
-	  }
-	  finally {
-	    freeFileMgrClient(fclient);
-	  }
-	}
-
-	return new SuccessRsp(timer);  
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }    
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
      
   /*----------------------------------------------------------------------------------------*/
 
@@ -5771,6 +4903,11 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, id)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may rename nodes in working " + 
+	   "areas owned by another user!");
 
       try {
 	NodeCommon.validateName(nname);
@@ -6148,6 +5285,9 @@ class MasterMgr
 
       return new SuccessRsp(timer);
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -6186,6 +5326,11 @@ class MasterMgr
     lock.writeLock().lock(); 
     try {
       timer.resume();
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may renumber nodes owned by " + 
+	   "another user!");
     
       WorkingBundle bundle = getWorkingBundle(nodeID);
       if(bundle == null) 
@@ -6230,6 +5375,880 @@ class MasterMgr
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C H E C K E D - I N   V E R S I O N S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the revision numbers of all checked-in versions of the given node. <P> 
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInVersionIDsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
+   */
+  public Object
+  getCheckedInVersionIDs
+  ( 
+   NodeGetCheckedInVersionIDsReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): " + name);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+      TreeSet<VersionID> vids = new TreeSet<VersionID>(checkedIn.keySet());
+
+      return new NodeGetCheckedInVersionIDsRsp(timer, vids);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+      
+  /** 
+   * Get the checked-in version of the node with the given revision number. <P> 
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
+   */
+  public Object
+  getCheckedInVersion
+  ( 
+   NodeGetCheckedInReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+
+    String name = req.getName();
+    VersionID vid = req.getVersionID();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+
+      if(vid == null) 
+	vid = checkedIn.lastKey();
+
+      CheckedInBundle bundle = checkedIn.get(vid);
+      if(bundle == null) 
+	throw new PipelineException 
+	  ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+
+      return new NodeGetCheckedInRsp(timer, new NodeVersion(bundle.getVersion()));
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+
+  /** 
+   * Get the log messages associated with all checked-in versions of the given node.
+   * 
+   * @param req 
+   *   The get history request.
+   * 
+   * @return
+   *   <CODE>NodeGetHistoryRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the log messages.
+   */
+  public Object
+  getHistory
+  ( 
+   NodeGetHistoryReq req
+  ) 
+  {	 
+    assert(req != null);
+    TaskTimer timer = new TaskTimer();
+  
+    String name = req.getName();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+      TreeMap<VersionID,LogMessage> history = new TreeMap<VersionID,LogMessage>();
+      for(VersionID vid : checkedIn.keySet()) 
+	history.put(vid, checkedIn.get(vid).getVersion().getLogMessage());
+
+      return new NodeGetHistoryRsp(timer, name, history);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+
+  /** 
+   * Get whether each file associated with each checked-in version of the given node 
+   * contains new data not present in the previous checked-in versions. <P> 
+   * 
+   * @param req 
+   *   The get file novelty request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInFileNoveltyRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the per-file novelty flags.
+   */
+  public Object
+  getCheckedInFileNovelty
+  ( 
+   NodeGetCheckedInFileNoveltyReq req
+  ) 
+  {	 
+    assert(req != null);
+    TaskTimer timer = new TaskTimer();
+  
+    String name = req.getName();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      try {
+	checkedIn = getCheckedInBundles(name);
+      }
+      catch(PipelineException ex) {
+      }
+
+      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty = 
+	new TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>();
+
+      if(checkedIn != null) {
+	for(VersionID vid : checkedIn.keySet()) {
+	  NodeVersion vsn = checkedIn.get(vid).getVersion();
+	  
+	  TreeMap<FileSeq,boolean[]> table = new TreeMap<FileSeq,boolean[]>();
+	  for(FileSeq fseq : vsn.getSequences()) 
+	    table.put(fseq, vsn.isNovel(fseq));
+	  
+	  novelty.put(vid, table);
+	}
+      }
+	
+      return new NodeGetCheckedInFileNoveltyRsp(timer, name, novelty);
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+
+  /** 
+   * Get the upstream links of all checked-in versions of the given node.
+   * 
+   * @param req 
+   *   The links request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInLinksRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in links.
+   */
+  public Object
+  getCheckedInLinks
+  ( 
+   NodeGetCheckedInLinksReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+  
+    String name = req.getName();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      try {
+	checkedIn = getCheckedInBundles(name);
+      }
+      catch(PipelineException ex) {
+      }
+
+      TreeMap<VersionID,TreeMap<String,LinkVersion>> links = 
+	new TreeMap<VersionID,TreeMap<String,LinkVersion>>();
+
+      if(checkedIn != null) {
+	for(VersionID vid : checkedIn.keySet()) {
+	  NodeVersion vsn = checkedIn.get(vid).getVersion();
+	  
+	  TreeMap<String,LinkVersion> table = new TreeMap<String,LinkVersion>();
+	  for(LinkVersion link : vsn.getSources()) 
+	    table.put(link.getName(), link);
+
+	  links.put(vid, table);
+	}
+      }
+	
+      return new NodeGetCheckedInLinksRsp(timer, links);
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   S T A T U S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the status of the tree of nodes rooted at the given node. <P> 
+   * 
+   * In addition to providing node status information for the given node, the returned 
+   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
+   * upstream and downstream) linked to the given node.  The status information for the 
+   * upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * 
+   * @param req 
+   *   The node status request.
+   *
+   * @return
+   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the status of the node.
+   */ 
+  public Object
+  status
+  ( 
+   NodeStatusReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      NodeID nodeID = req.getNodeID();
+      NodeStatus root = 
+	performNodeOperation(new NodeOp(), nodeID, timer);
+      return new NodeStatusRsp(timer, nodeID, root);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R E V I S I O N   C O N T R O L                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Register an initial working version of a node. <P> 
+   * 
+   * @param req 
+   *   The node register request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   */
+  public Object
+  register
+  (
+   NodeRegisterReq req
+  ) 
+  {
+    return register(req, true);
+  }
+
+  /**
+   * Register an initial working version of a node. <P> 
+   * 
+   * @param req 
+   *   The node register request.
+   *
+   * @param checkName
+   *   Whether to verify that the name of the new node is not already in use.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   */
+  private Object
+  register
+  (
+   NodeRegisterReq req, 
+   boolean checkName
+  ) 
+  {
+    /* node identifiers */ 
+    String name   = req.getNodeMod().getName();
+    NodeID nodeID = req.getNodeID();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.register(): " + nodeID);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+      
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may register nodes owned " + 
+	   "by another user!");
+
+      /* reserve the node name, 
+         after verifying that it doesn't conflict with existing nodes */ 
+      if(checkName) {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  timer.resume();
+	  
+	  if(!isNodePathUnused(name, req.getNodeMod().getPrimarySequence(), false)) 
+	    return new FailureRsp
+	      (timer, "Cannot register node (" + name + ") because its name conflicts " + 
+	       "with an existing node or one of its associated file sequences!");
+	
+	  addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
+	}
+      }
+      
+      timer.aquire();
+      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+      lock.writeLock().lock();
+      try {
+	timer.resume();
+	
+	/* write the new working version to disk */
+	writeWorkingVersion(nodeID, req.getNodeMod());	
+	
+	/* create a working bundle for the new working version */ 
+	synchronized(pWorkingBundles) {
+	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  if(table == null) {
+	    table = new HashMap<NodeID,WorkingBundle>();
+	    pWorkingBundles.put(name, table);
+	  }
+	  table.put(nodeID, new WorkingBundle(req.getNodeMod()));
+	}
+	
+	/* initialize the working downstream links */ 
+	timer.aquire();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	  
+	  DownstreamLinks links = getDownstreamLinks(nodeID.getName()); 
+	  links.createWorking(nodeID);
+	}
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}      
+	
+	return new SuccessRsp(timer);
+      }
+      finally {
+	lock.writeLock().unlock();
+      }  
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Release the working versions of nodes and optionally remove the associated 
+   * working area files. <P> 
+   * 
+   * @param req 
+   *   The node release request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to release the working version.
+   */
+  public Object
+  release
+  (
+   NodeReleaseReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.release()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+    
+      if(!pAdminPrivileges.isNodeManaged(req, req.getAuthor())) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may release nodes in working " + 
+	   "areas owned by another user!");
+
+      /* determine the link relationships between the nodes being released */ 
+      TreeMap<String,NodeLinks> all = new TreeMap<String,NodeLinks>();
+      {
+	for(String name : req.getNames()) 
+	  all.put(name, new NodeLinks(name));
+
+	for(String name : all.keySet()) {
+	  NodeLinks links = all.get(name);
+	  NodeID nodeID = new NodeID(req.getAuthor(), req.getView(), name);
+	  
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+	  lock.readLock().lock(); 
+	  try {
+	    timer.resume();
+	    
+	    WorkingBundle bundle = getWorkingBundle(nodeID);
+	    if(bundle == null) 
+	      throw new PipelineException
+		("No working version (" + nodeID + ") exists to be released.");
+	    
+	    for(String sname : bundle.getVersion().getSourceNames()) {
+	      NodeLinks slinks = all.get(sname);
+	      if(slinks != null) {
+		links.addSource(slinks);
+		slinks.addTarget(links);
+	      }
+	    }
+	  }
+	  finally {
+	    lock.readLock().unlock();
+	  }    
+	}
+      }
+      
+      /* get the initial tree roots */ 
+      TreeSet<String> roots = new TreeSet<String>();
+      for(String name : all.keySet()) {
+	NodeLinks links = all.get(name);
+	if(!links.hasTargets()) 
+	  roots.add(name);
+      }
+
+      /* release the nodes, roots first */ 
+      TreeSet<String> failures = new TreeSet<String>();
+      while(!roots.isEmpty()) {
+	String name = roots.first();
+	NodeLinks links = all.get(name);
+
+	try {
+	  releaseHelper(new NodeID(req.getAuthor(), req.getView(), name), 
+			req.removeFiles(), timer);
+	}
+	catch(PipelineException ex) {
+	  failures.add(ex.getMessage());
+	}
+
+	for(String sname : links.getSourceNames()) {
+	  NodeLinks slinks = all.get(sname);
+	  slinks.removeTarget(links);
+	  if(!slinks.hasTargets()) 
+	    roots.add(sname);
+	}
+	
+	roots.remove(name);
+      }
+      
+      if(!failures.isEmpty()) {
+	StringBuffer buf = new StringBuffer();
+	buf.append("Unable to release all of the selected nodes!");
+	for(String msg : failures) 
+	  buf.append("\n\n" + msg);
+	return new FailureRsp(timer, buf.toString());
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
+  }
+
+  /**
+   * Release a single working version of a node and optionally remove the associated 
+   * working area files. <P> 
+   * 
+   * This method should only be called from inside a pDatabaseLock synchronized block
+   * of code.
+   *
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param removeFiles
+   *   Should the files associated with the working version be deleted?
+   */
+  private void 
+  releaseHelper
+  (
+   NodeID id, 
+   boolean removeFiles, 
+   TaskTimer timer
+  )
+    throws PipelineException 
+  {
+    String name = id.getName();
+
+    /* unlink the downstream working versions from the to be released working version */ 
+    {
+      timer.aquire();
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+      downstreamLock.writeLock().lock();
+      try {
+	timer.resume();
+	  
+	DownstreamLinks links = getDownstreamLinks(name); 
+	if(links != null) {
+	  TreeSet<String> targets = links.getWorking(id);
+	  if(targets != null) {
+	    for(String target : targets) {
+	      NodeID targetID = new NodeID(id, target);
+		
+	      timer.suspend();
+	      Object obj = unlink(new NodeUnlinkReq(targetID, name));
+	      timer.accum(((TimedRsp) obj).getTimer());
+		
+	      if(obj instanceof FailureRsp)  {
+		FailureRsp rsp = (FailureRsp) obj;
+		throw new PipelineException(rsp.getMessage());
+	      }
+	    }
+	  }
+	}
+      }
+      finally {
+	downstreamLock.writeLock().unlock();
+      }
+    }
+      
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+
+      WorkingBundle bundle = getWorkingBundle(id);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("No working version (" + id + ") exists to be released.");
+      NodeMod mod = bundle.getVersion();
+	
+      /* kill any active jobs associated with the node */
+      killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
+	
+      /* remove the bundle */ 
+      synchronized(pWorkingBundles) {
+	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	table.remove(id);
+      }
+	
+      /* remove the working version node file(s) */ 
+      {
+	File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
+	File backup = new File(file + ".backup");
+	  
+	if(file.isFile()) {
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the working version file (" + file + ")!");
+	}
+	else {
+	  throw new PipelineException
+	    ("Somehow the working version file (" + file + ") did not exist!");
+	}
+	  
+	if(backup.isFile()) {
+	  if(!backup.delete())
+	    throw new PipelineException      
+	      ("Unable to remove the backup working version file (" + backup + ")!");
+	}
+
+	File root = new File(PackageInfo.sNodeDir, 
+			     "working/" + id.getAuthor() + "/" + id.getView());
+
+	deleteEmptyParentDirs(root, new File(PackageInfo.sNodeDir, 
+					     id.getWorkingParent().toString()));
+      }
+	
+      /* update the downstream links of this node */ 
+      {
+	boolean isRevoked = false;
+	  
+	timer.aquire();	
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	    
+	  DownstreamLinks links = getDownstreamLinks(name); 
+	  links.releaseWorking(id);
+	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	} 
+      }
+	
+      /* update the downstream links of the source nodes */ 
+      for(LinkMod link : mod.getSources()) {
+	String source = link.getName();
+	  
+	timer.aquire();	
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+
+	  NodeID sourceID = new NodeID(id, source);
+	  DownstreamLinks links = getDownstreamLinks(source); 
+	  links.removeWorking(sourceID, name);
+	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}    
+      }
+	
+      /* remove the node tree path */ 
+      removeWorkingNodeTreePath(id);
+
+      /* remove the associated files */ 
+      if(removeFiles) {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.removeAll(id, mod.getSequences());
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}	
+      }
+    }
+    finally {
+      lock.writeLock().unlock();
+    }  
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Delete all working and checked-in versions of a node and optionally remove all  
+   * associated working area files. <P> 
+   * 
+   * @param req 
+   *   The node delete request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the node.
+   */
+  public Object
+  delete
+  (
+   NodeDeleteReq req
+  ) 
+  {
+    String name = req.getName();
+    
+    TaskTimer timer = new TaskTimer("MasterMgr.delete(): " + name);
+    timer.aquire();
+    pDatabaseLock.writeLock().lock();
+    try {
+      timer.resume();	
+
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may delete nodes!"); 
+
+      /* get the checked-in versions  */ 
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      try {
+	checkedIn = getCheckedInBundles(name);
+      }
+      catch(PipelineException ex) {
+	checkedIn = new TreeMap<VersionID,CheckedInBundle>();
+      }
+
+      /* get the downstream links */ 
+      DownstreamLinks dsl = getDownstreamLinks(name);
+
+      /* make sure none of the checked-in versions are the source node of a link of 
+           another node */ 
+      {
+	boolean failed = false;
+	StringBuffer buf = new StringBuffer();
+	for(VersionID vid : checkedIn.keySet()) {
+	  TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
+	  if(dlinks == null) 
+	    throw new PipelineException
+	      ("Somehow there was no downstream links entry for checked-in version " + 
+	       "(" + vid + ") of node (" + name + ")!");
+	  
+	  if(!dlinks.isEmpty()) {
+	    failed = true;
+	    buf.append("\nChecked-in versions downstream of the (" + vid + ") version:\n");
+	    for(String dname : dlinks.keySet()) 
+	      buf.append("  " + dname + "  (" + dlinks.get(dname) + ")\n");
+	  }
+	}
+
+	if(failed) {
+	  throw new PipelineException
+	    ("Cannot delete node (" + name + ") because links to the following " +
+	     "checked-in versions exist in the repository:\n" + 
+	     buf.toString());
+	}
+      } 
+
+      /* release all working versions of the node */ 
+      {
+	ArrayList<NodeID> dead = new ArrayList<NodeID>();
+	for(String author : pWorkingAreaViews.keySet()) {
+	  for(String view : pWorkingAreaViews.get(author)) {
+	    NodeID nodeID = new NodeID(author, view, name);
+	    try {
+	      getWorkingBundle(nodeID);
+	      dead.add(nodeID);
+	    }
+	    catch(PipelineException ex) {
+	    }
+	  }
+	}
+
+	for(NodeID nodeID : dead) {
+	  releaseHelper(nodeID, req.removeFiles(), timer);
+	  pWorkingLocks.remove(nodeID);
+	}
+	
+	assert(pWorkingBundles.get(name).isEmpty());
+	pWorkingBundles.remove(name);
+      }
+	
+      /* delete the checked-in versions */ 
+      if(!checkedIn.isEmpty()) {
+
+	/* remove the downstream links to this node from the checked-in source nodes */ 
+	for(VersionID vid : checkedIn.keySet()) {
+	  NodeVersion vsn = checkedIn.get(vid).getVersion();
+	  for(LinkVersion link : vsn.getSources()) {
+	    DownstreamLinks ldsl = getDownstreamLinks(link.getName());
+	    ldsl.deleteCheckedIn(link.getVersionID(), name);
+	  }
+	}
+
+	/* delete files associated with all checked-in versions of the node */ 
+	{
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.deleteCheckedIn(name);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
+	
+	/* remove the checked-in version files */ 
+	for(VersionID vid : checkedIn.keySet()) {
+	  File file = new File(PackageInfo.sNodeDir, "repository" + name + "/" + vid);
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the checked-in version file (" + file + ")!");
+	}
+
+	/* remove the checked-in version node directory */
+	{
+	  File dir = new File(PackageInfo.sNodeDir, "repository" + name);
+	  File parent =  dir.getParentFile();
+	  if(!dir.delete())
+	    throw new PipelineException
+	      ("Unable to remove the checked-in version directory (" + dir + ")!");
+	  
+	  deleteEmptyParentDirs(new File(PackageInfo.sNodeDir, "repository"), parent);
+	}	    
+	
+	/* remove the checked-in version entries */ 
+	pCheckedInLocks.remove(name);
+	pCheckedInBundles.remove(name);
+      }
+
+      /* remove the downstream links file and entry */ 
+      {
+	File file = new File(PackageInfo.sNodeDir, "downstream" + name);
+	if(file.isFile()) {
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the downstream links file (" + file + ")!");
+	}
+
+	pDownstream.remove(name);
+      }
+
+      /* remove the leaf node tree entry */ 
+      removeNodeTreePath(name);
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.writeLock().unlock();
+    }
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -6248,7 +6267,6 @@ class MasterMgr
    NodeCheckInReq req 
   ) 
   {
-    assert(req != null);
     NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkIn(): " + nodeID);
@@ -6257,6 +6275,11 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may check-in nodes owned by " + 
+	   "another user!");
 
       /* make sure the latest action plugins are loaded */ 
       PluginMgrClient.getInstance().update();
@@ -6320,7 +6343,6 @@ class MasterMgr
    NodeCheckOutReq req 
   ) 
   {
-    assert(req != null);
     NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
@@ -6329,6 +6351,11 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	      
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may check-out nodes owned by " + 
+	   "another user!");
 
       /* get the current status of the nodes */ 
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
@@ -6348,7 +6375,8 @@ class MasterMgr
 
       /* lock online/offline status of all required nodes */ 
       timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(requiredVersions.keySet());
+      List<ReentrantReadWriteLock> onOffLocks = 
+	onlineOfflineReadLock(requiredVersions.keySet());
       try {
 	timer.resume();	
       
@@ -6411,9 +6439,10 @@ class MasterMgr
 	}
 
 	/* check-out the nodes */ 
-	performCheckOut(true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
-			table, new LinkedList<String>(), new HashSet<String>(), 
-			new HashSet<String>(), timer);
+	performCheckOut
+	  (true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
+	   table, new LinkedList<String>(), new HashSet<String>(), 
+	   new HashSet<String>(), timer);
       }
       finally {
 	onlineOfflineReadUnlock(onOffLocks);
@@ -6432,7 +6461,8 @@ class MasterMgr
   }
 
   /**
-   * Recursively collect the names of the checked-in versions required by the check-out operation. 
+   * Recursively collect the names of the checked-in versions required by the 
+   * check-out operation. 
    *
    * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
    * version. <P> 
@@ -7013,7 +7043,6 @@ class MasterMgr
    NodeLockReq req 
   ) 
   {
-    assert(req != null);
     NodeID nodeID = req.getNodeID();
     String name = nodeID.getName();
     VersionID vid = req.getVersionID();
@@ -7024,6 +7053,11 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may lock nodes in working " + 
+	   "areas owned by another user!");
 
       /* lock online/offline status of the node to lock */ 
       timer.aquire();
@@ -7048,8 +7082,8 @@ class MasterMgr
 	if(isOffline) {
 	  StringBuffer buf = new StringBuffer();
 	  buf.append
-	    ("Unable to lock node (" + name + ") to checked-in version (" + vid + ") because " + 
-	     "that version is currently offline!\n\n");
+	    ("Unable to lock node (" + name + ") to checked-in version (" + vid + ") " + 
+	     "because that version is currently offline!\n\n");
 
 	  TreeSet<VersionID> ovids = new TreeSet<VersionID>();
 	  ovids.add(vid);
@@ -7112,8 +7146,8 @@ class MasterMgr
 	    if(vid == null) {
 	      if(work == null) 
 		throw new PipelineException
-		  ("No working version of node (" + name + ") exists and no revision number " + 
-		   "was specified for the lock operation!");
+		  ("No working version of node (" + name + ") exists and no revision " + 
+		   "number was specified for the lock operation!");
 	      vid = work.getWorkingID();
 	    }
 	    assert(vid != null);
@@ -7130,8 +7164,8 @@ class MasterMgr
 	  for(LinkVersion link : vsn.getSources()) {
 	    if(link.getPolicy() == LinkPolicy.Reference) 
 	      throw new PipelineException
-		("Unable to lock node (" + name + ") because the checked-in version of the " + 
-		 "node had a Reference link to node (" + link.getName() + ")!");
+		("Unable to lock node (" + name + ") because the checked-in version " + 
+		 "of the node had a Reference link to node (" + link.getName() + ")!");
 	  }
 
 	  /* get the current timestamp */ 
@@ -7268,6 +7302,11 @@ class MasterMgr
     try {
       timer.resume();	      
       
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may revert files associated with " + 
+	   "nodes in working areas owned by another user!");
+
       /* whether the working area files should be modifiable */ 
       boolean writeable = false;
       {
@@ -7320,7 +7359,8 @@ class MasterMgr
 	  }
 	  
 	  if(!ovids.isEmpty()) {
-	    TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
+	    TreeMap<String,TreeSet<VersionID>> vsns = 
+	      new TreeMap<String,TreeSet<VersionID>>();
 	    vsns.put(name, ovids);
 	    
 	    StringBuffer buf = new StringBuffer();
@@ -7407,6 +7447,11 @@ class MasterMgr
     try {
       timer.resume();	      
       
+      if(!pAdminPrivileges.isNodeManaged(req, targetID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may clone files associated with " + 
+	   "nodes in working areas owned by another user!");
+
       FileSeq sourceSeq = null;
       {
 	timer.aquire(); 
@@ -7530,6 +7575,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may evolve nodes in working " + 
+	   "areas owned by another user!");
+
       /* verify the checked-in revision number */ 
       String name = nodeID.getName();
       VersionID vid = req.getVersionID();
@@ -7589,9 +7639,9 @@ class MasterMgr
 	      else {
 		throw new PipelineException
 		  ("Unable to evolve to version (" + vid + ") of node (" + name + ")  " + 
-		   "because the version is currently offline.  However, a request has been " + 
-		   "submitted to restore the version so that it may be used once it has " + 
-		   "been brought back online.");
+		   "because the version is currently offline.  However, a request has " + 
+		   "been submitted to restore the version so that it may be used once " + 
+		   "it has been brought back online.");
 	      }
 	    }
 	  }
@@ -7629,12 +7679,13 @@ class MasterMgr
       }      
     }
     catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -7664,6 +7715,11 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+      
+      if(!pAdminPrivileges.isQueueManaged(req, req.getNodeID()))
+	throw new PipelineException
+	  ("Only a user with Queue Manager privileges may submit jobs for nodes in " + 
+	   "working areas owned by another user!");
 
       /* get the current status of the nodes */ 
       NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
@@ -7711,6 +7767,11 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isQueueManaged(req, req.getNodeID()))
+	throw new PipelineException
+	  ("Only a user with Queue Manager privileges may submit jobs for nodes in " + 
+	   "working areas owned by another user!");
 
       /* get the current status of the nodes */ 
       NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
@@ -8307,7 +8368,8 @@ class MasterMgr
 	  }
 
 	  DoubleMap<OsType,String,String> envs = 
-	    getToolsetEnvironments(nodeID.getAuthor(), nodeID.getView(), work.getToolset(), timer);
+	    getToolsetEnvironments(nodeID.getAuthor(), nodeID.getView(), work.getToolset(), 
+				   timer);
 
 	  ActionAgenda agenda = 
 	    new ActionAgenda(jobID, nodeID, 
@@ -8638,6 +8700,127 @@ class MasterMgr
       pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
   }
 
+    
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove the working area files associated with the given node. <P>  
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  removeFiles
+  (
+   NodeRemoveFilesReq req
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+      
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID))
+	throw new PipelineException
+	  ("Only a user with Queue Manager privileges may remove files associated with " +
+	   "nodes in working areas owned by another user!");
+
+      TreeSet<Long> activeIDs = new TreeSet<Long>();
+      TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+      
+      timer.aquire();
+      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+      lock.readLock().lock();
+      try {
+	timer.resume();
+	
+	WorkingBundle bundle = getWorkingBundle(nodeID);
+	NodeMod mod = bundle.getVersion();
+	if(mod.isFrozen()) 
+	  throw new PipelineException
+	    ("The files associated with frozen node (" + nodeID + ") cannot be removed!");
+	
+	ArrayList<Long> jobIDs = new ArrayList<Long>();
+	ArrayList<JobState> jobStates = new ArrayList<JobState>();
+	pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
+				     jobIDs, jobStates);
+	
+	TreeSet<Integer> indices = req.getIndices();
+	if(indices == null) {
+	  int wk = 0;
+	  for(JobState state : jobStates) {
+	    Long jobID = jobIDs.get(wk);
+	    if((state != null) && (jobID != null)) {
+	      switch(state) {
+	      case Queued:
+	      case Preempted:
+	      case Paused:
+	      case Running:
+		activeIDs.add(jobID);
+	      }
+	    }
+	    
+	    wk++;
+	  }
+	  
+	  fseqs.addAll(mod.getSequences());
+	}
+	else {
+	  for(Integer idx : indices) {
+	    JobState state = jobStates.get(idx);
+	    Long jobID = jobIDs.get(idx);
+	    if((state != null) && (jobID != null)) {
+	      switch(state) {
+	      case Queued:
+	      case Preempted:
+	      case Paused:
+	      case Running:
+		activeIDs.add(jobID);
+	      }
+	    }
+	  }
+	  
+	  for(FileSeq fseq : mod.getSequences()) {
+	    for(Integer idx : indices) 
+	      fseqs.add(new FileSeq(fseq, idx));
+	  }
+	}
+      }
+      finally {
+	lock.readLock().unlock();
+      }    
+      assert(fseqs != null);
+      
+      if(!activeIDs.isEmpty()) 
+	pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
+
+      {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.removeAll(nodeID, fseqs);
+	}
+	finally {
+	    freeFileMgrClient(fclient);
+	}
+      }
+      
+      return new SuccessRsp(timer); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -8683,6 +8866,10 @@ class MasterMgr
     pDatabaseLock.writeLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isMasterAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may backup the database!"); 
 
       /* write cached downstream links */ 
       writeAllDownstreamLinks();
@@ -8854,7 +9041,8 @@ class MasterMgr
 		 given maximum number of archive volumes */ 
 	      if((maxArchives == null) || (numArchives <= maxArchives)) {
 		
-		/* get the timestamp of the latest archive containing the checked-in version */ 
+		/* get the timestamp of the latest archive containing the 
+		   checked-in version */ 
 		Date archived = null;
 		if(lastArchive != null) {
 		  timer.aquire();
@@ -8865,7 +9053,8 @@ class MasterMgr
 		}
 		
 		Date checkedIn = stamps.get(vid);
-		ArchiveInfo info = new ArchiveInfo(name, vid, checkedIn, archived, numArchives);
+		ArchiveInfo info = 
+		  new ArchiveInfo(name, vid, checkedIn, archived, numArchives);
 		archiveInfo.add(info);
 	      }
 	    }
@@ -8995,6 +9184,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!pAdminPrivileges.isMasterAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may create archives of checked-in " +
+	   "versions!"); 
+
       /* the archiver plugin to use */ 
       BaseArchiver archiver = req.getArchiver();
 
@@ -9043,8 +9237,8 @@ class MasterMgr
 		for(VersionID vid : versions.get(name)) {
 		  if((offline != null) && offline.contains(vid)) 
 		    throw new PipelineException 
-		      ("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
-		       "be archived because it is currently offline!");
+		      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+		       "cannot be archived because it is currently offline!");
 		  
 		  CheckedInBundle bundle = checkedIn.get(vid);
 		  if(bundle == null) 
@@ -9078,8 +9272,8 @@ class MasterMgr
 	    if(total > archiver.getCapacity()) 
 	      throw new PipelineException
 		("The total size of the files (" + total + " bytes) associated with the " +
-		 "checked-in versions to be archived exceeded the capacity of the archiver " + 
-		 "(" + archiver.getCapacity() + " bytes)!");
+		 "checked-in versions to be archived exceeded the capacity of the " + 
+		 "archiver (" + archiver.getCapacity() + " bytes)!");
 	  }
 	}
       	
@@ -9110,7 +9304,8 @@ class MasterMgr
 	      ("Somehow an archive named (" + archiveName + ") already exists!");
 	}
 	
-	/* create the archive volume by runing the archiver plugin and save any STDOUT output */
+	/* create the archive volume by runing the archiver plugin and save any 
+	   STDOUT output */
 	{
 	  String output = null;
 	  {
@@ -9642,6 +9837,10 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isMasterAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may offline checked-in versions!"); 
   
       TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
 
@@ -9654,7 +9853,8 @@ class MasterMgr
 	/* process each node */ 
 	for(String name : versions.keySet()) {	
 	  timer.aquire();
-	  ArrayList<ReentrantReadWriteLock> workingLocks = new ArrayList<ReentrantReadWriteLock>();
+	  ArrayList<ReentrantReadWriteLock> workingLocks = 
+	    new ArrayList<ReentrantReadWriteLock>();
 	  {
 	    TreeMap<String,TreeSet<String>> views = getViewsContaining(name);
 	    for(String author : views.keySet()) {
@@ -9711,8 +9911,8 @@ class MasterMgr
 
 		  if(!hasBeenArchived) 
 		    throw new PipelineException
-		      ("The checked-in version (" + vid + ") of node (" + name + ") cannot be " + 
-		       "offlined until it has been archived at least once!");
+		      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+		       "cannot be offlined until it has been archived at least once!");
 		}	    
 
 		/* make sure it is not being referenced by an existing working version */ 
@@ -10056,6 +10256,10 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.denyRestore()");
 
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+	(timer, "Only a user with Master Admin privileges may deny restore requests!");
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
@@ -10302,6 +10506,11 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.restore(): " + archiveName);
 
+    if(!pAdminPrivileges.isMasterAdmin(req))
+      return new FailureRsp
+	(timer, 
+	 "Only a user with Master Admin privileges may restore checked-in versions!"); 
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
@@ -10455,7 +10664,8 @@ class MasterMgr
 	      int vidx = vids.indexOf(vid);
 	      
 	      /* determine what files and/or links need to be modified */ 
-	      TreeMap<File,TreeSet<VersionID>> symlinks = new TreeMap<File,TreeSet<VersionID>>();
+	      TreeMap<File,TreeSet<VersionID>> symlinks = 
+		new TreeMap<File,TreeSet<VersionID>>();
 	      TreeMap<File,VersionID> targets = new TreeMap<File,VersionID>();
 	      for(File file : novelty.keySet()) {
 		Boolean[] isNovel = novelty.get(file);
@@ -13200,6 +13410,7 @@ class MasterMgr
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
  
   /**
@@ -14808,109 +15019,6 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Write the privileged users to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the privileged users file.
-   */ 
-  private void 
-  writePrivilegedUsers() 
-    throws PipelineException
-  {
-    synchronized(pPrivilegedUsers) {
-      File file = new File(PackageInfo.sNodeDir, "etc/privileged-users");
-      if(file.exists()) {
-	if(!file.delete())
-	  throw new PipelineException
-	    ("Unable to remove the old privileged users file (" + file + ")!");
-      }
-      
-      if(!pPrivilegedUsers.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Writing Privileged Users.");
-
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("PrivilegedUsers", pPrivilegedUsers);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the privileged users!");
-	    LogMgr.getInstance().flush();
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the privileged users file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-      }
-    }
-  }
-  
-  /**
-   * Read the privileged users from disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to read the privileged users file.
-   */ 
-  private void 
-  readPrivilegedUsers() 
-    throws PipelineException
-  {
-    synchronized(pPrivilegedUsers) {
-      pPrivilegedUsers.clear();
-
-      File file = new File(PackageInfo.sNodeDir, "etc/privileged-users");
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Privileged Users.");
-
-	TreeSet<String> users = null;
-	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  users = (TreeSet<String>) gd.getObject();
-	  in.close();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The privileged users file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the privileged users file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-	assert(users != null);
-	
-	pPrivilegedUsers.addAll(users);
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Write next job/group ID to disk.
    * 
    * @throws PipelineException
@@ -15868,7 +15976,8 @@ class MasterMgr
 	    }
 	  }
 
-	  /* determine the checked-in revision numbers and locked status of the upstream nodes */ 
+	  /* determine the checked-in revision numbers and locked status of 
+	     the upstream nodes */ 
 	  TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
 	  TreeMap<String,Boolean> locked = new TreeMap<String,Boolean>();
 	  for(NodeStatus lstatus : status.getSources()) {
@@ -16245,6 +16354,14 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The combined work groups and adminstrative privileges.
+   */ 
+  private AdminPrivileges  pAdminPrivileges; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * A lock which serializes access to the archive manifest file I/O operations.
@@ -16288,7 +16405,8 @@ class MasterMgr
    * These locks protect access to (and modification of) whether the versions of a node are 
    * currently online.  The per-node read-lock should be aquired for operations which 
    * require that the online/offline status not change during the operation.  The per-node 
-   * write-lock should be aquired when changing the online/offline status of versions of a node.
+   * write-lock should be aquired when changing the online/offline status of versions of a 
+   * node.
    */
   private HashMap<String,ReentrantReadWriteLock>  pOnlineOfflineLocks;
 
@@ -16401,16 +16519,6 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private DoubleMap<String,String,SuffixEditor>  pSuffixEditors;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The cached names of the privileged users. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeSet<String>  pPrivilegedUsers;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.3 2005/03/11 06:34:39 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.4 2006/01/15 06:29:25 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -38,10 +38,40 @@ class PluginMgrControlClient
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  /**
+   * Update the work groups and administrative privileges from the MasterMgr.
+   * 
+   * @param privs
+   *   The privileges. 
+   * 
+   * @throws PipelineException
+   *   If unable to update the privileges.
+   */ 
+  public synchronized void 
+  updateAdminPrivileges
+  (
+   AdminPrivileges privs
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    MiscUpdateAdminPrivilegesReq req = privs.getUpdateRequest();
+    Object obj = performTransaction(PluginRequest.UpdateAdminPrivileges, req); 
+    handleSimpleResponse(obj);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P L U G I N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Install a new or updated plugin class.
    * 
@@ -62,10 +92,6 @@ class PluginMgrControlClient
   ) 
     throws PipelineException 
   {
-    if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser)) 
-      throw new PipelineException
-	("Only the (" + PackageInfo.sPipelineUser + ") may install plugins!");
-
     /* the canonical class directory */ 
     File cdir = null;
     try {

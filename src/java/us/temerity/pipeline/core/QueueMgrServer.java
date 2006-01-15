@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.28 2006/01/05 16:54:43 jim Exp $
+// $Id: QueueMgrServer.java,v 1.29 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -106,6 +106,8 @@ class QueueMgrServer
 
 	collector.join();
 	dispatcher.join();
+
+	scheduler.interrupt();
 	scheduler.join();
 
 	synchronized(pTasks) {
@@ -272,19 +274,12 @@ class QueueMgrServer
 	    LogMgr.getInstance().flush();
 	  
 	    switch(kind) {
-	    /*-- PRIVILEGED USER STATUS ----------------------------------------------------*/
-	    case GetPrivilegedUsers:
+	    /*-- ADMINISTRATIVE PRIVILEGES -------------------------------------------------*/
+	    case UpdateAdminPrivileges: 
 	      {
-		objOut.writeObject(pQueueMgr.getPrivilegedUsers());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case SetPrivilegedUsers:
-	      {
-		MiscSetPrivilegedUsersReq req = 
-		  (MiscSetPrivilegedUsersReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.setPrivilegedUsers(req));
+		MiscUpdateAdminPrivilegesReq req = 
+		  (MiscUpdateAdminPrivilegesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.updateAdminPrivileges(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -626,7 +621,8 @@ class QueueMgrServer
 	    
 	    case DeleteAllJobGroups:
 	      {
-		objOut.writeObject(pQueueMgr.deleteAllJobGroups());
+		PrivilegedReq req = (PrivilegedReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.deleteAllJobGroups(req));
 		objOut.flush(); 
 	      }
 	      break;

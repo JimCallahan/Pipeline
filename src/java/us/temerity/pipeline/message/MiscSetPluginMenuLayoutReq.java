@@ -1,4 +1,4 @@
-// $Id: MiscSetPluginMenuLayoutReq.java,v 1.4 2005/07/18 01:34:08 jim Exp $
+// $Id: MiscSetPluginMenuLayoutReq.java,v 1.5 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class MiscSetPluginMenuLayoutReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -43,6 +43,8 @@ class MiscSetPluginMenuLayoutReq
    PluginMenuLayout layout
   )
   {
+    super();
+
     pName = name;
 
     if(os == null) 

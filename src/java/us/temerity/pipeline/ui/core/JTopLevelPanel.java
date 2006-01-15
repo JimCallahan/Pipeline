@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.4 2005/06/28 18:05:22 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.5 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,6 +35,8 @@ class JTopLevelPanel
   {
     super();
 
+    pPrivilegeDetails = new PrivilegeDetails();
+      
     setAuthorView(PackageInfo.sUser, "default");
     setGroupID(0);
   }
@@ -49,6 +51,8 @@ class JTopLevelPanel
   )
   {
     super();
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     if(panel != null) {
       setAuthorView(panel.getAuthor(), panel.getView());
@@ -139,12 +143,14 @@ class JTopLevelPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Are the contents of the panel read-only.
+   * Are the contents of the panel read-only. <P> 
+   * 
+   * Subclasses should override this method with a test against the pPrivilegeDetails.
    */ 
   public boolean
   isLocked() 
   {
-    return pIsLocked;
+    return (!PackageInfo.sUser.equals(pAuthor));
   }
 
   /**
@@ -192,16 +198,7 @@ class JTopLevelPanel
       throw new IllegalArgumentException("The view cannot be (null)!");
     pView = view;
 
-    pIsLocked = !PackageInfo.sUser.equals(pAuthor);
-    if(pIsLocked) {
-      UIMaster master = UIMaster.getInstance();
-      try {
-	pIsLocked = !master.getMasterMgrClient().isPrivileged(false);
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-    }
+    updatePrivileges();
   }
 
 
@@ -210,6 +207,24 @@ class JTopLevelPanel
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
  
+  /**
+   * Update the user privileges and title panel to reflect the changes.
+   */ 
+  public void 
+  updatePrivileges() 
+  {
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
+    try {
+      pPrivilegeDetails = client.getCachedPrivilegeDetails();
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+    }
+
+    updateManagerTitlePanel();
+  }
+
   /**
    * Update the parent manager title panel to reflect the current state of this panel.
    */ 
@@ -372,10 +387,10 @@ class JTopLevelPanel
    */
   protected String  pView;
 
-  /**
-   * Whether the contents of the panel is read-only.
-   */   
-  protected boolean  pIsLocked;
 
+  /**
+   * The details of the administrative privileges granted to the current user. 
+   */ 
+  protected PrivilegeDetails  pPrivilegeDetails; 
 
 }

@@ -1,4 +1,4 @@
-// $Id: MiscArchiveReq.java,v 1.4 2005/09/07 21:11:16 jim Exp $
+// $Id: MiscArchiveReq.java,v 1.5 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public
 class MiscArchiveReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -51,6 +51,8 @@ class MiscArchiveReq
    String toolset
   )
   {
+    super();
+
     if(prefix == null) 
       throw new IllegalArgumentException
 	("The volume prefix cannot be (null)!");

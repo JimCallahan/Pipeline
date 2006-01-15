@@ -1,4 +1,4 @@
-// $Id: JPackageArchiverPluginsPanel.java,v 1.1 2005/09/07 21:11:17 jim Exp $
+// $Id: JPackageArchiverPluginsPanel.java,v 1.2 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -54,8 +54,8 @@ class JPackageArchiverPluginsPanel
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    * 
-   * @param isPrivileged
-   *   Whether the current user is privileged.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public void 
   update
@@ -63,7 +63,7 @@ class JPackageArchiverPluginsPanel
    String pname, 
    OsType os,
    VersionID vid,
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
     throws PipelineException
   {
@@ -72,7 +72,7 @@ class JPackageArchiverPluginsPanel
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     pclient.update();
       
-    updateHelper(pname, os, vid, includedPlugins, pclient.getArchivers(), isPrivileged);
+    updateHelper(pname, os, vid, includedPlugins, pclient.getArchivers(), privileges);
   }
 
 

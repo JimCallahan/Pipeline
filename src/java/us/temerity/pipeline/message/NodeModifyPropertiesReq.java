@@ -1,4 +1,4 @@
-// $Id: NodeModifyPropertiesReq.java,v 1.5 2004/09/08 18:37:53 jim Exp $
+// $Id: NodeModifyPropertiesReq.java,v 1.6 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class NodeModifyPropertiesReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -41,6 +41,8 @@ class NodeModifyPropertiesReq
    NodeMod mod   
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

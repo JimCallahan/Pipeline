@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -103,8 +103,8 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("Manage the privileged users.", 
-	 "ShowManageUsers", "Users:"),    
+	("Manage the user privileges.", 
+	 "ShowManagePrivileges", "User Privileges:"),    
 
 	new HotKeyPref
 	("Manage the toolset environments.", 
@@ -1506,6 +1506,26 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
+	("Add a new user.", 
+	 "PrivilegeUsersAdd", "Add User:"), 
+
+	new HotKeyPref
+	("Remove the selected users.", 
+	 "PrivilegeUsersRemove", "Remove User:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Add a new work group.", 
+	 "WorkGroupsAdd", "Add Work Group:"), 
+      };
+
+      pPrefs.put("Dialogs|Privileges|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
 	("Add a new selection key.", 
 	 "SelectionKeysAdd", "Add Key:"), 
 
@@ -1600,6 +1620,7 @@ class GenUserPrefsApp
       pPrefPanels.add("Dialogs|Resource Usage History|Appearance");
       pPrefPanels.add("Dialogs|Resource Usage History|Hot Keys");
 
+      pPrefPanels.add("Dialogs|Privileges|Hot Keys");
       pPrefPanels.add("Dialogs|Selection Keys|Hot Keys");
     }
 
@@ -1663,7 +1684,7 @@ class GenUserPrefsApp
 	manager.add("ShowUserPrefs");
 	manager.add("ShowDefaultEditors");
 	manager.add("UpdatePlugins");
-	manager.add("ShowManageUsers");
+	manager.add("ShowManagePrivileges");
 	manager.add("ShowManageToolsets");
 	manager.add("ShowManageLicenseKeys");
 	manager.add("ShowManageSelectionKeys");
@@ -1921,6 +1942,16 @@ class GenUserPrefsApp
 
       {
 	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("Privileges", group);
+      
+	group.add("PrivilegeUsersAdd");
+	group.add("PrivilegeUsersRemove");
+
+	group.add("WorkGroupsAdd");
+      }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
 	pHotKeyGroups.put("SelectionKeys", group);
       
 	group.add("SelectionKeysAdd");
@@ -1980,7 +2011,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2237,7 +2268,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3593,7 +3624,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.28 2006/01/05 22:46:21 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

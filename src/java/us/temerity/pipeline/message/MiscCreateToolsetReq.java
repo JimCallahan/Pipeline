@@ -1,4 +1,4 @@
-// $Id: MiscCreateToolsetReq.java,v 1.2 2005/06/10 16:14:22 jim Exp $
+// $Id: MiscCreateToolsetReq.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public
 class MiscCreateToolsetReq
-  implements Serializable
+  extends PrivilegedReq 
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -58,6 +58,8 @@ class MiscCreateToolsetReq
    OsType os
   )
   {
+    super();
+
     if(author == null) 
       throw new IllegalArgumentException("The author cannot be (null)!");
     pAuthor = author;

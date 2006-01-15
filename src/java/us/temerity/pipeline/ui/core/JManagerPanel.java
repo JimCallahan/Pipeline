@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.24 2005/12/31 20:40:43 jim Exp $
+// $Id: JManagerPanel.java,v 1.25 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -330,8 +330,8 @@ class JManagerPanel
 	pPopup.add(sub);  
 
 	item = new JMenuItem("User Privileges...");
-	pManagerUsersItem = item;
-	item.setActionCommand("manage-users");
+	pManagePrivilegesItem = item;
+	item.setActionCommand("manage-privileges");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1013,8 +1013,8 @@ class JManagerPanel
        "Make sure that the latest plugins and plugin menus are being used.");
 
     updateMenuToolTip
-      (pManagerUsersItem, prefs.getShowManageUsers(), 
-       "Manage the privileged users.");
+      (pManagePrivilegesItem, prefs.getShowManagePrivileges(), 
+       "Manage the user privileges.");
     updateMenuToolTip
       (pManageToolsetsItem, prefs.getShowManageToolsets(), 
        "Manage the toolset environments.");
@@ -1684,9 +1684,9 @@ class JManagerPanel
       return true;
     }
 
-    else if((prefs.getShowManageUsers() != null) &&
-	    prefs.getShowManageUsers().wasPressed(e)) {
-      UIMaster.getInstance().showManageUsersDialog();
+    else if((prefs.getShowManagePrivileges() != null) &&
+	    prefs.getShowManagePrivileges().wasPressed(e)) {
+      UIMaster.getInstance().showManagePrivilegesDialog();
       return true;
     }
     else if((prefs.getShowManageToolsets() != null) &&
@@ -1880,8 +1880,8 @@ class JManagerPanel
     else if(cmd.equals("update-plugins"))
       UIMaster.getInstance().clearPluginCache();
 
-    else if(cmd.equals("manage-users"))
-      UIMaster.getInstance().showManageUsersDialog();
+    else if(cmd.equals("manage-privileges"))
+      UIMaster.getInstance().showManagePrivilegesDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
 
@@ -1905,8 +1905,7 @@ class JManagerPanel
     else if(cmd.equals("about"))
       UIMaster.getInstance().showAboutDialog();
     else if(cmd.equals("quick-reference"))
-      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
-		      "/share/docs/manuals/quick-reference.html");
+      BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php");
     else if(cmd.equals("user-manual"))
       BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
 		      "/share/docs/manuals/user-manual.html");
@@ -1922,7 +1921,7 @@ class JManagerPanel
       UIMaster.getInstance().showConfigDialog(); 
     else if(cmd.equals("license-agreement"))
       BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
-		      "/share/docs/license-agreement.html");
+		      "/share/docs/legal/license.html");
 
     else if(cmd.equals("quit"))
       UIMaster.getInstance().doQuit();    
@@ -2860,18 +2859,20 @@ class JManagerPanel
 
       /* privileged status */ 
       {
-	UIMaster master = UIMaster.getInstance();
-	try {
-	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
-	  pBackupDatabaseItem.setEnabled(isPrivileged);
-	  pArchiveItem.setEnabled(isPrivileged);
-	  pOfflineItem.setEnabled(isPrivileged);
-	  pShutdownServerItem.setEnabled(isPrivileged);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-      }
+ 	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+ 	try {
+ 	  PrivilegeDetails privileges = client.getCachedPrivilegeDetails();
+ 	  pBackupDatabaseItem.setEnabled(privileges.isMasterAdmin());
+ 	  pArchiveItem.setEnabled(privileges.isMasterAdmin());
+ 	  pOfflineItem.setEnabled(privileges.isMasterAdmin());
+ 	  pRestoreItem.setEnabled(privileges.isMasterAdmin());
+ 	  pShutdownServerItem.setEnabled(privileges.isMasterAdmin());
+ 	}
+ 	catch(PipelineException ex) {
+ 	  master.showErrorDialog(ex);
+ 	}
+      } 
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
     }
@@ -3277,7 +3278,7 @@ class JManagerPanel
   private JMenuItem  pDefaultEditorsItem;
   private JMenuItem  pUpdatePluginsItem;
 
-  private JMenuItem  pManagerUsersItem;
+  private JMenuItem  pManagePrivilegesItem;
   private JMenuItem  pManageToolsetsItem;
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;

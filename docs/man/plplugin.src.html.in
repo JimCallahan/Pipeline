@@ -35,11 +35,13 @@ and use the newly installed plugins.&nbsp; All Pipeline programs are
 capable of reloading plugins on the fly.&nbsp; This is
 important when developing and testing new plugins, but it requires that
 care be taken so that Pipeline maintains a consistent state.&nbsp; <br>
+  <br>
   <span style="color: rgb(153, 0, 0);"></span><span
- style="color: rgb(153, 0, 0);"></span><br>
-This program must be run by the
-(@PIPELINE_USER@) user when installing plugins (see <a
- href="#--install"><span style="font-weight: bold;">--install</span></a>).<br>
+ style="color: rgb(153, 0, 0);"></span><span
+ style="font-weight: normal;">This program must be run by a user with
+Master Admin
+privileges</span> when installing plugins (see <a href="#--install"><span
+ style="font-weight: bold;">--install</span></a>).<br>
 </blockquote>
 <h3><a name="Plugin_Limitations"></a>Plugin Requirements</h3>
 <blockquote>Besides safely installing plugin files, <span
@@ -199,9 +201,9 @@ versions of the plugin will continue to behave in a consistent
 manner.&nbsp; <br>
   <br>
 To facilitate testing of new plugin versions, the API provides a way to
-mark plugin versions as being under active development by calling&nbsp;
-  <code><a
- href="../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment%28%29"><span
+mark plugin versions as being under active development by calling
+the&nbsp; <code><a
+ href="../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment"><span
  style="font-weight: bold;">underDevelopment</span></a></code> method
 in the plugin's constructor.&nbsp; This lets Pipeline know that the
 plugin might change substantially and that its use should be restricted
@@ -418,7 +420,13 @@ previously installed plugin with the same name and version as one of
 the given classes, an error will be generated and the plugin will not
 be installed unless the previous plugin was under development (see <a
  href="#Important_Caveats"><span style="font-weight: bold;">Important
-Caveats</span></a>).</div>
+Caveats</span></a>).<br>
+<br>
+<span style="font-weight: normal;">This command requires Developer
+privileges (see <a style="font-weight: bold;"
+ href="../javadoc/us/temerity/pipeline/Privileges.html#isDeveloper">Privileges</a>).</span><span
+ style="font-weight: normal;"></span><br>
+</div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>

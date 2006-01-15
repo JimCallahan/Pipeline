@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.28 2006/01/05 16:54:43 jim Exp $
+// $Id: QueueMgrClient.java,v 1.29 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,202 +53,6 @@ class QueueMgrClient
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Warning,
 	 ex.getMessage());
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P R I V I L E G E D   U S E R S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Set the names of the privileged users. <P> 
-   * 
-   * Privileged users are allowed to perform operations which are restricted for normal
-   * users. In general privileged access is required when an operation is dangerous or 
-   * involves making changes which affect all users. The "pipeline" user is always 
-   * privileged. <P> 
-   * 
-   * This operation updates the queue managers cache of the privileged users.  The master
-   * manager will call this method whenever the set of privileged users is modified.
-   * 
-   * @param users
-   *    The names of the privileged users.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized void
-  setPrivilegedUsers
-  (
-   TreeSet<String> users
-  ) 
-    throws PipelineException
-  {
-    pPrivilegedUsers = null;
-
-    verifyConnection();
-
-    MiscSetPrivilegedUsersReq req = new MiscSetPrivilegedUsersReq(users);
-
-    Object obj = performTransaction(QueueRequest.SetPrivilegedUsers, req);
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Get the names of the privileged users. <P> 
-   * 
-   * Privileged users are allowed to perform operations which are restricted for normal
-   * users. In general privileged access is required when an operation is dangerous or 
-   * involves making changes which affect all users. The "pipeline" user is always 
-   * privileged. <P> 
-   * 
-   * Each client caches the set of privileged users recieved from the master server the 
-   * first time this method is called and uses this cache instead of network communication
-   * for subsequent calls.  This cache can be ignored and rebuilt if the <CODE>useCache</CODE>
-   * argument is set to <CODE>false</CODE>.
-   * 
-   * @param useCache
-   *   Should the local cache be used to determine whether the user is privileged?
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized TreeSet<String> 
-  getPrivilegedUsers
-  (
-   boolean useCache   
-  ) 
-    throws PipelineException
-  {
-    if(!useCache || (pPrivilegedUsers == null)) 
-      updatePrivilegedUsers();
-
-    return new TreeSet<String>(pPrivilegedUsers);
-  }
-
-  /**
-   * Is the given user privileged? <P> 
-   * 
-   * Privileged users are allowed to perform operations which are restricted for normal
-   * users. In general privileged access is required when an operation is dangerous or 
-   * involves making changes which affect all users. The "pipeline" user is always 
-   * privileged. <P> 
-   * 
-   * Each client caches the set of privileged users recieved from the master server the 
-   * first time this method is called and uses this cache instead of network communication
-   * for subsequent calls.  This cache can be ignored and rebuilt if the <CODE>useCache</CODE>
-   * argument is set to <CODE>false</CODE>.
-   * 
-   * @param author
-   *   The user in question.
-   * 
-   * @param useCache
-   *   Should the local cache be used to determine whether the user is privileged?
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged
-  (
-   String author, 
-   boolean useCache
-  ) 
-    throws PipelineException
-  {
-    if(author.equals(PackageInfo.sPipelineUser)) 
-      return true;
-
-    if(!useCache || (pPrivilegedUsers == null)) 
-      updatePrivilegedUsers();
-    assert(pPrivilegedUsers != null);
-
-    return pPrivilegedUsers.contains(author);
-  }
-
-  /**
-   * Is the given user privileged? <P> 
-   * 
-   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with a <CODE>useCache</CODE> argument of <CODE>true</CODE>.
-   * 
-   * @param author
-   *   The user in question.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged
-  (
-   String author
-  ) 
-    throws PipelineException
-  {
-    return isPrivileged(author, true);
-  }
-
-  /**
-   * Is the current user privileged? <P> 
-   * 
-   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with the current user as the <CODE>author</CODE> argument.
-   * 
-   * @param useCache
-   *   Should the local cache be used to determine whether the current user is privileged?
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged
-  ( 
-   boolean useCache
-  ) 
-    throws PipelineException
-  {
-    return isPrivileged(PackageInfo.sUser, useCache);
-  }
-
-  /**
-   * Is the current user privileged? <P> 
-   * 
-   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with the current user as the <CODE>author</CODE> argument and a <CODE>useCache</CODE> 
-   * argument of <CODE>true</CODE>.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged() 
-    throws PipelineException
-  {
-    return isPrivileged(PackageInfo.sUser, true);
-  }
-
-  /**
-   * Update the local cache of privileged users.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  private synchronized void 
-  updatePrivilegedUsers() 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(QueueRequest.GetPrivilegedUsers, null);
-    if(obj instanceof MiscGetPrivilegedUsersRsp) {
-      MiscGetPrivilegedUsersRsp rsp = (MiscGetPrivilegedUsersRsp) obj;
-      pPrivilegedUsers = rsp.getUsers();
-    }
-    else {
-      handleFailure(obj);
-      return;
     }
   }
 
@@ -325,10 +129,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged()) 
-      throw new PipelineException
-	("Only privileged users may add license keys!");
-
     verifyConnection();
 
     QueueAddLicenseKeyReq req = new QueueAddLicenseKeyReq(key);
@@ -354,10 +154,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged()) 
-      throw new PipelineException
-	("Only privileged users may remove license keys!");
-    
     verifyConnection();
 
     QueueRemoveLicenseKeyReq req = new QueueRemoveLicenseKeyReq(kname);
@@ -403,10 +199,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the total number of licenses!");
-
     verifyConnection();
 
     QueueSetMaxLicensesReq req =
@@ -488,10 +280,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged()) 
-      throw new PipelineException
-	("Only privileged users may add selection keys!");
-
     verifyConnection();
 
     QueueAddSelectionKeyReq req = new QueueAddSelectionKeyReq(key);
@@ -517,10 +305,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged()) 
-      throw new PipelineException
-	("Only privileged users may remove selection keys!");
-    
     verifyConnection();
 
     QueueRemoveSelectionKeyReq req = new QueueRemoveSelectionKeyReq(kname);
@@ -599,10 +383,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may add selection groups!"); 
-
     verifyConnection();
     
     QueueAddSelectionGroupReq req = new QueueAddSelectionGroupReq(gname);
@@ -648,10 +428,6 @@ class QueueMgrClient
   ) 
     throws PipelineException 
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may remove selection groups!"); 
-
     verifyConnection();
     
     QueueRemoveSelectionGroupsReq req = new QueueRemoveSelectionGroupsReq(gnames);
@@ -697,10 +473,6 @@ class QueueMgrClient
   ) 
     throws PipelineException 
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may edit selection groups!");
-    
     verifyConnection();
     
     QueueEditSelectionGroupsReq req = new QueueEditSelectionGroupsReq(groups);
@@ -779,10 +551,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may add selection schedules!"); 
-
     verifyConnection();
     
     QueueAddSelectionScheduleReq req = new QueueAddSelectionScheduleReq(sname);
@@ -828,10 +596,6 @@ class QueueMgrClient
   ) 
     throws PipelineException 
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may remove selection schedules!"); 
-
     verifyConnection();
     
     QueueRemoveSelectionSchedulesReq req = new QueueRemoveSelectionSchedulesReq(snames);
@@ -871,10 +635,6 @@ class QueueMgrClient
   ) 
     throws PipelineException 
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may edit selection keys!");
-    
     verifyConnection();
     
     QueueEditSelectionSchedulesReq req = new QueueEditSelectionSchedulesReq(schedules);
@@ -938,10 +698,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may add hosts!"); 
-
     verifyConnection();
     
     QueueAddHostReq req = new QueueAddHostReq(hostname);
@@ -969,10 +725,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged())
-      throw new PipelineException
-	("Only privileged users may remove hosts!"); 
-
     verifyConnection();
     
     QueueRemoveHostsReq req = new QueueRemoveHostsReq(hostnames);
@@ -1053,33 +805,11 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged()) {      
-      TreeSet<String> hostnames = new TreeSet<String>();
-      if(status != null) 
-	hostnames.addAll(status.keySet());
-      if(reservations != null) 
-	hostnames.addAll(reservations.keySet());
-      if(slots != null) 
-	hostnames.addAll(slots.keySet());
-      if(orders != null) 
-	hostnames.addAll(orders.keySet());
-      if(groups != null) 
-	hostnames.addAll(groups.keySet());
-      if(schedules != null) 
-	hostnames.addAll(schedules.keySet());
-
-      for(String hname : hostnames) {
-	if(!pLocalHostnames.contains(hname)) 
-	  throw new PipelineException
-	    ("Only privileged users may edit the properties of a job server " + 
-	     "(" + hname + ") which is not the local host!");
-      }
-    }
-
     verifyConnection();
 
     QueueEditHostsReq req = 
-      new QueueEditHostsReq(status, reservations, orders, slots, groups, schedules);
+      new QueueEditHostsReq(status, reservations, orders, slots, groups, schedules, 
+			    pLocalHostnames);
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);
   }
@@ -1296,13 +1026,9 @@ class QueueMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may preempt jobs owned by another user!");
-
     verifyConnection();
 
-    QueuePreemptJobsReq req = new QueuePreemptJobsReq(jobIDs);
+    QueuePreemptJobsReq req = new QueuePreemptJobsReq(author, jobIDs);
     Object obj = performTransaction(QueueRequest.PreemptJobs, req); 
     handleSimpleResponse(obj);
   }
@@ -1332,13 +1058,9 @@ class QueueMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may kill jobs owned by another user!");
-
     verifyConnection();
 
-    QueueKillJobsReq req = new QueueKillJobsReq(jobIDs);
+    QueueKillJobsReq req = new QueueKillJobsReq(author, jobIDs);
     Object obj = performTransaction(QueueRequest.KillJobs, req); 
     handleSimpleResponse(obj);
   }
@@ -1368,13 +1090,9 @@ class QueueMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may pause jobs owned by another user!");
-
     verifyConnection();
 
-    QueuePauseJobsReq req = new QueuePauseJobsReq(jobIDs);
+    QueuePauseJobsReq req = new QueuePauseJobsReq(author, jobIDs);
     Object obj = performTransaction(QueueRequest.PauseJobs, req); 
     handleSimpleResponse(obj);
   }
@@ -1404,13 +1122,9 @@ class QueueMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may resume jobs owned by another user!");
-
     verifyConnection();
 
-    QueueResumeJobsReq req = new QueueResumeJobsReq(jobIDs);
+    QueueResumeJobsReq req = new QueueResumeJobsReq(author, jobIDs);
     Object obj = performTransaction(QueueRequest.ResumeJobs, req); 
     handleSimpleResponse(obj);
   }
@@ -1495,13 +1209,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) {
-      for(String author : groupAuthors.values()) 
-	if(!PackageInfo.sUser.equals(author))
-	  throw new PipelineException
-	    ("Only privileged users may delete job groups owned by another user!");
-    }
-
     verifyConnection();
 
     QueueDeleteJobGroupsReq req = new QueueDeleteJobGroupsReq(groupAuthors);
@@ -1533,10 +1240,6 @@ class QueueMgrClient
   ) 
     throws PipelineException  
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may delete job groups owned by another user!");
-
     verifyConnection();
 
     QueueDeleteViewJobGroupsReq req = new QueueDeleteViewJobGroupsReq(author, view);
@@ -1557,13 +1260,11 @@ class QueueMgrClient
   deleteAllJobGroups() 
     throws PipelineException  
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may delete job groups owned by another user!");
-
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.DeleteAllJobGroups, null);
+    PrivilegedReq req = new PrivilegedReq();
+
+    Object obj = performTransaction(QueueRequest.DeleteAllJobGroups, req);
     handleSimpleResponse(obj);
   }
 
@@ -1586,13 +1287,6 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The cached names of the privileged users. <P> 
-   *
-   * May be <CODE>null</CODE> if the cache has been invalidated.
-   */ 
-  private TreeSet<String>  pPrivilegedUsers;
 
   /**
    * The canonical names of this host.

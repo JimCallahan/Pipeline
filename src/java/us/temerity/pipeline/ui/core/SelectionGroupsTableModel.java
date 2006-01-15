@@ -1,4 +1,4 @@
-// $Id: SelectionGroupsTableModel.java,v 1.2 2006/01/02 20:46:53 jim Exp $
+// $Id: SelectionGroupsTableModel.java,v 1.3 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -41,6 +41,8 @@ class SelectionGroupsTableModel
     /* initialize the fields */ 
     {
       pParent = parent;
+
+      pPrivilegeDetails = new PrivilegeDetails();    
 
       pSelectionGroups       = new ArrayList<SelectionGroup>();
       pSelectionKeys         = new ArrayList<String>();
@@ -237,42 +239,54 @@ class SelectionGroupsTableModel
    * @param keys
    *   The valid selection key descriptions indexed by key name.
    * 
-   * @param isPrivileged
-   *   Whether the current user is has privileged status.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    * 
    * @return 
-   *   The names of the selection keys which are no longer supported.
+   *   Modify whether a column should be visible indexed by column name. 
    */ 
-  public TreeSet<String> 
+  public TreeMap<String,Boolean>
   setSelectionGroups
   (
    TreeMap<String,SelectionGroup> groups, 
    TreeMap<String,String> keys, 
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
   {
     pSelectionGroups.clear();
     if(groups != null)
       pSelectionGroups.addAll(groups.values());
+    
+    TreeMap<String,Boolean> modified = new TreeMap<String,Boolean>();
+    {
+      TreeSet<String> obsolete = new TreeSet<String>(pSelectionKeys);
+      TreeSet<String> newborn  = new TreeSet<String>(keys.keySet());
 
-    TreeSet<String> obsolete = new TreeSet<String>(pSelectionKeys);
-    pSelectionKeys.clear();
-    if(keys != null) {
-      pSelectionKeys.addAll(keys.keySet());
-      obsolete.removeAll(keys.keySet());
+      pSelectionKeys.clear();
+      if(keys != null) {
+	pSelectionKeys.addAll(newborn);
+	newborn.removeAll(obsolete);
+	obsolete.removeAll(pSelectionKeys);
+      }
+      
+      for(String gname : obsolete)
+	modified.put(gname, false);
+    
+      for(String gname : newborn)
+	modified.put(gname, true);
     }
 
     pSelectionDescriptions.clear();
     if(keys != null) 
       pSelectionDescriptions.addAll(keys.values());
 
-    pIsPrivileged = isPrivileged;
+    pPrivilegeDetails = privileges; 
     
     pEditedIndices.clear();
 
     sort();
 
-    return obsolete;
+    return modified;
   }
 
   
@@ -377,7 +391,7 @@ class SelectionGroupsTableModel
    int col
   ) 
   {
-    return pIsPrivileged; 
+    return pPrivilegeDetails.isQueueAdmin(); 
   }
 
   /**
@@ -411,7 +425,7 @@ class SelectionGroupsTableModel
     int vrow = pRowToIndex[row];
     boolean edited = setValueAtHelper(value, vrow, col);
     
-    if(pIsPrivileged) {
+    if(pPrivilegeDetails.isQueueAdmin()) {
       int[] selected = pTable.getSelectedRows(); 
       int wk;
       for(wk=0; wk<selected.length; wk++) {
@@ -474,9 +488,9 @@ class SelectionGroupsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * The underlying set of selection groups.

@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.4 2005/04/02 00:34:27 jim Exp $
+// $Id: JOfflineDialog.java,v 1.5 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -34,6 +34,8 @@ class JOfflineDialog
   JOfflineDialog() 
   {
     super("Offline Tool", false);
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     /* create dialog body components */ 
     {
@@ -294,8 +296,9 @@ class JOfflineDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
     try {
-      pIsPrivileged = master.getMasterMgrClient().isPrivileged(false);
+      pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -310,7 +313,8 @@ class JOfflineDialog
   private void 
   updateButtons() 
   {
-    pOfflineButton.setEnabled(pIsPrivileged && !pOfflineTableModel.getData().isEmpty());
+    pOfflineButton.setEnabled
+      (pPrivilegeDetails.isMasterAdmin() && !pOfflineTableModel.getData().isEmpty());
   }
 
 
@@ -807,9 +811,9 @@ class JOfflineDialog
   /*----------------------------------------------------------------------------------------*/
     
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
 
   /*----------------------------------------------------------------------------------------*/

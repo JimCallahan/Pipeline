@@ -1,4 +1,4 @@
-// $Id: PluginInstallReq.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginInstallReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public
 class PluginInstallReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -46,6 +46,8 @@ class PluginInstallReq
    byte[] bytes
   )
   { 
+    super();
+
     pClassFile = classfile; 
     pClassName = cname;
     pVersionID = pkgID; 

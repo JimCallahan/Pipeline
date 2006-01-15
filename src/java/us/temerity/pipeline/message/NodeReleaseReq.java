@@ -1,4 +1,4 @@
-// $Id: NodeReleaseReq.java,v 1.2 2005/08/21 00:49:46 jim Exp $
+// $Id: NodeReleaseReq.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public
 class NodeReleaseReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -50,6 +50,8 @@ class NodeReleaseReq
    boolean removeFiles
   )
   { 
+    super();
+
     if(author == null) 
       throw new IllegalArgumentException("The author cannot be (null)!");
     pAuthor = author;

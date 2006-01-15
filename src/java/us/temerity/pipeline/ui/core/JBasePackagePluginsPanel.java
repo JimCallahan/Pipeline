@@ -1,4 +1,4 @@
-// $Id: JBasePackagePluginsPanel.java,v 1.2 2005/09/07 21:11:17 jim Exp $
+// $Id: JBasePackagePluginsPanel.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -47,7 +47,7 @@ class JBasePackagePluginsPanel
       pIncludedVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
       pAllVersions      = new DoubleMap<String,String,TreeSet<VersionID>>();
 
-      pIsPrivileged = false;
+      pPrivilegeDetails = new PrivilegeDetails(); 
     }
 
     /* create dialog body components */ 
@@ -218,8 +218,8 @@ class JBasePackagePluginsPanel
    * @param vid
    *   The revision number of the package.
    * 
-   * @param isPrivileged
-   *   Whether the current user is privileged.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public abstract void 
   update
@@ -227,7 +227,7 @@ class JBasePackagePluginsPanel
    String pname, 
    OsType os,
    VersionID vid,
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
     throws PipelineException;
 
@@ -250,8 +250,8 @@ class JBasePackagePluginsPanel
    * @param allPlugins
    *   The vendors, names and versions of all currently loaded plugins.
    * 
-   * @param isPrivileged
-   *   Whether the current user is privileged.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   protected void 
   updateHelper
@@ -261,7 +261,7 @@ class JBasePackagePluginsPanel
    VersionID vid, 
    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins,
    DoubleMap<String,String,TreeSet<VersionID>> allPlugins,
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
   {
     {
@@ -272,7 +272,7 @@ class JBasePackagePluginsPanel
       pIncludedVersions = includedPlugins;
       pAllVersions      = allPlugins;
       
-      pIsPrivileged = isPrivileged;
+      pPrivilegeDetails = privileges; 
     }
 
     rebuildPluginTree(pIncludedVersions, pIncludedTree);
@@ -687,9 +687,9 @@ class JBasePackagePluginsPanel
 
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
 
   /*----------------------------------------------------------------------------------------*/

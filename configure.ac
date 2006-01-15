@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.0.6)   
+AM_INIT_AUTOMAKE(Pipeline, 2.0.7)   
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1247,6 +1247,7 @@ AC_CONFIG_FILES([
 
   docs/javadoc/Makefile
 
+  docs/legal/Makefile
   docs/man/Makefile
   docs/man/plfilemgr.src.html
   docs/man/pljobmgr.src.html

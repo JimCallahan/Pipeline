@@ -1,4 +1,4 @@
-// $Id: JBooleanTableCellEditor.java,v 1.3 2005/03/20 22:49:23 jim Exp $
+// $Id: JBooleanTableCellEditor.java,v 1.4 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -73,6 +73,23 @@ class JBooleanTableCellEditor
 
     pField = UIFactory.createCollectionField(values, width);
     pField.addActionListener(this);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O O K  &  F E E L                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the prefix prepended to the name of the component.
+   */
+  public void 
+  setSynthPrefix
+  (
+   String prefix
+  ) 
+  {
+    pField.setSynthPrefix(prefix);
   }
 
 

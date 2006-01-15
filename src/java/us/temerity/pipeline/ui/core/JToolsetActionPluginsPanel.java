@@ -1,4 +1,4 @@
-// $Id: JToolsetActionPluginsPanel.java,v 1.3 2005/09/07 21:11:17 jim Exp $
+// $Id: JToolsetActionPluginsPanel.java,v 1.4 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -52,15 +52,15 @@ class JToolsetActionPluginsPanel
    * @param os
    *   The toolset operating system.
    * 
-   * @param isPrivileged
-   *   Whether the current user is privileged.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public void 
   update
   (
    Toolset toolset, 
    OsType os,
-   boolean isPrivileged
+   PrivilegeDetails privileges
   )
     throws PipelineException
   {
@@ -90,7 +90,7 @@ class JToolsetActionPluginsPanel
     }
 
     String tname = toolset.getName();      
-    updateHelper(tname, os, getLayout(tname, os), plugins, isPrivileged);
+    updateHelper(tname, os, getLayout(tname, os), plugins, privileges);
   }
 
   /**

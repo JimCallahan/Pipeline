@@ -1,4 +1,4 @@
-// $Id: QueueEditHostsReq.java,v 1.3 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueEditHostsReq.java,v 1.4 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class QueueEditHostsReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -43,6 +43,9 @@ class QueueEditHostsReq
    * 
    * @param schedules
    *   The names of the selection schedules indexed by fully resolved names of the hosts.
+   * 
+   * @param hostnames
+   *   The canonical names of the host from which the request was made.
    */
   public
   QueueEditHostsReq
@@ -52,15 +55,20 @@ class QueueEditHostsReq
    TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
    TreeMap<String,String> groups,
-   TreeMap<String,String> schedules
+   TreeMap<String,String> schedules,
+   TreeSet<String> hostnames
   )
   { 
+    super();
+
     pStatus       = status;
     pReservations = reservations;
     pJobOrders    = orders;
     pJobSlots     = slots; 
     pGroups       = groups; 
     pSchedules    = schedules;
+
+    pLocalHostnames = hostnames; 
   }
 
 
@@ -123,6 +131,14 @@ class QueueEditHostsReq
     return pSchedules;
   }
 
+  /**
+   * Gets the canonical names of the host from which the request was made.
+   */ 
+  public TreeSet<String> 
+  getLocalHostnames()
+  {
+    return pLocalHostnames; 
+  }
 
   
 
@@ -168,5 +184,9 @@ class QueueEditHostsReq
    */ 
   private TreeMap<String,String>  pSchedules;
 
+  /**
+   * The canonical names of the host from which the request was made.
+   */ 
+  private TreeSet<String>  pLocalHostnames;
 }
   

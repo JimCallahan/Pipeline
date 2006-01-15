@@ -1,4 +1,4 @@
-// $Id: MiscOfflineReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscOfflineReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -21,7 +21,7 @@ import java.util.*;
  */
 public
 class MiscOfflineReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -39,6 +39,8 @@ class MiscOfflineReq
     TreeMap<String,TreeSet<VersionID>> versions
   )
   {
+    super();
+
     if(versions == null) 
       throw new IllegalArgumentException
 	("The checked-in versions cannot be (null)!");

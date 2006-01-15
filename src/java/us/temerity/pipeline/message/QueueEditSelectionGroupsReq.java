@@ -1,4 +1,4 @@
-// $Id: QueueEditSelectionGroupsReq.java,v 1.1 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueEditSelectionGroupsReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,9 +8,9 @@ import us.temerity.pipeline.core.*;
 import java.io.*;
 import java.util.*;
 
-/*-----------------------------------------------------------------------------------------------*/
-/*   Q U E U E   E D I T   S E L E C T I O N  G R O U P   R E Q                                  */
-/*-----------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+/*   Q U E U E   E D I T   S E L E C T I O N  G R O U P   R E Q                             */
+/*------------------------------------------------------------------------------------------*/
 
 /**
  * A request to change the selection key biases and preemption flags for the given 
@@ -18,7 +18,7 @@ import java.util.*;
  */
 public 
 class QueueEditSelectionGroupsReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -36,6 +36,8 @@ class QueueEditSelectionGroupsReq
    Collection<SelectionGroup> groups
   )
   { 
+    super();
+
     if(groups == null) 
       throw new IllegalArgumentException
 	("The selection groups cannot be (null)!");

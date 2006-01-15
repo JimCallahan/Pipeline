@@ -1,4 +1,4 @@
-// $Id: NodeRevertFilesReq.java,v 1.1 2004/07/16 22:05:46 jim Exp $
+// $Id: NodeRevertFilesReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public
 class NodeRevertFilesReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -42,6 +42,8 @@ class NodeRevertFilesReq
    TreeMap<String,VersionID> files
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

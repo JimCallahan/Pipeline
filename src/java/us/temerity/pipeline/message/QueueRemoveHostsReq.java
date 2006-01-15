@@ -1,4 +1,4 @@
-// $Id: QueueRemoveHostsReq.java,v 1.2 2004/08/04 01:42:24 jim Exp $
+// $Id: QueueRemoveHostsReq.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public 
 class QueueRemoveHostsReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueRemoveHostsReq
    TreeSet<String> hostnames
   )
   { 
+    super();
+
     if(hostnames == null) 
       throw new IllegalArgumentException
 	("The hostnames cannot be (null)!");

@@ -1,4 +1,4 @@
-// $Id: MiscSetDefaultToolsetNameReq.java,v 1.1 2004/05/29 06:35:40 jim Exp $
+// $Id: MiscSetDefaultToolsetNameReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class MiscSetDefaultToolsetNameReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -37,6 +37,8 @@ class MiscSetDefaultToolsetNameReq
    String name
   )
   {
+    super();
+
     if(name == null) 
       throw new IllegalArgumentException
 	("The toolset name cannot be (null)!");

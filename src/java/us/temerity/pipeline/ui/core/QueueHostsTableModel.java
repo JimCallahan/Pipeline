@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.8 2006/01/05 16:54:44 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.9 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -42,6 +42,8 @@ class QueueHostsTableModel
     /* initialize the fields */ 
     {
       pParent = parent;
+
+      pPrivilegeDetails = new PrivilegeDetails();  
 
       pQueueHosts = new ArrayList<QueueHost>();
 
@@ -432,8 +434,8 @@ class QueueHostsTableModel
    * @param schedules
    *   The valid selection schedule names. 
    * 
-   * @param isPrivileged
-   *   Whether the current user is has privileged status.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public void
   setQueueHosts
@@ -441,7 +443,7 @@ class QueueHostsTableModel
    TreeMap<String,QueueHost> hosts, 
    TreeSet<String> groups, 
    TreeSet<String> schedules, 
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
   {
     pQueueHosts.clear();
@@ -456,7 +458,7 @@ class QueueHostsTableModel
     if(schedules != null) 
       pSelectionSchedules.addAll(schedules);
 
-    pIsPrivileged = isPrivileged;
+    pPrivilegeDetails = privileges; 
     
     pEditedStatusIndices.clear();
     pEditedReserveIndices.clear();
@@ -643,7 +645,7 @@ class QueueHostsTableModel
   {
     boolean editable = false;
     QueueHost host = pQueueHosts.get(pRowToIndex[row]);
-    if(pIsPrivileged) 
+    if(pPrivilegeDetails.isQueueAdmin()) 
       editable = true;
     else 
       editable = pLocalHostnames.contains(host.getName());
@@ -657,7 +659,8 @@ class QueueHostsTableModel
       return editable;
  
     case 9:
-      return ((host != null) && (host.getSelectionSchedule() == null));
+      return (editable && 
+	      ((host != null) && (host.getSelectionSchedule() == null)));
 
     default:
       return false;
@@ -755,8 +758,8 @@ class QueueHostsTableModel
 
     int vrow = pRowToIndex[row];
     boolean edited = setValueAtHelper(value, vrow, col, newGroup, modifyGroup);
-    
-    if(pIsPrivileged) {
+
+    {
       int[] selected = pTable.getSelectedRows(); 
       int wk;
       for(wk=0; wk<selected.length; wk++) {
@@ -879,9 +882,9 @@ class QueueHostsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * The underlying set of editors.

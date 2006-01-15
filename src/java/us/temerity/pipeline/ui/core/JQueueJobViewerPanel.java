@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.20 2005/12/31 20:40:44 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.21 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -350,6 +350,18 @@ class JQueueJobViewerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isQueueManaged(pAuthor));
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -369,9 +381,6 @@ class JQueueJobViewerPanel
    * 
    * @param status
    *   The job status indexed by job ID.
-   * 
-   * @param isPrivileged
-   *   Does the current user have privileged status?
    */ 
   public synchronized void
   updateQueueJobs
@@ -379,14 +388,13 @@ class JQueueJobViewerPanel
    String author, 
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> status, 
-   boolean isPrivileged
+   TreeMap<Long,JobStatus> status
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateQueueJobs(groups, status, isPrivileged);
+    updateQueueJobs(groups, status);
   }
 
 
@@ -398,22 +406,19 @@ class JQueueJobViewerPanel
    * 
    * @param status
    *   The job status indexed by job ID.
-   * 
-   * @param isPrivileged
-   *   Does the current user have privileged status?
    */ 
   public synchronized void
   updateQueueJobs
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> status, 
-   boolean isPrivileged
+   TreeMap<Long,JobStatus> status
   ) 
   {
-    pIsPrivileged = isPrivileged;
     if(UIMaster.getInstance().isRestoring())
       return;
 
+    updatePrivileges();
+    
     /* update the job groups and status tables */ 
     {
       pJobGroups.clear();
@@ -515,6 +520,38 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the job menu.
+   */ 
+  public void 
+  updateJobMenu() 
+  {
+    pJobQueueJobsItem.setEnabled(!isLocked());
+    pJobQueueJobsSpecialItem.setEnabled(!isLocked());
+    pJobPauseJobsItem.setEnabled(!isLocked());
+    pJobResumeJobsItem.setEnabled(!isLocked());
+    pJobPreemptJobsItem.setEnabled(!isLocked());
+    pJobKillJobsItem.setEnabled(!isLocked());
+
+    updateEditorMenus();
+  }
+
+  /**
+   * Update the group menu.
+   */ 
+  public void 
+  updateGroupMenu() 
+  {
+    pGroupQueueJobsItem.setEnabled(!isLocked());
+    pGroupQueueJobsSpecialItem.setEnabled(!isLocked());
+    pGroupPauseJobsItem.setEnabled(!isLocked());
+    pGroupResumeJobsItem.setEnabled(!isLocked());
+    pGroupPreemptJobsItem.setEnabled(!isLocked());
+    pGroupKillJobsItem.setEnabled(!isLocked());
+
+    updateEditorMenus();
+  }
 
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
@@ -1372,7 +1409,7 @@ class JQueueJobViewerPanel
 	      addSelect(vunder);
 	      primarySelect(vunder);
 
-	      updateEditorMenus();
+	      updateJobMenu();
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	    else if(under instanceof ViewerJobGroup) {
@@ -1381,7 +1418,7 @@ class JQueueJobViewerPanel
 	      addSelect(vunder);
 	      primarySelect(vunder);
 	      
-	      updateEditorMenus();
+	      updateGroupMenu();
 	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
@@ -2145,7 +2182,8 @@ class JQueueJobViewerPanel
     if(!failed.isEmpty()) {
       for(JobStatus status : failed.values()) {
 	NodeID targetID = status.getNodeID();
-	if(pIsPrivileged || targetID.getAuthor().equals(PackageInfo.sUser)) {
+	String author = targetID.getAuthor();
+	if(author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)) {
 	  TreeSet<FileSeq> fseqs = targets.get(targetID);
 	  if(fseqs == null) {
 	    fseqs = new TreeSet<FileSeq>();
@@ -2347,7 +2385,7 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * "Show the node which created the primary selected job/group in the Node Viewer.", 
+   * Show the node which created the primary selected job/group in the Node Viewer. 
    */ 
   private void 
   doShowNode() 
@@ -2465,7 +2503,6 @@ class JQueueJobViewerPanel
 	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateJob(pAuthor, pView, pJob, pJobInfo);
-	  panel.updateManagerTitlePanel();
 	}
       }
     }    
@@ -2932,11 +2969,6 @@ class JQueueJobViewerPanel
    * The job status of the jobs which make up the displayed job groups indexed by job ID. 
    */ 
   private TreeMap<Long,JobStatus>  pJobStatus;
-
-  /**
-   * Does the current user have privileged status?
-   */ 
-  private boolean  pIsPrivileged;
 
   /**
    * The toolset used to build the editor menu.

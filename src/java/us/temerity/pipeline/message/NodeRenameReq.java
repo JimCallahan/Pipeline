@@ -1,4 +1,4 @@
-// $Id: NodeRenameReq.java,v 1.5 2005/03/29 03:48:56 jim Exp $
+// $Id: NodeRenameReq.java,v 1.6 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class NodeRenameReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -45,6 +45,8 @@ class NodeRenameReq
    boolean renameFiles
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

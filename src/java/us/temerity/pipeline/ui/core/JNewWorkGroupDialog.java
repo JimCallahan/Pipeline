@@ -1,27 +1,23 @@
-// $Id: JNewPrivilegedUserDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNewWorkGroupDialog.java,v 1.1 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N E W   P R I V I L E G E D   U S E R   D I A L O G                                    */
+/*   N E W   W O R K   G R O U P   D I A L O G                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Queries the user for the name of a new privileged user.
+ * Queries the user for the name of a new work group.
  */ 
 public 
-class JNewPrivilegedUserDialog
+class JNewWorkGroupDialog
   extends JNewIdentifierDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,12 +28,12 @@ class JNewPrivilegedUserDialog
    * Construct a new dialog.
    */ 
   public 
-  JNewPrivilegedUserDialog
+  JNewWorkGroupDialog
   (
    Dialog owner        
   )
   {
-    super(owner, "New Privileged User", "New Privileged User:", null, "Add");
+    super(owner, "New Work Group", "New Group Name:", null, "Add");
   }
 
 
@@ -46,6 +42,6 @@ class JNewPrivilegedUserDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -904524623930359293L;
+  private static final long serialVersionUID = -4563819308105110698L;
 
 }

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.58 2005/10/17 06:23:38 jim Exp $
+// $Id: MasterMgrServer.java,v 1.59 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -249,6 +249,47 @@ class MasterMgrServer
 	    LogMgr.getInstance().flush();
 
 	    switch(kind) {
+	    /*-- ADMINISTRATIVE PRIVILEGES -------------------------------------------------*/
+	    case GetWorkGroups:
+	      {
+		objOut.writeObject(pMasterMgr.getWorkGroups());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetWorkGroups:
+	      {
+		MiscSetWorkGroupsReq req = (MiscSetWorkGroupsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setWorkGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPrivileges:
+	      {
+		objOut.writeObject(pMasterMgr.getPrivileges());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case EditPrivileges: 
+	      {
+		MiscEditPrivilegesReq req = (MiscEditPrivilegesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.editPrivileges(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPrivilegeDetails:
+	      {
+		MiscGetPrivilegeDetailsReq req = 
+		  (MiscGetPrivilegeDetailsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPrivilegeDetails(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
 	    /*-- TOOLSETS ------------------------------------------------------------------*/
 	    case GetDefaultToolsetName:
 	      {
@@ -617,32 +658,6 @@ class MasterMgrServer
 	      {
 		MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.setSuffixEditors(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-
-
-	    /*-- PRIVILEGED USER STATUS ----------------------------------------------------*/
-	    case GetPrivilegedUsers:
-	      {
-		objOut.writeObject(pMasterMgr.getPrivilegedUsers());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case GrantPrivileges:
-	      {
-		MiscGrantPrivilegesReq req = (MiscGrantPrivilegesReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.grantPrivileges(req));
-		objOut.flush(); 
-	      }
-	      break;
-	    
-	    case RemovePrivileges:
-	      {
-		MiscRemovePrivilegesReq req = (MiscRemovePrivilegesReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.removePrivileges(req));
 		objOut.flush(); 
 	      }
 	      break;

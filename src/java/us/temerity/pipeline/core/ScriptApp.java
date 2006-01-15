@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.47 2005/12/31 20:42:58 jim Exp $
+// $Id: ScriptApp.java,v 1.48 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -129,11 +129,28 @@ class ScriptApp
        "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "COMMANDS:\n\n" +
-       "  Privileged Users:\n" +
-       "    privileged\n" + 
+       "  User Privileges:\n" +
+       "    user\n" + 
        "      --get\n" + 
-       "      --grant=user-name\n" + 
-       "      --revoke=user-name\n" + 
+       "      --add=user-name\n" + 
+       "      --remove=user-name\n" +
+       "\n" + 
+       "    work-group\n" + 
+       "      --get\n" + 
+       "      --get-info=group-name\n" + 
+       "      --get-info-all\n" + 
+       "      --add=group-name\n" + 
+       "      --remove=group-name\n" +
+       "      --set=group-name --manager | --member | --not-member\n" + 
+       "        --user=user-name [--user=user-name ...]\n" +
+       "\n" + 
+       "    privilege\n" + 
+       "      --get-info=user-name\n" + 
+       "      --get-info-all\n" + 
+       "      --grant=user-name --master-admin | --developer |\n" + 
+       "        --queue-admin | --queue-manager | --node-mananger\n" + 
+       "      --revoke=user-name --master-admin | --developer |\n" + 
+       "        --queue-admin | --queue-manager | --node-mananger\n" + 
        "\n" + 
        "  Administration\n" +
        "    admin\n" + 
@@ -326,6 +343,248 @@ class ScriptApp
   }
 
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K   G R O U P                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print the membership of the given work group.
+   */ 
+  public void
+  printWorkGroupMembers
+  (
+   String gname, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    WorkGroups groups = client.getWorkGroups();
+    if(!groups.getGroups().contains(gname)) 
+      throw new PipelineException
+	("No work group named (" + gname + ") exists!");
+
+    StringBuffer buf = new StringBuffer();
+    printWorkGroupMembersHelper(gname, groups, buf, true);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();   
+  }
+
+  /**
+   * Print the membership of all work groups.
+   */ 
+  public void
+  printWorkGroupMembers
+  (
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    WorkGroups groups = client.getWorkGroups();
+
+    boolean first = true;
+    StringBuffer buf = new StringBuffer();
+    for(String gname : groups.getGroups()) {
+      printWorkGroupMembersHelper(gname, groups, buf, first);
+      first = false;
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();   
+  }
+
+  /**
+   * Print the membership of one work group.
+   */ 
+  private void 
+  printWorkGroupMembersHelper
+  (
+   String gname, 
+   WorkGroups groups, 
+   StringBuffer buf, 
+   boolean first
+  ) 
+    throws PipelineException
+  {
+    TreeSet<String> managers = new TreeSet<String>();
+    TreeSet<String> members  = new TreeSet<String>();
+    for(String uname : groups.getUsers()) {
+      Boolean tf = groups.isMemberOrManager(uname, gname);
+      if(tf != null) {
+	if(tf) 
+	  managers.add(uname);
+	else 
+	  members.add(uname);
+      }
+    }
+	
+    if(first) 
+      buf.append(tbar(80) + "\n");
+    else 
+      buf.append("\n" + 
+		 bar(80) + "\n");
+
+    buf.append("Work Group : " + gname + "\n" + 
+	       "Managers   :");
+    
+    if(managers.isEmpty()) {
+      buf.append(" -");
+    }
+    else {
+      for(String uname : managers) 
+	buf.append(" " + uname);
+    }
+
+    buf.append("\n" + 
+	       "Members    :");
+
+    if(managers.isEmpty()) {
+      buf.append(" -");
+    }
+    else {
+      for(String uname : members) 
+	buf.append(" " + uname);
+    }
+
+    buf.append("\n");
+  }
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R I V I L E G E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Print the privileges of the given user. 
+   */ 
+  public void
+  printUserPrivileges
+  (
+   String uname, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String,Privileges> privileges = client.getPrivileges();
+
+    Privileges privs = privileges.get(uname);
+    if(privs == null) 
+      privs = new Privileges();
+    
+    StringBuffer buf = new StringBuffer();
+    printUserPrivilegesHelper(uname, privs, buf, true);
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();   
+  }
+
+  /**
+   * Print the privileges of all users. 
+   */ 
+  public void
+  printUserPrivileges
+  (
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String,Privileges> privileges = client.getPrivileges();
+
+    boolean first = true;
+    StringBuffer buf = new StringBuffer();
+    for(String uname : privileges.keySet()) {
+      Privileges privs = privileges.get(uname);
+      printUserPrivilegesHelper(uname, privs, buf, first);
+      first = false;
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();   
+  }
+
+  /**
+   * Print the privileges of a users. 
+   */ 
+  private void
+  printUserPrivilegesHelper
+  (
+   String uname, 
+   Privileges privs,
+   StringBuffer buf, 
+   boolean first
+  ) 
+    throws PipelineException
+  {
+    if(first) 
+      buf.append(tbar(80) + "\n");
+    else 
+      buf.append("\n" + 
+		 bar(80) + "\n");
+
+    buf.append("User Name     : " + uname + "\n" + 
+	       "\n" +
+	       "Master Admin  : " + (privs.isMasterAdmin() ? "YES" : "no") + "\n" + 
+	       "Developer     : " + (privs.isDeveloper() ? "YES" : "no") + "\n" + 
+	       "Queue Admin   : " + (privs.isQueueAdmin() ? "YES" : "no") + "\n" + 
+	       "Queue Manager : " + (privs.isQueueManager() ? "YES" : "no") + "\n" + 
+	       "Node Manager  : " + (privs.isNodeManager() ? "YES" : "no") + "\n");
+  }
+
+  /**
+   * Edit the privileges of the given user. 
+   */ 
+  public void
+  editPrivileges
+  (
+   String uname, 
+   Boolean isMasterAdmin,
+   Boolean isDeveloper,
+   Boolean isQueueAdmin, 
+   Boolean isQueueManager, 
+   Boolean isNodeManager,
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String,Privileges> privileges = client.getPrivileges();
+    Privileges privs = privileges.get(uname);
+    if(privs == null) 
+      privs = new Privileges();
+    
+    if(isMasterAdmin != null) 
+      privs.setMasterAdmin(isMasterAdmin);
+
+    if(isDeveloper != null) 
+      privs.setDeveloper(isDeveloper);
+
+    if(isQueueAdmin != null) 
+      privs.setQueueAdmin(isQueueAdmin);
+
+    if(isQueueManager != null) 
+      privs.setQueueManager(isQueueManager);
+
+    if(isNodeManager != null) 
+      privs.setNodeManager(isNodeManager);
+
+    TreeMap<String,Privileges> edited = new TreeMap<String,Privileges>();
+    edited.put(uname, privs);
+
+    client.editPrivileges(edited);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   A D M I N                                                                            */
   /*----------------------------------------------------------------------------------------*/
@@ -358,7 +617,8 @@ class ScriptApp
 
     /* instantiate the Archiver plugin and set its parameters */ 
     BaseArchiver archiver = 
-      PluginMgrClient.getInstance().newArchiver(archiverName, archiverVersionID, archiverVendor);
+      PluginMgrClient.getInstance().newArchiver
+        (archiverName, archiverVersionID, archiverVendor);
     {
       TreeMap<String,String> aparams = (TreeMap<String,String>) params;
       for(String pname : aparams.keySet()) {
@@ -2245,7 +2505,8 @@ class ScriptApp
     BaseEditor editor = null;
     {
       if(editorName != null) 
-	editor = PluginMgrClient.getInstance().newEditor(editorName, editorVersionID, editorVendor);
+	editor = PluginMgrClient.getInstance().newEditor
+	           (editorName, editorVersionID, editorVendor);
       else 
 	editor = com.getEditor();
 
@@ -3451,6 +3712,10 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN16:
     case ScriptOptsParserConstants.UNKNOWN17:
     case ScriptOptsParserConstants.UNKNOWN18:
+    case ScriptOptsParserConstants.UNKNOWN19:
+    case ScriptOptsParserConstants.UNKNOWN20:
+    case ScriptOptsParserConstants.UNKNOWN21:
+    case ScriptOptsParserConstants.UNKNOWN22:
       return "an unknown argument";
 
     case ScriptOptsParserConstants.UNKNOWN_OPTION1:
@@ -3471,6 +3736,10 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN_OPTION16:
     case ScriptOptsParserConstants.UNKNOWN_OPTION17:
     case ScriptOptsParserConstants.UNKNOWN_OPTION18:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION19:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION20:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION21:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION22:
       return "an unknown option";
 
     case ScriptOptsParserConstants.TRUE:
@@ -3518,6 +3787,9 @@ class ScriptApp
 
     case ScriptOptsParserConstants.USER_NAME:
       return "a user name";
+
+    case ScriptOptsParserConstants.WORK_GROUP_NAME:
+      return "a work group name";
 
     case ScriptOptsParserConstants.SCHEDULE_NAME:
       return "a selection schedule name";
@@ -3646,6 +3918,12 @@ class ScriptApp
     case ScriptOptsParserConstants.AE46:
     case ScriptOptsParserConstants.AE47:
     case ScriptOptsParserConstants.AE48:
+    case ScriptOptsParserConstants.AE49:
+    case ScriptOptsParserConstants.AE50:
+    case ScriptOptsParserConstants.AE51:
+    case ScriptOptsParserConstants.AE52:
+    case ScriptOptsParserConstants.AE53:
+    case ScriptOptsParserConstants.AE54:
       return null;
 
     default: 

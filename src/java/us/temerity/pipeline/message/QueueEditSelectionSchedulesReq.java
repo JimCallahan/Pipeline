@@ -1,4 +1,4 @@
-// $Id: QueueEditSelectionSchedulesReq.java,v 1.1 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueEditSelectionSchedulesReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public 
 class QueueEditSelectionSchedulesReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueEditSelectionSchedulesReq
    Collection<SelectionSchedule> schedules
   )
   { 
+    super();
+
     if(schedules == null) 
       throw new IllegalArgumentException
 	("The selection schedules cannot be (null)!");

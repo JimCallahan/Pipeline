@@ -1,4 +1,4 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.2 2005/09/07 21:11:17 jim Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.3 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -40,6 +40,8 @@ class JManagePackagePluginsDialog
   ) 
   {
     super("Manage Package Plugins", false);
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     /* create dialog body components */ 
     {
@@ -93,32 +95,37 @@ class JManagePackagePluginsDialog
    * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
+   * 
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public void 
   update
   (
    String pname, 
    OsType os,
-   VersionID vid
+   VersionID vid,
+   PrivilegeDetails privileges
   )
   {
-    if(vid == null)
-      pHeaderLabel.setText(os + " Package Plugins:  " + pname + " (working)");
-    else
-      pHeaderLabel.setText(os + " Package Plugins:  " + pname + " (v" + vid + ")");
-
-    pPackageName = pname;
-
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
     try {
-      boolean isPrivileged = client.isPrivileged(false);
+      if(vid == null)
+	pHeaderLabel.setText(os + " Package Plugins:  " + pname + " (working)");
+      else
+	pHeaderLabel.setText(os + " Package Plugins:  " + pname + " (v" + vid + ")");
+      
+      pPackageName = pname;
+      
+      if(privileges != null) 
+	pPrivilegeDetails = privileges;
 
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
-	panel.update(pname, os, vid, isPrivileged);
+	panel.update(pname, os, vid, pPrivilegeDetails);
 
-      pConfirmButton.setEnabled(isPrivileged);
-      pApplyButton.setEnabled(isPrivileged);
+      pConfirmButton.setEnabled(pPrivilegeDetails.isDeveloper());
+      pApplyButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -150,7 +157,7 @@ class JManagePackagePluginsDialog
     try {
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
 	panel.clone(pname, os, vid);
-      update(pname, os, null);
+      update(pname, os, null, null);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -182,7 +189,7 @@ class JManagePackagePluginsDialog
     try {
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
 	panel.freeze(pname, os, vid);
-      update(pname, os, vid);
+      update(pname, os, vid, null);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -262,6 +269,11 @@ class JManagePackagePluginsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The details of the administrative privileges granted to the current user. 
+   */ 
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * The master toolsets dialog.

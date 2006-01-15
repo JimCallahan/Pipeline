@@ -1,4 +1,4 @@
-// $Id: QueueRemoveSelectionGroupsReq.java,v 1.1 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueRemoveSelectionGroupsReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public 
 class QueueRemoveSelectionGroupsReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueRemoveSelectionGroupsReq
    TreeSet<String> names
   )
   { 
+    super();
+
     if(names == null) 
       throw new IllegalArgumentException
 	("The selection group names cannot be (null)!");

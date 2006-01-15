@@ -1,4 +1,4 @@
-// $Id: MiscSetPrivilegedUsersReq.java,v 1.1 2004/07/25 03:13:17 jim Exp $
+// $Id: MiscUpdateAdminPrivilegesReq.java,v 1.1 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,16 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   S E T   P R I V I L E G E D   U S E R S   R E Q                              */
+/*   M I S C   U P D A T E   A D M I N   P R I V I L E G E S   R E Q                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to set the names of the privileged users. <P> 
- * 
- * @see MasterMgr
+ * A request to update the work groups and administrative privileges from the MasterMgr.
  */
 public
-class MiscSetPrivilegedUsersReq
+class MiscUpdateAdminPrivilegesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,19 +26,28 @@ class MiscSetPrivilegedUsersReq
   /** 
    * Constructs a new request.
    * 
-   * @param users
-   *    The names of the privileged users.
+   * @param groups
+   *   The work groups used to determine the scope of administrative privileges.
+   * 
+   * @param privs
+   *   The administrative privileges for each user indexed by user name. 
    */
   public
-  MiscSetPrivilegedUsersReq
+  MiscUpdateAdminPrivilegesReq
   (
-   TreeSet<String> users
-  ) 
+   WorkGroups groups, 
+   TreeMap<String,Privileges> privs
+  )
   {
-    if(users == null) 
+    if(groups == null) 
       throw new IllegalArgumentException
-	("The user names cannot be (null)!");
-    pUsers = users;
+	("The privileges cannot be (null)!");
+    pWorkGroups = groups; 
+
+    if(privs == null) 
+      throw new IllegalArgumentException
+	("The privileges cannot be (null)!");
+    pPrivileges = privs;
   }
 
 
@@ -50,33 +57,47 @@ class MiscSetPrivilegedUsersReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the names of the privileged users.
+   * Gets the work groups used to determine the scope of administrative privileges.
    */ 
-  public TreeSet<String>
-  getUsers() 
+  public WorkGroups
+  getWorkGroups() 
   {
-    assert(pUsers != null);
-    return pUsers;
+    return pWorkGroups; 
   }
-
+ 
+  /**
+   * Gets the administrative privileges for each user indexed by user name. 
+   */ 
+  public TreeMap<String,Privileges>
+  getPrivileges() 
+  {
+    return pPrivileges; 
+  }
+ 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -4422585889192093145L;
+  private static final long serialVersionUID = -9005292794718765767L;
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names of the privileged users.
-   */
-  private TreeSet<String>  pUsers;  
+   * The work groups used to determine the scope of administrative privileges.
+   */ 
+  private WorkGroups  pWorkGroups; 
+
+  /**
+   * The administrative privileges for each user indexed by user name. 
+   */ 
+  private TreeMap<String,Privileges>  pPrivileges; 
+  
 
 }
   

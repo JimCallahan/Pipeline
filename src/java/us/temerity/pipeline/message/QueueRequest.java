@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.15 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueRequest.java,v 1.16 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -21,15 +21,10 @@ public
 enum QueueRequest
 {
   /**
-   * Get the names of the privileged users.
+   * An instance of {@link MiscUpdateAdminPrivilegesReq MiscUpdateAdminPrivilegesReq} is next.
    */
-  GetPrivilegedUsers, 
+  UpdateAdminPrivileges, 
 
-  /**
-   * An instance {@link MiscSetPrivilegedUsersReq MiscSetPrivilegedUsersReq} is next.
-   */
-  SetPrivilegedUsers,
-  
 
   /*----------------------------------------------------------------------------------------*/
 

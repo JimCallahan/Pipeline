@@ -1,4 +1,4 @@
-// $Id: NodeCheckOutReq.java,v 1.4 2004/11/17 13:33:50 jim Exp $
+// $Id: NodeCheckOutReq.java,v 1.5 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class NodeCheckOutReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -53,6 +53,8 @@ class NodeCheckOutReq
    CheckOutMethod method
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

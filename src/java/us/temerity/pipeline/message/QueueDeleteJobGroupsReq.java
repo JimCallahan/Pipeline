@@ -1,4 +1,4 @@
-// $Id: QueueDeleteJobGroupsReq.java,v 1.1 2004/09/03 02:02:02 jim Exp $
+// $Id: QueueDeleteJobGroupsReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class QueueDeleteJobGroupsReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueDeleteJobGroupsReq
    TreeMap<Long,String> groupAuthors
   )
   { 
+    super();
+
     if(groupAuthors == null) 
       throw new IllegalArgumentException("The group authors cannot be (null)!");
     pGroupAuthors = groupAuthors;

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.70 2005/10/17 06:23:38 jim Exp $
+// $Id: MasterMgrClient.java,v 1.71 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -64,9 +64,10 @@ class MasterMgrClient
   ) 
     throws PipelineException 
   {
-    if(!isPrivileged(false)) 
+    PrivilegeDetails details = getPrivilegeDetails();
+    if(!details.isMasterAdmin()) 
       throw new PipelineException
-	("Only privileged users may shutdown the servers!");
+	("Only a user with Master Admin privileges may shutdown the servers!");
 
     verifyConnection();
 
@@ -83,12 +84,223 @@ class MasterMgrClient
   shutdown() 
     throws PipelineException 
   {
-    if(!isPrivileged(false)) 
+    PrivilegeDetails details = getPrivilegeDetails();
+    if(!details.isMasterAdmin()) 
       throw new PipelineException
-	("Only privileged users may shutdown the servers!");
+	("Only a user with Master Admin privileges may shutdown the servers!");
     
     super.shutdown();
   }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the work groups used to determine the scope of administrative privileges.
+   * 
+   * @return 
+   *   The work groups.
+   * 
+   * @throws PipelineException
+   *   If unable to get the work groups.
+   */ 
+  public synchronized WorkGroups
+  getWorkGroups()
+    throws PipelineException  
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(MasterRequest.GetWorkGroups, null);
+    if(obj instanceof MiscGetWorkGroupsRsp) {
+      MiscGetWorkGroupsRsp rsp = (MiscGetWorkGroupsRsp) obj;
+      return rsp.getGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Set the work groups used to determine the scope of administrative privileges. <P> 
+   * 
+   * This operation requires Master Admin privileges 
+   * (see {@link Privileges#isMasterAdmin isMasterAdmin 
+   * 
+   * @param groups 
+   *   The work groups.
+   * 
+   * @throws PipelineException
+   *   If unable to set the work groups.
+   */ 
+  public synchronized void
+  setWorkGroups
+  (
+   WorkGroups groups
+  )
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    invalidateCachedPrivilegeDetails();
+
+    MiscSetWorkGroupsReq req = new MiscSetWorkGroupsReq(groups);
+
+    Object obj = performTransaction(MasterRequest.SetWorkGroups, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the administrative privileges for all users.<P> 
+   * 
+   * If there is no entry for a given user, then no privileges are granted.
+   * 
+   * @return 
+   *   The privileges for each user indexed by user name.
+   * 
+   * @throws PipelineException
+   *   If unable to get the privileges.
+   */ 
+  public synchronized TreeMap<String,Privileges>   
+  getPrivileges()
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(MasterRequest.GetPrivileges, null);
+    if(obj instanceof MiscGetPrivilegesRsp) {
+      MiscGetPrivilegesRsp rsp = (MiscGetPrivilegesRsp) obj;
+      return rsp.getTable();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Change the administrative privileges for the given users. <P> 
+   * 
+   * This operation requires Master Admin privileges.
+   * 
+   * @param privs
+   *   The privileges for each user indexed by user name.
+   * 
+   * @throws PipelineException
+   *   If unable to set the privileges.
+   */ 
+  public synchronized void
+  editPrivileges
+  (
+   TreeMap<String,Privileges> privs
+  )
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    invalidateCachedPrivilegeDetails();
+
+    MiscEditPrivilegesReq req = new MiscEditPrivilegesReq(privs);
+
+    Object obj = performTransaction(MasterRequest.EditPrivileges, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the privileges granted to the current user with respect to all other users.
+   * 
+   * @return 
+   *   The privileges of the current user.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileges.
+   */
+  public synchronized PrivilegeDetails
+  getPrivilegeDetails()
+    throws PipelineException 
+  {
+    pPrivilegeDetails = getPrivilegeDetails(PackageInfo.sUser);
+    return pPrivilegeDetails;
+  }
+
+  /**
+   * Get the cached privileges granted to the current user with respect to all other 
+   * users.  <P> 
+   * 
+   * Each time the privileges are obtained from the server they are cached.  If the cache 
+   * has not been invalidated since the last communication with the server, this method 
+   * returns the last cached value instead. If the cache has been invalidated, this method 
+   * behaves identically to {@link #getPrivilegeDetails getPrivilegeDetails}.  This means that
+   * the privileges returned by this method are not guarenteed to be up-to-date and 
+   * operations relying on these privlegea may still fail due to a change in privileges 
+   * since the cache was last updated. <P> 
+   * 
+   * @return 
+   *   The privileges of the current user.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileges.
+   */
+  public synchronized PrivilegeDetails
+  getCachedPrivilegeDetails() 
+    throws PipelineException 
+  {
+    if(pPrivilegeDetails == null) 
+      return getPrivilegeDetails();
+    return pPrivilegeDetails;
+  }
+
+  /**
+   * Manually invalidate the privilege details cache.
+   */ 
+  public synchronized void 
+  invalidateCachedPrivilegeDetails()
+  {
+    pPrivilegeDetails = null;
+  }
+
+  /**
+   * Get the privileges granted to a specific user with respect to all other users. <P> 
+   * 
+   * @param uname
+   *   The unique name of the user.
+   * 
+   * @return 
+   *   The privileges of the given user.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the privileges.
+   */
+  public synchronized PrivilegeDetails
+  getPrivilegeDetails
+  (
+    String uname
+  )
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    MiscGetPrivilegeDetailsReq req = new MiscGetPrivilegeDetailsReq(uname);
+
+    Object obj = performTransaction(MasterRequest.GetPrivilegeDetails, req);
+    if(obj instanceof MiscGetPrivilegeDetailsRsp) {
+      MiscGetPrivilegeDetailsRsp rsp = (MiscGetPrivilegeDetailsRsp) obj;
+      return rsp.getDetails();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -138,10 +350,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {    
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the default toolset!");
-
     verifyConnection();
 
     MiscSetDefaultToolsetNameReq req = new MiscSetDefaultToolsetNameReq(name);
@@ -198,10 +406,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {    
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the active status of a toolset!");
-
     verifyConnection();
 
     MiscSetToolsetActiveReq req = new MiscSetToolsetActiveReq(name, isActive);
@@ -474,10 +678,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may create new toolsets!");
-
     verifyConnection();
 
     ArrayList<String> names = new ArrayList<String>();
@@ -686,10 +886,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may create new toolset packages!");
-
     verifyConnection();
 
     MiscCreateToolsetPackageReq req =
@@ -766,10 +962,6 @@ class MasterMgrClient
   ) 
     throws PipelineException      
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the editor menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
@@ -840,10 +1032,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the editor menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
@@ -960,11 +1148,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the editor plugins associated with " + 
-	 "a toolset package!"); 
-
     verifyConnection();
 
     MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
@@ -1030,10 +1213,6 @@ class MasterMgrClient
   ) 
     throws PipelineException      
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the comparator menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
@@ -1104,10 +1283,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the comparator menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
@@ -1224,11 +1399,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the comparator plugins associated with " + 
-	 "a toolset package!"); 
-
     verifyConnection();
 
     MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
@@ -1294,10 +1464,6 @@ class MasterMgrClient
   ) 
     throws PipelineException      
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the action menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
@@ -1368,10 +1534,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the action menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
@@ -1488,11 +1650,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the action plugins associated with " + 
-	 "a toolset package!"); 
-
     verifyConnection();
 
     MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
@@ -1558,10 +1715,6 @@ class MasterMgrClient
   ) 
     throws PipelineException      
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the tool menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
@@ -1632,10 +1785,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the tool menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
@@ -1752,11 +1901,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the tool plugins associated with " + 
-	 "a toolset package!"); 
-
     verifyConnection();
 
     MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
@@ -1822,10 +1966,6 @@ class MasterMgrClient
   ) 
     throws PipelineException      
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the archiver menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
@@ -1896,10 +2036,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the archiver menu layout!");
-
     verifyConnection();
 
     MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
@@ -2016,11 +2152,6 @@ class MasterMgrClient
   ) 
     throws PipelineException  
   {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the archiver plugins associated with " + 
-	 "a toolset package!"); 
-
     verifyConnection();
 
     MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
@@ -2151,237 +2282,6 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
   
-  
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P R I V I L E G E D   U S E R S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the privileged users. <P> 
-   * 
-   * Privileged users are allowed to perform operations which are restricted for normal
-   * users. In general privileged access is required when an operation is dangerous or 
-   * involves making changes which affect all users. The "pipeline" user is always 
-   * privileged. <P> 
-   * 
-   * Each client caches the set of privileged users recieved from the master server the 
-   * first time this method is called and uses this cache instead of network communication
-   * for subsequent calls.  This cache can be ignored and rebuilt if the <CODE>useCache</CODE>
-   * argument is set to <CODE>false</CODE>.
-   * 
-   * @param useCache
-   *   Should the local cache be used to determine whether the user is privileged?
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized TreeSet<String> 
-  getPrivilegedUsers
-  (
-   boolean useCache   
-  ) 
-    throws PipelineException
-  {
-    if(!useCache || (pPrivilegedUsers == null)) 
-      updatePrivilegedUsers();
-
-    return new TreeSet<String>(pPrivilegedUsers);
-  }
-
-  /**
-   * Is the given user privileged? <P> 
-   * 
-   * Privileged users are allowed to perform operations which are restricted for normal
-   * users. In general privileged access is required when an operation is dangerous or 
-   * involves making changes which affect all users. The "pipeline" user is always 
-   * privileged. <P> 
-   * 
-   * Each client caches the set of privileged users recieved from the master server the 
-   * first time this method is called and uses this cache instead of network communication
-   * for subsequent calls.  This cache can be ignored and rebuilt if the <CODE>useCache</CODE>
-   * argument is set to <CODE>false</CODE>.
-   * 
-   * @param author
-   *   The user in question.
-   * 
-   * @param useCache
-   *   Should the local cache be used to determine whether the user is privileged?
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged
-  (
-   String author, 
-   boolean useCache
-  ) 
-    throws PipelineException
-  {
-    if(author.equals(PackageInfo.sPipelineUser)) 
-      return true;
-
-    if(!useCache || (pPrivilegedUsers == null)) 
-      updatePrivilegedUsers();
-    assert(pPrivilegedUsers != null);
-
-    return pPrivilegedUsers.contains(author);
-  }
-
-  /**
-   * Is the given user privileged? <P> 
-   * 
-   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with a <CODE>useCache</CODE> argument of <CODE>true</CODE>.
-   * 
-   * @param author
-   *   The user in question.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged
-  (
-   String author
-  ) 
-    throws PipelineException
-  {
-    return isPrivileged(author, true);
-  }
-
-  /**
-   * Is the current user privileged? <P> 
-   * 
-   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with the current user as the <CODE>author</CODE> argument.
-   * 
-   * @param useCache
-   *   Should the local cache be used to determine whether the current user is privileged?
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged
-  ( 
-   boolean useCache
-  ) 
-    throws PipelineException
-  {
-    return isPrivileged(PackageInfo.sUser, useCache);
-  }
-
-  /**
-   * Is the current user privileged? <P> 
-   * 
-   * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with the current user as the <CODE>author</CODE> argument and a <CODE>useCache</CODE> 
-   * argument of <CODE>true</CODE>.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  public synchronized boolean 
-  isPrivileged() 
-    throws PipelineException
-  {
-    return isPrivileged(PackageInfo.sUser, true);
-  }
-
-  /**
-   * Update the local cache of privileged users.
-   * 
-   * @throws PipelineException
-   *   If unable to determine the privileged users.
-   */ 
-  private synchronized void 
-  updatePrivilegedUsers() 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetPrivilegedUsers, null);
-    if(obj instanceof MiscGetPrivilegedUsersRsp) {
-      MiscGetPrivilegedUsersRsp rsp = (MiscGetPrivilegedUsersRsp) obj;
-      pPrivilegedUsers = rsp.getUsers();
-    }
-    else {
-      handleFailure(obj);
-      return;
-    }
-  }
-  
-
-  /**
-   * Grant a user privileged access status. <P> 
-   * 
-   * This method may only be called by the "pipeline" user.  An exception will be thrown
-   * if called by any other user.
-   * 
-   * @param author
-   *   The user to make privileged.
-   * 
-   * @throws PipelineException
-   *   If unable to make the given user privileged.
-   */
-  public synchronized void 
-  grantPrivileges
-  (
-   String author
-  ) 
-    throws PipelineException    
-  {
-    if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
-      throw new PipelineException
-	("Only the \"pipeline\" user may change a user's privileges!");
-
-    /* invalidate the cache */ 
-    pPrivilegedUsers = null;
-
-    verifyConnection();
-
-    MiscGrantPrivilegesReq req = new MiscGrantPrivilegesReq(author);
-
-    Object obj = performTransaction(MasterRequest.GrantPrivileges, req);
-    handleSimpleResponse(obj);
-  }
-   
-  /**
-   * Remove a user's privileged access status. <P> 
-   * 
-   * This method may only be called by the "pipeline" user.  An exception will be thrown
-   * if called by any other user.
-   * 
-   * @param author
-   *   The user to remove privileges from.
-   * 
-   * @throws PipelineException
-   *   If unable to remove the given user's privileges.
-   */
-  public synchronized void 
-  removePrivileges
-  (
-   String author
-  ) 
-    throws PipelineException    
-  {
-    if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
-      throw new PipelineException
-	("Only the \"pipeline\" user may change a user's privileges!");
-
-    /* invalidate the cache */ 
-    pPrivilegedUsers = null;
-
-    verifyConnection();
-
-    MiscRemovePrivilegesReq req = new MiscRemovePrivilegesReq(author);
-
-    Object obj = performTransaction(MasterRequest.RemovePrivileges, req);
-    handleSimpleResponse(obj);
-  }
-
    
 
   /*----------------------------------------------------------------------------------------*/
@@ -2437,10 +2337,6 @@ class MasterMgrClient
   ) 
     throws PipelineException 
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may create working areas owned by another user!");
-
     verifyConnection();
 
     NodeCreateWorkingAreaReq req = new NodeCreateWorkingAreaReq(author, view);
@@ -2476,10 +2372,6 @@ class MasterMgrClient
   ) 
     throws PipelineException 
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may remove working areas owned by another user!");
-
     verifyConnection();
 
     NodeRemoveWorkingAreaReq req = new NodeRemoveWorkingAreaReq(author, view);
@@ -2748,10 +2640,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may modify nodes owned by another user!");
-
     verifyConnection();
 
     NodeID id = new NodeID(author, view, mod.getName());
@@ -3078,10 +2966,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may rename nodes owned by another user!");
-
     verifyConnection();
 
     NodeRenameReq req = new NodeRenameReq(nodeID, pattern, renameFiles);
@@ -3166,10 +3050,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may renumber nodes owned by another user!");
-
     verifyConnection();
 
     NodeRenumberReq req = new NodeRenumberReq(nodeID, range, removeFiles);
@@ -3469,10 +3349,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may register nodes owned by another user!");
-
     verifyConnection();
 
     NodeID id = new NodeID(author, view, mod.getName());
@@ -3481,7 +3357,6 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.Register, req);
     handleSimpleResponse(obj);
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3586,10 +3461,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may release nodes owned by another user!");
-
     if(names.isEmpty()) 
       throw new PipelineException
 	("At least one name of a node to release must be specified!");
@@ -3629,10 +3500,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may delete nodes!"); 
-
     verifyConnection();
 
     NodeDeleteReq req = new NodeDeleteReq(name, removeFiles);
@@ -3719,10 +3586,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may check-in nodes owned by another user!");
-
     verifyConnection();
 
     NodeCheckInReq req = new NodeCheckInReq(nodeID, msg, level);
@@ -3815,10 +3678,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may check-in nodes owned by another user!");
-
     verifyConnection();
 
     NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode, method);
@@ -3849,7 +3708,8 @@ class MasterMgrClient
    *   The fully resolved node name.
    * 
    * @param vid 
-   *   The revision number of the checked-in version to which the working version is being locked.
+   *   The revision number of the checked-in version to which the working version is 
+   *   being locked.
    * 
    * @throws PipelineException
    *   If unable to lock the nodes.
@@ -3880,7 +3740,8 @@ class MasterMgrClient
    *   The unique working version identifier. 
    * 
    * @param vid 
-   *   The revision number of the checked-in version to which the working version is being locked.
+   *   The revision number of the checked-in version to which the working version is 
+   *   being locked.
    * 
    * @throws PipelineException
    *   If unable to lock the nodes.
@@ -3893,10 +3754,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may lock nodes owned by another user!");
-
     verifyConnection();
 
     NodeLockReq req = new NodeLockReq(nodeID, vid);
@@ -3965,10 +3822,6 @@ class MasterMgrClient
   )
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may revert files owned by another user!");
-    
     verifyConnection();
 
     NodeRevertFilesReq req = new NodeRevertFilesReq(nodeID, files);
@@ -3981,7 +3834,8 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Replace the primary files associated with one node with the primary files of another node. <P>
+   * Replace the primary files associated with one node with the primary files of 
+   * another node. <P>
    * 
    * The two nodes must have exactly the same number of files in their primary file sequences
    * or the operation will fail. <P> 
@@ -4006,10 +3860,6 @@ class MasterMgrClient
   )
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(targetID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may clone files owned by another user!");
-    
     verifyConnection();
 
     NodeCloneFilesReq req = new NodeCloneFilesReq(sourceID, targetID); 
@@ -4088,10 +3938,6 @@ class MasterMgrClient
   )
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may evolve nodes owned by another user!");
-    
     verifyConnection();
 
     NodeEvolveReq req = new NodeEvolveReq(nodeID, vid);
@@ -4101,7 +3947,6 @@ class MasterMgrClient
   }
 
 
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   Q U E U E                                                                    */
@@ -4295,10 +4140,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may submit jobs for nodes owned by another user!");
-
     verifyConnection();
 
     NodeSubmitJobsReq req = 
@@ -4373,10 +4214,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may submit jobs for nodes owned by another user!");
-
     verifyConnection();
 
     NodeResubmitJobsReq req = 
@@ -4455,10 +4292,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may remove files owned by another user!");
-    
     verifyConnection();
 
     NodeRemoveFilesReq req = new NodeRemoveFilesReq(nodeID, indices);
@@ -4466,6 +4299,7 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.RemoveFiles, req);
     handleSimpleResponse(obj);    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4505,10 +4339,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may backup the database!"); 
-
     verifyConnection();
 
     MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file);
@@ -4633,10 +4463,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may create archives!"); 
-
     verifyConnection();
 
     MiscArchiveReq req = new MiscArchiveReq(prefix, versions, archiver, toolset);
@@ -4796,10 +4622,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may offline checked-in versions!"); 
-
     verifyConnection();
 
     MiscOfflineReq req = new MiscOfflineReq(versions);
@@ -4879,10 +4701,6 @@ class MasterMgrClient
   ) 
     throws PipelineException 
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may deny restore requests!");
-
     verifyConnection();
 
     MiscDenyRestoreReq req = new MiscDenyRestoreReq(versions);
@@ -4989,10 +4807,6 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may restore checked-in versions!"); 
-
     verifyConnection();
 
     MiscRestoreReq req = new MiscRestoreReq(name, versions, archiver, toolset);
@@ -5223,11 +5037,11 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The cached names of the privileged users. <P> 
-   *
-   * May be <CODE>null</CODE> if the cache has been invalidated.
+   * The cached details of the administrative privileges granted to the current user or 
+   * <CODE>null</CODE> if an operation which modifies the privileges has been called since
+   * the cache was last updated.
    */ 
-  private TreeSet<String>  pPrivilegedUsers;
-  
+  private PrivilegeDetails  pPrivilegeDetails; 
+
 }
 

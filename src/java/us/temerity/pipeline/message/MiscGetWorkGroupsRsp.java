@@ -1,4 +1,4 @@
-// $Id: MiscGetPrivilegedUsersRsp.java,v 1.6 2005/01/22 06:10:09 jim Exp $
+// $Id: MiscGetWorkGroupsRsp.java,v 1.1 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   P R I V I L E G E D   U S E R S   R S P                              */
+/*   M I S C   G E T   W O R K   G R O U P S   R S P                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a <CODE>MiscGetPrivilegedUsersReq</CODE> request.
+ * Get the work groups used to determine the scope of administrative privileges.
  */
 public
-class MiscGetPrivilegedUsersRsp
+class MiscGetWorkGroupsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,27 +29,21 @@ class MiscGetPrivilegedUsersRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param users
-   *   The names of privileged users.
+   * @param groups
+   *   The work groups.
    */ 
   public
-  MiscGetPrivilegedUsersRsp
-  ( 
+  MiscGetWorkGroupsRsp
+  (
    TaskTimer timer, 
-   TreeSet<String> users
+   WorkGroups groups
   )
   { 
     super(timer);
 
-    if(users == null) 
-      throw new IllegalArgumentException("The users cannot be (null)!");
-    pUsers = users;
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       getTimer().toString());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
+    if(groups == null) 
+      throw new IllegalArgumentException("The work groups cannot be (null)!");
+    pGroups = groups;
   }
 
 
@@ -59,12 +53,12 @@ class MiscGetPrivilegedUsersRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the names of the priviledged users.
+   * Gets the work groups used to determine the scope of administrative privileges.
    */
-  public TreeSet<String>
-  getUsers() 
+  public WorkGroups
+  getGroups() 
   {
-    return pUsers;
+    return pGroups;
   }
   
 
@@ -73,7 +67,7 @@ class MiscGetPrivilegedUsersRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -6613301169756629375L;
+  private static final long serialVersionUID = -2148662427104797743L;
 
   
 
@@ -82,9 +76,9 @@ class MiscGetPrivilegedUsersRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names of the priviledged users.
+   * The work groups used to determine the scope of administrative privileges.
    */ 
-  private TreeSet<String>  pUsers;
+  private WorkGroups  pGroups;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: QueuePauseJobsReq.java,v 1.1 2004/08/30 02:48:15 jim Exp $
+// $Id: QueuePauseJobsReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class QueuePauseJobsReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -26,15 +26,25 @@ class QueuePauseJobsReq
   /** 
    * Constructs a new request. <P> 
    * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
    * @param jobIDs
    *   The unique job identifiers.
    */
   public
   QueuePauseJobsReq
   (
+   String author, 
    TreeSet<Long> jobIDs
   )
   { 
+    super();
+
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    pAuthor = author;
+
     if(jobIDs == null) 
       throw new IllegalArgumentException("The job IDs cannot be (null)!");
     pJobIDs = jobIDs;
@@ -45,6 +55,15 @@ class QueuePauseJobsReq
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the name of user which owens the jobs.
+   */ 
+  public String
+  getAuthor() 
+  {
+    return pAuthor;
+  }
 
   /**
    * Get the unique job identifiers.
@@ -68,6 +87,11 @@ class QueuePauseJobsReq
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * The name of user which owens the jobs.
+   */
+  private String  pAuthor;
 
   /**
    * The unique job identifiers.

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.17 2006/01/05 22:46:21 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.18 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -761,6 +761,15 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isQueueManaged(pAuthor)); 
+  }
+
+  /**
    * Set the author and view.
    */ 
   public synchronized void 
@@ -919,6 +928,8 @@ class JQueueJobBrowserPanel
     if(UIMaster.getInstance().isRestoring())
       return;
 
+    UIMaster.getInstance().getMasterMgrClient().invalidateCachedPrivilegeDetails();
+
     QueryTask task = new QueryTask();
     task.start();
   }
@@ -1001,6 +1012,8 @@ class JQueueJobBrowserPanel
    TreeSet<String> selectionSchedules
   ) 
   {
+    updatePrivileges();
+
     /* update the groups and job status */ 
     {
       pJobGroups.clear();
@@ -1060,7 +1073,7 @@ class JQueueJobBrowserPanel
       pHostnamesTableModel.setHostnames(hosts.keySet());
 
       pHostsTableModel.setQueueHosts
-	(hosts, selectionGroups, selectionSchedules, pIsPrivileged);
+	(hosts, selectionGroups, selectionSchedules, pPrivilegeDetails);
 
       updateHostsHeaderButtons();
       pHostsTablePanel.tableStructureChanged();  
@@ -1075,14 +1088,14 @@ class JQueueJobBrowserPanel
       ListSelectionModel smodel = pSlotsTablePanel.getTable().getSelectionModel();
       smodel.removeListSelectionListener(pSlotsListSelector);
       {
-	pSlotsTableModel.setSlots(hosts, pJobStatus, jobInfo, pIsPrivileged);
+	pSlotsTableModel.setSlots(hosts, pJobStatus, jobInfo);
       }
       smodel.addListSelectionListener(pSlotsListSelector);      
     }
     
     /* update any connected JobViewer */ 
     if(pGroupID > 0) {
-      UIMaster master = UIMaster.getInstance();
+      UIMaster master = UIMaster.getInstance();      
       PanelGroup<JQueueJobViewerPanel> panels = master.getQueueJobViewerPanels();
       JQueueJobViewerPanel panel = panels.getPanel(pGroupID);
       if(panel != null) {
@@ -1106,8 +1119,7 @@ class JQueueJobBrowserPanel
 	}
 	  
 	/* update the viewer */ 
-	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus, pIsPrivileged);
-	panel.updateManagerTitlePanel();
+	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus);
       }
     }
   }
@@ -1124,8 +1136,8 @@ class JQueueJobBrowserPanel
   {
     boolean selected = (pHostsTablePanel.getTable().getSelectedRowCount() > 0);
     pHostsHistoryItem.setEnabled(selected);
-    pHostsAddItem.setEnabled(pIsPrivileged); 
-    pHostsRemoveItem.setEnabled(pIsPrivileged && selected); 
+    pHostsAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
+    pHostsRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && selected); 
   }
 
   /**
@@ -1153,23 +1165,29 @@ class JQueueJobBrowserPanel
   updateGroupsMenu() 
   {
     boolean selected = (pGroupsTablePanel.getTable().getSelectedRowCount() > 0);
-    pGroupsQueueItem.setEnabled(selected); 
-    pGroupsQueueSpecialItem.setEnabled(selected); 
-    pGroupsPauseItem.setEnabled(selected); 
-    pGroupsResumeItem.setEnabled(selected);
-    pGroupsPreemptItem.setEnabled(selected);
-    pGroupsKillItem.setEnabled(selected);
 
     switch(pViewFilter) {
     case SingleView:
     case OwnedViews:
-      pGroupsDeleteItem.setEnabled(selected && !pIsLocked);
-      pGroupsDeleteCompletedItem.setEnabled(!pIsLocked);
+      pGroupsQueueItem.setEnabled(selected && !isLocked()); 
+      pGroupsQueueSpecialItem.setEnabled(selected && !isLocked()); 
+      pGroupsPauseItem.setEnabled(selected && !isLocked()); 
+      pGroupsResumeItem.setEnabled(selected && !isLocked());
+      pGroupsPreemptItem.setEnabled(selected && !isLocked());
+      pGroupsKillItem.setEnabled(selected && !isLocked());
+      pGroupsDeleteItem.setEnabled(selected && !isLocked());
+      pGroupsDeleteCompletedItem.setEnabled(!isLocked());
       break;
 
     case AllViews:
-      pGroupsDeleteItem.setEnabled(selected && pIsPrivileged);
-      pGroupsDeleteCompletedItem.setEnabled(pIsPrivileged);
+      pGroupsQueueItem.setEnabled(selected); 
+      pGroupsQueueSpecialItem.setEnabled(selected); 
+      pGroupsPauseItem.setEnabled(selected); 
+      pGroupsResumeItem.setEnabled(selected);
+      pGroupsPreemptItem.setEnabled(selected);
+      pGroupsKillItem.setEnabled(selected);
+      pGroupsDeleteItem.setEnabled(selected);
+      pGroupsDeleteCompletedItem.setEnabled(true);
     }
   }
 
@@ -1905,7 +1923,8 @@ class JQueueJobBrowserPanel
       if(status != null) 
 	author = status.getNodeID().getAuthor();
       
-      if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+      if((author != null) && 
+	 (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	TreeSet<Long> dead = jobs.get(author);
 	if(dead == null) {
 	  dead = new TreeSet<Long>();
@@ -2000,7 +2019,8 @@ class JQueueJobBrowserPanel
       if(status != null) 
 	author = status.getNodeID().getAuthor();
       
-      if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+      if((author != null) &&
+	 (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	TreeSet<Long> dead = jobs.get(author);
 	if(dead == null) {
 	  dead = new TreeSet<Long>();
@@ -2145,15 +2165,18 @@ class JQueueJobBrowserPanel
 	    }
 	  }
       
-	  if((targetID != null) && 
-	     (pIsPrivileged || targetID.getAuthor().equals(PackageInfo.sUser))) {
-	    TreeSet<FileSeq> fseqs = targets.get(targetID);
-	    if(fseqs == null) {
-	      fseqs = new TreeSet<FileSeq>();
-	      targets.put(targetID, fseqs);
-	    }
+	  if(targetID != null) {
+	    String author = targetID.getAuthor();
+	    if(author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)) {
 
-	    fseqs.add(status.getTargetSequence());
+	      TreeSet<FileSeq> fseqs = targets.get(targetID);
+	      if(fseqs == null) {
+		fseqs = new TreeSet<FileSeq>();
+		targets.put(targetID, fseqs);
+	      }
+	      
+	      fseqs.add(status.getTargetSequence());
+	    }
 	  }
 	}
       }
@@ -2183,7 +2206,8 @@ class JQueueJobBrowserPanel
 	    }
 	  }
       
-	  if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+	  if((author != null) && 
+	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	    TreeSet<Long> paused = jobs.get(author);
 	    if(paused == null) {
 	      paused = new TreeSet<Long>();
@@ -2221,7 +2245,8 @@ class JQueueJobBrowserPanel
 	    }
 	  }
       
-	  if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+	  if((author != null) &&
+	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	    TreeSet<Long> resumed = jobs.get(author);
 	    if(resumed == null) {
 	      resumed = new TreeSet<Long>();
@@ -2262,7 +2287,8 @@ class JQueueJobBrowserPanel
 	    }
 	  }
       
-	  if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+	  if((author != null) &&
+	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	    TreeSet<Long> dead = jobs.get(author);
 	    if(dead == null) {
 	      dead = new TreeSet<Long>();
@@ -2303,7 +2329,8 @@ class JQueueJobBrowserPanel
 	    }
 	  }
       
-	  if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) {
+	  if((author != null) &&
+	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	    TreeSet<Long> dead = jobs.get(author);
 	    if(dead == null) {
 	      dead = new TreeSet<Long>();
@@ -2332,7 +2359,8 @@ class JQueueJobBrowserPanel
       QueueJobGroup group = pJobGroups.get(groupID);
       if(group != null) {
 	String author = group.getNodeID().getAuthor();
-	if((author != null) && (pIsPrivileged || author.equals(PackageInfo.sUser))) 
+	if((author != null) &&
+	   (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) 
 	  groups.put(groupID, author);
       }
     }
@@ -2767,7 +2795,6 @@ class JQueueJobBrowserPanel
 	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
 	  panel.updateJob(pAuthor, pView, pJob, pJobInfo);
-	  panel.updateManagerTitlePanel();
 	}
       }
     }
@@ -2810,13 +2837,11 @@ class JQueueJobBrowserPanel
       if(master.beginPanelOp("Updating...")) {
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient();
-
-	  pIsPrivileged = client.isPrivileged();
-
-	  groups    = client.getJobGroups(); 
-	  jobStatus = client.getJobStatus(new TreeSet<Long>(groups.keySet()));
-	  jobInfo   = client.getRunningJobInfo();
-	  hosts     = client.getHosts(); 
+	  
+	  groups     = client.getJobGroups(); 
+	  jobStatus  = client.getJobStatus(new TreeSet<Long>(groups.keySet()));
+	  jobInfo    = client.getRunningJobInfo();
+	  hosts      = client.getHosts(); 
 
 	  selectionGroups    = client.getSelectionGroupNames();
 	  selectionSchedules = client.getSelectionScheduleNames();
@@ -2871,11 +2896,11 @@ class JQueueJobBrowserPanel
       switch(pViewFilter) {
       case SingleView:
       case OwnedViews:
-	pDeleteCompletedButton.setEnabled(!pIsLocked);
+	pDeleteCompletedButton.setEnabled(!isLocked());
 	break;
 	
       case AllViews:
-	pDeleteCompletedButton.setEnabled(pIsPrivileged);
+	pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
       }
 
       /* update the panels */ 
@@ -3638,11 +3663,6 @@ class JQueueJobBrowserPanel
    * The IDs of the selected job groups. 
    */ 
   private TreeSet<Long>  pSelectedIDs; 
-
-  /**
-   * Does the current user have privileged status?
-   */ 
-  private boolean  pIsPrivileged;
 
   /**
    * The toolset used to build the editor menus.

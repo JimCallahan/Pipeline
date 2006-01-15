@@ -1,4 +1,4 @@
-// $Id: NodeRemoveWorkingAreaReq.java,v 1.1 2005/02/22 18:20:03 jim Exp $
+// $Id: NodeRemoveWorkingAreaReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class NodeRemoveWorkingAreaReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -39,6 +39,8 @@ class NodeRemoveWorkingAreaReq
    String view   
   )
   { 
+    super();
+
     if(author == null) 
       throw new IllegalArgumentException("The author cannot be (null)!");
     pAuthor = author;

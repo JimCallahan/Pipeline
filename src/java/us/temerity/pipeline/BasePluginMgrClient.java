@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.5 2005/09/07 21:11:16 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.6 2006/01/15 06:29:25 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -193,7 +193,8 @@ class BasePluginMgrClient
 
     for(String vendor : plugins.keySet()) {
       for(String name : plugins.get(vendor).keySet()) 
-	table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name).keySet()));
+	table.put(vendor, name, 
+		  new TreeSet<VersionID>(plugins.get(vendor).get(name).keySet()));
     }
 
     return table;
@@ -334,8 +335,8 @@ class BasePluginMgrClient
    * Create a new archiver plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseArchiver#getName BaseArchiver.getName} for the returned 
-   * archiver.
+   * name obtained by calling {@link BaseArchiver#getName BaseArchiver.getName} for the 
+   * returned archiver.
    *
    * @param name 
    *   The name of the archiver plugin to instantiate.  

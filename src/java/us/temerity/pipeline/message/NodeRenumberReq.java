@@ -1,4 +1,4 @@
-// $Id: NodeRenumberReq.java,v 1.1 2004/07/18 21:38:18 jim Exp $
+// $Id: NodeRenumberReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public
 class NodeRenumberReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -46,6 +46,8 @@ class NodeRenumberReq
    boolean removeFiles
   )
   { 
+    super();
+
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");

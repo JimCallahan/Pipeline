@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.6 2005/05/31 09:37:45 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.7 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -37,6 +37,8 @@ class JManageLicenseKeysDialog
   JManageLicenseKeysDialog() 
   {
     super("Manage License Keys", false);
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     /* create dialog body components */ 
     { 
@@ -87,18 +89,20 @@ class JManageLicenseKeysDialog
   updateLicenseKeys() 
   { 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
+    MasterMgrClient mclient = master.getMasterMgrClient();
+    QueueMgrClient qclient = master.getQueueMgrClient();
     try {
-      pIsPrivileged = client.isPrivileged(false);
+      pPrivilegeDetails = mclient.getPrivilegeDetails();
+      pTableModel.setLicenseKeys(qclient.getLicenseKeys(), pPrivilegeDetails);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
     }
 
-    doUpdate();
-
-    pAddButton.setEnabled(pIsPrivileged);
-    pRemoveButton.setEnabled(pIsPrivileged);
+    pAddButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
+    pRemoveButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
+    pConfirmButton.setEnabled(false);
+    pApplyButton.setEnabled(false);
   }
 
 
@@ -199,7 +203,7 @@ class JManageLicenseKeysDialog
 	  LicenseKey key = new LicenseKey(kname, desc, LicenseScheme.PerSlot, 0, null, null);
 	  client.addLicenseKey(key);
 			       
-	  pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
+	  pTableModel.setLicenseKeys(client.getLicenseKeys(), pPrivilegeDetails);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -226,7 +230,7 @@ class JManageLicenseKeysDialog
 	client.removeLicenseKey(kname);
       }
 
-      pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
+      pTableModel.setLicenseKeys(client.getLicenseKeys(), pPrivilegeDetails);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -240,18 +244,7 @@ class JManageLicenseKeysDialog
   doUpdate() 
   {
     pTablePanel.cancelEditing();
-
-    UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
-    try {
-      pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-    }
-
-    pConfirmButton.setEnabled(false);
-    pApplyButton.setEnabled(false);
+    updateLicenseKeys();
   }
 
   /**
@@ -278,9 +271,10 @@ class JManageLicenseKeysDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
+
 
   /**
    * The license keys table model.

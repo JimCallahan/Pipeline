@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.22 2005/12/31 20:40:43 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.23 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -354,6 +354,18 @@ class JNodeFilesPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
@@ -411,6 +423,8 @@ class JNodeFilesPanel
    TreeSet<VersionID> offline
   ) 
   {
+    updatePrivileges();
+
     pStatus  = status;
     pNovelty = novelty; 
     pOffline = offline;
@@ -899,6 +913,26 @@ class JNodeFilesPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Update the node menu.
+   */ 
+  public void 
+  updateNodeMenu() 
+  {
+    boolean privileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
+
+    pQueueJobsItem.setEnabled(privileged);
+    pQueueJobsSpecialItem.setEnabled(privileged);
+    pPauseJobsItem.setEnabled(privileged);
+    pResumeJobsItem.setEnabled(privileged);
+    pPreemptJobsItem.setEnabled(privileged);
+    pKillJobsItem.setEnabled(privileged);
+    pRemoveFilesItem.setEnabled(privileged);  
+
+    updateEditorMenus();
+  }
+
+  /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
   public void 
@@ -1342,17 +1376,17 @@ class JNodeFilesPanel
 	  }
 
 	  if((pTargetVersionID != null) && !checkedInHeader) {
-	    updateEditorMenus();
+	    updateNodeMenu();
 	    updateComparatorMenus();
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else if(pIsFrozen || checkedInHeader) {
-	    updateEditorMenus();
+	    updateNodeMenu();
 	    pFrozenPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else {
-	    updateEditorMenus();
+	    updateNodeMenu();
 	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	}

@@ -484,6 +484,46 @@
 
 
 
+  <!--  P R I V S   B U T T O N  -->
+
+  <style id="PrivsButton"> 
+    <state>
+      <imagePainter path="PrivsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="PrivsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="PrivsButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="PrivsButton" type="name" key="PrivsButton"/>
+
+
+
+  <!--  G R O U P S   B U T T O N  -->
+
+  <style id="GroupsButton"> 
+    <state>
+      <imagePainter path="GroupsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="GroupsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="GroupsButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="GroupsButton" type="name" key="GroupsButton"/>
+
+
+
   <!--  R A I S E D    B U T T O N  -->
 
   <style id="RaisedButton">
@@ -1279,6 +1319,62 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="CollectionValueTextField" type="name" key="CollectionValueTextField"/>
+
+  <style id="BlueCollectionField">
+    <state value="DISABLED"> 
+      <imagePainter path="BlueValuePanel.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="BlueEditableValuePanel.png"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueCollectionField" type="name" key="BlueCollectionField"/>
+
+  <style id="BlueCollectionValueTextField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#7c0074" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="DarkBlue.png"
+                  method="textFieldBackgroud"
+                  sourceInsets="0 0 0 0"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueCollectionValueTextField" type="name" 
+        key="BlueCollectionValueTextField"/>
+
+
+  <style id="GreenCollectionField">
+    <state value="DISABLED"> 
+      <imagePainter path="GreenValuePanel.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="GreenEditableValuePanel.png"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenCollectionField" type="name" key="GreenCollectionField"/>
+
+  <style id="GreenCollectionValueTextField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#7c0074" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="DarkGreen.png"
+                  method="textFieldBackgroud"
+                  sourceInsets="0 0 0 0"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenCollectionValueTextField" type="name" 
+        key="GreenCollectionValueTextField"/>
+
 
   <style id="PurpleCollectionField">
     <state value="DISABLED"> 

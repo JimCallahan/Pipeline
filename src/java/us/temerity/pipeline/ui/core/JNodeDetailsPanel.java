@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.25 2005/12/31 20:40:43 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.26 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1410,6 +1410,18 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Are the contents of the panel read-only. <P> 
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Does the current node have a working version?
    */ 
   private boolean 
@@ -1588,7 +1600,7 @@ class JNodeDetailsPanel
    NodeStatus status
   ) 
   {
-    UIMaster master = UIMaster.getInstance();
+    updatePrivileges();
 
     pStatus = status;
 
@@ -1729,6 +1741,7 @@ class JNodeDetailsPanel
 	{
 	  TreeSet<String> toolsets = new TreeSet<String>();
 	  if(work != null) {
+	    UIMaster master = UIMaster.getInstance();
 	    try {
 	      toolsets.addAll(master.getMasterMgrClient().getActiveToolsetNames());
 	      if((work.getToolset() != null) && !toolsets.contains(work.getToolset()))
@@ -1750,12 +1763,12 @@ class JNodeDetailsPanel
 	  else 
 	    pWorkingToolsetField.setSelected("-");
 
-	  pWorkingToolsetField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
+	  pWorkingToolsetField.setEnabled(!isLocked() && !pIsFrozen && (work != null));
 	}
 	pWorkingToolsetField.addActionListener(this);
 	
 	pSetToolsetButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
+	  (!isLocked() && !pIsFrozen && (work != null) && (latest != null));
 	
 	{
 	  if(latest != null) 
@@ -1780,12 +1793,12 @@ class JNodeDetailsPanel
 
 	  updateEditorFields();
 	  
-	  pWorkingEditorField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));
+	  pWorkingEditorField.setEnabled(!isLocked() && !pIsFrozen && (work != null));
 	}
 	pWorkingEditorField.addActionListener(this);
 	
 	pSetEditorButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
+	  (!isLocked() && !pIsFrozen && (work != null) && (latest != null));
 	
 	{
 	  BaseEditor editor = null;
@@ -1822,12 +1835,12 @@ class JNodeDetailsPanel
 	else
 	  pWorkingActionField.setPlugin(null);
 	
-	pWorkingActionField.setEnabled(!pIsLocked && !pIsFrozen && (work != null));	
+	pWorkingActionField.setEnabled(!isLocked() && !pIsFrozen && (work != null));	
       }
       pWorkingActionField.addActionListener(this);
 
       pSetActionButton.setEnabled
-	(!pIsLocked && !pIsFrozen && (work != null) && (latest != null));
+	(!isLocked() && !pIsFrozen && (work != null) && (latest != null));
 
       {
 	BaseAction caction = null;
@@ -1848,7 +1861,7 @@ class JNodeDetailsPanel
 
       if((work != null) && (getWorkingAction() != null)) {
 	pWorkingActionEnabledField.setValue(work.isActionEnabled()); 
-	pWorkingActionEnabledField.setEnabled(!pIsLocked && !pIsFrozen);
+	pWorkingActionEnabledField.setEnabled(!isLocked() && !pIsFrozen);
       }
       else {
 	pWorkingActionEnabledField.setValue(null);
@@ -2096,7 +2109,7 @@ class JNodeDetailsPanel
 	Box hbox = new Box(BoxLayout.X_AXIS);
 	
 	if((waction != null) && waction.supportsSourceParams()) {
-	  JButton btn = new JButton((pIsLocked || pIsFrozen) ? "View..." : "Edit...");
+	  JButton btn = new JButton((isLocked() || pIsFrozen) ? "View..." : "Edit...");
 	  pSourceParamComponents[1] = btn;
 	  
 	  btn.setName("ValuePanelButton");
@@ -2139,7 +2152,7 @@ class JNodeDetailsPanel
 	    
 	    pEditSourceParamsDialog = 
 	      new JSourceParamsDialog
-	      (!pIsLocked && !pIsFrozen, title, snames, stitles, sfseqs, waction);
+	      (!isLocked() && !pIsFrozen, title, snames, stitles, sfseqs, waction);
 	  }
 	}
 	else {
@@ -2164,7 +2177,7 @@ class JNodeDetailsPanel
 	  btn.addActionListener(this);
 	  btn.setActionCommand("set-source-params");
 	  
-	  btn.setEnabled(!pIsLocked && !pIsFrozen && 
+	  btn.setEnabled(!isLocked() && !pIsFrozen && 
 			 (waction != null) && (caction != null) && 
 			 caction.getName().equals(waction.getName()));
 	  
@@ -2341,7 +2354,7 @@ class JNodeDetailsPanel
 		    field.addActionListener(this);
 		    field.setActionCommand("action-param-changed:" + aparam.getName());
 
-		    field.setEnabled(!pIsLocked && !pIsFrozen);
+		    field.setEnabled(!isLocked() && !pIsFrozen);
 
 		    hbox.add(field);
 		  }
@@ -2354,7 +2367,7 @@ class JNodeDetailsPanel
 		    field.addActionListener(this);
 		    field.setActionCommand("action-param-changed:" + aparam.getName());
 
-		    field.setEnabled(!pIsLocked && !pIsFrozen);
+		    field.setEnabled(!isLocked() && !pIsFrozen);
 
 		    hbox.add(field);
 		  }
@@ -2367,7 +2380,7 @@ class JNodeDetailsPanel
 		    field.addActionListener(this);
 		    field.setActionCommand("action-param-changed:" + aparam.getName());
 
-		    field.setEnabled(!pIsLocked && !pIsFrozen);
+		    field.setEnabled(!isLocked() && !pIsFrozen);
 
 		    hbox.add(field);
 		  }
@@ -2380,7 +2393,7 @@ class JNodeDetailsPanel
 		    field.addActionListener(this);
 		    field.setActionCommand("action-param-changed:" + aparam.getName());
 
-		    field.setEnabled(!pIsLocked && !pIsFrozen);
+		    field.setEnabled(!isLocked() && !pIsFrozen);
 
 		    hbox.add(field);
 		  }
@@ -2395,7 +2408,7 @@ class JNodeDetailsPanel
 		    field.addActionListener(this);
 		    field.setActionCommand("action-param-changed:" + aparam.getName());
 
-		    field.setEnabled(!pIsLocked && !pIsFrozen);
+		    field.setEnabled(!isLocked() && !pIsFrozen);
 
 		    hbox.add(field);
 		  }
@@ -2414,7 +2427,7 @@ class JNodeDetailsPanel
 		    field.addActionListener(this);
 		    field.setActionCommand("action-param-changed:" + aparam.getName());
 
-		    field.setEnabled(!pIsLocked && !pIsFrozen);
+		    field.setEnabled(!isLocked() && !pIsFrozen);
 
 		    hbox.add(field);
 		  }
@@ -2443,7 +2456,7 @@ class JNodeDetailsPanel
 		btn.addActionListener(this);
 		btn.setActionCommand("set-action-param:" + param.getName());
 
-		btn.setEnabled(!pIsLocked && !pIsFrozen && 
+		btn.setEnabled(!isLocked() && !pIsFrozen && 
 			       (waction != null) && (caction != null) && 
 			       caction.getName().equals(waction.getName()));
 
@@ -2657,11 +2670,11 @@ class JNodeDetailsPanel
 	  pWorkingOverflowPolicyField.addActionListener(this);
 	  
 	  pWorkingOverflowPolicyField.setEnabled
-	    (!pIsLocked && !pIsFrozen && (waction != null));
+	    (!isLocked() && !pIsFrozen && (waction != null));
 	}
 	
 	pSetOverflowPolicyButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (waction != null) && (caction != null));
+	  (!isLocked() && !pIsFrozen && (waction != null) && (caction != null));
 	
 	if(caction != null)
 	  pCheckedInOverflowPolicyField.setText(vsn.getOverflowPolicy().toTitle());
@@ -2692,11 +2705,11 @@ class JNodeDetailsPanel
 	  pWorkingExecutionMethodField.addActionListener(this);
 	  
 	  pWorkingExecutionMethodField.setEnabled
-	    (!pIsLocked && !pIsFrozen && (waction != null));
+	    (!isLocked() && !pIsFrozen && (waction != null));
 	}
 	
 	pSetExecutionMethodButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (waction != null) && (caction != null));
+	  (!isLocked() && !pIsFrozen && (waction != null) && (caction != null));
 	
 	if(caction != null)
 	  pCheckedInExecutionMethodField.setText(vsn.getExecutionMethod().toTitle());
@@ -2739,11 +2752,11 @@ class JNodeDetailsPanel
 	  }
 	  pWorkingPriorityField.addActionListener(this);
 	  
-	  pWorkingPriorityField.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+	  pWorkingPriorityField.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 	}
 
 	pSetPriorityButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (wjreq != null) && (cjreq != null));
+	  (!isLocked() && !pIsFrozen && (wjreq != null) && (cjreq != null));
 	
 	if(cjreq != null)
 	  pCheckedInPriorityField.setText(String.valueOf(cjreq.getPriority()));
@@ -2765,11 +2778,11 @@ class JNodeDetailsPanel
 	  }
 	  pWorkingRampUpField.addActionListener(this);
 	  
-	  pWorkingRampUpField.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+	  pWorkingRampUpField.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 	}
 
 	pSetRampUpButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (wjreq != null) && (cjreq != null));
+	  (!isLocked() && !pIsFrozen && (wjreq != null) && (cjreq != null));
 	
 	if(cjreq != null)
 	  pCheckedInRampUpField.setText(String.valueOf(cjreq.getRampUp()));
@@ -2791,11 +2804,11 @@ class JNodeDetailsPanel
 	  }
 	  pWorkingMaxLoadField.addActionListener(this);
 	  
-	  pWorkingMaxLoadField.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+	  pWorkingMaxLoadField.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 	}
 
 	pSetMaxLoadButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (wjreq != null) && (cjreq != null));
+	  (!isLocked() && !pIsFrozen && (wjreq != null) && (cjreq != null));
 	
 	if(cjreq != null)
 	  pCheckedInMaxLoadField.setText(String.valueOf(cjreq.getMaxLoad()));
@@ -2817,11 +2830,11 @@ class JNodeDetailsPanel
 	  }
 	  pWorkingMinMemoryField.addActionListener(this);
 	  
-	  pWorkingMinMemoryField.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+	  pWorkingMinMemoryField.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 	}
 
 	pSetMinMemoryButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (wjreq != null) && (cjreq != null));
+	  (!isLocked() && !pIsFrozen && (wjreq != null) && (cjreq != null));
 	
 	if(cjreq != null)
 	  pCheckedInMinMemoryField.setText
@@ -2844,11 +2857,11 @@ class JNodeDetailsPanel
 	  }
 	  pWorkingMinDiskField.addActionListener(this);
 	  
-	  pWorkingMinDiskField.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+	  pWorkingMinDiskField.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 	}
 
 	pSetMinDiskButton.setEnabled
-	  (!pIsLocked && !pIsFrozen && (wjreq != null) && (cjreq != null));
+	  (!isLocked() && !pIsFrozen && (wjreq != null) && (cjreq != null));
 	
 	if(cjreq != null)
 	  pCheckedInMinDiskField.setText
@@ -2919,7 +2932,7 @@ class JNodeDetailsPanel
 		field.setActionCommand("selection-key-changed:" + kname);
 		field.addActionListener(this);
 
-		field.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+		field.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 
 		hbox.add(field);
 	      }
@@ -2939,7 +2952,7 @@ class JNodeDetailsPanel
 		btn.setActionCommand("set-selection-key:" + kname);
 		btn.addActionListener(this);
 
-		btn.setEnabled(!pIsLocked && !pIsFrozen && 
+		btn.setEnabled(!isLocked() && !pIsFrozen && 
 			       (wjreq != null) && (cjreq != null));
 
 		hbox.add(btn);
@@ -3030,7 +3043,7 @@ class JNodeDetailsPanel
 		field.setActionCommand("license-key-changed:" + kname);
 		field.addActionListener(this);
 		
-		field.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+		field.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
 		
 		hbox.add(field);
 	      }
@@ -3050,7 +3063,7 @@ class JNodeDetailsPanel
 		btn.setActionCommand("set-license-key:" + kname);
 		btn.addActionListener(this);
 		
-		btn.setEnabled(!pIsLocked && !pIsFrozen && 
+		btn.setEnabled(!isLocked() && !pIsFrozen && 
 			       (wjreq != null) && (cjreq != null));
 		
 		hbox.add(btn);
@@ -3248,6 +3261,26 @@ class JNodeDetailsPanel
   
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the node menu.
+   */ 
+  public void 
+  updateNodeMenu() 
+  {
+    boolean privileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
+
+    pQueueJobsItem.setEnabled(privileged);
+    pQueueJobsSpecialItem.setEnabled(privileged);
+    pPauseJobsItem.setEnabled(privileged);
+    pResumeJobsItem.setEnabled(privileged);
+    pPreemptJobsItem.setEnabled(privileged);
+    pKillJobsItem.setEnabled(privileged);
+    pRemoveFilesItem.setEnabled(privileged);  
+
+    updateEditorMenus();
+  }
 
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
@@ -3479,11 +3512,11 @@ class JNodeDetailsPanel
       NodeMod work = details.getWorkingVersion();
       NodeVersion latest = details.getLatestVersion();
       if((work != null) && !work.isFrozen()) {
-	updateEditorMenus();
+	updateNodeMenu();
 	pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
       }
       else if(latest != null) {
-	updateEditorMenus();
+	updateNodeMenu();
 	pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
       }
     }
@@ -3732,7 +3765,7 @@ class JNodeDetailsPanel
   private void 
   doApply()
   {
-    if(pIsLocked || pIsFrozen) 
+    if(isLocked() || pIsFrozen) 
       return;
 
     if((pStatus != null) && (pStatus.getDetails() != null)) {
@@ -4274,7 +4307,7 @@ class JNodeDetailsPanel
 	
 	pEditSourceParamsDialog = 
 	  new JSourceParamsDialog
-	  (!pIsLocked && !pIsFrozen, title, snames, stitles, sfseqs, waction);
+	  (!isLocked() && !pIsFrozen, title, snames, stitles, sfseqs, waction);
       }
 
       doSourceParamsChanged();
@@ -4395,9 +4428,9 @@ class JNodeDetailsPanel
     else {      
       if(pWorkingBatchSizeField.getValue() == null) 
 	pWorkingBatchSizeField.setValue(0);
-      pWorkingBatchSizeField.setEnabled(!pIsLocked && !pIsFrozen);
+      pWorkingBatchSizeField.setEnabled(!isLocked() && !pIsFrozen);
       pSetBatchSizeButton.setEnabled
-	(!pIsLocked && !pIsFrozen && (cmethod != null) && (cmethod.equals("Parallel")));
+	(!isLocked() && !pIsFrozen && (cmethod != null) && (cmethod.equals("Parallel")));
     }
 
     doBatchSizeChanged();

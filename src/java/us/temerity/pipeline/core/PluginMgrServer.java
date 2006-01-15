@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.5 2005/04/03 06:10:12 jim Exp $
+// $Id: PluginMgrServer.java,v 1.6 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -222,6 +222,17 @@ class PluginMgrServer
 	    LogMgr.getInstance().flush();
 	      
 	    switch(kind) {
+	    /*-- ADMINISTRATIVE PRIVILEGES -------------------------------------------------*/
+	    case UpdateAdminPrivileges: 
+	      {
+		MiscUpdateAdminPrivilegesReq req = 
+		  (MiscUpdateAdminPrivilegesReq) objIn.readObject();
+		objOut.writeObject(pPluginMgr.updateAdminPrivileges(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    /*-- PLUGINS -------------------------------------------------------------------*/
 	    case Update:
 	      {
 		PluginUpdateReq req = (PluginUpdateReq) objIn.readObject();

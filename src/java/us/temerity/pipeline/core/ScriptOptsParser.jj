@@ -137,6 +137,21 @@ ScriptOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * user --set options. 
+   */ 
+  private Boolean  pWorkGroupMembership; 
+  private TreeSet  pWorkGroupUsers; 
+
+  /**
+   * privilege --grant/--revoke options; 
+   */ 
+  private Boolean  pIsMasterAdmin; 
+  private Boolean  pIsDeveloper; 
+  private Boolean  pIsQueueAdmin; 
+  private Boolean  pIsQueueManager; 
+  private Boolean  pIsNodeManager; 
+
+  /**
    * admin --shutdown options. 
    */ 
   private boolean  pShutdownJobMgrs;
@@ -269,7 +284,9 @@ TOKEN :
 | <BATCH:        "--batch">               : PATH_SEP2
 		   
   /* commands */ 
-| <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
+| <USER:              "user">             : USER_OPTS 
+| <WORK_GROUP:        "work-group">       : WORK_GROUP_OPTS 
+| <PRIVILEGE:         "privilege">        : PRIVILEGE_OPTS 
 | <ADMIN:             "admin">            : ADMIN_OPTS
 | <ARCHIVE_VOLUME:    "archive-volume">   : ARCHIVE_VOLUME_OPTS
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
@@ -309,6 +326,15 @@ TOKEN :
 | <MAX_SLOTS:          "--max-slots">           : INTEGER_SEP  
 | <MAX_HOSTS:          "--max-hosts">           : INTEGER_SEP  
 | <MAX_HOST_SLOTS:     "--max-host-slots">      : INTEGER_SEP  
+| <MANAGER:            "--manager">  
+| <MEMBER:             "--member">  
+| <NOT_MEMBER:         "--not-member">  
+| <USER2:              "--user">                : USER_NAME_SEP
+| <MASTER_ADMIN:       "--master-admin">    
+| <DEVELOPER:          "--developer">    
+| <QUEUE_ADMIN:        "--queue-admin">    
+| <QUEUE_MANAGER:      "--queue-manager">    
+| <NODE_MANAGER:       "--node-manager">    
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
 | <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr">   
 | <PATTERN:            "--pattern">         	: STRING_SEP	      
@@ -640,6 +666,24 @@ TOKEN :
 	   	          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
 | <AE5:                 ["\0"]>                                   : OPTIONS
 | <ILLEGAL_USER_NAME:   (~["\0"])+>                               : IGNORE_STATE
+}
+
+
+/* work group name arguments */ 
+<WORK_GROUP_NAME_SEP> 
+TOKEN :
+{
+  <EQ41:                          "=">   : WORK_GROUP_NAME_STATE
+| <MISSING_WORK_GROUP_NAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<WORK_GROUP_NAME_STATE> 
+TOKEN :
+{
+  <WORK_GROUP_NAME:           (["a"-"z","A"-"Z"]) 
+	   	                (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <AE54:                      ["\0"]>                                   : OPTIONS
+| <ILLEGAL_WORK_GROUP_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
 
 
@@ -1229,18 +1273,45 @@ TOKEN :
 
 /*------------------------------------------------------------------------------------------*/
 
-/* privileged command options */ 
-<PRIVILEGED_OPTS> 
+/* user command options */ 
+<USER_OPTS> 
 TOKEN :
 {
-  <PRIVILEGED_GET:    "--get">                   : OPTIONS
-| <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
-| <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
-| <AE26:              ["\0"]>  
-| <UNKNOWN_OPTION3:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN3:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+  <USER_GET:          "--get">                   : OPTIONS
+| <USER_ADD:          "--add">                   : USER_NAME_SEP 
+| <USER_REMOVE:       "--remove">                : USER_NAME_SEP 
+| <AE52:              ["\0"]>  
+| <UNKNOWN_OPTION21:  "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN21:         ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
+/* work-group command options */ 
+<WORK_GROUP_OPTS> 
+TOKEN :
+{
+  <WORK_GROUP_GET:           "--get">                   : OPTIONS
+| <WORK_GROUP_GET_INFO:      "--get-info">              : WORK_GROUP_NAME_SEP  
+| <WORK_GROUP_GET_INFO_ALL:  "--get-info-all">          : OPTIONS 
+| <WORK_GROUP_ADD:           "--add">                   : WORK_GROUP_NAME_SEP 
+| <WORK_GROUP_REMOVE:        "--remove">                : WORK_GROUP_NAME_SEP 
+| <WORK_GROUP_SET:           "--set">                   : WORK_GROUP_NAME_SEP 
+| <AE53:                     ["\0"]>  
+| <UNKNOWN_OPTION22:         "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN22:                ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+/* privileged command options */ 
+<PRIVILEGE_OPTS> 
+TOKEN :
+{
+  <PRIVILEGE_GET_INFO:      "--get-info">              : USER_NAME_SEP 
+| <PRIVILEGE_GET_INFO_ALL:  "--get-info-all">          : OPTIONS 
+| <PRIVILEGE_GRANT:         "--grant">                 : USER_NAME_SEP
+| <PRIVILEGE_REVOKE:        "--revoke">                : USER_NAME_SEP
+| <AE26:                    ["\0"]>  
+| <UNKNOWN_OPTION3:         "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN3:                ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
 
 /* admin command options */ 
 <ADMIN_OPTS>
@@ -1526,7 +1597,7 @@ Commands()
   pQueueMgrClient  = new QueueMgrClient();
 }
 {
-  (PrivilegedCmds() | AdminCmds() | ArchiveVolumeCmds() |
+  (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | ArchiveVolumeCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
@@ -1636,7 +1707,7 @@ BatchCommand()
   throws PipelineException : 
 {}
 {
-  (PrivilegedCmds() | AdminCmds() | ArchiveVolumeCmds() |
+  (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | ArchiveVolumeCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
@@ -1941,26 +2012,27 @@ LogMgr.Level FinestLevel() :
 }
 
 /*------------------------------------------------------------------------------------------*/
-/*   P R I V I L E G E D   U S E R   C O M M A N D S                                        */
+/*   U S E R   C O M M A N D S                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 void 
-PrivilegedCmds() 
+UserCmds() 
   throws PipelineException : 
 {}
 {
-  <PRIVILEGED> AE() (PrivilegedGet() | PrivilegedGrant() | PrivilegedRevoke())
+  <USER> AE() (UserGet() | UserAdd() | UserRemove()) 
   {}
 }
 
 void 
-PrivilegedGet() 
+UserGet() 
   throws PipelineException : 
 {}
 {
-  <PRIVILEGED_GET> AE()
+  <USER_GET> AE()
   {
-    TreeSet users = pMasterMgrClient.getPrivilegedUsers(false);
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    Set users = wgroups.getUsers();
     Iterator iter = users.iterator();
     while(iter.hasNext()) {
       String user = (String) iter.next();
@@ -1973,38 +2045,400 @@ PrivilegedGet()
 }
 
 void 
-PrivilegedGrant() 
+UserAdd() 
   throws PipelineException : 
 {
   String user = null;
 }
 {
-  <PRIVILEGED_GRANT> EQ() user=UserName() AE()
+  <USER_ADD> EQ() user=UserName() AE()
   {
-    pMasterMgrClient.grantPrivileges(user);
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Granted privilged status to (" + user + ").");
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    wgroups.addUser(user);
+    pMasterMgrClient.setWorkGroups(wgroups);
+  }
+}
+
+void 
+UserRemove() 
+  throws PipelineException : 
+{
+  String user = null;
+}
+{
+  <USER_REMOVE> EQ() user=UserName() AE()
+  {
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    wgroups.removeUser(user);
+    pMasterMgrClient.setWorkGroups(wgroups);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   W O R K   G R O U P   C O M M A N D S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkGroupCmds() 
+  throws PipelineException : 
+{}
+{
+  <WORK_GROUP> AE() (WorkGroupGet() | WorkGroupGetInfo() | WorkGroupGetInfoAll() | 
+		     WorkGroupAdd() | WorkGroupRemove() | WorkGroupSet())
+  {}
+}
+
+void 
+WorkGroupGet() 
+  throws PipelineException : 
+{}
+{
+  <WORK_GROUP_GET> AE()
+  {
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    Set groups = wgroups.getGroups();
+    Iterator iter = groups.iterator();
+    while(iter.hasNext()) {
+      String group = (String) iter.next();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 group);
+    }
     LogMgr.getInstance().flush();
   }
 }
 
 void 
-PrivilegedRevoke() 
+WorkGroupGetInfo() 
+  throws PipelineException : 
+{
+  String group = null;
+}
+{
+  <WORK_GROUP_GET_INFO> EQ() group=WorkGroupName() AE()
+  {
+    pApp.printWorkGroupMembers(group, pMasterMgrClient);
+  }
+}
+
+void 
+WorkGroupGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <WORK_GROUP_GET_INFO_ALL> AE()
+  {
+    pApp.printWorkGroupMembers(pMasterMgrClient);
+  }
+}
+
+void 
+WorkGroupAdd() 
+  throws PipelineException : 
+{
+  String group = null;
+}
+{
+  <WORK_GROUP_ADD> EQ() group=WorkGroupName() AE()
+  {
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    wgroups.addGroup(group);
+    pMasterMgrClient.setWorkGroups(wgroups);
+  }
+}
+
+void 
+WorkGroupRemove() 
+  throws PipelineException : 
+{
+  String group = null;
+}
+{
+  <WORK_GROUP_REMOVE> EQ() group=WorkGroupName() AE()
+  {
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    wgroups.removeGroup(group);
+    pMasterMgrClient.setWorkGroups(wgroups);
+  }
+}
+
+void 
+WorkGroupSet() 
+  throws PipelineException : 
+{
+  String group = null;
+  pWorkGroupUsers = new TreeSet();
+}
+{
+  <WORK_GROUP_SET> EQ() group=WorkGroupName() AE() 
+     (Manager() | Member() | NotMember()) (WorkGroupSetOpts())* 
+  {
+    WorkGroups wgroups = pMasterMgrClient.getWorkGroups();
+    Iterator iter = pWorkGroupUsers.iterator();
+    while(iter.hasNext()) {
+      String user = (String) iter.next();
+      wgroups.setMemberOrManager(user, group, pWorkGroupMembership);
+    }
+    pMasterMgrClient.setWorkGroups(wgroups);
+  }
+}
+
+void 
+Manager() : 
+{}
+{
+  <MANAGER> AE() 
+  {
+    pWorkGroupMembership = new Boolean(true);
+  }
+}
+
+void 
+Member() : 
+{}
+{
+  <MEMBER> AE() 
+  {
+    pWorkGroupMembership = new Boolean(false);
+  }
+}
+
+void 
+NotMember() : 
+{}
+{
+  <NOT_MEMBER> AE() 
+  {
+    pWorkGroupMembership = null;
+  }
+}
+  
+void
+WorkGroupSetOpts() 
+  throws PipelineException : 
+{}
+{
+  (WorkGroupUser()) 
+  {}
+}
+
+void 
+WorkGroupUser() 
   throws PipelineException : 
 {
   String user = null;
 }
 {
-  <PRIVILEGED_REVOKE> EQ() user=UserName() AE()
+  <USER2> EQ() user=UserName() AE()
   {
-    pMasterMgrClient.removePrivileges(user);
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Revoked privilged status of (" + user + ").");
-    LogMgr.getInstance().flush();
+    pWorkGroupUsers.add(user);
   }
 }
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   P R I V I L E G E   C O M M A N D S                                                    */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+PrivilegeCmds() 
+  throws PipelineException : 
+{}
+{
+  <PRIVILEGE> AE() (PrivilegeGetInfo() | PrivilegeGetInfoAll() | 
+		    PrivilegeGrant() | PrivilegeRevoke())
+  {}
+}
+
+void 
+PrivilegeGetInfo() 
+  throws PipelineException : 
+{
+  String user = null;
+}
+{
+  <PRIVILEGE_GET_INFO> EQ() user=UserName() AE()
+  {
+    pApp.printUserPrivileges(user, pMasterMgrClient);
+  }
+}
+
+void 
+PrivilegeGetInfoAll() 
+  throws PipelineException :
+{}
+{
+  <PRIVILEGE_GET_INFO_ALL> AE()
+  {
+    pApp.printUserPrivileges(pMasterMgrClient);
+  }
+}
+
+void 
+PrivilegeGrant() 
+  throws PipelineException : 
+{
+  String user = null;
+
+  pIsMasterAdmin  = null;
+  pIsDeveloper    = null; 
+  pIsQueueAdmin   = null; 
+  pIsQueueManager = null; 
+  pIsNodeManager  = null; 
+}
+{
+  <PRIVILEGE_GRANT> EQ() user=UserName() AE() (PrivilegeGrantOpts())* 
+  {
+    pApp.editPrivileges(user, 
+			pIsMasterAdmin, pIsDeveloper, 
+			pIsQueueAdmin, pIsQueueManager, pIsNodeManager, 
+			pMasterMgrClient);
+  }
+}
+
+void
+PrivilegeGrantOpts() 
+  throws PipelineException : 
+{}
+{
+  (GrantMasterAdmin() | GrantDeveloper() | 
+   GrantQueueAdmin() | GrantQueueManager() | GrantNodeManager())
+  {}
+}
+
+void 
+GrantMasterAdmin() : 
+{}
+{
+  <MASTER_ADMIN> AE() 
+  {
+    pIsMasterAdmin = new Boolean(true);
+  }
+}
+
+void 
+GrantDeveloper() : 
+{}
+{
+  <DEVELOPER> AE() 
+  {
+    pIsDeveloper = new Boolean(true);
+  }
+}
+
+void 
+GrantQueueAdmin() : 
+{}
+{
+  <QUEUE_ADMIN> AE() 
+  {
+    pIsQueueAdmin = new Boolean(true);
+  }
+}
+
+void 
+GrantQueueManager() : 
+{}
+{
+  <QUEUE_MANAGER> AE() 
+  {
+    pIsQueueManager = new Boolean(true);
+  }
+}
+
+void 
+GrantNodeManager() : 
+{}
+{
+  <NODE_MANAGER> AE() 
+  {
+    pIsNodeManager = new Boolean(true);
+  }
+}
+
+void 
+PrivilegeRevoke() 
+  throws PipelineException : 
+{
+  String user = null;
+
+  pIsMasterAdmin  = null;
+  pIsDeveloper    = null; 
+  pIsQueueAdmin   = null; 
+  pIsQueueManager = null; 
+  pIsNodeManager  = null; 
+}
+{
+  <PRIVILEGE_REVOKE> EQ() user=UserName() AE() (PrivilegeRevokeOpts())* 
+  {
+    pApp.editPrivileges(user, 
+			pIsMasterAdmin, pIsDeveloper, 
+			pIsQueueAdmin, pIsQueueManager, pIsNodeManager, 
+			pMasterMgrClient);
+  }
+}
+
+void
+PrivilegeRevokeOpts() 
+  throws PipelineException : 
+{}
+{
+  (RevokeMasterAdmin() | RevokeDeveloper() | 
+   RevokeQueueAdmin() | RevokeQueueManager() | RevokeNodeManager())
+  {}
+}
+
+void 
+RevokeMasterAdmin() : 
+{}
+{
+  <MASTER_ADMIN> AE() 
+  {
+    pIsMasterAdmin = new Boolean(false);
+  }
+}
+
+void 
+RevokeDeveloper() : 
+{}
+{
+  <DEVELOPER> AE() 
+  {
+    pIsDeveloper = new Boolean(false);
+  }
+}
+
+void 
+RevokeQueueAdmin() : 
+{}
+{
+  <QUEUE_ADMIN> AE() 
+  {
+    pIsQueueAdmin = new Boolean(false);
+  }
+}
+
+void 
+RevokeQueueManager() : 
+{}
+{
+  <QUEUE_MANAGER> AE() 
+  {
+    pIsQueueManager = new Boolean(false);
+  }
+}
+
+void 
+RevokeNodeManager() : 
+{}
+{
+  <NODE_MANAGER> AE() 
+  {
+    pIsNodeManager = new Boolean(false);
+  }
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -2148,7 +2582,8 @@ AdminArchive()
         ("The --min-size cannot be negative!"); 
     
     pApp.archive(prefix, pArchivePattern, pMaxArchives, pMinSize, 
-		 pArchiverName, pArchiverVersionID, pArchiverVendor, pParams, pAutoStart, pToolset,
+		 pArchiverName, pArchiverVersionID, pArchiverVendor, pParams, 
+		 pAutoStart, pToolset,
 		 pMasterMgrClient);
   }
 }
@@ -5961,6 +6396,18 @@ UserName() :
 }
 
 String
+WorkGroupName() : 
+{
+  Token t;
+}
+{
+  t=<WORK_GROUP_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
 ToolsetName() : 
 {
   Token t;
@@ -6405,7 +6852,7 @@ AE() :
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
    t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50> | 
-   t=<AE51>)
+   t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54>)
   { 
     return t; 
   }
@@ -6500,7 +6947,8 @@ EQ() :
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
-   t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40>)
+   t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40> | 
+   t=<EQ41>)
   { 
     return t; 
   }

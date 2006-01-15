@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.6 2005/09/07 21:11:16 jim Exp $
+// $Id: PluginMgr.java,v 1.7 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,6 +35,8 @@ class PluginMgr
 
     pMakeDirLock = new Object();
 
+    pAdminPrivileges = new AdminPrivileges();
+
     {
       pPluginLock = new ReentrantReadWriteLock();
       
@@ -51,8 +53,38 @@ class PluginMgr
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the work groups and administrative privileges from the MasterMgr.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to update the privileges.
+   */ 
+  public Object
+  updateAdminPrivileges
+  (
+   MiscUpdateAdminPrivilegesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("PluginMgr.updateAdminPrivileges()");
+
+    timer.aquire();
+    pAdminPrivileges.updateAdminPrivileges(timer, req);
+    return new SuccessRsp(timer);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P L U G I N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -183,6 +215,10 @@ class PluginMgr
     pPluginLock.writeLock().lock();
     try {
       timer.resume();
+
+      if(!pAdminPrivileges.isDeveloper(req))
+	throw new PipelineException
+	  ("Only a user with Developer privileges may install plugins!");
 
       String cname = req.getClassName();
       byte bytes[] = req.getBytes();
@@ -609,6 +645,13 @@ class PluginMgr
    */
   private Object  pMakeDirLock;
   
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The combined work groups and adminstrative privileges.
+   */ 
+  private AdminPrivileges  pAdminPrivileges; 
+
 
   /*----------------------------------------------------------------------------------------*/
 

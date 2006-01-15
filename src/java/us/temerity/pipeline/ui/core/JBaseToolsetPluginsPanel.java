@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.3 2005/09/07 21:11:17 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.4 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -49,7 +49,8 @@ class JBaseToolsetPluginsPanel
     {
       pMenuLayout     = new PluginMenuLayout();
       pPluginVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
-      pIsPrivileged   = false;
+
+      pPrivilegeDetails = new PrivilegeDetails(); 
 
       pDialog = dialog; 
       pParent = parent;
@@ -300,15 +301,15 @@ class JBaseToolsetPluginsPanel
    * @param os
    *   The package operating system.
    * 
-   * @param isPrivileged
-   *   Whether the current user is privileged.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public abstract void 
   update
   (
    Toolset toolset, 
    OsType os,
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
     throws PipelineException;
 
@@ -327,8 +328,8 @@ class JBaseToolsetPluginsPanel
    * @param plugins
    *   The vendors, names of versions of the supported plugins.
    * 
-   * @param isPrivileged
-   *   Whether the current user is privileged.
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   protected void 
   updateHelper
@@ -337,7 +338,7 @@ class JBaseToolsetPluginsPanel
    OsType os,
    PluginMenuLayout layout, 
    DoubleMap<String,String,TreeSet<VersionID>> plugins, 
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
   {
     pToolsetName   = tname;
@@ -345,7 +346,8 @@ class JBaseToolsetPluginsPanel
 
     pMenuLayout     = layout;
     pPluginVersions = plugins;
-    pIsPrivileged   = isPrivileged;
+
+    pPrivilegeDetails = privileges; 
 
     rebuildMenuLayout();
     expandAllTreeNodes(pMenuLayoutTree);
@@ -549,8 +551,8 @@ class JBaseToolsetPluginsPanel
 	selectPluginVersion(pml.getName(), pml.getVersionID(), pml.getVendor());
 	vdata = getSelectedPluginData();
 
-	pSetPluginButton.setEnabled(pIsPrivileged);
-	pClearPluginButton.setEnabled(pIsPrivileged);
+	pSetPluginButton.setEnabled(pPrivilegeDetails.isDeveloper());
+	pClearPluginButton.setEnabled(pPrivilegeDetails.isDeveloper());
       }
       else {
 	pSetPluginButton.setEnabled(false);
@@ -560,7 +562,7 @@ class JBaseToolsetPluginsPanel
 
     if((pml != null) && (pml.isMenuItem() || (pml.size() == 0)) &&
        (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
-      pSetPluginButton.setEnabled(pIsPrivileged);
+      pSetPluginButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
     else {
       pSetPluginButton.setEnabled(false);
@@ -598,7 +600,7 @@ class JBaseToolsetPluginsPanel
    MouseEvent e
   )
   {
-    if(!pIsPrivileged) 
+    if(!pPrivilegeDetails.isDeveloper()) 
       return;
 
     int mods = e.getModifiersEx();
@@ -644,7 +646,7 @@ class JBaseToolsetPluginsPanel
    MouseEvent e
   )
   {
-    if(!pIsPrivileged) 
+    if(!pPrivilegeDetails.isDeveloper()) 
       return;
 
     /* BUTTON2: menu drop */ 
@@ -720,7 +722,7 @@ class JBaseToolsetPluginsPanel
    MouseEvent e
   )
   {
-    if(!pIsPrivileged) 
+    if(!pPrivilegeDetails.isDeveloper()) 
       return;
 
     int mods = e.getModifiersEx();
@@ -1298,10 +1300,11 @@ class JBaseToolsetPluginsPanel
    */ 
   private DoubleMap<String,String,TreeSet<VersionID>>  pPluginVersions;
 
+
   /**
-   * Does the current user have privileged status?
+   * The details of the administrative privileges granted to the current user. 
    */ 
-  private boolean  pIsPrivileged;
+  private PrivilegeDetails  pPrivilegeDetails; 
 
 
   /*----------------------------------------------------------------------------------------*/

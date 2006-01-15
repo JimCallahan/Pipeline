@@ -1,4 +1,4 @@
-// $Id: QueueAddSelectionKeyReq.java,v 1.1 2004/07/25 03:13:17 jim Exp $
+// $Id: QueueAddSelectionKeyReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class QueueAddSelectionKeyReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueAddSelectionKeyReq
    SelectionKey key
   )
   { 
+    super();
+
     if(key == null) 
       throw new IllegalArgumentException
 	("The selection key cannot be (null)!");

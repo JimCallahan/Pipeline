@@ -1,4 +1,4 @@
-// $Id: MiscGrantPrivilegesReq.java,v 1.1 2004/05/23 20:01:27 jim Exp $
+// $Id: MiscSetWorkGroupsReq.java,v 1.1 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,38 +9,40 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G R A N T   P R I V I L E G E S   R E Q                                      */
+/*   M I S C   S E T   W O R K   G R O U P S   R E Q                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to grant the given user privileged access status. <P> 
+ * A request to set the work groups used to determine the scope of administrative privileges. 
  * 
  * @see MasterMgr
  */
 public
-class MiscGrantPrivilegesReq
-  implements Serializable
+class MiscSetWorkGroupsReq
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request. <P> 
+   * Constructs a new request.
    * 
-   * @param author
-   *   The user to make privileged.
+   * @param groups
+   *   The work groups.
    */
   public
-  MiscGrantPrivilegesReq
+  MiscSetWorkGroupsReq
   (
-   String author
-   )
-  { 
-    if(author == null) 
+   WorkGroups groups
+  )
+  {
+    super();
+
+    if(groups == null) 
       throw new IllegalArgumentException
-	("The author cannot be (null)!");
-    pAuthor = author;
+	("The work groups cannot be (null)!");
+    pGroups = groups;
   }
 
 
@@ -50,32 +52,32 @@ class MiscGrantPrivilegesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the user to make privileged.
-   */
-  public String
-  getAuthor() 
+   * Gets the work groups.
+   */ 
+  public WorkGroups
+  getGroups() 
   {
-    return pAuthor;
+    return pGroups;
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2256795229011239218L;
+   private static final long serialVersionUID = 6592068558215240067L;
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The user to make privileged.
-   */ 
-  private String  pAuthor;
+   * The work groups.
+   */
+  private WorkGroups  pGroups;  
 
 }
   

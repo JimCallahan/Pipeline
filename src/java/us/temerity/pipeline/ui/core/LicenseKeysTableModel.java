@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.5 2005/05/31 09:37:45 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.6 2006/01/15 06:29:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,8 +38,13 @@ class LicenseKeysTableModel
   ) 
   {
     super();
-    
-    pParent = parent;
+
+    /* initialize the fields */ 
+    {
+      pParent = parent;
+
+      pPrivilegeDetails = new PrivilegeDetails();   
+    }
 
     /* initialize the columns */ 
     { 
@@ -232,18 +237,24 @@ class LicenseKeysTableModel
 
   /**
    * Get the underlying set of editors.
+   * 
+   * @param keys
+   *   The license key names.
+   * 
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public void
   setLicenseKeys
   (
    ArrayList<LicenseKey> keys, 
-   boolean isPrivileged
+   PrivilegeDetails privileges
   ) 
   {
     pLicenseKeys.clear();
     pLicenseKeys.addAll(keys);
 
-    pIsPrivileged = isPrivileged;
+    pPrivilegeDetails = privileges; 
 
     sort();
   }
@@ -274,7 +285,7 @@ class LicenseKeysTableModel
    int col
   ) 
   {
-    if(!pIsPrivileged) 
+    if(!pPrivilegeDetails.isQueueAdmin()) 
       return false;
 
     if(col == 2) 
@@ -450,18 +461,22 @@ class LicenseKeysTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the current user have privileged status?
+   * The parent dialog.
    */ 
-  private boolean  pIsPrivileged;
+  private JManageLicenseKeysDialog  pParent;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The details of the administrative privileges granted to the current user. 
+   */ 
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * The underlying set of editors.
    */ 
   private ArrayList<LicenseKey> pLicenseKeys;
 
-  /**
-   * The parent dialog.
-   */ 
-  private JManageLicenseKeysDialog  pParent;
 
 }

@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.3 2005/09/07 21:11:17 jim Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.4 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -41,6 +41,8 @@ class JManageToolsetPluginsDialog
   ) 
   {
     super("Manage Toolset Plugin Menus", false);
+
+    pPrivilegeDetails = new PrivilegeDetails();
 
     /* create dialog body components */ 
     {
@@ -112,12 +114,16 @@ class JManageToolsetPluginsDialog
    * 
    * @param os
    *   The toolset operating system.
+   * 
+   * @param privileges
+   *   The details of the administrative privileges granted to the current user. 
    */ 
   public void 
   update
   (
    String tname, 
-   OsType os
+   OsType os,
+   PrivilegeDetails privileges
   )
   {
     UIMaster master = UIMaster.getInstance();
@@ -131,17 +137,17 @@ class JManageToolsetPluginsDialog
 			   (toolset.isFrozen() ? "" : " (working)"));
       
       pToolsetName = toolset.getName();
-
-      MasterMgrClient client = master.getMasterMgrClient();
-      boolean isPrivileged = client.isPrivileged(false);
+      
+      if(privileges != null) 
+	pPrivilegeDetails = privileges;
 
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	panel.update(toolset, os, isPrivileged);
+	panel.update(toolset, os, pPrivilegeDetails);
 
-      pConfirmButton.setEnabled(isPrivileged);
-      pApplyButton.setEnabled(isPrivileged);
-      pDefaultButton.setEnabled(isPrivileged);
-      pSaveDefaultButton.setEnabled(isPrivileged);
+      pConfirmButton.setEnabled(pPrivilegeDetails.isDeveloper());
+      pApplyButton.setEnabled(pPrivilegeDetails.isDeveloper());
+      pDefaultButton.setEnabled(pPrivilegeDetails.isDeveloper());
+      pSaveDefaultButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -173,7 +179,7 @@ class JManageToolsetPluginsDialog
     try {
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
 	panel.clone(source, target, os);
-      update(target, os);
+      update(target, os, null);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -313,6 +319,11 @@ class JManageToolsetPluginsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The details of the administrative privileges granted to the current user. 
+   */ 
+  private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
    * The master toolsets dialog.

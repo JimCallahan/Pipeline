@@ -1,4 +1,4 @@
-// $Id: MiscDenyRestoreReq.java,v 1.1 2005/03/21 08:52:39 jim Exp $
+// $Id: MiscDenyRestoreReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class MiscDenyRestoreReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class MiscDenyRestoreReq
    TreeMap<String,TreeSet<VersionID>> versions
   )
   { 
+    super();
+
     if(versions == null) 
       throw new IllegalArgumentException("The node versions cannot be (null)!");
     pVersions = versions;

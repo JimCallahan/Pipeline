@@ -1,4 +1,4 @@
-// $Id: QueueAddSelectionGroupReq.java,v 1.1 2005/12/31 20:42:59 jim Exp $
+// $Id: QueueAddSelectionGroupReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,16 +8,16 @@ import us.temerity.pipeline.core.*;
 import java.io.*;
 import java.util.*;
 
-/*-----------------------------------------------------------------------------------------------*/
-/*   Q U E U E   A D D   S E L E C T I O N   G R U O P   R E Q                                   */
-/*-----------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+/*   Q U E U E   A D D   S E L E C T I O N   G R U O P   R E Q                              */
+/*------------------------------------------------------------------------------------------*/
 
 /**
  * A request to add a new selection group. <P> 
  */
 public 
 class QueueAddSelectionGroupReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -35,6 +35,8 @@ class QueueAddSelectionGroupReq
    String name
   )
   { 
+    super();
+
     if(name == null) 
       throw new IllegalArgumentException
 	("The selection group name cannot be (null)!");
