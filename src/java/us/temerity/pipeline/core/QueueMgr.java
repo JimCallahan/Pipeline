@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.51 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueMgr.java,v 1.52 2006/01/15 17:42:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1713,6 +1713,76 @@ class QueueMgr
       
       return new QueueGetJobStatesRsp(timer, nodeID, jobIDs, states);
     }
+  }
+
+  /**
+   * Get the job IDs of unfinished jobs associated with the given nodes.
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>GetUnfinishedJobsForNodesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the job IDs.
+   */ 
+  public Object
+  getUnfinishedJobsForNodes
+  (
+   QueueGetUnfinishedJobsForNodesReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.getUnfinishedJobsForNodes()");
+
+    String author = req.getAuthor();
+    String view   = req.getView();
+
+    TreeMap<String,FileSeq> fseqs = req.getFileSeqs();
+
+    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+    timer.aquire();
+    synchronized(pNodeJobIDs) {
+      timer.resume();
+      for(String name : fseqs.keySet()) {
+	TreeMap<File,Long> table = pNodeJobIDs.get(new NodeID(author, view, name));
+	if(table != null) 
+	  nodeJobIDs.putAll(table);
+      }
+    }
+	  
+    TreeMap<String,TreeSet<Long>> jobIDs = new TreeMap<String,TreeSet<Long>>();
+
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+
+      for(String name : fseqs.keySet()) {
+	for(File file : fseqs.get(name).getFiles()) {
+	  Long jobID = nodeJobIDs.get(file);
+	  if(jobID != null) {
+	    QueueJobInfo info = pJobInfo.get(jobID);	   
+	    if(info != null) {
+	      switch(info.getState()) {
+	      case Queued:
+	      case Preempted:
+	      case Paused:
+	      case Running:
+		{
+		  TreeSet<Long> ids = jobIDs.get(name);
+		  if(ids == null) {
+		    ids = new TreeSet<Long>();
+		    jobIDs.put(name, ids);
+		  }
+
+		  ids.add(jobID);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+      
+    return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
   }
 
   /**

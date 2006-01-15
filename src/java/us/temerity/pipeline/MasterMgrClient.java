@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.71 2006/01/15 06:29:25 jim Exp $
+// $Id: MasterMgrClient.java,v 1.72 2006/01/15 17:42:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3625,10 +3625,14 @@ class MasterMgrClient
    * @param method
    *   The method for creating working area files/links from the checked-in files.
    * 
+   * @return 
+   *   The unfinished job IDs indexed by node name if aborted or 
+   *   <CODE>null</CODE> if successful.
+   * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
-  public synchronized void
+  public synchronized TreeMap<String,TreeSet<Long>>
   checkOut
   ( 
    String author, 
@@ -3640,7 +3644,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    checkOut(new NodeID(author, view, name), vid, mode, method);
+    return checkOut(new NodeID(author, view, name), vid, mode, method);
   } 
 
   /** 
@@ -3665,10 +3669,14 @@ class MasterMgrClient
    * @param method
    *   The method for creating working area files/links from the checked-in files.
    * 
+   * @return 
+   *   The unfinished job IDs indexed by node name if aborted or 
+   *   <CODE>null</CODE> if successful.
+   * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
-  public synchronized void
+  public synchronized TreeMap<String,TreeSet<Long>>
   checkOut
   ( 
    NodeID nodeID,
@@ -3682,8 +3690,18 @@ class MasterMgrClient
 
     NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode, method);
 
-    Object obj = performLongTransaction(MasterRequest.CheckOut, req, 15000, 60000);  
-    handleSimpleResponse(obj);
+    Object obj = performLongTransaction(MasterRequest.CheckOut, req, 15000, 60000); 
+    if(obj instanceof GetUnfinishedJobsForNodesRsp) {
+      GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else if(obj instanceof SuccessRsp) {
+      return null;
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
   } 
 
 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.44 2006/01/15 12:17:39 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.45 2006/01/15 17:42:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5007,9 +5007,16 @@ class JNodeViewerPanel
 	  for(String name : pVersions.keySet()) {
 	    master.updatePanelOp("Checking-Out: " + name);
 
-	    master.getMasterMgrClient().checkOut
-	      (pAuthor, pView, name, 
-	       pVersions.get(name), pModes.get(name), pMethods.get(name));
+	    TreeMap<String,TreeSet<Long>> jobIDs = 
+	      master.getMasterMgrClient().checkOut
+	        (pAuthor, pView, name, 
+		 pVersions.get(name), pModes.get(name), pMethods.get(name));
+
+	    if((jobIDs != null) && !jobIDs.isEmpty()) {
+	      ShowUnfinshedJobsTask task = new ShowUnfinshedJobsTask(name, jobIDs);
+	      SwingUtilities.invokeLater(task);
+	      return;
+	    }
 	  }
 	}
 	catch(PipelineException ex) {
@@ -5030,7 +5037,46 @@ class JNodeViewerPanel
   }
 
   /** 
-   * Check-out a given node.
+   * Show the unfinished jobs dialog.
+   */ 
+  private
+  class ShowUnfinshedJobsTask
+    extends Thread
+  {
+    public ShowUnfinshedJobsTask
+    (
+     String name, 
+     TreeMap<String,TreeSet<Long>> jobIDs
+    ) 
+    {
+      super("JNodeViewerPanel:ShowUnfinshedJobsTask");
+
+      pName   = name;
+      pJobIDs = jobIDs;
+    }
+
+    public void 
+    run() 
+    {
+      JConfirmKillUnfinishedJobsDialog diag = 
+	new JConfirmKillUnfinishedJobsDialog(pName, pJobIDs);
+      diag.setVisible(true);
+      if(diag.wasConfirmed()) {
+	TreeSet<Long> dead = new TreeSet<Long>();
+	for(String name : pJobIDs.keySet()) 
+	  dead.addAll(pJobIDs.get(name));
+
+	KillJobsTask task = new KillJobsTask(dead);
+	task.start();
+      }
+    }
+
+    private String  pName; 
+    private TreeMap<String,TreeSet<Long>>  pJobIDs;
+  }
+
+  /** 
+   * Lock a given node.
    */ 
   private
   class LockTask

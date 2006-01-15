@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.13 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.14 2006/01/15 17:42:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -153,6 +153,47 @@ class QueueMgrControlClient
     }
     else {
       handleFailure(obj);
+    }        
+  }
+
+  /**
+   * Get the job IDs of unfinished jobs which will regenerate the files of the given 
+   * working nodes.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param fseqs
+   *   The primary file sequences indexed by fully resolved names of the nodes.
+   * 
+   * @return 
+   *   The unfinished job IDs indexed by node name.
+   */ 
+  public synchronized TreeMap<String,TreeSet<Long>>
+  getUnfinishedJobsForNodes
+  (
+   String author, 
+   String view, 
+   TreeMap<String,FileSeq> fseqs
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueGetUnfinishedJobsForNodesReq req = 
+      new QueueGetUnfinishedJobsForNodesReq(author, view, fseqs); 
+    
+    Object obj = performTransaction(QueueRequest.GetUnfinishedJobsForNodes, req);
+    if(obj instanceof GetUnfinishedJobsForNodesRsp) {
+      GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else {
+      handleFailure(obj);
+      return null;
     }        
   }
 

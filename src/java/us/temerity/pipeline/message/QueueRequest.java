@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.16 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueRequest.java,v 1.17 2006/01/15 17:42:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -123,12 +123,14 @@ enum QueueRequest
   AddSelectionSchedule, 
 
   /**
-   * An instance {@link QueueRemoveSelectionSchedulesReq QueueRemoveSelectionSchedulesReq} is next.
+   * An instance {@link QueueRemoveSelectionSchedulesReq QueueRemoveSelectionSchedulesReq} 
+   * is next.
    */
   RemoveSelectionSchedules, 
 
   /**
-   * An instance {@link QueueEditSelectionSchedulesReq QueueEditSelectionSchedulesReq} is next.
+   * An instance {@link QueueEditSelectionSchedulesReq QueueEditSelectionSchedulesReq} 
+   * is next.
    */
   EditSelectionSchedules, 
   
@@ -168,6 +170,12 @@ enum QueueRequest
    * An instance {@link QueueGetJobStatesReq QueueGetJobStatesReq} is next.
    */
   GetJobStates, 
+
+  /**
+   * An instance {@link QueueGetUnfinishedJobsForNodesReq QueueGetUnfinishedJobsForNodesReq} 
+   * is next.
+   */
+  GetUnfinishedJobsForNodes, 
 
   /**
    * Get the JobStatus of all jobs associated with the given job group IDs. 

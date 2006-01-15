@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.148 2006/01/15 06:29:25 jim Exp $
+// $Id: MasterMgr.java,v 1.149 2006/01/15 17:42:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6334,7 +6334,8 @@ class MasterMgr
    *   The node check-out request.
    *
    * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>SuccessRsp</CODE> if successful or
+   *   <CODE>GetUnfinishedJobsForNodesRsp</CODE> if running jobs prevent the check-out or 
    *   <CODE>FailureRsp</CODE> if unable to the check-out the nodes.
    */ 
   public Object
@@ -6362,7 +6363,6 @@ class MasterMgr
       performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, 
 			    new LinkedList<String>(), table, timer);
 
-
       /* determine all checked-in versions required by the check-out operation */ 
       TreeMap<String,TreeSet<VersionID>> requiredVersions = 
 	new TreeMap<String,TreeSet<VersionID>>();
@@ -6371,6 +6371,26 @@ class MasterMgr
 	  (true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
 	   table, requiredVersions, new LinkedList<String>(), new HashSet<String>(), 
 	   timer);
+      }
+
+      /* make sure no unfinished jobs associated with either the current upstream nodes, 
+	 the upstream nodes which will be checked-out or the checked-out downstream nodes 
+         currently exist */ 
+      {
+	TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
+	for(String source : requiredVersions.keySet()) {
+	  NodeID snodeID = new NodeID(nodeID, source);
+	  getDownstreamWorkingSeqs(snodeID, new LinkedList<String>(), fseqs, timer);
+	}
+
+	if(!fseqs.isEmpty()) {
+	  TreeMap<String,TreeSet<Long>> jobIDs = 
+	    pQueueMgrClient.getUnfinishedJobsForNodes
+	    (nodeID.getAuthor(), nodeID.getView(), fseqs);
+	  
+	  if(!jobIDs.isEmpty()) 
+	    return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+	}
       }
 
       /* lock online/offline status of all required nodes */ 
@@ -12666,7 +12686,7 @@ class MasterMgr
 
 
     timer.aquire();
-    ReentrantReadWriteLock lock = getDownstreamLock(nodeID.getName());
+    ReentrantReadWriteLock lock = getDownstreamLock(name);
     lock.readLock().lock();
     try {
       timer.resume();
@@ -12679,7 +12699,7 @@ class MasterMgr
       }
 
       /* process downstream nodes */ 
-      DownstreamLinks dsl = getDownstreamLinks(nodeID.getName()); 
+      DownstreamLinks dsl = getDownstreamLinks(name); 
       assert(dsl != null);
 
       TreeSet<String> wlinks = dsl.getWorking(nodeID);
@@ -12720,6 +12740,96 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+    }
+
+    /* pop the current node off of the end of the branch */ 
+    branch.removeLast();
+  } 
+
+  /**
+   * Recursively find the names and primary file sequences of all nodes downstream of 
+   * the given node which are currently checked-out into the given working area. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
+   * 
+   * @param fseqs
+   *   The collected primary file sequences indexed by fully resolved names of the nodes.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   */ 
+  private void 
+  getDownstreamWorkingSeqs
+  (
+   NodeID nodeID, 
+   LinkedList<String> branch, 
+   TreeMap<String,FileSeq> fseqs,
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    String name = nodeID.getName();
+
+    /* check for circularity */ 
+    checkBranchForCircularity(name, branch);
+
+    /* skip nodes which have already been processed */ 
+    if(fseqs.containsKey(name)) 
+      return;
+
+    /* push the current node onto the end of the branch */ 
+    branch.addLast(name);
+
+
+    /* add the current node */ 
+    boolean hasWorking = false;
+    timer.aquire();
+    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+    workingLock.readLock().lock(); 
+    try {
+      timer.resume();
+      
+      WorkingBundle working = null;
+      try {
+	working = getWorkingBundle(nodeID);
+      }
+      catch(PipelineException ex) {
+      }
+      
+      if(working != null) {
+	hasWorking = true;
+	FileSeq fseq = working.getVersion().getPrimarySequence();
+	fseqs.put(name, fseq);
+      }
+    }
+    finally {
+      workingLock.readLock().unlock();
+    }
+
+    /* process downstream nodes */ 
+    if(hasWorking) {
+      timer.aquire();
+      ReentrantReadWriteLock lock = getDownstreamLock(name);
+      lock.readLock().lock();
+      try {
+	timer.resume();
+	
+	DownstreamLinks dsl = getDownstreamLinks(name); 
+	assert(dsl != null);
+	
+	TreeSet<String> wlinks = dsl.getWorking(nodeID);
+	if(wlinks != null) {
+	  for(String lname : wlinks) 
+	    getDownstreamWorkingSeqs(new NodeID(nodeID, lname), branch, fseqs, timer);
+	}
+      }
+      finally {
+	lock.readLock().unlock();
+      }
     }
 
     /* pop the current node off of the end of the branch */ 
