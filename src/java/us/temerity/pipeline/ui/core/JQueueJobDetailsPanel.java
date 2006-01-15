@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.6 2006/01/15 06:29:26 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.7 2006/01/15 08:23:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -793,6 +793,8 @@ class JQueueJobDetailsPanel
 	    text = Dates.formatInterval(started.getTime() - submitted.getTime());
 	  else if(completed != null)
 	    text = Dates.formatInterval(completed.getTime() - submitted.getTime());
+	  else 
+	    text = Dates.formatInterval(Dates.now().getTime() - submitted.getTime());
 	}
 	
 	pWaitingField.setText(text);
@@ -800,8 +802,12 @@ class JQueueJobDetailsPanel
 
       {
 	String text = "-";
-	if((started != null) && (completed != null))
-	  text = Dates.formatInterval(completed.getTime() - started.getTime());
+	if(started != null) {
+	  if(completed != null)
+	    text = Dates.formatInterval(completed.getTime() - started.getTime());
+	  else 
+	    text = Dates.formatInterval(Dates.now().getTime() - started.getTime());
+	}
 	
 	pRunningField.setText(text);
       }
