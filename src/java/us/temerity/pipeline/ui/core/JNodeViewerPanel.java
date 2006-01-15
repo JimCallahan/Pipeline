@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.43 2006/01/15 06:29:26 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.44 2006/01/15 12:17:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1667,13 +1667,29 @@ class JNodeViewerPanel
   }
   
   /**
+   * Get the fully resolved name of root node of the primary node selection.
+   * 
+   * @return 
+   *   The node name or <CODE>null</CODE> if there is no primary selection.
+   */ 
+  public TreeSet<String>
+  getSelectedRootNames() 
+  {
+    TreeSet<String> names = new TreeSet<String>();
+    for(ViewerNode vnode : pSelected.values()) 
+      names.add(vnode.getNodePath().getRootName());
+
+    return names;
+  }
+
+  /**
    * Get the fully resolved names of the most downstream selected nodes. <P> 
    * 
    * Any nodes which are selected and are upstream of another selected node will be 
    * omitted from the returned names.
    */ 
   public TreeSet<String>
-  getSelectedRootNames() 
+  getMostDownstreamOfSelectedNames() 
   {
     TreeSet<String> all = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) 
@@ -2708,7 +2724,7 @@ class JNodeViewerPanel
     pPinnedPos  = pPrimary.getPosition();
     pPinnedPath = new NodePath(pPrimary.getNodePath().getCurrentName());
 
-    addRoot(getPrimarySelectionName());
+    addRoots(getSelectedNames());
 
     clearSelection();
   }
@@ -2723,8 +2739,8 @@ class JNodeViewerPanel
     pPinnedPath = new NodePath(pPrimary.getNodePath().getCurrentName());
 
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.remove(getPrimarySelectionRootName());
-    roots.add(getPrimarySelectionName());
+    roots.removeAll(getSelectedRootNames());
+    roots.addAll(getSelectedNames());
     setRoots(roots);
 
     clearSelection();
@@ -2736,7 +2752,7 @@ class JNodeViewerPanel
   private synchronized void
   doRemoveRoot()
   {
-    removeRoot(getPrimarySelectionRootName());
+    removeRoots(getSelectedRootNames());
 
     clearSelection();
   }
@@ -3292,7 +3308,7 @@ class JNodeViewerPanel
   doQueueJobs() 
   {
     TreeSet<String> roots = new TreeSet<String>();
-    for(String name : getSelectedRootNames()) {
+    for(String name : getMostDownstreamOfSelectedNames()) {
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	if((status != null) && status.getName().equals(name)) {
@@ -3324,7 +3340,7 @@ class JNodeViewerPanel
   doQueueJobsSpecial() 
   {
     TreeSet<String> roots = new TreeSet<String>();
-    for(String name : getSelectedRootNames()) {
+    for(String name : getMostDownstreamOfSelectedNames()) {
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	if((status != null) && status.getName().equals(name)) {
@@ -3521,7 +3537,7 @@ class JNodeViewerPanel
   doCheckIn() 
   {
     try {
-      TreeSet<String> roots = getSelectedRootNames();
+      TreeSet<String> roots = getMostDownstreamOfSelectedNames();
       if(!roots.isEmpty()) {
 	String header    = null;
 	VersionID latest = null;
@@ -3581,10 +3597,10 @@ class JNodeViewerPanel
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
 
-    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();    
+    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
 
-    for(String name : getSelectedRootNames()) {
+    for(String name : getMostDownstreamOfSelectedNames()) {
       if(!versions.containsKey(name)) {
 	try {
 	  versions.put(name, client.getCheckedInVersionIDs(name));
@@ -3621,10 +3637,10 @@ class JNodeViewerPanel
     MasterMgrClient client = master.getMasterMgrClient();
 
     TreeMap<String,VersionID> base = new TreeMap<String,VersionID>();
-    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();    
+    TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
 
-    for(String name : getSelectedRootNames()) {
+    for(String name : getMostDownstreamOfSelectedNames()) {
       if(!base.containsKey(name)) {
 	try {
 	  NodeMod mod = client.getWorkingVersion(pAuthor, pView, name);
