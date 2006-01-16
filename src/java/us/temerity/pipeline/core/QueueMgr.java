@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.52 2006/01/15 17:42:27 jim Exp $
+// $Id: QueueMgr.java,v 1.53 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1783,6 +1783,60 @@ class QueueMgr
     }
       
     return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+  }
+
+  /**
+   * Get the job IDs of unfinished jobs which will regenerate the given files of a 
+   * working node.
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>GetUnfinishedJobsForNodeFilesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the job IDs.
+   */ 
+  public Object
+  getUnfinishedJobsForNodeFiles
+  (
+   QueueGetUnfinishedJobsForNodeFilesReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.getUnfinishedJobsForNodeFiles()");
+
+    TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
+    timer.aquire();
+    synchronized(pNodeJobIDs) {
+      timer.resume();
+      TreeMap<File,Long> table = pNodeJobIDs.get(req.getNodeID());
+      if(table != null) 
+	nodeJobIDs.putAll(table);
+    }
+    
+    TreeSet<Long> jobIDs = new TreeSet<Long>();
+
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+
+      for(File file : req.getFiles()) {
+	Long jobID = nodeJobIDs.get(file);
+	if(jobID != null) {
+	  QueueJobInfo info = pJobInfo.get(jobID);	   
+	  if(info != null) {
+	    switch(info.getState()) {
+	    case Queued:
+	    case Preempted:
+	    case Paused:
+	    case Running:
+	      jobIDs.add(jobID);
+	    }
+	  }
+	}
+      }
+    }
+      
+    return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.72 2006/01/15 17:42:27 jim Exp $
+// $Id: MasterMgrClient.java,v 1.73 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3002,10 +3002,14 @@ class MasterMgrClient
    *   Whether to remove files from the old frame range which are no longer part of the new 
    *   frame range.
    * 
+   * @return
+   *   The job IDs of unfinished jobs associated with the obsolete frames or
+   *   <CODE>null</CODE> if no jobs where found.
+   * 
    * @throws PipelineException 
    *   If unable to renumber the given node or its associated primary files.
    */ 
-  public synchronized void 
+ public synchronized TreeSet<Long>
   renumber
   ( 
    String author, 
@@ -3016,7 +3020,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    renumber(new NodeID(author, view, name), range, removeFiles);
+    return renumber(new NodeID(author, view, name), range, removeFiles);
   } 
 
   /**
@@ -3038,10 +3042,14 @@ class MasterMgrClient
    *   Whether to remove files from the old frame range which are no longer part of the new 
    *   frame range.
    * 
+   * @return
+   *   The job IDs of unfinished jobs associated with the obsolete frames or
+   *   <CODE>null</CODE> if no jobs where found.
+   * 
    * @throws PipelineException 
    *   If unable to renumber the given node or its associated primary files.
    */ 
-  public synchronized void 
+  public synchronized TreeSet<Long>
   renumber
   ( 
    NodeID nodeID,
@@ -3054,8 +3062,18 @@ class MasterMgrClient
 
     NodeRenumberReq req = new NodeRenumberReq(nodeID, range, removeFiles);
 
-    Object obj = performTransaction(MasterRequest.Renumber, req);
-    handleSimpleResponse(obj);
+    Object obj = performTransaction(MasterRequest.Renumber, req); 
+    if(obj instanceof GetUnfinishedJobsForNodeFilesRsp) {
+      GetUnfinishedJobsForNodeFilesRsp rsp = (GetUnfinishedJobsForNodeFilesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else if(obj instanceof SuccessRsp) {
+      return null;
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
   } 
 
 

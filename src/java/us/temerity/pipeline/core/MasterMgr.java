@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.149 2006/01/15 17:42:27 jim Exp $
+// $Id: MasterMgr.java,v 1.150 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5361,6 +5361,14 @@ class MasterMgr
 	finally {
 	  freeFileMgrClient(fclient);
 	}
+      }
+
+      /* check for unfinished jobs associated with the obsolete files */ 
+      if(!obsolete.isEmpty()) {
+	TreeSet<Long> jobIDs = 
+	  pQueueMgrClient.getUnfinishedJobsForNodeFiles(nodeID, obsolete);
+	if(!jobIDs.isEmpty()) 
+	  return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
       }
       
       return new SuccessRsp(timer);

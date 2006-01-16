@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.45 2006/01/15 17:42:27 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.46 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4511,8 +4511,15 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Renumbering Node...")) {
 	try {
-	  master.getMasterMgrClient().renumber(pAuthor, pView, pName, 
-					       pFrameRange, pRemoveFiles);
+	  TreeSet<Long> jobIDs = 
+	    master.getMasterMgrClient().renumber
+	      (pAuthor, pView, pName, pFrameRange, pRemoveFiles);
+
+	  if((jobIDs != null) && !jobIDs.isEmpty()) {
+	    ShowObsoleteJobsTask task = new ShowObsoleteJobsTask(pName, jobIDs);
+	    SwingUtilities.invokeLater(task);
+	    return;
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4529,6 +4536,41 @@ class JNodeViewerPanel
     private String      pName; 
     private FrameRange  pFrameRange; 
     private boolean     pRemoveFiles; 
+  }
+
+  /** 
+   * Show the obsolete jobs dialog.
+   */ 
+  private
+  class ShowObsoleteJobsTask
+    extends Thread
+  {
+    public ShowObsoleteJobsTask
+    (
+     String name, 
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeViewerPanel:ShowObsoleteJobsTask");
+
+      pName   = name;
+      pJobIDs = jobIDs;
+    }
+
+    public void 
+    run() 
+    {
+      JConfirmKillObsoleteJobsDialog diag = 
+	new JConfirmKillObsoleteJobsDialog(pName, pJobIDs);
+      diag.setVisible(true);
+      if(diag.wasConfirmed()) {
+	KillJobsTask task = new KillJobsTask(pJobIDs);
+	task.start();
+      }
+    }
+
+    private String  pName; 
+    private TreeSet<Long>  pJobIDs;
   }
 
   /** 
@@ -5013,7 +5055,7 @@ class JNodeViewerPanel
 		 pVersions.get(name), pModes.get(name), pMethods.get(name));
 
 	    if((jobIDs != null) && !jobIDs.isEmpty()) {
-	      ShowUnfinshedJobsTask task = new ShowUnfinshedJobsTask(name, jobIDs);
+	      ShowUnfinishedJobsTask task = new ShowUnfinishedJobsTask(name, jobIDs);
 	      SwingUtilities.invokeLater(task);
 	      return;
 	    }
@@ -5040,10 +5082,10 @@ class JNodeViewerPanel
    * Show the unfinished jobs dialog.
    */ 
   private
-  class ShowUnfinshedJobsTask
+  class ShowUnfinishedJobsTask
     extends Thread
   {
-    public ShowUnfinshedJobsTask
+    public ShowUnfinishedJobsTask
     (
      String name, 
      TreeMap<String,TreeSet<Long>> jobIDs

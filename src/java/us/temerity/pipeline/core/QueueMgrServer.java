@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.30 2006/01/15 17:42:27 jim Exp $
+// $Id: QueueMgrServer.java,v 1.31 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -504,6 +504,15 @@ class QueueMgrServer
 		QueueGetUnfinishedJobsForNodesReq req = 
 		  (QueueGetUnfinishedJobsForNodesReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.getUnfinishedJobsForNodes(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetUnfinishedJobsForNodeFiles:
+	      {
+		QueueGetUnfinishedJobsForNodeFilesReq req = 
+		  (QueueGetUnfinishedJobsForNodeFilesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getUnfinishedJobsForNodeFiles(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.14 2006/01/15 17:42:27 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.15 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -189,6 +189,43 @@ class QueueMgrControlClient
     Object obj = performTransaction(QueueRequest.GetUnfinishedJobsForNodes, req);
     if(obj instanceof GetUnfinishedJobsForNodesRsp) {
       GetUnfinishedJobsForNodesRsp rsp = (GetUnfinishedJobsForNodesRsp) obj;
+      return rsp.getJobIDs();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the job IDs of unfinished jobs which will regenerate the given files of a 
+   * working node.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param files
+   *   The specific files to check.
+   * 
+   * @return 
+   *   The unfinished job IDs. 
+   */ 
+  public synchronized TreeSet<Long>
+  getUnfinishedJobsForNodeFiles
+  (
+   NodeID nodeID, 
+   ArrayList<File> files 
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueGetUnfinishedJobsForNodeFilesReq req = 
+      new QueueGetUnfinishedJobsForNodeFilesReq(nodeID, files);
+    
+    Object obj = performTransaction(QueueRequest.GetUnfinishedJobsForNodeFiles, req);
+    if(obj instanceof GetUnfinishedJobsForNodeFilesRsp) {
+      GetUnfinishedJobsForNodeFilesRsp rsp = (GetUnfinishedJobsForNodeFilesRsp) obj;
       return rsp.getJobIDs();
     }
     else {

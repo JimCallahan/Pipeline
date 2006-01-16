@@ -1,4 +1,4 @@
-// $Id: JConfirmKillUnfinishedJobsDialog.java,v 1.2 2006/01/16 04:11:12 jim Exp $
+// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.1 2006/01/16 04:11:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,14 +11,14 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   C O N F I R M   K I L L   U N F I N I S H E D   J O B S   D I A L O G                  */
+/*   C O N F I R M   K I L L   O B S O L E T E   J O B S   D I A L O G                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Asks whether jobs affected by a check-out should be killed.
+ * Asks whether jobs associated with obsolete frames after a renumber should be killed.
  */ 
 public 
-class JConfirmKillUnfinishedJobsDialog
+class JConfirmKillObsoleteJobsDialog
   extends JBaseDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,17 +28,17 @@ class JConfirmKillUnfinishedJobsDialog
   /**
    * Construct a new dialog.
    * 
-   * @param root
-   *   The name of the root node of the check-out.
+   * @param name
+   *   The name of the renumbered node. 
    * 
    * @param jobIDs
-   *   The unfinished job IDs indexed by node name.
+   *   The unfinished job IDs.
    */ 
   public 
-  JConfirmKillUnfinishedJobsDialog
+  JConfirmKillObsoleteJobsDialog
   ( 
-   String root, 
-   TreeMap<String,TreeSet<Long>> jobIDs
+   String name, 
+   TreeSet<Long> jobIDs
   ) 
   {
     super("Confirm", true);
@@ -53,22 +53,15 @@ class JConfirmKillUnfinishedJobsDialog
       JTextArea area = null;
       {
 	StringBuffer buf = new StringBuffer();
-	buf.append("Check-Out Aborted!\n" + 
-		   "\n" + 
-		   "Unable to perform check-out of node (" + root + ") because unfinished " + 
-		   "jobs are associated with downstream nodes which would likely be " + 
-		   "be made Stale by the check-out.\n" + 
-		   "\n" + 
-		   "The following jobs must either be killed or allowed to finish " + 
-		   "normally before the check-out can be performed:\n\n");
+	buf.append("The following unfinished jobs will regenerate frames which have been " +
+		   "made obsolete by the renumber operation:\n" +
+		   "\n");
 
-	for(String name : jobIDs.keySet()) {
-	  buf.append("Node: " + name + ":\n" + 
-		     "Jobs:");
-	  for(Long jobID : jobIDs.get(name)) 
-	    buf.append(" " + jobID);
-	  buf.append("\n\n");
-	}
+	buf.append("Node: " + name + ":\n" + 
+		   "Jobs:");
+	for(Long jobID : jobIDs) 
+	  buf.append(" " + jobID);
+	buf.append("\n\n");
 	
 	area = new JTextArea(buf.toString(), 8, 35); 
 	area.setName("TextArea");
@@ -88,7 +81,7 @@ class JConfirmKillUnfinishedJobsDialog
 	body.add(scroll);
       }
 
-      super.initUI("Kill Unfinished Jobs?", true, body, "Yes", null, null, "No");
+      super.initUI("Kill Obsolete Jobs?", true, body, "Yes", null, null, "No");
       pack();
     }
   }
@@ -99,6 +92,6 @@ class JConfirmKillUnfinishedJobsDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -729441957420008827L;
+  private static final long serialVersionUID = 3614821228922667189L;
 
 }
