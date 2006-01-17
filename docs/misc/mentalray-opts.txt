@@ -1,0 +1,220 @@
+
+Starting render...
+command: /usr/local/mi345/bin/ray -L /usr/local/mi345/lib -I /usr/local/mi345/include -h
+
+-acceleration S          ray tracing algorithm: b[sp], l[argebsp], or g[rid]
+-approx [F]* [T] [L H] --
+                          override geometry approximations. Flags F: view,
+                         any, fine, sharp S. Technique T: parametric U V,
+                         regular U V, length L, distance D, angle A. L and H
+                         are low and high subdivision limits, default 0 5 or 0
+                         7 (fine).
+-approx_displace [F]* [T] [L H] --
+                          override displacement approximations
+-aperture N              width of aperture
+-aspect N                aspect ratio
+-bsp_depth N             maximum depth of BSP tree
+-bsp_memory N            maximum memory allowed for BSP
+-bsp_shadow B            separate BSP for shadow objects
+-bsp_size N              maximum number of primitives in a BSP leaf
+-caustic B               toggle caustic computation
+-caustic_accuracy N [N]  caustic estimation parameters
+-caustic_scale F F F [F] 
+                          caustic contribution multiplier
+-clip N N                hither and yon clipping planes
+-code F ... --           compile and dynamically link C files
+-colorclip S             color clipping mode: a[lpha], rg[b] (default), or
+                         ra[w]
+-contrast R G B          threshold for adaptive oversampling
+-copyright               print copyright notice
+-core B                  allow core dumps, for debugging
+-c_compiler F            C compiler for dynamic linking
+-c_flags S               compiler flags for dynamic linking
+-c_linker F              linker command for dynamic linking
+-desaturate B            toggle desaturation color clipping
+-diagnostic samples      false-color visualization of sampling density
+-diagnostic photon density|irradiance [N]
+                          false-color visualization of photon map
+-diagnostic grid object|world|camera [N]
+                          superimpose space grid lines
+-diagnostic bsp depth|size
+                          false-color visualization of bsp tree depth or
+                         number of primitives per leaf
+-diagnostic finalgather  paint finalgather points
+-diagnostic hardware solid|wire|window|debug
+                          hardware rendering diagnostics: show solid unshaded
+                         gray objects, wireframe, progress on visible window;
+                         run Cg debugger in debug mode.
+-displace B              enable displacement shaders (default on)
+-displace_presample B    enable displacement presampling: longer startup,
+                         faster rendering (default on)
+-dither B                toggle intensity dithering
+-dof F R                 depth of field for Rapid Motion: focus plane distance
+                         and lens radius
+-echo F options --       echo scene DAG to file F, options: ascii, approx,
+                         source, textures, norendercommand, nolinkcommand,
+                         render, explode [N], omit S, norecurse S
+-face S                  faces to render: f[ront], ba[ck], or bo[th]
+-fb_dir D                frame buffer directory
+-fb_virtual B            virtual mem frame buffer
+-file_dir S              directory for output images
+-file_type S             file type (pic, rla, tiff etc)
+-file_name F             output picture file name
+-filter S [X [Y]]        b[ox], t[riangle], g[auss], m[itchell] or [l]anczos
+                         filter; and optional filter size in pixels units
+-finalgather S           finalgather rendering: on, off, only, f[astlookup]
+-finalgather_accuracy [view] N [N [N]]
+                          final gathering number of rays, max and min reuse
+                         radius
+-finalgather_depth N [N [N [N]]]
+                          max finalgather depth for reflect, refract, diffuse,
+                         total
+-finalgather_display B   preview in precomputing stage
+-finalgather_falloff F [F]
+                          finalgather rays falloff to the environment
+                         start/stop length
+-finalgather_file F1 ... FN --
+                          use finalgather file(s) F1 ... FN; or disable
+                         finalgather file if F1 is "off"
+-finalgather_filter N    finalgather ray filter size
+-finalgather_presample_density F
+                          precomputed finalgather points density multiplier
+                         factor
+-finalgather_rebuild S   finalgather rebuild on|of[f]|f[reeze]
+-finalgather_scale F F F [F]
+                          finalgather contribution multiplier
+-focal N                 focal length N, or orthographic if N=i[nfinite]
+-gamma N                 gamma exponent, default 1.0
+-geometry B              enable/disable all geometry shaders (default on)
+-globillum B             toggle global illumination computation
+-globillum_accuracy N [N]
+                          global illumination estimation parameters
+-globillum_scale F F F [F]
+                          globillum contribution multiplier
+-grid_resolution N [N [N]]
+                          grid size, default 0 0 0
+-grid_depth N            grid levels, default 2
+-grid_size N             max number of objects per grid cell
+-?                       print help information
+-h                       print help information
+-hair B                  enable/disable hair processing
+-hw [on|off|all] cg native fast [force] --
+                          hardware rendering: on for materials with explicit
+                         hardware shaders, all for automatic hardware shader
+                         search, off for software only. cg means Cg 1.2
+                         (default), native means OpenGL 2.0, fast means no
+                         shader programs; more than one can be specified. The
+                         force flag prevents falling back on software
+                         rendering.
+-hardware [on|off|all] cg native fast [force] --
+                          hardware rendering: on for materials with explicit
+                         hardware shaders, all for automatic hardware shader
+                         search, off for software only. cg means Cg 1.2
+                         (default), native means OpenGL 2.0, fast means no
+                         shader programs; more than one can be specified. The
+                         force flag prevents falling back on software
+                         rendering.
+-hardware_echo [error] D --
+                          write hardware shaders and info to directory D,
+                         named after materials. Only write failed files if
+                         `error'.
+-hardware_cflags S       flags for the hardware shading laguage compiler
+-hardware_samples multi super
+                          hardware multi-sampling(GPU) and
+                         super-sampling(rescale image)
+-H S                     hardware shader search path
+-hardware_path S         hardware shader search path
+-help                    print help information
+-hosts S ... --          servers to use, use host[:port] or 'host[:port]
+                         options'
+-imgpipe N               send preview image to file descriptorN
+-I P                     same as -include_path
+-include_path P          replace standard include path for $include <file>
+-jitter N                jitter image samples
+-jobmemory N [V]         obsolete, use -memory. (Limit physical and virtual
+                         memory to N and V MB)
+-L S                     library search path
+-ld_libs S               libraries for dynamic linking
+-ld_path S               library search path
+-lens B                  enable/disable all lens shaders (default on)
+-lightmap S              lightmap rendering: on, off, only
+-link F ... --           dynamically link .o or .so files
+-lightprofile_path S     lightprofile search path
+-maxdisplace X           if non zero: override max displace
+-memory N                set memory allocation limit to N megabytes;
+                         default=unlimited
+-merge B                 enable/disable surface edge merging where specified
+                         (default on)
+-message M S,S,... --    enable messages S in module M (all modules if M is
+                         "all")
+-motion B                enable motion vectors generation
+-motion_steps N          interpolate motion in N steps
+-nomaster                inhibit job execution on master (only if slaves are
+                         present)
+-pass B                  enable/disable multipass rendering
+-server                  ignored for compatibility
+-o F                     same as -file_name
+-offset X Y              offsets rendered area by X,Y pixels
+-output B                enable/disable all output shaders (default on)
+-photonmap_file F        use photonmap file F, or disable photon map file (if F
+                         is "off")
+-photonmap_only B        render photon maps only
+-photonmap_rebuild B     photonmap rebuild
+-photonvol_accuracy N [N]
+                          volume global illumination estimation parameters
+-photon_depth N [N [N]]  max photon depth for reflect, refract, total
+-premultiply B           premultiply RGB by alpha, default on
+-raycl_memory N          ray classification: megabytes for ray space
+                         subdivision
+-raycl_subdivision N N   ray classification: adjust # of eye and shadow
+                         subdivisions
+-render N1 N2 [N3]       only render frames N1...N2, increment N3 (first frame
+                         is 1; default 1 <last> 1)
+-resolution X Y          image resolution X by Y pixels
+-samples min max [defmin defmax]
+                          min,max sampling level, 0 means 1 sample/pixel;
+                         defmin/defmax are defaults where no objects with
+                         min/max are hit
+-samples_collect N       if -scanline rapid, number of spatial samples during
+                         composition phase, 0 (default) means 2^max_samples
+-samplelock B            if on, use same sampling pattern for all frames,
+                         reduces flickering
+-samples_motion N        if -scanline rapid, number of time samples of moving
+                         objects, default 1
+-scanline S              scanline rendering mode: on (software), off, r[apid],
+                         op[engl]
+-shading_samples X       shading samples per pixel, default 1.0
+-shadow S                shadow casting: on, off, so[rt], or se[gment]
+-shadowmap options --    modify shadow map options: on, off, opengl, detail,
+                         motion, nomotion, rebuild, reuse, merge, only, trace,
+                         window
+-shadowmap_bias N        globally add shadowmap bias, useful for shadowmap
+                         merging
+-shutter [D] N           shutter open time D (default 0.0) and shutter close
+                         time (default 0.0)
+-split_object NP NF      split objects with more than NP triangles(for polygons
+                         only) or NF faces, don't split(default): 0
+-strips B                tesselation generates triangle strips
+-swap_dir D              directory for temporary data files, do not share with
+                         other hosts
+-swap_limit N            put at most N megabytes into swap_dir, 0=no swapping
+                         (default)
+-T S                     texture search path
+-task_size N             size of image tasks
+-texture_continue B      ignore missing textures
+-texture_path S          texture search path
+-threads N               number of concurrent render threads
+-time_contrast R G B     temporal threshold for motion blur oversampling
+-trace B                 toggle ray tracing
+-trace_depth N [N [N]]   max depth for reflect, refract, total
+-v B                     same as -verbose
+-verbose B               verbose level 0..7, or off (0), or on (5)
+-version                 print version number and exit
+-volume B                enable/disable all volume shaders (default on)
+-window XL YL XH YH      sub-rectangle to render, rest is black
+-xcolor S                print colored messages, S=FEWPIDV (F=fatal, E=error,
+                         etc; each r=red, g=green, etc, .=no color; eg.
+                         -xcolor mrc..gb; useful in $MI_RAY_OPTIONS)
+
+Rendering complete.
+
