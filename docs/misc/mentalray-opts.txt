@@ -1,4 +1,13 @@
 
+To compile shaders:
+
+$ gcc34 --version
+gcc34 (GCC) 3.4.2 20041017 (Red Hat 3.4.2-6.fc3)
+
+
+
+------
+
 Starting render...
 command: /usr/local/mi345/bin/ray -L /usr/local/mi345/lib -I /usr/local/mi345/include -h
 
