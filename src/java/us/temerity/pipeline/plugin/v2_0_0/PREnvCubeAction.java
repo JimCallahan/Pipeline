@@ -1,4 +1,4 @@
-// $Id: PREnvCubeAction.java,v 1.1 2005/12/09 09:25:12 jim Exp $
+// $Id: PREnvCubeAction.java,v 1.2 2006/01/17 18:39:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -20,7 +20,8 @@ import java.io.*;
  * sequence of one of the source nodes into the single cubic environment map which is the 
  * single member of the primary file sequence of this node. <P> 
  * 
- * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan ProServer</A>
+ * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan 
+ * ProServer</A>
  * documentation for details about <B>txmake</B>(1). <P> 
  * 
  * This action defines the following single valued parameters: <BR>
@@ -294,8 +295,8 @@ class PREnvCubeAction
       ActionParam param = 
 	new EnumActionParam
 	("FilterPattern", 
-	 "Controls the set of filtered texture resolutions which are generated and stored in " + 
-	 "the texture file.",
+	 "Controls the set of filtered texture resolutions which are generated and stored " + 
+	 "in the texture file.",
 	 "Diagonal", choices);
       addSingleParam(param);
     }   
@@ -453,8 +454,8 @@ class PREnvCubeAction
 	String suffix = fseq.getFilePattern().getSuffix();
 	if((suffix == null) || !suffix.equals("tex"))
 	  throw new PipelineException
-	    ("The target primary file sequence (" + fseq + ") must contain a PhotoRealistic " + 
-	     "RenderMan textures (.tex)!");
+	    ("The target primary file sequence (" + fseq + ") must contain a " + 
+	     "PhotoRealistic RenderMan textures (.tex)!");
 	
 	if(fseq.numFrames() != 1)
 	  throw new PipelineException

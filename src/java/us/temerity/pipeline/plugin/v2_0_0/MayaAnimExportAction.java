@@ -1,4 +1,4 @@
-// $Id: MayaAnimExportAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaAnimExportAction.java,v 1.4 2006/01/17 18:39:22 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -286,7 +286,7 @@ class MayaAnimExportAction
 	  targetAnims.put(fpat.getPrefix(), fseq.getFile(0));
 	else 
 	  throw new PipelineException
-	    ("The primary file sequence (" + fseq + ") must be either a  Maya animation " + 
+	    ("The primary file sequence (" + fseq + ") must be either a Maya animation " + 
 	     "(.anim) file or a single dummy file without a suffix!");
       }
 

@@ -1,4 +1,4 @@
-// $Id: PRRenderAction.java,v 1.1 2005/12/09 09:25:12 jim Exp $
+// $Id: PRRenderAction.java,v 1.2 2006/01/17 18:39:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -17,14 +17,16 @@ import java.io.*;
  * 
  * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
  * sequence parameter will be processed.  The frame range rendered will be limited by frame 
- * numbers of the target images.  In most cases, an Execution Method of (Parallel) and a Batch Size 
- * of (1) should be used with this action so that each image frame is rendered by a seperate 
- * invocation of render(1) which is only passed the RIBs required for the frame being rendered. 
- * It is also possible to render multi-frame RIBs or even multiple single frame RIBs at one time 
- * by using a larger Batch Size.  Depending on the RIBs processed, one or more images, depthmaps 
- * or deep shadow maps may be generated in one rendering pass. <P> 
+ * numbers of the target images.  In most cases, an Execution Method of (Parallel) and a 
+ * Batch Size of (1) should be used with this action so that each image frame is rendered by
+ * a seperate invocation of render(1) which is only passed the RIBs required for the frame 
+ * being rendered. It is also possible to render multi-frame RIBs or even multiple single 
+ * frame RIBs at one time by using a larger Batch Size.  Depending on the RIBs processed, 
+ * one or more images, depthmaps or deep shadow maps may be generated in one rendering 
+ * pass. <P> 
  * 
- * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan ProServer</A>
+ * See the 
+ * <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan ProServer</A>
  * documentation for details about <B>render</B>(1). <P> 
  * 
  * This action defines the following per-source parameters: <BR>
