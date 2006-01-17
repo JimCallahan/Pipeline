@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.4 2006/01/17 20:41:47 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -2678,7 +2678,7 @@ class MRayRenderGlobalsAction
 
 	  if(verbose == -1) 
 	    throw new PipelineException
-	      ("The ExportVerbosity (" + param.getValue() + ") was illegal!"); 
+	      ("The ExportVerbosity was illegal!"); 
 	}
 
 	Boolean hier = (Boolean) getSingleParamValue("ExportExactHierarchy");  
