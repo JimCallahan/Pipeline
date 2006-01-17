@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.6 2005/09/07 21:11:17 jim Exp $
+// $Id: UIFactory.java,v 1.7 2006/01/17 18:40:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2695,11 +2695,25 @@ class UIFactory
   (
    JPanel tpanel, 
    JPanel vpanel, 
+   int theight, 
+   int vheight
+  ) 
+  {
+    tpanel.add(Box.createRigidArea(new Dimension(0, theight)));
+    vpanel.add(Box.createRigidArea(new Dimension(0, vheight)));
+  }
+  /**
+   * Add vertical space into the given panels.
+   */ 
+  public static void 
+  addVerticalSpacer
+  (
+   JPanel tpanel, 
+   JPanel vpanel, 
    int height
   ) 
   {
-    tpanel.add(Box.createRigidArea(new Dimension(0, height)));
-    vpanel.add(Box.createRigidArea(new Dimension(0, height)));
+    addVerticalSpacer(tpanel, vpanel, height, height);
   }
 
   /**

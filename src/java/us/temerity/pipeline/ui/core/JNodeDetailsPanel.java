@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.26 2006/01/15 06:29:26 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.27 2006/01/17 18:40:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2319,7 +2319,7 @@ class JNodeDetailsPanel
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	}
 	else {
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 4, 3);
 
 	  /* single valued parameter */ 
 	  ActionParam param = action.getSingleParam(pname);
