@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.3 2005/04/03 06:10:12 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.4 2006/01/18 20:27:37 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import javax.swing.*;
@@ -78,18 +79,26 @@ class JBaseMonitorJobOutputDialog
 	body.add(panel);
       }
             
+      pHostname = info.getHostname();
+      pJobID    = job.getJobID();
+      pSaveFile = new File(PackageInfo.sTempDir, "Job-" + pJobID + "-" + prefix + ".log");
+
       ActionAgenda agenda = job.getActionAgenda();
       String header = 
-	(prefix + " - Job " + job.getJobID() + ":  " + agenda.getPrimaryTarget() + 
+	(prefix + " - Job " + pJobID + ":  " + agenda.getPrimaryTarget() + 
 	 "    [" + info.getHostname() + "]");
       
-      super.initUI(header, false, body, null, null, null, "Close");
+      super.initUI(header, false, body, null, "Save As...", null, "Close");
     }
     
     addWindowListener(this);
 
+    pSaveDialog = 
+      new JFileSelectDialog(this, "Save " + title, "Save " + label, "Save As:", 54, "Save");
+    pSaveDialog.updateTargetFile(null);
+
     {    
-      pMonitorTask = new MonitorTask(info.getHostname(), job.getJobID());
+      pMonitorTask = new MonitorTask();
       pMonitorTask.start();
     }
   }
@@ -251,6 +260,26 @@ class JBaseMonitorJobOutputDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Save the output to disk.
+   */ 
+  public void 
+  doApply() 
+  {    
+    pSaveDialog.updateTargetFile(pSaveFile.getParentFile());
+    pSaveDialog.updateTargetName(pSaveFile.getName());
+    pSaveDialog.setVisible(true);    
+    if(pSaveDialog.wasConfirmed()) {
+      File file = pSaveDialog.getSelectedFile();
+      if(file != null) {
+	pApplyButton.setEnabled(false);
+	
+	SaveTask task = new SaveTask(file);
+	task.start();
+      }
+    }
+  }
+
+  /**
    * Disconnect from job server and close window.
    */ 
   public void 
@@ -363,16 +392,9 @@ class JBaseMonitorJobOutputDialog
     extends Thread
   {
     public 
-    MonitorTask
-    (
-     String hostname, 
-     long jobID
-    )
+    MonitorTask() 
     {
-      super("JMonitorJobOutputDialog:MonitorTask");
-
-      pHostname = hostname; 
-      pJobID    = jobID; 
+      super("JBaseMonitorJobOutputDialog:MonitorTask");
     }
     
     public void 
@@ -412,11 +434,88 @@ class JBaseMonitorJobOutputDialog
 	}
       }
     }
-
-    private String  pHostname;
-    private long    pJobID; 
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Periodically retrieves the output from the job until the job has completed.
+   */ 
+  private 
+  class SaveTask
+    extends Thread
+  {
+    public 
+    SaveTask
+    (
+     File file
+    )
+    {
+      super("JBaseMonitorJobOutputDialog:SaveTask");
+
+      pFile = file; 
+    }
+
+    public void 
+    run()
+    {
+      UIMaster master = UIMaster.getInstance();
+      JobMgrClient client = null;
+      try {
+	client = new JobMgrClient(pHostname);	
+	
+	FileWriter out = new FileWriter(pFile);
+
+	int lines = getNumLinesMonitor(client, pJobID);
+	int wk; 
+	for(wk=0; wk<lines; wk+=128) 
+	  out.write(getLinesMonitor(client, pJobID, wk, Math.min(lines-wk, 128)));
+
+	out.close();
+      }
+      catch (Exception ex) {
+	master.showErrorDialog(ex);	
+      }
+      finally {
+	if(client != null) {
+	  try {
+	    closeMonitor(client, pJobID);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+
+	  client.disconnect();
+	}
+      }
+
+      SaveDoneTask task = new SaveDoneTask();
+      SwingUtilities.invokeLater(task);
+    }
+
+    private File  pFile; 
+  }
+
+  /**
+   * Renable the Save As button.
+   */ 
+  private 
+  class SaveDoneTask
+    extends Thread
+  {
+    public 
+    SaveDoneTask() 
+    {
+      super("JBaseMonitorJobOutputDialog:SaveDoneTask");
+    }
+
+    public void 
+    run()
+    {
+      pApplyButton.setEnabled(true);
+    }
+  }
 
 
 
@@ -433,7 +532,27 @@ class JBaseMonitorJobOutputDialog
    * The output monitor panel.
    */ 
   private JobMonitorPanel  pJobMonitorPanel;
-  
+
+  /**
+   * The name of the job server host running the job.
+   */ 
+  private String  pHostname;
+
+  /**
+   * The unique job identifier.
+   */ 
+  private long  pJobID; 
+
+  /**
+   * The initial saved output filename. 
+   */ 
+  private File  pSaveFile; 
+ 
+  /**
+   * The file naming dialog for saving output to a local file.
+   */ 
+  private JFileSelectDialog  pSaveDialog;
+
   /**
    * The thread monitoring the job.
    */ 
