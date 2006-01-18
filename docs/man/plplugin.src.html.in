@@ -410,7 +410,7 @@ installed plugins and exits.<br>
 </div>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--force"></a>--install</span><i>
+ name="--install"></a>--install</span><i>
 class-file1 </i>[<i>class-file2 ...</i>]<br>
 <br>
 <div style="margin-left: 40px;">Installs plugins contained in the
