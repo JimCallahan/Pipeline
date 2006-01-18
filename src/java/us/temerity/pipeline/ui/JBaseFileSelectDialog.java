@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.10 2005/06/10 14:36:54 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.11 2006/01/18 20:29:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -189,9 +189,8 @@ class JBaseFileSelectDialog
 	{
 	  JScrollPane scroll = new JScrollPane(lst);
 	  
-	  Dimension size = new Dimension(690, 120);
-	  scroll.setMinimumSize(size);
-	  scroll.setPreferredSize(size);
+	  scroll.setMinimumSize(new Dimension(690, 120));
+	  scroll.setPreferredSize(new Dimension(690, 240));
 	  
 	  scroll.setHorizontalScrollBarPolicy
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
