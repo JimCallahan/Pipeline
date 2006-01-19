@@ -1,4 +1,4 @@
-// $Id: PRTextureAction.java,v 1.2 2005/12/31 20:41:42 jim Exp $
+// $Id: PRTextureAction.java,v 1.3 2006/01/19 12:35:02 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -18,7 +18,8 @@ import java.io.*;
  * Converts the images which make up the primary file sequence of one of the source
  * nodes into the texture maps which make up the primary file sequence of this node. <P>
  * 
- * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan ProServer</A>
+ * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan 
+ * ProServer</A>
  * documentation for details about <B>txmake</B>(1). <P> 
  * 
  * This action defines the following single valued parameters: <BR>
@@ -46,8 +47,8 @@ import java.io.*;
  *   <DIV style="margin-left: 40px;">
  *     How texture coordinates are adjusted by the resize of the input images.
  *     <UL>
- *       <LI> Proportional - 0 to 1 across longest dimension, 0 to aspect ratio across shortest
- *                           dimensions. 
+ *       <LI> Proportional - 0 to 1 across longest dimension, 0 to aspect ratio across 
+ *                           shortest dimensions. 
  *       <LI> Square - 0 to 1 across both dimensions.
  *     </UL>
  *   </DIV> <BR>
@@ -276,8 +277,8 @@ class PRTextureAction
       ActionParam param = 
 	new EnumActionParam
 	("FilterPattern", 
-	 "Controls the set of filtered texture resolutions which are generated and stored in " + 
-	 "the texture file.",
+	 "Controls the set of filtered texture resolutions which are generated and stored " + 
+	 "in the texture file.",
 	 "Diagonal", choices);
       addSingleParam(param);
     }   
