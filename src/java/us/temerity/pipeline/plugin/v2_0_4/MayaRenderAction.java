@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.2 2005/12/04 05:51:21 jim Exp $
+// $Id: MayaRenderAction.java,v 1.3 2006/01/19 12:33:17 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_4;
 
@@ -22,7 +22,8 @@ import java.io.*;
  * <DIV style="margin-left: 40px;">
  *   Renderer <BR>
  *   <DIV style="margin-left: 40px;">
- *     The type of renderer used to render the images: Hardware, Software, Mental Ray or Vector<BR>
+ *     The type of renderer used to render the images: Hardware, Software, Mental Ray or 
+ *     Vector<BR>
  *   </DIV> <BR>
  * 
  *   Camera Override <BR>
@@ -416,6 +417,8 @@ class MayaRenderAction
 	args.add("hw");
       else if(renderer.equals("Mental Ray")) 
 	args.add("mr");
+      else if(renderer.equals("Vector")) 
+	args.add("vr");
       else 
 	throw new PipelineException
 	  ("Unsupported renderer type (" + renderer + ")!");
@@ -438,34 +441,35 @@ class MayaRenderAction
 	
       File renderDir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
 
-      if(renderer.equals("Hardware")) {
+      if(renderer.equals("Hardware") || renderer.equals("Vector")) {
 	if(preRender != null) 
 	  throw new PipelineException
-	    ("The Hardware renderer does not accept PreRender Scripts!");
+	    ("The " + renderer + " renderer does not accept PreRender Scripts!");
 
 	if(postRender != null) 
 	  throw new PipelineException
-	    ("The Hardware renderer does not accept PostRender Scripts!");
+	    ("The " + renderer + " renderer does not accept PostRender Scripts!");
 
 	if(preLayer != null) 
 	  throw new PipelineException
-	    ("The Hardware renderer does not accept PreLayer Scripts!");
+	    ("The " + renderer + " renderer does not accept PreLayer Scripts!");
 
 	if(postLayer != null) 
 	  throw new PipelineException
-	    ("The Hardware renderer does not accept PostLayer Scripts!");
+	    ("The " + renderer + " renderer does not accept PostLayer Scripts!");
 
 	if(preFrame != null) 
 	  throw new PipelineException
-	    ("The Hardware renderer does not accept PreFrame Scripts!");
+	    ("The " + renderer + " renderer does not accept PreFrame Scripts!");
 
 	if(postFrame != null) 
 	  throw new PipelineException
-	    ("The Hardware renderer does not accept PostFrame Scripts!");
+	    ("The " + renderer + " renderer does not accept PostFrame Scripts!");
 
 	if(fpat.getPadding() > 1) 
 	  throw new PipelineException
-	    ("The Hardware renderer can only render files with unpadded frame numbers!");	
+	    ("The " + renderer + " renderer can only render files with unpadded " + 
+	     "frame numbers!");
       }
       else {
 	/* hack to get around the broken "-rd" option for mental ray */ 
