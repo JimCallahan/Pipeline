@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.4 2005/11/03 22:02:14 jim Exp $
+// $Id: Toolset.java,v 1.5 2006/01/19 13:57:35 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -169,50 +169,55 @@ class Toolset
 	  case AppendPath:
 	  case PrependPath:
 	    if(prev != null) {
-	      String first = null;
-	      String second = null;
-	      switch(com.getMergePolicy(key)) {
-	      case AppendPath:
-		first  = prev;
-		second = value;
-		break;
+	      if(value != null) {
+		String first = null;
+		String second = null;
+		switch(com.getMergePolicy(key)) {
+		case AppendPath:
+		  first  = prev;
+		  second = value;
+		  break;
+		  
+		case PrependPath:
+		  first  = value;
+		  second = prev;
+		}
 		
-	      case PrependPath:
-		first  = value;
-		second = prev;
-	      }
+		ArrayList<String> paths = new ArrayList<String>();
+		{
+		  String dirs[] = first.split(":");  
+		  int wk;
+		  for(wk=0; wk<dirs.length; wk++) 
+		    if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
+		      paths.add(dirs[wk]);
+		}
 		
-	      ArrayList<String> paths = new ArrayList<String>();
-	      {
-		String dirs[] = first.split(":");  
-		int wk;
-		for(wk=0; wk<dirs.length; wk++) 
-		  if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
-		    paths.add(dirs[wk]);
-	      }
-
-	      {
-		String dirs[] = second.split(":");
-		int wk;
-		for(wk=0; wk<dirs.length; wk++) 
-		  if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
-		    paths.add(dirs[wk]);
-	      }
-	      
-	      String nvalue = null;
-	      {
-		StringBuffer buf = new StringBuffer();
-		for(String path : paths) 
+		{
+		  String dirs[] = second.split(":");
+		  int wk;
+		  for(wk=0; wk<dirs.length; wk++) 
+		    if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
+		      paths.add(dirs[wk]);
+		}
+		
+		String nvalue = null;
+		{
+		  StringBuffer buf = new StringBuffer();
+		  for(String path : paths) 
 		  buf.append(path + ":");
-		String str = buf.toString();
-
-		if(paths.size() > 1) 
-		  nvalue = str.substring(0, str.length()-1);
-		else 
-		  nvalue = str;
+		  String str = buf.toString();
+		  
+		  if(paths.size() > 1) 
+		    nvalue = str.substring(0, str.length()-1);
+		  else 
+		    nvalue = str;
+		}
+		
+		pEnvironment.put(key, nvalue);
 	      }
-
-	      pEnvironment.put(key, nvalue);
+	      else {
+		pEnvironment.put(key, prev);
+	      }
 	    }
 	    else {
 	      pEnvironment.put(key, value);
