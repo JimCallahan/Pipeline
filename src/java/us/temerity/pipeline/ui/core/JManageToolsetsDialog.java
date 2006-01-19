@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.12 2006/01/15 06:29:25 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.13 2006/01/19 13:57:54 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3077,8 +3077,10 @@ class JManageToolsetsDialog
 		TreeMap<String,String> env = toolset.getEnvironment();
 		for(String ename : env.keySet()) {
 		  String evalue = env.get(ename);
-		  buf.append("export " + ename + "=" + 
-			     ((evalue != null) ? (evalue + "\n") : "\n"));
+		  buf.append("export " + ename + "=");
+		  if((evalue != null) && (evalue.length() > 0)) 
+		    buf.append("'" + evalue + "'");
+		  buf.append("\n");
 		}  
 	      }
 	      break;
