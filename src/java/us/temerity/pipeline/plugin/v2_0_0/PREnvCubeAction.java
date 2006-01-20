@@ -1,4 +1,4 @@
-// $Id: PREnvCubeAction.java,v 1.2 2006/01/17 18:39:42 jim Exp $
+// $Id: PREnvCubeAction.java,v 1.3 2006/01/20 16:47:52 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -13,8 +13,8 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Generate optimized PhotoRealistic RenderMan cubic environment maps from six direction 
- * source images. <P> 
+ * Generate optimized PhotoRealistic RenderMan cube faced environment maps from six 
+ * directional source images. <P> 
  * 
  * Converts the six images [+x, -x, +y, -y, +z, -z] which make up the primary file 
  * sequence of one of the source nodes into the single cubic environment map which is the 
@@ -49,8 +49,8 @@ import java.io.*;
  *   <DIV style="margin-left: 40px;">
  *     How texture coordinates are adjusted by the resize of the input images.
  *     <UL>
- *       <LI> Proportional - 0 to 1 across longest dimension, 0 to aspect ratio across shortest
- *                           dimensions. 
+ *       <LI> Proportional - 0 to 1 across longest dimension, 0 to aspect ratio across 
+ *                           shortest dimensions. 
  *       <LI> Square - 0 to 1 across both dimensions.
  *     </UL>
  *   </DIV> <BR>
@@ -146,8 +146,8 @@ class PREnvCubeAction
   PREnvCubeAction() 
   {
     super("PREnvCube", new VersionID("2.0.0"), "Temerity", 
-	  "Generate optimized PhotoRealistic RenderMan cubic environment maps from six " + 
-	  "direction source images.");
+	  "Generate optimized PhotoRealistic RenderMan cube faced environment maps from " + 
+	  "six directional source images.");
     
     {
       ActionParam param = 

@@ -1,4 +1,4 @@
-// $Id: DLEnvCubeAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: DLEnvCubeAction.java,v 1.4 2006/01/20 16:47:52 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -13,7 +13,8 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Generate an optimized 3Delight cubic environment map from six direction source images.
+ * Generate an optimized 3Delight cube faced environment map from six directional source 
+ * images.
  * 
  * Converts the six images [+x, -x, +y, -y, +z, -z] which make up the primary file 
  * sequence of one of the source nodes into the single cubic environment map which is the 
@@ -109,7 +110,7 @@ class DLEnvCubeAction
   DLEnvCubeAction() 
   {
     super("DLEnvCube", new VersionID("2.0.0"), "Temerity",
-	  "Generate an optimized 3Delight cubic environment map from six direction " + 
+	  "Generate an optimized 3Delight cube faced environment map from six directional " + 
 	  "source images.");
     
     {

@@ -1,4 +1,4 @@
-// $Id: PRShaderAction.java,v 1.2 2005/12/09 12:45:38 jim Exp $
+// $Id: PRShaderAction.java,v 1.3 2006/01/20 16:47:52 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -16,11 +16,11 @@ import java.io.*;
  * Compiles Shading Language source files to generate a PhotoRealistic RenderMan shader. <P>
  * 
  * Compiles the shader source file (.sl) which is the single member of the primary file 
- * sequence of one of the source nodes into a byte-code (.slo) shader which is the single member 
- * of the primary file sequence of this node. <P> 
+ * sequence of one of the source nodes into a byte-code (.slo) shader which is the single 
+ * member of the primary file sequence of this node. <P> 
  * 
- * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan ProServer</A>
- * documentation for details about <B>shader</B>(1). <P> 
+ * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan 
+ * ProServer</A> documentation for details about <B>shader</B>(1). <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -63,7 +63,8 @@ class PRShaderAction
   PRShaderAction() 
   {
     super("PRShader", new VersionID("2.0.0"), "Temerity",
-	  "Compiles Shading Language source files to generate a PhotoRealistic RenderMan shader.");
+	  "Compiles Shading Language source files to generate a PhotoRealistic " + 
+	  "RenderMan shader.");
     
     {
       ActionParam param = 
