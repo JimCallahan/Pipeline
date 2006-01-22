@@ -1,4 +1,4 @@
-// $Id: GelEnvCubeAction.java,v 1.1 2006/01/22 21:00:57 jim Exp $
+// $Id: GelEnvCubeAction.java,v 1.2 2006/01/22 22:26:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -20,7 +20,7 @@ import java.io.*;
  * sequence of one of the source nodes into the single cubic environment map which is the 
  * single member of the primary file sequence of this node. <P> 
  * 
- * See the Gelato documentation for details about <B>maketx</B>(1).
+ * See the Gelato documentation for details about <B>maketx</B>(1). <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
