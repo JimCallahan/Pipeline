@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.53 2006/01/16 04:11:12 jim Exp $
+// $Id: QueueMgr.java,v 1.54 2006/01/24 15:38:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -55,8 +55,6 @@ class QueueMgr
       pMakeDirLock = new Object(); 
 
       pAdminPrivileges = new AdminPrivileges();
-
-      pPrivilegedUsers = new TreeSet<String>();  // OBSOLETE
 
       pLicenseKeys = new TreeMap<String,LicenseKey>();
 
@@ -408,62 +406,6 @@ class QueueMgr
     timer.aquire();
     pAdminPrivileges.updateAdminPrivileges(timer, req);
     return new SuccessRsp(timer);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P R I V I L E G E D   U S E R S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the privileged users. <P> 
-   * 
-   * @return
-   *   <CODE>MiscGetPrivilegedUsersRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the privileged users.
-   */ 
-  public Object 
-  getPrivilegedUsers()
-  {
-    TaskTimer timer = new TaskTimer("QueueMgr.getPrivilegedUsers()");
-    
-    timer.aquire();
-    synchronized(pPrivilegedUsers) {
-      timer.resume();	
-
-      TreeSet<String> users = new TreeSet<String>(pPrivilegedUsers);
-      return new MiscGetPrivilegedUsersRsp(timer, users);
-    }
-  }
-  
-  /**
-   * Grant the given user privileged access status. <P> 
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to grant the given user privileged status.
-   */ 
-  public Object 
-  setPrivilegedUsers
-  ( 
-   MiscSetPrivilegedUsersReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.setPrivilegedUsers()");
-    
-    timer.aquire();
-    synchronized(pPrivilegedUsers) {
-      timer.resume();	
-
-      pPrivilegedUsers.clear();
-      pPrivilegedUsers.addAll(req.getUsers());
-
-      return new SuccessRsp(timer);
-    }
   }
 
 
@@ -5268,16 +5210,6 @@ class QueueMgr
    * The combined work groups and adminstrative privileges.
    */ 
   private AdminPrivileges  pAdminPrivileges; 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The cached names of the privileged users. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeSet<String>  pPrivilegedUsers;  // OBSOLETE 
 
 
   /*----------------------------------------------------------------------------------------*/
