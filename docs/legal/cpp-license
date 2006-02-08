@@ -81,37 +81,40 @@ accepted, a non-exclusive, non-transferable, non-sublicensable, limited\n\
 license to use the Software, subject to the terms and conditions of this\n\
 Agreement (the \"License\").\n\
 \n\
-b) ONLINE BUG DATABASE.  Temerity may, at its sole discretion, provide\n\
-access to an online bug database, associated with the Software, to\n\
-Customer. Access to the Online Bug Database is intended to aid Customer\n\
-in reporting to Temerity possible failures of the Software to conform\n\
-with the provided specification contained in the Software documentation\n\
-furnished to Customer. In addition, the Online Bug Database may act as a\n\
-source of information about work-arounds as well as the status of any\n\
-possible remedies for such reported failures. However, no guarantees are\n\
-made Temerity that such remedies exist or will be made available to\n\
-Customer through this Online Bug Database.  Use of this Online Bug\n\
-Database by Customer in no way alters or amends the responsibilities of\n\
-Temerity to the Customer defined in Article 4 of this agreement.\n\
+b) FULL SOFTWARE SUPPORT. During the period of time covered by a Full\n\ 
+Software Support contract purchased and fully paid for by Customer, \n\
+Temerity will provide free of charge to Customer all available bug fixes,\n\
+updates and other improvements to the licensed Software which Customer \n\
+has previously purchased from Temerity. \n\
 \n\
-c) INITIAL HOTLINE SUPPORT. Temerity may, from time to time, elect to\n\
-provide a period of initial hotline support services to Customer\n\
-following acquisition of Software. Temerity reserves the right to amend\n\
-or terminate such policy at any time in its sole discretion without\n\
-notice. Temerity current policy is that for a period of thirty (30) days\n\
-from Delivery, Temerity shall provide Customer with access to Temerity's\n\
-hotline support services in relation to the Software, where available.\n\
-Unless Customer otherwise purchases support or maintenance services from\n\
-Temerity or a Reseller and with the sole exception of the above noted\n\
-temporary access to the hotline, Customer shall not be entitled to any\n\
-form of support services, software maintenance services or products\n\
-relating to the Software.\n\
+c) ONLINE SUPPORT RESOURCES. Temerity may, at its sole discretion,\n\
+provide Customer access to online support resources including a bug\n\
+database, user discussion forums, tutorials and other instructional\n\
+material.  These resources may be provided to aid Customer in resolving\n\
+questions about the proper usage of the Software and in reporting any to\n\
+Temerity possible failures of the Software to conform with the provided\n\
+specification contained in the Software documentation furnished to\n\
+Customer. In addition, the Online Support Resources may act as a source\n\
+of information about work-arounds as well as the status of any possible\n\
+remedies for such reported failures.  No guarantees are made by Temerity\n\
+that such remedies exist or will be made available to Customer through\n\
+use of these Online Support Resources.  The use of these Online Support\n\
+Resources by Customer shall not in any way alter or amend the rights and\n\
+responsibilities of Temerity to the Customer defined in Article 4 of\n\
+this agreement.\n\
 \n\
-d) INSTALLATION LOCATION. Use of the License shall be limited to one\n\
+d) CONSULTING SERVICES. In order to aid the process of configuration,\n\
+installation and possible customization of the Software to suit \n\
+Customer's needs, either on-site or remote consulting services will be\n\
+made available to Customer by a trained representative of Temerity.\n\
+Such consulting services may be contracted from Temerity at a daily rate\n\ 
+negotiated with Temerity at the time of service.\n\
+\n\
+e) INSTALLATION LOCATION. Use of the License shall be limited to one\n\
 local area network at the Original Site. Relocation of the Software may\n\
 only be done with the express prior written consent of Temerity.\n\
 \n\
-e) LICENSES NON-TRANSFERABLE.  Licenses shall not be transferred\n\
+f) LICENSES NON-TRANSFERABLE.  Licenses shall not be transferred\n\
 without the prior written consent of Temerity, which may be granted or\n\
 withheld in Temerity's sole and absolute discretion. If such transfer is\n\
 authorized, Customer agrees to provide any and all information\n\
@@ -120,20 +123,20 @@ shall promptly execute and/or have executed by the proposed transferee\n\
 any and all documentation provided by Temerity required to effect such\n\
 transfer.\n\
 \n\
-f) BACK UP INSTALLATIONS. In the event of a major malfunction causing\n\
+g) BACK UP INSTALLATIONS. In the event of a major malfunction causing\n\
 the specified computer hardware on which the Software has been installed\n\
 to become inoperable for an extended period of time, Customer may\n\
 install the Software on a back-up system on a temporary basis during\n\
 such malfunction. Customer agrees to promptly notify Temerity of any\n\
 such back-up use and specify the location of the back up system.\n\
 \n\
-g) INTERNAL USE ONLY.  Customer may use the Software only in connection\n\
+h) INTERNAL USE ONLY.  Customer may use the Software only in connection\n\
 with operation and management of Customer's own internal business,\n\
 subject to the terms hereof. Customer is not authorized to grant\n\
 sublicenses to use the Software nor to permit other persons to use the\n\
 Software on a time-sharing or any other basis.\n\
 \n\
-h) CUSTOMER RESPONSIBILITIES.  Customer shall be exclusively\n\
+i) CUSTOMER RESPONSIBILITIES.  Customer shall be exclusively\n\
 responsible for the supervision, management and control of its use of\n\
 the Software, including, but not limited to: (i) selection of the\n\
 Software to achieve Customer's intended results; (ii) determining the\n\
@@ -147,7 +150,7 @@ malfunction of the Software; and (vi) implementing sufficient procedures\n\
 and checkpoints to satisfy its requirements for security and to assure\n\
 accuracy of input and output.\n\
 \n\
-i) LICENSE TERMINATION ON NON-PAYMENT. Temerity reserves the right to\n\
+j) LICENSE TERMINATION ON NON-PAYMENT. Temerity reserves the right to\n\
 terminate the License upon written notice if Customer fails to pay\n\
 either Reseller or Temerity for the License pursuant to the terms of the\n\
 Order.\n\
@@ -185,7 +188,7 @@ with the express prior written consent of Temerity.\n\
 e) LIMITATION OF ACCESS, DISCLOSURE AND USE.  Customer shall not use\n\
 any Proprietary Material for any purpose not specifically authorized in\n\
 this Agreement. Customer shall limit the use of and access to the\n\
-Software and other Proprietary Material to its /bona fide /employees\n\
+Software and other Proprietary Material to its bona fide employees\n\
 and/or consultants whose use of or access to such Proprietary Material\n\
 is necessary to Customer's use of the Software (in accordance with the\n\
 terms hereof) and Customer shall take appropriate action, by agreement,\n\
@@ -318,8 +321,8 @@ in the Agreement shall be affected.\n\
 \n\
 b) EVALUATION OR DEMONSTRATION LICENSES.  In the event that the\n\
 Software is provided to Customer for evaluation and/or demonstration\n\
-purposes Articles 2(b), 2(c), 4(a), 4(b) and 4(c) shall not apply. All\n\
-Software provided for evaluation and/or demonstration purposes is\n\
+purposes Articles 2(b), 2(c), 2(d), 4(a), 4(b) and 4(c) shall not apply.\n\
+All Software provided for evaluation and/or demonstration purposes is\n\
 provided \"as is\" and without warranties of any kind.\n\
 \n\
 c) GOVERNING LAW AND NOTICE.  This Agreement shall be governed and\n\
