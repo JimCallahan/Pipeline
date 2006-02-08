@@ -1,4 +1,4 @@
-// $Id: WorkGroups.java,v 1.1 2006/01/15 06:29:25 jim Exp $
+// $Id: WorkGroups.java,v 1.2 2006/02/08 23:32:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -360,11 +360,14 @@ class WorkGroups
     Integer uid1 = pUserIDs.get(manager);
     Integer uid2 = pUserIDs.get(member);
     if((uid1 != null) && (uid2 != null)) {
-      for(Integer gid : pUserGroups.get(uid1)) {
-	if((gid != null) && (gid < 0)) {
-	  TreeSet<Integer> uids2 = pGroupUsers.get(-gid);
-	  if(uids2.contains(uid2) || uids2.contains(-uid2))
-	    return true; 
+      TreeSet<Integer> gids = pUserGroups.get(uid1);
+      if(gids != null) {
+	for(Integer gid : gids) {
+	  if(gid < 0) {
+	    TreeSet<Integer> uids2 = pGroupUsers.get(-gid);
+	    if(uids2.contains(uid2) || uids2.contains(-uid2))
+	      return true; 
+	  }
 	}
       }
     }
@@ -393,10 +396,13 @@ class WorkGroups
     Integer uid = pUserIDs.get(manager);
     if(uid != null) {
       TreeSet<Integer> suids = new TreeSet<Integer>(); 
-      for(Integer gid : pUserGroups.get(uid)) {
-	if((gid != null) && (gid < 0)) {
-	  for(Integer suid : pGroupUsers.get(-gid))
-	    suids.add(Math.abs(suid));
+      TreeSet<Integer> gids = pUserGroups.get(uid);
+      if(gids != null) {
+	for(Integer gid : gids) {
+	  if(gid < 0) {
+	    for(Integer suid : pGroupUsers.get(-gid))
+	      suids.add(Math.abs(suid));
+	  }
 	}
       }
       
