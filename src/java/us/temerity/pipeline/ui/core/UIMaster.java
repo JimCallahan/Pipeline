@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.35 2006/01/15 06:29:26 jim Exp $
+// $Id: UIMaster.java,v 1.36 2006/02/24 14:04:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -612,8 +612,8 @@ class UIMaster
     JMenuItem item = null;
     if(layout.isMenuItem()) {
       item = new JMenuItem(layout.getTitle());
-      item.setActionCommand
-	(prefix + ":" + layout.getName() + ":" + layout.getVersionID() + ":" + layout.getVendor());
+      item.setActionCommand(prefix + ":" + layout.getName() + ":" + 
+			    layout.getVersionID() + ":" + layout.getVendor());
       item.addActionListener(listener);
    
       TreeSet<VersionID> vids = plugins.get(layout.getVendor(), layout.getName());
@@ -2543,7 +2543,8 @@ class UIMaster
     public void 
     run() 
     {
-      pSubProcessFailureDialog.updateProc(pHeader + " [code " + pProc.getExitCode() + "]", pProc);
+      pSubProcessFailureDialog.updateProc
+	(pHeader + " [code " + pProc.getExitCode() + "]", pProc);
       pSubProcessFailureDialog.setVisible(true);
     }
 
