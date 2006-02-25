@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.7 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeFileSys.java,v 1.8 2006/02/25 20:16:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -213,7 +213,7 @@ class NativeFileSys
    * @param mask
    *   The file creation bitmask.
    */
-  public static native void 
+  private static native void 
   umaskNative
   (
    int mask
@@ -265,7 +265,7 @@ class NativeFileSys
    * @return
    *   The free disk space (in bytes). 
    */
-  public static native long
+  private static native long
   freeDiskSpaceNative
   (
    String path
@@ -282,7 +282,7 @@ class NativeFileSys
    * @return
    *   The total disk space (in bytes).
    */
-  public static native long
+  private static native long
   totalDiskSpaceNative
   (
    String path
