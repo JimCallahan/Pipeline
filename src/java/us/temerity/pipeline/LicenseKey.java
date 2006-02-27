@@ -1,4 +1,4 @@
-// $Id: LicenseKey.java,v 1.5 2005/06/03 15:44:14 jim Exp $
+// $Id: LicenseKey.java,v 1.6 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,7 +23,12 @@ class LicenseKey
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */ 
   public
   LicenseKey() 
   {

@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.8 2005/02/01 14:51:47 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.9 2006/02/27 17:54:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class ResourceSampleBlock
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   ResourceSampleBlock() 
   {}

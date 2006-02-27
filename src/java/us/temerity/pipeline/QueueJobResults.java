@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.6 2005/10/31 14:46:14 jim Exp $
+// $Id: QueueJobResults.java,v 1.7 2006/02/27 17:54:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class QueueJobResults
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public
   QueueJobResults()
   {}

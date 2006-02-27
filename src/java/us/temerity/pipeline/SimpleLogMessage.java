@@ -1,4 +1,4 @@
-// $Id: SimpleLogMessage.java,v 1.1 2004/10/30 17:36:38 jim Exp $
+// $Id: SimpleLogMessage.java,v 1.2 2006/02/27 17:54:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class SimpleLogMessage
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   SimpleLogMessage() 
   {}

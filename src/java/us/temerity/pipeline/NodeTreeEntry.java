@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.6 2005/04/04 03:58:14 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.7 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -11,7 +11,12 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
+ * An entry in the internal node tree datastructure used to represent the name heirarchy 
+ * of all working and checked-in node versions. <P> 
  * 
+ * This class should not be referenced in user code.  The {@link NodeTreeComp} class should
+ * be used instead.  Instances of NodeTreeComp can be obtained using the {@link 
+ * MasterMgrClient.updatePaths()} method.
  */
 public
 class NodeTreeEntry

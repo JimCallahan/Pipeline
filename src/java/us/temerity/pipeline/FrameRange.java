@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.10 2005/06/22 18:11:09 jim Exp $
+// $Id: FrameRange.java,v 1.11 2006/02/27 17:57:08 jim Exp $
 
 package us.temerity.pipeline;
  
@@ -32,6 +32,11 @@ class FrameRange
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   FrameRange()
   {

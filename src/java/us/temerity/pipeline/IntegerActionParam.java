@@ -1,4 +1,4 @@
-// $Id: IntegerActionParam.java,v 1.4 2004/11/11 00:37:06 jim Exp $
+// $Id: IntegerActionParam.java,v 1.5 2006/02/27 17:54:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,6 +21,11 @@ class IntegerActionParam
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   IntegerActionParam() 
   {

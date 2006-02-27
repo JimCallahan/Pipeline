@@ -1,4 +1,4 @@
-// $Id: SelectionKey.java,v 1.1 2004/06/19 00:29:07 jim Exp $
+// $Id: SelectionKey.java,v 1.2 2006/02/27 17:54:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,7 +23,12 @@ class SelectionKey
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */ 
   public
   SelectionKey() 
   {

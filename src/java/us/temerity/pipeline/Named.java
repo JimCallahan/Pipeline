@@ -1,4 +1,4 @@
-// $Id: Named.java,v 1.10 2005/01/22 06:10:09 jim Exp $
+// $Id: Named.java,v 1.11 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class Named
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   protected 
   Named() 
   {}

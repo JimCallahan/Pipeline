@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.18 2005/03/28 04:16:13 jim Exp $
+// $Id: FileSeq.java,v 1.19 2006/02/27 17:58:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,10 +28,14 @@ class FileSeq
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   FileSeq() 
   {}
-
   
   /**
    * Construct a <CODE>FileSeq</CODE> which contains a single frame without a frame number.

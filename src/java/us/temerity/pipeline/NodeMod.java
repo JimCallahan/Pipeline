@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.44 2005/10/17 06:23:38 jim Exp $
+// $Id: NodeMod.java,v 1.45 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class NodeMod
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   NodeMod()
   {
@@ -391,7 +396,7 @@ class NodeMod
 
       FrameRange range = pPrimarySeq.getFrameRange();
       
-      File path = new File(nname);    
+      Path path = new Path(nname);    
       FilePattern pat = 
 	new FilePattern(path.getName(), pattern.getPadding(), pattern.getSuffix());
   

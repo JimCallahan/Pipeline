@@ -1,4 +1,4 @@
-// $Id: RestoreRequest.java,v 1.2 2005/03/21 07:04:35 jim Exp $
+// $Id: RestoreRequest.java,v 1.3 2006/02/27 17:54:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class RestoreRequest
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   RestoreRequest() 
   {}

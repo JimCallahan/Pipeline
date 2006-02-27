@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.10 2005/09/07 21:11:16 jim Exp $
+// $Id: BaseEditor.java,v 1.11 2006/02/27 17:59:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,8 +29,9 @@ class BaseEditor
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * This constructor is only used during GLUE decoding and should not be 
-   * used in user code.
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
    */ 
   public
   BaseEditor() 

@@ -1,4 +1,4 @@
-// $Id: NodeTreeComp.java,v 1.5 2004/10/24 04:31:04 jim Exp $
+// $Id: NodeTreeComp.java,v 1.6 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,8 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * 
+ * A component of the node tree datastructure used to represent the name heirarchy of all 
+ * working and checked-in node versions.
  */
 public
 class NodeTreeComp

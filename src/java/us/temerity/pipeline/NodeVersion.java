@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.22 2005/10/17 06:23:38 jim Exp $
+// $Id: NodeVersion.java,v 1.23 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,6 +23,11 @@ class NodeVersion
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   NodeVersion()
   {

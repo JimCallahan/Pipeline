@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.14 2005/03/04 08:11:37 jim Exp $
+// $Id: JobReqs.java,v 1.15 2006/02/27 17:57:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -117,6 +117,11 @@ class JobReqs
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   JobReqs()
   {

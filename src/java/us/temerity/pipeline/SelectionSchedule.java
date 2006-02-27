@@ -1,4 +1,4 @@
-// $Id: SelectionSchedule.java,v 1.2 2006/01/05 16:54:43 jim Exp $
+// $Id: SelectionSchedule.java,v 1.3 2006/02/27 17:59:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,8 +23,10 @@ class SelectionSchedule
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * This method should only be used by the GLUE parser to initialize the class.
-   */ 
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public
   SelectionSchedule()
   { 

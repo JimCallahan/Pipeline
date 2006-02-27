@@ -1,4 +1,4 @@
-// $Id: ArchiveVolume.java,v 1.4 2005/09/07 21:11:16 jim Exp $
+// $Id: ArchiveVolume.java,v 1.5 2006/02/27 17:58:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class ArchiveVolume
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   ArchiveVolume() 
   {}

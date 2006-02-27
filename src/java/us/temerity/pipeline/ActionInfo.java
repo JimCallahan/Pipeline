@@ -1,4 +1,4 @@
-// $Id: ActionInfo.java,v 1.2 2005/06/02 22:11:58 jim Exp $
+// $Id: ActionInfo.java,v 1.3 2006/02/27 17:58:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,6 +23,11 @@ class ActionInfo
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public
   ActionInfo()
   {

@@ -1,4 +1,4 @@
-// $Id: LayoutGroup.java,v 1.3 2005/03/01 23:06:35 jim Exp $
+// $Id: LayoutGroup.java,v 1.4 2006/02/27 17:59:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -24,9 +24,10 @@ class LayoutGroup
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * This constructor is only used during GLUE decoding and should not be 
-   * used in user plugin code.
-   */ 
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   LayoutGroup() 
   {

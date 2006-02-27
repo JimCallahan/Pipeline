@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.7 2005/01/03 00:05:31 jim Exp $
+// $Id: LinkMod.java,v 1.8 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,6 +18,11 @@ class LinkMod
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public 
   LinkMod() 
   {

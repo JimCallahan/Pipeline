@@ -1,4 +1,4 @@
-// $Id: WorkGroups.java,v 1.2 2006/02/08 23:32:47 jim Exp $
+// $Id: WorkGroups.java,v 1.3 2006/02/27 17:54:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,6 +31,9 @@ class WorkGroups
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Construct a new work group.
+   */ 
   public 
   WorkGroups() 
   {

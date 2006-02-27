@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.20 2005/12/31 20:42:58 jim Exp $
+// $Id: QueueHost.java,v 1.21 2006/02/27 17:56:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,6 +23,11 @@ class QueueHost
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public
   QueueHost()
   { 
