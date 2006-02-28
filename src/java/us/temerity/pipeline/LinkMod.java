@@ -1,6 +1,8 @@
-// $Id: LinkMod.java,v 1.8 2006/02/27 17:56:01 jim Exp $
+// $Id: LinkMod.java,v 1.9 2006/02/28 19:47:45 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.GlueDecoder; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I N K   M O D                                                                        */

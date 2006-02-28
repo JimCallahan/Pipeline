@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.7 2006/02/27 17:56:01 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.8 2006/02/28 19:47:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ import java.util.*;
  * 
  * This class should not be referenced in user code.  The {@link NodeTreeComp} class should
  * be used instead.  Instances of NodeTreeComp can be obtained using the {@link 
- * MasterMgrClient.updatePaths()} method.
+ * MasterMgrClient#updatePaths updatePaths} method.
  */
 public
 class NodeTreeEntry

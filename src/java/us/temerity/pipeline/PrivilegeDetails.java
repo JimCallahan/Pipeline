@@ -1,4 +1,4 @@
-// $Id: PrivilegeDetails.java,v 1.1 2006/01/15 06:29:25 jim Exp $
+// $Id: PrivilegeDetails.java,v 1.2 2006/02/28 19:47:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,7 +37,7 @@ class PrivilegeDetails
    * @param privs
    *   The privileges granted.
    * 
-   * @param managedUsers
+   * @param sharedUsers
    *   The names of the users which are a members (or managers) of at lease one group for
    *   which the privileged user is a manager.  If the privileged user does not have either
    *   Queue Manager or Node Manager privileges, <CODE>null</CODE> should be used instead. 

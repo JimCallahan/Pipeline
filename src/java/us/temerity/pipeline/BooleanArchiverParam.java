@@ -1,6 +1,8 @@
-// $Id: BooleanArchiverParam.java,v 1.2 2006/02/27 17:54:05 jim Exp $
+// $Id: BooleanArchiverParam.java,v 1.3 2006/02/28 19:43:34 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.GlueDecoder; 
 
 import java.util.*;
 import java.io.*;

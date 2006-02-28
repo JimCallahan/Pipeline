@@ -1,7 +1,9 @@
-// $Id: SingleEditor.java,v 1.9 2006/02/27 17:54:52 jim Exp $
+// $Id: SingleEditor.java,v 1.10 2006/02/28 19:47:45 jim Exp $
 
 package us.temerity.pipeline;
 
+import us.temerity.pipeline.glue.GlueDecoder;
+   
 import java.util.*;
 import java.io.*;
 

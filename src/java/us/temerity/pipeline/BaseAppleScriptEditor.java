@@ -1,6 +1,8 @@
-// $Id: BaseAppleScriptEditor.java,v 1.3 2006/02/27 17:58:25 jim Exp $
+// $Id: BaseAppleScriptEditor.java,v 1.4 2006/02/28 19:47:45 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.GlueDecoder; 
 
 import java.util.*;
 import java.io.*;
