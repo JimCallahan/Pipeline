@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.4 2005/09/17 23:26:47 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.5 2006/03/14 16:42:34 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -350,6 +350,12 @@ class MayaTextureSyncTool
 
 	  if(pTextureFiles.isEmpty()) {
 	    Component comps[] = UIFactory.createTitledPanels();
+	    JPanel tpanel = (JPanel) comps[0];
+	    JPanel vpanel = (JPanel) comps[1];
+	    
+	    tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	    vpanel.add(Box.createHorizontalGlue());
+
 	    ibox.add(comps[2]);
 	  }
 	  else {
@@ -581,8 +587,14 @@ class MayaTextureSyncTool
 	{
 	  Box ibox = new Box(BoxLayout.Y_AXIS);
 
-	  if(pNodeTextures.isEmpty()) {
+	  if(pNodeTextures.isEmpty() && pUnlinkNodes.isEmpty()) {
 	    Component comps[] = UIFactory.createTitledPanels();
+	    JPanel tpanel = (JPanel) comps[0];
+	    JPanel vpanel = (JPanel) comps[1];
+	    
+	    tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	    vpanel.add(Box.createHorizontalGlue());
+
 	    ibox.add(comps[2]);
 	  }
 	  else {
@@ -1001,15 +1013,17 @@ class MayaTextureSyncTool
 	String lines[] = buf.toString().split("\n");
 	int lk;
 	for(lk=0; lk<lines.length; lk++) {
-	  String fields[] = lines[lk].split(" ");
-	  if((fields.length != 2) || 
-	     !fields[0].startsWith("Shader=") || !fields[1].startsWith("Texture=")) 
-	    throw new PipelineException
-	      ("The the texture information file (" + info + ") was unreadable!");
-
-	  String shader  = fields[0].substring(7);
-	  String texture = fields[1].substring(8);
-	  fileInfo.put(shader, texture);
+	  if(lines[lk].length() > 0) {
+	    String fields[] = lines[lk].split(" ");
+	    if((fields.length != 2) || 
+	       !fields[0].startsWith("Shader=") || !fields[1].startsWith("Texture=")) 
+	      throw new PipelineException
+		("The the texture information file (" + info + ") was unreadable!");
+	    
+	    String shader  = fields[0].substring(7);
+	    String texture = fields[1].substring(8);
+	    fileInfo.put(shader, texture);
+	  }
 	}
       }
     }
@@ -1032,7 +1046,7 @@ class MayaTextureSyncTool
 	  File file = null;
 	  if(!texture.startsWith("/")) {
 	    file = new File(PackageInfo.sProdDir, 
-			    pTargetSceneID.getWorkingParent().getPath() + "/" + texture);
+			    pTargetSceneID.getWorkingParent() + "/" + texture);
 	  }
 	  else {
 	    file = new File(texture);
