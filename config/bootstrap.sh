@@ -1,19 +1,19 @@
 #!/bin/sh
 
-echo "-------------------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
-echo "-------------------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------------"
 
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
-plsrcdir=$HOME/code/src/pipeline
+plsrcdir=$HOME/code-2.0.8/src/pipeline
 
 pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/salamander/051009
+plprofile=$plsrcdir/plconfig/customers/salamander/060316
 
 pushd i686-pc-linux-gnu-dbg
   CC=/usr/bin/gcc33 CXX=/usr/bin/g++33 \
@@ -31,13 +31,13 @@ popd
 
 MAC_HOSTNAME=tadpole
 
-echo "-------------------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------------"
 echo "  UPDATING: $MAC_HOSTNAME"
-echo "-------------------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------------"
 
-ssh tadpole "rm -rf cd code/src/pipeline"
+ssh tadpole "rm -rf cd code-2.0.8/src/pipeline"
 
 rsync -av --exclude-from=$plsrcdir/config/excluded \
-  $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code/src/pipeline
+  $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-2.0.8/src/pipeline
 
-ssh tadpole "source .bash_profile; cd code/build/pipeline; ./bootstrap.sh"
+ssh tadpole "source .bash_profile; cd code-2.0.8/build/pipeline; ./bootstrap.sh"
