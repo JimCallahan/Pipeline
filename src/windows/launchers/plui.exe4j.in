@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exe4j version="3.1.2">
+  <directoryPresets config="C:/cygwin@top_srcdir@/src/windows/icons" />
+  <application name="plui" distributionSourceDir="C:/cygwin@top_srcdir@/../.." />
+  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/i686-pc-linux-gnu-dbg/src/windows/launchers" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="">
+    <messageSet language="English" />
+    <versionInfo include="true" fileVersion="" companyName="Temerity Software, Inc." fileDescription="Pipeline User Interface" legalCopyright="Copyright (c) 2002-2006 Temerity Software, Inc." productVersion="2.0.8.0" internalName="" />
+  </executable>
+  <splashScreen show="true" autoOff="true" alwaysOnTop="false" width="592" height="369" bitmapFile="C:/cygwin@top_srcdir@/src/java/us/temerity/pipeline/laf/source/StartingJava.png">
+    <text>
+      <statusLine x="35" y="319" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
+      <versionLine x="35" y="278" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
+    </text>
+  </splashScreen>
+  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.5" maxVersion="1.5" preferredVM="server" allowBetaVM="true" jdkOnly="false">
+    <searchSequence>
+      <directory location="@WIN_JAVA_HOME@" />
+    </searchSequence>
+    <classPath>
+      <archive location="@WIN_ROOT_INST_DIR@/lib/api.jar" failOnError="true" />
+    </classPath>
+    <nativeLibraryDirectories />
+  </java>
+  <includedFiles />
+</exe4j>
+
