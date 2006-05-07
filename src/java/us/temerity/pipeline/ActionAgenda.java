@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.8 2005/11/03 22:27:14 jim Exp $
+// $Id: ActionAgenda.java,v 1.9 2006/05/07 20:32:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,11 @@ class ActionAgenda
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public
   ActionAgenda()
   {}
@@ -288,18 +293,45 @@ class ActionAgenda
     return null;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract pathname of the execution working directory for the current 
+   * operating system. 
+   */ 
+  public Path
+  getWorkingPath() 
+  {
+    return (new Path(PackageInfo.sProdPath, pNodeID.getWorkingParent()));
+  }
+
   /**
    * Get the execution working directory for the current operating system.
    */ 
   public File
   getWorkingDir() 
   {
-    return new File(PackageInfo.sProdDir, 
-		    pNodeID.getWorkingParent().getPath());
+    return getWorkingPath().toFile();
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get abstract pathname of the execution working directory.
+   */ 
+  public Path
+  getWorkingPath
+  (
+   OsType os
+  ) 
+  {
+    return (new Path(PackageInfo.getProdPath(os), pNodeID.getWorkingParent()));
   }
   
   /**
-   * Get the execution working directory for the given operating system.
+   * Get the execution working directory for the given operating system. 
    */ 
   public File
   getWorkingDir
@@ -307,8 +339,7 @@ class ActionAgenda
    OsType os
   ) 
   {
-    return new File(PackageInfo.getProdDir(os), 
-		    pNodeID.getWorkingParent().getPath());
+    return getWorkingPath(os).toFile();
   }
   
 
