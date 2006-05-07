@@ -1,4 +1,4 @@
-// $Id: VerifiedApp.java.in,v 1.8 2005/06/22 23:59:09 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.9 2006/05/07 20:06:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -80,6 +80,23 @@ class VerifiedApp
     }
 
     /* check the license time window (unless the license is Perpetual) */ 
+    if(!isLicenseValid()) 
+      System.exit(1);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Check if the license is still valid.
+   */ 
+  public boolean
+  isLicenseValid() 
+  {
+    /* check the license time window (unless the license is Perpetual) */ 
     if(sLicenseEnd < Long.MAX_VALUE) {
       try {
 	if(!TimeService.isValid(sLicenseStart, sLicenseEnd)) {
@@ -91,7 +108,7 @@ class VerifiedApp
 	     fmt.format(new Date(sLicenseEnd)) + ".\n" + 
 	     "Contact <support@temerity.us> to renew the license.\n");
 	  
-	  System.exit(1);
+	  return false; 
 	}
       }
       catch(IOException ex) {
@@ -104,16 +121,12 @@ class VerifiedApp
 	   "InterNet is functioning properly and that NTP packets are not being " + 
 	   "filtered by your firewall.");
 	
-	System.exit(1);
+	return false;
       }      
     }
+
+    return true; 
   }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Generate the hardware IDs for the local machine.
@@ -269,34 +282,6 @@ class VerifiedApp
 	  }
 	}
       }
-	
-      /* get the PCI amd SCSCI info (if any exists) */ 
-      {
-	String[] files = {
-	  "/proc/pci", 
-	  "/proc/scsi/scsi"
-	};
-	  
-	byte[] buf = new byte[4096];
-	int wk;
-	for(wk=0; wk<files.length; wk++) {
-	  try {
-	    FileInputStream in = new FileInputStream(files[wk]);
-	    
-	    while(true) {
-	      int cnt = in.read(buf);
-	      if(cnt == -1) 
-		break;
-	      
-	      md.update(buf, 0, cnt);
-	    }
-	    
-	    in.close();
-	  }
-	  catch(IOException ex) {
-	  }    
-	}
-      }  
 
       BigInteger hardwareID = new BigInteger(md.digest());
       for(String host : found) 
