@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.0.8)   
+AM_INIT_AUTOMAKE(Pipeline, 2.0.9)   
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -32,9 +32,13 @@ case $build in
     NATIVE_OSTYPE=Unix;
     AC_DEFINE([OS_IS_UNIX], [], [The OS is a standard UNIX variant.]);;
 
-  (powerpc-apple-darwin8.1.0 | powerpc-apple-darwin8.3.0)  
+  (powerpc-apple-darwin8.1.0 | powerpc-apple-darwin8.3.0 | powerpc-apple-darwin8.6.0)  
     NATIVE_OSTYPE=MacOS;
-    AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Mac OS X (Darwin).]);;
+    AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Mac OS X (Darwin) system.]);;
+
+  (i686-pc-cygwin) 
+    NATIVE_OSTYPE=Windows;
+    AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Windows XP system.]);;
 
   (*)
     AC_MSG_ERROR(unsupported native OS type: $build_os);;
@@ -44,6 +48,7 @@ AC_MSG_RESULT([$NATIVE_OSTYPE])
 
 AM_CONDITIONAL(IS_UNIX, test x$NATIVE_OSTYPE = xUnix)
 AM_CONDITIONAL(IS_MAC_OS, test x$NATIVE_OSTYPE = xMacOS)
+AM_CONDITIONAL(IS_WINDOWS, test x$NATIVE_OSTYPE = xWindows)
 
 
 
@@ -124,7 +129,7 @@ dnl -- JAVA TOOLS --------------------------------------------------------------
 AC_MSG_RESULT([Locating the Java Development Tools:])
 
 case "$NATIVE_OSTYPE" in 
-  (Unix)  
+  (Unix | Windows)
     JAVA_PATH=$PATH;;
 
   (MacOS) 
@@ -148,7 +153,7 @@ AC_ARG_WITH([customer],
             [  --with-customer=NAME           The symbolic name of the customer.])
 
 AC_SUBST(CUSTOMER)
-CUSTOMER=/base/prod
+CUSTOMER=
 
 AC_SUBST(LICENSE_DOC)
 LICENSE_DOC=license
@@ -222,9 +227,18 @@ AC_MSG_CHECKING([Customer Profile Version Check])
 AC_SUBST(PLCONFIG_VERSION)
 PLCONFIG_VERSION=
 
-crypto_version=`$JAVA -classpath $CRYPTO_APP_DIR CryptoApp --version`
-crypto_lookup="$JAVA -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE --lookup"
-profile_version=`$crypto_lookup PlConfigVersion`
+crypto_version=`"$JAVA" -classpath $CRYPTO_APP_DIR CryptoApp --version`
+
+function crypto_lookup {
+  "$JAVA" -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE --lookup $*
+}
+
+profile_version=`crypto_lookup PlConfigVersion`
+
+if test "x$crypto_version" == "x" -o "x$profile_version" == "x"
+then 
+  AC_MSG_ERROR([unable to determine the Customer Profile and/or CryptoApp versions.])
+fi
 
 if test "$profile_version" != "$crypto_version"
 then 
@@ -241,19 +255,19 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Server Host IDs])
 
 AC_SUBST(PIPELINE_HOST_NAMES)
-PIPELINE_HOST_NAMES=`$crypto_lookup HostIDs \
+PIPELINE_HOST_NAMES=`crypto_lookup HostIDs \
                      | awk '{printf("\"%s\", ",$1)}' \
                      | awk '{printf("'%s'\n",substr($0,0,length($0)-2))}'`
 
 AC_SUBST(PIPELINE_HOST_IDS)
-PIPELINE_HOST_IDS=`$crypto_lookup HostIDs \
+PIPELINE_HOST_IDS=`crypto_lookup HostIDs \
                    | awk '{printf("\"%s\", ",$2)}' \
                    | awk '{printf("'%s'\n",substr($0,0,length($0)-2))}'`
 
 if test "$host_ids" != "null" 
 then
   AC_MSG_RESULT([])
-  $crypto_lookup HostIDs | awk '{printf("  %s\n",$0)}'
+  crypto_lookup HostIDs | awk '{printf("  %s\n",$0)}'
 else 
   AC_MSG_ERROR([customer profile was incomplete.])
 fi 
@@ -263,7 +277,7 @@ fi
 AC_MSG_CHECKING([License Type])
 
 AC_SUBST(LICENSE_TYPE)
-LICENSE_TYPE=`$crypto_lookup LicenseType`
+LICENSE_TYPE=`crypto_lookup LicenseType`
 
 if test "$LICENSE_TYPE" == "null"
 then
@@ -277,7 +291,7 @@ AC_MSG_RESULT([$LICENSE_TYPE])
 AC_MSG_CHECKING([License Start Stamp])
 
 AC_SUBST(LICENSE_START_STAMP)
-LICENSE_START_STAMP=`$crypto_lookup LicenseStartStamp`
+LICENSE_START_STAMP=`crypto_lookup LicenseStartStamp`
 
 if test "$LICENSE_START_STAMP" == "null"
 then
@@ -291,7 +305,7 @@ AC_MSG_RESULT([$LICENSE_START_STAMP])
 AC_MSG_CHECKING([License End Stamp])
 
 AC_SUBST(LICENSE_END_STAMP)
-LICENSE_END_STAMP=`$crypto_lookup LicenseEndStamp`
+LICENSE_END_STAMP=`crypto_lookup LicenseEndStamp`
 
 if test "$LICENSE_END_STAMP" == "null"
 then
@@ -305,7 +319,7 @@ AC_MSG_RESULT([$LICENSE_END_STAMP])
 AC_MSG_CHECKING([License Valid Until])
 
 AC_SUBST(LICENSE_END)
-LICENSE_END=`$crypto_lookup LicenseEnd`
+LICENSE_END=`crypto_lookup LicenseEnd`
 
 if test "$LICENSE_END" == "null"
 then
@@ -326,7 +340,7 @@ AC_MSG_CHECKING([Root Installation Directory])
 AC_SUBST(ROOT_INST_DIR)
 ROOT_INST_DIR=""
 
-root_inst_dir=`$crypto_lookup RootInstallDirectory`
+root_inst_dir=`crypto_lookup RootInstallDirectory`
 
 if test "$root_inst_dir" == "null"
 then
@@ -343,7 +357,7 @@ AC_MSG_RESULT([$ROOT_INST_DIR])
 AC_MSG_CHECKING([User Home Directory])
 
 AC_SUBST(HOMEDIR)
-HOMEDIR=`$crypto_lookup HomeDirectory`
+HOMEDIR=`crypto_lookup HomeDirectory`
 
 if test "$HOMEDIR" == "null"
 then
@@ -358,7 +372,7 @@ AC_MSG_RESULT([$HOMEDIR])
 AC_MSG_CHECKING([Temporary Directory])
 
 AC_SUBST(TEMPDIR)
-TEMPDIR=`$crypto_lookup TemporaryDirectory`
+TEMPDIR=`crypto_lookup TemporaryDirectory`
 
 if test "$TEMPDIR" == "null"
 then
@@ -374,7 +388,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Master Server Hostname])
 
 AC_SUBST(PL_MASTER_SERVER)
-PL_MASTER_SERVER=`$crypto_lookup MasterHostname`
+PL_MASTER_SERVER=`crypto_lookup MasterHostname`
 
 if test "$PL_MASTER_SERVER" == "null"
 then
@@ -388,7 +402,7 @@ AC_MSG_RESULT([$PL_MASTER_SERVER])
 AC_MSG_CHECKING([Pipeline Master Server Port])
 
 AC_SUBST(PL_MASTER_PORT)
-PL_MASTER_PORT=`$crypto_lookup MasterPort`
+PL_MASTER_PORT=`crypto_lookup MasterPort`
 
 if test "$PL_MASTER_PORT" == "null"
 then
@@ -402,7 +416,7 @@ AC_MSG_RESULT([$PL_MASTER_PORT])
 AC_MSG_CHECKING([Pipeline Master Server Heap Size])
 
 AC_SUBST(PL_MASTER_HEAP_SIZE)
-PL_MASTER_HEAP_SIZE=`$crypto_lookup MasterHeapSize`
+PL_MASTER_HEAP_SIZE=`crypto_lookup MasterHeapSize`
 
 if test "$PL_MASTER_HEAP_SIZE" == "null"
 then
@@ -416,7 +430,7 @@ AC_MSG_RESULT([$PL_MASTER_HEAP_SIZE])
 AC_MSG_CHECKING([Root Node Storage Directory])
 
 AC_SUBST(NODEDIR)
-NODEDIR=`$crypto_lookup NodeDirectory`
+NODEDIR=`crypto_lookup NodeDirectory`
 
 if test "$NODEDIR" == "null"
 then
@@ -432,7 +446,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline File Server Hostname])
 
 AC_SUBST(PL_FILE_SERVER)
-PL_FILE_SERVER=`$crypto_lookup FileHostname`
+PL_FILE_SERVER=`crypto_lookup FileHostname`
 
 if test "$PL_FILE_SERVER" == "null"
 then
@@ -446,7 +460,7 @@ AC_MSG_RESULT([$PL_FILE_SERVER])
 AC_MSG_CHECKING([Pipeline File Server Port])
 
 AC_SUBST(PL_FILE_PORT)
-PL_FILE_PORT=`$crypto_lookup FilePort`
+PL_FILE_PORT=`crypto_lookup FilePort`
 
 if test "$PL_FILE_PORT" == "null"
 then
@@ -460,7 +474,7 @@ AC_MSG_RESULT([$PL_FILE_PORT])
 AC_MSG_CHECKING([Pipeline File Server Heap Size])
 
 AC_SUBST(PL_FILE_HEAP_SIZE)
-PL_FILE_HEAP_SIZE=`$crypto_lookup FileHeapSize`
+PL_FILE_HEAP_SIZE=`crypto_lookup FileHeapSize`
 
 if test "$PL_FILE_HEAP_SIZE" == "null"
 then
@@ -474,7 +488,7 @@ AC_MSG_RESULT([$PL_FILE_HEAP_SIZE])
 AC_MSG_CHECKING([Root Production Directory])
 
 AC_SUBST(PRODDIR)
-PRODDIR=`$crypto_lookup ProductionDirectory`
+PRODDIR=`crypto_lookup ProductionDirectory`
 
 if test "$PRODDIR" == "null"
 then
@@ -490,7 +504,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Queue Server Hostname])
 
 AC_SUBST(PL_QUEUE_SERVER)
-PL_QUEUE_SERVER=`$crypto_lookup QueueHostname`
+PL_QUEUE_SERVER=`crypto_lookup QueueHostname`
 
 if test "$PL_QUEUE_SERVER" == "null"
 then
@@ -504,7 +518,7 @@ AC_MSG_RESULT([$PL_QUEUE_SERVER])
 AC_MSG_CHECKING([Pipeline Queue Server Port])
 
 AC_SUBST(PL_QUEUE_PORT)
-PL_QUEUE_PORT=`$crypto_lookup QueuePort`
+PL_QUEUE_PORT=`crypto_lookup QueuePort`
 
 if test "$PL_QUEUE_PORT" == "null"
 then
@@ -518,7 +532,7 @@ AC_MSG_RESULT([$PL_QUEUE_PORT])
 AC_MSG_CHECKING([Pipeline Queue Server Heap Size])
 
 AC_SUBST(PL_QUEUE_HEAP_SIZE)
-PL_QUEUE_HEAP_SIZE=`$crypto_lookup QueueHeapSize`
+PL_QUEUE_HEAP_SIZE=`crypto_lookup QueueHeapSize`
 
 if test "$PL_QUEUE_HEAP_SIZE" == "null"
 then
@@ -531,7 +545,7 @@ AC_MSG_RESULT([$PL_QUEUE_HEAP_SIZE])
 AC_MSG_CHECKING([Pipeline Job Server Port])
 
 AC_SUBST(PL_JOB_PORT)
-PL_JOB_PORT=`$crypto_lookup JobPort`
+PL_JOB_PORT=`crypto_lookup JobPort`
 
 if test "$PL_JOB_PORT" == "null"
 then
@@ -545,7 +559,7 @@ AC_MSG_RESULT([$PL_JOB_PORT])
 AC_MSG_CHECKING([Root Queue Storage Directory])
 
 AC_SUBST(QUEUEDIR)
-QUEUEDIR=`$crypto_lookup QueueDirectory`
+QUEUEDIR=`crypto_lookup QueueDirectory`
 
 if test "$QUEUEDIR" == "null"
 then
@@ -561,7 +575,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline Plugin Server Hostname])
 
 AC_SUBST(PL_PLUGIN_SERVER)
-PL_PLUGIN_SERVER=`$crypto_lookup PluginHostname`
+PL_PLUGIN_SERVER=`crypto_lookup PluginHostname`
 
 if test "$PL_PLUGIN_SERVER" == "null"
 then
@@ -574,7 +588,7 @@ AC_MSG_RESULT([$PL_PLUGIN_SERVER])
 AC_MSG_CHECKING([Pipeline Plugin Server Port])
 
 AC_SUBST(PL_PLUGIN_PORT)
-PL_PLUGIN_PORT=`$crypto_lookup PluginPort`
+PL_PLUGIN_PORT=`crypto_lookup PluginPort`
 
 if test "$PL_PLUGIN_PORT" == "null"
 then
@@ -590,7 +604,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Pipeline User])
 
 AC_SUBST(PIPELINE_USER)
-PIPELINE_USER=`$crypto_lookup PipelineUser`
+PIPELINE_USER=`crypto_lookup PipelineUser`
 
 if test "$PIPELINE_USER" == "null"
 then
@@ -603,7 +617,7 @@ AC_MSG_RESULT([$PIPELINE_USER])
 AC_MSG_CHECKING([Pipeline User ID])
 
 AC_SUBST(PIPELINE_UID)
-PIPELINE_UID=`$crypto_lookup PipelineUserID`
+PIPELINE_UID=`crypto_lookup PipelineUserID`
 
 if test "$PIPELINE_UID" == "null"
 then
@@ -616,7 +630,7 @@ AC_MSG_RESULT([$PIPELINE_UID])
 AC_MSG_CHECKING([Pipeline Group])
 
 AC_SUBST(PIPELINE_GROUP)
-PIPELINE_GROUP=`$crypto_lookup PipelineGroup`
+PIPELINE_GROUP=`crypto_lookup PipelineGroup`
 
 if test "$PIPELINE_GROUP" == "null"
 then
@@ -629,7 +643,7 @@ AC_MSG_RESULT([$PIPELINE_GROUP])
 AC_MSG_CHECKING([Pipeline Group ID])
 
 AC_SUBST(PIPELINE_GID)
-PIPELINE_GID=`$crypto_lookup PipelineGroupID`
+PIPELINE_GID=`crypto_lookup PipelineGroupID`
 
 if test "$PIPELINE_GID" == "null"
 then
@@ -654,13 +668,15 @@ MAC_HOMEDIR=""
 AC_SUBST(MAC_TEMPDIR)
 MAC_TEMPDIR=""
 
-mac_root_inst_dir=`$crypto_lookup MacRootInstallDirectory`
-mac_prod_dir=`$crypto_lookup MacProductionDirectory`
-mac_home_dir=`$crypto_lookup MacHomeDirectory`
-mac_temp_dir=`$crypto_lookup MacTemporaryDirectory`
+mac_clients=`crypto_lookup MacClients`
+mac_root_inst_dir=`crypto_lookup MacRootInstallDirectory`
+mac_prod_dir=`crypto_lookup MacProductionDirectory`
+mac_home_dir=`crypto_lookup MacHomeDirectory`
+mac_temp_dir=`crypto_lookup MacTemporaryDirectory`
 has_mac=false
 
-if test "$mac_root_inst_dir" != "null" \
+if test "$mac_clients" == "true" \
+     -a "$mac_root_inst_dir" != "null" \
      -a "$mac_prod_dir" != "null" \
      -a "$mac_home_dir" != "null" \
      -a "$mac_temp_dir" != "null"
@@ -690,27 +706,78 @@ AM_CONDITIONAL(HAS_MAC, test x$has_mac = xtrue)
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Plugin Version Pattern])
-legacy_plugins=`$crypto_lookup LegacyPlugins`
+AC_SUBST(WIN_ROOT_INST_DIR)
+WIN_ROOT_INST_DIR=""
 
-AC_SUBST(PLUGIN_VERSION_PATTERN)
-PLUGIN_VERSION_PATTERN='v2_*_*'
+AC_SUBST(WIN_PRODDIR)
+WIN_PRODDIR=""
 
-if test x$legacy_plugins = xtrue
+AC_SUBST(WIN_HOMEDIR)
+WIN_HOMEDIR=""
+
+AC_SUBST(WIN_TEMPDIR)
+WIN_TEMPDIR=""
+
+AC_SUBST(WIN_JAVA_HOME)
+WIN_JAVA_HOME=""
+
+win_clients=`crypto_lookup WinClients`
+win_root_inst_dir=`crypto_lookup WinRootInstallDirectory`
+win_prod_dir=`crypto_lookup WinProductionDirectory`
+win_home_dir=`crypto_lookup WinHomeDirectory`
+win_temp_dir=`crypto_lookup WinTemporaryDirectory`
+win_java_home=`crypto_lookup WinJavaHome`
+has_windows=false
+
+if test "$win_clients" == "true" \
+     -a "$win_root_inst_dir" != "null" \
+     -a "$win_prod_dir" != "null" \
+     -a "$win_home_dir" != "null" \
+     -a "$win_temp_dir" != "null" \
+     -a "$win_java_home" != "null"
 then
-  PLUGIN_VERSION_PATTERN='v*_*_*'
+  AC_MSG_CHECKING([Windows Root Installation Directory])
+  WIN_ROOT_INST_DIR="$win_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP"
+  AC_MSG_RESULT([$WIN_ROOT_INST_DIR])
+
+  AC_MSG_CHECKING([Windows Root Production Directory])
+  WIN_PRODDIR="$win_prod_dir"
+  AC_MSG_RESULT([$WIN_PRODDIR])
+  
+  AC_MSG_CHECKING([Windows User Home Directory])
+  WIN_HOMEDIR="$win_home_dir"
+  AC_MSG_RESULT([$WIN_HOMEDIR])
+
+  AC_MSG_CHECKING([Windows Temporary Directory])
+  WIN_TEMPDIR="$win_temp_dir"
+  AC_MSG_RESULT([$WIN_TEMPDIR])
+
+  AC_MSG_CHECKING([Windows Java Home Directory])
+  WIN_JAVA_HOME="$win_java_home"
+  AC_MSG_RESULT([$WIN_JAVA_HOME])
+
+  has_windows=true
 fi 
 
-AC_MSG_RESULT([$PLUGIN_VERSION_PATTERN])
+AM_CONDITIONAL(HAS_WINDOWS, test x$has_windows = xtrue)
 
 
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Java Runtime])
+AC_MSG_CHECKING([Plugin Version Pattern])
+legacy_plugins=`crypto_lookup LegacyPlugins`
+
+AM_CONDITIONAL([BUILD_LEGACY_PLUGINS], [test x$legacy_plugins = xtrue])
+
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([JRE Info])
 
 AC_SUBST(JAVA_HOME)
-JAVA_HOME=`$crypto_lookup JavaHome`
+JAVA_HOME=`crypto_lookup JavaHome`
 
 if test "$JAVA_HOME" == "null"
 then
@@ -723,7 +790,7 @@ AC_MSG_RESULT([$JAVA_HOME])
 AC_MSG_CHECKING([Java Vendor])
 
 AC_SUBST(JAVA_VENDOR)
-JAVA_VENDOR=`$crypto_lookup JavaVendor`
+JAVA_VENDOR=`crypto_lookup JavaVendor`
 
 if test "$JAVA_VENDOR" == "null"
 then
@@ -736,7 +803,7 @@ AC_MSG_RESULT([$JAVA_VENDOR])
 AC_MSG_CHECKING([Java Name])
 
 AC_SUBST(JAVA_NAME)
-JAVA_NAME=`$crypto_lookup JavaName`
+JAVA_NAME=`crypto_lookup JavaName`
 
 if test "$JAVA_NAME" == "null"
 then
@@ -749,7 +816,7 @@ AC_MSG_RESULT([$JAVA_NAME])
 AC_MSG_CHECKING([Java Version])
 
 AC_SUBST(JAVA_VERSION)
-JAVA_VERSION=`$crypto_lookup JavaVersion`
+JAVA_VERSION=`crypto_lookup JavaVersion`
 
 if test "$JAVA_VERSION" == "null"
 then
@@ -759,10 +826,10 @@ fi
 AC_MSG_RESULT([$JAVA_VERSION])
 
 
-AC_MSG_CHECKING([Java ClassVersion])
+AC_MSG_CHECKING([Java Class Version])
 
 AC_SUBST(JAVA_CLASS_VERSION)
-JAVA_CLASS_VERSION=`$crypto_lookup JavaClassVersion`
+JAVA_CLASS_VERSION=`crypto_lookup JavaClassVersion`
 
 if test "$JAVA_CLASS_VERSION" == "null"
 then
@@ -770,7 +837,7 @@ then
 fi 
 
 AC_MSG_RESULT([$JAVA_CLASS_VERSION])
-
+AC_MSG_RESULT([ ])
 
 
 
@@ -778,7 +845,7 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Javac Options:])
 
-AC_MSG_CHECKING([java includes])
+AC_MSG_CHECKING([Java Includes])
 
 AC_SUBST(JAVA_INC)
 case "$NATIVE_OSTYPE" in 
@@ -788,39 +855,58 @@ case "$NATIVE_OSTYPE" in
 
   (MacOS) 
     JAVA_INC=`dirname $JAVA`/../Headers;;
+
+  (Windows) 
+    JAVA_INC=`dirname $JAVA`/../include;;
 esac
 
 AC_MSG_RESULT([$JAVA_INC])
 
 
 
-AC_MSG_CHECKING([java opts])
+AC_MSG_CHECKING([Javac Flags])
 
 AC_SUBST(JAVA_C_FLAGS)
-JAVA_C_FLAGS="-source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
+JAVA_C_FLAGS="-source 1.5 -Xlint:all,deprecation,-unchecked,-fallthrough"
 JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
 
 AC_MSG_RESULT([$JAVA_C_FLAGS])
+AC_MSG_RESULT([ ])
+
+
+AC_MSG_CHECKING([Javac (No Deprecation) Flags])
+
+AC_SUBST(JAVA_C_NODEP_FLAGS)
+JAVA_C_NODEP_FLAGS="-source 1.5 -Xlint:all,-deprecation,-unchecked,-fallthrough"
+JAVA_C_NODEP_FLAGS="$JAVA_C_NODEP_FLAGS -J-Xms64m -J-Xmx256m"
+
+AC_MSG_RESULT([$JAVA_C_NODEP_FLAGS])
+AC_MSG_RESULT([ ])
 
 
 
 AC_SUBST(JAVA_RUNTIME)
 JAVA_RUNTIME=""
 
-AC_SUBST(PIPELINE_INST_DIR)
-PIPELINE_INST_DIR=""
+AC_SUBST(JAVA_RUNTIME_OPTS)
+JAVA_RUNTIME_OPTS=""
+
+AC_SUBST(PIPELINE_JAR)
+PIPELINE_JAR=""
 
 case "$NATIVE_OSTYPE" in 
   (Unix)  
     JAVA_RUNTIME="$JAVA_HOME/bin/java";
-    PIPELINE_INST_DIR="$ROOT_INST_DIR";;
+    PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";;
 
   (MacOS) 
     JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
-    PIPELINE_INST_DIR="$MAC_ROOT_INST_DIR";;
+    PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";;
+  
+  (Windows) 
+    JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java";
+    PIPELINE_JAR="${WIN_ROOT_INST_DIR}/lib/api.jar";;
 esac
-
-
 
 AC_SUBST(EXTRA_DEBUG_SUBDIRS)
 EXTRA_DEBUG_SUBDIRS=""
@@ -839,17 +925,30 @@ AC_ARG_ENABLE([opt],
 if test "$BUILD_MODE" = "opt" 
 then 
   CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG";
-  JAVA_RUNTIME="$JAVA_RUNTIME -disableassertions -server"
+  JAVA_RUNTIME_OPTS="-disableassertions"
   EXTRA_DEBUG_SUBDIRS=""
 else
   CXXFLAGS="$CXXFLAGS -g";
   JAVA_C_FLAGS="$JAVA_C_FLAGS -g"
-  JAVA_RUNTIME="$JAVA_RUNTIME -enableassertions -server"
+  JAVA_RUNTIME_OPTS="-enableassertions"
   EXTRA_DEBUG_SUBDIRS="tests"
 fi
 
-AC_MSG_CHECKING([java runtime])
+case "$NATIVE_OSTYPE" in 
+  (Unix | MacOS) 
+    JAVA_RUNTIME_OPTS="$JAVA_RUNTIME_OPTS -server";;
+esac
+
+
+AC_MSG_CHECKING([Java Runtime])
 AC_MSG_RESULT([$JAVA_RUNTIME])
+
+AC_MSG_CHECKING([Java Runtime Opts])
+AC_MSG_RESULT([$JAVA_RUNTIME_OPTS])
+
+AC_MSG_CHECKING([Pipeline JAR File])
+AC_MSG_RESULT([$PIPELINE_JAR])
+
 AC_MSG_RESULT([ ])
 
 
@@ -941,6 +1040,11 @@ AC_SUBST(PLPLUGINMGR_GC_OPTS)
 PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms16M -Xmx128M"
 AC_MSG_RESULT([$PLPLUGINMGR_GC_OPTS])
 
+AC_MSG_CHECKING([pltestnative])
+AC_SUBST(PLTESTNATIVE_GC_OPTS)
+PLTESTNATIVE_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
+AC_MSG_RESULT([$PLTESTNATIVE_GC_OPTS])
+
 AC_MSG_RESULT([ ])
 
 
@@ -998,6 +1102,11 @@ AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_DEBUG_OPTS)
 PLPLUGINMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+9))
 AC_MSG_RESULT([$PLPLUGINMGR_DEBUG_OPTS])
+
+AC_MSG_CHECKING([pltestnative])
+AC_SUBST(PLTESTNATIVE_DEBUG_OPTS)
+PLTESTNATIVE_DEBUG_OPTS=${java_debug_opts}$(($debug_base+10))
+AC_MSG_RESULT([$PLTESTNATIVE_DEBUG_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1123,6 +1232,7 @@ AC_PROG_INSTALL
 
 unset BASH
 AC_PATH_PROG(BASH, bash, $PATH)
+AC_PATH_PROG(ENV, env, $PATH)
 AC_PATH_PROG(MAKE, make, $PATH)
 AC_PATH_PROG(CVS, cvs, $PATH)
 AC_PATH_PROG(CHMOD, chmod, $PATH)
@@ -1133,12 +1243,10 @@ AC_PATH_PROG(KILL, kill, $PATH)
 AC_PATH_PROG(SSH, ssh, $PATH)
 AC_PATH_PROG(ID, id, $PATH)
 AC_PATH_PROG(DF, df, $PATH) 
-AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 AC_PATH_PROG(GIMP, gimp, $PATH)
 AC_PATH_PROG(CHECKBOT, checkbot, echo, $PATH)
 
 AC_MSG_RESULT([ ])
-
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -1217,6 +1325,7 @@ dnl   Checks for system services.
 dnl ------------------------------------------------------------------------------------------
 
 
+
 dnl ------------------------------------------------------------------------------------------
 dnl   Miscellaneous stuff.
 dnl ------------------------------------------------------------------------------------------
@@ -1273,6 +1382,14 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/laf/scripts/radial-menu
   src/java/us/temerity/pipeline/laf/scripts/build-web-icons
   src/java/us/temerity/pipeline/plugin/Makefile
+  src/java/us/temerity/pipeline/plugin/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/v1_1_0/Makefile
+  src/java/us/temerity/pipeline/plugin/v1_2_0/Makefile
+  src/java/us/temerity/pipeline/plugin/v1_3_0/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_1/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_4/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_9/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
 
@@ -1297,6 +1414,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plui
+  src/java/scripts/debug/pltestnative
 
   src/java/scripts/profile/Makefile
   src/java/scripts/profile/plfilemgr
@@ -1326,11 +1444,36 @@ AC_CONFIG_FILES([
 
   src/native/Makefile
 
+  src/windows/Makefile
+  src/windows/native/Makefile
+  src/windows/services/Makefile
+
+  src/windows/scripts/Makefile
+  src/windows/scripts/plscript.bat.src
+  src/windows/scripts/pljobmgr.bat.src
+
+  src/windows/scripts/debug/Makefile
+  src/windows/scripts/debug/pltestheavy.bat.src
+  src/windows/scripts/debug/pltestlight.bat.src
+  src/windows/scripts/debug/pltestnative.bat.src
+  src/windows/scripts/debug/plscript.bat.src
+  src/windows/scripts/debug/plui2.bat.src  
+  src/windows/scripts/debug/pljobmgr.bat.src
+
+  src/windows/launchers/Makefile
+  src/windows/launchers/plui.exe4j
+  src/windows/launchers/debug/Makefile
+  src/windows/launchers/debug/plui.exe4j
+
+  src/unix/Makefile
+  src/unix/icons/Makefile
+
   rpm/Makefile
   rpm/pipeline.spec
   rpm/plmaster.spec
   rpm/plqueuemgr.spec
   rpm/plmac.spec
+  rpm/plwin.spec
   rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros

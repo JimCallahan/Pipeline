@@ -3,6 +3,7 @@
 /docs/images/browser-icons/Makefile.in
 /docs/images/node-icons/Makefile.in
 /docs/images/javadoc/Makefile.in
+/docs/legal/Makefile.in
 /docs/Makefile.in
 /docs/manuals/Makefile.in
 /docs/man/Makefile.in
@@ -24,3 +25,6 @@
 /src/mac-apps/pipeline/Resources/Makefile.in
 /src/mac-apps/pipeline/Makefile.in
 /src/mac-apps/pipeline/MacOS/Makefile.in
+/src/windows/Makefile.in
+/src/windows/scripts/Makefile.in
+
