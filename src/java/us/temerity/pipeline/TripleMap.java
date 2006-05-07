@@ -1,4 +1,4 @@
-// $Id: TripleMap.java,v 1.2 2005/06/28 18:05:21 jim Exp $
+// $Id: TripleMap.java,v 1.3 2006/05/07 21:18:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,14 +38,7 @@ class TripleMap<A,B,C,V>
   )
   {
     super();
-
-    for(A keyA : tmap.keySet()) {
-      TreeMap<B,TreeMap<C,V>> tableB = new TreeMap<B,TreeMap<C,V>>();
-      put(keyA, tableB);
-      
-      for(B keyB : tmap.get(keyA).keySet()) 
-	tableB.put(keyB, new TreeMap<C,V>(tmap.get(keyA).get(keyB)));
-    }
+    putAll(tmap);
   }  
 
 
@@ -78,6 +71,15 @@ class TripleMap<A,B,C,V>
    V value
   )  
   {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
+    if(keyC == null) 
+      throw new IllegalArgumentException("The third key cannot be (null)!");
+
     TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
     if(tableB == null) {
       tableB = new TreeMap<B,TreeMap<C,V>>();
@@ -91,6 +93,27 @@ class TripleMap<A,B,C,V>
     }
 
     tableC.put(keyC, value);
+  }
+
+  /**
+   * Inserts all the of key/value mappings from the given map into this map.
+   * 
+   * @param tmap
+   *   The map to insert.
+   */ 
+  public void
+  putAll
+  (
+   TripleMap<A,B,C,V> tmap
+  )  
+  {
+    for(A a : tmap.keySet()) {
+      for(B b : tmap.keySet(a)) {
+	for(C c : tmap.keySet(a, b)) {
+	  put(a, b, c, tmap.get(a, b, c));
+	}
+      }
+    }
   }
 
   /**
@@ -116,6 +139,15 @@ class TripleMap<A,B,C,V>
    C keyC
   ) 
   {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
+    if(keyC == null) 
+      throw new IllegalArgumentException("The third key cannot be (null)!");
+
     TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
     if(tableB == null) 
       return null;
@@ -147,6 +179,15 @@ class TripleMap<A,B,C,V>
    C keyC
   ) 
   {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
+    if(keyC == null) 
+      throw new IllegalArgumentException("The third key cannot be (null)!");
+
     TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
     if(tableB == null) 
       return;
@@ -164,6 +205,69 @@ class TripleMap<A,B,C,V>
       super.remove(keyA);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the second set of keys given the first key index. 
+   * 
+   * @param keyA
+   *   The first key.
+   * 
+   * @return
+   *   The keys or <CODE>null</CODE> if no entry exists.
+   */ 
+  public Set<B>
+  keySet
+  (
+   A keyA
+  ) 
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
+    if(tableB == null) 
+      return null;
+
+    return tableB.keySet(); 
+  }
+
+  /**
+   * Returns the third set of keys given the first and second key indices. 
+   * 
+   * @param keyA
+   *   The first key.
+   * 
+   * @param keyB
+   *   The second key. 
+   * 
+   * @return
+   *   The keys or <CODE>null</CODE> if no entry exists.
+   */ 
+  public Set<C>
+  keySet
+  (
+   A keyA,
+   B keyB
+  ) 
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
+    TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
+    if(tableB == null) 
+      return null;
+
+    TreeMap<C,V> tableC = tableB.get(keyB);
+    if(tableC == null)
+      return null; 
+
+    return tableC.keySet(); 
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

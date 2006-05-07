@@ -1,4 +1,4 @@
-// $Id: DoubleMap.java,v 1.1 2005/06/27 07:16:54 jim Exp $
+// $Id: DoubleMap.java,v 1.2 2006/05/07 21:18:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,9 +38,7 @@ class DoubleMap<A,B,V>
   )
   {
     super();
-
-    for(A key : tmap.keySet()) 
-      put(key, new TreeMap<B,V>(tmap.get(key)));
+    putAll(tmap);
   }  
 
 
@@ -69,6 +67,12 @@ class DoubleMap<A,B,V>
    V value
   ) 
   {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
     TreeMap<B,V> tableB = super.get(keyA);
     if(tableB == null) {
       tableB = new TreeMap<B,V>();
@@ -76,6 +80,25 @@ class DoubleMap<A,B,V>
     }
 
     tableB.put(keyB, value);
+  }
+
+  /**
+   * Inserts all the of key/value mappings from the given map into this map.
+   * 
+   * @param tmap
+   *   The map to insert.
+   */ 
+  public void
+  putAll
+  (
+   DoubleMap<A,B,V> tmap
+  )  
+  {
+    for(A a : tmap.keySet()) {
+      for(B b : tmap.keySet(a)) {
+	put(a, b, tmap.get(a, b));
+      }
+    }
   }
 
   /**
@@ -97,6 +120,12 @@ class DoubleMap<A,B,V>
    B keyB
   ) 
   {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
     TreeMap<B,V> tableB = super.get(keyA);
     if(tableB == null) 
       return null;
@@ -120,6 +149,12 @@ class DoubleMap<A,B,V>
    B keyB
   ) 
   {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
     TreeMap<B,V> tableB = super.get(keyA);
     if(tableB == null) 
       return;
@@ -128,6 +163,34 @@ class DoubleMap<A,B,V>
 
     if(tableB.isEmpty())
       super.remove(keyA);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the second set of keys given the first key index. 
+   * 
+   * @param keyA
+   *   The first key.
+   * 
+   * @return
+   *   The keys or <CODE>null</CODE> if no entry exists.
+   */ 
+  public Set<B>
+  keySet
+  (
+   A keyA
+  ) 
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    TreeMap<B,V> tableB = super.get(keyA);
+    if(tableB == null) 
+      return null;
+
+    return tableB.keySet(); 
   }
 
 
