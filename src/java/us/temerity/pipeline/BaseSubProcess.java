@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.9 2005/11/03 22:02:14 jim Exp $
+// $Id: BaseSubProcess.java,v 1.10 2006/05/07 20:36:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -135,9 +135,21 @@ class BaseSubProcess
 	ArrayList<String> cmd = new ArrayList<String>();
 	
 	if(user != null) {
-	  cmd.add(PackageInfo.sInstDir + "/" + PackageInfo.sOsType + "/sbin/plrun");
-	  cmd.add(user);
-	  cmd.add(lookupUserID(user).toString());
+	  switch(PackageInfo.sOsType) {
+	  case Unix:
+	  case MacOS:
+	    {
+	      Path path = new Path(PackageInfo.sInstPath, 
+				   "/" + PackageInfo.sOsType + "/sbin/plrun");
+	      cmd.add(path.toOsString()); 
+	      cmd.add(user);
+	      cmd.add(lookupUserID(user).toString());
+	    }
+	    break;
+
+	  case Windows:
+	    throw new IllegalArgumentException("Not implemented yet...");
+	  }
 	}
 	
 	cmd.add(file.getPath());
@@ -154,7 +166,7 @@ class BaseSubProcess
 	      ("The argument number (" + cnt + ") given for the program (" + prog + ") " + 
 	       "was an empty string!  All subprocess arguments must contain at least one " + 
 	       "character.");
-
+	  
 	  cmd.add(arg);
 	  cnt++;
 	}
@@ -234,7 +246,7 @@ class BaseSubProcess
 
       SubProcessLight proc = 
 	new SubProcessLight("LookupUserID", "id", args, 
-			    System.getenv(), PackageInfo.sTempDir);
+			    System.getenv(), PackageInfo.sTempPath.toFile());
       try {
 	proc.start();
 	proc.join();
@@ -391,26 +403,36 @@ class BaseSubProcess
       boolean wasSignalled = false;
       
       if(pSubstituteUser != null) {
-	ArrayList<String> args = new ArrayList<String>();
-	args.add("-s");
-	args.add(signal.toString());
-	args.add(dpid.toString());
-	
-	SubProcessLight killProc = 
-	  new SubProcessLight(pSubstituteUser, "SignalSubProcess", 
-			      "kill", args, env, PackageInfo.sTempDir);
-	killProc.start(); 
-	try {
-	  killProc.join();
-	} 
-	catch(InterruptedException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
-	     "Interrupted while trying to send signal (" + signal + ") " + 
-	     "to process [" + dpid + "] using plrun(1):\n" +
-	     "  " + ex.getMessage());
+	switch(PackageInfo.sOsType) {
+	case Unix: 
+	case MacOS:
+	  {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("-s");
+	    args.add(signal.toString());
+	    args.add(dpid.toString());
+	    
+	    SubProcessLight killProc = 
+	      new SubProcessLight(pSubstituteUser, "SignalSubProcess", 
+				  "kill", args, env, PackageInfo.sTempPath.toFile());
+	    killProc.start(); 
+	    try {
+	      killProc.join();
+	    } 
+	    catch(InterruptedException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+		 "Interrupted while trying to send signal (" + signal + ") " + 
+		 "to process [" + dpid + "] using plrun(1):\n" +
+		 "  " + ex.getMessage());
+	    }
+	    wasSignalled = true;
+	  }
+	  break;
+
+	case Windows:
+	  throw new IllegalArgumentException("Not implemented yet...");
 	}
-	wasSignalled = true;
       }
       else {
 	try {
@@ -493,12 +515,10 @@ class BaseSubProcess
       }
       break;
 
+    case Windows:
     case MacOS:
       dead.add(pid);
       break;
-      
-    case Windows:
-      assert(false);
     }
 
     return dead;
