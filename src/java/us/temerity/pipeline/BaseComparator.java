@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.7 2006/02/28 19:47:45 jim Exp $
+// $Id: BaseComparator.java,v 1.8 2006/05/07 20:34:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -83,11 +83,15 @@ class BaseComparator
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Gets the name of the comparator executable.
+   * Gets the name of the comparator executable. <P> 
+   * 
+   * Automatically appends ".exe" to the program name when running under Windows.
    */
   public String
   getProgram() 
   {
+    if(PackageInfo.sOsType == OsType.Windows) 
+      return (pProgram + ".exe");
     return pProgram;
   }
 

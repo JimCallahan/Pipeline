@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.5 2006/02/27 17:57:29 jim Exp $
+// $Id: BasePlugin.java,v 1.6 2006/05/07 20:34:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,6 +13,11 @@ import java.io.*;
 
 /**
  * The superclass of all Pipeline plugins. <P>
+ * 
+ * By default only the Unix operating system is supported by a subclass plugin.  The 
+ * {@link #addSupport addSupport} method should be called in the subclass constructor to 
+ * add support for other operation systems.  Unix support can also be removed using the 
+ * {@link #removeSupport removeSupport} method. 
  */
 public 
 class BasePlugin
@@ -31,6 +36,9 @@ class BasePlugin
   BasePlugin() 
   {
     super();
+
+    pSupports = new TreeSet<OsType>();
+    addSupport(OsType.Unix); 
   }
 
   /** 
@@ -58,6 +66,9 @@ class BasePlugin
   ) 
   {
     super(name, desc);
+
+    pSupports = new TreeSet<OsType>();
+    addSupport(OsType.Unix);
 
     if(vid == null) 
       throw new IllegalArgumentException("The plugin version cannot be (null)");
@@ -92,6 +103,76 @@ class BasePlugin
     return pVendor; 
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the plugin supports execution under the given operating system type.
+   *
+   * @param os
+   *   The operating system type.
+   */ 
+  public boolean
+  supports
+  (
+   OsType os
+  ) 
+  {
+    return pSupports.contains(os); 
+  }
+
+  /**
+   * Get the supported operating system types.
+   */ 
+  public SortedSet<OsType>
+  getSupports() 
+  {
+    return Collections.unmodifiableSortedSet(pSupports); 
+  }
+
+  /**
+   * Add support for execution under the given operating system type.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  protected void 
+  addSupport
+  (
+   OsType os
+  ) 
+  {
+    pSupports.add(os); 
+  }
+
+  /**
+   * Remove support for execution under the given operating system type.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  protected void 
+  removeSupport
+  (
+   OsType os
+  ) 
+  {
+    pSupports.remove(os); 
+  }
+
+  /**
+   * Copy the OS support flags from the given plugin.
+   */ 
+  protected void
+  setSupports
+  (
+   SortedSet<OsType> oss
+  ) 
+  {
+    pSupports.clear();
+    pSupports.addAll(oss); 
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -167,14 +248,25 @@ class BasePlugin
   public String
   toString()
   {
-    return 
-     ("Name        : " + getName() + "\n" + 
-      "Version     : " + getVersionID() + "\n" + 
-      "Vendor      : " + getVendor() + "\n" + 
-      "Description : " + wordWrap(getDescription(), 14, 80) + "\n" + 
-      "Catagory    : " + getPluginCatagory() + "\n" +
-      "Status      : " + (isUnderDevelopment() ? "Under Development" : "Permanent") + "\n" + 
-      "Class       : " + getClass().getName());
+    StringBuffer buf = new StringBuffer();
+
+    buf.append
+      ("Name        : " + getName() + "\n" + 
+       "Version     : " + getVersionID() + "\n" + 
+       "Vendor      : " + getVendor() + "\n" + 
+       "Supports    :"); 
+    
+    for(OsType os : pSupports) 
+      buf.append(" " + os.toTitle()); 
+
+    buf.append
+      ("\n" +
+       "Description : " + wordWrap(getDescription(), 14, 80) + "\n" + 
+       "Catagory    : " + getPluginCatagory() + "\n" +
+       "Status      : " + (isUnderDevelopment() ? "Under Development" : "Permanent") + "\n" + 
+       "Class       : " + getClass().getName());
+
+    return buf.toString();
   }
 
 
@@ -213,7 +305,7 @@ class BasePlugin
     String vendor = (String)  decoder.decode("Vendor");
     if(vendor == null) 
       throw new GlueException("The \"Vendor\" was missing!");
-    pVendor = vendor;      
+    pVendor = vendor;     
   }
 
 
@@ -308,6 +400,11 @@ class BasePlugin
    * The name of the plugin vendor.
    */ 
   protected String  pVendor; 
+
+  /**
+   * The set of operating system types supported by this plugin. 
+   */ 
+  private TreeSet<OsType>  pSupports;
 
   /**
    * Whether this version of the plugin in currently being modified and tested by the 

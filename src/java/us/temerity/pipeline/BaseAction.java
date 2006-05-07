@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.31 2005/12/03 06:41:20 jim Exp $
+// $Id: BaseAction.java,v 1.32 2006/05/07 20:33:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,8 +38,9 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * This constructor is only used during GLUE decoding and should not be 
-   * used in user code.
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
    */ 
   public 
   BaseAction() 
@@ -99,6 +100,8 @@ class BaseAction
   ) 
   {
     super(action.pName, action.pVersionID, action.pVendor, action.pDescription);
+
+    setSupports(action.getSupports());
 
     pSingleParams    = action.pSingleParams;
     pSourceParams    = action.pSourceParams; 
@@ -1295,6 +1298,9 @@ class BaseAction
     FileCleaner.add(file);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Change file access permissions. <P> 
    * 
@@ -1320,6 +1326,26 @@ class BaseAction
     NativeFileSys.chmod(mode, file);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract pathname of the root directory used to store temporary files 
+   * created by the job. <P> 
+   * 
+   * @param agenda 
+   *   The jobs action agenda.
+   */
+  public Path
+  getTempPath
+  (
+   ActionAgenda agenda
+  )
+  {
+    return (new Path(PackageInfo.sTempPath, 
+		     "pljobmgr/" + agenda.getJobID() + "/scratch"));
+  }
+
   /**
    * Get the root directory used to store temporary files created by the job. <P> 
    * 
@@ -1332,7 +1358,7 @@ class BaseAction
    ActionAgenda agenda
   )
   {
-    return new File(PackageInfo.sTempDir, "pljobmgr/" + agenda.getJobID() + "/scratch");
+    return getTempPath(agenda).toFile();
   }
 
   /** 

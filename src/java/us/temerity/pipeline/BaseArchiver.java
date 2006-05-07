@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.10 2005/09/07 21:11:16 jim Exp $
+// $Id: BaseArchiver.java,v 1.11 2006/05/07 20:34:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,10 +30,11 @@ class BaseArchiver
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
- 
+
   /**
-   * This constructor is only used during GLUE decoding and should not be 
-   * used in user plugin code.
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
    */ 
   public
   BaseArchiver() 
@@ -105,6 +106,80 @@ class BaseArchiver
   } 
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add support for execution under the given operating system type.<P> 
+   * 
+   * This method is disabled because Archiver plugins can only support the default 
+   * Unix operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  protected void 
+  addSupport
+  (
+   OsType os
+  ) 
+  {
+    switch(os) {
+    case Unix:
+      super.addSupport(os);
+      break;
+      
+    default:
+      throw new IllegalArgumentException
+	("Archiver plugins can only support the default Unix operating system.");
+    }
+  }
+
+  /**
+   * Remove support for execution under the given operating system type.<P> 
+   * 
+   * This method is disabled because Archiver plugins can only support the default 
+   * Unix operating system.
+   * 
+   * @param os
+   *   The operating system type.
+   */ 
+  protected void 
+  removeSupport
+  (
+   OsType os
+  ) 
+  {
+    switch(os) {
+    case Unix:
+      throw new IllegalArgumentException
+	("Unix support cannot be removed from Archiver plugins!");
+
+    default:
+      super.removeSupport(os);
+    }
+  }
+
+  /**
+   * Copy the OS support flags from the given plugin.<P> 
+   * 
+   * This method is disabled because Archiver plugins can only support the default 
+   * Unix operating system.
+   */ 
+  protected void
+  setSupports
+  (
+   SortedSet<OsType> oss
+  ) 
+  {
+    if(oss.contains(OsType.MacOS) || oss.contains(OsType.Windows)) 
+      throw new IllegalArgumentException
+	("Archiver plugins can only support the default Unix operating system.");
+
+    super.setSupports(oss);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -519,6 +594,9 @@ class BaseArchiver
     FileCleaner.add(file);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Change file access permissions. <P> 
    * 
@@ -544,6 +622,26 @@ class BaseArchiver
     NativeFileSys.chmod(mode, file);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract pathname of the root directory used to store temporary files 
+   * created by the the archive process. <P> 
+   * 
+   * @param name 
+   *   The name of the archive volume.
+   */
+  public Path
+  getArchiveTempPath
+  (
+   String name
+  )
+  {
+    return new Path(PackageInfo.sTempPath, 
+		    "plfilemgr/archive/" + name + "/scratch");
+  }
+
   /**
    * Get the root directory used to store temporary files created by the the 
    * archive process. <P> 
@@ -557,7 +655,29 @@ class BaseArchiver
    String name
   )
   {
-    return new File(PackageInfo.sTempDir, "plfilemgr/archive/" + name + "/scratch");
+    return getArchiveTempPath(name).toFile();
+  }
+
+
+  /**
+   * Get the abstract pathname of the root directory used to store temporary files created 
+   * by the the restore process. <P> 
+   * 
+   * @param name 
+   *   The name of the archive volume.
+   * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   */
+  public Path
+  getRestoreTempPath
+  (
+   String name, 
+   Date stamp
+  )
+  {
+    return new Path(PackageInfo.sTempPath, 
+		    "plfilemgr/restore/" + name + "-" + stamp.getTime() + "/scratch");
   }
 
   /**
@@ -577,9 +697,9 @@ class BaseArchiver
    Date stamp
   )
   {
-    return new File(PackageInfo.sTempDir, 
-		    "plfilemgr/restore/" + name + "-" + stamp.getTime() + "/scratch");
+    return getRestoreTempPath(name, stamp).toFile();
   }
+
 
   /** 
    * Create a unique temporary file for the archive process with the given suffix and access 

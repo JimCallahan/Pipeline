@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.12 2006/02/28 19:47:45 jim Exp $
+// $Id: BaseEditor.java,v 1.13 2006/05/07 20:34:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -90,6 +90,8 @@ class BaseEditor
   {
     super(editor.pName, editor.pVersionID, editor.pVendor, editor.pDescription);
 
+    setSupports(editor.getSupports());
+
     pProgram = editor.pProgram;
   }
 
@@ -100,11 +102,15 @@ class BaseEditor
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Gets the name of the editor executable.
+   * Gets the name of the editor executable. <P> 
+   * 
+   * Automatically appends ".exe" to the program name when running under Windows.
    */
   public String
   getProgram() 
   {
+    if(PackageInfo.sOsType == OsType.Windows) 
+      return (pProgram + ".exe");
     return pProgram;
   }
 
@@ -162,9 +168,15 @@ class BaseEditor
   ) 
     throws PipelineException
   {
+    String dpath = dir.toString();
     ArrayList<String> args = new ArrayList<String>();
-    for(File file : fseq.getFiles()) 
-      args.add(file.getPath());
+    for(File file : fseq.getFiles()) {
+      String fpath = file.getPath();
+      if(fpath.startsWith(dpath)) 
+	args.add(fpath.substring(dpath.length()+1));
+      else 
+	args.add(fpath); 
+    }
 
     SubProcessLight proc = new SubProcessLight(getName(), getProgram(), args, env, dir);
     proc.start();
