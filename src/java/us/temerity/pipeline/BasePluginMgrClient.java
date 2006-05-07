@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.6 2006/01/15 06:29:25 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.7 2006/05/07 20:35:27 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -39,11 +39,11 @@ class BasePluginMgrClient
     super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, 
 	  PluginRequest.Disconnect, PluginRequest.Shutdown);
 
-    pEditors     = new TripleMap<String,String,VersionID,Class>();  
-    pActions     = new TripleMap<String,String,VersionID,Class>();  
-    pComparators = new TripleMap<String,String,VersionID,Class>();  
-    pTools  	 = new TripleMap<String,String,VersionID,Class>();   
-    pArchivers   = new TripleMap<String,String,VersionID,Class>();  
+    pEditors     = new TripleMap<String,String,VersionID,PluginData>();  
+    pActions     = new TripleMap<String,String,VersionID,PluginData>();  
+    pComparators = new TripleMap<String,String,VersionID,PluginData>();  
+    pTools  	 = new TripleMap<String,String,VersionID,PluginData>();   
+    pArchivers   = new TripleMap<String,String,VersionID,PluginData>();  
   }
 
 
@@ -69,11 +69,11 @@ class BasePluginMgrClient
     if(obj instanceof PluginUpdateRsp) {
       PluginUpdateRsp rsp = (PluginUpdateRsp) obj;
      
-      updatePlugins(rsp.getEditors(), pEditors);     
-      updatePlugins(rsp.getActions(), pActions);     
-      updatePlugins(rsp.getComparators(), pComparators);     
-      updatePlugins(rsp.getTools(), pTools);     
-      updatePlugins(rsp.getArchivers(), pArchivers);
+      updatePlugins(rsp.getEditors(), pEditors); 
+      updatePlugins(rsp.getActions(), pActions); 
+      updatePlugins(rsp.getComparators(), pComparators);
+      updatePlugins(rsp.getTools(), pTools); 
+      updatePlugins(rsp.getArchivers(), pArchivers); 
      
       pCycleID = rsp.getCycleID();
     }
@@ -89,7 +89,7 @@ class BasePluginMgrClient
   updatePlugins
   (
    TripleMap<String,String,VersionID,Object[]> source, 
-   TripleMap<String,String,VersionID,Class> target
+   TripleMap<String,String,VersionID,PluginData> target
   ) 
     throws PipelineException
   {
@@ -99,82 +99,88 @@ class BasePluginMgrClient
 	  Object[] objs = source.get(vendor).get(name).get(vid);
 	  String cname = (String) objs[0];
 	  byte[] bytes = (byte[]) objs[1];
+	  TreeSet<OsType> supports = (TreeSet<OsType>) objs[2];
 	  
-	ClassLoader loader = new PluginClassLoader(bytes);
-	try {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Finer,
-	     "Updating Plugin Class: " + cname + "\n" + 
-	     "     Name = " + name + "\n" + 
-	     "  Version = " + vid + "\n" + 
-	     "   Vendor = " + vendor);
-
-	  Class cls = loader.loadClass(cname);
-	  target.put(vendor, name, vid, cls);
+	  ClassLoader loader = new PluginClassLoader(bytes);
+	  try {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Plg, LogMgr.Level.Finer,
+	       "Updating Plugin Class: " + cname + "\n" + 
+	       "     Name = " + name + "\n" + 
+	       "  Version = " + vid + "\n" + 
+	       "   Vendor = " + vendor);
+	    
+	    Class cls = loader.loadClass(cname);
+	    target.put(vendor, name, vid, new PluginData(cls, supports)); 
+	  }
+	  catch(LinkageError ex) {
+	    throw new PipelineException
+	      ("Unable to link plugin class (" + cname + "):\n" + 
+	       ex.getMessage());
+	  }
+	  catch(ClassNotFoundException ex) {
+	    throw new PipelineException
+	      ("Unable to find plugin class (" + cname + "):\n" +
+	       ex.getMessage());
+	  }	  
+	  finally {
+	    LogMgr.getInstance().flush();
+	  }
 	}
-	catch(LinkageError ex) {
-	throw new PipelineException
-	  ("Unable to link plugin class (" + cname + "):\n" + 
-	   ex.getMessage());
-	}
-	catch(ClassNotFoundException ex) {
-	  throw new PipelineException
-	    ("Unable to find plugin class (" + cname + "):\n" +
-	     ex.getMessage());
-	}	  
-	finally {
-	  LogMgr.getInstance().flush();
-	}
-      }
       }
     }
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the vender, names and version numbers of all available editor plugins. <P> 
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available editor plugins. <P> 
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
   getEditors() 
   {
     return getPlugins(pEditors);
   }
-
+  
   /**
-   * Get the vender, names and version numbers of all available action plugins.
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available action plugins. <P> 
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
-  getActions()
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getActions() 
   {
     return getPlugins(pActions);
   }
-
+  
   /**
-   * Get the vender, names and version numbers of all available comparator plugins.
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available comparator plugins. <P> 
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
-  getComparators()
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getComparators() 
   {
     return getPlugins(pComparators);
   }
-
+  
   /**
-   * Get the vender, names and version numbers of all available tool plugins.
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available tool plugins. <P> 
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
-  getTools()
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getTools() 
   {
     return getPlugins(pTools);
   }
-
+  
   /**
-   * Get the vender, names and version numbers of all available archiver plugins.
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available archiver plugins. <P> 
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
-  getArchivers()
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getArchivers() 
   {
     return getPlugins(pArchivers);
   }
@@ -182,25 +188,29 @@ class BasePluginMgrClient
   /**
    * Get the vender, names and version numbers of all plugins in the given table.
    */ 
-  private DoubleMap<String,String,TreeSet<VersionID>>
+  private TripleMap<String,String,VersionID,TreeSet<OsType>>
   getPlugins
   (
-   TripleMap<String,String,VersionID,Class> plugins
+   TripleMap<String,String,VersionID,PluginData> plugins
   ) 
   {
-    DoubleMap<String,String,TreeSet<VersionID>> table = 
-      new DoubleMap<String,String,TreeSet<VersionID>>();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> table = 
+      new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 
     for(String vendor : plugins.keySet()) {
-      for(String name : plugins.get(vendor).keySet()) 
-	table.put(vendor, name, 
-		  new TreeSet<VersionID>(plugins.get(vendor).get(name).keySet()));
+      for(String name : plugins.get(vendor).keySet()) {
+	for(VersionID vid : plugins.get(vendor).get(name).keySet()) {
+	  PluginData data = plugins.get(vendor, name, vid);
+	  table.put(vendor, name, vid, new TreeSet<OsType>(data.getSupports())); 
+	}
+      }
     }
 
     return table;
   }
+   
 
-
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -389,7 +399,7 @@ class BasePluginMgrClient
   newPlugin
   (
    String ptype,
-   TripleMap<String,String,VersionID,Class> table, 
+   TripleMap<String,String,VersionID,PluginData> table, 
    String name, 
    VersionID vid, 
    String vendor
@@ -400,12 +410,12 @@ class BasePluginMgrClient
     if(vend == null) 
       vend = "Temerity";
 
-    TreeMap<String,TreeMap<VersionID,Class>> plugins = table.get(vend);
+    TreeMap<String,TreeMap<VersionID,PluginData>> plugins = table.get(vend);
     if(plugins == null) 
       throw new PipelineException
 	("No plugins created by the (" + vend + ") vendor exist!");
 
-    TreeMap<VersionID,Class> versions = plugins.get(name);
+    TreeMap<VersionID,PluginData> versions = plugins.get(name);
     if(versions == null) 
       throw new PipelineException
 	("No " + ptype + " plugin named (" + name + ") created by the (" + vend + ") " + 
@@ -415,15 +425,15 @@ class BasePluginMgrClient
     if(pvid == null) 
       pvid = versions.lastKey();
 
-    Class cls = versions.get(pvid);
-    if(cls == null) {
+    PluginData data = versions.get(pvid);
+    if(data == null) {
       throw new PipelineException
 	("Unable to find the " + ptype + " plugin (" + name + " v" + pvid + ") " + 
 	 "created by the (" + vend + ") vendor!");
     }
 
     try {
-      return (BasePlugin) cls.newInstance();  
+      return (BasePlugin) data.getPluginClass().newInstance();  
     }
     catch (IllegalAccessException ex) {
       throw new PipelineException
@@ -455,6 +465,43 @@ class BasePluginMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached plugin class and supported operating system types.
+   */ 
+  private class
+  PluginData
+  {
+    PluginData
+    (
+     Class cls, 
+     TreeSet<OsType> supports
+    ) 
+    {
+      pClass = cls;
+      pSupports = supports;
+    }
+
+    Class 
+    getPluginClass()
+    {
+      return pClass;
+    }
+
+    TreeSet<OsType> 
+    getSupports()
+    {
+      return pSupports;
+    }
+
+    private Class            pClass;
+    private TreeSet<OsType>  pSupports;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -469,29 +516,30 @@ class BasePluginMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The cached Editor plugin classes indexed by vendor, class name and revision number.
+   * The cached Editor plugin data indexed by vendor, class name and revision number.
    */ 
-  private TripleMap<String,String,VersionID,Class>  pEditors; 
+  private TripleMap<String,String,VersionID,PluginData>  pEditors; 
 
   /**
-   * The cached Action plugin classes indexed by vendor, class name and revision number.
+   * The cached Action plugin data indexed by vendor, class name and revision number.
    */ 
-  private TripleMap<String,String,VersionID,Class>  pActions; 
+  private TripleMap<String,String,VersionID,PluginData>  pActions; 
 
   /**
-   * The cached Comparator plugin classes indexed by vendor, class name and revision number.
+   * The cached Comparator plugin data indexed by vendor, class name and revision number.
    */ 
-  private TripleMap<String,String,VersionID,Class>  pComparators; 
+  private TripleMap<String,String,VersionID,PluginData>  pComparators; 
 
   /**
-   * The cached Tool plugin classes indexed by vendor, class name and revision number.
+   * The cached Tool plugin data indexed by vendor, class name and revision number.
    */ 
-  private TripleMap<String,String,VersionID,Class>  pTools; 
+  private TripleMap<String,String,VersionID,PluginData>  pTools; 
 
   /**
-   * The cached Archiver plugin classes indexed by vendor, class name and revision number.
+   * The cached Archiver plugin data indexed by vendor, class name and revision number.
    */ 
-  private TripleMap<String,String,VersionID,Class>  pArchivers; 
+  private TripleMap<String,String,VersionID,PluginData>  pArchivers; 
+
 
 }
 
