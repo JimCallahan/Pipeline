@@ -1,0 +1,4 @@
+
+liquid -GL; 
+
+liquidWriteArchive nurbsSphere1 "../rib/nurbsSphere1.rib"

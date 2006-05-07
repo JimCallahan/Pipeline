@@ -1,0 +1,145 @@
+
+Usage: /base/apps/i686-pc-linux-gnu-opt/maya-6.5-253/aw/maya/bin/Render [options] filename
+       where "filename" is a Maya ASCII or a Maya binary file.
+
+Common options:
+  -help              Print help
+  -test              Print Mel commands but do not execute them
+  -verb              Print Mel commands before they are executed
+  -keepMel           Keep the temporary Mel file
+  -listRenderers     List all available renderers
+  -renderer string   Use this specific renderer
+  -r string          Same as -renderer
+  -proj string       Use this Maya project to load the file
+  -preRender string  Executes this Mel script after loading file
+  -postRender string Executes this Mel script before quitting
+  -log string        Save output into the given file
+
+Specific options for renderer "sw": Maya software renderer
+
+General purpose flags:
+  -rd path             Directory in which to store image files
+  -im filename         Image file output name
+  -fnc int             File Name Convention: any of name, name.ext, ... See the
+        Render Globals window to find available options. Use namec and
+        namec.ext for Multi Frame Concatenated formats. As a shortcut,
+        numbers 1, 2, ... can also be used
+  -of string           Output image file format. See the Render Globals window
+        to find available formats
+
+  -s float             Starting frame for an animation sequence
+  -e float             End frame for an animation sequence
+  -b float             By frame (or step) for an animation sequence
+  -pad int             Number of digits in the output image frame file name
+        extension
+  -rfs int             Renumber Frame Start: number for the first image when
+        renumbering frames
+  -rfb int             Renumber Frame By: step used for renumbering frames
+  -se int              Obsolete flag identical to -rfs. Used only for backward
+        compatibility
+  -be int              Obsolete flag identical to -rfe. Used only for backward
+        compatibility
+
+  -cam name            Specify which camera to be rendered
+  -rgb boolean         Turn RGB output on or off
+  -alpha boolean       Turn Alpha output on or off
+  -depth boolean       Turn Depth output on or off
+  -iip                 Ignore Image Planes turn off all image planes before
+        rendering
+
+  -x int               Set X resolution of the final image
+  -y int               Set Y resolution of the final image
+  -ard float           Device aspect ratio for the rendered image
+
+  -pre string          Mel code executed before each frame
+  -post string         Mel code executed after each frame
+
+More advanced flags:
+
+Anti-aliasing quality:
+  -eaa int             The anti-aliasing quality of EAS (Abuffer). One of:
+        highest(0), high(1), medium(2), low(3)
+  -ss int              Global number of shading samples per surface in a pixel
+  -mss int             Maximum number of adaptive shading samples per surface
+        in a pixel
+  -mvs int             Number of motion blur visibility samples
+  -mvm int             Maximum number of motion blur visibility samples
+  -pss int             Number of particle visibility samples
+  -vs int              Global number of volume shading samples
+  -ufil boolean        If true, use the multi-pixel filtering; otherwise use
+        single pixel filtering
+  -pft int             When useFilter is true, identifies one of the following
+        filters: box(0), triangle(2), gaussian(4), quadratic(5)
+  -pfx float           When useFilter is true, defines the X size of the filter
+  -pfy float           When useFilter is true, defines the Y size of the filter
+  -rct float           Red channel contrast threshold
+  -gct float           Green channel contrast threshold
+  -bct float           Blue channel contrast threshold
+  -cct float           Pixel coverage contrast threshold (default is 1.0/8.0)
+
+Raytracing quality:
+  -ert boolean         Enable ray tracing
+  -rfl int             Maximum ray-tracing reflection level
+  -rfr int             Maximum ray-tracing refraction level
+  -sl int              Maximum ray-tracing shadow ray depth
+
+Field Options:
+  -field boolean       Enable field rendering. When on, images are interlaced
+  -pal                 When field rendering is enabled, render even field
+        first (PAL)
+  -ntsc                When field rendering is enabled, render odd field
+        first (NTSC)
+
+Motion Blur:
+  -mb boolean          Motion blur on/off
+  -mbf float           Motion blur by frame
+  -sa float            Shutter angle for motion blur (1-360)
+  -mb2d boolean        Motion blur 2D on/off
+  -bll float           2D motion blur blur length
+  -bls float           2D motion blur blur sharpness
+  -smv int             2D motion blur smooth value
+  -smc boolean         2D motion blur smooth color on/off
+  -kmv boolean         Keep motion vector for 2D motion blur on/off
+
+Render Options:
+  -ifg boolean         Use the film gate for rendering if false
+  -edm boolean         Enable depth map usage
+  -g float             Gamma value
+  -premul boolean      Premultiply color by the alpha value
+  -premulthr float     When premultiply is on, defines the threshold used to
+        determine whether to premultiply or not
+
+Memory and Performance:
+  -uf boolean          Use the tessellation file cache
+  -oi boolean          Dynamically detects similarly tessellated surfaces
+  -rut boolean         Reuse render geometry to generate depth maps
+  -udb boolean         Use the displacement bounding box scale to optimize
+        displacement-map performance
+  -mm int              Renderer maximum memory use (in Megabytes)
+
+Render Layers and Passes:
+  -rl boolean|name(s)  Render each render layer separately
+  -rp boolean|name(s)  Render passes separately
+  -rs boolean          Render layer output placed in subdirectories
+  -sel boolean|name(s) Selects which objects, groups and/or sets to render
+  -l boolean|name(s)   Selects which display and render layers to render
+
+Other:
+  -rep                 Do not replace the rendered image if it already exists
+  -reg int int int int Set sub-region pixel boundary of the final image:
+        left, right, bottom, top
+  -n int               Number of processors to use (0 indicates use all
+        available)
+  -mf boolean          Append image file format to image name if true
+  -sp boolean          Generate shadow depth maps only
+  -amt                 Abort renderer when encountered missing texture
+  -ipr boolean         Create an IPR file
+  -keepPreImage        Keep the renderings prior to post-process around
+
+*** Remember to put a space between option flags and their arguments. ***
+Any boolean flag will take the following values as TRUE: on, yes, true, or 1.
+Any boolean flag will take the following values as FALSE: off, no, false, or 0.
+
+    e.g. -x 512 -y 512 -cam persp -im test -of jpg -mb on -sa 180 file
+
+Invalid flag: -h

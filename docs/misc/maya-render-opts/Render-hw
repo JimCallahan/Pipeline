@@ -1,0 +1,87 @@
+
+Usage: Render [options] filename
+       where "filename" is a Maya ASCII or a Maya binary file.
+
+Common options:
+  -help              Print help
+  -test              Print Mel commands but do not execute them
+  -verb              Print Mel commands before they are executed
+  -keepMel           Keep the temporary Mel file
+  -listRenderers     List all available renderers
+  -renderer string   Use this specific renderer
+  -r string          Same as -renderer
+  -proj string       Use this Maya project to load the file
+  -log string        Save output into the given file
+
+Specific options for renderer "hw": Maya hardware renderer
+
+General purpose flags:
+  -rd path             Directory in which to store image file
+  -im filename         Image file output name
+
+  -fnc int             File Name Convention: any of name, name.ext, ... See the
+        Render Settings window to find available options. Use namec and
+        namec.ext for Multi Frame Concatenated formats. As a shortcut,
+        numbers 1, 2, ... can also be used
+  -of string           Output image file format. See the Render Settings window
+        to find available formats
+  -s float             Starting frame for an animation sequence
+  -e float             End frame for an animation sequence
+  -b float             By frame (or step) for an animation sequence
+  -rfs int             Renumber Frame Start: number for the first image when
+        renumbering frames
+  -rfb int             Renumber Frame By (or step) used for renumbering frames
+
+  -cam name            Specify which camera to be rendered
+  -rgb boolean         Turn RGB output on or off
+  -alpha boolean       Turn Alpha output on or off
+  -depth boolean       Turn Depth output on or off
+
+  -x int               Set X resolution of the final image
+  -y int               Set Y resolution of the final image
+  -percentRes float    Renders the image using percent of the resolution
+  -par float           Pixel aspect ratio for the rendered image
+
+Quality flags:
+  -ehl boolean         Enable high quality lighting
+  -ams boolean         Accelerated multi sampling
+  -ns int              Number of samples per pixel
+  -tsc boolean         Transparent shadow maps
+  -ctr int             Color texture resolution
+  -btr int             Bump texture resolution
+  -tc boolean          Enable texture compression
+
+Render options:
+  -c boolean           Culling mode.
+                0: per object.
+                1: all double sided.
+                2: all single sided
+  -sco boolean         Enable small object culling
+  -ct float            Small object culling threshold
+
+Render Layers and Passes:
+  -rl boolean|name(s)  Render each render layer separately
+  -rp boolean|name(s)  Render passes separately. 'all' will render all passes
+  -sel boolean|name(s) Selects which objects, groups and/or sets to render
+
+  -mb boolean          Enable motion blur
+  -mbf float           Motion blur by frame
+  -ne int              Number of exposures
+  -egm boolean         Enable geometry mask
+
+Mel callbacks
+  -preRender string    Mel code executed before rendering
+  -postRender string   Mel code executed after rendering
+  -preLayer string     Mel code executed before each render layer
+  -postLayer string    Mel code executed after each render layer
+  -preFrame string     Mel code executed before each frame
+  -postFrame string    Mel code executed after each frame
+  -pre string          Obsolete flag
+  -post string         Obsolete flag
+
+ *** Remember to place a space between option flags and their arguments. ***
+Any boolean flag will take the following values as TRUE: on, yes, true, or 1.
+Any boolean flag will take the following values as FALSE: off, no, false, or 0.
+
+    e.g. -s 1 -e 10 -x 512 -y 512 -cam persp file.
+
