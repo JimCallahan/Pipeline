@@ -1,4 +1,4 @@
-// $Id: FileMonitor.java,v 1.1 2005/01/05 23:01:56 jim Exp $
+// $Id: FileMonitor.java,v 1.2 2006/05/07 21:20:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -96,11 +96,11 @@ class FileMonitor
     throws IOException 
   {
     if(start < 0) 
-      throw new IllegalArgumentException
+      throw new IOException
 	("The start line number (" + start + ") must be non-negative!");
 
     if(lines < 1) 
-      throw new IllegalArgumentException
+      throw new IOException
 	("The number of lines to text (" + lines + ") must be positive!");
 
     if((start+lines) > pLinePos.size())
