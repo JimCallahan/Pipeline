@@ -1,0 +1,522 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(TestNativeOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+import java.net.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   T E S T  N A T I V E   O P T S   P A R S E R                                           */
+/*                                                                                          */
+/*    The parser for the pltestnative(1) program.                                           */
+/*------------------------------------------------------------------------------------------*/
+
+class 
+TestNativeOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   TestNativeApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private TestNativeApp  pApp;
+
+
+
+}
+
+
+PARSER_END(TestNativeOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* global options */	
+| <CHMOD:             "--chmod">              : MODE_PATH_SEP
+| <UMASK:             "--umask">              : MODE_PATH_SEP
+| <SYMLINK:           "--symlink">            : PATH_PATH_SEP
+| <REALPATH:          "--realpath">           : PATH_SEP
+| <FREE_DISK:         "--free-disk">          : PATH_SEP
+| <TOTAL_DISK:        "--total-disk">         : PATH_SEP
+| <FREE_MEM:          "--free-mem"> 
+| <TOTAL_MEM:         "--total-mem"> 
+| <NUM_PROCS:         "--num-procs"> 
+| <LOAD:              "--load"> 
+
+  /* seperators */ 
+| <AE1: (["\0"])+> 
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
+}
+
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG1:       ("/")* ("../")* <PATH_ARG_COMP1> 
+		     ("/" (".." | (<PATH_ARG_COMP1>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP1: (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
+| <MISSING_PATH1:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH1:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
+/* mode : filesystem path arguments */ 
+<MODE_PATH_SEP> 
+TOKEN :
+{
+  <EQ3:                     "=">   : MODE_STATE
+| <MISSING_MODE_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<MODE_STATE> 
+TOKEN :
+{
+  <MODE_ARG:      (["0"-"9"])+>   
+| <COLON1:        ":">           : PATH_STATE 
+| <ILLEGAL_MODE:  (~[":"])+>     : IGNORE_STATE    
+}
+
+
+/* filesystem path : filesystem path arguments */ 
+<PATH_PATH_SEP> 
+TOKEN :
+{
+  <EQ4:                     "=">   : PATH_PATH_STATE
+| <MISSING_PATH_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG2:       ("/")* ("../")* <PATH_ARG_COMP2> 
+		      ("/" (".." | (<PATH_ARG_COMP2>)+)?)*>    
+| <#PATH_ARG_COMP2: (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
+| <COLON2:          ":">                                         : PATH_STATE 
+| <ILLEGAL_PATH2 :   (~[":"])+>                                  : IGNORE_STATE    
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() 
+  throws IOException :
+{}
+{
+  (InformationOpts() | Commands()) <EOF>
+  {}
+}
+
+
+void
+Commands() 
+  throws IOException :
+{}
+{
+  (GlobalOpts() AE())*
+  {}
+}
+    
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> AE()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> AE()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> AE()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> AE()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> AE() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> AE() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts() 
+  throws IOException :
+{}
+{
+  (Chmod() | Umask() | RealPath() | Symlink() | FreeDisk() | TotalDisk() | 
+   FreeMem() | TotalMem() | NumProcs() | Load())
+  { 
+  }
+}
+
+void Chmod() 
+  throws IOException :
+{
+  int mode; 
+  Path path; 
+}
+{
+  <CHMOD> EQ() mode=Mode() Colon() path=Path()
+  { 
+    NativeFileSys.chmod(mode, path.toFile());
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Changed mode of (" + path + ") to (" + Integer.toString(mode, 8) + ")."); 
+  }
+}
+
+void Umask()
+  throws IOException :
+{
+  int mode; 
+  Path path; 
+}
+{
+  <UMASK> EQ() mode=Mode() Colon() path=Path()
+  { 
+    NativeFileSys.umask(mode); 
+    
+    FileWriter out = new FileWriter(path.toFile());
+    out.write("hi there...");
+    out.close();
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Set user mask to (" + Integer.toString(mode, 8) + ").  " + 
+       "Created (" + path + ") to test it."); 
+  }
+}
+
+void Symlink() 
+  throws IOException :
+{
+  Path path; 
+  Path link; 
+}
+{
+  <SYMLINK> EQ() path=Path() Colon() link=Path()
+  { 
+    NativeFileSys.symlink(path.toFile(), link.toFile());
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Created Link from (" + link + ") to (" + path + ")."); 
+  }
+}
+
+void RealPath() 
+  throws IOException :
+{
+  Path path; 
+}
+{
+  <REALPATH> EQ() path=Path()
+  { 
+    Path real = new Path(NativeFileSys.realpath(path.toFile()));
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "RealPath of (" + path + ") = " + real);
+    
+  }
+}
+
+void FreeDisk() 
+  throws IOException :
+{
+  Path path; 
+}
+{
+  <FREE_DISK> EQ() path=Path()
+  { 
+    long bytes = NativeFileSys.freeDiskSpace(path.toFile()); 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Free Disk Space on (" + path + ") = " + bytes);
+  }
+}
+
+void TotalDisk() 
+  throws IOException :
+{
+  Path path; 
+}
+{
+  <TOTAL_DISK> EQ() path=Path()
+  { 
+    long bytes = NativeFileSys.totalDiskSpace(path.toFile()); 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Total Disk Space on (" + path + ") = " + bytes);
+  }
+}
+
+void FreeMem() 
+  throws IOException :
+{}
+{
+  <FREE_MEM>
+  { 
+    long bytes = NativeOS.getFreeMemory(); 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Free Memory = " + bytes);
+  }
+}
+
+void TotalMem() 
+  throws IOException :
+{}
+{
+  <TOTAL_MEM>
+  { 
+    long bytes = NativeOS.getTotalMemory(); 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Total Memory = " + bytes);
+  }
+}
+
+void NumProcs() 
+  throws IOException :
+{}
+{
+  <NUM_PROCS>
+  { 
+    int procs = NativeOS.getNumProcessors(); 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Number of Processors = " + procs);
+  }
+}
+
+void Load() 
+  throws IOException :
+{}
+{
+  <LOAD>
+  { 
+    while(true) {
+      float load = NativeOS.getLoadAverage();
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Info,
+         "Load Average = " + load);
+      
+      try {
+	Thread.sleep(5000);
+      }
+      catch(InterruptedException ex) {
+      }
+    }
+  }
+}
+
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+Colon() :
+{
+  Token t;
+}
+{
+  (t=<COLON1> | t=<COLON2>)
+  { 
+    return t; 
+  }
+}
+
+
+int
+Mode() : 
+{
+  Token t;
+}
+{
+  t=<MODE_ARG>
+  {
+    try { 
+      return Integer.parseInt(t.image, 8);
+    }
+    catch(Exception ex) {
+      throw new ParseException("Illegal file mode (" + t.image + ")!");
+    }
+  }
+}
+
+Path
+Path() : 
+{
+  Token t;
+}
+{
+  (t=<PATH_ARG1> | t=<PATH_ARG2>)
+  {
+    return new Path(t.image);
+  }
+}
