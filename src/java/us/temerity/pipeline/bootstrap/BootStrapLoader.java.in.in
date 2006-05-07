@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.10 2005/06/10 04:55:06 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.11 2006/05/07 20:07:14 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -48,16 +48,19 @@ class BootStrapLoader
     File rootDir = null;
     if(opsys.equals("Linux")) 
       rootDir = new File("@ROOT_INST_DIR@");
-    else if (opsys.equals("Mac OS X")) 
+    else if(opsys.equals("Mac OS X")) 
       rootDir = new File("@MAC_ROOT_INST_DIR@");
+    else if(opsys.equals("Windows XP")) 
+      rootDir = new File("@WIN_ROOT_INST_DIR@");
     else 
-      assert(false);
+      throw new LicenseException
+	("The operating system (" + opsys + ") is not supported!");
 
-    File license = new File(rootDir, "plconfig/temerity-software.key");
+    File license = new File(rootDir, "plconfig" + File.separator + "temerity-software.key");
     if(!license.isFile()) 
       throw new LicenseException("The license file (" + license + ") was missing!");
 
-    File vault = new File(rootDir, "lib/vault");
+    File vault = new File(rootDir, "lib" + File.separator + "vault");
     if(!vault.isFile()) 
       throw new LicenseException("The code vault (" + vault + ") was missing!");
     

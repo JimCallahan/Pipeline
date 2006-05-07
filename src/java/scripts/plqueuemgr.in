@@ -1,8 +1,8 @@
 #!/bin/sh
 
 cd `pwd`
-exec @JAVA_RUNTIME@ \
+exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLQUEUEMGR_GC_OPTS@ \
-  -cp @PIPELINE_INST_DIR@/lib/api.jar \
+  -cp @PIPELINE_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.QueueMgrApp "$@"
 

@@ -1,8 +1,8 @@
-Summary: The MacOS X Pipeline Client Programs
+Summary: The Mac OS X Pipeline Client Programs
 Name: plmac-@CUSTOMER@
 Version: @VERSION@
 Release: @PROFILE_STAMP@
-URL: http://www.temerity.us/pipeline
+URL: http://www.temerity.us
 License: Commercial
 Vendor: Temerity Software, Inc
 Group: Applications/Productivity
@@ -10,16 +10,18 @@ BuildRoot: @RPM_ROOT@/DEST/plmac
 AutoReq: no
 
 %description
-The launcher scripts, native binaries and libraries needed to run the Pipeline 
-client programs under Mac OS X.  
+The launcher scripts, native binaries and libraries needed to run the 
+Pipeline client programs under Mac OS X.  
 
 This RPM should be installed on the same Linux file server as the main 
-"pipeline" RPM.  The Pipeline application bundle "Pipeline.app" provided by this
-RPM may be copied to the local Applications directory or other locations for
-convenient launching of the graphical client.  Note that this application bundle
-does not contain the required Java classes or data files needed to run the 
-application.  These resources are accessed over the network via NFS using the path 
-supplied to the --mac-root-dir option to plconfig(1) during Pipeline configuration.
+"pipeline" RPM.  The Pipeline application bundle "Pipeline.app" provided 
+by this RPM may be copied to the local Applications directory or other 
+locations for convenient launching of the graphical client.  Note that 
+this application bundle does not contain the required Java classes or 
+data files needed to run the application.  These resources are accessed 
+over the network via NFS using the path supplied to the Mac OS X Root
+Install Directory (--mac-root-dir option) to plconfig(1) during 
+Pipeline configuration process.
 
 %files
 
@@ -43,8 +45,12 @@ supplied to the --mac-root-dir option to plconfig(1) during Pipeline configurati
 @ROOT_INST_DIR@/MacOS/sbin/plrun
 
 @ROOT_INST_DIR@/MacOS/sbin/pljobmgr
+
 @ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
+
+@ROOT_INST_DIR@/MacOS/debug/sbin/pltestnative
+
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS

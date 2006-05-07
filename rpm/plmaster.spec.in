@@ -2,7 +2,7 @@ Summary: The config files used by the plmaster(1) Pipeline daemon.
 Name: plmaster-@CUSTOMER@
 Version: @VERSION@
 Release: @PROFILE_STAMP@
-URL: http://www.temerity.us/pipeline
+URL: http://www.temerity.us
 License: Commercial
 Vendor: Temerity Software, Inc
 Group: Applications/Productivity

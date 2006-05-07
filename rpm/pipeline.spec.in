@@ -2,7 +2,7 @@ Summary: The Pipeline production visualization/automation system.
 Name: pipeline-@CUSTOMER@
 Version: @VERSION@
 Release: @PROFILE_STAMP@
-URL: http://www.temerity.us/pipeline
+URL: http://www.temerity.us
 License: Commercial
 Vendor: Temerity Software, Inc
 Group: Applications/Productivity
@@ -12,8 +12,8 @@ AutoReq: no
 
 %description
 Pipeline consists of a suite of programs which use a high-level node 
-based representation of the production process to perform a wide range of 
-visualization, automation and administrative services.
+based representation of the production process to perform a wide range 
+of visualization, automation and administrative services.
 
 The core features of Pipeline include: 
   + Graphical tools to visualize and control the production process.
@@ -63,6 +63,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/debug/sbin/plmaster
 @ROOT_INST_DIR@/Unix/debug/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix/debug/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix/debug/sbin/pltestnative
 
 @ROOT_INST_DIR@/Unix/profile/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix/profile/sbin/pljobmgr
@@ -105,6 +106,8 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/pls.html
 @ROOT_INST_DIR@/share/docs/man/plshakeio.html
 @ROOT_INST_DIR@/share/docs/man/realpath.html
+
+@ROOT_INST_DIR@/share/icons/plui.png
 
 %dir @ROOT_INST_DIR@/plconfig
 

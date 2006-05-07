@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.15 2005/11/03 22:15:04 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.16 2006/05/07 20:07:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,6 +38,8 @@ class PackageInfo
       os = OsType.Unix;
     else if (opsys.equals("Mac OS X")) 
       os = OsType.MacOS;
+    else if(opsys.equals("Windows XP")) 
+      os = OsType.Windows; 
     else 
       assert(false);
     sOsType = os; 
@@ -50,6 +52,13 @@ class PackageInfo
       sWorkDir = new File("@PRODDIR@/working");
       sHomeDir = new File("@HOMEDIR@");
       sTempDir = new File("@TEMPDIR@");
+
+      sInstPath = new Path("@ROOT_INST_DIR@");
+      sProdPath = new Path("@PRODDIR@");
+      sRepoPath = new Path("@PRODDIR@/repository");
+      sWorkPath = new Path("@PRODDIR@/working");
+      sHomePath = new Path("@HOMEDIR@");
+      sTempPath = new Path("@TEMPDIR@");
       break;
 
     case MacOS:
@@ -59,9 +68,31 @@ class PackageInfo
       sWorkDir = new File("@MAC_PRODDIR@/working");
       sHomeDir = new File("@MAC_HOMEDIR@");
       sTempDir = new File("@MAC_TEMPDIR@");
+
+      sInstPath = new Path("@MAC_ROOT_INST_DIR@");
+      sProdPath = new Path("@MAC_PRODDIR@");
+      sRepoPath = new Path("@MAC_PRODDIR@/repository");
+      sWorkPath = new Path("@MAC_PRODDIR@/working");
+      sHomePath = new Path("@MAC_HOMEDIR@");
+      sTempPath = new Path("@MAC_TEMPDIR@");
       break;
 
     case Windows:
+      sInstDir = null;
+      sProdDir = null;
+      sRepoDir = null;
+      sWorkDir = null;
+      sHomeDir = null;
+      sTempDir = null;
+
+      sInstPath = new Path("@WIN_ROOT_INST_DIR@");
+      sProdPath = new Path("@WIN_PRODDIR@");
+      sRepoPath = new Path("@WIN_PRODDIR@/repository");
+      sWorkPath = new Path("@WIN_PRODDIR@/working");
+      sHomePath = new Path("@WIN_HOMEDIR@");
+      sTempPath = new Path("@WIN_TEMPDIR@");
+      break;
+
     default:
       sInstDir = null;
       sProdDir = null;
@@ -69,17 +100,80 @@ class PackageInfo
       sWorkDir = null;
       sHomeDir = null;
       sTempDir = null;
+
+      sInstPath = null;
+      sProdPath = null;
+      sRepoPath = null;
+      sWorkPath = null;
+      sHomePath = null;
+      sTempPath = null;
     } 
   } 
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   M I S C                                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the path seperator for the current operating system.
+   */ 
+  public static String
+  getPathSep() 
+  {
+    return getPathSep(PackageInfo.sOsType);
+  }
+
+  /**
+   * Gets the path seperator for the givenating system.
+   */ 
+  public static String
+  getPathSep
+  (
+   OsType os
+  ) 
+  {
+    switch(os) {
+    case Unix:
+    case MacOS:
+      return ":";
+
+    case Windows:
+      return ";";
+
+    default:
+      assert(false);
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S O R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  /** 
+   * Gets the abstract pathname of the root installation directory for the given 
+   * operating system.
+   */ 
+  public static Path
+  getInstPath
+  (
+   OsType os
+  ) 
+  {
+    return sOsInstPaths[os.ordinal()];
+  }
+
   /** 
    * Gets the root installation directory for the given operating system.
+   * 
+   * @deprecated 
+   *   The path returned by this method is not properly initialized on Windows systems.  
+   *   Use the {@link #getInstPath} method instead for an operating system independent 
+   *   abstract pathname.
    */ 
+  @Deprecated
   public static File
   getInstDir
   (
@@ -89,9 +183,31 @@ class PackageInfo
     return sOsInstDirs[os.ordinal()];
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Gets the abstract pathname of the root installation directory for the given 
+   * operating system.
+   */ 
+  public static Path
+  getProdPath
+  (
+   OsType os
+  ) 
+  {
+    return sOsProdPaths[os.ordinal()];
+  }
+
   /** 
    * Gets the root production directory for the given operating system.
+   * 
+   * @deprecated 
+   *   The path returned by this method is not properly initialized on Windows systems.  
+   *   Use the {@link #getProdPath} method instead for an operating system independent 
+   *   abstract pathname.
    */ 
+  @Deprecated
   public static File
   getProdDir
   (
@@ -101,9 +217,31 @@ class PackageInfo
     return sOsProdDirs[os.ordinal()];
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Gets the abstract pathname of the root directory of the file repository for the 
+   * given operating system.
+   */ 
+  public static Path
+  getRepoPath
+  (
+   OsType os
+  ) 
+  {
+    return sOsRepoPaths[os.ordinal()];
+  }
+
   /** 
    * Gets the root directory of the file repository for the given operating system.
+   * 
+   * @deprecated 
+   *   The path returned by this method is not properly initialized on Windows systems.  
+   *   Use the {@link #getRepoPath} method instead for an operating system independent 
+   *   abstract pathname.
    */ 
+  @Deprecated
   public static File
   getRepoDir
   (
@@ -113,9 +251,31 @@ class PackageInfo
     return sOsRepoDirs[os.ordinal()];
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Gets the abstract pathname of the root directory of user working areas for the 
+   * given operating system.
+   */
+  public static Path
+  getWorkPath
+  (
+   OsType os
+  ) 
+  {
+    return sOsWorkPaths[os.ordinal()];
+  }
+
   /** 
    * Gets the root directory of user working areas for the given operating system.
+   * 
+   * @deprecated 
+   *   The path returned by this method is not properly initialized on Windows systems.  
+   *   Use the {@link #getWorkPath} method instead for an operating system independent 
+   *   abstract pathname.
    */
+  @Deprecated
   public static File
   getWorkDir
   (
@@ -125,10 +285,32 @@ class PackageInfo
     return sOsWorkDirs[os.ordinal()];
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Gets the abstract pathname of the directory which contains the home directories 
+   * for users for this site for the given operating system.
+   */ 
+  public static Path
+  getHomePath
+  (
+   OsType os
+  ) 
+  {
+    return sOsHomePaths[os.ordinal()];
+  }
+
   /** 
    * Gets the directory which contains the home directories for users for this site 
    * for the given operating system.
+   * 
+   * @deprecated 
+   *   The path returned by this method is not properly initialized on Windows systems.  
+   *   Use the {@link #getHomePath} method instead for an operating system independent 
+   *   abstract pathname.
    */ 
+  @Deprecated
   public static File
   getHomeDir
   (
@@ -138,10 +320,32 @@ class PackageInfo
     return sOsHomeDirs[os.ordinal()];
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Gets the abstract pathname of the directory used to store temporary files generated 
+   * by Pipeline for the given operating system.
+   */ 
+  public static Path
+  getTempPath
+  (
+   OsType os
+  ) 
+  {
+    return sOsTempPaths[os.ordinal()];
+  } 
+
   /** 
    * Gets the directory used to store temporary files generated by Pipeline for the given 
    * operating system.
+   * 
+   * @deprecated 
+   *   The path returned by this method is not properly initialized on Windows systems.  
+   *   Use the {@link #getTempPath} method instead for an operating system independent 
+   *   abstract pathname.
    */ 
+  @Deprecated
   public static File
   getTempDir
   (
@@ -184,11 +388,25 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The root installation directory for the current operating system. <P> 
+   * The abstract pathname of the root installation directory for the current 
+   * operating system. <P> 
    * 
    * Set by the RootInstallDirectory customer profile entry.
    */ 
+  public static final Path sInstPath;
+
+  /** 
+   * The root installation directory for the current operating system. <P> 
+   * 
+   * Set by the RootInstallDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sInstPath} 
+   *   instead for an operating system independent abstract pathname.
+   */ 
+  @Deprecated
   public static final File sInstDir;
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -222,12 +440,26 @@ class PackageInfo
    */
   public static final int sMasterPort = @PL_MASTER_PORT@;
 
+
+  /** 
+   * The abstract pathname of the root directory of the persistent node storage area. <P>
+   *
+   * Set by the NodeDirectory customer profile entry.
+   */
+  public static final Path sNodePath = new Path("@NODEDIR@");
+
   /** 
    * The root directory of the persistent node storage area. <P>
    *
    * Set by the NodeDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sNodePath} 
+   *   instead for an operating system independent abstract pathname.
    */
+  @Deprecated
   public static final File sNodeDir = new File("@NODEDIR@");
+
 
   /**
    * The default maximum number of node versions to cache in memory. <P> 
@@ -253,26 +485,69 @@ class PackageInfo
 
 
   /** 
-   * The root production directory for the current operating system. <P>
+   * The abstract pathname of the root production directory for the current 
+   * operating system. <P>
    *
    * Set by the ProductionDirectory customer profile entry.
    */
+  public static final Path sProdPath;
+
+  /** 
+   * The root production directory for the current operating system. <P>
+   *
+   * Set by the ProductionDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sProdPath} 
+   *   instead for an operating system independent abstract pathname.
+   */
+  @Deprecated
   public static final File sProdDir;
+
+
+  /** 
+   * The abstract pathname of the root directory of the file repository for the 
+   * current operating system. <P>
+   *
+   * Set by appending "/repository" to value of the ProductionDirectory customer 
+   * profile entry.
+   */
+  public static final Path sRepoPath;
 
   /** 
    * The root directory of the file repository for the current operating system. <P>
    *
    * Set by appending "/repository" to value of the ProductionDirectory customer 
    * profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sRepoPath} 
+   *   instead for an operating system independent abstract pathname.
    */
+  @Deprecated
   public static final File sRepoDir;
+
+
+  /** 
+   * The abstract pathname of the root directory of user working areas for the 
+   * current operating system. <P>
+   *
+   * Set by appending "/working" to value of the ProductionDirectory customer 
+   * profile entry.
+   */
+  public static final Path sWorkPath;
 
   /** 
    * The root directory of user working areas for the current operating system. <P>
    *
    * Set by appending "/working" to value of the ProductionDirectory customer 
    * profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sWorkPath} 
+   *   instead for an operating system independent abstract pathname.
    */
+  @Deprecated
   public static final File sWorkDir;
   
 
@@ -301,12 +576,25 @@ class PackageInfo
    */
   public static final int sJobPort = @PL_JOB_PORT@;
 
+
+  /** 
+   * The abstract pathname of the root queue directory. <P>
+   *
+   * Set by the QueueDirectory customer profile entry.
+   */
+  public static final Path sQueuePath = new Path("@QUEUEDIR@"); 
+
   /** 
    * The root queue directory. <P>
    *
    * Set by the QueueDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sQueuePath} 
+   *   instead for an operating system independent abstract pathname.
    */
-  public static final File sQueueDir = new File("@QUEUEDIR@");
+  @Deprecated
+  public static final File sQueueDir = new File("@QUEUEDIR@"); 
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -327,22 +615,71 @@ class PackageInfo
   public static final int sPluginPort = @PL_PLUGIN_PORT@;
 
 
+  /** 
+   * The abstract pathname of the root plugin directory. <P>
+   *
+   * Set by appending "/plugins" to value of the RootInstallDirectory customer 
+   * profile entry.
+   */
+  public static final Path sPluginsPath = new Path("@ROOT_INST_DIR@/plugins");
+
+  /** 
+   * The root plugin directory. <P>
+   *
+   * Set by appending "/plugins" to value of the RootInstallDirectory customer 
+   * profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sPluginsPath} 
+   *   instead for an operating system independent abstract pathname.
+   */
+  @Deprecated
+  public static final File sPluginsDir = new File("@ROOT_INST_DIR@/plugins");
+
+
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * The abstract pathname of the directory which contains the home directories for users 
+   * for this site for the current operating system. <P>
+   *
+   * Set by the [Mac|Win]HomeDirectory customer profile entry.
+   */ 
+  public static final Path sHomePath;
 
   /** 
    * The directory which contains the home directories for users for this site for 
    * the current operating system. <P>
    *
    * Set by the [Mac|Win]HomeDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sHomePath} 
+   *   instead for an operating system independent abstract pathname.
    */ 
+  @Deprecated
   public static final File sHomeDir;
 
+
+  /** 
+   * The abstract pathname of the directory used to store temporary files generated by 
+   * Pipeline for the current operating system. <P>
+   *
+   * Set by the TemporaryDirectory customer profile entry.
+   */ 
+  public static final Path sTempPath;
+  
   /** 
    * The directory used to store temporary files generated by Pipeline for the
    * current operating system. <P>
    *
    * Set by the TemporaryDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sTempPath} 
+   *   instead for an operating system independent abstract pathname.
    */ 
+  @Deprecated
   public static final File sTempDir;
   
 
@@ -381,14 +718,6 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The location of the <B>bash</B>(1) program.
-   */ 
-  public static final String   sBash = "@BASH@";
-  
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * The copyright notice for Pipeline. 
    */
   public static final String sCopyright = 
@@ -403,9 +732,18 @@ class PackageInfo
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   P R I V A T E   F I E L S                                                            */
+  /*   P R I V A T E   F I E L D S                                                          */
   /*----------------------------------------------------------------------------------------*/
  
+  /** 
+   * The root installation directory indexed by operating system type [OsType.ordinal()].
+   */ 
+  private static final Path sOsInstPaths[] = { 
+    new Path("@ROOT_INST_DIR@"), 
+    new Path("@WIN_ROOT_INST_DIR@"),
+    new Path("@MAC_ROOT_INST_DIR@")
+  };
+
   /** 
    * The root installation directory indexed by operating system type [OsType.ordinal()].
    */ 
@@ -413,6 +751,17 @@ class PackageInfo
     new File("@ROOT_INST_DIR@"), 
     null,
     new File("@MAC_ROOT_INST_DIR@")
+  };
+
+
+  /** 
+   * The root production directory indexed by operating system 
+   * type [OsType.ordinal()].
+   */
+  private static final Path sOsProdPaths[] = {
+    new Path("@PRODDIR@"),
+    new Path("@WIN_PRODDIR@"),
+    new Path("@MAC_PRODDIR@")
   };
 
   /** 
@@ -429,10 +778,31 @@ class PackageInfo
    * The root directory of the file repository indexed by operating system 
    * type [OsType.ordinal()].
    */
+  private static final Path sOsRepoPaths[] = {
+    new Path("@PRODDIR@/repository"),    
+    new Path("@WIN_PRODDIR@/repository"),
+    new Path("@MAC_PRODDIR@/repository")
+  };
+
+  /** 
+   * The root directory of the file repository indexed by operating system 
+   * type [OsType.ordinal()].
+   */
   private static final File sOsRepoDirs[] = {
     new File("@PRODDIR@/repository"),    
     null,
     new File("@MAC_PRODDIR@/repository")
+  };
+
+
+  /** 
+   * The root directory of user working areas indexed by operating system 
+   * type [OsType.ordinal()].
+   */
+  private static final Path sOsWorkPaths[] = {
+    new Path("@PRODDIR@/working"), 
+    new Path("@WIN_PRODDIR@/working"),
+    new Path("@MAC_PRODDIR@/working")
   };
 
   /** 
@@ -445,6 +815,17 @@ class PackageInfo
     new File("@MAC_PRODDIR@/working")
   };
 
+
+  /**
+   * The directory which contains the home directories for users for this site indexed 
+   * by operating system type [OsType.ordinal()].
+   */ 
+  private static final Path sOsHomePaths[] = {
+    new Path("@HOMEDIR@"), 
+    new Path("@WIN_HOMEDIR@"),
+    new Path("@MAC_HOMEDIR@")
+  };
+
   /**
    * The directory which contains the home directories for users for this site indexed 
    * by operating system type [OsType.ordinal()].
@@ -453,6 +834,17 @@ class PackageInfo
     new File("@HOMEDIR@"), 
     null,
     new File("@MAC_HOMEDIR@")
+  };
+
+
+  /**
+   * The directory used to store temporary files generated by Pipeline indexed by 
+   * operating system type [OsType.ordinal()].
+   */ 
+  private static final Path sOsTempPaths[] = {
+    new Path("@TEMPDIR@"), 
+    new Path("@WIN_TEMPDIR@"),
+    new Path("@MAC_TEMPDIR@")
   };
 
   /**
