@@ -1,4 +1,4 @@
-// $Id: NativeOS.cc,v 1.1 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeOS.cc,v 1.2 2006/05/07 19:59:26 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -47,6 +47,31 @@
 
 #include "NativeOS.hh"
  
+/* Get the free amount of system memory (in bytes). */
+extern "C" 
+JNIEXPORT jlong
+JNICALL Java_us_temerity_pipeline_NativeOS_getFreeMemoryNative
+(
+ JNIEnv *env, 
+ jclass cls
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeOS.getFreeMemoryNative(), unable to lookup \"java/lang/IOException\"");
+    return -2L;
+  }
+
+  env->ThrowNew(IOException, 
+		"NativeOS.getFreeMemoryNative() is only supported on Windows!");
+  
+  return -2L;
+}
+ 
+
 /* Get the total amount of system memory (in bytes). */
 extern "C" 
 JNIEXPORT jlong

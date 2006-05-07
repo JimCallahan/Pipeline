@@ -9,6 +9,14 @@ extern "C" {
 #endif
 /*
  * Class:     us_temerity_pipeline_NativeOS
+ * Method:    nativeGetFreeMemoryNative
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_us_temerity_pipeline_NativeOS_getFreeMemoryNative
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     us_temerity_pipeline_NativeOS
  * Method:    nativeGetTotalMemoryNative
  * Signature: ()J
  */
