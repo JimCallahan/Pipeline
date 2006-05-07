@@ -624,7 +624,7 @@ ActionsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #416 { "ShakeComp" }
           Name <String> #417 { "ShakeComp" }
           VersionID <VersionID> #418 {
-            RevisionNumber <String> #419 { "2.0.4" }
+            RevisionNumber <String> #419 { "2.0.9" }
           }
           Vendor <String> #420 { "Temerity" }
         }
@@ -762,6 +762,19 @@ ActionsMenuLayout <PluginMenuLayout> #1 {
             RevisionNumber <String> #508 { "2.0.0" }
           }
           Vendor <String> #509 { "Temerity" }
+        }
+      }
+    }
+    <PluginMenuLayout> #510 {
+      Title <String> #511 { "TeX" }
+      Children <LinkedList> #512 {
+        <PluginMenuLayout> #513 {
+          Title <String> #514 { "LyxExport" }
+          Name <String> #515 { "LyxExport" }
+          VersionID <VersionID> #516 {
+            RevisionNumber <String> #517 { "2.0.9" }
+          }
+          Vendor <String> #518 { "Temerity" }
         }
       }
     }

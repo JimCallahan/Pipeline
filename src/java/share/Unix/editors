@@ -8,7 +8,7 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #8 { "Shake" }
           Name <String> #9 { "Shake" }
           VersionID <VersionID> #10 {
-            RevisionNumber <String> #11 { "2.0.0" }
+            RevisionNumber <String> #11 { "2.0.9" }
           }
           Vendor <String> #12 { "Temerity" }
         }
@@ -16,7 +16,7 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #14 { "Sho" }
           Name <String> #15 { "Sho" }
           VersionID <VersionID> #16 {
-            RevisionNumber <String> #17 { "2.0.0" }
+            RevisionNumber <String> #17 { "2.0.9" }
           }
           Vendor <String> #18 { "Temerity" }
         }
@@ -24,23 +24,23 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #20 { "AirShow" }
           Name <String> #21 { "AirShow" }
           VersionID <VersionID> #22 {
-            RevisionNumber <String> #23 { "2.0.0" }
+            RevisionNumber <String> #23 { "2.0.9" }
           }
-          Vendor <String> #24 { "Temerity" }
+          Vendor <REF> #18
         }
-        <PluginMenuLayout> #25 {
-          Title <String> #26 { "I-Display" }
-          Name <String> #27 { "I-Display" }
-          VersionID <VersionID> #28 {
-            RevisionNumber <String> #29 { "2.0.0" }
+        <PluginMenuLayout> #24 {
+          Title <String> #25 { "I-Display" }
+          Name <String> #26 { "I-Display" }
+          VersionID <VersionID> #27 {
+            RevisionNumber <String> #28 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <String> #29 { "Temerity" }
         }
         <PluginMenuLayout> #30 {
           Title <String> #31 { "IV" }
           Name <String> #32 { "IV" }
           VersionID <VersionID> #33 {
-            RevisionNumber <String> #34 { "2.0.0" }
+            RevisionNumber <String> #34 { "2.0.9" }
           }
           Vendor <String> #35 { "Temerity" }
         }
@@ -48,189 +48,276 @@ EditorsMenuLayout <PluginMenuLayout> #1 {
           Title <String> #37 { "Gimp" }
           Name <String> #38 { "Gimp" }
           VersionID <VersionID> #39 {
-            RevisionNumber <String> #40 { "2.0.0" }
+            RevisionNumber <String> #40 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <String> #41 { "Temerity" }
         }
-        <PluginMenuLayout> #41 {
-          Title <String> #42 { "FCheck" }
-          Name <String> #43 { "FCheck" }
-          VersionID <VersionID> #44 {
-            RevisionNumber <String> #45 { "2.0.0" }
+        <PluginMenuLayout> #42 {
+          Title <String> #43 { "FCheck" }
+          Name <String> #44 { "FCheck" }
+          VersionID <VersionID> #45 {
+            RevisionNumber <String> #46 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <String> #47 { "Temerity" }
         }
-        <PluginMenuLayout> #46 {
-          Title <String> #47 { "ImfDisp" }
-          Name <String> #48 { "ImfDisp" }
-          VersionID <VersionID> #49 {
-            RevisionNumber <String> #50 { "2.0.0" }
+        <PluginMenuLayout> #48 {
+          Title <String> #49 { "ImfDisp" }
+          Name <String> #50 { "ImfDisp" }
+          VersionID <VersionID> #51 {
+            RevisionNumber <String> #52 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <REF> #47
         }
-        <PluginMenuLayout> #51 {
-          Title <String> #52 { "MPlay" }
-          Name <String> #53 { "MPlay" }
-          VersionID <VersionID> #54 {
-            RevisionNumber <String> #55 { "2.0.0" }
+        <PluginMenuLayout> #53 {
+          Title <String> #54 { "MPlay" }
+          Name <String> #55 { "MPlay" }
+          VersionID <VersionID> #56 {
+            RevisionNumber <String> #57 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <REF> #29
         }
-        <PluginMenuLayout> #56 {
-          Title <String> #57 { "XImage" }
-          Name <String> #58 { "XImage" }
-          VersionID <VersionID> #59 {
-            RevisionNumber <String> #60 { "2.0.0" }
+        <PluginMenuLayout> #58 {
+          Title <String> #59 { "XImage" }
+          Name <String> #60 { "XImage" }
+          VersionID <VersionID> #61 {
+            RevisionNumber <String> #62 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <String> #63 { "Temerity" }
         }
-        <PluginMenuLayout> #61 {
-          Title <String> #62 { "DSView" }
-          Name <String> #63 { "DSView" }
-          VersionID <VersionID> #64 {
-            RevisionNumber <String> #65 { "2.0.0" }
+        <PluginMenuLayout> #64 {
+          Title <String> #65 { "DSView" }
+          Name <String> #66 { "DSView" }
+          VersionID <VersionID> #67 {
+            RevisionNumber <String> #68 { "2.0.9" }
           }
-          Vendor <String> #66 { "Temerity" }
-        }
-      }
-    }
-    <PluginMenuLayout> #67 {
-      Title <String> #68 { "3D Apps" }
-      Children <LinkedList> #69 {
-        <PluginMenuLayout> #70 {
-          Title <String> #71 { "Maya" }
-          Name <String> #72 { "Maya" }
-          VersionID <VersionID> #73 {
-            RevisionNumber <String> #74 { "2.0.0" }
-          }
-          Vendor <REF> #24
-        }
-        <PluginMenuLayout> #75 {
-          Title <String> #76 { "Houdini" }
-          Name <String> #77 { "Houdini" }
-          VersionID <VersionID> #78 {
-            RevisionNumber <String> #79 { "2.0.0" }
-          }
-          Vendor <REF> #24
-        }
-        <PluginMenuLayout> #80 {
-          Title <String> #81 { "RealFlow" }
-          Name <String> #82 { "RealFlow" }
-          VersionID <VersionID> #83 {
-            RevisionNumber <String> #84 { "2.0.0" }
-          }
-          Vendor <String> #85 { "Temerity" }
-        }
-        <PluginMenuLayout> #86 {
-          Title <String> #87 { "Open Inventor" }
-          Name <String> #88 { "IvView" }
-          VersionID <VersionID> #89 {
-            RevisionNumber <String> #90 { "2.0.0" }
-          }
-          Vendor <REF> #24
+          Vendor <REF> #18
         }
       }
     }
-    <PluginMenuLayout> #91 {
-      Title <String> #92 { "Geometry" }
-      Children <LinkedList> #93 {
-        <PluginMenuLayout> #94 {
-          Title <String> #95 { "GPlay" }
-          Name <String> #96 { "GPlay" }
-          VersionID <VersionID> #97 {
-            RevisionNumber <String> #98 { "2.0.0" }
+    <PluginMenuLayout> #69 {
+      Title <String> #70 { "3D Apps" }
+      Children <LinkedList> #71 {
+        <PluginMenuLayout> #72 {
+          Title <String> #73 { "Maya" }
+          Name <String> #74 { "Maya" }
+          VersionID <VersionID> #75 {
+            RevisionNumber <String> #76 { "2.0.9" }
           }
-          Vendor <String> #99 { "Temerity" }
+          Vendor <REF> #41
         }
-        <PluginMenuLayout> #100 {
-          Title <String> #101 { "PtViewer" }
-          Name <String> #102 { "PtViewer" }
-          VersionID <VersionID> #103 {
-            RevisionNumber <String> #104 { "2.0.0" }
+        <PluginMenuLayout> #77 {
+          Title <String> #78 { "Houdini" }
+          Name <String> #79 { "Houdini" }
+          VersionID <VersionID> #80 {
+            RevisionNumber <String> #81 { "2.0.9" }
           }
-          Vendor <REF> #99
+          Vendor <REF> #41
         }
-        <PluginMenuLayout> #105 {
-          Title <String> #106 { "BrickViewer" }
-          Name <String> #107 { "BrickViewer" }
-          VersionID <VersionID> #108 {
-            RevisionNumber <String> #109 { "2.0.0" }
+        <PluginMenuLayout> #82 {
+          Title <String> #83 { "ZBrush" }
+          Name <String> #84 { "ZBrush" }
+          VersionID <VersionID> #85 {
+            RevisionNumber <String> #86 { "2.0.9" }
           }
-          Vendor <String> #110 { "Temerity" }
-        }
-        <PluginMenuLayout> #111 {
-          Title <String> #112 { "IvView" }
-          Name <String> #113 { "IvView" }
-          VersionID <VersionID> #114 {
-            RevisionNumber <String> #115 { "2.0.0" }
-          }
-          Vendor <REF> #99
+          Vendor <String> #87 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #116 {
-      Title <String> #117 { "Documents" }
-      Children <LinkedList> #118 {
+    <PluginMenuLayout> #88 {
+      Title <String> #89 { "Geometry" }
+      Children <LinkedList> #90 {
+        <PluginMenuLayout> #91 {
+          Title <String> #92 { "GPlay" }
+          Name <String> #93 { "GPlay" }
+          VersionID <VersionID> #94 {
+            RevisionNumber <String> #95 { "2.0.9" }
+          }
+          Vendor <REF> #29
+        }
+        <PluginMenuLayout> #96 {
+          Title <String> #97 { "PtViewer" }
+          Name <String> #98 { "PtViewer" }
+          VersionID <VersionID> #99 {
+            RevisionNumber <String> #100 { "2.0.9" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #101 {
+          Title <String> #102 { "BrickViewer" }
+          Name <String> #103 { "BrickViewer" }
+          VersionID <VersionID> #104 {
+            RevisionNumber <String> #105 { "2.0.9" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #106 {
+          Title <String> #107 { "OpenInventor" }
+          Name <String> #108 { "IvView" }
+          VersionID <VersionID> #109 {
+            RevisionNumber <String> #110 { "2.0.9" }
+          }
+          Vendor <REF> #35
+        }
+      }
+    }
+    <PluginMenuLayout> #111 {
+      Title <String> #112 { "Adobe CS2" }
+      Children <LinkedList> #113 {
+        <PluginMenuLayout> #114 {
+          Title <String> #115 { "Photoshop" }
+          Name <String> #116 { "Photoshop" }
+          VersionID <VersionID> #117 {
+            RevisionNumber <String> #118 { "2.0.9" }
+          }
+          Vendor <REF> #29
+        }
         <PluginMenuLayout> #119 {
-          Title <String> #120 { "Emacs" }
-          Name <String> #121 { "Emacs" }
+          Title <String> #120 { "Illustrator" }
+          Name <String> #121 { "Illustrator" }
           VersionID <VersionID> #122 {
-            RevisionNumber <String> #123 { "2.0.0" }
+            RevisionNumber <String> #123 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <REF> #29
         }
         <PluginMenuLayout> #124 {
-          Title <String> #125 { "Vim" }
-          Name <String> #126 { "Vim" }
+          Title <String> #125 { "InDesign" }
+          Name <String> #126 { "InDesign" }
           VersionID <VersionID> #127 {
-            RevisionNumber <String> #128 { "2.0.0" }
+            RevisionNumber <String> #128 { "2.0.9" }
           }
-          Vendor <String> #129 { "Temerity" }
+          Vendor <REF> #29
         }
-        <PluginMenuLayout> #130 {
-          Title <String> #131 { "GEdit" }
-          Name <String> #132 { "GEdit" }
-          VersionID <VersionID> #133 {
-            RevisionNumber <String> #134 { "2.0.0" }
+        <PluginMenuLayout> #129 {
+          Title <String> #130 { "Acrobat" }
+          Name <String> #131 { "Acrobat" }
+          VersionID <VersionID> #132 {
+            RevisionNumber <String> #133 { "2.0.9" }
           }
-          Vendor <REF> #24
-        }
-        <PluginMenuLayout> #135 {
-          Title <String> #136 { "XDvi" }
-          Name <String> #137 { "XDvi" }
-          VersionID <VersionID> #138 {
-            RevisionNumber <String> #139 { "2.0.0" }
-          }
-          Vendor <REF> #24
-        }
-        <PluginMenuLayout> #140 {
-          Title <String> #141 { "Acroread" }
-          Name <String> #142 { "Acroread" }
-          VersionID <VersionID> #143 {
-            RevisionNumber <String> #144 { "2.0.0" }
-          }
-          Vendor <REF> #24
-        }
-        <PluginMenuLayout> #145 {
-          Title <String> #146 { "Evince" }
-          Name <String> #147 { "Evince" }
-          VersionID <VersionID> #148 {
-            RevisionNumber <String> #149 { "2.0.0" }
-          }
-          Vendor <REF> #12
+          Vendor <String> #134 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #150 {
-      Title <String> #151 { "Utils" }
-      Children <LinkedList> #152 {
-        <PluginMenuLayout> #153 {
-          Title <String> #154 { "Terminal" }
-          Name <String> #155 { "Terminal" }
-          VersionID <VersionID> #156 {
-            RevisionNumber <String> #157 { "2.0.0" }
+    <PluginMenuLayout> #135 {
+      Title <String> #136 { "Text Editors" }
+      Children <LinkedList> #137 {
+        <PluginMenuLayout> #138 {
+          Title <String> #139 { "Emacs" }
+          Name <String> #140 { "Emacs" }
+          VersionID <VersionID> #141 {
+            RevisionNumber <String> #142 { "2.0.9" }
           }
-          Vendor <REF> #24
+          Vendor <String> #143 { "Temerity" }
+        }
+        <PluginMenuLayout> #144 {
+          Title <String> #145 { "Vim" }
+          Name <String> #146 { "Vim" }
+          VersionID <VersionID> #147 {
+            RevisionNumber <String> #148 { "2.0.9" }
+          }
+          Vendor <String> #149 { "Temerity" }
+        }
+        <PluginMenuLayout> #150 {
+          Title <String> #151 { "GEdit" }
+          Name <String> #152 { "GEdit" }
+          VersionID <VersionID> #153 {
+            RevisionNumber <String> #154 { "2.0.9" }
+          }
+          Vendor <String> #155 { "Temerity" }
+        }
+        <PluginMenuLayout> #156 {
+          Title <String> #157 { "SciTE" }
+          Name <String> #158 { "SciTE" }
+          VersionID <VersionID> #159 {
+            RevisionNumber <String> #160 { "2.0.9" }
+          }
+          Vendor <REF> #87
+        }
+        <PluginMenuLayout> #161 {
+          Title <String> #162 { "TextEdit" }
+          Name <String> #163 { "TextEdit" }
+          VersionID <VersionID> #164 {
+            RevisionNumber <String> #165 { "2.0.9" }
+          }
+          Vendor <String> #166 { "Temerity" }
+        }
+      }
+    }
+    <PluginMenuLayout> #167 {
+      Title <String> #168 { "Documents" }
+      Children <LinkedList> #169 {
+        <PluginMenuLayout> #170 {
+          Title <String> #171 { "Evince" }
+          Name <String> #172 { "Evince" }
+          VersionID <VersionID> #173 {
+            RevisionNumber <String> #174 { "2.0.9" }
+          }
+          Vendor <REF> #155
+        }
+        <PluginMenuLayout> #175 {
+          Title <String> #176 { "Acroread" }
+          Name <String> #177 { "Acroread" }
+          VersionID <VersionID> #178 {
+            RevisionNumber <String> #179 { "2.0.9" }
+          }
+          Vendor <String> #180 { "Temerity" }
+        }
+        <PluginMenuLayout> #181 {
+          Title <String> #182 { "Foxit" }
+          Name <String> #183 { "Foxit" }
+          VersionID <VersionID> #184 {
+            RevisionNumber <String> #185 { "2.0.9" }
+          }
+          Vendor <String> #186 { "Temerity" }
+        }
+        <PluginMenuLayout> #187 {
+          Title <String> #188 { "eXPert" }
+          Name <String> #189 { "eXPert" }
+          VersionID <VersionID> #190 {
+            RevisionNumber <String> #191 { "2.0.9" }
+          }
+          Vendor <REF> #186
+        }
+        <PluginMenuLayout> #192 {
+          Title <String> #193 { "Preview" }
+          Name <String> #194 { "Preview" }
+          VersionID <VersionID> #195 {
+            RevisionNumber <String> #196 { "2.0.9" }
+          }
+          Vendor <REF> #166
+        }
+      }
+    }
+    <PluginMenuLayout> #197 {
+      Title <String> #198 { "TeX" }
+      Children <LinkedList> #199 {
+        <PluginMenuLayout> #200 {
+          Title <String> #201 { "Lyx" }
+          Name <String> #202 { "Lyx" }
+          VersionID <VersionID> #203 {
+            RevisionNumber <String> #204 { "2.0.9" }
+          }
+          Vendor <String> #205 { "Temerity" }
+        }
+        <PluginMenuLayout> #206 {
+          Title <String> #207 { "DVI Viewer" }
+          Name <String> #208 { "DviViewer" }
+          VersionID <VersionID> #209 {
+            RevisionNumber <String> #210 { "2.0.9" }
+          }
+          Vendor <String> #211 { "Temerity" }
+        }
+      }
+    }
+    <PluginMenuLayout> #212 {
+      Title <String> #213 { "Utils" }
+      Children <LinkedList> #214 {
+        <PluginMenuLayout> #215 {
+          Title <String> #216 { "Terminal" }
+          Name <String> #217 { "Terminal" }
+          VersionID <VersionID> #218 {
+            RevisionNumber <String> #219 { "2.0.9" }
+          }
+          Vendor <String> #220 { "Temerity" }
         }
       }
     }
