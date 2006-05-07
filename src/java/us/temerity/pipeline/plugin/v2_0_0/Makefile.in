@@ -10,8 +10,9 @@ VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ../..
+top_builddir = ../../../../../../..
 
+am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = @INSTALL@
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -26,12 +27,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = .
-ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
-ETAGS = etags
-CTAGS = ctags
-GZIP_ENV = --best
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -97,6 +92,7 @@ JAVA_C = @JAVA_C@
 JAVA_CC = @JAVA_CC@
 JAVA_CLASS_VERSION = @JAVA_CLASS_VERSION@
 JAVA_C_FLAGS = @JAVA_C_FLAGS@
+JAVA_C_NODEP_FLAGS = @JAVA_C_NODEP_FLAGS@
 JAVA_H = @JAVA_H@
 JAVA_HOME = @JAVA_HOME@
 JAVA_INC = @JAVA_INC@
@@ -164,7 +160,6 @@ PLQUEUEMGR_PROFILE_OPTS = @PLQUEUEMGR_PROFILE_OPTS@
 PLSCRIPT_DEBUG_OPTS = @PLSCRIPT_DEBUG_OPTS@
 PLSCRIPT_GC_OPTS = @PLSCRIPT_GC_OPTS@
 PLSCRIPT_PROFILE_OPTS = @PLSCRIPT_PROFILE_OPTS@
-PLUGIN_VERSION_PATTERN = @PLUGIN_VERSION_PATTERN@
 PLUI_DEBUG_OPTS = @PLUI_DEBUG_OPTS@
 PLUI_GC_OPTS = @PLUI_GC_OPTS@
 PLUI_PROFILE_OPTS = @PLUI_PROFILE_OPTS@
@@ -241,7 +236,8 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
-subdir = docs/javadoc
+DIST_COMMON = Makefile.in
+subdir = src/java/us/temerity/pipeline/plugin/v2_0_0
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
@@ -249,104 +245,104 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   V A R I A B L E S                                                                        #
 #--------------------------------------------------------------------------------------------#
 
-  EXTERNAL_URLS = \
-      -linkoffline \
-        http://java.sun.com/j2se/1.5.0/docs/api \
-        $(srcdir)/package-lists/jdk \
-      -linkoffline \
-        http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio-1_0-docs \
-        $(srcdir)/package-lists/jai-imageio \
-      -linkoffline \
-        http://java.sun.com/products/java-media/jai/forDevelopers/jai-apidocs \
-        $(srcdir)/package-lists/jai
+  PLUGIN_VERSION = $(notdir $(srcdir))
+
+          TARGET = plugins_$(PLUGIN_VERSION).jar
 
 
-     LOCAL_DIRS = /usr/java/jdk1.5.0/docs/api
+      JAVA_PATHS = -d ../../../../.. -classpath ../../api.jar		
 
-     LOCAL_URLS = $(patsubst %,-link file://%,$(LOCAL_DIRS))
+    JAVA_SOURCES = $(shell find $(srcdir) -type f -name "*.java")
+    JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
-
-  PLUGIN_SOURCES = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/plugin \
-                                -type f -path "*/@PLUGIN_VERSION_PATTERN@/*.java")
-
-     PLUGIN_DIRS = $(patsubst $(top_srcdir)/src/java/%.java,%,$(PLUGIN_SOURCES))
- PLUGIN_PACKAGES = $(sort $(subst /,.,$(patsubst %/,%,$(dir $(PLUGIN_DIRS)))))
+      PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
+     EXAMPLE_DIR = $(ROOT_INST_DIR)/examples/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
 
 
-  MAIN_PACKAGES = us.temerity.pipeline \
-                  us.temerity.pipeline.glue \
-                  us.temerity.pipeline.math \
-                  us.temerity.pipeline.toolset \
-                  us.temerity.pipeline.ui
-
-
-       PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES)
-
-   PACKAGE_HTML = $(patsubst %,$(top_srcdir)/src/java/%/package.html,\
-                             $(subst .,/,$(PACKAGES)))
-
-
-   JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
-                  -classpath $(top_builddir)/src/java \
-                  -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
-                  -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#ffffff;"><B>TEMERITY</B></SPAN></A></BIG><EM>' \
-                  -stylesheetfile $(srcdir)/stylesheet.css
-
-
-#$(LOCAL_URLS) 
-#$(EXTERNAL_URLS) 
 
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: javadoc.tar
+all: Makefile java-all $(TARGET) 
 
-javadoc.tar: docs-all
-	tar -cvf $@ javadoc
+$(TARGET): java-all
+	(cd ../../../../..; \
+         $(JAR) cvf us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/$@ \
+                $(patsubst %,us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/%,$(JAVA_CLASSES)))
 
-docs-all: $(PACKAGE_HTML) Makefile
-	$(JAVADOC) $(JAVADOC_OPTS) $(PACKAGES) \
-           $(top_builddir)/src/java/us/temerity/pipeline/PackageInfo.java
-	cp $(srcdir)/inherit.gif javadoc/resources/inherit.gif
+java-all: $(JAVA_SOURCES)
+	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	touch $@
+	rm -f $(top_builddir)/docs/javadoc/docs-all
+
+%.java: %.jj
+	$(JAVA_CC) $<
+
+check:
 
 
 #--------------------------------------------------------------------------------------------#
 
-install: all installdirs
-	(docdir=`pwd`; \
-         cd $(DESTDIR)$(ROOT_INST_DIR)/share/docs; \
-         tar -xvf $$docdir/javadoc.tar)
+install: all installdirs install-sources install-classes 
+
+install-classes: $(JAVA_CLASSES)
+	@list='$^'; for p in $$list; do \
+          if test -f $$p; then \
+            echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR); \
+            $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR); \
+          fi; \
+         done
+
+installdirs:
+	$(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(PLUGIN_DIR)
+
+install-sources: $(JAVA_SOURCES)
+	@list='$^'; for p in $$list; do \
+          f=`echo $$p | sed -e 's:$(srcdir)/::g'`; \
+          if test -f $$p; then \
+            echo $(INSTALL) -m 444 $$p $(DESTDIR)$(EXAMPLE_DIR); \
+            $(INSTALL) -m 444 $$p $(DESTDIR)$(EXAMPLE_DIR); \
+          fi; \
+         done
+
+
+
+#--------------------------------------------------------------------------------------------#
+
+uninstall: uninstall-jar
+
+uninstall-classes: $(JAVA_CLASSES)
+	@list='$^'; for p in $$list; do \
+          f=`basename $$p`; \
+	  if test -f $$p; then \
+            echo rm -f $(DESTDIR)$(PLUGIN_DIR)/$$f; \
+            rm -f $(DESTDIR)$(PLUGIN_DIR)/$$f; \
+          fi; \
+         done
+
+
+#--------------------------------------------------------------------------------------------#
+
+clean: clean-jar clean-class 
+
+clean-jar:
+	rm -f $(TARGET)
+
+clean-class:
+	rm -f *.class
+	rm -f java-all
+
+
+#--------------------------------------------------------------------------------------------#
 
 PHONY: installdirs
-installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/share/docs
 
-
-#--------------------------------------------------------------------------------------------#
-
-uninstall: 
-
-uninstall-jar: 
-	rm -f $(DESTDIR)$(ROOT_INST_DIR)/share/docs/javadoc
 
 
 #--------------------------------------------------------------------------------------------#
 
-check: all
-
-
-#--------------------------------------------------------------------------------------------#
-
-clean: 
-	rm -rf javadoc
-	rm -f javadoc.tar
-	rm -f docs-all
-
-
-#--------------------------------------------------------------------------------------------#
-
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 

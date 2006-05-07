@@ -5,22 +5,46 @@ noinst_DATA = \
   pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 
 
-if HAS_MAC 
-RPMS = \
-  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+if HAS_MAC
+
+if HAS_WINDOWS
+    RPMS = \
+      RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 else 
-RPMS = \
-  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+    RPMS = \
+      RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+endif 
+
+else
+
+if HAS_WINDOWS 
+  RPMS = \
+    RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+else 
+  RPMS = \
+    RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+endif
+
 endif
 
 
 MAC_SRC_DIR   = $(patsubst /home/%,/Users/%,$(top_srcdir))
 MAC_BUILD_DIR = $(patsubst /home/%,/Users/%,$(shell pwd))
+
+WIN_SRC_DIR   = $(top_srcdir)
+WIN_BUILD_DIR = $(shell pwd)
 
 
 
@@ -61,6 +85,11 @@ pipeline-install: clean-rpms rpm-mkdirs
 	mkdir -p DEST/plqueuemgr/@QUEUEDIR@
 
 
+core-rpms: pipeline-install \
+  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+
 RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
 	rpmbuild --rcfile rpmrc -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
@@ -87,16 +116,50 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 
 if HAS_MAC
 
+mac-rpm: clean-mac-rpm RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+
 RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmac-@CUSTOMER@-@VERSION@.spec
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  UPDATING: tadpole"
+	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plmac
-	rsync -av --exclude-from=$(top_srcdir)/config/excluded $(top_srcdir)/ tadpole:$(MAC_SRC_DIR)
+	rsync -av --exclude-from=$(top_srcdir)/config/excluded \
+          $(top_srcdir)/ tadpole:$(MAC_SRC_DIR)
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  BUILDING: tadpole"
+	@echo "-----------------------------------------------------------------------------"
 	ssh tadpole "source .bash_profile; $(MAKE) -C $(MAC_BUILD_DIR) all"
-	scp -rpq tadpole:$(MAC_BUILD_DIR)/DEST/plmac DEST/plmac
+	rsync -av tadpole:$(MAC_BUILD_DIR)/DEST/plmac DEST
 	rpmbuild --rcfile rpmrc -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec
 	cp -f plmac.spec $@
+
+endif
+
+
+if HAS_WINDOWS
+
+win-rpm: clean-win-rpm RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+
+RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
+  SPECS/plwin-@CUSTOMER@-@VERSION@.spec
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  UPDATING: lizard"
+	@echo "-----------------------------------------------------------------------------"
+	rm -rf DEST/plwin
+	rsync -av --exclude-from=$(top_srcdir)/config/excluded \
+          $(top_srcdir)/ lizard:$(WIN_SRC_DIR)
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  BUILDING: lizard"
+	@echo "-----------------------------------------------------------------------------"
+	ssh lizard "source .bash_profile; $(MAKE) -C $(WIN_BUILD_DIR) all"
+	rsync -av lizard:$(WIN_BUILD_DIR)/DEST/plwin DEST
+	rpmbuild --rcfile rpmrc -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec
+
+SPECS/plwin-@CUSTOMER@-@VERSION@.spec: plwin.spec
+	cp -f plwin.spec $@
 
 endif
 
@@ -132,6 +195,19 @@ clean: clean-rpms
 endif 
 
 
+if IS_WINDOWS
+
+all: clean-rpms rpm-mkdirs
+	rm -rf DEST/plwin
+	DESTDIR=`pwd`/DEST/plwin $(MAKE) -C .. install
+
+clean: clean-rpms
+	rm -rf BUILD DEST RPMS SPECS SOURCES SRPMS
+	$(MAKE) -C ../ clean
+
+endif 
+
+
 #---------------------------------------------------------------------------------------------
 
 rpm-mkdirs: 
@@ -139,3 +215,9 @@ rpm-mkdirs:
 
 clean-rpms: 
 	rm -f $(RPMS)
+
+clean-mac-rpm: 
+	rm -f RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+
+clean-win-rpm: 
+	rm -f RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm

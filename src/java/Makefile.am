@@ -1,7 +1,6 @@
 
-
 if FOUNDATION
-SUBDIRS = scripts share us
+  SUBDIRS = scripts share us
 else
-SUBDIRS = scripts
+  SUBDIRS = scripts
 endif

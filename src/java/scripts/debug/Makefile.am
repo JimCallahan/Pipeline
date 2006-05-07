@@ -19,4 +19,5 @@ endif
 
 instsbin_SCRIPTS = \
   pljobmgr \
+  pltestnative \
   $(admin_scripts)

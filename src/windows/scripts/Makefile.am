@@ -5,6 +5,11 @@ instbin_SCRIPTS = \
   plscript.bat
 
 
+# instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
+
+# instsbin_SCRIPTS = \
+#   pljobmgr.bat
+
 
 WIN_JAVA_RUNTIME = $(shell echo '@JAVA_RUNTIME@' | sed -e 's|/|\\\\\\\\|g')
 WIN_PIPELINE_JAR = $(shell echo '@PIPELINE_JAR@' | sed -e 's|/|\\\\\\\\|g')

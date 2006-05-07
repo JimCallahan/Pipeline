@@ -2,11 +2,21 @@
 instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/bin
 
 instbin_SCRIPTS = \
-  pltestheavy.bat \
-  pltestlight.bat \
-  pltestnative.bat \
   plscript.bat \
   plui2.bat
+
+# instbin_SCRIPTS = \
+#   pltestheavy.bat \
+#   pltestlight.bat \
+#   pltestnative.bat \
+#   plscript.bat \
+#   plui2.bat
+
+
+# instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin
+
+# instsbin_SCRIPTS = \
+#   pljobmgr.bat
 
 
 

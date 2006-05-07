@@ -27,66 +27,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure $(top_srcdir)/docs/javadoc/Makefile.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/Makefile.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/PackageInfo.java.src.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/core/VerifiedApp.java.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/build-web-icons.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/filter-fonts.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/filter-textures.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/radial-menu.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/plugin/Makefile.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/tests/Makefile.in \
-	$(top_srcdir)/src/java/us/temerity/pipeline/tests/TestInfo.java.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS config/config.guess \
-	config/config.sub config/depcomp config/install-sh \
-	config/missing config/mkinstalldirs
-subdir = .
-ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
-am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
-	$(ACLOCAL_M4)
-am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
- configure.lineno configure.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
-CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = docs/javadoc/Makefile \
-	src/java/us/temerity/pipeline/Makefile \
-	src/java/us/temerity/pipeline/PackageInfo.java.src \
-	src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in \
-	src/java/us/temerity/pipeline/core/VerifiedApp.java \
-	src/java/us/temerity/pipeline/laf/scripts/filter-fonts \
-	src/java/us/temerity/pipeline/laf/scripts/filter-textures \
-	src/java/us/temerity/pipeline/laf/scripts/radial-menu \
-	src/java/us/temerity/pipeline/laf/scripts/build-web-icons \
-	src/java/us/temerity/pipeline/plugin/Makefile \
-	src/java/us/temerity/pipeline/tests/Makefile \
-	src/java/us/temerity/pipeline/tests/TestInfo.java
-SOURCES =
-DIST_SOURCES =
-RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
-	html-recursive info-recursive install-data-recursive \
-	install-exec-recursive install-info-recursive \
-	install-recursive installcheck-recursive installdirs-recursive \
-	pdf-recursive ps-recursive uninstall-info-recursive \
-	uninstall-recursive
-ETAGS = etags
-CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-distdir = $(PACKAGE)-$(VERSION)
-top_distdir = $(distdir)
-am__remove_distdir = \
-  { test ! -d $(distdir) \
-    || { find $(distdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
-         && rm -fr $(distdir); }; }
-DIST_ARCHIVES = $(distdir).tar.gz
-GZIP_ENV = --best
-distuninstallcheck_listfiles = find . -type f -print
-distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -120,22 +60,31 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DF = @DF@
 DIFF = @DIFF@
-DLOPEN_LIB = @DLOPEN_LIB@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-EXPORT_DYNAMIC = @EXPORT_DYNAMIC@
 EXTRA_DEBUG_SUBDIRS = @EXTRA_DEBUG_SUBDIRS@
-GEN_LIB = @GEN_LIB@
+FOUNDATION_FALSE = @FOUNDATION_FALSE@
+FOUNDATION_TRUE = @FOUNDATION_TRUE@
 GIMP = @GIMP@
+HAS_MAC_FALSE = @HAS_MAC_FALSE@
+HAS_MAC_TRUE = @HAS_MAC_TRUE@
+HAS_WINDOWS_FALSE = @HAS_WINDOWS_FALSE@
+HAS_WINDOWS_TRUE = @HAS_WINDOWS_TRUE@
 HOMEDIR = @HOMEDIR@
 ID = @ID@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+IS_MAC_OS_FALSE = @IS_MAC_OS_FALSE@
+IS_MAC_OS_TRUE = @IS_MAC_OS_TRUE@
+IS_UNIX_FALSE = @IS_UNIX_FALSE@
+IS_UNIX_TRUE = @IS_UNIX_TRUE@
+IS_WINDOWS_FALSE = @IS_WINDOWS_FALSE@
+IS_WINDOWS_TRUE = @IS_WINDOWS_TRUE@
 JAR = @JAR@
 JAVA = @JAVA@
 JAVADOC = @JAVADOC@
@@ -147,9 +96,11 @@ JAVA_H = @JAVA_H@
 JAVA_HOME = @JAVA_HOME@
 JAVA_INC = @JAVA_INC@
 JAVA_NAME = @JAVA_NAME@
-JAVA_RUNTIME_FLAGS = @JAVA_RUNTIME_FLAGS@
+JAVA_RUNTIME = @JAVA_RUNTIME@
+JAVA_RUNTIME_OPTS = @JAVA_RUNTIME_OPTS@
 JAVA_VENDOR = @JAVA_VENDOR@
 JAVA_VERSION = @JAVA_VERSION@
+JNI_INCLUDES = @JNI_INCLUDES@
 JNI_LDADD = @JNI_LDADD@
 JNI_LDFLAGS = @JNI_LDFLAGS@
 KILL = @KILL@
@@ -162,14 +113,16 @@ LICENSE_END_STAMP = @LICENSE_END_STAMP@
 LICENSE_START_STAMP = @LICENSE_START_STAMP@
 LICENSE_TYPE = @LICENSE_TYPE@
 LTLIBOBJS = @LTLIBOBJS@
+MAC_HOMEDIR = @MAC_HOMEDIR@
+MAC_PRODDIR = @MAC_PRODDIR@
+MAC_ROOT_INST_DIR = @MAC_ROOT_INST_DIR@
+MAC_TEMPDIR = @MAC_TEMPDIR@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
-MOZILLA = @MOZILLA@
+NATIVE_OSTYPE = @NATIVE_OSTYPE@
 NODEDIR = @NODEDIR@
+NR_SHAKE_LOCATION = @NR_SHAKE_LOCATION@
 OBJEXT = @OBJEXT@
-OS_ARCH = @OS_ARCH@
-OS_NAME = @OS_NAME@
-OS_VERSION = @OS_VERSION@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -181,32 +134,45 @@ PIPELINE_GID = @PIPELINE_GID@
 PIPELINE_GROUP = @PIPELINE_GROUP@
 PIPELINE_HOST_IDS = @PIPELINE_HOST_IDS@
 PIPELINE_HOST_NAMES = @PIPELINE_HOST_NAMES@
+PIPELINE_JAR = @PIPELINE_JAR@
 PIPELINE_UID = @PIPELINE_UID@
 PIPELINE_USER = @PIPELINE_USER@
 PLCONFIG_VERSION = @PLCONFIG_VERSION@
 PLFILEMGR_DEBUG_OPTS = @PLFILEMGR_DEBUG_OPTS@
+PLFILEMGR_GC_OPTS = @PLFILEMGR_GC_OPTS@
 PLFILEMGR_PROFILE_OPTS = @PLFILEMGR_PROFILE_OPTS@
 PLJOBMGR_DEBUG_OPTS = @PLJOBMGR_DEBUG_OPTS@
+PLJOBMGR_GC_OPTS = @PLJOBMGR_GC_OPTS@
 PLJOBMGR_PROFILE_OPTS = @PLJOBMGR_PROFILE_OPTS@
 PLMASTER_DEBUG_OPTS = @PLMASTER_DEBUG_OPTS@
+PLMASTER_GC_OPTS = @PLMASTER_GC_OPTS@
 PLMASTER_PROFILE_OPTS = @PLMASTER_PROFILE_OPTS@
 PLPLUGINMGR_DEBUG_OPTS = @PLPLUGINMGR_DEBUG_OPTS@
+PLPLUGINMGR_GC_OPTS = @PLPLUGINMGR_GC_OPTS@
 PLPLUGINMGR_PROFILE_OPTS = @PLPLUGINMGR_PROFILE_OPTS@
 PLPLUGIN_DEBUG_OPTS = @PLPLUGIN_DEBUG_OPTS@
+PLPLUGIN_GC_OPTS = @PLPLUGIN_GC_OPTS@
 PLPLUGIN_PROFILE_OPTS = @PLPLUGIN_PROFILE_OPTS@
 PLQUEUEMGR_DEBUG_OPTS = @PLQUEUEMGR_DEBUG_OPTS@
+PLQUEUEMGR_GC_OPTS = @PLQUEUEMGR_GC_OPTS@
 PLQUEUEMGR_PROFILE_OPTS = @PLQUEUEMGR_PROFILE_OPTS@
 PLSCRIPT_DEBUG_OPTS = @PLSCRIPT_DEBUG_OPTS@
+PLSCRIPT_GC_OPTS = @PLSCRIPT_GC_OPTS@
 PLSCRIPT_PROFILE_OPTS = @PLSCRIPT_PROFILE_OPTS@
+PLUGIN_VERSION_PATTERN = @PLUGIN_VERSION_PATTERN@
 PLUI_DEBUG_OPTS = @PLUI_DEBUG_OPTS@
+PLUI_GC_OPTS = @PLUI_GC_OPTS@
 PLUI_PROFILE_OPTS = @PLUI_PROFILE_OPTS@
+PL_FILE_HEAP_SIZE = @PL_FILE_HEAP_SIZE@
 PL_FILE_PORT = @PL_FILE_PORT@
 PL_FILE_SERVER = @PL_FILE_SERVER@
 PL_JOB_PORT = @PL_JOB_PORT@
+PL_MASTER_HEAP_SIZE = @PL_MASTER_HEAP_SIZE@
 PL_MASTER_PORT = @PL_MASTER_PORT@
 PL_MASTER_SERVER = @PL_MASTER_SERVER@
 PL_PLUGIN_PORT = @PL_PLUGIN_PORT@
 PL_PLUGIN_SERVER = @PL_PLUGIN_SERVER@
+PL_QUEUE_HEAP_SIZE = @PL_QUEUE_HEAP_SIZE@
 PL_QUEUE_PORT = @PL_QUEUE_PORT@
 PL_QUEUE_SERVER = @PL_QUEUE_SERVER@
 PRODDIR = @PRODDIR@
@@ -223,8 +189,12 @@ SSH = @SSH@
 STRIP = @STRIP@
 TEMPDIR = @TEMPDIR@
 VERSION = @VERSION@
+WIN_HOMEDIR = @WIN_HOMEDIR@
+WIN_JAVA_HOME = @WIN_JAVA_HOME@
+WIN_PRODDIR = @WIN_PRODDIR@
+WIN_ROOT_INST_DIR = @WIN_ROOT_INST_DIR@
+WIN_TEMPDIR = @WIN_TEMPDIR@
 XDIFF = @XDIFF@
-YXXFLAGS = @YXXFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_STRIP = @ac_ct_STRIP@
@@ -284,22 +254,28 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = Math
+#            TESTS = BigInteger \
+#                    FileSeq \
+#                    Math \
+#                    NativeFileSys \
+#                    NodeID \
+#                    SubProcess
+#                    VersionID \
 
-#             TESTS = CheckSum \
-#                     DNotify \
-#                     FileSeq \
+
+           TESTS = Path
+
+#                     CheckSum \
 #                     FileMgr \
 #                     Glue \
 #                     NativeFileSys \
 #                     NodeID \
 #                     MasterMgr \
 #                     NodeModVersion \
-#                     SubProcess \
 #                     Toolsets \
-#                    VersionID
 
-         CLASSES = $(patsubst %,Test%App.class,$(TESTS))
+         CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
+#                   $(patsubst %.java,%.class,$(shell ls *.java))
 
 
 
@@ -314,7 +290,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d . -classpath "../../../..:$(srcdir)/../../../.."
 
-    JAVA_SOURCES = $(shell ls *.java $(srcdir)/*.java)
+    JAVA_SOURCES = $(patsubst %.class,$(srcdir)/%.java,$(CLASSES)) $(shell ls *.java)
 
 
 #--------------------------------------------------------------------------------------------#
@@ -323,11 +299,11 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 all: Makefile $(TARGET)
 
-$(TARGET): java-all
+$(TARGET): $(CLASSES)
 	(cd ../../../..; \
          $(JAR) cvf us/temerity/pipeline/tests/$@ us/temerity/pipeline/tests/*.class)
 
-java-all: $(JAVA_SOURCES)
+$(CLASSES): $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	touch $@
 
@@ -337,7 +313,7 @@ java-all: $(JAVA_SOURCES)
 check: all check-each 
 
 check-each: $(CLASSES) clean-data
-#	cp -r $(srcdir)/data data
+	cp -r $(srcdir)/data data
 	@failed=0; all=0; \
          banner1="========================================================================"; \
          banner2="------------------------------------------------------------------------"; \
@@ -349,11 +325,11 @@ check-each: $(CLASSES) clean-data
             echo "  TESTING: "$$c"..."; \
             echo; \
             echo env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
-                 $(JAVA) -Djava.util.logging.config.file=$(LOGGER_PROPS) $(GC_OPTS) \
-                         $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; \
+                 $(JAVA) $(GC_OPTS) $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
+                         $(JAVA_RUNTIME_FLAGS) $$c; \
             if env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
-                   $(JAVA) -Djava.util.logging.config.file=$(LOGGER_PROPS) $(GC_OPTS) \
-                           $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; \
+                   $(JAVA) $(GC_OPTS) $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
+                           $(JAVA_RUNTIME_FLAGS) $$c; \
             then \
               all=`expr $$all + 1`; \
               echo; \
