@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.14 2004/08/27 23:34:40 jim Exp $
+// $Id: PackageInfo.hh,v 1.15 2006/05/07 19:58:06 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -60,21 +60,6 @@ public:
   static const int sPipelineGID;
 
 
-  /**
-   * The installed location of Java.
-   */ 
-  static const char* sJavaHome;
-
-  /**
-   * The runtime options to be passed to Java.
-   */ 
-  static const char* sJavaRuntimeFlags;
-  
-  /**
-   * The extra runtime options if in debugging mode.
-   */ 
-  static const char* sPlNotifyDebugOpts;
-  
 
   /** 	
    * The root installation directory. <P>
