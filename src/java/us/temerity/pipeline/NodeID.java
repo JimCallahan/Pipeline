@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.10 2005/01/22 06:10:09 jim Exp $
+// $Id: NodeID.java,v 1.11 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -24,6 +24,11 @@ class NodeID
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */
   public
   NodeID()
   {}
@@ -132,11 +137,11 @@ class NodeID
   /** 
    * Get the node path without the last node name component. 
    */ 
-  public File
+  public Path
   getParent() 
   {
-    File path = new File(pStringRep);
-    return path.getParentFile();
+    Path path = new Path(pStringRep);
+    return path.getParentPath();
   }
 
 
@@ -145,20 +150,21 @@ class NodeID
   /** 
    * Get the working version path relative to the root production directory.
    */
-  public File
+  public Path
   getWorkingPath() 
   {
-    return (new File("/working" + pStringRep));
+    return (new Path("/working" + pStringRep));
   }
 
   /** 
    * Get parent directory of the working version path relative to the root 
    * production directory.
    */
-  public File
+  public Path
   getWorkingParent() 
   {
-    return getWorkingPath().getParentFile();
+    Path path = new Path("/working" + pStringRep);
+    return path.getParentPath();
   }
 
   
@@ -171,7 +177,7 @@ class NodeID
    * @param vid 
    *   The revision number of the checked-in version.
    */
-  public File
+  public Path
   getCheckedInPath
   (
    VersionID vid
@@ -180,8 +186,7 @@ class NodeID
     if(vid == null) 
       throw new IllegalArgumentException("The revision number cannot be (null)!");
 
-    File path = new File("/repository/" + pName + "/" + vid);
-    return path;
+    return (new Path("/repository/" + pName + "/" + vid)); 
   }
 
 

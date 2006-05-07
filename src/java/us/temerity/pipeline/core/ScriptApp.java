@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.48 2006/01/15 06:29:25 jim Exp $
+// $Id: ScriptApp.java,v 1.49 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1098,18 +1098,34 @@ class ScriptApp
     throws PipelineException
   {
     Toolset tset = client.getToolset(tname);
+    TreeMap<String,String> env = tset.getEnvironment();
 
     StringBuffer buf = new StringBuffer();
-    buf.append("export TOOLSET=" + tset.getName() + "\n");
-    buf.append("export USER=`whoami`\n");
-    buf.append("export HOME=" + PackageInfo.sHomeDir + "/$USER\n");
-    buf.append("export WORKING=" + PackageInfo.sWorkDir + "/$USER/default\n");
-    buf.append("export _=/bin/env\n");
-    
-    TreeMap<String,String> env = tset.getEnvironment();
-    for(String ename : env.keySet()) {
-      String evalue = env.get(ename);
-      buf.append("\nexport " + ename + "=" + ((evalue != null) ? evalue : ""));
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      {
+	buf.append("export TOOLSET=" + tset.getName() + "\n");
+	buf.append("export USER=`whoami`\n");
+	buf.append("export HOME=" + PackageInfo.sHomePath + "/$USER\n");
+	buf.append("export WORKING=" + PackageInfo.sWorkPath + "/$USER/default\n");
+	buf.append("export _=/bin/env\n");
+      
+	for(String ename : env.keySet()) {
+	  String evalue = env.get(ename);
+	  buf.append("\nexport " + ename + "=" + ((evalue != null) ? evalue : ""));
+	}
+      }
+      break;
+
+    case Windows:
+      {
+	throw new PipelineException
+	  ("Not implemented yet...");
+
+	// ...
+
+      }
     }
 
     LogMgr.getInstance().log
@@ -1499,7 +1515,7 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getEditors();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getEditors();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1508,7 +1524,7 @@ class ScriptApp
 	
       for(String vendor : versions.keySet()) {
 	for(String name : versions.get(vendor).keySet()) {
-	  for(VersionID vid : versions.get(vendor).get(name)) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	    BaseEditor plg = client.newEditor(name, vid, vendor);
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1529,7 +1545,7 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getActions();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getActions();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1538,7 +1554,7 @@ class ScriptApp
       
       for(String vendor : versions.keySet()) {
 	for(String name : versions.get(vendor).keySet()) {
-	  for(VersionID vid : versions.get(vendor).get(name)) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	    BaseAction plg = client.newAction(name, vid, vendor);
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1559,7 +1575,7 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getComparators();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getComparators();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1568,7 +1584,7 @@ class ScriptApp
       
       for(String vendor : versions.keySet()) {
 	for(String name : versions.get(vendor).keySet()) {
-	  for(VersionID vid : versions.get(vendor).get(name)) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	    BaseComparator plg = client.newComparator(name, vid, vendor);
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1589,7 +1605,7 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getTools();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getTools();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1598,7 +1614,7 @@ class ScriptApp
       
       for(String vendor : versions.keySet()) {
 	for(String name : versions.get(vendor).keySet()) {
-	  for(VersionID vid : versions.get(vendor).get(name)) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	    BaseTool plg = client.newTool(name, vid, vendor);
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1619,7 +1635,7 @@ class ScriptApp
     throws PipelineException
   {
     PluginMgrClient client = PluginMgrClient.getInstance();
-    DoubleMap<String,String,TreeSet<VersionID>> versions = client.getArchivers();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getArchivers();
     if(!versions.isEmpty()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -1628,7 +1644,7 @@ class ScriptApp
       
       for(String vendor : versions.keySet()) {
 	for(String name : versions.get(vendor).keySet()) {
-	  for(VersionID vid : versions.get(vendor).get(name)) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	    BaseArchiver plg = client.newArchiver(name, vid, vendor);
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -2532,22 +2548,40 @@ class ScriptApp
       env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
       
       /* override these since the editor will be run as the current user */ 
-      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
-      env.put("USER", PackageInfo.sUser);
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case MacOS:
+	{
+	  Path home = new Path(PackageInfo.sHomePath, PackageInfo.sUser);
+	  env.put("HOME", home.toOsString()); 
+	  env.put("USER", PackageInfo.sUser);
+	}
+	break;
+
+      case Windows:
+	throw new PipelineException
+	  ("Not implemented yet...");
+
+	// FIX THIS: handle Windows specific vars here...
+
+      default:
+	assert(false);
+      }
     }
     
     /* get the directory containing the files */ 
     File dir = null; 
     {
       if(mod != null) {
-	File wpath = 
-	  new File(PackageInfo.sWorkDir, 
+	Path wpath = 
+	  new Path(PackageInfo.sWorkPath, 
 		   nodeID.getAuthor() + "/" + nodeID.getView() + "/" + mod.getName());
-	dir = wpath.getParentFile();
+	dir = wpath.getParentPath().toFile();
       }
       else if(vsn != null) {
-	dir = new File(PackageInfo.sRepoDir + "/" + 
-		       vsn.getName() + "/" + vsn.getVersionID());
+	Path path = new Path(PackageInfo.sRepoPath,  
+			     vsn.getName() + "/" + vsn.getVersionID());
+	dir = path.toFile(); 
       }
       else {
 	assert(false);
@@ -2824,10 +2858,17 @@ class ScriptApp
       else if(svids.isEmpty()) 
 	svids.addAll(avids);
       
-      for(VersionID vid : svids) {
-	NodeVersion vsn = mclient.getCheckedInVersion(name, vid);
-	versions.add(vsn);
-      }		
+      switch(svids.size()) {
+      case 0:
+	break; 
+
+      case 1: 
+	versions.add(mclient.getCheckedInVersion(name, svids.first()));
+	break;
+
+      default:
+	versions.addAll(mclient.getAllCheckedInVersions(name).values());
+      }
     }
 
     StringBuffer buf = new StringBuffer();

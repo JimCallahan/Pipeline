@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.23 2006/01/15 06:29:26 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.24 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2745,21 +2745,17 @@ class JNodeFilesPanel
 	      
 	    /* passes pAuthor so that WORKING will correspond to the current view */ 
 	    env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
-
-	    /* override these since the editor will be run as the current user */ 
-	    env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
-	    env.put("USER", PackageInfo.sUser);
-	    env.put("WORKING", PackageInfo.sWorkDir + "/" + pAuthor + "/" + pView);
 	  }
 
 	  /* working directory */ 
 	  File dir = null;
-	  if(pVersionID != null) 
-	    dir = new File(PackageInfo.sRepoDir + name + "/" + pVersionID);
+	  if(pVersionID != null) {
+	    Path path = new Path(PackageInfo.sRepoPath, name + "/" + pVersionID);
+	    dir = path.toFile();
+	  }
 	  else {
-	    File path = new File(name);
-	    dir = new File(PackageInfo.sWorkDir + "/" + pAuthor + "/" + pView + 
-			   path.getParent());
+	    Path path = new Path(PackageInfo.sWorkPath, pAuthor + "/" + pView + name);
+	    dir = path.getParentPath().toFile();
 	  }
 
 	  /* start the editor */ 
@@ -2850,18 +2846,18 @@ class JNodeFilesPanel
 	    /* the checked-in file */  
 	    File fileB = null;
 	    {
-	      String path = (PackageInfo.sRepoDir + name + "/" + pVersionID);
-	      FileSeq fseq = new FileSeq(path, pFileSeq);
-	      fileB = new File(fseq.toString());
+	      Path path = new Path(PackageInfo.sRepoPath, 
+				   name + "/" + pVersionID + "/" + pFileSeq.toString());
+	      fileB = path.toFile();	      
 	    }
 
 	    /* the working file */ 
 	    File fileA = null;
 	    {
-	      File path = new File(pStatus.getName());
-	      fileA = new File(PackageInfo.sWorkDir, 
-			       pAuthor + "/" + pView + path.getParent() + "/" + 
-			       fileB.getName());
+	      Path path = new Path(PackageInfo.sWorkPath, 
+				   pAuthor + "/" + pView + pStatus.getName());
+	      Path wpath = new Path(path.getParentPath(), pFileSeq.toString());
+	      fileA = wpath.toFile();
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -2874,15 +2870,10 @@ class JNodeFilesPanel
 	      
 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
 	      env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
-
-	      /* override these since the comparator will be run as the current user */ 
-	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
-	      env.put("USER", PackageInfo.sUser);
-	      env.put("WORKING", PackageInfo.sWorkDir + "/" + pAuthor + "/" + pView);
 	    }
 	    
 	    /* start the comparator */ 
-	    proc = comparator.launch(fileA, fileB, env, PackageInfo.sTempDir);	   
+	    proc = comparator.launch(fileA, fileB, env, PackageInfo.sTempPath.toFile());
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);

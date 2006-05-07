@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.5 2005/10/17 06:23:39 jim Exp $
+// $Id: ViewerNode.java,v 1.6 2006/05/07 21:30:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -176,7 +176,7 @@ class ViewerNode
 	  UserPrefs prefs = UserPrefs.getInstance();
 	  String style = prefs.getNodeLabelStyle();
 	  if(style.equals("Name Only")) {
-	    File path = new File(pStatus.getNodeID().getName());
+	    Path path = new Path(pStatus.getNodeID().getName());
 	    text1 = path.getName();
 	    pLabelDLs = new int[1];
 	  }
@@ -187,7 +187,7 @@ class ViewerNode
 	  else if(style.equals("Pattern & Range Below")) {
 	    NodeDetails details = pStatus.getDetails();
 	    if(details == null) {
-	      File path = new File(pStatus.getNodeID().getName());
+	      Path path = new Path(pStatus.getNodeID().getName());
 	      text1 = path.getName();
 	    }
 	    else {

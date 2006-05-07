@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.19 2006/02/27 17:58:50 jim Exp $
+// $Id: FileSeq.java,v 1.20 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -250,18 +250,6 @@ class FileSeq
     return ((pFrameRange == null) || (pFrameRange.isSingle()));
   }
 
-  /**
-   * Whether the file sequence contains the given file.
-   */ 
-  public boolean 
-  contains
-  (
-   File file
-  ) 
-  {
-    return getFiles().contains(file);
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -323,7 +311,6 @@ class FileSeq
     else 
       return pFilePattern.getFile();
   }
- 
 
   /**
    * Generate a list of all of the files in the file sequence. 
@@ -346,81 +333,46 @@ class FileSeq
   }
 
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   F I L E S Y T E M                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Delete any existing files from this sequence under the given directory. 
+  /**
+   * Generated an abstract pathname for the given frame number. <P>
    * 
-   * @param dir  
-   *   The parent directory of the file sequence.
-   * 
-   * @throws PipelineException
-   *   If unable to delete the files.
+   * @param idx  
+   *   The frame index of the file.  Valid frame indices are in the range: 
+   *   [0,{@link #numFrames() numFrames()}).
    */ 
-  public void 
-  delete
+  public Path 
+  getPath
   (
-   File dir   
-  )
-    throws PipelineException
+   int idx  
+  )  
   {
-    File full = null;
-    try {
-      for(File file : getFiles()) {
-	full = new File(dir, file.getPath());
-	if(full.isFile()) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Sub, LogMgr.Level.Finest,
-	     "Deleting file: " + full);
-	  full.delete();
-	}
-      }
-    }
-    catch (SecurityException ex) {
-      throw new PipelineException
-	("Unable to delete file (" + full + ") from file sequence " + this + 
-	 " due to the Java Security Manager!");
-    }
+    assert(pFilePattern != null);
+    if(pFrameRange != null) 
+      return pFilePattern.getPath(pFrameRange.indexToFrame(idx));
+    else 
+      return pFilePattern.getPath();
   }
 
-
-  /** 
-   * Change the permissions to read-only for any existing files from the sequence 
-   * in the given directory. 
-   * 
-   * @param dir  
-   *   The parent directory of the file sequence.
-   * 
-   * @throws PipelineException
-   *   If unable to change the permission of the files.
+  /**
+   * Generate a list of abstract pathnames of all of the files in the file sequence. 
    */ 
-  public void 
-  setReadOnly
-  (
-   File dir   /* IN: parent directory */ 
-  )
-    throws PipelineException
+  public ArrayList<Path> 
+  getPaths() 
   {
-    File full = null;
-    try {
-      for(File file : getFiles()) {
-	full = new File(dir, file.getPath());
-	if(full.isFile()) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Sub, LogMgr.Level.Finest,
-	     "Making file read-only: " + full);
-	  full.setReadOnly();
-	}
-      }
+    ArrayList<Path> files = new ArrayList<Path>();
+    if(pFrameRange != null) {
+      int frames[] = pFrameRange.getFrameNumbers();
+      int wk;
+      for(wk=0; wk<frames.length; wk++)
+	files.add(pFilePattern.getPath(frames[wk]));
     }
-    catch (SecurityException ex) {
-      throw new PipelineException
-	("Unable to change the permissions to read-only for file (" + full + ") from " + 
-	 "file sequence " + this + " due to the Java Security Manager!");
+    else {
+      files.add(pFilePattern.getPath());
     }
+
+    return files;
   }
 
 
@@ -589,7 +541,10 @@ class FileSeq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Constructs the minimum set of file sequences which include all of the given files.
+   * Constructs the minimum set of file sequences which include all of the given files.<P> 
+   * 
+   * WARNING: The prefix of the returned file sequences will be seperated with an 
+   * operating system dependent character.
    * 
    * @param files
    *   The files which define the file sequences created.

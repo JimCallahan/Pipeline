@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.7 2005/11/03 22:02:14 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.8 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -64,7 +64,8 @@ class SubProcessHeavy
     super(name);
 
     initHeavy(outFile, errFile);
-    init(null, program.getPath(), args, new HashMap<String,String>(), PackageInfo.sTempDir);
+    init(null, program.getPath(), args, 
+	 new HashMap<String,String>(), PackageInfo.sTempPath.toFile());
   }
 
   /**

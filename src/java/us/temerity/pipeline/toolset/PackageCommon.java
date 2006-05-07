@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.6 2005/06/28 18:05:21 jim Exp $
+// $Id: PackageCommon.java,v 1.7 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -179,9 +179,29 @@ class PackageCommon
       throw new IllegalArgumentException("The author cannot be (null)!");
 
     TreeMap<String,String> env = getEnvironment();
-    
-    env.put("HOME", PackageInfo.sHomeDir + "/" + author);
-    env.put("USER", author);
+    Path home = new Path(PackageInfo.sHomePath, author);
+
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      env.put("USER", author);
+      env.put("HOME", home.toOsString()); 
+      break;
+
+    case Windows:
+      {
+	env.put("USERNAME", author);
+	env.put("USERPROFILE", home.toOsString());
+	env.put("HOMEPATH", home.toOsString());
+
+	Path appdata = new Path(home, "Application Data");
+	env.put("APPDATA", appdata.toOsString());
+      }
+      break;
+      
+    default:
+      assert(false);
+    }
 
     return env;
   }
@@ -210,7 +230,8 @@ class PackageCommon
 
     TreeMap<String,String> env = getEnvironment(author);
 
-    env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
+    Path working = new Path(PackageInfo.sWorkPath, author + "/" + view);
+    env.put("WORKING", working.toOsString());
 
     return env;
   }
@@ -271,7 +292,8 @@ class PackageCommon
   {
     super.toGlue(encoder);
 
-    encoder.encode("Entries", pEntries);
+    if(!pEntries.isEmpty()) 
+      encoder.encode("Entries", pEntries);
   }
   
   public void 
@@ -285,9 +307,8 @@ class PackageCommon
 
     TreeMap<String,PackageEntry> entries = 
       (TreeMap<String,PackageEntry>) decoder.decode("Entries"); 
-    if(entries == null) 
-      throw new GlueException("The \"Entries\" was missing!");
-    pEntries = entries;
+    if(entries != null) 
+      pEntries = entries;
   }
  
 

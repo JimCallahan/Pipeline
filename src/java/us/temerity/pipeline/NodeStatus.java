@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.16 2005/01/22 06:10:09 jim Exp $
+// $Id: NodeStatus.java,v 1.17 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -324,7 +324,7 @@ class NodeStatus
     if(pDetails != null) 
       return pDetails.toString();
 
-    File path = new File(pNodeID.getName());
+    Path path = new Path(pNodeID.getName());
     return path.getName();
   }
 

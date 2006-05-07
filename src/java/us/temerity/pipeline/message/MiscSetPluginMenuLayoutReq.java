@@ -1,4 +1,4 @@
-// $Id: MiscSetPluginMenuLayoutReq.java,v 1.5 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscSetPluginMenuLayoutReq.java,v 1.6 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,9 +29,6 @@ class MiscSetPluginMenuLayoutReq
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of editor plugin menus.
    */
@@ -39,7 +36,6 @@ class MiscSetPluginMenuLayoutReq
   MiscSetPluginMenuLayoutReq
   (
    String name, 
-   OsType os,
    PluginMenuLayout layout
   )
   {
@@ -47,11 +43,6 @@ class MiscSetPluginMenuLayoutReq
 
     pName = name;
 
-    if(os == null) 
-      throw new IllegalArgumentException
-	("The operating system cannot be (null)!");
-    pOsType = os;
-    
     if(layout == null) 
       throw new IllegalArgumentException
 	("The heirarchical set of editor plugin menus.");
@@ -73,15 +64,6 @@ class MiscSetPluginMenuLayoutReq
     return pName;
   }
   
-  /**
-   * Gets the operating system type.
-   */
-  public OsType
-  getOsType() 
-  {
-    return pOsType; 
-  }
-
   /**
    * Gets the heirarchical set of editor plugin menus.
    */
@@ -109,11 +91,6 @@ class MiscSetPluginMenuLayoutReq
    * The toolset package name.
    */
   private String  pName;
-  
-  /**
-   * The operating system type.
-   */
-  private OsType  pOsType; 
   
   /**
    * The heirarchical set of editor plugin menus.

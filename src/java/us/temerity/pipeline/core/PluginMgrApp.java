@@ -1,4 +1,4 @@
-// $Id: PluginMgrApp.java,v 1.5 2005/04/03 06:10:12 jim Exp $
+// $Id: PluginMgrApp.java,v 1.6 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,7 +33,15 @@ class PluginMgrApp
   {
     super("plpluginmgr");
 
-    NativeFileSys.umask(022);
+    try {
+      NativeFileSys.umask(022);
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(ex));
+      System.exit(1);
+    }
   }
 
   

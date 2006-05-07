@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.9 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaRenderAction.java,v 1.10 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -169,7 +169,8 @@ class MayaRenderAction
       args.add("-pad"); 
       args.add(String.valueOf(fpat.getPadding()));
 
-      File dir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
+      File dir = new File(PackageInfo.sProdDir, 
+			  nodeID.getWorkingParent().toFile().getPath());
       args.add("-rd");
       args.add(dir.getPath()); 
       

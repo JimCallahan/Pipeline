@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.2 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -140,15 +140,19 @@ class JBaseLayoutDialog
   public void 
   updateLayouts
   ( 
-   String current
+   Path current
   ) 
     throws PipelineException
   {
     DefaultMutableTreeNode root = null;
     {
       root = new DefaultMutableTreeNode(new TreeData(), true);
-      File dir = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline/layouts"); 
-      rebuildTreeModel(dir, dir, root);
+
+      {
+	Path path = new Path(PackageInfo.sHomePath, 
+			     PackageInfo.sUser + "/.pipeline/layouts"); 
+	rebuildTreeModel(path, new Path("/"), root);
+      }
       
       DefaultTreeModel model = (DefaultTreeModel) pTree.getModel();
       model.setRoot(root);
@@ -167,17 +171,15 @@ class JBaseLayoutDialog
     pTree.clearSelection();
     if(current != null) {
       TreePath tpath = null;
-      String comps[] = current.split("/");
       DefaultMutableTreeNode tnode = root;
-      int wk;
-      for(wk=1; wk<comps.length; wk++) {
+      for(String comp : current.getComponents()) {
 	DefaultMutableTreeNode next = null;
 	Enumeration e = tnode.children();
 	if(e != null) {
 	  while(e.hasMoreElements()) {
 	    DefaultMutableTreeNode child = (DefaultMutableTreeNode) e.nextElement(); 
 	    TreeData data = (TreeData) child.getUserObject();
-	    if(data.toString().equals(comps[wk])) {
+	    if(data.toString().equals(comp)) {
 	      tpath = new TreePath(child.getPath());
 	      next = child;
 	      break;
@@ -202,10 +204,10 @@ class JBaseLayoutDialog
    * Recursively rebuild the tree nodes.
    * 
    * @param root
-   *   The root saved layout directory.
+   *   The full abstract path to the root saved layout directory.
    * 
-   * @param dir 
-   *   The current directory.
+   * @param local 
+   *   The current directory relative to root (null if none).
    * 
    * @param tnode
    *   The current parent tree node.
@@ -213,43 +215,41 @@ class JBaseLayoutDialog
   private void 
   rebuildTreeModel
   (
-   File root, 
-   File dir,
+   Path root, 
+   Path local, 
    DefaultMutableTreeNode tnode
   ) 
   {
-    TreeMap<String,File> table = new TreeMap<String,File>();
+    TreeSet<Path> subdirs = new TreeSet<Path>();
+    TreeSet<String> layouts = new TreeSet<String>();
     {
-      File files[] = dir.listFiles();
+      Path current = new Path(root, local);
+      File files[] = current.toFile().listFiles();
       int wk;
-      for(wk=0; wk<files.length; wk++) 
-	if(files[wk].isFile() || files[wk].isDirectory()) 
-	  table.put(files[wk].getName(), files[wk]);
+      for(wk=0; wk<files.length; wk++) {
+	String name = files[wk].getName();
+	if(files[wk].isDirectory()) 
+	  subdirs.add(new Path(local, name)); 
+	else if(files[wk].isFile()) 
+	  layouts.add(name);
+      }
     }
     
-    int rlen = root.getPath().length();
-    for(String name : table.keySet()) {
-      File file = table.get(name);
-      File ddir = new File("/" + file.getPath().substring(rlen));
-      if(file.isDirectory()) {
-	TreeData data = new TreeData(ddir, null);
-	DefaultMutableTreeNode child = new DefaultMutableTreeNode(data, true);
-	tnode.add(child);
-
-	rebuildTreeModel(root, file, child);
-      }
+    for(Path subdir : subdirs) {
+      TreeData data = new TreeData(subdir);
+      DefaultMutableTreeNode child = new DefaultMutableTreeNode(data, true);
+      tnode.add(child);
+      
+      rebuildTreeModel(root, subdir, child);
     }
-
-    for(String name : table.keySet()) {
-      File file = table.get(name);
-      File ddir = new File("/" + file.getPath().substring(rlen));
-      if(file.isFile()) {
-	TreeData data = new TreeData(ddir.getParentFile(), name);
-	DefaultMutableTreeNode child = new DefaultMutableTreeNode(data, false);
-	tnode.add(child);
-      }
+     
+    for(String lname : layouts) {
+      TreeData data = new TreeData(new Path(local, lname), lname);
+      DefaultMutableTreeNode child = new DefaultMutableTreeNode(data, false);
+      tnode.add(child);
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -264,23 +264,34 @@ class JBaseLayoutDialog
   {
     public 
     TreeData() 
-    {}
+    {
+      this(new Path("/"), null);
+    }
 
     public 
     TreeData
     ( 
-     File dir, 
+     Path path
+    )
+    {
+      this(path, null);
+    }
+
+    public 
+    TreeData
+    ( 
+     Path path, 
      String name
     )
     {
-      pDir  = dir;
+      pPath = path;
       pName = name;
     }
 
-    public File
-    getDir()
+    public Path
+    getPath()
     {
-      return pDir;
+      return pPath;
     }
     
     public String
@@ -294,13 +305,10 @@ class JBaseLayoutDialog
     {
       if(pName != null) 
 	return pName;
-      else if(pDir != null) 
-	return pDir.getName();
-      else 
-	return "";
+      return pPath.getName();
     }
 
-    private File    pDir; 
+    private Path    pPath; 
     private String  pName;
   }
     

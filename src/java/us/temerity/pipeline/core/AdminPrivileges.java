@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.1 2006/01/15 06:29:25 jim Exp $
+// $Id: AdminPrivileges.java,v 1.2 2006/05/07 21:30:08 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -30,6 +30,8 @@ class AdminPrivileges
   public 
   AdminPrivileges() 
   {
+    assert(PackageInfo.sOsType == OsType.Unix);
+
     pWorkGroups = new WorkGroups();
     pPrivileges = new TreeMap<String,Privileges>();
   }
@@ -460,8 +462,9 @@ class AdminPrivileges
     throws PipelineException
   {
     enforcePipelineWorkGroups();
-
-    File file = new File(PackageInfo.sNodeDir, "etc/work-groups");
+    
+    Path path = new Path(PackageInfo.sNodePath, "etc/work-groups");
+    File file = path.toFile();
     if(file.exists()) {
       if(!file.delete())
 	throw new PipelineException
@@ -512,7 +515,8 @@ class AdminPrivileges
   readWorkGroups() 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/work-groups");
+    Path path = new Path(PackageInfo.sNodePath, "etc/work-groups");
+    File file = path.toFile();
     if(file.isFile()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -557,7 +561,8 @@ class AdminPrivileges
   {
     enforcePipelinePrivileges();
 
-    File file = new File(PackageInfo.sNodeDir, "etc/privileges");
+    Path path = new Path(PackageInfo.sNodePath, "etc/privileges");
+    File file = path.toFile();
     if(file.exists()) {
       if(!file.delete())
 	throw new PipelineException
@@ -612,7 +617,8 @@ class AdminPrivileges
   readPrivileges() 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/privileges");
+    Path path = new Path(PackageInfo.sNodePath, "etc/privileges");
+    File file = path.toFile();
     if(file.isFile()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,

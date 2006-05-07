@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.28 2005/12/31 20:42:58 jim Exp $
+// $Id: JobMgr.java,v 1.29 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,7 +42,8 @@ class JobMgr
 
     /* make sure that the root job directory exists */ 
     try {
-      pJobDir = new File(PackageInfo.sTempDir, "pljobmgr");
+      Path path = new Path(PackageInfo.sTempPath, "pljobmgr");
+      pJobDir = path.toFile();
       if(!pJobDir.isDirectory())
 	if(!pJobDir.mkdirs()) 
 	  throw new PipelineException
@@ -91,7 +92,7 @@ class JobMgr
       long memory = NativeOS.getFreeMemory();
       
       /* free temporary disk space */ 
-      long disk = NativeFileSys.freeDiskSpace(PackageInfo.sTempDir);
+      long disk = NativeFileSys.freeDiskSpace(PackageInfo.sTempPath.toFile());
 
       /* the resource sample */ 
       ResourceSample sample = new ResourceSample(numJobs, load, memory, disk);
@@ -174,7 +175,7 @@ class JobMgr
     timer.aquire();
     try {
       timer.resume();
-      long disk = NativeFileSys.totalDiskSpace(PackageInfo.sTempDir);
+      long disk = NativeFileSys.totalDiskSpace(PackageInfo.sTempPath.toFile());
       return new JobGetTotalDiskRsp(timer, disk);
     }
     catch(IOException ex) {
@@ -912,7 +913,8 @@ class JobMgr
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				  "MakeWorkingDir", "mkdir", args, env, PackageInfo.sTempDir);
+				  "MakeWorkingDir", "mkdir", 
+				  args, env, PackageInfo.sTempPath.toFile());
 	    try {
 	      proc.start();
 	      proc.join();

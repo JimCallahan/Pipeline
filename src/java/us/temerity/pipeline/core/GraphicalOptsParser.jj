@@ -74,7 +74,7 @@ GraphicalOptsParser
   /**
    * The name of the log file.
    */ 
-  private String  pLogFile; 
+  private Path  pLogFile; 
 
   /**
    * The number of backup to maintain of the log file.
@@ -85,9 +85,10 @@ GraphicalOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the override panel layout or <CODE>null</CODE> to use the default layout.
+   * The abstract pathname of the override panel layout 
+   * or <CODE>null</CODE> to use the default layout.
    */ 
-  private String  pLayout;
+  private Path  pLayout;
 
   /** 
    * Whether to restore the panel layout.
@@ -432,7 +433,7 @@ void LogFile() :
 {
   <LOG_FILE> EQ() t=<PATH_ARG>
   { 
-    pLogFile = t.image;
+    pLogFile = new Path(t.image);
   }
 }
 
@@ -441,7 +442,7 @@ void StandardLogFile() :
 {
   <STANDARD_LOG_FILE>
   { 
-    pLogFile = (PackageInfo.sHomeDir + "/" + PackageInfo.sUser + "/plui.log");
+    pLogFile = new Path(PackageInfo.sHomePath, PackageInfo.sUser + "/plui.log");
   }
 }
 
@@ -648,7 +649,7 @@ void Layout() :
 {
   <LAYOUT> EQ() t=<LAYOUT_NAME>
   {
-    pLayout = t.image;
+    pLayout = new Path(t.image);
   }
 }
 

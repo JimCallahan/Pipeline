@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.9 2005/03/23 00:35:23 jim Exp $
+// $Id: CheckSum.java,v 1.10 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -22,6 +22,7 @@ import java.nio.channels.*;
  * @see MessageDigest
  * @see MasterMgr
  */ 
+public
 class CheckSum
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -78,16 +79,6 @@ class CheckSum
     init(algorithm, dir);
   }
 
-  /** 
-   * Construct using the default "MD5" digest algorithm and the default production and 
-   * checksum directories. 
-   */
-  public
-  CheckSum() 
-  {
-    init("MD5", PackageInfo.sProdDir);
-  }
-  
 
   /*-- CONTRUCTION HELPERS -----------------------------------------------------------------*/
 
@@ -98,6 +89,8 @@ class CheckSum
    File dir
   ) 
   {
+    assert(PackageInfo.sOsType == OsType.Unix);
+
     if(algorithm == null) 
       throw new IllegalArgumentException("The digest algorithm cannot be (null)!");
 

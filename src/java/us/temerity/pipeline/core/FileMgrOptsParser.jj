@@ -67,7 +67,7 @@ FileMgrOptsParser
   /**
    * The name of the log file.
    */ 
-  private String  pLogFile; 
+  private Path pLogFile; 
 
   /**
    * The number of backup to maintain of the log file.
@@ -356,7 +356,7 @@ void LogFile() :
 {
   <LOG_FILE> EQ() t=<PATH_ARG>
   { 
-    pLogFile = t.image;
+    pLogFile = new Path(t.image);
   }
 }
 
@@ -365,7 +365,7 @@ void StandardLogFile() :
 {
   <STANDARD_LOG_FILE>
   { 
-    pLogFile = (PackageInfo.sInstDir + "/logs/plfilemgr.log");
+    pLogFile = new Path(PackageInfo.sInstPath, "/logs/plfilemgr.log");
   }
 }
 

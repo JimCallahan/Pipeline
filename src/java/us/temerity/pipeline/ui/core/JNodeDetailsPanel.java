@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.27 2006/01/17 18:40:23 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.28 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -50,7 +50,6 @@ class JNodeDetailsPanel
   JNodeDetailsPanel()
   {
     super();
-
     initUI();
   }
 
@@ -541,6 +540,41 @@ class JNodeDetailsPanel
 		vpanel.add(hbox);
 	      }
 	    }
+
+ 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+ 	    /* editor operating system sypport */ 
+ 	    { 
+ 	      {
+ 		JLabel label = UIFactory.createFixedLabel
+ 		  ("OS Support:", sTSize, JLabel.RIGHT, 
+ 		   "The operating system types supported by the Editor plugin.");
+ 		pEditorOsSupportTitle = label;
+ 		tpanel.add(label);
+ 	      }
+	      
+ 	      {
+ 		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+ 		{
+ 		  JOsSupportField field = UIFactory.createOsSupportField(sVSize);
+ 		  pWorkingEditorOsSupportField = field;
+		  
+ 		  hbox.add(field);
+ 		}
+		
+ 		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+		
+ 		{
+ 		  JOsSupportField field = UIFactory.createOsSupportField(sVSize);
+ 		  pCheckedInEditorOsSupportField = field;
+		  
+ 		  hbox.add(field);
+ 		}
+		
+ 		vpanel.add(hbox);
+ 	      }
+ 	    }
 	  }
 	    
 	  JDrawer drawer = new JDrawer("Properties:", (JComponent) comps[2], true);
@@ -687,6 +721,41 @@ class JNodeDetailsPanel
 		vpanel.add(hbox);
 	      }
 	    }
+
+ 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+ 	    /* action operating system sypport */ 
+ 	    { 
+ 	      {
+ 		JLabel label = UIFactory.createFixedLabel
+ 		  ("OS Support:", sTSize, JLabel.RIGHT, 
+ 		   "The operating system types supported by the Action plugin.");
+ 		pActionOsSupportTitle = label;
+ 		tpanel.add(label);
+ 	      }
+	      
+ 	      {
+ 		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+ 		{
+ 		  JOsSupportField field = UIFactory.createOsSupportField(sVSize);
+ 		  pWorkingActionOsSupportField = field;
+		  
+ 		  hbox.add(field);
+ 		}
+		
+ 		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+		
+ 		{
+ 		  JOsSupportField field = UIFactory.createOsSupportField(sVSize);
+ 		  pCheckedInActionOsSupportField = field;
+		  
+ 		  hbox.add(field);
+ 		}
+		
+ 		vpanel.add(hbox);
+ 	      }
+ 	    }
 
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
@@ -1809,11 +1878,13 @@ class JNodeDetailsPanel
 	    pCheckedInEditorField.setText(editor.getName());
 	    pCheckedInEditorVersionField.setText("v" + editor.getVersionID());
 	    pCheckedInEditorVendorField.setText(editor.getVendor());
+	    pCheckedInEditorOsSupportField.setSupports(editor.getSupports());
 	  }
 	  else {
 	    pCheckedInEditorField.setText("-");
 	    pCheckedInEditorVersionField.setText("-");
 	    pCheckedInEditorVendorField.setText("-");	
+	    pCheckedInEditorOsSupportField.setSupports(null);
 	  }
 	  
 	  pCheckedInEditorField.setEnabled(latest != null);
@@ -1851,11 +1922,13 @@ class JNodeDetailsPanel
 	  pCheckedInActionField.setText(caction.getName());
 	  pCheckedInActionVersionField.setText("v" + caction.getVersionID());
 	  pCheckedInActionVendorField.setText(caction.getVendor());
+	  pCheckedInActionOsSupportField.setSupports(caction.getSupports());
 	}
 	else {
 	  pCheckedInActionField.setText("-");
 	  pCheckedInActionVersionField.setText("-");
 	  pCheckedInActionVendorField.setText("-");
+	  pCheckedInActionOsSupportField.setSupports(null);
 	}
       }
 
@@ -1921,11 +1994,13 @@ class JNodeDetailsPanel
 	  pCheckedInEditorField.setText(editor.getName());
 	  pCheckedInEditorVersionField.setText("v" + editor.getVersionID());
 	  pCheckedInEditorVendorField.setText(editor.getVendor());
+	  pCheckedInEditorOsSupportField.setSupports(editor.getSupports());
 	}
 	else {
 	  pCheckedInEditorField.setText("-");
 	  pCheckedInEditorVersionField.setText("-");
 	  pCheckedInEditorVendorField.setText("-");
+	  pCheckedInEditorOsSupportField.setSupports(null);
 	}
 
 	updateEditorColors();
@@ -1939,11 +2014,13 @@ class JNodeDetailsPanel
 	pCheckedInActionField.setText(action.getName());
 	pCheckedInActionVersionField.setText("v" + action.getVersionID());
 	pCheckedInActionVendorField.setText(action.getVendor());
+	pCheckedInActionOsSupportField.setSupports(action.getSupports());
       }
       else {
 	pCheckedInActionField.setText("-");
 	pCheckedInActionVersionField.setText("-");
 	pCheckedInActionVendorField.setText("-");
+	pCheckedInActionOsSupportField.setSupports(null);
       }
 
       if(action != null) 
@@ -2004,10 +2081,12 @@ class JNodeDetailsPanel
     if(pWorkingEditorField.getPluginName() != null) {
       pWorkingEditorVersionField.setText("v" + pWorkingEditorField.getPluginVersionID());
       pWorkingEditorVendorField.setText(pWorkingEditorField.getPluginVendor());
+      pWorkingEditorOsSupportField.setSupports(pWorkingEditorField.getPluginSupports());
     }
     else {
       pWorkingEditorVersionField.setText("-");
       pWorkingEditorVendorField.setText("-");
+      pWorkingEditorOsSupportField.setSupports(null);
     }
   }
 
@@ -2042,6 +2121,10 @@ class JNodeDetailsPanel
     pEditorVendorTitle.setForeground(color);
     pWorkingEditorVendorField.setForeground(color);
     pCheckedInEditorVendorField.setForeground(color);
+
+    pEditorOsSupportTitle.setForeground(color);
+    pWorkingEditorOsSupportField.setForeground(color);
+    pCheckedInEditorOsSupportField.setForeground(color);    
   }
 
 
@@ -2057,10 +2140,12 @@ class JNodeDetailsPanel
     if(waction != null) {
       pWorkingActionVersionField.setText("v" + waction.getVersionID());
       pWorkingActionVendorField.setText(waction.getVendor());
+      pWorkingActionOsSupportField.setSupports(waction.getSupports());      
     }
     else {
       pWorkingActionVersionField.setText("-");
       pWorkingActionVendorField.setText("-");
+      pWorkingActionOsSupportField.setSupports(null);
     }
   }
 
@@ -3146,6 +3231,10 @@ class JNodeDetailsPanel
     pActionVendorTitle.setForeground(fg);
     pWorkingActionVendorField.setForeground(fg);
     pCheckedInActionVendorField.setForeground(fg);
+
+    pActionOsSupportTitle.setForeground(fg);
+    pWorkingActionOsSupportField.setForeground(fg);
+    pCheckedInActionOsSupportField.setForeground(fg);  
 
     updateActionEnabledColors();
 
@@ -5698,7 +5787,7 @@ class JNodeDetailsPanel
   private JLabel  pEditorVendorTitle;
 
   /**
-   * The working editor revision number field.
+   * The working editor vendor field.
    */ 
   private JTextField pWorkingEditorVendorField;
 
@@ -5706,6 +5795,22 @@ class JNodeDetailsPanel
    * The checked-in editor vendor field.
    */ 
   private JTextField pCheckedInEditorVendorField;
+
+  
+  /**
+   * The editor operating system support title label.
+   */ 
+  private JLabel  pEditorOsSupportTitle;
+  
+  /**
+   * The working editor operating system support field.
+   */ 
+  private JOsSupportField pWorkingEditorOsSupportField;
+
+  /**
+   * The checked-in editor operating system support field.
+   */ 
+  private JOsSupportField pCheckedInEditorOsSupportField;
 
 
   /**
@@ -5773,6 +5878,22 @@ class JNodeDetailsPanel
    * The checked-in action vendor field.
    */ 
   private JTextField pCheckedInActionVendorField;
+
+
+  /**
+   * The action operating system support title label.
+   */ 
+  private JLabel  pActionOsSupportTitle;
+  
+  /**
+   * The working action operating system support field.
+   */ 
+  private JOsSupportField pWorkingActionOsSupportField;
+
+  /**
+   * The checked-in action operating system support field.
+   */ 
+  private JOsSupportField pCheckedInActionOsSupportField;
 
 
 

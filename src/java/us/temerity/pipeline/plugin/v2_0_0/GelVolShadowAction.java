@@ -1,4 +1,4 @@
-// $Id: GelVolShadowAction.java,v 1.1 2006/01/24 14:41:14 jim Exp $
+// $Id: GelVolShadowAction.java,v 1.2 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -239,7 +239,8 @@ class GelVolShadowAction
 	fromSeq = fseq;
 	
 	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-	fromPath = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().getPath());
+	fromPath = new File(PackageInfo.sProdDir, 
+			    snodeID.getWorkingParent().toFile().getPath());
       }
       
       {

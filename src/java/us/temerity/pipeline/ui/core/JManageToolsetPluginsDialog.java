@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.4 2006/01/15 06:29:25 jim Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -112,9 +112,6 @@ class JManageToolsetPluginsDialog
    * @param tname
    *   The name of the toolset.
    * 
-   * @param os
-   *   The toolset operating system.
-   * 
    * @param privileges
    *   The details of the administrative privileges granted to the current user. 
    */ 
@@ -122,18 +119,18 @@ class JManageToolsetPluginsDialog
   update
   (
    String tname, 
-   OsType os,
    PrivilegeDetails privileges
   )
-  {
+  { 
     UIMaster master = UIMaster.getInstance();
+    PluginMgrClient pclient = PluginMgrClient.getInstance();
     try {
-      Toolset toolset = pParent.lookupToolset(tname, os);
+      Toolset toolset = pParent.lookupToolset(tname, OsType.Unix);
       if(toolset == null) 
 	throw new PipelineException
-	  ("No " + os + " toolset named (" + tname + ") exists!");
+	  ("No toolset named (" + tname + ") exists!");
       
-      pHeaderLabel.setText(os + " Toolset Plugin Menus:  " + tname + 
+      pHeaderLabel.setText("Toolset Plugin Menus:  " + tname + 
 			   (toolset.isFrozen() ? "" : " (working)"));
       
       pToolsetName = toolset.getName();
@@ -141,8 +138,9 @@ class JManageToolsetPluginsDialog
       if(privileges != null) 
 	pPrivilegeDetails = privileges;
 
+      pclient.update();
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	panel.update(toolset, os, pPrivilegeDetails);
+	panel.update(toolset, pPrivilegeDetails);
 
       pConfirmButton.setEnabled(pPrivilegeDetails.isDeveloper());
       pApplyButton.setEnabled(pPrivilegeDetails.isDeveloper());
@@ -164,22 +162,18 @@ class JManageToolsetPluginsDialog
    * 
    * @param target
    *   The name of the target toolset package.
-   * 
-   * @param os
-   *   The package operating system.
    */ 
   public void 
   clone
   (
    String source, 
-   String target, 
-   OsType os
+   String target
   )
   {
     try {
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	panel.clone(source, target, os);
-      update(target, os, null);
+	panel.clone(source, target);
+      update(target, null);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -192,20 +186,16 @@ class JManageToolsetPluginsDialog
    * 
    * @param tname
    *   The name of the toolset toolset.
-   * 
-   * @param os
-   *   The toolset operating system.
    */ 
   public void 
   remove
   (
-   String tname, 
-   OsType os
+   String tname
   )
   {
     try {
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
-	panel.remove(tname, os);
+	panel.remove(tname);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -282,11 +272,15 @@ class JManageToolsetPluginsDialog
   void
   doDefaultLayout() 
   {
-    try {
-      pPluginPanels.get(pTab.getSelectedIndex()).defaultLayout();
-    }
-    catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      try {
+	pPluginPanels.get(pTab.getSelectedIndex()).defaultLayout();
+      }
+      catch(PipelineException ex) {
+	UIMaster.getInstance().showErrorDialog(ex);
+      }
     }
   }
 
@@ -297,11 +291,15 @@ class JManageToolsetPluginsDialog
   void
   doSaveDefaultLayout() 
   {
-    try {
-      pPluginPanels.get(pTab.getSelectedIndex()).saveDefaultLayout();
-    }
-    catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      try {
+	pPluginPanels.get(pTab.getSelectedIndex()).saveDefaultLayout();
+      }
+      catch(PipelineException ex) {
+	UIMaster.getInstance().showErrorDialog(ex);
+      }
     }
   }
 

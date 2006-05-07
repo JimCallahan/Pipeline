@@ -68,7 +68,7 @@ JobMgrOptsParser
   /**
    * The name of the log file.
    */ 
-  private String  pLogFile; 
+  private Path  pLogFile; 
 
   /**
    * The number of backup to maintain of the log file.
@@ -339,7 +339,7 @@ void LogFile() :
 {
   <LOG_FILE> EQ() t=<PATH_ARG>
   { 
-    pLogFile = t.image;
+    pLogFile = new Path(t.image);
   }
 }
 
@@ -374,7 +374,7 @@ void StandardLogFile() :
       hostname = (String) hostnames.first();
     }
 
-    pLogFile = (PackageInfo.sInstDir + "/logs/pljobmgr." + hostname + ".log");
+    pLogFile = new Path(PackageInfo.sInstPath, "/logs/pljobmgr." + hostname + ".log");
   }
 }
 

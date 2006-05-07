@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.7 2005/09/07 21:11:17 jim Exp $
+// $Id: JCloneDialog.java,v 1.8 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -253,7 +253,7 @@ class JCloneDialog
     }
 
     pFileSeqDialog.updateHeader(author, view);
-    pRootDir = new File(PackageInfo.sWorkDir, author + "/" + view);
+    pRootPath = new Path(PackageInfo.sWorkPath, author + "/" + view);
 
     pPrefixField.setText(pNodeMod.getName() + "-clone");
 
@@ -432,11 +432,12 @@ class JCloneDialog
   public void 
   doBrowse() 
   {
-    pFileSeqDialog.setRootDir(pRootDir);
+    pFileSeqDialog.setRootDir(pRootPath.toFile());
 
     String prefix = pPrefixField.getText();
     if(prefix != null) {
-      File dir = new File(pRootDir, prefix);
+      Path path = new Path(pRootPath, prefix);
+      File dir = path.toFile();
       if(!dir.isDirectory()) 
 	dir = dir.getParentFile();
 
@@ -445,15 +446,16 @@ class JCloneDialog
 
     pFileSeqDialog.setVisible(true);
     if(pFileSeqDialog.wasConfirmed()) {
-      File dir = pFileSeqDialog.getDirectory();
-      if(dir != null) {
+      Path dpath = pFileSeqDialog.getDirectoryPath();
+      if(dpath != null) {
 	FileSeq fseq = pFileSeqDialog.getSelectedFileSeq();
 	if(fseq != null) {
-	  pPrefixField.setText(dir + "/" +  fseq.getFilePattern().getPrefix());
+	  Path path = new Path(dpath, fseq.getFilePattern().getPrefix());
+	  pPrefixField.setText(path.toString());
 	  updateFileSeq(fseq);
 	}
 	else {
-	  pPrefixField.setText(dir.toString());
+	  pPrefixField.setText(dpath.toString());
 	}
       }
     }
@@ -481,7 +483,7 @@ class JCloneDialog
 	  throw new PipelineException
 	    ("Unable to register node without a valid filename prefix!");
 	
-	File path = new File(name);
+	Path path = new Path(name);
 	prefix = path.getName();
       }
 
@@ -793,9 +795,9 @@ class JCloneDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The root directory of the current working area.
+   * The abstract pathname of the root directory of the current working area.
    */ 
-  private File  pRootDir;
+  private Path pRootPath;
 
   /**
    * The original working node version being cloned.

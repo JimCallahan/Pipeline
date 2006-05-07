@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.2 2005/12/02 20:05:23 jim Exp $
+// $Id: MayaRenderAction.java,v 1.3 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_1;
 
@@ -515,7 +515,8 @@ class MayaRenderAction
       args.add("-of");  
       args.add(fpat.getSuffix());
 
-      File dir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
+      File dir = new File(PackageInfo.sProdDir, 
+			  nodeID.getWorkingParent().toFile().getPath());
       args.add("-rd");
       args.add(dir.getPath()); 
       

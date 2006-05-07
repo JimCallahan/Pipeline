@@ -1,4 +1,4 @@
-// $Id: TestCheckSumApp.java,v 1.7 2005/01/22 06:10:10 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.8 2006/05/07 21:30:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -22,10 +22,6 @@ class TestCheckSumApp
    String[] args  /* IN: command line arguments */
   )
   {
-    /* init loggers */ 
-    
-    Logs.sum.setLevel(Level.INFO);
-
     try {
       File dir = new File(System.getProperty("user.dir") + "/data/prod");
       {
@@ -63,8 +59,10 @@ class TestCheckSumApp
     /* generate some test paths */ 
     TreeMap<Integer,ArrayList<File>> table = new TreeMap<Integer,ArrayList<File>>();
     {
-      System.out.print("-----------------------------------\n" + 
-		       "Generating Data Files: \n");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "-----------------------------------\n" + 
+	 "Generating Data Files: \n");
 
       int wk;
       for(wk=4; wk<21; wk++) {
@@ -90,14 +88,20 @@ class TestCheckSumApp
       
     /* tests */ 
     {
-      System.out.print("-----------------------------------\n" + 
-		       "Rebuilding CheckSums: \n\n");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "-----------------------------------\n" + 
+	 "Rebuilding CheckSums: \n\n");
+
       for(Integer size : table.keySet()) {
 	ArrayList<File> paths = table.get(size);
 
 	long total = 0;
 	{
-	  System.out.print("  File Size: " + size + ":\n");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sum, LogMgr.Level.Info,
+	     "  File Size: " + size + ":\n");
+
 	  total += refresh(paths.get(0));
 	  total += refresh(paths.get(1));
 	  total += refresh(paths.get(2));
@@ -113,8 +117,10 @@ class TestCheckSumApp
     }
 
     {
-      System.out.print("-----------------------------------\n" + 
-		       "Comparing with CheckSums: \n\n");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "-----------------------------------\n" + 
+	 "Comparing with CheckSums: \n\n");
 
       Date start = new Date();
       for(Integer size : table.keySet()) {
@@ -129,8 +135,11 @@ class TestCheckSumApp
 
       long time = (new Date()).getTime() - start.getTime();
       float rate = ((float) (table.keySet().size() * 5000)) / ((float) time);
-      System.out.print("    Time = " + time + " msec\n" + 
-		       "    Rate = " + rate + " files/sec\n\n");
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "    Time = " + time + " msec\n" + 
+	 "    Rate = " + rate + " files/sec\n\n");
     }
 
     System.exit(0);
@@ -152,7 +161,9 @@ class TestCheckSumApp
     pCheckSum.refresh(path); 
     long time = (new Date()).getTime() - start.getTime();
    
-    System.out.print("    Time = " + time + " msec\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "    Time = " + time + " msec\n");
 
     return time;
   }
@@ -169,10 +180,12 @@ class TestCheckSumApp
   {
     boolean result = pCheckSum.compare(pathA, pathB);
     
-    System.out.print("  Comparing: \n" +
-		     "    FileA: " + pathA + "\n" + 
-		     "    FileB: " + pathB + "\n" + 
-		     "    Equal: " + result + " (" + expect + ")\n\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "  Comparing: \n" +
+       "    FileA: " + pathA + "\n" + 
+       "    FileB: " + pathB + "\n" + 
+       "    Equal: " + result + " (" + expect + ")\n\n");
 
     assert(expect == result);
   }
@@ -191,7 +204,9 @@ class TestCheckSumApp
     if(file.isFile()) 
       return;
 
-    System.out.print("  " + file.getName() + "\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "  " + file.getName() + "\n");
 
     file.getParentFile().mkdirs();
     FileOutputStream out = new FileOutputStream(file);

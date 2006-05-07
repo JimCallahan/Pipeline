@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.1 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeOS.java,v 1.2 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -69,13 +69,10 @@ class NativeOS
       break;
 
     case MacOS:
+    case Windows:
       loadLibrary();
       memory = getTotalMemoryNative();    
       break;
-
-    case Windows:
-      throw new IOException
-	("Sorry, NativeOS.getTotalMemory() is not supported on Windows systems!");
     }
 
     return memory;
@@ -150,7 +147,7 @@ class NativeOS
 	  SubProcessLight proc = 
 	    new SubProcessLight("VMStat", "/usr/bin/vm_stat", 
 				new ArrayList<String>(), new TreeMap<String,String>(), 
-				PackageInfo.sTempDir);
+				PackageInfo.sTempPath.toFile());
 	  proc.start();
     
 	  try {
@@ -192,8 +189,8 @@ class NativeOS
       break;  
 
     case Windows:
-      throw new IOException
-	("Sorry, NativeOS.getFreeMemory() is not supported on Windows systems!");
+      loadLibrary();
+      return getFreeMemoryNative(); 
     }
 
     return memory;
@@ -234,7 +231,7 @@ class NativeOS
    * Get the number of processors (CPUs).
    * 
    * @throws IOException 
-   *   If unable to determine the load.
+   *   If unable to determine the number of processors. 
    */
   public static int
   getNumProcessors() 
@@ -272,20 +269,24 @@ class NativeOS
       break;
 
     case MacOS:
+    case Windows:
       loadLibrary();
       procs = getNumProcessorsNative();
       break;
-
-    case Windows:
-      throw new IOException
-	("Sorry, NativeOS.getNumProcessors() is not supported on Windows systems!");
     }
     
     return procs;
   }
 
   /**
-   * Get the system load factor (1-minute average).
+   * Get the system load factor (1-minute average). <P> 
+   * 
+   * On Windows, the load factor is computed by averaging the last (12) instantaneous samples
+   * of the length of the processor queue.  It is assumed that the JobMgr collector thread is
+   * calling this method at 5-second intervals, so that the average the last (12) samples 
+   * should constitute a 1-minute average. The average load factor is also rescaled to make
+   * values reported from Windows systems more consistent with the values reported for 
+   * Unix/MacOS systems with similar system activity.<P> 
    * 
    * @throws IOException 
    *   If unable to determine the load.
@@ -312,8 +313,12 @@ class NativeOS
       break;
 
     case Windows:
-      throw new IOException
-	("Sorry, NativeOS.getLoadAverage() is not supported on Windows systems!");
+      loadLibrary();      
+      sLoadSamples.add(getLoadAverageNative());
+      for(Float sample : sLoadSamples) 
+	load += sample;
+      load /= sLoadSamples.size();
+      break;
     }
 
     return load;
@@ -325,6 +330,16 @@ class NativeOS
   /*   N A T I V E    H E L P E R S                                                         */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Get the amount of free system memory (in bytes). 
+   * 
+   * @throws IOException 
+   *   If unable to determine the amount of total memory.
+   */ 
+  private static native long 
+  getFreeMemoryNative() 
+    throws IOException;
+  
   /**
    * Get the total amount of system memory (in bytes).
    * 
@@ -354,4 +369,20 @@ class NativeOS
   private static native float
   getLoadAverageNative() 
     throws IOException;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A ring buffer used to store the last 12 instantaneous processor active percentage 
+   * samples (collected at 5-second intervals) from a Windows system to be used to compute 
+   * a 1-minute average system load equilavent. <P> 
+   * 
+   * The values are initialized to (1.0) to over report the system load during the 
+   * first minute of sampling.
+   */ 
+  private static Ring<Float>  sLoadSamples = new Ring<Float>(12, new Float(1.0f));
 }

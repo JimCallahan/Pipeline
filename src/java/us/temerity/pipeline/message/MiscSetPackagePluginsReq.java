@@ -1,4 +1,4 @@
-// $Id: MiscSetPackagePluginsReq.java,v 1.3 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscSetPackagePluginsReq.java,v 1.4 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,9 +29,6 @@ class MiscSetPackagePluginsReq
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -42,7 +39,6 @@ class MiscSetPackagePluginsReq
   MiscSetPackagePluginsReq
   (
    String name, 
-   OsType os, 
    VersionID vid, 
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
@@ -53,11 +49,6 @@ class MiscSetPackagePluginsReq
       throw new IllegalArgumentException
 	("The package name cannot be (null)!");
     pName = name;
-
-    if(os == null) 
-      throw new IllegalArgumentException
-	("The operating system cannot be (null)!");
-    pOsType = os;
 
     if(vid == null) 
       throw new IllegalArgumentException
@@ -82,15 +73,6 @@ class MiscSetPackagePluginsReq
   getName() 
   {
     return pName;
-  }
-  
-  /**
-   * Gets the operating system type.
-   */
-  public OsType
-  getOsType() 
-  {
-    return pOsType; 
   }
   
   /**
@@ -129,11 +111,6 @@ class MiscSetPackagePluginsReq
    * The toolset package name.
    */
   private String  pName;
-  
-  /**
-   * The operating system type.
-   */
-  private OsType  pOsType; 
   
   /**
    * The revision number of the package.

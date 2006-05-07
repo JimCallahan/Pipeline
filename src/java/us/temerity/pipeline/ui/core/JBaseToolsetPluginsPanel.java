@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.4 2006/01/15 06:29:25 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -48,7 +48,7 @@ class JBaseToolsetPluginsPanel
     /* initialize fields */ 
     {
       pMenuLayout     = new PluginMenuLayout();
-      pPluginVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
+      pPluginVersions = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 
       pPrivilegeDetails = new PrivilegeDetails(); 
 
@@ -99,9 +99,13 @@ class JBaseToolsetPluginsPanel
 
     /* create dialog body components */ 
     {
-      setLayout(new BoxLayout(this, BoxLayout.X_AXIS));  
+      setLayout(new BorderLayout());
+      
+      JPanel panel = new JPanel();
+      panel.setName("MainPanel");
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));  
 
-      add(Box.createRigidArea(new Dimension(20, 0)));
+      panel.add(Box.createRigidArea(new Dimension(20, 0)));
 
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -147,11 +151,11 @@ class JBaseToolsetPluginsPanel
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	  
-	  add(vbox);
+	  panel.add(vbox);
 	}
       }
       
-      add(Box.createRigidArea(new Dimension(4, 0)));
+      panel.add(Box.createRigidArea(new Dimension(4, 0)));
       
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -194,10 +198,10 @@ class JBaseToolsetPluginsPanel
 	
 	vbox.add(Box.createVerticalGlue());
 	
-	add(vbox);
+	panel.add(vbox);
       }
       
-      add(Box.createRigidArea(new Dimension(4, 0)));
+      panel.add(Box.createRigidArea(new Dimension(4, 0)));
 	
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -226,7 +230,8 @@ class JBaseToolsetPluginsPanel
 	  
 	  {
 	    JScrollPane scroll = new JScrollPane(tree);
-	    
+	    pPluginScroll = scroll;
+
 	    scroll.setMinimumSize(new Dimension(150, 100));
 	    scroll.setPreferredSize(new Dimension(250, 500));
 	    
@@ -240,11 +245,13 @@ class JBaseToolsetPluginsPanel
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	  
-	  add(vbox);
+	  panel.add(vbox);
 	}
       }
 
-      add(Box.createRigidArea(new Dimension(20, 0)));
+      panel.add(Box.createRigidArea(new Dimension(20, 0)));
+
+      add(panel);
     }
   }
 
@@ -283,7 +290,7 @@ class JBaseToolsetPluginsPanel
    String vendor
   ) 
   {
-    TreeSet<VersionID> vids = pPluginVersions.get(vendor, name);
+    Set<VersionID> vids = pPluginVersions.keySet(vendor, name);
     return ((vids != null) && vids.contains(vid));
   }
 
@@ -298,67 +305,82 @@ class JBaseToolsetPluginsPanel
    * @param toolset
    *   The toolset. 
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param privileges
    *   The details of the administrative privileges granted to the current user. 
    */ 
-  public abstract void 
+  public void 
   update
   (
    Toolset toolset, 
-   OsType os,
    PrivilegeDetails privileges
   ) 
-    throws PipelineException;
-
-  /**
-   * Update the UI components to display the plugin menu associated with a toolset.
-   * 
-   * @param tname
-   *   The name of the toolset. 
-   * 
-   * @param os
-   *   The toolset operating system.
-   * 
-   * @param layout
-   *   The current plugin menu layout.
-   * 
-   * @param plugins
-   *   The vendors, names of versions of the supported plugins.
-   * 
-   * @param privileges
-   *   The details of the administrative privileges granted to the current user. 
-   */ 
-  protected void 
-  updateHelper
-  (
-   String tname,
-   OsType os,
-   PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins, 
-   PrivilegeDetails privileges
-  ) 
+    throws PipelineException
   {
-    pToolsetName   = tname;
-    pToolsetOsType = os; 
+    TripleMap<String,String,VersionID,TreeSet<OsType>> all = getAllPlugins(); 
 
-    pMenuLayout     = layout;
-    pPluginVersions = plugins;
+    pPluginVersions = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    {
+      int wk;
+      for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	String pname = toolset.getPackageName(wk);
+	VersionID pvid = toolset.getPackageVersionID(wk);
+	
+	DoubleMap<String,String,TreeSet<VersionID>> table = getPackagePlugins(pname, pvid);
 
+	for(String vendor : table.keySet()) {
+	  for(String name : table.keySet(vendor)) {
+	    for(VersionID vid : table.get(vendor, name)) {
+	      pPluginVersions.put(vendor, name, vid, all.get(vendor, name, vid));
+	    }
+	  }
+	}
+      }
+    }
+
+    pToolsetName = toolset.getName();      
+    pMenuLayout = getLayout(pToolsetName); 
     pPrivilegeDetails = privileges; 
 
     rebuildMenuLayout();
     expandAllTreeNodes(pMenuLayoutTree);
-
+    
     rebuildPluginVersions();
     expandAllTreeNodes(pPluginTree);
-
+    
     pSetPluginButton.setEnabled(false);
     pClearPluginButton.setEnabled(false);
   }
 
+  /**
+   * Get the all of the plugins. 
+   * 
+   * @param pname
+   *   The name of the toolset package.
+   * 
+   * @param pvid
+   *   The version number of the package.
+   */ 
+  protected abstract TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getAllPlugins() 
+    throws PipelineException;
+
+  /**
+   * Get the plugins associated with the given toolset package.
+   * 
+   * @param pname
+   *   The name of the toolset package.
+   * 
+   * @param pvid
+   *   The version number of the package.
+   */ 
+  protected abstract DoubleMap<String,String,TreeSet<VersionID>> 
+  getPackagePlugins
+  (
+   String pname, 
+   VersionID pvid
+  )
+    throws PipelineException;
+    
   /**
    * Update the UI components with the default menu layout. 
    * 
@@ -422,20 +444,16 @@ class JBaseToolsetPluginsPanel
    * 
    * @param target
    *   The name of the target toolset package.
-   * 
-   * @param os
-   *   The package operating system.
    */ 
   public void 
   clone
   (
    String source, 
-   String target, 
-   OsType os
+   String target
   )
     throws PipelineException
   {
-    setLayout(target, os, getLayout(source, os));
+    setLayout(target, getLayout(source));
   }
 
   /**
@@ -443,19 +461,15 @@ class JBaseToolsetPluginsPanel
    * 
    * @param tname
    *   The name of the toolset toolset.
-   * 
-   * @param os
-   *   The toolset operating system.
    */ 
   public void 
   remove
   (
-   String tname, 
-   OsType os
+   String tname
   )
     throws PipelineException
   {
-    setLayout(tname, os, null);
+    setLayout(tname, null);
   }
    
   /**
@@ -480,15 +494,11 @@ class JBaseToolsetPluginsPanel
    * 
    * @param tname
    *   The name of the toolset.
-   * 
-   * @param os
-   *   The package operating system.
    */ 
   protected abstract PluginMenuLayout
   getLayout
   (
-   String tname, 
-   OsType os
+   String tname
   )
     throws PipelineException; 
 
@@ -498,9 +508,6 @@ class JBaseToolsetPluginsPanel
    * @param tname
    *   The name of the toolset.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param layout
    *   The plugin menu layout.
    */ 
@@ -508,7 +515,6 @@ class JBaseToolsetPluginsPanel
   setLayout
   (
    String tname, 
-   OsType os, 
    PluginMenuLayout layout
   )
     throws PipelineException;
@@ -523,7 +529,7 @@ class JBaseToolsetPluginsPanel
   saveChanges()
     throws PipelineException
   {
-    setLayout(pToolsetName, pToolsetOsType, pMenuLayout);
+    setLayout(pToolsetName, pMenuLayout);
   }
 
 
@@ -1069,7 +1075,7 @@ class JBaseToolsetPluginsPanel
       VersionID vid = layout.getVersionID();
       String vendor = layout.getVendor();
 
-      TreeSet<VersionID> vids = pPluginVersions.get(vendor, name);
+      Set<VersionID> vids = pPluginVersions.keySet(vendor, name);
       if((vids == null) || !vids.contains(vid)) {
 	name = null;
 	vid = null;
@@ -1184,14 +1190,15 @@ class JBaseToolsetPluginsPanel
 	new DefaultMutableTreeNode(new PluginTreeData(vendor), true);
       root.add(rnode);
 
-      for(String name : pPluginVersions.get(vendor).keySet()) {
+      for(String name : pPluginVersions.keySet(vendor)) {
 	DefaultMutableTreeNode pnode = 
 	  new DefaultMutableTreeNode(new PluginTreeData(name), true);
 	rnode.add(pnode);
 	
-	for(VersionID vid : pPluginVersions.get(vendor).get(name)) {
-	  DefaultMutableTreeNode vnode = 
-	    new DefaultMutableTreeNode(new PluginTreeData(name, vid, vendor), false);
+	for(VersionID vid : pPluginVersions.keySet(vendor, name)) {	  
+	  PluginTreeData pdata = 
+	    new PluginTreeData(name, vid, vendor, pPluginVersions.get(vendor, name, vid));
+	  DefaultMutableTreeNode vnode = new DefaultMutableTreeNode(pdata, false);
 	  pnode.add(vnode);
 	}
       }
@@ -1237,6 +1244,10 @@ class JBaseToolsetPluginsPanel
 	     vid.equals(vdata.getVersionID()) && 
 	     vendor.equals(vdata.getVendor())) {
 	    pPluginTree.addSelectionPath(vpath);
+
+// 	    Rectangle bounds = pPluginTree.getPathBounds(vpath);
+// 	    if(bounds != null) 
+// 	      pPluginScroll.getViewport().scrollRectToVisible(bounds);
 	    return;
 	  }
 	}
@@ -1286,11 +1297,6 @@ class JBaseToolsetPluginsPanel
   protected String  pToolsetName; 
   
   /**
-   * The operating system type of the current toolset.
-   */
-  protected OsType  pToolsetOsType; 
-
-  /**
    * The plugin menu layout.
    */ 
   private PluginMenuLayout  pMenuLayout; 
@@ -1298,7 +1304,7 @@ class JBaseToolsetPluginsPanel
   /**
    * The plugin versions. 
    */ 
-  private DoubleMap<String,String,TreeSet<VersionID>>  pPluginVersions;
+  private TripleMap<String,String,VersionID,TreeSet<OsType>>  pPluginVersions;
 
 
   /**
@@ -1356,5 +1362,10 @@ class JBaseToolsetPluginsPanel
    * The plugin versions tree.
    */ 
   private JTree  pPluginTree;
+
+  /**
+   * The scroll pane containing the plugin versions tree.
+   */ 
+  private JScrollPane  pPluginScroll; 
 
 }

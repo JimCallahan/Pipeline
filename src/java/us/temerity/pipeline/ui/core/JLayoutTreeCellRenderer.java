@@ -1,4 +1,4 @@
-// $Id: JLayoutTreeCellRenderer.java,v 1.3 2005/06/14 13:38:33 jim Exp $
+// $Id: JLayoutTreeCellRenderer.java,v 1.4 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -88,13 +88,7 @@ class JLayoutTreeCellRenderer
 	pLabel.setIcon(sNormalIcon);
       }	
 
-      String lname = null;
-      if(data.getDir().getPath().length() > 1) 
-	lname = (data.getDir() + "/" + data.getName());
-      else 
-	lname = ("/" + data.getName());
-      
-      if((lname != null) && lname.equals(UIMaster.getInstance().getDefaultLayoutName())) 
+      if(data.getPath().equals(UIMaster.getInstance().getDefaultLayoutPath())) 
 	pExtraLabel.setText("(default)");
       else 
 	pExtraLabel.setText(null);

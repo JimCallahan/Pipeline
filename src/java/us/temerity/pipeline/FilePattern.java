@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.11 2006/02/27 17:57:29 jim Exp $
+// $Id: FilePattern.java,v 1.12 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -327,6 +327,61 @@ class FilePattern
       return new File(pPrefix + "." + pSuffix);
 
     return new File(pPrefix);
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generated an abstract pathname for the given frame number. <P>
+   * 
+   * This method is only valid for <CODE>FilePattern</CODE> objects which have a frame 
+   * number component.
+   * 
+   * @param frame  
+   *   The frame number used to generate the filename.
+   */ 
+  public Path
+  getPath
+  (
+   int frame  
+  ) 
+  {
+    assert(hasFrameNumbers());
+
+    StringBuffer buf = new StringBuffer();
+    buf.append(pPrefix);
+
+    String fstr = String.valueOf(frame);
+    if(pPadding >= 0) {
+      buf.append(".");
+      int wk; 
+      for(wk=0; wk < (pPadding - fstr.length()); wk++) 
+	buf.append("0");
+    }
+    buf.append(fstr);
+      
+    if(pSuffix != null) 
+      buf.append("." + pSuffix);
+
+    return new Path(buf.toString());
+  }
+  
+  /**
+   * Generated an abstract pathname. <P>
+   * 
+   * This method is only valid for <CODE>FilePattern</CODE> objects which have 
+   * <I>no</I> frame number component.
+   */
+  public Path
+  getPath() 
+  {
+    assert(!hasFrameNumbers());
+
+    if(pSuffix != null) 
+      return new Path(pPrefix + "." + pSuffix);
+
+    return new Path(pPrefix);
   }
   
 

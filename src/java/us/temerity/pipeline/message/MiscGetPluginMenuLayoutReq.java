@@ -1,4 +1,4 @@
-// $Id: MiscGetPluginMenuLayoutReq.java,v 1.1 2005/06/28 18:05:22 jim Exp $
+// $Id: MiscGetPluginMenuLayoutReq.java,v 1.2 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,23 +28,14 @@ class MiscGetPluginMenuLayoutReq
    * 
    * @param name
    *   The toolset name or <CODE>null</CODE> for default layout.
-   * 
-   * @param os
-   *   The operating system type.
    */
   public
   MiscGetPluginMenuLayoutReq
   (
-   String name, 
-   OsType os
+   String name
   )
   {
     pName = name;
-
-    if(os == null) 
-      throw new IllegalArgumentException
-	("The operating system cannot be (null)!");
-    pOsType = os;
   }
 
 
@@ -60,15 +51,6 @@ class MiscGetPluginMenuLayoutReq
   getName() 
   {
     return pName;
-  }
-  
-  /**
-   * Gets the operating system type.
-   */
-  public OsType
-  getOsType() 
-  {
-    return pOsType; 
   }
   
   
@@ -89,11 +71,5 @@ class MiscGetPluginMenuLayoutReq
    * The toolset package name.
    */
   private String  pName;
-  
-  /**
-   * The operating system type.
-   */
-  private OsType  pOsType; 
-  
 }
   

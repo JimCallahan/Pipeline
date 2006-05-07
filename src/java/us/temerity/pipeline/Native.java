@@ -1,4 +1,4 @@
-// $Id: Native.java,v 1.7 2005/06/10 04:55:06 jim Exp $
+// $Id: Native.java,v 1.8 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,16 +39,15 @@ class Native
 	break;
 
       case Windows:
-	assert(false);
+	ext = ".dll";
       }
       
-      String path = 
-	(PackageInfo.sInstDir + "/lib/" + PackageInfo.sOsType + "/libNative" + ext);
-
+      Path path = new Path(PackageInfo.sInstPath, 
+			   "/lib/" + PackageInfo.sOsType + "/libNative" + ext);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
-	 "Loading Native Library: " + path);
-      System.load(path);
+	 "Loading Native Library: " + path.toOsString());
+      System.load(path.toOsString());
             
       sIsLibraryLoaded = true;
     }

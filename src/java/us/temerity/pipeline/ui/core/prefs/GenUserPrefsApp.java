@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -2011,7 +2011,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2120,9 +2120,9 @@ class GenUserPrefsApp
 	 "  save()\n" + 
 	 "    throws GlueException, GlueLockException\n" + 
 	 "  {\n" + 
-	 "    File file = new File(PackageInfo.sHomeDir,\n" + 
+	 "    Path path = new Path(PackageInfo.sHomePath,\n" + 
 	 "		           PackageInfo.sUser + \"/.pipeline/preferences\");\n" + 
-	 "    LockedGlueFile.save(file, \"UserPreferences\", sUserPrefs);\n" + 
+	 "    LockedGlueFile.save(path.toFile(), \"UserPreferences\", sUserPrefs);\n" + 
 	 "  }\n" + 
 	 "\n" + 
 	 "  /**\n" + 
@@ -2132,9 +2132,9 @@ class GenUserPrefsApp
 	 "  load()\n" + 
 	 "    throws GlueException, GlueLockException\n" + 
 	 "  {\n" + 
-	 "    File file = new File(PackageInfo.sHomeDir,\n" + 
+	 "    Path path = new Path(PackageInfo.sHomePath,\n" + 
 	 "		           PackageInfo.sUser + \"/.pipeline/preferences\");\n" + 
-	 "    sUserPrefs = (UserPrefs) LockedGlueFile.load(file);\n" + 
+	 "    sUserPrefs = (UserPrefs) LockedGlueFile.load(path.toFile());\n" + 
 	 "  }\n" + 
 	 "\n" + 
 	 "\n" + 
@@ -2268,7 +2268,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3624,7 +3624,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.29 2006/01/15 06:29:26 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

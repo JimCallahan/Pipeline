@@ -1,4 +1,4 @@
-// $Id: TestNativeFileSysApp.java,v 1.5 2005/01/22 06:10:10 jim Exp $
+// $Id: TestNativeFileSysApp.java,v 1.6 2006/05/07 21:30:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -23,8 +23,7 @@ class TestNativeFileSysApp
    String[] args  /* IN: command line arguments */
   )
   {
-    
-    Logs.sub.setLevel(Level.FINEST);
+    LogMgr.getInstance().setLevel(LogMgr.Kind.Sub, LogMgr.Level.Finest);
 
     try {
       TestNativeFileSysApp app = new TestNativeFileSysApp();

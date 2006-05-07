@@ -1,4 +1,4 @@
-// $Id: JPackageActionPluginsPanel.java,v 1.3 2006/01/15 06:29:26 jim Exp $
+// $Id: JPackageActionPluginsPanel.java,v 1.4 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Edits the action plugins associated with a toolset package .
+ * Edits the action plugins associated with a toolset package.
  */ 
 public 
 class JPackageActionPluginsPanel
@@ -48,9 +48,6 @@ class JPackageActionPluginsPanel
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    * 
@@ -61,18 +58,15 @@ class JPackageActionPluginsPanel
   update
   (
    String pname, 
-   OsType os,
    VersionID vid,
    PrivilegeDetails privileges
   ) 
     throws PipelineException
   {
-    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins = getPlugins(pname, os, vid);
+    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins = getPlugins(pname, vid);
     
     PluginMgrClient pclient = PluginMgrClient.getInstance();
-    pclient.update();
-      
-    updateHelper(pname, os, vid, includedPlugins, pclient.getActions(), privileges);
+    updateHelper(pname, vid, includedPlugins, pclient.getActions(), privileges);
   }
 
 
@@ -84,9 +78,6 @@ class JPackageActionPluginsPanel
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
@@ -94,12 +85,11 @@ class JPackageActionPluginsPanel
   getPlugins
   (
    String pname, 
-   OsType os, 
    VersionID vid 
   )
     throws PipelineException
   {
-    return pParent.getPackageActions(pname, os, vid);
+    return pParent.getPackageActions(pname, vid);
   }
 
   /**
@@ -107,9 +97,6 @@ class JPackageActionPluginsPanel
    * 
    * @param pname
    *   The name of the toolset package.
-   * 
-   * @param os
-   *   The package operating system.
    * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
@@ -121,13 +108,12 @@ class JPackageActionPluginsPanel
   setPlugins
   (
    String pname, 
-   OsType os, 
    VersionID vid, 
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
     throws PipelineException
   {
-    pParent.setPackageActions(pname, os, vid, plugins);
+    pParent.setPackageActions(pname, vid, plugins);
   }
 
   

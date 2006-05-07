@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.6 2005/06/14 13:35:24 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.7 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -270,7 +270,7 @@ class JPackageDetailsDialog
     
     pAddEntryButton.setEnabled(mod != null);
     pClearEntriesButton.setEnabled(mod != null);
-    pLoadScriptButton.setEnabled(mod != null);
+    pLoadScriptButton.setEnabled((mod != null) && (PackageInfo.sOsType != OsType.Windows));
     pTestButton.setEnabled(false);
 
     pTitlePanel.removeAll();

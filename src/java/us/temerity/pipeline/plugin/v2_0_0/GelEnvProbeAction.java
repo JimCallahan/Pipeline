@@ -1,4 +1,4 @@
-// $Id: GelEnvProbeAction.java,v 1.2 2006/01/22 22:26:58 jim Exp $
+// $Id: GelEnvProbeAction.java,v 1.3 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -238,7 +238,8 @@ class GelEnvProbeAction
 	fromSeq = fseq;
 	
 	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-	fromPath = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().getPath());
+	fromPath = new File(PackageInfo.sProdDir, 
+			    snodeID.getWorkingParent().toFile().getPath());
       }
       
       {

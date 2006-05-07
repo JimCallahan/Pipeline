@@ -1,4 +1,4 @@
-// $Id: HfsOPLibsAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsOPLibsAction.java,v 1.4 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -117,7 +117,7 @@ class HfsOPLibsAction
       out.write("#!/bin/bash\n\n" +
 		"cat > OPlibraries <<EOF\n");
 
-      String targetDir = nodeID.getParent().getPath();
+      String targetDir = nodeID.getParent().toFile().getPath();
       String tpath[] = targetDir.split("/");
 
       for(String source : sources) {

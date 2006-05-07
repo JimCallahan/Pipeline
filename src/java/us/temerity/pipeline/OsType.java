@@ -1,4 +1,4 @@
-// $Id: OsType.java,v 1.1 2005/06/10 04:55:06 jim Exp $
+// $Id: OsType.java,v 1.2 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -72,6 +72,18 @@ enum OsType
   public String
   toTitle() 
   {
-    return toString();
+    return sTitles[ordinal()];
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "Linux", 
+    "Windows XP", 
+    "Mac OS X"
+  };
+
 }

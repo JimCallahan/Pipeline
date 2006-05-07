@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.2 2005/03/18 16:33:53 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.3 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -170,32 +170,37 @@ class JManageLayoutsDialog
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
     TreeData data = (TreeData) tnode.getUserObject();
 
-    String selected = null;
+    Path selected = null;
     if(data.getName() == null) {
       JNewIdentifierDialog diag = 
 	new JNewIdentifierDialog(this, "Rename Folder", "New Folder Name:", 
-				 data.getDir().getName(), "Rename");
+				 data.getPath().getName(), "Rename");
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
-	String oname = (data.getDir().getPath()); 
+	String oname = data.getPath().toString();
+	Path npath = new Path(data.getPath().getParentPath(), diag.getName());
 
-	String nname = null;
-	if(data.getDir().getParent().length() > 1) 
-	  nname = (data.getDir().getParent() + "/" + diag.getName());
-	else 
-	  nname = ("/" + diag.getName());
+	// DEBUG 
+	System.out.print("Rename Folder: " + oname + " to " + npath + "\n");
+	// DEBUG 
 
-	renameFiles(oname, nname);
+	renameFiles(oname, npath.toString());
 	
-	String lname = master.getLayoutName();
-	if((lname != null) && lname.startsWith(oname)) 
-	  master.setLayoutName(nname + lname.substring(oname.length()));
+	Path lpath = master.getLayoutPath();
+	if(lpath != null) {
+	  String lname = lpath.toString();
+	  if(lname.startsWith(oname)) 
+	    master.setLayoutPath(new Path(npath, lname.substring(oname.length())));
+	}
 	
-	String dname = master.getDefaultLayoutName();
-	if((dname != null) && dname.startsWith(oname)) 
-	  master.doDefaultLayout(nname + dname.substring(oname.length()));
-
-	selected = nname;
+	Path dpath = master.getDefaultLayoutPath(); 
+	if(dpath != null) {
+	  String dname = dpath.toString();
+	  if(dname.startsWith(oname)) 
+	    master.doDefaultLayout(new Path(npath, dname.substring(oname.length())));
+	}
+	
+	selected = npath;
       }
     }
     else {
@@ -204,25 +209,24 @@ class JManageLayoutsDialog
 				 data.getName(), "Rename");
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
-	String oname = (data.getDir() + "/" + data.getName());
+	String oname = data.getPath().toString();
+	Path npath = new Path(data.getPath().getParentPath(), diag.getName());
 
-	String nname = null;
-	if(data.getDir().getPath().length() > 1) 
-	  nname = (data.getDir() + "/" + diag.getName());
-	else 
-	  nname = ("/" + diag.getName());
+	// DEBUG 
+	System.out.print("Rename Layout: " + oname + " to " + npath + "\n");
+	// DEBUG 
 
-	renameFiles(oname, nname);
+	renameFiles(oname, npath.toString()); 
 
-	String lname = master.getLayoutName();
-	if((lname != null) && lname.equals(oname)) 
-	  master.setLayoutName(nname);
+	Path lpath = master.getLayoutPath();
+	if((lpath != null) && lpath.toString().equals(oname))
+	  master.setLayoutPath(npath);
 	
-	String dname = master.getDefaultLayoutName();
-	if((dname != null) && dname.equals(oname))
-	  master.doDefaultLayout(nname);
+	Path dpath = master.getDefaultLayoutPath(); 
+	if((dpath != null) && dpath.toString().equals(oname))
+	  master.doDefaultLayout(npath);
 
-	selected = nname;
+	selected = npath;
       }
     }
 
@@ -244,13 +248,18 @@ class JManageLayoutsDialog
    String nname
   ) 
   {
-    File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline/layouts");
-    File ofile = new File(base + oname);
-    File nfile = new File(base + nname);
+    Path base = new Path(PackageInfo.sHomePath, 
+			 PackageInfo.sUser + "/.pipeline/layouts");
+
+    Path opath = new Path(base, oname);
+    File ofile = opath.toFile();
+
+    Path npath = new Path(base, nname);
+    File nfile = npath.toFile();
     
     UIMaster master = UIMaster.getInstance();
 
-    deleteFiles(nfile);
+    Files.deleteAll(nfile);
     if(!ofile.renameTo(nfile)) {
       master.showErrorDialog
 	("I/O Error:", "Unable to rename (" + oname + ") to (" + nname + ")!");
@@ -278,30 +287,26 @@ class JManageLayoutsDialog
 
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
       TreeData data = (TreeData) tnode.getUserObject();
-      
-      if(data.getName() != null) {
-	if(data.getDir().getPath().length() > 1) 
-	  selected = (data.getDir() + "/" + data.getName());
-	else 
-	  selected = ("/" + data.getName());
-      }
-      else {
-	selected = (data.getDir().getPath());
-      }
+      selected = data.getPath().toString();
     }
-
-    System.out.print("Delete: " + selected + "\n");
-
-    File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline/layouts");
-    File file = new File(base + selected);
-    deleteFiles(file);
-
-    String lname = master.getLayoutName();
-    if((lname != null) && lname.startsWith(selected)) 
-      master.setLayoutName(null);
+    if(selected == null) 
+      return;
     
-    String dname = master.getDefaultLayoutName();
-    if((dname != null) && dname.startsWith(selected)) 
+    // DEBUG 
+    System.out.print("Delete: " + selected + "\n");
+    // DEBUG 
+
+    Path lpath = new Path(PackageInfo.sHomePath, 
+			  PackageInfo.sUser + "/.pipeline/layouts"); 
+    Path path = new Path(lpath, selected);
+    Files.deleteAll(path.toFile()); 
+
+    Path opath = master.getLayoutPath();
+    if((opath != null) && opath.toString().startsWith(selected)) 
+      master.setLayoutPath(null);
+    
+    Path dpath = master.getDefaultLayoutPath();
+    if((dpath != null) && dpath.toString().startsWith(selected)) 
       master.doDefaultLayout(null);
 
     try {
@@ -310,55 +315,6 @@ class JManageLayoutsDialog
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
     }      
-  }
-
-  /**
-   * Delete the underlying file/directory associated with the layout/folder.
-   */ 
-  private void 
-  deleteFiles
-  (
-   File file
-  ) 
-  {
-    if(!file.exists()) 
-      return; 
-
-    UIMaster master = UIMaster.getInstance();
-
-    if(file.isFile()) {
-      if(!file.delete()) {
-	master.showErrorDialog
-	  ("I/O Error:", "Unable to delete (" + file + ")!");
-	return;
-      }
-    }
-    else {
-      Map<String,String> env = System.getenv();
-      File dir = PackageInfo.sTempDir;
-      
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("-rf");
-      args.add(file.getPath());
-      
-      SubProcessLight proc = 
-	new SubProcessLight("RemoveLayout", "rm", args, env, dir);
-      proc.start();
-      
-      try {
-	proc.join();
-      }
-      catch(InterruptedException ex) {
-	master.showErrorDialog(ex);	
-	return;
-      }
-      
-      if(!proc.wasSuccessful()) {
-	master.showErrorDialog
-	  ("I/O Error:", "Unable to delete (" + file + ")!");
-	return;
-      }
-    }
   }
 
 
@@ -373,7 +329,7 @@ class JManageLayoutsDialog
   {
     UIMaster master = UIMaster.getInstance();
 
-    String selected = null;
+    Path selected = null;
     {
       TreePath tpath = pTree.getSelectionPath(); 
       if(tpath == null)
@@ -381,13 +337,8 @@ class JManageLayoutsDialog
 
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
       TreeData data = (TreeData) tnode.getUserObject();
-      
-      if(data.getName() != null) {
-	if(data.getDir().getPath().length() > 1) 
-	  selected = (data.getDir() + "/" + data.getName());
-	else 
-	  selected = ("/" + data.getName());
-      }
+      if(data.getName() != null) 
+	selected = data.getPath();
     }
 
     if(selected == null) 

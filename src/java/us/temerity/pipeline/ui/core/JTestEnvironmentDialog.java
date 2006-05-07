@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.4 2005/06/13 16:05:01 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -194,7 +194,8 @@ class JTestEnvironmentDialog
 
     File outFile = null;
     try {
-      outFile = File.createTempFile("plui-test-output.", ".tmp", PackageInfo.sTempDir);
+      outFile = File.createTempFile("plui-test-output.", ".tmp", 
+				    PackageInfo.sTempPath.toFile());
       FileCleaner.add(outFile);
     }
     catch(IOException ex) {
@@ -204,7 +205,8 @@ class JTestEnvironmentDialog
 
     File errFile = null;
     try {
-      errFile = File.createTempFile("plui-test-errors.", ".tmp", PackageInfo.sTempDir);
+      errFile = File.createTempFile("plui-test-errors.", ".tmp", 
+				    PackageInfo.sTempPath.toFile());
       FileCleaner.add(errFile);
     }
     catch(IOException ex) {

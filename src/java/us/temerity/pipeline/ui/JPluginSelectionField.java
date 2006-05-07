@@ -1,4 +1,4 @@
-// $Id: JPluginSelectionField.java,v 1.3 2005/09/07 21:11:16 jim Exp $
+// $Id: JPluginSelectionField.java,v 1.4 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -35,13 +35,13 @@ class JPluginSelectionField
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin vendors, names and revision numbers.
+   *   The legal plugin vendors, names, revision numbers and supported operating systems.
    */ 
   public 
   JPluginSelectionField
   (
    PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins
   )
   {
     super();  
@@ -100,13 +100,13 @@ class JPluginSelectionField
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin vendors, names and revision numbers.
+   *   The legal plugin vendors, names, revision numbers and supported operating systems.
    */ 
   public void 
   updatePlugins
   (
    PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins
   ) 
   {
     if(layout == null) 
@@ -115,7 +115,7 @@ class JPluginSelectionField
 
     if(plugins == null) 
       throw new IllegalArgumentException
-	("The set of legal plugin vendors/names/versions cannot be (null)!");
+	("The set of legal plugin vendors/names/versions/OSs cannot be (null)!");
     pPlugins = plugins;
 
     pPopup.removeAll();
@@ -140,10 +140,13 @@ class JPluginSelectionField
    BasePlugin plugin
   ) 
   {
-    if(plugin != null) 
+    if(plugin != null) {
       setPlugin(plugin.getName(), plugin.getVersionID(), plugin.getVendor());
-    else 
+      pPluginSupports = new TreeSet<OsType>(plugin.getSupports());
+    }
+    else {
       setPlugin(null, null, null);
+    }
   }
 
   /**
@@ -166,6 +169,7 @@ class JPluginSelectionField
       pPluginVersionID = null;
       pPluginVendor    = null;
     }
+    pPluginSupports = null;
 
     pLabel.setText((pPluginName != null) ? pPluginName : "-");
 
@@ -197,7 +201,7 @@ class JPluginSelectionField
   }
 
   /**
-   * Get the name of the plugin vendor. 
+   * Get the name of the selected plugin vendor. 
    * 
    * @return 
    *   The vendor name or <CODE>null</CODE> if undefined.
@@ -208,6 +212,25 @@ class JPluginSelectionField
     return pPluginVendor; 
   }
 
+  /**
+   * Get the supported operating system types of the selected plugin.
+   * 
+   * @return 
+   *   The vendor name or <CODE>null</CODE> if undefined.
+   */ 
+  public SortedSet<OsType>
+  getPluginSupports() 
+  {
+    TreeSet<OsType> supports = pPluginSupports; 
+    if(supports == null) {
+      supports = pPlugins.get(pPluginVendor, pPluginName, pPluginVersionID);
+      if(supports == null)
+	return null;
+    }
+
+    return Collections.unmodifiableSortedSet(supports); 
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -431,7 +454,7 @@ class JPluginSelectionField
   buildPluginMenu
   (
    PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins
   ) 
   {
     JMenuItem item = null;
@@ -441,7 +464,7 @@ class JPluginSelectionField
 	(layout.getName() + ":" + layout.getVersionID() + ":" + layout.getVendor());
       item.addActionListener(this);
    
-      TreeSet<VersionID> vids = plugins.get(layout.getVendor(), layout.getName());
+      Set<VersionID> vids = plugins.keySet(layout.getVendor(), layout.getName());
       item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
     }
     else {
@@ -490,11 +513,18 @@ class JPluginSelectionField
    */ 
   private String  pPluginVendor; 
 
+  /**
+   * The cached supported operating systems of the current plugin.  If <CODE>null</CODE>, 
+   * lookup the supported OSs from pPlugins.
+   */ 
+  private TreeSet<OsType>  pPluginSupports;
+
 
   /**
-   * The names and revision numbers of all legal plugins.
+   * The vender, name, revision numbers and supported operating system types 
+   * of all legal plugins.
    */ 
-  private DoubleMap<String,String,TreeSet<VersionID>>  pPlugins; 
+  private TripleMap<String,String,VersionID,TreeSet<OsType>>  pPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

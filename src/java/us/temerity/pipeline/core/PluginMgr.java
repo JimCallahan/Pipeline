@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.7 2006/01/15 06:29:25 jim Exp $
+// $Id: PluginMgr.java,v 1.8 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -28,6 +28,8 @@ class PluginMgr
   public
   PluginMgr() 
   {
+    assert(PackageInfo.sOsType == OsType.Unix);
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing...");
@@ -160,9 +162,10 @@ class PluginMgr
 	  for(VersionID vid : plugins.get(vendor).get(name).keySet()) {
 	    Plugin plg = plugins.get(vendor, name, vid);
 	    
-	    Object[] objs = new Object[2];
+	    Object[] objs = new Object[3];
 	    objs[0] = plg.getClassName();
 	    objs[1] = plg.getBytes();
+	    objs[2] = plg.getSupports();
 
 	    updated.put(vendor, name, vid, objs);
 	  }
@@ -176,9 +179,10 @@ class PluginMgr
       	    Plugin plg = plugins.get(vendor, name, vid);
 
 	    if(cycleID < plg.getCycleID()) {
-	      Object[] objs = new Object[2];
+	      Object[] objs = new Object[3];
 	      objs[0] = plg.getClassName();
 	      objs[1] = plg.getBytes();
+	      objs[2] = plg.getSupports();
 
 	      updated.put(vendor, name, vid, objs);
 	    }
@@ -228,26 +232,24 @@ class PluginMgr
       loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), bytes);      
 
       /* save the plugin class bytes in a file */ 
-      File file = null;
+      Path path = null; 
       try {
-	File root = new File(PackageInfo.sInstDir, "plugins");
-	File path = new File(cname.replace(".", "/"));
-	file = new File(root, path + ".class");
+	path = new Path(PackageInfo.sPluginsPath, cname.replace(".", "/") + ".class");
 	  
-	File dir = file.getParentFile();
+	File dir = path.getParentPath().toFile();
 	if(!dir.exists()) 
 	  if(!dir.mkdirs()) 
 	    throw new IOException
 	      ("Unable to create the directory (" + dir + ") where the plugin " + 
 	       "(" + cname + ") will be installed!");
 
-	FileOutputStream out = new FileOutputStream(file);
+	FileOutputStream out = new FileOutputStream(path.toFile());
 	out.write(bytes);
 	out.close();
       }
       catch(IOException ex) {
 	throw new PipelineException
-	  ("Unable to save the plugin (" + cname + ") to file (" + file + ")!");
+	  ("Unable to save the plugin (" + cname + ") to file (" + path + ")!");
       }
 
       return new SuccessRsp(timer);
@@ -272,7 +274,7 @@ class PluginMgr
   private void 
   loadAllPlugins() 
   {
-    File root = new File(PackageInfo.sInstDir, "plugins");
+    File root = PackageInfo.sPluginsPath.toFile();
     File[] dirs = root.listFiles();
     int wk;
     for(wk=0; wk<dirs.length; wk++) {
@@ -513,6 +515,11 @@ class PluginMgr
 	   "(" + pkgID + ") derived from the name of the directory containing the " + 
 	   "class file (" + classfile + ")!");
       
+      if(plg.getSupports().isEmpty()) 
+	throw new PipelineException
+	  ("The plugin class (" + cname + ") does not support execution under any " + 
+	   "type of operating system!  At least one OS must be supported.");	
+
       if(plg instanceof BaseEditor) 
 	addPlugin(plg, cname, bytes, pEditors);
       else if(plg instanceof BaseAction)
@@ -574,7 +581,8 @@ class PluginMgr
 	 "version of this plugin exists which is no longer under development!");
 
     table.put(plg.getVendor(), plg.getName(), plg.getVersionID(), 
-	      new Plugin(pLoadCycleID, cname, plg.isUnderDevelopment(), bytes));
+	      new Plugin(pLoadCycleID, cname, plg.getSupports(), plg.isUnderDevelopment(), 
+			 bytes));
   }
 
 
@@ -594,12 +602,14 @@ class PluginMgr
     (
      long cycleID, 
      String cname, 
+     SortedSet<OsType> supports, 
      boolean underDevelopment,
      byte[] bytes
     )
     {
       pCycleID            = cycleID; 
       pClassName          = cname;
+      pSupports           = new TreeSet<OsType>(supports);
       pIsUnderDevelopment = underDevelopment;
       pBytes              = bytes; 
     }
@@ -616,6 +626,12 @@ class PluginMgr
       return pClassName; 
     }
 
+    public TreeSet<OsType>
+    getSupports()
+    {
+      return pSupports;
+    }
+
     public boolean 
     isUnderDevelopment()
     {
@@ -628,10 +644,11 @@ class PluginMgr
       return pBytes; 
     }
 
-    private long     pCycleID; 
-    private String   pClassName;
-    private boolean  pIsUnderDevelopment; 
-    private byte[]   pBytes; 
+    private long             pCycleID; 
+    private String           pClassName;
+    private TreeSet<OsType>  pSupports; 
+    private boolean          pIsUnderDevelopment; 
+    private byte[]           pBytes; 
   }
 
 

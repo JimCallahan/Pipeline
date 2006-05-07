@@ -1,4 +1,4 @@
-// $Id: TestNodeIDApp.java,v 1.4 2004/05/21 21:17:51 jim Exp $
+// $Id: TestNodeIDApp.java,v 1.5 2006/05/07 21:30:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -88,9 +88,16 @@ class TestNodeIDApp
   )
   {
     System.out.print("-----------------------------------\n" +
-		     "NodeID: " + id + "\n" + 
-		     "   Dirname: " + id.getParent() + "\n" + 
-		     "  HashCode: " + id.hashCode() + "\n");
+		     "NodeID\n" + 
+		     "     StringRep: " + id + "\n" + 
+		     "      HashCode: " + id.hashCode() + "\n" +
+		     "        Author: " + id.getAuthor() + "\n" + 
+		     "          View: " + id.getView() + "\n" + 
+		     "        Parent: " + id.getParent() + "\n" + 
+		     "   WorkingPath: " + id.getWorkingPath() + "\n" + 
+		     " WorkingParent: " + id.getWorkingParent() + "\n" + 
+		     " CheckedInPath: " + 
+		     id.getCheckedInPath(new VersionID("1.2.3")) + "\n\n");
 
     System.out.print("  ---\n");
 
@@ -115,5 +122,13 @@ class TestNodeIDApp
       assert(id.equals(id2));
       assert(id.hashCode() == id2.hashCode());      
     }
+
+    {
+      NodeID id2 = new NodeID(id, "foo");
+      assert(id.compareTo(id2) < 0); 
+      assert(!id.equals(id2));
+      assert(id2.toString().startsWith(id.toString()));
+    }
+		     
   } 
 }

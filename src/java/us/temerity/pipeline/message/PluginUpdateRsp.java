@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.4 2005/09/07 21:11:16 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.5 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,24 +33,24 @@ class PluginUpdateRsp
    *   The plugin load cycle sequence identifier of this update.
    * 
    * @param editors
-   *   The new or updated Editor plugin class [name, bytes] indexed by class name 
-   *   and revision number.
+   *   The new or updated Editor plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
    * 
    * @param actions
-   *   The new or updated Action plugin class [name, bytes] indexed by class name 
-   *   and revision number.
+   *   The new or updated Action plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
    * 
    * @param comparators
-   *   The new or updated Comparator plugin class [name, bytes] indexed by class name 
-   *   and revision number.
+   *   The new or updated Comparator plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
    * 
    * @param tools
-   *   The new or updated Tool plugin class [name, bytes] indexed by class name 
-   *   and revision number.
+   *   The new or updated Tool plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
    * 
    * @param archivers
-   *   The new or updated Archiver plugin class [name, bytes] indexed by class name 
-   *   and revision number.
+   *   The new or updated Archiver plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
    */
   public
   PluginUpdateRsp
@@ -117,8 +117,8 @@ class PluginUpdateRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the new or updated Editor plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * Gets the new or updated Editor plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getEditors() 
@@ -127,8 +127,8 @@ class PluginUpdateRsp
   }
 
   /**
-   * Gets the new or updated Action plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * Gets the new or updated Action plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getActions() 
@@ -137,8 +137,8 @@ class PluginUpdateRsp
   }
 
   /**
-   * Gets the new or updated Comparator plugin class [name, bytes] indexed by class name  
-   * and revision number.
+   * Gets the new or updated Comparator plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getComparators() 
@@ -147,8 +147,8 @@ class PluginUpdateRsp
   }
 
   /**
-   * Gets the new or updated Tool plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * Gets the new or updated Tool plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getTools() 
@@ -157,8 +157,8 @@ class PluginUpdateRsp
   }
 
   /**
-   * Gets the new or updated Archiver plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * Gets the new or updated Archiver plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getArchivers() 
@@ -189,32 +189,32 @@ class PluginUpdateRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The new or updated Editor plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * The new or updated Editor plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pEditors; 
 
   /**
-   * The new or updated Action plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * The new or updated Action plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pActions; 
 
   /**
-   * The new or updated Comparator plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * The new or updated Comparator plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pComparators; 
 
   /**
-   * The new or updated Tool plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * The new or updated Tool plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pTools; 
 
   /**
-   * The new or updated Archiver plugin class [name, bytes] indexed by class name 
-   * and revision number.
+   * The new or updated Archiver plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pArchivers; 
 

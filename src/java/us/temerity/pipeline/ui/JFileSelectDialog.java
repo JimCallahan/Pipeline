@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.7 2005/01/03 06:56:23 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.8 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -182,9 +182,9 @@ class JFileSelectDialog
     String dtext = pDirField.getText(); 
     if(dtext == null) 
       return null;
+    File dir = new File(dtext);
 
     if(pFileField == null) {
-      File dir = new File(dtext);
       try {
 	return dir.getCanonicalFile();
       }
@@ -197,7 +197,7 @@ class JFileSelectDialog
       if(ftext == null) 
 	return null;
 
-      File file = new File(dtext + "/" + ftext);
+      File file = new File(dir, ftext);
       try {
 	return file.getCanonicalFile();
       }
@@ -246,18 +246,8 @@ class JFileSelectDialog
 	}
       }
       
-      if(canon == null) {
-	try {
-	  File dir = new File(System.getProperty("user.dir"));
-	  if(dir.getPath().startsWith(pRootDir.getPath())) 
-	    canon = dir.getCanonicalFile();
-	}
-	catch(IOException ex) {
-	}
-      }
-      
       if(canon == null) 
-	canon = pRootDir;
+	canon = isRestricted() ? getRootDir() : getDefaultDirectory();
     }
 
     /* determine the target directory and file name */ 
@@ -274,18 +264,22 @@ class JFileSelectDialog
 	Toolkit.getDefaultToolkit().beep();
 
 	File file = canon;
-	while(file.getPath().startsWith(pRootDir.getPath())) {
+	while(isAllowed(file)) {
 	  if(file.isDirectory()) {
 	    dir = file;
 	    break;
 	  }
 
 	  file = file.getParentFile();
+	  if(file == null) 
+	    break;
 	}
 
 	if(dir == null) 
 	  return;
       }
+
+      assert(dir != null);
     }
 
     /* initialize the UI components */ 
@@ -306,7 +300,8 @@ class JFileSelectDialog
 	    dirs.add(fs[wk]);
 	}
 	
-	if(!dir.equals(pRootDir)) 
+	if((isRestricted() && !dir.equals(getRootDir())) ||
+	   (!isRestricted() && (dir.getParentFile() != null)))
 	  model.addElement(new File(dir, ".."));
 	
 	for(File file : dirs) 
@@ -391,7 +386,8 @@ class JFileSelectDialog
   protected void 
   doJumpHome()
   { 
-    updateTargetFile(new File(PackageInfo.sHomeDir, PackageInfo.sUser));
+    Path home = new Path(PackageInfo.sHomePath, PackageInfo.sUser);
+    updateTargetFile(home.toFile());
   }
 
   /**

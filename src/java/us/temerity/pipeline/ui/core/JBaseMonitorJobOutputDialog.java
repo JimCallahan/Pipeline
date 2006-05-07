@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.4 2006/01/18 20:27:37 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -81,7 +81,9 @@ class JBaseMonitorJobOutputDialog
             
       pHostname = info.getHostname();
       pJobID    = job.getJobID();
-      pSaveFile = new File(PackageInfo.sTempDir, "Job-" + pJobID + "-" + prefix + ".log");
+
+      Path path = new Path(PackageInfo.sTempPath, "Job-" + pJobID + "-" + prefix + ".log");
+      pSaveFile = path.toFile();
 
       ActionAgenda agenda = job.getActionAgenda();
       String header = 

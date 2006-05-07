@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.9 2005/06/12 17:58:37 jim Exp $
+// $Id: PackageMod.java,v 1.10 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -234,6 +234,10 @@ class PackageMod
   ) 
     throws PipelineException
   {
+    if(PackageInfo.sOsType == OsType.Windows) 
+      throw new PipelineException
+	("The load script operation is not supported on Windows.");
+
     String path = null;
     try {
       path = script.getCanonicalPath();
@@ -245,16 +249,27 @@ class PackageMod
     /* evaluate the shell script and collect the output */ 
     String output[] = null;
     {
+      String envbin = null;
+      switch(PackageInfo.sOsType) {
+      case MacOS:
+	envbin = "/usr/bin/env";
+	break;
+
+      case Unix:
+	envbin = "/bin/env";
+      }
+
       ArrayList<String> args = new ArrayList<String>();
       args.add("--noprofile");
       args.add("-c");
-      args.add("if source " + path + "; then /bin/env; else exit 1; fi");
+      args.add("if source " + path + " 2>&1 > /dev/null; " +
+	       "then " + envbin + "; else exit 1; fi");
       
       TreeMap<String,String> env = new TreeMap<String,String>();
 
       SubProcessLight proc = 
-	new SubProcessLight("EvalPackage", PackageInfo.sBash, args, 
-			    env, PackageInfo.sTempDir);
+	new SubProcessLight("EvalPackage", "/bin/bash", args, 
+			    env, PackageInfo.sTempPath.toFile());
       proc.start();
     
       try {

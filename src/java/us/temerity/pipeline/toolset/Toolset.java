@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.5 2006/01/19 13:57:35 jim Exp $
+// $Id: Toolset.java,v 1.6 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -40,6 +40,9 @@ class Toolset
    * 
    * @param desc
    *   The package description.
+   * 
+   * @param os
+   *   The operating system type.
    */ 
   public
   Toolset
@@ -47,7 +50,8 @@ class Toolset
    String author, 
    String name, 
    Collection<PackageCommon> packages,
-   String desc
+   String desc, 
+   OsType os
   ) 
   {
     super(name);
@@ -56,7 +60,7 @@ class Toolset
       throw new IllegalArgumentException("The package description cannot be (null)!");
     pMessage = new SimpleLogMessage(author, desc);
 
-    init(packages);
+    init(packages, os);
   }
 
   /**
@@ -67,16 +71,20 @@ class Toolset
    * 
    * @param packages
    *   The packages in order of evaluation.
+   * 
+   * @param os
+   *   The operating system type.
    */ 
   public
   Toolset
   (
    String name, 
-   Collection<PackageCommon> packages
+   Collection<PackageCommon> packages, 
+   OsType os
   ) 
   {
     super(name);
-    init(packages);
+    init(packages, os);
   }
 
   /**
@@ -84,15 +92,19 @@ class Toolset
    * 
    * @param name
    *   The name of the toolset.
+   * 
+   * @param os
+   *   The operating system type.
    */ 
   public
   Toolset
   (
-   String name
+   String name, 
+   OsType os
   ) 
   {
     super(name);
-    init(new ArrayList<PackageCommon>());
+    init(new ArrayList<PackageCommon>(), os);
   }
 
 
@@ -103,11 +115,15 @@ class Toolset
    * 
    * @param packages
    *   The packages in order of evaluation.
+   * 
+   * @param os
+   *   The operating system type.
    */ 
   private void 
   init
   (
-   Collection<PackageCommon> packages
+   Collection<PackageCommon> packages, 
+   OsType os
   ) 
   {
     pPackages       = new ArrayList<String>();
@@ -119,6 +135,8 @@ class Toolset
     pConflicts     = new TreeMap<String,LinkedList<Integer>>();
     pAnyConflicts  = new TreeSet<Integer>();
     
+    String pathSep = PackageInfo.getPathSep(os); 
+
     int idx = 0;
     for(PackageCommon com : packages) {
       pPackages.add(com.getName());
@@ -185,7 +203,7 @@ class Toolset
 		
 		ArrayList<String> paths = new ArrayList<String>();
 		{
-		  String dirs[] = first.split(":");  
+		  String dirs[] = first.split(pathSep);  
 		  int wk;
 		  for(wk=0; wk<dirs.length; wk++) 
 		    if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
@@ -193,7 +211,7 @@ class Toolset
 		}
 		
 		{
-		  String dirs[] = second.split(":");
+		  String dirs[] = second.split(pathSep);
 		  int wk;
 		  for(wk=0; wk<dirs.length; wk++) 
 		    if((dirs[wk].length() > 0) && !paths.contains(dirs[wk]))
@@ -204,7 +222,7 @@ class Toolset
 		{
 		  StringBuffer buf = new StringBuffer();
 		  for(String path : paths) 
-		  buf.append(path + ":");
+		  buf.append(path + pathSep);
 		  String str = buf.toString();
 		  
 		  if(paths.size() > 1) 
@@ -494,9 +512,29 @@ class Toolset
       throw new IllegalArgumentException("The author cannot be (null)!");
 
     TreeMap<String,String> env = getEnvironment();
-    
-    env.put("HOME", PackageInfo.getHomeDir(os) + "/" + author);
-    env.put("USER", author);
+    Path home = new Path(PackageInfo.getHomePath(os), author);
+
+    switch(os) {
+    case Unix:
+    case MacOS:
+      env.put("USER", author);
+      env.put("HOME", home.toOsString(os)); 
+      break;
+
+    case Windows:
+      {
+	env.put("USERNAME", author);
+	env.put("USERPROFILE", home.toOsString(os));
+	env.put("HOMEPATH", home.toOsString(os));
+
+	Path appdata = new Path(home, "Application Data");
+	env.put("APPDATA", appdata.toOsString(os));
+      }
+      break;
+      
+    default:
+      assert(false);
+    }
 
     return env;
   }
@@ -530,7 +568,8 @@ class Toolset
 
     TreeMap<String,String> env = getEnvironment(author, os);
 
-    env.put("WORKING", PackageInfo.getWorkDir(os) + "/" + author + "/" + view);
+    Path working = new Path(PackageInfo.getWorkPath(os), author + "/" + view);
+    env.put("WORKING", working.toOsString(os));
 
     return env;
   }

@@ -1,4 +1,4 @@
-// $Id: JBasePackagePluginsPanel.java,v 1.3 2006/01/15 06:29:25 jim Exp $
+// $Id: JBasePackagePluginsPanel.java,v 1.4 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -45,16 +45,20 @@ class JBasePackagePluginsPanel
     /* initialize fields */ 
     {
       pIncludedVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
-      pAllVersions      = new DoubleMap<String,String,TreeSet<VersionID>>();
+      pAllVersions      = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 
       pPrivilegeDetails = new PrivilegeDetails(); 
     }
 
     /* create dialog body components */ 
     {
-      setLayout(new BoxLayout(this, BoxLayout.X_AXIS));  
+      setLayout(new BorderLayout());
+      
+      JPanel panel = new JPanel();
+      panel.setName("MainPanel");
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));  
 
-      add(Box.createRigidArea(new Dimension(20, 0)));
+      panel.add(Box.createRigidArea(new Dimension(20, 0)));
 
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -97,11 +101,11 @@ class JBasePackagePluginsPanel
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	  
-	  add(vbox);
+	  panel.add(vbox);
 	}
       }
 
-      add(Box.createRigidArea(new Dimension(4, 0)));
+      panel.add(Box.createRigidArea(new Dimension(4, 0)));
       
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -144,10 +148,10 @@ class JBasePackagePluginsPanel
 	
 	vbox.add(Box.createVerticalGlue());
 	
-	add(vbox);
+	panel.add(vbox);
       }
       
-      add(Box.createRigidArea(new Dimension(4, 0)));
+      panel.add(Box.createRigidArea(new Dimension(4, 0)));
 	
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -176,7 +180,8 @@ class JBasePackagePluginsPanel
 	  
 	  {
 	    JScrollPane scroll = new JScrollPane(tree);
-	    
+	    pAllScroll = scroll;
+
 	    scroll.setMinimumSize(new Dimension(150, 100));
 	    scroll.setPreferredSize(new Dimension(250, 500));
 	    
@@ -190,11 +195,13 @@ class JBasePackagePluginsPanel
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));
 	  
-	  add(vbox);
+	  panel.add(vbox);
 	}
       }
 
-      add(Box.createRigidArea(new Dimension(20, 0)));
+      panel.add(Box.createRigidArea(new Dimension(20, 0)));
+      
+      add(panel);
     }
   }
 
@@ -212,9 +219,6 @@ class JBasePackagePluginsPanel
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -225,7 +229,6 @@ class JBasePackagePluginsPanel
   update
   (
    String pname, 
-   OsType os,
    VersionID vid,
    PrivilegeDetails privileges
   ) 
@@ -238,9 +241,6 @@ class JBasePackagePluginsPanel
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -248,7 +248,8 @@ class JBasePackagePluginsPanel
    *   The vendors, names and versions of the plugins associated with the package. 
    * 
    * @param allPlugins
-   *   The vendors, names and versions of all currently loaded plugins.
+   *   The vendors, names, versions and supported operating systems 
+   *   of all currently loaded plugins.
    * 
    * @param privileges
    *   The details of the administrative privileges granted to the current user. 
@@ -257,16 +258,14 @@ class JBasePackagePluginsPanel
   updateHelper
   (
    String pname, 
-   OsType os, 
    VersionID vid, 
    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins,
-   DoubleMap<String,String,TreeSet<VersionID>> allPlugins,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> allPlugins,
    PrivilegeDetails privileges
   ) 
   {
     {
       pPackageName      = pname;
-      pPackageOsType    = os;
       pPackageVersionID = vid; 
       
       pIncludedVersions = includedPlugins;
@@ -289,9 +288,6 @@ class JBasePackagePluginsPanel
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the frozen package.
    */ 
@@ -299,12 +295,11 @@ class JBasePackagePluginsPanel
   clone
   (
    String pname, 
-   OsType os,
    VersionID vid
   )
     throws PipelineException
   {
-    setPlugins(pname, os, null, getPlugins(pname, os, vid));
+    setPlugins(pname, null, getPlugins(pname, vid));
   }
 
   /**
@@ -313,10 +308,7 @@ class JBasePackagePluginsPanel
    * 
    * @param pname
    *   The name of the toolset package.
-
-   * @param os
-   *   The package operating system.
-   * 
+   *
    * @param vid
    *   The revision number of the frozen package.
    */ 
@@ -324,12 +316,11 @@ class JBasePackagePluginsPanel
   freeze
   (
    String pname, 
-   OsType os,
    VersionID vid
   )
     throws PipelineException
   {
-    setPlugins(pname, os, vid, getPlugins(pname, os, null));
+    setPlugins(pname, vid, getPlugins(pname, null));
   }
 
   /**
@@ -337,19 +328,15 @@ class JBasePackagePluginsPanel
    * 
    * @param pname
    *   The name of the toolset package.
-   * 
-   * @param os
-   *   The package operating system.
    */ 
   public void 
   remove
   (
-   String pname, 
-   OsType os
+   String pname
   )
     throws PipelineException
   {
-    setPlugins(pname, os, null, null);
+    setPlugins(pname, null, null);
   }
 
 
@@ -362,9 +349,6 @@ class JBasePackagePluginsPanel
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
@@ -372,7 +356,6 @@ class JBasePackagePluginsPanel
   getPlugins
   (
    String pname, 
-   OsType os, 
    VersionID vid 
   )
     throws PipelineException; 
@@ -382,9 +365,6 @@ class JBasePackagePluginsPanel
    * 
    * @param pname
    *   The name of the toolset package.
-   * 
-   * @param os
-   *   The package operating system.
    * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
@@ -396,7 +376,6 @@ class JBasePackagePluginsPanel
   setPlugins
   (
    String pname, 
-   OsType os, 
    VersionID vid, 
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   )
@@ -412,7 +391,7 @@ class JBasePackagePluginsPanel
   saveChanges()
     throws PipelineException
   {
-    setPlugins(pPackageName, pPackageOsType, pPackageVersionID, pIncludedVersions);
+    setPlugins(pPackageName, pPackageVersionID, pIncludedVersions);
   }
 
 
@@ -436,6 +415,7 @@ class JBasePackagePluginsPanel
       PluginTreeData vdata = getSelectedPluginData(pIncludedTree);
       pExcludeButton.setEnabled
 	((vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null));
+      selectPluginVersion(vdata, pAllTree, null, pAllScroll);
     }
     else if(e.getSource() == pAllTree) {
       PluginTreeData vdata = getSelectedPluginData(pAllTree);
@@ -489,7 +469,7 @@ class JBasePackagePluginsPanel
 
       pExcludeButton.setEnabled(false);
       rebuildPluginTree(pIncludedVersions, pIncludedTree);
-      selectPluginVersion(vdata, pIncludedTree, pExcludeButton);
+      selectPluginVersion(vdata, pIncludedTree, pExcludeButton, null);
     }
   }
 
@@ -513,7 +493,7 @@ class JBasePackagePluginsPanel
 
       pExcludeButton.setEnabled(false);
       rebuildPluginTree(pIncludedVersions, pIncludedTree);
-      selectPluginVersion(vdata, pAllTree, pIncludeButton);      
+      selectPluginVersion(vdata, pAllTree, pIncludeButton, null);      
     }
   }
 
@@ -567,6 +547,51 @@ class JBasePackagePluginsPanel
   }
 
   /**
+   * Rebuild the plugin version tree nodes 
+   */ 
+  private void 
+  rebuildPluginTree
+  (
+   TripleMap<String,String,VersionID,TreeSet<OsType>> versions,
+   JTree tree
+  )
+  {
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PluginTreeData());
+
+    for(String vendor : versions.keySet()) {
+      DefaultMutableTreeNode rnode = 
+	new DefaultMutableTreeNode(new PluginTreeData(vendor), true);
+      root.add(rnode);
+
+      for(String name : versions.keySet(vendor)) {
+	DefaultMutableTreeNode pnode = 
+	  new DefaultMutableTreeNode(new PluginTreeData(name), true);
+	rnode.add(pnode);
+	
+	for(VersionID vid : versions.keySet(vendor, name)) {
+	  PluginTreeData pdata = 
+	    new PluginTreeData(name, vid, vendor, versions.get(vendor, name, vid));
+	  DefaultMutableTreeNode vnode = new DefaultMutableTreeNode(pdata, false);
+	  pnode.add(vnode);
+	}
+      }
+    }
+    
+    DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+    model.setRoot(root);
+
+    Enumeration e = root.depthFirstEnumeration();
+    if(e != null) {
+      while(e.hasMoreElements()) {
+	DefaultMutableTreeNode mnode = (DefaultMutableTreeNode) e.nextElement(); 
+	TreePath tpath = new TreePath(mnode.getPath());
+	tree.expandPath(tpath);
+      }
+    }    
+  }
+
+
+  /**
    * Select the plugin version tree node for the given plugin version.
    */ 
   private void 
@@ -574,7 +599,8 @@ class JBasePackagePluginsPanel
   (
    PluginTreeData data, 
    JTree tree, 
-   JButton button
+   JButton button, 
+   JScrollPane scroll
   ) 
   {
     if((data == null) || (data.getName() == null) || (data.getVersionID() == null))
@@ -605,7 +631,15 @@ class JBasePackagePluginsPanel
 	       data.getVersionID().equals(vdata.getVersionID()) &&
 	       data.getVendor().equals(vdata.getVendor())) {
 	      tree.addSelectionPath(vpath);
-	      button.setEnabled(true);
+
+	      if(button != null) 
+		button.setEnabled(true);
+
+// 	      if(scroll != null) {
+// 		Rectangle bounds = tree.getPathBounds(vpath);
+// 		if(bounds != null) 
+// 		  scroll.getViewport().scrollRectToVisible(bounds);
+// 	      }
 	      return;
 	    }
 	  }
@@ -665,11 +699,6 @@ class JBasePackagePluginsPanel
   protected String  pPackageName; 
 
   /**
-   * The package operating system.
-   */ 
-  protected OsType  pPackageOsType; 
-
-  /**
    * The revision number of the package.
    */ 
   protected VersionID  pPackageVersionID; 
@@ -681,9 +710,10 @@ class JBasePackagePluginsPanel
   protected DoubleMap<String,String,TreeSet<VersionID>>  pIncludedVersions;
 
   /**
-   * The names and versions of all currently loaded plugins.
+   * The vendors, names, versions and supported operating systems of all currently 
+   * loaded plugins.
    */ 
-  private DoubleMap<String,String,TreeSet<VersionID>>  pAllVersions;
+  private TripleMap<String,String,VersionID,TreeSet<OsType>>  pAllVersions;
 
 
   /**
@@ -709,5 +739,10 @@ class JBasePackagePluginsPanel
    * The all plugin versions tree.
    */ 
   private JTree  pAllTree;
+
+  /**
+   * The scroll pane containing the all plugin versions tree.
+   */ 
+  private JScrollPane  pAllScroll; 
 
 }

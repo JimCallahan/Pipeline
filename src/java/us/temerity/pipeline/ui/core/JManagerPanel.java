@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.25 2006/01/15 06:29:26 jim Exp $
+// $Id: JManagerPanel.java,v 1.26 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1720,13 +1720,13 @@ class JManagerPanel
     }
     else if((prefs.getShowQuickReference() != null) &&
 	    prefs.getShowQuickReference().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
 		      "/share/docs/manuals/quick-reference.html");
       return true;
     }
     else if((prefs.getShowUserManual() != null) &&
 	    prefs.getShowUserManual().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
 		      "/share/docs/manuals/user-manual.html");
       return true;
     }
@@ -1867,9 +1867,9 @@ class JManagerPanel
     else if(cmd.equals("save-layout-as"))
       UIMaster.getInstance().showSaveLayoutDialog();
     else if(cmd.startsWith("restore-layout:")) 
-      UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15), true);
+      UIMaster.getInstance().doRestoreSavedLayout(new Path(cmd.substring(15)), true);
     else if(cmd.startsWith("restore-layout-no-select:")) 
-      UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(25), false);
+      UIMaster.getInstance().doRestoreSavedLayout(new Path(cmd.substring(25)), false);
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
 
@@ -1907,7 +1907,7 @@ class JManagerPanel
     else if(cmd.equals("quick-reference"))
       BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php");
     else if(cmd.equals("user-manual"))
-      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
 		      "/share/docs/manuals/user-manual.html");
 
     else if(cmd.equals("home-page"))
@@ -1920,7 +1920,7 @@ class JManagerPanel
     else if(cmd.equals("site-configuration"))
       UIMaster.getInstance().showConfigDialog(); 
     else if(cmd.equals("license-agreement"))
-      BaseApp.showURL("file:///" + PackageInfo.sInstDir + 
+      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
 		      "/share/docs/legal/license.html");
 
     else if(cmd.equals("quit"))
@@ -1944,6 +1944,9 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JNodeBrowserPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -1957,6 +1960,9 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JNodeViewerPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -1973,6 +1979,9 @@ class JManagerPanel
     mgr.setContents(panel);
 
     updateNodeSubpanels(panel.getGroupID());
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -1989,6 +1998,9 @@ class JManagerPanel
     mgr.setContents(panel); 
     
     updateNodeSubpanels(panel.getGroupID());
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -2005,6 +2017,9 @@ class JManagerPanel
     mgr.setContents(panel); 
     
     updateNodeSubpanels(panel.getGroupID());
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -2021,6 +2036,9 @@ class JManagerPanel
     mgr.setContents(panel); 
 
     updateNodeSubpanels(panel.getGroupID());
+
+    frame.validate();
+    frame.repaint();
   }
 
 
@@ -2037,6 +2055,9 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JQueueJobBrowserPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -2050,6 +2071,9 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JQueueJobViewerPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
   }
 
   /** 
@@ -2063,6 +2087,9 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JQueueJobDetailsPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
   }
 
 
@@ -2078,6 +2105,9 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     mgr.setContents(new JEmptyPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
   }
 
 
@@ -2840,11 +2870,14 @@ class JManagerPanel
       /* panel layout items */ 
       {
 	UIMaster master = UIMaster.getInstance();
-	pSaveLayoutItem.setEnabled(master.getLayoutName() != null);
+	pSaveLayoutItem.setEnabled(master.getLayoutPath() != null);
 
 	pRestoreLayoutMenu.removeAll();
 	pRestoreLayoutNoSelectMenu.removeAll();
-	File dir = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline/layouts");  
+	
+	Path path = new Path(PackageInfo.sHomePath, 
+			     PackageInfo.sUser + "/.pipeline/layouts");  
+	File dir = path.toFile();
 	if(!dir.isDirectory()) {
 	  UIMaster.getInstance().showErrorDialog
 	    ("Error:", "The saved layout directory (" + dir + ") was missing!");
@@ -2852,8 +2885,8 @@ class JManagerPanel
 	  pRestoreLayoutNoSelectMenu.setEnabled(false);
 	} 
 	else {
-	  rebuildRestoreMenu(dir, dir, pRestoreLayoutMenu, true);
-	  rebuildRestoreMenu(dir, dir, pRestoreLayoutNoSelectMenu, false);
+	  rebuildRestoreMenu(path, new Path("/"), pRestoreLayoutMenu,         true);
+	  rebuildRestoreMenu(path, new Path("/"), pRestoreLayoutNoSelectMenu, false);
 	}
       }
 
@@ -2863,7 +2896,8 @@ class JManagerPanel
 	MasterMgrClient client = master.getMasterMgrClient();
  	try {
  	  PrivilegeDetails privileges = client.getCachedPrivilegeDetails();
- 	  pBackupDatabaseItem.setEnabled(privileges.isMasterAdmin());
+ 	  pBackupDatabaseItem.setEnabled
+	    (privileges.isMasterAdmin() && (PackageInfo.sOsType == OsType.Unix));
  	  pArchiveItem.setEnabled(privileges.isMasterAdmin());
  	  pOfflineItem.setEnabled(privileges.isMasterAdmin());
  	  pRestoreItem.setEnabled(privileges.isMasterAdmin());
@@ -2903,10 +2937,10 @@ class JManagerPanel
      * Recursively rebuild the restore layout menu.
      * 
      * @param root
-     *   The root saved layout directory.
+     *   The full abstract path to the root saved layout directory.
      * 
-     * @param dir 
-     *   The current directory.
+     * @param local 
+     *   The current directory relative to root (null if none).
      * 
      * @param menu
      *   The current parent menu.
@@ -2917,46 +2951,48 @@ class JManagerPanel
     private void 
     rebuildRestoreMenu
     (
-     File root, 
-     File dir,
+     Path root, 
+     Path local,
      JMenu menu, 
      boolean select
     ) 
     {
-      TreeMap<String,File> table = new TreeMap<String,File>();
+      TreeSet<Path> subdirs = new TreeSet<Path>();
+      TreeSet<String> layouts = new TreeSet<String>();
       {
-	File files[] = dir.listFiles();
+	Path current = new Path(root, local);
+	File files[] = current.toFile().listFiles();
 	int wk;
-	for(wk=0; wk<files.length; wk++) 
-	  if(files[wk].isFile() || files[wk].isDirectory()) 
-	    table.put(files[wk].getName(), files[wk]);
-      }
-
-      int rlen = root.getPath().length();
-      for(String name : table.keySet()) {
-	File file = table.get(name);
-	if(file.isDirectory()) {
-	  JMenu sub = new JMenu(name);
-	  menu.add(sub);
-
-	  rebuildRestoreMenu(root, file, sub, select);
+	for(wk=0; wk<files.length; wk++) {
+	  String name = files[wk].getName();
+	  if(files[wk].isDirectory()) 
+	    subdirs.add(new Path(local, name)); 
+	  else if(files[wk].isFile()) 
+	    layouts.add(name);
 	}
       }
+      
+      for(Path subdir : subdirs) {
+	JMenu sub = new JMenu(subdir.getName());
+	menu.add(sub);
+	
+	rebuildRestoreMenu(root, subdir, sub, select);
+      }
+      
+      for(String lname : layouts) {
+	JMenuItem item = new JMenuItem(lname);
 
-      for(String name : table.keySet()) {
-	File file = table.get(name);
-	if(file.isFile()) {
-	  JMenuItem item = new JMenuItem(name);
-	  item.setActionCommand((select ? "restore-layout:" : "restore-layout-no-select:") + 
-				file.getPath().substring(rlen));
-	  item.addActionListener(pPanel);
-
-	  menu.add(item);
-	}
+	Path lpath = new Path(local, lname);
+	item.setActionCommand
+	  ((select ? "restore-layout:" : "restore-layout-no-select:") + lpath);
+	item.addActionListener(pPanel);
+	
+	menu.add(item);
       }
 
       menu.setEnabled(menu.getItemCount() > 0);
     }
+
 
 
     /*-- INTERNALS -------------------------------------------------------------------------*/

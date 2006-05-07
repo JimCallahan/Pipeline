@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.46 2006/03/16 16:04:38 jim Exp $
+// $Id: NodeMod.java,v 1.47 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -396,7 +396,7 @@ class NodeMod
 
       FrameRange range = pPrimarySeq.getFrameRange();
       
-      File path = new File(nname);    
+      Path path = new Path(nname);    
       FilePattern pat = 
 	new FilePattern(path.getName(), pattern.getPadding(), pattern.getSuffix());
   

@@ -1,4 +1,4 @@
-// $Id: TestFileMgr2App.java,v 1.7 2005/01/22 06:10:10 jim Exp $
+// $Id: TestFileMgr2App.java,v 1.8 2006/05/07 21:30:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -24,10 +24,8 @@ class TestFileMgr2App
    String[] args  /* IN: command line arguments */
   )
   {
-    
-    Logs.net.setLevel(Level.FINEST);
-    Logs.sub.setLevel(Level.FINER);
-    //Logs.sum.setLevel(Level.FINER);
+    LogMgr.setLevel(LogMgr.Kind.Net, LogMgr.Level.Finest); 
+    LogMgr.setLevel(LogMgr.Kind.Sub, LogMgr.Level.Finer); 
 
     try {
       TestFileMgr2App app = new TestFileMgr2App();

@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.7 2006/01/17 18:40:23 jim Exp $
+// $Id: UIFactory.java,v 1.8 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -880,11 +880,33 @@ class UIFactory
   createPluginSelectionField
   (
    PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
    int width
   ) 
   {
     JPluginSelectionField field = new JPluginSelectionField(layout, plugins);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create an operating system support field.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JOsSupportField
+  createOsSupportField
+  (
+   int width
+  ) 
+  {
+    JOsSupportField field = new JOsSupportField();
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -2541,7 +2563,7 @@ class UIFactory
    *   The plugin menu layout.
    * 
    * @param plugins
-   *   The legal plugin vendors, names and revision numbers.
+   *   The legal plugin vendors, names, revision numbers and supported operating systems.
    * 
    * @param vwidth
    *   The minimum and preferred width of the value field.
@@ -2554,7 +2576,7 @@ class UIFactory
    int twidth,
    JPanel vpanel,
    PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
    int vwidth
   ) 
   {
@@ -2597,7 +2619,7 @@ class UIFactory
    int twidth,
    JPanel vpanel,
    PluginMenuLayout layout, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
    int vwidth, 
    String tooltip
   ) 
@@ -2605,6 +2627,80 @@ class UIFactory
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JPluginSelectionField field = createPluginSelectionField(layout, plugins, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create an operating system support field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   */ 
+  public static JOsSupportField
+  createTitledOsSupportField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vwidth
+  ) 
+  {
+    return createTitledOsSupportField(tpanel, title, twidth, vpanel, vwidth, null);
+  }
+
+  /**
+   * Create an operating system support field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JOsSupportField
+  createTitledOsSupportField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JOsSupportField field = createOsSupportField(vwidth);
     vpanel.add(field);
 
     return field;
@@ -2748,7 +2844,7 @@ class UIFactory
   public static JList 
   createListComponents
   (
-   Box box, 
+   JComponent box, 
    String title, 
    Dimension size
   ) 
@@ -2777,7 +2873,7 @@ class UIFactory
   public static JList 
   createListComponents
   (
-   Box box, 
+   JComponent box, 
    String title, 
    Dimension size, 
    boolean headerSpacer, 

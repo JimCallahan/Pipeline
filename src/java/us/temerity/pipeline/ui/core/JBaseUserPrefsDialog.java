@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.4 2005/06/14 13:35:24 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -368,9 +368,13 @@ class JBaseUserPrefsDialog
   public void 
   doReset()
   {
-    UserPrefs.getInstance().reset();
-    updatePrefs();
-    savePrefs();
+    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      UserPrefs.getInstance().reset();
+      updatePrefs();
+      savePrefs();
+    }
   }
 
 

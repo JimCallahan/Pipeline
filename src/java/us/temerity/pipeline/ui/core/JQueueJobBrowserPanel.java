@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.18 2006/01/15 06:29:26 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.19 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3230,28 +3230,23 @@ class JQueueJobBrowserPanel
  		throw new PipelineException
  		  ("No toolset was specified for node (" + mod.getName() + ")!");
 
- 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+ 	      /* passes author so that WORKING will correspond to the current view */ 
  	      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
-
- 	      /* override these since the editor will be run as the current user */ 
- 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
- 	      env.put("USER", PackageInfo.sUser);
-	      env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
  	    }
 	    
  	    /* get the primary file sequence */ 
  	    FileSeq fseq = null;
  	    File dir = null; 
  	    {
- 	      String path = null;
+ 	      Path path = null;
  	      {
- 		File wpath = new File(PackageInfo.sWorkDir, 
- 				      author + "/" + view + "/" + mod.getName());
- 		path = wpath.getParent();
+		Path wpath = new Path(PackageInfo.sWorkPath, 
+				      author + "/" + view + "/" + mod.getName());
+		path = wpath.getParentPath();
  	      }
 
- 	      fseq = new FileSeq(path, pFileSeq);
- 	      dir = new File(path);
+ 	      fseq = new FileSeq(path.toString(), pFileSeq);
+ 	      dir = path.toFile();
  	    }
 	    
  	    /* start the editor */ 

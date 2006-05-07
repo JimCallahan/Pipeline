@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.27 2006/03/16 16:04:38 jim Exp $
+// $Id: NodeCommon.java,v 1.28 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -202,7 +202,7 @@ class NodeCommon
   )
   { 
     validateName(pName);
-    File path = new File(pName);
+    Path path = new Path(pName);
 
     {
       if(primary == null) 

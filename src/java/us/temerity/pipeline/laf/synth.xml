@@ -1405,6 +1405,20 @@
 
 
 
+  <!--  O S   S U P P O R T   F I E L D  -->
+
+  <style id="OsSupportField">
+    <state> 
+      <imagePainter path="ValuePanel.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <font name="Lucida Sans Bold" size="12"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="OsSupportField" type="name" key="OsSupportField"/>
+
+
+
   <!--  S L I D E R  --> 
 
   <style id="Slider">
@@ -1955,6 +1969,8 @@
   <!--  M A I N   D I A L O G   P A N E L  -->
 
   <style id="MainDialogPanel">
+    <imagePainter path="Grey.png" 
+                  sourceInsets="0 0 0 0"/>
     <insets top="20" bottom="20" right="20" left="20"/>
   </style>
   <bind style="MainDialogPanel" type="name" key="MainDialogPanel"/>
@@ -1973,9 +1989,22 @@
   <!--  M A I N   P A N E L  -->
 
   <style id="MainPanel">
+    <imagePainter path="Grey.png" 
+                  sourceInsets="0 0 0 0"/>
     <insets top="5" bottom="5" right="5" left="5"/>
   </style>
   <bind style="MainPanel" type="name" key="MainPanel"/>
+
+
+
+  <!--  G R E Y   P A N E L  -->
+
+  <style id="GreyPanel">
+    <imagePainter path="Grey.png" 
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="GreyPanel" type="name" key="GreyPanel"/>
 
 
 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.59 2006/01/15 06:29:25 jim Exp $
+// $Id: MasterMgrServer.java,v 1.60 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,6 +36,9 @@ class MasterMgrServer
   /** 
    * Construct a new master manager server.
    * 
+   * @param app
+   *   The application instance.
+   * 
    * @param rebuildCache
    *   Whether to rebuild cache files and ignore existing lock files.
    * 
@@ -51,6 +54,7 @@ class MasterMgrServer
   public
   MasterMgrServer
   (
+   MasterApp app, 
    boolean rebuildCache, 
    boolean internalFileMgr, 
    long nodeCacheLimit
@@ -59,6 +63,7 @@ class MasterMgrServer
   { 
     super("MasterMgrServer");
 
+    pMasterApp = app;
     pMasterMgr = new MasterMgr(rebuildCache, internalFileMgr, nodeCacheLimit);
 
     pShutdown = new AtomicBoolean(false);
@@ -98,6 +103,9 @@ class MasterMgrServer
       NodeGCTask nodeGC = new NodeGCTask();
       nodeGC.start();
 
+//    LicenseTask lic = new LicenseTask();
+//    lic.start();
+
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
 	SocketChannel channel = schannel.accept();
@@ -116,6 +124,9 @@ class MasterMgrServer
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
 	   "Shutting Down -- Waiting for tasks to complete...");
 	LogMgr.getInstance().flush();
+
+// 	lic.interrupt();
+// 	lic.join();
 
 	nodeGC.interrupt();
 	nodeGC.join();
@@ -386,6 +397,15 @@ class MasterMgrServer
 	      {
 		MiscGetToolsetPackageReq req = (MiscGetToolsetPackageReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.getToolsetPackage(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetPackages:
+	      {
+		MiscGetToolsetPackagesReq req = 
+		  (MiscGetToolsetPackagesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetPackages(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -769,6 +789,14 @@ class MasterMgrServer
 	      {
 		NodeGetCheckedInReq req = (NodeGetCheckedInReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.getCheckedInVersion(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case GetAllCheckedIn:
+	      {
+		NodeGetAllCheckedInReq req = (NodeGetAllCheckedInReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getAllCheckedInVersions(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -1242,6 +1270,43 @@ class MasterMgrServer
     }
   }
 
+  /**
+   * Periodic license expiration checker.
+   */
+  private 
+  class LicenseTask
+    extends Thread
+  {
+    public 
+    LicenseTask() 
+    {
+      super("MasterMgrServer:LicenseTask");
+    }
+
+    public void 
+    run() 
+    {
+      /* check once a day */ 
+      while(!pShutdown.get()) {
+	try {
+	  Thread.sleep(86400000L); 
+	}
+	catch(InterruptedException ex) {
+	}	
+
+	if(!pMasterApp.isLicenseValid()) {	  
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	     "License Expired Shutdown.");
+	  LogMgr.getInstance().flush();
+
+	  pShutdown.set(true);
+	}
+      }
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -1280,6 +1345,11 @@ class MasterMgrServer
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance.
+   */ 
+  private MasterApp  pMasterApp; 
 
   /**
    * The shared master manager. 

@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.3 2006/01/19 12:33:17 jim Exp $
+// $Id: MayaRenderAction.java,v 1.4 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_4;
 
@@ -439,7 +439,8 @@ class MayaRenderAction
       args.add("-b");
       args.add(String.valueOf(range.getBy()));
 	
-      File renderDir = new File(PackageInfo.sProdDir, nodeID.getWorkingParent().getPath());
+      File renderDir = new File(PackageInfo.sProdDir, 
+				nodeID.getWorkingParent().toFile().getPath());
 
       if(renderer.equals("Hardware") || renderer.equals("Vector")) {
 	if(preRender != null) 

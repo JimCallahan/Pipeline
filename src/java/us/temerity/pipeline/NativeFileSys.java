@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.8 2006/02/25 20:16:03 jim Exp $
+// $Id: NativeFileSys.java,v 1.9 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,7 +23,12 @@ class NativeFileSys
   /**
    * Change file access permissions. <P> 
    * 
-   * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.
+   * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.<P>
+   * 
+   * Only limited support for this operation is provided by the Windows operating system which
+   * only supports a single Read and/or Write state.  Windows Read mode will be set if any 
+   * of the User, Group or Other Read bits are set in the <CODE>mode</CODE> argument.  
+   * Similarly, the Windows Write mode will be set if any of the Write mode bits are set.
    *
    * @param mode 
    *   The access mode bitmask.
@@ -54,24 +59,41 @@ class NativeFileSys
   /**
    * Set the file creation mask. <P> 
    * 
-   * See the manpage for umask(2) for details about the legal values for <CODE>mask</CODE>.
+   * See the manpage for umask(2) for details about the legal values for <CODE>mask</CODE>.<P>
+   * 
+   * This method is not supported by the Windows operating system.
    *
    * @param mask
    *   The file creation bitmask.
+   * 
+   * @throws IOException
+   *   If run under the Windows operating system.
    */
   public static void 
   umask
   (
    int mask
   ) 
+    throws IOException
   {
-    loadLibrary();
-    umaskNative(mask);
+    switch(PackageInfo.sOsType) {
+    case Unix: 
+    case MacOS:
+      loadLibrary();
+      umaskNative(mask);
+      break;
+
+    case Windows:
+      throw new IOException
+	("Not supported on Windows systems!");
+    }
   }
   
   
   /** 
    * Create a symbolic link which points to the given file. <P> 
+   * 
+   * This method is not supported by the Windows operating system.
    * 
    * @param file 
    *   The relative or absolute path to the file pointed to by the symlink. 
@@ -80,7 +102,7 @@ class NativeFileSys
    *   The fully resolved path of the symlink to create.  
    * 
    * @throws IOException 
-   *   If unable to create the symlink.
+   *   If unable to create the symlink or is run under the Windows operating system.
    */
   public static void 
   symlink
@@ -90,14 +112,21 @@ class NativeFileSys
   ) 
     throws IOException
   {
-    if(!link.isAbsolute()) 
+    switch(PackageInfo.sOsType) {
+    case Unix: 
+    case MacOS:
+      if(!link.isAbsolute()) 
+	throw new IOException
+	  ("The link argument (" + link + ") must be an absolute path!");
+      loadLibrary();
+      symlinkNative(file.getPath(), link.getPath());
+      break;
+
+    case Windows:
       throw new IOException
-	("The link argument (" + link + ") must be an absolute path!");
-    
-    loadLibrary();
-    symlinkNative(file.getPath(), link.getPath());
+	("Not supported on Windows systems!");
+    }
   }
-  
   
   /** 
    * Determine the canonicalized absolute pathname of the given path. <P> 

@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.5 2005/12/08 15:27:26 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.6 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -23,6 +23,7 @@ import java.util.*;
  * @see Glueable
  * @see GlueDecoder
  */
+public
 class GlueEncoderImpl
   implements GlueEncoder
 {     

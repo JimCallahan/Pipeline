@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.5 2005/03/28 04:16:45 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.6 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,10 +65,7 @@ class JFileSeqSelectDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the selected file sequence. <P> 
-   * 
-   * The file sequence prefix will contain the full canonical path to the root 
-   * directory of the current working area (see {@link #setRootDir setRootDir}).
+   * Get the selected file sequence local to the current directory. <P> 
    * 
    * @return 
    *   The file sequence or <CODE>null</CODE> if none is selected.
@@ -142,7 +139,7 @@ class JFileSeqSelectDialog
       }
       
       if(canon == null) 
-	canon = pRootDir;
+	canon = isRestricted() ? getRootDir() : getDefaultDirectory();
     }
 
     /* determine the target directory */ 
@@ -154,18 +151,21 @@ class JFileSeqSelectDialog
 	Toolkit.getDefaultToolkit().beep();
 	
 	File file = canon;
-	while(file.getPath().startsWith(pRootDir.getPath())) {
+	while(isAllowed(file)) {
 	  if(file.isDirectory()) {
 	    dir = file;
 	    break;
 	  }
 
 	  file = file.getParentFile();
+	  if(file == null) 
+	    break;
 	}
 
 	if(dir == null) 
 	  return;
       }
+
       assert(dir != null);
     }
 
@@ -187,7 +187,8 @@ class JFileSeqSelectDialog
 	    dirs.add(fs[wk]);
 	}
 
-	if(!dir.equals(pRootDir)) 
+	if((isRestricted() && !dir.equals(getRootDir())) ||
+	   (!isRestricted() && (dir.getParentFile() != null)))
 	  model.addElement(new File(dir, ".."));
 	
 	for(File file : dirs) 
@@ -206,13 +207,19 @@ class JFileSeqSelectDialog
 	{
 	  pRenderer.setDirectory(dir);
 
-	  assert(dir.getPath().startsWith(pRootDir.getPath()));
-	  String dstr = dir.getPath();
-	  String text = dstr.substring(pRootDir.getPath().length(), dstr.length());
+	  String text = null;
+	  if(isRestricted()) {
+	    String dstr = dir.getPath();
+	    text = dstr.substring(getRootDir().getPath().length(), dstr.length());
+	  }
+	  else {
+	    text = dir.getPath();
+	  }
+
 	  if(text.length() > 0) 
 	    pDirField.setText(text);
 	  else 
-	    pDirField.setText("/");
+	    pDirField.setText(File.separator);
 	}
       }
       else {
@@ -272,7 +279,12 @@ class JFileSeqSelectDialog
   protected void 
   doJumpDir()
   {
-    File dir = new File(pRootDir + pDirField.getText());
+    File dir = null;
+    if(isRestricted()) 
+      dir = new File(getRootDir(), pDirField.getText());
+    else
+      dir = new File(pDirField.getText());
+
     if(dir.isDirectory()) 
       updateTargetDir(dir);
     else 
@@ -285,7 +297,7 @@ class JFileSeqSelectDialog
   protected void 
   doJumpHome()
   { 
-    updateTargetDir(pRootDir);
+    updateTargetDir(isRestricted() ? getRootDir() : getDefaultDirectory()); 
   }
 
   /**
@@ -294,7 +306,12 @@ class JFileSeqSelectDialog
   protected void 
   doNewFolder()
   {
-    File dir = new File(pRootDir + pDirField.getText());
+    File dir = null;
+    if(isRestricted()) 
+      dir = new File(getRootDir(), pDirField.getText());
+    else
+      dir = new File(pDirField.getText());
+
     if(dir.isDirectory()) {
       JNewFolderDialog diag = new JNewFolderDialog(this);
       diag.setVisible(true);

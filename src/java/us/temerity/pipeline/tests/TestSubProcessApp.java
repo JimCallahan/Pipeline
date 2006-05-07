@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.7 2005/01/22 06:10:10 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.8 2006/05/07 21:30:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -23,8 +23,7 @@ class TestSubProcessApp
    String[] args  /* IN: command line arguments */
   )
   {
-    
-    Logs.sub.setLevel(Level.FINEST);
+    LogMgr.getInstance().setLevel(LogMgr.Kind.Sub, LogMgr.Level.Finest);
 
     try {
       TestSubProcessApp app = new TestSubProcessApp();
@@ -42,24 +41,22 @@ class TestSubProcessApp
   public void 
   run() 
   { 
-    File cwd = new File(System.getProperty("user.dir"));
+    File outdir = new File(System.getProperty("user.dir"), "data");
 
     /* fast commands */ 
     try {
       int wk;
-      for(wk=0; wk<1000; wk++) {
+      for(wk=0; wk<100; wk++) {
 	File file = File.createTempFile("quicky", "test", new File("/usr/tmp"));
 
 	System.out.print("-----------------------------------\n");
 	  
-	Logs.sub.setLevel(Level.FINEST);
-	
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("755");
 	args.add(file.toString());
 	
-	File stdout = new File(cwd, "QuickyStdOut");
-	File stderr = new File(cwd, "QuickyStdErr");
+	File stdout = new File(outdir, "QuickyStdOut");
+	File stderr = new File(outdir, "QuickyStdErr");
 
 	SubProcessHeavy proc = 
 	  new SubProcessHeavy("Quicky", new File("/bin/chmod"), args, stdout, stderr);
@@ -70,8 +67,8 @@ class TestSubProcessApp
 	}
 	catch(InterruptedException ex) {
 	    LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	      (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	       ex.getMessage());
 	}
 
 	printAllStats(proc);
@@ -79,22 +76,20 @@ ex.getMessage());
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
 
     /* check resource usage statistics  */ 
     {
       System.out.print("-----------------------------------\n");
 
-      Logs.sub.setLevel(Level.FINEST);
-
       ArrayList<String> args = new ArrayList<String>();
       args.add("--verbose");
       args.add(TestInfo.sSrcDir + "/scripts/factors");
 
-      File stdout = new File(cwd, "RUsageStdOut");
-      File stderr = new File(cwd, "RUsageStdErr");
+      File stdout = new File(outdir, "RUsageStdOut");
+      File stderr = new File(outdir, "RUsageStdErr");
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy("RUsage", new File("/usr/bin/time"), args, stdout, stderr); 
@@ -105,8 +100,8 @@ ex.getMessage());
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -115,16 +110,14 @@ ex.getMessage());
     {
       System.out.print("-----------------------------------\n");
 
-      Logs.sub.setLevel(Level.FINEST);
-
       ArrayList<String> args = new ArrayList<String>();
       args.add("5");
 
       HashMap<String,String> env = new HashMap<String,String>();
       env.put("PATH", "/bin:" + TestInfo.sSrcDir + "/scripts");
 
-      File stdout = new File(cwd, "KillChildrenStdOut");
-      File stderr = new File(cwd, "KillChildrenStdErr");
+      File stdout = new File(outdir, "KillChildrenStdOut");
+      File stderr = new File(outdir, "KillChildrenStdErr");
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy("KillChildren", "child-procs", args, env, new File("/tmp"), 
@@ -138,8 +131,8 @@ ex.getMessage());
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -148,13 +141,11 @@ ex.getMessage());
     {
       System.out.print("-----------------------------------\n");
 
-      Logs.sub.setLevel(Level.FINEST);
-
       ArrayList<String> args = new ArrayList<String>();
       args.add("localhost");
 
-      File stdout = new File(cwd, "KillStdOut");
-      File stderr = new File(cwd, "KillStdErr");
+      File stdout = new File(outdir, "KillStdOut");
+      File stderr = new File(outdir, "KillStdErr");
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy("Kill", new File("/bin/ping"), args, stdout, stderr); 
@@ -167,8 +158,8 @@ ex.getMessage());
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -177,8 +168,6 @@ ex.getMessage());
     {
       System.out.print("-----------------------------------\n");
 
-      Logs.sub.setLevel(Level.FINEST);
-
       ArrayList<String> args = new ArrayList<String>();
       args.add("-h");
 
@@ -186,8 +175,8 @@ ex.getMessage());
       env.put("PATH", "/bin:/usr/bin");
       env.put("TESTING", "123");
 
-      File stdout = new File(cwd, "WithEnvStdOut");
-      File stderr = new File(cwd, "WithEnvStdErr");
+      File stdout = new File(outdir, "WithEnvStdOut");
+      File stderr = new File(outdir, "WithEnvStdErr");
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy("WithEnv", "df", args, env, new File("/tmp"), stdout, stderr); 
@@ -198,8 +187,8 @@ ex.getMessage());
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -208,13 +197,11 @@ ex.getMessage());
     {
       System.out.print("-----------------------------------\n");
 
-      Logs.sub.setLevel(Level.FINEST);
-
       ArrayList<String> args = new ArrayList<String>();
       args.add("-xyz");
 
-      File stdout = new File(cwd, "BadArgsStdOut");
-      File stderr = new File(cwd, "BadArgsStdErr");
+      File stdout = new File(outdir, "BadArgsStdOut");
+      File stderr = new File(outdir, "BadArgsStdErr");
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy("BadArgs", new File("/bin/ping"), args, stdout, stderr); 
@@ -225,8 +212,8 @@ ex.getMessage());
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -235,15 +222,13 @@ ex.getMessage());
     {
       System.out.print("-----------------------------------\n");
 
-      Logs.sub.setLevel(Level.FINEST);
-
       ArrayList<String> args = new ArrayList<String>();
       args.add("-c");
       args.add("10");
       args.add("localhost");
 
-      File stdout = new File(cwd, "SimpleStdOut");
-      File stderr = new File(cwd, "SimpleStdErr");
+      File stdout = new File(outdir, "SimpleStdOut");
+      File stderr = new File(outdir, "SimpleStdErr");
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy("Simple", new File("/bin/ping"), args, stdout, stderr); 
@@ -254,8 +239,8 @@ ex.getMessage());
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       printAllStats(proc);
     }

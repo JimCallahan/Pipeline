@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.36 2006/02/24 14:04:42 jim Exp $
+// $Id: UIMaster.java,v 1.37 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,7 +46,8 @@ class UIMaster
    * Construct the sole instance.
    * 
    * @param layout
-   *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
+   *   The abstract pathname of the override panel layout or 
+   *   <CODE>null</CODE> to use the default layout.
    * 
    * @param restoreLayout
    *   Whether to restore the panel layout.
@@ -63,7 +64,7 @@ class UIMaster
   private 
   UIMaster
   (
-   String layout, 
+   Path layout, 
    boolean restoreLayout,
    boolean restoreSelections, 
    boolean debugGL, 
@@ -75,11 +76,16 @@ class UIMaster
 
     pOpsLock = new ReentrantLock();
 
-    pEditorPlugins     = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
-    pComparatorPlugins = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
-    pActionPlugins     = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();  
-    pToolPlugins       = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
-    pArchiverPlugins   = new TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>();
+    pEditorPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pComparatorPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pActionPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();  
+    pToolPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pArchiverPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     
     pEditorLayouts     = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts = new TreeMap<String,PluginMenuLayout>();                  
@@ -98,7 +104,7 @@ class UIMaster
     pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
     pQueueJobDetailsPanels = new PanelGroup<JQueueJobDetailsPanel>();
 
-    pOverrideLayoutName = layout;
+    pOverrideLayoutPath = layout;
     pRestoreLayout      = restoreLayout;
     pRestoreSelections  = restoreSelections; 
     pIsRestoring        = new AtomicBoolean();
@@ -122,7 +128,8 @@ class UIMaster
    * Initialize the user interface and connection to <B>plmaster<B>(1).
    * 
    * @param layout
-   *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
+   *   The abstract pathname of the override panel layout 
+   *   or <CODE>null</CODE> to use the default layout.
    * 
    * @param restoreLayout
    *   Whether to restore the panel layout.
@@ -139,7 +146,7 @@ class UIMaster
   public static void 
   init
   (
-   String layout,
+   Path layout,
    boolean restoreLayout,
    boolean restoreSelections,
    boolean debugGL, 
@@ -240,53 +247,53 @@ class UIMaster
   }
 
   /**
-   * Get the name of the current panel layout.
+   * Get the abstract pathname of the current panel layout.
    * 
    * @return 
-   *   The name or <CODE>null</CODE> if unset.
+   *   The path or <CODE>null</CODE> if unset.
    */ 
-  public String 
-  getLayoutName() 
+  public Path
+  getLayoutPath() 
   {
-    return pLayoutName;
+    return pLayoutPath;
   }
 
   /**
-   * Set the name of the current panel layout.
+   * Set the abstract pathname of the current panel layout.
    */ 
   public void 
-  setLayoutName
+  setLayoutPath
   (
-   String name
+   Path path
   ) 
   {
-    pLayoutName = name;
+    pLayoutPath = path;
     updateFrameHeaders();
   }
 
 
   /**
-   * Get the name of the default panel layout.
+   * Get the abstract pathname of the default panel layout.
    * 
    * @return 
-   *   The name or <CODE>null</CODE> if unset.
+   *   The path or <CODE>null</CODE> if unset.
    */ 
-  public String 
-  getDefaultLayoutName() 
+  public Path
+  getDefaultLayoutPath() 
   {
-    return pDefaultLayoutName;
+    return pDefaultLayoutPath;
   }
   
   /**
-   * Set the name of the default panel layout.
+   * Set the abstract pathname of the default panel layout.
    */ 
   public void 
-  setDefaultLayoutName
+  setDefaultLayoutPath
   (
-   String name
+   Path path
   ) 
   {
-    pDefaultLayoutName = name;
+    pDefaultLayoutPath = path; 
     updateFrameHeaders();
   }
 
@@ -297,12 +304,11 @@ class UIMaster
   updateFrameHeaders()
   {
     String title = "plui";
-    if(pLayoutName != null) {
-      File path = new File(pLayoutName);
+    if(pLayoutPath != null) {
       String def = "";
-      if((pDefaultLayoutName != null) && pDefaultLayoutName.equals(pLayoutName))
+      if((pDefaultLayoutPath != null) && pDefaultLayoutPath.equals(pLayoutPath))
 	def = " (default)";
-      title = ("plui - Main | " + path.getName() + def);
+      title = ("plui - Main | " + pLayoutPath.getName() + def);
     }
 
     pFrame.setTitle(title);    
@@ -387,12 +393,26 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetEditorPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetEditorPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getEditors();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.get(vendor).keySet()) {
+	      for(VersionID vid : index.get(vendor).get(name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pEditorPlugins.put(tname, plugins);
 	}
       }
@@ -400,7 +420,7 @@ class UIMaster
       synchronized(pEditorLayouts) {
 	layout = pEditorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getEditorMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getEditorMenuLayout(tname);
 	  pEditorLayouts.put(tname, layout);
 	}
       }
@@ -443,12 +463,26 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       synchronized(pComparatorPlugins) {
 	plugins = pComparatorPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetComparatorPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	     pMasterMgrClient.getToolsetComparatorPlugins(tname);
+	  
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getComparators();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.get(vendor).keySet()) {
+	      for(VersionID vid : index.get(vendor).get(name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pComparatorPlugins.put(tname, plugins);
 	}
       }
@@ -456,7 +490,7 @@ class UIMaster
       synchronized(pComparatorLayouts) {
 	layout = pComparatorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getComparatorMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getComparatorMenuLayout(tname);
 	  pComparatorLayouts.put(tname, layout);
 	}
       }
@@ -498,12 +532,26 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetToolPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetToolPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getTools();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.get(vendor).keySet()) {
+	      for(VersionID vid : index.get(vendor).get(name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pToolPlugins.put(tname, plugins);
 	}
       }
@@ -511,7 +559,7 @@ class UIMaster
       synchronized(pToolLayouts) {
 	layout = pToolLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getToolMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getToolMenuLayout(tname);
 	  pToolLayouts.put(tname, layout);
 	}
       }
@@ -549,14 +597,28 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       String tname = pMasterMgrClient.getDefaultToolsetName();
 
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetToolPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetToolPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getTools();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.get(vendor).keySet()) {
+	      for(VersionID vid : index.get(vendor).get(name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+	  
 	  pToolPlugins.put(tname, plugins);
 	}
       }
@@ -564,7 +626,7 @@ class UIMaster
       synchronized(pToolLayouts) {
 	layout = pToolLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getToolMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getToolMenuLayout(tname);
 	  pToolLayouts.put(tname, layout);
 	}
       }
@@ -605,7 +667,7 @@ class UIMaster
   (
    PluginMenuLayout layout, 
    String prefix, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins, 
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins, 
    ActionListener listener
   ) 
   {
@@ -616,8 +678,14 @@ class UIMaster
 			    layout.getVersionID() + ":" + layout.getVendor());
       item.addActionListener(listener);
    
-      TreeSet<VersionID> vids = plugins.get(layout.getVendor(), layout.getName());
-      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
+      boolean enabled = false;
+      Set<VersionID> vids = plugins.keySet(layout.getVendor(), layout.getName());
+      if((vids != null) && vids.contains(layout.getVersionID())) {
+	TreeSet<OsType> supported = 
+	  plugins.get(layout.getVendor(), layout.getName(), layout.getVersionID());
+	enabled = ((supported != null) && supported.contains(PackageInfo.sOsType));
+      }
+      item.setEnabled(enabled); 
     }
     else {
       JMenu sub = new JMenu(layout.getTitle()); 
@@ -645,14 +713,28 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       String tname = pMasterMgrClient.getDefaultToolsetName();
 
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetEditorPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetEditorPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getEditors();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pEditorPlugins.put(tname, plugins);
 	}
       }
@@ -660,7 +742,7 @@ class UIMaster
       synchronized(pEditorLayouts) {
 	layout = pEditorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getEditorMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getEditorMenuLayout(tname);
 	  pEditorLayouts.put(tname, layout);
 	}
       }
@@ -669,7 +751,7 @@ class UIMaster
       showErrorDialog(ex);
 
       layout = new PluginMenuLayout();
-      plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
@@ -689,12 +771,26 @@ class UIMaster
       return;
 
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetEditorPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetEditorPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getEditors();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pEditorPlugins.put(tname, plugins);
 	}
       }
@@ -702,7 +798,7 @@ class UIMaster
       synchronized(pEditorLayouts) {
 	layout = pEditorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getEditorMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getEditorMenuLayout(tname);
 	  pEditorLayouts.put(tname, layout);
 	}
       }
@@ -717,7 +813,7 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Create a new action plugin selection field based on the default toolset.
    * 
@@ -731,14 +827,28 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       String tname = pMasterMgrClient.getDefaultToolsetName();
 
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetActionPlugins(tname, OsType.Unix);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetActionPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getActions();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pActionPlugins.put(tname, plugins);
 	}
       }
@@ -746,7 +856,7 @@ class UIMaster
       synchronized(pActionLayouts) {
 	layout = pActionLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
+	  layout = pMasterMgrClient.getActionMenuLayout(tname);
 	  pActionLayouts.put(tname, layout);
 	}
       }
@@ -755,7 +865,7 @@ class UIMaster
       showErrorDialog(ex);
 
       layout = new PluginMenuLayout();
-      plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
@@ -775,12 +885,26 @@ class UIMaster
       return;
 
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetActionPlugins(tname, OsType.Unix);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetActionPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getActions();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pActionPlugins.put(tname, plugins);
 	}
       }
@@ -788,7 +912,7 @@ class UIMaster
       synchronized(pActionLayouts) {
 	layout = pActionLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getActionMenuLayout(tname, OsType.Unix);
+	  layout = pMasterMgrClient.getActionMenuLayout(tname);
 	  pActionLayouts.put(tname, layout);
 	}
       }
@@ -817,14 +941,28 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       String tname = pMasterMgrClient.getDefaultToolsetName();
 
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetArchiverPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetArchiverPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getArchivers();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pArchiverPlugins.put(tname, plugins);
 	}
       }
@@ -832,7 +970,7 @@ class UIMaster
       synchronized(pArchiverLayouts) {
 	layout = pArchiverLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getArchiverMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getArchiverMenuLayout(tname);
 	  pArchiverLayouts.put(tname, layout);
 	}
       }
@@ -841,7 +979,7 @@ class UIMaster
       showErrorDialog(ex);
 
       layout = new PluginMenuLayout();
-      plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
@@ -861,12 +999,26 @@ class UIMaster
       return;
 
     PluginMenuLayout layout = null;
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
 	if(plugins == null) {
-	  plugins = pMasterMgrClient.getToolsetArchiverPlugins(tname, PackageInfo.sOsType);
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetArchiverPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getArchivers();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
 	  pArchiverPlugins.put(tname, plugins);
 	}
       }
@@ -874,7 +1026,7 @@ class UIMaster
       synchronized(pArchiverLayouts) {
 	layout = pArchiverLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getArchiverMenuLayout(tname, PackageInfo.sOsType);
+	  layout = pMasterMgrClient.getArchiverMenuLayout(tname);
 	  pArchiverLayouts.put(tname, layout);
 	}
       }
@@ -1506,7 +1658,7 @@ class UIMaster
   public void 
   doSaveLayout()
   {
-    if(pLayoutName != null) 
+    if(pLayoutPath != null) 
       saveLayoutHelper();
     else 
       showSaveLayoutDialog();
@@ -1519,10 +1671,11 @@ class UIMaster
   saveLayoutHelper() 
   {
     try {
-      File file = new File(PackageInfo.sHomeDir, 
-			   PackageInfo.sUser + "/.pipeline/layouts/" + pLayoutName);
+      Path lpath = new Path(PackageInfo.sHomePath, 
+			   PackageInfo.sUser + "/.pipeline/layouts");
+      Path path = new Path(lpath, pLayoutPath);
       
-      File dir = file.getParentFile();
+      File dir = path.getParentPath().toFile();
       if(!dir.isDirectory()) 
 	dir.mkdirs();
       
@@ -1540,7 +1693,7 @@ class UIMaster
 	layouts.add(layout);
       }
       
-      LockedGlueFile.save(file, "PanelLayout", layouts);
+      LockedGlueFile.save(path.toFile(), "PanelLayout", layouts);
     }
     catch(Exception ex) {
       showErrorDialog(ex);
@@ -1553,12 +1706,12 @@ class UIMaster
   public void 
   doRestoreSavedLayout
   (
-   String name, 
+   Path path, 
    boolean restoreSelections
   ) 
   {
     pRestoreSelections = restoreSelections;
-    SwingUtilities.invokeLater(new RestoreSavedLayoutTask(name));
+    SwingUtilities.invokeLater(new RestoreSavedLayoutTask(path));
   }
 
   /**
@@ -1567,7 +1720,7 @@ class UIMaster
   public void 
   doDefaultLayout() 
   {
-    doDefaultLayout(pLayoutName);
+    doDefaultLayout(pLayoutPath);
   }
 
   /**
@@ -1576,22 +1729,22 @@ class UIMaster
   public void 
   doDefaultLayout
   (
-   String layoutName
+   Path layoutPath
   )
   {
-    if((layoutName != null) && (layoutName.equals(pLayoutName)))
+    if((layoutPath != null) && (layoutPath.equals(pLayoutPath)))
       saveLayoutHelper();
 
     try {
-      File file = new File(PackageInfo.sHomeDir, 
+      Path path = new Path(PackageInfo.sHomePath, 
 			   PackageInfo.sUser + "/.pipeline/default-layout");
-
-      if(layoutName != null) 
-	LockedGlueFile.save(file, "DefaultLayout", layoutName);
+      File file = path.toFile();
+      if(layoutPath != null) 
+	LockedGlueFile.save(file, "DefaultLayout", layoutPath.toString());
       else 
 	file.delete();
 
-      setDefaultLayoutName(layoutName);
+      setDefaultLayoutPath(layoutPath);
     }
     catch(Exception ex) {
       showErrorDialog(ex);
@@ -1610,15 +1763,15 @@ class UIMaster
       String choice = prefs.getAutoSaveLayout();
       if(choice.equals("Save Only") || choice.equals("Save & Make Default")) {
 	try {
-	  if(pLayoutName != null) 
+	  if(pLayoutPath != null) 
 	    saveLayoutHelper();
 	  else {
-	    pSaveLayoutDialog.updateLayouts(pLayoutName);
+	    pSaveLayoutDialog.updateLayouts(pLayoutPath);
 	    pSaveLayoutDialog.setVisible(true);
 	    if(pSaveLayoutDialog.wasConfirmed()) {
-	      String name = pSaveLayoutDialog.getSelectedName();
-	      if((name != null) && (name.length() > 0)) {
-		setLayoutName(name);	    
+	      Path path = pSaveLayoutDialog.getSelectedPath();
+	      if(path != null) {
+		setLayoutPath(path);	    
 		saveLayoutHelper();
 	      }
 	    }
@@ -1633,8 +1786,9 @@ class UIMaster
 
     /* save the collapsed node paths */ 
     synchronized(pCollapsedNodePaths) {
-      File file = new File(PackageInfo.sHomeDir, 
+      Path path = new Path(PackageInfo.sHomePath, 
 			   PackageInfo.sUser + "/.pipeline/collapsed-nodes");
+      File file = path.toFile();
       if(pCollapsedNodePaths.isEmpty()) {
 	file.delete();
       }
@@ -1706,11 +1860,12 @@ class UIMaster
     {  
       /* make sure user preference exist */ 
       try {
-	File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline");
+	Path base = new Path(PackageInfo.sHomePath, PackageInfo.sUser + "/.pipeline");
 	String subdirs[] = { "layouts" };
 	int wk;
 	for(wk=0; wk<subdirs.length; wk++) {
-	  File dir = new File(base, subdirs[wk]);
+	  Path path = new Path(base, subdirs[wk]);
+	  File dir = path.toFile(); 
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) {
 	      LogMgr.getInstance().log
@@ -1724,14 +1879,15 @@ class UIMaster
 	}
 
 	{
-	  File file = new File(base, "preferences");
-	  if(file.isFile()) 	  
+	  Path path = new Path(base, "preferences");
+	  if(path.toFile().isFile()) 	  
 	    UserPrefs.load();
 	}
 
 	/* read the collapsed node paths */ 
 	synchronized(pCollapsedNodePaths) {
-	  File file = new File(base, "collapsed-nodes");
+	  Path path = new Path(base, "collapsed-nodes");
+	  File file = path.toFile();
 	  if(file.isFile()) {
 	    try {      
 	      HashSet<String> collapsed = (HashSet<String>) LockedGlueFile.load(file);
@@ -1913,6 +2069,7 @@ class UIMaster
 
 	{
 	  JPanel root = new JPanel();
+	  root.setName("GreyPanel"); 
 	  
 	  root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));   
 	  
@@ -1935,6 +2092,7 @@ class UIMaster
 	  
 	  {
 	    JPanel panel = new JPanel(); 
+	    panel.setName("GreyPanel"); 
 	    panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
 
 	    panel.add(Box.createRigidArea(new Dimension(2, 0)));
@@ -2018,7 +2176,7 @@ class UIMaster
 	pBackupDialog = 
 	  new JFileSelectDialog("Backup Database", "Backup Database File:",
 				"Backup As:", 64, "Backup"); 
-	pBackupDialog.updateTargetFile(PackageInfo.sTempDir);
+	pBackupDialog.updateTargetFile(PackageInfo.sTempPath.toFile());
 
 	pArchiveDialog        = new JArchiveDialog();
 	pOfflineDialog        = new JOfflineDialog();
@@ -2031,15 +2189,19 @@ class UIMaster
       pSplashFrame.setVisible(false);
 
       {
-	String layoutName = null;
+	Path layoutPath = null;
 	if(pRestoreLayout) {
-	  layoutName = pOverrideLayoutName;
-	  if(layoutName == null) {
+	  layoutPath = pOverrideLayoutPath;
+	  if(layoutPath == null) {
 	    try {
-	      File file = new File(PackageInfo.sHomeDir, 
+	      Path path = new Path(PackageInfo.sHomePath, 
 				   PackageInfo.sUser + "/.pipeline/default-layout"); 
-	      if(file.isFile()) 
-		layoutName = (String) LockedGlueFile.load(file);
+	      File file = path.toFile();
+	      if(file.isFile()) {
+		String lname = (String) LockedGlueFile.load(file);
+		if(lname != null) 
+		  layoutPath = new Path(lname);
+	      }
 	    }
 	    catch(Exception ex) {
 	      showErrorDialog(ex);
@@ -2047,9 +2209,9 @@ class UIMaster
 	  }
 	}
 	  
-	if(layoutName != null) {
-	  setDefaultLayoutName(layoutName);
-	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutName));
+	if(layoutPath != null) {
+	  setDefaultLayoutPath(layoutPath);
+	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutPath));
 	}
 	else {
 	  pFrame.setVisible(true);
@@ -2160,12 +2322,12 @@ class UIMaster
     run() 
     {
       try {
-	pSaveLayoutDialog.updateLayouts(pLayoutName);
+	pSaveLayoutDialog.updateLayouts(pLayoutPath);
 	pSaveLayoutDialog.setVisible(true);
 	if(pSaveLayoutDialog.wasConfirmed()) {
-	  String name = pSaveLayoutDialog.getSelectedName();
-	  if((name != null) && (name.length() > 0)) {
-	    setLayoutName(name);	    
+	  Path path = pSaveLayoutDialog.getSelectedPath();
+	  if(path != null) {
+	    setLayoutPath(path);	    
 	    saveLayoutHelper();
 	  }
 	}
@@ -2193,10 +2355,10 @@ class UIMaster
     run() 
     {
       try {
-	File file = new File(PackageInfo.sHomeDir, 
-			     PackageInfo.sUser + "/.pipeline/layouts/" + pLayoutName);
-
-	File dir = file.getParentFile();
+	Path lpath = new Path(PackageInfo.sHomePath, 
+			      PackageInfo.sUser + "/.pipeline/layouts");
+	Path path = new Path(lpath, pLayoutPath);
+	File dir = path.getParentPath().toFile();
 	if(!dir.isDirectory()) 
 	  dir.mkdirs();
 
@@ -2214,7 +2376,7 @@ class UIMaster
 	  layouts.add(layout);
 	}
 
-	LockedGlueFile.save(file, "PanelLayout", layouts);
+	LockedGlueFile.save(path.toFile(), "PanelLayout", layouts);
       }
       catch(Exception ex) {
 	showErrorDialog(ex);
@@ -2232,12 +2394,12 @@ class UIMaster
     public 
     RestoreSavedLayoutTask
     (
-     String name
+     Path path
     ) 
     {
       super("UIMaster:RestoreSavedLayoutTask");
 
-      pName = name;
+      pPath = path;
     }
 
     public void 
@@ -2276,11 +2438,11 @@ class UIMaster
       /* show the splash screen */ 
       pRestoreSplashFrame.setVisible(true);
       
-      RestoreSavedLayoutRefreshTask task = new RestoreSavedLayoutRefreshTask(pName);
+      RestoreSavedLayoutRefreshTask task = new RestoreSavedLayoutRefreshTask(pPath);
       task.start();      
     }
 
-    private String  pName;
+    private Path pPath; 
   }
 
   private 
@@ -2290,12 +2452,12 @@ class UIMaster
     public 
     RestoreSavedLayoutRefreshTask
     (
-     String name
+     Path path 
     ) 
     {
       super("UIMaster:RestoreSavedLayoutRefreshTask");
       
-      pName = name;
+      pPath = path; 
     }
 
     public void 
@@ -2307,10 +2469,10 @@ class UIMaster
       catch(InterruptedException ex) {
       }
 
-      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pName));
+      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pPath));
     }
 
-    private String  pName;
+    private Path    pPath;
     private JFrame  pSplash;
   }
 
@@ -2321,12 +2483,12 @@ class UIMaster
     public 
     RestoreSavedLayoutLoaderTask
     (
-     String name
+     Path path 
     ) 
     {
       super("UIMaster:RestoreSavedLayoutLoaderTask");
       
-      pName = name;
+      pPath = path;
     }
 
     public void 
@@ -2337,8 +2499,10 @@ class UIMaster
       {
 	pIsRestoring.set(true);
 	
-	File file = new File(PackageInfo.sHomeDir, 
-			     PackageInfo.sUser + "/.pipeline/layouts" + pName);
+	Path lpath = new Path(PackageInfo.sHomePath, 
+			      PackageInfo.sUser + "/.pipeline/layouts");
+	Path path = new Path(lpath, pPath);
+	File file = path.toFile();
 	try {      
 	  if(!file.isFile()) 
 	    throw new GlueException();
@@ -2395,7 +2559,7 @@ class UIMaster
 	  }
 	}
 	
-	setLayoutName(pName);
+	setLayoutPath(pPath); 
       }
       else {
 	JManagerPanel mpanel = new JManagerPanel();
@@ -2416,7 +2580,7 @@ class UIMaster
 	frame.setVisible(true);
     }
 
-    private String  pName;
+    private Path pPath;
   }
 
   /**
@@ -2436,7 +2600,7 @@ class UIMaster
     run() 
     {
       try {
-	pManageLayoutsDialog.updateLayouts(pLayoutName);
+	pManageLayoutsDialog.updateLayouts(pLayoutPath);
 	pManageLayoutsDialog.setVisible(true);
       }
       catch(Exception ex) {
@@ -2678,37 +2842,32 @@ class UIMaster
 	      if(mod != null)
 		view = pViewName; 
 
-	      /* passes pAuthorName so that WORKING will correspond to the current view */ 
+	      /* passes author so that WORKING will correspond to the current view */ 
 	      env = client.getToolsetEnvironment
-		(pAuthorName, view, tname, PackageInfo.sOsType);
-
-	      /* override these since the editor will be run as the current user */ 
-	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
-	      env.put("USER", PackageInfo.sUser);
-	      env.put("WORKING", PackageInfo.sWorkDir + "/" + pAuthorName + "/" + view);
+		      (pAuthorName, view, tname, PackageInfo.sOsType);
 	    }
 	    
 	    /* get the primary file sequence */ 
 	    FileSeq fseq = null;
 	    File dir = null; 
 	    {
-	      String path = null;
+	      Path path = null;
 	      if(mod != null) {
-		File wpath = 
-		  new File(PackageInfo.sWorkDir, 
+		Path wpath = 
+		  new Path(PackageInfo.sWorkPath, 
 			   pAuthorName + "/" + pViewName + "/" + pNodeCommon.getName());
-		path = wpath.getParent();
+		path = wpath.getParentPath();
 	      }
 	      else if(vsn != null) {
-		path = (PackageInfo.sRepoDir + "/" + 
-			vsn.getName() + "/" + vsn.getVersionID());
+		path = new Path(PackageInfo.sRepoPath, 
+				vsn.getName() + "/" + vsn.getVersionID());
 	      }
 	      else {
 		assert(false);
 	      }
 	  
-	      fseq = new FileSeq(path, pNodeCommon.getPrimarySequence());
-	      dir = new File(path);
+	      fseq = new FileSeq(path.toString(), pNodeCommon.getPrimarySequence());
+	      dir = path.toFile();
 	    }
 	    
 	    /* start the editor */ 
@@ -3239,19 +3398,19 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the last saved/loaded layout.
+   * The abstract pathname of the last saved/loaded layout.
    */ 
-  private String  pLayoutName;
+  private Path  pLayoutPath;
  
   /**
-   * The name of the default layout.
+   * The abstract pathname of the default layout.
    */ 
-  private String  pDefaultLayoutName;
+  private Path  pDefaultLayoutPath;
  
   /**
-   * The name of the override default layout.
+   * The abstract pathname of the override default layout.
    */ 
-  private String  pOverrideLayoutName;
+  private Path  pOverrideLayoutPath;
  
   /** 
    * Whether to restore the initial panel layout.
@@ -3277,13 +3436,19 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Caches of plugin names and revision numbers indexed by toolset name.
+   * Caches of plugin vendor, names, revision number and supported operating systems
+   * indexed by toolset name.
    */ 
-  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pEditorPlugins;
-  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pComparatorPlugins;
-  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pActionPlugins;
-  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pToolPlugins;
-  private TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>  pArchiverPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pEditorPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pComparatorPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pActionPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pToolPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pArchiverPlugins;
 
   /** 
    * Caches of plugin menu layouts indexed by toolset name.

@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.8 2005/09/07 21:11:16 jim Exp $
+// $Id: PluginApp.java,v 1.9 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,7 +33,15 @@ class PluginApp
   {
     super("plplugin");
 
-    NativeFileSys.umask(022);
+    try {
+      NativeFileSys.umask(022);
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(ex));
+      System.exit(1);
+    }
   }
 
   
@@ -103,7 +111,7 @@ class PluginApp
     throws PipelineException 
   {
     {
-      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getEditors();
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getEditors();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -112,7 +120,7 @@ class PluginApp
 	
 	for(String vendor : versions.keySet()) {
 	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name)) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	      BaseEditor plg = client.newEditor(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -124,7 +132,7 @@ class PluginApp
     }
     
     {
-      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getActions();
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getActions();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -133,7 +141,7 @@ class PluginApp
 	
 	for(String vendor : versions.keySet()) {
 	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name)) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	      BaseAction plg = client.newAction(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -145,7 +153,7 @@ class PluginApp
     }
     
     {
-      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getComparators();
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getComparators();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -154,7 +162,7 @@ class PluginApp
 	
 	for(String vendor : versions.keySet()) {
 	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name)) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	      BaseComparator plg = client.newComparator(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -166,7 +174,7 @@ class PluginApp
     }
     
     {
-      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getTools();
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getTools();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -175,7 +183,7 @@ class PluginApp
 	
 	for(String vendor : versions.keySet()) {
 	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name)) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	      BaseTool plg = client.newTool(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -187,7 +195,7 @@ class PluginApp
     }
     
     {
-      DoubleMap<String,String,TreeSet<VersionID>> versions = client.getArchivers();
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getArchivers();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -196,7 +204,7 @@ class PluginApp
 	
 	for(String vendor : versions.keySet()) {
 	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name)) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	      BaseArchiver plg = client.newArchiver(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,

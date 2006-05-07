@@ -1,8 +1,10 @@
-// $Id: PluginTreeData.java,v 1.2 2005/09/07 21:11:17 jim Exp $
+// $Id: PluginTreeData.java,v 1.3 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   T R E E   D A T A                                                        */
@@ -37,7 +39,7 @@ class PluginTreeData
    String name
   )
   {
-    pName = name; 
+    this(name, null, null, null); 
   }
 
   /**
@@ -60,9 +62,39 @@ class PluginTreeData
    String vendor
   )
   {
+    this(name, vid, vendor, null); 
+  }
+
+  /**
+   * Construct the plugin version node.
+   * 
+   * @param name
+   *   The plugin name.
+   * 
+   * @param vid
+   *   The revision number.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor.
+   * 
+   * @para supports
+   *   The operating systems supported by the plugin.
+   */ 
+  public 
+  PluginTreeData
+  ( 
+   String name, 
+   VersionID vid, 
+   String vendor, 
+   TreeSet<OsType> supports
+  )
+  {
     pName      = name;
     pVersionID = vid;
     pVendor    = vendor;
+
+    if(supports != null) 
+      pSupports = supports;
   }
 
 
@@ -99,6 +131,17 @@ class PluginTreeData
   getVendor()
   {
     return pVendor; 
+  }
+
+  /**
+   * Get the supported operating system types.
+   */ 
+  public SortedSet<OsType>
+  getSupports() 
+  {
+    if(pSupports != null) 
+      return Collections.unmodifiableSortedSet(pSupports); 
+    return null;
   }
 
 
@@ -166,5 +209,9 @@ class PluginTreeData
    */
   private String  pVendor; 
 
+  /**
+   * The set of operating system types supported by this plugin. 
+   */ 
+  private TreeSet<OsType>  pSupports;
 }
 

@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.2 2005/08/15 01:02:03 jim Exp $
+// $Id: LogMgr.java,v 1.3 2006/05/07 21:30:07 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -81,7 +81,7 @@ class LogMgr
    *   The kind of message being logged.
    */ 
   public synchronized Level
-  setLevel
+  getLevel
   (
    Kind kind
   ) 
@@ -280,7 +280,7 @@ class LogMgr
   public synchronized void 
   logToFile 
   (
-   String prefix,
+   Path prefix,
    int backups, 
    long size
   ) 
@@ -337,8 +337,11 @@ class LogMgr
     if(needsRotate) {
       int wk;
       for(wk=pBackups-2; wk>=0; wk--) {
-	File nfile = new File(pPrefix + "." + wk);
-	File ofile = new File(pPrefix + "." + (wk+1));
+	Path npath = new Path(pPrefix, "." + wk);
+	File nfile = npath.toFile();
+
+	Path opath = new Path(pPrefix, "." + (wk+1));
+	File ofile = opath.toFile();
 	if(ofile.exists()) {
 	  if(!ofile.delete()) 
 	    System.err.println
@@ -355,7 +358,8 @@ class LogMgr
 
     /* if nessary, create a new file writer */ 
     if(pWriter == null) {
-      File file = new File(pPrefix + ".0");
+      Path path = new Path(pPrefix, ".0");
+      File file = path.toFile();
       try {
 	pWriter = new FileWriter(file);
 	pBytesWritten = 0L;
@@ -528,9 +532,9 @@ class LogMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The rotating log file prefix.
+   * The abstract pathname prefix of the rotating log files.
    */
-  private String  pPrefix; 
+  private Path  pPrefix; 
 
   /**
    * The number of rotating log files to maintain.

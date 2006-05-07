@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.10 2005/10/06 17:06:06 jim Exp $
+// $Id: ExecPath.java,v 1.11 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -10,7 +10,12 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A list of directories used to resolve the absolute file system path to an executable. <P>
+ * A list of directories used to resolve the absolute file system path to an executable. <P> 
+ * 
+ * Because the paths are separated by an operating system dependent character, this class
+ * should only be instantiated with a path which is local to the current OS.  Typically, 
+ * the <CODE>path</CODE> originates from the environmental variable PATH in a Toolset and
+ * this class is used to find the location of a binary as part of launching a subprocess.
  */
 public
 class ExecPath
@@ -20,9 +25,8 @@ class ExecPath
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct from a <CODE>String</CODE> containing a colon seperated list of absolute 
-   * paths to file system directories. Typically, the <CODE>path</CODE> originates from
-   * the environmental variable PATH in a Toolset.
+   * Construct from a <CODE>String</CODE> containing a list of absolute paths to file 
+   * system directories. 
    * 
    * @param path  
    *   The execution search path.  
@@ -39,7 +43,7 @@ class ExecPath
     if(path.length() == 0) 
       throw new IllegalArgumentException("The path cannot be empty!");
 
-    String dirs[] = path.split(":");
+    String dirs[] = path.split(PackageInfo.getPathSep());
     pDirs = new ArrayList<File>(dirs.length);
     
     int wk;

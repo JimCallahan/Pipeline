@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.13 2005/09/20 04:14:43 jim Exp $
+// $Id: JRegisterDialog.java,v 1.14 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -193,7 +193,7 @@ class JRegisterDialog
 	    UIFactory.createTitledPluginSelectionField
 	    (tpanel, "Editor:", sTSize, 
 	     vpanel, new PluginMenuLayout(), 
-	     new DoubleMap<String,String,TreeSet<VersionID>>(), sVSize, 
+	     new TripleMap<String,String,VersionID,TreeSet<OsType>>(), sVSize, 
 	     "The Editor plugin used to edit/view the files associated with the node.");
 	  pEditorField = field;
 
@@ -316,7 +316,7 @@ class JRegisterDialog
     }
 
     pFileSeqDialog.updateHeader(author, view);
-    pRootDir = new File(PackageInfo.sWorkDir, author + "/" + view);
+    pRootPath = new Path(PackageInfo.sWorkPath, author + "/" + view);
 
     pack();
   }
@@ -501,11 +501,12 @@ class JRegisterDialog
   public void 
   doBrowse() 
   {
-    pFileSeqDialog.setRootDir(pRootDir);
+    pFileSeqDialog.setRootDir(pRootPath.toFile());
 
     String prefix = pPrefixField.getText();
     if(prefix != null) {
-      File dir = new File(pRootDir, prefix);
+      Path path = new Path(pRootPath, prefix);
+      File dir = path.toFile();
       if(!dir.isDirectory()) 
 	dir = dir.getParentFile();
 
@@ -514,21 +515,22 @@ class JRegisterDialog
 
     pFileSeqDialog.setVisible(true);
     if(pFileSeqDialog.wasConfirmed()) {
-      File dir = pFileSeqDialog.getDirectory();
-      if(dir != null) {
+      Path dpath = pFileSeqDialog.getDirectoryPath();
+      if(dpath != null) {
 	FileSeq fseq = pFileSeqDialog.getSelectedFileSeq();
 	if(fseq != null) {
-	  pPrefixField.setText(dir + "/" + fseq.getFilePattern().getPrefix());
-	  updateFileSeq(fseq);	    
+	  Path path = new Path(dpath, fseq.getFilePattern().getPrefix());
+	  pPrefixField.setText(path.toString());
+	  updateFileSeq(fseq);
 	}
 	else {
-	  pPrefixField.setText(dir.toString());
+	  pPrefixField.setText(dpath.toString());
 	  pFileModeField.setSelectedIndex(0);	  
 	  pFrameNumbersField.setValue(false);
 	  pFramePaddingField.setValue(null);
 	  pSuffixField.setText(null);
 	}
-
+      
 	doUpdateEditor();
       }
     }
@@ -675,7 +677,7 @@ class JRegisterDialog
 	  throw new PipelineException
 	    ("Unable to register node without a valid filename prefix!");
 	
-	File path = new File(name);
+	Path path = new Path(name);
 	prefix = path.getName();
       }
 
@@ -865,9 +867,9 @@ class JRegisterDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The root directory of the current working area.
+   * The abstract pathname of the root directory of the current working area.
    */ 
-  private File  pRootDir;
+  private Path pRootPath;
 
   /**
    * The working node version described by the current dialog configuration. 

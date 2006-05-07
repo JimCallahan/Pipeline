@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.150 2006/01/16 04:11:12 jim Exp $
+// $Id: MasterMgr.java,v 1.151 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -214,10 +214,13 @@ class MasterMgr
    long nodeCacheLimit
   )
     throws PipelineException 
-  {
+  { 
     pRebuildCache    = rebuildCache;
     pInternalFileMgr = internalFileMgr;
     pNodeCacheLimit  = nodeCacheLimit;
+
+    assert(PackageInfo.sOsType == OsType.Unix);
+    pNodeDir = PackageInfo.sNodePath.toFile();
 
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
@@ -269,9 +272,9 @@ class MasterMgr
       removeArchivesCache();
     }
     else {
-      File lock  = new File(PackageInfo.sNodeDir, "lock");
-      File dwns  = new File(PackageInfo.sNodeDir, "downstream");
-      File ntree = new File(PackageInfo.sNodeDir, "etc/node-tree");
+      File lock  = new File(pNodeDir, "lock");
+      File dwns  = new File(pNodeDir, "downstream");
+      File ntree = new File(pNodeDir, "etc/node-tree");
       if(lock.exists() || !dwns.exists() || !ntree.exists())
 	throw new PipelineException 
 	  ("Another plmaster(1) process may already running or was improperly shutdown!\n" + 
@@ -300,33 +303,26 @@ class MasterMgr
       pDefaultToolset     = null;
       pActiveToolsets     = new TreeSet<String>();
       pToolsets           = new TreeMap<String,TreeMap<OsType,Toolset>>();
-      pToolsetPackages    = new PackageMap<PackageVersion>();
+      pToolsetPackages    = new TripleMap<String,OsType,VersionID,PackageVersion>();
 
-      pEditorMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
-      pDefaultEditorMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
-
-      pComparatorMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
-      pDefaultComparatorMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
-
-      pActionMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
-      pDefaultActionMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
-
-      pToolMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
-      pDefaultToolMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
+      pEditorMenuLayouts     = new TreeMap<String,PluginMenuLayout>();
+      pComparatorMenuLayouts = new TreeMap<String,PluginMenuLayout>();
+      pActionMenuLayouts     = new TreeMap<String,PluginMenuLayout>();
+      pToolMenuLayouts       = new TreeMap<String,PluginMenuLayout>();
   
-      pArchiverMenuLayouts        = new DoubleMap<String,OsType,PluginMenuLayout>();
-      pDefaultArchiverMenuLayouts = new TreeMap<OsType,PluginMenuLayout>();
+      pArchiverMenuLayouts       = new TreeMap<String,PluginMenuLayout>();
+      pDefaultArchiverMenuLayout = new PluginMenuLayout();
 
       pPackageEditorPlugins = 
-	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
       pPackageComparatorPlugins = 
-	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
       pPackageActionPlugins = 
-	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
       pPackageToolPlugins = 
-	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
       pPackageArchiverPlugins = 
-	new PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>();
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
 
       pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
 
@@ -407,22 +403,22 @@ class MasterMgr
   makeRootDirs() 
     throws PipelineException
   {
-    if(!PackageInfo.sNodeDir.isDirectory()) 
+    if(!pNodeDir.isDirectory()) 
       throw new PipelineException
-	("The root node directory (" + PackageInfo.sNodeDir + ") does not exist!");
+	("The root node directory (" + pNodeDir + ") does not exist!");
     
     ArrayList<File> dirs = new ArrayList<File>();
-    dirs.add(new File(PackageInfo.sNodeDir, "repository"));
-    dirs.add(new File(PackageInfo.sNodeDir, "working"));
-    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/packages"));
-    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/toolsets"));
-    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/plugins/packages"));
-    dirs.add(new File(PackageInfo.sNodeDir, "toolsets/plugins/toolsets"));
-    dirs.add(new File(PackageInfo.sNodeDir, "etc"));
-    dirs.add(new File(PackageInfo.sNodeDir, "etc/suffix-editors"));
-    dirs.add(new File(PackageInfo.sNodeDir, "archives/manifests"));
-    dirs.add(new File(PackageInfo.sNodeDir, "archives/output/archive"));
-    dirs.add(new File(PackageInfo.sNodeDir, "archives/output/restore"));
+    dirs.add(new File(pNodeDir, "repository"));
+    dirs.add(new File(pNodeDir, "working"));
+    dirs.add(new File(pNodeDir, "toolsets/packages"));
+    dirs.add(new File(pNodeDir, "toolsets/toolsets"));
+    dirs.add(new File(pNodeDir, "toolsets/plugins/packages"));
+    dirs.add(new File(pNodeDir, "toolsets/plugins/toolsets"));
+    dirs.add(new File(pNodeDir, "etc"));
+    dirs.add(new File(pNodeDir, "etc/suffix-editors"));
+    dirs.add(new File(pNodeDir, "archives/manifests"));
+    dirs.add(new File(pNodeDir, "archives/output/archive"));
+    dirs.add(new File(pNodeDir, "archives/output/restore"));
 
     pMakeDirLock = new Object();
     synchronized(pMakeDirLock) {
@@ -444,19 +440,19 @@ class MasterMgr
   private void 
   removeArchivesCache()
   {
-    File archivedIn = new File(PackageInfo.sNodeDir, "archives/archived-in");
+    File archivedIn = new File(pNodeDir, "archives/archived-in");
     if(archivedIn.exists())
       archivedIn.delete();
 
-    File archivedOn = new File(PackageInfo.sNodeDir, "archives/archived-on");
+    File archivedOn = new File(pNodeDir, "archives/archived-on");
     if(archivedOn.exists())
       archivedOn.delete();
     
-    File restoredOn = new File(PackageInfo.sNodeDir, "archives/restored-on");
+    File restoredOn = new File(pNodeDir, "archives/restored-on");
     if(restoredOn.exists())
       restoredOn.delete();
     
-    File offlined = new File(PackageInfo.sNodeDir, "archives/offlined");
+    File offlined = new File(pNodeDir, "archives/offlined");
     if(offlined.exists())
       offlined.delete();
   }
@@ -475,7 +471,7 @@ class MasterMgr
 
       /* scan archive volume GLUE files */ 
       {
-	File dir = new File(PackageInfo.sNodeDir, "archives/manifests");
+	File dir = new File(pNodeDir, "archives/manifests");
 	File files[] = dir.listFiles(); 
 	int wk;
 	for(wk=0; wk<files.length; wk++) {
@@ -505,7 +501,7 @@ class MasterMgr
       
       /* scan restore output files */ 
       {
-	File dir = new File(PackageInfo.sNodeDir, "archives/output/restore");
+	File dir = new File(pNodeDir, "archives/output/restore");
 	File files[] = dir.listFiles(); 
 	int wk;
 	for(wk=0; wk<files.length; wk++) {
@@ -561,7 +557,7 @@ class MasterMgr
   createLockFile()
     throws PipelineException 
   {
-    File file = new File(PackageInfo.sNodeDir, "lock");
+    File file = new File(pNodeDir, "lock");
     try {
       FileWriter out = new FileWriter(file);
       out.close();
@@ -578,7 +574,7 @@ class MasterMgr
   private void 
   removeLockFile() 
   {
-    File file = new File(PackageInfo.sNodeDir, "lock");
+    File file = new File(pNodeDir, "lock");
     if(file.exists())
       file.delete();
   }
@@ -598,30 +594,31 @@ class MasterMgr
     readActiveToolsets();
 
     /* initialize default plugin menu layouts */ 
-    for(OsType os : OsType.all()) {
-      readPluginMenuLayout(null, os, "editors", 
-			   pEditorMenuLayouts, pDefaultEditorMenuLayouts);
-      readPluginMenuLayout(null, os, "comparators", 
-			   pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
-      readPluginMenuLayout(null, os, "actions", 
-			   pActionMenuLayouts, pDefaultActionMenuLayouts);
-      readPluginMenuLayout(null, os, "tools", 
-			   pToolMenuLayouts, pDefaultToolMenuLayouts);
-      readPluginMenuLayout(null, os, "archiver", 
-			   pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
-    }
+    pDefaultEditorMenuLayout = 
+      readPluginMenuLayout(null, "editors", pEditorMenuLayouts); 
+    pDefaultComparatorMenuLayout = 
+      readPluginMenuLayout(null, "comparators", pComparatorMenuLayouts); 
+    pDefaultActionMenuLayout = 
+      readPluginMenuLayout(null, "actions", pActionMenuLayouts); 
+    pDefaultToolMenuLayout = 
+      readPluginMenuLayout(null, "tools", pToolMenuLayouts); 
+    pDefaultArchiverMenuLayout = 
+      readPluginMenuLayout(null, "archivers", pArchiverMenuLayouts); 
 
     /* initialize toolsets */ 
     {
-      File dir = new File(PackageInfo.sNodeDir, "toolsets/toolsets");
+      File dir = new File(pNodeDir, "toolsets/toolsets");
       File tsets[] = dir.listFiles(); 
       int tk;
       for(tk=0; tk<tsets.length; tk++) {
 	if(tsets[tk].isDirectory()) {
 	  String tname = tsets[tk].getName();
+	  boolean hasToolset = false;
 	  for(OsType os : OsType.all()) {
 	    File file = new File(tsets[tk], os.toString());
 	    if(file.isFile()) {
+	      hasToolset = true;
+
 	      TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
 	      if(toolsets == null) {
 		toolsets = new TreeMap<OsType,Toolset>();
@@ -629,18 +626,15 @@ class MasterMgr
 	      }
 
 	      toolsets.put(os, null);
-
-	      readPluginMenuLayout(tname, os, "editors",     
-				   pEditorMenuLayouts, pDefaultEditorMenuLayouts);
-	      readPluginMenuLayout(tname, os, "comparators", 
-				   pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
-	      readPluginMenuLayout(tname, os, "actions",     
-				   pActionMenuLayouts, pDefaultActionMenuLayouts);
-	      readPluginMenuLayout(tname, os, "tools",       
-				   pToolMenuLayouts, pDefaultToolMenuLayouts);
-	      readPluginMenuLayout(tname, os, "archivers",     
-				   pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
 	    }
+	  }
+
+	  if(hasToolset) {
+	    readPluginMenuLayout(tname, "editors", pEditorMenuLayouts);
+	    readPluginMenuLayout(tname, "comparators", pComparatorMenuLayouts); 
+	    readPluginMenuLayout(tname, "actions", pActionMenuLayouts); 
+	    readPluginMenuLayout(tname, "tools", pToolMenuLayouts); 
+	    readPluginMenuLayout(tname, "archivers", pArchiverMenuLayouts); 
 	  }
 	}
       }
@@ -648,7 +642,7 @@ class MasterMgr
 
     /* initialize package keys and plugin tables */ 
     {
-      File dir = new File(PackageInfo.sNodeDir, "toolsets/packages");
+      File dir = new File(pNodeDir, "toolsets/packages");
       File pkgs[] = dir.listFiles(); 
       int pk;
       for(pk=0; pk<pkgs.length; pk++) {
@@ -665,16 +659,14 @@ class MasterMgr
 
 		  pToolsetPackages.put(pname, os, vid, null);
 
-		  readPackagePlugins(pname, os, vid, 
-				     "editors", pPackageEditorPlugins);
-		  readPackagePlugins(pname, os, vid, 
-				     "comparators", pPackageComparatorPlugins);
-		  readPackagePlugins(pname, os, vid, 
-				     "actions", pPackageActionPlugins);
-		  readPackagePlugins(pname, os, vid, 
-				     "tools", pPackageToolPlugins);
-		  readPackagePlugins(pname, os, vid, 
-				     "archivers", pPackageArchiverPlugins);
+		  switch(os) {
+		  case Unix:
+		    readPackagePlugins(pname, vid, "editors", pPackageEditorPlugins);
+		    readPackagePlugins(pname, vid, "comparators", pPackageComparatorPlugins);
+		    readPackagePlugins(pname, vid, "actions", pPackageActionPlugins);
+		    readPackagePlugins(pname, vid, "tools", pPackageToolPlugins);
+		    readPackagePlugins(pname, vid, "archivers", pPackageArchiverPlugins);
+		  }
 		}
 	      }
 	    }
@@ -693,7 +685,7 @@ class MasterMgr
   private void 
   initWorkingAreas() 
   {
-    File dir = new File(PackageInfo.sNodeDir, "working");
+    File dir = new File(pNodeDir, "working");
     File authors[] = dir.listFiles(); 
     int ak;
     for(ak=0; ak<authors.length; ak++) {
@@ -727,7 +719,7 @@ class MasterMgr
   private void 
   removeNodeTreeCache()
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/node-tree");
+    File file = new File(pNodeDir, "etc/node-tree");
     if(file.exists())
       file.delete();
   }
@@ -745,12 +737,12 @@ class MasterMgr
 	 "Rebuilding Node Tree Cache...");   
       
       {
-	File dir = new File(PackageInfo.sNodeDir, "repository");
+	File dir = new File(pNodeDir, "repository");
 	initCheckedInNodeTree(dir.getPath(), dir); 
       }
       
       {
-	File dir = new File(PackageInfo.sNodeDir, "working");
+	File dir = new File(pNodeDir, "working");
 	File authors[] = dir.listFiles(); 
 	int ak;
 	for(ak=0; ak<authors.length; ak++) {
@@ -884,7 +876,7 @@ class MasterMgr
   removeDownstreamLinksCache() 
     throws PipelineException 
   {
-    File dir = new File(PackageInfo.sNodeDir, "downstream");
+    File dir = new File(pNodeDir, "downstream");
     if(dir.exists()) {
       ArrayList<String> args = new ArrayList<String>();
       args.add("--recursive");
@@ -894,8 +886,7 @@ class MasterMgr
       Map<String,String> env = System.getenv();
       
       SubProcessLight proc = 
-	new SubProcessLight("RemoveDownstreamLinks", "rm", 
-			    args, env, PackageInfo.sNodeDir);
+	new SubProcessLight("RemoveDownstreamLinks", "rm", args, env, pNodeDir);
       try {
 	proc.start();
 	proc.join();
@@ -922,7 +913,7 @@ class MasterMgr
       return; 
 
     {
-      File dir = new File(PackageInfo.sNodeDir, "downstream");
+      File dir = new File(pNodeDir, "downstream");
       if(dir.isDirectory()) 
 	throw new PipelineException
 	  ("Somehow the downstream links directory (" + dir + ") already exitsts!");
@@ -938,13 +929,13 @@ class MasterMgr
 
     /* process checked-in versions */ 
     {
-      File dir = new File(PackageInfo.sNodeDir, "repository");
+      File dir = new File(pNodeDir, "repository");
       collectCheckedInDownstreamLinks(dir.getPath(), dir); 
     }
 
     /* process working versions */ 
     {
-      File dir = new File(PackageInfo.sNodeDir, "working");
+      File dir = new File(pNodeDir, "working");
       File authors[] = dir.listFiles(); 
       int ak;
       for(ak=0; ak<authors.length; ak++) {
@@ -1639,7 +1630,7 @@ class MasterMgr
 	  if((pDefaultToolset != null) && pDefaultToolset.equals(tname)) {
 	    pDefaultToolset = null;
 	    
-	    File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
+	    File file = new File(pNodeDir, "toolsets/default-toolset");
 	    if(file.exists()) {
 	      if(!file.delete())
 		throw new PipelineException
@@ -1973,9 +1964,9 @@ class MasterMgr
 	
 	TreeMap<String,String> env = null;
 	if((author != null) && (view != null)) 
-	  env = tset.getEnvironment(author, view, PackageInfo.sOsType);
+	  env = tset.getEnvironment(author, view, os);
 	else if(author != null)
-	  env = tset.getEnvironment(author, PackageInfo.sOsType);
+	  env = tset.getEnvironment(author, os);
 	else 
 	  env = tset.getEnvironment();
  	
@@ -2054,7 +2045,7 @@ class MasterMgr
 	
 	/* build the toolset */ 
 	Toolset tset = 
-	  new Toolset(req.getAuthor(), tname, packages, req.getDescription());
+	  new Toolset(req.getAuthor(), tname, packages, req.getDescription(), os);
 	if(tset.hasConflicts()) 
 	  return new FailureRsp
 	    (timer, 
@@ -2217,6 +2208,53 @@ class MasterMgr
   }
 
   /**
+   * Get multiple OS specific toolset packages. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetPackagesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the toolset packages.
+   */
+  public Object
+  getToolsetPackages
+  ( 
+   MiscGetToolsetPackagesReq req
+  )  
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsetPackages) {
+	timer.resume();
+
+	TripleMap<String,VersionID,OsType,PackageVersion> packages = 
+	  new TripleMap<String,VersionID,OsType,PackageVersion>();
+
+	DoubleMap<String,VersionID,TreeSet<OsType>> index = req.getPackages();
+	for(String pname : index.keySet()) {
+	  for(VersionID vid : index.keySet(pname)) {
+	    for(OsType os : index.get(pname, vid)) {
+	      packages.put(pname, vid, os, getToolsetPackage(pname, vid, os));
+	    }
+	  }
+	}
+
+	return new MiscGetToolsetPackagesRsp(timer, packages);
+      }  
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /**
    * Get the OS specific toolset package with the given name and revision number. 
    * 
    * @param name
@@ -2295,7 +2333,7 @@ class MasterMgr
 	OsType os       = req.getOsType();
 	PackageMod pmod = req.getPackage();
 
-	if(pmod.isEmpty()) 
+	if(pmod.isEmpty() && (os != OsType.Unix))
 	  throw new PipelineException 
 	    ("Unable to create the " + os + " toolset package (" + pname + ") " + 
 	     "until at least one environmental variable has been defined!"); 	
@@ -2308,7 +2346,7 @@ class MasterMgr
 	case MacOS:
 	  if((packages == null) || !packages.containsKey(OsType.Unix)) 
 	    throw new PipelineException
-	      ("The Unix toolset package must be created before a " + os + " toolset can " +
+	      ("The Unix toolset package must be created before a " + os + " package can " +
 	       "be added for (" + pname + ")!");
 	}
 
@@ -2367,10 +2405,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.getEditorMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.getEditorMenuLayout(): " + name);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2380,9 +2417,9 @@ class MasterMgr
 
 	PluginMenuLayout layout = null;
 	if(name == null) 
-	  layout = pDefaultEditorMenuLayouts.get(os);
+	  layout = pDefaultEditorMenuLayout;
 	else 
-	  layout = pEditorMenuLayouts.get(name, os);
+	  layout = pEditorMenuLayouts.get(name);
 
 	if(layout != null) 
 	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
@@ -2412,10 +2449,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.setEditorMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.setEditorMenuLayout(): " + name);
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2430,20 +2466,17 @@ class MasterMgr
 	PluginMenuLayout layout = req.getLayout();
 
 	if(name == null) {
-	  if(layout == null) 
-	    pDefaultEditorMenuLayouts.remove(os);
-	  else 
-	    pDefaultEditorMenuLayouts.put(os, layout);
+	  pDefaultEditorMenuLayout = layout;
 	}
 	else {
 	  if(layout == null) 
-	    pEditorMenuLayouts.remove(name, os);
+	    pEditorMenuLayouts.remove(name);
 	  else 
-	    pEditorMenuLayouts.put(name, os, layout);
+	    pEditorMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, os, "editors", 
-			      pEditorMenuLayouts, pDefaultEditorMenuLayouts);
+	writePluginMenuLayout(name, "editors", 
+			      pEditorMenuLayouts, pDefaultEditorMenuLayout);
 
 	return new SuccessRsp(timer);
       }
@@ -2473,7 +2506,6 @@ class MasterMgr
   ) 
   {
     String tname = req.getName();
-    OsType os    = req.getOsType();
 
     TaskTimer timer = new TaskTimer();
 
@@ -2485,7 +2517,7 @@ class MasterMgr
 	timer.resume();
 
 	try {
-	  Toolset toolset = getToolset(tname, os, timer);	
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
 	  int wk;
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname = toolset.getPackageName(wk);
@@ -2515,7 +2547,7 @@ class MasterMgr
 	    for(VersionID pvid : packages.get(pname)) {
 	      
 	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageEditorPlugins.get(pname, os, pvid);
+		pPackageEditorPlugins.get(pname, pvid);
 
 	      if(table != null) {
 		for(String vendor : table.keySet()) {
@@ -2567,7 +2599,7 @@ class MasterMgr
 	timer.resume();
 	
 	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageEditorPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageEditorPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
 	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
 
@@ -2602,20 +2634,18 @@ class MasterMgr
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
-	  ("Only a user with Developer privileges may change the editor plugins associated " +
-	   "with a toolset package!"); 
+	  ("Only a user with Developer privileges may change the editor plugins " + 
+	   "associated with a toolset package!"); 
 
       synchronized(pPackageEditorPlugins) {
 	timer.resume();
 	
 	if(req.getPlugins() == null)
-	  pPackageEditorPlugins.remove
-	    (req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageEditorPlugins.remove(req.getName(), req.getVersionID());
 	else 
-	  pPackageEditorPlugins.put
-	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+	  pPackageEditorPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
-	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+	writePackagePlugins(req.getName(), req.getVersionID(), 
 			    "editors", pPackageEditorPlugins);
 
 	return new SuccessRsp(timer);
@@ -2649,10 +2679,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.getComparatorMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.getComparatorMenuLayout(): " + name);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2662,9 +2691,9 @@ class MasterMgr
 
 	PluginMenuLayout layout = null;
 	if(name == null) 
-	  layout = pDefaultComparatorMenuLayouts.get(os);
+	  layout = pDefaultComparatorMenuLayout;
 	else 
-	  layout = pComparatorMenuLayouts.get(name, os);
+	  layout = pComparatorMenuLayouts.get(name);
 
 	if(layout != null) 
 	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
@@ -2694,10 +2723,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.setComparatorMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.setComparatorMenuLayout(): " + name);
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2712,27 +2740,24 @@ class MasterMgr
 	PluginMenuLayout layout = req.getLayout();
 
 	if(name == null) {
-	  if(layout == null) 
-	    pDefaultComparatorMenuLayouts.remove(os);
-	  else 
-	    pDefaultComparatorMenuLayouts.put(os, layout);
+	  pDefaultComparatorMenuLayout = layout;
 	}
 	else {
 	  if(layout == null) 
-	    pComparatorMenuLayouts.remove(name, os);
+	    pComparatorMenuLayouts.remove(name);
 	  else 
-	    pComparatorMenuLayouts.put(name, os, layout);
+	    pComparatorMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, os, "comparators", 
-			      pComparatorMenuLayouts, pDefaultComparatorMenuLayouts);
+	writePluginMenuLayout(name, "comparators", 
+			      pComparatorMenuLayouts, pDefaultComparatorMenuLayout);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    } 
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -2755,7 +2780,6 @@ class MasterMgr
   ) 
   {
     String tname = req.getName();
-    OsType os    = req.getOsType();
 
     TaskTimer timer = new TaskTimer();
 
@@ -2767,7 +2791,7 @@ class MasterMgr
 	timer.resume();
 
 	try {
-	  Toolset toolset = getToolset(tname, os, timer);	
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
 	  int wk;
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname = toolset.getPackageName(wk);
@@ -2797,7 +2821,7 @@ class MasterMgr
 	    for(VersionID pvid : packages.get(pname)) {
 	      
 	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageComparatorPlugins.get(pname, os, pvid);
+		pPackageComparatorPlugins.get(pname, pvid);
 
 	      if(table != null) {
 		for(String vendor : table.keySet()) {
@@ -2849,7 +2873,7 @@ class MasterMgr
 	timer.resume();
 	
 	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageComparatorPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageComparatorPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
 	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
 
@@ -2886,25 +2910,23 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Developer privileges may change the comparator plugins " + 
 	   "associated with a toolset package!"); 
- 
+
       synchronized(pPackageComparatorPlugins) {
 	timer.resume();
 	
 	if(req.getPlugins() == null)
-	  pPackageComparatorPlugins.remove
-	    (req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageComparatorPlugins.remove(req.getName(), req.getVersionID());
 	else 
-	  pPackageComparatorPlugins.put
-	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+	  pPackageComparatorPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
-	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+	writePackagePlugins(req.getName(), req.getVersionID(), 
 			    "comparators", pPackageComparatorPlugins);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -2931,10 +2953,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.getActionMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.getActionMenuLayout(): " + name);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2944,9 +2965,9 @@ class MasterMgr
 
 	PluginMenuLayout layout = null;
 	if(name == null) 
-	  layout = pDefaultActionMenuLayouts.get(os);
+	  layout = pDefaultActionMenuLayout;
 	else 
-	  layout = pActionMenuLayouts.get(name, os);
+	  layout = pActionMenuLayouts.get(name);
 
 	if(layout != null) 
 	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
@@ -2976,10 +2997,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.setActionMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.setActionMenuLayout(): " + name);
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2994,27 +3014,24 @@ class MasterMgr
 	PluginMenuLayout layout = req.getLayout();
 
 	if(name == null) {
-	  if(layout == null) 
-	    pDefaultActionMenuLayouts.remove(os);
-	  else 
-	    pDefaultActionMenuLayouts.put(os, layout);
+	  pDefaultActionMenuLayout = layout;
 	}
 	else {
 	  if(layout == null) 
-	    pActionMenuLayouts.remove(name, os);
+	    pActionMenuLayouts.remove(name);
 	  else 
-	    pActionMenuLayouts.put(name, os, layout);
+	    pActionMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, os, "actions", 
-			      pActionMenuLayouts, pDefaultActionMenuLayouts);
+	writePluginMenuLayout(name, "actions", 
+			      pActionMenuLayouts, pDefaultActionMenuLayout);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }   
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -3037,7 +3054,6 @@ class MasterMgr
   ) 
   {
     String tname = req.getName();
-    OsType os    = req.getOsType();
 
     TaskTimer timer = new TaskTimer();
 
@@ -3049,7 +3065,7 @@ class MasterMgr
 	timer.resume();
 
 	try {
-	  Toolset toolset = getToolset(tname, os, timer);	
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
 	  int wk;
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname = toolset.getPackageName(wk);
@@ -3079,7 +3095,7 @@ class MasterMgr
 	    for(VersionID pvid : packages.get(pname)) {
 	      
 	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageActionPlugins.get(pname, os, pvid);
+		pPackageActionPlugins.get(pname, pvid);
 
 	      if(table != null) {
 		for(String vendor : table.keySet()) {
@@ -3131,7 +3147,7 @@ class MasterMgr
 	timer.resume();
 	
 	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageActionPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageActionPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
 	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
 
@@ -3166,27 +3182,25 @@ class MasterMgr
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
-	  ("Only a user with Developer privileges may change the action plugins associated " +
-	   "with a toolset package!"); 
+	  ("Only a user with Developer privileges may change the action plugins " + 
+	   "associated with a toolset package!"); 
 
       synchronized(pPackageActionPlugins) {
 	timer.resume();
 	
 	if(req.getPlugins() == null)
-	  pPackageActionPlugins.remove
-	    (req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageActionPlugins.remove(req.getName(), req.getVersionID());
 	else 
-	  pPackageActionPlugins.put
-	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+	  pPackageActionPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
-	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+	writePackagePlugins(req.getName(), req.getVersionID(), 
 			    "actions", pPackageActionPlugins);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -3213,10 +3227,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.getToolMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.getToolMenuLayout(): " + name);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -3226,9 +3239,9 @@ class MasterMgr
 
 	PluginMenuLayout layout = null;
 	if(name == null) 
-	  layout = pDefaultToolMenuLayouts.get(os);
+	  layout = pDefaultToolMenuLayout;
 	else 
-	  layout = pToolMenuLayouts.get(name, os);
+	  layout = pToolMenuLayouts.get(name);
 
 	if(layout != null) 
 	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
@@ -3258,10 +3271,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.setToolMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.setToolMenuLayout(): " + name);
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -3276,27 +3288,24 @@ class MasterMgr
 	PluginMenuLayout layout = req.getLayout();
 
 	if(name == null) {
-	  if(layout == null) 
-	    pDefaultToolMenuLayouts.remove(os);
-	  else 
-	    pDefaultToolMenuLayouts.put(os, layout);
+	  pDefaultToolMenuLayout = layout;
 	}
 	else {
 	  if(layout == null) 
-	    pToolMenuLayouts.remove(name, os);
+	    pToolMenuLayouts.remove(name);
 	  else 
-	    pToolMenuLayouts.put(name, os, layout);
+	    pToolMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, os, "tools", 
-			      pToolMenuLayouts, pDefaultToolMenuLayouts);
+	writePluginMenuLayout(name, "tools", 
+			      pToolMenuLayouts, pDefaultToolMenuLayout);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }   
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -3319,7 +3328,6 @@ class MasterMgr
   ) 
   {
     String tname = req.getName();
-    OsType os    = req.getOsType();
 
     TaskTimer timer = new TaskTimer();
 
@@ -3331,7 +3339,7 @@ class MasterMgr
 	timer.resume();
 
 	try {
-	  Toolset toolset = getToolset(tname, os, timer);	
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
 	  int wk;
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname = toolset.getPackageName(wk);
@@ -3361,7 +3369,7 @@ class MasterMgr
 	    for(VersionID pvid : packages.get(pname)) {
 	      
 	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageToolPlugins.get(pname, os, pvid);
+		pPackageToolPlugins.get(pname, pvid);
 
 	      if(table != null) {
 		for(String vendor : table.keySet()) {
@@ -3413,7 +3421,7 @@ class MasterMgr
 	timer.resume();
 	
 	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageToolPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageToolPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
 	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
 
@@ -3448,27 +3456,25 @@ class MasterMgr
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
-	  ("Only a user with Developer privileges may change the tool plugins associated " +
-	   "with a toolset package!"); 
+	  ("Only a user with Developer privileges may change the tool plugins " + 
+	   "associated with a toolset package!"); 
 
       synchronized(pPackageToolPlugins) {
 	timer.resume();
 	
 	if(req.getPlugins() == null)
-	  pPackageToolPlugins.remove
-	    (req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageToolPlugins.remove(req.getName(), req.getVersionID());
 	else 
-	  pPackageToolPlugins.put
-	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+	  pPackageToolPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
-	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+	writePackagePlugins(req.getName(), req.getVersionID(), 
 			    "tools", pPackageToolPlugins);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -3495,10 +3501,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.getArchiverMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.getArchiverMenuLayout(): " + name);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -3508,9 +3513,9 @@ class MasterMgr
 
 	PluginMenuLayout layout = null;
 	if(name == null) 
-	  layout = pDefaultArchiverMenuLayouts.get(os);
+	  layout = pDefaultArchiverMenuLayout;
 	else 
-	  layout = pArchiverMenuLayouts.get(name, os);
+	  layout = pArchiverMenuLayouts.get(name);
 
 	if(layout != null) 
 	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
@@ -3540,10 +3545,9 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    OsType os = req.getOsType();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.setArchiverMenuLayout(): " + name + " " + os);
+      new TaskTimer("MasterMgr.setArchiverMenuLayout(): " + name);
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -3558,27 +3562,24 @@ class MasterMgr
 	PluginMenuLayout layout = req.getLayout();
 
 	if(name == null) {
-	  if(layout == null) 
-	    pDefaultArchiverMenuLayouts.remove(os);
-	  else 
-	    pDefaultArchiverMenuLayouts.put(os, layout);
+	  pDefaultArchiverMenuLayout = layout;
 	}
 	else {
 	  if(layout == null) 
-	    pArchiverMenuLayouts.remove(name, os);
+	    pArchiverMenuLayouts.remove(name);
 	  else 
-	    pArchiverMenuLayouts.put(name, os, layout);
+	    pArchiverMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, os, "archivers", 
-			      pArchiverMenuLayouts, pDefaultArchiverMenuLayouts);
+	writePluginMenuLayout(name, "archivers", 
+			      pArchiverMenuLayouts, pDefaultArchiverMenuLayout);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }      
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -3601,7 +3602,6 @@ class MasterMgr
   ) 
   {
     String tname = req.getName();
-    OsType os    = req.getOsType();
 
     TaskTimer timer = new TaskTimer();
 
@@ -3613,7 +3613,7 @@ class MasterMgr
 	timer.resume();
 
 	try {
-	  Toolset toolset = getToolset(tname, os, timer);	
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
 	  int wk;
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname = toolset.getPackageName(wk);
@@ -3643,7 +3643,7 @@ class MasterMgr
 	    for(VersionID pvid : packages.get(pname)) {
 	      
 	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageArchiverPlugins.get(pname, os, pvid);
+		pPackageArchiverPlugins.get(pname, pvid);
 
 	      if(table != null) {
 		for(String vendor : table.keySet()) {
@@ -3695,7 +3695,7 @@ class MasterMgr
 	timer.resume();
 	
 	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageArchiverPlugins.get(req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageArchiverPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
 	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
 
@@ -3727,7 +3727,7 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
-    try {    
+    try {
       if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
 	  ("Only a user with Developer privileges may change the archiver plugins " + 
@@ -3737,20 +3737,18 @@ class MasterMgr
 	timer.resume();
 	
 	if(req.getPlugins() == null)
-	  pPackageArchiverPlugins.remove
-	    (req.getName(), req.getOsType(), req.getVersionID());
+	  pPackageArchiverPlugins.remove(req.getName(), req.getVersionID());
 	else 
-	  pPackageArchiverPlugins.put
-	    (req.getName(), req.getOsType(), req.getVersionID(), req.getPlugins());
+	  pPackageArchiverPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
-	writePackagePlugins(req.getName(), req.getOsType(), req.getVersionID(), 
+	writePackagePlugins(req.getName(), req.getVersionID(), 
 			    "archivers", pPackageArchiverPlugins);
 
 	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());	  
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -4006,7 +4004,7 @@ class MasterMgr
 	  return new SuccessRsp(timer);
 	
 	/* create the working area node directory */ 
-	File dir = new File(PackageInfo.sNodeDir, "working/" + author + "/" + view);
+	File dir = new File(pNodeDir, "working/" + author + "/" + view);
 	synchronized(pMakeDirLock) {
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) 
@@ -4127,7 +4125,7 @@ class MasterMgr
       }
       
       /* remove the empty working area database directory */ 
-      File viewDir = new File(PackageInfo.sNodeDir, "working/" + author + "/" + view);
+      File viewDir = new File(pNodeDir, "working/" + author + "/" + view);
       if(!viewDir.delete()) 
 	throw new PipelineException 
 	  ("Unable to remove the working area view database directory (" + viewDir + ")!");
@@ -4139,7 +4137,7 @@ class MasterMgr
       if(views.isEmpty()) {
 	pWorkingAreaViews.remove(author);
 	
-	File userDir = new File(PackageInfo.sNodeDir, "working/" + author);
+	File userDir = new File(pNodeDir, "working/" + author);
 	if(!userDir.delete()) 
 	  throw new PipelineException 
 	    ("Unable to remove the working area user database directory (" + userDir + ")!");
@@ -5476,6 +5474,56 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }  
   }  
+      
+  /** 
+   * Get all of the checked-in versions of a node. <P> 
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetAllCheckedInRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in versions.
+   */
+  public Object
+  getAllCheckedInVersions
+  ( 
+   NodeGetAllCheckedInReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+
+    String name = req.getName();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,NodeVersion> versions = new TreeMap<VersionID,NodeVersion>();
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+      for(VersionID vid : checkedIn.keySet()) {
+	CheckedInBundle bundle = checkedIn.get(vid);
+	if(bundle == null) 
+	  throw new PipelineException 
+	    ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+
+	versions.put(vid, new NodeVersion(bundle.getVersion()));
+      }
+
+      return new NodeGetAllCheckedInRsp(timer, versions); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
 
   /** 
    * Get the log messages associated with all checked-in versions of the given node.
@@ -6005,7 +6053,7 @@ class MasterMgr
 	
       /* remove the working version node file(s) */ 
       {
-	File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
+	File file   = new File(pNodeDir, id.getWorkingPath().toString());
 	File backup = new File(file + ".backup");
 	  
 	if(file.isFile()) {
@@ -6024,10 +6072,10 @@ class MasterMgr
 	      ("Unable to remove the backup working version file (" + backup + ")!");
 	}
 
-	File root = new File(PackageInfo.sNodeDir, 
+	File root = new File(pNodeDir, 
 			     "working/" + id.getAuthor() + "/" + id.getView());
 
-	deleteEmptyParentDirs(root, new File(PackageInfo.sNodeDir, 
+	deleteEmptyParentDirs(root, new File(pNodeDir, 
 					     id.getWorkingParent().toString()));
       }
 	
@@ -6208,7 +6256,7 @@ class MasterMgr
 	
 	/* remove the checked-in version files */ 
 	for(VersionID vid : checkedIn.keySet()) {
-	  File file = new File(PackageInfo.sNodeDir, "repository" + name + "/" + vid);
+	  File file = new File(pNodeDir, "repository" + name + "/" + vid);
 	  if(!file.delete())
 	    throw new PipelineException
 	      ("Unable to remove the checked-in version file (" + file + ")!");
@@ -6216,13 +6264,13 @@ class MasterMgr
 
 	/* remove the checked-in version node directory */
 	{
-	  File dir = new File(PackageInfo.sNodeDir, "repository" + name);
+	  File dir = new File(pNodeDir, "repository" + name);
 	  File parent =  dir.getParentFile();
 	  if(!dir.delete())
 	    throw new PipelineException
 	      ("Unable to remove the checked-in version directory (" + dir + ")!");
 	  
-	  deleteEmptyParentDirs(new File(PackageInfo.sNodeDir, "repository"), parent);
+	  deleteEmptyParentDirs(new File(pNodeDir, "repository"), parent);
 	}	    
 	
 	/* remove the checked-in version entries */ 
@@ -6232,7 +6280,7 @@ class MasterMgr
 
       /* remove the downstream links file and entry */ 
       {
-	File file = new File(PackageInfo.sNodeDir, "downstream" + name);
+	File file = new File(pNodeDir, "downstream" + name);
 	if(file.isFile()) {
 	  if(!file.delete())
 	    throw new PipelineException
@@ -8916,7 +8964,7 @@ class MasterMgr
 	Map<String,String> env = System.getenv();
 
 	SubProcessLight proc = 
-	  new SubProcessLight("BackupDatabase", "tar", args, env, PackageInfo.sNodeDir);
+	  new SubProcessLight("BackupDatabase", "tar", args, env, pNodeDir);
 	try {
 	  proc.start();
 	  proc.join();
@@ -9347,7 +9395,7 @@ class MasterMgr
 	  }
 	  
 	  if(output != null) {
-	    File file = new File(PackageInfo.sNodeDir, 
+	    File file = new File(pNodeDir, 
 				 "archives/output/archive/" + archiveName);
 	    try {
 	      FileWriter out = new FileWriter(file);
@@ -10646,7 +10694,7 @@ class MasterMgr
 	  }
 	  
 	  Date now = new Date();
-	  File file = new File(PackageInfo.sNodeDir, "archives/output/restore/" + 
+	  File file = new File(pNodeDir, "archives/output/restore/" + 
 			       archiveName + "-" + now.getTime());
 	  try {
 	    FileWriter out = new FileWriter(file);
@@ -10903,7 +10951,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getArchivedOutput(): " + aname);
 
     try {
-      File file = new File(PackageInfo.sNodeDir, 
+      File file = new File(pNodeDir, 
 			   "archives/output/archive/" + aname);
       String output = null;
       if(file.length() > 0) {
@@ -10952,7 +11000,7 @@ class MasterMgr
     TaskTimer timer = 
       new TaskTimer("MasterMgr.getRestoredOutput(): " + aname + "-" + stamp.getTime());
     try {
-      File file = new File(PackageInfo.sNodeDir, 
+      File file = new File(pNodeDir, 
 			   "archives/output/restore/" + aname + "-" + stamp.getTime());
       String output = null;
       if(file.length() > 0) {
@@ -13548,7 +13596,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchiveFileLock) {
-      File file = new File(PackageInfo.sNodeDir, "archives/manifests/" + archive.getName());
+      File file = new File(pNodeDir, "archives/manifests/" + archive.getName());
       if(file.exists()) {
 	throw new PipelineException
 	  ("Unable to overrite the existing archive file(" + file + ")!");
@@ -13607,7 +13655,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchiveFileLock) {
-      File file = new File(PackageInfo.sNodeDir, "archives/manifests/" + name);
+      File file = new File(pNodeDir, "archives/manifests/" + name);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No file exists for archive (" + name + ")!");
@@ -13661,7 +13709,7 @@ class MasterMgr
       if(pArchivedIn.isEmpty()) 
 	return;
 
-      File file = new File(PackageInfo.sNodeDir, "archives/archived-in");
+      File file = new File(pNodeDir, "archives/archived-in");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -13710,7 +13758,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchivedIn) {
-      File file = new File(PackageInfo.sNodeDir, "archives/archived-in");
+      File file = new File(pNodeDir, "archives/archived-in");
       if(!file.isFile()) 
 	return;
 
@@ -13758,7 +13806,7 @@ class MasterMgr
       if(pArchivedOn.isEmpty()) 
 	return;
 
-      File file = new File(PackageInfo.sNodeDir, "archives/archived-on");
+      File file = new File(pNodeDir, "archives/archived-on");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -13811,7 +13859,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchivedOn) {
-      File file = new File(PackageInfo.sNodeDir, "archives/archived-on");
+      File file = new File(pNodeDir, "archives/archived-on");
       if(!file.isFile()) 
 	return;
 
@@ -13862,7 +13910,7 @@ class MasterMgr
       if(pRestoredOn.isEmpty()) 
 	return;
 
-      File file = new File(PackageInfo.sNodeDir, "archives/restored-on");
+      File file = new File(pNodeDir, "archives/restored-on");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -13919,7 +13967,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pRestoredOn) {
-      File file = new File(PackageInfo.sNodeDir, "archives/restored-on");
+      File file = new File(pNodeDir, "archives/restored-on");
       if(!file.isFile()) 
 	return;
 
@@ -13976,7 +14024,7 @@ class MasterMgr
       if(pOfflined.isEmpty()) 
 	return;
 
-      File file = new File(PackageInfo.sNodeDir, "archives/offlined");
+      File file = new File(pNodeDir, "archives/offlined");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -14025,7 +14073,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pOfflined) {
-      File file = new File(PackageInfo.sNodeDir, "archives/offlined");
+      File file = new File(pNodeDir, "archives/offlined");
       if(!file.isFile()) 
 	return;
 
@@ -14069,7 +14117,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pRestoreReqs) {
-      File file = new File(PackageInfo.sNodeDir, "archives/restore-reqs");
+      File file = new File(pNodeDir, "archives/restore-reqs");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -14126,7 +14174,7 @@ class MasterMgr
     synchronized(pRestoreReqs) {
       pRestoreReqs.clear();
 
-      File file = new File(PackageInfo.sNodeDir, "archives/restore-reqs");
+      File file = new File(pNodeDir, "archives/restore-reqs");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -14171,7 +14219,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pDefaultToolsetLock) {
-      File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
+      File file = new File(pNodeDir, "toolsets/default-toolset");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -14228,7 +14276,7 @@ class MasterMgr
     synchronized(pDefaultToolsetLock) {
       pDefaultToolset = null;
 
-      File file = new File(PackageInfo.sNodeDir, "toolsets/default-toolset");
+      File file = new File(pNodeDir, "toolsets/default-toolset");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -14270,7 +14318,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pActiveToolsets) {
-      File file = new File(PackageInfo.sNodeDir, "toolsets/active-toolsets");
+      File file = new File(pNodeDir, "toolsets/active-toolsets");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -14327,7 +14375,7 @@ class MasterMgr
     synchronized(pActiveToolsets) {
       pActiveToolsets.clear();
 
-      File file = new File(PackageInfo.sNodeDir, "toolsets/active-toolsets");
+      File file = new File(pNodeDir, "toolsets/active-toolsets");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -14382,7 +14430,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsets) {
-      File dir = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + tset.getName());
+      File dir = new File(pNodeDir, "toolsets/toolsets/" + tset.getName());
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
 	  if(!dir.mkdir()) 
@@ -14453,7 +14501,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsets) {
-      File file = new File(PackageInfo.sNodeDir, "toolsets/toolsets/" + tname + "/" + os);
+      File file = new File(pNodeDir, "toolsets/toolsets/" + tname + "/" + os);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No " + os + " toolset file exists for the toolset (" + tname + ")!");
@@ -14519,8 +14567,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsetPackages) {
-      File dir = new File(PackageInfo.sNodeDir, 
-			  "toolsets/packages/" + pkg.getName() + "/" + os);
+      File dir = new File(pNodeDir, "toolsets/packages/" + pkg.getName() + "/" + os);
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
 	  if(!dir.mkdirs()) 
@@ -14595,8 +14642,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pToolsetPackages) {
-      File file = new File(PackageInfo.sNodeDir, 
-			   "toolsets/packages/" + name + "/" + os + "/" + vid);
+      File file = new File(pNodeDir, "toolsets/packages/" + name + "/" + os + "/" + vid);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No " + os + " toolset package file exists for package " + 
@@ -14643,17 +14689,14 @@ class MasterMgr
    * @param name
    *   The name of the toolset.
    * 
-   * @param os
-   *   The operating system type. 
-   * 
    * @param ptype
    *   The type of plugins: editors, comparators, actions or tools
    * 
    * @param table
    *   The plugin menu layout table.
    *
-   * @param defaultTable
-   *   The default menu layout table.
+   * @param defaultLayout
+   *   The default menu layout.
    *
    * @throws PipelineException
    *   If unable to write the menu layuout file. 
@@ -14662,10 +14705,9 @@ class MasterMgr
   writePluginMenuLayout
   (
    String name, 
-   OsType os, 
    String ptype,
-   DoubleMap<String,OsType,PluginMenuLayout> table, 
-   TreeMap<OsType,PluginMenuLayout> defaultTable
+   TreeMap<String,PluginMenuLayout> table, 
+   PluginMenuLayout defaultLayout
   ) 
     throws PipelineException
   {
@@ -14679,10 +14721,9 @@ class MasterMgr
     synchronized(table) {
       File dir = null;
       if(name != null) 
-	dir = new File(PackageInfo.sNodeDir, 
-		       "toolsets/plugins/toolsets/" + name + "/" + os);
+	dir = new File(pNodeDir, "toolsets/plugins/toolsets/" + name + "/Unix");
       else 
-	dir = new File(PackageInfo.sNodeDir, "etc/default-layouts/" + os);
+	dir = new File(pNodeDir, "etc/default-layouts/Unix");
 
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
@@ -14695,9 +14736,9 @@ class MasterMgr
 
       PluginMenuLayout layout = null;
       if(name != null) 
-	layout = table.get(name, os);
+	layout = table.get(name);
       else 
-	layout = defaultTable.get(os);
+	layout = defaultLayout;
 
       if(layout == null) {
 	if(file.exists())
@@ -14713,7 +14754,7 @@ class MasterMgr
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing " + os + " Toolset Plugin Menu: " + tname + " " + uptype);
+	 "Writing Toolset Plugin Menu: " + tname + " " + uptype);
 
       try {
 	String glue = null;
@@ -14754,29 +14795,24 @@ class MasterMgr
    * @param name
    *   The name of the toolset.
    * 
-   * @param os
-   *   The operating system type. 
-   * 
    * @param ptype
    *   The type of plugins: editors, comparators, actions or tools
    * 
    * @param table
    *   The plugin menu layout table.
    * 
-   * @param defaultTable
-   *   The default menu layout table.
+   * @return 
+   *   The read menu layout.
    * 
    * @throws PipelineException
    *   If unable to read an existing package plugins file.
    */ 
-  private void
+  private PluginMenuLayout
   readPluginMenuLayout
   (
    String name, 
-   OsType os, 
    String ptype,
-   DoubleMap<String,OsType,PluginMenuLayout> table, 
-   TreeMap<OsType,PluginMenuLayout> defaultTable
+   TreeMap<String,PluginMenuLayout> table
   ) 
     throws PipelineException
   {
@@ -14790,13 +14826,13 @@ class MasterMgr
     synchronized(table) {
       File file = null;
       if(name != null) 
-	file = new File(PackageInfo.sNodeDir, 
-			"toolsets/plugins/toolsets/" + name + "/" + os + "/" + ptype);  
+	file = new File(pNodeDir, 
+			"toolsets/plugins/toolsets/" + name + "/Unix/" + ptype);  
       else 
-	file = new File(PackageInfo.sNodeDir, "etc/default-layouts/" + os + "/" + ptype);
+	file = new File(pNodeDir, "etc/default-layouts/Unix/" + ptype);
 
       if(!file.isFile())
-	return;
+	return null;
 
       String tname = name;
       if(tname == null) 
@@ -14804,7 +14840,7 @@ class MasterMgr
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Reading " + os + " Toolset Plugin Menu: " + tname + " " + uptype);
+	 "Reading Toolset Plugin Menu: " + tname + " " + uptype);
 
       PluginMenuLayout layout = null;
       try {
@@ -14828,9 +14864,9 @@ class MasterMgr
       assert(layout != null);
 
       if(name != null) 
-	table.put(name, os, layout);
-      else 
-	defaultTable.put(os, layout);
+	table.put(name, layout);
+
+      return layout;
     }
   }
 
@@ -14842,9 +14878,6 @@ class MasterMgr
    * 
    * @param name
    *   The name of the toolset package.
-   * 
-   * @param os
-   *   The operating system type. 
    * 
    * @param vid
    *   The package revision number
@@ -14862,10 +14895,9 @@ class MasterMgr
   writePackagePlugins
   (
    String name, 
-   OsType os, 
    VersionID vid, 
    String ptype,
-   PackageMap<DoubleMap<String,String,TreeSet<VersionID>>> table 
+   DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>> table 
   ) 
     throws PipelineException
   {
@@ -14877,8 +14909,8 @@ class MasterMgr
     }
 
     synchronized(table) {
-      File dir = new File(PackageInfo.sNodeDir, 
-			  "toolsets/plugins/packages/" + name + "/" + os + "/" + vid);
+      File dir = new File(pNodeDir, 
+			  "toolsets/plugins/packages/" + name + "/Unix/" + vid);
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
 	  if(!dir.mkdirs()) 
@@ -14888,7 +14920,7 @@ class MasterMgr
 
       File file = new File(dir, ptype);
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = table.get(name, os, vid);
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = table.get(name, vid);
       if((plugins == null) || plugins.isEmpty()) {
 	if(file.exists())
 	  if(!file.delete()) 
@@ -14899,7 +14931,7 @@ class MasterMgr
 	
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing " + os + " Toolset Package Plugins: " + name + " v" + vid + " " + ptype);
+	 "Writing Toolset Package Plugins: " + name + " v" + vid + " " + ptype);
 
       try {
 	String glue = null;
@@ -14940,9 +14972,6 @@ class MasterMgr
    * @param name
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The operating system type. 
-   * 
    * @param vid
    *   The package revision number
    * 
@@ -14959,10 +14988,9 @@ class MasterMgr
   readPackagePlugins
   (
    String name, 
-   OsType os, 
    VersionID vid, 
    String ptype,
-   PackageMap<DoubleMap<String,String,TreeSet<VersionID>>> table 
+   DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>> table 
   )
     throws PipelineException
   {
@@ -14975,14 +15003,14 @@ class MasterMgr
 
     synchronized(table) {
       File file = 
-	new File(PackageInfo.sNodeDir, 
-		 "toolsets/plugins/packages/" + name + "/" + os + "/" + vid + "/" + ptype);
+	new File(pNodeDir, 
+		 "toolsets/plugins/packages/" + name + "/Unix/" + vid + "/" + ptype);
       if(!file.isFile())
 	return;
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Reading " + os + " Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
+	 "Reading Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
 
       DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
       try {
@@ -15005,7 +15033,7 @@ class MasterMgr
       }
 
       assert(plugins != null);
-      table.put(name, os, vid, plugins);
+      table.put(name, vid, plugins);
     }
   }
 
@@ -15033,7 +15061,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pSuffixEditors) {
-      File file = new File(PackageInfo.sNodeDir, "etc/suffix-editors/" + author); 
+      File file = new File(pNodeDir, "etc/suffix-editors/" + author); 
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -15093,7 +15121,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pSuffixEditors) {
-      File file = new File(PackageInfo.sNodeDir, "etc/suffix-editors/" + author); 
+      File file = new File(pNodeDir, "etc/suffix-editors/" + author); 
       if(!file.isFile()) 
 	return null;
 
@@ -15146,7 +15174,7 @@ class MasterMgr
   writeNextIDs() 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/next-ids");
+    File file = new File(pNodeDir, "etc/next-ids");
     if(file.exists()) {
       if(!file.delete())
 	throw new PipelineException
@@ -15203,7 +15231,7 @@ class MasterMgr
   readNextIDs() 
     throws PipelineException 
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/next-ids");
+    File file = new File(pNodeDir, "etc/next-ids");
     if(file.exists()) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -15270,8 +15298,7 @@ class MasterMgr
        "Writing Checked-In Version: " + 
        vsn.getName() + " (" + vsn.getVersionID() + ")");
 
-    File file = new File(PackageInfo.sNodeDir, 
-			 "repository/" + vsn.getName() + "/" + vsn.getVersionID());
+    File file = new File(pNodeDir, "repository/" + vsn.getName() + "/" + vsn.getVersionID());
     File dir  = file.getParentFile();
 
     try {
@@ -15343,7 +15370,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File dir = new File(PackageInfo.sNodeDir, "repository" + name + "/");
+    File dir = new File(pNodeDir, "repository" + name + "/");
     if(!dir.isDirectory()) 
       return null;
 
@@ -15421,7 +15448,7 @@ class MasterMgr
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Writing Working Version: " + id);
 
-    File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
+    File file   = new File(pNodeDir, id.getWorkingPath().toString());
     File backup = new File(file + ".backup");
     File dir    = file.getParentFile();
 
@@ -15497,7 +15524,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file   = new File(PackageInfo.sNodeDir, id.getWorkingPath().getPath());
+    File file   = new File(pNodeDir, id.getWorkingPath().toString());
     File backup = new File(file + ".backup");
     
     try {
@@ -15536,7 +15563,8 @@ class MasterMgr
 	    catch(Exception ex2) {
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
-		"The backup working version file (" + backup + ") appears to be corrupted:\n" + 
+		"The backup working version file (" + backup + ") appears to be " + 
+		 "corrupted:\n" +
 		 "  " + ex.getMessage());
 	      LogMgr.getInstance().flush();
 	      
@@ -15608,7 +15636,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "downstream/" + links.getName());
+    File file = new File(pNodeDir, "downstream/" + links.getName());
     File dir  = file.getParentFile();
 
     if(!links.hasLinks()) {
@@ -15689,7 +15717,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "downstream/" + name);
+    File file = new File(pNodeDir, "downstream/" + name);
     
     try {
       if(file.exists()) {
@@ -15740,7 +15768,7 @@ class MasterMgr
   writeNodeTree() 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/node-tree");
+    File file = new File(pNodeDir, "etc/node-tree");
     try {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -15785,7 +15813,7 @@ class MasterMgr
   readNodeTree() 
     throws PipelineException
   {
-    File file = new File(PackageInfo.sNodeDir, "etc/node-tree");
+    File file = new File(pNodeDir, "etc/node-tree");
     try {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -16436,6 +16464,17 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
  
   /**
+   * The common back-end directories.
+   * 
+   * Since the master manager should always be run on a Unix system, these variables are 
+   * always initialized to Unix specific paths.
+   */
+  private File pNodeDir; 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Whether to command the queue manager to shutdown all job servers before exiting.
    */ 
   private AtomicBoolean  pShutdownJobMgrs; 
@@ -16586,46 +16625,51 @@ class MasterMgr
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private PackageMap<PackageVersion>  pToolsetPackages;
+  private TripleMap<String,OsType,VersionID,PackageVersion>  pToolsetPackages;
 
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
    * The cached tables of plugin menu layouts associated with toolsets indexed by 
-   * toolset name and operating system. <P> 
+   * toolset name. <P> 
    * 
-   * The cached tables of default layouts for these operating systems.<P> 
+   * The cached default layouts for these operating systems.<P> 
    * 
    * Access to these fields should be protected by a synchronized block.  Access to the
    * default tables should synchronize on the non-default tables.
    */ 
-  private DoubleMap<String,OsType,PluginMenuLayout>  pEditorMenuLayouts;
-  private TreeMap<OsType,PluginMenuLayout>           pDefaultEditorMenuLayouts;
+  private TreeMap<String,PluginMenuLayout>  pEditorMenuLayouts;
+  private PluginMenuLayout                  pDefaultEditorMenuLayout;
 
-  private DoubleMap<String,OsType,PluginMenuLayout>  pComparatorMenuLayouts;
-  private TreeMap<OsType,PluginMenuLayout>           pDefaultComparatorMenuLayouts;
+  private TreeMap<String,PluginMenuLayout>  pComparatorMenuLayouts;
+  private PluginMenuLayout                  pDefaultComparatorMenuLayout;
 
-  private DoubleMap<String,OsType,PluginMenuLayout>  pActionMenuLayouts;
-  private TreeMap<OsType,PluginMenuLayout>           pDefaultActionMenuLayouts;
+  private TreeMap<String,PluginMenuLayout>  pActionMenuLayouts;
+  private PluginMenuLayout                  pDefaultActionMenuLayout;
 
-  private DoubleMap<String,OsType,PluginMenuLayout>  pToolMenuLayouts;
-  private TreeMap<OsType,PluginMenuLayout>           pDefaultToolMenuLayouts;
+  private TreeMap<String,PluginMenuLayout>  pToolMenuLayouts;
+  private PluginMenuLayout                  pDefaultToolMenuLayout;
   
-  private DoubleMap<String,OsType,PluginMenuLayout>  pArchiverMenuLayouts;
-  private TreeMap<OsType,PluginMenuLayout>           pDefaultArchiverMenuLayouts;
+  private TreeMap<String,PluginMenuLayout>  pArchiverMenuLayouts;
+  private PluginMenuLayout                  pDefaultArchiverMenuLayout;
 
   /**
    * The cached tables of the vendors, names and versions of all plugins associated with a 
-   * package indexed by package name, operating system and package revision number. <P> 
+   * package indexed by package name and package revision number. <P> 
    * 
    * Access to these fields should be protected by a synchronized block.
    */ 
-  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageEditorPlugins; 
-  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageComparatorPlugins; 
-  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageActionPlugins; 
-  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageToolPlugins; 
-  private PackageMap<DoubleMap<String,String,TreeSet<VersionID>>>  pPackageArchiverPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageEditorPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageComparatorPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageActionPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageToolPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageArchiverPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

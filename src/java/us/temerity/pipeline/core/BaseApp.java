@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.16 2006/02/08 23:33:19 jim Exp $
+// $Id: BaseApp.java,v 1.17 2006/05/07 21:30:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -61,7 +61,7 @@ class BaseApp
   public void
   htmlHelp()
   {
-    showURL("file://" + PackageInfo.sInstDir + "/share/docs/man/" + pName + ".html");
+    showURL("file:///" + PackageInfo.sInstPath + "/share/docs/man/" + pName + ".html");
   }
 
   /**
@@ -153,7 +153,8 @@ class BaseApp
 	args.add("open location \"" + url + "\"");
 
 	SubProcessLight proc = 
-	  new SubProcessLight("OpenURL", "osascript", args, env, PackageInfo.sTempDir);
+	  new SubProcessLight("OpenURL", "osascript", 
+			      args, env, PackageInfo.sTempPath.toFile());
 	proc.start();
       }
       break;
@@ -186,7 +187,8 @@ class BaseApp
     args.add("ping()");
 
     SubProcessLight proc = 
-      new SubProcessLight("CheckBrowser", browser, args, env, PackageInfo.sTempDir);
+      new SubProcessLight("CheckBrowser", browser, 
+			  args, env, PackageInfo.sTempPath.toFile());
     try {
       proc.start();
       proc.join();
@@ -225,7 +227,8 @@ class BaseApp
     args.add("openURL(" + url + ", new-tab)");
     
     SubProcessLight proc = 
-      new SubProcessLight("RemoteBrowser", browser, args, env, PackageInfo.sTempDir);
+      new SubProcessLight("RemoteBrowser", browser, 
+			  args, env, PackageInfo.sTempPath.toFile());
     try {      
       proc.start();
       proc.join();
@@ -261,7 +264,8 @@ class BaseApp
     args.add(url.toString());
     
     SubProcessLight proc = 
-      new SubProcessLight("LaunchBrowser", browser, args, env, PackageInfo.sTempDir);
+      new SubProcessLight("LaunchBrowser", browser, 
+			  args, env, PackageInfo.sTempPath.toFile());
     proc.start();
   }
     

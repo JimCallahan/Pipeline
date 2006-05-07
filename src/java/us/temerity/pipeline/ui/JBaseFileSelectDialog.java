@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.11 2006/01/18 20:29:26 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.12 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -41,7 +41,6 @@ class JBaseFileSelectDialog
   ) 
   {
     super(title, true);
-    pRootDir = new File("/");
   }
 
   /**
@@ -61,7 +60,6 @@ class JBaseFileSelectDialog
   ) 
   {
     super(owner, title, true);
-    pRootDir = new File("/");
   }
 
 
@@ -268,6 +266,36 @@ class JBaseFileSelectDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether browsing is restricted to a subset of the filesystem.
+   */ 
+  public boolean
+  isRestricted() 
+  {
+    return (pRootDir != null);
+  }
+  
+  /**
+   * Whether the given canonical file is within the allowed subset of the filesystem.
+   * 
+   * @return 
+   *   Always returns true if not restricted.
+   */ 
+  public boolean
+  isAllowed
+  (
+   File canon
+  ) 
+  {
+    return (!isRestricted() || canon.getPath().startsWith(getRootDir().getPath()));
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -275,7 +303,8 @@ class JBaseFileSelectDialog
    * Set the root directory.
    * 
    * @param root
-   *   The root directory under which the dialog will browse.
+   *   The root directory under which browsing is restricted or 
+   *   <CODE>null</CODE> for no restrictions.
    */ 
   public void 
   setRootDir
@@ -283,13 +312,14 @@ class JBaseFileSelectDialog
    File root
   ) 
   {
-    if(root == null) 
-      throw new IllegalArgumentException
-	("The root directory cannot be (null)!");
-
+    if(root == null) {
+      pRootDir = null;
+      return;
+    }
+   
     if(!root.isDirectory()) 
       throw new IllegalArgumentException
-	("The root directory must exist!");
+	("The root directory (" + root + ") does not exist!");
 
     try {
       pRootDir = root.getCanonicalFile();
@@ -300,7 +330,63 @@ class JBaseFileSelectDialog
   }
 
   /**
-   * Get the current directory.
+   * Get the root directory under which browsing is restricted.
+   * 
+   * @return 
+   *   The root directory or <CODE>null</CODE> if there are no restrictions.
+   */ 
+  public File
+  getRootDir()
+  {
+    return pRootDir;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get a default directory to use as a fallback location when user input is illegal. 
+   */ 
+  public File 
+  getDefaultDirectory()
+  {
+    File canon = null;
+    try {
+      File dir = new File(System.getProperty("user.dir"));
+      if(dir != null) {
+	File cdir = dir.getCanonicalFile();
+	if(isAllowed(cdir)) 
+	  canon = dir; 
+      }
+    }
+    catch(IOException ex) {
+    }
+      
+    if(canon != null) 
+      return canon;
+
+    if(pRootDir != null) 
+      return pRootDir;
+    else {
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case MacOS:
+	return new File("/");
+
+      case Windows:
+	return new File("C:\\");
+      }
+    }
+
+    assert(false);
+    return null;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current directory relative to the root directory.
    */ 
   public File 
   getDirectory() 
@@ -310,6 +396,23 @@ class JBaseFileSelectDialog
       return null;
 
     return new File(dir);
+  }
+
+  /**
+   * Get the full abstract pathname of the current working directory 
+   * relative to the root directory. 
+   * 
+   * @return 
+   *   The path or <CODE>null</CODE> if none is selected.
+   */ 
+  public Path
+  getDirectoryPath() 
+  {
+    File dir = getDirectory();
+    if(dir == null) 
+      return null;
+
+    return new Path(dir);
   }
 
 
@@ -472,7 +575,7 @@ class JBaseFileSelectDialog
   /**
    * The root directory.
    */ 
-  protected File  pRootDir;
+  private File  pRootDir;
 
 
   /**

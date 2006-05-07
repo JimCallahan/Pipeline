@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.73 2006/01/16 04:11:12 jim Exp $
+// $Id: MasterMgrClient.java,v 1.74 2006/05/07 21:30:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -127,7 +127,7 @@ class MasterMgrClient
    * Set the work groups used to determine the scope of administrative privileges. <P> 
    * 
    * This operation requires Master Admin privileges 
-   * (see {@link Privileges#isMasterAdmin isMasterAdmin 
+   * (see {@link Privileges#isMasterAdmin isMasterAdmin}). 
    * 
    * @param groups 
    *   The work groups.
@@ -839,6 +839,43 @@ class MasterMgrClient
     }        
   }
 
+  /**
+   * Get multiple OS specific toolset packages. 
+   * 
+   * @param packages
+   *   The name, revision number and operating systems of the toolset packages to retrieve.
+   * 
+   * @return
+   *   The packages indexed by name, revision number and operating system type.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset packages.
+   */ 
+  public synchronized TripleMap<String,VersionID,OsType,PackageVersion> 
+  getToolsetPackages
+  (
+   DoubleMap<String,VersionID,TreeSet<OsType>> packages
+  ) 
+    throws PipelineException    
+  {
+    verifyConnection();
+
+    if(packages.isEmpty()) 
+      throw new PipelineException("No packages where specified!");
+
+    MiscGetToolsetPackagesReq req = new MiscGetToolsetPackagesReq(packages);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetPackages, req);
+    if(obj instanceof MiscGetToolsetPackagesRsp) {
+      MiscGetToolsetPackagesRsp rsp = (MiscGetToolsetPackagesRsp) obj;
+      return rsp.getPackages();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -909,10 +946,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the default layout of the editor plugin menu for an operating system.
-   * 
-   * @param os
-   *   The operating system type.
+   * Get the default layout of the editor plugin menu.
    * 
    * @return 
    *   The heirarchical set of editor plugin menus.
@@ -921,15 +955,12 @@ class MasterMgrClient
    *   If unable to determine the editor menu layout.
    */ 
   public synchronized PluginMenuLayout
-  getEditorMenuLayout
-  (
-   OsType os
-  ) 
+  getEditorMenuLayout()
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
 
     Object obj = performTransaction(MasterRequest.GetEditorMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -945,9 +976,6 @@ class MasterMgrClient
   /**
    * Set the default layout of the editor plugin menu.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of editor plugin menus.
    * 
@@ -957,14 +985,13 @@ class MasterMgrClient
   public synchronized void 
   setEditorMenuLayout
   (
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException      
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
 
     Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -976,9 +1003,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The heirarchical set of editor plugin menus.
    * 
@@ -988,14 +1012,13 @@ class MasterMgrClient
   public synchronized PluginMenuLayout
   getEditorMenuLayout
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
 
     Object obj = performTransaction(MasterRequest.GetEditorMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1014,9 +1037,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of editor plugin menus.
    * 
@@ -1027,14 +1047,13 @@ class MasterMgrClient
   setEditorMenuLayout
   (
    String name, 
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
 
     Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1046,9 +1065,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The vendors, names and revision numbers of the associated editor plugins.
    * 
@@ -1058,14 +1074,13 @@ class MasterMgrClient
   public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetEditorPlugins
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
 
     Object obj = performTransaction(MasterRequest.GetToolsetEditorPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1084,9 +1099,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1100,14 +1112,13 @@ class MasterMgrClient
   getPackageEditorPlugins
   (
    String name, 
-   OsType os,
    VersionID vid
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
 
     Object obj = performTransaction(MasterRequest.GetPackageEditorPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1126,9 +1137,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1142,7 +1150,6 @@ class MasterMgrClient
   setPackageEditorPlugins
   ( 
    String name,  
-   OsType os, 
    VersionID vid,
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
@@ -1150,20 +1157,18 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
 
     Object obj = performTransaction(MasterRequest.SetPackageEditorPlugins, req); 
     handleSimpleResponse(obj); 
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
 
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
-   * Get the default layout of the comparator plugin menu for an operating system.
-   * 
-   * @param os
-   *   The operating system type.
+   * Get the default layout of the comparator plugin menu.
    * 
    * @return 
    *   The heirarchical set of comparator plugin menus.
@@ -1172,15 +1177,12 @@ class MasterMgrClient
    *   If unable to determine the comparator menu layout.
    */ 
   public synchronized PluginMenuLayout
-  getComparatorMenuLayout
-  (
-   OsType os
-  ) 
+  getComparatorMenuLayout()
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
 
     Object obj = performTransaction(MasterRequest.GetComparatorMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1196,9 +1198,6 @@ class MasterMgrClient
   /**
    * Set the default layout of the comparator plugin menu.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of comparator plugin menus.
    * 
@@ -1208,14 +1207,13 @@ class MasterMgrClient
   public synchronized void 
   setComparatorMenuLayout
   (
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException      
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
 
     Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1227,9 +1225,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The heirarchical set of comparator plugin menus.
    * 
@@ -1239,14 +1234,13 @@ class MasterMgrClient
   public synchronized PluginMenuLayout
   getComparatorMenuLayout
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
 
     Object obj = performTransaction(MasterRequest.GetComparatorMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1260,13 +1254,10 @@ class MasterMgrClient
   }
   
   /**
-   * Get the layout of the comparator plugin menu associated with a toolset.
+   * Set the layout of the comparator plugin menu associated with a toolset.
    * 
    * @param name
    *   The toolset name.
-   * 
-   * @param os
-   *   The operating system type.
    * 
    * @param layout
    *   The heirarchical set of comparator plugin menus.
@@ -1278,14 +1269,13 @@ class MasterMgrClient
   setComparatorMenuLayout
   (
    String name, 
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
 
     Object obj = performTransaction(MasterRequest.SetComparatorMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1297,9 +1287,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The vendors, names and revision numbers of the associated comparator plugins.
    * 
@@ -1309,14 +1296,13 @@ class MasterMgrClient
   public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetComparatorPlugins
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
 
     Object obj = performTransaction(MasterRequest.GetToolsetComparatorPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1335,9 +1321,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1351,14 +1334,13 @@ class MasterMgrClient
   getPackageComparatorPlugins
   (
    String name, 
-   OsType os,
    VersionID vid
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
 
     Object obj = performTransaction(MasterRequest.GetPackageComparatorPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1377,9 +1359,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1393,7 +1372,6 @@ class MasterMgrClient
   setPackageComparatorPlugins
   ( 
    String name,  
-   OsType os, 
    VersionID vid,
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
@@ -1401,20 +1379,18 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
 
     Object obj = performTransaction(MasterRequest.SetPackageComparatorPlugins, req); 
     handleSimpleResponse(obj); 
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
 
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
-   * Get the default layout of the action plugin menu for an operating system.
-   * 
-   * @param os
-   *   The operating system type.
+   * Get the default layout of the action plugin menu.
    * 
    * @return 
    *   The heirarchical set of action plugin menus.
@@ -1423,15 +1399,12 @@ class MasterMgrClient
    *   If unable to determine the action menu layout.
    */ 
   public synchronized PluginMenuLayout
-  getActionMenuLayout
-  (
-   OsType os
-  ) 
+  getActionMenuLayout()
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
 
     Object obj = performTransaction(MasterRequest.GetActionMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1447,9 +1420,6 @@ class MasterMgrClient
   /**
    * Set the default layout of the action plugin menu.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of action plugin menus.
    * 
@@ -1459,14 +1429,13 @@ class MasterMgrClient
   public synchronized void 
   setActionMenuLayout
   (
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException      
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
 
     Object obj = performTransaction(MasterRequest.SetActionMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1478,9 +1447,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The heirarchical set of action plugin menus.
    * 
@@ -1490,14 +1456,13 @@ class MasterMgrClient
   public synchronized PluginMenuLayout
   getActionMenuLayout
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
 
     Object obj = performTransaction(MasterRequest.GetActionMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1511,13 +1476,10 @@ class MasterMgrClient
   }
   
   /**
-   * Get the layout of the action plugin menu associated with a toolset.
+   * Set the layout of the action plugin menu associated with a toolset.
    * 
    * @param name
    *   The toolset name.
-   * 
-   * @param os
-   *   The operating system type.
    * 
    * @param layout
    *   The heirarchical set of action plugin menus.
@@ -1529,14 +1491,13 @@ class MasterMgrClient
   setActionMenuLayout
   (
    String name, 
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
 
     Object obj = performTransaction(MasterRequest.SetActionMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1548,9 +1509,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The vendors, names and revision numbers of the associated action plugins.
    * 
@@ -1560,14 +1518,13 @@ class MasterMgrClient
   public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetActionPlugins
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
 
     Object obj = performTransaction(MasterRequest.GetToolsetActionPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1586,9 +1543,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1602,14 +1556,13 @@ class MasterMgrClient
   getPackageActionPlugins
   (
    String name, 
-   OsType os,
    VersionID vid
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
 
     Object obj = performTransaction(MasterRequest.GetPackageActionPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1628,9 +1581,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1644,7 +1594,6 @@ class MasterMgrClient
   setPackageActionPlugins
   ( 
    String name,  
-   OsType os, 
    VersionID vid,
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
@@ -1652,20 +1601,18 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
 
     Object obj = performTransaction(MasterRequest.SetPackageActionPlugins, req); 
     handleSimpleResponse(obj); 
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
 
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
-   * Get the default layout of the tool plugin menu for an operating system.
-   * 
-   * @param os
-   *   The operating system type.
+   * Get the default layout of the tool plugin menu.
    * 
    * @return 
    *   The heirarchical set of tool plugin menus.
@@ -1674,15 +1621,12 @@ class MasterMgrClient
    *   If unable to determine the tool menu layout.
    */ 
   public synchronized PluginMenuLayout
-  getToolMenuLayout
-  (
-   OsType os
-  ) 
+  getToolMenuLayout()
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
 
     Object obj = performTransaction(MasterRequest.GetToolMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1698,9 +1642,6 @@ class MasterMgrClient
   /**
    * Set the default layout of the tool plugin menu.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of tool plugin menus.
    * 
@@ -1710,14 +1651,13 @@ class MasterMgrClient
   public synchronized void 
   setToolMenuLayout
   (
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException      
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
 
     Object obj = performTransaction(MasterRequest.SetToolMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1729,9 +1669,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The heirarchical set of tool plugin menus.
    * 
@@ -1741,14 +1678,13 @@ class MasterMgrClient
   public synchronized PluginMenuLayout
   getToolMenuLayout
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
 
     Object obj = performTransaction(MasterRequest.GetToolMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1762,13 +1698,10 @@ class MasterMgrClient
   }
   
   /**
-   * Get the layout of the tool plugin menu associated with a toolset.
+   * Set the layout of the tool plugin menu associated with a toolset.
    * 
    * @param name
    *   The toolset name.
-   * 
-   * @param os
-   *   The operating system type.
    * 
    * @param layout
    *   The heirarchical set of tool plugin menus.
@@ -1780,14 +1713,13 @@ class MasterMgrClient
   setToolMenuLayout
   (
    String name, 
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
 
     Object obj = performTransaction(MasterRequest.SetToolMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1799,9 +1731,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The vendors, names and revision numbers of the associated tool plugins.
    * 
@@ -1811,14 +1740,13 @@ class MasterMgrClient
   public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetToolPlugins
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
 
     Object obj = performTransaction(MasterRequest.GetToolsetToolPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1837,9 +1765,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1853,14 +1778,13 @@ class MasterMgrClient
   getPackageToolPlugins
   (
    String name, 
-   OsType os,
    VersionID vid
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
 
     Object obj = performTransaction(MasterRequest.GetPackageToolPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -1879,9 +1803,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -1895,7 +1816,6 @@ class MasterMgrClient
   setPackageToolPlugins
   ( 
    String name,  
-   OsType os, 
    VersionID vid,
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
@@ -1903,20 +1823,18 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
 
     Object obj = performTransaction(MasterRequest.SetPackageToolPlugins, req); 
     handleSimpleResponse(obj); 
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the default layout of the archiver plugin menu for an operating system.
-   * 
-   * @param os
-   *   The operating system type.
+   * Get the default layout of the archiver plugin menu.
    * 
    * @return 
    *   The heirarchical set of archiver plugin menus.
@@ -1925,15 +1843,12 @@ class MasterMgrClient
    *   If unable to determine the archiver menu layout.
    */ 
   public synchronized PluginMenuLayout
-  getArchiverMenuLayout
-  (
-   OsType os
-  ) 
+  getArchiverMenuLayout()
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
 
     Object obj = performTransaction(MasterRequest.GetArchiverMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -1949,9 +1864,6 @@ class MasterMgrClient
   /**
    * Set the default layout of the archiver plugin menu.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of archiver plugin menus.
    * 
@@ -1961,14 +1873,13 @@ class MasterMgrClient
   public synchronized void 
   setArchiverMenuLayout
   (
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException      
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
 
     Object obj = performTransaction(MasterRequest.SetArchiverMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -1980,9 +1891,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The heirarchical set of archiver plugin menus.
    * 
@@ -1992,14 +1900,13 @@ class MasterMgrClient
   public synchronized PluginMenuLayout
   getArchiverMenuLayout
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name, os);
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
 
     Object obj = performTransaction(MasterRequest.GetArchiverMenuLayout, req); 
     if(obj instanceof MiscGetPluginMenuLayoutRsp) {
@@ -2018,9 +1925,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param layout
    *   The heirarchical set of archiver plugin menus.
    * 
@@ -2031,14 +1935,13 @@ class MasterMgrClient
   setArchiverMenuLayout
   (
    String name, 
-   OsType os,
    PluginMenuLayout layout
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, os, layout);
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
 
     Object obj = performTransaction(MasterRequest.SetArchiverMenuLayout, req); 
     handleSimpleResponse(obj);    
@@ -2050,9 +1953,6 @@ class MasterMgrClient
    * @param name
    *   The toolset name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @return 
    *   The vendors, names and revision numbers of the associated archiver plugins.
    * 
@@ -2062,14 +1962,13 @@ class MasterMgrClient
   public synchronized DoubleMap<String,String,TreeSet<VersionID>>
   getToolsetArchiverPlugins
   (
-   String name, 
-   OsType os
+   String name
   )
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name, os);
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
 
     Object obj = performTransaction(MasterRequest.GetToolsetArchiverPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -2088,9 +1987,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -2104,14 +2000,13 @@ class MasterMgrClient
   getPackageArchiverPlugins
   (
    String name, 
-   OsType os,
    VersionID vid
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, os, vid);
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
 
     Object obj = performTransaction(MasterRequest.GetPackageArchiverPlugins, req);
     if(obj instanceof MiscGetPackagePluginsRsp) {
@@ -2130,9 +2025,6 @@ class MasterMgrClient
    * @param name
    *   The toolset package name.
    * 
-   * @param os
-   *   The operating system type.
-   * 
    * @param vid
    *   The revision number of the package.
    * 
@@ -2146,7 +2038,6 @@ class MasterMgrClient
   setPackageArchiverPlugins
   ( 
    String name,  
-   OsType os, 
    VersionID vid,
    DoubleMap<String,String,TreeSet<VersionID>> plugins
   ) 
@@ -2154,7 +2045,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, os, vid, plugins);
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
 
     Object obj = performTransaction(MasterRequest.SetPackageArchiverPlugins, req); 
     handleSimpleResponse(obj); 
@@ -3142,6 +3033,40 @@ class MasterMgrClient
     if(obj instanceof NodeGetCheckedInRsp) {
       NodeGetCheckedInRsp rsp = (NodeGetCheckedInRsp) obj;
       return rsp.getNodeVersion();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /** 
+   * Get all of the checked-in versions of a node. <P> 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The checked-in versions indexed by revision number.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in version.
+   */
+  public synchronized TreeMap<VersionID,NodeVersion> 
+  getAllCheckedInVersions
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetAllCheckedInReq req = new NodeGetAllCheckedInReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetAllCheckedIn, req);
+    if(obj instanceof NodeGetAllCheckedInRsp) {
+      NodeGetAllCheckedInRsp rsp = (NodeGetAllCheckedInRsp) obj;
+      return rsp.getNodeVersions();      
     }
     else {
       handleFailure(obj);
@@ -4375,6 +4300,10 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new PipelineException
+	("The backup database operation can only be initiated from a Unix client!");
+
     verifyConnection();
 
     MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file);

@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.3 2005/06/10 04:55:41 jim Exp $
+// $Id: JConfigDialog.java,v 1.4 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -62,7 +62,7 @@ class JConfigDialog
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  UIFactory.createTitledTextField(tpanel, "Node Directory:", sTSize, 
-					 vpanel, PackageInfo.sNodeDir.toString(), sVSize);
+					 vpanel, PackageInfo.sNodePath.toString(), sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -80,7 +80,7 @@ class JConfigDialog
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  UIFactory.createTitledTextField(tpanel, "Production Directory:", sTSize, 
-					 vpanel, PackageInfo.sProdDir.toString(), sVSize);
+					  vpanel, PackageInfo.sProdPath.toString(), sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -104,24 +104,24 @@ class JConfigDialog
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  UIFactory.createTitledTextField(tpanel, "Queue Directory:", sTSize, 
-					 vpanel, PackageInfo.sQueueDir.toString(), sVSize);
+					 vpanel, PackageInfo.sQueuePath.toString(), sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
 	  UIFactory.createTitledTextField(tpanel, "Install Directory:", sTSize, 
-					 vpanel, PackageInfo.sInstDir.toString(), sVSize);
+					  vpanel, PackageInfo.sInstPath.toString(), sVSize);
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  UIFactory.createTitledTextField(tpanel, "User Home Directory:", sTSize, 
-					 vpanel, PackageInfo.sHomeDir.toString(), sVSize);
+					  vpanel, PackageInfo.sHomePath.toString(), sVSize);
 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  UIFactory.createTitledTextField(tpanel, "Temporary Directory:", sTSize, 
-					 vpanel, PackageInfo.sTempDir.toString(), sVSize);
+					  vpanel, PackageInfo.sTempPath.toString(), sVSize);
 	}
 
 	

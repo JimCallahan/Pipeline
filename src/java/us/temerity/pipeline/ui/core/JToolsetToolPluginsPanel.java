@@ -1,4 +1,4 @@
-// $Id: JToolsetToolPluginsPanel.java,v 1.4 2006/01/15 06:29:26 jim Exp $
+// $Id: JToolsetToolPluginsPanel.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -43,54 +43,40 @@ class JToolsetToolPluginsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the the UI components to display the current plugins associated with a 
-   * toolset package.
+   * Get the all of the plugins. 
    * 
-   * @param toolset
-   *   The toolset. 
+   * @param pname
+   *   The name of the toolset package.
    * 
-   * @param os
-   *   The toolset operating system.
-   * 
-   * @param privileges
-   *   The details of the administrative privileges granted to the current user. 
+   * @param pvid
+   *   The version number of the package.
    */ 
-  public void 
-  update
-  (
-   Toolset toolset, 
-   OsType os,
-   PrivilegeDetails privileges
-  )
+  protected TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getAllPlugins() 
     throws PipelineException
   {
-    DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-      new DoubleMap<String,String,TreeSet<VersionID>>();
-    {
-      int wk;
-      for(wk=0; wk<toolset.getNumPackages(); wk++) {
-	String pname = toolset.getPackageName(wk);
-	VersionID pvid = toolset.getPackageVersionID(wk);
-	
-	DoubleMap<String,String,TreeSet<VersionID>> table = 
-	  pDialog.getPackageTools(pname, os, pvid);
+    PluginMgrClient pclient = PluginMgrClient.getInstance();
+    return pclient.getTools();
+  }
 
-	for(String vendor : table.keySet()) {
-	  for(String name : table.get(vendor).keySet()) {
-	    TreeSet<VersionID> vids = plugins.get(vendor, name);
-	    if(vids == null) {
-	      vids = new TreeSet<VersionID>();
-	      plugins.put(vendor, name, vids);
-	    }
-	  
-	    vids.addAll(table.get(vendor, name));
-	  }
-	}
-      }
-    }
-
-    String tname = toolset.getName();      
-    updateHelper(tname, os, getLayout(tname, os), plugins, privileges);
+  /**
+   * Get the plugins associated with the given toolset package.
+   * 
+   * @param pname
+   *   The name of the toolset package.
+   * 
+   * @param pvid
+   *   The version number of the package.
+   */ 
+  protected DoubleMap<String,String,TreeSet<VersionID>> 
+  getPackagePlugins
+  (
+   String pname, 
+   VersionID pvid
+  ) 
+    throws PipelineException
+  {
+    return pDialog.getPackageTools(pname, pvid);
   }
 
   /**
@@ -102,8 +88,8 @@ class JToolsetToolPluginsPanel
   {
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getToolMenuLayout(pToolsetOsType);
-    setLayout(pToolsetName, pToolsetOsType, layout);
+    PluginMenuLayout layout = client.getToolMenuLayout();
+    setLayout(pToolsetName, layout);
     updateDefault(layout);
   }
 
@@ -116,7 +102,7 @@ class JToolsetToolPluginsPanel
   {
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
-    client.setToolMenuLayout(pToolsetOsType, getLayout(pToolsetName, pToolsetOsType));
+    client.setToolMenuLayout(getLayout(pToolsetName));
   }
 
 
@@ -127,19 +113,15 @@ class JToolsetToolPluginsPanel
    * 
    * @param tname
    *   The name of the toolset.
-   * 
-   * @param os
-   *   The package operating system.
    */ 
   protected  PluginMenuLayout
   getLayout
   (
-   String tname, 
-   OsType os
+   String tname
   )
     throws PipelineException
   {
-    return pDialog.getToolsetTools(tname, os);
+    return pDialog.getToolsetTools(tname);
   }
 
   /**
@@ -148,9 +130,6 @@ class JToolsetToolPluginsPanel
    * @param tname
    *   The name of the toolset.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param layout
    *   The plugin menu layout.
    */ 
@@ -158,12 +137,11 @@ class JToolsetToolPluginsPanel
   setLayout
   (
    String tname, 
-   OsType os, 
    PluginMenuLayout layout
   )
     throws PipelineException
   {
-    pDialog.setToolsetTools(tname, os, layout);
+    pDialog.setToolsetTools(tname, layout);
   }
 
 

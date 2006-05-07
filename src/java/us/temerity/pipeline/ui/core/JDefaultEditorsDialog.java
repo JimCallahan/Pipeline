@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -175,7 +175,7 @@ class JDefaultEditorsDialog
     else if(cmd.equals("remove")) 
       doRemove();
     else if(cmd.equals("reset")) 
-      updateDefaultEditors();
+      doReset(); 
     else 
       super.actionPerformed(e);
   }
@@ -243,6 +243,19 @@ class JDefaultEditorsDialog
 
     pTableModel.removeRows(pTablePanel.getTable().getSelectedRows());
   }
+
+  /**
+   * Reset the suffix editors back to the defaults.
+   */ 
+  public void 
+  doReset()
+  {
+    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) 
+      updateDefaultEditors();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

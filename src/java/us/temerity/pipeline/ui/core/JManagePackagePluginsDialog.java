@@ -1,4 +1,4 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.3 2006/01/15 06:29:25 jim Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.4 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -90,9 +90,6 @@ class JManagePackagePluginsDialog
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    * 
@@ -103,26 +100,27 @@ class JManagePackagePluginsDialog
   update
   (
    String pname, 
-   OsType os,
    VersionID vid,
    PrivilegeDetails privileges
   )
   {
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
+    PluginMgrClient pclient = PluginMgrClient.getInstance();
     try {
       if(vid == null)
-	pHeaderLabel.setText(os + " Package Plugins:  " + pname + " (working)");
+	pHeaderLabel.setText("Package Plugins:  " + pname + " (working)");
       else
-	pHeaderLabel.setText(os + " Package Plugins:  " + pname + " (v" + vid + ")");
+	pHeaderLabel.setText("Package Plugins:  " + pname + " (v" + vid + ")");
       
       pPackageName = pname;
       
       if(privileges != null) 
 	pPrivilegeDetails = privileges;
 
+      pclient.update();
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
-	panel.update(pname, os, vid, pPrivilegeDetails);
+	panel.update(pname, vid, pPrivilegeDetails);
 
       pConfirmButton.setEnabled(pPrivilegeDetails.isDeveloper());
       pApplyButton.setEnabled(pPrivilegeDetails.isDeveloper());
@@ -140,9 +138,6 @@ class JManagePackagePluginsDialog
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the frozen package.
    */ 
@@ -150,14 +145,13 @@ class JManagePackagePluginsDialog
   clone
   (
    String pname, 
-   OsType os,
    VersionID vid
   )
   {
     try {
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
-	panel.clone(pname, os, vid);
-      update(pname, os, null, null);
+	panel.clone(pname, vid);
+      update(pname, null, null);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -172,24 +166,20 @@ class JManagePackagePluginsDialog
    * @param pname
    *   The name of the toolset package.
    * 
-   * @param os
-   *   The package operating system.
-   * 
    * @param vid
    *   The revision number of the frozen package.
    */ 
   public void 
   freeze
   (
-   String pname, 
-   OsType os,
+   String pname,
    VersionID vid
   )
   {
     try {
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
-	panel.freeze(pname, os, vid);
-      update(pname, os, vid, null);
+	panel.freeze(pname, vid);
+      update(pname, vid, null);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -202,20 +192,16 @@ class JManagePackagePluginsDialog
    * 
    * @param pname
    *   The name of the toolset package.
-   * 
-   * @param os
-   *   The package operating system.
    */ 
   public void 
   remove
   (
-   String pname, 
-   OsType os
+   String pname
   )
   {
     try {
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
-	panel.remove(pname, os);
+	panel.remove(pname);
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);

@@ -1,4 +1,4 @@
-// $Id: DLTextureAction.java,v 1.4 2005/12/31 20:41:42 jim Exp $
+// $Id: DLTextureAction.java,v 1.5 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -377,7 +377,8 @@ class DLTextureAction
 	fromSeq = fseq;
 	
 	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-	fromPath = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().getPath());
+	fromPath = new File(PackageInfo.sProdDir, 
+			    snodeID.getWorkingParent().toFile().getPath());
       }
       
       {

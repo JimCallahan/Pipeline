@@ -1,4 +1,4 @@
-// $Id: JAddSecondaryDialog.java,v 1.6 2005/04/30 01:02:20 jim Exp $
+// $Id: JAddSecondaryDialog.java,v 1.7 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -220,8 +220,8 @@ class JAddSecondaryDialog
     pFileSeqDialog.updateHeader(author, view);
 
     {
-      File path = new File(PackageInfo.sWorkDir, author + "/" + view + mod.getName());
-      pRootDir = path.getParentFile();
+      Path path = new Path(PackageInfo.sWorkPath, author + "/" + view + mod.getName());
+      pRootDir = path.getParentPath().toFile();
     }
 
     if(mod != null) {

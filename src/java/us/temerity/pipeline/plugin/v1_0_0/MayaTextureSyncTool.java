@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.15 2005/12/04 05:51:38 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.16 2006/05/07 21:30:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -1032,7 +1032,7 @@ class MayaTextureSyncTool
 	  File file = null;
 	  if(!texture.startsWith("/")) {
 	    file = new File(PackageInfo.sProdDir, 
-			    pTargetSceneID.getWorkingParent().getPath() + "/" + texture);
+			    pTargetSceneID.getWorkingParent().toFile() + "/" + texture);
 	  }
 	  else {
 	    file = new File(texture);

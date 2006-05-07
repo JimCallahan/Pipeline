@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.2 2005/03/18 16:33:53 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.3 2006/05/07 21:30:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,50 +143,48 @@ class JSaveLayoutDialog
   public void 
   updateLayouts
   ( 
-   String current
+   Path current
   ) 
     throws PipelineException
   {
     super.updateLayouts(current);
     
-    if(current != null) {
-      File path = new File(current);
-      pNameField.setText(path.getName());
-    }
-    else {
+    if(current != null) 
+      pNameField.setText(current.getName());
+    else 
       pNameField.setText(null);
-    }
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name to use for the saved layout. <P> 
+   * Get the abstract pathname to use for the saved layout. <P> 
    * 
    * @return
    *   The layout name or <CODE>null</CODE> if none was chosen.
    */ 
-  public String
-  getSelectedName() 
+  public Path
+  getSelectedPath() 
   {
     String text = pNameField.getText();
     if((text == null) || (text.length() == 0)) 
       return null;
 
-    String dir = null;
+    Path path = null;
     {
       TreePath tpath = pTree.getSelectionPath(); 
       if(tpath != null) {
 	DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
 	TreeData data = (TreeData) tnode.getUserObject();
-	dir = data.getDir().getPath();
+	if(data.getName() == null) 
+	  path = new Path(data.getPath(), text);
+	else 
+	  path = data.getPath();
       }
     }
 
-    if((dir != null) && (dir.length() > 1))
-      return (dir + "/" + text);
-    return ("/" + text);
+    return path;
   }
 
 
@@ -277,11 +275,11 @@ class JSaveLayoutDialog
 	if(tpath != null) {
 	  tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
 	  TreeData data = (TreeData) tnode.getUserObject();
-	  cdata = new TreeData(new File(data.getDir(), diag.getName()), null);
+	  cdata = new TreeData(new Path(data.getPath(), diag.getName()), null);
 	}
 	else {
 	  tnode = (DefaultMutableTreeNode) pTree.getModel().getRoot();
-	  cdata = new TreeData(new File("/" + diag.getName()), null);
+	  cdata = new TreeData(new Path("/" + diag.getName()), null);
 	}
 
 	if(!tnode.getAllowsChildren()) 
@@ -290,8 +288,10 @@ class JSaveLayoutDialog
 
       /* create the new directory */ 
       {
-	File dir = new File(PackageInfo.sHomeDir, 
-			    PackageInfo.sUser + "/.pipeline/layouts/" + cdata.getDir());
+	Path lpath = new Path(PackageInfo.sHomePath, 
+			      PackageInfo.sUser + "/.pipeline/layouts");
+	Path path = new Path(lpath, cdata.getPath().getParentPath()); 
+	File dir = path.toFile();
 	if(!dir.isDirectory()) 
 	  dir.mkdirs();
       }
@@ -307,7 +307,7 @@ class JSaveLayoutDialog
 	    TreeData data = (TreeData) child.getUserObject();
 
 	    if((data.getName() != null) || 
-	       (data.getDir().compareTo(cdata.getDir()) > 0))
+	       (data.getPath().compareTo(cdata.getPath()) > 0))
 	      break;
 
 	    idx++;
