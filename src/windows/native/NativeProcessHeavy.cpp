@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cpp,v 1.1 2006/04/22 12:12:36 jim Exp $
+// $Id: NativeProcessHeavy.cpp,v 1.2 2006/05/07 19:56:58 jim Exp $
 
 #include "stdafx.h"
 
@@ -299,7 +299,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 
       printf("Cmdline Size = %d\n", csize);
 
-      if(csize >= (MAX_PATH-1)) {
+      if(csize >= 32767) {
 	env->ThrowNew(IOException, "command line exceeds 32K limit on Windows!");
       	return -1; 
       }
@@ -370,7 +370,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     }
 
     /* get handle to the STDOUT file */ 
-    child_stdout = CreateFile(TEXT(outFile), GENERIC_WRITE, 0, &saAttr, 
+    child_stdout = CreateFile(TEXT(outFile), GENERIC_WRITE, FILE_SHARE_READ, &saAttr, 
 			      CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if(child_stdout == INVALID_HANDLE_VALUE) {
       env->ThrowNew(IOException, "unable to open the STDOUT file!"); 
@@ -378,7 +378,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     }
 
     /* get handle to the STDERR file */ 
-    child_stderr = CreateFile(TEXT(errFile), GENERIC_WRITE, 0, &saAttr, 
+    child_stderr = CreateFile(TEXT(errFile), GENERIC_WRITE, FILE_SHARE_READ, &saAttr, 
 			      CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if(child_stderr == INVALID_HANDLE_VALUE) {
       env->ThrowNew(IOException, "unable to open the STDERR file!"); 

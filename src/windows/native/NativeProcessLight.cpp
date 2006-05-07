@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cpp,v 1.1 2006/04/22 12:12:36 jim Exp $
+// $Id: NativeProcessLight.cpp,v 1.2 2006/05/07 19:56:58 jim Exp $
 
 #include "stdafx.h"
 
@@ -463,7 +463,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 
       printf("Cmdline Size = %d\n", csize);
 
-      if(csize >= (MAX_PATH-1)) {
+      if(csize >= 32767) {
 	env->ThrowNew(IOException, "command line exceeds 32K limit on Windows!");
       	return -1; 
       }
