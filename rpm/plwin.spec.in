@@ -1,0 +1,65 @@
+Summary: The Windows XP Pipeline Client Programs
+Name: plwin-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/plwin
+AutoReq: no
+
+%description
+The launcher scripts, native binaries and libraries needed to run the 
+Pipeline client programs under Windows XP.  
+
+This RPM should be installed on the same Linux file server as the main 
+"pipeline" RPM.  Note that this RPM does not contain the required Java 
+classes or data files needed to run the Pipeline client applications.
+These resources are accessed over a network share using the path supplied
+to the Windows Root Install Directory (--win-root-dir option) to 
+plconfig(1) during Pipeline configuration process.
+
+Windows machines must install the PipelineJobManager service locally in
+order to participate in procesing jobs for the Pipeline queue.  You must
+first run the Windows installer for the Job Manager service which can be
+found here:
+
+  @WIN_ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
+
+This will install a Windows service wrapper program and a pair of 
+utilities for installing and uninstalling the program as a Windows 
+service.  Once the service is installed, you must also start it before it
+can begin processing jobs using:
+
+  Control Panel -> Administrative Tools -> Services
+
+%files
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/Windows/bin/plscript.bat
+@ROOT_INST_DIR@/Windows/bin/plui.exe
+
+#@ROOT_INST_DIR@/Windows/sbin/pljobmgr.bat
+
+@ROOT_INST_DIR@/Windows/debug/bin/plscript.bat
+@ROOT_INST_DIR@/Windows/debug/bin/plui2.bat
+@ROOT_INST_DIR@/Windows/debug/bin/plui.exe
+
+#@ROOT_INST_DIR@/Windows/debug/bin/pltestheavy.bat
+#@ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
+#@ROOT_INST_DIR@/Windows/debug/bin/pltestnative.bat
+
+#@ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
+
+#@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/lib/Windows
+
+%changelog
+* @RPM_DATE@ Temerity Support <support@temerity.us>
+Latest build.
+
+
+
