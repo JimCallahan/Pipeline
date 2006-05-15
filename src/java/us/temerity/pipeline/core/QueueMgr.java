@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.55 2006/05/07 21:30:08 jim Exp $
+// $Id: QueueMgr.java,v 1.56 2006/05/15 01:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2833,8 +2833,8 @@ class QueueMgr
 
 	      /* determine whether the job is ready for execution */ 
 	      if(job != null) {
-		boolean ready = true;
-		boolean done = false;
+		boolean waitingOnUpstream = false; 
+		boolean abortDueToUpstream = false;
 		for(Long sjobID : job.getSourceJobIDs()) {
 		  QueueJobInfo sinfo = null;
 		  timer.aquire();
@@ -2849,24 +2849,21 @@ class QueueMgr
 		    case Preempted:
 		    case Paused:
 		    case Running:
-		      waiting.add(jobID);
-		      ready = false;
-		      done = true;
+		      waitingOnUpstream = true;
 		      break;
 
 		    case Aborted:
 		    case Failed:
-		      pHitList.add(jobID);
-		      ready = false;
-		      done = true;
+		      abortDueToUpstream = true;
 		    }
 		  }
-		    
-		  if(done) 
-		    break;
 		}
 		
-		if(ready) 
+		if(abortDueToUpstream) 
+		  pHitList.add(jobID);
+		else if(waitingOnUpstream) 
+		  waiting.add(jobID);
+		else 
 		  pReady.add(jobID);
 	      }
 	    }
@@ -3113,7 +3110,7 @@ class QueueMgr
 			}
 			break;
 		    
-			/* skip aborted jobs */ 
+		      /* skip aborted jobs */ 
 		      case Aborted:
 			processed.add(jobID);
 			break;
