@@ -1,0 +1,59 @@
+
+
+
+
+
+
+
+
+Plugins
+			
+97 	Job Output Parsing 		
+550 	Validator Plugins
+							
+594 	ZBrush Plugins	
+611 	XSI Plugins
+593 	Turtle Plugins								
+522 	ShakeSync Tool		
+518 	HDiff Comparator Plugin 	
+598 	Windows Specific Air Editor Plugins 			
+599 	3Delight 5.0 Plugins 						
+567 	Liquid/Pixie Plugins 	
+							
+510 	Maya Frame Rate 
+584 	Example Shot Setup Tool				
+601 	IvView Editor on Windows & Mac OS X 
+600 	GimpDiff Comparator on Windows 		
+
+
+UI Features
+						
+494 	Multiple Evolve 
+588 	Add getRoot/setRoot methods to BaseTool
+582 	Changing Toolset needs to invalidate Action/Editor 
+564 	View selected checked-in sequences in Node Files panel 	
+549 	Determine owner of unchecked in node
+483 	Multiple Threads 
+548 	View Version Trees 
+								
+542 	Show Toolset Modifications 				
+580 	The BROWSER Project				
+583 	Job Spreadsheet Panel 						
+527 	Display Action Name 
+				
+559 	Text Entry Invisible in Some Dialogs 	
+341 	Dual Monitor Problems
+
+
+Backend	
+				
+568 	Long Term Queue Statistics 					
+554 	Node Bundles						
+275 	Distributed Jobs 					
+573 	Intermediate Nodes 			
+536 	License Expiration Warnings
+			
+
+Misc 
+	
+366 	Frame Increment Incorrect 
