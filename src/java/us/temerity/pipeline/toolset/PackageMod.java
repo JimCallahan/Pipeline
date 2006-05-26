@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.10 2006/05/07 21:30:13 jim Exp $
+// $Id: PackageMod.java,v 1.11 2006/05/26 18:01:48 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -238,9 +238,9 @@ class PackageMod
       throw new PipelineException
 	("The load script operation is not supported on Windows.");
 
-    String path = null;
+    File sfile = null;
     try {
-      path = script.getCanonicalPath();
+      sfile = script.getCanonicalFile();
     }
     catch(IOException ex) {
       throw new PipelineException(ex);
@@ -262,14 +262,13 @@ class PackageMod
       ArrayList<String> args = new ArrayList<String>();
       args.add("--noprofile");
       args.add("-c");
-      args.add("if source " + path + " 2>&1 > /dev/null; " +
+      args.add("if source " + sfile + " 2>&1 > /dev/null; " +
 	       "then " + envbin + "; else exit 1; fi");
       
       TreeMap<String,String> env = new TreeMap<String,String>();
 
       SubProcessLight proc = 
-	new SubProcessLight("EvalPackage", "/bin/bash", args, 
-			    env, PackageInfo.sTempPath.toFile());
+	new SubProcessLight("EvalPackage", "/bin/bash", args, env, sfile.getParentFile());
       proc.start();
     
       try {
