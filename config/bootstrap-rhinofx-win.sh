@@ -13,16 +13,15 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/$1
+plprofile=../../../src/pipeline/plconfig/customers/rhinofx/$1
 
 pushd i686-pc-linux-gnu-dbg
-  PATH=$HOME/local/bin:$PATH \
   $plsrcdir/configure \
     --disable-foundation \
     --disable-opt \
-    --with-debug-base=43000 \
-    --with-prof-base=43100 \
-    --with-crypto-app=$plsrcdir/plconfig \
+    --with-debug-base=45000 \
+    --with-prof-base=45100 \
+    --with-crypto-app=../../../src/pipeline/plconfig \
     --with-customer=rhinofx \
     --with-customer-profile=$plprofile
 popd

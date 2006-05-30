@@ -1,19 +1,21 @@
 #!/bin/sh
 
-echo "-------------------------------------------------------------------------------------------"
+sitep=060519
+
+echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
-echo "-------------------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------------"
 
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
 plsrcdir=$HOME/code-rhinofx/src/pipeline
+plprofile=$plsrcdir/plconfig/customers/rhinofx/$sitep
 
 pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/060124
 
 pushd i686-pc-linux-gnu-dbg
   CC=/usr/bin/gcc33 CXX=/usr/bin/g++33 \
@@ -29,15 +31,34 @@ pushd i686-pc-linux-gnu-dbg
 popd
 
 
-MAC_HOSTNAME=tadpole
 
-echo "-------------------------------------------------------------------------------------------"
-echo "  UPDATING: $MAC_HOSTNAME"
-echo "-------------------------------------------------------------------------------------------"
+mac_clients=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacClients`
+if [ "x$mac_clients" == "xtrue" ]
+then
+  MAC_HOSTNAME=tadpole
 
-ssh tadpole "rm -rf code-rhinofx/src/pipeline"
+  echo "-------------------------------------------------------------------------------------"
+  echo "  UPDATING: $MAC_HOSTNAME"
+  echo "-------------------------------------------------------------------------------------"
 
-rsync -av --exclude-from=$plsrcdir/config/excluded \
-  $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-rhinofx/src/pipeline
+  rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
+    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-rhinofx/src/pipeline
 
-ssh tadpole "source .bash_profile; cd code-rhinofx/build/pipeline; ./bootstrap.sh"
+  ssh $MAC_HOSTNAME "source .bash_profile; cd code-rhinofx/build/pipeline; ./bootstrap.sh $sitep"
+fi
+
+
+win_clients=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup WinClients`
+if [ "x$win_clients" == "xtrue" ]
+then
+  WIN_HOSTNAME=lizard
+
+  echo "-------------------------------------------------------------------------------------"
+  echo "  UPDATING: $WIN_HOSTNAME"
+  echo "-------------------------------------------------------------------------------------"
+
+  rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
+    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code-rhinofx/src/pipeline
+
+  ssh $WIN_HOSTNAME "source .bash_profile; cd code-rhinofx/build/pipeline; ./bootstrap.sh $sitep"
+fi
