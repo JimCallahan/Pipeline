@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.3 2006/05/07 21:30:07 jim Exp $
+// $Id: LogMgr.java,v 1.4 2006/05/30 17:18:31 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -337,10 +337,10 @@ class LogMgr
     if(needsRotate) {
       int wk;
       for(wk=pBackups-2; wk>=0; wk--) {
-	Path npath = new Path(pPrefix, "." + wk);
+	Path npath = new Path(pPrefix + "." + wk);
 	File nfile = npath.toFile();
 
-	Path opath = new Path(pPrefix, "." + (wk+1));
+	Path opath = new Path(pPrefix + "." + (wk+1));
 	File ofile = opath.toFile();
 	if(ofile.exists()) {
 	  if(!ofile.delete()) 
@@ -358,7 +358,7 @@ class LogMgr
 
     /* if nessary, create a new file writer */ 
     if(pWriter == null) {
-      Path path = new Path(pPrefix, ".0");
+      Path path = new Path(pPrefix + ".0");
       File file = path.toFile();
       try {
 	pWriter = new FileWriter(file);
