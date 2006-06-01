@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.16 2006/05/07 20:07:13 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.17 2006/06/01 16:21:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,10 +38,12 @@ class PackageInfo
       os = OsType.Unix;
     else if (opsys.equals("Mac OS X")) 
       os = OsType.MacOS;
-    else if(opsys.equals("Windows XP")) 
+    else if(opsys.equals("Windows XP") || 
+	    opsys.equals("Windows 2000") ||
+	    opsys.equals("Windows NT"))
       os = OsType.Windows; 
     else 
-      assert(false);
+      assert(false) : ("Unsupported OS type (" + opsys + ")!");
     sOsType = os; 
 
     switch(os) {
