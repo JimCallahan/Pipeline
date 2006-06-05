@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.3 2006/05/07 21:30:14 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.4 2006/06/05 03:45:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -180,7 +180,7 @@ class JSaveLayoutDialog
 	if(data.getName() == null) 
 	  path = new Path(data.getPath(), text);
 	else 
-	  path = data.getPath();
+	  path = new Path(data.getPath().getParentPath(), text);
       }
     }
 
