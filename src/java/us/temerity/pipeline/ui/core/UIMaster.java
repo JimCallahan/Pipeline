@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.37 2006/05/07 21:30:14 jim Exp $
+// $Id: UIMaster.java,v 1.38 2006/06/05 03:46:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1672,7 +1672,7 @@ class UIMaster
   {
     try {
       Path lpath = new Path(PackageInfo.sHomePath, 
-			   PackageInfo.sUser + "/.pipeline/layouts");
+			    PackageInfo.sUser + "/.pipeline/layouts");
       Path path = new Path(lpath, pLayoutPath);
       
       File dir = path.getParentPath().toFile();
