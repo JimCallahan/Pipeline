@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.2 2006/06/01 16:19:26 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.3 2006/06/06 11:17:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -43,6 +43,7 @@ class MayaTextureSyncTool
     pTextureFormats.add("hdr");
     pTextureFormats.add("jpg");
     pTextureFormats.add("jpeg");
+    pTextureFormats.add("map");
     pTextureFormats.add("png");
     pTextureFormats.add("ppm");
     pTextureFormats.add("psd");
