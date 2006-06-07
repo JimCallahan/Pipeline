@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.11 2006/05/07 20:07:14 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.12 2006/06/07 23:21:34 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -50,7 +50,9 @@ class BootStrapLoader
       rootDir = new File("@ROOT_INST_DIR@");
     else if(opsys.equals("Mac OS X")) 
       rootDir = new File("@MAC_ROOT_INST_DIR@");
-    else if(opsys.equals("Windows XP")) 
+    else if(opsys.equals("Windows XP") || 
+	    opsys.equals("Windows 2000") ||
+	    opsys.equals("Windows NT"))
       rootDir = new File("@WIN_ROOT_INST_DIR@");
     else 
       throw new LicenseException
