@@ -247,6 +247,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
          ALL_JAR = all.jar
          API_JAR = api.jar
+        GLUE_JAR = glue.jar
            VAULT = vault
 
 
@@ -314,9 +315,12 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    TestNativeOptsParser \
                    GlueParser
 
+    GLUE_PARSERS = GlueParser
+
 
     JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
                    $(patsubst %,core/%.java,$(CORE_PARSERS)) \
+                   $(patsubst %,glue/io/%.java,$(GLUE_PARSERS)) \
                    PackageInfo.java ui/core/UserPrefs.java ui/core/JUserPrefsDialog.java
 
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
@@ -331,7 +335,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: Makefile $(API_JAR) 
+all: Makefile $(GLUE_JAR) 
 	$(MAKE) -C plugin $@
 	$(MAKE) $(VAULT) bootstrap-jar
 
@@ -340,6 +344,7 @@ $(ALL_JAR): java-all textures fonts
          $(JAR) cvf us/temerity/pipeline/$(ALL_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
+                    us/temerity/pipeline/glue/io/*.class \
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/laf/fonts \
@@ -359,6 +364,7 @@ $(API_JAR): java-all textures fonts
          $(JAR) cvf us/temerity/pipeline/$(API_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
+                    us/temerity/pipeline/glue/io/*.class \
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/laf/fonts \
@@ -370,6 +376,12 @@ $(API_JAR): java-all textures fonts
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
+
+$(GLUE_JAR): $(API_JAR)
+	(cd ../../..; \
+         $(JAR) cvf us/temerity/pipeline/$(GLUE_JAR) \
+                    us/temerity/pipeline/glue/io/*.class)
+
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
@@ -410,6 +422,12 @@ core/%.java: core/%.jj
 	cp --force $(srcdir)/core/parser/TokenMgrError.java core/
 	(cd core; $(JAVA_CC) $<)
 
+glue/io/%.java: glue/io/%.jj
+	-@mkdir -p glue/io
+	cp --force $(srcdir)/glue/io/parser/ParseException.java glue/io/
+	cp --force $(srcdir)/glue/io/parser/TokenMgrError.java glue/io/
+	(cd glue/io; $(JAVA_CC) $<)
+
 
 PackageInfo.java: PackageInfo.java.src
 	@echo Adding legal notices to: $@
@@ -435,7 +453,7 @@ install: all installdirs install-jar
 	$(MAKE) -C plugin $@
 
 install-jar: $(API_JAR) $(VAULT)
-	$(INSTALL) -m 444 $(API_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
+	$(INSTALL) -m 444 $(API_JAR) $(GLUE_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
 
 PHONY: installdirs
 installdirs:
@@ -482,6 +500,7 @@ clean-class:
 	rm -f *.class 
 	rm -f bootstrap/*.class
 	rm -f glue/*.class
+	rm -f glue/io/*.class
 	rm -f laf/*.class
 	rm -f message/*.class
 	rm -f core/*.class
@@ -496,10 +515,12 @@ clean-aux:
 	rm -f bootstrap/BootStrapLoader.java
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
+	rm -f glue/io/ParseException.java glue/io/SimpleCharStream.java 
+	rm -f glue/io/Token.java glue/io/TokenMgrError.java
 	rm -f core/PackageInfo.java core/VerifiedApp.java
 	rm -f ui/core/JUserPrefsDialog.java ui/core/UserPrefs.java
 
-clean-parser: clean-core-parser 
+clean-parser: clean-core-parser clean-glue-parser 
 
 clean-core-parser: 
 	@list='$(CORE_PARSERS)'; \
@@ -516,6 +537,27 @@ clean-core-parser:
             rm -f $$f; \
           fi; \
           f=core/$$p"TokenManager.java"; \
+	  if test -f $$f; then \
+            echo rm -f $$f; \
+            rm -f $$f; \
+          fi; \
+         done	
+
+clean-glue-parser: 
+	@list='$(GLUE_PARSERS)'; \
+         for p in $$list; \
+         do \
+          f=glue/io/$$p".java"; \
+	  if test -f $$f; then \
+            echo rm -f $$f; \
+            rm -f $$f; \
+          fi; \
+          f=glue/io/$$p"Constants.java"; \
+	  if test -f $$f; then \
+            echo rm -f $$f; \
+            rm -f $$f; \
+          fi; \
+          f=glue/io/$$p"TokenManager.java"; \
 	  if test -f $$f; then \
             echo rm -f $$f; \
             rm -f $$f; \

@@ -1,0 +1,1067 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(GlueParser)
+
+package us.temerity.pipeline.glue.io;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+
+import java.util.*;
+import java.lang.reflect.Array;
+
+/*------------------------------------------------------------------------------------------*/
+/*   C L I E N T   O P T S   P A R S E R                                                    */
+/*                                                                                          */
+/*    The parser for the command-line driven Pipeline client.                               */
+/*------------------------------------------------------------------------------------------*/
+
+class 
+GlueParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached class objects for types and interfaces which are tested frequently.
+   */
+  static {
+    try {
+      sGlueable       = Class.forName("us.temerity.pipeline.glue.Glueable");
+      sCollection     = Class.forName("java.util.Collection");
+      sMap            = Class.forName("java.util.Map");
+
+      sBooleanClass   = Class.forName("java.lang.Boolean");
+      sByteClass      = Class.forName("java.lang.Byte");
+      sShortClass     = Class.forName("java.lang.Short");
+      sIntegerClass   = Class.forName("java.lang.Integer");
+      sLongClass      = Class.forName("java.lang.Long");
+      sFloatClass     = Class.forName("java.lang.Float");
+      sDoubleClass    = Class.forName("java.lang.Double");
+      sCharacterClass = Class.forName("java.lang.Character");
+      sStringClass    = Class.forName("java.lang.String");
+    }
+    catch (ClassNotFoundException ex) {
+      assert(false);  
+    }
+  }
+
+  /**
+   * The package prefixes to use when resolving simple class names. 
+   */ 
+  private static final String sPackages[] = {
+    "java.lang", 
+    "java.util", 
+    "us.temerity.pipeline"
+  };
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private ParseException 
+  typeMismatch
+  (
+   Class cls, 
+   Class vcls
+  ) 
+  {
+    return new ParseException(
+      "Type mismatch, value of type (" + vcls.getName() + ") cannot be assigned" +
+      " to objects of type (" + cls.getName() + ")!");
+  }
+
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  private static Class sGlueable;       
+  private static Class sCollection;     
+  private static Class sMap;            
+    
+  private static Class sBooleanClass;    
+  private static Class sByteClass;        
+  private static Class sShortClass;      
+  private static Class sIntegerClass;    
+  private static Class sLongClass;       
+  private static Class sFloatClass;      
+  private static Class sDoubleClass;     
+  private static Class sCharacterClass;  
+  private static Class sStringClass;      
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  private GlueDecoder      pDecoder;
+  private GlueParserState  pState; 
+
+  private int  pArrayDepth;
+}
+
+
+PARSER_END(GlueParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+/* seperators */ 
+  <OPEN_ANGLE:          "<">
+| <CLOSE_ANGLE:   	">">
+					      
+| <OPEN_CURLY:    	"{">
+| <CLOSE_CURLY:   	"}">
+					      
+| <OPEN_BRACE:    	"[">
+| <CLOSE_BRACE:   	"]">
+					      
+| <POUND:         	"#">
+
+/* literals */ 
+| <TRUE:                "true">         
+| <FALSE:               "false">  
+
+| <INTEGER_LITERAL:     (["-","+"])? (["0"-"9"])+>
+
+| <#EXPONENT:		("e" (["-","+"])? (["0"-"9"])+)>
+| <REAL_LITERAL:        (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])+ (<EXPONENT>)?>
+
+| <EMPTY_STRING:        "\"\""> 
+| <OPEN_QUOTE:          "\""> : STRING_STATE
+| <COLON:               ":"> 
+
+/* primitive types */ 
+| <PRIM_BOOLEAN_CLASS:  "boolean">
+| <PRIM_BYTE_CLASS:     "byte">
+| <PRIM_SHORT_CLASS:    "short">
+| <PRIM_INT_CLASS:      "int">
+| <PRIM_LONG_CLASS:     "long">
+| <PRIM_FLOAT_CLASS:    "float">
+| <PRIM_DOUBLE_CLASS:   "double">
+| <PRIM_CHAR_CLASS:     "char">
+
+/* basic classes */ 
+| <BOOLEAN_CLASS:       "Boolean">
+| <BYTE_CLASS:          "Byte">
+| <SHORT_CLASS:         "Short">
+| <INTEGER_CLASS:       "Integer">
+| <LONG_CLASS:          "Long">
+| <FLOAT_CLASS:         "Float">
+| <DOUBLE_CLASS:        "Double">
+| <CHARACTER_CLASS:     "Character">
+| <STRING_CLASS:        "String">
+
+/* special entries */ 
+| <NULL:                "NULL">
+| <REF:                 "REF">
+
+/* identifiers: record titles and complex class names */ 
+| <IDENT:               (["a"-"z","A"-"Z","0"-"9"])+ (["a"-"z","A"-"Z","0"-"9","_","$","."])*>
+
+/* whitespace */ 
+| <WS:                  ([" ","\t","\n","\r","\f"])+>
+}
+
+
+/* string literals */ 
+<STRING_STATE>
+TOKEN :
+{
+  <STRING_LITERAL:      ((~["\""]) | "\\\"" )+>
+| <CLOSE_QUOTE:         "\""> : DEFAULT
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+Object 
+Decode
+(
+ GlueDecoder decoder, 
+ GlueParserState state
+) 
+  throws GlueException : 
+{
+  assert(decoder != null);
+  pDecoder = decoder;
+
+  assert(state != null);
+  pState = state;
+
+  Object obj;
+} 
+{
+  Identifier() <WS> "<" obj=ComplexBody() <EOF>
+  {
+    return obj;
+  }
+}
+
+Object[]
+Block() :
+{
+  Object key;
+  Object obj;
+}
+{
+  key=Identifier() <WS> "<" (obj=RefBody() | obj=NullBody() | obj=ComplexBody())
+  {
+    Object[] pair = { key, obj };
+    return pair;
+  }
+}
+
+Object
+RefBody() : 
+{
+  Long objID;  
+}
+{
+  <REF> ">" <WS> objID=ObjectID() <WS>
+  {
+    Object obj = pState.lookupObject(objID);
+    if(objID == null)
+      throw new ParseException("Reference to unknown object encountered: #" + objID);
+    return obj;
+  }
+}
+
+Object 
+NullBody() : 
+{}
+{
+  <NULL> ">" <WS>
+  {
+    return null;
+  }
+}
+
+Object 
+ComplexBody() : 
+{
+  Class cls;
+  Object obj;
+}
+{
+  cls=AnyClass() (obj=ObjectBody(cls) | obj=ArrayBody(cls)) 
+  {
+    return obj;
+  }
+}
+
+Object 
+ObjectBody(Class cls) :
+{
+  Long objID;
+  Object obj;
+}
+{
+  ">" <WS> objID=ObjectID() <WS> 
+  "{" <WS> 
+    (obj=SimpleValue(cls, objID) | 
+     obj=CollectionValues(cls, objID) | 
+     obj=MapValues(cls, objID) | 
+     obj=GlueableValues(cls, objID))
+  "}" <WS>
+  {
+    return obj;
+  }
+}
+
+Object 
+SimpleValue(Class cls, Long objID) : 
+{
+  Object val;
+}
+{
+  val=Value() <WS>
+  {
+    Object obj = null;
+    {
+      Class vcls = val.getClass();
+      if(vcls == sBooleanClass) {
+	if(cls != sBooleanClass) 
+	  throw typeMismatch(cls, vcls);
+	obj = val;
+      }
+      else if(vcls == sLongClass) {
+	Long l = (Long) val;
+	if(cls == sByteClass) 
+	  obj = new Byte(l.byteValue());
+	else if(cls == sShortClass) 
+	  obj = new Short(l.shortValue());
+	else if(cls == sIntegerClass) 
+	  obj = new Integer(l.intValue());
+	else if(cls == sLongClass) 
+	  obj = val;
+	else if(cls == sCharacterClass) 
+	  obj = new Character((char) l.intValue());
+	else 
+	  throw typeMismatch(cls, vcls);
+      }
+      else if(vcls == sDoubleClass) {
+	Double d = (Double) val;
+	if(cls == sFloatClass) 
+	  obj = new Float(d.floatValue());
+	else if(cls == sDoubleClass) 
+	  obj = val;
+	else 
+	  throw typeMismatch(cls, vcls);
+      }    
+      else if(vcls == sStringClass) {
+	if(cls == sStringClass) 
+	  obj = val;      
+	else if(cls.isEnum()) {
+	  try {
+	    obj = Enum.valueOf(cls, (String) val);
+	  }
+	  catch(IllegalArgumentException ex) {
+	    throw new ParseException
+	      ("The \"" + cls.getName() + "\" enumeration does not contain \"" + val + "\"!");
+	  }
+	}
+	else 
+	  throw typeMismatch(cls, vcls);
+      }
+      else {
+	throw new ParseException("Interal Error in GlueParser.SimpleValue()");
+      }
+    }
+
+    pState.insertObject(objID, obj);
+
+    return obj;
+  }
+}
+
+Object
+CollectionValues(Class cls, Long objID) : 
+{
+  Object obj = pState.newInstance(objID, cls);
+}
+{
+  (CollectionValue((Collection) obj))+
+  {
+    return obj;
+  }
+}
+
+void
+CollectionValue(Collection col) : 
+{
+  Object obj;
+}
+{
+  "<" (obj=RefBody() | obj=NullBody() | obj=ComplexBody())
+  {
+    col.add(obj);
+  }
+}
+    
+Object 
+MapValues(Class cls, Long objID) : 
+{
+  Object obj = pState.newInstance(objID, cls);
+}
+{
+  (MapValue((Map) obj))+
+  {
+    return obj;
+  }
+}
+
+void 
+MapValue(Map table) : 
+{
+  Object[] key;
+  Object[] val;
+}
+{
+  "{" <WS> 
+    key=Block() 
+    val=Block()
+  "}" <WS>
+  {
+    if(!key[0].equals("Key"))
+      throw new ParseException("Was expecting \"Key\" but found \"" + key[0] + "\"!");
+    if(!val[0].equals("Val"))
+      throw new ParseException("Was expecting \"Val\" but found \"" + val[0] + "\"!");
+    table.put(key[1], val[1]);
+  }
+}
+
+Object 
+GlueableValues(Class cls, Long objID) : 
+{
+  Object obj = pState.newInstance(objID, cls);
+  HashMap table = new HashMap();
+}
+{
+  (GlueableValue(table))+
+  {
+    pState.setCurrentTable(table);
+
+    try {
+      Glueable g = (Glueable) obj;
+      g.fromGlue(pDecoder);
+    }
+    catch(GlueException ex) {
+      throw new ParseException(ex.getMessage());
+    }
+
+    return obj;
+  }
+}
+
+void 
+GlueableValue(HashMap table) : 
+{
+  Object[] pair;
+}
+{
+  pair=Block()
+  {
+    table.put(pair[0], pair[1]);
+  }
+}
+
+String
+Identifier() : 
+{
+  Token t;
+}
+{
+  t=<IDENT> 
+  {
+    return t.image;
+  }
+}
+
+Long
+ObjectID() :
+{
+  Long val;
+}
+{
+  "#" val=IntValue()
+  {
+    return val;
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   A R R A Y S                                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+Object 
+ArrayBody(Class cls) :
+{
+  Long objID;
+  int sizeDepth[];
+  Object obj;
+}
+{
+  sizeDepth=ArrayDecl() ">" <WS> objID=ObjectID() <WS> 
+  "{" <WS> 
+    obj=ArrayValue(cls, sizeDepth[0], sizeDepth[1], objID)
+  "}" <WS>
+  {
+    return obj;
+  }
+}
+
+int[]
+ArrayDecl() :
+{
+  Token t;
+  Long size;
+  int depth = 1;
+}
+{
+  "[" size=IntValue() "]" (depth=ArrayDepth())?
+  {
+    if(size.intValue() < 0) 
+      throw new ParseException("Illegal array size: " + size);
+
+    int sizeDepth[] = { size.intValue(), depth };
+    return sizeDepth;
+  }
+}
+
+int 
+ArrayDepth() : 
+{
+  pArrayDepth = 1;
+}
+{
+  (ArrayDepthLevel())+
+  {
+    return pArrayDepth;
+  }
+}
+
+void 
+ArrayDepthLevel() : 
+{}
+{
+  "[" "]"
+  {
+    pArrayDepth++;
+  }
+}
+
+Object
+ArrayValue(Class cls, int size, int depth, Long objID) : 
+{
+  Object obj = pState.newArrayInstance(objID, cls, size, depth);
+}
+{
+  (ArrayEntry(obj))+
+  {
+    return obj;
+  }  
+}
+
+void
+ArrayEntry(Object array) : 
+{
+  Long idx;
+  Class cls;
+}
+{
+  idx=IntValue() <WS> "<" 
+  ((cls=AnyClass() (SimpleArrayEntry(cls, array, idx.intValue()) | 
+		    SubArrayEntry(cls, array, idx.intValue()))) | 
+   RefArrayEntry(array, idx.intValue()) |
+   NullBody())
+  {}
+}
+
+void 
+SimpleArrayEntry(Class cls, Object array, int idx) :
+{}
+{
+  ">" <WS> (PrimArrayEntry(cls, array, idx) | ObjectArrayEntry(cls, array, idx)) 
+  {}
+}
+
+void 
+PrimArrayEntry(Class cls, Object array, int idx) :
+{
+  Object val;
+}
+{
+  "{" <WS> val=Value() <WS> "}" <WS> 
+  {
+    Class vcls = val.getClass();
+    if(vcls == sBooleanClass) {
+      if(cls != Boolean.TYPE) 
+	throw typeMismatch(cls, vcls);
+      Array.setBoolean(array, idx, (Boolean) val);
+    }
+    else if(vcls == sLongClass) {
+      Long l = (Long) val;
+      if(cls == Byte.TYPE) 
+        Array.setByte(array, idx, l.byteValue());
+      else if(cls == Short.TYPE) 
+        Array.setShort(array, idx, l.shortValue());
+      else if(cls == Integer.TYPE) 
+        Array.setInt(array, idx, l.intValue());
+      else if(cls == Long.TYPE) 
+	Array.setLong(array, idx, l);
+      else if(cls == Character.TYPE) 
+        Array.setChar(array, idx, (char) l.intValue());
+      else 
+        throw typeMismatch(cls, vcls);
+    }
+    else if(vcls == sDoubleClass) {
+      Double d = (Double) val;
+      if(cls == Float.TYPE) 
+        Array.setFloat(array, idx, d.floatValue());
+      else if(cls == Double.TYPE) 
+        Array.setDouble(array, idx, d);
+      else 
+        throw typeMismatch(cls, vcls);
+    }  
+    else  {
+      Array.set(array, idx, val);
+    }
+  }
+}
+
+void 
+ObjectArrayEntry(Class cls, Object array, int idx) :
+{
+  Long objID;
+  Object obj;
+}
+{
+  objID=ObjectID() <WS> 
+  "{" <WS> 
+    (obj=SimpleValue(cls, objID) | 
+     obj=CollectionValues(cls, objID) | 
+     obj=MapValues(cls, objID) | 
+     obj=GlueableValues(cls, objID))
+  "}" <WS>
+  {
+    Array.set(array, idx, obj);
+  }
+}
+
+void 
+SubArrayEntry(Class cls, Object array, int idx) :
+{
+  Object obj;
+  int size;
+}
+{
+  obj=ArrayBody(cls)
+  {
+    Array.set(array, idx, obj);
+  }
+}
+
+void 
+RefArrayEntry(Object array, int idx) :
+{
+  Object obj;
+}
+{
+  obj=RefBody()
+  {
+    Array.set(array, idx, obj);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   V A L U E S                                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+Object 
+Value() : 
+{
+  Object obj;
+}
+{
+  (obj=BooleanValue() | obj=IntValue() | obj=RealValue() | 
+   obj=StringValue() | obj=EnumValue())
+  {
+    return obj;
+  }
+}
+
+
+Boolean 
+BooleanValue() :
+{
+  Boolean val;
+}
+{
+  (val=True() | val=False())
+  {
+    return val;
+  }
+}
+
+Boolean
+True() : 
+{}
+{
+  <TRUE>
+  {
+    return new Boolean(true);
+  }
+}
+
+Boolean
+False() : 
+{}
+{
+  <FALSE>
+  {
+    return new Boolean(false);
+  }
+}
+
+
+Long
+IntValue() : 
+{
+  Token t;
+}
+{
+  t=<INTEGER_LITERAL>
+  {
+    return new Long(t.image);
+  }
+}
+
+
+Double
+RealValue() : 
+{
+  Token t;
+}
+{
+  t=<REAL_LITERAL>
+  {
+    return new Double(t.image);
+  }
+}
+
+
+String
+StringValue() : 
+{
+  String s = null;
+}
+{
+  (s=StringLiteral() | s=EmptyString())
+  {
+    return s; 
+  }
+}
+
+String
+StringLiteral() : 
+{
+  Token t;
+}
+{
+  <OPEN_QUOTE> t=<STRING_LITERAL> <CLOSE_QUOTE>
+  {
+    char cs[] = t.image.toCharArray();
+
+    StringBuffer buf = new StringBuffer();
+    int wk;
+    for(wk=0; wk<cs.length; wk++) {
+      if((cs[wk] != '\\') || ((wk+1) > cs.length) || (cs[wk+1] != '"'))
+	buf.append(cs[wk]);
+    }
+
+    return buf.toString();
+  }
+}
+
+String
+EmptyString() :
+{}
+{
+  <EMPTY_STRING>
+  {
+    return "";
+  }
+}
+
+
+String
+EnumValue() : 
+{
+  String e;
+}
+{
+  <COLON> e=Identifier() <COLON>
+  {
+    return e;
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   C L A S S E S                                                                          */
+/*------------------------------------------------------------------------------------------*/
+
+Class 
+AnyClass() :
+{
+  Class cls    = null;  
+  String cname = null;
+}
+{
+  /* primitive types */ 
+  (cls=PrimBooleanClass() |   
+   cls=PrimByteClass() |         
+   cls=PrimShortClass() |     
+   cls=PrimIntClass() |       
+   cls=PrimLongClass() |      
+   cls=PrimFloatClass() |     
+   cls=PrimDoubleClass() |     
+   cls=PrimCharClass() |  
+
+   /* basic classes */ 
+   cls=BooleanClass() |     
+   cls=ByteClass() |        
+   cls=ShortClass() |       
+   cls=IntegerClass() |     
+   cls=LongClass() |        
+   cls=FloatClass() |       
+   cls=DoubleClass() | 
+   cls=CharacterClass() |    
+   cls=StringClass() | 
+
+   /* compound class */ 
+   cname=Identifier()) 
+  {
+    if(cls != null) 
+      return cls;
+
+    try {
+      return Class.forName(cname);
+    }
+    catch (ClassNotFoundException ex) {
+      int wk;
+      for(wk=0; wk<sPackages.length; wk++) {
+	try {
+	  return Class.forName(sPackages[wk] + "." + cname);
+	}
+	catch (ClassNotFoundException ex2) {
+	}
+      }
+    
+      throw new ParseException("Unable to locate class: " + cname);
+    }
+  }
+}
+
+
+Class 
+NonPrimClass() :
+{
+  Class cls    = null;  
+  String cname = null;
+}
+{
+  /* basic classes */ 
+  (cls=BooleanClass() |     
+   cls=ByteClass() |        
+   cls=ShortClass() |       
+   cls=IntegerClass() |     
+   cls=LongClass() |        
+   cls=FloatClass() |       
+   cls=DoubleClass() | 
+   cls=CharacterClass() |    
+   cls=StringClass() | 
+
+   /* compound class */ 
+   cname=Identifier()) 
+  {
+    if(cls != null) 
+      return cls;
+
+    try {
+      return Class.forName(cname);
+    }
+    catch (ClassNotFoundException ex) {
+      int wk;
+      for(wk=0; wk<sPackages.length; wk++) {
+	try {
+	  return Class.forName(sPackages[wk] + "." + cname);
+	}
+	catch (ClassNotFoundException ex2) {
+	}
+      }
+    
+      throw new ParseException("Unable to locate class: " + cname);
+    }
+  }
+}
+
+
+
+
+
+/*-- PRIMITIVE TYPES -----------------------------------------------------------------------*/
+
+Class 
+PrimBooleanClass() :
+{} 
+{ 
+  <PRIM_BOOLEAN_CLASS>
+  {
+    return Boolean.TYPE;
+  }
+}
+
+Class 
+PrimByteClass() :
+{} 
+{ 
+  <PRIM_BYTE_CLASS>
+  {
+    return Byte.TYPE;
+  }
+}
+
+Class 
+PrimShortClass() :
+{} 
+{ 
+  <PRIM_SHORT_CLASS>
+  {
+    return Short.TYPE;
+  }
+}
+
+Class 
+PrimIntClass() :
+{} 
+{ 
+  <PRIM_INT_CLASS>
+  {
+    return Integer.TYPE;
+  }
+}
+
+Class 
+PrimLongClass() :
+{} 
+{ 
+  <PRIM_LONG_CLASS>
+  {
+    return Long.TYPE;
+  }
+}
+
+Class 
+PrimFloatClass() :
+{} 
+{ 
+  <PRIM_FLOAT_CLASS>
+  {
+    return Float.TYPE;
+  }
+}
+
+Class 
+PrimDoubleClass() :
+{} 
+{ 
+  <PRIM_DOUBLE_CLASS>
+  {
+    return Double.TYPE;
+  }
+}
+	  
+Class 
+PrimCharClass() :
+{} 
+{ 
+  <PRIM_CHAR_CLASS>
+  {
+    return Character.TYPE;
+  }
+}
+
+
+
+/*-- PRIMITIVE WRAPPER CLASSES -------------------------------------------------------------*/
+
+Class 
+BooleanClass() : 
+{} 
+{ 
+  <BOOLEAN_CLASS>
+  {
+    return sBooleanClass;
+  }
+}
+
+Class 
+ByteClass() : 
+{} 
+{ 
+  <BYTE_CLASS>
+  {
+    return sByteClass;
+  }
+}
+
+Class 
+ShortClass() : 
+{} 
+{ 
+  <SHORT_CLASS>
+  {
+    return sShortClass;
+  }
+}
+
+Class 
+IntegerClass() : 
+{} 
+{ 
+  <INTEGER_CLASS>
+  {
+    return sIntegerClass;
+  }
+}
+
+Class 
+LongClass() : 
+{} 
+{ 
+  <LONG_CLASS>
+  {
+    return sLongClass;
+  }
+}
+
+Class 
+FloatClass() : 
+{} 
+{ 
+  <FLOAT_CLASS>
+  {
+    return sFloatClass;
+  }
+}
+
+Class 
+DoubleClass() : 
+{} 
+{ 
+  <DOUBLE_CLASS>
+  {
+    return sDoubleClass;
+  }
+}
+
+Class 
+CharacterClass() : 
+{} 
+{ 
+  <CHARACTER_CLASS>
+  {
+    return sCharacterClass;
+  }
+}
+
+Class 
+StringClass() : 
+{} 
+{ 
+  <STRING_CLASS>
+  {
+    return sStringClass;
+  }
+}
+
+
+
+
+
