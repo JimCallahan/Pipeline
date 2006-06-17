@@ -247,7 +247,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
          ALL_JAR = all.jar
          API_JAR = api.jar
-        GLUE_JAR = glue.jar
            VAULT = vault
 
 
@@ -278,7 +277,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
      API_SOURCES = $(shell ls $(srcdir)/*.java)
 
-    GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java) 
+    GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java $(srcdir)/glue/io/*.java) 
 
      LAF_SOURCES = $(shell ls $(srcdir)/laf/*.java) 
 
@@ -335,7 +334,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: Makefile $(GLUE_JAR) 
+all: Makefile $(API_JAR) 
 	$(MAKE) -C plugin $@
 	$(MAKE) $(VAULT) bootstrap-jar
 
@@ -377,10 +376,11 @@ $(API_JAR): java-all textures fonts
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
-$(GLUE_JAR): $(API_JAR)
-	(cd ../../..; \
-         $(JAR) cvf us/temerity/pipeline/$(GLUE_JAR) \
-                    us/temerity/pipeline/glue/io/*.class)
+
+#$(GLUE_JAR): $(API_JAR)
+#	(cd ../../..; \
+#         $(JAR) cvf us/temerity/pipeline/$(GLUE_JAR) \
+#                    us/temerity/pipeline/glue/io/*.class)
 
 
 bootstrap-jar: bootstrap-all
@@ -453,7 +453,7 @@ install: all installdirs install-jar
 	$(MAKE) -C plugin $@
 
 install-jar: $(API_JAR) $(VAULT)
-	$(INSTALL) -m 444 $(API_JAR) $(GLUE_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
+	$(INSTALL) -m 444 $(API_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
 
 PHONY: installdirs
 installdirs:
