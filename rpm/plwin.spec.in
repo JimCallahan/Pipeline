@@ -54,8 +54,8 @@ can begin processing jobs using:
 
 #@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
 
-%defattr(-,root,root)
-@ROOT_INST_DIR@/lib/Windows
+%defattr(555,root,root)
+@ROOT_INST_DIR@/lib/Windows/libNative.dll
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
