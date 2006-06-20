@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.151 2006/05/07 21:30:08 jim Exp $
+// $Id: MasterMgr.java,v 1.152 2006/06/20 13:24:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11837,9 +11837,10 @@ class MasterMgr
       NodeStatus status = new NodeStatus(nodeID);
       table.put(name, status);
 
-      /* determine if the current working version is locked */ 
+      /* determine if the current working version is locked or frozen */ 
       boolean workIsLocked = ((work != null) && work.isLocked());
-
+      boolean workIsFrozen = ((work != null) && work.isFrozen());
+    
       /* if not locked, process the upstream nodes */ 
       Date missingStamp = new Date();
       switch(versionState) {
@@ -11966,30 +11967,55 @@ class MasterMgr
 
       default:
 	{
-	  /* query the file manager for per-file states */ 
-	  VersionID vid = null;
-	  if(latest != null) 
-	    vid = latest.getVersionID();
-	  
+	  /* get the per-file states and timestamps */
 	  TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
 	  
-	  {
+	  /* frozen nodes are always Identical and use the working node version timestamp */ 
+	  if(workIsFrozen) {
+	    boolean primarySeq = true;
+	    for(FileSeq fseq : work.getSequences()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
+	      Date ts[] = new Date[fs.length];
+
+	      if(newestStamps == null) 
+		newestStamps = new Date[fs.length];	  
+	      
+	      if(oldestStamps == null) 
+		oldestStamps = new Date[fs.length];
+
+	      int wk;
+	      for(wk=0; wk<fs.length; wk++) {
+		fs[wk] = FileState.Identical;
+		ts[wk] = work.getTimeStamp();
+
+		if(primarySeq) {
+		  newestStamps[wk] = ts[wk];
+		  oldestStamps[wk] = ts[wk];
+		}
+	      }
+
+	      fileStates.put(fseq, fs);
+	      stamps.put(fseq, ts);
+
+	      primarySeq = false;
+	    }
+	  }
+
+	  /* non-frozen nodes need to query the file manager */
+	  else {	     
 	    FileMgrClient fclient = getFileMgrClient();
 	    try {
-	      fclient.states(nodeID, work, versionState, work.isFrozen(), 
-			     vid, fileStates, stamps);
+	      VersionID vid = null;
+	      if(latest != null) 
+		vid = latest.getVersionID();
+
+	      fclient.states(nodeID, work, versionState, workIsFrozen, vid, fileStates, stamps);
 	    }
 	    finally {
 	      freeFileMgrClient(fclient);
 	    }
-	  }
 
-	  /* get the newest/oldest of the timestamp for each file sequence index */ 
-	  {
-	    Date stamp = null;
-	    if(work.isFrozen()) 
-	      stamp = work.getTimeStamp();
-
+	    /* get the newest/oldest of the timestamp for each file sequence index */ 
 	    for(FileSeq fseq : stamps.keySet()) {
 	      Date[] ts = stamps.get(fseq);
 	      
@@ -12001,21 +12027,15 @@ class MasterMgr
 	      
 	      int wk;
 	      for(wk=0; wk<ts.length; wk++) {
-		if(stamp != null) {
-		  newestStamps[wk] = stamp; 
-		  oldestStamps[wk] = stamp;
-		}
-		else {
-		  /* the newest among the primary/secondary files for the index */ 
-		  if((newestStamps[wk] == null) || 
-		     ((ts[wk] != null) && (ts[wk].compareTo(newestStamps[wk]) > 0)))
-		    newestStamps[wk] = ts[wk];
-		  
-		  /* the oldest among the primary/secondary files for the index */ 
-		  if((oldestStamps[wk] == null) || 
-		     ((ts[wk] != null) && (ts[wk].compareTo(oldestStamps[wk]) < 0)))
-		    oldestStamps[wk] = ts[wk];
-		}
+		/* the newest among the primary/secondary files for the index */ 
+		if((newestStamps[wk] == null) || 
+		   ((ts[wk] != null) && (ts[wk].compareTo(newestStamps[wk]) > 0)))
+		  newestStamps[wk] = ts[wk];
+		
+		/* the oldest among the primary/secondary files for the index */ 
+		if((oldestStamps[wk] == null) || 
+		   ((ts[wk] != null) && (ts[wk].compareTo(oldestStamps[wk]) < 0)))
+		  oldestStamps[wk] = ts[wk];
 	      }
 	    }
 	  }
@@ -12203,7 +12223,7 @@ class MasterMgr
 	break;
 
       default:
-	if(workIsLocked) {
+	if(workIsLocked || workIsFrozen) {
 	  int numFrames = work.getPrimarySequence().numFrames();
 	  jobIDs      = new Long[numFrames];
 	  queueStates = new QueueState[numFrames];
@@ -12234,7 +12254,7 @@ class MasterMgr
 	  
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
-	    /* the regeneration action is disabled or does not exist, 
+	    /* there is no regeneration action or it is disabled, 
 	         therefore QueueState is always Finished */ 
 	    if(!work.isActionEnabled()) {
 	      queueStates[wk] = QueueState.Finished;

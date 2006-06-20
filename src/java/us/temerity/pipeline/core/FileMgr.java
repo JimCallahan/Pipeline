@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.50 2006/05/07 21:30:08 jim Exp $
+// $Id: FileMgr.java,v 1.51 2006/06/20 13:24:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -338,6 +338,8 @@ class FileMgr
   {
     assert(req != null);
     TaskTimer timer = new TaskTimer();
+
+    assert(!req.isFrozen());
 
     timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
