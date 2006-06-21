@@ -1,4 +1,4 @@
-// $Id: PtViewerEditor.java,v 1.1 2006/05/07 21:34:00 jim Exp $
+// $Id: PtViewerEditor.java,v 1.2 2006/06/21 04:03:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -12,8 +12,7 @@ import us.temerity.pipeline.*;
  * Interactive viewer for examining Pixar's 3D point cloud file format. <P> 
  * 
  * See the <A href="https://renderman.pixar.com/products/tools/rps.html">RenderMan 
- * ProServer</A>
- * documentation for details about <B>ptviewer</B>(1). <P> 
+ * ProServer</A> documentation for details about <B>ptviewer</B>(1). <P> 
  */
 public
 class PtViewerEditor
