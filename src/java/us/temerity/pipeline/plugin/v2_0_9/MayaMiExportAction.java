@@ -1,4 +1,4 @@
-// $Id: MayaMiExportAction.java,v 1.1 2006/05/26 17:06:35 jim Exp $
+// $Id: MayaMiExportAction.java,v 1.2 2006/06/21 05:25:10 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -24,6 +24,11 @@ import java.io.*;
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains the Maya scene file. <BR> 
  *   </DIV> <BR>
+ * 
+ *   Output Format <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The format of the output MI file. <BR>
+ *   </DIV> 
  * 
  *   <I>Fragment Export</I> <BR>
  *   <DIV style="margin-left: 40px;">
