@@ -1,4 +1,4 @@
-// $Id: ZBrushEditor.java,v 1.1 2006/06/01 16:21:02 jim Exp $
+// $Id: ZBrushEditor.java,v 1.2 2006/06/21 05:24:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -30,10 +30,7 @@ class ZBrushEditor
 	  "ZBrush2");
     
     addSupport(OsType.Windows);
-    addSupport(OsType.MacOS);
     removeSupport(OsType.Unix);
-
-    underDevelopment();
   }
 
 
@@ -102,16 +99,9 @@ class ZBrushEditor
       proc.start();
       return proc;
     }
-    else if(PackageInfo.sOsType == OsType.MacOS) {
-
-      // ...
-
-      throw new PipelineException
-	("Not implemented yet...");
-    }
     else {
       throw new PipelineException
-	("This plugin does not support the Unix operating system!");
+	("This plugin does not support the " + PackageInfo.sOsType + " operating system!");
     }
   }
 
