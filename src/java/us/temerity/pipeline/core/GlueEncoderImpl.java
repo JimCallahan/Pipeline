@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.6 2006/05/07 21:30:08 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.7 2006/06/21 04:52:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -289,25 +289,34 @@ class GlueEncoderImpl
       /* primitive type members */ 
       pLevel++;
       if(primCls != null) {
-	String s = null;
-	if((primCls == Boolean.TYPE) ||
-	   (primCls == Byte.TYPE) ||
-	   (primCls == Short.TYPE) ||
-	   (primCls == Integer.TYPE) ||
-	   (primCls == Long.TYPE) ||
-	   (primCls == Float.TYPE) ||
-	   (primCls == Double.TYPE)) 
-	  s = "";
-	else if(cls == Character.TYPE) 
-	  s = "'";
-	else
-	  assert(false);
-	
 	int wk;
 	for(wk=0; wk<dim; wk++) {
 	  Object comp = Array.get(obj, wk);
 	  assert(comp != null);
-	  pBuf.append(indent() + wk + " <" + simple + "> { " + s + comp + s + " }\n");
+
+	  pBuf.append(indent() + wk + " <" + simple + "> { ");
+
+	  if((primCls == Boolean.TYPE) ||
+	     (primCls == Byte.TYPE) ||
+	     (primCls == Short.TYPE) ||
+	     (primCls == Integer.TYPE) ||
+	     (primCls == Long.TYPE)) {
+	    pBuf.append(comp.toString());
+	  }
+	  else if(primCls == Float.TYPE) {
+	    pBuf.append(sFloatFormat.format((Float) comp));
+	  }
+	  else if(primCls == Double.TYPE) {
+	    pBuf.append(sDoubleFormat.format((Double) comp));
+	  }
+	  else if(primCls == Character.TYPE) {
+	    pBuf.append("'" + comp + "'");
+	  }
+	  else {
+	    assert(false);
+	  }
+
+	  pBuf.append(" }\n");
 	}
       }
 
