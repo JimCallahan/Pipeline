@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.46 2006/01/16 04:11:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.47 2006/06/21 03:53:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -77,9 +77,9 @@ class JNodeViewerPanel
 
       pShowDownstream = UserPrefs.getInstance().getShowDownstream();
 
-      pViewerNodes = new HashMap<NodePath,ViewerNode>();
+      pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
-      pSelected = new HashMap<NodePath,ViewerNode>();
+      pSelected = new TreeMap<NodePath,ViewerNode>();
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
@@ -1390,7 +1390,7 @@ class JNodeViewerPanel
    * @return 
    *   The height of the layout area of the viewer node including its children.
    */ 
-   private double
+   private synchronized double
    layoutNodes
    (
     boolean isRoot, 
@@ -1527,7 +1527,7 @@ class JNodeViewerPanel
    * @param offset
    *   The vertical distance to shift all nodes except the root node.
    */ 
-  private void
+  private synchronized void
   shiftUpstreamNodes
   (
    boolean isRoot, 
@@ -1567,7 +1567,7 @@ class JNodeViewerPanel
    * @param offset
    *   The vertical distance to shift all nodes.
    */ 
-  private void
+  private synchronized void
   shiftDownstreamNodes
   (
    boolean isRoot, 
@@ -1631,7 +1631,7 @@ class JNodeViewerPanel
    * @return 
    *   The node name or <CODE>null</CODE> if there is no primary selection.
    */ 
-  public String
+  public synchronized String
   getPrimarySelectionName() 
   {
     if(pPrimary != null) 
@@ -1645,7 +1645,7 @@ class JNodeViewerPanel
    * @return 
    *   The node name or <CODE>null</CODE> if there is no primary selection.
    */ 
-  public String
+  public synchronized String
   getPrimarySelectionRootName() 
   {
     if(pPrimary != null) 
@@ -1656,7 +1656,7 @@ class JNodeViewerPanel
   /**
    * Get the fully resolved names of all selected nodes.
    */ 
-  public TreeSet<String>
+  public synchronized TreeSet<String>
   getSelectedNames() 
   {
     TreeSet<String> names = new TreeSet<String>();
@@ -1672,7 +1672,7 @@ class JNodeViewerPanel
    * @return 
    *   The node name or <CODE>null</CODE> if there is no primary selection.
    */ 
-  public TreeSet<String>
+  public synchronized TreeSet<String>
   getSelectedRootNames() 
   {
     TreeSet<String> names = new TreeSet<String>();
@@ -1688,7 +1688,7 @@ class JNodeViewerPanel
    * Any nodes which are selected and are upstream of another selected node will be 
    * omitted from the returned names.
    */ 
-  public TreeSet<String>
+  public synchronized TreeSet<String>
   getMostDownstreamOfSelectedNames() 
   {
     TreeSet<String> all = new TreeSet<String>();
@@ -1718,7 +1718,7 @@ class JNodeViewerPanel
   /**
    * Clear the current selection.
    */ 
-  public void
+  public synchronized void
   clearSelection()
   {
     for(ViewerNode vnode : pSelected.values()) 
@@ -1733,7 +1733,7 @@ class JNodeViewerPanel
   /**
    * Make the given viewer node the primary selection.
    */ 
-  public void 
+  public synchronized void 
   primarySelect
   (
    ViewerNode vnode
@@ -1754,7 +1754,7 @@ class JNodeViewerPanel
   /**
    * Add the given viewer node to the selection.
    */ 
-  public void 
+  public synchronized void 
   addSelect
   (
    ViewerNode vnode
@@ -1774,9 +1774,24 @@ class JNodeViewerPanel
   }
 
   /**
+   * Add the viewer nodes inside the given bounding box to the selection.
+   */ 
+  public synchronized void 
+  addSelect
+  (
+   BBox2d bbox
+  ) 
+  {
+    for(ViewerNode vnode : pViewerNodes.values()) {
+      if(vnode.isInsideOf(bbox)) 
+	addSelect(vnode);
+    }
+  }
+
+  /**
    * Toggle the selection of the given viewer node.
    */ 
-  public void 
+  public synchronized void 
   toggleSelect
   (
    ViewerNode vnode
@@ -1800,13 +1815,28 @@ class JNodeViewerPanel
     }    
   }
 
+  /**
+   * Toggle the selection of the viewer nodes inside the given bounding box.
+   */ 
+  public synchronized void 
+  toggleSelect
+  (
+   BBox2d bbox
+  ) 
+  {
+    for(ViewerNode vnode : pViewerNodes.values()) {
+      if(vnode.isInsideOf(bbox)) 
+	toggleSelect(vnode);
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the ViewerNode or ViewerLinkRelationship under the current mouse position. <P> 
    */ 
-  private Object
+  private synchronized Object
   objectAtMousePos() 
   {
     /* compute world coordinates */ 
@@ -1856,9 +1886,7 @@ class JNodeViewerPanel
     /* render the scene geometry */ 
     {
       if(pRefreshScene) {
-	for(ViewerNode vnode : pViewerNodes.values()) 
-	  vnode.rebuild(gl);
-	pViewerLinks.rebuild(gl);
+	rebuildAll(gl);
 
 	{
 	  UIMaster master = UIMaster.getInstance(); 
@@ -1866,11 +1894,7 @@ class JNodeViewerPanel
 	}
 
 	gl.glNewList(pSceneDL.get(), GL.GL_COMPILE_AND_EXECUTE);
-	{
-	  for(ViewerNode vnode : pViewerNodes.values()) 
-	    vnode.render(gl);
-	  pViewerLinks.render(gl);
-	}
+	  renderAll(gl);
 	gl.glEndList();
 
 	pRefreshScene = false;
@@ -1881,11 +1905,40 @@ class JNodeViewerPanel
     }
   }
 
+  /** 
+   * Syncronized display list building helper.
+   */ 
+  private synchronized void
+  rebuildAll
+  (
+   GL gl
+  ) 
+  {
+    for(ViewerNode vnode : pViewerNodes.values()) 
+      vnode.rebuild(gl);
+    pViewerLinks.rebuild(gl);
+  }
+  
+  /** 
+   * Syncronized rendering helper.
+   */ 
+  private synchronized void 
+  renderAll
+  (
+   GL gl
+  ) 
+  {
+    for(ViewerNode vnode : pViewerNodes.values()) 
+      vnode.render(gl);
+    pViewerLinks.render(gl);
+  }
+  
+
   /**
    * Return the previously allocated OpenGL display lists to the pool of display lists to be 
    * reused. 
    */ 
-  public void 
+  public synchronized void 
   freeDisplayLists() 
   {
     super.freeDisplayLists();
@@ -2208,28 +2261,17 @@ class JNodeViewerPanel
 	  /* BUTTON1: replace selection */ 
 	  if((mods & (on1 | off1)) == on1) {
 	    clearSelection();	 
-	    for(ViewerNode vnode : pViewerNodes.values()) {
-	      if(vnode.isInsideOf(bbox)) 
-		addSelect(vnode);
-	    }
+	    addSelect(bbox);
 	  }
 	  
 	  /* BUTTON1+SHIFT: toggle selection */ 
 	  else if((mods & (on2 | off2)) == on2) {
-	    for(ViewerNode vnode : pViewerNodes.values()) {
-	      if(vnode.isInsideOf(bbox)) {
-		toggleSelect(vnode);
-	      }
-	    }
+	    toggleSelect(bbox);
 	  }
 	  
 	  /* BUTTON1+SHIFT+CTRL: add to selection */ 
 	  else if((mods & (on3 | off3)) == on3) {
-	    for(ViewerNode vnode : pViewerNodes.values()) {
-	      if(vnode.isInsideOf(bbox)) {
-		addSelect(vnode);
-	      }
-	    }
+	    addSelect(bbox);
 	  }
 	}
 
@@ -2672,7 +2714,7 @@ class JNodeViewerPanel
   /**
    * Update the status of all nodes.
    */ 
-  private void
+  private synchronized void
   doUpdate()
   { 
     UIMaster.getInstance().getMasterMgrClient().invalidateCachedPrivilegeDetails();
@@ -2686,7 +2728,7 @@ class JNodeViewerPanel
   /**
    * Update the node details panels with the current primary selected node status.
    */ 
-  private void
+  private synchronized void
   doDetails()
   {
     if(pPrimary != null) 
@@ -2702,7 +2744,7 @@ class JNodeViewerPanel
   /**
    * Make the current primary selection the only root node.
    */ 
-  private void
+  private synchronized void
   doMakeRoot()
   {
     pPinnedPos  = pPrimary.getPosition();
@@ -2857,7 +2899,7 @@ class JNodeViewerPanel
   /**
    * Create (or modify) a link from the secondary selected nodes to the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doLink() 
   {
     if(pPrimary != null) {
@@ -2899,7 +2941,7 @@ class JNodeViewerPanel
   /**
    * Unlink the secondary selected nodes from the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doUnlink()
   {
     if(pPrimary != null) {
@@ -2933,7 +2975,7 @@ class JNodeViewerPanel
   /**
    * Add a secondary file sequence.
    */ 
-  private void 
+  private synchronized void 
   doAddSecondary() 
   {
     if(pPrimary != null) {
@@ -2962,7 +3004,7 @@ class JNodeViewerPanel
   /**
    * Remove a secondary file sequence.
    */ 
-  private void 
+  private synchronized void 
   doRemoveSecondary
   (
    String name
@@ -2993,7 +3035,7 @@ class JNodeViewerPanel
    * Export the node properties of the primary selected node to the rest of the selected 
    * nodes.
    */ 
-  private void 
+  private synchronized void 
   doExport() 
   {
     if(pPrimary != null) {
@@ -3035,7 +3077,7 @@ class JNodeViewerPanel
   /**
    * Rename the primary seleted node.
    */ 
-  private void 
+  private synchronized void 
   doRename() 
   {
     if(pPrimary != null) {
@@ -3070,7 +3112,7 @@ class JNodeViewerPanel
   /**
    * Renumber frame range of the primary seleted node.
    */ 
-  private void 
+  private synchronized void 
   doRenumber() 
   {
     if(pPrimary != null) {
@@ -3109,7 +3151,7 @@ class JNodeViewerPanel
   /**
    * Register a new node based on the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doClone() 
   {
     if(pPrimary != null) {
@@ -3136,7 +3178,7 @@ class JNodeViewerPanel
   /**
    * Register a new node.
    */ 
-  private void 
+  private synchronized void 
   doRegister() 
   {
     pRegisterDialog.updateNode(pAuthor, pView);
@@ -3150,7 +3192,7 @@ class JNodeViewerPanel
   /**
    * Release the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doRelease() 
   {
     String text = null;
@@ -3206,7 +3248,7 @@ class JNodeViewerPanel
   /**
    * Release nodes from the current working area view.
    */ 
-  private void 
+  private synchronized void 
   doReleaseView() 
   {
     pReleaseViewDialog.setVisible(true);
@@ -3225,7 +3267,7 @@ class JNodeViewerPanel
   /**
    * Remove all primary/secondary files associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doRemoveFiles() 
   {
     TreeSet<String> names = new TreeSet<String>();
@@ -3263,7 +3305,7 @@ class JNodeViewerPanel
   /**
    * Delete the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doDelete() 
   {
     if(pPrimary != null) {
@@ -3304,7 +3346,7 @@ class JNodeViewerPanel
   /**
    * Queue jobs to the queue for the primary selected node and all nodes upstream of it.
    */ 
-  private void 
+  private synchronized void 
   doQueueJobs() 
   {
     TreeSet<String> roots = new TreeSet<String>();
@@ -3336,7 +3378,7 @@ class JNodeViewerPanel
    * Queue jobs to the queue for the primary selected node and all nodes upstream of it 
    * with special job requirements.
    */ 
-  private void 
+  private synchronized void 
   doQueueJobsSpecial() 
   {
     TreeSet<String> roots = new TreeSet<String>();
@@ -3386,7 +3428,7 @@ class JNodeViewerPanel
   /**
    * Pause all waiting jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doPauseJobs() 
   {
     TreeSet<Long> paused = new TreeSet<Long>();
@@ -3421,7 +3463,7 @@ class JNodeViewerPanel
   /**
    * Resume execution of all paused jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doResumeJobs() 
   {
     TreeSet<Long> resumed = new TreeSet<Long>();
@@ -3456,7 +3498,7 @@ class JNodeViewerPanel
   /**
    * Preempt all jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doPreemptJobs() 
   {
     TreeSet<Long> dead = new TreeSet<Long>();
@@ -3493,7 +3535,7 @@ class JNodeViewerPanel
   /**
    * Kill all jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doKillJobs() 
   {
     TreeSet<Long> dead = new TreeSet<Long>();
@@ -3533,7 +3575,7 @@ class JNodeViewerPanel
   /**
    * Check-in the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doCheckIn() 
   {
     try {
@@ -3591,7 +3633,7 @@ class JNodeViewerPanel
   /**
    * Check-out the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doCheckOut() 
   {
     UIMaster master = UIMaster.getInstance();
@@ -3630,7 +3672,7 @@ class JNodeViewerPanel
   /**
    * Lock the primary selected node to specific checked-in version.
    */ 
-  private void 
+  private synchronized void 
   doLock() 
   {
     UIMaster master = UIMaster.getInstance();
@@ -3677,7 +3719,7 @@ class JNodeViewerPanel
   /**
    * Evolve the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doEvolve() 
   {
     if(pPrimary != null) {
@@ -3722,7 +3764,7 @@ class JNodeViewerPanel
   /**
    * Restore offline checked-in versions of the primary selected node.
    */ 
-  private void 
+  private synchronized void 
   doRestore() 
   {
     RestoreQueryTask task = new RestoreQueryTask(getSelectedNames());
@@ -3738,7 +3780,7 @@ class JNodeViewerPanel
   /**
    * Edit an existing link.
    */ 
-  private void 
+  private synchronized void 
   doLinkEdit()
   {
     if(pPrimary != null) {
@@ -3773,7 +3815,7 @@ class JNodeViewerPanel
   /**
    * Unlink nodes of the currently selected link.
    */ 
-  private void 
+  private synchronized void 
   doLinkUnlink()
   {
     if(pPrimary != null) {
@@ -3803,7 +3845,7 @@ class JNodeViewerPanel
   /**
    * Move the camera to frame the bounds of the currently selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doFrameSelection() 
   {
     doFrameNodes(pSelected.values());
@@ -3812,7 +3854,7 @@ class JNodeViewerPanel
   /**
    * Move the camera to frame all active nodes.
    */ 
-  private void 
+  private synchronized void 
   doFrameAll() 
   {
     doFrameNodes(pViewerNodes.values());
@@ -3821,7 +3863,7 @@ class JNodeViewerPanel
   /**
    * Move the camera to frame the given set of nodes.
    */ 
-  private void 
+  private synchronized void 
   doFrameNodes
   (
    Collection<ViewerNode> vnodes
@@ -3836,7 +3878,7 @@ class JNodeViewerPanel
   /**
    * Set a fixed node expansion depth.
    */
-  private void 
+  private synchronized void 
   doExpandDepth
   (
    int depth
@@ -3849,7 +3891,7 @@ class JNodeViewerPanel
   /**
    * Change to layout policy to <CODE>AutomaticExpand</CODE> and relayout the nodes.
    */ 
-  private void
+  private synchronized void
   doAutomaticExpand()
   {
     clearSelection();
@@ -3861,7 +3903,7 @@ class JNodeViewerPanel
   /**
    * Change to layout policy to <CODE>ExpandAll</CODE> and relayout the nodes.
    */ 
-  private void
+  private synchronized void
   doExpandAll()
   {
     clearSelection();
@@ -3873,7 +3915,7 @@ class JNodeViewerPanel
   /**
    * Change to layout policy to <CODE>CollapseAll</CODE> and relayout the nodes.
    */ 
-  private void
+  private synchronized void
   doCollapseAll()
   {
     clearSelection();
@@ -3886,7 +3928,7 @@ class JNodeViewerPanel
   /**
    * Show/Hide the downstream node tree.
    */ 
-  private void
+  private synchronized void
   doShowHideDownstream()
   {
     clearSelection();
@@ -3901,7 +3943,7 @@ class JNodeViewerPanel
   /**
    * Run the given tool plugin.
    */ 
-  private void 
+  private synchronized void 
   doRunTool
   (
    String name 
@@ -5803,7 +5845,7 @@ class JNodeViewerPanel
   /**
    * The currently displayed nodes indexed by <CODE>NodePath</CODE>.
    */ 
-  private HashMap<NodePath,ViewerNode>  pViewerNodes; 
+  private TreeMap<NodePath,ViewerNode>  pViewerNodes; 
 
   /**
    * The currently displayed node links. 
@@ -5814,7 +5856,7 @@ class JNodeViewerPanel
   /**
    * The currently selected nodes indexed by <CODE>NodePath</CODE>.
    */ 
-  private HashMap<NodePath,ViewerNode>  pSelected;
+  private TreeMap<NodePath,ViewerNode>  pSelected;
 
   /**
    * The primary selection.

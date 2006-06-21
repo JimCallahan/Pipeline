@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.22 2006/05/07 21:30:14 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.23 2006/06/21 03:53:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1100,6 +1100,26 @@ class JQueueJobViewerPanel
   }
 
   /**
+   * Add the viewer jobs and job groups inside the given bounding box to the selection.
+   */ 
+  public synchronized void 
+  addSelect
+  (
+   BBox2d bbox
+  ) 
+  {
+    for(ViewerJob vjob : pViewerJobs.values()) {
+      if(vjob.isInsideOf(bbox)) 
+	toggleSelect(vjob);
+    }
+    
+    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
+      if(vgroup.isInsideOf(bbox)) 
+	toggleSelect(vgroup);
+    }
+  }
+
+  /**
    * Toggle the selection of the given viewer job.
    */ 
   public void 
@@ -1159,13 +1179,33 @@ class JQueueJobViewerPanel
     }
   }
 
+  /**
+   * Toggle the selection of the viewer jobs and job groups inside the given bounding box.
+   */ 
+  public synchronized void 
+  toggleSelect
+  (
+   BBox2d bbox
+  ) 
+  {
+    for(ViewerJob vjob : pViewerJobs.values()) {
+      if(vjob.isInsideOf(bbox)) 
+	toggleSelect(vjob);
+    }
+    
+    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
+      if(vgroup.isInsideOf(bbox)) 
+	toggleSelect(vgroup);
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the ViewerJob or ViewerJobGroup under the current mouse position. <P> 
    */ 
-  private Object
+  private synchronized Object
   objectAtMousePos() 
   {
     /* compute world coordinates */ 
@@ -1220,11 +1260,7 @@ class JQueueJobViewerPanel
     /* render the scene geometry */ 
     {
       if(pRefreshScene) {
-	for(ViewerJob vjob : pViewerJobs.values()) 
-	  vjob.rebuild(gl);
-
-	for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
-	  vgroup.rebuild(gl);
+	rebuildAll(gl);
 
 	{
 	  UIMaster master = UIMaster.getInstance(); 
@@ -1232,13 +1268,7 @@ class JQueueJobViewerPanel
 	}
 
 	gl.glNewList(pSceneDL.get(), GL.GL_COMPILE_AND_EXECUTE);
-	{
-	  for(ViewerJob vjob : pViewerJobs.values()) 
-	    vjob.render(gl);
-
-	  for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
-	    vgroup.render(gl);
-	}
+	  renderAll(gl);
 	gl.glEndList();
 
 	pRefreshScene = false;
@@ -1249,6 +1279,38 @@ class JQueueJobViewerPanel
     }    
   }
    
+  /** 
+   * Syncronized display list building helper.
+   */ 
+  private synchronized void
+  rebuildAll
+  (
+   GL gl
+  ) 
+  {
+    for(ViewerJob vjob : pViewerJobs.values()) 
+      vjob.rebuild(gl);
+    
+    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
+      vgroup.rebuild(gl);
+  }
+  
+  /** 
+   * Syncronized rendering helper.
+   */ 
+  private synchronized void
+  renderAll
+  (
+   GL gl
+  ) 
+  {
+    for(ViewerJob vjob : pViewerJobs.values()) 
+      vjob.render(gl);
+    
+    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
+      vgroup.render(gl);
+  }
+
 
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
@@ -1520,42 +1582,17 @@ class JQueueJobViewerPanel
 	  /* BUTTON1: replace selection */ 
 	  if((mods & (on1 | off1)) == on1) {
 	    clearSelection();
-	    
-	    for(ViewerJob vjob : pViewerJobs.values()) {
-	      if(vjob.isInsideOf(bbox)) 
-		addSelect(vjob);
-	    }
-	    
-	    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
-	      if(vgroup.isInsideOf(bbox)) 
-		addSelect(vgroup);
-	    }
+	    addSelect(bbox);
 	  }
 	  
 	  /* BUTTON1+SHIFT: toggle selection */ 
 	  else if((mods & (on2 | off2)) == on2) {
-	    for(ViewerJob vjob : pViewerJobs.values()) {
-	      if(vjob.isInsideOf(bbox)) 
-		toggleSelect(vjob);
-	    }
-	    
-	    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
-	      if(vgroup.isInsideOf(bbox)) 
-		toggleSelect(vgroup);
-	    }
+	    toggleSelect(bbox);
 	  }
 	  
 	  /* BUTTON1+SHIFT+CTRL: add to selection */ 
 	  else if((mods & (on3 | off3)) == on3) {
-	    for(ViewerJob vjob : pViewerJobs.values()) {
-	      if(vjob.isInsideOf(bbox)) 
-		addSelect(vjob);
-	    }
-	    
-	    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
-	      if(vgroup.isInsideOf(bbox)) 
-		addSelect(vgroup);
-	    }
+	    addSelect(bbox);
 	  }
 	}
 	
@@ -1885,7 +1922,7 @@ class JQueueJobViewerPanel
   /**
    * Update the status of all jobs.
    */ 
-  private void
+  private synchronized void
   doUpdate()
   { 
     UIMaster master = UIMaster.getInstance();
@@ -1905,7 +1942,7 @@ class JQueueJobViewerPanel
   /**
    * Move the camera to frame the bounds of the currently selected jobs.
    */ 
-  private void 
+  private synchronized void 
   doFrameSelection() 
   {
     doFrameJobs(pSelected.values(), pSelectedGroups.values());
@@ -1914,7 +1951,7 @@ class JQueueJobViewerPanel
   /**
    * Move the camera to frame all active jobs.
    */ 
-  private void 
+  private synchronized void 
   doFrameAll() 
   {
     doFrameJobs(pViewerJobs.values(), pViewerJobGroups.values());
@@ -1923,7 +1960,7 @@ class JQueueJobViewerPanel
   /**
    * Move the camera to frame the given set of jobs.
    */ 
-  private void 
+  private synchronized void 
   doFrameJobs
   (
    Collection<ViewerJob> vjobs, 
@@ -1939,7 +1976,7 @@ class JQueueJobViewerPanel
   /**
    * Set a fixed job expansion depth.
    */
-  private void 
+  private synchronized void 
   doExpandDepth
   (
    int depth
@@ -1952,7 +1989,7 @@ class JQueueJobViewerPanel
   /**
    * Change to layout policy to <CODE>AutomaticExpand</CODE> and relayout the jobs.
    */ 
-  private void
+  private synchronized void
   doAutomaticExpand()
   {
     clearSelection();
@@ -1964,7 +2001,7 @@ class JQueueJobViewerPanel
   /**
    * Change to layout policy to <CODE>ExpandAll</CODE> and relayout the jobs.
    */ 
-  private void
+  private synchronized void
   doExpandAll()
   {
     clearSelection();
@@ -1976,7 +2013,7 @@ class JQueueJobViewerPanel
   /**
    * Change to layout policy to <CODE>CollapseAll</CODE> and relayout the jobs.
    */ 
-  private void
+  private synchronized void
   doCollapseAll()
   {
     clearSelection();
@@ -1991,7 +2028,7 @@ class JQueueJobViewerPanel
   /**
    * Update the job details panels with the current primary selected job status.
    */ 
-  private void
+  private synchronized void
   doDetails()
   {
     if((pGroupID > 0) && (pPrimary != null))
@@ -2007,7 +2044,7 @@ class JQueueJobViewerPanel
   /**
    * View the target files of the primary selected job.
    */ 
-  private void 
+  private synchronized void 
   doView() 
   {
     if(pPrimary != null) {
@@ -2029,7 +2066,7 @@ class JQueueJobViewerPanel
    * View the target files of the primary selected job using the default editor for 
    * the file type.
    */ 
-  private void 
+  private synchronized void 
   doViewWithDefault() 
   {
     if(pPrimary != null) {
@@ -2050,7 +2087,7 @@ class JQueueJobViewerPanel
   /**
    * View the target files of the primary selected job with the given editor.
    */ 
-  private void 
+  private synchronized void 
   doViewWith
   (
    String editor
@@ -2088,7 +2125,7 @@ class JQueueJobViewerPanel
   /**
    * Resubmit all aborted and failed selected jobs.
    */ 
-  private void 
+  private synchronized void 
   doQueueJobs() 
   {
     TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
@@ -2104,7 +2141,7 @@ class JQueueJobViewerPanel
   /**
    * Resubmit all aborted and failed selected jobs with special job requirements.
    */ 
-  private void 
+  private synchronized void 
   doQueueJobsSpecial() 
   {
     TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
@@ -2139,7 +2176,7 @@ class JQueueJobViewerPanel
   /** 
    * Get the target file sequences of the aborted and failed selected root jobs.
    */ 
-  private TreeMap<NodeID,TreeSet<FileSeq>> 
+  private synchronized TreeMap<NodeID,TreeSet<FileSeq>> 
   getQueuedFileSeqs() 
   {
     /* get the aborted and failed selected jobs */ 
@@ -2225,7 +2262,7 @@ class JQueueJobViewerPanel
   /**
    * Pause all waiting selected jobs.
    */ 
-  private void 
+  private synchronized void 
   doPauseJobs() 
   {
     TreeMap<String,TreeSet<Long>> paused = new TreeMap<String,TreeSet<Long>>();
@@ -2254,7 +2291,7 @@ class JQueueJobViewerPanel
   /**
    * Resume execution of all paused jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doResumeJobs() 
   {
     TreeMap<String,TreeSet<Long>> resumed = new TreeMap<String,TreeSet<Long>>();
@@ -2288,7 +2325,7 @@ class JQueueJobViewerPanel
   /**
    * Preempt all jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doPreemptJobs() 
   {
     TreeMap<String,TreeSet<Long>> preempt = new TreeMap<String,TreeSet<Long>>();
@@ -2321,7 +2358,7 @@ class JQueueJobViewerPanel
   /**
    * Kill all jobs associated with the selected nodes.
    */ 
-  private void 
+  private synchronized void 
   doKillJobs() 
   {
     TreeMap<String,TreeSet<Long>> dead = new TreeMap<String,TreeSet<Long>>();
@@ -2361,7 +2398,7 @@ class JQueueJobViewerPanel
   /**
    * Delete the primary selected job group.
    */ 
-  private void 
+  private synchronized void 
   doDeleteJobGroups() 
   {
     if(pPrimaryGroup != null) {
@@ -2387,7 +2424,7 @@ class JQueueJobViewerPanel
   /**
    * Show the node which created the primary selected job/group in the Node Viewer. 
    */ 
-  private void 
+  private synchronized void 
   doShowNode() 
   {
     NodeID nodeID = null;
