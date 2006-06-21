@@ -325,9 +325,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                    bootstrap/BootStrapLoader.java
 
-#           LOCKED = $(shell ls core/*.class) \
-#                    $(shell ls ui/core/*.class)
-
 
 
 #--------------------------------------------------------------------------------------------#
