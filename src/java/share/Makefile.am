@@ -6,8 +6,7 @@ editor_DATA = \
 
 
 SUBDIRS = \
-  Unix \
-  MacOS
+  Unix 
 
 
 install-data-hook:
