@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.47 2006/06/21 03:53:21 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.48 2006/06/21 05:48:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1839,6 +1839,9 @@ class JNodeViewerPanel
   private synchronized Object
   objectAtMousePos() 
   {
+    if(pMousePos == null) 
+      return null;
+
     /* compute world coordinates */ 
     Point2d pos = new Point2d(pMousePos);
     {

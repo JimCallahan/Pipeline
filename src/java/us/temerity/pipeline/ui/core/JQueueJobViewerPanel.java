@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.23 2006/06/21 03:53:21 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.24 2006/06/21 05:48:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1208,6 +1208,9 @@ class JQueueJobViewerPanel
   private synchronized Object
   objectAtMousePos() 
   {
+    if(pMousePos == null) 
+      return null;
+
     /* compute world coordinates */ 
     Point2d pos = new Point2d(pMousePos);
     {
