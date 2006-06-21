@@ -1,4 +1,4 @@
-// $Id: RenumberTool.java,v 1.1 2006/06/19 18:23:18 jim Exp $
+// $Id: RenumberTool.java,v 1.2 2006/06/21 04:08:47 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -32,13 +32,12 @@ RenumberTool
   /*  C O N S T R U C T O R                                                                 */
   /*----------------------------------------------------------------------------------------*/
 
-  public RenumberTool()
+  public 
+  RenumberTool()
   {
     super("Renumber", new VersionID("2.0.9"), "Temerity",
-	  "Renumbers the frame range of a target node and all nodes connected upstream to "
-	  + "the target node through links with a OneToOne relationship.");
-
-    underDevelopment();
+	  "Renumbers the frame range of a target node and all nodes connected upstream " + 
+	  "to the target node through links with a OneToOne relationship.");
 
     pPhase = 1;
 
@@ -69,18 +68,17 @@ RenumberTool
   collectPhaseInput() 
     throws PipelineException
   {
-    switch (pPhase)
-      {
-      case 1:
-	return collectFirstPhaseInput();
-
-      case 2:
-	return collectSecondPhaseInput();
-
-      default:
-	assert (false);
-	return null;
-      }
+    switch (pPhase) {
+    case 1:
+      return collectFirstPhaseInput();
+      
+    case 2:
+      return collectSecondPhaseInput();
+      
+    default:
+      assert (false);
+      return null;
+    }
   }
 
   /**
@@ -191,7 +189,7 @@ RenumberTool
 
     /* validate node selections and initialize dialog components */
     {
-      if (pPrimary == null)
+      if(pPrimary == null)
 	throw new PipelineException("The primary selection must be the Target Node!");
 
       pTargetNodeField.setText(pPrimary);
@@ -199,26 +197,27 @@ RenumberTool
       {
 	NodeStatus status = pSelected.get(pPrimary);
 	NodeID nodeID = status.getNodeID();
+	pUser = nodeID.getAuthor();
 	pView = nodeID.getView();
 
 	NodeDetails details = status.getDetails();
-	if (details == null)
+	if(details == null)
 	  throw new PipelineException
 	    ("The target node must have an existing status in order to be renumbered!");
 
 	NodeMod mod = details.getWorkingVersion();
-	if (mod == null)
+	if(mod == null)
 	  throw new PipelineException
 	    ("The target node must be checked-out in order to be renumbered!");
 
 	{
 	  FileSeq fseq = mod.getPrimarySequence();
-	  if (!fseq.hasFrameNumbers())
+	  if(!fseq.hasFrameNumbers())
 	    throw new PipelineException
 	      ("The Target Node (" + pTargetNode + ") must have frame numbers to be " + 
 	       "renumbered!");
 	  pOrigFrameRange = fseq.getFrameRange();
-	  if (pOrigFrameRange == null)
+	  if(pOrigFrameRange == null)
 	    throw new PipelineException
 	      ("The target node must have frame numbers in order to be renumbered!");
 	}
@@ -233,11 +232,11 @@ RenumberTool
       }
 
       {
-	Path wpath = new Path(PackageInfo.sWorkPath, PackageInfo.sUser + "/" + pView);
+	Path wpath = new Path(PackageInfo.sWorkPath, pUser + "/" + pView);
 	pWorkRoot = wpath.toOsString();
       }
 
-      if (pSelected.size() != 1)
+      if(pSelected.size() != 1)
 	throw new PipelineException
 	  ("Only one Target Node may be selected to be renumbered.");
     }
@@ -246,61 +245,59 @@ RenumberTool
     JToolDialog diag = new JToolDialog("Renumber:", body, "Continue");
 
     diag.setVisible(true);
-    if (diag.wasConfirmed())
+    if(diag.wasConfirmed()) {
+      pTargetNode = pTargetNodeField.getText();
+      if((pTargetNode == null) || (pTargetNode.length() == 0))
+	throw new PipelineException("Illegal Target Node name!");
+      
+      /* collect new frame range info */
       {
-	pTargetNode = pTargetNodeField.getText();
-	if ((pTargetNode == null) || (pTargetNode.length() == 0))
-	  throw new PipelineException("Illegal Target Node name!");
-
-	/* collect new frame range info */
 	{
-	  {
-	    Integer frame = pStartFrameField.getValue();
-	    if (frame == null)
-	      throw new PipelineException
-		("Unable to renumber node with an unspecified start frame!");
-	    pStartFrame = frame;
-	  }
-
-	  {
-	    Integer frame = pEndFrameField.getValue();
-	    if (frame == null)
-	      throw new PipelineException
-		("Unable to renumber node with an unspecified end frame!");
-	    pEndFrame = frame;
-	  }
-
-	  if (pStartFrame > pEndFrame)
-	    {
-	      Integer tmp = pEndFrame;
-	      pEndFrame = pStartFrame;
-	      pStartFrame = tmp;
-
-	      pStartFrameField.setValue(pStartFrame);
-	      pEndFrameField.setValue(pEndFrame);
-	    }
-
-	  {
-	    Integer frame = pByFrameField.getValue();
-	    if (frame == null)
-	      throw new PipelineException
-		("Unable to renumber node with an unspecified frame increment!");
-	    pByFrame = frame;
-	  }
-
-	  pIsByEnabled = pByFrameField.isEnabled();
-
-	  {
-	    Boolean tf = pRemoveFilesField.getValue();
-	    pRemoveFiles = (tf != null) && tf;
-	  }
+	  Integer frame = pStartFrameField.getValue();
+	  if(frame == null)
+	    throw new PipelineException
+	      ("Unable to renumber node with an unspecified start frame!");
+	  pStartFrame = frame;
 	}
-
-	return ": Collecting Upstream Node Information...";
-      } else
+	
 	{
-	  return null;
+	  Integer frame = pEndFrameField.getValue();
+	  if(frame == null)
+	    throw new PipelineException
+	      ("Unable to renumber node with an unspecified end frame!");
+	  pEndFrame = frame;
 	}
+	
+	if(pStartFrame > pEndFrame) {
+	  Integer tmp = pEndFrame;
+	  pEndFrame = pStartFrame;
+	  pStartFrame = tmp;
+	  
+	  pStartFrameField.setValue(pStartFrame);
+	  pEndFrameField.setValue(pEndFrame);
+	}
+	
+	{
+	  Integer frame = pByFrameField.getValue();
+	  if(frame == null)
+	    throw new PipelineException
+	      ("Unable to renumber node with an unspecified frame increment!");
+	  pByFrame = frame;
+	}
+	
+	pIsByEnabled = pByFrameField.isEnabled();
+	
+	{
+	  Boolean tf = pRemoveFilesField.getValue();
+	  pRemoveFiles = (tf != null) && tf;
+	}
+      }
+      
+      return ": Collecting Upstream Node Information...";
+    } 
+    else {
+      return null;
+    }
   }
 
   /**
@@ -326,7 +323,7 @@ RenumberTool
     {
       Box ibox = new Box(BoxLayout.Y_AXIS);
 
-      if (pPotentialNames.isEmpty()) {
+      if(pPotentialNames.isEmpty()) {
 	Component comps[] = UIFactory.createTitledPanels();
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
@@ -388,11 +385,11 @@ RenumberTool
 				       "Confirm");
 
     diag.setVisible(true);
-    if (diag.wasConfirmed()) {
+    if(diag.wasConfirmed()) {
       for (String name : pRenumberFields.keySet()) {
 	JBooleanField field = pRenumberFields.get(name);
 	Boolean value = field.getValue();
-	if ((value == null) || !value)
+	if((value == null) || !value)
 	  pRenumberNames.remove(name);
       }
       
@@ -468,25 +465,25 @@ RenumberTool
   {
     /* get the current status of the target node */
     {
-      pTargetNodeID = new NodeID(PackageInfo.sUser, pView, pTargetNode);
+      pTargetNodeID = new NodeID(pUser, pView, pTargetNode);
       pTargetNodeStatus = mclient.status(pTargetNodeID);
       pTargetNodeMod = pTargetNodeStatus.getDetails().getWorkingVersion();
-      if (pTargetNodeMod == null)
+      if(pTargetNodeMod == null)
 	throw new PipelineException
 	  ("No working version of the Target Node ("+ pTargetNode + ") exists " + 
-	   "in the (" + pView + ") working area owned by (" + PackageInfo.sUser + ")!");
+	   "in the (" + pView + ") working area owned by (" + pUser + ")!");
 
       /* validate the new frame range */
       {
 	pTargetFrameRange = null;
 
-	if (!pIsByEnabled
+	if(!pIsByEnabled
 	    && ((((pOrigFrameRange.getStart() - pStartFrame) % pByFrame) != 0) || 
 		(((pOrigFrameRange.getStart() - pEndFrame) % pByFrame) != 0)))
 	  throw new PipelineException
 	    ("Unable to renumber node due to misalignment of the new frame range ("
-	     + pStartFrame + "-" + pEndFrame + "x" + pByFrame + ") with the original frame " + 
-	     "range (" + pOrigFrameRange + ")!");
+	     + pStartFrame + "-" + pEndFrame + "x" + pByFrame + ") with the original " + 
+	     "frame range (" + pOrigFrameRange + ")!");
 
 	try {
 	  pTargetFrameRange = new FrameRange(pStartFrame, pEndFrame, pByFrame);
@@ -495,7 +492,7 @@ RenumberTool
 	  throw new PipelineException("Unable to renumber node. " + ex.getMessage());
 	}
 
-	if (pOrigFrameRange.equals(pTargetFrameRange))
+	if(pOrigFrameRange.equals(pTargetFrameRange))
 	  throw new PipelineException
 	    ("Unecessary to renumber node when the frame range (" +
 	     pOrigFrameRange + " " + "has not been altered!");
@@ -536,9 +533,8 @@ RenumberTool
   )
     throws PipelineException
   {
-    for (String name : pRenumberNames)
-      mclient
-	.renumber(PackageInfo.sUser, pView, name, pTargetFrameRange, pRemoveFiles);
+    for(String name : pRenumberNames)
+      mclient.renumber(pUser, pView, name, pTargetFrameRange, pRemoveFiles);
     return false;
   }
 
@@ -558,19 +554,19 @@ RenumberTool
   )
   {
     NodeDetails details = status.getDetails();
-    if (details == null)
+    if(details == null)
       return;
 
     NodeMod mod = details.getWorkingVersion();
-    if (mod == null)
+    if(mod == null)
       return;
 
-    if (mod.getPrimarySequence().getFrameRange().equals(pOrigFrameRange)) {
+    if(mod.getPrimarySequence().getFrameRange().equals(pOrigFrameRange)) {
       pPotentialNames.add(status.getName());
       
       for (NodeStatus lstatus : status.getSources()) {
 	LinkMod link = mod.getSource(lstatus.getName());
-	if (link.getRelationship() == LinkRelationship.OneToOne)
+	if(link.getRelationship() == LinkRelationship.OneToOne)
 	  findNodesToRenumber(lstatus);
       }
     }
@@ -584,10 +580,10 @@ RenumberTool
 
   private static final long serialVersionUID = -9120144129255872029L;
 
-  private static final int sTSize = 150;
-  private static final int sVSize = 300;
+  private static final int sTSize  = 150;
+  private static final int sVSize  = 300;
   private static final int sVSize1 = 60;
-  private static final int sVSize2 = 250; // change this???
+  private static final int sVSize2 = 250; 
 
 
 
@@ -601,8 +597,9 @@ RenumberTool
   private int pPhase;
 
   /**
-   * The current working area view.
+   * The current working area user|view.
    */
+  private String pUser;
   private String pView;
 
   /**
