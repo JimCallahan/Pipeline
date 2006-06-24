@@ -272,13 +272,14 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
  LEGACY_PLUGINS = $(BUILD_LEGACY_PLUGINS_FALSE)v1_0_0 v1_1_0 v1_2_0 v1_3_0
- MODERN_PLUGINS = v2_0_0 v2_0_1 v2_0_4 v2_0_9
+ MODERN_PLUGINS = v2_0_0 v2_0_1 v2_0_4 v2_0_9 v2_0_10 v2_0_11 v2_0_12 v2_0_13
     ALL_PLUGINS = $(LEGACY_PLUGINS) $(MODERN_PLUGINS) 
 PLUGIN_PACKAGES = $(sort $(patsubst %,us.temerity.pipeline.plugin.%,$(ALL_PLUGINS)))
 
 
   MAIN_PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.glue \
+                  us.temerity.pipeline.glue.io \
                   us.temerity.pipeline.math \
                   us.temerity.pipeline.toolset \
                   us.temerity.pipeline.ui
