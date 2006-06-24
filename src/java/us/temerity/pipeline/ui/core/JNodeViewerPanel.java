@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.48 2006/06/21 05:48:28 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.49 2006/06/24 21:02:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -740,10 +740,11 @@ class JNodeViewerPanel
    TreeSet<String> names
   )
   {
-    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.removeAll(names);
+    for(String name : names) 
+      pRoots.remove(name);
     
-    setRoots(roots);
+    updateNodeBrowserSelection();
+    updateNodeStatus(); 
   }
 
   /**
