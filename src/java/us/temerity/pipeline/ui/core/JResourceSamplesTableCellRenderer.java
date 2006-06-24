@@ -1,4 +1,4 @@
-// $Id: JResourceSamplesTableCellRenderer.java,v 1.2 2005/03/05 02:29:23 jim Exp $
+// $Id: JResourceSamplesTableCellRenderer.java,v 1.3 2006/06/24 21:05:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -152,7 +152,8 @@ class JResourceSamplesTableCellRenderer
     }
 
     List<ResourceSample> samples = host.getSamples();
-    if((samples != null) && !samples.isEmpty()) { 
+    if((host != null) && 
+       (samples != null) && !samples.isEmpty()) { 
 
       /* update the numeric label */ 
       {
