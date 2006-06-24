@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.0.11)   
+AM_INIT_AUTOMAKE(Pipeline, 2.0.12)   
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1390,6 +1390,10 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/v2_0_1/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_4/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_12/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_13/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
 
