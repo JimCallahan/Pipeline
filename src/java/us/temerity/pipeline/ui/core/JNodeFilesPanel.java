@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.24 2006/05/07 21:30:14 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.25 2006/06/24 20:48:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2759,6 +2759,7 @@ class JNodeFilesPanel
 	  }
 
 	  /* start the editor */ 
+	  editor.makeWorkingDirs(dir);
 	  proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);	   
 	}
 	catch(Exception ex) {

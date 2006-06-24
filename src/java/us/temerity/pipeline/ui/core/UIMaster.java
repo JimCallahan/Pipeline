@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.38 2006/06/05 03:46:01 jim Exp $
+// $Id: UIMaster.java,v 1.39 2006/06/24 20:48:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2871,6 +2871,7 @@ class UIMaster
 	    }
 	    
 	    /* start the editor */ 
+	    editor.makeWorkingDirs(dir);
 	    proc = editor.launch(fseq, env, dir);
 	  }
 	  catch(IllegalArgumentException ex) {

@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.13 2006/05/07 20:34:01 jim Exp $
+// $Id: BaseEditor.java,v 1.14 2006/06/24 20:48:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -183,7 +183,44 @@ class BaseEditor
     return proc;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C   F I L E   U T I L S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Insures that the given working directory containing the files to be edited exists.
+   */
+  public void 
+  makeWorkingDirs
+  (
+   File dir
+  ) 
+    throws PipelineException
+  {
+    if(dir.exists()) {
+      if(!dir.isDirectory()) 
+	throw new PipelineException
+	  ("Unable to create the working area directory (" + dir + ") because a file with " + 
+	   "the same name already exists!"); 
+    }
+
+    try {
+      if(!dir.mkdirs()) 
+	throw new PipelineException
+	  ("Unable to create the working area directory (" + dir + ") containing the file " + 
+	   "to be edited!");
+    }
+    catch(SecurityException ex) {
+      throw new PipelineException
+	("You do not have the necessary permission to create the working area directory " + 
+	 "(" + dir + ") containing the file to be edited!");
+    }
+  }
   
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */

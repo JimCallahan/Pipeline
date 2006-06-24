@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.19 2006/05/07 21:30:14 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.20 2006/06/24 20:48:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3250,6 +3250,7 @@ class JQueueJobBrowserPanel
  	    }
 	    
  	    /* start the editor */ 
+	    editor.makeWorkingDirs(dir);
  	    proc = editor.launch(fseq, env, dir);
  	  }
  	  catch(PipelineException ex) {

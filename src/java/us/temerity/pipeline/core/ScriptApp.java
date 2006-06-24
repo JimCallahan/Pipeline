@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.49 2006/05/07 21:30:08 jim Exp $
+// $Id: ScriptApp.java,v 1.50 2006/06/24 20:48:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2591,6 +2591,8 @@ class ScriptApp
     /* launch an editor for each file sequence */ 
     ArrayList<SubProcessLight> procs = new ArrayList<SubProcessLight>();
     for(FileSeq fs : editSeqs) {
+      editor.makeWorkingDirs(dir);
+
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info, 
 	 "Editing: " + fs + " with " + 
