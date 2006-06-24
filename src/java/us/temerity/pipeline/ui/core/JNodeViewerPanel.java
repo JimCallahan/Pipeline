@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.49 2006/06/24 21:02:22 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.50 2006/06/24 22:30:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -174,8 +174,8 @@ class JNodeViewerPanel
       pUndefinedNodePopup = new JPopupMenu();  
       pUndefinedNodePopup.addPopupMenuListener(this);
 
-      pLockedNodePopup = new JPopupMenu();  
-      pLockedNodePopup.addPopupMenuListener(this);
+      pPanelLockedNodePopup = new JPopupMenu();  
+      pPanelLockedNodePopup.addPopupMenuListener(this);
 
       pCheckedInNodePopup = new JPopupMenu();  
       pCheckedInNodePopup.addPopupMenuListener(this);
@@ -189,7 +189,7 @@ class JNodeViewerPanel
       pEditWithMenus = new JMenu[4];
 
       JPopupMenu menus[] = { 
-	pUndefinedNodePopup, pLockedNodePopup, pCheckedInNodePopup, 
+	pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
 	pFrozenNodePopup, pNodePopup 
       };
 
@@ -201,7 +201,7 @@ class JNodeViewerPanel
       pEditItems            = new JMenuItem[4];
       pEditWithDefaultItems = new JMenuItem[4];
       pCheckOutItems        = new JMenuItem[3];
-      pLockItems            = new JMenuItem[2];
+      pLockItems            = new JMenuItem[3];
       pRestoreItems         = new JMenuItem[3];
       pReleaseItems         = new JMenuItem[2];
 
@@ -267,13 +267,11 @@ class JNodeViewerPanel
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 
-	  if(wk == 3) {
-	    item = new JMenuItem("Lock...");
-	    pLockItems[0] = item;
-	    item.setActionCommand("lock");
-	    item.addActionListener(this);
-	    menus[wk].add(item);
-	  }
+	  item = new JMenuItem("Lock...");
+	  pLockItems[wk-2] = item;
+	  item.setActionCommand("lock");
+	  item.addActionListener(this);
+	  menus[wk].add(item);
 
 	  item = new JMenuItem("Request Restore...");
 	  pRestoreItems[wk-2] = item;
@@ -375,7 +373,7 @@ class JNodeViewerPanel
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Lock...");
-	pLockItems[1] = item;
+	pLockItems[2] = item;
 	item.setActionCommand("lock");
 	item.addActionListener(this);
 	pNodePopup.add(item);
@@ -869,15 +867,11 @@ class JNodeViewerPanel
       updateMenuToolTip
 	(pCheckOutItems[wk], prefs.getNodeViewerCheckOut(), 
 	 "Check-out the current primary selection.");
-    }
 
-    for(wk=0; wk<2; wk++) {
       updateMenuToolTip
 	(pLockItems[wk], prefs.getNodeViewerLock(), 
 	 "Lock the current primary selection to a specific checked-in version.");
-    }
 
-    for(wk=0; wk<3; wk++) {
       updateMenuToolTip
 	(pRestoreItems[wk], prefs.getNodeViewerCheckOut(), 
 	 "Submit requests to restore offline checked-in versions of the selected ndoes.");
@@ -1012,7 +1006,7 @@ class JNodeViewerPanel
     pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers());
     
     pCheckOutItems[2].setEnabled(hasCheckedIn);
-    pLockItems[1].setEnabled(hasCheckedIn);
+    pLockItems[2].setEnabled(hasCheckedIn);
     pEvolveItem.setEnabled(hasCheckedIn);
     pRestoreItems[2].setEnabled(hasCheckedIn);
     
@@ -2099,7 +2093,7 @@ class JNodeViewerPanel
 	      if(details != null) {
 		if(isLocked()) {
 		  updateEditorMenus();
-		  pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		  pPanelLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion() == null) {
 		  updateEditorMenus();
@@ -3690,12 +3684,19 @@ class JNodeViewerPanel
       if(!base.containsKey(name)) {
 	try {
 	  NodeMod mod = client.getWorkingVersion(pAuthor, pView, name);
-	  VersionID vid = mod.getWorkingID();
-	  if(vid != null) {
-	    base.put(name, vid);
-	    versions.put(name, client.getCheckedInVersionIDs(name));
-	    offline.put(name, client.getOfflineVersionIDs(name));
+	  if(mod != null) {
+	    VersionID vid = mod.getWorkingID();
+	    if(vid != null) 
+	      base.put(name, vid);
 	  }
+	}
+	catch (PipelineException ex) {
+	  base.put(name, null);
+	}
+
+	try {
+	  versions.put(name, client.getCheckedInVersionIDs(name));
+	  offline.put(name, client.getOfflineVersionIDs(name));
 	}
 	catch (PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3704,7 +3705,7 @@ class JNodeViewerPanel
       }
     }
     
-    if(base.isEmpty()) {
+    if(base.isEmpty() && versions.isEmpty()) {
       master.showErrorDialog("Error:", "None of the selected nodes can be locked!");
       return;
     }
@@ -5929,7 +5930,7 @@ class JNodeViewerPanel
    * The node popup menus.
    */ 
   private JPopupMenu  pUndefinedNodePopup; 
-  private JPopupMenu  pLockedNodePopup; 
+  private JPopupMenu  pPanelLockedNodePopup; 
   private JPopupMenu  pCheckedInNodePopup; 
   private JPopupMenu  pFrozenNodePopup; 
   private JPopupMenu  pNodePopup; 

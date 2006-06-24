@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.1 2005/10/17 06:23:39 jim Exp $
+// $Id: JLockDialog.java,v 1.2 2006/06/24 22:30:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -148,6 +148,8 @@ class JLockDialog
 	ArrayList<VersionID> vids = new ArrayList<VersionID>(versions.get(name));
 	Collections.reverse(vids);
 	pVersionIDs.put(name, vids);
+
+	VersionID bvid = base.get(name);
       
 	{
 	  Component comps[] = UIFactory.createTitledPanels();
@@ -163,7 +165,7 @@ class JLockDialog
 	  
 	  UIFactory.createTitledTextField
 	    (tpanel, "Base Version:", sTSize, 
-	     vpanel, "v" +  base.get(name), sVSize, 
+	     vpanel, (bvid != null) ? ("v" +  bvid) : "-", sVSize, 
 	     "The revision number of the current base checked-in version.");
 	    
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -185,11 +187,14 @@ class JLockDialog
 	      UIFactory.createTitledCollectionField
 	      (tpanel, "Lock Version:", sTSize, 
 	       vpanel, values, this, sVSize, 
-	       "The revision number of the checked-in versions which is the target of the lock.");
+	       "The revision number of the checked-in versions which is the target " + 
+	       "of the lock.");
 	    
 	    {
 	      ArrayList<VersionID> avids = new ArrayList<VersionID>(vids);
-	      int idx = avids.indexOf(base.get(name));
+	      int idx = 0; 
+	      if(bvid != null) 
+		idx = avids.indexOf(bvid);
 	      field.setSelectedIndex(idx);
 	    }
 
