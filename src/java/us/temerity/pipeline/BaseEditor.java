@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.14 2006/06/24 20:48:21 jim Exp $
+// $Id: BaseEditor.java,v 1.15 2006/06/25 23:29:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -204,6 +204,7 @@ class BaseEditor
 	throw new PipelineException
 	  ("Unable to create the working area directory (" + dir + ") because a file with " + 
 	   "the same name already exists!"); 
+      return;
     }
 
     try {
