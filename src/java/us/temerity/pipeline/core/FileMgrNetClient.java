@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.2 2005/09/07 21:11:16 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.3 2006/06/25 23:30:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -416,7 +416,7 @@ class FileMgrNetClient
     verifyConnection();
 
     FileRenameReq req = 
-      new FileRenameReq(id, mod.getSequences(), pattern);
+      new FileRenameReq(id, mod.getPrimarySequence(), mod.getSecondarySequences(), pattern);
 
     Object obj = performTransaction(FileRequest.Rename, req);
     handleSimpleResponse(obj);

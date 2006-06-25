@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.51 2006/06/20 13:24:55 jim Exp $
+// $Id: FileMgr.java,v 1.52 2006/06/25 23:30:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1702,8 +1702,8 @@ class FileMgr
 	    if(wdir.exists()) {
 	      if(!wdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + wdir + 
-		   ") in the location of the working directory!");
+		  ("Somehow there exists a non-directory (" + wdir + ") in the location " + 
+		   "of the working directory!");
 	    }
 	    else {
 	      dir = wdir; 
@@ -1712,8 +1712,8 @@ class FileMgr
 	    if(cwdir.exists()) {
 	      if(!cwdir.isDirectory()) 
 		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + cwdir + 
-		   ") in the location of the working checksum directory!");
+		  ("Somehow there exists a non-directory (" + cwdir + ") in the location " + 
+		   "of the working checksum directory!");
 	    }
 	    else {
 	      if(!cwdir.mkdirs())
@@ -1741,8 +1741,8 @@ class FileMgr
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
-		  ("Interrupted while creating directories for working version (" + id + 
-		   ")!");
+		  ("Interrupted while creating directories for working version " + 
+		   "(" + id + ")!");
 	      }
 	    }
 	  }
@@ -1756,23 +1756,21 @@ class FileMgr
 	  opfiles = new ArrayList<File>();
 	  pfiles  = new ArrayList<File>();
 	  sfiles  = new ArrayList<File>();
-	  boolean primary = true;
-	  for(FileSeq fseq : req.getFileSequences()) {
-	    if(primary) {
-	      opfiles.addAll(fseq.getFiles());
+
+	  {
+	    FileSeq fseq = req.getPrimarySequence();
+
+	    opfiles.addAll(fseq.getFiles());
 	      
-	      File path = new File(npat.getPrefix());
-	      FilePattern pat =
-		new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
-	      FileSeq nfseq = new FileSeq(pat, fseq.getFrameRange());	  
-	      pfiles.addAll(nfseq.getFiles());
-	      
-	      primary = false;
-	    }
-	    else {
-	      sfiles.addAll(fseq.getFiles());
-	    }
+	    File path = new File(npat.getPrefix());
+	    FilePattern pat =
+	      new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
+	    FileSeq nfseq = new FileSeq(pat, fseq.getFrameRange());	  
+	    pfiles.addAll(nfseq.getFiles());
 	  }
+
+	  for(FileSeq fseq : req.getSecondarySequences())
+	    sfiles.addAll(fseq.getFiles());
 	}
       
 	/* move each primary file */ 

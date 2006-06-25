@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.2 2005/09/07 21:11:16 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.3 2006/06/25 23:30:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -389,7 +389,7 @@ class FileMgrDirectClient
     throws PipelineException 
   {
     FileRenameReq req = 
-      new FileRenameReq(id, mod.getSequences(), pattern);
+      new FileRenameReq(id, mod.getPrimarySequence(), mod.getSecondarySequences(), pattern);
 
     Object obj = pFileMgr.rename(req);
     handleSimpleResponse(obj);

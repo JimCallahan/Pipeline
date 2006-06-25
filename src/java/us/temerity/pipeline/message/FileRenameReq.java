@@ -1,4 +1,4 @@
-// $Id: FileRenameReq.java,v 1.3 2005/03/29 03:48:56 jim Exp $
+// $Id: FileRenameReq.java,v 1.4 2006/06/25 23:30:32 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,8 +29,11 @@ class FileRenameReq
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param fseqs
-   *   The file sequences associated with the working version.
+   * @param primary
+   *   The primary file sequence associated with the working version.
+   * 
+   * @param secondary
+   *   The secondary file sequences associated with the working version.
    * 
    * @param pattern
    *   The new fully resolved file pattern.
@@ -39,7 +42,8 @@ class FileRenameReq
   FileRenameReq
   (
    NodeID id, 
-   TreeSet<FileSeq> fseqs, 
+   FileSeq primary, 
+   SortedSet<FileSeq> secondary, 
    FilePattern pattern
   )
   { 
@@ -47,9 +51,13 @@ class FileRenameReq
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    if(fseqs == null) 
-      throw new IllegalArgumentException("The working file sequences cannot (null)!");
-    pFileSeqs = fseqs;
+    if(primary == null) 
+      throw new IllegalArgumentException("The primary working file sequence cannot (null)!");
+    pPrimary = primary;
+
+    if(secondary == null) 
+      throw new IllegalArgumentException("The secondary file sequences cannot (null)!");
+    pSecondary = secondary;
 
     if(pattern == null) 
       throw new IllegalArgumentException
@@ -73,12 +81,21 @@ class FileRenameReq
   }
     
   /**
-   * Gets the primary and secondary file sequences associated with the working version.
+   * Gets the primary file sequence associated with the working version.
    */
-  public TreeSet<FileSeq>
-  getFileSequences() 
+  public FileSeq
+  getPrimarySequence() 
   {
-    return pFileSeqs;
+    return pPrimary; 
+  }
+
+  /**
+   * Gets the secondary file sequences associated with the working version.
+   */
+  public SortedSet<FileSeq>
+  getSecondarySequences() 
+  {
+    return pSecondary;
   }
 
   /**
@@ -112,7 +129,8 @@ class FileRenameReq
   /** 
    * The primary and secondary file sequences associated with the working version. 
    */
-  private TreeSet<FileSeq>  pFileSeqs;
+  private FileSeq             pPrimary; 
+  private SortedSet<FileSeq>  pSecondary; 
 
   /**
    * The new fully resolved file pattern.
