@@ -1,4 +1,4 @@
-// $Id: MayaProjectEditor.java,v 1.1 2006/06/26 21:08:43 jim Exp $
+// $Id: MayaProjectEditor.java,v 1.2 2006/06/26 21:12:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -92,7 +92,7 @@ class MayaProjectEditor
     else {
       args.add("setProject(\"" + fseq.getPath(0).getParent() + "\")");
       args.add("-file");
-      args.add(fseq.getPath(0));
+      args.add(fseq.getPath(0).toOsString());
     }
     
     SubProcessLight proc = new SubProcessLight(getName(), getProgram(), args, nenv, dir);
