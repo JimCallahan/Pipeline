@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.152 2006/06/20 13:24:55 jim Exp $
+// $Id: MasterMgr.java,v 1.153 2006/06/26 06:35:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4727,7 +4727,7 @@ class MasterMgr
       synchronized(pNodeTreeRoot) {
 	timer.resume();
 	
-	if(!isNodePathUnused(nodeID.getName(), fseq, true))
+	if(!isNodeSecondaryUnused(nodeID.getName(), fseq))
 	  return new FailureRsp
 	    (timer, "Cannot add secondary file sequence (" + fseq + ") " + 
 	     "to node (" + nodeID.getName() + ") because its name conflicts with " + 
@@ -4738,7 +4738,7 @@ class MasterMgr
 	
 	addWorkingNodeTreePath(nodeID, secondary);
       }
-      
+
       timer.aquire();
       ReentrantReadWriteLock lock = getWorkingLock(nodeID);
       lock.writeLock().lock();
@@ -4776,11 +4776,12 @@ class MasterMgr
       catch(PipelineException ex) { 
 	timer.aquire();
 	removeSecondaryWorkingNodeTreePath(nodeID, fseq);
+
 	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
 	lock.writeLock().unlock();
-      }    
+      }  
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -4840,7 +4841,7 @@ class MasterMgr
 	  ("Unable to remove secondary file sequences from the node (" + nodeID + ") " + 
 	   "while there are active jobs associated with the node!");
 
-      /* remove the link */ 
+      /* remove the sequence */ 
       mod.removeSecondarySequence(fseq);
       
       /* write the new working version to disk */ 
@@ -4895,6 +4896,9 @@ class MasterMgr
     String nname     = npat.getPrefix();
     NodeID nid       = new NodeID(id, nname);
 
+    TreeSet<FileSeq> oldSeqs = null;
+    TreeSet<FileSeq> newSeqs = null;
+
     TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + npat);
 
     timer.aquire();
@@ -4926,6 +4930,7 @@ class MasterMgr
 
 	  WorkingBundle bundle = getWorkingBundle(id);
 	  NodeMod mod = bundle.getVersion();
+	  oldSeqs = mod.getSequences();
 
 	  /* make sure its not frozen */ 
 	  if(mod.isFrozen()) 
@@ -4960,10 +4965,13 @@ class MasterMgr
 	    FilePattern pat = 
 	      new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
 
-	    primary = new FileSeq(pat, range);
-	  }
+	    primary   = new FileSeq(pat, range);
+	    secondary = mod.getSecondarySequences();
 
-	  secondary = mod.getSecondarySequences();
+	    newSeqs = new TreeSet<FileSeq>(); 
+	    newSeqs.add(primary);
+	    newSeqs.addAll(secondary);
+	  }
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -4973,25 +4981,41 @@ class MasterMgr
 	}
       }
 
-      /* if the prefix is different, 
-	   reserve the new node name after verifying that it doesn't conflict with 
-	   existing nodes */ 
-      if(!name.equals(nname)) {
+      /* verifying that the new node name doesn't conflict with existing node and
+         reserve the new name */ 
+      {
 	timer.aquire();
 	synchronized(pNodeTreeRoot) {
 	  timer.resume();
-	  
-	  if(!isNodePathUnused(nname, primary, false)) 
-	    return new FailureRsp
-	      (timer, "Cannot rename node (" + name + ") to (" + nname + ") because the  " + 
-	       "new name conflicts with an existing node or one of its associated file " +
-	       "sequences!");
 
-	  TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
-	  fseqs.add(primary);
-	  fseqs.addAll(secondary);
+	  /* remove the old working node entry, primary and secondary sequences */ 
+	  removeWorkingNodeTreePath(id, oldSeqs); 
 	  
-	  addWorkingNodeTreePath(nid, fseqs);
+	  try {
+	    if(!isNodePrimaryUnused(nname, primary)) 
+	    throw new PipelineException
+	      ("Cannot rename node (" + name + ") to (" + nname + ") because the " + 
+	       "new primary sequence name (" + primary + ") conflicts with an existing " + 
+	       "node or one of its associated file sequences!");
+
+	    for(FileSeq fseq : secondary) {
+	      if(!isNodePrimaryUnused(nname, fseq)) 
+		throw new PipelineException 
+		  ("Cannot rename node (" + name + ") to (" + nname + ") because the " + 
+		   "new secondary sequence name (" + fseq + ") conflicts with an existing " + 
+		   "node or one of its associated file sequences!");
+	    }
+	  }
+	  catch(PipelineException ex) {
+	    /* restore the old working node entry, primary and secondary sequences */ 
+	    addWorkingNodeTreePath(id, oldSeqs);
+
+	    /* abort */ 
+	    return new FailureRsp(timer, ex.getMessage());
+	  }
+	    
+	  /* add the new working node entry, primary and secondary sequences */ 
+	  addWorkingNodeTreePath(nid, newSeqs);
 	}
       }
 
@@ -5074,9 +5098,6 @@ class MasterMgr
 	    timer.accum(((TimedRsp) obj).getTimer());
 	  }
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
 	finally {
 	  downstreamLock.writeLock().unlock();
 	}
@@ -5123,7 +5144,7 @@ class MasterMgr
 	      timer.accum(((TimedRsp) obj).getTimer());
 	      if(obj instanceof FailureRsp) {
 		FailureRsp rsp = (FailureRsp) obj;
-		return new FailureRsp(timer, rsp.getMessage());
+		throw new PipelineException(rsp.getMessage());
 	      }
 	    }
 
@@ -5150,27 +5171,24 @@ class MasterMgr
 	      timer.accum(((TimedRsp) obj).getTimer());
 	      if(obj instanceof FailureRsp) {
 		FailureRsp rsp = (FailureRsp) obj;
-		return new FailureRsp(timer, rsp.getMessage());
+		throw new PipelineException(rsp.getMessage());
 	      }	  
 	    }
 	    
 	    /* release the old named node */ 
-	    releaseHelper(id, false, timer);
+	    releaseHelper(id, false, false, timer);
 	  }
 	  
 	  /* rename the files */ 
 	  if(req.renameFiles()) {
 	    FileMgrClient fclient = getFileMgrClient();
 	    try {
-	      fclient.rename(id, omod, npat);
+	      fclient.rename(id, omod, npat);  
 	    }
 	    finally {
 	      freeFileMgrClient(fclient);
 	    }
 	  }
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
 	}
 	finally {
 	  nlock.writeLock().unlock();
@@ -5193,7 +5211,7 @@ class MasterMgr
 	  timer.accum(((TimedRsp) obj).getTimer());
 	  if(obj instanceof FailureRsp) {
 	    FailureRsp rsp = (FailureRsp) obj;
-	    return new FailureRsp(timer, rsp.getMessage());
+	    throw new PipelineException(rsp.getMessage());
 	  }
 	}
 	
@@ -5224,9 +5242,6 @@ class MasterMgr
 		try {
 		  timer.resume();
 		  targetMod = new NodeMod(getWorkingBundle(targetID).getVersion());
-		}
-		catch(PipelineException ex) {
-		  return new FailureRsp(timer, ex.getMessage());
 		}
 		finally {
 		  lock.readLock().unlock();
@@ -5261,12 +5276,7 @@ class MasterMgr
 	      }
 
 	      /* update the action related parameters */ 
-	      try {
-		targetMod.setAction(action);
-	      }
-	      catch(PipelineException ex) {
-		return new FailureRsp(timer, ex.getMessage());	      
-	      }
+	      targetMod.setAction(action);
 	      
 	      /* modify the working version */ 
 	      timer.suspend();
@@ -5274,7 +5284,7 @@ class MasterMgr
 	      timer.accum(((TimedRsp) obj).getTimer());
 	      if(obj instanceof FailureRsp) {
 		FailureRsp rsp = (FailureRsp) obj;
-		return new FailureRsp(timer, rsp.getMessage());
+		throw new PipelineException(rsp.getMessage());
 	      }	  
 	    }
 	  }
@@ -5284,6 +5294,13 @@ class MasterMgr
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
+      /* remove the new working node entry, primary and secondary sequences */ 
+      removeWorkingNodeTreePath(nid, newSeqs); 
+      
+      /* restore the old working node entry, primary and secondary sequences */ 
+      addWorkingNodeTreePath(id, oldSeqs);
+
+      /* abort */ 
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -5801,7 +5818,7 @@ class MasterMgr
 	synchronized(pNodeTreeRoot) {
 	  timer.resume();
 	  
-	  if(!isNodePathUnused(name, req.getNodeMod().getPrimarySequence(), false)) 
+	  if(!isNodePrimaryUnused(name, req.getNodeMod().getPrimarySequence())) 
 	    return new FailureRsp
 	      (timer, "Cannot register node (" + name + ") because its name conflicts " + 
 	       "with an existing node or one of its associated file sequences!");
@@ -5940,7 +5957,7 @@ class MasterMgr
 
 	try {
 	  releaseHelper(new NodeID(req.getAuthor(), req.getView(), name), 
-			req.removeFiles(), timer);
+			req.removeFiles(), true, timer);
 	}
 	catch(PipelineException ex) {
 	  failures.add(ex.getMessage());
@@ -5986,12 +6003,16 @@ class MasterMgr
    * 
    * @param removeFiles
    *   Should the files associated with the working version be deleted?
+   * 
+   * @param removeNodeTreePath
+   *   Should the node tree path entries for the working version be removed? 
    */
   private void 
   releaseHelper
   (
    NodeID id, 
    boolean removeFiles, 
+   boolean removeNodeTreePath, 
    TaskTimer timer
   )
     throws PipelineException 
@@ -6117,7 +6138,8 @@ class MasterMgr
       }
 	
       /* remove the node tree path */ 
-      removeWorkingNodeTreePath(id);
+      if(removeNodeTreePath) 
+	removeWorkingNodeTreePath(id, mod.getSequences());
 
       /* remove the associated files */ 
       if(removeFiles) {
@@ -6223,7 +6245,7 @@ class MasterMgr
 	}
 
 	for(NodeID nodeID : dead) {
-	  releaseHelper(nodeID, req.removeFiles(), timer);
+	  releaseHelper(nodeID, req.removeFiles(), true, timer);
 	  pWorkingLocks.remove(nodeID);
 	}
 	
@@ -7010,7 +7032,7 @@ class MasterMgr
 
       /* initialize new working version */ 
       if(working == null) {
-	/* register the node name */ 
+	/* register the node name and sequences */ 
 	timer.aquire();
 	synchronized(pNodeTreeRoot) {
 	  timer.resume();
@@ -7046,6 +7068,15 @@ class MasterMgr
 	 
       /* update existing working version */ 
       else {
+	/* unregister the old working node name and sequences,
+	   register the new node name and sequences */ 
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  timer.resume();
+	  removeWorkingNodeTreePath(nodeID, work.getSequences());
+	  addWorkingNodeTreePath(nodeID, nwork.getSequences());
+	}
+	
 	/* update the working bundle */ 
 	working.setVersion(nwork);
 
@@ -11211,12 +11242,13 @@ class MasterMgr
       
       entry.addWorking(nodeID.getAuthor(), nodeID.getView());
       
-      if(fseqs != null) {
-	for(FileSeq fseq : fseqs)
-	  entry.addSequence(fseq);
-      }
+      for(FileSeq fseq : fseqs)
+	entry.addSequence(fseq);
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Remove the given working version from the node path tree. <P> 
@@ -11225,11 +11257,15 @@ class MasterMgr
    * 
    * @param nodeID
    *   The unique working version identifier.
-   */ 
+   *
+   * @param fseq
+   *   The file sequences associated with the working version.
+   */
   private void 
   removeWorkingNodeTreePath
   (
-   NodeID nodeID
+   NodeID nodeID,
+   TreeSet<FileSeq> fseqs
   )
   {
     synchronized(pNodeTreeRoot) {
@@ -11250,6 +11286,9 @@ class MasterMgr
       assert(entry.isLeaf());
 
       entry.removeWorking(nodeID.getAuthor(), nodeID.getView());
+      for(FileSeq fseq : fseqs)
+	entry.removeSequence(fseq);
+
       if(!entry.hasWorking() && !entry.isCheckedIn()) {
 	while(!stack.isEmpty()) {
 	  NodeTreeEntry parent = stack.pop();
@@ -11262,6 +11301,37 @@ class MasterMgr
 	  entry = parent;
 	}
       }
+    }
+  }
+
+  /**
+   * Remove the given secondary file sequence of the working version from the node 
+   * path tree. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param fseq
+   *   The secondary file sequence to remove.
+   */ 
+  private void 
+  removeSecondaryWorkingNodeTreePath
+  (
+   NodeID nodeID, 
+   FileSeq fseq
+  )
+  {
+    synchronized(pNodeTreeRoot) {
+      String comps[] = nodeID.getName().split("/"); 
+      
+      NodeTreeEntry parent = pNodeTreeRoot;
+      int wk;
+      for(wk=1; wk<(comps.length-1); wk++) 
+	parent = (NodeTreeEntry) parent.get(comps[wk]);
+      
+      String name = comps[comps.length-1];
+      NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
+      entry.removeSequence(fseq);
     }
   }
 
@@ -11310,39 +11380,11 @@ class MasterMgr
     }
   }
 
-  /**
-   * Remove the given secondary file sequence of the working version from the node 
-   * path tree. <P> 
-   * 
-   * @param nodeID
-   *   The unique working version identifier.
-   * 
-   * @param fseq
-   *   The secondary file sequence to remove.
-   */ 
-  private void 
-  removeSecondaryWorkingNodeTreePath
-  (
-   NodeID nodeID, 
-   FileSeq fseq
-  )
-  {
-    synchronized(pNodeTreeRoot) {
-      String comps[] = nodeID.getName().split("/"); 
-      
-      NodeTreeEntry parent = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<(comps.length-1); wk++) 
-	parent = (NodeTreeEntry) parent.get(comps[wk]);
-      
-      String name = comps[comps.length-1];
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
-      entry.removeSequence(fseq);
-    }
-  }
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Is the given fully resolved node name unused?
+   * Is the given fully resolved node name and sequence unused?
    * 
    * @param name
    *   The fully resolved node name.
@@ -11350,15 +11392,59 @@ class MasterMgr
    * @param fseq
    *   The file sequence to test.
    * 
-   * @param seqsOnly
-   *   Only check the file sequences and ignore existing node name conflicts.
+   * @param checkSeqsOnly
+   *   Whether to only check the file sequences, ignoring node name conflicts.
    */ 
   private boolean
-  isNodePathUnused
+  isNodePrimaryUnused
+  (
+   String name, 
+   FileSeq fseq
+  ) 
+  {
+    return isNodeSeqUnused(name, fseq, false);
+  }
+
+  /** 
+   * Is the given fully resolved node name and sequence unused?
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The file sequence to test.
+   * 
+   * @param checkSeqsOnly
+   *   Whether to only check the file sequences, ignoring node name conflicts.
+   */ 
+  private boolean
+  isNodeSecondaryUnused
+  (
+   String name, 
+   FileSeq fseq
+  ) 
+  {
+    return isNodeSeqUnused(name, fseq, true);
+  }
+
+  /** 
+   * Is the given fully resolved node name and sequence unused?
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The file sequence to test.
+   * 
+   * @param checkSeqsOnly
+   *   Whether to only check the file sequences, ignoring node name conflicts.
+   */ 
+  private boolean
+  isNodeSeqUnused
   (
    String name, 
    FileSeq fseq, 
-   boolean seqsOnly 
+   boolean checkSeqsOnly 
   ) 
   {
     synchronized(pNodeTreeRoot) {
@@ -11373,7 +11459,7 @@ class MasterMgr
 	    return true;
 	}
 	else {
-	  if(!seqsOnly && (entry != null)) 
+	  if(!checkSeqsOnly && (entry != null)) 
 	    return false;
 
 	  for(NodeTreeEntry child : parent.values()) {
@@ -11427,6 +11513,9 @@ class MasterMgr
 
     return views;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Log the node tree contents.
@@ -11482,8 +11571,10 @@ class MasterMgr
 	Set<String> keys = entry.getSequences();
 	if(!keys.isEmpty()) {
 	  buf.append(istr + "  Sequences =\n");
-	  for(String key : keys)   
-	    buf.append(istr + "    " + key + "\n");
+	  for(String key : keys) {
+	    Integer cnt = entry.getSequenceCount(key);
+	    buf.append(istr + "    " + key + " [" + cnt + "]\n");
+	  }
 	  buf.append("\n");
 	}
       }	

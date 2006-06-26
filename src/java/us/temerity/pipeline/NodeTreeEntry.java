@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.8 2006/02/28 19:47:45 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.9 2006/06/26 06:35:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,7 +76,7 @@ class NodeTreeEntry
     pIsLeaf      = true;
     pIsCheckedIn = isCheckedIn;
     pWorking     = new TreeMap<String,TreeSet<String>>();
-    pFileSeqs    = new TreeSet<String>();
+    pFileSeqRefs = new RefCountTable<String>();
   }
 
 
@@ -222,7 +222,7 @@ class NodeTreeEntry
   addWorking
   ( 
    String author, 
-   String view   
+   String view
   ) 
   {
     assert(pIsLeaf);
@@ -250,7 +250,7 @@ class NodeTreeEntry
   removeWorking
   ( 
    String author, 
-   String view   
+   String view
   ) 
   {
     assert(pIsLeaf);
@@ -262,6 +262,7 @@ class NodeTreeEntry
 	pWorking.remove(author);
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -279,7 +280,7 @@ class NodeTreeEntry
     assert(pIsLeaf);
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
-    return (!pFileSeqs.contains(sname));
+    return (!pFileSeqRefs.contains(sname));
   }
 
   /**
@@ -289,7 +290,20 @@ class NodeTreeEntry
   getSequences() 
   {
     assert(pIsLeaf);
-    return Collections.unmodifiableSet(pFileSeqs);
+    return pFileSeqRefs.getKeys();
+  }
+
+  /**
+   * Get reference count of the given file sequence key.
+   */ 
+  public Integer
+  getSequenceCount
+  (
+   String key
+  ) 
+  {
+    assert(pIsLeaf);
+    return pFileSeqRefs.getCount(key);
   }
 
   /**
@@ -304,7 +318,7 @@ class NodeTreeEntry
     assert(pIsLeaf);
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
-    pFileSeqs.add(sname);
+    pFileSeqRefs.ref(sname);
   } 
 
   /**
@@ -319,7 +333,7 @@ class NodeTreeEntry
     assert(pIsLeaf);
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
-    pFileSeqs.remove(sname);
+    pFileSeqRefs.unref(sname);
   } 
 
 
@@ -343,8 +357,7 @@ class NodeTreeEntry
       if(!pWorking.isEmpty()) 
 	encoder.encode("Working", pWorking);
       
-      if(!pFileSeqs.isEmpty()) 
-	encoder.encode("FileSeqs", pFileSeqs);
+      encoder.encode("FileSeqs", pFileSeqRefs);
     }
 
     if(!isEmpty()) 
@@ -378,9 +391,7 @@ class NodeTreeEntry
       if(pWorking == null) 
 	pWorking = new TreeMap<String,TreeSet<String>>();
       
-      pFileSeqs = (TreeSet<String>) decoder.decode("FileSeqs"); 
-      if(pFileSeqs == null)
-	pFileSeqs = new TreeSet<String>();
+      pFileSeqRefs = (RefCountTable<String>) decoder.decode("FileSeqs"); 
     }
 
     LinkedList<NodeTreeEntry> children = 
@@ -429,9 +440,9 @@ class NodeTreeEntry
   private TreeMap<String,TreeSet<String>>  pWorking;
 
   /**
-   * The "prefix|suffix" format names of all file sequences associated with 
-   * the leaf components. 
+   * Reference counts of each file sequence indexed by "prefix|suffix" for all file 
+   * sequences associated with the leaf components. 
    */ 
-  private TreeSet<String> pFileSeqs;
+  private RefCountTable<String>  pFileSeqRefs;
 
 }
