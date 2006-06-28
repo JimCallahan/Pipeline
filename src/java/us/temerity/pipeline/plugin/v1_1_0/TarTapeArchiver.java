@@ -1,4 +1,4 @@
-// $Id: TarTapeArchiver.java,v 1.5 2005/10/06 17:06:33 jim Exp $
+// $Id: TarTapeArchiver.java,v 1.6 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -278,7 +278,7 @@ class TarTapeArchiver
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3451740157729490251L;
+  private static final long serialVersionUID = -3451740157729490252L;
 
 }
 

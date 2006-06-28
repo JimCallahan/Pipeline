@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.3 2006/05/07 21:30:13 jim Exp $
+// $Id: MayaRenderAction.java,v 1.4 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_3_0;
 
@@ -467,7 +467,7 @@ class MayaRenderAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7574872839083068401L;
+  private static final long serialVersionUID = 7574872839083068402L;
 
 }
 

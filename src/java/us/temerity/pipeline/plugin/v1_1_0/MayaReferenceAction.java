@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.8 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.9 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -361,7 +361,7 @@ class MayaReferenceAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -4751775228919961267L;
+  private static final long serialVersionUID = -4751775228919961268L;
 
 }
 

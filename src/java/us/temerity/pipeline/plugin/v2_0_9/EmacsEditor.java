@@ -1,4 +1,4 @@
-// $Id: EmacsEditor.java,v 1.1 2006/05/07 21:33:59 jim Exp $
+// $Id: EmacsEditor.java,v 1.2 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -130,7 +130,7 @@ class EmacsEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-   private static final long serialVersionUID = 3797613382593920249L;
+   private static final long serialVersionUID = 3797613382593920250L;
 
 }
 

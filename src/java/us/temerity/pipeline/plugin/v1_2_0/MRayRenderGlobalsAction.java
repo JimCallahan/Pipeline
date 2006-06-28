@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.3 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_2_0;
 
@@ -2761,7 +2761,7 @@ class MRayRenderGlobalsAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -6216311731394337147L;
+  private static final long serialVersionUID = -6216311731394337150L;
 
 }
 

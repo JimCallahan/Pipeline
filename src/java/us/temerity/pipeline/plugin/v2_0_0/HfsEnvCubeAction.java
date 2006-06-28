@@ -1,4 +1,4 @@
-// $Id: HfsEnvCubeAction.java,v 1.4 2006/01/20 16:47:52 jim Exp $
+// $Id: HfsEnvCubeAction.java,v 1.5 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -198,7 +198,7 @@ class HfsEnvCubeAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3262838376294654128L;
+  private static final long serialVersionUID = -3262838376294654129L;
 
 }
 

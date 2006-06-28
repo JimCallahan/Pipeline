@@ -1,4 +1,4 @@
-// $Id: MRayRenderAction.java,v 1.1 2006/06/21 05:25:10 jim Exp $
+// $Id: MRayRenderAction.java,v 1.2 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -657,7 +657,7 @@ MRayRenderAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2862127392931902719L;
+  private static final long serialVersionUID = 2862127392931902720L;
 
   private static final String commandParam   = "Command";
   private static final String bufferParam    = "FramebufferType";

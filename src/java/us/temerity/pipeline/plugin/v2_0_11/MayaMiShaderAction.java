@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.1 2006/06/21 05:25:10 jim Exp $
+// $Id: MayaMiShaderAction.java,v 1.2 2006/06/28 02:11:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -541,6 +541,6 @@ MayaMiShaderAction
   private static final String PARAM_namespace  = "MaterialNamespace";
   private static final String PARAM_command    = "Command";
 	
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 1819212509103978776L;
 
 }
