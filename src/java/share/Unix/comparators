@@ -5,7 +5,7 @@ ComparatorsMenuLayout <PluginMenuLayout> #1 {
       Title <String> #5 { "ShakeDiff" }
       Name <String> #6 { "ShakeDiff" }
       VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "2.0.0" }
+        RevisionNumber <String> #8 { "2.0.9" }
       }
       Vendor <String> #9 { "Temerity" }
     }
@@ -13,7 +13,7 @@ ComparatorsMenuLayout <PluginMenuLayout> #1 {
       Title <String> #11 { "GimpDiff" }
       Name <String> #12 { "GimpDiff" }
       VersionID <VersionID> #13 {
-        RevisionNumber <String> #14 { "2.0.0" }
+        RevisionNumber <String> #14 { "2.0.9" }
       }
       Vendor <String> #15 { "Temerity" }
     }
@@ -21,9 +21,9 @@ ComparatorsMenuLayout <PluginMenuLayout> #1 {
       Title <String> #17 { "XDiff" }
       Name <String> #18 { "XDiff" }
       VersionID <VersionID> #19 {
-        RevisionNumber <String> #20 { "2.0.0" }
+        RevisionNumber <String> #20 { "2.0.9" }
       }
-      Vendor <REF> #15
+      Vendor <String> #21 { "Temerity" }
     }
   }
 }
