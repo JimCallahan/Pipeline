@@ -1,4 +1,4 @@
-// $Id: MayaProjectEditor.java,v 1.2 2006/06/26 21:12:08 jim Exp $
+// $Id: MayaProjectEditor.java,v 1.3 2006/06/29 01:35:20 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -21,10 +21,11 @@ class MayaProjectEditor
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+
   public 
   MayaProjectEditor() 
   {
-    super("Maya", new VersionID("2.0.10"), "Temerity",
+    super("MayaProject", new VersionID("2.0.10"), "Temerity",
 	  "3D modeling and animation software from Alias|Wavefront. " +
 	  "Opens Maya and sets the project to the current working directory.",
 	  "maya");
