@@ -48,7 +48,6 @@ can begin processing jobs using:
 
 #@ROOT_INST_DIR@/Windows/debug/bin/pltestheavy.bat
 #@ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
-#@ROOT_INST_DIR@/Windows/debug/bin/pltestnative.bat
 
 #@ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
 

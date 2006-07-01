@@ -49,8 +49,6 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
 
-@ROOT_INST_DIR@/MacOS/debug/sbin/pltestnative
-
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS
