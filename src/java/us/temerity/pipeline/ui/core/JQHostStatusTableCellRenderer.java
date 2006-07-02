@@ -1,4 +1,4 @@
-// $Id: JQHostStatusTableCellRenderer.java,v 1.1 2006/07/02 00:27:50 jim Exp $
+// $Id: JQHostStatusTableCellRenderer.java,v 1.2 2006/07/02 04:55:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -74,7 +74,7 @@ class JQHostStatusTableCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 2906183585360827735L;
 
 
 
