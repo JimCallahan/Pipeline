@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.4 2006/06/05 03:45:42 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.5 2006/07/02 06:01:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -171,7 +171,7 @@ class JSaveLayoutDialog
     if((text == null) || (text.length() == 0)) 
       return null;
 
-    Path path = null;
+    Path path = null; 
     {
       TreePath tpath = pTree.getSelectionPath(); 
       if(tpath != null) {
@@ -181,6 +181,9 @@ class JSaveLayoutDialog
 	  path = new Path(data.getPath(), text);
 	else 
 	  path = new Path(data.getPath().getParentPath(), text);
+      }
+      else {
+	path = new Path(text);
       }
     }
 
@@ -274,6 +277,9 @@ class JSaveLayoutDialog
 	TreePath tpath = pTree.getSelectionPath(); 
 	if(tpath != null) {
 	  tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+	  if(!tnode.getAllowsChildren()) 
+	    tnode = (DefaultMutableTreeNode) tnode.getParent();
+
 	  TreeData data = (TreeData) tnode.getUserObject();
 	  cdata = new TreeData(new Path(data.getPath(), diag.getName()), null);
 	}
@@ -281,9 +287,6 @@ class JSaveLayoutDialog
 	  tnode = (DefaultMutableTreeNode) pTree.getModel().getRoot();
 	  cdata = new TreeData(new Path("/" + diag.getName()), null);
 	}
-
-	if(!tnode.getAllowsChildren()) 
-	  tnode = (DefaultMutableTreeNode) tnode.getParent();
       }
 
       /* create the new directory */ 

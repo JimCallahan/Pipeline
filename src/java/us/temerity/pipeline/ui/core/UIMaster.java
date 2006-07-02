@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.39 2006/06/24 20:48:38 jim Exp $
+// $Id: UIMaster.java,v 1.40 2006/07/02 06:01:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1677,7 +1677,9 @@ class UIMaster
       
       File dir = path.getParentPath().toFile();
       if(!dir.isDirectory()) 
-	dir.mkdirs();
+	if(!dir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create parent directory (" + dir + ") to contain saved layout!");
       
       LinkedList<PanelLayout> layouts = new LinkedList<PanelLayout>();
       {
@@ -1692,7 +1694,7 @@ class UIMaster
 	  new PanelLayout(mpanel, frame.getWindowName(), frame.getBounds());
 	layouts.add(layout);
       }
-      
+
       LockedGlueFile.save(path.toFile(), "PanelLayout", layouts);
     }
     catch(Exception ex) {

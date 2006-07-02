@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.3 2006/05/07 21:30:14 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.4 2006/07/02 06:01:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -180,10 +180,6 @@ class JManageLayoutsDialog
 	String oname = data.getPath().toString();
 	Path npath = new Path(data.getPath().getParentPath(), diag.getName());
 
-	// DEBUG 
-	System.out.print("Rename Folder: " + oname + " to " + npath + "\n");
-	// DEBUG 
-
 	renameFiles(oname, npath.toString());
 	
 	Path lpath = master.getLayoutPath();
@@ -211,10 +207,6 @@ class JManageLayoutsDialog
       if(diag.wasConfirmed()) {
 	String oname = data.getPath().toString();
 	Path npath = new Path(data.getPath().getParentPath(), diag.getName());
-
-	// DEBUG 
-	System.out.print("Rename Layout: " + oname + " to " + npath + "\n");
-	// DEBUG 
 
 	renameFiles(oname, npath.toString()); 
 
@@ -292,10 +284,6 @@ class JManageLayoutsDialog
     if(selected == null) 
       return;
     
-    // DEBUG 
-    System.out.print("Delete: " + selected + "\n");
-    // DEBUG 
-
     Path lpath = new Path(PackageInfo.sHomePath, 
 			  PackageInfo.sUser + "/.pipeline/layouts"); 
     Path path = new Path(lpath, selected);
