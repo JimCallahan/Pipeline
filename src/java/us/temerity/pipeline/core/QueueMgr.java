@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.57 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueMgr.java,v 1.58 2006/07/02 09:41:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2627,7 +2627,7 @@ class QueueMgr
 	dead.add(pJobGroups.get(groupID));
 	
       for(QueueJobGroup group : dead) {   
-	if(!pAdminPrivileges.isQueueManaged(req, group.getNodeID())) {
+	if(pAdminPrivileges.isQueueManaged(req, group.getNodeID())) {
 	  try {
 	    deleteCompletedJobGroup(timer, group);
 	  }
