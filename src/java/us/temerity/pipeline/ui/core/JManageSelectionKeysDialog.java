@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.10 2006/01/15 06:29:25 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.11 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -526,7 +526,7 @@ class JManageSelectionKeysDialog
 	TreeMap<Long,JobStatus> jobStatus = 
 	  client.getJobStatus(new TreeSet<Long>(groups.keySet()));
 	TreeMap<Long,QueueJobInfo> jobInfo = client.getRunningJobInfo();
-	TreeMap<String,QueueHost> hosts = client.getHosts(); 
+	TreeMap<String,QueueHostInfo> hosts = client.getHosts(); 
 	TreeSet<String> selectionGroups = client.getSelectionGroupNames();
 	TreeSet<String> selectionSchedules = client.getSelectionScheduleNames();
 

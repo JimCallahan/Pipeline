@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.6 2006/01/15 06:29:26 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.7 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -251,13 +251,13 @@ class QueueSlotsTableModel
   public void
   setSlots
   (
-   TreeMap<String,QueueHost> hosts, 
+   TreeMap<String,QueueHostInfo> hosts, 
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo
   ) 
   {
     int cnt = 0;
-    for(QueueHost host : hosts.values()) {
+    for(QueueHostInfo host : hosts.values()) {
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
@@ -275,7 +275,7 @@ class QueueSlotsTableModel
 
     int wk = 0;
     for(String hostname : hosts.keySet()) {
-      QueueHost host = hosts.get(hostname);
+      QueueHostInfo host = hosts.get(hostname);
       switch(host.getStatus()) {
       case Enabled:
       case Disabled:
@@ -301,7 +301,7 @@ class QueueSlotsTableModel
 	  
 	  int sk;
 	  for(sk=0; sk<host.getJobSlots(); sk++) {
-	    pIsEnabled[wk] = (host.getStatus() == QueueHost.Status.Enabled);
+	    pIsEnabled[wk] = (host.getStatus() == QueueHostStatus.Enabled);
 	    pHostnames[wk] = hostname;
 	    
 	    if(sk < hinfo.size()) {
@@ -457,7 +457,7 @@ class QueueSlotsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether the host owning each slot is enabled.
+   * Whether the host owning each slot is Enabled.
    */ 
   private boolean[] pIsEnabled; 
 

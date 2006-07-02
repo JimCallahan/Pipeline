@@ -1,0 +1,24 @@
+#!/bin/bash
+
+puid=`id -u`
+pgid=`id -g`
+if [ $puid -ne @PIPELINE_UID@ -o $pgid -ne @PIPELINE_GID@ ]
+then
+  echo "This program can only be run by the (@PIPELINE_USER@) user!"
+  exit 1
+fi
+
+qhost=`hostname`
+if [ $qhost != @PL_QUEUE_SERVER@ ]
+then
+  echo "This program can only be run on the Queue Manager server (@PL_QUEUE_SERVER@)!"
+  exit 1
+fi
+
+hfile=@QUEUEDIR@/queue/job-servers/hosts
+
+echo "Saving current hosts file as: " ${hfile}.backup
+cp -f ${hfile} ${hfile}.backup
+
+echo "Updating current hosts file: " ${hfile}
+sed -e 's|<QueueHost>|<QueueHostInfo>|g' ${hfile}.backup > ${hfile}

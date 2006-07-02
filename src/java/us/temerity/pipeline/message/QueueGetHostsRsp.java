@@ -1,4 +1,4 @@
-// $Id: QueueGetHostsRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: QueueGetHostsRsp.java,v 1.4 2006/07/02 00:27:49 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,7 +36,7 @@ class QueueGetHostsRsp
   QueueGetHostsRsp
   (
    TaskTimer timer, 
-   TreeMap<String,QueueHost> hosts
+   TreeMap<String,QueueHostInfo> hosts
   )
   { 
     super(timer);
@@ -61,7 +61,7 @@ class QueueGetHostsRsp
   /**
    * Gets the per-host information indexed by fully resolved host name.
    */
-  public TreeMap<String,QueueHost>
+  public TreeMap<String,QueueHostInfo>
   getHosts() 
   {
     return pHosts;
@@ -84,7 +84,7 @@ class QueueGetHostsRsp
   /**
    * The per-host information indexed by fully resolved host name.
    */ 
-  private TreeMap<String,QueueHost>  pHosts;
+  private TreeMap<String,QueueHostInfo>  pHosts;
 
 }
   

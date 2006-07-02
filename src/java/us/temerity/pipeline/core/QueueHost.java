@@ -1,7 +1,8 @@
-// $Id: QueueHost.java,v 1.21 2006/02/27 17:56:01 jim Exp $
+// $Id: QueueHost.java,v 1.1 2006/07/02 00:27:49 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
@@ -50,6 +51,30 @@ class QueueHost
     init();
   }
 
+  /**
+   * Construct from queue host information.
+   * 
+   * @param qinfo
+   *   The queue host information data.
+   */ 
+  public
+  QueueHost
+  (
+   QueueHostInfo qinfo
+  ) 
+  {
+    super(qinfo.getName());
+    init();
+
+    pReservation = qinfo.getReservation();
+    pOrder       = qinfo.getOrder();
+    pJobSlots    = qinfo.getJobSlots();
+
+    pSelectionSchedule = qinfo.getSelectionSchedule();
+    pSelectionGroup    = qinfo.getSelectionGroup();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -71,6 +96,30 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current operational status of the host (QueueHostInfo format).
+   */ 
+  public synchronized QueueHostStatus 
+  getInfoStatus() 
+  {
+    switch(pStatus) {
+    case Enabled:
+      return QueueHostStatus.Enabled;
+
+    case Disabled:
+      return QueueHostStatus.Disabled;
+
+    case Shutdown:
+      return QueueHostStatus.Shutdown;
+      
+    case Hung:
+      return QueueHostStatus.Hung;
+    }
+
+    assert(false);
+    return null;
+  }
 
   /**
    * Get the current operational status of the host.
@@ -694,6 +743,23 @@ class QueueHost
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Return a read-only form of information about the current status of a job server host. 
+   */ 
+  public synchronized QueueHostInfo
+  toInfo() 
+  {
+    return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
+			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
+			     getHold(), pSamples, pSelectionSchedule, pSelectionGroup);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -731,9 +797,8 @@ class QueueHost
 
     Integer order = (Integer) decoder.decode("Order"); 
     if(order == null) 
-      pOrder = 0;   // REPLACE THIS WITH AN EXECEPTION in v1.9.16
-    else 
-      pOrder = order;
+      throw new GlueException("The \"Order\" was missing!");
+    pOrder = order;
 
     Integer slots = (Integer) decoder.decode("JobSlots"); 
     if(slots == null) 
@@ -788,6 +853,7 @@ class QueueHost
      * in this state.
      */ 
     Hung;
+
 
     /**
      * Get the list of all possible values.

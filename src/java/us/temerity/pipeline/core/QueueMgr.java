@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.56 2006/05/15 01:04:23 jim Exp $
+// $Id: QueueMgr.java,v 1.57 2006/07/02 00:27:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -65,9 +65,18 @@ class QueueMgr
       pSelectionGroups    = new TreeMap<String,SelectionGroup>();
       pSelectionSchedules = new TreeMap<String,SelectionSchedule>();
 
+      pStatusChanges            = new TreeMap<String,QueueHostStatusChange>();
+      pReservationChanges       = new TreeMap<String,String>();
+      pOrderChanges             = new TreeMap<String,Integer>();
+      pSlotChanges              = new TreeMap<String,Integer>();
+      pSelectionGroupChanges    = new TreeMap<String,String>();
+      pSelectionScheduleChanges = new TreeMap<String,String>();
+
       pHosts           = new TreeMap<String,QueueHost>(); 
       pLastSampleWrite = new Date();
       pSampleFileLock  = new Object();
+
+      pHostsInfo = new TreeMap<String,QueueHostInfo>();
 
       pPreemptList = new ConcurrentLinkedQueue<Long>();
       pHitList     = new ConcurrentLinkedQueue<Long>();
@@ -1166,17 +1175,17 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
-    synchronized(pHosts) {
+    synchronized(pHostsInfo) {
       timer.resume();
       
-      return new QueueGetHostsRsp(timer, pHosts);
+      return new QueueGetHostsRsp(timer, pHostsInfo);
     }
   }
   
   /**
    * Add a new execution host to the Pipeline queue. <P> 
    * 
-   * The host will be added in a <CODE>Shutdown</CODE> state, unreserved and with no 
+   * The host will be added in a <CODE>Offline</CODE> state, unreserved and with no 
    * selection key biases.  If a host already exists with the given name, an exception 
    * will be thrown instead. <P> 
    * 
@@ -1201,26 +1210,33 @@ class QueueMgr
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may add hosts!"); 
 
-      synchronized(pHosts) {
-	timer.resume();
+      boolean modified = false;
+      try {
+	synchronized(pHosts) {
+	  timer.resume();
+	  
+	  try {
+	    hname = InetAddress.getByName(hname).getCanonicalHostName();
+	  }
+	  catch(UnknownHostException ex) {
+	    throw new PipelineException
+	      ("The host (" + hname + ") could not be reached or is illegal!");
+	  }
 	
-	try {
-	  hname = InetAddress.getByName(hname).getCanonicalHostName();
-	}
-	catch(UnknownHostException ex) {
-	  throw new PipelineException
-	    ("The host (" + hname + ") could not be reached or is illegal!");
-	}
-	
-	if(pHosts.containsKey(hname)) 
-	  throw new PipelineException
-	    ("The host (" + hname + ") is already a job server!");
-	pHosts.put(hname, new QueueHost(hname));
+	  if(pHosts.containsKey(hname)) 
+	    throw new PipelineException
+	      ("The host (" + hname + ") is already a job server!");
+	  pHosts.put(hname, new QueueHost(hname));
 
-	writeHosts();
-
-	return new SuccessRsp(timer);
+	  writeHosts();
+	}
       }
+      finally {
+	if(modified)       
+	  updateHostsInfo(timer);
+      }
+	
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
@@ -1230,7 +1246,7 @@ class QueueMgr
   /**
    * Remove the given existing execution hosts from the Pipeline queue. <P> 
    * 
-   * The hosts must be in a <CODE>Shutdown</CODE> state before they can be removed. <P> 
+   * The hosts must be in a <CODE>Offline</CODE> state before they can be removed. <P> 
    * 
    * @param req
    *   The request.
@@ -1252,30 +1268,38 @@ class QueueMgr
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may remove hosts!"); 
 
-      synchronized(pHosts) {
-	timer.resume();
+      boolean modified = false;
+      try {
+	synchronized(pHosts) {
+	  timer.resume();
 	
-	for(String hname : req.getHostnames()) {
-	  QueueHost host = pHosts.get(hname);
-	  if(host != null) {
-	    switch(host.getStatus()) {
-	    case Shutdown:
-	    case Hung:
-	      pHosts.remove(hname);
-	      JobMgrControlClient.serverUnreachable(hname);
-	      break;
-
-	    default:
-	      throw new PipelineException
-		("Unable to remove host (" + hname + ") until it is Shutdown!");
+	  for(String hname : req.getHostnames()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Shutdown:
+	      case Hung:
+		modified = true;
+		pHosts.remove(hname);
+		JobMgrControlClient.serverUnreachable(hname);
+		break;
+		
+	      default:
+		throw new PipelineException
+		  ("Unable to remove host (" + hname + ") until it is Shutdown!");
+	      }
 	    }
 	  }
+	  
+	  writeHosts();
 	}
-
-	writeHosts();
-
-	return new SuccessRsp(timer);
       }
+      finally {
+	if(modified)       
+	  updateHostsInfo(timer);
+      }
+
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
@@ -1324,37 +1348,10 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
 
-    timer.aquire();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req)) {
-	TreeSet<String> hostnames = new TreeSet<String>();
-
-	TreeMap<String,QueueHost.Status> status = req.getStatus();
-	if(status != null) 
-	  hostnames.addAll(status.keySet());
-
-	TreeMap<String,String> reservations = req.getReservations();
-	if(reservations != null) 
-	  hostnames.addAll(reservations.keySet());
-
-	TreeMap<String,Integer> slots = req.getJobSlots();
-	if(slots != null) 
-	  hostnames.addAll(slots.keySet());
-
-	TreeMap<String,Integer> orders = req.getJobOrders();
-	if(orders != null) 
-	  hostnames.addAll(orders.keySet());
-
-	TreeMap<String,String> groups = req.getSelectionGroups();
-	if(groups != null) 
-	  hostnames.addAll(groups.keySet());
-
-	TreeMap<String,String> schedules = req.getSelectionSchedules();
-	if(schedules != null) 
-	  hostnames.addAll(schedules.keySet());
-
 	TreeSet<String> localHostnames = req.getLocalHostnames();
-	for(String hname : hostnames) {
+	for(String hname : req.getEditedHostnames()) {
 	  if(!localHostnames.contains(hname)) 
 	    throw new PipelineException
 	      ("Only a user with Queue Admin privileges may may edit the properties of a " + 
@@ -1362,124 +1359,328 @@ class QueueMgr
 	}
       }	
 
+      if(req.getStatusChanges() != null) {
+	timer.aquire();
+	synchronized(pStatusChanges) {
+	  timer.resume();
+	  pStatusChanges.putAll(req.getStatusChanges());
+	}
+      }
+
+      if(req.getReservations() != null) {
+	timer.aquire();
+	synchronized(pReservationChanges) {
+	  timer.resume();
+	  pReservationChanges.putAll(req.getReservations());
+	}
+      }
+
+      if(req.getJobOrders() != null) {
+	timer.aquire();
+	synchronized(pOrderChanges) {
+	  timer.resume();
+	  pOrderChanges.putAll(req.getJobOrders());
+	}
+      }
+
+      if(req.getJobSlots() != null) {
+	timer.aquire();
+	synchronized(pSlotChanges) {
+	  timer.resume();
+	  pSlotChanges.putAll(req.getJobSlots());
+	}
+      }
+
+      if(req.getSelectionGroups() != null) {
+	timer.aquire();
+	synchronized(pSelectionGroupChanges) {
+	  timer.resume();
+	  pSelectionGroupChanges.putAll(req.getSelectionGroups());
+	}
+      }
+
+      if(req.getSelectionSchedules() != null) {
+	timer.aquire();
+	synchronized(pSelectionScheduleChanges) {
+	  timer.resume();
+	  pSelectionScheduleChanges.putAll(req.getSelectionSchedules());
+	}
+      }
+
+      updatePendingHostChanges(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    
+    return new SuccessRsp(timer);
+  }
+
+  /**
+   * Update the read-only cache of job server info
+   */ 
+  private void 
+  updateHostsInfo
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.aquire();
+    synchronized(pHostsInfo) {
       synchronized(pHosts) {
-	boolean modified = false;
-	synchronized(pSelectionSchedules) {
-	  synchronized(pSelectionGroups) {
+	timer.resume();  
+	
+	pHostsInfo.clear();
+	for(String hname : pHosts.keySet()) 
+	  pHostsInfo.put(hname, pHosts.get(hname).toInfo());
+      }
+    }
+      
+    updatePendingHostChanges(timer); 
+  }
+
+  /**
+   * Update the current read-only cache of job server info to reflect pending state changes.
+   */ 
+  private void 
+  updatePendingHostChanges
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.aquire();
+    synchronized(pHostsInfo) {
+      synchronized(pStatusChanges) {
+	timer.resume();
+      
+	for(String hname : pStatusChanges.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  if(qinfo != null) {
+	    switch(pStatusChanges.get(hname)) {
+	    case Enable:
+	      qinfo.setStatus(QueueHostStatus.Enabling);
+	      break;
+	      
+	    case Disable:
+	      qinfo.setStatus(QueueHostStatus.Disabling);
+	      break;
+	      
+	    case Terminate:
+	      qinfo.setStatus(QueueHostStatus.Terminating);
+	    }
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pReservationChanges) {
+	timer.resume();
+	
+	for(String hname : pReservationChanges.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  if(qinfo != null) 
+	    qinfo.setReservation(pReservationChanges.get(hname));
+	}
+      }
+
+      timer.aquire();
+      synchronized(pOrderChanges) {
+	timer.resume();
+
+	for(String hname : pOrderChanges.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  if(qinfo != null) 
+	    qinfo.setOrder(pOrderChanges.get(hname));
+	}
+      }
+
+      timer.aquire();
+      synchronized(pSlotChanges) {
+	timer.resume();
+	
+	for(String hname : pSlotChanges.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  if(qinfo != null) 
+	    qinfo.setJobSlots(pSlotChanges.get(hname));
+	}
+      }
+
+      timer.aquire();
+      synchronized(pSelectionGroupChanges) {
+	timer.resume();
+
+	for(String hname : pSelectionGroupChanges.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  if(qinfo != null) 
+	    qinfo.setSelectionGroup(pSelectionGroupChanges.get(hname));
+	}
+      }
+
+      timer.aquire();
+      synchronized(pSelectionScheduleChanges) {
+	timer.resume();
+      
+	for(String hname : pSelectionScheduleChanges.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  if(qinfo != null) 
+	    qinfo.setSelectionSchedule(pSelectionScheduleChanges.get(hname));
+	}
+      }
+    }
+  }
+  
+  /**
+   * Apply the changes previously requested to the hosts.
+   */ 
+  private void 
+  applyHostEdits
+  (
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    timer.aquire();
+    synchronized(pHosts) {
+      boolean modified = false;
+      synchronized(pSelectionSchedules) {
+	synchronized(pSelectionGroups) {
+	  timer.resume();
+	  
+	  /* status */ 
+	  timer.aquire();
+	  synchronized(pStatusChanges) {
 	    timer.resume();
 	    
-	    /* status */ 
-	    {
-	      TreeMap<String,QueueHost.Status> table = req.getStatus();
-	      if(table != null) {
-		for(String hname : table.keySet()) {
-		  QueueHost.Status status = table.get(hname);
-		  QueueHost host = pHosts.get(hname);
-		  if((status != null) && (host != null) && (status != host.getStatus())) {
-		    switch(status) {
-		    case Disabled:
-		    case Enabled:
-		      try {
-			JobMgrControlClient client = new JobMgrControlClient(hname);
-			client.verifyConnection();
-			client.disconnect();
-		      }
-		      catch(PipelineException ex) {
-			status = QueueHost.Status.Shutdown;
-		      }	    	    
-		    }
-		    
-		    switch(status) {
-		    case Shutdown:
-		      try {
-			JobMgrControlClient client = new JobMgrControlClient(hname);
-			client.shutdown();
-		      }
-		      catch(PipelineException ex) {
-		      }	    
-		    }
-		    
-		    setHostStatus(host, status);
+	    for(String hname : pStatusChanges.keySet()) {
+	      QueueHostStatusChange change = pStatusChanges.get(hname);
+	      QueueHost host = pHosts.get(hname);
+	      if((change != null) && (host != null)) {
+		switch(change) {
+		case Enable:
+		case Disable:
+		  try {
+		    JobMgrControlClient client = new JobMgrControlClient(hname);
+		    client.verifyConnection();
+		    client.disconnect();
 		  }
+		  catch(PipelineException ex) {
+		    change = QueueHostStatusChange.Terminate;
+		  }	    	    
+		}
+		
+		switch(change) {
+		case Terminate:
+		  try {
+		    JobMgrControlClient client = new JobMgrControlClient(hname);
+		    client.shutdown();
+		  }
+		  catch(PipelineException ex) {
+		  }	    
+		}
+		
+		switch(change) {
+		case Enable:
+		  setHostStatus(host, QueueHost.Status.Enabled);
+		  break;
+		  
+		case Disable:
+		  setHostStatus(host, QueueHost.Status.Disabled);
+		  break;
+		  
+		case Terminate:
+		  setHostStatus(host, QueueHost.Status.Shutdown);
+		}
+	      }
+	    }
+
+	    pStatusChanges.clear();
+	  }
+	   
+	  
+	  /* user reservations */ 
+	  timer.aquire();
+	  synchronized(pReservationChanges) {
+	    timer.resume();
+
+	    for(String hname : pReservationChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.setReservation(pReservationChanges.get(hname));
+		modified = true;
+	      }
+	    }
+
+	    pReservationChanges.clear();
+	  }
+	    
+	  /* job orders */ 
+	  timer.aquire();
+	  synchronized(pOrderChanges) {
+	    timer.resume();
+
+	    for(String hname : pOrderChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.setOrder(pOrderChanges.get(hname));
+		modified = true;
+	      }
+	    }
+
+	    pOrderChanges.clear();
+	  }
+	    
+	  /* job slots */ 
+	  timer.aquire();
+	  synchronized(pSlotChanges) {
+	    timer.resume();
+
+	    for(String hname : pSlotChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.setJobSlots(pSlotChanges.get(hname));
+		modified = true;
+	      }
+	    }
+	    
+	    pSlotChanges.clear();
+	  }
+	    
+	  /* selection groups */ 
+	  timer.aquire();
+	  synchronized(pSelectionGroupChanges) {
+	    timer.resume();
+
+	    for(String hname : pSelectionGroupChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		String name = pSelectionGroupChanges.get(hname);
+		if((name == null) || pSelectionGroups.containsKey(name)) {
+		  host.setSelectionGroup(name);
+		  modified = true;
+		}
+	      }
+	    }
+
+	    pSelectionGroupChanges.clear();
+	  }
+
+	  /* selection schedules */ 
+	  timer.aquire();
+	  synchronized(pSelectionScheduleChanges) {
+	    timer.resume();
+	    
+	    for(String hname : pSelectionScheduleChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		String name = pSelectionScheduleChanges.get(hname);
+		if((name == null) || pSelectionSchedules.containsKey(name)) {
+		  host.setSelectionSchedule(name);
+		  modified = true;
 		}
 	      }
 	    }
 	    
-	    /* user reservations */ 
-	    {
-	      TreeMap<String,String> table = req.getReservations();
-	      if(table != null) {
-		for(String hname : table.keySet()) {
-		  QueueHost host = pHosts.get(hname);
-		  if(host != null) {
-		    host.setReservation(table.get(hname));
-		    modified = true;
-		  }
-		}
-	      }
-	    }
-	    
-	    /* job orders */ 
-	    {
-	      TreeMap<String,Integer> table = req.getJobOrders();
-	      if(table != null) {
-		for(String hname : table.keySet()) {
-		  QueueHost host = pHosts.get(hname);
-		  if(host != null) {
-		    host.setOrder(table.get(hname));
-		    modified = true;
-		  }
-		}
-	      }
-	    }	
-	    
-	    /* job slots */ 
-	    {
-	      TreeMap<String,Integer> table = req.getJobSlots();
-	      if(table != null) {
-		for(String hname : table.keySet()) {
-		  QueueHost host = pHosts.get(hname);
-		  if(host != null) {
-		    host.setJobSlots(table.get(hname));
-		    modified = true;
-		  }
-		}
-	      }
-	    }
-	    
-	    /* selection schedules */ 
-	    {
-	      TreeMap<String,String> table = req.getSelectionSchedules();
-	      if(table != null) {
-		for(String hname : table.keySet()) {
-		  QueueHost host = pHosts.get(hname);
-		  if(host != null) {
-		    String name = table.get(hname);
-		    if((name == null) || pSelectionSchedules.containsKey(name)) {
-		      host.setSelectionSchedule(name);
-		      modified = true;
-		    }
-		  }
-		}
-	      }
-	    }
-	    
-	    /* selection groups */ 
-	    {
-	      TreeMap<String,String> table = req.getSelectionGroups();
-	      if(table != null) {
-		for(String hname : table.keySet()) {
-		  QueueHost host = pHosts.get(hname);
-		  if(host != null) {
-		    String name = table.get(hname);
-		    if((name == null) || pSelectionGroups.containsKey(name)) {
-		      host.setSelectionGroup(name);
-		      modified = true;
-		    }
-		  }
-		}
-	      }
-	    }
+	    pSelectionScheduleChanges.clear();
 	  }
 	}
 
@@ -1488,11 +1689,6 @@ class QueueMgr
 	  writeHosts();
       }
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }    
-    
-    return new SuccessRsp(timer);
   }
 
   /**
@@ -2655,6 +2851,9 @@ class QueueMgr
 	}
       }
     }
+    
+    /* update the read-only cache of job server info */ 
+    updateHostsInfo(timer);
 
     /* write the last interval of samples to disk */ 
     if(dump != null) {
@@ -2897,6 +3096,21 @@ class QueueMgr
       }
 
       pWaiting.addAll(waiting);      
+    }
+
+    /* update the read-only cache of job server info before aquiring any potentially
+       long duration locks on the pHosts table */ 
+    updateHostsInfo(timer);
+
+    /* apply any pending modifications to the job servers prior to dispatch */ 
+    try {
+      applyHostEdits(timer);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 ex.getMessage()); 
+      LogMgr.getInstance().flush();
     }
 
     /* process the available job server slots in dispatch order */ 
@@ -4082,7 +4296,11 @@ class QueueMgr
 	try {
 	  String glue = null;
 	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("Hosts", pHosts);
+	    TreeMap<String,QueueHostInfo> infos = new TreeMap<String,QueueHostInfo>();
+	    for(QueueHost host : pHosts.values()) 
+	      infos.put(host.getName(), host.toInfo());
+
+	    GlueEncoder ge = new GlueEncoderImpl("Hosts", infos);
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
@@ -4130,11 +4348,11 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Hosts.");
 
-	TreeMap<String,QueueHost> hosts = null;
+	TreeMap<String,QueueHostInfo> infos = null;
 	try {
 	  FileReader in = new FileReader(file);
 	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  hosts = (TreeMap<String,QueueHost>) gd.getObject();
+	  infos = (TreeMap<String,QueueHostInfo>) gd.getObject();
 	  in.close();
 	}
 	catch(Exception ex) {
@@ -4149,9 +4367,10 @@ class QueueMgr
 	     "  While attempting to read the hosts file (" + file + ")...\n" + 
 	     "    " + ex.getMessage());
 	}
-	assert(hosts != null);
+	assert(infos != null);
 	
-	pHosts.putAll(hosts);
+	for(QueueHostInfo qinfo : infos.values()) 
+	  pHosts.put(qinfo.getName(), new QueueHost(qinfo));
       }
     }
   }
@@ -5161,7 +5380,7 @@ class QueueMgr
   private static final long  sUnhangInterval = 600000L;  /* 10-minutes */ 
 
   /**
-   * Job servers Hung more than once within this interval will be Disabled.
+   * Job servers Hung more than once within this interval will be changed to Disabled.
    */ 
   private static final long  sDisableInterval = 3600000L;  /* 60-minutes */ 
 
@@ -5259,6 +5478,50 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Pending changes to per-host status indexed by by fully resolved host name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,QueueHostStatusChange>  pStatusChanges; 
+
+  /**
+   * Pending changes to per-host reservations indexed by by fully resolved host name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,String>  pReservationChanges; 
+
+  /**
+   * Pending changes to per-host server order indexed by by fully resolved host name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,Integer>  pOrderChanges; 
+
+  /**
+   * Pending changes to per-host number of slots indexed by by fully resolved host name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,Integer>  pSlotChanges; 
+
+  /**
+   * Pending changes to per-host selection groups indexed by by fully resolved host name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,String>  pSelectionGroupChanges; 
+
+  /**
+   * Pending changes to per-host selection schedules indexed by by fully resolved host name.
+   * <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,String>  pSelectionScheduleChanges; 
+  
 
   /**
    * The per-host information indexed by fully resolved host name. <P> 
@@ -5278,6 +5541,16 @@ class QueueMgr
    * A lock which protects resource sample files from simulatenous reads and writes.
    */ 
   private Object  pSampleFileLock; 
+
+  
+  /**
+   * Last read-only copy of per-host status information indexed by fully resolved host name. 
+   * <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<String,QueueHostInfo>  pHostsInfo; 
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5406,12 +5679,53 @@ class QueueMgr
   /**
    * Lock Nesting Order (to prevent deadlock):
    * 
+   * synchronized(pHostsInfo) {
+   *   synchronized(pHosts) {
+   *     ...
+   *   }
+   *   synchronized(pStatusChanges) {
+   *     ...
+   *   }
+   *   synchronized(pReservationChanges) {
+   *     ...
+   *   }
+   *   synchronized(pOrderChanges) {
+   *     ...
+   *   }
+   *   synchronized(pSlotChanges) {
+   *     ...
+   *   }
+   *   synchronized(pSelectionGroupChanges) {
+   *     ...
+   *   }
+   *   synchronized(pSelectionScheduleChanges) {
+   *     ...
+   *   }
+   * }
+   * 
    * synchronized(pHosts) {
    *   synchronized(pJobs) {
    *     synchronized(pSelectionSchedules) {
    *       synchronized(pSelectionGroups) {
    *         synchronized(pSelectionKeys) {
-   *           ...
+   *           synchronized(pStatusChanges) {
+   *             ...
+   *           }
+   *           synchronized(pReservationChanges) {
+   *             ...
+   *           }
+   *           synchronized(pOrderChanges) {
+   *             ...
+   *           }
+   *           synchronized(pSlotChanges) {
+   *             ...
+   *           }
+   *           synchronized(pSelectionGroupChanges) {
+   *             ...
+   *           }
+   *           synchronized(pSelectionScheduleChanges) {
+   *             ...
+   *           }
    *         }
    *       }
    *     }

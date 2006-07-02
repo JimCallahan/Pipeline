@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.29 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueMgrClient.java,v 1.30 2006/07/02 00:27:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -659,7 +659,7 @@ class QueueMgrClient
    * @throws PipelineException
    *   If unable to retrieve the host information.
    */
-  public synchronized TreeMap<String,QueueHost>
+  public synchronized TreeMap<String,QueueHostInfo>
   getHosts()
     throws PipelineException  
   {
@@ -738,14 +738,8 @@ class QueueMgrClient
    * Any of the arguments may be <CODE>null</CODE> if no changes are do be made for
    * the type of host property the argument controls. <P> 
    * 
-   * A <B>pljobmgr</B>(1) daemon must be running on a host before its status can be 
-   * changed to <CODE>Disabled</CODE> or <CODE>Enabled</CODE>.  If <B>plqueuemgr</B>(1) cannot
-   * establish a network connection to a <B>pljobmgr</B>(1) daemon running on the host, the 
-   * status will be overridden and changed to <CODE>Shutdown</CODE>.
-   * 
-   * If the new status for a host is <CODE>Shutdown</CODE> and there is a <B>pljobmgr</B>(1) 
-   * daemon running on the host, it will be stopped and any job it is currently running will
-   * be killed. <P> 
+   * A <B>pljobmgr</B>(1) daemon must first be running on a host before a change can be 
+   * made to its status. <P> 
    * 
    * When a host is reserved, only jobs submitted by the reserving user will be assigned
    * to the host.  The reservation can be cleared by setting the reserving user name to
@@ -772,8 +766,8 @@ class QueueMgrClient
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
-   * @param status
-   *   The new host status indexed by fully resolved names of the hosts.
+   * @param changes
+   *   The changes in host status indexed by fully resolved names of the hosts.
    * 
    * @param reservations
    *   The names of reserving users indexed by fully resolved names of the hosts.
@@ -796,7 +790,7 @@ class QueueMgrClient
   public synchronized void
   editHosts
   (
-   TreeMap<String,QueueHost.Status> status, 
+   TreeMap<String,QueueHostStatusChange> changes, 
    TreeMap<String,String> reservations, 
    TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
@@ -808,7 +802,7 @@ class QueueMgrClient
     verifyConnection();
 
     QueueEditHostsReq req = 
-      new QueueEditHostsReq(status, reservations, orders, slots, groups, schedules, 
+      new QueueEditHostsReq(changes, reservations, orders, slots, groups, schedules, 
 			    pLocalHostnames);
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);

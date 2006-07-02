@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.20 2006/06/24 20:48:21 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.21 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -414,16 +414,18 @@ class JQueueJobBrowserPanel
 	  panel.addKeyListener(this);
 	  panel.addMouseListener(new KeyFocuser(panel));
 	  
+	  {
+	    pHostsTableModel = new QueueHostsTableModel(this, pLocalHostnames);
+	    pHostnamesTableModel = new QueueHostnamesTableModel(this, pHostsTableModel);
+	  }
+
 	  {	
 	    Box vbox = new Box(BoxLayout.Y_AXIS);
 	    vbox.setAlignmentX(0.5f);
 
 	    {
-	      QueueHostnamesTableModel model = new QueueHostnamesTableModel(this);
-	      pHostnamesTableModel = model;
-	      
 	      JTablePanel tpanel =
-		new JTablePanel(model, 
+		new JTablePanel(pHostnamesTableModel, 
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 	      pHostnamesTablePanel = tpanel;
@@ -458,10 +460,7 @@ class JQueueJobBrowserPanel
 	  panel.add(Box.createRigidArea(new Dimension(2, 0)));
 
 	  {	    
-	    QueueHostsTableModel model = new QueueHostsTableModel(this, pLocalHostnames);
-	    pHostsTableModel = model;
-
-	    JTablePanel tpanel = new JTablePanel(model);
+	    JTablePanel tpanel = new JTablePanel(pHostsTableModel);
 	    pHostsTablePanel = tpanel;
 	  
 	    {
@@ -969,7 +968,7 @@ class JQueueJobBrowserPanel
    TreeMap<Long,QueueJobGroup> groups, 
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo, 
-   TreeMap<String,QueueHost> hosts, 
+   TreeMap<String,QueueHostInfo> hosts, 
    TreeSet<String> selectionGroups, 
    TreeSet<String> selectionSchedules
   ) 
@@ -1007,7 +1006,7 @@ class JQueueJobBrowserPanel
    TreeMap<Long,QueueJobGroup> groups, 
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo, 
-   TreeMap<String,QueueHost> hosts, 
+   TreeMap<String,QueueHostInfo> hosts, 
    TreeSet<String> selectionGroups, 
    TreeSet<String> selectionSchedules
   ) 
@@ -2830,7 +2829,7 @@ class JQueueJobBrowserPanel
       TreeMap<Long,QueueJobGroup> groups = null;
       TreeMap<Long,JobStatus> jobStatus = null;
       TreeMap<Long,QueueJobInfo> jobInfo = null;
-      TreeMap<String,QueueHost> hosts = null;
+      TreeMap<String,QueueHostInfo> hosts = null;
       TreeSet<String> selectionGroups = null;
       TreeSet<String> selectionSchedules = null;
 
@@ -2873,7 +2872,7 @@ class JQueueJobBrowserPanel
      TreeMap<Long,QueueJobGroup> groups, 
      TreeMap<Long,JobStatus> jobStatus, 
      TreeMap<Long,QueueJobInfo> jobInfo, 
-     TreeMap<String,QueueHost> hosts, 
+     TreeMap<String,QueueHostInfo> hosts, 
      TreeSet<String> selectionGroups, 
      TreeSet<String> selectionSchedules
     ) 
@@ -2907,10 +2906,10 @@ class JQueueJobBrowserPanel
       updateJobs(pGroups, pStatus, pInfo, pHosts, pSelectionGroups, pSelectionSchedules);
     }
     
-    private TreeMap<Long,QueueJobGroup>  pGroups; 
-    private TreeMap<Long,JobStatus>      pStatus; 
-    private TreeMap<Long,QueueJobInfo>   pInfo; 
-    private TreeMap<String,QueueHost>    pHosts;
+    private TreeMap<Long,QueueJobGroup>   pGroups; 
+    private TreeMap<Long,JobStatus>       pStatus; 
+    private TreeMap<Long,QueueJobInfo>    pInfo; 
+    private TreeMap<String,QueueHostInfo> pHosts;
 
     private TreeSet<String>  pSelectionGroups; 
     private TreeSet<String>  pSelectionSchedules;
@@ -3042,12 +3041,12 @@ class JQueueJobBrowserPanel
       task.start();
     }
 
-    private TreeMap<String,QueueHost.Status>  pStatus; 
-    private TreeMap<String,String>            pReservations; 
-    private TreeMap<String,Integer>           pOrders;  
-    private TreeMap<String,Integer>           pSlots;  
-    private TreeMap<String,String>            pSelectionGroups; 
-    private TreeMap<String,String>            pSelectionSchedules; 
+    private TreeMap<String,QueueHostStatusChange>  pStatus; 
+    private TreeMap<String,String>                 pReservations; 
+    private TreeMap<String,Integer>                pOrders;  
+    private TreeMap<String,Integer>                pSlots;  
+    private TreeMap<String,String>                 pSelectionGroups; 
+    private TreeMap<String,String>                 pSelectionSchedules; 
   }
 
   /** 

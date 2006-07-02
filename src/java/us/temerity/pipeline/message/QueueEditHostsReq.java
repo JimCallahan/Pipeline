@@ -1,4 +1,4 @@
-// $Id: QueueEditHostsReq.java,v 1.4 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueEditHostsReq.java,v 1.5 2006/07/02 00:27:49 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,8 +26,8 @@ class QueueEditHostsReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param status
-   *   The new host status indexed by fully resolved names of the hosts.
+   * @param changes
+   *   The changes in host status indexed by fully resolved names of the hosts.
    * 
    * @param reservations
    *   The names of reserving users indexed by fully resolved names of the hosts.
@@ -50,7 +50,7 @@ class QueueEditHostsReq
   public
   QueueEditHostsReq
   (
-   TreeMap<String,QueueHost.Status> status, 
+   TreeMap<String,QueueHostStatusChange> changes, 
    TreeMap<String,String> reservations, 
    TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
@@ -61,12 +61,12 @@ class QueueEditHostsReq
   { 
     super();
 
-    pStatus       = status;
-    pReservations = reservations;
-    pJobOrders    = orders;
-    pJobSlots     = slots; 
-    pGroups       = groups; 
-    pSchedules    = schedules;
+    pStatusChanges = changes;
+    pReservations  = reservations;
+    pJobOrders     = orders;
+    pJobSlots      = slots; 
+    pGroups        = groups; 
+    pSchedules     = schedules;
 
     pLocalHostnames = hostnames; 
   }
@@ -78,12 +78,41 @@ class QueueEditHostsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the new host status indexed by fully resolved names of the hosts.
+   * Gets fully resolved names of all hosts being edited.
    */
-  public TreeMap<String,QueueHost.Status>
-  getStatus() 
+  public TreeSet<String> 
+  getEditedHostnames()
   {
-    return pStatus;
+    TreeSet<String> hosts = new TreeSet<String>();
+
+    if(pStatusChanges != null) 
+      hosts.addAll(pStatusChanges.keySet());
+    
+    if(pReservations != null) 
+      hosts.addAll(pReservations.keySet());
+
+    if(pJobOrders != null)
+      hosts.addAll(pJobOrders.keySet());
+
+    if(pJobSlots != null)
+      hosts.addAll(pJobSlots.keySet());
+
+    if(pGroups != null) 
+      hosts.addAll(pGroups.keySet());
+
+    if(pSchedules != null)
+      hosts.addAll(pSchedules.keySet());    
+
+    return hosts; 
+  }
+  
+  /**
+   * Gets changes in host status changes indexed by fully resolved names of the hosts.
+   */
+  public TreeMap<String,QueueHostStatusChange>
+  getStatusChanges() 
+  {
+    return pStatusChanges;
   }
 
   /**
@@ -155,9 +184,9 @@ class QueueEditHostsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The new host status indexed by fully resolved names of the hosts.
+   * The changes in host status changes indexed by fully resolved names of the hosts.
    */ 
-  private TreeMap<String,QueueHost.Status>  pStatus;
+  private TreeMap<String,QueueHostStatusChange>  pStatusChanges;
 
   /**
    * The names of reserving users indexed by fully resolved names of the hosts.

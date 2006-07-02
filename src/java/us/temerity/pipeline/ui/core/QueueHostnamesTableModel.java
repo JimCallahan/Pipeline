@@ -1,4 +1,4 @@
-// $Id: QueueHostnamesTableModel.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: QueueHostnamesTableModel.java,v 1.4 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -33,7 +33,8 @@ class QueueHostnamesTableModel
   public 
   QueueHostnamesTableModel
   (
-   JQueueJobBrowserPanel parent
+   JQueueJobBrowserPanel parent, 
+   QueueHostsTableModel hostsTable
   ) 
   {
     super();
@@ -69,7 +70,7 @@ class QueueHostnamesTableModel
       }
 
       {
-	TableCellRenderer renderers[] = { new JSimpleTableCellRenderer(JLabel.CENTER) };
+	TableCellRenderer renderers[] = { new JQHostnameTableCellRenderer(hostsTable) };
 	pRenderers = renderers;
       }
 
@@ -222,7 +223,7 @@ class QueueHostnamesTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names of the queue hosts.
+   * The queue hosts info.
    */ 
   private ArrayList<String> pHostnames;
 

@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.9 2006/01/15 06:29:26 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.10 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -17,7 +17,7 @@ import javax.swing.table.*;
 
 /**
  * A {@link SortableTableModel SortableTableModel} which contains a set of 
- * {@link QueueHost QueueHost} instances.
+ * {@link QueueHostInfo QueueHostInfo} instances.
  */ 
 public
 class QueueHostsTableModel
@@ -45,7 +45,8 @@ class QueueHostsTableModel
 
       pPrivilegeDetails = new PrivilegeDetails();  
 
-      pQueueHosts = new ArrayList<QueueHost>();
+      pQueueHosts = new ArrayList<QueueHostInfo>();
+      pQueueHostStatusChanges = new ArrayList<QueueHostStatusChange>();
 
       pSelectionGroups    = new TreeSet<String>();
       pSelectionSchedules = new TreeSet<String>();
@@ -67,8 +68,8 @@ class QueueHostsTableModel
       {
 	Class classes[] = { 
 	  String.class, String.class, 
-	  QueueHost.class, QueueHost.class, QueueHost.class,
-	  QueueHost.class, Integer.class,
+	  QueueHostInfo.class, QueueHostInfo.class, QueueHostInfo.class,
+	  QueueHostInfo.class, Integer.class,
 	  String.class, Integer.class, String.class, String.class
 	}; 
 	pColumnClasses = classes;
@@ -117,15 +118,9 @@ class QueueHostsTableModel
       }
 
       {
-	JSimpleTableCellRenderer green = new JSimpleTableCellRenderer(JLabel.CENTER);
-	green.setName("GreenTableCellRenderer");
-
-	JSimpleTableCellRenderer purple = new JSimpleTableCellRenderer(JLabel.CENTER);
-	purple.setName("PurpleTableCellRenderer");
-
 	TableCellRenderer renderers[] = {
+	  new JQHostStatusTableCellRenderer(this), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JResourceSamplesTableCellRenderer
 	        (JResourceSamplesTableCellRenderer.SampleType.Load), 
 	  new JResourceSamplesTableCellRenderer
@@ -134,19 +129,25 @@ class QueueHostsTableModel
                 (JResourceSamplesTableCellRenderer.SampleType.Disk), 
 	  new JResourceSamplesTableCellRenderer
                 (JResourceSamplesTableCellRenderer.SampleType.Jobs), 
-	  green, 
-	  purple, 
-	  purple, 
-	  purple,
- 	  purple
+	  new JQHostSlotsTableCellRenderer(this), 
+	  new JQHostReservationTableCellRenderer(this), 
+	  new JQHostOrderTableCellRenderer(this), 
+	  new JQHostSGroupTableCellRenderer(this), 
+	  new JQHostSSchedTableCellRenderer(this), 
 	};
 
 	pRenderers = renderers;
       }
 
       {
-	JCollectionTableCellEditor status = 
-	  new JCollectionTableCellEditor(QueueHost.Status.titles(), 120);
+	JDualCollectionTableCellEditor status = null;
+	{
+	  ArrayList<String> dvals = new ArrayList<String>(QueueHostStatus.titles());
+	  dvals.addAll(QueueHostStatusChange.titles());
+	  
+	  status = new JDualCollectionTableCellEditor
+	                 (QueueHostStatusChange.titles(), dvals, 120);
+	}
 
 	JIntegerTableCellEditor slots = 
 	  new JIntegerTableCellEditor(60, JLabel.CENTER);
@@ -190,11 +191,17 @@ class QueueHostsTableModel
     ArrayList<Comparable> values = new ArrayList<Comparable>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
-    for(QueueHost host : pQueueHosts) {
+    for(QueueHostInfo host : pQueueHosts) {
       Comparable value = null;
       switch(pSortColumn) {
       case 0:
-	value = host.getStatus().toString();
+	{
+	  QueueHostStatusChange change = pQueueHostStatusChanges.get(idx);
+	  if(change != null) 
+	    value = change.toString();
+	  else 
+	    value = host.getStatus().toString();
+	}
 	break;
 
       case 1:
@@ -440,7 +447,7 @@ class QueueHostsTableModel
   public void
   setQueueHosts
   (
-   TreeMap<String,QueueHost> hosts, 
+   TreeMap<String,QueueHostInfo> hosts, 
    TreeSet<String> groups, 
    TreeSet<String> schedules, 
    PrivilegeDetails privileges
@@ -449,6 +456,10 @@ class QueueHostsTableModel
     pQueueHosts.clear();
     if(hosts != null)
       pQueueHosts.addAll(hosts.values());
+
+    pQueueHostStatusChanges.clear();
+    for(String hname : hosts.keySet()) 
+      pQueueHostStatusChanges.add(null);
 
     pSelectionGroups.clear();
     if(groups != null) 
@@ -470,6 +481,45 @@ class QueueHostsTableModel
     sort();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Whether changes are pending for host on the given row. 
+   */
+  public boolean 
+  isHostPending
+  (
+   int row
+  ) 
+  { 
+    int srow = pRowToIndex[row];
+
+    QueueHostInfo qinfo = pQueueHosts.get(srow);
+    if((qinfo != null) && qinfo.isPending()) 
+      return true;
+
+    return (pQueueHostStatusChanges.get(srow) != null);
+  }
+
+  /** 
+   * Whether status changes are pending for host on the given row. 
+   */
+  public boolean 
+  isHostStatusPending
+  (
+   int row
+  ) 
+  { 
+    int srow = pRowToIndex[row];
+
+    QueueHostInfo qinfo = pQueueHosts.get(srow);
+    if((qinfo != null) && qinfo.isStatusPending()) 
+      return true;
+
+    return (pQueueHostStatusChanges.get(srow) != null);
+  }
+
   
   /*----------------------------------------------------------------------------------------*/
   
@@ -482,7 +532,7 @@ class QueueHostsTableModel
    int row
   ) 
   { 
-    QueueHost host = pQueueHosts.get(pRowToIndex[row]);
+    QueueHostInfo host = pQueueHosts.get(pRowToIndex[row]);
     if(host != null) 
       return host.getName();
     return null;
@@ -503,20 +553,36 @@ class QueueHostsTableModel
     return names;
   }
 
-  
+  /** 
+   * Get the host info for the given row.
+   */
+  public QueueHostInfo
+  getHostInfo
+  (
+   int row
+  ) 
+  { 
+    return pQueueHosts.get(pRowToIndex[row]);
+  }
+ 
+ 
+ /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Get the changes to host state. 
    */ 
-  public TreeMap<String,QueueHost.Status> 
+  public TreeMap<String,QueueHostStatusChange> 
   getHostStatus() 
   {
-    TreeMap<String,QueueHost.Status> table = new TreeMap<String,QueueHost.Status>();
-    for(Integer idx : pEditedStatusIndices) {
-      QueueHost host = pQueueHosts.get(idx);
-      if(host != null) 
-	table.put(host.getName(), host.getStatus());
+    TreeMap<String,QueueHostStatusChange> table = new TreeMap<String,QueueHostStatusChange>();
+    int idx; 
+    for(idx=0; idx<pQueueHostStatusChanges.size(); idx++) {
+      QueueHostStatusChange change = pQueueHostStatusChanges.get(idx);
+      QueueHostInfo host = pQueueHosts.get(idx);
+      if((change != null) && (host != null)) 
+	table.put(host.getName(), change);
     }
-    
+
     if(!table.isEmpty()) 
       return table;
 
@@ -531,7 +597,7 @@ class QueueHostsTableModel
   {
     TreeMap<String,String> table = new TreeMap<String,String>();
     for(Integer idx : pEditedReserveIndices) {
-      QueueHost host = pQueueHosts.get(idx);
+      QueueHostInfo host = pQueueHosts.get(idx);
       if(host != null) 
 	table.put(host.getName(), host.getReservation());
     }
@@ -550,7 +616,7 @@ class QueueHostsTableModel
   {
     TreeMap<String,Integer> table = new TreeMap<String,Integer>();
     for(Integer idx : pEditedOrderIndices) {
-      QueueHost host = pQueueHosts.get(idx);
+      QueueHostInfo host = pQueueHosts.get(idx);
       if(host != null) 
 	table.put(host.getName(), host.getOrder());
     }
@@ -569,7 +635,7 @@ class QueueHostsTableModel
   {
     TreeMap<String,Integer> table = new TreeMap<String,Integer>();
     for(Integer idx : pEditedSlotsIndices) {
-      QueueHost host = pQueueHosts.get(idx);
+      QueueHostInfo host = pQueueHosts.get(idx);
       if(host != null) 
 	table.put(host.getName(), host.getJobSlots());
     }
@@ -588,7 +654,7 @@ class QueueHostsTableModel
   {
     TreeMap<String,String> table = new TreeMap<String,String>();
     for(Integer idx : pEditedGroupIndices) {
-      QueueHost host = pQueueHosts.get(idx);
+      QueueHostInfo host = pQueueHosts.get(idx);
       if(host != null) 
 	table.put(host.getName(), host.getSelectionGroup());
     }
@@ -607,7 +673,7 @@ class QueueHostsTableModel
   {
     TreeMap<String,String> table = new TreeMap<String,String>();
     for(Integer idx : pEditedScheduleIndices) {
-      QueueHost host = pQueueHosts.get(idx);
+      QueueHostInfo host = pQueueHosts.get(idx);
       if(host != null) 
 	table.put(host.getName(), host.getSelectionSchedule());
     }
@@ -644,7 +710,7 @@ class QueueHostsTableModel
   ) 
   {
     boolean editable = false;
-    QueueHost host = pQueueHosts.get(pRowToIndex[row]);
+    QueueHostInfo host = pQueueHosts.get(pRowToIndex[row]);
     if(pPrivilegeDetails.isQueueAdmin()) 
       editable = true;
     else 
@@ -677,10 +743,17 @@ class QueueHostsTableModel
    int col
   )
   {
-    QueueHost host = pQueueHosts.get(pRowToIndex[row]);
+    int srow = pRowToIndex[row];
+    QueueHostInfo host = pQueueHosts.get(srow);
     switch(col) {
     case 0:
-      return host.getStatus().toString();
+      {
+	QueueHostStatusChange change = pQueueHostStatusChanges.get(srow);
+	if(change != null) 
+	  return change.toString();
+	else 
+	  return host.getStatus().toString();
+      }
 
     case 1:
       return host.getOsType();
@@ -785,14 +858,17 @@ class QueueHostsTableModel
    boolean modifyGroup 
   ) 
   {
-    QueueHost host = pQueueHosts.get(srow);
+    QueueHostInfo host = pQueueHosts.get(srow);
     switch(col) {
     case 0:
       {
-	host.setStatus(QueueHost.Status.valueOf(QueueHost.Status.class, (String) value));
+	if(QueueHostStatusChange.titles().contains((String) value)) {
+	  QueueHostStatusChange change = 
+	    QueueHostStatusChange.valueOf(QueueHostStatusChange.class, (String) value);
 
-	pEditedStatusIndices.add(srow);
-	return true;
+	  pQueueHostStatusChanges.set(srow, change);
+	  return true;
+	}
       }
 
     case 6:
@@ -887,9 +963,17 @@ class QueueHostsTableModel
   private PrivilegeDetails  pPrivilegeDetails; 
 
   /**
-   * The underlying set of editors.
+   * The underlying set of hosts.
    */ 
-  private ArrayList<QueueHost> pQueueHosts;
+  private ArrayList<QueueHostInfo> pQueueHosts;
+  
+  /**
+   * The underlying set of host status changes.  Entries which are <CODE>null</CODE> should
+   * use the status from the pQueueHost.getStatus() method instead.
+   */ 
+  private ArrayList<QueueHostStatusChange> pQueueHostStatusChanges;
+
+
 
   /*----------------------------------------------------------------------------------------*/
 

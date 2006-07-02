@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.50 2006/06/24 22:30:52 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.51 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5561,7 +5561,7 @@ class JNodeViewerPanel
       TreeMap<Long,QueueJobGroup> jobGroups = null; 
       TreeMap<Long,JobStatus> jobStatus = null; 
       TreeMap<Long,QueueJobInfo> jobInfo = null;
-      TreeMap<String,QueueHost> hosts = null;
+      TreeMap<String,QueueHostInfo> hosts = null;
       TreeSet<String> selectionGroups = null;
       TreeSet<String> selectionSchedules = null;
       
@@ -5694,7 +5694,7 @@ class JNodeViewerPanel
      TreeMap<Long,QueueJobGroup> jobGroups, 
      TreeMap<Long,JobStatus> jobStatus,
      TreeMap<Long,QueueJobInfo> jobInfo, 
-     TreeMap<String,QueueHost> hosts, 
+     TreeMap<String,QueueHostInfo> hosts, 
      TreeSet<String> selectionGroups, 
      TreeSet<String> selectionSchedules
     )
@@ -5784,11 +5784,11 @@ class JNodeViewerPanel
 
     private TreeSet<VersionID>  pOffline; 
 
-    private boolean                      pUpdateJobs; 
-    private TreeMap<Long,QueueJobGroup>  pJobGroups;
-    private TreeMap<Long,JobStatus>      pJobStatus; 
-    private TreeMap<Long,QueueJobInfo>   pJobInfo; 
-    private TreeMap<String,QueueHost>    pHosts;
+    private boolean                       pUpdateJobs; 
+    private TreeMap<Long,QueueJobGroup>   pJobGroups;
+    private TreeMap<Long,JobStatus>       pJobStatus; 
+    private TreeMap<Long,QueueJobInfo>    pJobInfo; 
+    private TreeMap<String,QueueHostInfo> pHosts;
 
     private TreeSet<String>  pSelectionGroups; 
     private TreeSet<String>  pSelectionSchedules;

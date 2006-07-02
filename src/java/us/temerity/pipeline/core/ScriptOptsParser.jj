@@ -175,7 +175,7 @@ ScriptOptsParser
   /**
    * job-server command option temporaries
    */ 
-  private QueueHost.Status  pJobStatus; 
+  private QueueHostStatusChange  pJobStatus; 
 
   private String   pJobReserve;
   private boolean  pSetJobReserve;
@@ -3437,7 +3437,7 @@ JobServerShutdown() :
     if(pJobStatus != null) 
       throw new ParseException
 	("The --shutdown, --enable and --disable options are mutually exclusive!");
-    pJobStatus = QueueHost.Status.Shutdown;
+    pJobStatus = QueueHostStatusChange.Terminate;
   }
 }
 
@@ -3450,7 +3450,7 @@ JobServerEnable() :
     if(pJobStatus != null) 
       throw new ParseException
 	("The --shutdown, --enable and --disable options are mutually exclusive!");
-    pJobStatus = QueueHost.Status.Enabled;
+    pJobStatus = QueueHostStatusChange.Enable;
   }
 }
 
@@ -3463,7 +3463,7 @@ JobServerDisable() :
     if(pJobStatus != null) 
       throw new ParseException
 	("The --shutdown, --enable and --disable options are mutually exclusive!");
-    pJobStatus = QueueHost.Status.Disabled;
+    pJobStatus = QueueHostStatusChange.Disable;
   }
 }
 

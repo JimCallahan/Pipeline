@@ -1,4 +1,4 @@
-// $Id: JResourceSamplesTableCellRenderer.java,v 1.3 2006/06/24 21:05:51 jim Exp $
+// $Id: JResourceSamplesTableCellRenderer.java,v 1.4 2006/07/02 00:27:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,7 +143,7 @@ class JResourceSamplesTableCellRenderer
    int column
   )
   {
-    QueueHost host = (QueueHost) value; 
+    QueueHostInfo host = (QueueHostInfo) value; 
 
     Color fg = new Color(0.75f, 0.75f, 0.75f);
     switch(host.getStatus()) {

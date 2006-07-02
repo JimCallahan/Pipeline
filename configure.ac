@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.0.12)   
+AM_INIT_AUTOMAKE(Pipeline, 2.0.13)   
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1408,6 +1408,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plui
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
+  src/java/scripts/upgrade-hosts-file
 
   src/java/scripts/debug/Makefile
   src/java/scripts/debug/plfilemgr

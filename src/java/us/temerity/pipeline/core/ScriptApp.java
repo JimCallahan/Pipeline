@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.50 2006/06/24 20:48:21 jim Exp $
+// $Id: ScriptApp.java,v 1.51 2006/07/02 00:27:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1371,8 +1371,8 @@ class ScriptApp
   ) 
     throws PipelineException 
   {
-    TreeMap<String,QueueHost> hosts = client.getHosts();
-    ArrayList<QueueHost> selected = new ArrayList<QueueHost>();
+    TreeMap<String,QueueHostInfo> hosts = client.getHosts();
+    ArrayList<QueueHostInfo> selected = new ArrayList<QueueHostInfo>();
     if(hname == null)
       selected.addAll(hosts.values());
     else 
@@ -1380,7 +1380,7 @@ class ScriptApp
 
     StringBuffer buf = new StringBuffer();
     boolean first = true;
-    for(QueueHost host : selected) {
+    for(QueueHostInfo host : selected) {
       if(first) 
 	buf.append(tbar(80) + "\n");
       else 
@@ -1435,7 +1435,7 @@ class ScriptApp
   editHost
   (
    String hname, 
-   QueueHost.Status status, 
+   QueueHostStatusChange status, 
    String reserve, 
    boolean setReserve, 
    Integer order, 
@@ -1448,10 +1448,11 @@ class ScriptApp
   )
     throws PipelineException 
   {
-    TreeMap<String,QueueHost> hosts = client.getHosts();
-    QueueHost host = hosts.get(hname);
+    TreeMap<String,QueueHostInfo> hosts = client.getHosts();
+    QueueHostInfo host = hosts.get(hname);
     if(host != null) {
-      TreeMap<String,QueueHost.Status> statusTable = new TreeMap<String,QueueHost.Status>();
+      TreeMap<String,QueueHostStatusChange> statusTable = 
+	new TreeMap<String,QueueHostStatusChange>();
       if(status != null) 
 	statusTable.put(hname, status);
 

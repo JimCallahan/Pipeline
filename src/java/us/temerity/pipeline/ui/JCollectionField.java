@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.12 2006/01/02 20:45:23 jim Exp $
+// $Id: JCollectionField.java,v 1.13 2006/07/02 00:27:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -407,12 +407,23 @@ class JCollectionField
    MouseEvent e
   ) 
   {
-    if((pValues.size() > 0) && (pSelectedIdx >= 0)) {
+    mousePressedHelper(e, pValues, pValues);
+  }
+
+  protected void 
+  mousePressedHelper
+  (
+   MouseEvent e, 
+   ArrayList<String> displayed, 
+   ArrayList<String> selected
+  ) 
+  {
+    if((selected.size() > 0) && (pSelectedIdx >= 0)) {
       pLabel.setForeground(Color.yellow);
       Dimension size = getSize();
 
-      if(pValues.size() < sItemLimit) {
-	pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size() + 10));
+      if(selected.size() < sItemLimit) {
+	pPopup.setPopupSize(new Dimension(size.width, 23*selected.size() + 10));
 	pPopup.show(this, 0, size.height);
       }
       else {
@@ -421,10 +432,15 @@ class JCollectionField
 	  DefaultListModel model = (DefaultListModel) pItemList.getModel();
 	  model.clear();
 	  
-	  for(String value : pValues) 
+	  for(String value : selected) 
 	    model.addElement(value);	  
-	  
-	  pItemList.setSelectedIndex(getSelectedIndex());
+
+	  {	  
+	    String value = getSelected();
+	    int idx = selected.indexOf(value);
+	    if(idx != -1) 
+	      pItemList.setSelectedIndex(idx);
+	  }
 	}
 	pItemList.addListSelectionListener(this);
 
@@ -558,7 +574,7 @@ class JCollectionField
   /**
    * The popup menu.
    */ 
-  private JPopupMenu  pPopup; 
+  protected JPopupMenu  pPopup; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -566,12 +582,12 @@ class JCollectionField
   /**
    * The item selection dialog used for long lists.
    */ 
-  private JDialog  pDialog;
+  protected JDialog  pDialog;
 
   /** 
    * The item selection list.
    */ 
-  private JList  pItemList;
+  protected JList  pItemList;
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -595,7 +611,7 @@ class JCollectionField
   /**
    * The underlying Collection.
    */ 
-  private ArrayList<String>  pValues;
+  protected ArrayList<String>  pValues;
 
 
   /*----------------------------------------------------------------------------------------*/
