@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.153 2006/06/26 06:35:17 jim Exp $
+// $Id: MasterMgr.java,v 1.154 2006/07/02 07:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11143,6 +11143,69 @@ class MasterMgr
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a default saved panel layout file. <P> 
+   * 
+   * The layout is copied from an initial default layout provided with the Pipeline release.
+   * This layout is provided as a helpful starting point for new users when creating custom
+   * layouts.  The created panels will be set to view the working area specified by the 
+   * <CODE>author</CODE> and <CODE>view</CODE> parameters. 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>MiscCreateInitialPanelLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to load the layout.
+   */ 
+  public Object
+  createInitialPanelLayout
+  (
+   MiscCreateInitialPanelLayoutReq req
+  ) 
+    throws PipelineException
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    try {
+      StringBuffer buf = new StringBuffer();
+      try {
+	File file = new File(pNodeDir, "etc/initial-panel-layout");
+	FileReader in = new FileReader(file);
+	char cs[] = new char[1024];
+	while(true) {
+	  int cnt = in.read(cs);
+	  if(cnt == -1) 
+	    break;
+	  
+	  buf.append(cs, 0, cnt);
+	}
+	in.close();
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read the initial panel layout...\n" +
+	 "    " + ex.getMessage());
+      }
+
+      String contents = 
+	buf.toString().replaceFirst("@CALLING_AUTHOR@", 
+				    req.getAuthor()).replaceFirst("@CALLING_VIEW@", 
+								  req.getView());
+
+      return new MiscCreateInitialPanelLayoutRsp(timer, contents);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

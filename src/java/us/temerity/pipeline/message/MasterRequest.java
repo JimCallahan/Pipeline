@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.43 2006/05/07 21:30:13 jim Exp $
+// $Id: MasterRequest.java,v 1.44 2006/07/02 07:48:55 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -603,6 +603,15 @@ enum MasterRequest
    * An instance of {@link MiscGetArchiveReq MiscGetArchiveReq} is next.
    */
   GetArchive, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link MiscCreateInitialPanelLayoutReq MiscCreateInitialPanelLayoutReq } 
+   * is next.
+   */
+  CreateInitialPanelLayout, 
 
 
   /*----------------------------------------------------------------------------------------*/

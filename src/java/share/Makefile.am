@@ -1,8 +1,15 @@
 
+etcdir = @NODEDIR@/etc
+
+etc_DATA = \
+  initial-panel-layout
+
+
 editordir = @NODEDIR@/etc/suffix-editors
 
 editor_DATA = \
   pipeline
+
 
 
 SUBDIRS = \

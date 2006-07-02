@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.40 2006/07/02 06:01:10 jim Exp $
+// $Id: UIMaster.java,v 1.41 2006/07/02 07:48:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1860,14 +1860,14 @@ class UIMaster
     public void 
     run() 
     {  
-      /* make sure user preference exist */ 
       try {
-	Path base = new Path(PackageInfo.sHomePath, PackageInfo.sUser + "/.pipeline");
-	String subdirs[] = { "layouts" };
-	int wk;
-	for(wk=0; wk<subdirs.length; wk++) {
-	  Path path = new Path(base, subdirs[wk]);
-	  File dir = path.toFile(); 
+	Path base = new Path(PackageInfo.sHomePath, 
+			     PackageInfo.sUser + "/.pipeline");
+
+	/* create an intial layout (if none exists) and make it the default */ 
+	{
+	  Path lpath = new Path(base, "layouts");
+	  File dir = lpath.toFile(); 
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) {
 	      LogMgr.getInstance().log
@@ -1877,9 +1877,24 @@ class UIMaster
 	      System.exit(1);	    
 	    }
 	    NativeFileSys.chmod(0700, dir);
+	    
+	    pMasterMgrClient.createInitialPanelLayout
+	      ("Default", PackageInfo.sUser, "default");
+
+	    try {
+	      Path dpath = new Path(base, "default-layout");
+	      LockedGlueFile.save(dpath.toFile(), "DefaultLayout", "/Default");
+	    }
+	    catch(Exception ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+		 "Unable to set the initial default layout!");
+	      LogMgr.getInstance().flush();
+	    }    
 	  }	  
 	}
-
+	
+	/* make sure user preference exist */ 
 	{
 	  Path path = new Path(base, "preferences");
 	  if(path.toFile().isFile()) 	  

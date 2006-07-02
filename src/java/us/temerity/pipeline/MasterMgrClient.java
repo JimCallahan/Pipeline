@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.74 2006/05/07 21:30:07 jim Exp $
+// $Id: MasterMgrClient.java,v 1.75 2006/07/02 07:48:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7,6 +7,8 @@ import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.glue.*;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
@@ -4978,6 +4980,81 @@ class MasterMgrClient
       return null;
     }    
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a default saved panel layout file. <P> 
+   * 
+   * The layout is copied from an initial default layout provided with the Pipeline release.
+   * This layout is provided as a helpful starting point for new users when creating custom
+   * layouts.  The created panels will be set to view the working area specified by the 
+   * <CODE>author</CODE> and <CODE>view</CODE> parameters. 
+   * 
+   * @param name
+   *   The name of the created layout.
+   * 
+   * @param author
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view.
+   * 
+   * @throws PipelineException 
+   *   If unable to create the layout.
+   */ 
+  public synchronized void
+  createInitialPanelLayout
+  (
+   String name,
+   String author,  
+   String view
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscCreateInitialPanelLayoutReq req = new MiscCreateInitialPanelLayoutReq(author, view);
+    Object obj = performTransaction(MasterRequest.CreateInitialPanelLayout, req);
+    if(obj instanceof MiscCreateInitialPanelLayoutRsp) {
+      MiscCreateInitialPanelLayoutRsp rsp = (MiscCreateInitialPanelLayoutRsp) obj;
+
+      Path lpath = new Path(PackageInfo.sHomePath, 
+			    PackageInfo.sUser + "/.pipeline/layouts"); 
+      Path path = new Path(lpath, name);
+      File file = path.toFile();
+      try {
+	file.delete();
+	FileChannel chan = new RandomAccessFile(file, "rw").getChannel();
+	FileLock lock = chan.tryLock();
+	if(lock == null) 
+	  throw new PipelineException
+	    ("Unable to aquire lock for Glue file (" + file + ")!");
+	
+	try {
+	  ByteBuffer buf = ByteBuffer.wrap(rsp.getContents().getBytes());
+	  chan.write(buf);
+	}
+	finally {
+	  lock.release();
+	  chan.close();
+	}
+      }
+      catch (Exception ex) {
+	throw new PipelineException
+	  ("Unable to save Glue file (" + file + "):\n" + 
+	   "  " + ex);
+      }
+    }
+    else {
+      handleFailure(obj);
+    }       
+  } 
+
 
 
 

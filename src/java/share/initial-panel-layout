@@ -1,0 +1,148 @@
+PanelLayout <LinkedList> #1 {
+  <ui.core.PanelLayout> #2 {
+    RootPanel <ui.core.JManagerPanel> #3 {
+      Contents <ui.JHorzSplitPanel> #4 {
+        Left <ui.core.JManagerPanel> #5 {
+          Contents <ui.core.JTabbedPanel> #6 {
+            Tabs <LinkedList> #7 {
+              <ui.core.JManagerPanel> #8 {
+                Contents <ui.core.JNodeBrowserPanel> #9 {
+                  GroupID <Integer> #10 { 1 }
+                  Author <String> #11 { "@CALLING_AUTHOR@" }
+                  View <String> #12 { "@CALLING_VIEW@" }
+                  ExpandedPaths <TreeSet> #13 {
+                    <String> #14 { "/" }
+                  }
+                  Filter <TreeMap> #15 {
+                    {
+                      Key <NodeTreeComp$State> #16 { :WorkingCurrentCheckedInSome: }
+                      Val <Boolean> #17 { true }
+                    }
+                    {
+                      Key <NodeTreeComp$State> #18 { :WorkingOtherCheckedInSome: }
+                      Val <REF> #17
+                    }
+                    {
+                      Key <NodeTreeComp$State> #19 { :WorkingNoneCheckedInSome: }
+                      Val <REF> #17
+                    }
+                    {
+                      Key <NodeTreeComp$State> #20 { :WorkingCurrentCheckedInNone: }
+                      Val <REF> #17
+                    }
+                    {
+                      Key <NodeTreeComp$State> #21 { :WorkingOtherCheckedInNone: }
+                      Val <REF> #17
+                    }
+                  }
+                }
+              }
+              <ui.core.JManagerPanel> #22 {
+                Contents <ui.core.JNodeDetailsPanel> #23 {
+                  GroupID <REF> #10
+                  Author <REF> #11
+                  View <REF> #12
+                  VersionDrawerOpen <Boolean> #24 { true }
+                  PropertyDrawerOpen <REF> #24
+                  ActionDrawerOpen <REF> #24
+                  JobReqsDrawerOpen <REF> #24
+                  SelectionDrawerOpen <Boolean> #25 { false }
+                  LicenseDrawerOpen <REF> #25
+                }
+              }
+              <ui.core.JManagerPanel> #26 {
+                Contents <ui.core.JNodeFilesPanel> #27 {
+                  GroupID <REF> #10
+                  Author <REF> #11
+                  View <REF> #12
+                }
+              }
+              <ui.core.JManagerPanel> #28 {
+                Contents <ui.core.JNodeHistoryPanel> #29 {
+                  GroupID <REF> #10
+                  Author <REF> #11
+                  View <REF> #12
+                }
+              }
+            }
+            SelectedIndex <Integer> #30 { 0 }
+          }
+        }
+        Right <ui.core.JManagerPanel> #31 {
+          Contents <ui.core.JNodeViewerPanel> #32 {
+            GroupID <REF> #10
+            Author <REF> #11
+            View <REF> #12
+            CameraPos <math.Point3d> #33 {
+              Comps <double[3]> #34 {
+                0 <double> { -0.00000 }
+                1 <double> { 1.00000 }
+                2 <double> { -7.42969 }
+              }
+            }
+            ShowDownstream <REF> #25
+          }
+        }
+        DividerLocation <Integer> #35 { 581 }
+      }
+    }
+    FramePosX <REF> #30
+    FramePosY <REF> #30
+    FrameWidth <Integer> #36 { 1292 }
+    FrameHeight <Integer> #37 { 1049 }
+  }
+  <ui.core.PanelLayout> #38 {
+    RootPanel <ui.core.JManagerPanel> #39 {
+      Contents <ui.JVertSplitPanel> #40 {
+        Top <ui.core.JManagerPanel> #41 {
+          Contents <ui.core.JQueueJobBrowserPanel> #42 {
+            GroupID <Integer> #43 { 2 }
+            Author <REF> #11
+            View <REF> #12
+            ViewFilter <ui.core.JQueueJobBrowserPanel$ViewFilter> #44 { :SingleView: }
+            SelectedTabIndex <REF> #43
+          }
+        }
+        Bottom <ui.core.JManagerPanel> #45 {
+          Contents <ui.JHorzSplitPanel> #46 {
+            Left <ui.core.JManagerPanel> #47 {
+              Contents <ui.core.JQueueJobViewerPanel> #48 {
+                GroupID <REF> #43
+                Author <REF> #11
+                View <REF> #12
+                CameraPos <math.Point3d> #49 {
+                  Comps <double[3]> #50 {
+                    0 <double> { 0.00000 }
+                    1 <double> { 0.00000 }
+                    2 <double> { -20.00000 }
+                  }
+                }
+              }
+            }
+            Right <ui.core.JManagerPanel> #51 {
+              Contents <ui.core.JQueueJobDetailsPanel> #52 {
+                GroupID <REF> #43
+                Author <REF> #11
+                View <REF> #12
+                SummaryDrawerOpen <REF> #24
+                ProcessDrawerOpen <REF> #24
+                JobReqsDrawerOpen <REF> #25
+                SelectionDrawerOpen <REF> #25
+                LicenseDrawerOpen <REF> #25
+                FilesDrawerOpen <REF> #25
+                TargetFilesDrawerOpen <REF> #24
+                SourceFilesDrawerOpen <REF> #24
+              }
+            }
+            DividerLocation <Integer> #53 { 773 }
+          }
+        }
+        DividerLocation <Integer> #54 { 377 }
+      }
+    }
+    FramePosX <REF> #30
+    FramePosY <REF> #30
+    FrameWidth <Integer> #55 { 1292 }
+    FrameHeight <Integer> #56 { 1049 }
+  }
+}

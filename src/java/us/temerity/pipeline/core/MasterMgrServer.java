@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.60 2006/05/07 21:30:08 jim Exp $
+// $Id: MasterMgrServer.java,v 1.61 2006/07/02 07:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1127,6 +1127,18 @@ class MasterMgrServer
 		objOut.flush(); 
 	      }
 	      break;    
+
+
+	    /*-- USER INTERFACE ------------------------------------------------------------*/
+	    case CreateInitialPanelLayout: 
+	      {
+		MiscCreateInitialPanelLayoutReq req = 
+		  (MiscCreateInitialPanelLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.createInitialPanelLayout(req));
+		objOut.flush(); 
+	      }
+	      break;    
+
 
 	    /*-- NETWORK CONNECTION --------------------------------------------------------*/
 	    case Disconnect:
