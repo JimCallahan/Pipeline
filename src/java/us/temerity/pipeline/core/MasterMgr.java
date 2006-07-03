@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.154 2006/07/02 07:48:55 jim Exp $
+// $Id: MasterMgr.java,v 1.155 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -227,7 +227,7 @@ class MasterMgr
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Establishing Network Connections...");
+       "Establishing Network Connections [plpluginmgr plfilemgr plqueuemgr]...");
     LogMgr.getInstance().flush();
 
     {
@@ -1746,6 +1746,55 @@ class MasterMgr
   }
   
   /**
+   * Get all OS specific toolsets with the given name. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetOsToolsetsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the toolset.
+   */
+  public Object
+  getOsToolsets
+  ( 
+   MiscGetOsToolsetsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+
+	String tname = req.getName();
+
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists!");
+	
+	for(OsType os : toolsets.keySet()) {
+	  Toolset toolset = toolsets.get(os);
+	  if(toolset == null) 
+	    toolset = readToolset(tname, os);
+	  assert(toolset != null);
+	}
+
+	return new MiscGetOsToolsetsRsp(timer, toolsets);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
    * Get the toolset with the given name.
    * 
    * @param tname
@@ -1793,6 +1842,44 @@ class MasterMgr
   }
 
   /**
+   * Make sure the given toolset is currently cached.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   */
+  private void
+  cacheToolset
+  ( 
+   String tname,
+   TaskTimer timer 
+  )
+    throws PipelineException 
+  {
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	if(toolsets == null) 
+	  throw new PipelineException 
+	    ("No toolset named (" + tname + ") exists!");
+
+	for(OsType os : toolsets.keySet()) {
+	  Toolset toolset = toolsets.get(os);
+	  if(toolset == null) 
+	    toolset = readToolset(tname, os);
+	  assert(toolset != null);
+	}
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
    * Get the cooked toolset environment with the given name.
    * 
    * @param req 
@@ -1816,7 +1903,7 @@ class MasterMgr
 
       TreeMap<String,String> env = 
 	getToolsetEnvironment
-	(req.getAuthor(), req.getView(), req.getName(), req.getOsType(), timer);	
+	  (req.getAuthor(), req.getView(), req.getName(), req.getOsType(), timer);	
       
       return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
     }
@@ -1824,7 +1911,6 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
   }
-
 
   /**
    * Get the cooked toolset environments for all operating systems specific to the given user 
@@ -8474,15 +8560,13 @@ class MasterMgr
 	    }
 	  }
 
-	  DoubleMap<OsType,String,String> envs = 
-	    getToolsetEnvironments(nodeID.getAuthor(), nodeID.getView(), work.getToolset(), 
-				   timer);
+	  cacheToolset(work.getToolset(), timer);
 
 	  ActionAgenda agenda = 
 	    new ActionAgenda(jobID, nodeID, 
 			     primaryTarget, secondaryTargets, 
 			     primarySources, secondarySources, actionInfos,  
-			     work.getToolset(), envs);
+			     work.getToolset());
 	  
 	  JobReqs jreqs = work.getJobRequirements();
 	  {
@@ -8500,37 +8584,6 @@ class MasterMgr
 
 	  BaseAction action = work.getAction();
 	  {
-	    /* strip any per-source parameters from the action for nodes which are not 
-	       one of the currently linke upstream nodes */ 
-	    {
-	      // THIS CODE SHOULD BE UNECCESSARY
-
-	      TreeSet<String> dead = new TreeSet<String>();
-
-	      for(String sname : action.getSourceNames()) {
-		if(work.getSource(sname) == null) 
-		  dead.add(sname);
-	      }
-	      
-	      for(String sname : action.getSecondarySourceNames()) {
-		if(work.getSource(sname) == null) 
-		  dead.add(sname);
-	      }
-	      
-	      for(String sname : dead) {
-		action.removeSourceParams(sname); 
-		action.removeSecondarySourceParams(sname);
-		
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Net, LogMgr.Level.Warning,
-		   "The node (" + nodeID + ") has per-source parameter referencing " + 
-		   "(" + dead + ") which is no longer linked to the node!");
-		LogMgr.getInstance().flush();
-	      }
-
-	      // THIS CODE SHOULD BE UNECCESSARY
-	    }
-
 	    /* strip per-source parameters which do not correspond to secondary sequences
 	       of the currently linked upstream nodes */ 
 	    {

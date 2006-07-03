@@ -1,9 +1,10 @@
-// $Id: QueueMgr.java,v 1.58 2006/07/02 09:41:27 jim Exp $
+// $Id: QueueMgr.java,v 1.59 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.*;
 
 import java.io.*;
@@ -27,10 +28,18 @@ class QueueMgr
 
   /** 
    * Construct a new queue manager.
+   * 
+   * @param server
+   *   The parent queue manager server.
    */
   public
-  QueueMgr()
+  QueueMgr
+  (
+   QueueMgrServer server 
+  ) 
   { 
+    pServer = server;
+
     assert(PackageInfo.sOsType == OsType.Unix);
     pQueueDir = PackageInfo.sQueuePath.toFile();
 
@@ -58,12 +67,15 @@ class QueueMgr
       pMakeDirLock = new Object(); 
 
       pAdminPrivileges = new AdminPrivileges();
+      pMasterMgrClient = new MasterMgrClient();
 
       pLicenseKeys = new TreeMap<String,LicenseKey>();
 
       pSelectionKeys      = new TreeMap<String,SelectionKey>();
       pSelectionGroups    = new TreeMap<String,SelectionGroup>();
       pSelectionSchedules = new TreeMap<String,SelectionSchedule>();
+      
+      pToolsets = new DoubleMap<String,OsType,Toolset>();
 
       pStatusChanges            = new TreeMap<String,QueueHostStatusChange>();
       pReservationChanges       = new TreeMap<String,String>();
@@ -2680,6 +2692,7 @@ class QueueMgr
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   C O L L E C T O R                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -2898,6 +2911,25 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Establish a connection back to the Master Manager daemon.
+   */ 
+  public void 
+  establishMasterConnection()
+  {
+    try {
+      pMasterMgrClient.waitForConnection(1000, 5000);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 "Unable to (re)connect to the Master Manager daemon!\n" + 
+	 "  " + ex.getMessage());
+      
+      pServer.internalShutdown();
+    }
+  }
+
+  /**
    * Perform one round of assigning jobs to available hosts. 
    */ 
   public void 
@@ -2982,6 +3014,7 @@ class QueueMgr
     }
 
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
+    TreeSet<String> readyToolsets = new TreeSet<String>();
     {
       LinkedList<Long> waiting = new LinkedList<Long>();
       while(true) {
@@ -3062,8 +3095,10 @@ class QueueMgr
 		  pHitList.add(jobID);
 		else if(waitingOnUpstream) 
 		  waiting.add(jobID);
-		else 
+		else {
 		  pReady.add(jobID);
+		  readyToolsets.add(job.getActionAgenda().getToolset());
+		}
 	      }
 	    }
 	    break;
@@ -3096,6 +3131,32 @@ class QueueMgr
       }
 
       pWaiting.addAll(waiting);      
+    }
+
+    /* retrieve any toolsets required by newly ready jobs which are not already cached */ 
+    synchronized(pToolsets) {
+      for(String tname : readyToolsets) {
+	if(!pToolsets.containsKey(tname)) {
+	  while(true) {
+	    try {
+	      pToolsets.put(tname, pMasterMgrClient.getOsToolsets(tname));	
+	      break;
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Severe,
+		 ex.getMessage()); 
+	      	     
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Info,
+		 "Reestablishing Network Connections...");
+	      LogMgr.getInstance().flush();
+   
+	      establishMasterConnection();
+	    }
+	  }
+	}
+      }
     }
 
     /* update the read-only cache of job server info before aquiring any potentially
@@ -3179,7 +3240,16 @@ class QueueMgr
 			  ActionAgenda jagenda = job.getActionAgenda();
 			  String author = jagenda.getNodeID().getAuthor();
 			  JobReqs jreqs = job.getJobRequirements();
-			  if(jagenda.supportsOsType(host.getOsType()) && 
+
+			  boolean supportsOsToolset = false;
+			  synchronized(pToolsets) {
+			    String tname = jagenda.getToolset();
+			    supportsOsToolset = 
+			      (pToolsets.containsKey(tname) && 
+			       pToolsets.get(tname).containsKey(host.getOsType()));
+			  }
+
+			  if(supportsOsToolset && 
 			     job.getAction().supports(host.getOsType()) && 
 			     host.isEligible(author, jreqs)) {
 
@@ -3554,12 +3624,45 @@ class QueueMgr
       }
     }
 
+    /* lookup the toolset for the job and cook the environment */ 
+    DoubleMap<OsType,String,String> envs = new DoubleMap<OsType,String,String>();
+    {
+      String tname  = job.getActionAgenda().getToolset();
+      NodeID nodeID = job.getNodeID();
+      String author = nodeID.getAuthor();
+      String view   = nodeID.getView();
+
+      timer.aquire();
+      synchronized(pToolsets) {
+	timer.resume();
+	
+	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+	assert(toolsets != null); 
+
+	for(OsType os : toolsets.keySet()) {
+	  Toolset tset = toolsets.get(os);
+	  assert(tset != null);
+	  
+	  TreeMap<String,String> env = null;
+	  if((author != null) && (view != null)) 
+	    env = tset.getEnvironment(author, view, os);
+	  else if(author != null)
+	    env = tset.getEnvironment(author, os);
+	  else 
+	    env = tset.getEnvironment();
+	  
+	  assert(env != null);
+	  envs.put(os, env);
+	}
+      }
+    }
+
     /* start the job on the selected server */ 
     {
       JobMgrControlClient client = null;
       try {
  	client = new JobMgrControlClient(host.getName());	
- 	client.jobStart(job);
+ 	client.jobStart(job, envs);
 	
  	timer.aquire();
  	synchronized(pJobInfo) {
@@ -5411,24 +5514,26 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The common back-end directories.
-   * 
-   * Since the queue manager should always be run on a Unix system, these variables are always
-   * initialized to Unix specific paths.
+   * The parent queue mananger server. 
    */
-  private File pQueueDir; 
-
-
-  /*----------------------------------------------------------------------------------------*/
+  private QueueMgrServer  pServer; 
 
   /**
    * Whether to shutdown all job servers before exiting.
    */ 
   private AtomicBoolean  pShutdownJobMgrs; 
-   
+
 
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * The common back-end directories.
+   * 
+   * Since the queue manager should always be run on a Unix system, these variables are always
+   * initialized to Unix specific paths.
+   */
+  private File pQueueDir;
+
   /**
    * The file system directory creation lock.
    */
@@ -5441,6 +5546,11 @@ class QueueMgr
    * The combined work groups and adminstrative privileges.
    */ 
   private AdminPrivileges  pAdminPrivileges; 
+
+  /**
+   * The network interface to the <B>plmaster</B>(1) daemon.
+   */ 
+  private MasterMgrClient  pMasterMgrClient;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5476,6 +5586,16 @@ class QueueMgr
    */ 
   private TreeMap<String,SelectionSchedule>  pSelectionSchedules; 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The cached toolsets indexed by toolset name and operating system. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
+  
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -5703,9 +5823,13 @@ class QueueMgr
    *   }
    * }
    * 
+   * synchronized(pToolsets) {
+   *   ...
+   * }
+   * 
    * synchronized(pHosts) {
    *   synchronized(pJobs) {
-   *     synchronized(pSelectionSchedules) {
+   *     synchronized(pToolsets) {
    *       synchronized(pSelectionGroups) {
    *         synchronized(pSelectionKeys) {
    *           synchronized(pStatusChanges) {
@@ -5729,7 +5853,7 @@ class QueueMgr
    *         }
    *       }
    *     }
-   *   }
+   *   }   
    *   synchronized(pJobInfo) {
    *     ...
    *   }

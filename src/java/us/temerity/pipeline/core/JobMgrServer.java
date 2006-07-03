@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.21 2005/12/31 20:42:58 jim Exp $
+// $Id: JobMgrServer.java,v 1.22 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -354,6 +354,16 @@ class JobMgrServer
 	      break;
 
 	    
+	    /*-- EXEC DETAILS --------------------------------------------------------------*/
+	    case GetExecDetails:
+	      {
+		JobGetExecDetailsReq req = (JobGetExecDetailsReq) objIn.readObject();
+		objOut.writeObject(pJobMgr.getExecDetails(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
 	    /*-- JOB OUTPUT ----------------------------------------------------------------*/
 	    case GetNumStdOutLines:
 	      {

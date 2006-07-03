@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.18 2005/12/31 20:42:58 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.19 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -176,19 +176,23 @@ class JobMgrControlClient
    * @param job 
    *   The job to execute.
    * 
+   * @param envs  
+   *   The cooked toolset environments indexed by operating system type.
+   * 
    * @throws PipelineException 
    *   If unable to contact the job server. 
    */ 
   public synchronized void
   jobStart
   (
-   QueueJob job
+   QueueJob job, 
+   DoubleMap<OsType,String,String> envs
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    JobStartReq req = new JobStartReq(job);
+    JobStartReq req = new JobStartReq(job, envs);
 
     Object obj = performTransaction(JobRequest.Start, req, 60000); 
     handleSimpleResponse(obj);

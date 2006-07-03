@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.21 2006/07/02 00:27:50 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.22 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2723,14 +2723,21 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();      
 
-      QueueJob     job  = null;
+      QueueJob job = null;
       QueueJobInfo info = null; 
+      SubProcessExecDetails details = null; 
       if((pGroupID > 0) && (pJobID != null)) {
 	if(master.beginPanelOp("Updating Job Details...")) {
 	  try {
 	    QueueMgrClient client = master.getQueueMgrClient();
 	    job  = client.getJob(pJobID);
 	    info = client.getJobInfo(pJobID);
+
+	    String hostname = info.getHostname();
+	    if(hostname != null) {
+	      JobMgrClient jclient = new JobMgrClient(hostname);
+	      details = jclient.getExecDetails(pJobID);
+	    }
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -2741,7 +2748,8 @@ class JQueueJobBrowserPanel
 	}
       }
 	
-      UpdateSlotsSelectionTask task = new UpdateSlotsSelectionTask(pGroupID, job, info);
+      UpdateSlotsSelectionTask task = 
+	new UpdateSlotsSelectionTask(pGroupID, job, info, details);
       SwingUtilities.invokeLater(task);
     }
 
@@ -2761,14 +2769,16 @@ class JQueueJobBrowserPanel
     (
      int groupID, 
      QueueJob job, 
-     QueueJobInfo info
+     QueueJobInfo info, 
+     SubProcessExecDetails details
     ) 
     {
       super("JQueueJobBrowserPanel:UpdateSlotsSelectionTask");
 
-      pGroupID = groupID;
-      pJob     = job; 
-      pJobInfo = info; 
+      pGroupID     = groupID;
+      pJob         = job; 
+      pJobInfo     = info; 
+      pExecDetails = details;
     }
 
     public void 
@@ -2793,14 +2803,15 @@ class JQueueJobBrowserPanel
 	PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
 	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateJob(pAuthor, pView, pJob, pJobInfo);
+	  panel.updateJob(pAuthor, pView, pJob, pJobInfo, pExecDetails);
 	}
       }
     }
 
-    private int           pGroupID;
-    private QueueJob      pJob; 
-    private QueueJobInfo  pJobInfo; 
+    private int                    pGroupID;
+    private QueueJob               pJob; 
+    private QueueJobInfo           pJobInfo; 
+    private SubProcessExecDetails  pExecDetails; 
   }
 
 

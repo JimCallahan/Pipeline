@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.7 2006/02/27 17:54:52 jim Exp $
+// $Id: QueueJobResults.java,v 1.8 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -41,16 +41,11 @@ class QueueJobResults
   )
   {
     pTimeStamp = new Date(); 
-    pCommand   = ("Job Prep Failed: " + ex.getMessage() + "\n" + 
-		  "(see Error log for details)");
     pExitCode  = 666;
   }
 
   /**
    * Construct a new job results.
-   * 
-   * @param command
-   *   The literal command line used to execute the job's regeneration action.
    *
    * @param exitCode
    *   The exit code of the subprocess.
@@ -79,7 +74,6 @@ class QueueJobResults
   public
   QueueJobResults
   ( 
-   String command,
    int exitCode, 
    Double userTime, 
    Double systemTime, 
@@ -90,7 +84,6 @@ class QueueJobResults
   )
   {
     pTimeStamp    = new Date(); 
-    pCommand      = command; 
     pExitCode     = exitCode;
     pUserTime     = userTime;
     pSystemTime   = systemTime;
@@ -118,18 +111,6 @@ class QueueJobResults
 
   /*----------------------------------------------------------------------------------------*/
  
-  /**
-   * The literal command line used to execute the job's regeneration action.
-   * 
-   * @return 
-   *   The command line or <CODE>null</CODE> if the job was never executed.
-   */ 
-  public String 
-  getCommand() 
-  {
-    return pCommand;
-  }
-
   /**
    * The exit code of the subprocess generated to execute the job's regeneration action.
    * 
@@ -235,9 +216,6 @@ class QueueJobResults
   {
     encoder.encode("TimeStamp", pTimeStamp.getTime());
 
-    if(pCommand != null) 
-      encoder.encode("Command", pCommand);
-    
     if(pExitCode != null) 
       encoder.encode("ExitCode", pExitCode);
     
@@ -275,12 +253,6 @@ class QueueJobResults
       pTimeStamp = new Date(stamp);
     }
 
-    {
-      String cmd = (String) decoder.decode("Command"); 
-      if(cmd != null) 
-	pCommand = cmd;
-    }
-    
     {
       Integer code = (Integer) decoder.decode("ExitCode"); 
       if(code != null) 
@@ -342,12 +314,6 @@ class QueueJobResults
    * The timestamp of when the results where recorded.
    */ 
   private Date  pTimeStamp;
-
-  /**
-   * The literal command line used to execute the job's regeneration action or 
-   * <CODE>null</CODE> if the job was never executed.
-   */ 
-  private String pCommand;
 
   /**
    * The exit code of the subprocess generated to execute the job's regeneration action or

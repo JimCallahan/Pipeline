@@ -1,4 +1,4 @@
-// $Id: JobStartReq.java,v 1.2 2006/07/03 06:38:42 jim Exp $
+// $Id: JobGetExecDetailsReq.java,v 1.1 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,14 +8,14 @@ import us.temerity.pipeline.core.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   J O B   S T A R T   R E Q                                                              */
+/*   J O B   G E T   E X E C   D E T A I L S   R E Q                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to start execution of a job on the server.
+ * A request to get the execution details for a given job.
  */
 public
-class JobStartReq
+class JobGetExecDetailsReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -25,26 +25,16 @@ class JobStartReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param job
-   *   The queue job to start. 
-   * 
-   * @param envs  
-   *   The cooked toolset environments indexed by operating system type.
+   * @param jobID
+   *   The unique job identifier. 
    */
   public
-  JobStartReq
+  JobGetExecDetailsReq
   (
-   QueueJob job, 
-   DoubleMap<OsType,String,String> envs
+   long jobID
   )
   { 
-    if(job == null) 
-      throw new IllegalArgumentException("The queue job cannot be (null)!");
-    pJob = job; 
-
-    if(envs == null) 
-      throw new IllegalArgumentException("The cooked environments cannot be (null)!");
-    pCookedEnvs = envs; 
+    pJobID = jobID;
   }
 
 
@@ -54,30 +44,21 @@ class JobStartReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the queue job.
+   * Gets the unique job identifier. 
    */
-  public QueueJob
-  getJob()
+  public long
+  getJobID()
   {
-    return pJob; 
+    return pJobID; 
   }
 
-  /**
-   * Gets the cooked toolset environments indexed by operating system type.
-   */
-  public DoubleMap<OsType,String,String>
-  getCookedEnvs()
-  {
-    return pCookedEnvs; 
-  }
 
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3749831052229551495L;
+  private static final long serialVersionUID = -7286665130472712422L;
 
   
 
@@ -86,14 +67,9 @@ class JobStartReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The queue job.
+   * The unique job identifier. 
    */ 
-  private QueueJob  pJob; 
-
-  /**
-   * The cooked toolset environments indexed by operating system type.
-   */ 
-  private DoubleMap<OsType,String,String>  pCookedEnvs; 
+  private long  pJobID; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.31 2006/01/16 04:11:12 jim Exp $
+// $Id: QueueMgrServer.java,v 1.32 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,10 +41,10 @@ class QueueMgrServer
   { 
     super("QueueMgrServer");
 
-    pQueueMgr = new QueueMgr();
+    pQueueMgr = new QueueMgr(this);
 
     pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
+    pTasks = new HashSet<HandlerTask>();
   }
  
 
@@ -71,16 +71,14 @@ class QueueMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sQueuePort);
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Ready.");
       LogMgr.getInstance().flush();
 
       CollectorTask collector = new CollectorTask();
       collector.start();
 
       DispatcherTask dispatcher = new DispatcherTask();
-      dispatcher.start();
+      MasterConnectTask connector = new MasterConnectTask(dispatcher); 
+      connector.start();
 
       SchedulerTask scheduler = new SchedulerTask();
       scheduler.start();
@@ -166,6 +164,22 @@ class QueueMgrServer
     }
   }
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S H U T D O W N                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Shutdown the Queue Manager due to an internal failure.
+   */ 
+  public void 
+  internalShutdown()
+  {
+    pShutdown.set(true);
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -790,6 +804,52 @@ class QueueMgrServer
   }
 
   /**
+   * Establish connection back to plmaster(1) for toolset lookup purposes.
+   */
+  private 
+  class MasterConnectTask
+    extends Thread
+  {
+    public 
+    MasterConnectTask
+    (
+     DispatcherTask dispatcher
+    ) 
+    {
+      super("QueueMgrServer:MasterConnectTask"); 
+      pDispatcher = dispatcher;
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "Establishing Network Connections [plmaster]...");
+	LogMgr.getInstance().flush();
+   
+	pQueueMgr.establishMasterConnection();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "Server Ready.");
+	LogMgr.getInstance().flush();
+	
+	pDispatcher.start();
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Master Connector Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();
+      }
+    }
+
+    private DispatcherTask pDispatcher;
+  }
+
+  /**
    * Assigns jobs to available hosts.
    */
   private 
@@ -810,6 +870,8 @@ class QueueMgrServer
 	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
 	   "Dispatcher Started.");	
 	LogMgr.getInstance().flush();
+
+	pQueueMgr.establishMasterConnection();
 
 	while(!pShutdown.get()) {
 	  pQueueMgr.dispatcher();

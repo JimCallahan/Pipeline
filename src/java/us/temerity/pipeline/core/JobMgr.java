@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.29 2006/05/07 21:30:08 jim Exp $
+// $Id: JobMgr.java,v 1.30 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -206,6 +206,8 @@ class JobMgr
   ) 
   {
     QueueJob job = req.getJob();
+    DoubleMap<OsType,String,String> envs = req.getCookedEnvs();
+
     TaskTimer timer = new TaskTimer("JobMgr.start(): " + job.getJobID());
 
     /* create the job scratch directory */ 
@@ -233,7 +235,7 @@ class JobMgr
     synchronized(pExecuteTasks) {
       timer.resume();
       
-      ExecuteTask task = new ExecuteTask(job);
+      ExecuteTask task = new ExecuteTask(job, envs);
       task.start();
 
       pExecuteTasks.put(job.getJobID(), task); 
@@ -297,7 +299,7 @@ class JobMgr
    * 
    * @return
    *   <CODE>JobWaitRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to start the job.
+   *   <CODE>FailureRsp</CODE> if unable to find the job.
    */ 
   public Object
   jobWait
@@ -546,6 +548,88 @@ class JobMgr
     }
     
     return new SuccessRsp(timer);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E X E C U T I O N   D E T A I L S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the execution details for a given job.
+   * 
+   * @param req
+   *   The execution details request.
+   * 
+   * @return
+   *   <CODE>JobGetExecDetailsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable find the details for the job.
+   */ 
+  public Object
+  getExecDetails
+  (
+   JobGetExecDetailsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer(); 
+    try {
+      timer.aquire();
+      ExecuteTask task = null;
+      synchronized(pExecuteTasks) {
+	timer.resume();
+	task = pExecuteTasks.get(req.getJobID());
+      }
+
+      SubProcessExecDetails details = null;
+
+      /* the execution task still exists */ 
+      if(task != null) {
+	details = task.getExecDetails(); 
+      }
+
+      /* job server may have been restarted, see if a details file exists */ 
+      else {
+	File file = new File(pJobDir, req.getJobID() + "/details");
+	if(file.isFile()) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	     "Reading Job Execution Details: " + req.getJobID());
+	  
+	  try {
+	    FileReader in = new FileReader(file);
+	    GlueDecoder gd = new GlueDecoderImpl(in);
+	    details = (SubProcessExecDetails) gd.getObject();
+	    in.close();
+	  }
+	  catch(Exception ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "The job execution details file (" + file + ") appears to be corrupted!");
+	    LogMgr.getInstance().flush();
+	  
+	    throw new PipelineException
+	      ("I/O ERROR: \n" + 
+	       "  While attempting to read the job execution details file " + 
+	       "(" + file + ")...\n" + 
+	       "    " + ex.getMessage());
+	  }
+	}
+	else {
+	  throw new PipelineException
+	    ("No job (" + req.getJobID() + ") exists on the server!");
+	}
+      }
+      
+      assert(details != null);
+      return new JobGetExecDetailsRsp(req.getJobID(), timer, details); 
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
   }
 
 
@@ -858,18 +942,26 @@ class JobMgr
     public 
     ExecuteTask
     (
-     QueueJob job
+     QueueJob job, 
+     DoubleMap<OsType,String,String> envs
     ) 
     {
       super("JobMgr:ExecuteTask[Job" + job.getJobID() + "]");
 
-      pJob = job;
+      pJob        = job;
+      pCookedEnvs = envs; 
     }
 
     public synchronized QueueJobResults
     getResults()
     {
       return pResults;
+    }
+
+    public synchronized SubProcessExecDetails
+    getExecDetails()
+    {
+      return pExecDetails; 
     }
 
     public void 
@@ -890,7 +982,7 @@ class JobMgr
       try {
 	long jobID = pJob.getJobID();
 
-	ActionAgenda agenda = pJob.getActionAgenda();
+	ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
 	File wdir = agenda.getWorkingDir();
 	SortedMap<String,String> env = agenda.getEnvironment();
 	
@@ -968,7 +1060,7 @@ class JobMgr
 	  }
 	  
 	  /* create the job execution process */ 
-	  pProc = pJob.getAction().prep(pJob.getActionAgenda(), outFile, errFile);
+	  pProc = pJob.getAction().prep(agenda, outFile, errFile);
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -1019,6 +1111,9 @@ class JobMgr
 	    	  
 	  return;
 	}
+
+	/* save the execution details */ 
+	recordExecDetails(pProc.getExecDetails(), dir); 
 
 	/* run the job */ 
 	LogMgr.getInstance().log
@@ -1095,7 +1190,7 @@ class JobMgr
 	/* record the results */ 
 	{
 	  QueueJobResults results = 
-	    new QueueJobResults(pProc.getCommand(), pProc.getExitCode(), 
+	    new QueueJobResults(pProc.getExitCode(), 
 				pProc.getUserTime(), pProc.getSystemTime(), 
 				pProc.getVirtualSize(), pProc.getResidentSize(), 
 				pProc.getSwappedSize(), pProc.getPageFaults());
@@ -1130,6 +1225,48 @@ class JobMgr
 	buf.append("  " + stack[wk].toString() + "\n");
       
       return (buf.toString());
+    }
+
+    private synchronized void 
+    recordExecDetails
+    (
+     SubProcessExecDetails details,
+     File dir
+    ) 
+      throws PipelineException
+    {
+      File file = new File(dir, "details");
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Details", details);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+	     "Unable to generate a Glue format representation of the job execution details!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the job execution details file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      finally {
+	pExecDetails = details; 
+      }
     }
 
     private synchronized void 
@@ -1175,9 +1312,13 @@ class JobMgr
     }
 
 
-    private QueueJob         pJob; 
-    private SubProcessHeavy  pProc; 
-    private QueueJobResults  pResults; 
+    private QueueJob  pJob;
+
+    private DoubleMap<OsType,String,String>  pCookedEnvs; 
+
+    private SubProcessHeavy        pProc; 
+    private SubProcessExecDetails  pExecDetails; 
+    private QueueJobResults        pResults; 
   }
 
 

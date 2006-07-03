@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.9 2006/05/07 20:32:18 jim Exp $
+// $Id: ActionAgenda.java,v 1.10 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -58,9 +58,6 @@ class ActionAgenda
    * 
    * @param toolset 
    *   The name of the toolset environment under which the action is executed.
-   * 
-   * @param envs  
-   *   The cooked toolset environments indexed by operating system type.
    */
   public
   ActionAgenda
@@ -72,8 +69,7 @@ class ActionAgenda
    Map<String,FileSeq> primarySources,        
    Map<String,Set<FileSeq>> secondarySources,  
    Map<String,ActionInfo> actionInfo, 
-   String toolset, 
-   DoubleMap<OsType,String,String> envs
+   String toolset
   ) 
   {
     if(jobID < 0) 
@@ -116,6 +112,35 @@ class ActionAgenda
       throw new IllegalArgumentException
 	("The toolset cannot be (null)!");
     pToolset = toolset;
+  }
+
+  /** 
+   * Construct an action agenda which includes a cooked toolset environment.
+   * 
+   * @param agenda
+   *   The agenda to copy.
+   * 
+   * @param envs  
+   *   The cooked toolset environments indexed by operating system type.
+   */
+  public
+  ActionAgenda
+  ( 
+   ActionAgenda agenda,
+   DoubleMap<OsType,String,String> envs
+  ) 
+  {
+    pJobID  = agenda.pJobID;
+    pNodeID = agenda.pNodeID;
+
+    pPrimaryTarget    = agenda.pPrimaryTarget;
+    pSecondaryTargets = agenda.pSecondaryTargets;
+    pPrimarySources   = agenda.pPrimarySources;
+    pSecondarySources = agenda.pSecondarySources;
+
+    pActionInfo = agenda.pActionInfo;
+
+    pToolset = agenda.pToolset;
     
     if(envs == null) 
       throw new IllegalArgumentException
@@ -246,18 +271,6 @@ class ActionAgenda
   }
 
   /**
-   * Whether the given operating system is supported by the toolset.
-   */ 
-  public boolean
-  supportsOsType
-  (
-   OsType os
-  ) 
-  {
-    return ((os != null) && pEnvironment.containsKey(os));
-  }
-
-  /**
    * Get the environment for the current operating system under which the action is executed.
    * 
    * @throws PipelineException
@@ -267,6 +280,10 @@ class ActionAgenda
   getEnvironment()
     throws PipelineException
   {
+    if(pEnvironment == null) 
+      throw new PipelineException
+	("No environment has been set!");
+
     TreeMap<String,String> env = pEnvironment.get(PackageInfo.sOsType);
     if(env == null) 
       throw new PipelineException
@@ -287,9 +304,13 @@ class ActionAgenda
    OsType os
   ) 
   {
+    if(pEnvironment == null)
+      return null;
+
     TreeMap<String,String> env = pEnvironment.get(os);
     if(env != null) 
       return Collections.unmodifiableSortedMap(env);
+
     return null;
   }
 
@@ -374,7 +395,6 @@ class ActionAgenda
       encoder.encode("ActionInfo", pActionInfo);
     
     encoder.encode("Toolset", pToolset);
-    encoder.encode("Environment", pEnvironment);
   }
   
   public void 
@@ -440,12 +460,6 @@ class ActionAgenda
     if(toolset == null) 
       throw new GlueException("The \"Toolset\" was missing!");
     pToolset = toolset;
-
-    DoubleMap<OsType,String,String> env = 
-      (DoubleMap<OsType,String,String>) decoder.decode("Environment"); 
-    if(env == null) 
-      throw new GlueException("The \"Environment\" was missing!");
-    pEnvironment = env;
   }
 
 

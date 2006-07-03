@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.75 2006/07/02 07:48:55 jim Exp $
+// $Id: MasterMgrClient.java,v 1.76 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -536,6 +536,37 @@ class MasterMgrClient
     if(obj instanceof MiscGetToolsetRsp) {
       MiscGetToolsetRsp rsp = (MiscGetToolsetRsp) obj;
       return rsp.getToolset();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get all OS specific toolsets with the given name. 
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  public synchronized TreeMap<OsType,Toolset>
+  getOsToolsets
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetOsToolsetsReq req = new MiscGetOsToolsetsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetOsToolsets, req);
+    if(obj instanceof MiscGetOsToolsetsRsp) {
+      MiscGetOsToolsetsRsp rsp = (MiscGetOsToolsetsRsp) obj;
+      return rsp.getToolsets();
     }
     else {
       handleFailure(obj);

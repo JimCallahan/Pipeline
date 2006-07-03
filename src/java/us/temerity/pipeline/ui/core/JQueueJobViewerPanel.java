@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.25 2006/06/24 20:48:21 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.26 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -501,7 +501,7 @@ class JQueueJobViewerPanel
 	}
       }
       else {
-	UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(pGroupID, null, null);
+	UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(pGroupID, null, null, null);
 	SwingUtilities.invokeLater(task);
       }
     }
@@ -2485,13 +2485,20 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();      
 
       if(pGroupID > 0) {
-	QueueJob     job  = null;
+	QueueJob job = null;
 	QueueJobInfo info = null; 
+	SubProcessExecDetails details = null; 
 	if(master.beginPanelOp("Updating Job Details...")) {
 	  try {
 	    QueueMgrClient client = master.getQueueMgrClient();
 	    job  = client.getJob(pJobID);
 	    info = client.getJobInfo(pJobID);
+
+	    String hostname = info.getHostname();
+	    if(hostname != null) {
+	      JobMgrClient jclient = new JobMgrClient(hostname);
+	      details = jclient.getExecDetails(pJobID);
+	    }
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -2500,8 +2507,9 @@ class JQueueJobViewerPanel
 	    master.endPanelOp("Done.");
 	  }
 	}
-	
-	UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(pGroupID, job, info);
+
+	UpdateDetailsPanelTask task = 
+	  new UpdateDetailsPanelTask(pGroupID, job, info, details);
 	SwingUtilities.invokeLater(task);
       }
     }
@@ -2523,14 +2531,16 @@ class JQueueJobViewerPanel
     (
      int groupID, 
      QueueJob job, 
-     QueueJobInfo info
+     QueueJobInfo info, 
+     SubProcessExecDetails details
     ) 
     {
       super("JQueueJobViewerPanel:UpdateDetailsPanelTask");
 
-      pGroupID = groupID;
-      pJob     = job; 
-      pJobInfo = info; 
+      pGroupID     = groupID;
+      pJob         = job; 
+      pJobInfo     = info; 
+      pExecDetails = details;
     }
 
     public void 
@@ -2542,14 +2552,15 @@ class JQueueJobViewerPanel
 	PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
 	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateJob(pAuthor, pView, pJob, pJobInfo);
+	  panel.updateJob(pAuthor, pView, pJob, pJobInfo, pExecDetails);
 	}
       }
     }    
 
-    private int           pGroupID;
-    private QueueJob      pJob; 
-    private QueueJobInfo  pJobInfo; 
+    private int                    pGroupID;
+    private QueueJob               pJob; 
+    private QueueJobInfo           pJobInfo; 
+    private SubProcessExecDetails  pExecDetails; 
   }
 
  

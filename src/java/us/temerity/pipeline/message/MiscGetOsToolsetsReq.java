@@ -1,4 +1,4 @@
-// $Id: JobStartReq.java,v 1.2 2006/07/03 06:38:42 jim Exp $
+// $Id: MiscGetOsToolsetsReq.java,v 1.1 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -6,16 +6,19 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*; 
 
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   J O B   S T A R T   R E Q                                                              */
+/*   M I S C   G E T   O S  T O O L S E T   R E Q                                           */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to start execution of a job on the server.
+ * A request to get all OS specific toolsets with the same name. 
+ * 
+ * @see MasterMgr
  */
 public
-class JobStartReq
+class MiscGetOsToolsetsReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -23,28 +26,21 @@ class JobStartReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request. <P> 
+   * Constructs a new request.
    * 
-   * @param job
-   *   The queue job to start. 
-   * 
-   * @param envs  
-   *   The cooked toolset environments indexed by operating system type.
+   * @param name
+   *   The toolset name.
    */
   public
-  JobStartReq
+  MiscGetOsToolsetsReq
   (
-   QueueJob job, 
-   DoubleMap<OsType,String,String> envs
+   String name
   )
-  { 
-    if(job == null) 
-      throw new IllegalArgumentException("The queue job cannot be (null)!");
-    pJob = job; 
-
-    if(envs == null) 
-      throw new IllegalArgumentException("The cooked environments cannot be (null)!");
-    pCookedEnvs = envs; 
+  {
+    if(name == null) 
+      throw new IllegalArgumentException
+	("The toolset name cannot be (null)!");
+    pName = name;
   }
 
 
@@ -54,30 +50,22 @@ class JobStartReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the queue job.
-   */
-  public QueueJob
-  getJob()
+   * Gets the name of the toolset;
+   */ 
+  public String
+  getName() 
   {
-    return pJob; 
+    assert(pName != null);
+    return pName;
   }
+ 
 
-  /**
-   * Gets the cooked toolset environments indexed by operating system type.
-   */
-  public DoubleMap<OsType,String,String>
-  getCookedEnvs()
-  {
-    return pCookedEnvs; 
-  }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3749831052229551495L;
+  private static final long serialVersionUID = -1252044923620569410L;
 
   
 
@@ -86,14 +74,9 @@ class JobStartReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The queue job.
-   */ 
-  private QueueJob  pJob; 
-
-  /**
-   * The cooked toolset environments indexed by operating system type.
-   */ 
-  private DoubleMap<OsType,String,String>  pCookedEnvs; 
+   * The name of the toolset.
+   */
+  private String  pName;  
 
 }
   

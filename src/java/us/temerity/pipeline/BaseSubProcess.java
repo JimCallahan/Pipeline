@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.10 2006/05/07 20:36:05 jim Exp $
+// $Id: BaseSubProcess.java,v 1.11 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -186,10 +186,13 @@ class BaseSubProcess
 	throw new IllegalArgumentException
 	  ("The working directory (" + dir.getPath() + ") does not exist!");
     } 
-    
+
     /* create low-level process */ 
     pProc = initNativeProcess(procCmd, procEnv, dir);
     pIsFinished = new AtomicBoolean(false);
+
+    /* save the execution details */ 
+    pExecDetails = new SubProcessExecDetails(pProc.getCommand(), env);
   }
 
   /**
@@ -357,7 +360,16 @@ class BaseSubProcess
     return pProc.getWorkingDir();
   }
 
-  
+  /**
+   * Get the full execution details. 
+   */ 
+  public SubProcessExecDetails
+  getExecDetails()
+  {
+    return pExecDetails;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P R O C C E S S   M A N A G E M E N T                                                */
@@ -652,6 +664,11 @@ class BaseSubProcess
    * If <CODE>null</CODE>, the process is run as the current user directly. 
    */ 
   private String  pSubstituteUser;   
+
+  /**
+   * The full execution details. 
+   */ 
+  private SubProcessExecDetails pExecDetails; 
 
 
 }

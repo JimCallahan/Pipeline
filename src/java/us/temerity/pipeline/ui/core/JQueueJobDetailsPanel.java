@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.7 2006/01/15 08:23:01 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.8 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -590,7 +590,7 @@ class JQueueJobDetailsPanel
       addMouseListener(this); 
     }
 
-    updateJob(null, null);
+    updateJob(null, null, null);
   }
 
   /**
@@ -706,6 +706,9 @@ class JQueueJobDetailsPanel
    * 
    * @param info
    *   The current job status information. 
+   * 
+   * @param details
+   *   The job execution details.
    */
   public synchronized void 
   updateJob
@@ -713,13 +716,14 @@ class JQueueJobDetailsPanel
    String author, 
    String view, 
    QueueJob job,
-   QueueJobInfo info
+   QueueJobInfo info, 
+   SubProcessExecDetails details
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateJob(job, info); 
+    updateJob(job, info, details); 
   }
 
   /**
@@ -730,18 +734,23 @@ class JQueueJobDetailsPanel
    * 
    * @param info
    *   The current job status information. 
+   * 
+   * @param details
+   *   The job execution details.
    */
   public synchronized void 
   updateJob
   (
    QueueJob job,
-   QueueJobInfo info
+   QueueJobInfo info, 
+   SubProcessExecDetails details
   ) 
   {
     updatePrivileges();
 
-    pJob     = job;
-    pJobInfo = info;
+    pJob         = job;
+    pJobInfo     = info;
+    pExecDetails = details; 
 
     ActionAgenda agenda = null;
     if(pJob != null) 
@@ -840,7 +849,8 @@ class JQueueJobDetailsPanel
 
     /* process details panel */ 
     {
-      pExecDetailsButton.setEnabled(pJob != null);
+      pExecDetailsButton.setEnabled
+	((pJob != null) && (pJobInfo != null) && (pExecDetails != null));
 
       {
 	String text = "-";
@@ -1409,7 +1419,7 @@ class JQueueJobDetailsPanel
       if((pExecDetailsDialog == null) || !pExecDetailsDialog.isVisible())
 	pExecDetailsDialog = new JExecDetailsDialog();
 
-      pExecDetailsDialog.updateContents(pHeaderLabel.getText(), pJob, pJobInfo);
+      pExecDetailsDialog.updateContents(pHeaderLabel.getText(), pJob, pJobInfo, pExecDetails);
       pExecDetailsDialog.setVisible(true);
     }
   }
@@ -1574,6 +1584,12 @@ class JQueueJobDetailsPanel
    * The job status information.
    */ 
   private QueueJobInfo  pJobInfo; 
+
+  /** 
+   * The job execution details.
+   */ 
+  private SubProcessExecDetails  pExecDetails; 
+
 
 
 

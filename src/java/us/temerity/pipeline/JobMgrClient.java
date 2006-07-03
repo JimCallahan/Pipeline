@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.8 2005/04/03 06:10:11 jim Exp $
+// $Id: JobMgrClient.java,v 1.9 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -75,6 +75,41 @@ class JobMgrClient
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   E X E C U T I O N   D E T A I L S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the execution details for a given job.
+   * 
+   * @param jobID
+   *   The unique job identifier. 
+   *    
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */ 
+  public synchronized SubProcessExecDetails
+  getExecDetails
+  (
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    JobGetExecDetailsReq req = new JobGetExecDetailsReq(jobID);
+    Object obj = performTransaction(JobRequest.GetExecDetails, req);
+    if(obj instanceof JobGetExecDetailsRsp) {
+      JobGetExecDetailsRsp rsp = (JobGetExecDetailsRsp) obj;
+      return rsp.getExecDetails();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   O U T P U T                                                                  */

@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.2 2005/11/03 22:02:14 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.3 2006/07/03 06:38:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -211,15 +211,12 @@ class JExecDetailsDialog
   (
    String jheader,
    QueueJob job,
-   QueueJobInfo info
+   QueueJobInfo info, 
+   SubProcessExecDetails details
   ) 
   {
     ActionAgenda agenda = job.getActionAgenda();
     QueueJobResults results = info.getResults();
-    
-    String command = "(none yet)";
-    if(results != null)
-      command = results.getCommand();
     
     String dir = "-";
     if((agenda != null) && (info.getOsType() != null))
@@ -229,25 +226,25 @@ class JExecDetailsDialog
     if(info.getHostname() != null)
       hostname = ("    [" + info.getHostname() + "]");
 
-    String osname = "";
-    SortedMap<String,String> env = new TreeMap<String,String>();
-    if((agenda != null) && (info.getOsType() != null)) {
-      SortedMap<String,String> oenv = agenda.getEnvironment(info.getOsType());
-      if(oenv != null) 
-	env = oenv;
+    String command = "-";
+    if(details != null) 
+      command = details.getCommand();
 
-      osname = (" (" + info.getOsType().toString() + ")");
-    }
+    TreeMap<String,String> env = new TreeMap<String,String>();
+    if(details != null) 
+      env = details.getEnvironment();
     
+    
+
     pHeaderLabel.setText("Execution Details -" + jheader + hostname);
-      
+ 
+    pWorkingDirField.setText(dir);
+     
     BaseAction action = job.getAction();
     pCommandLineLabel.setText("Action Command:  " + 
 			      action.getName() + " (v" + action.getVersionID() + ")");
     pCommandLineArea.setText(command);
       
-    pWorkingDirField.setText(dir);
-    
     {
       Component comps[] = UIFactory.createTitledPanels();
       {
