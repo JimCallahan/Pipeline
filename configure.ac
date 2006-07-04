@@ -1394,6 +1394,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/v2_0_11/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_12/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_13/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_14/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
 

@@ -283,22 +283,24 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     CORE_SOURCES = $(shell ls $(srcdir)/core/*.java) 
 
+    MATH_SOURCES = $(shell ls $(srcdir)/math/*.java) 
+
      MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
 
-      TS_SOURCES = $(shell ls $(srcdir)/toolset/*.java)
-
     TASK_SOURCES = $(shell ls $(srcdir)/task/*.java)
+
+      TS_SOURCES = $(shell ls $(srcdir)/toolset/*.java)
 
       UI_SOURCES = $(shell ls $(srcdir)/ui/*.java) 
 
  UI_CORE_SOURCES = $(shell ls $(srcdir)/ui/core/*.java) 
 
-    MATH_SOURCES = $(shell ls $(srcdir)/math/*.java) 
+    UTIL_SOURCES = $(shell ls $(srcdir)/utils/v2_0_14/*.java) 
 
 
      ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) $(CORE_SOURCES) \
-                   $(MSG_SOURCES) $(TS_SOURCES) $(TASK_SOURCES) $(UI_SOURCES) \
-                   $(UI_CORE_SOURCES) $(MATH_SOURCES)
+                   $(MATH_SOURCES) $(MSG_SOURCES) $(TASK_SOURCES) $(TS_SOURCES) \
+                   $(UI_SOURCES) $(UI_CORE_SOURCES) $(UTIL_SOURCES)
 
 
     CORE_PARSERS = BatchParser \
@@ -339,18 +341,19 @@ $(ALL_JAR): java-all textures fonts
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(ALL_JAR) \
                     us/temerity/pipeline/*.class \
+                    us/temerity/pipeline/core/*.class \
                     us/temerity/pipeline/glue/*.class \
                     us/temerity/pipeline/glue/io/*.class \
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/laf/fonts \
-                    us/temerity/pipeline/core/*.class \
+                    us/temerity/pipeline/math/*.class \
                     us/temerity/pipeline/message/*.class \
-                    us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/task/*.class \
+                    us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/ui/core/*.class \
-                    us/temerity/pipeline/math/*.class)
+                    us/temerity/pipeline/utils/v2_0_14/*.clas)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -364,21 +367,15 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/laf/fonts \
+                    us/temerity/pipeline/math/*.class \
                     us/temerity/pipeline/message/*.class \
-                    us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/task/*.class \
+                    us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
-                    us/temerity/pipeline/math/*.class)
+                    us/temerity/pipeline/utils/v2_0_14/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
-
-
-#$(GLUE_JAR): $(API_JAR)
-#	(cd ../../..; \
-#         $(JAR) cvf us/temerity/pipeline/$(GLUE_JAR) \
-#                    us/temerity/pipeline/glue/io/*.class)
-
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
@@ -496,15 +493,17 @@ clean-vault:
 clean-class:
 	rm -f *.class 
 	rm -f bootstrap/*.class
+	rm -f core/*.class
 	rm -f glue/*.class
 	rm -f glue/io/*.class
 	rm -f laf/*.class
 	rm -f message/*.class
-	rm -f core/*.class
+	rm -f task/*.class
+	rm -f toolset/*.class
 	rm -f ui/*.class
 	rm -f ui/core/*.class
 	rm -f ui/core/prefs/*.class
-	rm -f math/*.class
+	rm -f utils/v2_0_14/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:
