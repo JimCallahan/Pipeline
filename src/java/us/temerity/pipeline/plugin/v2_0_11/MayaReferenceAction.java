@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.1 2006/07/02 04:06:06 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.2 2006/07/05 12:07:09 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -361,9 +361,6 @@ class MayaReferenceAction
       out.write("// WORK AROUNDS:\n" + 
 		"lightlink -q;\n\n");
       
-      /* load the animImportExport plugin */ 
-      out.write("loadPlugin \"animImportExport.so\";\n\n");
-
       /* rename the current scene as the output scene */ 
       out.write("// SCENE SETUP\n" + 
 		"file -rename \"" + saveScene + "\";\n" + 
