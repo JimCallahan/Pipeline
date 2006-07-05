@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.19 2006/07/03 06:38:42 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.20 2006/07/05 21:07:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -318,7 +318,7 @@ class JobMgrControlClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether the server is no longer reachable communication should no longer be attempted.<P>
+   * When the server is no longer reachable, communication should no longer be attempted.<P>
    * 
    * Subclasses which wish to force performLongTransaction() to give up before receiving
    * a response should override this method to return <CODE>true</CODE>.
