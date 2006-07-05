@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.1 2006/07/02 04:06:06 jim Exp $
+// $Id: MayaCollateAction.java,v 1.2 2006/07/05 12:07:32 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -541,7 +541,8 @@ class MayaCollateAction
 		"lightlink -q;\n\n");
       
       /* load the animImportExport plugin */ 
-      out.write("loadPlugin \"animImportExport.so\";\n\n");
+      out.write("if(!`pluginInfo -q -l \"animImportExport.so\"`)\n" + 
+		"  loadPlugin \"animImportExport.so\";\n\n");
 
       /* rename the current scene as the output scene */ 
       out.write("// SCENE SETUP\n" + 
