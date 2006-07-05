@@ -6,7 +6,7 @@ FROM bugs_reports, phpbb_posts, phpbb_topics
 WHERE phpbb_topics.forum_id =12
 AND project_id =1
 AND bugs_reports.version_id >=56
-AND bugs_reports.version_id <=63
+AND bugs_reports.version_id <=71
 AND bugs_reports.status_id =5
 AND bugs_reports.post_id = phpbb_posts.post_id
 AND phpbb_posts.topic_id = phpbb_topics.topic_id
@@ -19,7 +19,7 @@ FROM bugs_reports, phpbb_posts, phpbb_topics
 WHERE phpbb_topics.forum_id =12
 AND project_id =1
 AND bugs_reports.version_id >=56
-AND bugs_reports.version_id <=63
+AND bugs_reports.version_id <=71
 AND bugs_reports.status_id =4
 AND bugs_reports.post_id = phpbb_posts.post_id
 AND phpbb_posts.topic_id = phpbb_topics.topic_id
