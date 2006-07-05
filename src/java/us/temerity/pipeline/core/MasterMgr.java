@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.155 2006/07/03 06:38:42 jim Exp $
+// $Id: MasterMgr.java,v 1.156 2006/07/05 12:08:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -227,7 +227,7 @@ class MasterMgr
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Establishing Network Connections [plpluginmgr plfilemgr plqueuemgr]...");
+       "Establishing Network Connections [PluginMgr FileMgr QueueMgr]...");
     LogMgr.getInstance().flush();
 
     {
@@ -258,7 +258,7 @@ class MasterMgr
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Initializing...");
+       "Initializing [MasterMgr]...");
     LogMgr.getInstance().flush();
 
     /* Make sure that the root node directories exist. */ 

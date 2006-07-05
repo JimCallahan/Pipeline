@@ -242,7 +242,7 @@ Commands() :
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Establishing Network Connections [plpluginmgr]...");
+       "Establishing Network Connections [PluginMgr]...");
     LogMgr.getInstance().flush();
 
     /* initialize the plugins */ 

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.52 2006/06/25 23:30:32 jim Exp $
+// $Id: FileMgr.java,v 1.53 2006/07/05 12:08:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -159,7 +159,7 @@ class FileMgr
   {
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Initializing...");
+       "Initializing [FileMgr]...");
     LogMgr.getInstance().flush();
 
     assert(PackageInfo.sOsType == OsType.Unix);

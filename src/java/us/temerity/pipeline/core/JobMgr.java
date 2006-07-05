@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.30 2006/07/03 06:38:42 jim Exp $
+// $Id: JobMgr.java,v 1.31 2006/07/05 12:08:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -31,7 +31,7 @@ class JobMgr
   {
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Initializing...");
+       "Initializing [JobMgr]...");
     LogMgr.getInstance().flush();
 
     /* initialize the fields */ 
@@ -1067,43 +1067,53 @@ class JobMgr
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     "Job Prep Failed: " + jobID);
 
-	  String msg = ("Job Prep Failed!\n\n" + getFullMessage(ex));
+	  {
+	    String msg = ("Job Prep Failed: " + ex.getMessage() + "\n" + 
+			  "(see Error log for details)");
+	    recordExecDetails(new SubProcessExecDetails(msg, env), dir);
+	  }
 
 	  {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	       "Appending the exception stack to the STDOUT file (" + outFile + ") of " + 
-	       "job (" + jobID + ")...");
+	    String msg = ("Job Prep Failed!\n\n" + getFullMessage(ex));
 	    
-	    try {
-	      FileWriter out = new FileWriter(outFile, true);
-	      out.write(msg);
-	      out.flush();
-	      out.close();
-	    }
-	    catch(IOException ex2) {
+	    {
 	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
-		 "Could not append the Exception message to STDOUT file (" + outFile + ")!");
-	    }
-	  }	  
-
-	  {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	       "Appending the exception stack to the STDERR file (" + errFile + ") of " + 
-	       "job (" + jobID + ")...");
+		(LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+		 "Appending the exception stack to the STDOUT file (" + outFile + ") of " + 
+		 "job (" + jobID + ")...");
+	      
+	      try {
+		FileWriter out = new FileWriter(outFile, true);
+		out.write(msg);
+		out.flush();
+		out.close();
+	      }
+	      catch(IOException ex2) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+		   "Could not append the Exception message to STDOUT file " + 
+		   "(" + outFile + ")!");
+	      }
+	    }	  
 	    
-	    try {
-	      FileWriter out = new FileWriter(errFile, true);
-	      out.write(msg);
-	      out.flush();
-	      out.close();
-	    }
-	    catch(IOException ex2) {
+	    {
 	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
-		 "Could not append the Exception message to STDERR file (" + errFile + ")!");
+		(LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+		 "Appending the exception stack to the STDERR file (" + errFile + ") of " + 
+		 "job (" + jobID + ")...");
+	      
+	      try {
+		FileWriter out = new FileWriter(errFile, true);
+		out.write(msg);
+		out.flush();
+		out.close();
+	      }
+	      catch(IOException ex2) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+		   "Could not append the Exception message to STDERR file " + 
+		   "(" + errFile + ")!");
+	      }
 	    }
 	  }
 

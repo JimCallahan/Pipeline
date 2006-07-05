@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.32 2006/07/03 06:38:42 jim Exp $
+// $Id: QueueMgrServer.java,v 1.33 2006/07/05 12:08:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -826,7 +826,7 @@ class QueueMgrServer
       try {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "Establishing Network Connections [plmaster]...");
+	   "Establishing Network Connections [MasterMgr]...");
 	LogMgr.getInstance().flush();
    
 	pQueueMgr.establishMasterConnection();

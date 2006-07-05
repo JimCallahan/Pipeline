@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.59 2006/07/03 06:38:42 jim Exp $
+// $Id: QueueMgr.java,v 1.60 2006/07/05 12:08:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -47,7 +47,7 @@ class QueueMgr
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Initializing...");
+       "Initializing [QueueMgr]...");
     LogMgr.getInstance().flush();
 
     init();
