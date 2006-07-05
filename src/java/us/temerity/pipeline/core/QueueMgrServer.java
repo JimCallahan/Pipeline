@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.33 2006/07/05 12:08:50 jim Exp $
+// $Id: QueueMgrServer.java,v 1.34 2006/07/05 21:06:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,14 +74,12 @@ class QueueMgrServer
       LogMgr.getInstance().flush();
 
       CollectorTask collector = new CollectorTask();
-      collector.start();
-
       DispatcherTask dispatcher = new DispatcherTask();
-      MasterConnectTask connector = new MasterConnectTask(dispatcher); 
-      connector.start();
-
       SchedulerTask scheduler = new SchedulerTask();
-      scheduler.start();
+
+      MasterConnectTask connector = 
+	new MasterConnectTask(collector, dispatcher, scheduler); 
+      connector.start();
 
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
@@ -761,6 +759,60 @@ class QueueMgrServer
     private Socket         pSocket;
   }
   
+  /**
+   * Establish connection back to plmaster(1) for toolset lookup purposes before
+   * starting the other threads.
+   */
+  private 
+  class MasterConnectTask
+    extends Thread
+  {
+    public 
+    MasterConnectTask
+    (
+     CollectorTask collector,
+     DispatcherTask dispatcher,
+     SchedulerTask scheduler
+    ) 
+    {
+      super("QueueMgrServer:MasterConnectTask"); 
+      pCollector = collector;
+      pDispatcher = dispatcher;
+      pScheduler = scheduler;
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "Establishing Network Connections [MasterMgr]...");
+	LogMgr.getInstance().flush();
+   
+	pQueueMgr.establishMasterConnection();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "Server Ready.");
+	LogMgr.getInstance().flush();
+	
+	pCollector.start();
+	pDispatcher.start();
+	pScheduler.start();
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Master Connector Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();
+      }
+    }
+
+    private CollectorTask  pCollector;
+    private DispatcherTask pDispatcher;
+    private SchedulerTask  pScheduler;
+  }
 
   /**
    * Collects per-host system resource information.
@@ -780,7 +832,7 @@ class QueueMgrServer
     {
       try {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Col, LogMgr.Level.Fine,
 	   "Collector Started.");	
 	LogMgr.getInstance().flush();
 
@@ -790,63 +842,17 @@ class QueueMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Col, LogMgr.Level.Severe,
 	   "Collector Failed: " + getFullMessage(ex));	
 	LogMgr.getInstance().flush();	
       }
       finally {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Col, LogMgr.Level.Fine,
 	   "Collector Finished.");	
 	LogMgr.getInstance().flush();
       }
     }
-  }
-
-  /**
-   * Establish connection back to plmaster(1) for toolset lookup purposes.
-   */
-  private 
-  class MasterConnectTask
-    extends Thread
-  {
-    public 
-    MasterConnectTask
-    (
-     DispatcherTask dispatcher
-    ) 
-    {
-      super("QueueMgrServer:MasterConnectTask"); 
-      pDispatcher = dispatcher;
-    }
-
-    public void 
-    run() 
-    {
-      try {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "Establishing Network Connections [MasterMgr]...");
-	LogMgr.getInstance().flush();
-   
-	pQueueMgr.establishMasterConnection();
-
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "Server Ready.");
-	LogMgr.getInstance().flush();
-	
-	pDispatcher.start();
-      }
-      catch (Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Master Connector Failed: " + getFullMessage(ex));	
-	LogMgr.getInstance().flush();
-      }
-    }
-
-    private DispatcherTask pDispatcher;
   }
 
   /**
@@ -867,7 +873,7 @@ class QueueMgrServer
     {
       try {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
 	   "Dispatcher Started.");	
 	LogMgr.getInstance().flush();
 
@@ -879,13 +885,13 @@ class QueueMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
 	   "Dispatcher Failed: " + getFullMessage(ex));	
 	LogMgr.getInstance().flush();
       }
       finally {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
 	   "Dispatcher Finished.");	
 	LogMgr.getInstance().flush();
       }
@@ -910,7 +916,7 @@ class QueueMgrServer
     {
       try {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Scheduler Started.");	
 	LogMgr.getInstance().flush();
 
@@ -920,13 +926,13 @@ class QueueMgrServer
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   "Scheduler Failed: " + getFullMessage(ex));	
 	LogMgr.getInstance().flush();
       }
       finally {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	   "Scheduler Finished.");	
 	LogMgr.getInstance().flush();
       }
