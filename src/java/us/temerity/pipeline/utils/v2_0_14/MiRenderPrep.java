@@ -1,4 +1,4 @@
-// $Id: MiRenderPrep.java,v 1.1 2006/07/04 06:12:29 jim Exp $
+// $Id: MiRenderPrep.java,v 1.2 2006/07/05 21:05:11 jim Exp $
 
 package us.temerity.pipeline.utils.v2_0_14;
 
@@ -65,7 +65,7 @@ public class MiRenderPrep
 		finalLine += buffer[j] + " ";
 	      }
 	      String texPath = buffer[buffer.length - 1];
-	      texPath.replaceAll("\"", "");
+	      texPath = texPath.replaceAll("\"", "");
 	      // Did they set an absolute working path?
 	      if(texPath.contains(PackageInfo.sProdPath.toOsString())) {
 		System.err.println("Working Path");
@@ -84,15 +84,23 @@ public class MiRenderPrep
 	      }
 	      else if(texPath.matches(mayaCrapPattern)) {
 		System.err.println("Crap path");
-		texPath.replace("renderData/mentalray/", "");
+		texPath = texPath.replace("renderData/mentalray/", "");
 	      }
 	      else if(texPath.matches(localTexPattern1) || texPath.matches(localTexPattern2)
 		|| texPath.matches(localTexPattern3)) {
 		System.err.println("Local path");
 	      }
-	      else
-		throw new PipelineException("The file texture path ("
+	      else {
+		System.err.println("The file texture path ("
 		  + buffer[buffer.length - 1] + ") is not valid.  Please correct.");
+		System.exit(1);
+	      }
+	      
+	      if (texPath.matches(workingPattern)) {
+		System.err.println("Chopping Working");
+		texPath = texPath.replace("$WORKING/", "");
+	      }
+	      
 	      finalLine += "\"" + texPath + "\"";
 	    }
 	    System.err.println("Writing line: " + finalLine);
@@ -108,11 +116,13 @@ public class MiRenderPrep
 
       }
       catch(FileNotFoundException e) {
-	throw new PipelineException("The shader file is not "
+	System.err.println("The shader file is not "
 	  + "being written correctly from maya.\n" + e.getMessage());
+	System.exit(1);
       }
       catch(IOException e) {
-	throw new PipelineException("File IO error has occured.\n" + e.getMessage());
+	System.err.println("File IO error has occured.\n" + e.getMessage());
+	System.exit(1);
       }
 
       // Open the file.
@@ -605,6 +615,8 @@ public class MiRenderPrep
   private final static String localTexPattern3 = "^/tmp/.*";
 
   private final static String mayaCrapPattern = "^renderData/mentalray/.*";
+  
+  private final static String workingPattern = "^\\$WORKING/.*";
 
   private final static boolean DEBUG = true;
 
