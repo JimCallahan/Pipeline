@@ -346,7 +346,8 @@ TOKEN :
 | <MIN_ARCHIVES:       "--min-archives">    	: INTEGER_SEP
 | <CHECKED_IN_VSN:     "--vsn">                 : VSN_NAME_SEP
 | <DISABLE:            "--disable">         				      
-| <ENABLE:             "--enable">  	    				      
+| <ENABLE:             "--enable"> 
+| <SHUTDOWN1:          "--shutdown">  
 | <RESERVE:            "--reserve">         	: USER_NAME_SEP           
 | <OPEN:               "--open">  	    				      
 | <SLOTS:              "--slots">           	: INTEGER_SEP  	      
@@ -1317,7 +1318,7 @@ TOKEN :
 <ADMIN_OPTS>
 TOKEN :
 {
-  <SHUTDOWN:  "--shutdown">  : OPTIONS    
+  <SHUTDOWN2: "--shutdown">  : OPTIONS    
 | <BACKUP:    "--backup">    : PATH_SEP
 | <ARCHIVE:   "--archive">   : ARCHIVE_PREFIX_SEP
 | <OFFLINE:   "--offline">   : OPTIONS
@@ -2463,7 +2464,7 @@ AdminShutdown()
   pShutdownPluginMgr = false;
 }
 {
-  <SHUTDOWN> AE() (ShutdownOpts())* 
+  Shutdown() AE() (ShutdownOpts())* 
   {
     if(pQueueMgrClient != null) 
       pQueueMgrClient.disconnect();
@@ -3397,7 +3398,8 @@ JobServerSet()
   {
     if((pJobSelectionSchedule != null) && pJobNoSelectionSchedule) 
       throw new PipelineException
-        ("The --selection-schedule and --no-selection-schedule options are mutually exclusive!");
+        ("The --selection-schedule and --no-selection-schedule options are " + 
+	 "mutually exclusive!");
     
     if((pJobSelectionGroup != null) && pJobNoSelectionGroup) 
       throw new PipelineException
@@ -3432,7 +3434,7 @@ void
 JobServerShutdown() :
 {}
 {
-  <SHUTDOWN> AE()
+  Shutdown() AE()
   {
     if(pJobStatus != null) 
       throw new ParseException
@@ -6828,6 +6830,18 @@ RevisionNumber()
     catch(IllegalArgumentException ex) {
       throw new PipelineException(ex.getMessage());
     }
+  }
+}
+
+Token
+Shutdown() :
+{
+  Token t;
+}
+{
+  (t=<SHUTDOWN1> | t=<SHUTDOWN2>)
+  {
+    return t;
   }
 }
 
