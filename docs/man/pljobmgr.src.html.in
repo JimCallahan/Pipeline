@@ -65,7 +65,7 @@ agreement</span></a> for this software and exits.<br>
   </div>
   <blockquote> </blockquote>
 </blockquote>
-<h3><a name="Global_Options"></a>Global Option<br>
+<h3><a name="Global_Options"></a>Global Options<br>
 </h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--log-file"></a>--log-file</span>=<span
@@ -203,9 +203,22 @@ all loggers and is used for normal output from <b>pljobmgr</b>(1). <br>
 </div>
 <div style="margin-left: 80px;">These three levels are used for
 increasingly more detailed command tracing messages. <br>
+<br>
 </div>
 </div>
 </div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--fail-fast"></a>--fail-fast </span><br>
+<br>
+<div style="margin-left: 40px;">If unable to contact <span
+ style="font-weight: bold;">plpluginmgr</span>(1), the daemon will
+abort immediately instead of repeatedly retrying the connection.&nbsp;
+This is usefull when launching pljobmgr(1) from an init(8) script so
+that if the plpluginmgr(1) isn't running, the daemon will fail
+quickly.&nbsp; <br>
+</div>
+</div>
+<br>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>

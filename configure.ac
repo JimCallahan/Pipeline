@@ -1436,6 +1436,10 @@ AC_CONFIG_FILES([
   src/java/share/Unix/Makefile
   src/java/share/MacOS/Makefile
 
+  src/etc/Makefile
+  src/etc/init.d/Makefile
+  src/etc/init.d/pljobmgr
+
   src/utils/Makefile
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc.src

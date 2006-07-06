@@ -6,7 +6,7 @@ else
 if IS_WINDOWS 
   SUBDIRS = windows
 else 
-  SUBDIRS = unix java utils native
+  SUBDIRS = unix etc java utils native
 endif
 
 endif

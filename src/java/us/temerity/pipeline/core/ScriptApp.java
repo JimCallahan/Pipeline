@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.52 2006/07/06 04:12:09 jim Exp $
+// $Id: ScriptApp.java,v 1.53 2006/07/06 13:44:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,7 +58,7 @@ class ScriptApp
     boolean success = false;
     try {
       /* initialize the plugins */ 
-      PluginMgrClient.init();
+      PluginMgrClient.init(true);
 
       /* parse the command line */ 
       ScriptOptsParser parser = null;
@@ -1373,10 +1373,14 @@ class ScriptApp
   {
     TreeMap<String,QueueHostInfo> hosts = client.getHosts();
     ArrayList<QueueHostInfo> selected = new ArrayList<QueueHostInfo>();
-    if(hname == null)
+    if(hname == null) {
       selected.addAll(hosts.values());
-    else 
-      selected.add(hosts.get(hname));
+    }
+    else {
+      QueueHostInfo qinfo = hosts.get(hname);
+      if(qinfo != null) 
+	selected.add(qinfo); 
+    }
 
     StringBuffer buf = new StringBuffer();
     boolean first = true;
@@ -1466,8 +1470,10 @@ class ScriptApp
     if(host != null) {
       TreeMap<String,QueueHostStatusChange> statusTable = 
 	new TreeMap<String,QueueHostStatusChange>();
-      if(status != null) 
+      if(status != null) {
+	client.verifyConnection();
 	statusTable.put(hname, status);
+      }
 
       TreeMap<String,String> reserveTable = new TreeMap<String,String>();
       if(setReserve) 

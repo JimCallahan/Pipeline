@@ -1,0 +1,127 @@
+#!/bin/sh -f
+#
+# chkconfig: 2345 99 05
+# description: Start/Stop the Pipeline (v@VERSION@) Job Server daemon
+# processname: pljobmgr
+# pidfile:
+
+. /etc/rc.d/init.d/functions
+
+PLJOBMGR=@ROOT_INST_DIR@/Unix/sbin/pljobmgr
+PLSCRIPT=@ROOT_INST_DIR@/Unix/bin/plscript
+
+PLRUNUSER="runuser -s /bin/bash - @PIPELINE_USER@ -c "
+PLPROCESS="ps -U @PIPELINE_UID@ -G @PIPELINE_GID@ -o args="
+
+case "$1" in
+  start)
+    echo -n "Starting Pipeline Job Manager: " 
+
+    # make sure its already running... 
+    if [ -f /var/run/pljobmgr.pid ]
+    then
+      PLPID=`cat /var/run/pljobmgr.pid`
+      if [ -e /proc/$PLPID ]
+      then
+        echo_failure 
+        echo 
+        echo "  The Job Manager (pid $PLPID) appears to be running already..."
+        exit 1
+      else 
+        rm -f /var/run/pljobmgr.pid             
+      fi
+    fi
+
+    # start the job manager daemon (in the background)
+    nohup $PLRUNUSER "$PLJOBMGR --standard-log-file --fail-fast" >/dev/null 2>&1 &
+    PLPID="$!"
+    echo $PLPID > /var/run/pljobmgr.pid
+
+    # give it time to start and then see if its still running
+    sleep 45
+    if [ -e /proc/$PLPID ]; 
+    then 
+      echo_success
+      exit 0
+    else 
+      rm -f /var/run/pljobmgr.pid
+      echo_failure
+      exit 1
+    fi 
+    ;;
+
+  stop)
+    echo -n "Stopping Pipeline Job Manager: " 
+
+    # see if the logged process is still running
+    PLPID=
+    if [ -f /var/run/pljobmgr.pid ]
+    then
+      PLPID=`cat /var/run/pljobmgr.pid`
+      if [ ! -e /proc/$PLPID ]
+      then
+        PLPID=
+      fi
+    fi
+
+    # if not, see if any Job Manager process is running
+    if [ `$PLPROCESS -o args= | grep -c 'us.temerity.pipeline.core.JobMgrApp'` -eq 0 ]
+    then
+      echo_failure 
+      echo 
+      echo "  The Job Manager does not appear to be running..."
+      exit 1
+    else 
+      PLPID=`$PLPROCESS -o pid= -o args= | grep 'us.temerity.pipeline.core.JobMgrApp' | awk '{print $1}'`
+    fi 
+
+    # first try to use the queue manager to shutdown the job server cleanly
+    $PLRUNUSER "$PLSCRIPT job-server --set=`hostname` --shutdown" >/dev/null 2>&1
+    if [ "$?" -eq 0 ] 
+    then 
+      rm -f /var/run/pljobmgr.pid
+      echo_success
+        echo 
+        echo "  Job Manager shutdown cleanly."
+      exit 0
+    fi
+
+    # simply kill the process
+    if [ -n "$PLPID" ] 
+    then 
+      if kill -9 $PLPID
+      then 
+        rm -f /var/run/pljobmgr.pid
+        echo_success
+        echo 
+        echo "  Job Manager KILLED!"
+        exit 0
+      fi
+    fi
+        
+    echo_failure 
+    echo 
+    echo "  Unable to stop the Job Manager."
+    exit 1
+    exit 1
+    ;;
+
+  status)
+    echo "Checking Pipeline Job Manager Status: " 
+
+    if [ `$PLPROCESS | grep -c 'us.temerity.pipeline.core.JobMgrApp'` -eq 0 ]
+    then
+      echo "  No Job Manager process is running on ("`hostname`")."
+    else 
+      echo "  A Job Manager process is running on ("`hostname`")."
+    fi
+      
+    echo
+    echo "Checking with the Queue Manager..."
+    $PLRUNUSER "$PLSCRIPT job-server --get-info=`hostname`"
+    ;;
+
+  *)
+    echo "usage: $0 {start|stop|staus}"
+    ;;
+esac

@@ -49,6 +49,7 @@ JobMgrOptsParser
   init()
   {
     pLogBackups = 10;
+    pFailFast = false;
   }
  
 
@@ -75,6 +76,10 @@ JobMgrOptsParser
    */ 
   private int  pLogBackups;
 
+  /**
+   * Whether to abort quickly if unable to contact the plpluginmgr(1).
+   */ 
+  private boolean  pFailFast;
 
 }
 
@@ -97,6 +102,8 @@ TOKEN :
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
+
+| <FAIL_FAST:         "--fail-fast"> 
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -230,7 +237,7 @@ Commands() :
 
     /* initialize the plugins */ 
     try {
-      PluginMgrClient.init();
+      PluginMgrClient.init(pFailFast);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -328,7 +335,7 @@ void
 GlobalOpts() :
 {}
 {
-  (Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups() | FailFast())
   {}
 }
 
@@ -559,6 +566,16 @@ LogMgr.Level FinestLevel() :
   <FINEST> 
   {
     return LogMgr.Level.Finest;
+  }
+}
+
+
+void FailFast() :
+{}
+{
+  <FAIL_FAST> 
+  {
+    pFailFast = true;
   }
 }
 

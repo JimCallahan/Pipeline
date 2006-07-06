@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.4 2005/12/08 15:28:30 jim Exp $
+// $Id: PluginMgrClient.java,v 1.5 2006/07/06 13:44:12 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -51,12 +51,32 @@ class PluginMgrClient
   init() 
     throws PipelineException
   {
+    init(false);
+  }
+
+  /**
+   * Initialize the plugin manager instance. 
+   * 
+   * @param failFast
+   *   Whether to abort immediately if unable to connect to the plugin manager.
+   */
+  public static void 
+  init
+  (
+   boolean failFast
+  ) 
+    throws PipelineException
+  {
     if(sPluginMgrClient != null)
       throw new PipelineException("PluginMgrClient has already been initialized!");
 
     sPluginMgrClient = new PluginMgrClient();
     
-    sPluginMgrClient.waitForConnection(100, 5000);
+    if(failFast) 
+      sPluginMgrClient.verifyConnection();
+    else 
+      sPluginMgrClient.waitForConnection(100, 5000);
+
     sPluginMgrClient.update();
   }
 
