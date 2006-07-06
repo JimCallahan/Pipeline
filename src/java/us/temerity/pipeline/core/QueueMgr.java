@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.60 2006/07/05 12:08:50 jim Exp $
+// $Id: QueueMgr.java,v 1.61 2006/07/06 06:27:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -300,6 +300,25 @@ class QueueMgr
 	WaitTask task = new WaitTask(hostname, jobID);
 	task.start();
       }
+    }
+  }
+
+  /**
+   * Establish a connection back to the Master Manager daemon.
+   */ 
+  public void 
+  establishMasterConnection()
+  {
+    try {
+      pMasterMgrClient.waitForConnection(1000, 5000);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 "Unable to (re)connect to the Master Manager daemon!\n" + 
+	 "  " + ex.getMessage());
+      
+      pServer.internalShutdown();
     }
   }
 
@@ -2703,15 +2722,17 @@ class QueueMgr
   public void 
   collector()
   {
-    TaskTimer timer = new TaskTimer("QueueMgr.collector()");
+    TaskTimer timer = new TaskTimer("Collector");
 
     /* get the names of the currently enabled/disabled hosts */
     TreeSet<String> needsCollect = new TreeSet<String>();
     TreeSet<String> needsTotals = new TreeSet<String>();
     {
-      timer.aquire();
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Collector [Find Enabled]");
+      tm.aquire();
       synchronized(pHosts) {
-	timer.resume();
+        tm.resume();
 	for(String hname : pHosts.keySet()) {
 	  QueueHost host = pHosts.get(hname);
 	  switch(host.getStatus()) {
@@ -2725,6 +2746,10 @@ class QueueMgr
 	  }	  
 	}
       }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
     }
 
     /* collect system resource usage samples from the hosts */ 
@@ -2735,33 +2760,47 @@ class QueueMgr
     TreeMap<String,Integer> numProcs = new TreeMap<String,Integer>();
     TreeMap<String,Long> totalMemory = new TreeMap<String,Long>();
     TreeMap<String,Long> totalDisk = new TreeMap<String,Long>();
-    for(String hname : needsCollect) {
-      try {
-	JobMgrControlClient client = new JobMgrControlClient(hname);
-	ResourceSample sample = client.getResources();
-	samples.put(hname, sample);
-
- 	if(needsTotals.contains(hname)) {
-	  osTypes.put(hname, client.getOsType());
-	  numProcs.put(hname, client.getNumProcessors());
- 	  totalMemory.put(hname, client.getTotalMemory());
- 	  totalDisk.put(hname, client.getTotalDisk());
+    {
+      timer.suspend();
+      TaskTimer ntm = new TaskTimer("Collector [Network]");
+      for(String hname : needsCollect) {
+	ntm.suspend();
+	TaskTimer tm = new TaskTimer("Collector [Network - " + hname + "]");
+	try {
+	  JobMgrControlClient client = new JobMgrControlClient(hname);
+	  ResourceSample sample = client.getResources();
+	  samples.put(hname, sample);
+	  
+	  if(needsTotals.contains(hname)) {
+	    osTypes.put(hname, client.getOsType());
+	    numProcs.put(hname, client.getNumProcessors());
+	    totalMemory.put(hname, client.getTotalMemory());
+	    totalDisk.put(hname, client.getTotalDisk());
+	  }
+	  
+	  client.disconnect();
 	}
-
-	client.disconnect();
+	catch(PipelineException ex) {
+	  Throwable cause = ex.getCause();
+	  if(cause instanceof SocketTimeoutException) {
+	    hung.add(hname);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	       ex.getMessage());
+	    LogMgr.getInstance().flush();
+	  }
+	  else 
+	    dead.add(hname);
+	}	    
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
+	   tm.toString()); 
+	ntm.accum(tm);
       }
-      catch(PipelineException ex) {
-	Throwable cause = ex.getCause();
-	if(cause instanceof SocketTimeoutException) {
-	  hung.add(hname);
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	     ex.getMessage());
-	  LogMgr.getInstance().flush();
-	}
-	else 
-	  dead.add(hname);
-      }	    
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+	 ntm.toString()); 
+      timer.accum(ntm);
     }
 
     /* should the last interval of samples be written to disk? */ 
@@ -2773,122 +2812,157 @@ class QueueMgr
     }
 
     /* update the hosts */ 
-    timer.aquire();
-    synchronized(pHosts) {
-      timer.resume();
-      for(String hname : dead) {
-	QueueHost host = pHosts.get(hname);
-	if(host != null) 
-	  setHostStatus(host, QueueHost.Status.Shutdown);
-      }
-
-      for(String hname : hung) {
-	QueueHost host = pHosts.get(hname);
-	if(host != null) {
-	  Date lastHung = host.getLastHung();
-	  if((lastHung == null) || 
-	     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-	    setHostStatus(host, QueueHost.Status.Hung);
-	  else 
-	    setHostStatus(host, QueueHost.Status.Disabled);
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Collector [Update Hosts]");
+      tm.aquire();
+      synchronized(pHosts) {
+	tm.resume();
+	for(String hname : dead) {
+	  QueueHost host = pHosts.get(hname);
+	  if(host != null) 
+	    setHostStatus(host, QueueHost.Status.Shutdown);
 	}
-      }
-
-      for(QueueHost host : pHosts.values()) {
-	switch(host.getStatus()) {
-	case Disabled:
-	case Hung:
-	case Shutdown:
-	  host.cancelHolds();
+	
+	for(String hname : hung) {
+	  QueueHost host = pHosts.get(hname);
+	  if(host != null) {
+	    Date lastHung = host.getLastHung();
+	    if((lastHung == null) || 
+	       ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+	      setHostStatus(host, QueueHost.Status.Hung);
+	    else 
+	      setHostStatus(host, QueueHost.Status.Disabled);
+	  }
 	}
-      }	 
-
-      for(String hname : samples.keySet()) {
-	QueueHost host = pHosts.get(hname);
-	if(host != null) {
+	
+	for(QueueHost host : pHosts.values()) {
 	  switch(host.getStatus()) {
-	  case Enabled:
 	  case Disabled:
-	    {
-	      ResourceSample sample = samples.get(hname);
-	      if(sample != null)
-		host.addSample(sample);
-
-	      if(dump != null) {
-		ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
-		for(ResourceSample s : host.getSamples()) {
-		  if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
-		    rs.add(s);
+	  case Hung:
+	  case Shutdown:
+	    host.cancelHolds();
+	  }
+	}	 
+	
+	for(String hname : samples.keySet()) {
+	  QueueHost host = pHosts.get(hname);
+	  if(host != null) {
+	    switch(host.getStatus()) {
+	    case Enabled:
+	    case Disabled:
+	      {
+		ResourceSample sample = samples.get(hname);
+		if(sample != null)
+		  host.addSample(sample);
+		
+		if(dump != null) {
+		  ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
+		  for(ResourceSample s : host.getSamples()) {
+		    if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
+		      rs.add(s);
+		  }
+		  
+		  if(!rs.isEmpty() && 
+		     (host.getNumProcessors() != null) && 
+		     (host.getTotalMemory() != null) && 
+		     (host.getTotalDisk() != null)) {
+		    
+		    ResourceSampleBlock block = 
+		      new ResourceSampleBlock(host.getJobSlots(), 
+					      host.getNumProcessors(), 
+					      host.getTotalMemory(), 
+					      host.getTotalDisk(), 
+					      rs);
+		    dump.put(hname, block);
+		  }
 		}
-
-		if(!rs.isEmpty() && 
-		   (host.getNumProcessors() != null) && 
-		   (host.getTotalMemory() != null) && 
-		   (host.getTotalDisk() != null)) {
-
-		  ResourceSampleBlock block = 
-		    new ResourceSampleBlock(host.getJobSlots(), 
-					    host.getNumProcessors(), 
-					    host.getTotalMemory(), 
-					    host.getTotalDisk(), 
-					    rs);
-		  dump.put(hname, block);
-		}
+		
+		OsType os = osTypes.get(hname);
+		if(os != null) 
+		  host.setOsType(os); 
+		
+		Integer procs = numProcs.get(hname);
+		if(procs != null) 
+		  host.setNumProcessors(procs);
+		
+		Long memory = totalMemory.get(hname);
+		if(memory != null) 
+		  host.setTotalMemory(memory);
+		
+		Long disk = totalDisk.get(hname);
+		if(disk != null) 
+		  host.setTotalDisk(disk);
 	      }
-
-	      OsType os = osTypes.get(hname);
-	      if(os != null) 
-		host.setOsType(os); 
-
-	      Integer procs = numProcs.get(hname);
-	      if(procs != null) 
-		host.setNumProcessors(procs);
-
-	      Long memory = totalMemory.get(hname);
-	      if(memory != null) 
-		host.setTotalMemory(memory);
-
-	      Long disk = totalDisk.get(hname);
-	      if(disk != null) 
-		host.setTotalDisk(disk);
 	    }
 	  }
 	}
-      }
 
-      for(QueueHost host : pHosts.values()) {
-	switch(host.getStatus()) {
-	case Hung:
-	  if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
-	    setHostStatus(host, QueueHost.Status.Enabled);	      
+	for(QueueHost host : pHosts.values()) {
+	  switch(host.getStatus()) {
+	  case Hung:
+	    if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
+	      setHostStatus(host, QueueHost.Status.Enabled);	      
+	  }
 	}
       }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
     }
     
     /* update the read-only cache of job server info */ 
-    updateHostsInfo(timer);
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Collector [Update Hosts Info]");
+      {
+	updateHostsInfo(tm);
+      }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
+    }
 
     /* write the last interval of samples to disk */ 
     if(dump != null) {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Collector [Write Samples]");
       try {
-	writeSamples(timer, now, dump);
+	writeSamples(tm, now, dump);
       }
       catch(PipelineException ex) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Col, LogMgr.Level.Severe,
 	   ex.getMessage());
       }
-      
-      pLastSampleWrite = now;
+      finally {
+	pLastSampleWrite = now;
+      }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
     }
 
     /* cleanup any out-of-date sample files */ 
-    cleanupSamples(timer);
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Collector [Clean Samples]");
+      {
+	cleanupSamples(tm);
+      }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);      
+    }
 
     LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+      (LogMgr.Kind.Col, LogMgr.Level.Fine,
        timer.toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Col, LogMgr.Level.Fine))
       LogMgr.getInstance().flush();
 
     /* if we're ahead of schedule, take a nap */ 
@@ -2896,38 +2970,33 @@ class QueueMgr
       timer.suspend();
       long nap = sCollectorInterval - timer.getTotalDuration();
       if(nap > 0) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
+	   "Collector: Sleeping for (" + nap + ") ms...");
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Col, LogMgr.Level.Finest))
+	  LogMgr.getInstance().flush();
+
 	try {
 	  Thread.sleep(nap);
 	}
 	catch(InterruptedException ex) {
 	}
       }
+      else {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
+	   "Collector: Overbudget by (" + (-nap) + ") ms...");
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Col, LogMgr.Level.Finest))
+	  LogMgr.getInstance().flush();
+      }
     }
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
   /*   D I S P A T C H E R                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Establish a connection back to the Master Manager daemon.
-   */ 
-  public void 
-  establishMasterConnection()
-  {
-    try {
-      pMasterMgrClient.waitForConnection(1000, 5000);
-    }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 "Unable to (re)connect to the Master Manager daemon!\n" + 
-	 "  " + ex.getMessage());
-      
-      pServer.internalShutdown();
-    }
-  }
 
   /**
    * Perform one round of assigning jobs to available hosts. 
@@ -2935,67 +3004,30 @@ class QueueMgr
   public void 
   dispatcher()
   {
-    TaskTimer timer = new TaskTimer("QueueMgr.dispatcher()");
+    TaskTimer timer = new TaskTimer("Dispatcher");
 
     /* kill/abort the jobs in the hit list */ 
-    while(true) {
-      Long jobID = pHitList.poll();
-      if(jobID == null) 
-	break;
-
-      QueueJobInfo info = null;
-      timer.aquire();
-      synchronized(pJobInfo) {
-	timer.resume();
-	info = pJobInfo.get(jobID);
-      }
-
-      if(info != null) {
-	switch(info.getState()) {
-	case Queued:
-	case Preempted:
-	case Paused:
-	  info.aborted();
-	  try {
-	    writeJobInfo(info);
-	  }
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	       ex.getMessage()); 
-	    LogMgr.getInstance().flush();
-	  }
-	  break; 
-
-	case Running:
-	  {
-	    KillTask task = new KillTask(info.getHostname(), jobID);
-	    task.start();
-	  }
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Kill/Abort]");
+      while(true) {
+	Long jobID = pHitList.poll();
+	if(jobID == null) 
+	  break;
+	
+	QueueJobInfo info = null;
+	tm.aquire();
+	synchronized(pJobInfo) {
+	  tm.resume();
+	  info = pJobInfo.get(jobID);
 	}
-      }
-    }
-    
-    /* kill and requeue running jobs on the preempt list */  
-    while(true) {
-      Long jobID = pPreemptList.poll();
-      if(jobID == null) 
-	break;
-
-      QueueJobInfo info = null;
-      timer.aquire();
-      synchronized(pJobInfo) {
-	timer.resume();
-	info = pJobInfo.get(jobID);
-      }
-
-      if(info != null) {
-	switch(info.getState()) {
-	case Running:
-	  {
-	    String hostname = info.getHostname();
-
-	    info.preempted();
+	
+	if(info != null) {
+	  switch(info.getState()) {
+	  case Queued:
+	  case Preempted:
+	  case Paused:
+	    info.aborted();
 	    try {
 	      writeJobInfo(info);
 	    }
@@ -3005,17 +3037,72 @@ class QueueMgr
 		 ex.getMessage()); 
 	      LogMgr.getInstance().flush();
 	    }
-	  
-	    KillTask task = new KillTask(hostname, jobID);
-	    task.start();
+	    break; 
+	    
+	  case Running:
+	    {
+	      KillTask task = new KillTask(info.getHostname(), jobID);
+	      task.start();
+	    }
 	  }
 	}
       }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);      
+    }
+    
+    /* kill and requeue running jobs on the preempt list */  
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Preempt]");
+      while(true) {
+	Long jobID = pPreemptList.poll();
+	if(jobID == null) 
+	  break;
+
+	QueueJobInfo info = null;
+	tm.aquire();
+	synchronized(pJobInfo) {
+	  tm.resume();
+	  info = pJobInfo.get(jobID);
+	}
+
+	if(info != null) {
+	  switch(info.getState()) {
+	  case Running:
+	    {
+	      String hostname = info.getHostname();
+
+	      info.preempted();
+	      try {
+		writeJobInfo(info);
+	      }
+	      catch(PipelineException ex) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		   ex.getMessage()); 
+		LogMgr.getInstance().flush();
+	      }
+	  
+	      KillTask task = new KillTask(hostname, jobID);
+	      task.start();
+	    }
+	  }
+	}
+      }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);          
     }
 
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
     TreeSet<String> readyToolsets = new TreeSet<String>();
     {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Sort Waiting]");
       LinkedList<Long> waiting = new LinkedList<Long>();
       while(true) {
 	Long jobID = pWaiting.poll();
@@ -3023,9 +3110,9 @@ class QueueMgr
 	  break;
 	
 	QueueJobInfo info = null;
-	timer.aquire();
+	tm.aquire();
 	synchronized(pJobInfo) {
-	  timer.resume();
+	  tm.resume();
 	  info = pJobInfo.get(jobID);
 	}
 	
@@ -3036,9 +3123,9 @@ class QueueMgr
 	    {
 	      /* pause waiting jobs marked to be paused */  
 	      if(pPaused.contains(jobID)) {
-		timer.aquire();
+		tm.aquire();
 		synchronized(pJobInfo) {
-		  timer.resume();
+		  tm.resume();
 
 		  info.paused();
 		  try {
@@ -3057,9 +3144,9 @@ class QueueMgr
 	      }
 	      
 	      QueueJob job = null;
-	      timer.aquire();
+	      tm.aquire();
 	      synchronized(pJobs) {
-		timer.resume();
+		tm.resume();
 		job = pJobs.get(jobID);
 	      }
 
@@ -3069,9 +3156,9 @@ class QueueMgr
 		boolean abortDueToUpstream = false;
 		for(Long sjobID : job.getSourceJobIDs()) {
 		  QueueJobInfo sinfo = null;
-		  timer.aquire();
+		  tm.aquire();
 		  synchronized(pJobInfo) {
-		    timer.resume();
+		    tm.resume();
 		    sinfo = pJobInfo.get(sjobID);
 		  }
 		  
@@ -3107,9 +3194,9 @@ class QueueMgr
 	    /* resume previously paused jobs marked to be resumed */ 
 	    {
 	      if(!pPaused.contains(jobID)) {
-		timer.aquire();
+		tm.aquire();
 		synchronized(pJobInfo) {
-		  timer.resume();
+		  tm.resume();
 
 		  info.resumed();
 		  try {
@@ -3129,67 +3216,105 @@ class QueueMgr
 	  }
 	}
       }
-
       pWaiting.addAll(waiting);      
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);      
     }
 
     /* retrieve any toolsets required by newly ready jobs which are not already cached */ 
-    synchronized(pToolsets) {
-      for(String tname : readyToolsets) {
-	if(!pToolsets.containsKey(tname)) {
-	  while(true) {
-	    try {
-	      pToolsets.put(tname, pMasterMgrClient.getOsToolsets(tname));	
-	      break;
-	    }
-	    catch(PipelineException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Severe,
-		 ex.getMessage()); 
-	      	     
-	      LogMgr.getInstance().log
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Toolsets]");
+      tm.aquire();
+      synchronized(pToolsets) {
+        tm.resume();
+	for(String tname : readyToolsets) {
+	  if(!pToolsets.containsKey(tname)) {
+	    while(true) {
+	      try {
+		pToolsets.put(tname, pMasterMgrClient.getOsToolsets(tname));	
+		break;
+	      }
+	      catch(PipelineException ex) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		   ex.getMessage()); 
+		
+		LogMgr.getInstance().log
 		(LogMgr.Kind.Net, LogMgr.Level.Info,
 		 "Reestablishing Network Connections...");
-	      LogMgr.getInstance().flush();
-   
-	      establishMasterConnection();
+		LogMgr.getInstance().flush();
+		
+		establishMasterConnection();
+	      }
 	    }
 	  }
 	}
       }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);           
     }
 
     /* update the read-only cache of job server info before aquiring any potentially
        long duration locks on the pHosts table */ 
-    updateHostsInfo(timer);
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Update Hosts Info]");
+      {
+	updateHostsInfo(tm);
+      }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
+    }
 
     /* apply any pending modifications to the job servers prior to dispatch */ 
-    try {
-      applyHostEdits(timer);
-    }
-    catch(PipelineException ex) {
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Apply Host Edits]");
+      try {
+	applyHostEdits(tm);
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+	LogMgr.getInstance().flush();
+      }
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 ex.getMessage()); 
-      LogMgr.getInstance().flush();
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
     }
 
     /* process the available job server slots in dispatch order */ 
     {
+      timer.suspend();
+      TaskTimer dtm = new TaskTimer("Dispatcher [Dispatch Total]");
+
       TreeSet<String> keys = new TreeSet<String>();
-      timer.aquire();
+      dtm.aquire();
       synchronized(pSelectionKeys) {
-	timer.resume();
+	dtm.resume();
 	keys.addAll(pSelectionKeys.keySet());
       }
 
-      timer.aquire();
+      dtm.aquire();
       synchronized(pHosts) {
-	timer.resume();
+	dtm.resume();
 	
 	/* sort hosts by dispatch order */ 
 	ArrayList<String> hostsInOrder = new ArrayList<String>();
 	{
+	  dtm.suspend();
+	  TaskTimer tm = new TaskTimer("Dispatcher [Order Hosts]");
+
 	  TreeMap<Integer,TreeSet<String>> inOrder = 
 	    new TreeMap<Integer,TreeSet<String>>();
 	  for(String hostname : pHosts.keySet()) {
@@ -3204,6 +3329,11 @@ class QueueMgr
 	  
 	  for(TreeSet<String> names : inOrder.values()) 
 	    hostsInOrder.addAll(names);
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	     tm.toString()); 	  
+	  dtm.accum(tm);   
 	}
 
 	for(String hostname : hostsInOrder) {
@@ -3221,10 +3351,18 @@ class QueueMgr
 		 "Initial Slots [" + hostname + "]: Free = " + slots + "\n");
 	      LogMgr.getInstance().flush();
     
+	      dtm.suspend();
+	      TaskTimer stm = new TaskTimer
+		("Dispatcher [Dispatch Host - " + hostname + "]");
+
 	      while(slots > 0) {
 		/* rank job IDs by selection score, priority and submission stamp */
 		ArrayList<Long> rankedJobIDs = new ArrayList<Long>();
 		{
+		  stm.suspend();
+		  TaskTimer tm = new TaskTimer
+		    ("Dispatcher [Rank Jobs - " + hostname + ":" + slots + "]");
+
 		  TreeMap<Integer,TreeMap<Integer,TreeMap<Date,Long>>> byScore = 
 		    new TreeMap<Integer,TreeMap<Integer,TreeMap<Date,Long>>>();
 		  for(Long jobID : pReady) {
@@ -3232,9 +3370,9 @@ class QueueMgr
 		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = null;	
 		    {
 		      Integer score = null;
-		      timer.aquire();
+		      tm.aquire();
 		      synchronized(pJobs) {
-			timer.resume();
+			tm.resume();
 			QueueJob job = pJobs.get(jobID);
 			if(job != null) {
 			  ActionAgenda jagenda = job.getActionAgenda();
@@ -3242,7 +3380,9 @@ class QueueMgr
 			  JobReqs jreqs = job.getJobRequirements();
 
 			  boolean supportsOsToolset = false;
+			  tm.aquire();
 			  synchronized(pToolsets) {
+			    tm.resume();
 			    String tname = jagenda.getToolset();
 			    supportsOsToolset = 
 			      (pToolsets.containsKey(tname) && 
@@ -3258,7 +3398,9 @@ class QueueMgr
 			    else {
 			      String gname = host.getSelectionGroup();
 			      if(gname != null) {
+				tm.aquire();
 				synchronized(pSelectionGroups) {
+				  tm.resume();
 				  SelectionGroup sg = pSelectionGroups.get(gname);
 				  if(sg == null) 
 				    score = 0;
@@ -3284,9 +3426,9 @@ class QueueMgr
 		    TreeMap<Date,Long> byAge = null;
 		    if(byPriority != null) {
 		      Integer priority = null;
-		      timer.aquire();
+		      tm.aquire();
 		      synchronized(pJobs) {
-			timer.resume();
+			tm.resume();
 			QueueJob job = pJobs.get(jobID);
 			if(job != null) 
 			  priority = job.getJobRequirements().getPriority();
@@ -3304,9 +3446,9 @@ class QueueMgr
 		    /* submission date */
 		    if(byAge != null) {
 		      Date stamp = null;
-		      timer.aquire();
+		      tm.aquire();
 		      synchronized(pJobInfo) {
-			timer.resume();
+			tm.resume();
 			QueueJobInfo info = pJobInfo.get(jobID);
 			if(info != null) 
 			  stamp = info.getSubmittedStamp();
@@ -3329,12 +3471,20 @@ class QueueMgr
 			rankedJobIDs.add(jobID);
 		    }
 		  }
+		  LogMgr.getInstance().log
+		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+		     tm.toString()); 
+		  stm.accum(tm);
 		}
 
 		/* attempt to dispatch a job to the slot:
 		     in order of selection score, job priority and age */ 
 		TreeSet<Long> processed = new TreeSet<Long>();
 		{
+		  stm.suspend();
+		  TaskTimer tm = new TaskTimer
+		    ("Dispatcher [Assign Job - " + hostname + ":" + slots + "]");
+
 		  boolean jobDispatched = false;
 		  for(Long jobID : rankedJobIDs) {
 		    if(jobDispatched) 
@@ -3342,18 +3492,18 @@ class QueueMgr
 
 		    QueueJob job = null;
 		    {
-		      timer.aquire();
+		      tm.aquire();
 		      synchronized(pJobs) {
-			timer.resume();
+			tm.resume();
 			job = pJobs.get(jobID);
 		      }
 		    }
 		    
 		    QueueJobInfo info = null;
 		    {
-		      timer.aquire();
+		      tm.aquire();
 		      synchronized(pJobInfo) {
-			timer.resume();
+			tm.resume();
 			info = pJobInfo.get(jobID);
 		      }
 		    }
@@ -3367,9 +3517,9 @@ class QueueMgr
 		      case Preempted:
 			/* pause ready jobs marked to be paused */ 
 			if(pPaused.contains(jobID)) {
-			  timer.aquire();
+			  tm.aquire();
 			  synchronized(pJobInfo) {
-			    timer.resume();
+			    tm.resume();
 			    
 			    info.paused();
 			    try {
@@ -3388,7 +3538,7 @@ class QueueMgr
 			}
 			
 			/* try to dispatch the job */ 
-			else if(dispatchJob(job, info, host, timer)) {
+			else if(dispatchJob(job, info, host, tm)) {
 			  processed.add(jobID);
 			  jobDispatched = true;
 			}
@@ -3404,6 +3554,10 @@ class QueueMgr
 		      }
 		    }
 		  }
+		  LogMgr.getInstance().log
+		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+		     tm.toString()); 
+		  stm.accum(tm);
 		}
 
 		for(Long jobID : processed) 
@@ -3417,19 +3571,29 @@ class QueueMgr
 		   "Updated Slots [" + hostname + "]:  Free = " + slots + "\n");
 		LogMgr.getInstance().flush();
 	      }
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+		 stm.toString()); 
+	      dtm.accum(stm);
 	    }
 	  }
 	}
       }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 dtm.toString()); 
+      timer.accum(dtm);
     }
 
     /* filter any jobs not ready for execution from the ready list */ 
     {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Filter Unready]");
       TreeSet<Long> processed = new TreeSet<Long>();
       for(Long jobID : pReady) {
-	timer.aquire();
+	tm.aquire();
 	synchronized(pJobInfo) {
-	  timer.resume();
+	  tm.resume();
 
 	  QueueJobInfo info = pJobInfo.get(jobID);
 	  if(info == null) {
@@ -3467,81 +3631,97 @@ class QueueMgr
 
       for(Long jobID : processed) 
 	pReady.remove(jobID);
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm); 
     }
 
     /* check for newly completed job groups */ 
-    timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      for(Long groupID : pJobGroups.keySet()) {
-	QueueJobGroup group = pJobGroups.get(groupID);
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Update Job Groups]");
+      tm.aquire();
+      synchronized(pJobGroups) {
+	tm.resume();
+	for(Long groupID : pJobGroups.keySet()) {
+	  QueueJobGroup group = pJobGroups.get(groupID);
 	
-	/* the job is not yet completed */ 
-	if((group != null) && (group.getCompletedStamp() == null)) {
-	  boolean done = true; 
-	  Date latest = null;
-	  for(Long jobID : group.getAllJobIDs()) {
-	    QueueJobInfo info = null;
-	    timer.aquire();
-	    synchronized(pJobInfo) {
-	      timer.resume();
-	      info = pJobInfo.get(jobID);
-	    }
+	  /* the job is not yet completed */ 
+	  if((group != null) && (group.getCompletedStamp() == null)) {
+	    boolean done = true; 
+	    Date latest = null;
+	    for(Long jobID : group.getAllJobIDs()) {
+	      QueueJobInfo info = null;
+	      tm.aquire();
+	      synchronized(pJobInfo) {
+		tm.resume();
+		info = pJobInfo.get(jobID);
+	      }
 
-	    if(info != null) {
-	      switch(info.getState()) {
-	      case Queued:
-	      case Preempted:
-	      case Paused:
-	      case Running:
-		done = false;
-		break;
+	      if(info != null) {
+		switch(info.getState()) {
+		case Queued:
+		case Preempted:
+		case Paused:
+		case Running:
+		  done = false;
+		  break;
 
-	      default: 
-		{
-		  Date stamp = info.getCompletedStamp(); 
-		  if(latest == null) 
-		    latest = stamp; 
-		  else if(latest.compareTo(stamp) < 0)
-		    latest = stamp;
+		default: 
+		  {
+		    Date stamp = info.getCompletedStamp(); 
+		    if(latest == null) 
+		      latest = stamp; 
+		    else if(latest.compareTo(stamp) < 0)
+		      latest = stamp;
+		  }
 		}
 	      }
 	    }
-	  }
 
-	  /* update the completed group */ 
-	  if(done && (latest != null)) {
-	    group.completed(latest);
-	    try {
-	      writeJobGroup(group);
-	    }
-	    catch(PipelineException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-		 ex.getMessage());
+	    /* update the completed group */ 
+	    if(done && (latest != null)) {
+	      group.completed(latest);
+	      try {
+		writeJobGroup(group);
+	      }
+	      catch(PipelineException ex) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+		   ex.getMessage());
+	      }
 	    }
 	  }
 	}
       }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);      
     }
 
     /* perform garbage collection of jobs at regular intervals */ 
     pDispatcherCycles++;
     if(pDispatcherCycles > sGarbageCollectAfter) {
       timer.suspend();
-
-      TaskTimer gtimer = new TaskTimer("QueueMgr.garbageCollectJobs()");
-      garbageCollectJobs(gtimer);
-
-      timer.accum(gtimer);
+      TaskTimer tm = new TaskTimer("Dispatcher [Garbage Collect]");
+      {
+	garbageCollectJobs(tm);
+      }
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	 tm.toString()); 
+      timer.accum(tm);
 
       pDispatcherCycles = 0;
     }
 
     LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+      (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
        timer.toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Fine))
       LogMgr.getInstance().flush();
 
     /* if we're ahead of schedule, take a nap */ 
@@ -3549,11 +3729,24 @@ class QueueMgr
       timer.suspend();
       long nap = sDispatcherInterval - timer.getTotalDuration();
       if(nap > 0) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	   "Dispatcher: Sleeping for (" + nap + ") ms...");
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest))
+	  LogMgr.getInstance().flush();
+
 	try {
 	  Thread.sleep(nap);
 	}
 	catch(InterruptedException ex) {
 	}
+      }
+      else {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	   "Dispatcher: Overbudget by (" + (-nap) + ") ms...");
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest))
+	  LogMgr.getInstance().flush();
       }
     }
   }

@@ -140,7 +140,19 @@ at once.<br>
 command-line options.<br>
 <br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">glu<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">col<br>
+</span>
+<div style="margin-left: 40px;">Logs activity and timing statistics for
+the job server dynamics resources collector thread.<br>
+<br>
+</div>
+<span style="font-weight: bold;">dsp<br>
+</span>
+<div style="margin-left: 40px;">Logs activity and timing statistics for
+the job dispatcher thread.<br>
+<br>
+</div>
+<span style="font-weight: bold;">glu<br>
 </span>
 <div style="margin-left: 40px;">Logs the I/O activity related to <a
  style="font-weight: bold;"
@@ -150,9 +162,9 @@ format files.<br>
 <span style="font-weight: bold;"><br>
 </span><span style="font-weight: bold;">ops</span><br>
 <span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">Logs queue related activity of
+<div style="margin-left: 80px;">Logs general activity of
 the
-server.<br>
+server unrelated to the dispatcher or collector threads.<br>
 <br>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>

@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.4 2006/05/30 17:18:31 jim Exp $
+// $Id: LogMgr.java,v 1.5 2006/07/06 06:27:06 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -472,7 +472,17 @@ class LogMgr
     /**
      * Texture image loading.
      */
-    Tex; 
+    Tex, 
+
+    /**
+     * Activity of the Queue Manager dispatcher thread.
+     */ 
+    Dsp, 
+
+    /**
+     * Activity of the Queue Manager collector thread.
+     */ 
+    Col;
   }
 
 
@@ -514,7 +524,9 @@ class LogMgr
     "OPS", 
     "PLG", 
     "SUB", 
-    "TEX"
+    "TEX", 
+    "DSP", 
+    "COL"
   };
 
 
