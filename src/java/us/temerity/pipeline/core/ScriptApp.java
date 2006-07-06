@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.51 2006/07/02 00:27:49 jim Exp $
+// $Id: ScriptApp.java,v 1.52 2006/07/06 04:12:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1389,12 +1389,12 @@ class ScriptApp
 
       buf.append
 	("Job Server         : " + host.getName() + "\n" + 
-	 "Status             : " + host.getStatus() + "\n" + 
-	 "Reservation        : ");
-      
-      String reserve = host.getReservation();
-      if(reserve != null) 
-	buf.append(reserve);
+	 "Status             : " + host.getStatus() + "\n" +  
+	 "OS                 : ");
+
+      OsType os = host.getOsType();
+      if(os != null) 
+	buf.append(os.toString());
       else 
 	buf.append("-");
 
@@ -1402,22 +1402,35 @@ class ScriptApp
       if(sample != null) {
 	buf.append
 	  ("\n" + 
-	   "Jobs               : " + (sample.getNumJobs() + 
-				  " (slots " + host.getJobSlots() + ")") + "\n" + 
 	   "System Load        : " + (String.format("%1$.2f", sample.getLoad()) + 
 				  " (procs " + host.getNumProcessors()) + ")\n" +
 	   "Free Memory        : " + (formatLong(sample.getMemory()) + " (total " + 
 				  formatLong(host.getTotalMemory()) + ")") + "\n" +
 	   "Free Disk          : " + (formatLong(sample.getDisk()) + " (total " +
-				      formatLong(host.getTotalDisk()) + ")"));
+				      formatLong(host.getTotalDisk()) + ")") + "\n" +
+	   "Jobs               : " + (sample.getNumJobs() + 
+				      " (slots " + host.getJobSlots() + ")"));
 
       }
+
+      buf.append("\n" + 
+		 "Reservation        : ");
+      
+      String reserve = host.getReservation();
+      if(reserve != null) 
+	buf.append(reserve);
+      else 
+	buf.append("-");
+
+      buf.append("\n" + 
+		 "Order              : " + host.getOrder());
 
       {
 	String sgroup = host.getSelectionGroup();
 	String sched  = host.getSelectionSchedule();
 	buf.append
-	  ("Selection Schedule : " + ((sgroup != null) ? sgroup : "-") + "\n" + 
+	  ("\n" + 
+	   "Selection Schedule : " + ((sgroup != null) ? sgroup : "-") + "\n" + 
 	   "Selection Group    : " + ((sched != null) ? sched : "-") + "\n");
       }
     }
