@@ -1,4 +1,4 @@
-// $Id: MiRenderPrep.java,v 1.2 2006/07/05 21:05:11 jim Exp $
+// $Id: MiRenderPrep.java,v 1.3 2006/07/06 18:44:06 jim Exp $
 
 package us.temerity.pipeline.utils.v2_0_14;
 
@@ -75,11 +75,10 @@ public class MiRenderPrep
 		comps.remove(0);
 		comps.remove(0);
 		comps.remove(0);
-		comps.remove(0);
 		texPath = "";
 		for(String s : comps)
 		  texPath += s + "/";
-		texPath = texPath.substring(0, texPath.length() - 2);
+		texPath = texPath.substring(0, texPath.length() - 1);
 
 	      }
 	      else if(texPath.matches(mayaCrapPattern)) {
