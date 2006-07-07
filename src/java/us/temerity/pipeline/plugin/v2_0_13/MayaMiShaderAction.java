@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.1 2006/06/26 21:18:23 jim Exp $
+// $Id: MayaMiShaderAction.java,v 1.2 2006/07/07 04:36:41 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_13;
 
@@ -60,7 +60,7 @@ MayaMiShaderAction
   {
     super("MayaMiShader", new VersionID("2.0.13"), "Temerity",
 	  "Exports shaders for the correct pass based on the name of the source.");
-
+    
     {
       ActionParam param = 
 	new LinkActionParam
@@ -472,6 +472,9 @@ MayaMiShaderAction
 	out.println("    string $shadespace = \"" + shadeSpace + "\";");
 	out.println("    if (!`namespace -exists $finalname`)");
 	out.println("        namespace -add $finalname;");
+	out.println("    if ($shadespace != \"\")");
+	out.println("        $shadespace += \":\";");
+
 
 	out.println("    string $pass = \"" + passName + "\";");
 	out.println("    string $shadingGroups[] = "
@@ -561,8 +564,6 @@ MayaMiShaderAction
 	out.println("                  namespace -set \":\";");
 	out.println("        }");
 	out.println("");
-	out.println("        if ($shadespace != \"\")");
-	out.println("            $shadespace += \":\";");
 	out.println("");
 	out.println("        string $shadeName = "
 		    + "$shadespace + $matBase + \"_\" + $pass;");
@@ -573,7 +574,7 @@ MayaMiShaderAction
 	if ((Boolean) getSingleParamValue(PARAM_material)) {
 	  out.println("        if (`objExists $shadeName`)");
 	  out.println("        {");
-	  out.println("        connectAttr -f ($shadeName + \".outValue\") "
+	  out.println("        connectAttr -f ($shadeName + \".message\") "
 		      + "($matName + \".miMaterialShader\");");
 	  out.println("        }");
 	}
@@ -583,7 +584,7 @@ MayaMiShaderAction
 		      + "$shadespace + $matBase + \"_disp\";");
 	  out.println("        if (`objExists $dispName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($dispName + \".outValue\")"
+	  out.println("            connectAttr -f ($dispName + \".message\")"
 		      + " ($matName + \".miDisplacementShader\");");
 	  out.println("        }");
 	}
@@ -592,7 +593,7 @@ MayaMiShaderAction
 	  out.println("        string $shadowName = $shadeName + \"_shad\";");
 	  out.println("        if (`objExists $shadowName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($shadowName + \".outValue\")"
+	  out.println("            connectAttr -f ($shadowName + \".message\")"
 		      + " ($matName + \".miShadowShader\");");
 	  out.println("        }");
 	}
@@ -601,7 +602,7 @@ MayaMiShaderAction
 	  out.println("        string $volumeName = $shadeName + \"_vol\";");
 	  out.println("        if (`objExists $volumeName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($volumeName + \".outValue\")"
+	  out.println("            connectAttr -f ($volumeName + \".message\")"
 		      + " ($matName + \".miVolumeShader\");");
 	  out.println("        }");
 	}
@@ -610,7 +611,7 @@ MayaMiShaderAction
 	  out.println("        string $photonName = $shadeName + \"_pho\";");
 	  out.println("        if (`objExists $photonName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($photonName + \".outValue\") "
+	  out.println("            connectAttr -f ($photonName + \".message\") "
 		      + "($matName + \".miPhotonShader\");");
 	  out.println("        }");
 	}
@@ -619,7 +620,7 @@ MayaMiShaderAction
 	  out.println("        string $photonVName = $shadeName + \"_phov\";");
 	  out.println("        if (`objExists $photonVName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($photonVName + \".outValue\") "
+	  out.println("            connectAttr -f ($photonVName + \".message\") "
 		      + "($matName + \".miPhotonVolumeShader\");");
 	  out.println("        }");
 	}
@@ -628,7 +629,7 @@ MayaMiShaderAction
 	  out.println("        string $envName = $shadeName + \"_env\";");
 	  out.println("        if (`objExists $envName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($envName + \".outValue\") "
+	  out.println("            connectAttr -f ($envName + \".message\") "
 		      + "($matName + \".miEnvironmentShader\");");
 	  out.println("        }");
 	}
@@ -637,7 +638,7 @@ MayaMiShaderAction
 	  out.println("        string $lMapName = $shadeName + \"_lmap\";");
 	  out.println("        if (`objExists $lMapName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($lMapName + \".outValue\") "
+	  out.println("            connectAttr -f ($lMapName + \".message\") "
 		      + "($matName + \".miLightMapShader\");");
 	  out.println("        }");
 	}
@@ -646,7 +647,7 @@ MayaMiShaderAction
 	  out.println("        string $contourName = $shadeName + \"_con\";");
 	  out.println("        if (`objExists $contourName`)");
 	  out.println("        {");
-	  out.println("            connectAttr -f ($contourName + \".outValue\") "
+	  out.println("            connectAttr -f ($contourName + \".message\") "
 		      + "($matName + \".miContourShader\");");
 	  out.println("        }");
 	}
