@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.61 2006/07/06 06:27:06 jim Exp $
+// $Id: QueueMgr.java,v 1.62 2006/07/08 10:02:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1209,7 +1209,7 @@ class QueueMgr
     synchronized(pHostsInfo) {
       timer.resume();
       
-      return new QueueGetHostsRsp(timer, pHostsInfo);
+      return new QueueGetHostsRsp(timer, new TreeMap<String,QueueHostInfo>(pHostsInfo));
     }
   }
   

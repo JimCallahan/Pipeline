@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.1 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueHostInfo.java,v 1.2 2006/07/08 10:02:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -139,7 +139,7 @@ class QueueHostInfo
   /**
    * Whether a change in reservation is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isPending()
   {
     return (isStatusPending() || pReservationPending || pOrderPending || pJobSlotsPending ||
@@ -155,7 +155,7 @@ class QueueHostInfo
   /**
    * Get the current operational status of the host.
    */ 
-  public QueueHostStatus 
+  public synchronized QueueHostStatus 
   getStatus() 
   {
     return pStatus;
@@ -167,7 +167,7 @@ class QueueHostInfo
    * @param status
    *   The current operational status of the host.
    */ 
-  public void 
+  public synchronized void 
   setStatus
   (
    QueueHostStatus status
@@ -179,7 +179,7 @@ class QueueHostInfo
   /**
    * Whether a change in status is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isStatusPending()
   {
     switch(pStatus) {
@@ -205,7 +205,7 @@ class QueueHostInfo
    * @return 
    *   The name of the reserving user or <CODE>null</CODE> if the host is not reserved.
    */ 
-  public String
+  public synchronized String
   getReservation() 
   {
     return pReservation;
@@ -221,7 +221,7 @@ class QueueHostInfo
    *   The name of the user who is reserving the host or <CODE>null</CODE> to clear the
    *   the reservation.
    */ 
-  public void
+  public synchronized void
   setReservation
   (
    String author
@@ -234,7 +234,7 @@ class QueueHostInfo
   /**
    * Whether a change in reservation is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isReservationPending()
   {
     return pReservationPending;
@@ -250,7 +250,7 @@ class QueueHostInfo
    * @return 
    *   The dispatch order.
    */ 
-  public int 
+  public synchronized int 
   getOrder() 
   {
     return pOrder;
@@ -262,7 +262,7 @@ class QueueHostInfo
    * @param order
    *   The dispatch order.
    */ 
-  public void 
+  public synchronized void 
   setOrder
   (
    int order
@@ -275,7 +275,7 @@ class QueueHostInfo
   /**
    * Whether a change in order is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isOrderPending()
   {
     return pOrderPending;
@@ -290,7 +290,7 @@ class QueueHostInfo
    * @return 
    *   The number of job slots.
    */ 
-  public int 
+  public synchronized int 
   getJobSlots() 
   {
     return pJobSlots;
@@ -302,7 +302,7 @@ class QueueHostInfo
    * @param slots
    *   The number of job slots.
    */ 
-  public void 
+  public synchronized void 
   setJobSlots
   (
    int slots
@@ -318,7 +318,7 @@ class QueueHostInfo
   /**
    * Whether a change in job slots is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isJobSlotsPending()
   {
     return pJobSlotsPending;
@@ -334,7 +334,7 @@ class QueueHostInfo
    * @return 
    *   The operating system or <CODE>null</CODE> if unknown.
    */ 
-  public OsType
+  public synchronized OsType
   getOsType() 
   {
     return pOsType; 
@@ -346,7 +346,7 @@ class QueueHostInfo
    * @return 
    *   The number of processors or <CODE>null</CODE> if unknown.
    */ 
-  public Integer 
+  public synchronized Integer 
   getNumProcessors() 
   {
     return pNumProcessors;
@@ -358,7 +358,7 @@ class QueueHostInfo
    * @return 
    *   The memory size or <CODE>null</CODE> if unknown.
    */ 
-  public Long 
+  public synchronized Long 
   getTotalMemory() 
   {
     return pTotalMemory;
@@ -370,7 +370,7 @@ class QueueHostInfo
    * @return 
    *   The disk size or <CODE>null</CODE> if unknown.
    */ 
-  public Long 
+  public synchronized Long 
   getTotalDisk() 
   {
     return pTotalDisk;
@@ -382,7 +382,7 @@ class QueueHostInfo
   /**
    * Get the timestamp of when all ramp-up intervals will have expired.
    */ 
-  public Date
+  public synchronized Date
   getHold() 
   {
     return pHoldTimeStamp;
@@ -395,7 +395,7 @@ class QueueHostInfo
    * @return 
    *   The sample or <CODE>null</CODE> if there are no samples.
    */ 
-  public ResourceSample
+  public synchronized ResourceSample
   getLatestSample() 
   {
     if(!pSamples.isEmpty()) 
@@ -409,7 +409,7 @@ class QueueHostInfo
    * @return 
    *   The sample or <CODE>null</CODE> if there are no samples.
    */ 
-  public List<ResourceSample> 
+  public synchronized List<ResourceSample> 
   getSamples() 
   {
     return Collections.unmodifiableList(pSamples);
@@ -428,7 +428,7 @@ class QueueHostInfo
    *   The schedule name or <CODE>null</CODE> if the choice of selection group is currently 
    *   manual.
    */ 
-  public String
+  public synchronized String
   getSelectionSchedule() 
   {
     return pSelectionSchedule;
@@ -437,7 +437,7 @@ class QueueHostInfo
   /**
    * Set the name of the current selection schedule or <CODE>null</CODE> to clear.
    */ 
-  public void
+  public synchronized void
   setSelectionSchedule
   (
    String name
@@ -450,7 +450,7 @@ class QueueHostInfo
   /**
    * Whether a change in selection schedule is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isSelectionSchedulePending()
   {
     return pSelectionSchedulePending;
@@ -465,7 +465,7 @@ class QueueHostInfo
    * @return
    *   The selection group or <CODE>null</CODE> not a member of any selection group.
    */ 
-  public String
+  public synchronized String
   getSelectionGroup() 
   {
     return pSelectionGroup;
@@ -474,7 +474,7 @@ class QueueHostInfo
   /**
    * Set the name of the current selection group or <CODE>null</CODE> to clear.
    */ 
-  public void
+  public synchronized void
   setSelectionGroup
   (
    String name
@@ -487,7 +487,7 @@ class QueueHostInfo
   /**
    * Whether a change in selection schedule is pending.
    */ 
-  public boolean
+  public synchronized boolean
   isSelectionGroupPending()
   {
     return pSelectionGroupPending;
