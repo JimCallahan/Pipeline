@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.5 2006/07/06 06:27:06 jim Exp $
+// $Id: LogMgr.java,v 1.6 2006/07/09 16:48:36 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -133,7 +133,34 @@ class LogMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Generate a log message.
+   * Generate a log message. <P> 
+   * 
+   * Always flushes the output stream or file.
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param level
+   *   The level of logging verbosity and detail.
+   * 
+   * @param msg
+   *   The log message text.
+   */ 
+  public synchronized void 
+  logAndFlush
+  (
+   Kind kind, 
+   Level level, 
+   String msg
+  ) 
+  {
+    logHelper(kind, level, msg, true);
+  }
+
+  /**
+   * Generate a log message. <P> 
+   * 
+   * Only flushes the output for Warning or Severe messages.
    * 
    * @param kind
    *   The kind of message being logged.
@@ -150,6 +177,93 @@ class LogMgr
    Kind kind, 
    Level level, 
    String msg
+  ) 
+  {
+    logHelper(kind, level, msg, false);
+  }
+
+  /**
+   * Generate the timing statistics log message for a stage of computation. <P> 
+   * 
+   * This is a shortcut for suspending the timer and then reporting the stage timing 
+   * statistics. Always flushes the output stream or file.
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param level
+   *   The level of logging verbosity and detail.
+   * 
+   * @param timer
+   *   The task timer to report.
+   */ 
+  public synchronized void 
+  logStage
+  (
+   Kind kind, 
+   Level level, 
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    logHelper(kind, level, timer.toString(), true);
+  }
+
+  /**
+   * Generate the timing statistics log message for a substage of computation. <P> 
+   * 
+   * This is a shortcut for suspending the subtimer, reporting the substage timing statistics 
+   * and accumilating the timing stats for the enclosing stage timer which is then resumed.  
+   * Only flushes the output for Warning or Severe messages.
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param level
+   *   The level of logging verbosity and detail.
+   * 
+   * @param subtimer
+   *   The task timer to report.
+   * 
+   * @param timer
+   *   The enclosing task timer which accumilates the results of subtimer.
+   */ 
+  public synchronized void 
+  logSubStage
+  (
+   Kind kind, 
+   Level level, 
+   TaskTimer subtimer, 
+   TaskTimer timer
+  ) 
+  {
+    subtimer.suspend();
+    logHelper(kind, level, subtimer.toString(), false);
+    timer.accum(subtimer);
+  }
+  
+  /**
+   * Generate a log message.
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param level
+   *   The level of logging verbosity and detail.
+   * 
+   * @param msg
+   *   The log message text.
+   * 
+   * @param flush
+   *   Whether to force a flush of the output stream or file.
+   */ 
+  private synchronized void 
+  logHelper
+  (
+   Kind kind, 
+   Level level, 
+   String msg, 
+   boolean flush
   ) 
   {
     if(isLoggable(kind, level)) {
@@ -186,10 +300,15 @@ class LogMgr
 	  pWriter.write(text);
 	  pBytesWritten += text.length();
 
-	  switch(level) { 
-	  case Severe:
-	  case Warning:
+	  if(flush) {
 	    pWriter.flush();
+	  }
+	  else {
+	    switch(level) { 
+	    case Severe:
+	    case Warning:
+	      pWriter.flush();
+	    }
 	  }
 	}
 	catch(IOException ex) {
@@ -214,7 +333,6 @@ class LogMgr
     }
   }
 
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I / O                                                                                */
@@ -239,6 +357,31 @@ class LogMgr
       System.out.flush();
     }
   }
+
+  /**
+   * Flush any cached messages to the output stream. <P> 
+   * 
+   * If the given kind and level of logger is not currently loggable, the flush is ignored. 
+   * 
+   * @param kind
+   *   The kind of message being logged.
+   * 
+   * @param level
+   *   The level of logging verbosity and detail.
+   */ 
+  public synchronized void
+  flush
+  (
+   Kind kind, 
+   Level level
+  ) 
+  {
+    if(isLoggable(kind, level)) 
+      flush();
+  }
+ 
+ 
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Close down the logging facilities. <P> 
@@ -469,10 +612,12 @@ class LogMgr
      */
     Sub,
 
+
     /**
      * Texture image loading.
      */
     Tex, 
+
 
     /**
      * Activity of the Queue Manager dispatcher thread.
@@ -482,7 +627,12 @@ class LogMgr
     /**
      * Activity of the Queue Manager collector thread.
      */ 
-    Col;
+    Col, 
+
+    /**
+     * Activity of the Queue Manager scheduler thread.
+     */ 
+    Sch;
   }
 
 
@@ -526,7 +676,8 @@ class LogMgr
     "SUB", 
     "TEX", 
     "DSP", 
-    "COL"
+    "COL",
+    "SCH"
   };
 
 
