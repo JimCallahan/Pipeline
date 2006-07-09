@@ -96,6 +96,10 @@ TOKEN :
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
 
+  /* performance tuning options */ 
+| <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">     : INTEGER_SEP
+| <DISPATCHER_INTERVAL:      "--dispatcher-interval">      : INTEGER_SEP
+| <SAMPLE_CLEANUP_INTERVAL:  "--sample-cleanup-interval">  : INTEGER_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -170,6 +174,7 @@ TOKEN :
 | <LOG_PLG: 	     "plg">      
 | <LOG_DSP: 	     "dsp">        
 | <LOG_COL: 	     "col">        
+| <LOG_SCH: 	     "sch">        
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -195,7 +200,8 @@ TOKEN :
 /*------------------------------------------------------------------------------------------*/
 
 QueueMgrServer
-CommandLine() :
+CommandLine() 
+  throws PipelineException : 
 {
   QueueMgrServer s = null;
 }
@@ -208,7 +214,8 @@ CommandLine() :
 
 
 QueueMgrServer
-Commands() :
+Commands() 
+  throws PipelineException : 
 {
   init();
 }
@@ -328,10 +335,12 @@ License() :
 /*------------------------------------------------------------------------------------------*/
 
 void
-GlobalOpts() :
+GlobalOpts() 
+  throws PipelineException : 
 {}
 {
-  (Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Log() | LogFile() | StandardLogFile() | LogBackups() |
+   CollectorBatchSize() | DispatcherInterval() | SampleCleanupInterval())
   {}
 }
 
@@ -409,7 +418,7 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
-   g=DspKind() | g=ColKind())
+   g=DspKind() | g=ColKind() | g=SchKind())
   {
     return g;
   }
@@ -475,6 +484,15 @@ LogMgr.Kind ColKind() :
   <LOG_COL>
   {
     return LogMgr.Kind.Col;
+  }
+}
+
+LogMgr.Kind SchKind() : 
+{}
+{
+  <LOG_SCH>
+  {
+    return LogMgr.Kind.Sch;
   }
 }
 
@@ -555,6 +573,57 @@ LogMgr.Level FinestLevel() :
   <FINEST> 
   {
     return LogMgr.Level.Finest;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void CollectorBatchSize() 
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <COLLECTOR_BATCH_SIZE> EQ() t=<INTEGER>
+  {
+    Integer num = Integer.parseInt(t.image);
+    if(num <= 0) 
+      throw new PipelineException
+        ("The collector batch size (" + num + ") must be positive!");
+    QueueMgr.setMaxServersPerCollector(num);
+  }
+}
+
+void DispatcherInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <DISPATCHER_INTERVAL> EQ() t=<INTEGER>
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The dispatcher interval (" + msec + ") must be positive!");
+    QueueMgr.setDispatcherInterval(msec);
+  }
+}
+
+void SampleCleanupInterval() 
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <SAMPLE_CLEANUP_INTERVAL> EQ() t=<INTEGER>
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The sample cleanup interval (" + msec + ") must be positive!");
+    QueueMgr.setSampleCleanupInterval(msec);
   }
 }
 

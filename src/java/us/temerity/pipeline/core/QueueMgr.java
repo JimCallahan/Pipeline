@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.62 2006/07/08 10:02:54 jim Exp $
+// $Id: QueueMgr.java,v 1.63 2006/07/09 17:04:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -45,10 +45,9 @@ class QueueMgr
 
     pShutdownJobMgrs = new AtomicBoolean(false);
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Initializing [QueueMgr]...");
-    LogMgr.getInstance().flush();
+       "Initializing [QueueMgr]..."); 
 
     init();
   }
@@ -83,6 +82,15 @@ class QueueMgr
       pSlotChanges              = new TreeMap<String,Integer>();
       pSelectionGroupChanges    = new TreeMap<String,String>();
       pSelectionScheduleChanges = new TreeMap<String,String>();
+
+      pHungChanges = new TreeSet<String>();
+      
+      pSampleChanges = new TreeMap<String,LinkedList<ResourceSample>>();
+
+      pOsTypeChanges      = new TreeMap<String,OsType>();
+      pNumProcChanges     = new TreeMap<String,Integer>();
+      pTotalMemoryChanges = new TreeMap<String,Long>();
+      pTotalDiskChanges   = new TreeMap<String,Long>();
 
       pHosts           = new TreeMap<String,QueueHost>(); 
       pLastSampleWrite = new Date();
@@ -149,7 +157,6 @@ class QueueMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
-      LogMgr.getInstance().flush();
 
       System.exit(1);
     }
@@ -1564,7 +1571,7 @@ class QueueMgr
    * Apply the changes previously requested to the hosts.
    */ 
   private void 
-  applyHostEdits
+  applyHostEdits  
   (
    TaskTimer timer
   ) 
@@ -1572,15 +1579,28 @@ class QueueMgr
   {
     timer.aquire();
     synchronized(pHosts) {
-      boolean modified = false;
+      timer.resume();
+
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Host Status Changes]");
+      boolean modified = false;  
+      Date now = new Date();
       synchronized(pSelectionSchedules) {
 	synchronized(pSelectionGroups) {
-	  timer.resume();
 	  
+	  /* attempt to re-Enable previously Hung servers */ 
+	  for(QueueHost host : pHosts.values()) {
+	    switch(host.getStatus()) {
+	    case Hung:
+	      if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
+		setHostStatus(host, QueueHost.Status.Enabled);	      
+	    }
+	  }
+	   
 	  /* status */ 
-	  timer.aquire();
+	  tm.aquire();
 	  synchronized(pStatusChanges) {
-	    timer.resume();
+	    tm.resume();
 	    
 	    for(String hname : pStatusChanges.keySet()) {
 	      QueueHostStatusChange change = pStatusChanges.get(hname);
@@ -1626,12 +1646,46 @@ class QueueMgr
 
 	    pStatusChanges.clear();
 	  }
-	   
-	  
+
+	  /* hung servers */ 
+	  tm.aquire();
+	  synchronized(pHungChanges) {
+	    tm.resume();
+
+	    for(String hname : pHungChanges) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		switch(host.getStatus()) {
+		case Enabled:
+		  {
+		    Date lastHung = host.getLastHung();
+		    if((lastHung == null) || 
+		       ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+		      setHostStatus(host, QueueHost.Status.Hung);
+		    else 
+		      setHostStatus(host, QueueHost.Status.Disabled);
+		  }
+		}
+	      }
+	    }
+
+	    pHungChanges.clear();
+	  }
+
+	  /* cancel holds on non-enabled servers */ 
+	  for(QueueHost host : pHosts.values()) {
+	    switch(host.getStatus()) {
+	    case Disabled:
+	    case Hung:
+	    case Shutdown:
+	      host.cancelHolds();
+	    }
+	  }	
+
 	  /* user reservations */ 
-	  timer.aquire();
+	  tm.aquire();
 	  synchronized(pReservationChanges) {
-	    timer.resume();
+	    tm.resume();
 
 	    for(String hname : pReservationChanges.keySet()) {
 	      QueueHost host = pHosts.get(hname);
@@ -1645,9 +1699,9 @@ class QueueMgr
 	  }
 	    
 	  /* job orders */ 
-	  timer.aquire();
+	  tm.aquire();
 	  synchronized(pOrderChanges) {
-	    timer.resume();
+	    tm.resume();
 
 	    for(String hname : pOrderChanges.keySet()) {
 	      QueueHost host = pHosts.get(hname);
@@ -1661,9 +1715,9 @@ class QueueMgr
 	  }
 	    
 	  /* job slots */ 
-	  timer.aquire();
+	  tm.aquire();
 	  synchronized(pSlotChanges) {
-	    timer.resume();
+	    tm.resume();
 
 	    for(String hname : pSlotChanges.keySet()) {
 	      QueueHost host = pHosts.get(hname);
@@ -1677,9 +1731,9 @@ class QueueMgr
 	  }
 	    
 	  /* selection groups */ 
-	  timer.aquire();
+	  tm.aquire();
 	  synchronized(pSelectionGroupChanges) {
-	    timer.resume();
+	    tm.resume();
 
 	    for(String hname : pSelectionGroupChanges.keySet()) {
 	      QueueHost host = pHosts.get(hname);
@@ -1696,9 +1750,9 @@ class QueueMgr
 	  }
 
 	  /* selection schedules */ 
-	  timer.aquire();
+	  tm.aquire();
 	  synchronized(pSelectionScheduleChanges) {
-	    timer.resume();
+	    tm.resume();
 	    
 	    for(String hname : pSelectionScheduleChanges.keySet()) {
 	      QueueHost host = pHosts.get(hname);
@@ -1715,9 +1769,191 @@ class QueueMgr
 	  }
 	}
 
-	/* write changes to disk */ 
+	/* write changes to host database file disk */ 
 	if(modified) 
 	  writeHosts();
+      }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	 tm, timer); 
+    }
+
+    /* collector generated changes */ 
+    {
+      /* should the last interval of samples be written to disk? */ 
+      TreeMap<String,ResourceSampleBlock> dump = null;   
+      Date now = new Date();
+      {
+	if((now.getTime() - pLastSampleWrite.getTime()) > QueueHost.getSampleInterval())
+	  dump = new TreeMap<String,ResourceSampleBlock>();
+      }
+
+      /* apply changes to hosts */ 
+      {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Dispatcher [Sample Changes]");
+	tm.aquire();
+	synchronized(pHosts) {
+	  tm.resume();
+
+	  /* resource samples */ 
+	  tm.aquire();
+	  synchronized(pSampleChanges) {
+	    tm.resume();
+
+	    for(String hname : pSampleChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		switch(host.getStatus()) {
+		case Enabled:
+		case Disabled:
+		  {
+		    LinkedList<ResourceSample> samples = pSampleChanges.get(hname);
+		    if(samples != null) {
+		      for(ResourceSample sample : samples) 
+			host.addSample(sample);
+		    }
+		
+		    if(dump != null) {
+		      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
+		      for(ResourceSample s : host.getSamples()) {
+			if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
+			  rs.add(s);
+		      }
+		
+		      if(!rs.isEmpty() && 
+			 (host.getNumProcessors() != null) && 
+			 (host.getTotalMemory() != null) && 
+			 (host.getTotalDisk() != null)) {
+		    
+			ResourceSampleBlock block = 
+			  new ResourceSampleBlock(host.getJobSlots(), 
+						  host.getNumProcessors(), 
+						  host.getTotalMemory(), 
+						  host.getTotalDisk(), 
+						  rs);
+			dump.put(hname, block);
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+
+	    pSampleChanges.clear();
+	  }
+
+	  /* operating system type */ 
+	  tm.aquire();
+	  synchronized(pOsTypeChanges) {
+	    tm.resume();
+      
+	    for(String hname : pOsTypeChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		switch(host.getStatus()) {
+		case Enabled:
+		case Disabled:
+		  host.setOsType(pOsTypeChanges.get(hname));
+		}
+	      }
+	    }
+
+	    pOsTypeChanges.clear();
+	  }
+
+	  /* number of processors */ 
+	  tm.aquire();
+	  synchronized(pNumProcChanges) {
+	    tm.resume();
+      
+	    for(String hname : pNumProcChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		switch(host.getStatus()) {
+		case Enabled:
+		case Disabled:
+		  host.setNumProcessors(pNumProcChanges.get(hname));
+		}
+	      }
+	    }
+
+	    pNumProcChanges.clear();
+	  }
+      
+	  /* total memory */ 
+	  tm.aquire();
+	  synchronized(pTotalMemoryChanges) {
+	    tm.resume();
+      
+	    for(String hname : pTotalMemoryChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		switch(host.getStatus()) {
+		case Enabled:
+		case Disabled:
+		  host.setTotalMemory(pTotalMemoryChanges.get(hname));
+		}
+	      }
+	    }
+
+	    pTotalMemoryChanges.clear();
+	  }
+      
+	  /* total disk */ 
+	  tm.aquire();
+	  synchronized(pTotalDiskChanges) {
+	    tm.resume();
+      
+	    for(String hname : pTotalDiskChanges.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		switch(host.getStatus()) {
+		case Enabled:
+		case Disabled:
+		  host.setTotalDisk(pTotalDiskChanges.get(hname));
+		}
+	      }
+	    }
+
+	    pTotalDiskChanges.clear();
+	  }
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	   tm, timer); 
+      }
+    
+      /* write the last interval of samples to disk */ 
+      if(dump != null) {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Dispatcher [Write Samples]");
+	try {
+	  writeSamples(tm, now, dump);
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+	     ex.getMessage());
+	}
+	finally {
+	  pLastSampleWrite = now;
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	   tm, timer); 
+      }
+
+      /* cleanup any out-of-date sample files */ 
+      {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Dispatcher [Clean Samples]");
+	{
+	  cleanupSamples(tm);
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	   tm, timer); 
       }
     }
   }
@@ -2731,250 +2967,196 @@ class QueueMgr
       timer.suspend();
       TaskTimer tm = new TaskTimer("Collector [Find Enabled]");
       tm.aquire();
-      synchronized(pHosts) {
+      synchronized(pHostsInfo) {
         tm.resume();
-	for(String hname : pHosts.keySet()) {
-	  QueueHost host = pHosts.get(hname);
-	  switch(host.getStatus()) {
+	for(String hname : pHostsInfo.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  switch(qinfo.getStatus()) {
 	  case Enabled:
 	  case Disabled:
 	    needsCollect.add(hname);
-	    if((host.getNumProcessors() == null) || 
-	       (host.getTotalMemory() == null) ||
-	       (host.getTotalDisk() == null)) 
+	    if((qinfo.getNumProcessors() == null) || 
+	       (qinfo.getTotalMemory() == null) ||
+	       (qinfo.getTotalDisk() == null)) 
 	      needsTotals.add(hname);
 	  }	  
 	}
       }
-      LogMgr.getInstance().log
+      LogMgr.getInstance().logSubStage
 	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
+	 tm, timer);
     }
 
     /* collect system resource usage samples from the hosts */ 
-    TreeSet<String> dead = new TreeSet<String>();
-    TreeSet<String> hung = new TreeSet<String>();
-    TreeMap<String,ResourceSample> samples = new TreeMap<String,ResourceSample>();
-    TreeMap<String,OsType> osTypes = new TreeMap<String,OsType>();
-    TreeMap<String,Integer> numProcs = new TreeMap<String,Integer>();
-    TreeMap<String,Long> totalMemory = new TreeMap<String,Long>();
-    TreeMap<String,Long> totalDisk = new TreeMap<String,Long>();
     {
-      timer.suspend();
-      TaskTimer ntm = new TaskTimer("Collector [Network]");
-      for(String hname : needsCollect) {
-	ntm.suspend();
-	TaskTimer tm = new TaskTimer("Collector [Network - " + hname + "]");
-	try {
-	  JobMgrControlClient client = new JobMgrControlClient(hname);
-	  ResourceSample sample = client.getResources();
-	  samples.put(hname, sample);
-	  
-	  if(needsTotals.contains(hname)) {
-	    osTypes.put(hname, client.getOsType());
-	    numProcs.put(hname, client.getNumProcessors());
-	    totalMemory.put(hname, client.getTotalMemory());
-	    totalDisk.put(hname, client.getTotalDisk());
+      ArrayList<SubCollectorTask> cthreads = new ArrayList<SubCollectorTask>();
+      {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Collector [Network]");
+
+	/* spawn collection threads */ 
+	if(!needsCollect.isEmpty()) {
+	  SubCollectorTask thread = null;
+	  int wk = 0;
+	  int id = 0;
+	  for(String hname : needsCollect) {
+	    if((wk % sMaxServersPerCollector) == 0) {
+	      if(thread != null) {
+		cthreads.add(thread);
+		thread.start();
+	      }
+	      
+	      thread = new SubCollectorTask(id);
+	      id++;
+	    }
+	    
+	    thread.addCollect(hname);
+	    if(needsTotals.contains(hname)) 
+	      thread.addTotals(hname);
+	    
+	    wk++;
 	  }
-	  
-	  client.disconnect();
+	
+	  cthreads.add(thread);
+	  thread.start();
 	}
-	catch(PipelineException ex) {
-	  Throwable cause = ex.getCause();
-	  if(cause instanceof SocketTimeoutException) {
-	    hung.add(hname);
+	
+	/* wait for all to finish */ 
+	for(SubCollectorTask thread : cthreads) {
+	  try {
+	    thread.join();
+	  }
+	  catch(InterruptedException ex) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	       ex.getMessage());
+	       "Interrupted while collecting resource information.");
 	    LogMgr.getInstance().flush();
 	  }
-	  else 
-	    dead.add(hname);
-	}	    
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
-	   tm.toString()); 
-	ntm.accum(tm);
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
+	   tm, timer); 
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 ntm.toString()); 
-      timer.accum(ntm);
-    }
+      
+      /* collect the data from all threads and to update pending change tables */ 
+      {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Collector [Pending Changes]");
+	for(SubCollectorTask thread : cthreads) {
 
-    /* should the last interval of samples be written to disk? */ 
-    Date now = new Date();
-    TreeMap<String,ResourceSampleBlock> dump = null;
-    {
-      if((now.getTime() - pLastSampleWrite.getTime()) > QueueHost.getSampleInterval())
-	dump = new TreeMap<String,ResourceSampleBlock>();
-    }
-
-    /* update the hosts */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Collector [Update Hosts]");
-      tm.aquire();
-      synchronized(pHosts) {
-	tm.resume();
-	for(String hname : dead) {
-	  QueueHost host = pHosts.get(hname);
-	  if(host != null) 
-	    setHostStatus(host, QueueHost.Status.Shutdown);
-	}
-	
-	for(String hname : hung) {
-	  QueueHost host = pHosts.get(hname);
-	  if(host != null) {
-	    Date lastHung = host.getLastHung();
-	    if((lastHung == null) || 
-	       ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-	      setHostStatus(host, QueueHost.Status.Hung);
-	    else 
-	      setHostStatus(host, QueueHost.Status.Disabled);
-	  }
-	}
-	
-	for(QueueHost host : pHosts.values()) {
-	  switch(host.getStatus()) {
-	  case Disabled:
-	  case Hung:
-	  case Shutdown:
-	    host.cancelHolds();
-	  }
-	}	 
-	
-	for(String hname : samples.keySet()) {
-	  QueueHost host = pHosts.get(hname);
-	  if(host != null) {
-	    switch(host.getStatus()) {
-	    case Enabled:
-	    case Disabled:
-	      {
-		ResourceSample sample = samples.get(hname);
-		if(sample != null)
-		  host.addSample(sample);
+	  {
+	    TreeSet<String> dead = thread.getDead();
+	    if(!dead.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pStatusChanges) {
+		tm.resume();
 		
-		if(dump != null) {
-		  ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
-		  for(ResourceSample s : host.getSamples()) {
-		    if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
-		      rs.add(s);
-		  }
-		  
-		  if(!rs.isEmpty() && 
-		     (host.getNumProcessors() != null) && 
-		     (host.getTotalMemory() != null) && 
-		     (host.getTotalDisk() != null)) {
+		for(String hname : dead) 
+		  pStatusChanges.put(hname, QueueHostStatusChange.Terminate);
+	      }
+	    }
+	  }
+
+	  {	
+	    TreeSet<String> hung = thread.getHung();
+	    if(!hung.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pHungChanges) {
+		tm.resume();
+		
+		pHungChanges.addAll(hung);
+	      }
+	    }
+	  }
+	  
+	  {
+	    TreeMap<String,ResourceSample> samples = thread.getSamples();
+	    if(!samples.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pSampleChanges) {
+		tm.resume();
+
+		for(String hname : samples.keySet()) {
+		  ResourceSample sample = samples.get(hname);
+		  if(sample != null) {
+		    LinkedList<ResourceSample> latest = pSampleChanges.get(hname);
+		    if(latest == null) {
+		      latest = new LinkedList<ResourceSample>(); 
+		      pSampleChanges.put(hname, latest);
+		    }
 		    
-		    ResourceSampleBlock block = 
-		      new ResourceSampleBlock(host.getJobSlots(), 
-					      host.getNumProcessors(), 
-					      host.getTotalMemory(), 
-					      host.getTotalDisk(), 
-					      rs);
-		    dump.put(hname, block);
+		    latest.add(sample);
 		  }
 		}
+	      }
+	    }
+	  }
+
+	  {
+	    TreeMap<String,OsType> osTypes = thread.getOsTypes();
+	    if(!osTypes.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pOsTypeChanges) {
+		tm.resume();
 		
-		OsType os = osTypes.get(hname);
-		if(os != null) 
-		  host.setOsType(os); 
+		pOsTypeChanges.putAll(osTypes);
+	      }
+	    }
+	  }
+
+	  {
+	    TreeMap<String,Integer> numProcs = thread.getNumProcs();
+	    if(!numProcs.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pNumProcChanges) {
+		tm.resume();
 		
-		Integer procs = numProcs.get(hname);
-		if(procs != null) 
-		  host.setNumProcessors(procs);
+		pNumProcChanges.putAll(numProcs);
+	      }
+	    }
+	  }
+
+	  {
+	    TreeMap<String,Long> totalMemory = thread.getTotalMemory();
+	    if(!totalMemory.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pTotalMemoryChanges) {
+		tm.resume();
 		
-		Long memory = totalMemory.get(hname);
-		if(memory != null) 
-		  host.setTotalMemory(memory);
+		pTotalMemoryChanges.putAll(totalMemory);
+	      }
+	    }
+	  }
+
+	  {
+	    TreeMap<String,Long> totalDisk = thread.getTotalDisk();
+	    if(!totalDisk.isEmpty()) {
+	      tm.aquire();
+	      synchronized(pTotalDiskChanges) {
+		tm.resume();
 		
-		Long disk = totalDisk.get(hname);
-		if(disk != null) 
-		  host.setTotalDisk(disk);
+		pTotalDiskChanges.putAll(totalDisk);
 	      }
 	    }
 	  }
 	}
-
-	for(QueueHost host : pHosts.values()) {
-	  switch(host.getStatus()) {
-	  case Hung:
-	    if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
-	      setHostStatus(host, QueueHost.Status.Enabled);	      
-	  }
-	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
+	   tm, timer); 
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
     }
-    
-    /* update the read-only cache of job server info */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Collector [Update Hosts Info]");
-      {
-	updateHostsInfo(tm);
-      }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
-    }
-
-    /* write the last interval of samples to disk */ 
-    if(dump != null) {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Collector [Write Samples]");
-      try {
-	writeSamples(tm, now, dump);
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Col, LogMgr.Level.Severe,
-	   ex.getMessage());
-      }
-      finally {
-	pLastSampleWrite = now;
-      }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
-    }
-
-    /* cleanup any out-of-date sample files */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Collector [Clean Samples]");
-      {
-	cleanupSamples(tm);
-      }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Col, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);      
-    }
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Col, LogMgr.Level.Fine,
-       timer.toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Col, LogMgr.Level.Fine))
-      LogMgr.getInstance().flush();
 
     /* if we're ahead of schedule, take a nap */ 
     {
-      timer.suspend();
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Col, LogMgr.Level.Fine,
+	 timer); 
+
       long nap = sCollectorInterval - timer.getTotalDuration();
       if(nap > 0) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
 	   "Collector: Sleeping for (" + nap + ") ms...");
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Col, LogMgr.Level.Finest))
-	  LogMgr.getInstance().flush();
 
 	try {
 	  Thread.sleep(nap);
@@ -2983,11 +3165,9 @@ class QueueMgr
 	}
       }
       else {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
 	   "Collector: Overbudget by (" + (-nap) + ") ms...");
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Col, LogMgr.Level.Finest))
-	  LogMgr.getInstance().flush();
       }
     }
   }
@@ -3005,6 +3185,23 @@ class QueueMgr
   dispatcher()
   {
     TaskTimer timer = new TaskTimer("Dispatcher");
+
+    /* apply any pending modifications to the job servers prior to dispatch */ 
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Apply Host Edits]");
+      try {
+	applyHostEdits(tm);
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+      }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
+    }
 
     /* kill/abort the jobs in the hit list */ 
     {
@@ -3035,7 +3232,6 @@ class QueueMgr
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Net, LogMgr.Level.Severe,
 		 ex.getMessage()); 
-	      LogMgr.getInstance().flush();
 	    }
 	    break; 
 	    
@@ -3047,10 +3243,9 @@ class QueueMgr
 	  }
 	}
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);      
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
     
     /* kill and requeue running jobs on the preempt list */  
@@ -3083,7 +3278,6 @@ class QueueMgr
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		   ex.getMessage()); 
-		LogMgr.getInstance().flush();
 	      }
 	  
 	      KillTask task = new KillTask(hostname, jobID);
@@ -3092,10 +3286,9 @@ class QueueMgr
 	  }
 	}
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);          
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
 
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
@@ -3135,7 +3328,6 @@ class QueueMgr
 		    LogMgr.getInstance().log
 		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		       ex.getMessage()); 
-		    LogMgr.getInstance().flush();
 		  }
 		}
 
@@ -3206,7 +3398,6 @@ class QueueMgr
 		    LogMgr.getInstance().log
 		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		       ex.getMessage()); 
-		    LogMgr.getInstance().flush();
 		  }
 		}
 	      }
@@ -3218,10 +3409,9 @@ class QueueMgr
       }
       pWaiting.addAll(waiting);      
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);      
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
 
     /* retrieve any toolsets required by newly ready jobs which are not already cached */ 
@@ -3243,10 +3433,9 @@ class QueueMgr
 		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		   ex.getMessage()); 
 		
-		LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Info,
-		 "Reestablishing Network Connections...");
-		LogMgr.getInstance().flush();
+		LogMgr.getInstance().logAndFlush
+		  (LogMgr.Kind.Net, LogMgr.Level.Info,
+		   "Reestablishing Network Connections...");
 		
 		establishMasterConnection();
 	      }
@@ -3254,10 +3443,9 @@ class QueueMgr
 	  }
 	}
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);           
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
 
     /* update the read-only cache of job server info before aquiring any potentially
@@ -3268,29 +3456,9 @@ class QueueMgr
       {
 	updateHostsInfo(tm);
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
-    }
-
-    /* apply any pending modifications to the job servers prior to dispatch */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Apply Host Edits]");
-      try {
-	applyHostEdits(tm);
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage()); 
-	LogMgr.getInstance().flush();
-      }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
 
     /* process the available job server slots in dispatch order */ 
@@ -3330,10 +3498,9 @@ class QueueMgr
 	  for(TreeSet<String> names : inOrder.values()) 
 	    hostsInOrder.addAll(names);
 
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	     tm.toString()); 	  
-	  dtm.accum(tm);   
+	  LogMgr.getInstance().logSubStage
+	    (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	     tm, dtm); 
 	}
 
 	for(String hostname : hostsInOrder) {
@@ -3346,10 +3513,9 @@ class QueueMgr
 	    {
 	      int slots = host.getAvailableSlots();
 
-	      LogMgr.getInstance().log
+	      LogMgr.getInstance().logAndFlush
 		(LogMgr.Kind.Ops, LogMgr.Level.Finest,
 		 "Initial Slots [" + hostname + "]: Free = " + slots + "\n");
-	      LogMgr.getInstance().flush();
     
 	      dtm.suspend();
 	      TaskTimer stm = new TaskTimer
@@ -3471,10 +3637,9 @@ class QueueMgr
 			rankedJobIDs.add(jobID);
 		    }
 		  }
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-		     tm.toString()); 
-		  stm.accum(tm);
+		  LogMgr.getInstance().logSubStage
+		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+		     tm, stm);
 		}
 
 		/* attempt to dispatch a job to the slot:
@@ -3529,7 +3694,6 @@ class QueueMgr
 			      LogMgr.getInstance().log
 				(LogMgr.Kind.Net, LogMgr.Level.Severe,
 				 ex.getMessage()); 
-			      LogMgr.getInstance().flush();
 			    }
 			  }
 			  
@@ -3554,10 +3718,9 @@ class QueueMgr
 		      }
 		    }
 		  }
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-		     tm.toString()); 
-		  stm.accum(tm);
+		  LogMgr.getInstance().logSubStage
+		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+		     tm, stm);
 		}
 
 		for(Long jobID : processed) 
@@ -3566,23 +3729,20 @@ class QueueMgr
 		/* next slot, if any are available */ 
 		slots = Math.min(slots-1, host.getAvailableSlots());
 
-		LogMgr.getInstance().log
+		LogMgr.getInstance().logAndFlush
 		  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
 		   "Updated Slots [" + hostname + "]:  Free = " + slots + "\n");
-		LogMgr.getInstance().flush();
 	      }
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-		 stm.toString()); 
-	      dtm.accum(stm);
+	      LogMgr.getInstance().logSubStage
+		(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+		 stm, dtm); 
 	    }
 	  }
 	}
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 dtm.toString()); 
-      timer.accum(dtm);
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 dtm, timer);
     }
 
     /* filter any jobs not ready for execution from the ready list */ 
@@ -3613,7 +3773,6 @@ class QueueMgr
 		  LogMgr.getInstance().log
 		    (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		     ex.getMessage()); 
-		  LogMgr.getInstance().flush();
 		}
 		
 		pWaiting.add(jobID);
@@ -3632,10 +3791,9 @@ class QueueMgr
       for(Long jobID : processed) 
 	pReady.remove(jobID);
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm); 
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
 
     /* check for newly completed job groups */ 
@@ -3696,10 +3854,9 @@ class QueueMgr
 	  }
 	}
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);      
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
     }
 
     /* perform garbage collection of jobs at regular intervals */ 
@@ -3710,31 +3867,24 @@ class QueueMgr
       {
 	garbageCollectJobs(tm);
       }
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	 tm.toString()); 
-      timer.accum(tm);
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
 
       pDispatcherCycles = 0;
     }
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Dsp, LogMgr.Level.Fine,
-       timer.toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Fine))
-      LogMgr.getInstance().flush();
-
     /* if we're ahead of schedule, take a nap */ 
     {
-      timer.suspend();
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Fine,
+	 timer); 
+
       long nap = sDispatcherInterval - timer.getTotalDuration();
       if(nap > 0) {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
 	   "Dispatcher: Sleeping for (" + nap + ") ms...");
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest))
-	  LogMgr.getInstance().flush();
-
 	try {
 	  Thread.sleep(nap);
 	}
@@ -3742,11 +3892,9 @@ class QueueMgr
 	}
       }
       else {
-	LogMgr.getInstance().log
+	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
 	   "Dispatcher: Overbudget by (" + (-nap) + ") ms...");
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest))
-	  LogMgr.getInstance().flush();
       }
     }
   }
@@ -3871,7 +4019,6 @@ class QueueMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   ex.getMessage()); 
-	LogMgr.getInstance().flush();
 	
 	Throwable cause = ex.getCause();
 	if(cause instanceof SocketTimeoutException) {
@@ -3960,7 +4107,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     ex.getMessage());
-	  LogMgr.getInstance().flush();
 	}
       }
 
@@ -3975,7 +4121,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     ex.getMessage());
-	  LogMgr.getInstance().flush();
 	}
       }      
     }
@@ -3986,11 +4131,9 @@ class QueueMgr
       task.start();
     }
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logStage
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
-       timer.toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer))
-      LogMgr.getInstance().flush();
+       timer); 
   }
 
   /**
@@ -4045,10 +4188,9 @@ class QueueMgr
 
     buf.append("\n");
 
-    LogMgr.getInstance().log
+    LogMgr.getInstance().logAndFlush
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
        buf.toString());
-    LogMgr.getInstance().flush();
   }
 
 
@@ -4062,77 +4204,105 @@ class QueueMgr
   public void 
   scheduler()
   {
-    TaskTimer timer = new TaskTimer("QueueMgr.scheduler()");
+    TaskTimer timer = new TaskTimer("Scheduler");
 
     /* precompute current groups for each schedule */ 
     TreeMap<String,String> scheduledGroups = new TreeMap<String,String>();
     {
-      timer.aquire();
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Scheduler [Compute Groups]");
+      tm.aquire();
       synchronized(pSelectionSchedules) {
-	timer.resume();
+	tm.resume();
 	
 	Date now = new Date();
 	for(SelectionSchedule sched : pSelectionSchedules.values()) 
 	  scheduledGroups.put(sched.getName(), sched.activeGroup(now));
       }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Sch, LogMgr.Level.Finer, 
+	 tm, timer);
     }
     
     /* update the hosts */ 
-    timer.aquire();
-    synchronized(pHosts) {
-      boolean modified = false;
-      synchronized(pSelectionGroups) {
-	timer.resume();
-	
-	for(String hname : pHosts.keySet()) {
-	  QueueHost host = pHosts.get(hname);
+    {
+      timer.suspend();
+      TaskTimer utm = new TaskTimer("Scheduler [Update Hosts]");      
+      utm.aquire();
+      synchronized(pHosts) {
+	boolean modified = false;
+	synchronized(pSelectionGroups) {
+	  utm.resume();
 	  
-	  String sname = host.getSelectionSchedule();
-	  String gname = host.getSelectionGroup();
-	  if(sname != null) {
-	    String name = scheduledGroups.get(sname);
-	    if(!pSelectionGroups.containsKey(name)) 
-	      name = null;
+	  for(String hname : pHosts.keySet()) {
+	    QueueHost host = pHosts.get(hname);
 	    
-	    if(!(((name == null) && (gname == null)) ||
-		 ((name != null) && (name.equals(gname))))) {
-	      host.setSelectionGroup(name);
-	      modified = true;
-
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-		 "Scheduler [" + hname + "]: Selection Group = " + name + 
-		 " (" + gname + ")\n");
-	      LogMgr.getInstance().flush();
+	    String sname = host.getSelectionSchedule();
+	    String gname = host.getSelectionGroup();
+	    if(sname != null) {
+	      String name = scheduledGroups.get(sname);
+	      if(!pSelectionGroups.containsKey(name)) 
+		name = null;
+	      
+	      if(!(((name == null) && (gname == null)) ||
+		   ((name != null) && (name.equals(gname))))) {
+		host.setSelectionGroup(name);
+		modified = true;
+		
+		LogMgr.getInstance().logAndFlush
+		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		   "Scheduler [" + hname + "]: " + 
+		   "Selection Group = " + name + " (" + gname + ")\n");
+	      }
 	    }
 	  }
 	}
-      }
 
-      /* write changes to disk */ 
-      if(modified) {
-	try {
-	  writeHosts();
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     ex.getMessage());
+	/* write changes to disk */ 
+	if(modified) {
+	  utm.suspend();
+	  TaskTimer tm = new TaskTimer("Scheduler [Write Hosts]");  
+	  try {
+	    writeHosts();
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	       ex.getMessage());
+	  }
+	  LogMgr.getInstance().logSubStage
+	    (LogMgr.Kind.Sch, LogMgr.Level.Finest, 
+	     tm, utm); 
 	}
       }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Sch, LogMgr.Level.Finer, 
+	 utm, timer);
     }
 
     /* if we're ahead of schedule, take a nap */ 
     {
-      timer.suspend();
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Sch, LogMgr.Level.Fine,
+	 timer); 
+
       long nap = sSchedulerInterval - timer.getTotalDuration();
       if(nap > 0) {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+	   "Scheduler: Sleeping for (" + nap + ") ms...");
+
 	try {
 	  Thread.sleep(nap);
 	}
 	catch(InterruptedException ex) {
 	}
       }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+	   "Scheduler: Overbudget by (" + (-nap) + ") ms...");
+      }	
     }
   }
 
@@ -4177,7 +4347,6 @@ class QueueMgr
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "Unable to generate a Glue format representation of the license keys!");
-	       LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -4230,7 +4399,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The license keys file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -4283,7 +4451,6 @@ class QueueMgr
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "Unable to generate a Glue format representation of the selection keys!");
-	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -4336,7 +4503,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The selection keys file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -4389,7 +4555,6 @@ class QueueMgr
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "Unable to generate a Glue format representation of the selection groups!");
-	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -4442,7 +4607,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The selection groups file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -4495,7 +4659,6 @@ class QueueMgr
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "Unable to generate a Glue format representation of the selection schedules!");
-	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -4548,7 +4711,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The selection schedules file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -4603,7 +4765,6 @@ class QueueMgr
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "Unable to generate a Glue format representation of the hosts!");
-	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -4656,7 +4817,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The hosts file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -4741,7 +4901,6 @@ class QueueMgr
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "Unable to generate a Glue format representation of the resource samples!");
-	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -4817,7 +4976,6 @@ class QueueMgr
 	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	       "The resource samples file (" + file + ") appears to be corrupted:\n" + 
 	       "  " + ex.getMessage());
-	    LogMgr.getInstance().flush();
 	    
 	    throw new PipelineException
 	      ("I/O ERROR: \n" + 
@@ -4951,7 +5109,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	    "Unable to generate a Glue format representation of the job!");
-	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -5011,7 +5168,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The job file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -5123,7 +5279,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "Unable to generate a Glue format representation of the job information!");
-	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -5183,7 +5338,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The job information file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -5293,7 +5447,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "Unable to generate a Glue format representation of the job group!");
-	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -5350,7 +5503,6 @@ class QueueMgr
 	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
 	     "The job group file (" + file + ") appears to be corrupted:\n" + 
 	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -5401,6 +5553,163 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Collects resource stats from a subset of the enabled job servers.
+   */
+  private 
+  class SubCollectorTask
+    extends Thread
+  {
+    public 
+    SubCollectorTask
+    (
+     int id
+    ) 
+    {
+      super("QueueMgr:SubCollectorTask");
+
+      pID = id;
+
+      pNeedsCollect = new TreeSet<String>();
+      pNeedsTotals = new TreeSet<String>();
+
+      pDead = new TreeSet<String>();
+      pHung = new TreeSet<String>();
+      pSamples = new TreeMap<String,ResourceSample>();
+      pOsTypes = new TreeMap<String,OsType>();
+      pNumProcs = new TreeMap<String,Integer>();
+      pTotalMemory = new TreeMap<String,Long>();
+      pTotalDisk = new TreeMap<String,Long>();
+    }
+
+
+    /*-- ACCESSORS -------------------------------------------------------------------------*/
+
+    public void 
+    addCollect
+    (
+     String hname
+    ) 
+    {
+      pNeedsCollect.add(hname);
+    }
+
+    public void 
+    addTotals
+    (
+     String hname
+    ) 
+    {
+      pNeedsTotals.add(hname);
+    }
+
+
+    public TreeSet<String>
+    getDead() 
+    {
+      return pDead;
+    }
+
+    public TreeSet<String>
+    getHung() 
+    {
+      return pHung;
+    }
+
+    public TreeMap<String,ResourceSample>
+    getSamples() 
+    {
+      return pSamples;
+    }
+
+    public TreeMap<String,OsType>
+    getOsTypes() 
+    {
+      return pOsTypes;
+    }
+
+    public TreeMap<String,Integer>
+    getNumProcs() 
+    {
+      return pNumProcs;
+    }
+
+    public TreeMap<String,Long>
+    getTotalMemory()
+    {
+      return pTotalMemory;
+    }
+
+    public TreeMap<String,Long>
+    getTotalDisk()
+    {
+      return pTotalDisk;
+    }
+
+
+    /*-- THREAD RUN ------------------------------------------------------------------------*/
+
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer("SubCollector " + pID + " [Total]");
+      for(String hname : pNeedsCollect) {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("SubCollector " + pID + " [" + hname + "]");
+	try {
+	  JobMgrControlClient client = new JobMgrControlClient(hname);
+	  ResourceSample sample = client.getResources();
+	  pSamples.put(hname, sample);
+	  
+	  if(pNeedsTotals.contains(hname)) {
+	    pOsTypes.put(hname, client.getOsType());
+	    pNumProcs.put(hname, client.getNumProcessors());
+	    pTotalMemory.put(hname, client.getTotalMemory());
+	    pTotalDisk.put(hname, client.getTotalDisk());
+	  }
+	  
+	  client.disconnect();
+	}
+	catch(PipelineException ex) {
+	  Throwable cause = ex.getCause();
+	  if(cause instanceof SocketTimeoutException) {
+	    pHung.add(hname);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	       ex.getMessage());
+	    LogMgr.getInstance().flush();
+	  }
+	  else {
+	    pDead.add(hname);
+	  }
+	}	    
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
+	   tm, timer);
+      }
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Col, LogMgr.Level.Finer,
+         timer); 
+    }
+
+
+    /*-- INTERNALS -------------------------------------------------------------------------*/
+
+    private int  pID; 
+    private TaskTimer  pTimer; 
+
+    private TreeSet<String>  pNeedsCollect; 
+    private TreeSet<String>  pNeedsTotals; 
+
+    private TreeSet<String>  pDead; 
+    private TreeSet<String>  pHung; 
+    private TreeMap<String,ResourceSample>  pSamples;
+    private TreeMap<String,OsType>  pOsTypes; 
+    private TreeMap<String,Integer>  pNumProcs; 
+    private TreeMap<String,Long>  pTotalMemory; 
+    private TreeMap<String,Long>  pTotalDisk; 
+  }
 
   /**
    * Waits on a job to finish and records the results.
@@ -5456,14 +5765,12 @@ class QueueMgr
 
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Warning, msg);
-	    LogMgr.getInstance().flush();
 	  }
 	  else {
 	    done = true;
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	       ex.getMessage()); 
-	    LogMgr.getInstance().flush();	    
 	  }
 	}
 	catch(Exception ex) {
@@ -5471,7 +5778,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	     ex.getMessage()); 
-	  LogMgr.getInstance().flush();
 	}
 	finally {
 	  client.disconnect();
@@ -5497,7 +5803,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	     ex.getMessage()); 
-	  LogMgr.getInstance().flush();
 	}	
       }
       
@@ -5539,7 +5844,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	     ex.getMessage()); 
-	  LogMgr.getInstance().flush();
 	}
 	finally {
 	  if(client != null)
@@ -5585,7 +5889,6 @@ class QueueMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   ex.getMessage()); 
-	LogMgr.getInstance().flush();
       }
       finally {
 	if(client != null)
@@ -5640,7 +5943,6 @@ class QueueMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	     ex.getMessage()); 
-	  LogMgr.getInstance().flush();
 	}
 	finally {
 	  if(client != null)
@@ -5653,7 +5955,41 @@ class QueueMgr
   }
 
 
-     
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   A C C E S O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  public static void
+  setMaxServersPerCollector
+  (
+   int num
+  ) 
+  {
+    assert(num > 0);
+    sMaxServersPerCollector = num;
+  }
+
+  public static void
+  setSampleCleanupInterval
+  (
+   long msec
+  ) 
+  {
+    assert(msec > 0L);
+    sSampleCleanupInterval = msec;
+  }
+
+  public static void 
+  setDispatcherInterval
+  (
+   long msec
+  ) 
+  {
+    assert(msec > 0L);
+    sDispatcherInterval = msec;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5666,9 +6002,14 @@ class QueueMgr
   private static final long  sCollectorInterval = 15000L;  /* 15-second */ 
 
   /**
+   * The maximum number of job servers per collection sub-thread.
+   */ 
+  private static int  sMaxServersPerCollector = 15;
+
+  /**
    * The maximum age of a sample file before it is deleted (in milliseconds).
    */ 
-  private static final long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
+  private static long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
 
   /**
    * The interval between attempts to automatically enable Hung job servers. 
@@ -5683,7 +6024,7 @@ class QueueMgr
   /**
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 
-  private static final long  sDispatcherInterval = 1000L;  /* 1-second */ 
+  private static long  sDispatcherInterval = 2000L;  /* 2-seconds */ 
 
   /**
    * The number of dispatcher cycles between garbage collection of jobs.
@@ -5693,13 +6034,14 @@ class QueueMgr
   /**
    * The minimum time a cycle of the scheduler loop should take (in milliseconds).
    */ 
-  private static final long  sSchedulerInterval = 60000L;  /* 1-minute */ 
+  private static final long  sSchedulerInterval = 300000L;  /* 5-minutes */ 
 
   /**
    * The maximum number of times to attempt to reconnect to a job server while waiting
-   * of the results of a job. 
+   * on the results of a job. 
    */ 
-  private static final int  sMaxWaitReconnects = 10;
+  private static final int  sMaxWaitReconnects = 5;
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5793,47 +6135,102 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Pending changes to per-host status indexed by by fully resolved host name. <P> 
+   * Pending changes to per-host status 
+   * indexed by by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,QueueHostStatusChange>  pStatusChanges; 
 
   /**
-   * Pending changes to per-host reservations indexed by by fully resolved host name. <P> 
+   * Pending changes to per-host reservations 
+   * indexed by by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,String>  pReservationChanges; 
 
   /**
-   * Pending changes to per-host server order indexed by by fully resolved host name. <P> 
+   * Pending changes to per-host server order 
+   * indexed by by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,Integer>  pOrderChanges; 
 
   /**
-   * Pending changes to per-host number of slots indexed by by fully resolved host name. <P> 
+   * Pending changes to per-host number of slots 
+   * indexed by by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,Integer>  pSlotChanges; 
 
   /**
-   * Pending changes to per-host selection groups indexed by by fully resolved host name. <P> 
+   * Pending changes to per-host selection groups 
+   * indexed by by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,String>  pSelectionGroupChanges; 
 
   /**
-   * Pending changes to per-host selection schedules indexed by by fully resolved host name.
-   * <P> 
+   * Pending changes to per-host selection schedules 
+   * indexed by by fully resolved host name.<P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,String>  pSelectionScheduleChanges; 
+  
+
+  /**
+   * Pending hosts marked as hung.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeSet<String> pHungChanges;
+
+
+  /**
+   * Pending per-host resource samples
+   * indexed by by fully resolved host name.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,LinkedList<ResourceSample>>  pSampleChanges; 
+
+
+  /**
+   * Pending changes to per-host OS type 
+   * indexed by by fully resolved host name.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,OsType>  pOsTypeChanges; 
+  
+  /**
+   * Pending changes to per-host number of processors 
+   * indexed by by fully resolved host name.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,Integer>  pNumProcChanges; 
+  
+  /**
+   * Pending changes to per-host total memory size
+   * indexed by by fully resolved host name.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,Long>  pTotalMemoryChanges; 
+  
+  /**
+   * Pending changes to per-host total disk size
+   * indexed by by fully resolved host name.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,Long>  pTotalDiskChanges; 
   
 
   /**

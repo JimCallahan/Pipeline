@@ -152,6 +152,12 @@ the job server dynamics resources collector thread.<br>
 the job dispatcher thread.<br>
 <br>
 </div>
+<span style="font-weight: bold;">sch<br>
+</span>
+<div style="margin-left: 40px;">Logs activity and timing statistics for
+the selection scheduler thread.<br>
+<br>
+</div>
 <span style="font-weight: bold;">glu<br>
 </span>
 <div style="margin-left: 40px;">Logs the I/O activity related to <a
@@ -211,6 +217,44 @@ all loggers and is used for normal output from <b>plqueuemgr</b>(1). <br>
 <div style="margin-left: 80px;">These three levels are used for
 increasingly more detailed command tracing messages. <br>
 </div>
+</div>
+</div>
+<h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--collector-batch-size"></a>--collector-batch-size</span>=<span
+ style="font-style: italic;">num</span><br>
+<div style="margin-left: 40px;"><br>
+Overrides the maximum number of servers (<span
+ style="font-style: italic;">num</span>) each collector sub-thread
+processes in one collection cycle.&nbsp; If the collector thread is
+frequently exceeding its normal 15sec interval, you may wish to set
+this to a lower value to increase the network parallelism.<br>
+<br>
+The default value is (15) servers per sub-thread.<br>
+<br>
+</div>
+<span style="font-weight: bold;"><a name="--dispatcher-interval"></a>--dispatcher-interval</span>=<span
+ style="font-style: italic;">msec</span><br>
+<div style="margin-left: 40px;"><br>
+Overrides the dispatcher cycle interval (<span
+ style="font-style: italic;">msec</span>).&nbsp; If the dispatcher
+thread completes one cycle in less time than this interval, it will
+sleep for the remainder of the time.&nbsp; Increasing the interval will
+reduce CPU load at the expense of job dispatch latency.<br>
+<br>
+The default value is (2000) msec.&nbsp; Which is (2) seconds.<br>
+</div>
+<br>
+<a name="--sample-cleanup-interval"></a><span style="font-weight: bold;">--sample-cleanup-interval</span>=<span
+ style="font-style: italic;">msec<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Overrides the maximum interval (msec) that job server resource usage
+sample files will be retained.&nbsp; Larger values will lead to more
+disk space usage and longer updates when viewing the detailed job
+server history due to more samples being loaded.<br>
+<br>
+The default value is (86400000) msec.&nbsp; Which is (24) hours.<br>
 </div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
