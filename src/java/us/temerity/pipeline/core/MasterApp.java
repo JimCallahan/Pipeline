@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.17 2006/05/07 21:30:08 jim Exp $
+// $Id: MasterApp.java,v 1.18 2006/07/09 17:05:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -130,6 +130,10 @@ class MasterApp
        "GLOBAL OPTIONS:\n" +
        "  [--rebuild] [--file-mgr]\n" + 
        "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
+       "\n" + 
+       "PERFORMANCE TUNING OPTIONS:\n" +
+       "  [--restore-cleanup-interval=...]\n" + 
+       "  [--node-gc-interval=...] [--node-cache-limit=...]\n" +
        "\n" + 
        "\n" +  
        "Use \"plmaster --html-help\" to browse the full documentation.\n");

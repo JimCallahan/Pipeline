@@ -106,21 +106,8 @@ is not possible or desirable to run <a href="plfilemgr.html"><span
  style="font-weight: bold;">plfilemgr</span></a>(1) on the network file
 server, the next best option is to run the file manager internally
 using this option.<br>
-<br>
 </div>
-<span style="font-weight: bold;"><a name="--node-cache-limit"></a>--node-cache-limit</span>=<span
- style="font-style: italic;">size </span><br>
-<div style="margin-left: 40px;"><br>
-Overrides the limit (<span style="font-style: italic;">size</span>) on
-the number of node versions cached in memory.&nbsp; By default, the
-limit is automatically calculated based on the maximum heap size of the
-Java
-VM set by the <span style="font-weight: bold;">--master-heap-size</span>
-option to <a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-</div>
-<span style="font-weight: bold;"><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;"><br>
 <a name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename<br>
 <br>
@@ -257,6 +244,50 @@ all loggers and is used for normal output from <b>plmaster</b>(1). <br>
 <div style="margin-left: 80px;">These three levels are used for
 increasingly more detailed command tracing messages. <br>
 </div>
+</div>
+</div>
+<h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--restore-cleanup-interval"></a>-</span><span class="postbody"><span
+ style="font-weight: bold;">-restore-cleanup-interval</span>=<span
+ style="font-style: italic;">msec</span><br>
+</span>
+<div style="margin-left: 40px;"><br>
+Overrides the maximum age (msec) of a resolved (Restored or Denied)
+restore request before it is deleted.&nbsp; Pipeline automatically
+cleans up these processed requests after a reasonable interval.&nbsp;
+Unresolved requests are never automatically removed.<br>
+<br>
+The default value is (172800000) msec.&nbsp; Which is (48) hours.<br>
+<br>
+</div>
+<span class="postbody"><span style="font-weight: bold;"><a
+ name="--node-gc-interval"></a>--node-gc-interval</span>=<span
+ style="font-style: italic;">msec<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Overrides the node garbage collection interval (msec).&nbsp;&nbsp;
+Pipeline maintains an in memory cache of frequently accessed node
+database information to accelerate node status updates.&nbsp; When the
+cache grows to a significant portion of the JVM's heap, less frequently
+used nodes are removed from the cache so that Java can free up the
+memory.&nbsp; This option controls how frequently the node cache is
+processed to reduce memory usage.&nbsp; <br>
+<br>
+The default value is (10800000) msec.&nbsp; Which is (90) minutes.<br>
+<br>
+</div>
+<span style="font-weight: bold;"><a name="--node-cache-limit"></a>--node-cache-limit</span>=<span
+ style="font-style: italic;">size </span><br>
+<div style="margin-left: 40px;"><br>
+Overrides the limit (<span style="font-style: italic;">size</span>) on
+the number of node versions cached in memory.&nbsp; By default, the
+limit is automatically calculated based on the maximum heap size of the
+Java
+VM set by the <span style="font-weight: bold;">--master-heap-size</span>
+option to <a
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
 </div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>

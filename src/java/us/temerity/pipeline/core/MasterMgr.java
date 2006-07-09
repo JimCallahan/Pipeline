@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.156 2006/07/05 12:08:50 jim Exp $
+// $Id: MasterMgr.java,v 1.157 2006/07/09 17:05:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16670,6 +16670,32 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   A C C E S O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  public static void
+  setRestoreCleanupInterval
+  (
+   long msec
+  ) 
+  {
+    assert(msec > 0L);
+    sRestoreCleanupInterval = msec;
+  }
+
+  public static void 
+  setNodeGCInterval
+  (
+   long msec
+  ) 
+  {
+    assert(msec > 0L);
+    sNodeGCInterval = msec;
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -16677,13 +16703,14 @@ class MasterMgr
    * The maximum age of a resolved (Restored or Denied) restore request before it 
    * is deleted (in milliseconds).
    */ 
-  private static final long  sRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
+  private static long  sRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
   
   /**
    * The minimum time a cycle of the node cache garbage collector loop should 
    * take (in milliseconds).
    */ 
-  private static final long  sNodeGCInterval = 10800000L;  /* 90-minutes */
+  private static long  sNodeGCInterval = 10800000L;  /* 90-minutes */
+
 
  
   /*----------------------------------------------------------------------------------------*/

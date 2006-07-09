@@ -109,12 +109,15 @@ TOKEN :
   /* global options */	
 | <REBUILD:           "--rebuild"> 
 | <FILE_MGR:          "--file-mgr">   
-| <NODE_CACHE_LIMIT:  "--node-cache-limit">        : INTEGER_SEP  
 | <LOG_FILE:          "--log-file">                : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
 | <LOG:               "--log">                     : LOG_SEP
 
+  /* performance tuning options */ 
+| <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
+| <NODE_GC_INTERVAL:          "--node-gc-interval">          : INTEGER_SEP
+| <NODE_CACHE_LIMIT:          "--node-cache-limit">          : INTEGER_SEP  
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -357,11 +360,13 @@ License() :
 /*------------------------------------------------------------------------------------------*/
 
 void
-GlobalOpts() :
+GlobalOpts() 
+  throws PipelineException : 
 {}
 {
-  (Rebuild() | FileMgr() | NodeCacheLimit() | 
-   Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Rebuild() | FileMgr() |
+   Log() | LogFile() | StandardLogFile() | LogBackups() |
+   RestoreCleanupInterval() | NodeGCInterval() | NodeCacheLimit())
   {}
 }
 
@@ -380,21 +385,6 @@ void FileMgr() :
   <FILE_MGR>
   { 
     pInternalFileMgr = true; 
-  }
-}
-
-void NodeCacheLimit() : 
-{
-  Token t;
-}
-{
-  <NODE_CACHE_LIMIT> EQ() t=<INTEGER>
-  { 
-    pNodeCacheLimit = Long.parseLong(t.image);
-
-    if(pNodeCacheLimit < 100)
-      throw new ParseException
-        ("The node cache limit must be at least (100) node versions!");
   }
 }
 
@@ -622,6 +612,55 @@ LogMgr.Level FinestLevel() :
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void RestoreCleanupInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <RESTORE_CLEANUP_INTERVAL> EQ() t=<INTEGER>
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The restore cleanup interval (" + msec + ") must be positive!");
+    MasterMgr.setRestoreCleanupInterval(msec);
+  }
+}
+
+void NodeGCInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <NODE_GC_INTERVAL> EQ() t=<INTEGER>
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The node garbage collection interval (" + msec + ") must be positive!");
+    MasterMgr.setNodeGCInterval(msec);
+  }
+}
+
+void NodeCacheLimit() : 
+{
+  Token t;
+}
+{
+  <NODE_CACHE_LIMIT> EQ() t=<INTEGER>
+  { 
+    pNodeCacheLimit = Long.parseLong(t.image);
+
+    if(pNodeCacheLimit < 100)
+      throw new ParseException
+        ("The node cache limit must be at least (100) node versions!");
+  }
+}
 
 
 
