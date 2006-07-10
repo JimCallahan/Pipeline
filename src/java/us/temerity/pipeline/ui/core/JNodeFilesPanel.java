@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.25 2006/06/24 20:48:21 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.26 2006/07/10 11:03:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -807,27 +807,30 @@ class JNodeFilesPanel
 		  bvid = details.getBaseVersion().getVersionID();
 		  
 		for(VersionID vid : vids) {
-		  JButton btn = new JButton("v" + vid);
-		  btn.setName("TableHeaderButton");
-		    
-		  boolean isOffline = pOffline.contains(vid);
+		  JFileHeaderButton btn = 
+		    new JFileHeaderButton(this, fseq, vid, bvid, pOffline.contains(vid));
 
-		  if((bvid != null) && bvid.equals(vid)) 
-		    btn.setForeground(Color.cyan);
-		  else if(isOffline) 
-		    btn.setForeground(new Color(0.75f, 0.75f, 0.75f));
+// 		  JButton btn = new JButton("v" + vid);
+// 		  btn.setName("TableHeaderButton");
 		    
-		  if(!isOffline) {
-		    btn.addActionListener(this);
-		    btn.setActionCommand("version-pressed:" + fseq + ":" + vid);
-		  }
+// 		  boolean isOffline = pOffline.contains(vid);
+
+// 		  if((bvid != null) && bvid.equals(vid)) 
+// 		    btn.setForeground(Color.cyan);
+// 		  else if(isOffline) 
+// 		    btn.setForeground(new Color(0.75f, 0.75f, 0.75f));
 		    
-		  btn.setFocusable(false);
+// 		  if(!isOffline) {
+// 		    btn.addActionListener(this);
+// 		    btn.setActionCommand("version-pressed:" + fseq + ":" + vid);
+// 		  }
 		    
-		  Dimension size = new Dimension(70, 23);
-		  btn.setMinimumSize(size);
-		  btn.setMaximumSize(size);
-		  btn.setPreferredSize(size);
+// 		  btn.setFocusable(false);
+		    
+// 		  Dimension size = new Dimension(70, 23);
+// 		  btn.setMinimumSize(size);
+// 		  btn.setMaximumSize(size);
+// 		  btn.setPreferredSize(size);
 		    
 		  hbox.add(btn);
 		}
@@ -1334,6 +1337,12 @@ class JNodeFilesPanel
 	    JFileSeqLabel label = (JFileSeqLabel) source;
 	    pTargetFileSeq = label.getFileSeq();
 	    selectAll(); 
+	  }
+	  else if(source instanceof JFileHeaderButton) {
+	    JFileHeaderButton btn = (JFileHeaderButton) source;
+	    pTargetFileSeq   = btn.getFileSeq(); 
+	    pTargetVersionID = btn.getVersionID();
+	    checkedInHeader  = true;
 	  }
  	  else if(source == pHeaderIcon) {
  	    if(pStatus == null) 
@@ -2373,6 +2382,67 @@ class JNodeFilesPanel
     private FileSeq    pFileSeq;
     private VersionID  pVersionID;
     private boolean    pHasWorking;
+  }
+
+  /**
+   * A JButton with an attached checked-in file sequence used as header buttons.
+   */ 
+  private 
+  class JFileHeaderButton
+    extends JButton
+  {
+    public
+    JFileHeaderButton
+    (
+     JNodeFilesPanel parent,
+     FileSeq fseq, 
+     VersionID vid, 
+     VersionID bvid, 
+     boolean isOffline
+    ) 
+    {
+      super("v" + vid);
+      setName("TableHeaderButton");
+
+      if((bvid != null) && bvid.equals(vid)) 
+	setForeground(Color.cyan);
+      else if(isOffline) 
+	setForeground(new Color(0.75f, 0.75f, 0.75f));
+      
+      if(!isOffline) {
+	addActionListener(parent);
+	setActionCommand("version-pressed:" + fseq + ":" + vid);
+
+	addMouseListener(parent);
+      }
+
+      setFocusable(false);
+      
+      Dimension size = new Dimension(70, 23);
+      setMinimumSize(size);
+      setMaximumSize(size);
+      setPreferredSize(size);
+
+      pFileSeq   = fseq;
+      pVersionID = vid;
+    }
+
+    public FileSeq
+    getFileSeq() 
+    {
+      return pFileSeq;
+    }
+
+    public VersionID
+    getVersionID() 
+    {
+      return pVersionID;
+    }
+
+    private static final long serialVersionUID = -8577377349066976132L;
+
+    private FileSeq    pFileSeq;
+    private VersionID  pVersionID;
   }
 
 
