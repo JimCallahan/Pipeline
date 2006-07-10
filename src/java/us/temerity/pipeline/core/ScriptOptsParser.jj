@@ -1582,6 +1582,9 @@ void
 Commands() 
   throws PipelineException :
 {
+  /* initialize the plugins */ 
+  PluginMgrClient.init(true);
+
   /* setup the log files */ 
   if(pLogFile != null) {
     try {
@@ -1618,6 +1621,9 @@ void
 Batch() 
   throws PipelineException : 
 {
+  /* initialize the plugins */ 
+  PluginMgrClient.init(true);
+
   /* setup the log files */ 
   if(pLogFile != null) {
     try {

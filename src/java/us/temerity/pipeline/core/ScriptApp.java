@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.53 2006/07/06 13:44:12 jim Exp $
+// $Id: ScriptApp.java,v 1.54 2006/07/10 14:37:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -55,46 +55,38 @@ class ScriptApp
   {
     packageArguments(args);
 
+    /* parse the command line */ 
     boolean success = false;
+    ScriptOptsParser parser = null;
     try {
-      /* initialize the plugins */ 
-      PluginMgrClient.init(true);
-
-      /* parse the command line */ 
-      ScriptOptsParser parser = null;
-      try {
-	parser = new ScriptOptsParser(new StringReader(pPackedArgs));
-	parser.setApp(this);
-	parser.CommandLine();   
-	
-	success = true;
-      }
-      catch(ParseException ex) {
-	handleParseException(ex);
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   wordWrap(ex.getMessage(), 0, 80));
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   getFullMessage(ex));
-      }
-      finally {
-	if(parser != null)
-	  parser.disconnect();
-	LogMgr.getInstance().cleanup();
-      }
+      parser = new ScriptOptsParser(new StringReader(pPackedArgs));
+      parser.setApp(this);
+      parser.CommandLine();   
+      
+      success = true;
+    }
+    catch(ParseException ex) {
+      handleParseException(ex);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 wordWrap(ex.getMessage(), 0, 80));
     }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(ex));
+    }
     finally {
-      PluginMgrClient.getInstance().disconnect();
+      if(parser != null)
+	parser.disconnect();
+
+      LogMgr.getInstance().cleanup();
+
+      PluginMgrClient pclient = PluginMgrClient.getInstance();
+      if(pclient != null) 
+	pclient.disconnect();
     }
 
     System.exit(success ? 0 : 1);
