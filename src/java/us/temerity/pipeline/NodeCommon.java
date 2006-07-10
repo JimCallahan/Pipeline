@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.28 2006/05/07 21:30:07 jim Exp $
+// $Id: NodeCommon.java,v 1.29 2006/07/10 08:11:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,7 +18,7 @@ import java.io.*;
  * @see NodeVersion
  * @see NodeMod
  */
-public
+public abstract
 class NodeCommon
   extends Named
 {  
@@ -426,8 +426,22 @@ class NodeCommon
   {
     return pBatchSize;
   }
-
   
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Does this version have links to upstream nodes.
+   */
+  public abstract boolean 
+  hasSources();
+
+  /** 
+   * Get the fully resolved names of the upstream nodes.
+   */
+  public abstract Set<String>
+  getSourceNames();
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -488,6 +502,7 @@ class NodeCommon
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   C L O N E A B L E                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -498,7 +513,8 @@ class NodeCommon
   public Object 
   clone()
   {
-    return new NodeCommon(this);
+    assert(false) : ("Cannot clone a NodeCommon!");
+    return null;
   }
 
 
@@ -563,7 +579,9 @@ class NodeCommon
     if(editor != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+	pEditor = client.newEditor(editor.getName(), 
+				   editor.getVersionID(), 
+				   editor.getVendor());
       }
       catch(PipelineException ex) {
 	throw new IOException(ex.getMessage());
@@ -577,7 +595,9 @@ class NodeCommon
     if(action != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
+	pAction = client.newAction(action.getName(), 
+				   action.getVersionID(), 
+				   action.getVendor());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
@@ -669,7 +689,9 @@ class NodeCommon
     if(editor != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pEditor = client.newEditor(editor.getName(), editor.getVersionID(), editor.getVendor());
+	pEditor = client.newEditor(editor.getName(), 
+				   editor.getVersionID(), 
+				   editor.getVendor());
       }
       catch(PipelineException ex) {
 	throw new GlueException(ex.getMessage());
@@ -680,7 +702,9 @@ class NodeCommon
     if(action != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
+	pAction = client.newAction(action.getName(), 
+				   action.getVersionID(), 
+				   action.getVendor());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
