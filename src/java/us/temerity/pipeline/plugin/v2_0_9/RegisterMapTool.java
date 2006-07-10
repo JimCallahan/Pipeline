@@ -1,4 +1,4 @@
-// $Id: RegisterMapTool.java,v 1.1 2006/06/21 05:25:10 jim Exp $
+// $Id: RegisterMapTool.java,v 1.2 2006/07/10 08:12:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -30,6 +30,8 @@ RegisterMapTool
     super("RegisterMap", new VersionID("2.0.9"), "Temerity",
 	  "Registers nodes associated with optimized Mental Ray memory mappable " + 
 	  "pyramid textures for all the selected image texture nodes.");
+
+    underDevelopment();
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
@@ -117,6 +119,8 @@ RegisterMapTool
 
 	  field.setEditable(false);
 	}
+	
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	{
 	  JTextField field = 
@@ -127,6 +131,8 @@ RegisterMapTool
 
 	  pNewPathField.add(field);
 	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	{
 	  JTextField field = 
@@ -200,6 +206,12 @@ RegisterMapTool
       act.setSingleParamValue("ImageSource", oldName);
       mod.setAction(act);
       mclient.modifyProperties(pUser, pView, mod);
+
+      if(pRoots.contains(oldName)) {
+	pRoots.remove(oldName);
+	pRoots.add(newName);
+      }
+
       i++;
     }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.51 2006/07/02 00:27:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.52 2006/07/10 08:12:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3976,7 +3976,9 @@ class JNodeViewerPanel
 	  selected.put(status.getName(), status);
       }
 
-      tool.initExecution(primary, selected);
+      TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+
+      tool.initExecution(primary, selected, roots);
 
       SwingUtilities.invokeLater(new ToolInputTask(tool));
     }
@@ -5503,7 +5505,7 @@ class JNodeViewerPanel
 	  if(pTool.executePhase(master.getMasterMgrClient(), master.getQueueMgrClient())) 
 	    SwingUtilities.invokeLater(new ToolInputTask(pTool));
 	  else if(pTool.updateOnExit()) 
-	    updateRoots();
+	    setRoots(pTool.rootsOnExit());
 	}
 	catch(Exception ex) {
 	  master.showErrorDialog(ex);

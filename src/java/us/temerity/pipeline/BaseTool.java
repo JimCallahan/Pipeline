@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.9 2006/02/28 19:47:45 jim Exp $
+// $Id: BaseTool.java,v 1.10 2006/07/10 08:12:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -124,16 +124,21 @@ class BaseTool
    * 
    * @param selected
    *   The last known status of the selected nodes indexed by fully resolved node name.
+   * 
+   * @param roots
+   *   The fully resolved names of the root nodes of the currently displayed node trees.
    */
   public void 
   initExecution
   (
    String primary, 
-   TreeMap<String,NodeStatus> selected
+   TreeMap<String,NodeStatus> selected, 
+   TreeSet<String> roots
   )
   {
     pPrimary  = primary;
     pSelected = selected;    
+    pRoots    = roots;
   }
 
 
@@ -217,6 +222,22 @@ class BaseTool
     return true;
   }
 
+  /**
+   * The fully resolved names of the root nodes to display on exit.
+   * 
+   * By default this method returns <CODE>pRoots</CODE>.  Subclasses which which to modify
+   * the set of nodes updated when the tool exits should modify the contents of 
+   * <CODE>pRoots</CODE> or override this method to return the specific root nodes they wish 
+   * to be displayed. 
+   */ 
+  public TreeSet<String> 
+  rootsOnExit() 
+  {
+    return pRoots; 
+  }
+
+
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -241,6 +262,15 @@ class BaseTool
    * The last known status of the selected nodes indexed by fully resolved node name.
    */ 
   protected TreeMap<String,NodeStatus>  pSelected; 
+
+  /**
+   * The fully resolved names of the root nodes of the currently displayed node trees. <P> 
+   * 
+   * You can modify the contents of this set to change which nodes are displayed once 
+   * the tool exits.  See the {@link #updateOnExit} and {@link rootsOnExit} methods
+   * for details.
+   */ 
+  protected TreeSet<String>  pRoots; 
 
 }
 
