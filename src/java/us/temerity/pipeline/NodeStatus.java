@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.17 2006/05/07 21:30:07 jim Exp $
+// $Id: NodeStatus.java,v 1.18 2006/07/10 10:55:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -234,6 +234,55 @@ class NodeStatus
   ) 
   {
     pTargets.put(status.getName(), status);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the given node is one of the upstream nodes.
+   * 
+   * @param name
+   *   The fully resolved name of the node.
+   */ 
+  public boolean
+  hasUpstreamNamed
+  (
+   String name
+  ) 
+  {
+    if(getName().equals(name)) 
+      return true;
+
+    for(NodeStatus status : pSources.values()) {
+      if(status.hasUpstreamNamed(name)) 
+	return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Whether the given node is one of the downstream nodes.
+   *
+   * @param name
+   *   The fully resolved name of the node.
+   */ 
+  public boolean
+  hasDownstreamNamed
+  (
+   String name
+  ) 
+  {
+    if(getName().equals(name)) 
+      return true;
+
+    for(NodeStatus status : pTargets.values()) {
+      if(status.hasDownstreamNamed(name)) 
+	return true;
+    }
+
+    return false;
   }
 
 

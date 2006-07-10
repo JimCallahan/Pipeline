@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.52 2006/07/10 08:12:15 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.53 2006/07/10 10:55:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -767,6 +767,27 @@ class JNodeViewerPanel
       roots.add(newName);
     }
     setRoots(roots);
+  }
+
+  /**
+   * Invalidate the state of all current root nodes which have the given node as an 
+   * upstream dependency.  These roots will be updated at the next status update.
+   */ 
+  private synchronized void
+  invalidateRootsContaining
+  (
+   String name
+  ) 
+  {
+    TreeSet<String> dead = new TreeSet<String>();
+    for(String root : pRoots.keySet()) {
+      NodeStatus status = pRoots.get(root);
+      if(root.equals(name) || status.hasUpstreamNamed(name)) 
+	dead.add(root);
+    }
+
+    for(String root : dead)
+      pRoots.put(root, null);
   }
 
 
@@ -4146,6 +4167,7 @@ class JNodeViewerPanel
 	  master.endPanelOp("Done.");
 	}
 
+	invalidateRootsContaining(pTarget);
 	removeRoots(linked);
       }
     }
