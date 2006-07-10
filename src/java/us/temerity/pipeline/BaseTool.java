@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.10 2006/07/10 08:12:15 jim Exp $
+// $Id: BaseTool.java,v 1.11 2006/07/10 10:30:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -267,7 +267,7 @@ class BaseTool
    * The fully resolved names of the root nodes of the currently displayed node trees. <P> 
    * 
    * You can modify the contents of this set to change which nodes are displayed once 
-   * the tool exits.  See the {@link #updateOnExit} and {@link rootsOnExit} methods
+   * the tool exits.  See the {@link #updateOnExit} and {@link #rootsOnExit} methods
    * for details.
    */ 
   protected TreeSet<String>  pRoots; 
