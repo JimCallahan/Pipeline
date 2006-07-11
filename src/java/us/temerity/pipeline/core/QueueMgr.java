@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.63 2006/07/09 17:04:32 jim Exp $
+// $Id: QueueMgr.java,v 1.64 2006/07/11 04:45:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1585,154 +1585,157 @@ class QueueMgr
       TaskTimer tm = new TaskTimer("Dispatcher [Host Status Changes]");
       boolean modified = false;  
       Date now = new Date();
-      synchronized(pSelectionSchedules) {
-	synchronized(pSelectionGroups) {
-	  
-	  /* attempt to re-Enable previously Hung servers */ 
-	  for(QueueHost host : pHosts.values()) {
-	    switch(host.getStatus()) {
-	    case Hung:
-	      if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
-		setHostStatus(host, QueueHost.Status.Enabled);	      
-	    }
+      {
+	/* attempt to re-Enable previously Hung servers */ 
+	for(QueueHost host : pHosts.values()) {
+	  switch(host.getStatus()) {
+	  case Hung:
+	    if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
+	      setHostStatus(host, QueueHost.Status.Enabled);	      
 	  }
+	}
 	   
-	  /* status */ 
+	/* status */ 
+	{
+	  /* make a copy of pending changes before attempting network communication */
+	  TreeMap<String,QueueHostStatusChange> changes = null;
 	  tm.aquire();
 	  synchronized(pStatusChanges) {
 	    tm.resume();
-	    
-	    for(String hname : pStatusChanges.keySet()) {
-	      QueueHostStatusChange change = pStatusChanges.get(hname);
-	      QueueHost host = pHosts.get(hname);
-	      if((change != null) && (host != null)) {
-		switch(change) {
-		case Enable:
-		case Disable:
-		  try {
-		    JobMgrControlClient client = new JobMgrControlClient(hname);
-		    client.verifyConnection();
-		    client.disconnect();
-		  }
-		  catch(PipelineException ex) {
-		    change = QueueHostStatusChange.Terminate;
-		  }	    	    
-		}
-		
-		switch(change) {
-		case Terminate:
-		  try {
-		    JobMgrControlClient client = new JobMgrControlClient(hname);
-		    client.shutdown();
-		  }
-		  catch(PipelineException ex) {
-		  }	    
-		}
-		
-		switch(change) {
-		case Enable:
-		  setHostStatus(host, QueueHost.Status.Enabled);
-		  break;
-		  
-		case Disable:
-		  setHostStatus(host, QueueHost.Status.Disabled);
-		  break;
-		  
-		case Terminate:
-		  setHostStatus(host, QueueHost.Status.Shutdown);
-		}
-	      }
-	    }
-
+	    changes = new TreeMap<String,QueueHostStatusChange>(pStatusChanges);
 	    pStatusChanges.clear();
 	  }
 
-	  /* hung servers */ 
-	  tm.aquire();
-	  synchronized(pHungChanges) {
-	    tm.resume();
+	  for(String hname : changes.keySet()) {
+	    QueueHostStatusChange change = changes.get(hname);
+	    QueueHost host = pHosts.get(hname);
+	    if((change != null) && (host != null)) {
+	      switch(change) {
+	      case Enable:
+	      case Disable:
+		try {
+		  JobMgrControlClient client = new JobMgrControlClient(hname);
+		  client.verifyConnection();
+		  client.disconnect();
+		}
+		catch(PipelineException ex) {
+		  change = QueueHostStatusChange.Terminate;
+		}	    	    
+	      }
+		
+	      switch(change) {
+	      case Terminate:
+		try {
+		  JobMgrControlClient client = new JobMgrControlClient(hname);
+		  client.shutdown();
+		}
+		catch(PipelineException ex) {
+		}	    
+	      }
+		
+	      switch(change) {
+	      case Enable:
+		setHostStatus(host, QueueHost.Status.Enabled);
+		break;
+		  
+	      case Disable:
+		setHostStatus(host, QueueHost.Status.Disabled);
+		break;
+		  
+	      case Terminate:
+		setHostStatus(host, QueueHost.Status.Shutdown);
+	      }
+	    }
+	  }	      
+	}
 
-	    for(String hname : pHungChanges) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		switch(host.getStatus()) {
-		case Enabled:
-		  {
-		    Date lastHung = host.getLastHung();
-		    if((lastHung == null) || 
-		       ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-		      setHostStatus(host, QueueHost.Status.Hung);
-		    else 
-		      setHostStatus(host, QueueHost.Status.Disabled);
-		  }
+	/* hung servers */ 
+	tm.aquire();
+	synchronized(pHungChanges) {
+	  tm.resume();
+
+	  for(String hname : pHungChanges) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Enabled:
+		{
+		  Date lastHung = host.getLastHung();
+		  if((lastHung == null) || 
+		     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+		    setHostStatus(host, QueueHost.Status.Hung);
+		  else 
+		    setHostStatus(host, QueueHost.Status.Disabled);
 		}
 	      }
 	    }
-
-	    pHungChanges.clear();
 	  }
 
-	  /* cancel holds on non-enabled servers */ 
-	  for(QueueHost host : pHosts.values()) {
-	    switch(host.getStatus()) {
-	    case Disabled:
-	    case Hung:
-	    case Shutdown:
-	      host.cancelHolds();
+	  pHungChanges.clear();
+	}
+
+	/* cancel holds on non-enabled servers */ 
+	for(QueueHost host : pHosts.values()) {
+	  switch(host.getStatus()) {
+	  case Disabled:
+	  case Hung:
+	  case Shutdown:
+	    host.cancelHolds();
+	  }
+	}	
+
+	/* user reservations */ 
+	tm.aquire();
+	synchronized(pReservationChanges) {
+	  tm.resume();
+
+	  for(String hname : pReservationChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      host.setReservation(pReservationChanges.get(hname));
+	      modified = true;
 	    }
-	  }	
+	  }
 
-	  /* user reservations */ 
-	  tm.aquire();
-	  synchronized(pReservationChanges) {
-	    tm.resume();
+	  pReservationChanges.clear();
+	}
+	    
+	/* job orders */ 
+	tm.aquire();
+	synchronized(pOrderChanges) {
+	  tm.resume();
 
-	    for(String hname : pReservationChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		host.setReservation(pReservationChanges.get(hname));
-		modified = true;
-	      }
+	  for(String hname : pOrderChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      host.setOrder(pOrderChanges.get(hname));
+	      modified = true;
 	    }
+	  }
 
-	    pReservationChanges.clear();
+	  pOrderChanges.clear();
+	}
+	    
+	/* job slots */ 
+	tm.aquire();
+	synchronized(pSlotChanges) {
+	  tm.resume();
+
+	  for(String hname : pSlotChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      host.setJobSlots(pSlotChanges.get(hname));
+	      modified = true;
+	    }
 	  }
 	    
-	  /* job orders */ 
-	  tm.aquire();
-	  synchronized(pOrderChanges) {
-	    tm.resume();
-
-	    for(String hname : pOrderChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		host.setOrder(pOrderChanges.get(hname));
-		modified = true;
-	      }
-	    }
-
-	    pOrderChanges.clear();
-	  }
+	  pSlotChanges.clear();
+	}
 	    
-	  /* job slots */ 
-	  tm.aquire();
-	  synchronized(pSlotChanges) {
-	    tm.resume();
-
-	    for(String hname : pSlotChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		host.setJobSlots(pSlotChanges.get(hname));
-		modified = true;
-	      }
-	    }
-	    
-	    pSlotChanges.clear();
-	  }
-	    
-	  /* selection groups */ 
-	  tm.aquire();
-	  synchronized(pSelectionGroupChanges) {
+	/* selection groups */ 
+	tm.aquire();
+	synchronized(pSelectionGroupChanges) {
+	  synchronized(pSelectionGroups) {
 	    tm.resume();
 
 	    for(String hname : pSelectionGroupChanges.keySet()) {
@@ -1745,15 +1748,17 @@ class QueueMgr
 		}
 	      }
 	    }
-
-	    pSelectionGroupChanges.clear();
 	  }
+	      
+	  pSelectionGroupChanges.clear();
+	}
 
-	  /* selection schedules */ 
-	  tm.aquire();
-	  synchronized(pSelectionScheduleChanges) {
+	/* selection schedules */ 
+	tm.aquire();
+	synchronized(pSelectionScheduleChanges) {
+	  synchronized(pSelectionSchedules) {
 	    tm.resume();
-	    
+	      
 	    for(String hname : pSelectionScheduleChanges.keySet()) {
 	      QueueHost host = pHosts.get(hname);
 	      if(host != null) {
@@ -1764,9 +1769,9 @@ class QueueMgr
 		}
 	      }
 	    }
-	    
-	    pSelectionScheduleChanges.clear();
 	  }
+	    
+	  pSelectionScheduleChanges.clear();
 	}
 
 	/* write changes to host database file disk */ 
@@ -6389,11 +6394,32 @@ class QueueMgr
   /**
    * Lock Nesting Order (to prevent deadlock):
    * 
-   * synchronized(pHostsInfo) {
-   *   synchronized(pHosts) {
+   * synchronized(pSelectionGroups) {
+   *   synchronized(pSelectionKeys) {
    *     ...
    *   }
+   * }
+   *
+   * synchronized(pHostsInfo) {
    *   synchronized(pStatusChanges) {
+   *     ...
+   *   }
+   *   synchronized(pHungChanges) {
+   *     ...
+   *   }
+   *   synchronized(pSampleChanges) {
+   *     ...
+   *   }
+   *   synchronized(pOsTypeChanges) {
+   *     ...
+   *   }
+   *   synchronized(pNumProcChanges) {
+   *     ...
+   *   }
+   *   synchronized(pTotalMemoryChanges) {
+   *     ...
+   *   }
+   *   synchronized(pTotalDiskChanges) {
    *     ...
    *   }
    *   synchronized(pReservationChanges) {
@@ -6411,40 +6437,74 @@ class QueueMgr
    *   synchronized(pSelectionScheduleChanges) {
    *     ...
    *   }
-   * }
-   * 
-   * synchronized(pToolsets) {
-   *   ...
+   *   synchronized(pHosts) {
+   *     ...
+   *   }
    * }
    * 
    * synchronized(pHosts) {
    *   synchronized(pJobs) {
-   *     synchronized(pToolsets) {
-   *       synchronized(pSelectionGroups) {
-   *         synchronized(pSelectionKeys) {
-   *           synchronized(pStatusChanges) {
-   *             ...
-   *           }
-   *           synchronized(pReservationChanges) {
-   *             ...
-   *           }
-   *           synchronized(pOrderChanges) {
-   *             ...
-   *           }
-   *           synchronized(pSlotChanges) {
-   *             ...
-   *           }
-   *           synchronized(pSelectionGroupChanges) {
-   *             ...
-   *           }
-   *           synchronized(pSelectionScheduleChanges) {
-   *             ...
-   *           }
-   *         }
+   *	 synchronized(pToolsets) {
+   *	   synchronized(pSelectionGroups) {
+   *         ...
    *       }
    *     }
-   *   }   
+   *   }
    *   synchronized(pJobInfo) {
+   *     ...
+   *   }
+   *   synchronized(pStatusChanges) {
+   *     ...
+   *   }
+   *   synchronized(pHungChanges) {
+   *     ...
+   *   }
+   *   synchronized(pReservationChanges) {
+   *     ...
+   *   }
+   *   synchronized(pOrderChanges) {
+   *     ...
+   *   }
+   *   synchronized(pSlotChanges) {
+   *     ...
+   *   }
+   *   synchronized(pSelectionGroups) {
+   *     ...
+   *   }
+   *   synchronized(pSelectionGroupChanges) {
+   *     synchronized(pSelectionGroups) {
+   *       ...
+   *     }
+   *   }
+   *   synchronized(pSelectionScheduleChanges) {
+   *     synchronized(pSelectionSchedules) {
+   *       ...
+   *     }
+   *   }
+   *   synchronized(pSelectionSchedules) {
+   *     synchronized(pSelectionGroups) {
+   *       ...
+   *     }
+   *   }
+   *   synchronized(pSampleChanges) {
+   *     ...
+   *   }
+   *   synchronized(pOsTypeChanges) {
+   *     ...
+   *   }
+   *   synchronized(pNumProcChanges) {
+   *     ...
+   *   }
+   *   synchronized(pTotalMemoryChanges) {
+   *     ...
+   *   }
+   *   synchronized(pTotalDiskChanges) {
+   *     ...
+   *   }
+   * }
+   * 
+   * synchronized(pJobInfo) {
+   *   synchronized(pNodeJobIDs) {
    *     ...
    *   }
    * }
@@ -6457,6 +6517,12 @@ class QueueMgr
    * 
    * synchronized(pSampleFileLock) { 
    *   synchronized(pMakeDirLock) {
+   *     ...
+   *   }
+   * }
+   * 
+   * synchronized(pSampleFileLock) { 
+   *    synchronized(pMakeDirLock) {
    *     ...
    *   }
    * }
