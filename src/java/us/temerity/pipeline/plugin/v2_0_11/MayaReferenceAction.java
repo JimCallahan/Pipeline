@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.2 2006/07/05 12:07:09 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.3 2006/07/14 18:06:40 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -14,7 +14,7 @@ import java.text.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Generates a new Maya scene from component scenes. <P> 
+ * Generates a new Maya scene using Maya referencing of component scenes.<P> 
  * 
  * A new empty scene is first created.  The component scenes are imported as Maya references 
  * from each source node who's primary file sequence is a Maya scene file ("ma" or "mb").  
