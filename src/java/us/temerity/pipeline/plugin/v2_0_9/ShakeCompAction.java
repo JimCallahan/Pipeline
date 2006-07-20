@@ -1,4 +1,4 @@
-// $Id: ShakeCompAction.java,v 1.1 2006/05/07 21:34:00 jim Exp $
+// $Id: ShakeCompAction.java,v 1.2 2006/07/20 17:48:00 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -114,7 +114,7 @@ class ShakeCompAction
     File script = null; 
     FrameRange range = null;
     {
-      /* generate the filename of the Maya scene to load */
+      /* generate the filename of the Shake script to load */
       {
 	String sname = (String) getSingleParamValue("ShakeScript"); 
 	if(sname == null) 
