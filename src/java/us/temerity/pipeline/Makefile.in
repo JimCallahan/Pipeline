@@ -295,7 +295,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
  UI_CORE_SOURCES = $(shell ls $(srcdir)/ui/core/*.java) 
 
-    UTIL_SOURCES = $(shell ls $(srcdir)/utils/v2_0_14/*.java) 
+    UTIL_SOURCES = $(shell ls $(srcdir)/utils/*.java $(srcdir)/utils/v2_0_14/*.java) 
 
 
      ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) $(CORE_SOURCES) \
@@ -353,7 +353,8 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/ui/core/*.class \
-                    us/temerity/pipeline/utils/v2_0_14/*.clas)
+                    us/temerity/pipeline/utils/*.class \
+                    us/temerity/pipeline/utils/v2_0_14/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -372,6 +373,7 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/task/*.class \
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
+                    us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
@@ -503,7 +505,7 @@ clean-class:
 	rm -f ui/*.class
 	rm -f ui/core/*.class
 	rm -f ui/core/prefs/*.class
-	rm -f utils/v2_0_14/*.class
+	rm -f utils/*.class utils/v2_0_14/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:
