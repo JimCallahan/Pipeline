@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.2 2006/05/07 21:30:07 jim Exp $
+// $Id: NativeOS.java,v 1.3 2006/07/22 05:27:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -167,18 +167,28 @@ class NativeOS
 	  output = proc.getStdOut().split("\\n");
 	}
 
-	if(output.length < 2)
+	if(output.length < 4)
 	  throw new IOException
 	    ("Missing output from vm_stat(1)!");
 
 	try {
 	  long pageSize = Long.parseLong(output[0].split("\\s")[7]);
 
-	  String fields[] = output[1].split("\\s");
-	  String str = fields[fields.length-1];
-	  long freePages = Long.parseLong(str.substring(0, str.length()-1));
+	  long freePages = 0L;
+	  {
+	    String fields[] = output[1].split("\\s");
+	    String str = fields[fields.length-1];
+	    freePages = Long.parseLong(str.substring(0, str.length()-1));
+	  }
 
-	  memory = pageSize * freePages;
+	  long inactivePages = 0L;
+	  {
+	    String fields[] = output[3].split("\\s");
+	    String str = fields[fields.length-1];
+	    inactivePages = Long.parseLong(str.substring(0, str.length()-1));
+	  }	    
+
+	  memory = pageSize * (freePages + inactivePages);
 	}
 	catch(Exception ex) {
 	  throw new IOException
