@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.4 2005/06/02 22:11:59 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.5 2006/07/22 05:14:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -135,6 +135,11 @@ class SourceParamsTableModel
 	  pColumnWidths[col]  = 160;
 	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
 	  pEditors[col]       = new JIntegerParamTableCellEditor(160, JLabel.CENTER);
+	}
+	else if(aparam instanceof ByteSizeActionParam) {
+	  pColumnWidths[col]  = 160;
+	  pRenderers[col]     = new JByteSizeParamTableCellRenderer(JLabel.CENTER);
+	  pEditors[col]       = new JByteSizeParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof DoubleActionParam) {
 	  pColumnWidths[col]  = 160;

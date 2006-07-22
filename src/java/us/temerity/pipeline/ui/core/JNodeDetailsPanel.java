@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.28 2006/05/07 21:30:14 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.29 2006/07/22 05:14:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2456,6 +2456,19 @@ class JNodeDetailsPanel
 
 		    hbox.add(field);
 		  }
+		  else if(aparam instanceof ByteSizeActionParam) {
+		    Long value = (Long) aparam.getValue();
+		    JByteSizeField field = 
+		      UIFactory.createByteSizeField(value, sVSize, JLabel.CENTER);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
 		  else if(aparam instanceof DoubleActionParam) {
 		    Double value = (Double) aparam.getValue();
 		    JDoubleField field = 
@@ -3296,6 +3309,11 @@ class JNodeDetailsPanel
 	    if(field.getValue() != null) 
 	      wtext = field.getValue().toString();
 	  }
+	  else if(aparam instanceof ByteSizeActionParam) {
+	    JByteSizeField field = (JByteSizeField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();
+	  }
 	  else if(aparam instanceof DoubleActionParam) {
 	    JDoubleField field = (JDoubleField) pcomps[1];
 	    if(field.getValue() != null) 
@@ -3903,6 +3921,10 @@ class JNodeDetailsPanel
 		  JIntegerField field = (JIntegerField) pcomps[1];
 		  value = field.getValue();
 		}
+		else if(aparam instanceof ByteSizeActionParam) {   
+		  JByteSizeField field = (JByteSizeField) pcomps[1];
+		  value = field.getValue();
+		}
 		else if(aparam instanceof DoubleActionParam) { 
 		  JDoubleField field = (JDoubleField) pcomps[1];
 		  value = field.getValue();
@@ -4288,6 +4310,10 @@ class JNodeDetailsPanel
 	else if(wparam instanceof IntegerActionParam) {
 	  JIntegerField field = (JIntegerField) pcomps[1];
 	  field.setValue((Integer) value);
+	}
+	else if(wparam instanceof ByteSizeActionParam) {
+	  JByteSizeField field = (JByteSizeField) pcomps[1];
+	  field.setValue((Long) value);
 	}
 	else if(wparam instanceof DoubleActionParam) {
 	  JDoubleField field = (JDoubleField) pcomps[1];
@@ -5256,6 +5282,11 @@ class JNodeDetailsPanel
 	      else if(aparam instanceof IntegerActionParam) {
 		JIntegerField field = (JIntegerField) comps[1];
 		field.setValue((Integer) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof ByteSizeActionParam) {
+		JByteSizeField field = (JByteSizeField) comps[1];
+		field.setValue((Long) value);
 		doActionParamChanged(pname);
 	      }
 	      else if(aparam instanceof DoubleActionParam) {
