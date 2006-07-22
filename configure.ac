@@ -886,7 +886,14 @@ AC_MSG_RESULT([ ])
 
 
 AC_SUBST(JAVA_RUNTIME)
-JAVA_RUNTIME=""
+JAVA_RUNTIME="";
+
+AC_SUBST(MAC_JAVA_RUNTIME)
+MAC_JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java"
+
+AC_SUBST(WIN_JAVA_RUNTIME)
+WIN_JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java"
+
 
 AC_SUBST(JAVA_RUNTIME_OPTS)
 JAVA_RUNTIME_OPTS=""
@@ -1395,6 +1402,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/v2_0_12/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_13/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_14/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_0_15/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
 

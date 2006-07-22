@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.17 2006/06/01 16:21:38 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.18 2006/07/22 05:12:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -153,7 +153,22 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S O R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Gets the abstract pathname of Java Runtime Environment for the given operating system.
+   */ 
+  public static Path
+  getJavaRuntime
+  (
+   OsType os
+  ) 
+  {
+    return sJavaRuntimePaths[os.ordinal()];
+  }
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /** 
    * Gets the abstract pathname of the root installation directory for the given 
    * operating system.
@@ -408,7 +423,6 @@ class PackageInfo
    */ 
   @Deprecated
   public static final File sInstDir;
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -737,6 +751,16 @@ class PackageInfo
   /*   P R I V A T E   F I E L D S                                                          */
   /*----------------------------------------------------------------------------------------*/
  
+  /**
+   * The abstract pathname of Java Runtime Environment indexed by 
+   * operating system type [OsType.ordinal()].
+   */ 
+  private static final Path sJavaRuntimePaths[] = {
+    new Path("@JAVA_RUNTIME@"), 
+    new Path("@WIN_JAVA_RUNTIME@"),
+    new Path("@MAC_JAVA_RUNTIME@")
+  };
+
   /** 
    * The root installation directory indexed by operating system type [OsType.ordinal()].
    */ 
