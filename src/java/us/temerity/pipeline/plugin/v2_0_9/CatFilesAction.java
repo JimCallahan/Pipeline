@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.1 2006/06/21 04:16:10 jim Exp $
+// $Id: CatFilesAction.java,v 1.2 2006/07/22 05:28:07 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -141,7 +141,7 @@ class CatFilesAction
 	  ("No source files where specified using the per-source Order parameter!");
     }
 
-    /* create a temporary MEL script file */ 
+    /* create a temporary shell script file */ 
     File script = createTemp(agenda, 0755, "bash");
     try {      
       FileWriter out = new FileWriter(script);
