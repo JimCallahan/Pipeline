@@ -791,7 +791,7 @@ TOKEN :
 | <COLON3:           ":">                                     : REVISION_NUMBER_STATE2 
 | <COMMA11:          ",">                                     : VENDOR_NAME_STATE 
 | <AE10:             ["\0"]>                                  : OPTIONS
-| <ILLEGAL_EDITOR:   (~[":","\0"])+>                          : IGNORE_STATE
+| <ILLEGAL_EDITOR:   (~[":",",","\0"])+>                      : IGNORE_STATE
 }
 
 
@@ -811,7 +811,7 @@ TOKEN :
 | <COLON4:           ":">                                     : REVISION_NUMBER_STATE2 
 | <COMMA12:          ",">                                     : VENDOR_NAME_STATE 
 | <AE11:             ["\0"]>                                  : OPTIONS
-| <ILLEGAL_ACTION:   (~[":","\0"])+>                          : IGNORE_STATE
+| <ILLEGAL_ACTION:   (~[":",",","\0"])+>                      : IGNORE_STATE
 }
 
 
@@ -831,7 +831,7 @@ TOKEN :
 | <COLON5:               ":">                                     : REVISION_NUMBER_STATE2 
 | <COMMA13:              ",">                                     : VENDOR_NAME_STATE 
 | <AE12:                 ["\0"]>                                  : OPTIONS
-| <ILLEGAL_COMPARATOR:   (~[":","\0"])+>                          : IGNORE_STATE
+| <ILLEGAL_COMPARATOR:   (~[":",",","\0"])+>                      : IGNORE_STATE
 }
 
 
@@ -851,7 +851,7 @@ TOKEN :
 | <COLON8:         ":">                                     : REVISION_NUMBER_STATE2 
 | <COMMA14:        ",">                                     : VENDOR_NAME_STATE 
 | <AE42:           ["\0"]>                                  : OPTIONS
-| <ILLEGAL_TOOL:   (~[":","\0"])+>                          : IGNORE_STATE
+| <ILLEGAL_TOOL:   (~[":",",","\0"])+>                      : IGNORE_STATE
 }
 
 
@@ -871,7 +871,7 @@ TOKEN :
 | <COLON9:             ":">                                     : REVISION_NUMBER_STATE2 
 | <COMMA15:            ",">                                     : VENDOR_NAME_STATE 
 | <AE43:               ["\0"]>                                  : OPTIONS
-| <ILLEGAL_ARCHIVER:   (~[":","\0"])+>                          : IGNORE_STATE
+| <ILLEGAL_ARCHIVER:   (~[":",",","\0"])+>                      : IGNORE_STATE
 }
 
 
@@ -938,7 +938,7 @@ TOKEN :
 | <#REVNUM2:                   (["0"-"9"])+>
 | <COMMA16:                    ",">                          : VENDOR_NAME_STATE 
 | <AE50:                       ["\0"]>                       : OPTIONS
-| <ILLEGAL_REVISION_NUMBER2:   (~["\0"])+>                   : IGNORE_STATE
+| <ILLEGAL_REVISION_NUMBER2:   (~[",","\0"])+>               : IGNORE_STATE
 }
 
 
@@ -6828,7 +6828,7 @@ RevisionNumber()
   Token t; 
 }
 {
-  t=<REVISION_NUMBER> 
+  (t=<REVISION_NUMBER> | t=<REVISION_NUMBER2>)
   {
     try {
       return new VersionID(t.image);

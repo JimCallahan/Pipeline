@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.54 2006/07/10 14:37:08 jim Exp $
+// $Id: ScriptApp.java,v 1.55 2006/07/24 23:48:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3875,6 +3875,7 @@ class ScriptApp
       return "an archive volume prefix/name"; 
 
     case ScriptOptsParserConstants.REVISION_NUMBER:
+    case ScriptOptsParserConstants.REVISION_NUMBER2:
       return "a revision number";
 
     case ScriptOptsParserConstants.VENDOR_NAME: 
