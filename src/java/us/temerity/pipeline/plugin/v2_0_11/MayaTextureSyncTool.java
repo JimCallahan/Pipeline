@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.1 2006/07/06 18:45:43 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.2 2006/07/29 02:19:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -1021,7 +1021,8 @@ class MayaTextureSyncTool
 	   "  string $tex = `getAttr ($node + \".fileTextureName\")`;\n" + 
 	   "  fprint $out (\"Shader=\" + $node + \" Texture=\" + $tex + \"\\n\");\n" + 
 	   "}\n" +
-	   "for ($each in `ls -type \"mentalrayTexture\"`)\n" +
+	   "string $nodes[] = `ls -type \"mentalrayTexture\"`;\n" +
+	   "for ($each in $nodes)\n" +
 	   "{\n" +
 	   "  string $tex = `getAttr ($each + \".fileTextureName\")`;\n" +
 	   "  fprint $out (\"MRay=\" + $each + \" Texture=\" + $tex + \"\\n\");\n" +
