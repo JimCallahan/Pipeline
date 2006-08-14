@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.10 2005/07/16 22:42:38 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.11 2006/08/14 22:38:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -196,9 +196,20 @@ class JBaseViewerPanel
    GLDrawable drawable
   )
   {
-    GL gl = drawable.getGL();
+    GL gl   = drawable.getGL();
+    GLU glu = drawable.getGLU();
 
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+
+    /* reset camera projection & clipping planes */ 
+    {
+      setClip(Math.max(0.001, -pCameraPos.z()-2.0), 
+	      Math.max(2.0, -pCameraPos.z()+2.0));
+      
+      gl.glMatrixMode(GL.GL_PROJECTION);
+      gl.glLoadIdentity();
+      glu.gluPerspective(pFOV, pAspect, pNear, pFar);
+    }
 
     /* set camera position */ 
     {
@@ -488,8 +499,6 @@ class JBaseViewerPanel
   )
   {
     int mods = e.getModifiersEx();
-
-    //    System.out.print("MOUSE DRAGGED: " + InputEvent.getModifiersExText(mods) + "\n");
 
     boolean rb   = false;
     boolean pan  = false;
