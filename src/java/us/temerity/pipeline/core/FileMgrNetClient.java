@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.3 2006/06/25 23:30:32 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.4 2006/08/15 05:59:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -107,7 +107,7 @@ class FileMgrNetClient
 
     FileRemoveWorkingAreaReq req = new FileRemoveWorkingAreaReq(author, view);
 
-    Object obj = performTransaction(FileRequest.RemoveWorkingArea, req);
+    Object obj = performLongTransaction(FileRequest.RemoveWorkingArea, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -172,7 +172,7 @@ class FileMgrNetClient
     FileStateReq req = 
       new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, mod.getSequences());
 
-    Object obj = performTransaction(FileRequest.State, req);
+    Object obj = performLongTransaction(FileRequest.State, req, 15000, 60000);  
 
     if(obj instanceof FileStateRsp) {
       FileStateRsp rsp = (FileStateRsp) obj;
@@ -298,7 +298,7 @@ class FileMgrNetClient
 
     FileRevertReq req = new FileRevertReq(id, files, writeable);
     
-    Object obj = performTransaction(FileRequest.Revert, req);
+    Object obj = performLongTransaction(FileRequest.Revert, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -337,7 +337,7 @@ class FileMgrNetClient
 
     FileCloneReq req = new FileCloneReq(sourceID, targetID, files, writeable);
     
-    Object obj = performTransaction(FileRequest.Clone, req);
+    Object obj = performLongTransaction(FileRequest.Clone, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -363,7 +363,7 @@ class FileMgrNetClient
     FileRemoveReq req = 
       new FileRemoveReq(id, files);
 
-    Object obj = performTransaction(FileRequest.Remove, req);
+    Object obj = performLongTransaction(FileRequest.Remove, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -388,7 +388,7 @@ class FileMgrNetClient
 
     FileRemoveAllReq req = new FileRemoveAllReq(id, fseqs);
 
-    Object obj = performTransaction(FileRequest.RemoveAll, req);
+    Object obj = performLongTransaction(FileRequest.RemoveAll, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -418,7 +418,7 @@ class FileMgrNetClient
     FileRenameReq req = 
       new FileRenameReq(id, mod.getPrimarySequence(), mod.getSecondarySequences(), pattern);
 
-    Object obj = performTransaction(FileRequest.Rename, req);
+    Object obj = performLongTransaction(FileRequest.Rename, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -449,7 +449,7 @@ class FileMgrNetClient
     FileChangeModeReq req = 
       new FileChangeModeReq(id, mod.getSequences(), writeable);
 
-    Object obj = performTransaction(FileRequest.ChangeMode, req);
+    Object obj = performLongTransaction(FileRequest.ChangeMode, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -471,7 +471,7 @@ class FileMgrNetClient
 
     FileDeleteCheckedInReq req = new FileDeleteCheckedInReq(name);
 
-    Object obj = performTransaction(FileRequest.DeleteCheckedIn, req);
+    Object obj = performLongTransaction(FileRequest.DeleteCheckedIn, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -504,7 +504,7 @@ class FileMgrNetClient
 
     FileGetArchiveSizesReq req = new FileGetArchiveSizesReq(fseqs);
 
-    Object obj = performTransaction(FileRequest.GetArchiveSizes, req);
+    Object obj = performLongTransaction(FileRequest.GetArchiveSizes, req, 15000, 60000);  
     if(obj instanceof FileGetSizesRsp) {
       FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
       return rsp.getSizes();
@@ -586,7 +586,7 @@ class FileMgrNetClient
 
     FileGetOfflineSizesReq req = new FileGetOfflineSizesReq(files);
 
-    Object obj = performTransaction(FileRequest.GetOfflineSizes, req);
+    Object obj = performLongTransaction(FileRequest.GetOfflineSizes, req, 15000, 60000);  
     if(obj instanceof FileGetSizesRsp) {
       FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
       return rsp.getSizes();
@@ -636,7 +636,7 @@ class FileMgrNetClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(FileRequest.GetOfflined, null);
+    Object obj = performLongTransaction(FileRequest.GetOfflined, null, 15000, 60000); 
     if(obj instanceof FileGetOfflinedRsp) {
       FileGetOfflinedRsp rsp = (FileGetOfflinedRsp) obj;
       return rsp.getVersions();
@@ -692,7 +692,7 @@ class FileMgrNetClient
 
     FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size);
 
-    Object obj = performTransaction(FileRequest.Extract, req);
+    Object obj = performLongTransaction(FileRequest.Extract, req, 15000, 60000); 
     if(obj instanceof FileArchiverRsp) {
       FileArchiverRsp rsp = (FileArchiverRsp) obj;
       return rsp.getOutput();
@@ -773,7 +773,7 @@ class FileMgrNetClient
 
     FileExtractCleanupReq req = new FileExtractCleanupReq(archiveName, stamp); 
 
-    Object obj = performTransaction(FileRequest.ExtractCleanup, req);
+    Object obj = performLongTransaction(FileRequest.ExtractCleanup, req, 15000, 60000); 
     handleSimpleResponse(obj);    
   }
 
