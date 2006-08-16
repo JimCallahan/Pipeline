@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.53 2006/07/05 12:08:50 jim Exp $
+// $Id: FileMgr.java,v 1.54 2006/08/16 18:56:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -166,6 +166,23 @@ class FileMgr
     pProdDir = PackageInfo.sProdPath.toFile();
     pRepoDir = PackageInfo.sRepoPath.toFile();
     pTempDir = PackageInfo.sTempPath.toFile();
+
+    /* make sure that the scratch directory exists */ 
+    try {
+      Path path = new Path(PackageInfo.sTempPath, "plfilemgr");
+      pScratchDir = path.toFile();
+      if(!pScratchDir.isDirectory())
+	if(!pScratchDir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create the temporary directory (" + pScratchDir + ")!");
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
+      System.exit(1);
+    }
 
     pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
     pWorkingLocks   = new HashMap<NodeID,Object>();
@@ -708,21 +725,27 @@ class FileMgr
 
 	  /* copy the files */ 
 	  if(!copies.isEmpty()) {	    
+	    ArrayList<String> preOpts = new ArrayList<String>();
+	    preOpts.add("--target-directory=" + rdir);
+	    
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--target-directory=" + rdir);
 	    for(File file : copies) 
 	      args.add(file.getPath());
-	    
-	    SubProcessLight proc = 
-	      new SubProcessLight("CheckIn-Copy", "cp", args, env, wdir);
+
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("CheckIn-Copy", "cp", preOpts, args, env, wdir);
+
 	    try {	    
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to copying files for working version (" + req.getNodeID() + 
-		   ") into the file repository:\n" +
-		   proc.getStdErr());
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to copy files for working version (" + req.getNodeID() + ") " + 
+		     "into the file repository:\n" +
+		     proc.getStdErr());
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -754,21 +777,27 @@ class FileMgr
 
 	  /* copy the checksums */ 
 	  {
+	    ArrayList<String> preOpts = new ArrayList<String>();
+	    preOpts.add("--target-directory=" + crdir);
+
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--target-directory=" + crdir);
 	    for(File file : files) 
 	      args.add(file.getPath());
 
-	    SubProcessLight proc = 
-	      new SubProcessLight("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("CheckIn-CopyCheckSums", "cp", preOpts, args, env, cwdir);
+
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to copying checksums for working version (" + 
-		   req.getNodeID() + ") into the checksum repository:\n" + 
-		   proc.getStdErr());		   
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to copy checksums for working version " + 
+		     "(" + req.getNodeID() + ") into the checksum repository:\n" + 
+		     proc.getStdErr());
+	      }		   
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -907,24 +936,30 @@ class FileMgr
 	    }
 
 	    if(!dirs.isEmpty()) {
+	      ArrayList<String> preOpts = new ArrayList<String>();
+	      preOpts.add("--parents");
+	      preOpts.add("--mode=755");
+
 	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--parents");
-	      args.add("--mode=755");
 	      for(File dir : dirs)
 		args.add(dir.getPath());
 	      
-	      SubProcessLight proc = 
-		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "CheckOut-MakeDirs", "mkdir", 
-				    args, env, pProdDir);
+	      LinkedList<SubProcessLight> procs = 
+		SubProcessLight.createMultiSubProcess
+		(req.getNodeID().getAuthor(), 
+		 "CheckOut-MakeDirs", "mkdir", 
+		 preOpts, args, env, pProdDir);
+
 	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to create directories for working version (" + 
-		     req.getNodeID() + "):\n\n" + 
-		     proc.getStdErr());	
+		for(SubProcessLight proc : procs) {
+		  proc.start();
+		  proc.join();
+		  if(!proc.wasSuccessful()) 
+		    throw new PipelineException
+		      ("Unable to create directories for working version (" + 
+		       req.getNodeID() + "):\n\n" + 
+		       proc.getStdErr());	
+		}
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -954,10 +989,11 @@ class FileMgr
 	/* if frozen, create relative symlinks from the working files to the 
 	   checked-in files */ 
 	if(req.isFrozen()) {
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--symbolic-link");
-	  args.add("--remove-destination");
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--symbolic-link");
+	  preOpts.add("--remove-destination");
 
+	  ArrayList<String> args = new ArrayList<String>();
 	  {
 	    StringBuffer buf = new StringBuffer();
 	    String comps[] = wpath.getPath().split("/");
@@ -969,20 +1005,26 @@ class FileMgr
 
 	    for(File file : files) 
 	      args.add(path + "/" + file);
-	    args.add(".");
 	  }
 
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"CheckOut-Symlink", "cp", args, env, wdir);
+	  ArrayList<String> postOpts = new ArrayList<String>();
+	  postOpts.add(".");
+
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (req.getNodeID().getAuthor(), 
+	     "CheckOut-Symlink", "cp", preOpts, args, postOpts, env, wdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to create symbolic links to the repository for the " +
-		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to create symbolic links to the repository for the " +
+		   "working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());
+	    }	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -993,23 +1035,29 @@ class FileMgr
 
 	/* otherwise, copy the checked-in files to the working directory */ 
 	else {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--remove-destination");
+	  preOpts.add("--target-directory=" + wdir);
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + wdir);
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"CheckOut-Copy", "cp", args, env, rdir);
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (req.getNodeID().getAuthor(), 
+	     "CheckOut-Copy", "cp", preOpts, args, env, rdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to copy files from the repository for the " +
-		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to copy files from the repository for the " +
+		   "working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1020,21 +1068,27 @@ class FileMgr
 
 	/* if frozen, remove the working checksums */ 
 	if(req.isFrozen()) {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--force");
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  SubProcessLight proc = 
-	    new SubProcessLight("CheckOut-RemoveCheckSums", "rm", args, env, cwdir);
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("CheckOut-RemoveCheckSums", "rm", preOpts, args, env, cwdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to remove the working checksums for version (" + 
-		 req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the working checksums for version (" + 
+		   req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1045,22 +1099,28 @@ class FileMgr
 
 	/* otherwise, overwrite the working checksums with the checked-in checksums */ 
 	else {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--remove-destination");
+	  preOpts.add("--target-directory=" + cwdir);
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + cwdir);
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  SubProcessLight proc = 
-	    new SubProcessLight("CheckOut-CopyCheckSums", "cp", args, env, crdir);
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	      ("CheckOut-CopyCheckSums", "cp", preOpts, args, env, crdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to copy checksums from the repository for the " +
-		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to copy checksums from the repository for the " +
+		   "working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1071,23 +1131,29 @@ class FileMgr
 
 	/* if not frozen, add write permission to the working files and checksums */ 
         if(!req.isFrozen()) {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("u+w");
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("u+w");
 	  for(File file : files) 
 	    args.add(file.getName());
 
 	  if(req.getWritable()) {
-	    SubProcessLight proc = 
-	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "CheckOut-SetWritable", "chmod", args, env, wdir);
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        (req.getNodeID().getAuthor(), 
+		 "CheckOut-SetWritable", "chmod", preOpts, args, env, wdir);
+
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to add write access permission to the files for " + 
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to add write access permission to the files for " + 
 		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1097,16 +1163,20 @@ class FileMgr
 	  }
 
 	  {
-	    SubProcessLight proc = 
-	      new SubProcessLight("CheckOut-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("CheckOut-SetWritableCheckSums", "chmod", preOpts, args, env, cwdir);
+
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to add write access permission to the checksums for " + 
-		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to add write access permission to the checksums for " + 
+		     "the working version (" + req.getNodeID() + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1196,24 +1266,29 @@ class FileMgr
 	    }
 
 	    if(!dirs.isEmpty()) {
+	      ArrayList<String> preOpts = new ArrayList<String>();
+	      preOpts.add("--parents");
+	      preOpts.add("--mode=755");
+
 	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--parents");
-	      args.add("--mode=755");
 	      for(File dir : dirs)
 		args.add(dir.getPath());
 	      
-	      SubProcessLight proc = 
-		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "Revert-MakeDirs", "mkdir", 
-				    args, env, pProdDir);
+	      LinkedList<SubProcessLight> procs = 
+		SubProcessLight.createMultiSubProcess
+		  (req.getNodeID().getAuthor(), 
+		   "Revert-MakeDirs", "mkdir", preOpts, args, env, pProdDir);
+
 	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to create directories for working version (" + 
+		for(SubProcessLight proc : procs) {
+		  proc.start();
+		  proc.join();
+		  if(!proc.wasSuccessful()) 
+		    throw new PipelineException
+		      ("Unable to create directories for working version (" + 
 		     req.getNodeID() + "):\n\n" + 
-		     proc.getStdErr());	
+		       proc.getStdErr());	
+		}
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1230,25 +1305,30 @@ class FileMgr
 
 	/* copy the checked-in files to the working directory */ 
 	{
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--remove-destination");
+	  preOpts.add("--target-directory=" + wdir);
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + wdir);
 	  args.addAll(rfiles);
 
-	  File rdir = new File(pProdDir, 
-			       "repository" + req.getNodeID().getName());
+	  File rdir = new File(pProdDir, "repository" + req.getNodeID().getName());
 	    
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"Revert-Copy", "cp", args, env, rdir);
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (req.getNodeID().getAuthor(), 
+	     "Revert-Copy", "cp", preOpts, args, env, rdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to copy files from the repository for the " +
-		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to copy files from the repository for the " +
+		   "working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1259,24 +1339,29 @@ class FileMgr
 
 	/* overwrite the working checksums with the checked-in checksums */ 
 	{
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+	  preOpts.add("--target-directory=" + cwdir);
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--force");
-	  args.add("--target-directory=" + cwdir);
 	  args.addAll(rfiles);
 
-	  File crdir = new File(pProdDir, 
-				"checksum/repository" + req.getNodeID().getName());
+	  File crdir = new File(pProdDir, "checksum/repository" + req.getNodeID().getName());
 
-	  SubProcessLight proc = 
-	    new SubProcessLight("Revert-CopyCheckSums", "cp", args, env, crdir);
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	      ("Revert-CopyCheckSums", "cp", preOpts, args, env, crdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to copy checksums from the repository for the " +
-		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to copy checksums from the repository for the " +
+		   "working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1287,22 +1372,28 @@ class FileMgr
 	
 	/* add write permission to the to working files and checksums */ 
         {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("u+w");
+
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("u+w");
 	  args.addAll(req.getFiles().keySet());
 
 	  if(req.getWritable()) {
-	    SubProcessLight proc = 
-	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "Revert-SetWritable", "chmod", args, env, wdir);
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	      (req.getNodeID().getAuthor(), 
+	       "Revert-SetWritable", "chmod", preOpts, args, env, wdir);
+
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to add write access permission to the files for " + 
-		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to add write access permission to the files for " + 
+		     "the working version (" + req.getNodeID() + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1312,16 +1403,20 @@ class FileMgr
 	  }
 
 	  {
-	    SubProcessLight proc = 
-	      new SubProcessLight("Revert-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("Revert-SetWritableCheckSums", "chmod", preOpts, args, env, cwdir);
+
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to add write access permission to the checksums for " + 
-		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to add write access permission to the checksums for " + 
+		     "the working version (" + req.getNodeID() + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1414,8 +1509,8 @@ class FileMgr
 
 	      SubProcessLight proc = 
 		new SubProcessLight(targetID.getAuthor(), 
-				    "Clone-MakeDirs", "mkdir", 
-				    args, env, pProdDir);
+				    "Clone-MakeDirs", "mkdir", args, env, pProdDir);
+
 	      try {
 		proc.start();
 		proc.join();
@@ -1447,60 +1542,103 @@ class FileMgr
 	}
 	
 	/* copy each primary file */ 
-	for(File ofile : files.keySet()) {
-	  File opath = new File(owdir, ofile.getName());
-	  if(opath.isFile()) {
-	    File file = files.get(ofile);
+	{
+	  boolean hasCommands = false;
+	  File script = null;
+	  try {
+	    script = File.createTempFile("Clone-Primary.", ".bash", pScratchDir);
+	    FileCleaner.add(script);
 
+	    FileWriter out = new FileWriter(script);
+
+	    for(File ofile : files.keySet()) {
+	      File opath = new File(owdir, ofile.getName());
+	      if(opath.isFile()) {
+		File file = files.get(ofile);
+		out.write("if ! cp --force " + opath.getPath() + " " + file.getName() +
+			  "; then exit 1; fi\n");
+		hasCommands = true;
+	      }
+	    }
+
+	    out.close();
+	  }
+	  catch(IOException ex) {
+	    throw new PipelineException
+	      ("Unable to write temporary script file (" + script + ")!\n" +
+	       ex.getMessage());
+	  }
+
+	  if(hasCommands) {
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add(opath.getPath());
-	    args.add(file.getName());
+	    args.add(script.getPath());
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight(targetID.getAuthor(), 
-				  "Clone-Primary", "cp", args, env, wdir);
+				  "Clone-Primary", "bash", args, env, wdir);
 	    try {
 	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		  ("Unable to clone a primary file for version (" + targetID + "):\n\n" + 
+		  ("Unable to clone the primary files for version " + 
+		   "(" + targetID + "):\n\n" + 
 		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while cloning a primary file for version " + 
-		   "(" + targetID + ")!");
+	      throw new PipelineException
+		("Interrupted while cloning the primary files for version " + 
+		 "(" + targetID + ")!");
 	    }
 	  }
 	}
 	
 	/* copy each primary checksum */ 
-	for(File ofile : files.keySet()) {
-	  File opath = new File(ocwdir, ofile.getName());
-	  if(opath.isFile()) {
-	    File file = files.get(ofile);
+	{
+	  boolean hasCommands = false;
+	  File script = null;
+	  try {
+	    script = File.createTempFile("Clone-PrimaryCheckSum.", ".bash", pScratchDir);
+	    FileCleaner.add(script);
 
+	    FileWriter out = new FileWriter(script);
+
+	    for(File ofile : files.keySet()) {
+	      File opath = new File(ocwdir, ofile.getName());
+	      if(opath.isFile()) {
+		File file = files.get(ofile);
+		out.write("if ! cp --force " + opath.getPath() + " " + file.getName() +
+			  "; then exit 1; fi\n");
+		hasCommands = true;
+	      }
+	    }
+
+	    out.close();
+	  }
+	  catch(IOException ex) {
+	    throw new PipelineException
+	      ("Unable to write temporary script file (" + script + ")!\n" +
+	       ex.getMessage());
+	  }
+	  
+	  if(hasCommands) {
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add(opath.getPath());
-	    args.add(file.getName());
+	    args.add(script.getPath());
 	    
 	    SubProcessLight proc = 
-	      new SubProcessLight("Clone-PrimaryCheckSum", "cp", args, env, cwdir);
+	      new SubProcessLight("Clone-PrimaryCheckSum", "bash", args, env, cwdir);
 	    try {
 	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		  ("Unable to clone a primary checksum for version " + 
+		  ("Unable to clone the primary checksums for version " + 
 		   "(" + targetID + "):\n\n" + 
-		     proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
-		("Interrupted while cloning a primary checksum for version " + 
+		("Interrupted while cloning the primary checksums for version " + 
 		 "(" + targetID + ")!");
 	    }
 	  }
@@ -1508,30 +1646,32 @@ class FileMgr
 
 	/* set write permission to the to working files */ 
         {
-	  ArrayList<String> args = new ArrayList<String>();
-	  if(req.getWritable()) 
-	    args.add("u+w");
-	  else 
-	    args.add("u-w");
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add(req.getWritable() ? "u+w" : "u-w");
 
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : files.values()) {
 	    File path = new File(wdir, file.getName());
 	    if(path.isFile()) 
 	      args.add(file.getPath()); 
 	  }
 	  
-	  if(args.size() > 1) {
-	    SubProcessLight proc = 
-	      new SubProcessLight(targetID.getAuthor(), 
-				  "Clone-SetWritable", "chmod", args, env, wdir);
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	      (targetID.getAuthor(), 
+	       "Clone-SetWritable", "chmod", preOpts, args, env, wdir);
+
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to set the access permission to the files for " + 
-		   "the working version (" + targetID + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to set the access permission to the files for " + 
+		     "the working version (" + targetID + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1541,28 +1681,33 @@ class FileMgr
 	  }
 	}
 
-	/* set write permission to the to working filesand checksums */ 
+	/* set write permission to the to working checksums */ 
 	{
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("u+w");
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("u+w");
 
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : files.values()) {
 	    File path = new File(cwdir, file.getName());
 	    if(path.isFile()) 
 	      args.add(file.getPath()); 
 	  }
 	    
-	  if(args.size() > 1) {
-	    SubProcessLight proc = 
-	      new SubProcessLight("Clone-SetWritableCheckSums", "chmod", args, env, cwdir);
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	      ("Clone-SetWritableCheckSums", "chmod", preOpts, args, env, cwdir);
+	    
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to add write access permission to the checksums for " + 
-		   "the working version (" + targetID + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to add write access permission to the checksums for " + 
+		     "the working version (" + targetID + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1775,130 +1920,181 @@ class FileMgr
       
 	/* move each primary file */ 
 	{
-	  Iterator<File> oiter = opfiles.iterator();
-	  Iterator<File>  iter = pfiles.iterator();
-	  while(oiter.hasNext() && iter.hasNext()) {
-	    File ofile = oiter.next();
-	    File opath = new File(owdir, ofile.getName());
-	    
-	    File file = iter.next();
-	    
-	    if(opath.isFile()) {
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--force");
-	      args.add(opath.getPath());
-	      args.add(file.getName());
+	  boolean hasCommands = false;
+	  File script = null;
+	  try {
+	    script = File.createTempFile("Rename-Primary.", ".bash", pScratchDir);
+	    FileCleaner.add(script);
+
+	    FileWriter out = new FileWriter(script);
+
+	    Iterator<File> oiter = opfiles.iterator();
+	    Iterator<File>  iter = pfiles.iterator();
+	    while(oiter.hasNext() && iter.hasNext()) {
+	      File ofile = oiter.next();
+	      File opath = new File(owdir, ofile.getName());
 	      
-	      SubProcessLight proc = 
-		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "Rename-Primary", "mv", args, env, wdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to rename a primary file for version (" + id + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while renaming a primary file for version (" + id + ")!");
+	      File file = iter.next();
+	    
+	      if(opath.isFile()) {
+		out.write("if ! mv --force " + opath.getPath() + " " + file.getName() +
+			  "; then exit 1; fi\n");
+		hasCommands = true;
 	      }
 	    }
+
+	    out.close();
 	  }
-	}
-	
-	/* move all of the secondary files (if the node directory changed) */ 
-	if(!owdir.equals(wdir)) {	
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(File file : sfiles) {
-	    File work = new File(owdir, file.getPath());
-	    if(work.isFile()) 
-	      old.add(file.getName());
+	  catch(IOException ex) {
+	    throw new PipelineException
+	      ("Unable to write temporary script file (" + script + ")!\n" +
+	       ex.getMessage());
 	  }
-	  
-	  if(!old.isEmpty()) {
+	      
+	  if(hasCommands) {
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add("--target-directory=" + wdir);
-	    args.addAll(old);
+	    args.add(script.getPath());
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "Rename-Secondary", "mv", args, env, owdir);
+				  "Rename-Primary", "bash", args, env, wdir);
 	    try {
 	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		  ("Unable to rename the secondary files for version (" + id + "):\n\n" + 
+		  ("Unable to rename the primary files for version (" + id + "):\n\n" + 
 		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
-		("Interrupted while renaming the secondary files for version (" + id + ")!");
+		("Interrupted while renaming a primary file for version (" + id + ")!");
+	    }
+	  }
+	}
+	
+	/* move all of the secondary files (if the node directory changed) */ 
+	if(!owdir.equals(wdir)) {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+	  preOpts.add("--target-directory=" + wdir);
+	
+	  ArrayList<String> args = new ArrayList<String>();
+	  for(File file : sfiles) {
+	    File work = new File(owdir, file.getPath());
+	    if(work.isFile()) 
+	      args.add(file.getName());
+	  }
+	  
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	      (req.getNodeID().getAuthor(), 
+	       "Rename-Secondary", "mv", preOpts, args, env, owdir);
+
+	    try {
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to rename the secondary files for version " + 
+		     "(" + id + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while renaming the secondary files for version " + 
+		 "(" + id + ")!");
 	    }
 	  }
 	}
 
 	/* move each primary checksum */ 
 	{
-	  Iterator<File> oiter = opfiles.iterator();
-	  Iterator<File>  iter = pfiles.iterator();
-	  while(oiter.hasNext() && iter.hasNext()) {
-	    File ofile = oiter.next();
-	    File opath = new File(ocwdir, ofile.getName());
-	    
-	    File file = iter.next();
-	    
-	    if(opath.isFile()) {
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--force");
-	      args.add(opath.getPath());
-	      args.add(file.getName());
+	  boolean hasCommands = false;
+	  File script = null;
+	  try {
+	    script = File.createTempFile("Rename-Primary.", ".bash", pScratchDir);
+	    FileCleaner.add(script);
+
+	    FileWriter out = new FileWriter(script);
+
+	    Iterator<File> oiter = opfiles.iterator();
+	    Iterator<File>  iter = pfiles.iterator();
+	    while(oiter.hasNext() && iter.hasNext()) {
+	      File ofile = oiter.next();
+	      File opath = new File(ocwdir, ofile.getName());
 	      
-	      SubProcessLight proc = 
-		new SubProcessLight("Rename-PrimaryCheckSum", "mv", args, env, cwdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to rename a primary checksum for version (" + id + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while renaming a primary checksum for version (" + id + ")!");
+	      File file = iter.next();
+	      
+	      if(opath.isFile()) {
+		out.write("if ! mv --force " + opath.getPath() + " " + file.getName() +
+			  "; then exit 1; fi\n");
+		hasCommands = true;
 	      }
 	    }
-	  }
-	}
-	
-	/* move all of the secondary checksums (if the node directory changed) */ 
-	if(!owdir.equals(wdir)) {	
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(File file : sfiles) {
-	    File work = new File(ocwdir, file.getPath());
-	    if(work.isFile()) 
-	      old.add(file.getName());
-	  }
-	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add("--target-directory=" + cwdir);
-	    args.addAll(old);
 
+	    out.close();
+	  }
+	  catch(IOException ex) {
+	    throw new PipelineException
+	      ("Unable to write temporary script file (" + script + ")!\n" +
+	       ex.getMessage());
+	  }
+	      
+	  if(hasCommands) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add(script.getPath());
+	    
 	    SubProcessLight proc = 
-	      new SubProcessLight("Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
+	      new SubProcessLight("Rename-PrimaryCheckSum", "bash", args, env, cwdir);
 	    try {
 	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		  ("Unable to rename the secondary checksums for version (" + id + "):\n\n" + 
+		  ("Unable to rename the primary checksums for version " + 
+		   "(" + id + "):\n\n" + 
 		   proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while renaming the primary checksums for version " +
+		 "(" + id + ")!");
+	    }
+	  }
+	}
+	
+	/* move all of the secondary checksums (if the node directory changed) */ 
+	if(!owdir.equals(wdir)) {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+	  preOpts.add("--target-directory=" + cwdir);
+	
+	  ArrayList<String> args = new ArrayList<String>();
+	  for(File file : sfiles) {
+	    File work = new File(ocwdir, file.getPath());
+	    if(work.isFile()) 
+	      args.add(file.getName());
+	  }
+	  
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("Rename-SecondaryCheckSums", "mv", preOpts, args, env, ocwdir);
+
+	    try {
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to rename the secondary checksums for version " + 
+		     "(" + id + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -2059,8 +2255,10 @@ class FileMgr
 	File wdir = new File(pProdDir, 
 			     req.getNodeID().getWorkingParent().toString());
 
+	ArrayList<String> preOpts = new ArrayList<String>();
+	preOpts.add(req.getWritable() ? "u+w" : "u-w");
+
 	ArrayList<String> args = new ArrayList<String>();
-	args.add(req.getWritable() ? "u+w" : "u-w");
 	for(FileSeq fseq : req.getFileSequences()) {
 	  for(File file : fseq.getFiles()) {
 	    File path = new File(wdir, file.getPath());
@@ -2069,18 +2267,22 @@ class FileMgr
 	  }
 	}
       
-	if(args.size() > 1) {
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"ChangeMode", "chmod", args, env, wdir);
+	if(!args.isEmpty()) {
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (req.getNodeID().getAuthor(), 
+	     "ChangeMode", "chmod", preOpts, args, env, wdir);
+	  
 	  try { 
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to change the write access permission of the files for " + 
-		 "the working version (" + req.getNodeID() + "):\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to change the write access permission of the files for " + 
+		   "the working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2441,25 +2643,30 @@ class FileMgr
 
       /* remove the symlinks in later versions which reference this version */ 
       {
- 	ArrayList<String> args = new ArrayList<String>();
- 	args.add("--force");
+ 	ArrayList<String> preOpts = new ArrayList<String>();
+ 	preOpts.add("--force");
 	
+ 	ArrayList<String> args = new ArrayList<String>();
 	for(File file : symlinks.keySet()) {
 	  for(VersionID lvid : symlinks.get(file)) 
 	    args.add(lvid + "/" + file);
 	}
-	
-	if(args.size() > 1) {
-	  SubProcessLight proc = 
-	    new SubProcessLight("Offline-DeleteSymlinks", "rm", args, env, nodeDir);
+
+	if(!args.isEmpty()) {
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    ("Offline-DeleteSymlinks", "rm", preOpts, args, env, nodeDir);
+	  
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to remove the stale symlinks referencing the checked-in version " + 
-		 "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
-		 proc.getStdErr());
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the stale symlinks referencing the checked-in " + 
+		   "version (" + vid + ") of node (" + name + ") from the repository:\n\n" +
+		   proc.getStdErr());
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2502,26 +2709,31 @@ class FileMgr
 	}
 
 	for(VersionID lvid : moves.keySet()) {
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--force");
-	  args.add("--target-directory=" + nodeDir + "/" + lvid);
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+	  preOpts.add("--target-directory=" + nodeDir + "/" + lvid);
 	  
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : moves.get(lvid)) 
 	    args.add(file.toString());
 
 	  File dir = new File(nodeDir, vid.toString());
 	  
-	  SubProcessLight proc = 
-	    new SubProcessLight("Offline-MoveFiles", "mv", args, env, dir);
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	      ("Offline-MoveFiles", "mv", preOpts, args, env, dir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to move the files associated with the checked-in version " + 
-		 "(" + vid + ") of node (" + name + ") referenced by later version " +
-		 "(" + lvid + ") symlinks:\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to move the files associated with the checked-in version " + 
+		   "(" + vid + ") of node (" + name + ") referenced by later version " +
+		   "(" + lvid + ") symlinks:\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2536,9 +2748,10 @@ class FileMgr
       {
 	File rdir = new File(nodeDir, vid.toString());
 
- 	ArrayList<String> args = new ArrayList<String>();
- 	args.add("--force");
+ 	ArrayList<String> preOpts = new ArrayList<String>();
+ 	preOpts.add("--force");
 	
+ 	ArrayList<String> args = new ArrayList<String>();
  	{
  	  File files[] = rdir.listFiles(); 
  	  int wk;
@@ -2546,17 +2759,21 @@ class FileMgr
  	    args.add(files[wk].getName());
  	}
 	
- 	SubProcessLight proc = 
- 	  new SubProcessLight("Offline-DeleteVersion", "rm", args, env, rdir);
+	LinkedList<SubProcessLight> procs = 
+	  SubProcessLight.createMultiSubProcess
+	    ("Offline-DeleteVersion", "rm", preOpts, args, env, rdir);
+
  	try {
- 	  proc.start();
- 	  proc.join();
- 	  if(!proc.wasSuccessful()) 
- 	    throw new PipelineException
- 	      ("Unable to remove the files associated with the checked-in version " + 
- 	       "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
- 	       proc.getStdErr());
- 	}
+	  for(SubProcessLight proc : procs) {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to remove the files associated with the checked-in version " + 
+		 "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
+		 proc.getStdErr());
+	  }
+	}
  	catch(InterruptedException ex) {
  	  throw new PipelineException
  	    ("Interrupted while offline the files associated with the checked-in version " + 
@@ -2941,25 +3158,30 @@ class FileMgr
       /* move restored files into the repository */ 
       if(!symlinks.isEmpty()) {
 	{
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--force");
-	  args.add("--target-directory=" + nodeDir + "/" + vid);
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+	  preOpts.add("--target-directory=" + nodeDir + "/" + vid);
 	
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : symlinks.keySet()) 
 	    args.add(file.getPath()); 
 	
 	  File sdir = new File(restoreDir, name + "/" + vid);
 	
-	  SubProcessLight proc = 
-	    new SubProcessLight("Restore-MoveFiles", "mv", args, env, sdir);
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	      ("Restore-MoveFiles", "mv", preOpts, args, env, sdir);
+
 	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to move the restored files associated with the checked-in " + 
-		 "version (" + vid + ") of node (" + name + ") into the repository:\n\n" + 
-		 proc.getStdErr());	
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to move the restored files associated with the checked-in " + 
+		   "version (" + vid + ") of node (" + name + ") into the repository:\n\n" + 
+		   proc.getStdErr());	
+	    }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2971,18 +3193,21 @@ class FileMgr
 
 	/* remove the symlinks in later versions which reference this version */ 
 	{
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--force");
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
 	  
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : symlinks.keySet()) {
 	    for(VersionID lvid : symlinks.get(file))
 	      args.add(lvid + "/" + file);
 	  }
 	  
-	  if(args.size() > 1) {
-	    SubProcessLight proc = 
-	      new SubProcessLight("Restore-DeleteSymlinks", "rm", args, env, nodeDir);
-	    try {
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	      ("Restore-DeleteSymlinks", "rm", preOpts, args, env, nodeDir);
+	  
+	  try {
+	    for(SubProcessLight proc : procs) {
 	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
@@ -2991,12 +3216,12 @@ class FileMgr
 		   "version (" + vid + ") of node (" + name + ") from the repository:\n\n" +
 		   proc.getStdErr());
 	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while removing the stale symlinks referencing the " + 
-		 "checked-in version (" + vid + ") of node (" + name + ") from the " + 
-		 "repository.");	
-	    }
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while removing the stale symlinks referencing the " + 
+	       "checked-in version (" + vid + ") of node (" + name + ") from the " + 
+	       "repository.");	
 	  }
 	}
 	
@@ -3248,29 +3473,31 @@ class FileMgr
 	
 	/* remove the working files */ 
 	{
-	  ArrayList<String> old = new ArrayList<String>();
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+	    
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : files) {
 	    File work = new File(wdir, file.getPath());
 	    if(work.isFile()) 
-	      old.add(file.getName());
+	      args.add(file.getName());
 	  }
 	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.addAll(old);
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	      (id.getAuthor(), "Remove-Files", "rm", preOpts, args, env, wdir);
 	    
-	    SubProcessLight proc = 
-	      new SubProcessLight(id.getAuthor(), 
-				  "Remove-Files", "rm", args, env, wdir);
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the working files for version (" + 
-		   id + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to remove the working files for version (" + 
+		     id + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -3282,39 +3509,40 @@ class FileMgr
 	
 	/* remove the working checksums */ 
 	{
-	  ArrayList<String> old = new ArrayList<String>();
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+
+	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : files) {
 	    File cksum = new File(cwdir, file.getPath());
 	    if(cksum.isFile()) 
-	      old.add(file.getName());
+	      args.add(file.getName());
 	  }
 	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.addAll(old);
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	      ("Remove-CheckSums", "rm", preOpts, args, env, cwdir);
 	    
-	    SubProcessLight proc = 
-	      new SubProcessLight("Remove-CheckSums", "rm", args, env, cwdir);
 	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the working checksums for version (" + 
-		   id + "):\n\n" + 
-		   proc.getStdErr());	
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to remove the working checksums for version (" + id + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
-		("Interrupted while removing the working checksums for version (" + 
-		 id + ")!");
+		("Interrupted while removing the working checksums for version " + 
+		 "(" + id + ")!");
 	    }
 	  }
 
 	  deleteEmptyParentDirs
-	    (new File(pProdDir, 
-		      "checksum/working/" + id.getAuthor() + "/" + id.getView()),
+	    (new File(pProdDir, "checksum/working/" + id.getAuthor() + "/" + id.getView()),
 	     cwdir);
 	}
 	
@@ -3417,6 +3645,7 @@ class FileMgr
   private File pProdDir; 
   private File pRepoDir; 
   private File pTempDir; 
+  private File pScratchDir; 
 
   /**
    * The file system directory creation lock.
