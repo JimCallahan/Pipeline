@@ -255,34 +255,34 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #--------------------------------------------------------------------------------------------#
 
 #            TESTS = BigInteger \
+#                    CheckSum \
+#                    FileMgr \
+#                    FileMgr2 \
 #                    FileSeq \
+#                    Glue \
+#                    MasterMgr \
+#                    MasterMgr2 \
 #                    Math \
+#                    NativeApp \
 #                    NativeFileSys \
+#                    NewToolsets \
 #                    NodeID \
-#                    SubProcess
+#                    NodeModVersion \
+#                    Path \
+#                    Plugins \
+#                    ReadWriteLock \
+#                    SubProcess \
 #                    VersionID \
 
 
-           TESTS = Path
-
-#                     CheckSum \
-#                     FileMgr \
-#                     Glue \
-#                     NativeFileSys \
-#                     NodeID \
-#                     MasterMgr \
-#                     NodeModVersion \
-#                     Toolsets \
+           TESTS = SubProcess 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
-#                   $(patsubst %.java,%.class,$(shell ls *.java))
 
 
-
-       INT_TESTS = Plugins \
+       INT_TESTS = Plugins
 
      INT_CLASSES = $(patsubst %,Test%App.class,$(INT_TESTS))
-
 
 
           TARGET = tests.jar
@@ -305,7 +305,6 @@ $(TARGET): $(CLASSES)
 
 $(CLASSES): $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
-	touch $@
 
 
 #--------------------------------------------------------------------------------------------#

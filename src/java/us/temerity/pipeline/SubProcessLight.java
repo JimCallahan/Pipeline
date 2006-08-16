@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.8 2006/05/07 21:30:08 jim Exp $
+// $Id: SubProcessLight.java,v 1.9 2006/08/16 18:57:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,6 +22,28 @@ public
 class SubProcessLight
   extends BaseSubProcess
 {  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Initialize fields which must be determined at runtime.
+   */ 
+  static {
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      sArgMax = 131072L - 1024L - 256L;  
+      // env + args + 1024(MAX_PATH_LEN) + 256? < 128k("getconf ARG_MAX")
+      break;
+
+    default:
+      sArgMax = -1L;
+    }
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -153,6 +175,308 @@ class SubProcessLight
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create one or more OS level subprocess for a program with a possibly large number
+   * of arguments which may be executed as the current user in several passes. <P> 
+   * 
+   * The calling conventions of the program must have the following form: 
+   * <DIV style="margin-left: 40px;">
+   *   program [pre-options] arg1 ... argN [post-options]
+   * </DIV> <P> 
+   * 
+   * Where the program can be invoked with one or more of the (<I>arg</I>) options using 
+   * the same (<I>pre/post-options</I>) in each invocation with identical results.  This 
+   * method will attempt to invoke the program with as many arguments as possible without 
+   * exceeding the maximum size of command line arguments for the underlying operating 
+   * system.<P> 
+   *
+   * The Windows operating system is not supported by this method.
+   * 
+   * @param name 
+   *   Name to give the created threads.
+   * 
+   * @param program
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param preOpts
+   *   The fixed length pre-option arguments.
+   * 
+   * @param args 
+   *   The variable length arguments.
+   * 
+   * @param postOpts
+   *   The fixed length pre-option arguments.
+   * 
+   * @param env  
+   *   The environment under which the OS level processes are run.  
+   * 
+   * @param dir  
+   *   The working directory of the OS level processes.   
+   */
+  public static LinkedList<SubProcessLight>
+  createMultiSubProcess
+  (
+   String name, 
+   String program, 
+   ArrayList<String> preOpts, 
+   ArrayList<String> args, 
+   ArrayList<String> postOpts, 
+   Map<String,String> env,      
+   File dir
+  ) 
+  {
+    if(PackageInfo.sOsType.equals(OsType.Windows)) 
+      throw new IllegalArgumentException
+	("This method does now support the Windows operating system!"); 
+
+    LinkedList<SubProcessLight> procs = new LinkedList<SubProcessLight>();
+    if(args.isEmpty())
+      return procs; 
+
+    for(ArrayList<String> margs : splitMultiArgs(preOpts, args, postOpts, env))
+      procs.add(new SubProcessLight(name, program, margs, env, dir));
+    
+    return procs;
+  }
+
+  /**
+   * Create one or more OS level subprocess for a program with a possibly large number
+   * of arguments which may be executed as the current user in several passes. <P> 
+   * 
+   * The calling conventions of the program must have the following form: 
+   * <DIV style="margin-left: 40px;">
+   *   program [pre-options] arg1 ... argN 
+   * </DIV> <P> 
+   * 
+   * Where the program can be invoked with one or more of the (<I>arg</I>) options using 
+   * the same (<I>pre-options</I>) in each invocation with identical results.  This 
+   * method will attempt to invoke the program with as many arguments as possible without 
+   * exceeding the maximum size of command line arguments for the underlying operating 
+   * system.<P> 
+   *
+   * The Windows operating system is not supported by this method.
+   * 
+   * @param name 
+   *   Name to give the created threads.
+   * 
+   * @param program
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param preOpts
+   *   The fixed length pre-option arguments.
+   * 
+   * @param args 
+   *   The variable length arguments.
+   * 
+   * @param env  
+   *   The environment under which the OS level processes are run.  
+   * 
+   * @param dir  
+   *   The working directory of the OS level processes.   
+   */
+  public static LinkedList<SubProcessLight>
+  createMultiSubProcess
+  (
+   String name, 
+   String program, 
+   ArrayList<String> preOpts, 
+   ArrayList<String> args, 
+   Map<String,String> env,      
+   File dir
+  ) 
+  {
+    return createMultiSubProcess(name, program, 
+				 preOpts, args, new ArrayList<String>(), 
+				 env, dir);
+  }
+
+  /**
+   * Create one or more OS level subprocess for a program with a possibly large number
+   * of arguments which may be executed as the given user in several passes. <P> 
+   * 
+   * The calling conventions of the program must have the following form: 
+   * <DIV style="margin-left: 40px;">
+   *   program [pre-options] arg1 ... argN [post-options]
+   * </DIV> <P> 
+   * 
+   * Where the program can be invoked with one or more of the (<I>arg</I>) options using 
+   * the same (<I>pre/post-options</I>) in each invocation with identical results.  This 
+   * method will attempt to invoke the program with as many arguments as possible without 
+   * exceeding the maximum size of command line arguments for the underlying operating 
+   * system.<P> 
+   * 
+   * The Windows operating system is not supported by this method.
+   *
+   * @param user  
+   *   The username which will own the OS level subprocesses.
+   * 
+   * @param name 
+   *   Name to give the created threads.
+   * 
+   * @param program
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param preOpts
+   *   The fixed length pre-option arguments.
+   * 
+   * @param args 
+   *   The variable length arguments.
+   * 
+   * @param postOpts
+   *   The fixed length pre-option arguments.
+   * 
+   * @param env  
+   *   The environment under which the OS level processes are run.  
+   * 
+   * @param dir  
+   *   The working directory of the OS level processes.   
+   */
+  public static LinkedList<SubProcessLight>
+  createMultiSubProcess
+  (
+   String user,  
+   String name, 
+   String program, 
+   ArrayList<String> preOpts, 
+   ArrayList<String> args, 
+   ArrayList<String> postOpts, 
+   Map<String,String> env,      
+   File dir
+  ) 
+  {
+    if(PackageInfo.sOsType.equals(OsType.Windows)) 
+      throw new IllegalArgumentException
+	("This method does now support the Windows operating system!"); 
+
+    LinkedList<SubProcessLight> procs = new LinkedList<SubProcessLight>();
+    if(args.isEmpty())
+      return procs; 
+
+    for(ArrayList<String> margs : splitMultiArgs(preOpts, args, postOpts, env))
+      procs.add(new SubProcessLight(user, name, program, margs, env, dir));
+    
+    return procs;
+  }
+
+  /**
+   * Create one or more OS level subprocess for a program with a possibly large number
+   * of arguments which may be executed as the given user in several passes. <P> 
+   * 
+   * The calling conventions of the program must have the following form: 
+   * <DIV style="margin-left: 40px;">
+   *   program [pre-options] arg1 ... argN 
+   * </DIV> <P> 
+   * 
+   * Where the program can be invoked with one or more of the (<I>arg</I>) options using 
+   * the same (<I>pre-options</I>) in each invocation with identical results.  This 
+   * method will attempt to invoke the program with as many arguments as possible without 
+   * exceeding the maximum size of command line arguments for the underlying operating 
+   * system.<P> 
+   * 
+   * The Windows operating system is not supported by this method.
+   *
+   * @param user  
+   *   The username which will own the OS level subprocesses.
+   * 
+   * @param name 
+   *   Name to give the created threads.
+   * 
+   * @param program
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param preOpts
+   *   The fixed length pre-option arguments.
+   * 
+   * @param args 
+   *   The variable length arguments.
+   * 
+   * @param env  
+   *   The environment under which the OS level processes are run.  
+   * 
+   * @param dir  
+   *   The working directory of the OS level processes.   
+   */
+  public static LinkedList<SubProcessLight>
+  createMultiSubProcess
+  (
+   String user,  
+   String name, 
+   String program, 
+   ArrayList<String> preOpts, 
+   ArrayList<String> args, 
+   Map<String,String> env,      
+   File dir
+  ) 
+  {
+    return createMultiSubProcess(user, name, program, 
+				 preOpts, args, new ArrayList<String>(), 
+				 env, dir);
+  }
+
+  /**
+   * Split into multiple invocations which do not exceed the argument length limits.
+   */ 
+  private static LinkedList<ArrayList<String>> 
+  splitMultiArgs
+  (
+   ArrayList<String> preOpts, 
+   ArrayList<String> multiOpts, 
+   ArrayList<String> postOpts, 
+   Map<String,String> env   
+  ) 
+  {
+    LinkedList<ArrayList<String>> margs = new LinkedList<ArrayList<String>>();
+
+    long envLen = 0L;
+    for(String key : env.keySet()) {
+      envLen += key.length() + 2;
+
+      String value = env.get(key);
+      if(value != null) 
+	envLen += value.length();
+    }
+
+    long preLen = 0L;
+    for(String opt : preOpts) 
+      preLen += opt.length() + 1;
+    
+    long postLen = 0L;
+    for(String opt : postOpts) 
+      postLen += opt.length() + 1;
+    
+    long total = preLen + postLen + envLen; 
+    ArrayList<String> args = null; 
+    for(String mopt : multiOpts) {
+      int len = mopt.length() + 1;
+      
+      if((args == null) || ((total + len) > sArgMax)) {
+	if(args != null) {
+	  for(String opt : postOpts) 
+	    args.add(opt);
+	}
+	
+	args = new ArrayList<String>();
+	margs.add(args);
+	
+	total = preLen + postLen + envLen;
+	for(String opt : preOpts) 
+	  args.add(opt);
+      }
+      
+      total += len;
+      args.add(mopt);	  
+    }
+    
+    for(String opt : postOpts) 
+      args.add(opt);
+
+    return margs; 
+  }
+
+  
 
   /*-- INITIALIZATION HELPERS --------------------------------------------------------------*/
 
@@ -703,6 +1027,17 @@ class SubProcessLight
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The maximum length of all command line arguments passed to a subprocess.
+   */ 
+  private static final long sArgMax;
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

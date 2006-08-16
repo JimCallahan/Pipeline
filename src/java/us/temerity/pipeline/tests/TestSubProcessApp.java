@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.8 2006/05/07 21:30:13 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.9 2006/08/16 18:57:07 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -24,6 +24,7 @@ class TestSubProcessApp
   )
   {
     LogMgr.getInstance().setLevel(LogMgr.Kind.Sub, LogMgr.Level.Finest);
+    FileCleaner.init();
 
     try {
       TestSubProcessApp app = new TestSubProcessApp();
@@ -43,11 +44,125 @@ class TestSubProcessApp
   { 
     File outdir = new File(System.getProperty("user.dir"), "data");
 
+    File temp = new File("/usr/tmp/TestSubProcess");
+    temp.mkdirs();
+
+    /* multi-subprocess (single) */ 
+    try {
+      System.out.print("-----------------------------------\n");
+
+      File dir = new File("/usr/tmp");
+
+      ArrayList<String> preOpts = new ArrayList<String>();
+      preOpts.add("-h");
+      preOpts.add("-al");
+
+      ArrayList<String> args = null; 
+      {
+	TreeSet<String> fargs = new TreeSet<String>();
+	File files[] = dir.listFiles(); 
+	if(files != null) {
+	  int fk;
+	  for(fk=0; fk<files.length; fk++) {
+	    if(!files[fk].isDirectory()) 		  
+	      fargs.add(files[fk].toString());
+	  }
+	}
+
+	args = new ArrayList<String>(fargs);
+      }
+
+      ArrayList<String> postOpts = new ArrayList<String>();
+      
+      Map<String,String> env = System.getenv();
+
+      LinkedList<SubProcessLight> procs = 
+	SubProcessLight.createMultiSubProcess
+	 ("MultiSubProcess-Single", "/bin/ls", preOpts, args, postOpts, env, temp); 
+
+      try {
+	for(SubProcessLight proc : procs) {
+	  proc.start();
+	  proc.join();
+	  printExitStats(proc);
+	}
+      }
+      catch(InterruptedException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
+      }
+    }
+    catch(Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);      
+    }
+
+    /* multi-subprocess */ 
+    try {
+      System.out.print("-----------------------------------\n");
+
+      File dir = new File("/usr/share/man");
+
+      ArrayList<String> preOpts = new ArrayList<String>();
+      preOpts.add("-h");
+      preOpts.add("-al");
+
+      ArrayList<String> args = null; 
+      {
+	TreeSet<String> fargs = new TreeSet<String>();
+	File dirs[] = dir.listFiles(); 
+	if(dirs != null) {
+	  int dk;
+	  for(dk=0; dk<dirs.length; dk++) {
+	    if(dirs[dk].isDirectory()) {
+	      File files[] = dirs[dk].listFiles(); 
+	      if(files != null) {
+		int fk;
+		for(fk=0; fk<files.length; fk++) {
+		  if(!files[fk].isDirectory()) 		  
+		    fargs.add(files[fk].toString());
+		}
+	      }
+	    }
+	  }
+	}
+
+	args = new ArrayList<String>(fargs);
+      }
+
+      ArrayList<String> postOpts = new ArrayList<String>();
+      
+      Map<String,String> env = System.getenv();
+
+      LinkedList<SubProcessLight> procs = 
+	SubProcessLight.createMultiSubProcess
+	 ("MultiSubProcess", "/bin/ls", preOpts, args, postOpts, env, temp); 
+
+      try {
+	for(SubProcessLight proc : procs) {
+	  proc.start();
+	  proc.join();
+	  printExitStats(proc);
+	}
+      }
+      catch(InterruptedException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
+      }
+    }
+    catch(Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);      
+    }
+
     /* fast commands */ 
     try {
       int wk;
       for(wk=0; wk<100; wk++) {
-	File file = File.createTempFile("quicky", "test", new File("/usr/tmp"));
+	File file = File.createTempFile("quicky", "test", temp); 
+	FileCleaner.add(file);
 
 	System.out.print("-----------------------------------\n");
 	  
@@ -254,6 +369,17 @@ class TestSubProcessApp
   private String
   exitStats
   (
+   SubProcessLight proc
+  ) 
+  {
+    return ("          User Time: " + proc.getUserTime() + "\n" + 
+	    "        System Time: " + proc.getSystemTime() + "\n" + 
+	    "        Page Faults: " + proc.getPageFaults() + "\n");
+  }
+
+  private String
+  exitStats
+  (
    SubProcessHeavy proc
   ) 
   {
@@ -270,6 +396,15 @@ class TestSubProcessApp
   {
     return("      Virtual Memory: " + proc.getVirtualSize() + " bytes\n" +
 	   "     Resident Memory: " + proc.getResidentSize() + " bytes\n");
+  }
+
+  private void 
+  printExitStats
+  (
+   SubProcessLight proc
+  ) 
+  {
+    System.out.print(exitStats(proc));
   }
 
   private void 
