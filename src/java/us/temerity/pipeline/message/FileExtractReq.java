@@ -1,4 +1,4 @@
-// $Id: FileExtractReq.java,v 1.2 2005/09/07 21:11:16 jim Exp $
+// $Id: FileExtractReq.java,v 1.3 2006/08/16 19:00:43 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -170,8 +170,8 @@ class FileExtractReq
     out.writeObject(pTimeStamp);
     out.writeObject(pFileSeqs);
     out.writeObject(new BaseArchiver(pArchiver));
-    out.writeObject(pSize);
     out.writeObject(pEnvironment);
+    out.writeObject(pSize);
   }  
 
   /**
