@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.8 2006/02/27 17:56:01 jim Exp $
+// $Id: QueueJob.java,v 1.9 2006/08/19 03:08:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -183,7 +183,9 @@ class QueueJob
     if(action != null) {
       try {
 	PluginMgrClient client = PluginMgrClient.getInstance();
-	pAction = client.newAction(action.getName(), action.getVersionID(), action.getVendor());
+	pAction = client.newAction(action.getName(), 
+				   action.getVersionID(), 
+				   action.getVendor());
 	pAction.setSingleParamValues(action);
 	pAction.setSourceParamValues(action);
       }
