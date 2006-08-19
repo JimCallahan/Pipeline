@@ -173,6 +173,7 @@ TOKEN :
 | <LOG_NET: 	     "net">    
 | <LOG_PLG: 	     "plg">      
 | <LOG_DSP: 	     "dsp">        
+| <LOG_JOB: 	     "job">        
 | <LOG_COL: 	     "col">        
 | <LOG_SCH: 	     "sch">        
 | <COLON:  	     ":">        : LOG_LEVEL  
@@ -418,7 +419,7 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
-   g=DspKind() | g=ColKind() | g=SchKind())
+   g=DspKind() | g=JobKind() | g=ColKind() | g=SchKind())
   {
     return g;
   }
@@ -475,6 +476,15 @@ LogMgr.Kind DspKind() :
   <LOG_DSP>
   {
     return LogMgr.Kind.Dsp;
+  }
+}
+
+LogMgr.Kind JobKind() : 
+{}
+{
+  <LOG_JOB>
+  {
+    return LogMgr.Kind.Job;
   }
 }
 

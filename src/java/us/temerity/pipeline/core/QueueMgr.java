@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.64 2006/07/11 04:45:01 jim Exp $
+// $Id: QueueMgr.java,v 1.65 2006/08/19 03:14:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -303,8 +303,15 @@ class QueueMgr
 
       if(stillExists) {
 	String hostname = running.get(jobID);
-	
-	WaitTask task = new WaitTask(hostname, jobID);
+
+	QueueJob job = null;
+	TreeSet<String> aquiredKeys = new TreeSet<String>();
+	synchronized(pJobs) {
+	  job = pJobs.get(jobID);
+	  aquiredKeys.addAll(job.getJobRequirements().getLicenseKeys());
+	}
+
+	MonitorTask task = new MonitorTask(hostname, job, aquiredKeys);
 	task.start();
       }
     }
@@ -3940,7 +3947,7 @@ class QueueMgr
     
     /* aquire the jobs license keys, 
          aborts early if unable to aquire all keys required by the job */ 
-    TreeSet<String> aquiredLicenseKeys = new TreeSet<String>();
+    TreeSet<String> aquiredKeys = new TreeSet<String>();
     {
       boolean available = true;
       timer.aquire();
@@ -3954,7 +3961,7 @@ class QueueMgr
  	  }
  	  else {
  	    if(key.aquire(host.getName())) 
- 	      aquiredLicenseKeys.add(kname);
+ 	      aquiredKeys.add(kname);
  	    else {
  	      available = false; 
  	      break;
@@ -3963,7 +3970,7 @@ class QueueMgr
  	}
 	
  	if(!available) {
- 	  for(String kname : aquiredLicenseKeys) 
+ 	  for(String kname : aquiredKeys) 
  	    pLicenseKeys.get(kname).release(host.getName());
  	  return false;
  	}
@@ -4003,56 +4010,32 @@ class QueueMgr
       }
     }
 
-    /* start the job on the selected server */ 
+    /* mark the job as being started on the selected server
+         technically this hasn't actually happened yet, but will happen shortly... */ 
     {
-      JobMgrControlClient client = null;
-      try {
- 	client = new JobMgrControlClient(host.getName());	
- 	client.jobStart(job, envs);
-	
- 	timer.aquire();
- 	synchronized(pJobInfo) {
- 	  timer.resume();
- 	  info.started(host.getName(), host.getOsType());
- 	  writeJobInfo(info);
- 	}
-	
-	host.setHold(job.getJobID(), jreqs.getRampUp());
-	host.jobStarted();
-      }
-      catch (Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage()); 
-	
-	Throwable cause = ex.getCause();
-	if(cause instanceof SocketTimeoutException) {
-	  Date now = new Date();
-	  Date lastHung = host.getLastHung();
-	  if((lastHung == null) || 
-	     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-	    setHostStatus(host, QueueHost.Status.Hung);
-	  else 
-	    setHostStatus(host, QueueHost.Status.Disabled);
+      timer.aquire();
+      synchronized(pJobInfo) {
+	timer.resume();
+
+	info.started(host.getName(), host.getOsType());
+	try {
+	  writeJobInfo(info);
 	}
-      
- 	timer.aquire();
- 	synchronized(pLicenseKeys) {
- 	  timer.resume();
- 	  for(String kname : aquiredLicenseKeys) 
- 	    pLicenseKeys.get(kname).release(host.getName());
- 	}
- 	return false;
+	catch (PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	     ex.getMessage()); 
+	}
       }
-      finally {
- 	if(client != null)
- 	  client.disconnect();
-      }
+
+      host.setHold(job.getJobID(), jreqs.getRampUp());
+      host.jobStarted();
     }
 
-    /* start a task to collect the results of the execution */ 
+    /* start a task to contact the job server to the job 
+         and collect the results of the execution */ 
     {
-      WaitTask task = new WaitTask(host.getName(), job.getJobID());
+      MonitorTask task = new MonitorTask(host.getName(), job, aquiredKeys, envs);
       task.start();
     }
 
@@ -5717,148 +5700,267 @@ class QueueMgr
   }
 
   /**
-   * Waits on a job to finish and records the results.
+   * Monitors the progress of a job from start to finish. 
    */
   private 
-  class WaitTask
+  class MonitorTask
     extends Thread
   {
+    /* just wait on an existing job */ 
     public 
-    WaitTask
+    MonitorTask
     (
      String hostname, 
-     long jobID
+     QueueJob job, 
+     TreeSet<String> aquiredKeys
     ) 
     {
-      super("QueueMgr:WaitTask");
+      this(hostname, job, aquiredKeys, null);
+    }
+
+    /* start a job on the given server and wait for it to finish */ 
+    public 
+    MonitorTask
+    (
+     String hostname, 
+     QueueJob job, 
+     TreeSet<String> aquiredKeys, 
+     DoubleMap<OsType,String,String> envs
+    ) 
+    {
+      super("QueueMgr:MonitorTask");
 
       pHostname = hostname; 
-      pJobID = jobID;
+      pJob = job; 
+      pAquiredKeys = aquiredKeys; 
+      pEnvironments = envs; 
     }
 
     public void 
     run() 
     {
-      /* wait for the job to finish and collect the results */ 
-      QueueJobResults results = null;
-      int tries = 0;
-      boolean done = false;
-      while(!done) {
-	JobMgrControlClient client = new JobMgrControlClient(pHostname);
+      long jobID = pJob.getJobID();
+
+      TaskTimer timer = new TaskTimer("Monitor - Job " + jobID);
+
+      /* attempt to start the job on the selected server, 
+	   no environment means the job has been started previously */ 
+      boolean aborted = false;
+      if(pEnvironments != null) {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
+
+	JobMgrControlClient client = new JobMgrControlClient(pHostname); 
 	try {
-	  results = client.jobWait(pJobID);
-	  done = true;
-	}
-	catch(PipelineException ex) {
-	  Throwable cause = ex.getCause();
-	  if(cause instanceof SocketTimeoutException) {
-	    tries++;
-	    String msg = null;
-	    if(tries < sMaxWaitReconnects) {
-	      msg = 
-		("Unable to retrieved results for job (" + pJobID + ") from " + 
-		 "(" + pHostname + ") before the connection timed-out.\n" + 
-		 "Reconnecting for the (" + tries + ") time...");
-	    }
-	    else {
-	      msg = 
-		("Giving up retrieved results for job (" + pJobID + ") from " +
-		 "(" + pHostname + ") after (" + tries + ") attempts!\n" + 
-		 "Marking the job as Failed!");
-	      done = true;
-	    }
-
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning, msg);
-	  }
-	  else {
-	    done = true;
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	       ex.getMessage()); 
-	  }
-	}
-	catch(Exception ex) {
-	  done = true;
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	     ex.getMessage()); 
-	}
-	finally {
-	  client.disconnect();
-	}
-      }
-
-      /* update job information */ 
-      boolean preempted = false;
-      synchronized(pJobInfo) {
-	try {
-	  QueueJobInfo info = pJobInfo.get(pJobID);
-	  switch(info.getState()) {
-	  case Preempted: 
-	    preempted = true;
-	    break;
-	    
-	  default:
-	    info.exited(results);
-	  }
-	  writeJobInfo(info);
-	}
-	catch (PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	     ex.getMessage()); 
-	}	
-      }
-      
-      /* release any license keys */ 
-      {
-	TreeSet<String> aquiredLicenseKeys = new TreeSet<String>();
-	synchronized(pJobs) {
-	  QueueJob job = pJobs.get(pJobID);
-	  aquiredLicenseKeys.addAll(job.getJobRequirements().getLicenseKeys());
-	}
-	
-	synchronized(pLicenseKeys) {
-	  for(String kname : aquiredLicenseKeys) 
-	    pLicenseKeys.get(kname).release(pHostname);
-	}
-      }
-
-      /* update the number of currently running jobs and release any ramp-up holds */ 
-      synchronized(pHosts) {
-	QueueHost host = pHosts.get(pHostname);
-	if(host != null) {
-	  host.jobFinished();
-	  host.cancelHold(pJobID);
-	}
-      }      
-
-      /* if the job was preempted, 
-	   clean up the obsolete data files on the jobs server and 
-	   put job back on the list of jobs waiting to be run */ 
-      if(preempted) {
-	JobMgrControlClient client = null;
-	try {
-	  client = new JobMgrControlClient(pHostname);	
-	  client.cleanupPreemptedResources(pJobID);
-
-	  pWaiting.add(pJobID);
+	  client.jobStart(pJob, pEnvironments); 
 	}
 	catch (Exception ex) {
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	    (LogMgr.Kind.Job, LogMgr.Level.Severe,
 	     ex.getMessage()); 
+	  
+	  Throwable cause = ex.getCause();
+	  if(cause instanceof SocketTimeoutException) {
+	    tm.aquire(); 
+	    synchronized(pHosts) {
+	      tm.resume();
+
+	      QueueHost host = pHosts.get(pHostname);
+	      if(host != null) {
+		Date now = new Date();
+		Date lastHung = host.getLastHung();
+		if((lastHung == null) || 
+		   ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+		  setHostStatus(host, QueueHost.Status.Hung);
+		else 
+		  setHostStatus(host, QueueHost.Status.Disabled);
+	      }
+	    }
+	  }
+	  
+	  /* treat a failure to start as a preemption */ 
+	  tm.aquire(); 
+	  synchronized(pJobInfo) {
+	    tm.resume();
+
+	    try {
+	      QueueJobInfo info = pJobInfo.get(jobID);
+	      info.preempted();
+	      writeJobInfo(info);
+	    }
+	    catch(PipelineException ex2) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Job, LogMgr.Level.Severe,
+		 ex2.getMessage()); 
+	    }
+	  }
+
+	  aborted = true;
 	}
 	finally {
 	  if(client != null)
 	    client.disconnect();
 	}
+
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+	   tm, timer);
       }
+
+      /* if job was successfully started... */ 
+      boolean preempted = false;
+      if(!aborted) {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]"); 
+
+	/* wait for the job to finish and collect the results */ 
+	tm.aquire(); 
+	QueueJobResults results = null;
+	int tries = 0;
+	boolean done = false;
+	while(!done) {
+	  JobMgrControlClient client = new JobMgrControlClient(pHostname);
+	  try {
+	    results = client.jobWait(jobID);
+	    done = true;
+	  }
+	  catch(PipelineException ex) {
+	    Throwable cause = ex.getCause();
+	    if(cause instanceof SocketTimeoutException) {
+	      tries++;
+	      String msg = null;
+	      if(tries < sMaxWaitReconnects) {
+		msg = 
+		  ("Unable to retrieved results for job (" + jobID + ") from " + 
+		   "(" + pHostname + ") before the connection timed-out.\n" +
+		   "Attempting to reconnect " + 
+		   "(" + tries + " of " + sMaxWaitReconnects + ")..."); 
+	      }
+	      else {
+		msg = 
+		  ("Giving up retrieved results for job (" + jobID + ") from " +
+		   "(" + pHostname + ") after making (" + tries + ") attempts!\n" + 
+		   "Marking the job as Failed!");
+		done = true;
+	      }
+	      
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Job, LogMgr.Level.Warning, msg);
+	    }
+	    else {
+	      done = true;
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Job, LogMgr.Level.Severe,
+		 ex.getMessage()); 
+	    }
+	  }
+	  catch(Exception ex) {
+	    done = true;
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Job, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	  finally {
+	    client.disconnect();
+	  }
+	}
+	tm.resume();
+	
+	/* update job information */ 
+	tm.aquire(); 
+	synchronized(pJobInfo) {
+	  tm.resume();
+
+	  try {
+	    QueueJobInfo info = pJobInfo.get(jobID);
+	    switch(info.getState()) {
+	    case Preempted: 
+	      preempted = true;
+	      break;
+	      
+	    default:
+	      info.exited(results);
+	    }
+	    writeJobInfo(info);
+	  }
+	  catch (PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Job, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }	
+	}
+	
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+	   tm, timer);
+      }
+
+      /* clean up... */ 
+      {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Cleanup]"); 
+
+	/* release any license keys */ 
+	tm.aquire();
+	synchronized(pLicenseKeys) {
+	  tm.resume();
+
+	  for(String kname : pAquiredKeys) 
+	    pLicenseKeys.get(kname).release(pHostname);
+	}
+	
+	/* update the number of currently running jobs and release any ramp-up holds */ 
+	tm.aquire();
+	synchronized(pHosts) {
+	  tm.resume();
+
+	  QueueHost host = pHosts.get(pHostname);
+	  if(host != null) {
+	    host.jobFinished();
+	    host.cancelHold(jobID);
+	  }
+	}      
+	
+	/* if the job was preempted, 
+	     clean up the obsolete data files on the jobs server */ 
+	if(preempted) {
+	  tm.aquire();
+	  JobMgrControlClient client = new JobMgrControlClient(pHostname);	
+	  try {
+	    client.cleanupPreemptedResources(jobID);
+	  }
+	  catch (Exception ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Job, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	  finally {
+	    if(client != null)
+	    client.disconnect();
+	  }
+	  tm.resume();
+	}
+
+	/* if aborted or preempted, 
+	     put job back on the list of jobs waiting to be run */ 
+	if(aborted || preempted)
+	  pWaiting.add(jobID);
+
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Job, LogMgr.Level.Finer, 
+	   tm, timer);	
+      }
+
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Job, LogMgr.Level.Fine,
+	 timer); 
     }
 
-    private String  pHostname; 
-    private long    pJobID; 
+
+    private String                           pHostname; 
+    private QueueJob                         pJob; 
+    private TreeSet<String>                  pAquiredKeys; 
+    private DoubleMap<OsType,String,String>  pEnvironments; 
   }
 
 
@@ -5892,7 +5994,7 @@ class QueueMgr
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	  (LogMgr.Kind.Job, LogMgr.Level.Severe,
 	   ex.getMessage()); 
       }
       finally {
@@ -5946,7 +6048,7 @@ class QueueMgr
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	    (LogMgr.Kind.Job, LogMgr.Level.Severe,
 	     ex.getMessage()); 
 	}
 	finally {

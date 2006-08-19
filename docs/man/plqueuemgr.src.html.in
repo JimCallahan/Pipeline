@@ -152,6 +152,12 @@ the job server dynamics resources collector thread.<br>
 the job dispatcher thread.<br>
 <br>
 </div>
+<span style="font-weight: bold;">job<br>
+</span>
+<div style="margin-left: 40px;">Logs the activity of the threads which
+start each job and wait for it to finish.<br>
+<br>
+</div>
 <span style="font-weight: bold;">sch<br>
 </span>
 <div style="margin-left: 40px;">Logs activity and timing statistics for
