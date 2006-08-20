@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.7 2006/05/07 20:35:27 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.8 2006/08/20 05:46:51 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -98,10 +98,10 @@ class BasePluginMgrClient
 	for(VersionID vid : source.get(vendor).get(name).keySet()) {
 	  Object[] objs = source.get(vendor).get(name).get(vid);
 	  String cname = (String) objs[0];
-	  byte[] bytes = (byte[]) objs[1];
+	  TreeMap<String,byte[]> contents = (TreeMap<String,byte[]>) objs[1];
 	  TreeSet<OsType> supports = (TreeSet<OsType>) objs[2];
 	  
-	  ClassLoader loader = new PluginClassLoader(bytes);
+	  ClassLoader loader = new PluginClassLoader(contents);
 	  try {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Plg, LogMgr.Level.Finer,

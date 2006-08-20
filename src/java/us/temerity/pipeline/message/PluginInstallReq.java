@@ -1,4 +1,4 @@
-// $Id: PluginInstallReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: PluginInstallReq.java,v 1.3 2006/08/20 05:46:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,7 +26,7 @@ class PluginInstallReq
    * Constructs a new request.
    * 
    * @param classfile
-   *   The plugin class file.
+   *   The plugin class or JAR file.
    * 
    * @param cname
    *   The full class name.
@@ -34,8 +34,8 @@ class PluginInstallReq
    * @param pkgID
    *   The revision number component of the class package.
    * 
-   * @param bytes
-   *   The raw class bytes.
+   * @param contents
+   *   The raw plugin class bytes indexed by class name.
    */
   public
   PluginInstallReq
@@ -43,7 +43,7 @@ class PluginInstallReq
    File classfile, 
    String cname, 
    VersionID pkgID, 
-   byte[] bytes
+   TreeMap<String,byte[]> contents
   )
   { 
     super();
@@ -51,7 +51,7 @@ class PluginInstallReq
     pClassFile = classfile; 
     pClassName = cname;
     pVersionID = pkgID; 
-    pBytes     = bytes;
+    pContents  = contents; 
   }
 
 
@@ -88,12 +88,12 @@ class PluginInstallReq
   }
 
   /**
-   * Get the raw class bytes.
+   * Get the raw class indexed by class name.
    */
-  public byte[]
-  getBytes()
+  public TreeMap<String,byte[]>
+  getContents() 
   {
-    return pBytes; 
+    return pContents; 
   }
 
 
@@ -126,9 +126,9 @@ class PluginInstallReq
   private VersionID pVersionID; 
 
   /**
-   * The raw class bytes.
+   * The raw class bytes indexed by class name.
    */ 
-  private byte[] pBytes; 
+  private TreeMap<String,byte[]>  pContents; 
 
 }
   

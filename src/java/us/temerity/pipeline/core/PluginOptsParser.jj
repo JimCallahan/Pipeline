@@ -49,7 +49,7 @@ PluginOptsParser
   {
     pLogBackups = 10;
     pList       = false;
-    pClassFiles = new TreeSet();
+    pPluginFiles = new TreeSet();
   }
  
 
@@ -90,9 +90,9 @@ PluginOptsParser
   private boolean  pInstall;
 
   /**
-   * The list of compiled Java class files containing plugins.
+   * The list of compiled Java plugin files containing plugins.
    */ 
-  private TreeSet  pClassFiles; 
+  private TreeSet  pPluginFiles; 
 }
 
 
@@ -119,10 +119,10 @@ TOKEN :
 | <LIST:         "--list">     
 | <INSTALL:      "--install">    
 
-  /* class files */
-| <CLASS_FILE:   ("/")* ("../")* <CLASS_COMP> 
-                 ("/" (".." | (<CLASS_COMP>)+)?)* ".class">  
-| <#CLASS_COMP:  (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+  /* plugin files */
+| <PLUGIN_FILE:   ("/")* ("../")* <PLUGIN_COMP> 
+                 ("/" (".." | (<PLUGIN_COMP>)+)?)* (".jar" | ".class")>  
+| <#PLUGIN_COMP:  (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
 
   /* seperators */ 
 | <AE1: (["\0"])+>
@@ -235,7 +235,7 @@ Commands()
 {
   (GlobalOpts() AE())* 
   ((List()) | 
-   (Install() (ClassFile() AE())+))
+   (Install() (PluginFile() AE())+))
   { 
     /* setup the log files */ 
     if(pLogFile != null) {
@@ -266,22 +266,22 @@ Commands()
 	pApp.listPlugins(client);
       }
       else if(pInstall) {
-	if(pClassFiles.isEmpty()) 
+	if(pPluginFiles.isEmpty()) 
 	  throw new ParseException
-	    ("No plugins where installed, since no Java class files where given!");
+	    ("No plugins where installed, since no Java class or JAR files were given!");
 	
-	File classdir = new File(".");
-	Iterator iter = pClassFiles.iterator();
+	File plugindir = new File(".");
+	Iterator iter = pPluginFiles.iterator();
 	while(iter.hasNext()) {
-	  File classfile = (File) iter.next();
+	  File pluginfile = (File) iter.next();
 	  
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     "Installing: " + classfile); 
+	     "Installing: " + pluginfile); 
 	  LogMgr.getInstance().flush();
 	  
 	  try {
-	    client.installPlugin(classdir, classfile);
+	    client.installPlugin(plugindir, pluginfile);
 	  }
 	  catch(PipelineException ex) {
 	    LogMgr.getInstance().log
@@ -319,19 +319,19 @@ Install() :
   }
 }
 
-void ClassFile() : 
+void PluginFile() : 
 {
   Token t; 
 }
 {
-  (t=<CLASS_FILE>) 
+  (t=<PLUGIN_FILE>) 
   {
     File file = new File(t.image);
     if(!file.isFile()) 
       throw new ParseException
-	("The given class file (" + file + ") does not exist!");
+	("The given plugin file (" + file + ") does not exist!");
 
-    pClassFiles.add(file);
+    pPluginFiles.add(file);
   }
 }
 

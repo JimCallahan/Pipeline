@@ -275,7 +275,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                    VersionID \
 
 
-           TESTS = SubProcess 
+           TESTS = JarReader
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
 

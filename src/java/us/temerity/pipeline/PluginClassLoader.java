@@ -1,8 +1,9 @@
-// $Id: PluginClassLoader.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginClassLoader.java,v 1.2 2006/08/20 05:46:51 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.io.*;
+import java.util.*;
 import java.net.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -23,18 +24,18 @@ class PluginClassLoader
   /** 
    * Construct a new plugin loader.
    * 
-   * @param bytes
-   *   The raw plugin class bytes.
+   * @param contents
+   *   The raw plugin class bytes indexed by class name.
    */
   public 
   PluginClassLoader
   (
-   byte[] bytes
+   TreeMap<String,byte[]> contents
   ) 
   {
     super();
 
-    pBytes = bytes;
+    pContents = contents; 
   }
 
 
@@ -53,7 +54,12 @@ class PluginClassLoader
   ) 
     throws ClassNotFoundException
   {
-    return defineClass(cname, pBytes, 0, pBytes.length);
+    byte bs[] = pContents.get(cname);
+    if(bs == null) 
+      throw new ClassNotFoundException
+	("Unable to find class (" + cname + ")!");
+
+    return defineClass(cname, bs, 0, bs.length);
   }
 
 
@@ -63,9 +69,9 @@ class PluginClassLoader
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The raw plugin class bytes.
+   * The raw plugin class bytes indexed by class name.
    */ 
-  private byte[]  pBytes; 
+  private TreeMap<String,byte[]>  pContents; 
 
 }
 

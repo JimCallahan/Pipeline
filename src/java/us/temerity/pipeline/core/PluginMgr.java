@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.9 2006/07/05 12:08:50 jim Exp $
+// $Id: PluginMgr.java,v 1.10 2006/08/20 05:46:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8,6 +8,8 @@ import us.temerity.pipeline.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
+import java.util.jar.*; 
+import java.util.zip.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R                                                                    */
@@ -164,7 +166,7 @@ class PluginMgr
 	    
 	    Object[] objs = new Object[3];
 	    objs[0] = plg.getClassName();
-	    objs[1] = plg.getBytes();
+	    objs[1] = plg.getContents();
 	    objs[2] = plg.getSupports();
 
 	    updated.put(vendor, name, vid, objs);
@@ -181,7 +183,7 @@ class PluginMgr
 	    if(cycleID < plg.getCycleID()) {
 	      Object[] objs = new Object[3];
 	      objs[0] = plg.getClassName();
-	      objs[1] = plg.getBytes();
+	      objs[1] = plg.getContents();
 	      objs[2] = plg.getSupports();
 
 	      updated.put(vendor, name, vid, objs);
@@ -225,27 +227,54 @@ class PluginMgr
 	  ("Only a user with Developer privileges may install plugins!");
 
       String cname = req.getClassName();
-      byte bytes[] = req.getBytes();
+      TreeMap<String,byte[]> contents = req.getContents();
 
       /* load the class and cache the class bytes */ 
       pLoadCycleID++;
-      loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), bytes);      
+      loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), contents); 
 
       /* save the plugin class bytes in a file */ 
       Path path = null; 
       try {
-	path = new Path(PackageInfo.sPluginsPath, cname.replace(".", "/") + ".class");
+	boolean isJar = (contents.size() > 1);
+	path = new Path(PackageInfo.sPluginsPath, 
+			cname.replace(".", "/") + (isJar ? ".jar" : ".class"));
 	  
 	File dir = path.getParentPath().toFile();
-	if(!dir.exists()) 
+	if(!dir.exists()) {
 	  if(!dir.mkdirs()) 
 	    throw new IOException
 	      ("Unable to create the directory (" + dir + ") where the plugin " + 
 	       "(" + cname + ") will be installed!");
+	}
+	else {
+	  /* remove old class or JAR file if the plugin has changed format */ 
+	  Path opath = new Path(PackageInfo.sPluginsPath, 
+				cname.replace(".", "/") + (isJar ? ".class" : ".jar"));
+	  File ofile = opath.toFile();
+	  if(ofile.isFile()) 
+	    ofile.delete();
+	}
+	  
+	if(isJar) {
+	  JarOutputStream out = new JarOutputStream(new FileOutputStream(path.toFile()));
+	  
+	  for(String key : contents.keySet()) {
+	    String ename = (key.replace(".", "/") + ".class");
+	    byte bs[] = contents.get(key);
+	    
+	    out.putNextEntry(new ZipEntry(ename));
+	    out.write(bs, 0, bs.length);
+	    out.closeEntry();
+	  }
 
-	FileOutputStream out = new FileOutputStream(path.toFile());
-	out.write(bytes);
-	out.close();
+	  out.close();
+	}
+	else {
+	  FileOutputStream out = new FileOutputStream(path.toFile());
+	  out.write(contents.get(cname)); 
+	  out.close();
+	}
       }
       catch(IOException ex) {
 	throw new PipelineException
@@ -319,9 +348,9 @@ class PluginMgr
 	  }
 	  catch(IllegalArgumentException ex) {
 	    throw new PipelineException 
-	      ("The directory containing plugin class files (" + dir + ") does " +
+	      ("The directory containing plugin files (" + dir + ") does " +
 	       "not conform to the naming convention of \"v#_#_#\" used to denote " +
-	       "the plugin version!  Ignoring class file (" + file + ").\n" + 
+	       "the plugin version!  Ignoring plugin file (" + file + ").\n" + 
 	       ex.getMessage());
 	  }
 
@@ -340,13 +369,13 @@ class PluginMgr
   }
 
   /**
-   * Load the plugin from the given class file.
+   * Load the plugin from the given class or JAR file.
    * 
    * @param classdir
    *   The sole Java CLASSPATH directory used to load the class. 
    * 
-   * @param classfile
-   *   The plugin class file.
+   * @param pluginfile
+   *   The plugin class or JAR file.
    * 
    * @throws PipelineException
    *   If unable to load the plugin.
@@ -355,7 +384,7 @@ class PluginMgr
   loadPlugin
   (
    File classdir, 
-   File classfile
+   File pluginfile
   ) 
     throws PipelineException 
   {
@@ -369,20 +398,20 @@ class PluginMgr
     }
     catch(IOException ex) {
       throw new PipelineException 
-	("The class directory (" + classdir + ") was not a valid directory!");
+	("The plugin directory (" + classdir + ") was not a valid directory!");
     }
 
     /* the canonical class file */ 
     File cfile = null;
     try {
-      cfile = classfile.getCanonicalFile();
+      cfile = pluginfile.getCanonicalFile();
 
       if(!cfile.isFile()) 
 	throw new IOException();
     }
     catch(IOException ex) {
       throw new PipelineException 
-	("The class file (" + classfile + ") was not a valid file!");
+	("The plugin file (" + pluginfile + ") was not a valid file!");
     }
 
     /* the class file relative to the class directory */ 
@@ -393,8 +422,8 @@ class PluginMgr
 
       if(!fpath.startsWith(dpath)) 
 	throw new PipelineException 
-	  ("The class file (" + cfile + ") was not located under the class directory " + 
-	   "(" + cdir + ")!");
+	  ("The plugin file (" + cfile + ") was not located under the " + 
+	   "plugin directory (" + cdir + ")!");
       
       rfile = new File(fpath.substring(dpath.length()));
     }
@@ -414,43 +443,94 @@ class PluginMgr
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException
-	("The class file (" + classfile + ") was not located under a directory who's " +
+	("The plugin file (" + pluginfile + ") was not located under a directory who's " +
 	 "name designates a legal plugin revision number:\n" + ex.getMessage());
     }
 
     /* the class name */ 
     String cname = null;
+    boolean isJar = false;
     {
       String parts[] = cfile.getName().split("\\.");
-      if((parts.length == 2) && parts[1].equals("class")) 
+      if((parts.length == 2) && (parts[1].equals("class") || parts[1].equals("jar"))) {
+	isJar = parts[1].equals("jar");
 	cname = (pkgName + "." + parts[0]);
-      else 
+      }
+      else {
 	throw new PipelineException 
-	  ("The class file (" + classfile + ") was not a Java class file!");
+	  ("The plugin file (" + pluginfile + ") was not a Java class or JAR file!");
+      }
     }
     
-    /* load, instantiate and validate the class */ 
+    /* load, instantiate and validate the plugin class or JAR file */ 
     {
-      byte[] bytes = new byte[(int) cfile.length()];
-      try {
-	FileInputStream in = new FileInputStream(cfile);
-	in.read(bytes);
-	in.close();
-      }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("Unable to read the class file (" + cfile + ")!");
-      }
+      TreeMap<String,byte[]> contents = new TreeMap<String,byte[]>(); 
+      if(isJar) {
+	try {
+	  JarInputStream in = new JarInputStream(new FileInputStream(cfile)); 
       
-      loadPluginHelper(classfile, cname, pkgID, bytes);
+	  byte buf[] = new byte[4096];
+	  while(true) {
+	    JarEntry entry = in.getNextJarEntry();
+	    if(entry == null) 
+	      break;
+
+	    if(!entry.isDirectory()) {
+	      String path = entry.getName(); 
+	      if(path.endsWith("class")) {
+		String jcname = path.substring(0, path.length()-6).replace('/', '.'); 
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		
+		while(true) {
+		  int len = in.read(buf, 0, buf.length); 
+		  if(len == -1) 
+		    break;
+		  out.write(buf, 0, len);
+		}
+		
+		contents.put(jcname, out.toByteArray());
+	      }
+	    }
+	  }
+
+	  in.close();
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("Unable to read the plugin JAR file (" + cfile + ")!");
+	}
+
+	if(!contents.containsKey(cname)) 
+	  throw new PipelineException
+	    ("The plugin JAR file (" + cfile + ") did not contain the required " + 
+	     "plugin class (" + cname + ")!");
+      }
+      else {
+	byte[] bytes = new byte[(int) cfile.length()];
+
+	try {
+	  FileInputStream in = new FileInputStream(cfile);
+	  in.read(bytes);
+	  in.close();
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("Unable to read the plugin class file (" + cfile + ")!");
+	}
+
+	contents.put(cname, bytes);
+      }
+
+      loadPluginHelper(pluginfile, cname, pkgID, contents);
     }
   }
     
   /**
    * Load the plugin.
    * 
-   * @param classfile
-   *   The plugin class file.
+   * @param pluginfile
+   *   The plugin class or JAR file.
    * 
    * @param cname
    *   The full class name.
@@ -458,8 +538,8 @@ class PluginMgr
    * @param pkgID
    *   The revision number component of the class package.
    * 
-   * @param bytes
-   *   The raw class bytes.
+   * @param contents
+   *   The raw plugin class bytes indexed by class name.
    * 
    * @throws PipelineException
    *   If unable to load the plugin.
@@ -467,14 +547,14 @@ class PluginMgr
   private void 
   loadPluginHelper
   (
-   File classfile, 
+   File pluginfile, 
    String cname, 
    VersionID pkgID, 
-   byte[] bytes
+   TreeMap<String,byte[]> contents
   ) 
     throws PipelineException
   {
-    ClassLoader loader = new PluginClassLoader(bytes);
+    ClassLoader loader = new PluginClassLoader(contents);
     try {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Plg, LogMgr.Level.Finer,
@@ -513,7 +593,7 @@ class PluginMgr
 	  ("The revision number (" + plg.getVersionID() + ") of the instantiated " + 
 	   "plugin class (" + cname + ") does not match the revision number " + 
 	   "(" + pkgID + ") derived from the name of the directory containing the " + 
-	   "class file (" + classfile + ")!");
+	   "class file (" + pluginfile + ")!");
       
       if(plg.getSupports().isEmpty()) 
 	throw new PipelineException
@@ -521,18 +601,18 @@ class PluginMgr
 	   "type of operating system!  At least one OS must be supported.");	
 
       if(plg instanceof BaseEditor) 
-	addPlugin(plg, cname, bytes, pEditors);
+	addPlugin(plg, cname, contents, pEditors);
       else if(plg instanceof BaseAction)
-	addPlugin(plg, cname, bytes, pActions);
+	addPlugin(plg, cname, contents, pActions);
       else if(plg instanceof BaseComparator)
-	addPlugin(plg, cname, bytes, pComparators);
+	addPlugin(plg, cname, contents, pComparators);
       else if(plg instanceof BaseTool)
-	addPlugin(plg, cname, bytes, pTools);
+	addPlugin(plg, cname, contents, pTools);
       else if(plg instanceof BaseArchiver)
-	addPlugin(plg, cname, bytes, pArchivers);
+	addPlugin(plg, cname, contents, pArchivers);
       else 
 	throw new PipelineException
-	  ("The class file (" + classfile + ") does not contain a Pipeline plugin!");
+	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
     }
     catch(LinkageError ex) {
       throw new PipelineException
@@ -558,8 +638,8 @@ class PluginMgr
    * @param cname
    *   The full name of the plugin class.
    * 
-   * @param bytes
-   *   The raw class bytes.
+   * @param contents
+   *   The raw plugin class bytes indexed by class name.
    * 
    * @param table
    *   The cached plugins.
@@ -569,7 +649,7 @@ class PluginMgr
   (
    BasePlugin plg,
    String cname, 
-   byte[] bytes, 
+   TreeMap<String,byte[]> contents, 
    TripleMap<String,String,VersionID,Plugin> table
   ) 
     throws PipelineException 
@@ -580,9 +660,10 @@ class PluginMgr
 	("Cannot install the plugin (" + cname + ") because a previously installed " + 
 	 "version of this plugin exists which is no longer under development!");
 
-    table.put(plg.getVendor(), plg.getName(), plg.getVersionID(), 
-	      new Plugin(pLoadCycleID, cname, plg.getSupports(), plg.isUnderDevelopment(), 
-			 bytes));
+    table.put(plg.getVendor(), plg.getName(), plg.getVersionID(),
+	      new Plugin(pLoadCycleID, cname, 
+			 plg.getSupports(), plg.isUnderDevelopment(), 
+			 contents));
   }
 
 
@@ -604,14 +685,14 @@ class PluginMgr
      String cname, 
      SortedSet<OsType> supports, 
      boolean underDevelopment,
-     byte[] bytes
+     TreeMap<String,byte[]> contents
     )
     {
       pCycleID            = cycleID; 
       pClassName          = cname;
       pSupports           = new TreeSet<OsType>(supports);
       pIsUnderDevelopment = underDevelopment;
-      pBytes              = bytes; 
+      pContents           = contents; 
     }
 
     public long
@@ -638,17 +719,17 @@ class PluginMgr
       return pIsUnderDevelopment;
     }
 
-    public byte[]
-    getBytes() 
+    public TreeMap<String,byte[]>
+    getContents() 
     {
-      return pBytes; 
+      return pContents; 
     }
 
-    private long             pCycleID; 
-    private String           pClassName;
-    private TreeSet<OsType>  pSupports; 
-    private boolean          pIsUnderDevelopment; 
-    private byte[]           pBytes; 
+    private long                    pCycleID; 
+    private String                  pClassName;
+    private TreeSet<OsType>         pSupports; 
+    private boolean                 pIsUnderDevelopment; 
+    private TreeMap<String,byte[]>  pContents; 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.4 2006/01/15 06:29:25 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.5 2006/08/20 05:46:51 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.jar.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R   C O N T R O L   C L I E N T                                      */
@@ -73,13 +74,13 @@ class PluginMgrControlClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Install a new or updated plugin class.
+   * Install a new or updated plugin class or JAR file.
    * 
    * @param classdir
    *   The sole Java CLASSPATH directory used to load the class. 
    * 
-   * @param classfile
-   *   The plugin class file.
+   * @param pluginfile
+   *   The plugin class or JAR file.
    * 
    * @throws PipelineException
    *   If unable to install the plugin.
@@ -88,7 +89,7 @@ class PluginMgrControlClient
   installPlugin
   (
    File classdir, 
-   File classfile
+   File pluginfile
   ) 
     throws PipelineException 
   {
@@ -102,20 +103,20 @@ class PluginMgrControlClient
     }
     catch(IOException ex) {
       throw new PipelineException 
-	("The class directory (" + classdir + ") was not a valid directory!");
+	("The plugin directory (" + classdir + ") was not a valid directory!");
     }
 
     /* the canonical class file */ 
     File cfile = null;
     try {
-      cfile = classfile.getCanonicalFile();
+      cfile = pluginfile.getCanonicalFile();
 
       if(!cfile.isFile()) 
 	throw new IOException();
     }
     catch(IOException ex) {
       throw new PipelineException 
-	("The class file (" + classfile + ") was not a valid file!");
+	("The plugin file (" + pluginfile + ") was not a valid file!");
     }
 
     /* the class file relative to the class directory */ 
@@ -126,8 +127,8 @@ class PluginMgrControlClient
 
       if(!fpath.startsWith(dpath)) 
 	throw new PipelineException 
-	  ("The class file (" + cfile + ") was not located under the class directory " + 
-	   "(" + cdir + ")!");
+	  ("The plugin file (" + cfile + ") was not located under the " + 
+	   "plugin directory (" + cdir + ")!");
       
       rfile = new File(fpath.substring(dpath.length()));
     }
@@ -147,37 +148,90 @@ class PluginMgrControlClient
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException
-	("The class file (" + classfile + ") was not located under a directory who's " +
+	("The plugin file (" + pluginfile + ") was not located under a directory who's " +
 	 "name designates a legal plugin revision number:\n" + ex.getMessage());
     }
 
     /* the class name */ 
     String cname = null;
+    boolean isJar = false;
     {
       String parts[] = cfile.getName().split("\\.");
-      if((parts.length == 2) && parts[1].equals("class")) 
+      if((parts.length == 2) && (parts[1].equals("class") || parts[1].equals("jar"))) {
+	isJar = parts[1].equals("jar");
 	cname = (pkgName + "." + parts[0]);
-      else 
+      }
+      else {
 	throw new PipelineException 
-	  ("The class file (" + classfile + ") was not a Java class file!");
+	  ("The plugin file (" + pluginfile + ") was not a Java class or JAR file!");
+      }
     }
     
-    /* load the raw bytes */ 
-    byte[] bytes = new byte[(int) cfile.length()];
-    try {
-      FileInputStream in = new FileInputStream(cfile);
-      in.read(bytes);
-	in.close();
+    /* load, instantiate and validate the plugin class or JAR file */ 
+    {
+      TreeMap<String,byte[]> contents = new TreeMap<String,byte[]>(); 
+      if(isJar) {
+	try {
+	  JarInputStream in = new JarInputStream(new FileInputStream(cfile)); 
+	  
+	  byte buf[] = new byte[4096];
+	  while(true) {
+	    JarEntry entry = in.getNextJarEntry();
+	    if(entry == null) 
+	      break;
+	    
+	    if(!entry.isDirectory()) {
+	      String path = entry.getName(); 
+	      if(path.endsWith("class")) {
+		String jcname = path.substring(0, path.length()-6).replace('/', '.'); 
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		
+		while(true) {
+		  int len = in.read(buf, 0, buf.length); 
+		  if(len == -1) 
+		    break;
+		  out.write(buf, 0, len);
+		}
+		
+		contents.put(jcname, out.toByteArray());
+	      }
+	    }
+	  }
+
+	  in.close();
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("Unable to read the plugin JAR file (" + cfile + ")!");
+	}
+	
+	if(!contents.containsKey(cname)) 
+	  throw new PipelineException
+	    ("The plugin JAR file (" + cfile + ") did not contain the required " + 
+	     "plugin class (" + cname + ")!");
+      }
+      else {
+	byte[] bytes = new byte[(int) cfile.length()];
+
+	try {
+	  FileInputStream in = new FileInputStream(cfile);
+	  in.read(bytes);
+	  in.close();
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("Unable to read the plugin class file (" + cfile + ")!");
+	}
+
+	contents.put(cname, bytes);
+      }
+      
+      PluginInstallReq req = new PluginInstallReq(pluginfile, cname, pkgID, contents);
+      
+      Object obj = performTransaction(PluginRequest.Install, req);
+      handleSimpleResponse(obj);    
     }
-    catch(IOException ex) {
-      throw new PipelineException
-	("Unable to read the class file (" + cfile + ")!");
-    }
-    
-    PluginInstallReq req = new PluginInstallReq(classfile, cname, pkgID, bytes);
-    
-    Object obj = performTransaction(PluginRequest.Install, req);
-    handleSimpleResponse(obj);    
   }
 }
 

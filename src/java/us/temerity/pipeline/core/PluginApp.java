@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.9 2006/05/07 21:30:08 jim Exp $
+// $Id: PluginApp.java,v 1.10 2006/08/20 05:46:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -276,8 +276,8 @@ class PluginApp
     case PluginOptsParserConstants.UNKNOWN_COMMAND:
       return "an unknown command";
 
-    case PluginOptsParserConstants.CLASS_FILE:
-      return "a Java class file";
+    case PluginOptsParserConstants.PLUGIN_FILE:
+      return "a plugin Java class or JAR file";
 
     case PluginOptsParserConstants.PATH_ARG:
       return "an file system path";

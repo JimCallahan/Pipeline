@@ -15,7 +15,7 @@
  style="font-weight: bold;"> </span><b><br>
 plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
  href="#--install"><span style="font-weight: bold;">--install</span></a>
-  <i>class-file1 </i>[<i>class-file2 ...</i>]<i><br>
+  <i>plugin-file1 </i>[<i>plugin-file2 ...</i>]<i><br>
   </i><br>
   <b>plplugin</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
   <b>plplugin</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
@@ -46,7 +46,8 @@ privileges</span> when installing plugins (see <a href="#--install"><span
 <h3><a name="Plugin_Limitations"></a>Plugin Requirements</h3>
 <blockquote>Besides safely installing plugin files, <span
  style="font-weight: bold;">plplugin</span>(1) inspects the compiled
-Java class files to make sure they will be loaded properly by Pipeline
+Java class or JAR files to make sure they will be loaded properly by
+Pipeline
 programs before performing the installation.&nbsp; Due to the dynamic
 nature of how Pipeline loads plugins, there are some
 restrictions on what plugins may contain and how they are named and
@@ -166,7 +167,8 @@ probably not a bad idea to follow this convention in order to keeping
 things
 straight.&nbsp;&nbsp;&nbsp; <br>
   <br>
-Notice that a "serialVersionUID" is provided for the plugin.&nbsp; This
+Note also that a "serialVersionUID" is provided for the plugin.&nbsp;
+This
 is important since these classes are serialized by Pipeline programs
 when communicating with each other over the network and this reduces
 the possibility of Java's serialization system from getting mixed
@@ -378,11 +380,32 @@ increasingly more detailed command tracing messages. <br>
 <h3><a name="Action_Options"></a>Action Options</h3>
 <div style="margin-left: 40px;">The following options specify the
 action to be taken by <b>plplugin</b>(1) and may be followed by the
-file system paths to one or more compiled Java class files containing
+file system paths to one or more compiled Java class or JAR files
+containing
 Pipeline plugins.&nbsp; The class files should each contain one plugin
 and be named identically to the Java class with the "<span
  style="font-family: monospace;">.class</span>" extension
 appended.&nbsp; <br>
+<br>
+Alternatively, a JAR archive file may be specified for plugins which
+require more than one complied class file.&nbsp; This JAR file must
+contain at least one class which matches the same naming conventions as
+the single compiled class file specified for plugins with only a single
+file.&nbsp; It may also contain additional class files used by this
+main plugin class.&nbsp; The JAR file must be named identically to the
+single class file case, except with the ".jar" extention instead of
+".class".&nbsp; <br>
+<br>
+Although you can manually create JAR files which contain any type of
+file, <span style="font-weight: bold;">plplugin</span>(1) will only
+install the compiled class files contained in a JAR.&nbsp; The Manifest
+file in the JAR is also ignored if present.&nbsp; For these reasons,
+the JAR file saved in the installed plugins directory will not
+necessarily be identical to the JAR file given to <span
+ style="font-weight: bold;">plplugin</span>(1).&nbsp; In fact, if you
+specify a JAR file containing only the single required plugin class
+file, then only this class will be installed without a wrapping JAR
+file.<br>
 <br>
 Each of the class file arguments is loaded using a Java class path
 containing only the current directory.&nbsp; This means that <span
@@ -395,12 +418,19 @@ For instance, to command line to install the <a href="#emacs"><span
  style="font-weight: bold;"> </span>mentioned above would be be: <br>
 <br>
 <div style="margin-left: 40px;"><code>&gt;
-plplugin us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
+plplugin --install us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
 </code></div>
 <br>
+A JAR file example, might look like this: <br>
+<div style="margin-left: 40px;">
+<pre>&gt; jar -cvf com/studioX/plugin/v2_1_0/ExampleAction.jar \<br>  com/studioX/plugin/v2_1_0/ExampleAction.class \<br>  com/studioX/plugin/v2_1_0/ExampleExtras.class <br><br>&gt; plplugin --install com/studioX/plugin/v2_1_0/ExampleAction.jar<br><code></code></pre>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--list"></a>--list</span><br>
+</div>
+<div style="margin-left: 40px;">You can also install mixtures of class
+and JAR files in one invocation of <span style="font-weight: bold;">plplugin</span>(1).<span
+ style="font-weight: bold;"><br>
+<br>
+<a name="--list"></a>--list</span><br>
 <span style="font-weight: bold;"></span></div>
 <br>
 <div style="margin-left: 40px;">
@@ -410,17 +440,24 @@ installed plugins and exits.<br>
 </div>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--install"></a>--install</span><i>
-class-file1 </i>[<i>class-file2 ...</i>]<br>
+ name="--install"></a>--install</span><i> plugin-file1 </i>[<i>plugin-file2
+...</i>]<br>
 <br>
-<div style="margin-left: 40px;">Installs plugins contained in the
-given class files and prints
-information about the installed plugins.&nbsp;&nbsp; If there exists a
+<div style="margin-left: 40px;">Installs one or more compiled plugins (<span
+ style="font-style: italic;">plugin-file</span>) contained in the
+given class or JAR files and prints
+information about the plugins processed.&nbsp; <br>
+<br>
+If there exists a
 previously installed plugin with the same name and version as one of
-the given classes, an error will be generated and the plugin will not
-be installed unless the previous plugin was under development (see <a
- href="#Important_Caveats"><span style="font-weight: bold;">Important
-Caveats</span></a>).<br>
+the given plugins, the existing plugin must be under development or an
+error will be generated (see <a href="#Important_Caveats"><span
+ style="font-weight: bold;">Important
+Caveats</span></a>).&nbsp; While under development, if the form of the
+installed plugin is changed from a single class file to a JAR (or visa
+versa) the previous installed plugin file will be removed when the
+plugin is installed.&nbsp; In other words, there will never be both a
+class and JAR file form installed for a given plugin version.<br>
 <br>
 <span style="font-weight: normal;">This command requires Developer
 privileges (see <a style="font-weight: bold;"
@@ -459,7 +496,11 @@ Programs</span><br>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Other
 Software</span><br>
-<div style="margin-left: 40px;"><a href="http://www.mozilla.org/"><b>mozilla</b></a>(1)</div>
+<div style="margin-left: 40px;"><a href="http://www.mozilla.org/"><b>mozilla</b></a>(1)
+<br>
+<span style="font-weight: bold;">jar</span>(1), <span
+ style="font-weight: bold;">serialver</span>(1)<br>
+</div>
 </div>
 <h3><a name="Files"></a>Files</h3>
 <div style="margin-left: 40px; font-weight: bold;"><a name="plugins_dir"></a><a
@@ -467,7 +508,7 @@ Software</span><br>
 </div>
 <div style="margin-left: 40px;"><br>
 <div style="margin-left: 40px;">The directory containing the installed
-plugin class files.<br>
+plugin class and JAR files.<br>
 </div>
 </div>
 <h3><a name="Author"></a>Author</h3>
