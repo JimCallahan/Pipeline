@@ -264,7 +264,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: Makefile java-all $(TARGET) 
+all: Makefile java-all $(TARGET) TestAction.jar
 
 $(TARGET): java-all
 	(cd ../../../../..; \
@@ -280,6 +280,17 @@ java-all: $(JAVA_SOURCES)
 	$(JAVA_CC) $<
 
 check:
+
+
+#--------------------------------------------------------------------------------------------#
+
+TestAction.jar: java-all 
+	(cd ../../../../..; \
+         $(JAR) cvf us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/$@ \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/TestAction.class \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/TestParams.class \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'TestParams$$TestEnum.class')
+	rm -f TestAction.class TestParams.class 'TestParams$$TestEnum.class'
 
 
 #--------------------------------------------------------------------------------------------#
@@ -325,7 +336,7 @@ uninstall-classes: $(JAVA_CLASSES)
 
 #--------------------------------------------------------------------------------------------#
 
-clean: clean-jar clean-class 
+clean: clean-jar clean-class clean-plugin-jars
 
 clean-jar:
 	rm -f $(TARGET)
@@ -333,6 +344,9 @@ clean-jar:
 clean-class:
 	rm -f *.class
 	rm -f java-all
+
+clean-plugin-jars: 
+	rm -f TestAction.jar
 
 
 #--------------------------------------------------------------------------------------------#
