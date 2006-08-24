@@ -1,6 +1,13 @@
 #!/bin/sh
 
-sitep=060519
+# NEW SERVER
+#sitep=060728
+
+# OLD SERVER
+#sitep=060519
+
+# OLD FILE SERVER / NEW PIPELINE SERVER
+sitep=060821
 
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
