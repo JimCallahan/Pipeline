@@ -297,7 +297,7 @@ TestAction.jar: java-all
 
 install: all installdirs install-sources install-classes 
 
-install-classes: $(shell find . -type f -name "*.java") TestAction.jar
+install-classes: $(shell find . -type f -name "*.class") TestAction.jar
 	@list='$^'; for p in $$list; do \
           if test -f $$p; then \
             echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR); \
