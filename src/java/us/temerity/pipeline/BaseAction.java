@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.32 2006/05/07 20:33:51 jim Exp $
+// $Id: BaseAction.java,v 1.33 2006/08/26 04:35:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1622,7 +1622,7 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Specifies the grouping of single valued parameters used layout components which 
+   * Specifies the grouping of single valued parameters used to layout components which 
    * represent the parameters in the user interface. 
    */ 
   private LayoutGroup  pSingleLayout;
