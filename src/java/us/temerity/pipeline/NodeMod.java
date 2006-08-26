@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.47 2006/05/07 21:30:07 jim Exp $
+// $Id: NodeMod.java,v 1.48 2006/08/26 04:55:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -889,6 +889,11 @@ class NodeMod
     case Serial:
     case Subdivided:
       pBatchSize = null;    
+      break;
+
+    case Parallel:
+      if(pBatchSize == null) 
+	pBatchSize = 0;
     }
 
     updateLastMod();
@@ -920,6 +925,9 @@ class NodeMod
 	("The batch size can only be set for nodes with Parallel execution!");
     }
 
+    if(size < 0)
+      throw new IllegalArgumentException
+	("The batch size cannot be negative!");
     pBatchSize = size;
 
     updateLastMod();
