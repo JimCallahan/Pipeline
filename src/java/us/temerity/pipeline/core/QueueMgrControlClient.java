@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.15 2006/01/16 04:11:12 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.16 2006/08/29 06:01:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17,7 +17,7 @@ import java.util.*;
  * A control connection to the Pipeline queue server daemon. <P> 
  * 
  * This class handles network communication with the Pipeline queue server daemon 
- * <A HREF="../../../../man/plmaster.html"><B>plqueuemgr</B><A>(1).  
+ * <A HREF="../../../../man/plqueuemgr.html"><B>plqueuemgr</B><A>(1).  
  */
 class QueueMgrControlClient
   extends QueueMgrClient
