@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.62 2006/07/03 06:38:42 jim Exp $
+// $Id: MasterMgrServer.java,v 1.63 2006/08/31 08:54:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,6 +42,10 @@ class MasterMgrServer
    * @param rebuildCache
    *   Whether to rebuild cache files and ignore existing lock files.
    * 
+   * @param preserveOfflinedCache
+   *   Whether to keep the offlined versions cache file after startup and reread instead of 
+   *   rebuilding it during a database rebuild.
+   * 
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
@@ -56,6 +60,7 @@ class MasterMgrServer
   (
    MasterApp app, 
    boolean rebuildCache, 
+   boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
    long nodeCacheLimit
   )
@@ -64,7 +69,8 @@ class MasterMgrServer
     super("MasterMgrServer");
 
     pMasterApp = app;
-    pMasterMgr = new MasterMgr(rebuildCache, internalFileMgr, nodeCacheLimit);
+    pMasterMgr = new MasterMgr(rebuildCache, preserveOfflinedCache, 
+			       internalFileMgr, nodeCacheLimit);
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
@@ -1214,7 +1220,7 @@ class MasterMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage());
+	   getFullMessage(ex));
       }
       finally {
 	closeConnection();

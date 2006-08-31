@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.18 2006/07/09 17:05:28 jim Exp $
+// $Id: MasterApp.java,v 1.19 2006/08/31 08:54:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -128,7 +128,7 @@ class MasterApp
        "  plmaster --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--rebuild] [--file-mgr]\n" + 
+       "  [--rebuild] [--preserve-offlined] [--file-mgr]\n" + 
        "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +

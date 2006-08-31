@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.157 2006/07/09 17:05:28 jim Exp $
+// $Id: MasterMgr.java,v 1.158 2006/08/31 08:55:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -197,6 +197,10 @@ class MasterMgr
    * @param rebuildCache
    *   Whether to rebuild cache files and ignore existing lock files.
    * 
+   * @param preserveOfflinedCache
+   *   Whether to keep the offlined versions cache file after startup and reread instead of 
+   *   rebuilding it during a database rebuild.
+   * 
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
@@ -210,14 +214,16 @@ class MasterMgr
   MasterMgr
   (
    boolean rebuildCache, 
+   boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
    long nodeCacheLimit
   )
     throws PipelineException 
   { 
-    pRebuildCache    = rebuildCache;
-    pInternalFileMgr = internalFileMgr;
-    pNodeCacheLimit  = nodeCacheLimit;
+    pRebuildCache          = rebuildCache;
+    pPreserveOfflinedCache = preserveOfflinedCache;
+    pInternalFileMgr       = internalFileMgr;
+    pNodeCacheLimit        = nodeCacheLimit;
 
     assert(PackageInfo.sOsType == OsType.Unix);
     pNodeDir = PackageInfo.sNodePath.toFile();
@@ -452,6 +458,16 @@ class MasterMgr
     if(restoredOn.exists())
       restoredOn.delete();
     
+    if(!pPreserveOfflinedCache) 
+      removeOfflinedCache();
+  }
+
+  /**
+   * Remove offlined versions cache files.
+   */ 
+  private void 
+  removeOfflinedCache()
+  {
     File offlined = new File(pNodeDir, "archives/offlined");
     if(offlined.exists())
       offlined.delete();
@@ -466,7 +482,7 @@ class MasterMgr
   {
     if(pRebuildCache) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Rebuilding Archive Caches...");   
 
       /* scan archive volume GLUE files */ 
@@ -523,15 +539,22 @@ class MasterMgr
 	    }
 	  }
 	}    
-      }
-      
+      }      
+
+      /* rebuild (or reread) offlined versions cache */ 
       {
-	FileMgrClient fclient = getFileMgrClient();
-	try {
-	  pOfflined = fclient.getOfflined();
+	File offlined = new File(pNodeDir, "archives/offlined");
+	if(pPreserveOfflinedCache && offlined.exists()) {
+	  readOfflined();
 	}
-	finally {
-	  freeFileMgrClient(fclient);
+	else {
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    pOfflined = fclient.getOfflined();
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
 	}
       }
     }
@@ -733,7 +756,7 @@ class MasterMgr
   {
     if(pRebuildCache) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Rebuilding Node Tree Cache...");   
       
       {
@@ -924,7 +947,7 @@ class MasterMgr
     }
 
     LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Fine,
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Rebuilding Downstream Links Cache...");   
 
     /* process checked-in versions */ 
@@ -9995,6 +10018,7 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
+    boolean cacheModified = false;
     try {
       timer.resume();	
 
@@ -10190,6 +10214,7 @@ class MasterMgr
 	  }
 	}
 
+	cacheModified = true;
 	return new SuccessRsp(timer);
       }
       finally {
@@ -10201,6 +10226,21 @@ class MasterMgr
     }  
     finally {
       pDatabaseLock.readLock().unlock();
+
+      /* keep the offlined cache file up-to-date */ 
+      if(cacheModified && pPreserveOfflinedCache) {
+	try {
+	  writeOfflined();
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
+	  
+	  removeOfflinedCache();
+	}
+      }
     }
   }
 
@@ -10673,6 +10713,7 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
+    boolean cacheModified = false;
     try {
       timer.resume();	
 
@@ -10919,6 +10960,7 @@ class MasterMgr
 	  }	  
 	}
 
+	cacheModified = true;
 	return new SuccessRsp(timer);
       }
       finally {
@@ -10956,6 +10998,21 @@ class MasterMgr
       }
 
       pDatabaseLock.readLock().unlock();
+
+      /* keep the offlined cache file up-to-date */ 
+      if(cacheModified && pPreserveOfflinedCache) {
+	try {
+	  writeOfflined();
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
+	  
+	  removeOfflinedCache();
+	}
+      }
     }
   }
 
@@ -16762,6 +16819,12 @@ class MasterMgr
    * Whether to rebuild cache files and ignore existing lock files.
    */
   private boolean  pRebuildCache; 
+
+  /**
+   * Whether to keep the offlined versions cache file after startup and reread instead of 
+   * rebuilding it during a database rebuild.
+   */
+  private boolean  pPreserveOfflinedCache; 
 
 
   /*----------------------------------------------------------------------------------------*/

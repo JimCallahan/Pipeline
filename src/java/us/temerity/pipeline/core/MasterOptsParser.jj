@@ -68,6 +68,12 @@ MasterOptsParser
   private boolean  pRebuildCache; 
 
   /**
+   * Whether to keep the offlined versions cache file after startup and reread instead of 
+   * rebuilding it during a database rebuild.
+   */
+  private boolean  pPreserveOfflinedCache; 
+
+  /**
    * Whether the file manager should be run as a thread of plmaster(1).
    */ 
   private boolean  pInternalFileMgr; 
@@ -108,6 +114,7 @@ TOKEN :
 
   /* global options */	
 | <REBUILD:           "--rebuild"> 
+| <PRESERVE_OFFLINED: "--preserve-offlined"> 
 | <FILE_MGR:          "--file-mgr">   
 | <LOG_FILE:          "--log-file">                : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
@@ -275,7 +282,8 @@ Commands()
 	 "host (" + PackageInfo.sMasterServer + ")!");
 
     /* create the server */ 
-    return (new MasterMgrServer(pApp, pRebuildCache, pInternalFileMgr, pNodeCacheLimit));
+    return (new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, 
+				pInternalFileMgr, pNodeCacheLimit));
   }
 }
     
@@ -364,7 +372,7 @@ GlobalOpts()
   throws PipelineException : 
 {}
 {
-  (Rebuild() | FileMgr() |
+  (Rebuild() | PreserveOfflined() | FileMgr() |
    Log() | LogFile() | StandardLogFile() | LogBackups() |
    RestoreCleanupInterval() | NodeGCInterval() | NodeCacheLimit())
   {}
@@ -376,6 +384,15 @@ void Rebuild() :
   <REBUILD>
   { 
     pRebuildCache = true; 
+  }
+}
+
+void PreserveOfflined() : 
+{}
+{
+  <PRESERVE_OFFLINED>
+  { 
+    pPreserveOfflinedCache = true; 
   }
 }
 
