@@ -76,8 +76,37 @@ the first time <span style="font-weight: bold;">plmaster</span>(1) is
 started, this option must be given.<br>
 <br>
 </div>
-<span style="font-weight: bold;"><br>
-<a name="--file-mgr"></a>--file-mgr</span><br>
+<span style="font-weight: bold;">
+<a name="--preserve-offlined"></a>--preserve-offlined<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Normally, whem <span style="font-weight: bold;">plmaster</span>(1)
+starts up it reads and then removes the database file containing the
+list of currently offlined repository node versions.&nbsp; When
+shutdown properly, this offlined versions cache file is written back to
+disk.&nbsp; If <span style="font-weight: bold;">plmaster</span>(1)
+exits abruptly due to a failure or hardware problem, the offined
+versions cache must be rebuilt from scratch by scanning the production
+repository directories.&nbsp; Usually, this behavior is desirable since
+it insures that the offlined version cache is always up-to-date.&nbsp;
+However, for very large production file systems this rescan can be very
+time consuming and sometimes it would be convienent to be able to avoid
+this rescanning process.<br>
+<br>
+This option will prevent <span style="font-weight: bold;">plmaster</span>(1)
+from removing the offlined versions cache file after startup.&nbsp; If
+given with the --rebuild option, <span style="font-weight: bold;">plmaster</span>(1)
+will read any existing offlined versions cache file instead of
+rebuilding it after an unclean shutdown.&nbsp; This option also forces <span
+ style="font-weight: bold;">plmaster</span>(1) to save the offline
+versions cache file after each offline/restore operation.&nbsp; This
+should greatly speed up the rebuild process for studios with large
+production file systems, but is inherently dangerous since the offlined
+versions cache file is not strictly guarenteed to be up-to-date if a
+failure occurs during an offline/restore operation. <br>
+<br>
+</div>
+<span style="font-weight: bold;"><a name="--file-mgr"></a>--file-mgr</span><br>
 <div style="margin-left: 40px;"><br>
 Run the Pipeline file manager as an internal thread of <span
  style="font-weight: bold;">plmaster</span>(1) instead of running the
