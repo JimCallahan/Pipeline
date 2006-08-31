@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.48 2006/08/26 04:55:17 jim Exp $
+// $Id: NodeMod.java,v 1.49 2006/08/31 18:20:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -768,14 +768,16 @@ class NodeMod
     if((pAction != null) && pAction.isUnderDevelopment()) {
       BaseAction action = pAction;
       PluginMgrClient pclient = PluginMgrClient.getInstance();
-      pAction = pclient.newAction(action.getName(), action.getVersionID(), action.getVendor());
+      pAction = pclient.newAction(action.getName(), 
+				  action.getVersionID(), 
+				  action.getVendor());
       pAction.setSingleParamValues(action);
       pAction.setSourceParamValues(action);
     }
   }
 
   /**
-   * Set whether the regeneration action his currently enabled? <P> 
+   * Set whether the regeneration action is currently enabled? <P> 
    */ 
   public void 
   setActionEnabled
