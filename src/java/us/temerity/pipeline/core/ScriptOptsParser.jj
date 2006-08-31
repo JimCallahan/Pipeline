@@ -254,6 +254,7 @@ ScriptOptsParser
   private boolean          pBrief;
   private boolean          pUpstream;
   private boolean          pLinkGraph; 
+  private boolean          pGlue; 
   private VersionID.Level  pLevel; 
   private CheckOutMode     pCheckOutMode; 
   private CheckOutMethod   pCheckOutMethod; 
@@ -405,6 +406,7 @@ TOKEN :
 | <BRIEF:              "--brief">					
 | <UPSTREAM:           "--upstream">				
 | <LINK_GRAPH:         "--link-graph">                             
+| <GLUE:               "--glue"> 
 
   /* argument end separator */ 
 | <AE2:               (["\0"])+>   
@@ -5069,6 +5071,7 @@ NodeStatus()
   pBrief     = false;
   pUpstream  = false;
   pLinkGraph = false;
+  pGlue      = false;
   pSections  = new TreeSet();
 }
 {
@@ -5079,7 +5082,7 @@ NodeStatus()
         ("The --brief and --show options are mutually exclusive!");
 
     pApp.printNodeStatus(new NodeID(pAuthor, pView, name), 
-			 pBrief, pUpstream, pLinkGraph, pSections, 
+			 pBrief, pUpstream, pLinkGraph, pGlue, pSections, 
 			 pMasterMgrClient, pQueueMgrClient);
   }
 }
@@ -5089,7 +5092,7 @@ NodeStatusOpts() :
 {}
 {
   (Author() | View() | Brief() | Upstream() | LinkGraph() | 
-   NodeStatusShow() | NodeStatusHide()) 
+   NodeStatusShow() | NodeStatusHide() | Glue()) 
   {}
 }
 
@@ -5120,6 +5123,16 @@ LinkGraph() :
   <LINK_GRAPH> AE() 
   {
     pLinkGraph = true;
+  }
+}
+
+void 
+Glue() : 
+{}
+{
+  <GLUE> AE() 
+  {
+    pGlue = true;
   }
 }
 

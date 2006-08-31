@@ -1,6 +1,8 @@
-// $Id: NodeStatus.java,v 1.18 2006/07/10 10:55:55 jim Exp $
+// $Id: NodeStatus.java,v 1.19 2006/08/31 18:20:11 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 import java.io.*;
@@ -16,7 +18,7 @@ import java.io.*;
  */
 public
 class NodeStatus
-  implements Serializable
+  implements Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -375,6 +377,43 @@ class NodeStatus
 
     Path path = new Path(pNodeID.getName());
     return path.getName();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("NodeID", pNodeID);
+
+    if(pDetails != null) 
+      encoder.encode("NodeDetails", pDetails);
+
+    if(!pSources.isEmpty()) 
+      encoder.encode("Sources", pSources);
+
+    if(!pTargets.isEmpty()) 
+      encoder.encode("Targets", pTargets);
+
+    if(!pStaleLinks.isEmpty()) 
+      encoder.encode("StaleLinks", pStaleLinks);
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    throw new GlueException("NodeStatus does not support GLUE decoding!");
   }
 
 

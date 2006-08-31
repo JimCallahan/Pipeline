@@ -1,8 +1,9 @@
-// $Id: ScriptApp.java,v 1.55 2006/07/24 23:48:08 jim Exp $
+// $Id: ScriptApp.java,v 1.56 2006/08/31 18:20:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.toolset.*;
 
 import java.io.*; 
@@ -3035,6 +3036,7 @@ class ScriptApp
    boolean briefFormat, 
    boolean printUpstream,
    boolean printLinkGraph, 
+   boolean printGlue, 
    TreeSet sections, 
    MasterMgrClient mclient, 
    QueueMgrClient qclient
@@ -3540,6 +3542,22 @@ class ScriptApp
 	 pad("-- Link Graph ", '-', 80));
       
       printGraph(buf, root, 2);
+    }
+
+    if(printGlue) {
+      buf.append
+	("\n\n" +
+	 pad("-- GLUE Format ", '-', 80) + "\n");
+
+      try {
+	GlueEncoder ge = new GlueEncoderImpl("Status", root);
+	buf.append(ge.getText());
+      }
+      catch(GlueException ex) {
+	buf.append
+	  ("Unable to generate a Glue format representation of the node status:\n  " + 
+	   ex.getMessage());
+      }
     }
 
     LogMgr.getInstance().log

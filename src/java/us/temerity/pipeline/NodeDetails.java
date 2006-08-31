@@ -1,6 +1,8 @@
-// $Id: NodeDetails.java,v 1.14 2005/01/22 06:10:09 jim Exp $
+// $Id: NodeDetails.java,v 1.15 2006/08/31 18:20:11 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 import java.io.*;
@@ -17,7 +19,7 @@ import java.io.*;
  */
 public
 class NodeDetails
-  implements Serializable
+  implements Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -375,6 +377,63 @@ class NodeDetails
     if(pWorkingVersion != null)
       return pWorkingVersion.toString();
     return pLatestVersion.toString();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("Name", pName); 
+    encoder.encode("TimeStamp", pTimeStamp.getTime());
+    
+    if(pWorkingVersion != null) 
+      encoder.encode("WorkingVersion", pWorkingVersion);
+
+    if(pBaseVersion != null) 
+      encoder.encode("BaseVersion", pBaseVersion);
+    
+    if(pLatestVersion != null) 
+      encoder.encode("LatestVersion", pLatestVersion);
+
+    if(!pVersionIDs.isEmpty()) 
+      encoder.encode("VersionIDs", pVersionIDs);
+
+    encoder.encode("OverallNodeState", pOverallNodeState);
+    encoder.encode("OverallQueueState", pOverallQueueState);
+    encoder.encode("VersionState", pVersionState);
+    encoder.encode("PropertyState", pPropertyState);
+    encoder.encode("LinkState", pLinkState);
+    encoder.encode("FileStates", pFileStates);
+    
+    {
+      Long ts[] = new Long[pFileTimeStamps.length];
+      int wk;
+      for(wk=0; wk<pFileTimeStamps.length; wk++) 
+	ts[wk] = pFileTimeStamps[wk].getTime();
+      encoder.encode("FileTimeStamps", ts);
+    }
+
+    encoder.encode("IgnoreTimeStamps", pIgnoreTimeStamps);
+    encoder.encode("JobIDs", pJobIDs);
+    encoder.encode("QueueStates", pQueueStates);
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    throw new GlueException("NodeDetails does not support GLUE decoding!");
   }
 
 
