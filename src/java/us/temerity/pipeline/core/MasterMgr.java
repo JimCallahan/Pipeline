@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.158 2006/08/31 08:55:29 jim Exp $
+// $Id: MasterMgr.java,v 1.159 2006/09/01 09:41:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -548,6 +548,10 @@ class MasterMgr
 	  readOfflined();
 	}
 	else {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     "Rebuilding Offlined Cache...");   
+
 	  FileMgrClient fclient = getFileMgrClient();
 	  try {
 	    pOfflined = fclient.getOfflined();
@@ -7087,8 +7091,30 @@ class MasterMgr
 	case KeepModified:
 	  if(!isRoot && (work.getWorkingID().compareTo(vsn.getVersionID()) >= 0)) {
 	    branch.removeLast();
-	    if(work.getWorkingID().compareTo(vsn.getVersionID()) > 0)
+
+	    /* is the working version newer? */ 
+	    if(work.getWorkingID().compareTo(vsn.getVersionID()) > 0) {
 	      dirty.add(name);
+	    }
+	    /* or is the working version modified? */ 
+	    else {
+	      switch(details.getOverallNodeState()) {
+	      case Identical:
+	      case ModifiedLocks:
+		break;
+
+	      case ModifiedLinks:
+	      case Modified:
+	      case Missing:
+		dirty.add(name);
+		break;
+
+	      default:
+		assert(false) : 
+		  ("The " + details.getOverallNodeState() + " should not be possible here!");
+	      }
+	    }
+
 	    return;
 	  }
 	}
