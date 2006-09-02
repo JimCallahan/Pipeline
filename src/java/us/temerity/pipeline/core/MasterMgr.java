@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.159 2006/09/01 09:41:45 jim Exp $
+// $Id: MasterMgr.java,v 1.160 2006/09/02 09:50:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -12876,13 +12876,13 @@ class MasterMgr
 	else {
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
-	    if(anyMissing[wk]) 
+	    if(anyMissing[wk] || (newestStamps[wk] == null)) 
 	      fileStamps[wk] = missingStamp;
 	    else 
 	      fileStamps[wk] = newestStamps[wk];
 
 	    Date critical = work.getLastCriticalModification();
-	    if(critical.compareTo(fileStamps[wk]) > 0)
+	    if(critical.compareTo(fileStamps[wk]) > 0) 
 	      fileStamps[wk] = critical;
 
 	    switch(overallNodeState) {
