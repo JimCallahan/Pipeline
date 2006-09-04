@@ -1,9 +1,9 @@
 FileHeapSize = 134217728
-FileHostname = dimetrodon.site
+FileHostname = dimetrodon
 FilePort = 53136
 HomeDirectory = /crypt/home
 HostIDs = 
-    dimetrodon.site               -154960051279394931859196224568743955114
+    dimetrodon                    -92365807818446937857352556303256028492
 JavaClassVersion = 49.0
 JavaHome = /usr/java/jdk1.5.0_08/jre
 JavaName = Java HotSpot(TM) Server VM
@@ -22,7 +22,7 @@ MacProductionDirectory = /Network/Servers/dimetrodon/base/prod
 MacRootInstallDirectory = /Network/Servers/dimetrodon/base/apps/i686-pc-linux-gnu-dbg
 MacTemporaryDirectory = /var/tmp
 MasterHeapSize = 536870912
-MasterHostname = dimetrodon.site
+MasterHostname = dimetrodon
 MasterPort = 53135
 NodeDirectory = /usr/share/pipeline
 OS-Arch = i386
@@ -33,12 +33,12 @@ PipelineGroupID = 502
 PipelineUser = pipeline
 PipelineUserID = 502
 PlConfigVersion = 3.0.2
-PluginHostname = dimetrodon.site
+PluginHostname = dimetrodon
 PluginPort = 53141
 ProductionDirectory = /base/prod
 QueueDirectory = /usr/share/pipeline
 QueueHeapSize = 268435456
-QueueHostname = dimetrodon.site
+QueueHostname = dimetrodon
 QueuePort = 53139
 RootInstallDirectory = /base/apps/i686-pc-linux-gnu-dbg
 TemporaryDirectory = /var/tmp
