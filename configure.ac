@@ -28,7 +28,7 @@ AC_SUBST(NATIVE_OSTYPE)
 NATIVE_OSTYPE=
 
 case $build in
-  (i686-pc-linux-gnu)          
+  (i686-pc-linux-gnu | x86_64-unknown-linux-gnu)          
     NATIVE_OSTYPE=Unix;
     AC_DEFINE([OS_IS_UNIX], [], [The OS is a standard UNIX variant.]);;
 
