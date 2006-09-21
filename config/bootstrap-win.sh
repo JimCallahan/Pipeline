@@ -13,7 +13,7 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=../../../src/pipeline/plconfig/customers/salamander/$1
+plprofile=../../../src/pipeline/plconfig/customers/dimetrodon/$1
 
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
@@ -22,6 +22,6 @@ pushd i686-pc-linux-gnu-dbg
     --with-debug-base=45000 \
     --with-prof-base=45100 \
     --with-crypto-app=../../../src/pipeline/plconfig \
-    --with-customer=salamander \
+    --with-customer=dimetrodon \
     --with-customer-profile=$plprofile
 popd

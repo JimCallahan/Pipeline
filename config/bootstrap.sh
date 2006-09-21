@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sitep=060519
+sitep=060904
 
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
@@ -10,7 +10,7 @@ rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
 plsrcdir=$HOME/code/src/pipeline
-plprofile=$plsrcdir/plconfig/customers/salamander/$sitep
+plprofile=$plsrcdir/plconfig/customers/dimetrodon/$sitep
 
 pushd $plsrcdir
   sh autogen.sh
@@ -18,14 +18,16 @@ popd
 
 
 pushd i686-pc-linux-gnu-dbg
-  CC=/usr/bin/gcc33 CXX=/usr/bin/g++33 \
+  CC="/usr/local/compat-gcc-3.3.4/bin/gcc -m32" \
+  CXX="/usr/local/compat-gcc-3.3.4/bin/g++ -m32" \
+  LD_LIBRARY_PATH=/usr/local/compat-gcc-3.3.4/lib \
   $plsrcdir/configure \
     --enable-foundation \
     --disable-opt \
     --with-debug-base=45000 \
     --with-prof-base=45100 \
     --with-crypto-app=$plsrcdir/plconfig \
-    --with-customer=salamander \
+    --with-customer=dimetrodon \
     --with-customer-profile=$plprofile \
     --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd

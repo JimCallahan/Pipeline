@@ -40,11 +40,11 @@ endif
 endif
 
 
-MAC_SRC_DIR   = $(patsubst /home/%,/Users/%,$(top_srcdir))
-MAC_BUILD_DIR = $(patsubst /home/%,/Users/%,$(shell pwd))
+MAC_SRC_DIR   = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(top_srcdir))
+MAC_BUILD_DIR = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(shell pwd))
 
-WIN_SRC_DIR   = $(top_srcdir)
-WIN_BUILD_DIR = $(shell pwd)
+WIN_SRC_DIR   = $(patsubst $(HOME)/%,/home/$(USER)/%,$(top_srcdir))
+WIN_BUILD_DIR = $(patsubst $(HOME)/%,/home/$(USER)/%,$(shell pwd))
 
 
 
