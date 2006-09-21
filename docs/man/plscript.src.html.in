@@ -1009,7 +1009,9 @@ Operations</span></span></a></li>
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]</span></li>
+ style="font-style: italic;">section</span> ...]] [--<span
+ style="font-weight: bold;">glue</span>]<br>
+          </span></li>
       </ul>
     </ul>
     <ul>
@@ -4220,9 +4222,10 @@ Operations</span></span></h3>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
  style="font-weight: bold;">--brief</span>] [<span
  style="font-weight: bold;">--upstream</span>] [<span
- style="font-weight: bold;">--link-graph</span>] <br>
-&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;"></span>[<span
- style="font-weight: bold;">--show</span>=<span
+ style="font-weight: bold;">--link-graph</span>] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--glue</span>]</span><br>
+<span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;"></span>[<span style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
@@ -4248,7 +4251,12 @@ displayed.&nbsp; The nodes will be printed in alphabetical order.&nbsp;
 The <span style="font-weight: bold;">--link-graph</span> option causes
 a heirarchical nested list of node names which describes the link
 relationships for all nodes upstream of the given node to be printed in
-addition to any status information.<br>
+addition to any status information.&nbsp; <br>
+<br>
+If the <span style="font-weight: bold;">--glue</span> option is
+specified, the full GLUE text format representation of the node status
+will
+be printed in addition to any other output generated.<br>
 <br>
 The <span style="font-weight: bold;">--show</span> and <span
  style="font-weight: bold;">--hide</span> options control the kinds of
