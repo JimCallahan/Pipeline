@@ -1,4 +1,4 @@
-// $Id: NodeCreateWorkingAreaReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: NodeCreateWorkingAreaReq.java,v 1.3 2006/09/25 11:41:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to Create a new empty working area. <P> 
+ * A request to create a new empty working area. <P> 
  */
 public
 class NodeCreateWorkingAreaReq
