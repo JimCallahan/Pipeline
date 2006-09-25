@@ -1,4 +1,4 @@
-// $Id: JToolDialog.java,v 1.1 2005/02/20 20:49:29 jim Exp $
+// $Id: JToolDialog.java,v 1.2 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -34,11 +34,29 @@ class JToolDialog
    String confirm
   ) 
   {
-    super("Tool", true);
-    initUI(header, true, body, confirm, null, null, "Cancel");
+    super(sRootFrame, "Tool");
+    initUI(header, body, confirm, null, null, "Cancel");
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the root Pipeline frame.
+   */ 
+  public static void 
+  initRootFrame
+  (
+   JFrame root
+  ) 
+  {
+    sRootFrame = root;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -46,4 +64,5 @@ class JToolDialog
 
   private static final long serialVersionUID = -2888190912678205880L;
 
+  private static JFrame  sRootFrame = null;
 }

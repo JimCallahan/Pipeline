@@ -1,4 +1,4 @@
-// $Id: JBaseCreateKeyDialog.java,v 1.3 2005/02/22 06:07:02 jim Exp $
+// $Id: JBaseCreateKeyDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,11 +38,11 @@ class JBaseCreateKeyDialog
   public 
   JBaseCreateKeyDialog
   (
-   Dialog owner,
+   Frame owner,
    String title
   )
   {
-    super(owner, title, true);
+    super(owner, title);
 
     /* create dialog body components */ 
     {
@@ -73,7 +73,7 @@ class JBaseCreateKeyDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI(title + ":", true, body, "Add", null, null, "Close");
+      super.initUI(title + ":", body, "Add", null, null, "Close");
       pack();
     }  
 

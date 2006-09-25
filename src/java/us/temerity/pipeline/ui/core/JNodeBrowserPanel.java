@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.7 2006/01/15 06:29:26 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.8 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -125,9 +125,6 @@ class JNodeBrowserPanel
 
     /* update the tree */ 
     updateNodeTree();
-
-    /* initialize dialogs */ 
-    pFilterDialog = new JNodeBrowserFilterDialog(this);
   }
 
 
@@ -925,6 +922,9 @@ class JNodeBrowserPanel
   public void 
   doNodeFilter() 
   {
+    if(pFilterDialog == null) 
+      pFilterDialog = new JNodeBrowserFilterDialog(this);
+
     pFilterDialog.updateFilter(pFilter);
     pFilterDialog.setVisible(true);
   }

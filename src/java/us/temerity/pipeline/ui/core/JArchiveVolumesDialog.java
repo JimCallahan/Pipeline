@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.3 2005/09/07 21:11:17 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -20,7 +20,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JArchiveVolumesDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener, ComponentListener, ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ class JArchiveVolumesDialog
   public 
   JArchiveVolumesDialog() 
   {
-    super("Archive Volumes", false);
+    super("Archive Volumes");
 
     /* initialize fields */ 
     {
@@ -288,7 +288,7 @@ class JArchiveVolumesDialog
       };
 
       JButton btns[] = 
-	super.initUI("Archive Volume Browser:", false, body, null, null, extra, "Close");
+	super.initUI("Archive Volume Browser:", body, null, null, extra, "Close");
 
       btns[0].setToolTipText(UIFactory.formatToolTip
         ("Submit a request to restore the selected checked-in versions."));
@@ -804,7 +804,7 @@ class JArchiveVolumesDialog
 	    }
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	  finally {
 	    master.endPanelOp("Done.");
@@ -918,7 +918,7 @@ class JArchiveVolumesDialog
 	      }
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	    }
 	    finally {
 	    master.endPanelOp("Done.");
@@ -1000,7 +1000,7 @@ class JArchiveVolumesDialog
 	    master.getMasterMgrClient().requestRestore(pVersions);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	    return;
 	  }
 	  finally {
@@ -1044,7 +1044,7 @@ class JArchiveVolumesDialog
 	    output = master.getMasterMgrClient().getArchivedOutput(pName);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	    return;
 	  }
 	  finally {
@@ -1093,7 +1093,7 @@ class JArchiveVolumesDialog
 	    output = master.getMasterMgrClient().getRestoredOutput(pName, pStamp);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	    return;
 	  }
 	  finally {

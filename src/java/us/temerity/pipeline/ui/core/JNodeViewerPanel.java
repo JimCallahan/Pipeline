@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.53 2006/07/10 10:55:55 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.54 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -473,26 +473,6 @@ class JNodeViewerPanel
     /* initialize components */ 
     {
       pCanvas.addKeyListener(this);
-    }
-
-    /* initialize child dialogs */ 
-    {
-      pAddSecondaryDialog = new JAddSecondaryDialog();
-      pExportDialog       = new JExportDialog();
-      pRenameDialog       = new JRenameDialog();
-      pRenumberDialog     = new JRenumberDialog();
-      pRegisterDialog     = new JRegisterDialog();
-      pCloneDialog        = new JCloneDialog();
-      pReleaseDialog      = new JReleaseDialog();
-      pReleaseViewDialog  = new JReleaseViewDialog();
-      pDeleteDialog       = new JDeleteDialog();
-      pCheckInDialog      = new JCheckInDialog();
-      pCheckOutDialog     = new JCheckOutDialog();
-      pLockDialog         = new JLockDialog();
-      pEvolveDialog       = new JEvolveDialog();
-      pRestoreDialog      = new JRequestRestoreDialog();
-      pCreateLinkDialog   = new JCreateLinkDialog();
-      pEditLinkDialog     = new JEditLinkDialog();
     }
   }
 
@@ -2935,6 +2915,9 @@ class JNodeViewerPanel
 	  sources.remove(details.getName());
 	  
 	  if(!sources.isEmpty()) {  
+	    if(pCreateLinkDialog == null) 
+	      pCreateLinkDialog = new JCreateLinkDialog(getTopFrame());
+
 	    pCreateLinkDialog.updateLink();
 	    pCreateLinkDialog.setVisible(true);
 	    
@@ -3002,6 +2985,9 @@ class JNodeViewerPanel
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen()) {
+	  if(pAddSecondaryDialog == null) 
+	    pAddSecondaryDialog = new JAddSecondaryDialog(getTopFrame());
+
 	  pAddSecondaryDialog.updateNode(pAuthor, pView, mod);
 	  pAddSecondaryDialog.setVisible(true);
 	  
@@ -3075,6 +3061,9 @@ class JNodeViewerPanel
 	if(!targets.isEmpty()) {
 	  NodeMod mod = details.getWorkingVersion();
 	  if(mod != null) {
+	    if(pExportDialog == null) 
+	      pExportDialog = new JExportDialog(getTopFrame());
+
 	    synchronized(pExportDialog) {
 	      pExportDialog.updateNode(mod);
 	      pExportDialog.setVisible(true);
@@ -3105,6 +3094,9 @@ class JNodeViewerPanel
 
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen() && (details.getLatestVersion() == null)) { 
+	  if(pRenameDialog == null) 
+	    pRenameDialog = new JRenameDialog(getTopFrame());
+
 	  pRenameDialog.updateNode(mod);
 	  pRenameDialog.setVisible(true);
 	
@@ -3140,6 +3132,9 @@ class JNodeViewerPanel
 
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen() && (mod.getPrimarySequence().hasFrameNumbers())) {
+	  if(pRenumberDialog == null) 
+	    pRenumberDialog = new JRenumberDialog(getTopFrame());
+
 	  pRenumberDialog.updateNode(mod);
 	  pRenumberDialog.setVisible(true);
 	
@@ -3149,7 +3144,8 @@ class JNodeViewerPanel
 
 	    boolean confirmed = true;
 	    if(range.numFrames() > 10000) {
-	      JConfirmFrameRangeDialog diag = new JConfirmFrameRangeDialog(range);
+	      JConfirmFrameRangeDialog diag = 
+		new JConfirmFrameRangeDialog(getTopFrame(), range);
 	      diag.setVisible(true);
 	      confirmed = diag.wasConfirmed();
 	    }
@@ -3180,7 +3176,10 @@ class JNodeViewerPanel
 	NodeMod mod = details.getWorkingVersion();
 	if(mod == null) 
 	  return; 
-	
+	    
+	if(pCloneDialog == null) 
+	  pCloneDialog = new JCloneDialog(getTopFrame());
+
 	pCloneDialog.updateNode(pAuthor, pView, mod);
 	pCloneDialog.setVisible(true);
 
@@ -3200,6 +3199,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRegister() 
   {
+    if(pRegisterDialog == null) 
+      pRegisterDialog = new JRegisterDialog(getTopFrame());
+
     pRegisterDialog.updateNode(pAuthor, pView);
     pRegisterDialog.setVisible(true); 
 
@@ -3235,19 +3237,23 @@ class JNodeViewerPanel
       else 
 	header = ("Release Multiple Nodes:");
 
+      if(pReleaseDialog == null) 
+	pReleaseDialog = new JReleaseDialog(getTopFrame());
+
       pReleaseDialog.updateHeader(header);
       pReleaseDialog.setVisible(true);
       if(pReleaseDialog.wasConfirmed()) {
 
 	boolean wasConfirmed = false;
 	if(names.size() == 1) {
-	  JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+	  JConfirmDialog confirm = new JConfirmDialog(getTopFrame(), "Are you sure?");
 	  confirm.setVisible(true);
 	  wasConfirmed = confirm.wasConfirmed();
 	}
 	else {
 	  JConfirmListDialog confirm = 
-	    new JConfirmListDialog("Are you sure?", "Nodes to Release:", names);
+	    new JConfirmListDialog(getTopFrame(), "Are you sure?", 
+				   "Nodes to Release:", names);
 	  confirm.setVisible(true);
 	  wasConfirmed = confirm.wasConfirmed();
 	}
@@ -3270,6 +3276,9 @@ class JNodeViewerPanel
   private synchronized void 
   doReleaseView() 
   {
+    if(pReleaseViewDialog == null) 
+      pReleaseViewDialog = new JReleaseViewDialog(getTopFrame());
+
     pReleaseViewDialog.setVisible(true);
     if(pReleaseViewDialog.wasConfirmed()) {
       ReleaseViewTask task = 
@@ -3301,7 +3310,8 @@ class JNodeViewerPanel
 	    names.add(mod.getName());
 	  else {
 	    JConfirmDialog confirm = 
-	      new JConfirmDialog("Remove from Nodes without enabled Actions?");
+	      new JConfirmDialog(getTopFrame(), 
+				 "Remove from Nodes without enabled Actions?");
 	    confirm.setVisible(true);
 	    confirmed = confirm.wasConfirmed(); 
 
@@ -3340,12 +3350,15 @@ class JNodeViewerPanel
 	  else if(vsn != null) 
 	    text = mod.getPrimarySequence().toString();
 	}
+    
+	if(pDeleteDialog == null) 
+	  pDeleteDialog = new JDeleteDialog(getTopFrame());
 
 	pDeleteDialog.updateHeader("Delete Node:  " + text);
 	pDeleteDialog.setVisible(true);
       
 	if(pDeleteDialog.wasConfirmed()) {
-	  JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+	  JConfirmDialog confirm = new JConfirmDialog(getTopFrame(), "Are you sure?");
 	  confirm.setVisible(true);
 	  if(confirm.wasConfirmed()) {
 	    DeleteTask task = new DeleteTask(details.getName(), pDeleteDialog.removeFiles());
@@ -3627,7 +3640,10 @@ class JNodeViewerPanel
 	  if(details.getLatestVersion() != null) 
 	    latest = details.getLatestVersion().getVersionID();
 	}
-	
+ 		
+	if(pCheckInDialog == null) 
+	  pCheckInDialog = new JCheckInDialog(getTopFrame());
+
 	pCheckInDialog.updateNameVersion(header, latest, multiple);
 	pCheckInDialog.setVisible(true);
 	
@@ -3674,6 +3690,9 @@ class JNodeViewerPanel
       }
     }
     
+    if(pCheckOutDialog == null) 
+      pCheckOutDialog = new JCheckOutDialog(getTopFrame());
+
     pCheckOutDialog.updateVersions(versions, offline);
     pCheckOutDialog.setVisible(true);	
     if(pCheckOutDialog.wasConfirmed()) {
@@ -3730,6 +3749,9 @@ class JNodeViewerPanel
       master.showErrorDialog("Error:", "None of the selected nodes can be locked!");
       return;
     }
+    
+    if(pLockDialog == null) 
+      pLockDialog = new JLockDialog(getTopFrame());
 
     pLockDialog.updateVersions(base, versions, offline);
     pLockDialog.setVisible(true);	
@@ -3767,7 +3789,10 @@ class JNodeViewerPanel
 	    master.showErrorDialog(ex);
 	    return;
 	  }
-	  
+	  	
+	  if(pEvolveDialog == null) 
+	    pEvolveDialog = new JEvolveDialog(getTopFrame());
+
 	  pEvolveDialog.updateNameVersions
 	    ("Evolve Version:  " + status, work.getWorkingID(), versions, offline);
 	  pEvolveDialog.setVisible(true);
@@ -3814,6 +3839,9 @@ class JNodeViewerPanel
       NodeMod mod = details.getWorkingVersion();
       if((mod != null) && !mod.isFrozen()) {
 	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
+	  if(pEditLinkDialog == null) 
+	    pEditLinkDialog = new JEditLinkDialog(getTopFrame());
+
 	  LinkMod link = (LinkMod) pSelectedLink;
 	  pEditLinkDialog.updateLink(link);
 	  pEditLinkDialog.setVisible(true);
@@ -4632,7 +4660,7 @@ class JNodeViewerPanel
     run() 
     {
       JConfirmKillObsoleteJobsDialog diag = 
-	new JConfirmKillObsoleteJobsDialog(pName, pJobIDs);
+	new JConfirmKillObsoleteJobsDialog(getTopFrame(), pName, pJobIDs);
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
 	KillJobsTask task = new KillJobsTask(pJobIDs);
@@ -4732,13 +4760,14 @@ class JNodeViewerPanel
     {
       boolean wasConfirmed = false;
       if(pNames.isEmpty()) {
-	JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+	JConfirmDialog confirm = new JConfirmDialog(getTopFrame(), "Are you sure?");
 	confirm.setVisible(true);
 	wasConfirmed = confirm.wasConfirmed();
       }
       else {
 	JConfirmListDialog confirm = 
-	  new JConfirmListDialog("Are you sure?", "Nodes to Release:", pNames);
+	  new JConfirmListDialog(getTopFrame(), "Are you sure?", 
+				 "Nodes to Release:", pNames);
 	confirm.setVisible(true);
 	wasConfirmed = confirm.wasConfirmed();
       }
@@ -5172,7 +5201,7 @@ class JNodeViewerPanel
     run() 
     {
       JConfirmKillUnfinishedJobsDialog diag = 
-	new JConfirmKillUnfinishedJobsDialog(pName, pJobIDs);
+	new JConfirmKillUnfinishedJobsDialog(getTopFrame(), pName, pJobIDs);
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
 	TreeSet<Long> dead = new TreeSet<Long>();
@@ -5351,6 +5380,9 @@ class JNodeViewerPanel
     public void 
     run() 
     {
+      if(pRestoreDialog == null) 
+	pRestoreDialog = new JRequestRestoreDialog(getTopFrame());
+
       pRestoreDialog.setVersions(pVersions);
       pRestoreDialog.setVisible(true);
       if(pRestoreDialog.wasConfirmed()) {

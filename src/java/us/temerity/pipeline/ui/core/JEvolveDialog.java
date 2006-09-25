@@ -1,4 +1,4 @@
-// $Id: JEvolveDialog.java,v 1.3 2005/03/14 16:08:21 jim Exp $
+// $Id: JEvolveDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,11 +31,17 @@ class JEvolveDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JEvolveDialog() 
+  JEvolveDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Evolve Version", true);
+    super(owner, "Evolve Version");
 
     pVersionIDs = new ArrayList<VersionID>();
 
@@ -66,7 +72,7 @@ class JEvolveDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Evolve", null, null, "Cancel");
+      super.initUI("X", body, "Evolve", null, null, "Cancel");
       pack();
     }  
   }

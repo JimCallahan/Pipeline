@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.8 2006/05/07 21:30:14 jim Exp $
+// $Id: JCloneDialog.java,v 1.9 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JCloneDialog
-  extends JBaseDialog
+  extends JFullDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,11 +30,17 @@ class JCloneDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JCloneDialog() 
+  JCloneDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Clone Node", true);
+    super(owner, "Clone Node");
 
     pRegistered = new TreeSet<String>();
 
@@ -199,7 +205,7 @@ class JCloneDialog
 	{ "Browse",  "browse" }
       };
 
-      super.initUI("Register Cloned Node:", true, scroll, "Confirm", "Apply", extra, "Close");
+      super.initUI("Register Cloned Node:", scroll, "Confirm", "Apply", extra, "Close");
 
       pack();
     }  
@@ -371,7 +377,7 @@ class JCloneDialog
       FileSeq fseq = mod.getPrimarySequence();
       if(fseq.numFrames() > 10000) {
 	JConfirmFrameRangeDialog diag = 
-	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	  new JConfirmFrameRangeDialog(this, fseq.getFrameRange());
 	diag.setVisible(true);
 	if(!diag.wasConfirmed()) 
 	  return;
@@ -387,7 +393,7 @@ class JCloneDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
       finally {
 	master.endPanelOp("Done.");
@@ -411,7 +417,7 @@ class JCloneDialog
       FileSeq fseq = mod.getPrimarySequence();
       if(fseq.numFrames() > 10000) {
 	JConfirmFrameRangeDialog diag = 
-	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	  new JConfirmFrameRangeDialog(this, fseq.getFrameRange());
 	diag.setVisible(true);
 	if(!diag.wasConfirmed()) 
 	  return;
@@ -576,7 +582,7 @@ class JCloneDialog
       mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
     }
     catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     return mod;
@@ -740,7 +746,7 @@ class JCloneDialog
 	  }
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 	finally {
 	  master.endPanelOp("Done.");

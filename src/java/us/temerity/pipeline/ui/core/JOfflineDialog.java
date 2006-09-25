@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.5 2006/01/15 06:29:26 jim Exp $
+// $Id: JOfflineDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -20,7 +20,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JOfflineDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ class JOfflineDialog
   public 
   JOfflineDialog() 
   {
-    super("Offline Tool", false);
+    super("Offline Tool");
 
     pPrivilegeDetails = new PrivilegeDetails();
 
@@ -267,8 +267,7 @@ class JOfflineDialog
 	{ "Offline", "offline" }
       };
 
-      JButton btns[] = 
-	super.initUI("Offline Tool:", false, body, null, null, extra, "Close");
+      JButton btns[] = super.initUI("Offline Tool:", body, null, null, extra, "Close");
 
       pOfflineButton = btns[0];
       pOfflineButton.setEnabled(false);
@@ -301,7 +300,7 @@ class JOfflineDialog
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     updateButtons();
@@ -502,7 +501,7 @@ class JOfflineDialog
       versions.put(name, new TreeSet<VersionID>(data.get(name).keySet()));
 
     if(!versions.isEmpty()) {
-      JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+      JConfirmDialog confirm = new JConfirmDialog(this, "Are you sure?");
       confirm.setVisible(true);
       if(confirm.wasConfirmed()) {
 	OfflineTask task = new OfflineTask(versions); 
@@ -587,7 +586,7 @@ class JOfflineDialog
 	  info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 	finally {
 	  master.endPanelOp("Done.");
@@ -662,7 +661,7 @@ class JOfflineDialog
 	  data = client.getOfflineSizes(pVersions);
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 	finally {
 	  master.endPanelOp("Done.");
@@ -762,7 +761,7 @@ class JOfflineDialog
 	  client.offline(pVersions); 
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	finally {

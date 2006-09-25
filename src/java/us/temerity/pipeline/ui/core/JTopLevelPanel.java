@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.5 2006/01/15 06:29:26 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -92,6 +92,18 @@ class JTopLevelPanel
   ) 
   {
     pManagerPanel = panel;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the top-level frame containing this panel.
+   */ 
+  public Frame
+  getTopFrame() 
+  {
+    return pManagerPanel.getTopFrame(); 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.swing.event.*;
  */ 
 public abstract
 class JBaseUserPrefsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements TreeSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,11 +32,11 @@ class JBaseUserPrefsDialog
   
   /**
    * Construct a new user preferences dialog.
-   */ 
+   */
   public 
   JBaseUserPrefsDialog()
   {
-    super("User Preferences", false);
+    super("User Preferences");
   }
 
 
@@ -165,7 +165,7 @@ class JBaseUserPrefsDialog
       
       String extra[][] = { { "Reset", "reset" } };
       JButton btns[] = 
-	super.initUI("User Preferences:", false, body, "Confirm", "Apply", extra, "Close");
+	super.initUI("User Preferences:", body, "Confirm", "Apply", extra, "Close");
 
       pConfirmButton.setToolTipText(UIFactory.formatToolTip
         ("Update the user interface to reflect the preference changes and close " +
@@ -245,7 +245,7 @@ class JBaseUserPrefsDialog
       updatePrefs();
     }    
     catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
     }
   }
 
@@ -368,7 +368,7 @@ class JBaseUserPrefsDialog
   public void 
   doReset()
   {
-    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    JConfirmDialog diag = new JConfirmDialog(this, "Are you sure?"); 
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
       UserPrefs.getInstance().reset();

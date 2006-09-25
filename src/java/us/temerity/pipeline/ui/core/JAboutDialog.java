@@ -1,4 +1,4 @@
-// $Id: JAboutDialog.java,v 1.3 2005/02/22 06:07:02 jim Exp $
+// $Id: JAboutDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -19,7 +19,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JAboutDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -31,7 +31,7 @@ class JAboutDialog
   public 
   JAboutDialog()
   {
-    super("About Pipeline", false);
+    super("About Pipeline");
 
     /* create dialog body components */ 
     {
@@ -58,7 +58,7 @@ class JAboutDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("About Pipeline:", false, body, null, null, null, "Close");
+      super.initUI("About Pipeline:", body, null, null, null, "Close");
     }  
   }
 

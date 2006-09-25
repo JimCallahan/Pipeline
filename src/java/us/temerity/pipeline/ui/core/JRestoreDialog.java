@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.8 2006/01/15 06:29:26 jim Exp $
+// $Id: JRestoreDialog.java,v 1.9 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -20,7 +20,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JRestoreDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener, ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ class JRestoreDialog
   public 
   JRestoreDialog() 
   {
-    super("Restore Tool", false);
+    super("Restore Tool");
 
     /* initialize fields */ 
     {
@@ -362,8 +362,7 @@ class JRestoreDialog
 	{ "Restore...", "restore" },
       };
 
-      JButton btns[] = 
-	super.initUI("Restore Tool:", false, body, null, null, extra, "Close");
+      JButton btns[] = super.initUI("Restore Tool:", body, null, null, extra, "Close");
 
       pRestoreButton = btns[0];
       pRestoreButton.setEnabled(false);
@@ -394,7 +393,7 @@ class JRestoreDialog
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     updateButtons();
@@ -544,7 +543,7 @@ class JRestoreDialog
 
     ArrayList<String> anames = new ArrayList<String>(rversions.keySet());
 
-    RestoreParamsTask task = new RestoreParamsTask(0, anames, rversions);
+    RestoreParamsTask task = new RestoreParamsTask(this, 0, anames, rversions);
     SwingUtilities.invokeLater(task);     
   }
 
@@ -764,7 +763,7 @@ class JRestoreDialog
 	    reqs = client.getRestoreRequests();
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	  finally {
 	    master.endPanelOp("Done.");
@@ -835,7 +834,7 @@ class JRestoreDialog
 	    client.denyRestore(pVersions);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	  finally {
 	    master.endPanelOp("Done.");
@@ -906,7 +905,7 @@ class JRestoreDialog
 	    }
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	  finally {
 	    master.endPanelOp("Done.");
@@ -991,6 +990,7 @@ class JRestoreDialog
     public 
     RestoreParamsTask
     (
+     JRestoreDialog parent, 
      int idx, 
      ArrayList<String> names,
      TreeMap<String,TreeMap<String,TreeSet<VersionID>>> versions 
@@ -998,6 +998,7 @@ class JRestoreDialog
     {
       super("JRestoreDialog:RestoreParamsTask");
 
+      pParent   = parent; 
       pIndex    = idx; 
       pNames    = names;
       pVersions = versions; 
@@ -1013,7 +1014,7 @@ class JRestoreDialog
 	BaseArchiver archiver = pRestoreParamsDialog.getArchiver();
 	if(archiver.isManual()) {
 	  JConfirmDialog diag = 
-	    new JConfirmDialog("Are you ready to read (" + aname + ")?");
+	    new JConfirmDialog(pParent, "Are you ready to read (" + aname + ")?");
 	  diag.setVisible(true);
 	  
 	  if(!diag.wasConfirmed()) {
@@ -1024,15 +1025,16 @@ class JRestoreDialog
 	    for(wk=pIndex; wk<pNames.size(); wk++) 
 	      buf.append("  " + pNames.get(wk) + "\n");	
 	    
-	    UIMaster.getInstance().showErrorDialog
-	      ("Warning:", buf.toString());
+	    showErrorDialog("Warning:", buf.toString());
+
 	    return;
 	  }	      
 	}
 	
 	String toolset = pRestoreParamsDialog.getToolset();
 
-	RestoreTask task = new RestoreTask(pIndex, pNames, pVersions, archiver, toolset);
+	RestoreTask task = 
+	  new RestoreTask(pParent, pIndex, pNames, pVersions, archiver, toolset);
 	task.start();
       }
       else {
@@ -1043,13 +1045,14 @@ class JRestoreDialog
 	for(wk=pIndex; wk<pNames.size(); wk++) 
 	  buf.append("  " + pNames.get(wk) + "\n");	
 	
-	UIMaster.getInstance().showErrorDialog
-	  ("Warning:", buf.toString());
+	showErrorDialog("Warning:", buf.toString());
       }
     }
 
-    private int                                                 pIndex; 
-    private ArrayList<String>                                   pNames; 
+    private JRestoreDialog     pParent; 
+    private int                pIndex; 
+    private ArrayList<String>  pNames; 
+
     private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pVersions;
   }
     
@@ -1060,6 +1063,7 @@ class JRestoreDialog
     public 
     RestoreTask
     (
+     JRestoreDialog parent, 
      int idx, 
      ArrayList<String> names,
      TreeMap<String,TreeMap<String,TreeSet<VersionID>>> versions,
@@ -1100,8 +1104,8 @@ class JRestoreDialog
  	    for(wk=pIndex; wk<pNames.size(); wk++) 
  	      buf.append("  " + pNames.get(wk) + "\n");	    
 	    
- 	    UIMaster.getInstance().showErrorDialog
- 	      ("Error:", buf.toString());
+ 	    showErrorDialog("Error:", buf.toString());
+
  	    return;
  	  }
  	  finally {
@@ -1115,20 +1119,23 @@ class JRestoreDialog
 
        int next = pIndex+1;
        if(next < pNames.size()) {
- 	RestoreParamsTask task = new RestoreParamsTask(next, pNames, pVersions); 
- 	SwingUtilities.invokeLater(task);     
+	 RestoreParamsTask task = new RestoreParamsTask(pParent, next, pNames, pVersions); 
+	 SwingUtilities.invokeLater(task);     
        }
        else {
- 	GetRequestsTask task = new GetRequestsTask();
- 	task.start();
+	 GetRequestsTask task = new GetRequestsTask();
+	 task.start();
        }
     }
 
-    private int                                                 pIndex; 
-    private ArrayList<String>                                   pNames; 
+    private JRestoreDialog     pParent; 
+    private int                pIndex; 
+    private ArrayList<String>  pNames; 
+
     private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pVersions;
-    private BaseArchiver                                        pArchiver; 
-    private String                                              pToolset; 
+
+    private BaseArchiver       pArchiver; 
+    private String             pToolset; 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.5 2005/06/02 22:11:59 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -32,6 +32,9 @@ class JSourceParamsDialog
   /**
    * Construct a new dialog.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param isEditable
    *   Should the dialog allow editing of parameter values?
    * 
@@ -54,6 +57,7 @@ class JSourceParamsDialog
   public 
   JSourceParamsDialog
   (
+   Frame owner,      
    boolean isEditable, 
    String title, 
    ArrayList<String> snames, 
@@ -62,7 +66,7 @@ class JSourceParamsDialog
    BaseAction action    
   )    
   {
-    super(isEditable ? "Edit Source Parameters" : "View Source Parameters", true);
+    super(owner, isEditable ? "Edit Source Parameters" : "View Source Parameters");
 
     /* create dialog body components */ 
     { 
@@ -112,7 +116,7 @@ class JSourceParamsDialog
 	cancel = "Cancel";
       }
 	 
-      super.initUI(header, true, body, confirm, null, extra, cancel);
+      super.initUI(header, body, confirm, null, extra, cancel);
 
       pack();
     }

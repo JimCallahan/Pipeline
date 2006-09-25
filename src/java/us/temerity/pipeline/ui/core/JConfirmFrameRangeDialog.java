@@ -1,4 +1,4 @@
-// $Id: JConfirmFrameRangeDialog.java,v 1.1 2005/06/22 22:03:21 jim Exp $
+// $Id: JConfirmFrameRangeDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -28,17 +28,52 @@ class JConfirmFrameRangeDialog
   /**
    * Construct a new dialog.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param range
    *   Thesuspicious frame range.
    */ 
   public 
   JConfirmFrameRangeDialog
   (
+   Frame owner,
    FrameRange range
   )
   {
-    super("Confirm", true);
+    super(owner, "Confirm");
+    initUI(range);
+  }
 
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param range
+   *   Thesuspicious frame range.
+   */ 
+  public 
+  JConfirmFrameRangeDialog
+  (
+   Dialog owner,
+   FrameRange range
+  )
+  {
+    super(owner, "Confirm");
+    initUI(range);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private void
+  initUI
+  (
+   FrameRange range   
+  ) 
+  {
     /* create dialog body components */ 
     {
       JPanel body = new JPanel(new BorderLayout());
@@ -73,7 +108,7 @@ class JConfirmFrameRangeDialog
 	body.add(scroll);
       }
 
-      super.initUI("Are you sure?", true, body, "Yes", null, null, "No");
+      super.initUI("Are you sure?", body, "Yes", null, null, "No");
       pack();
     }
   }

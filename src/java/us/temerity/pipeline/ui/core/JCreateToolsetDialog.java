@@ -1,4 +1,4 @@
-// $Id: JCreateToolsetDialog.java,v 1.2 2005/02/22 06:07:02 jim Exp $
+// $Id: JCreateToolsetDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,11 +35,19 @@ class JCreateToolsetDialog
   public 
   JCreateToolsetDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
-    super(owner, "New Toolset", true);
+    super(owner, "New Toolset");
+    initUI();
+  }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private void 
+  initUI() 
+  {
     /* create dialog body components */ 
     {
       Box body = null;
@@ -60,12 +68,13 @@ class JCreateToolsetDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Add", null, null, "Close");
+      super.initUI("X", body, "Add", null, null, "Close");
       pack();
-    }  
-
-    pConfirmButton.setEnabled(false);
+    }    
+    
+    pConfirmButton.setEnabled(false);  
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

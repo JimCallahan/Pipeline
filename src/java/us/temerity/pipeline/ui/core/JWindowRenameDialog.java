@@ -1,4 +1,4 @@
-// $Id: JWindowRenameDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
+// $Id: JWindowRenameDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,14 +30,18 @@ class JWindowRenameDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
   JWindowRenameDialog
   (
+   Frame owner, 
    String name
   )
   {
-    super("Rename Window", true); 
+    super(owner, "Rename Window"); 
 
     /* create dialog body components */ 
     {
@@ -57,7 +61,7 @@ class JWindowRenameDialog
 	body.add(field);
       }
 	  
-      super.initUI(null, true, body, "Rename", null, null, "Cancel");
+      super.initUI(null, body, "Rename", null, null, "Cancel");
     }  
   }
 

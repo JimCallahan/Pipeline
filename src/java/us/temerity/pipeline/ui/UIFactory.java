@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.8 2006/05/07 21:30:14 jim Exp $
+// $Id: UIFactory.java,v 1.9 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,69 +40,6 @@ class UIFactory
   private void 
   UIFactory() 
   {}
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   D I A L O G S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Show an error message dialog for the given exception.
-   */ 
-  public static void 
-  showErrorDialog
-  (
-   Exception ex
-  ) 
-  {
-    sErrorDialog.setMessage(ex);
-    sErrorDialog.setVisible(true);
-  }
-
-  /**
-   * Show an error message dialog with the given title and message.
-   */ 
-  public static void 
-  showErrorDialog
-  (
-   String title, 
-   String msg
-  ) 
-  {
-    sErrorDialog.setMessage(title, msg);
-    sErrorDialog.setVisible(true);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Show a dialog for editing colors.
-   * 
-   * @param title
-   *   The title of the color being edited.
-   * 
-   * @param color
-   *   The initial color.
-   * 
-   * @return 
-   *   The edited color or <CODE>null</CODE> if unchanged.
-   */ 
-  public static Color3d
-  showColorEditorDialog
-  (
-   String title, 
-   Color3d color
-  )
-  {
-    sColorEditorDialog.setHeaderTitle(title);
-    sColorEditorDialog.setColor(color);
-
-    sColorEditorDialog.setVisible(true);
-    if(sColorEditorDialog.wasConfirmed())
-      return sColorEditorDialog.getColor();
-    return null;
-  }
 
 
 
@@ -733,6 +670,9 @@ class UIFactory
   /**
    * Create a new color field. <P> 
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param value
    *   The initial value.
    * 
@@ -742,11 +682,42 @@ class UIFactory
   public static JColorField
   createColorField
   (
+   Frame owner, 
    Color3d value,  
    int width
   )
   {
-    JColorField field = new JColorField(value);
+    JColorField field = new JColorField(owner, value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
+   * Create a new color field. <P> 
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JColorField
+  createColorField
+  (
+   Dialog owner,  
+   Color3d value,  
+   int width
+  )
+  {
+    JColorField field = new JColorField(owner, value);
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -1867,6 +1838,9 @@ class UIFactory
   /**
    * Create a new color field with a title and add them to the given panels.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param tpanel
    *   The titles panel.
    * 
@@ -1885,6 +1859,7 @@ class UIFactory
   public static JColorField
   createTitledColorField
   (
+   Frame owner, 
    JPanel tpanel, 
    String title,  
    int twidth,
@@ -1893,11 +1868,50 @@ class UIFactory
    int vwidth
   )
   {
-    return createTitledColorField(tpanel, title, twidth, vpanel, value, vwidth, null);
+    return createTitledColorField(owner, tpanel, title, twidth, vpanel, value, vwidth, null);
   }
   
   /**
    * Create a new color field with a title and add them to the given panels.
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JColorField
+  createTitledColorField
+  (
+   Dialog owner,  
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Color3d value, 
+   int vwidth
+  )
+  {
+    return createTitledColorField(owner, tpanel, title, twidth, vpanel, value, vwidth, null);
+  }
+  
+  /**
+   * Create a new color field with a title and add them to the given panels.
+   * 
+   * @param owner
+   *   The parent frame.
    * 
    * @param tpanel
    *   The titles panel.
@@ -1920,6 +1934,7 @@ class UIFactory
   public static JColorField
   createTitledColorField
   (
+   Frame owner, 
    JPanel tpanel, 
    String title,  
    int twidth,
@@ -1931,7 +1946,52 @@ class UIFactory
   {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
-    JColorField field = createColorField(value, vwidth);
+    JColorField field = createColorField(owner, value, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new color field with a title and add them to the given panels.
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JColorField
+  createTitledColorField
+  (
+   Dialog owner,  
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Color3d value, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JColorField field = createColorField(owner, value, vwidth);
     vpanel.add(field);
 
     return field;
@@ -2970,20 +3030,5 @@ class UIFactory
     }
   }
   
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C    I N T E R N A L S                                                     */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The error message dialog.
-   */ 
-  private static JErrorDialog  sErrorDialog = new JErrorDialog();
-
-  /**
-   * The color editor dialog.
-   */ 
-  private static JColorEditorDialog  sColorEditorDialog = new JColorEditorDialog(); 
 
 }

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.22 2006/07/03 06:38:42 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.23 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1788,7 +1788,7 @@ class JQueueJobBrowserPanel
   {
     pHostsTablePanel.cancelEditing();
 
-    JNewJobServerDialog diag = new JNewJobServerDialog();
+    JNewJobServerDialog diag = new JNewJobServerDialog(getTopFrame());
     diag.setVisible(true);
     
     if(diag.wasConfirmed()) {

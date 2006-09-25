@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.26 2006/05/07 21:30:14 jim Exp $
+// $Id: JManagerPanel.java,v 1.27 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -611,7 +611,34 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the frame containing this panel.
+   * Get the top-level frame containing this panel.
+   */ 
+  public Frame
+  getTopFrame() 
+  {
+    Frame frame = null;
+    {
+      Container contain = getParent();
+      while(true) {
+	if(contain == null)
+	  break;
+
+	if(contain instanceof Frame) {
+	  frame = (Frame) contain;
+	  break;
+	}
+	
+	contain = contain.getParent();
+      }
+    }
+    
+    assert(frame != null);
+    return frame;
+  }
+
+
+  /**
+   * Get the panel frame containing this panel.
    * 
    * @return 
    *   The frame or <CODE>null</CODE> if the containing window is not a JPanelFrame.
@@ -2121,7 +2148,8 @@ class JManagerPanel
   {
     JPanelFrame frame = getPanelFrame();
     if(frame != null) {
-      JWindowRenameDialog diag = new JWindowRenameDialog(frame.getWindowName());
+      JWindowRenameDialog diag = 
+	new JWindowRenameDialog(getTopFrame(), frame.getWindowName());
       diag.setVisible(true);
       
       if(diag.wasConfirmed()) {
@@ -2626,7 +2654,8 @@ class JManagerPanel
   doChangeOwnerView()
   {
     JOwnerViewDialog dialog = 
-      new JOwnerViewDialog(pTopLevelPanel.getAuthor(), pTopLevelPanel.getView());
+      new JOwnerViewDialog(getTopFrame(), 
+			   pTopLevelPanel.getAuthor(), pTopLevelPanel.getView());
     dialog.setVisible(true);
     
     if(dialog.wasConfirmed()) {
@@ -2715,7 +2744,7 @@ class JManagerPanel
   private void 
   doShutdownServer() 
   {
-    JShutdownDialog diag = new JShutdownDialog();
+    JShutdownDialog diag = new JShutdownDialog(getTopFrame());
     diag.setVisible(true);
 
     if(diag.wasConfirmed()) {

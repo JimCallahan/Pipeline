@@ -1,4 +1,4 @@
-// $Id: JMessageDialog.java,v 1.1 2005/04/02 01:00:31 jim Exp $
+// $Id: JMessageDialog.java,v 1.2 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,9 +23,12 @@ class JMessageDialog
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    * 
    * @param msg
    *   The message to display. 
@@ -33,14 +36,47 @@ class JMessageDialog
   public 
   JMessageDialog
   (
+   Frame owner,      
    String msg
   )
   {
-    super("Message", true);
+    super(owner, "Message");
+    initUI(msg);
+  }
 
-    super.initUI(msg, true, null, null, null, null, "Ok");
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param msg
+   *   The message to display. 
+   */ 
+  public 
+  JMessageDialog
+  (      
+   Dialog owner, 
+   String msg
+  )
+  {
+    super(owner, "Message");
+    initUI(msg);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private void
+  initUI
+  (
+   String msg
+  ) 
+  {
+    super.initUI(msg, null, null, null, null, "Ok");
     setResizable(false);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

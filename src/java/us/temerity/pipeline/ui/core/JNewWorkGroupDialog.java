@@ -1,4 +1,4 @@
-// $Id: JNewWorkGroupDialog.java,v 1.1 2006/01/15 06:29:26 jim Exp $
+// $Id: JNewWorkGroupDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,7 +30,7 @@ class JNewWorkGroupDialog
   public 
   JNewWorkGroupDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
     super(owner, "New Work Group", "New Group Name:", null, "Add");

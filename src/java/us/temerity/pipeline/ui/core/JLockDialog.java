@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.2 2006/06/24 22:30:52 jim Exp $
+// $Id: JLockDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JLockDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JLockDialog() 
+  JLockDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Lock Node", true);
+    super(owner, "Lock Node");
 
     /* initialize fields */ 
     {
@@ -76,7 +82,7 @@ class JLockDialog
 	}
       }
       
-      super.initUI("Lock:", true, box, "Lock", null, null, "Cancel");
+      super.initUI("Lock:", box, "Lock", null, null, "Cancel");
       pack();
 
       setSize(sTSize+sVSize+63, 500);

@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.1 2006/01/15 06:29:25 jim Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.border.*;
  */ 
 public 
 class  JManagePrivilegesDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements MouseListener, KeyListener, ActionListener, AdjustmentListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ class  JManagePrivilegesDialog
   public 
   JManagePrivilegesDialog() 
   {
-    super("Manage Privileges", false);
+    super("Manage Privileges");
 
     pPrivilegeDetails = new PrivilegeDetails();
     pWorkGroups = new WorkGroups();
@@ -242,7 +242,7 @@ class  JManagePrivilegesDialog
 	{ "Update", "update" }
       };
 
-      JButton btns[] = super.initUI(null, false, body, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI(null, body, "Confirm", "Apply", extra, "Close");
       
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(
@@ -289,7 +289,7 @@ class  JManagePrivilegesDialog
       pPrivilegesTablePanel.refilterColumns(modified); 
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     updateUsersMenu();
@@ -717,7 +717,7 @@ class  JManagePrivilegesDialog
       }
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
     
     updateAll();
@@ -818,7 +818,7 @@ class  JManagePrivilegesDialog
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
       }
@@ -851,7 +851,7 @@ class  JManagePrivilegesDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
     }
     
@@ -885,7 +885,7 @@ class  JManagePrivilegesDialog
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
       }
@@ -913,7 +913,7 @@ class  JManagePrivilegesDialog
 	modified = true;
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
 
       pGroupUnderMouse = null;

@@ -1,4 +1,4 @@
-// $Id: JCheckInDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JCheckInDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -29,11 +29,17 @@ class JCheckInDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JCheckInDialog() 
+  JCheckInDialog
+  (
+   Frame owner
+  )    
   {
-    super("Check-In Node", "Check-In", true);
+    super(owner, "Check-In Node", "Check-In", true);
   }
 
 

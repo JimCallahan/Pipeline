@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.11 2006/07/02 00:27:50 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.12 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.border.*;
  */ 
 public 
 class JManageSelectionKeysDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ListSelectionListener, MouseListener, KeyListener, ActionListener, 
              AdjustmentListener
 {
@@ -36,7 +36,7 @@ class JManageSelectionKeysDialog
   public 
   JManageSelectionKeysDialog() 
   {
-    super("Manage Selection Keys, Groups and Schedules", false);
+    super("Manage Selection Keys, Groups and Schedules");
 
     pPrivilegeDetails = new PrivilegeDetails();
 
@@ -417,7 +417,7 @@ class JManageSelectionKeysDialog
 	{ "Update", "update" }
       };
 
-      JButton btns[] = super.initUI(null, false, tab, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
       
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(
@@ -500,7 +500,7 @@ class JManageSelectionKeysDialog
       }
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     updateKeysMenu();
@@ -535,7 +535,7 @@ class JManageSelectionKeysDialog
 			   hosts, selectionGroups, selectionSchedules); 
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
       finally {
 	master.endPanelOp("Done.");
@@ -1031,7 +1031,7 @@ class JManageSelectionKeysDialog
       }
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
     
     updateAll();
@@ -1088,7 +1088,7 @@ class JManageSelectionKeysDialog
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
       }
@@ -1120,7 +1120,7 @@ class JManageSelectionKeysDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
     }
     
@@ -1153,7 +1153,7 @@ class JManageSelectionKeysDialog
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
       }
@@ -1199,7 +1199,7 @@ class JManageSelectionKeysDialog
 	      modified = true;
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	    }
 	  }
 	}
@@ -1239,7 +1239,7 @@ class JManageSelectionKeysDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
     }
 
@@ -1272,7 +1272,7 @@ class JManageSelectionKeysDialog
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
       }
@@ -1308,7 +1308,7 @@ class JManageSelectionKeysDialog
 		modified = true;
 	      }
 	      catch(PipelineException ex) {
-		master.showErrorDialog(ex);
+		showErrorDialog(ex);
 	      }
 	    }
 	  }
@@ -1339,7 +1339,7 @@ class JManageSelectionKeysDialog
 	  modified = true;
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
       }
     }
@@ -1375,7 +1375,7 @@ class JManageSelectionKeysDialog
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
       }
@@ -1414,7 +1414,7 @@ class JManageSelectionKeysDialog
 		modified = true;
 	      }
 	      catch(PipelineException ex) {
-		master.showErrorDialog(ex);
+		showErrorDialog(ex);
 	      }
 	    }
 	  }
@@ -1452,7 +1452,7 @@ class JManageSelectionKeysDialog
 	      modified = true;
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	    }
 	  }
 	}

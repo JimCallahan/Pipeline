@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.9 2005/05/18 15:31:21 jim Exp $
+// $Id: JErrorDialog.java,v 1.10 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -28,12 +28,42 @@ class JErrorDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JErrorDialog()
+  JErrorDialog
+  (
+   Frame owner
+  )  
   {
-    super("Error", true);
+    super(owner, "Error");
+    initUI();
+  }
 
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent dialog.
+   */ 
+  public 
+  JErrorDialog
+  (
+   Dialog owner
+  )  
+  {
+    super(owner, "Error");
+    initUI();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  initUI() 
+  {
     /* create dialog body components */ 
     {
       JPanel body = new JPanel(new BorderLayout());
@@ -62,7 +92,7 @@ class JErrorDialog
 	body.add(scroll);
       }
 
-      super.initUI("Error:", true, body, null, null, null, "Close");
+      super.initUI("Error:", body, null, null, null, "Close");
       pack();
     }  
   }

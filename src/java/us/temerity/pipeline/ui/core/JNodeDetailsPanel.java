@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.29 2006/07/22 05:14:23 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.30 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2237,7 +2237,8 @@ class JNodeDetailsPanel
 	    
 	    pEditSourceParamsDialog = 
 	      new JSourceParamsDialog
-	      (!isLocked() && !pIsFrozen, title, snames, stitles, sfseqs, waction);
+	        (getTopFrame(), !isLocked() && !pIsFrozen, title, snames, stitles, 
+		 sfseqs, waction);
 	  }
 	}
 	else {
@@ -2321,7 +2322,8 @@ class JNodeDetailsPanel
 	    }
 	    
 	    pViewSourceParamsDialog = 
-	      new JSourceParamsDialog(false, title, snames, stitles, sfseqs, caction);
+	      new JSourceParamsDialog
+	        (getTopFrame(), false, title, snames, stitles, sfseqs, caction);
 	  }
 	}
 	else {
@@ -4422,7 +4424,8 @@ class JNodeDetailsPanel
 	
 	pEditSourceParamsDialog = 
 	  new JSourceParamsDialog
-	  (!isLocked() && !pIsFrozen, title, snames, stitles, sfseqs, waction);
+	    (getTopFrame(), !isLocked() && !pIsFrozen, title, snames, stitles, 
+	     sfseqs, waction);
       }
 
       doSourceParamsChanged();

@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.5 2005/10/07 12:44:01 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JArchiveParamsDialog
-  extends JBaseDialog
+  extends JFullDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -35,10 +35,10 @@ class JArchiveParamsDialog
   public 
   JArchiveParamsDialog
   (
-   Dialog owner
+   Frame owner
   ) 
   {
-    super(owner, "Archive", true);
+    super(owner, "Archive");
 
     /* initialize fields */ 
     {
@@ -175,7 +175,7 @@ class JArchiveParamsDialog
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
       }
 
-      super.initUI("Create Archive Volumes:", true, scroll, "Archive", null, null, "Cancel");
+      super.initUI("Create Archive Volumes:", scroll, "Archive", null, null, "Cancel");
       pack();
     }  
 
@@ -525,7 +525,7 @@ class JArchiveParamsDialog
 	    pArchiver.setParamValues(oarchiver);
 	}
 	catch(PipelineException ex) {
-	  UIMaster.getInstance().showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  pArchiver = null;	    
 	}
       }

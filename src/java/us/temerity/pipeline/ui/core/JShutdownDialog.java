@@ -1,4 +1,4 @@
-// $Id: JShutdownDialog.java,v 1.3 2005/03/28 04:17:12 jim Exp $
+// $Id: JShutdownDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JShutdownDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JShutdownDialog() 
+  JShutdownDialog
+  ( 
+   Frame owner
+  ) 
   {
-    super("Shutdown", true);
+    super(owner, "Shutdown");
 
     /* create dialog body components */ 
     {
@@ -64,7 +70,7 @@ class JShutdownDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("Shutdown Pipeline Servers?", true, body, "Yes", null, null, "No");
+      super.initUI("Shutdown Pipeline Servers?", body, "Yes", null, null, "No");
       pack();
     }  
   }

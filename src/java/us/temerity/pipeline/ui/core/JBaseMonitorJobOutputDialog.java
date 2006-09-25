@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.event.*;
  */ 
 public abstract 
 class JBaseMonitorJobOutputDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements WindowListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ class JBaseMonitorJobOutputDialog
    QueueJobInfo info
   ) 
   {
-    super(title, false);
+    super(title);
 
     pShouldUpdate = new AtomicBoolean(false);
 
@@ -90,7 +90,7 @@ class JBaseMonitorJobOutputDialog
 	(prefix + " - Job " + pJobID + ":  " + agenda.getPrimaryTarget() + 
 	 "    [" + info.getHostname() + "]");
       
-      super.initUI(header, false, body, null, "Save As...", null, "Close");
+      super.initUI(header, body, null, "Save As...", null, "Close");
     }
     
     addWindowListener(this);
@@ -340,7 +340,7 @@ class JBaseMonitorJobOutputDialog
 	    return getNumLinesMonitor(pClient, pJobID);
 	}
 	catch(PipelineException ex) {
-	  UIMaster.getInstance().showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
       }
 
@@ -369,7 +369,7 @@ class JBaseMonitorJobOutputDialog
 	    return getLinesMonitor(pClient, pJobID, start, lines);
 	}
 	catch(PipelineException ex) {
-	  UIMaster.getInstance().showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
       }
       
@@ -421,7 +421,7 @@ class JBaseMonitorJobOutputDialog
 	}
       }
       catch (Exception ex) {
-	master.showErrorDialog(ex);	
+	showErrorDialog(ex);	
       }
       finally {
 	if(client != null) {
@@ -429,7 +429,7 @@ class JBaseMonitorJobOutputDialog
 	    closeMonitor(client, pJobID);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 
 	  client.disconnect();
@@ -477,7 +477,7 @@ class JBaseMonitorJobOutputDialog
 	out.close();
       }
       catch (Exception ex) {
-	master.showErrorDialog(ex);	
+	showErrorDialog(ex);	
       }
       finally {
 	if(client != null) {
@@ -485,7 +485,7 @@ class JBaseMonitorJobOutputDialog
 	    closeMonitor(client, pJobID);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 
 	  client.disconnect();

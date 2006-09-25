@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.3 2005/06/14 13:35:24 jim Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -24,7 +24,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JToolsetDetailsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -39,7 +39,7 @@ class JToolsetDetailsDialog
    JManageToolsetsDialog parent
   ) 
   {
-    super("Toolset Details", false);
+    super("Toolset Details");
 
     pParent = parent;
 
@@ -160,7 +160,7 @@ class JToolsetDetailsDialog
 	}
       }
 
-      super.initUI("", false, body, null, "Test", null, "Close");
+      super.initUI("", body, null, "Test", null, "Close");
 
       updateToolset(null, null);
       pack();

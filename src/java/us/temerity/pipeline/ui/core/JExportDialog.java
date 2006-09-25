@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.3 2005/03/30 22:42:38 jim Exp $
+// $Id: JExportDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JExportDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JExportDialog() 
+  JExportDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Export", true);
+    super(owner, "Export");
 
     /* create dialog body components */ 
     {
@@ -74,7 +80,7 @@ class JExportDialog
 
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
 	
-	super.initUI("X", true, scroll, "Export", null, null, "Cancel");
+	super.initUI("X", scroll, "Export", null, null, "Cancel");
       }
     }  
   }

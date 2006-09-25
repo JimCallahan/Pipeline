@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.7 2005/12/31 20:16:56 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.8 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JCheckOutDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JCheckOutDialog() 
+  JCheckOutDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Check-Out Node", true);
+    super(owner, "Check-Out Node");
 
     /* initialize fields */ 
     {
@@ -137,7 +143,7 @@ class JCheckOutDialog
 	}
       }
       
-      super.initUI("Check-Out:", true, box, "Check-Out", null, null, "Cancel");
+      super.initUI("Check-Out:", box, "Check-Out", null, null, "Cancel");
       pack();
 
       setSize(sTSize+sVSize+63, 500);

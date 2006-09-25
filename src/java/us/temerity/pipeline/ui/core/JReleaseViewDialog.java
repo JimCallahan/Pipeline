@@ -1,4 +1,4 @@
-// $Id: JReleaseViewDialog.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: JReleaseViewDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JReleaseViewDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JReleaseViewDialog() 
+  JReleaseViewDialog
+  (
+   Frame owner
+  )
   {
-    super("Release View", true);
+    super(owner, "Release View");
 
     /* create dialog body components */ 
     {
@@ -94,7 +100,7 @@ class JReleaseViewDialog
 
       doMethodChanged();
 
-      super.initUI("Release View:", true, body, "Release", null, null, "Cancel");
+      super.initUI("Release View:", body, "Release", null, null, "Cancel");
       pack();
     }  
   }

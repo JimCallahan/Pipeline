@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.4 2006/07/02 06:01:10 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -28,27 +28,17 @@ class JManageLayoutsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Construct a new dialog.
-   */ 
-  public 
-  JManageLayoutsDialog()
-  {
-    super("Manage Saved Layouts");
-    initUI();
-  }
 
   /**
    * Construct a new dialog.
    * 
    * @param owner
-   *   The parent dialog.
+   *   The parent frame.
    */ 
   public 
   JManageLayoutsDialog
   (
-   Dialog owner
+   Frame owner
   )  
   {
     super(owner, "Manage Saved Layouts");
@@ -226,7 +216,7 @@ class JManageLayoutsDialog
       updateLayouts(selected);
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }    
   }
    
@@ -253,7 +243,7 @@ class JManageLayoutsDialog
 
     Files.deleteAll(nfile);
     if(!ofile.renameTo(nfile)) {
-      master.showErrorDialog
+      showErrorDialog
 	("I/O Error:", "Unable to rename (" + oname + ") to (" + nname + ")!");
       return;
     }  
@@ -301,7 +291,7 @@ class JManageLayoutsDialog
       updateLayouts(null);
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }      
   }
 
@@ -338,7 +328,7 @@ class JManageLayoutsDialog
       updateLayouts(selected);
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }      
   }
 

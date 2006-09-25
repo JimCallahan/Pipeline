@@ -1,4 +1,4 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.4 2006/05/07 21:30:14 jim Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JManagePackagePluginsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ class JManagePackagePluginsDialog
    JManageToolsetsDialog parent
   ) 
   {
-    super("Manage Package Plugins", false);
+    super("Manage Package Plugins");
 
     pPrivilegeDetails = new PrivilegeDetails();
 
@@ -58,7 +58,7 @@ class JManagePackagePluginsDialog
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
 	tab.add(panel);
       
-      super.initUI("", false, tab, "Confirm", "Apply", null, "Close");
+      super.initUI("", tab, "Confirm", "Apply", null, "Close");
     }
   }
 
@@ -126,7 +126,7 @@ class JManagePackagePluginsDialog
       pApplyButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
   }
@@ -154,7 +154,7 @@ class JManagePackagePluginsDialog
       update(pname, null, null);
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
   }
@@ -182,7 +182,7 @@ class JManagePackagePluginsDialog
       update(pname, vid, null);
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
   }
@@ -204,7 +204,7 @@ class JManagePackagePluginsDialog
 	panel.remove(pname);
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
   }
@@ -238,7 +238,7 @@ class JManagePackagePluginsDialog
       pParent.updateDialogs();
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
     }
   }
   

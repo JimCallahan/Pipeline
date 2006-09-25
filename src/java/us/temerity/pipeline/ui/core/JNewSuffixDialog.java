@@ -1,4 +1,4 @@
-// $Id: JNewSuffixDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
+// $Id: JNewSuffixDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,10 +38,10 @@ class JNewSuffixDialog
   public 
   JNewSuffixDialog
   (
-   Dialog owner
+   Frame owner
   )
   {
-    super(owner, "New Suffix", true);
+    super(owner, "New Suffix");
 
     /* create dialog body components */ 
     {
@@ -63,11 +63,12 @@ class JNewSuffixDialog
 	body.add(field);
       }
 	  
-      super.initUI(null, true, body, "Add", null, null, "Cancel");
+      super.initUI(null, body, "Add", null, null, "Cancel");
     }  
 
     pConfirmButton.setEnabled(false);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

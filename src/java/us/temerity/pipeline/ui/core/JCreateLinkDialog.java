@@ -1,10 +1,11 @@
-// $Id: JCreateLinkDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JCreateLinkDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*; 
 
 import javax.swing.*;
+import java.awt.Frame;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C R E A T E   L I N K   D I A L O G                                                    */
@@ -23,11 +24,17 @@ class JCreateLinkDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public
-  JCreateLinkDialog() 
+  JCreateLinkDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Create Link", "Create Node Link:", "Add");
+    super(owner, "Create Link", "Create Node Link:", "Add");
   }
 
 

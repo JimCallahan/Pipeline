@@ -1,4 +1,4 @@
-// $Id: JConfirmListDialog.java,v 1.2 2005/02/23 06:52:08 jim Exp $
+// $Id: JConfirmListDialog.java,v 1.3 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -27,6 +27,9 @@ class JConfirmListDialog
   /**
    * Construct a new dialog.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param question
    *   The question to ask the user.
    * 
@@ -39,13 +42,55 @@ class JConfirmListDialog
   public 
   JConfirmListDialog
   (
+   Frame owner,  
    String question, 
    String title, 
    Collection<String> items
   )
   {
-    super("Confirm", true);
+    super(owner, "Confirm");
+    initUI(question, title, items);
+  }
 
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param question
+   *   The question to ask the user.
+   * 
+   * @param title
+   *   The text to display as the title of the list.
+   * 
+   * @param items
+   *   The items to display in the list.
+   */ 
+  public 
+  JConfirmListDialog
+  (
+   Dialog owner,        
+   String question, 
+   String title, 
+   Collection<String> items
+  )
+  {
+    super(owner, "Confirm");
+    initUI(question, title, items);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  private void 
+  initUI
+  (
+   String question, 
+   String title, 
+   Collection<String> items
+  )
+  {
     Box body = new Box(BoxLayout.X_AXIS);
     {
       body.add(Box.createRigidArea(new Dimension(20, 0)));
@@ -95,7 +140,7 @@ class JConfirmListDialog
       body.add(Box.createRigidArea(new Dimension(20, 0)));
     }
 
-    super.initUI(question, true, body, "Yes", null, null, "No");
+    super.initUI(question, body, "Yes", null, null, "No");
     pack();
 
     setSize(350, 500);

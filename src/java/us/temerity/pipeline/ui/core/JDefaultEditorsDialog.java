@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.border.*;
  */ 
 public 
 class JDefaultEditorsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ class JDefaultEditorsDialog
   public 
   JDefaultEditorsDialog() 
   {
-    super("Default Editors", false);
+    super("Default Editors");
 
     /* create dialog body components */ 
     { 
@@ -45,7 +45,7 @@ class JDefaultEditorsDialog
       body.setLayout(new BorderLayout());
 
       {
-	SuffixEditorTableModel model = new SuffixEditorTableModel(this);
+	SuffixEditorTableModel model = new SuffixEditorTableModel();
 	pTableModel = model;
 
 	JTablePanel tpanel = new JTablePanel(model);
@@ -62,7 +62,7 @@ class JDefaultEditorsDialog
       };
 
       JButton btns[] = 
-	super.initUI("Default Editors:", false, body, "Confirm", "Apply", extra, "Close");
+	super.initUI("Default Editors:", body, "Confirm", "Apply", extra, "Close");
       
       pConfirmButton.setToolTipText(UIFactory.formatToolTip
         ("Save the current editor settings and close the dialog."));
@@ -102,7 +102,7 @@ class JDefaultEditorsDialog
       pTableModel.setSuffixEditors(client.getSuffixEditors());
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
       return;      
     }
@@ -122,7 +122,7 @@ class JDefaultEditorsDialog
       pTableModel.setSuffixEditors(client.getDefaultSuffixEditors());
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
       return;      
     }
@@ -146,7 +146,7 @@ class JDefaultEditorsDialog
       return true;
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
       return false; 
     }
   }
@@ -250,7 +250,7 @@ class JDefaultEditorsDialog
   public void 
   doReset()
   {
-    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    JConfirmDialog diag = new JConfirmDialog(this, "Are you sure?"); 
     diag.setVisible(true);
     if(diag.wasConfirmed()) 
       updateDefaultEditors();

@@ -1,4 +1,4 @@
-// $Id: JConfirmKillUnfinishedJobsDialog.java,v 1.2 2006/01/16 04:11:12 jim Exp $
+// $Id: JConfirmKillUnfinishedJobsDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -28,6 +28,9 @@ class JConfirmKillUnfinishedJobsDialog
   /**
    * Construct a new dialog.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param root
    *   The name of the root node of the check-out.
    * 
@@ -37,11 +40,12 @@ class JConfirmKillUnfinishedJobsDialog
   public 
   JConfirmKillUnfinishedJobsDialog
   ( 
+   Frame owner, 
    String root, 
    TreeMap<String,TreeSet<Long>> jobIDs
   ) 
   {
-    super("Confirm", true);
+    super(owner, "Confirm");
 
     /* create dialog body components */ 
     {
@@ -88,7 +92,7 @@ class JConfirmKillUnfinishedJobsDialog
 	body.add(scroll);
       }
 
-      super.initUI("Kill Unfinished Jobs?", true, body, "Yes", null, null, "No");
+      super.initUI("Kill Unfinished Jobs?", body, "Yes", null, null, "No");
       pack();
     }
   }

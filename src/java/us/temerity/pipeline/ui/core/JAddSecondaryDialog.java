@@ -1,4 +1,4 @@
-// $Id: JAddSecondaryDialog.java,v 1.7 2006/05/07 21:30:14 jim Exp $
+// $Id: JAddSecondaryDialog.java,v 1.8 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JAddSecondaryDialog
-  extends JBaseDialog
+  extends JFullDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,11 +30,17 @@ class JAddSecondaryDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JAddSecondaryDialog() 
+  JAddSecondaryDialog
+  (
+   Frame owner
+  )
   {
-    super("Add Secondary", true);
+    super(owner, "Add Secondary");
 
     /* create dialog body components */ 
     {
@@ -169,7 +175,7 @@ class JAddSecondaryDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("Add Secondary File Sequence:", true, body, 
+      super.initUI("Add Secondary File Sequence:", body, 
 		   "Add", "Browse", null, "Cancel");
 
       pack();
@@ -345,7 +351,7 @@ class JAddSecondaryDialog
   doApply() 
   {
     if(!pRootDir.isDirectory()) {
-      UIMaster.getInstance().showErrorDialog
+      showErrorDialog
 	("Error:", 
 	 "Unable to browse for secondary file sequences because the node working " + 
 	 "directory (" + pRootDir + ") does not exist!");
@@ -521,7 +527,7 @@ class JAddSecondaryDialog
       pFileSeq = new FileSeq(fpat, frange);
     }
     catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
     }
     
     return pFileSeq;

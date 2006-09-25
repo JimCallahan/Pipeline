@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.6 2006/05/07 21:30:14 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.7 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -27,6 +27,22 @@ class JFileSeqSelectDialog
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new dialog for selecting file sequences.
+   * 
+   * @param owner
+   *   The parent frame.
+   */ 
+  public 
+  JFileSeqSelectDialog
+  (
+   Frame owner
+  ) 
+  {
+    super(owner, "Select File Sequence");
+    initUI();
+  }
+
   /**
    * Construct a new dialog for selecting file sequences.
    * 
@@ -319,7 +335,7 @@ class JFileSeqSelectDialog
       if(diag.wasConfirmed()) {
 	File ndir = new File(dir, diag.getName());
 	if(!ndir.mkdirs()) {
-	  UIFactory.showErrorDialog
+	  showErrorDialog
 	    ("I/O Error:", 
 	     "Unable to create directory (" + ndir + ")!");
 	}

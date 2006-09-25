@@ -1,4 +1,4 @@
-// $Id: JRequestRestoreDialog.java,v 1.1 2005/03/23 20:47:28 jim Exp $
+// $Id: JRequestRestoreDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JRequestRestoreDialog
-  extends JBaseDialog
+  extends JFullDialog
   implements ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,11 +31,17 @@ class JRequestRestoreDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JRequestRestoreDialog() 
+  JRequestRestoreDialog
+  (
+   Frame owner
+  )
   {
-    super("Request Restore", true);
+    super(owner, "Request Restore");
 
     /* create dialog body components */ 
     {
@@ -78,7 +84,7 @@ class JRequestRestoreDialog
 	{ "Clear",     "clear" }
       };
 
-      super.initUI("Request Restore of Offline Versions:", true, body, 
+      super.initUI("Request Restore of Offline Versions:", body, 
 		   "Submit", null, extra, "Cancel");
 
       pack();
@@ -229,7 +235,7 @@ class JRequestRestoreDialog
 	  versions = client.restoreQuery(pPattern); 
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	finally {

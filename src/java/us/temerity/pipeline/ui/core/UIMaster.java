@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.41 2006/07/02 07:48:55 jim Exp $
+// $Id: UIMaster.java,v 1.42 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2171,10 +2171,10 @@ class UIMaster
       {
 	pPanelFrames = new LinkedList<JPanelFrame>();
 
-	pSaveLayoutDialog     = new JSaveLayoutDialog();
-	pManageLayoutsDialog  = new JManageLayoutsDialog();
+	pSaveLayoutDialog     = new JSaveLayoutDialog(pFrame);
+	pManageLayoutsDialog  = new JManageLayoutsDialog(pFrame);
 
-	pErrorDialog     = new JErrorDialog();
+	pErrorDialog     = new JErrorDialog(pFrame);
 	pUserPrefsDialog = new JUserPrefsDialog();
 	pAboutDialog     = new JAboutDialog();
 	pConfigDialog    = new JConfigDialog();
@@ -2186,12 +2186,12 @@ class UIMaster
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 
-	pQueueJobsDialog = new JQueueJobsDialog();
+	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
 	
-	pSubProcessFailureDialog = new JSubProcessFailureDialog();
+	pSubProcessFailureDialog = new JSubProcessFailureDialog(pFrame);
 
 	pBackupDialog = 
-	  new JFileSelectDialog("Backup Database", "Backup Database File:",
+	  new JFileSelectDialog(pFrame, "Backup Database", "Backup Database File:",
 				"Backup As:", 64, "Backup"); 
 	pBackupDialog.updateTargetFile(PackageInfo.sTempPath.toFile());
 
@@ -2201,6 +2201,8 @@ class UIMaster
 	pArchiveVolumesDialog = new JArchiveVolumesDialog();
 
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
+
+	JToolDialog.initRootFrame(pFrame);
       }
 
       pSplashFrame.setVisible(false);

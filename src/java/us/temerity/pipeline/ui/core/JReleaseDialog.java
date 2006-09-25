@@ -1,4 +1,4 @@
-// $Id: JReleaseDialog.java,v 1.6 2005/03/11 06:33:44 jim Exp $
+// $Id: JReleaseDialog.java,v 1.7 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JReleaseDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JReleaseDialog() 
+  JReleaseDialog
+  (
+   Frame owner
+  )
   {
-    super("Release Node", true);
+    super(owner, "Release Node");
 
     /* create dialog body components */ 
     {
@@ -54,7 +60,7 @@ class JReleaseDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Release", null, null, "Cancel");
+      super.initUI("X", body, "Release", null, null, "Cancel");
 
       pack();
     }  

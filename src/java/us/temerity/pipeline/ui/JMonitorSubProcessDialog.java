@@ -1,4 +1,4 @@
-// $Id: JMonitorSubProcessDialog.java,v 1.4 2005/02/04 09:25:53 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.5 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JMonitorSubProcessDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements WindowListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ class JMonitorSubProcessDialog
    SubProcessHeavy proc
   ) 
   {
-    super(title, false);
+    super(title);
     
     pHeader = header;
     pProc   = proc;
@@ -138,7 +138,7 @@ class JMonitorSubProcessDialog
 
       body.setDividerLocation(100);
 
-      super.initUI(header, false, body, null, null, null, "Kill");
+      super.initUI(header, body, null, null, null, "Kill");
     }
 
     addWindowListener(this);

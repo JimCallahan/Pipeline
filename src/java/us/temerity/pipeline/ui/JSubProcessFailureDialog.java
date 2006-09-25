@@ -1,4 +1,4 @@
-// $Id: JSubProcessFailureDialog.java,v 1.3 2005/01/03 06:56:23 jim Exp $
+// $Id: JSubProcessFailureDialog.java,v 1.4 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,11 +30,17 @@ class JSubProcessFailureDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JSubProcessFailureDialog()
+  JSubProcessFailureDialog
+  (
+   Frame owner
+  )  
   {
-    super("Subprocess Failure", true);
+    super(owner, "Subprocess Failure");
 
     /* create dialog body components */ 
     {
@@ -144,7 +150,7 @@ class JSubProcessFailureDialog
       body.setAlignmentX(0.5f);
       body.setMinimumSize(new Dimension(100, 350));
 
-      super.initUI("X", true, body, null, null, null, "Close");
+      super.initUI("X", body, null, null, null, "Close");
     }
   }
 

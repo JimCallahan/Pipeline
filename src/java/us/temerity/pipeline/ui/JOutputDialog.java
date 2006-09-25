@@ -1,4 +1,4 @@
-// $Id: JOutputDialog.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: JOutputDialog.java,v 1.2 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,7 +20,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JOutputDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -32,7 +32,7 @@ class JOutputDialog
   public 
   JOutputDialog() 
   {
-    super("Output", false);
+    super("Output");
 
     JPanel body = new JPanel();
     {    
@@ -81,7 +81,7 @@ class JOutputDialog
       }
     }
       
-    super.initUI(":", false, body, null, null, null, "Close");
+    super.initUI(":", body, null, null, null, "Close");
     pack();
   }
 

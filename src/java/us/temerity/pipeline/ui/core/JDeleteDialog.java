@@ -1,4 +1,4 @@
-// $Id: JDeleteDialog.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: JDeleteDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JDeleteDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JDeleteDialog() 
+  JDeleteDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Delete Node", true);
+    super(owner, "Delete Node");
 
     /* create dialog body components */ 
     {
@@ -55,7 +61,7 @@ class JDeleteDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Delete", null, null, "Cancel");
+      super.initUI("X", body, "Delete", null, null, "Cancel");
 
       pack();
     }  

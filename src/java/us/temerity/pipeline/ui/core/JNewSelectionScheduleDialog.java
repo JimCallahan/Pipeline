@@ -1,4 +1,4 @@
-// $Id: JNewSelectionScheduleDialog.java,v 1.1 2006/01/09 12:05:34 jim Exp $
+// $Id: JNewSelectionScheduleDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -34,7 +34,7 @@ class JNewSelectionScheduleDialog
   public 
   JNewSelectionScheduleDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
     super(owner, "New Selection Schedule", "New Schedule Name:", null, "Add");

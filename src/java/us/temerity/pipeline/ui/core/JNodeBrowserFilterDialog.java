@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserFilterDialog.java,v 1.5 2005/06/14 13:38:33 jim Exp $
+// $Id: JNodeBrowserFilterDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,7 +38,7 @@ class JNodeBrowserFilterDialog
    JNodeBrowserPanel panel
   )
   {
-    super("Node Browser Filter", true);
+    super(panel.getTopFrame(), "Node Browser Filter");
 
     /* intialize fields */ 
     {
@@ -168,7 +168,7 @@ class JNodeBrowserFilterDialog
 	addVerticalGlue(tpanel1, tpanel2, tpanel3, vpanel);
       }
 
-      super.initUI("Node Browser Filter:", true, body, "Confirm", "Apply", null, "Close");
+      super.initUI("Node Browser Filter:", body, "Confirm", "Apply", null, "Close");
       pack();
     }  
   }

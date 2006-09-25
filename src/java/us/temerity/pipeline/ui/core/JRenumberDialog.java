@@ -1,4 +1,4 @@
-// $Id: JRenumberDialog.java,v 1.5 2005/06/21 21:23:35 jim Exp $
+// $Id: JRenumberDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JRenumberDialog
-  extends JBaseDialog
+  extends JFullDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,11 +30,17 @@ class JRenumberDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JRenumberDialog() 
+  JRenumberDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Renumber Node", true);
+    super(owner, "Renumber Node");
 
     /* create dialog body components */ 
     {
@@ -118,7 +124,7 @@ class JRenumberDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Renumber", null, null, "Cancel");
+      super.initUI("X", body, "Renumber", null, null, "Cancel");
 
       pack();
     }  
@@ -278,7 +284,7 @@ class JRenumberDialog
 	   "has not been altered!");
     }
     catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       return false;
     }
 

@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.14 2006/09/25 12:11:44 jim Exp $
+// $Id: JTopLevelDialog.java,v 1.1 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -9,57 +9,37 @@ import java.awt.event.*;
 import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   B A S E   D I A L O G                                                                  */
+/*   T O P   L E V E L   D I A L O G                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Base class of all model dialogs.
+ * Base class of all top-level non-modal application dialogs.
  */ 
 public 
-class JBaseDialog
-  extends JDialog
-  implements ActionListener
+class JTopLevelDialog
+  extends JFrame
+  implements ActionListener, WindowListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct a new dialog owned by a top-level frame.
-   * 
-   * @param owner
-   *   The parent frame.
+   * Construct a new top-level frame. 
    * 
    * @param title
-   *   The title of the dialog.
+   *   The title of the dialog window.
+   * 
+   * @param modal
+   *   Is the dialog modal?
    */ 
   protected
-  JBaseDialog
+  JTopLevelDialog
   (
-   Frame owner,        
    String title
   ) 
   {
-    super(owner, title, true);
-  }
-
-  /**
-   * Construct a new dialog owned by another dialog.
-   * 
-   * @param owner
-   *   The parent dialog.
-   * 
-   * @param title
-   *   The title of the dialog.
-   */ 
-  protected
-  JBaseDialog
-  (
-   Dialog owner,        
-   String title
-  ) 
-  {
-    super(owner, title, true);
+    super(title); 
   }
 
 
@@ -103,12 +83,15 @@ class JBaseDialog
    String cancel
   ) 
   {
+    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    addWindowListener(this);
+
     JPanel root = new JPanel();
     root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));  
 
     if(header != null) {
       JPanel panel = new JPanel();
-      panel.setName("ModalDialogHeader");	
+      panel.setName("DialogHeader");	
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
       
       {
@@ -234,20 +217,53 @@ class JBaseDialog
     pack();
 
     {
-      Window owner = getOwner();
-      if(owner != null) {
-	setLocationRelativeTo(owner);
-      }
-      else {
-	Rectangle bounds = getGraphicsConfiguration().getBounds();
-	setLocation(bounds.x + bounds.width/2 - getWidth()/2, 
-		    bounds.y + bounds.height/2 - getHeight()/2);		    
-      }
+      Rectangle bounds = getGraphicsConfiguration().getBounds();
+      setLocation(bounds.x + bounds.width/2 - getWidth()/2, 
+		  bounds.y + bounds.height/2 - getHeight()/2);		    
     }
 
     return extraBtns;
   }
+
      
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   D I A L O G S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Show an error message dialog for the given exception.
+   */ 
+  public void 
+  showErrorDialog
+  (
+   Exception ex
+  ) 
+  {
+    if(pErrorDialog == null) 
+      pErrorDialog = new JErrorDialog(this);
+
+    pErrorDialog.setMessage(ex);
+    SwingUtilities.invokeLater(new ShowErrorDialogTask());
+  }
+
+  /**
+   * Show an error message dialog with the given title and message.
+   */ 
+  public void 
+  showErrorDialog
+  (
+   String title, 
+   String msg
+  ) 
+  {
+    if(pErrorDialog == null) 
+      pErrorDialog = new JErrorDialog(this);
+
+    pErrorDialog.setMessage(title, msg);
+    SwingUtilities.invokeLater(new ShowErrorDialogTask());
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -289,6 +305,58 @@ class JBaseDialog
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /*-- WINDOW LISTENER METHODS -------------------------------------------------------------*/
+
+  /**
+   * Invoked when the Window is set to be the active Window.
+   */
+  public void 
+  windowActivated(WindowEvent e) {} 
+
+  /**
+   * Invoked when a window has been closed as the result of calling dispose on the window.
+   */ 
+  public void 	
+  windowClosed(WindowEvent e) {} 
+
+  /**
+   * Invoked when the user attempts to close the window from the window's system menu.
+   */ 
+  public void 	
+  windowClosing
+  (
+   WindowEvent e
+  ) 
+  {
+    doCancel();
+  }
+
+  /**
+   * Invoked when a Window is no longer the active Window.
+   */ 
+  public void 	
+  windowDeactivated(WindowEvent e) {}
+
+  /**
+   * Invoked when a window is changed from a minimized to a normal state.
+   */ 
+  public void 	
+  windowDeiconified(WindowEvent e) {}
+
+  /**
+   * Invoked when a window is changed from a normal to a minimized state.
+   */ 
+  public void 	
+  windowIconified(WindowEvent e) {}
+
+  /**
+   * Invoked the first time a window is made visible.	
+   */ 
+  public void     
+  windowOpened(WindowEvent e) {}
+
+
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
@@ -345,6 +413,35 @@ class JBaseDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Show the error dialog. <P> 
+   * 
+   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
+   * showing the dialog.
+   */ 
+  private
+  class ShowErrorDialogTask
+    extends Thread
+  { 
+    public 
+    ShowErrorDialogTask() 
+    {
+      super("JTopLevelPanel:ShowErrorDialogTask");
+    }
+
+    public void 
+    run() 
+    {
+      pErrorDialog.setVisible(true);
+    }
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -374,4 +471,11 @@ class JBaseDialog
   protected JButton  pConfirmButton;
   protected JButton  pApplyButton;
   protected JButton  pCancelButton;
+
+
+  /**
+   * The error message dialog.
+   */ 
+  private JErrorDialog  pErrorDialog;
+
 }

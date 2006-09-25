@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.2 2006/05/07 21:30:14 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,32 +22,17 @@ import javax.swing.event.*;
  */ 
 public 
 class JBaseLayoutDialog
-  extends JBaseDialog
+  extends JFullDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Construct a new panel layout dialog.
-   * 
-   * @param title
-   *   The title of the dialog.
-   */ 
-  public 
-  JBaseLayoutDialog
-  (    
-   String title
-  ) 
-  {
-    super(title, true);
-  }
 
   /**
    * Construct a new panel layout dialog.
    * 
    * @param owner
-   *   The parent dialog.
+   *   The parent frame.
    * 
    * @param title
    *   The title of the dialog.
@@ -55,12 +40,13 @@ class JBaseLayoutDialog
   public 
   JBaseLayoutDialog
   (
-   Dialog owner,    
+   Frame owner,    
    String title
   ) 
   {
-    super(owner, title, true);
+    super(owner, title);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -120,7 +106,7 @@ class JBaseLayoutDialog
       if(extraComps != null) 
 	body.add(extraComps);
 	  
-      extraBtns = super.initUI(title, true, body, confirm, null, extra, cancel);
+      extraBtns = super.initUI(title, body, confirm, null, extra, cancel);
     }  
     
     return extraBtns;

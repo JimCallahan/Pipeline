@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,16 +30,20 @@ class JBaseLinkDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   protected 
   JBaseLinkDialog
   (
+   Frame owner,
    String title, 
    String header, 
    String confirm
   ) 
   {
-    super(title, true);
+    super(owner, title);
 
     /* create dialog body components */ 
     {
@@ -85,7 +89,7 @@ class JBaseLinkDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI(header, true, body, confirm, null, null, "Cancel");
+      super.initUI(header, body, confirm, null, null, "Cancel");
       pack();
     }  
   }

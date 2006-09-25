@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JQueueJobsDialog
-  extends JBaseDialog
+  extends JFullDialog
   implements ComponentListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,11 +31,17 @@ class JQueueJobsDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JQueueJobsDialog() 
+  JQueueJobsDialog
+  (
+   Frame owner
+  )  
   {
-    super("Queue Jobs Special", true);
+    super(owner, "Queue Jobs Special");
 
     /* initialize fields */ 
     {
@@ -180,10 +186,11 @@ class JQueueJobsDialog
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
       }
 	
-      super.initUI("Queue Jobs Special:", true, scroll, "Submit", "Reset", null, "Cancel");
+      super.initUI("Queue Jobs Special:", scroll, "Submit", "Reset", null, "Cancel");
+      pack();
     }
     
-    setSize(new Dimension(419, 342));
+//     setSize(new Dimension(419, 342));
   }
 
 
@@ -455,7 +462,7 @@ class JQueueJobsDialog
 	  knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
       }
       
@@ -504,7 +511,7 @@ class JQueueJobsDialog
   private static final long serialVersionUID = -8678401089074297592L;
   
   private static final int sTSize = 150;
-  private static final int sVSize = 200;
+  private static final int sVSize = 250;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.4 2005/10/07 12:44:01 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,10 +35,10 @@ class JRestoreParamsDialog
   public 
   JRestoreParamsDialog
   (
-   Dialog owner
+   Frame owner
   ) 
   {
-    super(owner, "Restore", true);
+    super(owner, "Restore");
 
     /* initialize fields */ 
     {
@@ -141,7 +141,7 @@ class JRestoreParamsDialog
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
       }
 
-      super.initUI("Restore", true, scroll, "Restore", null, null, "Cancel");
+      super.initUI("Restore", scroll, "Restore", null, null, "Cancel");
       pack();
     }  
   }

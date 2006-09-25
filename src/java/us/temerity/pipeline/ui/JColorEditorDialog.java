@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.10 2005/03/18 16:33:53 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.11 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,12 +38,43 @@ class JColorEditorDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JColorEditorDialog() 
+  JColorEditorDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Color Editor", true);
-    
+
+    super(owner, "Color Editor");
+    initUI();
+  }
+
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent dialog.
+   */ 
+  public 
+  JColorEditorDialog
+  (
+   Dialog owner
+  ) 
+  {
+    super(owner, "Color Editor");
+    initUI();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  private void 
+  initUI() 
+  {
     /* initialize fields */ 
     {
       pHSV = new Tuple3d(0.0, 1.0, 1.0);
@@ -79,12 +110,12 @@ class JColorEditorDialog
 	body.add(pCanvas);
       }
 
-      super.initUI("Color Editor:", true, body, "Confirm", null, null, "Cancel");
+      super.initUI("Color Editor:", body, "Confirm", null, null, "Cancel");
     }
 
     setResizable(false);
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/

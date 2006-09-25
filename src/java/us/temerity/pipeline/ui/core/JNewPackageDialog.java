@@ -1,4 +1,4 @@
-// $Id: JNewPackageDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNewPackageDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -27,14 +27,14 @@ class JNewPackageDialog
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Construct a new dialog.
    */ 
   public 
   JNewPackageDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
     super(owner, "New Package", "New Package Name:", null, "Add");

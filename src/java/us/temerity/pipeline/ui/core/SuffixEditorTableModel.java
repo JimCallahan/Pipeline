@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.7 2005/09/07 21:11:17 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.8 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -32,10 +32,7 @@ class SuffixEditorTableModel
    * Construct a table model.
    */
   public 
-  SuffixEditorTableModel
-  (
-   JDialog parent
-  )
+  SuffixEditorTableModel() 
   {
     super();
     

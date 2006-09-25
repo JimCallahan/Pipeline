@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.4 2006/01/15 06:29:26 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,7 +21,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JOwnerViewDialog
-  extends JBaseDialog
+  extends JFullDialog
   implements ActionListener, ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,6 +30,9 @@ class JOwnerViewDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    * 
    * @param author
    *   The current owner of the working area view.
@@ -40,11 +43,12 @@ class JOwnerViewDialog
   public 
   JOwnerViewDialog
   (
+   Frame owner, 
    String author, 
    String view
   )
   {
-    super("Change Owner|View", true);
+    super(owner, "Change Owner|View");
 
     if(author == null)
       throw new IllegalArgumentException("The author cannot be (null)!");
@@ -73,7 +77,7 @@ class JOwnerViewDialog
       String extra[][] = { { "Add View", "add-view" } };
 
       JButton[] btns = 
-	super.initUI("Change Owner|View", true, body, "Confirm", null, extra, "Cancel");
+	super.initUI("Change Owner|View", body, "Confirm", null, extra, "Cancel");
 
       pAddViewButton = btns[0];
 
@@ -118,7 +122,7 @@ class JOwnerViewDialog
       pTable = client.getWorkingAreas(); 
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
       return;
     }
@@ -267,7 +271,7 @@ class JOwnerViewDialog
 	      master.getMasterMgrClient().createWorkingArea(author, view);
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	      setVisible(false);
 	      return;
 	    }

@@ -1,10 +1,11 @@
-// $Id: JEditLinkDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JEditLinkDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*; 
 
 import javax.swing.*;
+import java.awt.Frame;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E D I T   L I N K   D I A L O G                                                        */
@@ -23,11 +24,17 @@ class JEditLinkDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public
-  JEditLinkDialog() 
+  JEditLinkDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Edit Link", "Edit Node Link:", "Confirm");
+    super(owner, "Edit Link", "Edit Node Link:", "Confirm");
   }
 
 

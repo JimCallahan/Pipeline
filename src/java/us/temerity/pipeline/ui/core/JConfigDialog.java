@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.4 2006/05/07 21:30:14 jim Exp $
+// $Id: JConfigDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -19,7 +19,7 @@ import javax.swing.event.*;
  */ 
 public 
 class JConfigDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -31,7 +31,7 @@ class JConfigDialog
   public 
   JConfigDialog()
   {
-    super("Site Configuration", false);
+    super("Site Configuration");
 
     /* create dialog body components */ 
     {
@@ -140,7 +140,7 @@ class JConfigDialog
 	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
       }
 
-      super.initUI("Site Configuration:", false, scroll, null, null, null, "Close");
+      super.initUI("Site Configuration:", scroll, null, null, null, "Close");
     }  
   }
 

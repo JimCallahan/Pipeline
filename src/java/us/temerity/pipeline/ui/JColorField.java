@@ -1,4 +1,4 @@
-// $Id: JColorField.java,v 1.4 2005/01/03 06:56:23 jim Exp $
+// $Id: JColorField.java,v 1.5 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -26,52 +26,83 @@ class JColorField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct with a grey color.
-   */ 
-  public 
-  JColorField() 
-  {
-    this(new Color3d(0.5, 0.5, 0.5));
-  }
-  
-  /**
    * Construct with an initial color.
+   * 
+   * @param owner
+   *   The parent frame.
+   * 
+   * @param color
+   *   The initial color. 
    */ 
   public 
   JColorField
   (
+   Frame owner,  
    Color3d color
   ) 
   {
     super();
-    
-    pValue = new Color3d();
-    setValue(color);
-
-    pTitle = "Color Editor:";
-
-    initUI();
+    pOwnerFrame = owner;
+    initColor(color);
   }
 
   /**
-   * Construct with an initial AWT color.
+   * Construct with an initial color.
+   * 
+   * @param owner
+   *   The parent dialog.
    */ 
   public 
   JColorField
   (
+   Dialog owner,    
+   Color3d color
+  ) 
+  {
+    super();
+    pOwnerDialog = owner;
+    initColor(color);
+  }
+  
+  /**
+   * Construct with an initial color.
+   * 
+   * @param owner
+   *   The parent frame.
+   * 
+   * @param color
+   *   The initial color. 
+   */ 
+  public 
+  JColorField
+  (
+   Frame owner,  
    Color color
   ) 
   {
     super();
-    
-    pValue = new Color3d();
-    setColor(color);
-
-    pTitle = "Color Editor:";
-
-    initUI();
+    pOwnerFrame = owner;
+    initColor(color);
   }
 
+  /**
+   * Construct with an initial color.
+   * 
+   * @param owner
+   *   The parent dialog.
+   */ 
+  public 
+  JColorField
+  (
+   Dialog owner,    
+   Color color
+  ) 
+  {
+    super();
+    pOwnerDialog = owner;
+    initColor(color);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -79,8 +110,32 @@ class JColorField
    * Initialize the common user interface components. <P> 
    */ 
   private void 
+  initColor
+  (
+   Color3d color
+  ) 
+  {
+    pValue = new Color3d();
+    setValue(color);
+    initUI();
+  }
+
+  private void 
+  initColor
+  (
+   Color color
+  ) 
+  {
+    pValue = new Color3d();
+    setColor(color);
+    initUI();
+  }
+
+  private void 
   initUI()
   {
+    pTitle = "Color Editor:";
+
     setLayout(new BorderLayout());
     setAlignmentX(0.5f);
     setOpaque(true);
@@ -217,9 +272,20 @@ class JColorField
   private void 
   doEditColor() 
   {
-    Color3d color = UIFactory.showColorEditorDialog(pTitle, pValue);
-    if(color != null) 
-      setValue(color);
+    JColorEditorDialog diag = null;
+    if(pOwnerDialog != null) 
+      diag = new JColorEditorDialog(pOwnerDialog);
+    else if(pOwnerFrame != null) 
+      diag = new JColorEditorDialog(pOwnerFrame); 
+    else 
+      assert(false);
+      
+    diag.setHeaderTitle(pTitle);
+    diag.setColor(pValue); 
+
+    diag.setVisible(true);
+    if(diag.wasConfirmed())
+      setValue(diag.getColor());
   }
    
  
@@ -235,7 +301,13 @@ class JColorField
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Parent window.
+   */ 
+  private Dialog  pOwnerDialog;
+  private Frame   pOwnerFrame;
+
   /**
    * The color being displayed.
    */ 

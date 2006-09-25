@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.26 2006/07/10 11:03:33 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.27 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1975,7 +1975,8 @@ class JNodeFilesPanel
 	    }
 	    else {
 	      JConfirmDialog confirm = 
-		new JConfirmDialog("Remove from Node without enabled Actions?");
+		new JConfirmDialog(getTopFrame(), 
+				   "Remove from Node without enabled Actions?");
 	      confirm.setVisible(true);
 	      confirmed = confirm.wasConfirmed(); 
 	    }

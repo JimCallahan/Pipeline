@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.12 2006/05/07 21:30:13 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.13 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,7 +21,7 @@ import javax.swing.tree.*;
  */ 
 public abstract 
 class JBaseFileSelectDialog
-  extends JBaseDialog
+  extends JFullDialog
   implements ListSelectionListener, DocumentListener, MouseListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,16 +31,20 @@ class JBaseFileSelectDialog
   /**
    * Construct a new dialog for selecting files.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param title
    *   The title of the dialog.
    */ 
   public 
   JBaseFileSelectDialog
   (
+   Frame owner,
    String title
   ) 
   {
-    super(title, true);
+    super(owner, title);
   }
 
   /**
@@ -59,7 +63,7 @@ class JBaseFileSelectDialog
    String title
   ) 
   {
-    super(owner, title, true);
+    super(owner, title);
   }
 
 
@@ -231,7 +235,7 @@ class JBaseFileSelectDialog
 	}  
       }
 
-      super.initUI(header, true, body, confirm, null, null, "Close");
+      super.initUI(header, body, confirm, null, null, "Close");
 
       pack();
     }    

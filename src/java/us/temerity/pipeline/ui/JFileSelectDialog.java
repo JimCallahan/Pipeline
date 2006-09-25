@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.8 2006/05/07 21:30:14 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.9 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,6 +30,9 @@ class JFileSelectDialog
   /**
    * Construct a new dialog for selecting files.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param title
    *   The title of the dialog.
    * 
@@ -48,6 +51,7 @@ class JFileSelectDialog
   public 
   JFileSelectDialog
   (
+   Frame owner,
    String title,
    String header,
    String fieldTitle, 
@@ -55,8 +59,36 @@ class JFileSelectDialog
    String confirm
   ) 
   {
-    super(title);
+    super(owner, title);
     initUI(title, header, fieldTitle, fieldTitleSize, confirm);
+  }
+
+  /**
+   * Construct a new dialog for selecting directories only.
+   * 
+   * @param owner
+   *   The parent frame.
+   * 
+   * @param title
+   *   The title of the dialog.
+   * 
+   * @param header
+   *   The header label.
+   * 
+   * @param confirm
+   *   The name of the confirm button.
+   */ 
+  public 
+  JFileSelectDialog
+  (
+   Frame owner,
+   String title, 
+   String header, 
+   String confirm
+  ) 
+  {
+    super(owner, title);
+    initUI(title, header, null, 0, confirm);
   }
 
   /**
@@ -95,7 +127,6 @@ class JFileSelectDialog
     initUI(title, header, fieldTitle, fieldTitleSize, confirm);
   }
 
-  
   /**
    * Construct a new dialog for selecting directories only.
    * 
@@ -123,8 +154,6 @@ class JFileSelectDialog
     super(owner, title);
     initUI(title, header, null, 0, confirm);
   }
-
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -164,6 +193,7 @@ class JFileSelectDialog
     JIdentifierField field = UIFactory.createIdentifierField(null, 60, JLabel.LEFT);
     super.initUI(header, renderer, fieldTitle, fieldTitleSize, field, confirm);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -207,7 +237,6 @@ class JFileSelectDialog
     }
   }
 
-    
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -404,7 +433,7 @@ class JFileSelectDialog
       if(diag.wasConfirmed()) {
 	File ndir = new File(dir, diag.getName());
 	if(!ndir.mkdirs()) {
-	  UIFactory.showErrorDialog
+	  showErrorDialog
 	    ("I/O Error:", 
 	     "Unable to create directory (" + ndir + ")!");
 	}

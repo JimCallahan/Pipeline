@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.3 2006/07/03 06:38:42 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,7 +21,7 @@ import javax.swing.event.*;
  */ 
 public  
 class JExecDetailsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -34,7 +34,7 @@ class JExecDetailsDialog
   public 
   JExecDetailsDialog()
   {
-    super("Execution Details", false);
+    super("Execution Details");
 
     /* create dialog body components */ 
     {
@@ -184,7 +184,7 @@ class JExecDetailsDialog
 	body.add(split);
       }
                
-      super.initUI("X", false, body, null, null, null, "Close");
+      super.initUI("X", body, null, null, null, "Close");
     }
   }
   

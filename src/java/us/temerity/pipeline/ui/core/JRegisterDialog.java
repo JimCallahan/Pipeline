@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.14 2006/05/07 21:30:14 jim Exp $
+// $Id: JRegisterDialog.java,v 1.15 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JRegisterDialog
-  extends JBaseDialog
+  extends JFullDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,11 +30,17 @@ class JRegisterDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JRegisterDialog() 
+  JRegisterDialog
+  (
+   Frame owner
+  )
   {
-    super("Register Node", true);
+    super(owner, "Register Node");
 
     /* initialize fields */ 
     {
@@ -228,7 +234,7 @@ class JRegisterDialog
 	{ "Browse",  "browse" }
       };
 
-      super.initUI("Register New Node:", true, body, "Confirm", "Apply", extra, "Close");
+      super.initUI("Register New Node:", body, "Confirm", "Apply", extra, "Close");
 
       pack();
     }  
@@ -293,7 +299,7 @@ class JRegisterDialog
 	  defaultToolset = master.getMasterMgrClient().getDefaultToolsetName();
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 
 	if(tsets.isEmpty())
@@ -440,7 +446,7 @@ class JRegisterDialog
       FileSeq fseq = mod.getPrimarySequence();
       if(fseq.numFrames() > 10000) {
 	JConfirmFrameRangeDialog diag = 
-	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	  new JConfirmFrameRangeDialog(this, fseq.getFrameRange());
 	diag.setVisible(true);
 	if(!diag.wasConfirmed()) 
 	  return;
@@ -456,7 +462,7 @@ class JRegisterDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
       finally {
 	master.endPanelOp("Done.");
@@ -480,7 +486,7 @@ class JRegisterDialog
       FileSeq fseq = mod.getPrimarySequence();
       if(fseq.numFrames() > 10000) {
 	JConfirmFrameRangeDialog diag = 
-	  new JConfirmFrameRangeDialog(fseq.getFrameRange());
+	  new JConfirmFrameRangeDialog(this, fseq.getFrameRange());
 	diag.setVisible(true);
 	if(!diag.wasConfirmed()) 
 	  return;
@@ -766,7 +772,7 @@ class JRegisterDialog
       pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
     }
     catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     return pNodeMod;
@@ -811,7 +817,7 @@ class JRegisterDialog
 	  }
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 	finally {
 	  master.endPanelOp("Done.");

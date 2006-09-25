@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -2011,7 +2011,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2268,7 +2268,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2429,7 +2429,7 @@ class GenUserPrefsApp
        "      UserPrefs.save();\n" + 
        "    }\n" +     
        "    catch(Exception ex) {\n" + 
-       "      master.showErrorDialog(ex);\n" + 
+       "      showErrorDialog(ex);\n" + 
        "      return;\n" + 
        "    }\n" +
        "\n" + 
@@ -3356,7 +3356,8 @@ class GenUserPrefsApp
       buf.append
 	(indent(level) + "p" + pTitle + " =\n" + 
 	 indent(level+1) + "UIFactory.createTitledColorField\n" + 
-	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize,\n" + 
+	 indent(level+2) + "(this,\n" + 
+	 indent(level+2) + " tpanel, \"" + pLabel + "\", sTSize,\n" + 
 	 indent(level+2) + " vpanel, " + 
 	 "new Color3d(" + c[0] + ", " + c[1] + ", " + c[2] + "), sVSize,\n" + 
 	 indent(level+2) + " \"" + pDesc + "\");\n" + 
@@ -3624,7 +3625,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.30 2006/05/07 21:30:15 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JConfirmDialog.java,v 1.1 2004/05/23 20:01:27 jim Exp $
+// $Id: JConfirmDialog.java,v 1.2 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -27,20 +27,56 @@ class JConfirmDialog
   /**
    * Construct a new dialog.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param question
    *   The question to ask the user.
    */ 
   public 
   JConfirmDialog
   (
+   Frame owner,      
    String question
   )
   {
-    super("Confirm", true);
+    super(owner, "Confirm");
+    initUI(question);
+  }
 
-    super.initUI(question, true, null, "Yes", null, null, "No");
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent dialog.
+   * 
+   * @param question
+   *   The question to ask the user.
+   */ 
+  public 
+  JConfirmDialog
+  (      
+   Dialog owner, 
+   String question
+  )
+  {
+    super(owner, "Confirm");
+    initUI(question);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private void
+  initUI
+  (
+   String question
+  ) 
+  {
+    super.initUI(question, null, "Yes", null, null, "No");
     setResizable(false);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

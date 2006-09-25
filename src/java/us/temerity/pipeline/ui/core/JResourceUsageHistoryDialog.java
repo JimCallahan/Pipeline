@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.12 2005/06/14 13:37:55 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.13 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -27,8 +27,9 @@ import net.java.games.jogl.*;
  */ 
 public  
 class JResourceUsageHistoryDialog 
-  extends JDialog
-  implements MouseListener, MouseMotionListener, GLEventListener, KeyListener, ActionListener
+  extends JFrame
+  implements MouseListener, MouseMotionListener, GLEventListener, KeyListener, 
+             ActionListener, WindowListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -46,7 +47,7 @@ class JResourceUsageHistoryDialog
   public 
   JResourceUsageHistoryDialog() 
   {
-    super((JFrame) null, "Resource Usage History", false);
+    super("Resource Usage History");
 
     /* initialize fields */ 
     {
@@ -149,6 +150,9 @@ class JResourceUsageHistoryDialog
 
     /* initialize the dialog components */     
     {
+      setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+      addWindowListener(this);
+
       JPanel root = new JPanel();
       root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));  
 
@@ -2349,6 +2353,57 @@ class JResourceUsageHistoryDialog
   keyTyped(KeyEvent e) {} 
 
 
+  /*-- WINDOW LISTENER METHODS -------------------------------------------------------------*/
+
+  /**
+   * Invoked when the Window is set to be the active Window.
+   */
+  public void 
+  windowActivated(WindowEvent e) {} 
+
+  /**
+   * Invoked when a window has been closed as the result of calling dispose on the window.
+   */ 
+  public void 	
+  windowClosed(WindowEvent e) {} 
+
+  /**
+   * Invoked when the user attempts to close the window from the window's system menu.
+   */ 
+  public void 	
+  windowClosing
+  (
+   WindowEvent e
+  ) 
+  {
+    setVisible(false);
+  }
+
+  /**
+   * Invoked when a Window is no longer the active Window.
+   */ 
+  public void 	
+  windowDeactivated(WindowEvent e) {}
+
+  /**
+   * Invoked when a window is changed from a minimized to a normal state.
+   */ 
+  public void 	
+  windowDeiconified(WindowEvent e) {}
+
+  /**
+   * Invoked when a window is changed from a normal to a minimized state.
+   */ 
+  public void 	
+  windowIconified(WindowEvent e) {}
+
+  /**
+   * Invoked the first time a window is made visible.	
+   */ 
+  public void     
+  windowOpened(WindowEvent e) {}
+
+
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
@@ -2383,6 +2438,8 @@ class JResourceUsageHistoryDialog
       pCanvas.repaint();
     }
   }
+
+
 
   
 

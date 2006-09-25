@@ -1,4 +1,4 @@
-// $Id: JRenameDialog.java,v 1.5 2005/03/29 03:48:56 jim Exp $
+// $Id: JRenameDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,11 +30,17 @@ class JRenameDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The parent frame.
    */ 
   public 
-  JRenameDialog() 
+  JRenameDialog
+  (
+   Frame owner
+  ) 
   {
-    super("Rename Node", true);
+    super(owner, "Rename Node");
 
     /* create dialog body components */ 
     {
@@ -73,7 +79,7 @@ class JRenameDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Rename", null, null, "Cancel");
+      super.initUI("X", body, "Rename", null, null, "Cancel");
 
       pack();
     }  

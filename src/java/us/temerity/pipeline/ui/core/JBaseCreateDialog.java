@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -33,6 +33,31 @@ class JBaseCreateDialog
    * Construct a new dialog.
    * 
    * @param owner
+   *   The parent frame.
+   * 
+   * @param title
+   *   The title of the dialog.
+   * 
+   * @param confirm
+   *   The name of the confirm button.
+   */ 
+  public 
+  JBaseCreateDialog
+  (
+   Frame owner,
+   String title, 
+   String confirm, 
+   boolean isScrolled
+  ) 
+  {
+    super(owner, title);
+    initUI(confirm, isScrolled);
+  }
+
+  /**
+   * Construct a new dialog.
+   * 
+   * @param owner
    *   The parent dialog.
    * 
    * @param title
@@ -44,34 +69,13 @@ class JBaseCreateDialog
   public 
   JBaseCreateDialog
   (
-   Dialog owner,
+   Dialog owner, 
    String title, 
    String confirm, 
    boolean isScrolled
   ) 
   {
-    super(owner, title, true);
-    initUI(confirm, isScrolled);
-  }
-
-  /**
-   * Construct a new dialog.
-   * 
-   * @param title
-   *   The title of the dialog.
-   * 
-   * @param confirm
-   *   The name of the confirm button.
-   */ 
-  public 
-  JBaseCreateDialog
-  (
-   String title, 
-   String confirm, 
-   boolean isScrolled
-  ) 
-  {
-    super(title, true);
+    super(owner, title);
     initUI(confirm, isScrolled);
   }
 
@@ -180,7 +184,7 @@ class JBaseCreateDialog
 	tpanel.add(Box.createVerticalGlue());
       }
 
-      super.initUI("X", true, body, confirm, null, null, "Cancel");
+      super.initUI("X", body, confirm, null, null, "Cancel");
       pack();
     }
 

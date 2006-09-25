@@ -1,4 +1,4 @@
-// $Id: JArchiveQueryDialog.java,v 1.2 2005/03/14 16:08:21 jim Exp $
+// $Id: JArchiveQueryDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -37,10 +37,10 @@ class JArchiveQueryDialog
   public 
   JArchiveQueryDialog
   (
-   Dialog owner
+   Frame owner
   ) 
   {
-    super(owner, "Search Criteria", true);
+    super(owner, "Search Criteria");
 
     /* create dialog body components */ 
     {
@@ -67,7 +67,7 @@ class JArchiveQueryDialog
 	   "of times.");
       }
 
-      super.initUI("Checked-In Version Search Criteria:", true, body, 
+      super.initUI("Checked-In Version Search Criteria:", body, 
 		   "Search", null, null, "Cancel");
       pack();
     }  

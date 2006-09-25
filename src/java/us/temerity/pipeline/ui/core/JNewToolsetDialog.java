@@ -1,4 +1,4 @@
-// $Id: JNewToolsetDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNewToolsetDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -34,7 +34,7 @@ class JNewToolsetDialog
   public 
   JNewToolsetDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
     super(owner, "New Toolset", "New Toolset Name:", null, "Add");

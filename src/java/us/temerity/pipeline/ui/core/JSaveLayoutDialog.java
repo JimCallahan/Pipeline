@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.5 2006/07/02 06:01:10 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,24 +31,14 @@ class JSaveLayoutDialog
   
   /**
    * Construct a new dialog.
-   */ 
-  public 
-  JSaveLayoutDialog()
-  {
-    super("Save Layout");
-    initUI();
-  }
-
-  /**
-   * Construct a new dialog.
    * 
    * @param owner
-   *   The parent dialog.
+   *   The parent frame.
    */ 
   public 
   JSaveLayoutDialog
   (
-   Dialog owner
+   Frame owner
   )  
   {
     super(owner, "Save Layout");

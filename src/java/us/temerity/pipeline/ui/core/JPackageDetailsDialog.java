@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.7 2006/05/07 21:30:14 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.8 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -26,7 +26,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JPackageDetailsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -41,7 +41,7 @@ class JPackageDetailsDialog
    JManageToolsetsDialog parent
   ) 
   {
-    super("Package Details", false);
+    super("Package Details");
 
     pParent = parent;
 
@@ -170,7 +170,7 @@ class JPackageDetailsDialog
 	{ "Test",        "test-package" }
       };
 
-      JButton btns[] = super.initUI("", false, body, null, null, extra, "Close");
+      JButton btns[] = super.initUI("", body, null, null, extra, "Close");
       pLoadScriptButton   = btns[0];
       pAddEntryButton     = btns[1];
       pClearEntriesButton = btns[2];
@@ -576,7 +576,7 @@ class JPackageDetailsDialog
 	    pParent.refreshPackage(pOsType, pkg);
 	  }
 	  catch(PipelineException ex) {
-	    UIMaster.getInstance().showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}	
       }

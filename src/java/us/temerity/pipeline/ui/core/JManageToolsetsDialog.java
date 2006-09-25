@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.15 2006/09/25 11:55:31 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.16 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JManageToolsetsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ListSelectionListener, TreeSelectionListener, MouseListener, MouseMotionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ class JManageToolsetsDialog
   public 
   JManageToolsetsDialog() 
   {
-    super("Manage Toolsets", false);
+    super("Manage Toolsets");
 
     /* initialize fields */ 
     {
@@ -566,7 +566,7 @@ class JManageToolsetsDialog
       JHorzSplitPanel body = new JHorzSplitPanel(left, right);
       body.setMinimumSize(body.getPreferredSize());
 
-      super.initUI("Manage Toolsets:", false, body, null, null, null, "Close");
+      super.initUI("Manage Toolsets:", body, null, null, null, "Close");
     }
 
     pPackageDetailsDialog = new JPackageDetailsDialog(this);
@@ -620,7 +620,7 @@ class JManageToolsetsDialog
 	      toolsets.put(os, toolset);
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	    }
 	  }
 
@@ -1019,7 +1019,7 @@ class JManageToolsetsDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
       }
     }
   }
@@ -1055,7 +1055,7 @@ class JManageToolsetsDialog
 	    pPackageVersions.put(pname, os, vid, pkg);
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	  }
 	}
 	
@@ -2046,7 +2046,7 @@ class JManageToolsetsDialog
 	}
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
+	showErrorDialog(ex);
 	setVisible(false);
 	return;      
       }
@@ -3086,7 +3086,7 @@ class JManageToolsetsDialog
  	    }
  	  }
  	  catch(IOException ex) {
- 	    UIMaster.getInstance().showErrorDialog(ex);
+ 	    showErrorDialog(ex);
  	  }
  	}
       }
@@ -3197,7 +3197,7 @@ class JManageToolsetsDialog
 	UIMaster master = UIMaster.getInstance();
 	
 	if(!toolset.hasPackages()) {
-	  master.showErrorDialog
+	  showErrorDialog
 	    ("Error:", 
 	     "Unable to freeze toolset (" + tname + ") which contained no packages!");
 	  return;
@@ -3211,7 +3211,7 @@ class JManageToolsetsDialog
 	      buf.append("  " + toolset.getPackageName(wk) + "\n");
 	  }
 
-	  master.showErrorDialog
+	  showErrorDialog
 	    ("Error:", 
 	     "Unable to freeze toolset (" + tname + ") which contained the " + 
 	     "following working packages:\n\n" + 
@@ -3224,7 +3224,7 @@ class JManageToolsetsDialog
 	  for(String ename : toolset.getConflictedEnvNames()) 
 	    buf.append("  " + ename + "\n");
 	  
-	  master.showErrorDialog
+	  showErrorDialog
 	    ("Error:", 
 	     "Unable to freeze toolset (" + tname + ") which has unresolved " + 
 	     "conflicts between its packages for the following environmental " + 
@@ -3264,7 +3264,7 @@ class JManageToolsetsDialog
 	    setToolsetTools(tname, pToolsetTools.get(tname));
 	  }
 	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    showErrorDialog(ex);
 	    return;
 	  }
 	
@@ -3321,7 +3321,7 @@ class JManageToolsetsDialog
 	  client.setDefaultToolsetName(tname);
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	
@@ -3355,7 +3355,7 @@ class JManageToolsetsDialog
 	      client.setToolsetActive(tname, true);
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	      return;
 	    }
 	    
@@ -3384,7 +3384,7 @@ class JManageToolsetsDialog
 	  client.setToolsetActive(tname, false);
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	
@@ -3692,7 +3692,7 @@ class JManageToolsetsDialog
 	      versions.put(pvsn.getVersionID(), pvsn);
 	    }
 	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	      showErrorDialog(ex);
 	      return;
 	    }
 	  }
@@ -4256,14 +4256,12 @@ class JManageToolsetsDialog
    * All existing toolset packages will have a key in this table, but the value may be 
    * null if the toolset package is not currently cached.  
    */   
-//private TreeMap<String,TreeMap<OsType,TreeMap<VersionID,PackageVersion>>>  pPackageVersions;
   private TripleMap<String,OsType,VersionID,PackageVersion>  pPackageVersions;
 
   /** 
    * The modifiable toolset packages which have not yet been frozen indexed by package 
    * and operating system.
    */ 
-  //  private TreeMap<String,TreeMap<OsType,PackageMod>>  pPackageMods;
   private DoubleMap<String,OsType,PackageMod>  pPackageMods;
 
   /**

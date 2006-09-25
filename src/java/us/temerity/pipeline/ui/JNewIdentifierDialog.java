@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.7 2005/01/05 17:41:31 jim Exp $
+// $Id: JNewIdentifierDialog.java,v 1.8 2006/09/25 12:11:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -29,7 +29,10 @@ class JNewIdentifierDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct a new dialog owned by the main application frame. <P> 
+   * Construct a new dialog owned by another dialog. <P> 
+   * 
+   * @param owner
+   *   The parent frame.
    * 
    * @param title
    *   The title of the dialog.
@@ -45,14 +48,15 @@ class JNewIdentifierDialog
    */ 
   public 
   JNewIdentifierDialog
-  (      
+  (
+   Frame owner,       
    String title,  
    String fieldTitle, 
    String name, 
    String confirm
   )
   {
-    super(title, true);
+    super(owner, title);
     initUI(fieldTitle, name, confirm);
   }
 
@@ -84,7 +88,7 @@ class JNewIdentifierDialog
    String confirm
   )
   {
-    super(owner, title, true);
+    super(owner, title);
     initUI(fieldTitle, name, confirm);
   }
 
@@ -131,7 +135,7 @@ class JNewIdentifierDialog
 	body.add(field);
       }
 	  
-      super.initUI(null, true, body, confirm, null, null, "Cancel");
+      super.initUI(null, body, confirm, null, null, "Cancel");
     }  
 
     pConfirmButton.setEnabled((name != null) && (name.length() > 0));

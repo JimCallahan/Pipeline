@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -24,7 +24,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JManageToolsetPluginsDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class JManageToolsetPluginsDialog
    JManageToolsetsDialog parent
   ) 
   {
-    super("Manage Toolset Plugin Menus", false);
+    super("Manage Toolset Plugin Menus");
 
     pPrivilegeDetails = new PrivilegeDetails();
 
@@ -65,8 +65,7 @@ class JManageToolsetPluginsDialog
 	{ "Save Default", "save-default" }
       };
 
-      JButton btns[] = 
-	super.initUI("", false, pTab, "Confirm", "Apply", extra, "Close");
+      JButton btns[] = super.initUI("", pTab, "Confirm", "Apply", extra, "Close");
 
       pDefaultButton     = btns[1];
       pSaveDefaultButton = btns[2];
@@ -148,7 +147,7 @@ class JManageToolsetPluginsDialog
       pSaveDefaultButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
   }
@@ -176,7 +175,7 @@ class JManageToolsetPluginsDialog
       update(target, null);
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
   }
@@ -198,7 +197,7 @@ class JManageToolsetPluginsDialog
 	panel.remove(tname);
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       setVisible(false);
     }
 
@@ -261,7 +260,7 @@ class JManageToolsetPluginsDialog
 	panel.saveChanges();
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
     }
   }
   
@@ -272,14 +271,14 @@ class JManageToolsetPluginsDialog
   void
   doDefaultLayout() 
   {
-    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    JConfirmDialog diag = new JConfirmDialog(this, "Are you sure?"); 
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
       try {
 	pPluginPanels.get(pTab.getSelectedIndex()).defaultLayout();
       }
       catch(PipelineException ex) {
-	UIMaster.getInstance().showErrorDialog(ex);
+	showErrorDialog(ex);
       }
     }
   }
@@ -291,14 +290,14 @@ class JManageToolsetPluginsDialog
   void
   doSaveDefaultLayout() 
   {
-    JConfirmDialog diag = new JConfirmDialog("Are you sure?"); 
+    JConfirmDialog diag = new JConfirmDialog(this, "Are you sure?"); 
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
       try {
 	pPluginPanels.get(pTab.getSelectedIndex()).saveDefaultLayout();
       }
       catch(PipelineException ex) {
-	UIMaster.getInstance().showErrorDialog(ex);
+	showErrorDialog(ex);
       }
     }
   }

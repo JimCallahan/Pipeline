@@ -1,4 +1,4 @@
-// $Id: JCreatePackageDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JCreatePackageDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -33,7 +33,7 @@ class JCreatePackageDialog
   public 
   JCreatePackageDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
     super(owner, "New Package", "Add", false);

@@ -1,4 +1,4 @@
-// $Id: JNewPipelineUserDialog.java,v 1.1 2006/01/15 06:29:26 jim Exp $
+// $Id: JNewPipelineUserDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,7 +30,7 @@ class JNewPipelineUserDialog
   public 
   JNewPipelineUserDialog
   (
-   Dialog owner        
+   Frame owner        
   )
   {
     super(owner, "New Pipeline User", "New User Name:", null, "Add");

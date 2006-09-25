@@ -1,4 +1,4 @@
-// $Id: JRestoreQueryDialog.java,v 1.1 2005/03/23 20:47:28 jim Exp $
+// $Id: JRestoreQueryDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -40,7 +40,7 @@ class JRestoreQueryDialog
    Dialog owner
   ) 
   {
-    super(owner, "Search Criteria", true);
+    super(owner, "Search Criteria");
 
     /* create dialog body components */ 
     {
@@ -58,7 +58,7 @@ class JRestoreQueryDialog
 	   "A regular expression used to select checked-in version names.");
       }
 
-      super.initUI("Offline Version Search Criteria:", true, body, 
+      super.initUI("Offline Version Search Criteria:", body, 
 		   "Search", null, null, "Cancel");
       pack();
     }  

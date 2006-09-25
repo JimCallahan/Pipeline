@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.5 2006/05/07 21:30:14 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JTestEnvironmentDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -38,7 +38,7 @@ class JTestEnvironmentDialog
    String title
   ) 
   {
-    super(title, false);
+    super(title);
 
     /* create dialog body components */ 
     {
@@ -96,7 +96,7 @@ class JTestEnvironmentDialog
 	body.add(area);
       }
 
-      JButton btns[] = super.initUI("X", false, body, null, "Run Test", null, "Close");
+      JButton btns[] = super.initUI("X", body, null, "Run Test", null, "Close");
 
       pack();
     }
@@ -199,7 +199,7 @@ class JTestEnvironmentDialog
       FileCleaner.add(outFile);
     }
     catch(IOException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       return;
     }
 
@@ -210,7 +210,7 @@ class JTestEnvironmentDialog
       FileCleaner.add(errFile);
     }
     catch(IOException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      showErrorDialog(ex);
       return;
     }
 
@@ -224,7 +224,7 @@ class JTestEnvironmentDialog
       diag.setVisible(true);
     }
     catch(IllegalArgumentException ex) {
-      UIMaster.getInstance().showErrorDialog("Error:", ex.getMessage());
+      showErrorDialog("Error:", ex.getMessage());
     }
   }
   

@@ -1,4 +1,4 @@
-// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.1 2006/01/16 04:11:12 jim Exp $
+// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -28,6 +28,9 @@ class JConfirmKillObsoleteJobsDialog
   /**
    * Construct a new dialog.
    * 
+   * @param owner
+   *   The parent frame.
+   * 
    * @param name
    *   The name of the renumbered node. 
    * 
@@ -37,11 +40,12 @@ class JConfirmKillObsoleteJobsDialog
   public 
   JConfirmKillObsoleteJobsDialog
   ( 
+   Frame owner,  
    String name, 
    TreeSet<Long> jobIDs
   ) 
   {
-    super("Confirm", true);
+    super(owner, "Confirm");
 
     /* create dialog body components */ 
     {
@@ -81,7 +85,7 @@ class JConfirmKillObsoleteJobsDialog
 	body.add(scroll);
       }
 
-      super.initUI("Kill Obsolete Jobs?", true, body, "Yes", null, null, "No");
+      super.initUI("Kill Obsolete Jobs?", body, "Yes", null, null, "No");
       pack();
     }
   }

@@ -1,4 +1,4 @@
-// $Id: JNewViewDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNewViewDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -28,6 +28,18 @@ class JNewViewDialog
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new dialog.
+   */ 
+  public 
+  JNewViewDialog
+  (
+   Frame owner        
+  )
+  {
+    super(owner, "New View", "New Working Area View Name:", null, "Add");
+  }
+
   /**
    * Construct a new dialog.
    */ 

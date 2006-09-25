@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.7 2006/01/15 06:29:25 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.8 2006/09/25 12:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,7 +23,7 @@ import javax.swing.border.*;
  */ 
 public 
 class JManageLicenseKeysDialog
-  extends JBaseDialog
+  extends JTopLevelDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ class JManageLicenseKeysDialog
   public 
   JManageLicenseKeysDialog() 
   {
-    super("Manage License Keys", false);
+    super("Manage License Keys");
 
     pPrivilegeDetails = new PrivilegeDetails();
 
@@ -64,8 +64,9 @@ class JManageLicenseKeysDialog
 	{ "Update", "update" }
       };
 
-      JButton btns[] = super.initUI("Manage License Keys:", false, body, 
-				    "Confirm", "Apply", extra, "Close");
+      JButton btns[] = 
+	super.initUI("Manage License Keys:", body, "Confirm", "Apply", extra, "Close");
+
       pAddButton    = btns[1];
       pRemoveButton = btns[2];
 
@@ -96,7 +97,7 @@ class JManageLicenseKeysDialog
       pTableModel.setLicenseKeys(qclient.getLicenseKeys(), pPrivilegeDetails);
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
 
     pAddButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
@@ -177,7 +178,7 @@ class JManageLicenseKeysDialog
       }
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
   }
 
@@ -206,7 +207,7 @@ class JManageLicenseKeysDialog
 	  pTableModel.setLicenseKeys(client.getLicenseKeys(), pPrivilegeDetails);
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
       }
     }
@@ -233,7 +234,7 @@ class JManageLicenseKeysDialog
       pTableModel.setLicenseKeys(client.getLicenseKeys(), pPrivilegeDetails);
     }
     catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      showErrorDialog(ex);
     }
   }
 
