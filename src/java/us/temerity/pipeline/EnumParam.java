@@ -1,4 +1,4 @@
-// $Id: EnumParam.java,v 1.4 2006/02/28 19:43:34 jim Exp $
+// $Id: EnumParam.java,v 1.5 2006/09/25 18:47:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -59,12 +59,10 @@ class EnumParam
    ArrayList<String> values
   ) 
   {
-    super(name, desc, value);
-
-    if(value == null)
-      throw new IllegalArgumentException("The value cannot be (null)!");
+    super(name, desc, null);
 
     pValues = values;
+    setValue(value);
   }
 
 
