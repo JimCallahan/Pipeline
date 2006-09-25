@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.14 2006/05/07 21:30:14 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.15 2006/09/25 11:55:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2304,7 +2304,8 @@ class JManageToolsetsDialog
 	    (pPrivilegeDetails.isMasterAdmin() && !toolsets.containsKey(OsType.MacOS));
 	  pAddWindowsToolsetItem.setEnabled
 	    (pPrivilegeDetails.isMasterAdmin() && !toolsets.containsKey(OsType.Windows));
-	  pCloneToolsetItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	  pCloneToolsetItem.setEnabled
+	    ((data.getOsType() == null) && pPrivilegeDetails.isMasterAdmin());
 	}
       }
     }
