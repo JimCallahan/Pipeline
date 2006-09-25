@@ -1,4 +1,4 @@
-// $Id: NodePathBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: PathBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,15 +8,15 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   P A T H   B U I L D E R   P A R A M                                          */
+/*   P A T H   B U I D E R   P A R A M                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with an fully resolved node name value.
+ * An Builder parameter with an abstract file system pathname value. <P> 
  */
 public 
-class NodePathBuilderParam
-  extends StringParam
+class PathBuilderParam
+  extends PathParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ class NodePathBuilderParam
    * from user code.
    */    
   public 
-  NodePathBuilderParam() 
+  PathBuilderParam() 
   {
     super();
   }
@@ -47,11 +47,11 @@ class NodePathBuilderParam
    *   The default value for this parameter.
    */ 
   public
-  NodePathBuilderParam
+  PathBuilderParam
   (
    String name,  
    String desc, 
-   String value
+   Path value
   ) 
   {
     super(name, desc, value);
@@ -63,7 +63,7 @@ class NodePathBuilderParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6004574702514003655L;
+  private static final long serialVersionUID = -3611514841873329087L;
 
 }
 

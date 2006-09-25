@@ -1,22 +1,22 @@
-// $Id: IdentifierBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: DoubleBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder;
+import us.temerity.pipeline.glue.GlueDecoder; 
 
 import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   I D E N T I F I E R   B U I D E R   P A R A M                                          */
+/*   D O U B L E   B U I D L E R   P A R A M                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with an identifier String value. <P> 
+ * An Builder parameter with a Double value. <P> 
  */
 public 
-class IdentifierBuilderParam
-  extends StringParam
+class DoubleBuilderParam
+  extends DoubleParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -28,8 +28,8 @@ class IdentifierBuilderParam
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
    */    
-  public 
-  IdentifierBuilderParam() 
+  public
+  DoubleBuilderParam() 
   {
     super();
   }
@@ -47,11 +47,11 @@ class IdentifierBuilderParam
    *   The default value for this parameter.
    */ 
   public
-  IdentifierBuilderParam
+  DoubleBuilderParam
   (
    String name,  
    String desc, 
-   String value
+   Double value
   ) 
   {
     super(name, desc, value);
@@ -63,7 +63,7 @@ class IdentifierBuilderParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6562921895708739669L;
+  private static final long serialVersionUID = -5846325461046856536L;
 
 }
 

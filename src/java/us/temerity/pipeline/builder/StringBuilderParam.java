@@ -1,22 +1,22 @@
-// $Id: EnumBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: StringBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder; 
+import us.temerity.pipeline.glue.GlueDecoder;
 
 import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   E N U M   B U I L D E R   P A R A M                                                    */
+/*   S T R I N G   B U I D E R   P A R A M                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with an Enum value. <P> 
+ * An Builder parameter with a short String value. <P> 
  */
 public 
-class EnumBuilderParam
-  extends EnumParam
+class StringBuilderParam
+  extends StringParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -28,8 +28,8 @@ class EnumBuilderParam
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
    */    
-  public
-  EnumBuilderParam() 
+  public 
+  StringBuilderParam() 
   {
     super();
   }
@@ -45,20 +45,16 @@ class EnumBuilderParam
    * 
    * @param value 
    *   The default value for this parameter.
-   * 
-   * @param values
-   *   The complete set of enumerated values.
    */ 
   public
-  EnumBuilderParam
+  StringBuilderParam
   (
    String name,  
    String desc, 
-   String value, 
-   ArrayList<String> values
+   String value
   ) 
   {
-    super(name, desc, value, values);
+    super(name, desc, value);
   }
 
 
@@ -67,7 +63,7 @@ class EnumBuilderParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -2885971711944580825L;
+  private static final long serialVersionUID = -3966290581349083988L;
 
 }
 

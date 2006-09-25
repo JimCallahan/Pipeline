@@ -1,4 +1,4 @@
-// $Id: BooleanBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: IntegerBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,15 +8,15 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   B O O L E A N   B U I L D E R   P A R A M                                              */
+/*   I N T E G E R   B U I L D E R   P A R A M                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A Builder parameter with an Boolean value. <P> 
+ * A Builder parameter with an Integer value. <P> 
  */
 public 
-class BooleanBuilderParam
-  extends BooleanParam
+class IntegerBuilderParam
+  extends IntegerParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ class BooleanBuilderParam
    * from user code.
    */
   public 
-  BooleanBuilderParam() 
+  IntegerBuilderParam() 
   {
     super();
   }
@@ -47,22 +47,23 @@ class BooleanBuilderParam
    *   The default value for this parameter.
    */ 
   public
-  BooleanBuilderParam
+  IntegerBuilderParam
   (
    String name,  
    String desc, 
-   Boolean value
+   Integer value
   ) 
   {
     super(name, desc, value);
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1946048474834302993L;
+  private static final long serialVersionUID = 8425305116840749504L;
 
 }
 

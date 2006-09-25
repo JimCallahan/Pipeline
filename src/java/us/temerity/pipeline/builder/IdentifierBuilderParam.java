@@ -1,4 +1,4 @@
-// $Id: StringBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: IdentifierBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,14 +8,14 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S T R I N G   B U I D E R   P A R A M                                                  */
+/*   I D E N T I F I E R   B U I D E R   P A R A M                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with a short String value. <P> 
+ * An Builder parameter with an identifier String value. <P> 
  */
 public 
-class StringBuilderParam
+class IdentifierBuilderParam
   extends StringParam
   implements BuilderParam
 {  
@@ -29,7 +29,7 @@ class StringBuilderParam
    * from user code.
    */    
   public 
-  StringBuilderParam() 
+  IdentifierBuilderParam() 
   {
     super();
   }
@@ -47,7 +47,7 @@ class StringBuilderParam
    *   The default value for this parameter.
    */ 
   public
-  StringBuilderParam
+  IdentifierBuilderParam
   (
    String name,  
    String desc, 
@@ -63,7 +63,7 @@ class StringBuilderParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3966290581349083988L;
+  private static final long serialVersionUID = 6562921895708739669L;
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: IntegerBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: EnumBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,15 +8,15 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   I N T E G E R   B U I L D E R   P A R A M                                              */
+/*   E N U M   B U I L D E R   P A R A M                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A Builder parameter with an Integer value. <P> 
+ * An Builder parameter with an Enum value. <P> 
  */
 public 
-class IntegerBuilderParam
-  extends IntegerParam
+class EnumBuilderParam
+  extends EnumParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -27,9 +27,9 @@ class IntegerBuilderParam
    * This constructor is required by the {@link GlueDecoder} to instantiate the class 
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
-   */
-  public 
-  IntegerBuilderParam() 
+   */    
+  public
+  EnumBuilderParam() 
   {
     super();
   }
@@ -45,16 +45,20 @@ class IntegerBuilderParam
    * 
    * @param value 
    *   The default value for this parameter.
+   * 
+   * @param values
+   *   The complete set of enumerated values.
    */ 
   public
-  IntegerBuilderParam
+  EnumBuilderParam
   (
    String name,  
    String desc, 
-   Integer value
+   String value, 
+   ArrayList<String> values
   ) 
   {
-    super(name, desc, value);
+    super(name, desc, value, values);
   }
 
 
@@ -63,7 +67,7 @@ class IntegerBuilderParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 8425305116840749504L;
+  private static final long serialVersionUID = -2885971711944580825L;
 
 }
 

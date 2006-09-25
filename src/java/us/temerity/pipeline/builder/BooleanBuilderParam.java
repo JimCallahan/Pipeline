@@ -1,22 +1,22 @@
-// $Id: PathBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: BooleanBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder;
+import us.temerity.pipeline.glue.GlueDecoder; 
 
 import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P A T H   B U I D E R   P A R A M                                                      */
+/*   B O O L E A N   B U I L D E R   P A R A M                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with an abstract file system pathname value. <P> 
+ * A Builder parameter with an Boolean value. <P> 
  */
 public 
-class PathBuilderParam
-  extends PathParam
+class BooleanBuilderParam
+  extends BooleanParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -27,9 +27,9 @@ class PathBuilderParam
    * This constructor is required by the {@link GlueDecoder} to instantiate the class 
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
-   */    
+   */
   public 
-  PathBuilderParam() 
+  BooleanBuilderParam() 
   {
     super();
   }
@@ -47,23 +47,22 @@ class PathBuilderParam
    *   The default value for this parameter.
    */ 
   public
-  PathBuilderParam
+  BooleanBuilderParam
   (
    String name,  
    String desc, 
-   Path value
+   Boolean value
   ) 
   {
     super(name, desc, value);
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3611514841873329087L;
+  private static final long serialVersionUID = 1946048474834302993L;
 
 }
 

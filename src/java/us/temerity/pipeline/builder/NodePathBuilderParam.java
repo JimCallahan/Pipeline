@@ -1,22 +1,22 @@
-// $Id: DoubleBuilderParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: NodePathBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder; 
+import us.temerity.pipeline.glue.GlueDecoder;
 
 import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   D O U B L E   B U I D L E R   P A R A M                                                */
+/*   N O D E   P A T H   B U I L D E R   P A R A M                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with a Double value. <P> 
+ * An Builder parameter with an fully resolved node name value.
  */
 public 
-class DoubleBuilderParam
-  extends DoubleParam
+class NodePathBuilderParam
+  extends StringParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -28,8 +28,8 @@ class DoubleBuilderParam
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
    */    
-  public
-  DoubleBuilderParam() 
+  public 
+  NodePathBuilderParam() 
   {
     super();
   }
@@ -47,11 +47,11 @@ class DoubleBuilderParam
    *   The default value for this parameter.
    */ 
   public
-  DoubleBuilderParam
+  NodePathBuilderParam
   (
    String name,  
    String desc, 
-   Double value
+   String value
   ) 
   {
     super(name, desc, value);
@@ -63,7 +63,7 @@ class DoubleBuilderParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5846325461046856536L;
+  private static final long serialVersionUID = 6004574702514003655L;
 
 }
 
