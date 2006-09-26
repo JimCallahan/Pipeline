@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.54 2006/08/16 18:56:39 jim Exp $
+// $Id: FileMgr.java,v 1.55 2006/09/26 19:32:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -526,7 +526,8 @@ class FileMgr
 	    for(File file : fseq.getFiles()) {
 	      File work = new File(pProdDir, 
 				   req.getNodeID().getWorkingParent() + "/" + file);
-	      long when = work.lastModified();
+
+	      long when = NativeFileSys.lastChanged(work); 
 	      if(when > 0) 
 		stamps[wk] = new Date(when);
 

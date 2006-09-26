@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.1 2005/06/10 04:49:58 jim Exp $
+// $Id: NativeFileSys.cc,v 1.2 2006/09/26 19:32:40 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -184,6 +184,49 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   }
 
   return env->NewStringUTF(resolved);
+}
+
+/* Returns the newest of change and modification time for the given file. */ 
+extern "C" 
+JNIEXPORT jlong 
+JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jpath  /* IN: the file/directory to test */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeFileSys.lastChangedNative(), unable to lookup \"java/lang/IOException\"");
+    return 0L;
+  }
+
+  /* repackage the arguments */ 
+  const char* path = env->GetStringUTFChars(jpath, 0);
+  if((path == NULL) || (strlen(path) == 0)) {
+    env->ThrowNew(IOException,"empty path argument");
+    return 0L;
+  }
+
+  /* get the file status */ 
+  struct stat buf;
+  switch(stat(path, &buf)) {
+  case 0:
+    return ((jlong) ((buf.st_mtime > buf.st_ctime) ? buf.st_mtime : buf.st_ctime));
+
+  case ENOENT: 
+  case ENOTDIR:
+    return 0L;
+
+  default:
+    sprintf(msg, "cannot stat (%s): %s\n", path, strerror(errno));
+    env->ThrowNew(IOException, msg);  
+    return 0L;
+  }
 }
 
 /* Determine amount of free disk space available on the file system which contains the 

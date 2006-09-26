@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.9 2006/05/07 21:30:07 jim Exp $
+// $Id: NativeFileSys.java,v 1.10 2006/09/26 19:32:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -158,6 +158,45 @@ class NativeFileSys
     return new File(realpathNative(path.getPath()));
   }
 
+  /** 
+   * Returns the newest of change and modification time for the given file. <P> 
+   * 
+   * The change time (ctime) changed by writing or by setting inode information 
+   * (owner, group, link count, mode, etc.).  The modification time (mtime) is changed by 
+   * file modifications, e.g. by mknod(2), truncate(2), utime(2) and write(2) (of more than 
+   * zero bytes).  This method will return the newer (larger) of the time stamps, measured in 
+   * milliseconds since the epoch (00:00:00 GMT, January 1, 1970) or OL if the file does
+   * not exist. <P> 
+   * 
+   * This method is required because there is no access to the change time from the 
+   * {@link File} class which only provides {@link #File.lastModified} to retrieve the 
+   * modification time for a file.  
+   * 
+   * @param path 
+   *   The file/directory to test.
+   * 
+   * @return
+   *   The newest of change and modification time or OL if non-existant.
+   */
+  public static long
+  lastChanged
+  (
+   File path
+  ) 
+  {
+    loadLibrary();
+
+    try { 
+      return (lastChangedNative(path.getPath()) * 1000L);
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	 "NativeFileSys.lastChanged(): " + ex.getMessage()); 
+      return 0L;
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -280,6 +319,26 @@ class NativeFileSys
    String path
   ) 
     throws IOException;
+
+  /** 
+   * Returns the newest of change and modification time for the given file. <P> 
+   * 
+   * @param path 
+   *   The file/directory to test.
+   * 
+   * @return
+   *   The newest of change and modification time or OL if non-existant.
+   * 
+   * @throws IOException 
+   *   If unable to determine the status of an existing file or some other I/O problem was 
+   *   encountered.
+   */
+  public static native long
+  lastChangedNative
+  (
+   String path
+  ) 
+    throws IOException; 
 
 
   /*----------------------------------------------------------------------------------------*/

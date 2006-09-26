@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cpp,v 1.1 2006/04/22 12:12:36 jim Exp $
+// $Id: NativeFileSys.cpp,v 1.2 2006/09/26 19:32:41 jim Exp $
 
 #include "stdafx.h"
 
@@ -104,6 +104,28 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   }
 
   return env->NewStringUTF(resolved);
+}
+
+/* Returns the newest of change and modification time for the given file. */ 
+extern "C" 
+JNIEXPORT jlong 
+JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jpath  /* IN: the file/directory to test */ 
+)
+{
+  /* exception initialization */ 
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = EINVAL;
+    perror("NativeFileSys.lastChangedNative(), unable to lookup \"java/lang/IOException\"");
+    return 0L;
+  }
+
+  env->ThrowNew(IOException, "Windows NativeFileSys.lastChangedNative() not implementable!"); 
+  return 0L;
 }
 
 /* Determine amount of free disk space available on the file system which contains the 
