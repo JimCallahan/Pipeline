@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sitep=060904
+sitep=060926
 
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
@@ -9,8 +9,8 @@ echo "--------------------------------------------------------------------------
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
-plsrcdir=$HOME/code-dimetrodon/src/pipeline
-plprofile=$plsrcdir/plconfig/customers/dimetrodon/$sitep
+plsrcdir=$HOME/code-salamander/src/pipeline
+plprofile=$plsrcdir/plconfig/customers/salamander/$sitep
 
 pushd $plsrcdir
   sh autogen.sh
@@ -25,7 +25,7 @@ pushd i686-pc-linux-gnu-dbg
     --with-debug-base=43000 \
     --with-prof-base=43100 \
     --with-crypto-app=$plsrcdir/plconfig \
-    --with-customer=dimetrodon \
+    --with-customer=salamander \
     --with-customer-profile=$plprofile \
     --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd
@@ -42,9 +42,9 @@ then
   echo "-------------------------------------------------------------------------------------"
 
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
-    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-dimetrodon/src/pipeline
+    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-salamander/src/pipeline
 
-  ssh $MAC_HOSTNAME "source .bash_profile; cd code-dimetrodon/build/pipeline; ./bootstrap.sh $sitep"
+  ssh $MAC_HOSTNAME "source .bash_profile; cd code-salamander/build/pipeline; ./bootstrap.sh $sitep"
 fi
 
 
@@ -58,7 +58,7 @@ then
   echo "-------------------------------------------------------------------------------------"
 
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
-    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code-dimetrodon/src/pipeline
+    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code-salamander/src/pipeline
 
-  ssh $WIN_HOSTNAME "source .bash_profile; cd code-dimetrodon/build/pipeline; ./bootstrap.sh $sitep"
+  ssh $WIN_HOSTNAME "source .bash_profile; cd code-salamander/build/pipeline; ./bootstrap.sh $sitep"
 fi

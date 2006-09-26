@@ -18,7 +18,9 @@ popd
 
 
 pushd i686-pc-linux-gnu-dbg
-  CC=/usr/bin/gcc33 CXX=/usr/bin/g++33 \
+  CC="/usr/local/compat-gcc-3.3.4/bin/gcc -m32" \
+  CXX="/usr/local/compat-gcc-3.3.4/bin/g++ -m32" \
+  LD_LIBRARY_PATH=/usr/local/compat-gcc-3.3.4/lib \
   $plsrcdir/configure \
     --enable-foundation \
     --disable-opt \
