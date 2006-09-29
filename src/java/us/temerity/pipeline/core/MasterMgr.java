@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.161 2006/09/26 03:28:59 jim Exp $
+// $Id: MasterMgr.java,v 1.162 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -225,7 +225,8 @@ class MasterMgr
     pInternalFileMgr       = internalFileMgr;
     pNodeCacheLimit        = nodeCacheLimit;
 
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
     pNodeDir = PackageInfo.sNodePath.toFile();
 
     pShutdownJobMgrs   = new AtomicBoolean(false);
@@ -716,13 +717,18 @@ class MasterMgr
     File authors[] = dir.listFiles(); 
     int ak;
     for(ak=0; ak<authors.length; ak++) {
-      assert(authors[ak].isDirectory());
+      if(!authors[ak].isDirectory())
+	throw new IllegalStateException
+	  ("Non-directory file found in the root working area directory!"); 
       String author = authors[ak].getName();
       
       File views[] = authors[ak].listFiles();  
       int vk;
       for(vk=0; vk<views.length; vk++) {
-	assert(views[vk].isDirectory());
+	if(!views[vk].isDirectory())
+	  throw new IllegalStateException
+	    ("Non-directory file found in the user (" + author + ") root working " + 
+	     "area directory!"); 
 	String view = views[vk].getName();
 	
 	synchronized(pWorkingAreaViews) {
@@ -773,13 +779,18 @@ class MasterMgr
 	File authors[] = dir.listFiles(); 
 	int ak;
 	for(ak=0; ak<authors.length; ak++) {
-	  assert(authors[ak].isDirectory());
+	  if(!authors[ak].isDirectory())
+	    throw new IllegalStateException
+	      ("Non-directory file found in the root working area directory!"); 
 	  String author = authors[ak].getName();
 	  
 	  File views[] = authors[ak].listFiles();  
 	  int vk;
 	  for(vk=0; vk<views.length; vk++) {
-	    assert(views[vk].isDirectory());
+	    if(!views[vk].isDirectory())
+	      throw new IllegalStateException
+		("Non-directory file found in the user (" + author + ") root working " + 
+		 "area directory!"); 
 	    String view = views[vk].getName();
 	    
 	    initWorkingNodeTree(views[vk].getPath(), author, view, views[vk]);
@@ -827,7 +838,7 @@ class MasterMgr
 	else if(files[wk].isFile()) 
 	  allDirs = false;
 	else
-	  assert(false);
+	  throw new IllegalStateException(); 
       }
     }
 
@@ -846,7 +857,7 @@ class MasterMgr
 	initCheckedInNodeTree(prefix, files[wk]);
     }
     else {
-      assert(false);
+      throw new IllegalStateException(); 
     } 
   }
   
@@ -966,13 +977,18 @@ class MasterMgr
       File authors[] = dir.listFiles(); 
       int ak;
       for(ak=0; ak<authors.length; ak++) {
-	assert(authors[ak].isDirectory());
+	if(!authors[ak].isDirectory())
+	  throw new IllegalStateException
+	    ("Non-directory file found in the root working area directory!"); 
 	String author = authors[ak].getName();
 	
 	File views[] = authors[ak].listFiles();  
 	int vk;
 	for(vk=0; vk<views.length; vk++) {
-	  assert(views[vk].isDirectory());
+	  if(!views[vk].isDirectory())
+	    throw new IllegalStateException
+	      ("Non-directory file found in the user (" + author + ") root working " + 
+	       "area directory!"); 
 	  String view = views[vk].getName();
 	  collectWorkingDownstreamLinks(author, view, views[vk].getPath(), views[vk]);
 	}
@@ -1026,7 +1042,7 @@ class MasterMgr
 	else if(files[wk].isFile()) 
 	  allDirs = false;
 	else
-	  assert(false);
+	  throw new IllegalStateException(); 
       }
     }
 
@@ -1064,7 +1080,7 @@ class MasterMgr
 	collectCheckedInDownstreamLinks(prefix, files[wk]);
     }
     else {
-      assert(false);
+      throw new IllegalStateException(); 
     } 
   }
   
@@ -1807,7 +1823,9 @@ class MasterMgr
 	  Toolset toolset = toolsets.get(os);
 	  if(toolset == null) 
 	    toolset = readToolset(tname, os);
-	  assert(toolset != null);
+	  if(toolset == null)
+	    throw new IllegalStateException
+	      ("Toolset for (" + os + ") OS cannot be (null)!");
 	}
 
 	return new MiscGetOsToolsetsRsp(timer, toolsets);
@@ -1858,8 +1876,10 @@ class MasterMgr
 	Toolset toolset = toolsets.get(os);
 	if(toolset == null) 
 	  toolset = readToolset(tname, os);
-	assert(toolset != null);
-	
+	if(toolset == null)
+	  throw new IllegalStateException
+	    ("Toolset for (" + os + ") OS cannot be (null)!");
+
 	return toolset;
       }
     }
@@ -1897,7 +1917,9 @@ class MasterMgr
 	  Toolset toolset = toolsets.get(os);
 	  if(toolset == null) 
 	    toolset = readToolset(tname, os);
-	  assert(toolset != null);
+	  if(toolset == null)
+	    throw new IllegalStateException
+	      ("Toolset for (" + os + ") OS cannot be (null)!");
 	}
       }
     }
@@ -1992,7 +2014,9 @@ class MasterMgr
 	  Toolset tset = toolsets.get(os);
 	  if(tset == null) 
 	    tset = readToolset(tname, os);
-	  assert(tset != null);
+	  if(tset == null)
+	    throw new IllegalStateException
+	      ("Toolset for (" + os + ") OS cannot be (null)!");
 	  
 	  TreeMap<String,String> env = null;
 	  if((author != null) && (view != null)) 
@@ -2002,7 +2026,9 @@ class MasterMgr
 	  else 
 	    env = tset.getEnvironment();
 	  
-	  assert(env != null);
+	  if(env == null)
+	    throw new IllegalStateException
+	      ("Toolset environment for (" + os + ") OS cannot be (null)!");
 	  envs.put(os, env);
 	}
 
@@ -2073,7 +2099,9 @@ class MasterMgr
 	Toolset tset = toolsets.get(os);
 	if(tset == null) 
 	  tset = readToolset(tname, os);
-	assert(tset != null);
+	if(tset == null)
+	  throw new IllegalStateException
+	    ("Toolset for (" + os + ") OS cannot be (null)!");
 	
 	TreeMap<String,String> env = null;
 	if((author != null) && (view != null)) 
@@ -2083,7 +2111,9 @@ class MasterMgr
 	else 
 	  env = tset.getEnvironment();
  	
-	assert(env != null);
+	if(env == null)
+	  throw new IllegalStateException
+	    ("Toolset environment for (" + os + ") OS cannot be (null)!");
 	return env;
       }
     }
@@ -2409,7 +2439,9 @@ class MasterMgr
     PackageVersion pkg = versions.get(vid);
     if(pkg == null) 
       pkg = readToolsetPackage(pname, vid, os);
-    assert(pkg != null);
+    if(pkg == null)
+      throw new IllegalStateException
+	("Toolset package for (" + os + ") OS cannot be (null)!");
     
     return pkg;
   }
@@ -2469,7 +2501,9 @@ class MasterMgr
 
 	VersionID nvid = new VersionID();
 	if(versions != null) {
-	  assert(!versions.isEmpty());
+	  if(versions.isEmpty())
+	    throw new IllegalStateException();
+	  
 	  if(req.getLevel() == null) 
 	    throw new PipelineException 
 	      ("Unable to create the " + os + " toolset package (" + pname + ") " + 
@@ -3987,7 +4021,8 @@ class MasterMgr
       if(editors == null) 
 	editors = new TreeMap<String,SuffixEditor>();
       }
-      assert(editors != null);
+      if(editors == null)
+	throw new IllegalStateException("Editors cannot be (null)!"); 
       
       return editors;
     }
@@ -4377,7 +4412,8 @@ class MasterMgr
 	    }
 	    
 	    NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
-	    assert(comp != null);
+	    if(comp == null)
+	      throw new IllegalStateException(); 
 	    
 	    parentEntry = entry;
 	    parentComp  = comp;
@@ -5000,8 +5036,6 @@ class MasterMgr
    NodeRenameReq req
   ) 
   {
-    assert(req != null);
-    
     NodeID id   = req.getNodeID();
     String name = id.getName();
 
@@ -5152,7 +5186,8 @@ class MasterMgr
 	  timer.resume();
 	  
 	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
-	  assert(links != null); 
+	  if(links == null)
+	    throw new IllegalStateException(); 
 	  
 	  for(String target : links.getWorking(id)) {
 	    NodeID targetID = new NodeID(id, target);
@@ -5440,8 +5475,6 @@ class MasterMgr
    NodeRenumberReq req
   ) 
   {
-    assert(req != null);
-    
     NodeID nodeID = req.getNodeID();
     String name = nodeID.getName();
     FrameRange range = req.getFrameRange();
@@ -5671,7 +5704,6 @@ class MasterMgr
    NodeGetHistoryReq req
   ) 
   {	 
-    assert(req != null);
     TaskTimer timer = new TaskTimer();
   
     String name = req.getName();
@@ -5716,7 +5748,6 @@ class MasterMgr
    NodeGetCheckedInFileNoveltyReq req
   ) 
   {	 
-    assert(req != null);
     TaskTimer timer = new TaskTimer();
   
     String name = req.getName();
@@ -6362,7 +6393,8 @@ class MasterMgr
 	  pWorkingLocks.remove(nodeID);
 	}
 	
-	assert(pWorkingBundles.get(name).isEmpty());
+	if(!pWorkingBundles.get(name).isEmpty())
+	  throw new IllegalStateException(); 
 	pWorkingBundles.remove(name);
       }
 	
@@ -6756,7 +6788,8 @@ class MasterMgr
       }
 
       details = status.getDetails();
-      assert(details != null);
+      if(details == null)
+	throw new IllegalStateException(); 
     }
 
     timer.aquire();
@@ -6788,7 +6821,8 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Internal Error: " + ex.getMessage());
 	}
-	assert(checkedIn != null);
+	if(checkedIn == null)
+	  throw new IllegalStateException(); 
       }
 
       /* extract the working and the checked-in version to be checked-out */ 
@@ -6812,7 +6846,8 @@ class MasterMgr
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
 	  vsn = new NodeVersion(bundle.getVersion());
 	}
-	assert(vsn != null);
+	if(vsn == null)
+	  throw new IllegalStateException(); 
       }
 
       /* mark having seen this node already */ 
@@ -6961,7 +6996,8 @@ class MasterMgr
       }
 
       details = status.getDetails();
-      assert(details != null);
+      if(details == null)
+	throw new IllegalStateException(); 
     }
 
     /* make sure the node does have any active jobs */
@@ -7003,7 +7039,8 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Internal Error: " + ex.getMessage());
 	}
-	assert(checkedIn != null);
+	if(checkedIn == null)
+	  throw new IllegalStateException(); 
       }
 
       /* extract the working and the checked-in version to be checked-out */ 
@@ -7027,7 +7064,8 @@ class MasterMgr
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
 	  vsn = new NodeVersion(bundle.getVersion());
 	}
-	assert(vsn != null);
+	if(vsn == null)
+	  throw new IllegalStateException(); 
       }
 
       /* mark having seen this node already */ 
@@ -7111,7 +7149,7 @@ class MasterMgr
 		break;
 
 	      default:
-		assert(false) : 
+		throw new IllegalStateException
 		  ("The " + details.getOverallNodeState() + " should not be possible here!");
 	      }
 	    }
@@ -7376,7 +7414,8 @@ class MasterMgr
 	      throw new PipelineException
 		("There are no checked-in versions of node (" + name + ") to lock!");
 	    }
-	    assert(checkedIn != null);
+	    if(checkedIn == null)
+	      throw new IllegalStateException(); 
 	  }
 	
 	  /* extract the working and the checked-in versions */ 
@@ -7393,14 +7432,16 @@ class MasterMgr
 		   "number was specified for the lock operation!");
 	      vid = work.getWorkingID();
 	    }
-	    assert(vid != null);
+	    if(vid == null)
+	      throw new IllegalStateException(); 
 
 	    CheckedInBundle bundle = checkedIn.get(vid);
 	    if(bundle == null) 
 	      throw new PipelineException
 		("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
 	    vsn = new NodeVersion(bundle.getVersion());
-	    assert(vsn != null);
+	    if(vsn == null)
+	      throw new IllegalStateException(); 
 	  }
 
 	  /* make sure the checked-in version has no Reference links */ 
@@ -8295,7 +8336,8 @@ class MasterMgr
     
     Long[] jobIDs = details.getJobIDs();
     QueueState[] queueStates = details.getQueueState();
-    assert(jobIDs.length == queueStates.length);
+    if(jobIDs.length != queueStates.length)
+      throw new IllegalStateException(); 
 
     /* determine the frame batches */ 
     ArrayList<TreeSet<Integer>> batches = new ArrayList<TreeSet<Integer>>();
@@ -8385,7 +8427,8 @@ class MasterMgr
 
 		  if(extIDs[idx] == null) 
 		    extIDs[idx] = jobIDs[idx];
-		  assert(extIDs[idx] != null);
+		  if(extIDs[idx] == null)
+		    throw new IllegalStateException(); 
 		}
 		break;
 
@@ -8396,7 +8439,7 @@ class MasterMgr
 		break;
 
 	      case Undefined:
-		assert(false);
+		throw new IllegalStateException(); 
 	      }
 	    }
 	  }
@@ -8473,7 +8516,8 @@ class MasterMgr
 	  ("Cannot generate jobs for the frozen node (" + nodeID + ")!");
       
       for(TreeSet<Integer> batch : batches) {
-	assert(!batch.isEmpty());
+	if(batch.isEmpty())
+	  throw new IllegalStateException(); 
 	
 	/* determine the frame indices of the source nodes depended on by the 
 	   frames of this batch */
@@ -9006,7 +9050,8 @@ class MasterMgr
       finally {
 	lock.readLock().unlock();
       }    
-      assert(fseqs != null);
+      if(fseqs == null)
+	throw new IllegalStateException(); 
       
       if(!activeIDs.isEmpty()) 
 	pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
@@ -11477,13 +11522,16 @@ class MasterMgr
       int wk;
       for(wk=1; wk<comps.length; wk++) {
 	NodeTreeEntry entry = (NodeTreeEntry) stack.peek().get(comps[wk]);
-	assert(entry != null);
+	if(entry == null)
+	  throw new IllegalStateException(); 
 	stack.push(entry);
       }
 
       NodeTreeEntry entry = stack.pop();
-      assert(entry != null); 
-      assert(entry.isLeaf());
+      if(entry == null)
+	throw new IllegalStateException(); 
+      if(!entry.isLeaf())
+	throw new IllegalStateException(); 
 
       entry.removeWorking(nodeID.getAuthor(), nodeID.getView());
       for(FileSeq fseq : fseqs)
@@ -11492,7 +11540,8 @@ class MasterMgr
       if(!entry.hasWorking() && !entry.isCheckedIn()) {
 	while(!stack.isEmpty()) {
 	  NodeTreeEntry parent = stack.pop();
-	  assert(!parent.isLeaf());
+	  if(parent.isLeaf())
+	    throw new IllegalStateException(); 
 	  
 	  parent.remove(entry.getName());
 	  if(!parent.isEmpty()) 
@@ -11564,12 +11613,15 @@ class MasterMgr
       }
 
       NodeTreeEntry entry = stack.pop();
-      assert(entry != null); 
-      assert(entry.isLeaf());
+      if(entry == null)
+	throw new IllegalStateException(); 
+      if(!entry.isLeaf())
+	throw new IllegalStateException(); 
 
       while(!stack.isEmpty()) {
 	NodeTreeEntry parent = stack.pop();
-	assert(!parent.isLeaf());
+	if(parent.isLeaf())
+	  throw new IllegalStateException(); 
 	
 	parent.remove(entry.getName());
 	if(!parent.isEmpty()) 
@@ -11673,8 +11725,7 @@ class MasterMgr
 	parent = entry;
       }
       
-      assert(false);
-      return false;
+      throw new IllegalStateException();
     }
   }
 
@@ -11936,7 +11987,8 @@ class MasterMgr
       performUpstreamNodeOp(nodeOp, nodeID, false, new LinkedList<String>(), table, timer);
 
       root = table.get(nodeID.getName());
-      assert(root != null);
+      if(root == null)
+	throw new IllegalStateException(); 
 
       validateStaleLinks(root);
     }
@@ -12063,7 +12115,8 @@ class MasterMgr
 
 	  VersionID workID = work.getWorkingID();
 	  if(workID != null) {
-	    assert(checkedIn != null);
+	    if(checkedIn == null)
+	      throw new IllegalStateException(); 
 	    CheckedInBundle bundle = checkedIn.get(workID);
 	    if(bundle == null) 
 	      throw new PipelineException
@@ -12078,16 +12131,19 @@ class MasterMgr
 	      versionState = VersionState.NeedsCheckOut;
 	  }
 	  else {
-	    assert(checkedIn == null);
+	    if(checkedIn != null)
+	      throw new IllegalStateException(); 
 	    versionState = VersionState.Pending;
 	  }
 	}
 	else {
-	  assert(checkedIn != null);
+	  if(checkedIn == null)
+	    throw new IllegalStateException(); 
 	  versionState = VersionState.CheckedIn;
 	}
       }
-      assert(versionState != null);
+      if(versionState == null)
+	throw new IllegalStateException(); 
 
       /* compute property state */ 
       PropertyState propertyState = null;
@@ -12119,7 +12175,7 @@ class MasterMgr
 	    break;
 
 	  default:
-	    assert(false);
+	    throw new IllegalStateException(); 
 	  }
 	}
       }	
@@ -12456,12 +12512,11 @@ class MasterMgr
 	      overallNodeState = OverallNodeState.NeedsCheckOut;
 	  }
 	  else {
-	    assert(versionState == VersionState.Identical);
-	    assert(propertyState == PropertyState.Identical);
-	    assert(linkState == LinkState.Identical);
-	    assert(!anyNeedsCheckOutFs);
-	    assert(!anyModifiedFs);
-	    assert(!anyConflictedFs);
+	    if((versionState != VersionState.Identical) ||
+	       (propertyState != PropertyState.Identical) ||
+	       (linkState != LinkState.Identical) ||
+	       anyNeedsCheckOutFs || anyModifiedFs || anyConflictedFs)
+	      throw new IllegalStateException(); 
 
 	    /* the work and base version have the same set of links 
 		 because (linkState == Identical) */
@@ -12536,10 +12591,12 @@ class MasterMgr
 	    pQueueMgrClient.getJobStates(nodeID, work.getTimeStamp(), 
 					 work.getPrimarySequence(), jIDs, jobStates);
 
-	    assert(jobIDs.length == jIDs.size());
+	    if(jobIDs.length != jIDs.size())
+	      throw new IllegalStateException(); 
 	    jobIDs = (Long[]) jIDs.toArray(jobIDs);
 
-	    assert(js.length == jobStates.size());
+	    if(js.length != jobStates.size())
+	      throw new IllegalStateException(); 
 	    js = (JobState[]) jobStates.toArray(js);
 	  }
 	  
@@ -13067,7 +13124,8 @@ class MasterMgr
 
       /* process downstream nodes */ 
       DownstreamLinks dsl = getDownstreamLinks(name); 
-      assert(dsl != null);
+      if(dsl == null)
+	throw new IllegalStateException(); 
 
       TreeSet<String> wlinks = dsl.getWorking(nodeID);
       if(wlinks != null) {
@@ -13076,7 +13134,8 @@ class MasterMgr
 				  branch, table, timer);
 
 	  NodeStatus lstatus = table.get(lname);
-	  assert(lstatus != null);
+	  if(lstatus == null)
+	    throw new IllegalStateException(); 
 
 	  status.addTarget(lstatus);
 	  lstatus.addSource(status);
@@ -13097,7 +13156,8 @@ class MasterMgr
 				    branch, table, timer);
 	    
 	    NodeStatus lstatus = table.get(lname);
-	    assert(lstatus != null);
+	    if(lstatus == null)
+	      throw new IllegalStateException(); 
 	    
 	    status.addTarget(lstatus);
 	    lstatus.addSource(status);
@@ -13186,7 +13246,8 @@ class MasterMgr
 	timer.resume();
 	
 	DownstreamLinks dsl = getDownstreamLinks(name); 
-	assert(dsl != null);
+	if(dsl == null)
+	  throw new IllegalStateException(); 
 	
 	TreeSet<String> wlinks = dsl.getWorking(nodeID);
 	if(wlinks != null) {
@@ -13994,8 +14055,8 @@ class MasterMgr
 	   "  While attempting to read the archive file (" + file + ")...\n" + 
 	   "    " + ex.getMessage());
       }
-      assert(archive != null);
-      assert(archive.getName().equals(name));
+      if((archive == null) || !archive.getName().equals(name))
+	throw new IllegalStateException(); 
 
       return archive;
     }
@@ -14840,8 +14901,8 @@ class MasterMgr
 	   "  While attempting to read the toolset file (" + file + ")...\n" + 
 	   "    " + ex.getMessage());
       }
-      assert(tset != null);
-      assert(tset.getName().equals(tname));
+      if((tset == null) || !tset.getName().equals(tname))
+	throw new IllegalStateException(); 
 
       TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
       if(toolsets == null) {
@@ -14982,9 +15043,8 @@ class MasterMgr
 	   "  While attempting to read the toolset package file (" + file + ")...\n" + 
 	   "    " + ex.getMessage());
       }
-      assert(pkg != null);
-      assert(pkg.getName().equals(name));
-      assert(pkg.getVersionID().equals(vid));
+      if((pkg == null) || !pkg.getName().equals(name) || !pkg.getVersionID().equals(vid))
+	throw new IllegalStateException(); 
 
       pToolsetPackages.put(name, os, vid, pkg);
 
@@ -15172,7 +15232,8 @@ class MasterMgr
 	   "  While attempting to read the toolset plugin menu file (" + file + ")...\n" + 
 	   "    " + ex.getMessage());
       }
-      assert(layout != null);
+      if(layout == null)
+	throw new IllegalStateException(); 
 
       if(name != null) 
 	table.put(name, layout);
@@ -15343,7 +15404,8 @@ class MasterMgr
 	   "    " + ex.getMessage());
       }
 
-      assert(plugins != null);
+      if(plugins == null)
+	throw new IllegalStateException(); 
       table.put(name, vid, plugins);
     }
   }
@@ -15459,7 +15521,8 @@ class MasterMgr
 	   "  While attempting to read the suffix editors file (" + file + ")...\n" + 
 	   "    " + ex.getMessage());
       }
-      assert(editors != null);
+      if(editors == null)
+	throw new IllegalStateException(); 
 
       TreeMap<String,SuffixEditor> table = new TreeMap<String,SuffixEditor>();
       for(SuffixEditor se : editors) 
@@ -16346,7 +16409,8 @@ class MasterMgr
     {
       String name = status.getName();
       NodeDetails details = status.getDetails();
-      assert(details != null);
+      if(details == null)
+	throw new IllegalStateException(); 
 
       /* make sure node is in a Finished state */ 
       if(details.getOverallQueueState() != OverallQueueState.Finished) {
@@ -16763,7 +16827,9 @@ class MasterMgr
    long msec
   ) 
   {
-    assert(msec > 0L);
+    if(msec <= 0L)
+      throw new IllegalArgumentException
+	("The restore cleanup interval (" + msec + ") must be positive!"); 
     sRestoreCleanupInterval = msec;
   }
 
@@ -16773,7 +16839,9 @@ class MasterMgr
    long msec
   ) 
   {
-    assert(msec > 0L);
+    if(msec <= 0L)
+      throw new IllegalArgumentException
+	("The node garbage collector interval (" + msec + ") must be positive!"); 
     sNodeGCInterval = msec;
   }
 

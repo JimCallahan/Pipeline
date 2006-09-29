@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.10 2005/01/22 06:10:09 jim Exp $
+// $Id: DownstreamLinks.java,v 1.11 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -94,7 +94,8 @@ class DownstreamLinks
   public String
   getName() 
   {
-    assert(pName != null);
+    if(pName == null)
+      throw new IllegalStateException(); 
     return pName;
   }
 
@@ -124,7 +125,8 @@ class DownstreamLinks
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");
-    assert(id.getName().equals(pName)); 
+    if(!id.getName().equals(pName))
+      throw new IllegalStateException(); 
 
     if(pWorkingLinks.containsKey(id)) {
       TreeSet<String> links = pWorkingLinks.get(id);
@@ -174,7 +176,8 @@ class DownstreamLinks
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");
-    assert(id.getName().equals(pName)); 
+    if(!id.getName().equals(pName))
+      throw new IllegalStateException(); 
     
     if(name == null) 
       throw new IllegalArgumentException
@@ -207,7 +210,8 @@ class DownstreamLinks
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");
-    assert(id.getName().equals(pName));  
+    if(!id.getName().equals(pName))
+      throw new IllegalStateException(); 
 
     if(name == null) 
       throw new IllegalArgumentException

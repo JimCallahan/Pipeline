@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.1 2006/08/12 17:01:52 jim Exp $
+// $Id: MayaBuildAction.java,v 1.2 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -458,7 +458,6 @@ class MayaBuildAction
 	else if(type.equals("Reference"))
 	  command = "  -reference\n";
 	else {
-	  assert (false);
 	  throw new PipelineException("Somehow the value of the " + PARAM_type
 	    + "source parameter for (" + sname
 	    + ") was set to a value that should never exist.");

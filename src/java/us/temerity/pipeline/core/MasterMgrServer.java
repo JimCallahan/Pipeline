@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.63 2006/08/31 08:54:39 jim Exp $
+// $Id: MasterMgrServer.java,v 1.64 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1175,7 +1175,7 @@ class MasterMgrServer
 	      break;	    
 
 	    default:
-	      assert(false);
+	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
 	    }
 	  }
 	}

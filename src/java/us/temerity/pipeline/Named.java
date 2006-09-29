@@ -1,4 +1,4 @@
-// $Id: Named.java,v 1.11 2006/02/27 17:56:01 jim Exp $
+// $Id: Named.java,v 1.12 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -60,7 +60,8 @@ class Named
   public String
   getName() 
   {
-    assert(pName != null);
+    if(pName == null)
+      throw new IllegalStateException(); 
     return pName;
   }
  
@@ -103,8 +104,7 @@ class Named
       return super.clone();
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException();     
     }
   }
 

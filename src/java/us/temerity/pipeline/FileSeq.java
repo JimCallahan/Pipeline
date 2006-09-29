@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.20 2006/05/07 21:30:07 jim Exp $
+// $Id: FileSeq.java,v 1.21 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -54,7 +54,9 @@ class FileSeq
    String suffix    
   ) 
   {
-    assert(prefix != null);
+    if(prefix == null)
+      throw new IllegalStateException(); 
+
     if((suffix != null) && (suffix.length() >= 0))
       pFilePattern = new FilePattern(prefix, -1, suffix);
     else 
@@ -88,7 +90,8 @@ class FileSeq
    FrameRange range      
   ) 
   {
-    assert(pattern != null);      
+    if(pattern == null)
+      throw new IllegalStateException(); 
     pFilePattern = new FilePattern(pattern);
 
     if(range != null) {
@@ -262,7 +265,8 @@ class FileSeq
   public FilePattern
   getFilePattern()
   {
-    assert(pFilePattern != null);
+    if(pFilePattern == null)
+      throw new IllegalStateException(); 
     return new FilePattern(pFilePattern);
   }
 
@@ -305,7 +309,8 @@ class FileSeq
    int idx  
   )  
   {
-    assert(pFilePattern != null);
+    if(pFilePattern == null)
+      throw new IllegalStateException(); 
     if(pFrameRange != null) 
       return pFilePattern.getFile(pFrameRange.indexToFrame(idx));
     else 
@@ -348,7 +353,8 @@ class FileSeq
    int idx  
   )  
   {
-    assert(pFilePattern != null);
+    if(pFilePattern == null)
+      throw new IllegalStateException(); 
     if(pFrameRange != null) 
       return pFilePattern.getPath(pFrameRange.indexToFrame(idx));
     else 
@@ -407,7 +413,8 @@ class FileSeq
   public int 
   hashCode() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pHashCode;
   }
 
@@ -417,7 +424,8 @@ class FileSeq
   public String
   toString() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pStringRep;
   }
 

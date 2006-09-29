@@ -1,4 +1,4 @@
-// $Id: RenumberTool.java,v 1.2 2006/06/21 04:08:47 jim Exp $
+// $Id: RenumberTool.java,v 1.3 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -76,8 +76,7 @@ RenumberTool
       return collectSecondPhaseInput();
       
     default:
-      assert (false);
-      return null;
+      throw new IllegalStateException(); 
     }
   }
 
@@ -434,8 +433,7 @@ RenumberTool
 	return executeSecondPhase(mclient, qclient);
 	
     default:
-      assert (false);
-      return false;
+      throw new IllegalStateException();
     }
   }
 

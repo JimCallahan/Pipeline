@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.22 2006/07/03 06:38:42 jim Exp $
+// $Id: JobMgrServer.java,v 1.23 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -429,7 +429,7 @@ class JobMgrServer
 	      break;	    
 
 	    default:
-	      assert(false);
+	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
 	    }
 	  }
 	}
@@ -510,7 +510,8 @@ class JobMgrServer
     public void 
     run() 
     {
-      assert(PackageInfo.sOsType == OsType.Unix);
+      if(PackageInfo.sOsType != OsType.Unix)
+	throw new IllegalStateException("The OS type must be Unix!");
 
       try {
 	LogMgr.getInstance().log

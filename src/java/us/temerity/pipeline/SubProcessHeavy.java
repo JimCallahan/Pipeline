@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.8 2006/05/07 21:30:08 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.9 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -537,7 +537,8 @@ class SubProcessHeavy
 	pExitCode = -1;
       }
       finally {
-	assert(pExitCode != null);
+	if(pExitCode == null)
+	  throw new IllegalStateException(); 
 	pIsFinished.set(true);
       }
 
@@ -557,8 +558,10 @@ class SubProcessHeavy
       pExitCode = -2;
     }
 
-    assert(!closeStdin.isAlive());
-    assert((stats == null) || !stats.isAlive());
+    if(closeStdin.isAlive()) 
+      throw new IllegalStateException(); 
+    if((stats != null) && stats.isAlive())
+      throw new IllegalStateException(); 
     
     /* append any IOException messages to the STDERR output */ 
     if(extraErrors != null) {
@@ -626,7 +629,8 @@ class SubProcessHeavy
     public void 
     run()
     {
-      assert(PackageInfo.sOsType == OsType.Unix);
+      if(PackageInfo.sOsType != OsType.Unix)
+	throw new IllegalStateException("The OS type must be Unix!");
 
       if(pIsFinished == null) 
 	throw new IllegalStateException("The subprocess was never initialized!");
@@ -658,7 +662,8 @@ class SubProcessHeavy
 
 	if(!pIsFinished.get()) {
 	  int pid = pProc.getPid();
-	  assert(pid != -1);
+	  if(pid == -1)
+	    throw new IllegalStateException(); 
 	  
 	  sProcStats.monitor(pid);
 	  LogMgr.getInstance().log

@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.3 2006/06/06 11:17:01 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.4 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -108,8 +108,7 @@ class MayaTextureSyncTool
       return collectThirdPhaseInput();
 
     default:
-      assert(false);
-      return null;
+      throw new IllegalStateException(); 
     }
   }
 
@@ -849,8 +848,7 @@ class MayaTextureSyncTool
       return executeThirdPhase(mclient, qclient);
 
     default:
-      assert(false);
-      return false;
+      throw new IllegalStateException();   
     }
   }
 
@@ -1264,7 +1262,8 @@ class MayaTextureSyncTool
 	    files.add(new File(texture));
 
 	  TreeSet<FileSeq> tfseqs = FileSeq.collate(files, false);
-	  assert(tfseqs.size() == 1);
+	  if(tfseqs.size() != 1)
+	    throw new IllegalStateException(); 
 	  FileSeq tfseq = tfseqs.first();
 	  
 	  for(FileSeq fseq : com.getSequences()) {
@@ -1272,7 +1271,8 @@ class MayaTextureSyncTool
 	      files.addAll(fseq.getFiles());
 	      
 	      TreeSet<FileSeq> afseqs = FileSeq.collate(files, false);
-	      assert(afseqs.size() == 1);
+	      if(afseqs.size() != 1)
+		throw new IllegalStateException(); 
 	      FileSeq afseq = afseqs.first();
 
 	      if(!afseq.equals(fseq)) 

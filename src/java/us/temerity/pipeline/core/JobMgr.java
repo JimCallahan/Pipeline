@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.31 2006/07/05 12:08:50 jim Exp $
+// $Id: JobMgr.java,v 1.32 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -382,7 +382,8 @@ class JobMgr
 	}
       }
       
-      assert(results != null);
+      if(results == null) 
+	throw new IllegalStateException("Job results cannot be (null)!"); 
       return new JobWaitRsp(req.getJobID(), timer, results);
     }
     catch(PipelineException ex) {
@@ -621,7 +622,8 @@ class JobMgr
 	}
       }
       
-      assert(details != null);
+      if(details == null) 
+	throw new IllegalStateException("Job details cannot be (null)!"); 
       return new JobGetExecDetailsRsp(req.getJobID(), timer, details); 
     }
     catch(PipelineException ex) {

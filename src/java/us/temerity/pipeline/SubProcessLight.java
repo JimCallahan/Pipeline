@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.9 2006/08/16 18:57:07 jim Exp $
+// $Id: SubProcessLight.java,v 1.10 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -699,7 +699,8 @@ class SubProcessLight
 	pExitCode = -2;
       }
       finally {
-	assert(pExitCode != null);
+	if(pExitCode == null)
+	  throw new IllegalStateException(); 
 	pIsFinished.set(true);
       }
 	
@@ -720,10 +721,9 @@ class SubProcessLight
       pExitCode = -3;
     }
 
-    assert(!closeStdin.isAlive());
-    assert(!stdout.isAlive());
-    assert(!stderr.isAlive());
-    
+    if(closeStdin.isAlive() || stdout.isAlive() || stderr.isAlive())
+      throw new IllegalStateException(); 
+
     /* append any IOException messages to the STDERR output */ 
     if(extraErrors != null) {
       synchronized(pErrors) {

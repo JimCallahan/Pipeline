@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetPackageReq.java,v 1.2 2005/06/10 16:14:22 jim Exp $
+// $Id: MiscGetToolsetPackageReq.java,v 1.3 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -73,7 +73,8 @@ class MiscGetToolsetPackageReq
   public String
   getName() 
   {
-    assert(pName != null);
+    if(pName == null)
+      throw new IllegalStateException(); 
     return pName;
   }
  

@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.15 2006/02/27 17:57:08 jim Exp $
+// $Id: JobReqs.java,v 1.16 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -546,8 +546,7 @@ class JobReqs
       return clone; 
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException();       
     }
   }
 

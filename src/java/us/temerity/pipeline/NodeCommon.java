@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.29 2006/07/10 08:11:41 jim Exp $
+// $Id: NodeCommon.java,v 1.30 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -513,8 +513,7 @@ class NodeCommon
   public Object 
   clone()
   {
-    assert(false) : ("Cannot clone a NodeCommon!");
-    return null;
+    throw new IllegalStateException("Cannot clone a NodeCommon!");
   }
 
 
@@ -646,17 +645,21 @@ class NodeCommon
 
       encoder.encode("IsActionEnabled", pIsActionEnabled);
 
-      assert(pJobReqs != null);
+      if(pJobReqs == null)
+	throw new IllegalStateException(); 
       encoder.encode("JobRequirements", pJobReqs);
    
-      assert(pOverflow != null);
+      if(pOverflow == null)
+	throw new IllegalStateException(); 
       encoder.encode("OverflowPolicy", pOverflow); 
 
-      assert(pExecution != null);
+      if(pExecution == null)
+	throw new IllegalStateException(); 
       encoder.encode("ExecutionMethod", pExecution); 
 
       if(pExecution == ExecutionMethod.Parallel) {
-	assert(pBatchSize != null);
+	if(pBatchSize == null)
+	  throw new IllegalStateException(); 
 	encoder.encode("BatchSize", pBatchSize);
       }
     }

@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.2 2006/06/21 04:52:33 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.3 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
@@ -269,7 +269,7 @@ class GlueEncoderImpl
 	      break;
 	      
 	    default:
-	      assert(false);
+	      throw new IllegalStateException("Unknown array type (" + cs[depth] + ")!"); 
 	    }
 	  }
 	
@@ -292,7 +292,8 @@ class GlueEncoderImpl
 	int wk;
 	for(wk=0; wk<dim; wk++) {
 	  Object comp = Array.get(obj, wk);
-	  assert(comp != null);
+	  if(comp == null)
+	    throw new IllegalStateException();
 
 	  pBuf.append(indent() + wk + " <" + simple + "> { ");
 
@@ -313,7 +314,7 @@ class GlueEncoderImpl
 	    pBuf.append("'" + comp + "'");
 	  }
 	  else {
-	    assert(false);
+	    throw new IllegalStateException("Unknown primitive type (" + primCls + ")!");
 	  }
 
 	  pBuf.append(" }\n");
@@ -420,7 +421,8 @@ class GlueEncoderImpl
   private String 
   indent() 
   {
-    assert(pLevel >= 0);
+    if(pLevel < 0)
+      throw new IllegalStateException("Indent level (" + pLevel + ") cannot be negative!"); 
 
     StringBuffer buf = new StringBuffer();
     int wk;
@@ -518,7 +520,9 @@ class GlueEncoderImpl
       sStringClass    = Class.forName("java.lang.String");
     }
     catch (ClassNotFoundException ex) {
-      assert(false) : ex.toString();
+      throw new IllegalStateException
+	("Unable to find atomic GLUE classes:\n  " + 
+	 ex.toString());
     }
   }
 

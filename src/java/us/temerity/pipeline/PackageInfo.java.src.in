@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.18 2006/07/22 05:12:10 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.19 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,7 +31,8 @@ class PackageInfo
     }
     catch(Exception ex) {
     }
-    assert(opsys != null);
+    if(opsys == null)
+      throw new IllegalStateException(); 
 
     OsType os = null;
     if(opsys.equals("Linux")) 
@@ -43,7 +44,7 @@ class PackageInfo
 	    opsys.equals("Windows NT"))
       os = OsType.Windows; 
     else 
-      assert(false) : ("Unsupported OS type (" + opsys + ")!");
+      throw new IllegalStateException("Unsupported OS type (" + opsys + ")!");
     sOsType = os; 
 
     switch(os) {
@@ -144,8 +145,7 @@ class PackageInfo
       return ";";
 
     default:
-      assert(false);
-      return null;
+      throw new IllegalStateException();
     }
   }
 

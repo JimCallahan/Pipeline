@@ -1,4 +1,4 @@
-// $Id: NativeProcessStats.java,v 1.3 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeProcessStats.java,v 1.4 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,7 +27,8 @@ class NativeProcessStats
   public 
   NativeProcessStats() 
   {
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
     loadLibrary();
     pStats = new TreeMap<Integer,ProcStats>();
   }

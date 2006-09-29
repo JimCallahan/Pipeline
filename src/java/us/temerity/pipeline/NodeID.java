@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.11 2006/05/07 21:30:07 jim Exp $
+// $Id: NodeID.java,v 1.12 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -221,7 +221,8 @@ class NodeID
   public int 
   hashCode() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pHashCode;
   }
 
@@ -234,7 +235,8 @@ class NodeID
   public String
   toString() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pStringRep;
   }
 

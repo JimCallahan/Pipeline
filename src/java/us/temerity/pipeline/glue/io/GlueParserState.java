@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.1 2006/06/11 13:44:07 jim Exp $
+// $Id: GlueParserState.java,v 1.2 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
@@ -66,7 +66,8 @@ class GlueParserState
    HashMap table
   ) 
   {
-    assert(table != null);
+    if(table == null)
+      throw new IllegalArgumentException("The object table cannot be (null)!");
     pCurTable = table;
   }
 
@@ -91,7 +92,8 @@ class GlueParserState
   ) 
     throws ParseException
   {
-    assert(cls != null);
+    if(cls == null) 
+      throw new IllegalArgumentException("The class cannot be (null)!");
 
     Object obj = null;
     try {
@@ -171,7 +173,7 @@ class GlueParserState
 	  else if(cls == Character.TYPE) 
 	    buf.append("C");
 	  else 
-	    assert(false);
+	    throw new IllegalStateException("Unknown array type (" + cls + ")!");
 	}
 	else {
 	  buf.append("L" + cls.getName() + ";");
@@ -212,7 +214,9 @@ class GlueParserState
   ) 
     throws ParseException
   {
-    assert(obj != null);
+    if(obj == null)
+      throw new IllegalArgumentException("The object cannot be (null)!");       
+
     if(pMasterTable.containsKey(objID)) 
       throw new ParseException("Duplicate object ID (" + objID + " encountered!");
     pMasterTable.put(objID, obj);

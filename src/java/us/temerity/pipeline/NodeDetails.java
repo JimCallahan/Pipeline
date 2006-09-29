@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.15 2006/08/31 18:20:11 jim Exp $
+// $Id: NodeDetails.java,v 1.16 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -177,7 +177,8 @@ class NodeDetails
   public String
   getName() 
   {
-    assert(pName != null);
+    if(pName == null)
+      throw new IllegalStateException(); 
     return pName;
   }
 
@@ -187,7 +188,8 @@ class NodeDetails
   public Date
   getTimeStamp() 
   {
-    assert(pTimeStamp != null);
+    if(pTimeStamp == null)
+      throw new IllegalStateException(); 
     return (Date) pTimeStamp.clone();
   }
 

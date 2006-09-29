@@ -1,4 +1,4 @@
-// $Id: Path.java,v 1.1 2006/05/07 21:30:07 jim Exp $
+// $Id: Path.java,v 1.2 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -179,7 +179,7 @@ class Path
       break;
 
     default:
-      assert(false);
+      throw new IllegalStateException();    
     }
   }
 
@@ -450,8 +450,7 @@ class Path
       return new File(pStringRep.replace('/', '\\'));
 
     default:
-      assert(false);
-      return null;
+      throw new IllegalStateException(); 
     }
   }
 
@@ -482,8 +481,7 @@ class Path
       return pStringRep.replace('/', '\\');
 
     default:
-      assert(false);
-      return null;
+      throw new IllegalStateException(); 
     }
   }
 
@@ -515,7 +513,8 @@ class Path
   public int 
   hashCode() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pHashCode;
   }
 
@@ -525,7 +524,8 @@ class Path
   public String
   toString() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pStringRep;
   }
 
@@ -545,8 +545,7 @@ class Path
       return super.clone();
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException(); 
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.11 2006/09/26 19:32:36 jim Exp $
+// $Id: CheckSum.java,v 1.12 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -89,7 +89,8 @@ class CheckSum
    File dir
   ) 
   {
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
 
     if(algorithm == null) 
       throw new IllegalArgumentException("The digest algorithm cannot be (null)!");
@@ -280,7 +281,7 @@ class CheckSum
 	("No permission to read the source file (" + file + ")!");
     }   
     catch (IOException ex) {   
-      assert(false);
+      throw new IllegalStateException();
     } 
 
     /* write the checksum to file */ 
@@ -310,8 +311,8 @@ class CheckSum
       throw new PipelineException
 	("No permission to write the checksum file (" + sfile + ")!");
     } 
-    catch (IOException ex) {    
-      assert(false);
+    catch (IOException ex) { 
+      throw new IllegalStateException();
     }
 
     LogMgr.getInstance().flush();
@@ -384,8 +385,8 @@ class CheckSum
 	throw new PipelineException
 	("No permission to read the checksum file (" + sfileA + ")!");
       }   
-      catch (IOException ex) {   
-	assert(false);
+      catch (IOException ex) {     
+	throw new IllegalStateException(); 
       } 
 
       /* read the second checksum file */ 
@@ -411,7 +412,7 @@ class CheckSum
 	("No permission to read the checksum file (" + sfileB + ")!");
       }   
       catch (IOException ex) {   
-	assert(false);
+	throw new IllegalStateException();    
       }       
     }
       
@@ -470,7 +471,7 @@ class CheckSum
 	("No permission to read the checksum file (" + file + ")!");
       }   
       catch (IOException ex) {   
-	assert(false);
+	throw new IllegalStateException();     
       } 
     }
 
@@ -513,7 +514,7 @@ class CheckSum
 	  ("No permission to read the restored file (" + file + ")!");
       }   
       catch (IOException ex) {   
-	assert(false);
+	throw new IllegalStateException();    
       } 
     }
     

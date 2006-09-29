@@ -1,4 +1,4 @@
-// $Id: HfsEnvCubeAction.java,v 1.2 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsEnvCubeAction.java,v 1.3 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -175,7 +175,7 @@ class HfsEnvCubeAction
 	break;
 
       default:
-	assert(false);
+	throw new IllegalStateException(); 
       }
 
       args.add(target.toString());

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.65 2006/08/19 03:14:15 jim Exp $
+// $Id: QueueMgr.java,v 1.66 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,7 +40,8 @@ class QueueMgr
   { 
     pServer = server;
 
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
     pQueueDir = PackageInfo.sQueuePath.toFile();
 
     pShutdownJobMgrs = new AtomicBoolean(false);
@@ -277,7 +278,8 @@ class QueueMgr
 	  try {
 	    Long groupID = new Long(files[wk].getName());
 	    QueueJobGroup group = readJobGroup(groupID);
-	    assert(group != null);
+	    if(group == null) 
+	      throw new IllegalStateException("The job group cannot be (null)!");
 	    synchronized(pJobGroups) {
 	      pJobGroups.put(groupID, group);
 	    }
@@ -3726,7 +3728,8 @@ class QueueMgr
 			break;
 			
 		      default:
-			assert(false);
+			throw new IllegalStateException
+			  ("Unexpected job state (" + info.getState() + ")!");
 		      }
 		    }
 		  }
@@ -3990,11 +3993,13 @@ class QueueMgr
 	timer.resume();
 	
 	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
-	assert(toolsets != null); 
+	if(toolsets == null) 
+	  throw new IllegalStateException("The toolsets cannot be (null)!");
 
 	for(OsType os : toolsets.keySet()) {
 	  Toolset tset = toolsets.get(os);
-	  assert(tset != null);
+	  if(tset == null) 
+	    throw new IllegalStateException("The toolset cannot be (null)!");
 	  
 	  TreeMap<String,String> env = null;
 	  if((author != null) && (view != null)) 
@@ -4004,7 +4009,8 @@ class QueueMgr
 	  else 
 	    env = tset.getEnvironment();
 	  
-	  assert(env != null);
+	  if(env == null) 
+	    throw new IllegalStateException("The environment cannot be (null)!");
 	  envs.put(os, env);
 	}
       }
@@ -4392,9 +4398,10 @@ class QueueMgr
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the license keys file (" + file + ")...\n" + 
 	     "    " + ex.getMessage());
-	}
-	assert(keys != null);
-	
+	}	  
+	if(keys == null) 
+	  throw new IllegalStateException("The license keys cannot be (null)!");
+
 	for(LicenseKey key : keys) 
 	  pLicenseKeys.put(key.getName(), key);
       }
@@ -4497,7 +4504,8 @@ class QueueMgr
 	     "  While attempting to read the selection keys file (" + file + ")...\n" + 
 	     "    " + ex.getMessage());
 	}
-	assert(keys != null);
+	if(keys == null) 
+	  throw new IllegalStateException("The selection keys cannot be (null)!");
 	
 	for(SelectionKey key : keys) 
 	  pSelectionKeys.put(key.getName(), key);
@@ -4601,8 +4609,9 @@ class QueueMgr
 	     "  While attempting to read the selection groups file (" + file + ")...\n" + 
 	     "    " + ex.getMessage());
 	}
-	assert(groups != null);
-	
+	if(groups == null) 
+	  throw new IllegalStateException("The selection groups cannot be (null)!");
+
 	for(SelectionGroup key : groups) 
 	  pSelectionGroups.put(key.getName(), key);
       }
@@ -4705,8 +4714,9 @@ class QueueMgr
 	     "  While attempting to read the selection schedules file (" + file + ")...\n" + 
 	     "    " + ex.getMessage());
 	}
-	assert(schedules != null);
-	
+	if(schedules == null) 
+	  throw new IllegalStateException("The selection schedules cannot be (null)!");
+
 	for(SelectionSchedule key : schedules) 
 	  pSelectionSchedules.put(key.getName(), key);
       }
@@ -4811,7 +4821,8 @@ class QueueMgr
 	     "  While attempting to read the hosts file (" + file + ")...\n" + 
 	     "    " + ex.getMessage());
 	}
-	assert(infos != null);
+	if(infos == null) 
+	  throw new IllegalStateException("The host info cannot be (null)!");
 	
 	for(QueueHostInfo qinfo : infos.values()) 
 	  pHosts.put(qinfo.getName(), new QueueHost(qinfo));
@@ -4970,7 +4981,8 @@ class QueueMgr
 	       "  While attempting to read the resource samples file (" + file + ")...\n" + 
 	       "    " + ex.getMessage());
 	  }
-	  assert(block != null);
+	  if(block == null) 
+	    throw new IllegalStateException("The resource sample block cannot be (null)!");
 	  
 	  blocks.put(block.getLastTimeStamp().getTime(), block);
 	}
@@ -6073,7 +6085,9 @@ class QueueMgr
    int num
   ) 
   {
-    assert(num > 0);
+    if(num <= 0) 
+      throw new IllegalArgumentException
+	("The servers per collector (" + num + ") must be positive!");    
     sMaxServersPerCollector = num;
   }
 
@@ -6083,7 +6097,9 @@ class QueueMgr
    long msec
   ) 
   {
-    assert(msec > 0L);
+    if(msec <= 0L) 
+      throw new IllegalArgumentException
+	("The sample cleanup interval (" + msec + ") must be positive!"); 
     sSampleCleanupInterval = msec;
   }
 
@@ -6093,7 +6109,9 @@ class QueueMgr
    long msec
   ) 
   {
-    assert(msec > 0L);
+    if(msec <= 0L) 
+      throw new IllegalArgumentException
+	("The dispatcher interval (" + msec + ") must be positive!"); 
     sDispatcherInterval = msec;
   }
 

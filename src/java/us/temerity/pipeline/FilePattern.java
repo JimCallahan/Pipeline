@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.12 2006/05/07 21:30:07 jim Exp $
+// $Id: FilePattern.java,v 1.13 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -241,7 +241,8 @@ class FilePattern
   public String
   getPrefix()
   {
-    assert(pPrefix != null);
+    if(pPrefix == null)
+      throw new IllegalStateException(); 
     return pPrefix;
   }
 
@@ -292,7 +293,8 @@ class FilePattern
    int frame  
   ) 
   {
-    assert(hasFrameNumbers());
+    if(!hasFrameNumbers())
+      throw new IllegalStateException(); 
 
     StringBuffer buf = new StringBuffer();
     buf.append(pPrefix);
@@ -321,7 +323,8 @@ class FilePattern
   public File
   getFile() 
   {
-    assert(!hasFrameNumbers());
+    if(hasFrameNumbers())
+      throw new IllegalStateException(); 
 
     if(pSuffix != null) 
       return new File(pPrefix + "." + pSuffix);
@@ -347,7 +350,8 @@ class FilePattern
    int frame  
   ) 
   {
-    assert(hasFrameNumbers());
+    if(!hasFrameNumbers())
+      throw new IllegalStateException(); 
 
     StringBuffer buf = new StringBuffer();
     buf.append(pPrefix);
@@ -376,7 +380,8 @@ class FilePattern
   public Path
   getPath() 
   {
-    assert(!hasFrameNumbers());
+    if(hasFrameNumbers())
+      throw new IllegalStateException(); 
 
     if(pSuffix != null) 
       return new Path(pPrefix + "." + pSuffix);
@@ -417,7 +422,8 @@ class FilePattern
   public int 
   hashCode() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pHashCode;
   }
 
@@ -427,7 +433,8 @@ class FilePattern
   public String
   toString() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pStringRep;
   }
 
@@ -489,8 +496,7 @@ class FilePattern
       return super.clone(); 
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException(); 
     }
   }
 

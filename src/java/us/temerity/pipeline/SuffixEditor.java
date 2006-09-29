@@ -1,4 +1,4 @@
-// $Id: SuffixEditor.java,v 1.5 2006/02/27 17:54:52 jim Exp $
+// $Id: SuffixEditor.java,v 1.6 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -88,7 +88,8 @@ class SuffixEditor
   public String
   getSuffix() 
   {
-    assert(pSuffix != null);
+    if(pSuffix == null)
+      throw new IllegalStateException(); 
     return pSuffix;
   }
 

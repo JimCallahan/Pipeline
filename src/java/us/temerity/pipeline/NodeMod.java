@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.49 2006/08/31 18:20:29 jim Exp $
+// $Id: NodeMod.java,v 1.50 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -295,7 +295,8 @@ class NodeMod
       throw new IllegalArgumentException
 	("Frozen working versions cannot be modified!");
 
-    assert(vid != null);
+    if(vid == null)
+      throw new IllegalStateException(); 
     pWorkingID = vid;
 
     updateLastMod();
@@ -319,7 +320,8 @@ class NodeMod
   public Date
   getLastModification() 
   {
-    assert(pLastMod != null);
+    if(pLastMod == null)
+      throw new IllegalStateException(); 
     return pLastMod;
   }
 
@@ -340,7 +342,8 @@ class NodeMod
   public Date
   getLastCriticalModification() 
   {
-    assert(pLastCriticalMod != null);
+    if(pLastCriticalMod == null)
+      throw new IllegalStateException(); 
     return pLastCriticalMod;
   }
 

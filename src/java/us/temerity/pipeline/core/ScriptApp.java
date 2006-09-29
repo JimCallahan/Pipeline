@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.56 2006/08/31 18:20:11 jim Exp $
+// $Id: ScriptApp.java,v 1.57 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -888,7 +888,7 @@ class ScriptApp
 	  archiver.setParamValue(pname, value);
 	}
 	else {
-	  assert(false) : "Unknown archiver parameter type!";
+	  throw new IllegalStateException("Unknown archiver parameter type!");
 	}
       }
       catch(NumberFormatException ex) {
@@ -2479,7 +2479,7 @@ class ScriptApp
 	    editSeqs.add(new FileSeq(primary, idx[0], idx[1]));
 	  }
 	  else {
-	    assert(false);
+	    throw new IllegalStateException(); 
 	  }
 	}
 	catch(IllegalArgumentException ex) {
@@ -2507,7 +2507,7 @@ class ScriptApp
 	    editSeqs.add(new FileSeq(primary, s, e));
 	  }
 	  else {
-	    assert(false);
+	    throw new IllegalStateException();
 	  }
 	}
 	catch(IllegalArgumentException ex) {
@@ -2520,7 +2520,8 @@ class ScriptApp
     else {
       editSeqs.add(primary);
     }
-    assert(!editSeqs.isEmpty());
+    if(editSeqs.isEmpty())
+      throw new IllegalStateException();
 
     NodeMod mod = null;
     if(com instanceof NodeMod) 
@@ -2576,9 +2577,6 @@ class ScriptApp
 	  ("Not implemented yet...");
 
 	// FIX THIS: handle Windows specific vars here...
-
-      default:
-	assert(false);
       }
     }
     
@@ -2597,7 +2595,7 @@ class ScriptApp
 	dir = path.toFile(); 
       }
       else {
-	assert(false);
+	throw new IllegalStateException(); 
       }
     }
 
@@ -2793,7 +2791,7 @@ class ScriptApp
 	  }
 	}
 	else {
-	  assert(false);
+	  throw new IllegalStateException(); 
 	}
       }
     }
@@ -2818,7 +2816,7 @@ class ScriptApp
 	      frameIndices.add(wk);
 	  }
 	  else {
-	    assert(false);
+	    throw new IllegalStateException(); 
 	  }
 	}
 	catch(IllegalArgumentException ex) {

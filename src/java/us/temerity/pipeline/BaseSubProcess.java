@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.11 2006/07/03 06:38:42 jim Exp $
+// $Id: BaseSubProcess.java,v 1.12 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -411,7 +411,8 @@ class BaseSubProcess
     /* search out all descendent processes of (pid) and kill them */ 
     Map<String,String> env = System.getenv();
     for(Integer dpid : buildHitList(pid)) {
-      assert(dpid > 0);
+      if(dpid <= 0)
+	throw new IllegalStateException(); 
       boolean wasSignalled = false;
       
       if(pSubstituteUser != null) {

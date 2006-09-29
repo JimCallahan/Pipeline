@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.7 2006/05/07 21:30:13 jim Exp $
+// $Id: PackageCommon.java,v 1.8 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -197,10 +197,6 @@ class PackageCommon
 	Path appdata = new Path(home, "Application Data");
 	env.put("APPDATA", appdata.toOsString());
       }
-      break;
-      
-    default:
-      assert(false);
     }
 
     return env;

@@ -1,4 +1,4 @@
-// $Id: SimpleLogMessage.java,v 1.2 2006/02/27 17:54:52 jim Exp $
+// $Id: SimpleLogMessage.java,v 1.3 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,7 +99,8 @@ class SimpleLogMessage
   public Date
   getTimeStamp() 
   {
-    assert(pTimeStamp != null);
+    if(pTimeStamp == null)
+      throw new IllegalStateException(); 
     return (Date) pTimeStamp.clone();
   }
 
@@ -109,7 +110,8 @@ class SimpleLogMessage
   public String
   getAuthor() 
   {
-    assert(pAuthor != null);
+    if(pAuthor == null)
+      throw new IllegalStateException(); 
     return pAuthor;
   }
 
@@ -166,8 +168,7 @@ class SimpleLogMessage
       return super.clone();
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException();      
     }
   }
 

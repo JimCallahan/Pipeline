@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.10 2006/08/20 05:46:51 jim Exp $
+// $Id: PluginMgr.java,v 1.11 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -30,7 +30,8 @@ class PluginMgr
   public
   PluginMgr() 
   {
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,

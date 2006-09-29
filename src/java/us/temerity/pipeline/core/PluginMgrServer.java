@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.6 2006/01/15 06:29:25 jim Exp $
+// $Id: PluginMgrServer.java,v 1.7 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -262,7 +262,7 @@ class PluginMgrServer
 	      break;	    
 		
 	    default:
-	      assert(false);
+	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
 	    }
 	  }
 	}

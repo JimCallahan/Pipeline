@@ -45,7 +45,9 @@ GlueParser
       sStringClass    = Class.forName("java.lang.String");
     }
     catch (ClassNotFoundException ex) {
-      assert(false);  
+      throw new IllegalStateException
+	("Unable to find atomic GLUE classes:\n  " + 
+	 ex.toString());
     }
   }
 
@@ -193,10 +195,12 @@ Decode
 ) 
   throws GlueException : 
 {
-  assert(decoder != null);
+  if(decoder == null)
+    throw new IllegalStateException(); 
   pDecoder = decoder;
 
-  assert(state != null);
+  if(state == null)
+    throw new IllegalStateException(); 
   pState = state;
 
   Object obj;

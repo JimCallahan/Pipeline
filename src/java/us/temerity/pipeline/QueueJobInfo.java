@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.12 2006/02/27 17:56:01 jim Exp $
+// $Id: QueueJobInfo.java,v 1.13 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -245,7 +245,9 @@ class QueueJobInfo
     
     pCompletedStamp = new Date();
     
-    assert(pState != JobState.Preempted);
+    if(pState == JobState.Preempted)
+      throw new IllegalStateException(); 
+
     if((pResults != null) && (pResults.getExitCode() == BaseSubProcess.SUCCESS))
       pState = JobState.Finished;
     else 

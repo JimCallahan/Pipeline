@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.34 2006/07/05 21:06:54 jim Exp $
+// $Id: QueueMgrServer.java,v 1.35 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -679,7 +679,7 @@ class QueueMgrServer
 	      break;	    
 
 	    default:
-	      assert(false);
+	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
 	    }
 	  }
 	}

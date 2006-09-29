@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.31 2005/04/03 06:10:12 jim Exp $
+// $Id: FileMgrServer.java,v 1.32 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -402,7 +402,7 @@ class FileMgrServer
 	      break;	    
 
 	    default:
-	      assert(false);
+	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
 	    }
 	  }
 	}

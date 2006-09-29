@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.1 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueHost.java,v 1.2 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -115,10 +115,10 @@ class QueueHost
       
     case Hung:
       return QueueHostStatus.Hung;
-    }
 
-    assert(false);
-    return null;
+    default:
+      throw new IllegalStateException();
+    }
   }
 
   /**
@@ -517,8 +517,9 @@ class QueueHost
    ResourceSample sample
   ) 
   {
-    assert(pSamples.isEmpty() || 
-	   (pSamples.getFirst().getTimeStamp().compareTo(sample.getTimeStamp()) < 0));
+    if(!(pSamples.isEmpty() || 
+	 (pSamples.getFirst().getTimeStamp().compareTo(sample.getTimeStamp()) < 0)))
+      throw new IllegalStateException("Illegal resource sample data!");
 
     if(pNumJobs != null) 
       sample.setNumJobs(pNumJobs);
@@ -563,8 +564,8 @@ class QueueHost
   public synchronized void 
   jobStarted()
   {
-    assert(pNumJobs != null);
-    assert(pNumJobs >= 0);
+    if((pNumJobs == null) || (pNumJobs < 0))
+      throw new IllegalStateException("Illegal job count (" + pNumJobs + ")!");
     pNumJobs++;
 
     LogMgr.getInstance().log
@@ -581,7 +582,9 @@ class QueueHost
   {
     if(pNumJobs != null) {
       pNumJobs--;
-      assert(pNumJobs >= 0);
+
+      if(pNumJobs < 0)
+	throw new IllegalStateException("Illegal job count (" + pNumJobs + ")!");
     }
 
     LogMgr.getInstance().log
@@ -682,8 +685,9 @@ class QueueHost
 
       return 0;
     }
-
-    assert(pNumJobs != null);
+    
+    if(pNumJobs == null) 
+      throw new IllegalStateException("Illegal job count!"); 
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,

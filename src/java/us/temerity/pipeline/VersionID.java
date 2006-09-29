@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.13 2004/07/22 00:07:46 jim Exp $
+// $Id: VersionID.java,v 1.14 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -234,7 +234,8 @@ class VersionID
   public int 
   hashCode() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pHashCode;
   }
 
@@ -244,7 +245,8 @@ class VersionID
   public String
   toString() 
   {
-    assert(pStringRep != null);
+    if(pStringRep == null)
+      throw new IllegalStateException(); 
     return pStringRep;
   }
 
@@ -312,8 +314,7 @@ class VersionID
       return super.clone();
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException();     
     }
   }
 

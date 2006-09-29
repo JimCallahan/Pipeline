@@ -1,4 +1,4 @@
-// $Id: TaskTimer.java,v 1.1 2004/05/02 12:15:44 jim Exp $
+// $Id: TaskTimer.java,v 1.2 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -110,10 +110,12 @@ class TaskTimer
   public void 
   aquire() 
   {
-    assert(pStartWait == -1);
+    if(pStartWait != -1)
+      throw new IllegalStateException(); 
     pStartWait = (new Date()).getTime();
 
-    assert(pStartActive > 0); 
+    if(pStartActive <= 0)
+      throw new IllegalStateException(); 
     pActiveDuration += (new Date()).getTime() - pStartActive;
     pStartActive = -1;
   }
@@ -124,10 +126,12 @@ class TaskTimer
   public void 
   resume() 
   {
-    assert(pStartActive == -1);
+    if(pStartActive != -1)
+      throw new IllegalStateException(); 
     pStartActive = (new Date()).getTime();
 
-    assert(pStartWait > 0); 
+    if(pStartWait <= 0)
+      throw new IllegalStateException(); 
     pWaitDuration += (new Date()).getTime() - pStartWait;
     pStartWait = -1;
   }
@@ -159,8 +163,8 @@ class TaskTimer
    TaskTimer timer
   ) 
   {
-    assert(pStartWait == -1);
-    assert(pStartActive == -1);
+    if((pStartWait != -1) || (pStartActive != -1)) 
+      throw new IllegalStateException(); 
 
     pWaitDuration   += timer.getWaitDuration();
     pActiveDuration += timer.getActiveDuration(); 

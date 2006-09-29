@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.11 2006/02/27 17:57:08 jim Exp $
+// $Id: FrameRange.java,v 1.12 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
  
@@ -431,8 +431,7 @@ class FrameRange
       return super.clone();
     }
     catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
+      throw new IllegalStateException();     
     }
   }
 

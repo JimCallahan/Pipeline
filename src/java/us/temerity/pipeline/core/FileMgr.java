@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.55 2006/09/26 19:32:37 jim Exp $
+// $Id: FileMgr.java,v 1.56 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -162,7 +162,8 @@ class FileMgr
        "Initializing [FileMgr]...");
     LogMgr.getInstance().flush();
 
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
     pProdDir = PackageInfo.sProdPath.toFile();
     pRepoDir = PackageInfo.sRepoPath.toFile();
     pTempDir = PackageInfo.sTempPath.toFile();
@@ -353,10 +354,10 @@ class FileMgr
    FileStateReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = new TaskTimer();
 
-    assert(!req.isFrozen());
+    if(req.isFrozen())
+      throw new IllegalStateException(); 
 
     timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
@@ -572,7 +573,6 @@ class FileMgr
    FileCheckInReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
@@ -700,12 +700,13 @@ class FileMgr
 		copies.add(file);	
 	      }
 	      else {
-		assert(ldir != null);
+		if(ldir == null)
+		  throw new IllegalStateException(); 
 		File latest = new File(ldir, file.getPath());
 		try {
-		  assert(ldir != null);
 		  String source = NativeFileSys.realpath(latest).getPath();
-		  assert(source.startsWith(rbase));
+		  if(!source.startsWith(rbase))
+		    throw new IllegalStateException(); 
 		  links.add(new File(".." + source.substring(rbase.length())));
 		}
 		catch(IOException ex) {
@@ -880,7 +881,6 @@ class FileMgr
    FileCheckOutReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
@@ -1218,7 +1218,6 @@ class FileMgr
    FileRevertReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = new TaskTimer("FileMgr.revert(): " + req.getNodeID());
 
     timer.aquire();
@@ -1745,7 +1744,6 @@ class FileMgr
    FileRemoveReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = new TaskTimer("FileMgr.remove(): " + req.getNodeID());
 
     return removeHelper(timer, req.getNodeID(), req.getFiles());
@@ -1770,7 +1768,6 @@ class FileMgr
    FileRemoveAllReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
@@ -1806,7 +1803,6 @@ class FileMgr
    FileRenameReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
@@ -2236,7 +2232,6 @@ class FileMgr
    FileChangeModeReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();

@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.9 2006/06/26 06:35:17 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.10 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -119,7 +119,8 @@ class NodeTreeEntry
   public boolean
   isCheckedIn() 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
     return pIsCheckedIn;
   }
 
@@ -133,7 +134,8 @@ class NodeTreeEntry
    boolean tf
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
     pIsCheckedIn = tf;
   }
 
@@ -157,7 +159,9 @@ class NodeTreeEntry
    String view   
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     TreeSet<String> views = pWorking.get(author);
     if(views != null) 
       return views.contains(view);
@@ -170,7 +174,8 @@ class NodeTreeEntry
   public boolean
   hasWorking() 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
     return (!pWorking.isEmpty());
   }
 
@@ -181,7 +186,8 @@ class NodeTreeEntry
   public Set<String>
   getWorkingAuthors() 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
     return Collections.unmodifiableSet(pWorking.keySet());
   }
 
@@ -201,7 +207,9 @@ class NodeTreeEntry
    String author   
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     TreeSet<String> views = pWorking.get(author);
     if(views != null)
       return Collections.unmodifiableSet(views);
@@ -225,7 +233,8 @@ class NodeTreeEntry
    String view
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
 
     TreeSet<String> views = pWorking.get(author);
     if(views == null) {
@@ -253,7 +262,8 @@ class NodeTreeEntry
    String view
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
 
     TreeSet<String> views = pWorking.get(author);
     if(views != null) {
@@ -277,7 +287,9 @@ class NodeTreeEntry
    FileSeq fseq
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
     return (!pFileSeqRefs.contains(sname));
@@ -289,7 +301,9 @@ class NodeTreeEntry
   public Set<String> 
   getSequences() 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     return pFileSeqRefs.getKeys();
   }
 
@@ -302,7 +316,9 @@ class NodeTreeEntry
    String key
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     return pFileSeqRefs.getCount(key);
   }
 
@@ -315,7 +331,9 @@ class NodeTreeEntry
    FileSeq fseq
   ) 
   {
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
     pFileSeqRefs.ref(sname);
@@ -330,7 +348,9 @@ class NodeTreeEntry
    FileSeq fseq
   ) 
   { 
-    assert(pIsLeaf);
+    if(!pIsLeaf)
+      throw new IllegalStateException(); 
+
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
     pFileSeqRefs.unref(sname);

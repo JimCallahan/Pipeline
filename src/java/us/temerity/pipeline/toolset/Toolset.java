@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.6 2006/05/07 21:30:13 jim Exp $
+// $Id: Toolset.java,v 1.7 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -530,10 +530,6 @@ class Toolset
 	Path appdata = new Path(home, "Application Data");
 	env.put("APPDATA", appdata.toOsString(os));
       }
-      break;
-      
-    default:
-      assert(false);
     }
 
     return env;

@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.2 2006/05/07 21:30:08 jim Exp $
+// $Id: AdminPrivileges.java,v 1.3 2006/09/29 03:03:21 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -30,7 +30,8 @@ class AdminPrivileges
   public 
   AdminPrivileges() 
   {
-    assert(PackageInfo.sOsType == OsType.Unix);
+    if(PackageInfo.sOsType != OsType.Unix)
+      throw new IllegalStateException("The OS type must be Unix!");
 
     pWorkGroups = new WorkGroups();
     pPrivileges = new TreeMap<String,Privileges>();

@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.33 2006/08/26 04:35:32 jim Exp $
+// $Id: BaseAction.java,v 1.34 2006/09/29 03:03:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -368,7 +368,8 @@ class BaseAction
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
     TreeMap<String,ActionParam> params = getInitialSourceParams();
-    assert(params != null);
+    if(params == null)
+      throw new IllegalStateException(); 
     
     pSourceParams.put(source, params);
   }
@@ -397,7 +398,8 @@ class BaseAction
 	("The secondary sequence file pattern cannot be (null)!");
 
     TreeMap<String,ActionParam> params = getInitialSourceParams();
-    assert(params != null);
+    if(params == null)
+      throw new IllegalStateException(); 
     
     TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
     if(ftable == null) {
