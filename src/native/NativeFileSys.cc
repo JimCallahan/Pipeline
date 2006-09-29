@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.3 2006/09/29 09:57:03 jim Exp $
+// $Id: NativeFileSys.cc,v 1.4 2006/09/29 11:13:15 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -217,15 +217,15 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
   switch(stat(path, &buf)) {
   case 0:
     return ((jlong) ((buf.st_mtime > buf.st_ctime) ? buf.st_mtime : buf.st_ctime));
-    
-  case EACCES:
-  case ENOENT: 
-  case ENOTDIR:
+
+  case ENOMEM:
+  case ENAMETOOLONG:
+  case ELOOP:
+    sprintf(msg, "cannot stat (%s): %s\n", path, strerror(errno));
+    env->ThrowNew(IOException, msg);  
     return 0L;
 
   default:
-    sprintf(msg, "cannot stat (%s): %s\n", path, strerror(errno));
-    env->ThrowNew(IOException, msg);  
     return 0L;
   }
 }
