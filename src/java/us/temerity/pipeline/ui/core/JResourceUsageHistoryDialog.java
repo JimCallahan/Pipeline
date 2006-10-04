@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.13 2006/09/25 12:11:44 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.14 2006/10/04 13:20:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2453,7 +2453,7 @@ class JResourceUsageHistoryDialog
   private synchronized void 
   doUpdate()
   {
-    UpdateTask task = new UpdateTask(pSamples.keySet());
+    UpdateTask task = new UpdateTask(new TreeSet<String>(pSamples.keySet()));
     task.start();
   }
 
@@ -2549,7 +2549,7 @@ class JResourceUsageHistoryDialog
     public 
     UpdateTask
     (
-     Set<String> hostnames
+     TreeSet<String> hostnames
     ) 
     {
       super("JResourceUsageHistoryDialog:UpdateTask");
@@ -2584,7 +2584,7 @@ class JResourceUsageHistoryDialog
       updateSamples(samples);
     }
 
-    private Set<String>  pHostnames;
+    private TreeSet<String>  pHostnames;
   }
 
 
