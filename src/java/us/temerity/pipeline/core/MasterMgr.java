@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.162 2006/09/29 03:03:21 jim Exp $
+// $Id: MasterMgr.java,v 1.163 2006/10/06 17:17:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7142,9 +7142,11 @@ class MasterMgr
 	      case NeedsCheckOut:
 		break;
 
+	      case Conflicted:
 	      case ModifiedLinks:
 	      case Modified:
 	      case Missing:
+	      case MissingNewer:
 		dirty.add(name);
 		break;
 
