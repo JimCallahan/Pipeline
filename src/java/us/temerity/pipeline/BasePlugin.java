@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.6 2006/05/07 20:34:01 jim Exp $
+// $Id: BasePlugin.java,v 1.7 2006/10/07 13:31:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -376,6 +376,37 @@ class BasePlugin
 
     return buf.toString();
   }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  protected String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
+  }
 
 
 
