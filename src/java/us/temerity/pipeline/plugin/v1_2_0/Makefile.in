@@ -255,6 +255,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
     JAVA_SOURCES = $(shell find $(srcdir) -type f -name "*.java")
     JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
+     PLUGIN_JARS = TestAction.jar
+
       PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
      EXAMPLE_DIR = $(ROOT_INST_DIR)/examples/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
 
@@ -264,7 +266,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: Makefile java-all $(TARGET) TestAction.jar
+all: Makefile java-all $(TARGET) $(PLUGIN_JARS)
 
 $(TARGET): java-all
 	(cd ../../../../..; \
@@ -297,7 +299,7 @@ TestAction.jar: java-all
 
 install: all installdirs install-sources install-classes 
 
-install-classes: $(shell find . -type f -name "*.class") TestAction.jar
+install-classes: $(PLUGIN_JARS) $(shell find . -type f -name "*.class") 
 	@list='$^'; for p in $$list; do \
           if test -f $$p; then \
             echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR); \
