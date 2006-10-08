@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.12 2006/01/15 06:29:26 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.13 2006/10/08 17:12:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -693,7 +693,7 @@ class JNodeLinksPanel
 		  Box hbox = new Box(BoxLayout.X_AXIS);
 		  
 		  VersionID bvid = null;
-		  if(details.getBaseVersion() != null) 
+		  if((details != null) && (details.getBaseVersion() != null)) 
 		    bvid = details.getBaseVersion().getVersionID();
 		  
 		  ArrayList<VersionID> rvids = new ArrayList<VersionID>(pLinks.keySet());
