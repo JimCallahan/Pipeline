@@ -1,4 +1,4 @@
-// $Id: MayaMRayRenderAction.java,v 1.1 2006/10/10 22:18:58 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.2 2006/10/10 22:27:46 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -545,13 +545,13 @@ public class MayaMRayRenderAction
   /** 
    * Single action parameter names.
    */ 
-  private static final String aPreExportMEL = "PreExportMEL";
-  private static final String aPostExportMEL = "PostExportMEL";
-  private static final String aExtraOpts = "ExtraOptions";
-  private static final String aKeepTempFiles = "KeepTempFiles";
-  private static final String aLibraryPath = "LibraryPath";
-  private static final String aIncludePath = "IncludePath";
+  private static final String aPreExportMEL    = "PreExportMEL";
+  private static final String aPostExportMEL   = "PostExportMEL";
+  private static final String aExtraOpts       = "ExtraOptions";
+  private static final String aKeepTempFiles   = "KeepTempFiles";
+  private static final String aLibraryPath     = "LibraryPath";
+  private static final String aIncludePath     = "IncludePath";
   private static final String aRenderVerbosity = "RenderVerbosity";
-  private static final String aMayaScene = "MayaScene";
+  private static final String aMayaScene       = "MayaScene";
     
 }
