@@ -1,4 +1,4 @@
-// $Id: JProportionGraph.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JProportionGraph.java,v 1.2 2006/10/11 06:09:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,8 +39,6 @@ class JProportionGraph
   /**
    * Set the values to be displayed. <P> 
    * 
-   * 
-   * 
    * @param values
    *   The set of proportion values (should sum to 1.0).
    * 
@@ -57,7 +55,6 @@ class JProportionGraph
    Color[] colors 
   ) 
   {
-    assert(values.length == colors.length);
     pValues = values;
     pColors = colors; 
   } 

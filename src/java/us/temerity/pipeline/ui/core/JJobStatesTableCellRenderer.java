@@ -1,4 +1,4 @@
-// $Id: JJobStatesTableCellRenderer.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JJobStatesTableCellRenderer.java,v 1.2 2006/10/11 06:09:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,25 +67,27 @@ class JJobStatesTableCellRenderer
    int column
   )
   {
-    {
-      int[] counts = (int[]) value; 
-      
-      int wk;
-      float[] props = new float[counts.length];
-      for(wk=0; wk<props.length; wk++) 
-	props[wk] = (float) counts[wk];
-      
-      float total = 0.0f;
-      for(wk=0; wk<props.length; wk++) 
-	total += props[wk];
-      
-      assert(total > 0.0f);
+    int[] counts = (int[]) value; 
+    
+    int wk;
+    float[] props = new float[counts.length];
+    for(wk=0; wk<props.length; wk++) 
+      props[wk] = (float) counts[wk];
+    
+    float total = 0.0f;
+    for(wk=0; wk<props.length; wk++) 
+      total += props[wk];
+    
+    if(total > 0.0f) {
       for(wk=0; wk<props.length; wk++)
 	props[wk] /= total;
       
       pGraph.setValues(props, NodeStyles.getJobColors());
     }
-      
+    else {
+      pGraph.setValues(null, null);
+    }
+    
     return pPanel;
   }
 
