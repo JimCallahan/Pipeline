@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.0.18a)   
+AM_INIT_AUTOMAKE(Pipeline, 2.1.1)   
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1403,6 +1403,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/v2_0_13/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_14/Makefile
   src/java/us/temerity/pipeline/plugin/v2_0_15/Makefile
+  src/java/us/temerity/pipeline/plugin/v2_1_1/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
 
@@ -1495,6 +1496,17 @@ AC_CONFIG_FILES([
   rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros
+
+  www/Makefile
+#  www/gcstats/Makefile
+#  www/gcstats/etc/Makefile
+#  www/gcstats/sql/Makefile
+  www/plstats/Makefile
+  www/plstats/etc/Makefile
+  www/plstats/sql/Makefile
+#  www/swfcharts/Makefile
+#  www/swfcharts/charts_library/Makefile
+
 ])
 
 AC_OUTPUT

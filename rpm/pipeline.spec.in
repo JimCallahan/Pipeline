@@ -66,6 +66,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/debug/sbin/plmaster
 @ROOT_INST_DIR@/Unix/debug/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix/debug/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix/debug/sbin/plinsert-gcstats
 
 @ROOT_INST_DIR@/Unix/profile/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix/profile/sbin/pljobmgr
@@ -110,6 +111,8 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/realpath.html
 
 @ROOT_INST_DIR@/share/icons/plui.png
+
+@ROOT_INST_DIR@/share/www
 
 %dir @ROOT_INST_DIR@/plconfig
 
