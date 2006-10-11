@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.19 2005/07/15 20:10:44 jim Exp $
+// $Id: BaseMgrClient.java,v 1.20 2006/10/11 22:36:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -81,6 +81,13 @@ class BaseMgrClient
     if((pSocket != null) && pSocket.isConnected())
       return;
 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Establishing Connection: " + pHostname + ":" + pPort); 
+      LogMgr.getInstance().flush();
+    }
+
     try {
       pSocket = new Socket();
 
@@ -116,6 +123,13 @@ class BaseMgrClient
 	     "release versions!\n" + 
 	     "  Client = " + cinfo + "\n" +
 	     "  Server = " + sinfo);
+	}
+
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	     "Connection Opened: " + pSocket.getInetAddress());
+	  LogMgr.getInstance().flush();
 	}
       }
     }
@@ -202,6 +216,13 @@ class BaseMgrClient
 	objOut.flush(); 
 
 	pSocket.close();
+
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	     "Connection Closed: " + pHostname + ":" + pPort); 
+	  LogMgr.getInstance().flush();
+	}
       }
     }
     catch (IOException ex) {
@@ -351,6 +372,15 @@ class BaseMgrClient
     try {
       pSocket.setSoTimeout(timeout);
 
+      TaskTimer timer = null;
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + "]: " + kind.toString());
+	timer.aquire();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   "Send [" + pSocket.getInetAddress() + "]: " + kind.toString());	  
+      }
+
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
       objOut.writeObject(kind);
@@ -362,6 +392,13 @@ class BaseMgrClient
       ObjectInput objIn  = new PluginInputStream(in);
       Object rsp = objIn.readObject();
 
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+	timer.resume();
+	LogMgr.getInstance().logStage
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   timer); 
+      }
+      
       pSocket.setSoTimeout(0);
 
       return rsp; 
@@ -419,6 +456,15 @@ class BaseMgrClient
     try {
       pSocket.setSoTimeout(reqTimeout);
 
+      TaskTimer timer = null;
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + "]: " + kind.toString());
+	timer.aquire();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   "Send [" + pSocket.getInetAddress() + "]: " + kind.toString());	  
+      }
+
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
       objOut.writeObject(kind);
@@ -437,9 +483,21 @@ class BaseMgrClient
 	  rsp = objIn.readObject();
 	}
 	catch(SocketTimeoutException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	     "Socket Timeout [" + pSocket.getInetAddress() + "]: " + kind.toString() + "\n" +
+	     " " + timer); 
+
 	  if(isServerUnreachable() || (ex.bytesTransferred > 0)) 
 	    throw ex;
 	}
+      }
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+	timer.resume();
+	LogMgr.getInstance().logStage
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   timer); 
       }
 
       pSocket.setSoTimeout(0);
