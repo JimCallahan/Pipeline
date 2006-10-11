@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -119,6 +119,12 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Manage the selection keys.", 
 	 "ShowManageSelectionKeys", "Selection Keys:"),
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Manage the server extension configurations.",
+	 "ShowManageServerExtensions", "Master Extensions:"),
       };
 
       pPrefs.put("Main Menu|Admin|Hot Keys", prefs);
@@ -1688,6 +1694,7 @@ class GenUserPrefsApp
 	manager.add("ShowManageToolsets");
 	manager.add("ShowManageLicenseKeys");
 	manager.add("ShowManageSelectionKeys");
+	manager.add("ShowManageServerExtensions");
 	manager.add("Quit");
       
 	/* help */ 
@@ -2011,7 +2018,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2268,7 +2275,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3625,7 +3632,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.31 2006/09/25 12:11:44 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

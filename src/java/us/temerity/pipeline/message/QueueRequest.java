@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.18 2006/01/16 04:11:12 jim Exp $
+// $Id: QueueRequest.java,v 1.19 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -136,6 +136,24 @@ enum QueueRequest
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the current queue extension configurations.
+   */
+  GetQueueExtension, 
+  
+  /**
+   * An instance of {@link QueueRemoveQueueExtension} is next.
+   */
+  RemoveQueueExtension, 
+  
+  /**
+   * An instance of {@link QueueSetQueueExtension} is next.
+   */
+  SetQueueExtension, 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the current state of the hosts capable of executing jobs for the Pipeline queue.
@@ -235,11 +253,6 @@ enum QueueRequest
    */
   ResumeJobs, 
 
-
-  /**
-   * An instance {@link QueueGroupJobsReq QueueGroupJobsReq} is next.
-   */
-  GroupJobs, 
 
   /**
    * An instance {@link QueueGetJobGroupReq QueueGetJobGroupReq} is next.

@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.45 2006/07/03 06:38:42 jim Exp $
+// $Id: MasterRequest.java,v 1.46 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -25,7 +25,7 @@ enum MasterRequest
   GetWorkGroups, 
   
   /**
-   * An instance of {@link MiscSetWorkGroupsReq MiscSetWorkGroupsReq} is next.
+   * An instance of {@link MiscSetWorkGroupsReq} is next.
    */
   SetWorkGroups, 
 
@@ -36,7 +36,7 @@ enum MasterRequest
   GetPrivileges,
 
   /**
-   * An instance of {@link MiscEditPrivilegesReq MiscEditPrivilegesReq} is next.
+   * An instance of {@link MiscEditPrivilegesReq} is next.
    */
   EditPrivileges, 
 
@@ -55,7 +55,7 @@ enum MasterRequest
   GetDefaultToolsetName, 
 
   /**
-   * An instance of {@link MiscSetDefaultToolsetNameReq MiscSetDefaultToolsetNameReq} is next.
+   * An instance of {@link MiscSetDefaultToolsetNameReq} is next.
    */
   SetDefaultToolsetName, 
 
@@ -65,7 +65,7 @@ enum MasterRequest
   GetActiveToolsetNames, 
 
   /**
-   * An instance of {@link MiscSetToolsetActiveReq MiscSetToolsetActiveReq} is next.
+   * An instance of {@link MiscSetToolsetActiveReq} is next.
    */
   SetToolsetActive, 
 
@@ -80,22 +80,22 @@ enum MasterRequest
   GetAllToolsetNames, 
 
   /**
-   * An instance of {@link MiscGetToolsetReq MiscGetToolsetReq} is next.
+   * An instance of {@link MiscGetToolsetReq} is next.
    */
   GetToolset, 
 
   /**
-   * An instance of {@link MiscGetOsToolsetsReq MiscGetOsToolsetsReq} is next.
+   * An instance of {@link MiscGetOsToolsetsReq} is next.
    */
   GetOsToolsets, 
 
   /**
-   * An instance of {@link MiscGetToolsetEnvironmentReq MiscGetToolsetEnvironmentReq} is next.
+   * An instance of {@link MiscGetToolsetEnvironmentReq} is next.
    */
   GetToolsetEnvironment, 
 
   /**
-   * An instance of {@link MiscCreateToolsetReq MiscCreateToolsetReq} is next.
+   * An instance of {@link MiscCreateToolsetReq} is next.
    */
   CreateToolset, 
 
@@ -113,17 +113,17 @@ enum MasterRequest
   GetAllToolsetPackageNames, 
 
   /**
-   * An instance of {@link MiscGetToolsetPackageReq MiscGetToolsetPackageReq} is next.
+   * An instance of {@link MiscGetToolsetPackageReq} is next.
    */
   GetToolsetPackage, 
 
   /**
-   * An instance of {@link MiscGetToolsetPackagesReq MiscGetToolsetPackagesReq} is next.
+   * An instance of {@link MiscGetToolsetPackagesReq} is next.
    */
   GetToolsetPackages, 
 
   /**
-   * An instance of {@link MiscCreateToolsetPackageReq MiscCreateToolsetPackageReq} is next.
+   * An instance of {@link MiscCreateToolsetPackageReq} is next.
    */
   CreateToolsetPackage, 
 
@@ -141,17 +141,17 @@ enum MasterRequest
   SetEditorMenuLayout, 
 
   /**
-   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
    */
   GetToolsetEditorPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   GetPackageEditorPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageEditorPlugins, 
 
@@ -169,17 +169,17 @@ enum MasterRequest
   SetComparatorMenuLayout, 
 
   /**
-   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
    */
   GetToolsetComparatorPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   GetPackageComparatorPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageComparatorPlugins, 
 
@@ -197,17 +197,17 @@ enum MasterRequest
   SetActionMenuLayout, 
 
   /**
-   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
    */
   GetToolsetActionPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   GetPackageActionPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageActionPlugins, 
 
@@ -225,17 +225,17 @@ enum MasterRequest
   SetToolMenuLayout, 
 
   /**
-   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
    */
   GetToolsetToolPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   GetPackageToolPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageToolPlugins, 
 
@@ -253,35 +253,109 @@ enum MasterRequest
   SetArchiverMenuLayout, 
 
   /**
-   * An instance of {@link MiscGetToolsetPluginsReq MiscGetToolsetPluginsReq} is next.
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
    */
   GetToolsetArchiverPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   GetPackageArchiverPlugins, 
   
   /**
-   * An instance of {@link MiscGetPackagePluginsReq MiscGetPackagePluginsReq} is next.
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageArchiverPlugins, 
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the master extension plugin selection menu associated with a toolset.
+   */
+  GetMasterExtMenuLayout, 
   
   /**
-   * An instance of {@link MiscGetEditorForSuffixReq MiscGetEditorForSuffixReq} is next.
+   * Set layout of the master extension plugin selection menu associated with a toolset.
+   */
+  SetMasterExtMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetMasterExtPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageMasterExtPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageMasterExtPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the master extension plugin selection menu associated with a toolset.
+   */
+  GetQueueExtMenuLayout, 
+  
+  /**
+   * Set layout of the master extension plugin selection menu associated with a toolset.
+   */
+  SetQueueExtMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetQueueExtPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageQueueExtPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageQueueExtPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the current master extension configurations.
+   */
+  GetMasterExtension, 
+  
+  /**
+   * An instance of {@link MiscRemoveMasterExtension} is next.
+   */
+  RemoveMasterExtension, 
+  
+  /**
+   * An instance of {@link MiscSetMasterExtension} is next.
+   */
+  SetMasterExtension, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * An instance of {@link MiscGetEditorForSuffixReq} is next.
    */
   GetEditorForSuffix, 
   
   /**
-   * An instance of {@link MiscGetSuffixEditorsReq MiscGetSuffixEditorsReq} is next.
+   * An instance of {@link MiscGetSuffixEditorsReq} is next.
    */
   GetSuffixEditors, 
   
   /**
-   * An instance of {@link MiscSetSuffixEditorsReq MiscSetSuffixEditorsReq} is next.
+   * An instance of {@link MiscSetSuffixEditorsReq} is next.
    */
   SetSuffixEditors, 
 
@@ -289,17 +363,17 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance {@link QueueAddLicenseKeyReq QueueAddLicenseKeyReq} is next.
+   * An instance {@link QueueAddLicenseKeyReq} is next.
    */
   AddLicenseKey, 
   
   /**
-   * An instance {@link QueueRemoveLicenseKeyReq QueueRemoveLicenseKeyReq} is next.
+   * An instance {@link QueueRemoveLicenseKeyReq} is next.
    */
   RemoveLicenseKey, 
 
   /**
-   * An instance {@link QueueSetTotalLicensesReq QueueSetTotalLicensesReq} is next.
+   * An instance {@link QueueSetTotalLicensesReq} is next.
    */
   SetTotalLicenses, 
   
@@ -312,17 +386,17 @@ enum MasterRequest
   GetWorkingAreas,  
 
   /**
-   * An instance of {@link NodeCreateWorkingAreaReq NodeCreateWorkingAreaReq} is next.
+   * An instance of {@link NodeCreateWorkingAreaReq} is next.
    */
   CreateWorkingArea,  
 
   /**
-   * An instance of {@link NodeRemoveWorkingAreaReq NodeRemoveWorkingAreaReq} is next.
+   * An instance of {@link NodeRemoveWorkingAreaReq} is next.
    */
   RemoveWorkingArea,  
 
   /**
-   * An instance of {@link NodeGetWorkingNamesReq NodeGetWorkingNamesReq} is next.
+   * An instance of {@link NodeGetWorkingNamesReq} is next.
    */
   GetWorkingNames, 
 
@@ -330,12 +404,12 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeUpdatePathsReq NodeUpdatePathsReq} is next.
+   * An instance of {@link NodeUpdatePathsReq} is next.
    */
   UpdatePaths, 
 
   /**
-   * An instance of {@link NodeGetNodeOwningReq NodeGetNodeOwningReq} is next.
+   * An instance of {@link NodeGetNodeOwningReq} is next.
    */
   GetNodeOwning, 
   
@@ -343,32 +417,32 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeGetWorkingReq NodeGetWorkingReq} is next.
+   * An instance of {@link NodeGetWorkingReq} is next.
    */
   GetWorking, 
 
   /**
-   * An instance of {@link NodeModifyPropertiesReq NodeModifyPropertiesReq} is next.
+   * An instance of {@link NodeModifyPropertiesReq} is next.
    */
   ModifyProperties, 
 
   /**
-   * An instance of {@link NodeLinkReq NodeLinkReq} is next.
+   * An instance of {@link NodeLinkReq} is next.
    */
   Link, 
 
   /**
-   * An instance of {@link NodeUnlinkReq NodeUnlinkReq} is next.
+   * An instance of {@link NodeUnlinkReq} is next.
    */
   Unlink, 
 
   /**
-   * An instance of {@link NodeAddSecondaryReq NodeAddSecondaryReq} is next.
+   * An instance of {@link NodeAddSecondaryReq} is next.
    */
   AddSecondary, 
  
   /**
-   * An instance of {@link NodeRemoveSecondaryReq NodeRemoveSecondaryReq} is next.
+   * An instance of {@link NodeRemoveSecondaryReq} is next.
    */
   RemoveSecondary, 
 
@@ -376,34 +450,33 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeGetCheckedInReq NodeGetCheckedInReq} is next.
+   * An instance of {@link NodeGetCheckedInReq} is next.
    */
   GetCheckedIn, 
 
   /**
-   * An instance of {@link NodeGetAllCheckedInReq NodeGetAllCheckedInReq} is next.
+   * An instance of {@link NodeGetAllCheckedInReq} is next.
    */
   GetAllCheckedIn, 
 
   /**
-   * An instance of {@link NodeGetCheckedInVersionIDsReq NodeGetCheckedInVersionIDsReq} 
+   * An instance of {@link NodeGetCheckedInVersionIDsReq} 
    * is next.
    */
   GetCheckedInVersionIDs, 
 
   /**
-   * An instance of {@link NodeGetHistoryReq NodeGetHistoryReq} is next.
+   * An instance of {@link NodeGetHistoryReq} is next.
    */
   GetHistory, 
 
   /**
-   * An instance of {@link NodeGetCheckedInFileNoveltyReq NodeGetCheckedInFileNoveltyReq} 
-   * is next.
+   * An instance of {@link NodeGetCheckedInFileNoveltyReq} is next.
    */
   GetCheckedInFileNovelty, 
 
   /**
-   * An instance of {@link NodeGetCheckedInLinksReq NodeGetCheckedInLinksReq} is next.
+   * An instance of {@link NodeGetCheckedInLinksReq} is next.
    */
   GetCheckedInLinks, 
 
@@ -411,7 +484,7 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeStatusReq NodeStatusReq} is next.
+   * An instance of {@link NodeStatusReq} is next.
    */
   Status, 
 
@@ -419,62 +492,62 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeRegisterReq NodeRegisterReq} is next.
+   * An instance of {@link NodeRegisterReq} is next.
    */
   Register, 
 
   /**
-   * An instance of {@link NodeReleaseReq NodeReleaseReq} is next.
+   * An instance of {@link NodeReleaseReq} is next.
    */
   Release, 
 
   /**
-   * An instance of {@link NodeDeleteReq NodeDeleteReq} is next.
+   * An instance of {@link NodeDeleteReq} is next.
    */
   Delete, 
 
   /**
-   * An instance of {@link NodeRemoveFilesReq NodeRemoveFilesReq} is next.
+   * An instance of {@link NodeRemoveFilesReq} is next.
    */
   RemoveFiles, 
 
   /**
-   * An instance of {@link NodeRenameReq NodeRenameReq} is next.
+   * An instance of {@link NodeRenameReq} is next.
    */
   Rename, 
 
   /**
-   * An instance of {@link NodeRenumberReq NodeRenumberReq} is next.
+   * An instance of {@link NodeRenumberReq} is next.
    */
   Renumber, 
 
   /**
-   * An instance of {@link NodeCheckInReq NodeCheckInReq} is next.
+   * An instance of {@link NodeCheckInReq} is next.
    */
   CheckIn, 
 
   /**
-   * An instance of {@link NodeCheckOutReq NodeCheckOutReq} is next.
+   * An instance of {@link NodeCheckOutReq} is next.
    */
   CheckOut, 
 
   /**
-   * An instance of {@link NodeLockReq NodeLockReq} is next.
+   * An instance of {@link NodeLockReq} is next.
    */
   Lock, 
 
   /**
-   * An instance of {@link NodeRevertFilesReq NodeRevertFilesReq} is next.
+   * An instance of {@link NodeRevertFilesReq} is next.
    */
   RevertFiles, 
 
   /**
-   * An instance of {@link NodeCloneFilesReq NodeCloneFilesReq} is next.
+   * An instance of {@link NodeCloneFilesReq} is next.
    */
   CloneFiles, 
 
   /**
-   * An instance of {@link NodeEvolveReq NodeEvolveReq} is next.
+   * An instance of {@link NodeEvolveReq} is next.
    */
   Evolve, 
 
@@ -482,12 +555,12 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link NodeSubmitJobsReq NodeSubmitJobsReq} is next.
+   * An instance of {@link NodeSubmitJobsReq} is next.
    */
   SubmitJobs, 
 
   /**
-   * An instance of {@link NodeResubmitJobsReq NodeResubmitJobsReq} is next.
+   * An instance of {@link NodeResubmitJobsReq} is next.
    */
   ResubmitJobs, 
 
@@ -495,7 +568,7 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link MiscBackupDatabaseReq MiscBackupDatabaseReq} is next.
+   * An instance of {@link MiscBackupDatabaseReq} is next.
    */
   BackupDatabase, 
 
@@ -503,17 +576,17 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link MiscArchiveQueryReq MiscArchiveQueryReq} is next.
+   * An instance of {@link MiscArchiveQueryReq} is next.
    */
   ArchiveQuery, 
 
   /**
-   * An instance of {@link MiscGetArchiveSizesReq MiscGetArchiveSizesReq} is next.
+   * An instance of {@link MiscGetArchiveSizesReq} is next.
    */
   GetArchiveSizes, 
 
   /**
-   * An instance of {@link MiscArchiveReq MiscArchiveReq} is next.
+   * An instance of {@link MiscArchiveReq} is next.
    */
   Archive, 
   
@@ -522,22 +595,22 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link MiscOfflineQueryReq MiscOfflineQueryReq} is next.
+   * An instance of {@link MiscOfflineQueryReq} is next.
    */
   OfflineQuery, 
 
   /**
-   * An instance of {@link NodeGetOfflineVersionIDsReq NodeGetOfflineVersionIDsReq} is next.
+   * An instance of {@link NodeGetOfflineVersionIDsReq} is next.
    */
   GetOfflineVersionIDs, 
 
   /**
-   * An instance of {@link MiscGetOfflineSizesReq MiscGetOfflineSizesReq} is next.
+   * An instance of {@link MiscGetOfflineSizesReq} is next.
    */
   GetOfflineSizes, 
 
   /**
-   * An instance of {@link MiscOfflineReq MiscOfflineReq} is next.
+   * An instance of {@link MiscOfflineReq} is next.
    */
   Offline, 
 
@@ -545,32 +618,32 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link MiscRestoreQueryReq MiscRestoreQueryReq} is next.
+   * An instance of {@link MiscRestoreQueryReq} is next.
    */
   RestoreQuery, 
 
   /**
-   * An instance of {@link MiscRequestRestoreReq MiscRequestRestoreReq} is next.
+   * An instance of {@link MiscRequestRestoreReq} is next.
    */
   RequestRestore, 
   
   /**
-   * An instance of {@link MiscDenyRestoreReq MiscDenyRestoreReq} is next.
+   * An instance of {@link MiscDenyRestoreReq} is next.
    */
   DenyRestore, 
 
   /**
-   * An instance of {@link MiscGetRestoreRequestsReq MiscGetRestoreRequestsReq} is next.
+   * An instance of {@link MiscGetRestoreRequestsReq} is next.
    */
   GetRestoreRequests, 
 
   /**
-   * An instance of {@link MiscGetRestoreSizesReq MiscGetRestoreSizesReq} is next.
+   * An instance of {@link MiscGetRestoreSizesReq} is next.
    */
   GetRestoreSizes, 
 
   /**
-   * An instance of {@link MiscRestoreReq MiscRestoreReq} is next.
+   * An instance of {@link MiscRestoreReq} is next.
    */
   Restore, 
 
@@ -600,12 +673,12 @@ enum MasterRequest
   GetRestoredOutput, 
 
   /**
-   * An instance of {@link MiscGetArchivesContainingReq MiscGetArchivesContainingReq} is next.
+   * An instance of {@link MiscGetArchivesContainingReq} is next.
    */
   GetArchivesContaining, 
 
   /**
-   * An instance of {@link MiscGetArchiveReq MiscGetArchiveReq} is next.
+   * An instance of {@link MiscGetArchiveReq} is next.
    */
   GetArchive, 
 
@@ -613,8 +686,7 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link MiscCreateInitialPanelLayoutReq MiscCreateInitialPanelLayoutReq } 
-   * is next.
+   * An instance of {@link MiscCreateInitialPanelLayoutReq} is next.
    */
   CreateInitialPanelLayout, 
 
@@ -627,7 +699,7 @@ enum MasterRequest
   Disconnect,
 
   /**
-   * An instance of {@link MiscShutdownOptionsReq MiscShutdownOptionsReq} is next.
+   * An instance of {@link MiscShutdownOptionsReq} is next.
    */
   ShutdownOptions, 
 

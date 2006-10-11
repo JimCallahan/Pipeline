@@ -1,4 +1,4 @@
-// $Id: QueueSubmitJobsReq.java,v 1.1 2005/10/30 10:01:32 jim Exp $
+// $Id: QueueSubmitJobsReq.java,v 1.2 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,21 +26,27 @@ class QueueSubmitJobsReq
   /** 
    * Constructs a new request. <P> 
    * 
+   * @param group
+   *   The queue job group.
+   * 
    * @param jobs
    *   The queue jobs.
    */
   public
   QueueSubmitJobsReq
   (
+   QueueJobGroup group,
    ArrayList<QueueJob> jobs
   )
-  { 
+  {
+    if(group == null)
+      throw new IllegalArgumentException("The job group cannot be (null)!");
+    pJobGroup = group;
+ 
     if(jobs == null) 
       throw new IllegalArgumentException("The job cannot be (null)!");
-
     if(jobs.isEmpty()) 
       throw new IllegalArgumentException("At least one job must be submitted!");
-      
     pJobs = jobs;
   }
 
@@ -49,6 +55,15 @@ class QueueSubmitJobsReq
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the queue group.
+   */
+  public QueueJobGroup
+  getJobGroup() 
+  {
+    return pJobGroup;
+  }
 
   /**
    * Get the queue jobs.
@@ -72,6 +87,11 @@ class QueueSubmitJobsReq
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The queue job group.
+   */ 
+  private QueueJobGroup  pJobGroup; 
 
   /**
    * The queue jobs.

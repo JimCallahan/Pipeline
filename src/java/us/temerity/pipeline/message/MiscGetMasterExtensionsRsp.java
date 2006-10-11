@@ -1,43 +1,56 @@
-// $Id: QueueGroupJobsReq.java,v 1.1 2004/08/22 22:05:43 jim Exp $
+// $Id: MiscGetMasterExtensionsRsp.java,v 1.1 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G R O U P   J O B S   R E Q                                                */
+/*   M I S C   G E T   M A S T E R   E X T E N S I O N S   R S P                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to notify the queue that a set of previously submitted jobs make up a job group.
+ * Get the current master extension configurations.
  */
 public
-class QueueGroupJobsReq
-  implements Serializable
+class MiscGetMasterExtensionsRsp 
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request. <P> 
+   * Constructs a new response.
    * 
-   * @param group
-   *   The queue job group.
-   */
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param extensions
+   *   The extension configurations indexed by configuration name.
+   */ 
   public
-  QueueGroupJobsReq
+  MiscGetMasterExtensionsRsp
   (
-   QueueJobGroup group
+   TaskTimer timer, 
+   TreeMap<String,MasterExtensionConfig> extensions
   )
   { 
-    if(group == null) 
-      throw new IllegalArgumentException("The job group cannot be (null)!");
-    pJobGroup = group;
+    super(timer);
+
+    if(extensions == null) 
+      throw new IllegalArgumentException("The extensions cannot be (null)!");
+    pExtensions = extensions;
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.getMasterExtensions():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 
@@ -47,21 +60,22 @@ class QueueGroupJobsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the queue group.
+   * Gets the extension configurations indexed by configuration name.
    */
-  public QueueJobGroup
-  getJobGroup() 
+  public TreeMap<String,MasterExtensionConfig>
+  getExtensions() 
   {
-    return pJobGroup;
+    return pExtensions;
   }
-
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -2819969724147212302L;
+  private static final long serialVersionUID = -4611750029416155521L;
+
 
   
 
@@ -70,10 +84,9 @@ class QueueGroupJobsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The queue job group.
+   * The extension configurations indexed by configuration name.
    */ 
-  private QueueJobGroup  pJobGroup; 
+  private TreeMap<String,MasterExtensionConfig>  pExtensions;
 
 }
-
   

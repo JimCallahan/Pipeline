@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.8 2006/08/20 05:46:51 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.9 2006/10/11 22:45:40 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -44,6 +44,8 @@ class BasePluginMgrClient
     pComparators = new TripleMap<String,String,VersionID,PluginData>();  
     pTools  	 = new TripleMap<String,String,VersionID,PluginData>();   
     pArchivers   = new TripleMap<String,String,VersionID,PluginData>();  
+    pMasterExts  = new TripleMap<String,String,VersionID,PluginData>();  
+    pQueueExts   = new TripleMap<String,String,VersionID,PluginData>();  
   }
 
 
@@ -74,6 +76,8 @@ class BasePluginMgrClient
       updatePlugins(rsp.getComparators(), pComparators);
       updatePlugins(rsp.getTools(), pTools); 
       updatePlugins(rsp.getArchivers(), pArchivers); 
+      updatePlugins(rsp.getMasterExts(), pMasterExts); 
+      updatePlugins(rsp.getQueueExts(), pQueueExts); 
      
       pCycleID = rsp.getCycleID();
     }
@@ -183,6 +187,26 @@ class BasePluginMgrClient
   getArchivers() 
   {
     return getPlugins(pArchivers);
+  }
+
+  /**
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available Master Extension plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getMasterExts() 
+  {
+    return getPlugins(pMasterExts);
+  }
+
+  /**
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available Queue Extension plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getQueueExts() 
+  {
+    return getPlugins(pQueueExts);
   }
 
   /**
@@ -374,6 +398,70 @@ class BasePluginMgrClient
   }
   
   /**
+   * Create a new master extension plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseMasterExt#getName BaseMasterExt.getName} for the 
+   * returned master extension.
+   *
+   * @param name 
+   *   The name of the master extension plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the master extension to instantiate 
+   *   or <CODE>null</CODE> for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no master extension plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseMasterExt
+  newMasterExt
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    return (BaseMasterExt) newPlugin("MasterExt", pMasterExts, name, vid, vendor);
+  }
+  
+  /**
+   * Create a new queue extension plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseQueueExt#getName BaseQueueExt.getName} for the 
+   * returned queue extension.
+   *
+   * @param name 
+   *   The name of the queue extension plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the queue extension to instantiate 
+   *   or <CODE>null</CODE> for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no queue extension plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseQueueExt
+  newQueueExt
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    return (BaseQueueExt) newPlugin("QueueExt", pQueueExts, name, vid, vendor);
+  }
+  
+  /**
    * Create a new plugin instance. <P> 
    * 
    * @param ptype 
@@ -540,6 +628,17 @@ class BasePluginMgrClient
    */ 
   private TripleMap<String,String,VersionID,PluginData>  pArchivers; 
 
+  /**
+   * The cached Master Extension plugin data 
+   * indexed by vendor, class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,PluginData>  pMasterExts; 
+
+  /**
+   * The cached Queue Extension plugin data 
+   * indexed by vendor, class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,PluginData>  pQueueExts; 
 
 }
 

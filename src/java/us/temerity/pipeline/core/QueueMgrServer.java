@@ -1,9 +1,10 @@
-// $Id: QueueMgrServer.java,v 1.35 2006/09/29 03:03:21 jim Exp $
+// $Id: QueueMgrServer.java,v 1.36 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.core.exts.*;
 
 import java.io.*;
 import java.nio.*;
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.*;
  * class.
  */
 class QueueMgrServer
-  extends Thread
+  extends BaseMgrServer
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -42,8 +43,6 @@ class QueueMgrServer
     super("QueueMgrServer");
 
     pQueueMgr = new QueueMgr(this);
-
-    pShutdown = new AtomicBoolean(false);
     pTasks = new HashSet<HandlerTask>();
   }
  
@@ -95,25 +94,42 @@ class QueueMgrServer
       }
 
       try {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Shutting Down -- Waiting for tasks to complete...");
-	LogMgr.getInstance().flush();
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Collector...");
+	  LogMgr.getInstance().flush();
 
-	collector.join();
-	dispatcher.join();
+	  collector.join();
+	}
+
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Dispatcher...");
+	  LogMgr.getInstance().flush();
+
+	  dispatcher.join();
+	}
 
 	scheduler.interrupt();
 	scheduler.join();
 
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.closeConnection();
-	}	
-	
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.join();
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Client Handlers...");
+	  LogMgr.getInstance().flush();
+	  
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.closeConnection();
+	  }	
+	  
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.join();
+	  }
 	}
       }
       catch(InterruptedException ex) {
@@ -178,39 +194,6 @@ class QueueMgrServer
   }
   
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  private String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuffer buf = new StringBuffer();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -460,6 +443,33 @@ class QueueMgrServer
 	      break;
 
 
+	    /*-- SERVER EXTENSIONS ---------------------------------------------------------*/
+	    case GetQueueExtension:
+	      {
+		objOut.writeObject(pQueueMgr.getQueueExtensions());
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case RemoveQueueExtension:
+	      {
+		QueueRemoveQueueExtensionReq req = 
+		  (QueueRemoveQueueExtensionReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeQueueExtension(req));
+		objOut.flush();
+	      }
+	      break;
+
+	    case SetQueueExtension:
+	      {
+		QueueSetQueueExtensionReq req = 
+		  (QueueSetQueueExtensionReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.setQueueExtension(req));
+		objOut.flush();
+	      }
+	      break;
+
+
 	    /*-- JOB MANAGER HOSTS ---------------------------------------------------------*/
 	    case GetHosts:
 	      {
@@ -608,14 +618,6 @@ class QueueMgrServer
 	      }
 	      break;
 
-
-	    case GroupJobs:
-	      {
-		QueueGroupJobsReq req = (QueueGroupJobsReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.groupJobs(req));
-		objOut.flush(); 
-	      }
-	      break;
 
 	    case GetJobGroup:
 	      {
@@ -948,11 +950,6 @@ class QueueMgrServer
    * The shared queue manager. 
    */
   private QueueMgr  pQueueMgr;
-
-  /**
-   * Has the server been ordered to shutdown?
-   */
-  private AtomicBoolean  pShutdown;
 
   /**
    * The set of currently running tasks.

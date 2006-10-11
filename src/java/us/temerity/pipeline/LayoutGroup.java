@@ -1,4 +1,4 @@
-// $Id: LayoutGroup.java,v 1.4 2006/02/27 17:59:16 jim Exp $
+// $Id: LayoutGroup.java,v 1.5 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,22 +36,18 @@ class LayoutGroup
   }
 
   /**
-   * Construct a new default layout group.
+   * Construct a new default layout group. <P> 
    * 
    * @param isOpen
    *   Whether the group is initially open.
-   */ 
+   */
   public 
   LayoutGroup
   (
    boolean isOpen
   ) 
   {
-    super("ActionParameters", "The single valued Action plugin parameters."); 
-
-    pIsOpen    = isOpen;
-    pEntries   = new LinkedList<String>();
-    pSubGroups = new LinkedList<LayoutGroup>();
+    this("Root", "", isOpen); 
   }
 
   /**
@@ -79,6 +75,34 @@ class LayoutGroup
     pIsOpen    = isOpen;
     pEntries   = new LinkedList<String>();
     pSubGroups = new LinkedList<LayoutGroup>();
+  }
+
+  /**
+   * Construct a new layout group which is a copy of the given group but with a 
+   * new name and description.
+   * 
+   * @param name
+   *   The name of the group.
+   * 
+   * @param desc 
+   *   A short description of the layout group.
+   * 
+   * @param group
+   *   The layout group to copy.
+   */ 
+  public 
+  LayoutGroup
+  (
+   String name,   
+   String desc, 
+   LayoutGroup group
+  ) 
+  {
+    super(name, desc);
+
+    pIsOpen    = group.pIsOpen;
+    pEntries   = new LinkedList<String>(group.pEntries);
+    pSubGroups = new LinkedList<LayoutGroup>(group.pSubGroups);
   }
 
 

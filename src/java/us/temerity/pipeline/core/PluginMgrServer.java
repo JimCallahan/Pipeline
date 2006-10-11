@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.7 2006/09/29 03:03:21 jim Exp $
+// $Id: PluginMgrServer.java,v 1.8 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.*;
  * class.
  */
 class PluginMgrServer
-  extends Thread
+  extends BaseMgrServer
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -42,9 +42,7 @@ class PluginMgrServer
     super("PluginMgrServer");
 
     pPluginMgr = new PluginMgr();
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();    
+    pTasks     = new HashSet<HandlerTask>();    
   }
 
 
@@ -92,14 +90,15 @@ class PluginMgrServer
 
       try {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Shutting Down -- Waiting for tasks to complete...");
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "Waiting on Client Handlers...");
 	LogMgr.getInstance().flush();
+	
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
 	    task.closeConnection();
 	}
-
+	
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
 	    task.join();
@@ -116,20 +115,20 @@ class PluginMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 "IO problems on port (" + PackageInfo.sPluginPort + "):\n" + 
-	 ex.getMessage());
+	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 ex.getMessage());
+	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 ex.getMessage());
+	 getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
@@ -146,6 +145,7 @@ class PluginMgrServer
       LogMgr.getInstance().flush();  
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -278,18 +278,18 @@ class PluginMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "IO problems on port (" + PackageInfo.sPluginPort + "):\n" + 
-	   ex.getMessage());
+	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Illegal object encountered on port (" + PackageInfo.sPluginPort + "):\n" + 
-	   ex.getMessage());	
+	   getFullMessage(ex));	
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage());
+	   getFullMessage(ex));
       }
       finally {
 	closeConnection();
@@ -335,11 +335,6 @@ class PluginMgrServer
    */
   private PluginMgr  pPluginMgr;
   
-  /**
-   * Has the server been ordered to shutdown?
-   */
-  private AtomicBoolean  pShutdown;
-
   /**
    * The set of currently running tasks.
    */ 

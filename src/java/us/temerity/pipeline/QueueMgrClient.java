@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.30 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueMgrClient.java,v 1.31 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -639,6 +639,112 @@ class QueueMgrClient
     
     QueueEditSelectionSchedulesReq req = new QueueEditSelectionSchedulesReq(schedules);
     Object obj = performTransaction(QueueRequest.EditSelectionSchedules, req); 
+    handleSimpleResponse(obj);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R V E R   E X T E N S I O N S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current queue extension configurations. <P> 
+   * 
+   * @param name
+   *   The name of the queue extension configuration.
+   * 
+   * @return 
+   *   The extension configuration 
+   *   or <CODE>null</CODE> if no extension with the given name exists.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the extensions.
+   */ 
+  public synchronized QueueExtensionConfig
+  getQueueExtensionConfig
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    if(name == null) 
+      throw new IllegalArgumentException
+	("The extension configuration name cannot be (null)!");
+    return getQueueExtensionConfigs().get(name);
+  }
+
+  /**
+   * Get the current queue extension configurations. <P> 
+   * 
+   * @return 
+   *   The extension configurations indexed by configuration name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the extensions.
+   */ 
+  public synchronized TreeMap<String,QueueExtensionConfig> 
+  getQueueExtensionConfigs() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetQueueExtension, null); 
+    if(obj instanceof QueueGetQueueExtensionsRsp) {
+      QueueGetQueueExtensionsRsp rsp = (QueueGetQueueExtensionsRsp) obj;
+      return rsp.getExtensions();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Remove an existing the queue extension configuration. <P> 
+   * 
+   * @param name
+   *   The name of the queue extension configuration to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the extension.
+   */ 
+  public synchronized void
+  removeQueueExtensionConfig
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueRemoveQueueExtensionReq req = new QueueRemoveQueueExtensionReq(name);
+
+    Object obj = performTransaction(QueueRequest.RemoveQueueExtension, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Add or modify an existing the queue extension configuration. <P> 
+   * 
+   * @param extension
+   *   The queue extension configuration to add (or modify).
+   * 
+   * @throws PipelineException
+   *   If unable to set the extension.
+   */ 
+  public synchronized void
+  setQueueExtensionConfig
+  (
+   QueueExtensionConfig extension
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueSetQueueExtensionReq req = new QueueSetQueueExtensionReq(extension);
+
+    Object obj = performTransaction(QueueRequest.SetQueueExtension, req); 
     handleSimpleResponse(obj);
   }
 

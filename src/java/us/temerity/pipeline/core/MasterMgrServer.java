@@ -1,9 +1,10 @@
-// $Id: MasterMgrServer.java,v 1.64 2006/09/29 03:03:21 jim Exp $
+// $Id: MasterMgrServer.java,v 1.65 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.core.exts.*;
 
 import java.io.*;
 import java.nio.*;
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.*;
  * class.
  */
 class MasterMgrServer
-  extends Thread
+  extends BaseMgrServer
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -72,8 +73,7 @@ class MasterMgrServer
     pMasterMgr = new MasterMgr(rebuildCache, preserveOfflinedCache, 
 			       internalFileMgr, nodeCacheLimit);
 
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
+    pTasks = new HashSet<HandlerTask>();
   }
   
  
@@ -126,25 +126,27 @@ class MasterMgrServer
       }
 
       try {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Shutting Down -- Waiting for tasks to complete...");
-	LogMgr.getInstance().flush();
-
 // 	lic.interrupt();
 // 	lic.join();
 
 	nodeGC.interrupt();
 	nodeGC.join();
 
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.closeConnection();
-	}	
-	
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.join();
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Client Handlers...");
+	  LogMgr.getInstance().flush();
+	  
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.closeConnection();
+	  }	
+	  
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.join();
+	  }
 	}
       }
       catch(InterruptedException ex) {
@@ -158,20 +160,20 @@ class MasterMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 "IO problems on port (" + PackageInfo.sMasterPort + "):\n" + 
-	 ex.getMessage());
+	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 ex.getMessage());
+	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 ex.getMessage());
+	 getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
@@ -260,10 +262,12 @@ class MasterMgrServer
 	  else {
 	    MasterRequest kind = (MasterRequest) obj;
 	  
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	    LogMgr.getInstance().flush();
+	    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Finer,
+		 "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
+	      LogMgr.getInstance().flush();
+	    }
 
 	    switch(kind) {
 	    /*-- ADMINISTRATIVE PRIVILEGES -------------------------------------------------*/
@@ -665,6 +669,128 @@ class MasterMgrServer
 		  (MiscSetPackagePluginsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.setPackageArchiverPlugins(req));
 		objOut.flush(); 
+	      }
+	      break;
+
+	    /*----------------------------------*/
+	      
+	    case GetMasterExtMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getMasterExtMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetMasterExtMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setMasterExtMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetMasterExtPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetMasterExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageMasterExtPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageMasterExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageMasterExtPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageMasterExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*----------------------------------*/
+	      
+	    case GetQueueExtMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getQueueExtMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetQueueExtMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setQueueExtMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetQueueExtPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetQueueExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageQueueExtPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageQueueExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageQueueExtPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageQueueExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- SERVER EXTENSIONS ---------------------------------------------------------*/
+	    case GetMasterExtension:
+	      {
+		objOut.writeObject(pMasterMgr.getMasterExtensions());
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case RemoveMasterExtension:
+	      {
+		MiscRemoveMasterExtensionReq req = 
+		  (MiscRemoveMasterExtensionReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removeMasterExtension(req));
+		objOut.flush();
+	      }
+	      break;
+
+	    case SetMasterExtension:
+	      {
+		MiscSetMasterExtensionReq req = 
+		  (MiscSetMasterExtensionReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setMasterExtension(req));
+		objOut.flush();
 	      }
 	      break;
 
@@ -1335,40 +1461,6 @@ class MasterMgrServer
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  private String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuffer buf = new StringBuffer();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -1381,11 +1473,6 @@ class MasterMgrServer
    * The shared master manager. 
    */
   private MasterMgr  pMasterMgr;
-
-  /**
-   * Has the server been ordered to shutdown?
-   */
-  private AtomicBoolean  pShutdown;
 
   /**
    * The set of currently running tasks.

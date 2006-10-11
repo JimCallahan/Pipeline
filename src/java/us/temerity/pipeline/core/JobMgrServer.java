@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.23 2006/09/29 03:03:21 jim Exp $
+// $Id: JobMgrServer.java,v 1.24 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,22 +99,30 @@ class JobMgrServer
       pJobMgr.killAll();
 
       try {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Shutting Down -- Waiting for tasks to complete...");
-	LogMgr.getInstance().flush();
+	if(collector != null) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Collector...");
+	  LogMgr.getInstance().flush();
 
-	if(collector != null) 
 	  collector.join();
+	}
 
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.closeConnection();
-	}	
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Client Handlers...");
+	  LogMgr.getInstance().flush();
+
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.closeConnection();
+	  }	
 	
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.join();
+	  synchronized(pTasks) {
+	    for(HandlerTask task : pTasks) 
+	      task.join();
+	  }
 	}
       }
       catch(InterruptedException ex) {

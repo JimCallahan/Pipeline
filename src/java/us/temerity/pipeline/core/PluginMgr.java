@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.11 2006/09/29 03:03:21 jim Exp $
+// $Id: PluginMgr.java,v 1.12 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,6 +52,8 @@ class PluginMgr
       pComparators = new TripleMap<String,String,VersionID,Plugin>();  
       pTools  	   = new TripleMap<String,String,VersionID,Plugin>();   
       pArchivers   = new TripleMap<String,String,VersionID,Plugin>();  
+      pMasterExts  = new TripleMap<String,String,VersionID,Plugin>();  
+      pQueueExts   = new TripleMap<String,String,VersionID,Plugin>();  
     }
 
     loadAllPlugins(); 
@@ -132,8 +134,15 @@ class PluginMgr
       TripleMap<String,String,VersionID,Object[]> archivers = 
 	collectUpdated(cycleID, pArchivers);
 
+      TripleMap<String,String,VersionID,Object[]> masterExts = 
+	collectUpdated(cycleID, pMasterExts);
+
+      TripleMap<String,String,VersionID,Object[]> queueExts = 
+	collectUpdated(cycleID, pQueueExts);
+
       return new PluginUpdateRsp(timer, pLoadCycleID, 
-				 editors, actions, comparators, tools, archivers);
+				 editors, actions, comparators, tools, archivers, 
+				 masterExts, queueExts);
     }
     finally {
       pPluginLock.readLock().unlock();
@@ -600,17 +609,21 @@ class PluginMgr
 	throw new PipelineException
 	  ("The plugin class (" + cname + ") does not support execution under any " + 
 	   "type of operating system!  At least one OS must be supported.");	
-
+      
       if(plg instanceof BaseEditor) 
 	addPlugin(plg, cname, contents, pEditors);
-      else if(plg instanceof BaseAction)
+      else if(plg instanceof BaseAction) 
 	addPlugin(plg, cname, contents, pActions);
-      else if(plg instanceof BaseComparator)
+      else if(plg instanceof BaseComparator) 
 	addPlugin(plg, cname, contents, pComparators);
-      else if(plg instanceof BaseTool)
+      else if(plg instanceof BaseTool) 
 	addPlugin(plg, cname, contents, pTools);
-      else if(plg instanceof BaseArchiver)
+      else if(plg instanceof BaseArchiver) 
 	addPlugin(plg, cname, contents, pArchivers);
+      else if(plg instanceof BaseMasterExt) 
+	addPlugin(plg, cname, contents, pMasterExts);
+      else if(plg instanceof BaseQueueExt) 
+	addPlugin(plg, cname, contents, pQueueExts);
       else 
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
@@ -788,6 +801,17 @@ class PluginMgr
    * The loaded Archiver plugins indexed by plugin name and revision number.
    */
   private TripleMap<String,String,VersionID,Plugin>  pArchivers; 
+
+  /**
+   * The loaded Master Extension plugins indexed by plugin name and revision number.
+   */
+  private TripleMap<String,String,VersionID,Plugin>  pMasterExts; 
+
+  /**
+   * The loaded Queue Extension plugins indexed by plugin name and revision number.
+   */
+  private TripleMap<String,String,VersionID,Plugin>  pQueueExts; 
+
 
 }
 

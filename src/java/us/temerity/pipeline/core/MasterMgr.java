@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.163 2006/10/06 17:17:20 jim Exp $
+// $Id: MasterMgr.java,v 1.164 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.ui.core.NodeStyles;
 
 import java.io.*;
@@ -318,7 +319,10 @@ class MasterMgr
       pToolMenuLayouts       = new TreeMap<String,PluginMenuLayout>();
   
       pArchiverMenuLayouts       = new TreeMap<String,PluginMenuLayout>();
-      pDefaultArchiverMenuLayout = new PluginMenuLayout();
+      pDefaultArchiverMenuLayout = new PluginMenuLayout();  // ???
+
+      pMasterExtMenuLayouts  = new TreeMap<String,PluginMenuLayout>();
+      pQueueExtMenuLayouts   = new TreeMap<String,PluginMenuLayout>();
 
       pPackageEditorPlugins = 
 	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
@@ -330,6 +334,12 @@ class MasterMgr
 	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
       pPackageArchiverPlugins = 
 	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageMasterExtPlugins = 
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageQueueExtPlugins = 
+	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
+
+      pMasterExtensions = new TreeMap<String,MasterExtensionConfig>();
 
       pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
 
@@ -353,6 +363,7 @@ class MasterMgr
       initPrivileges();
       initArchives();
       initToolsets();
+      initMasterExtensions();
       initWorkingAreas();
       initDownstreamLinks();
       initNodeTree();
@@ -623,15 +634,32 @@ class MasterMgr
 
     /* initialize default plugin menu layouts */ 
     pDefaultEditorMenuLayout = 
-      readPluginMenuLayout(null, "editors", pEditorMenuLayouts); 
+      readPluginMenuLayout(null, "editor", 
+			   pEditorMenuLayouts);
+
     pDefaultComparatorMenuLayout = 
-      readPluginMenuLayout(null, "comparators", pComparatorMenuLayouts); 
+      readPluginMenuLayout(null, "comparator", 
+			   pComparatorMenuLayouts); 
+    
     pDefaultActionMenuLayout = 
-      readPluginMenuLayout(null, "actions", pActionMenuLayouts); 
+      readPluginMenuLayout(null, "action", 
+			   pActionMenuLayouts); 
+    
     pDefaultToolMenuLayout = 
-      readPluginMenuLayout(null, "tools", pToolMenuLayouts); 
+      readPluginMenuLayout(null, "tool", 
+			   pToolMenuLayouts); 
+    
     pDefaultArchiverMenuLayout = 
-      readPluginMenuLayout(null, "archivers", pArchiverMenuLayouts); 
+      readPluginMenuLayout(null, "archiver", 
+			   pArchiverMenuLayouts); 
+    
+    pDefaultMasterExtMenuLayout = 
+      readPluginMenuLayout(null, "master extension", 
+			   pMasterExtMenuLayouts); 
+    
+    pDefaultArchiverMenuLayout = 
+      readPluginMenuLayout(null, "queue extension", 
+			   pQueueExtMenuLayouts); 
 
     /* initialize toolsets */ 
     {
@@ -658,11 +686,26 @@ class MasterMgr
 	  }
 
 	  if(hasToolset) {
-	    readPluginMenuLayout(tname, "editors", pEditorMenuLayouts);
-	    readPluginMenuLayout(tname, "comparators", pComparatorMenuLayouts); 
-	    readPluginMenuLayout(tname, "actions", pActionMenuLayouts); 
-	    readPluginMenuLayout(tname, "tools", pToolMenuLayouts); 
-	    readPluginMenuLayout(tname, "archivers", pArchiverMenuLayouts); 
+	    readPluginMenuLayout(tname, "editor", 
+				 pEditorMenuLayouts);
+
+	    readPluginMenuLayout(tname, "comparator", 
+				 pComparatorMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "action", 
+				 pActionMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "tool", 
+				 pToolMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "archiver", 
+				 pArchiverMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "master extension", 
+				 pMasterExtMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "queue extension", 
+				 pQueueExtMenuLayouts); 
 	  }
 	}
       }
@@ -689,11 +732,26 @@ class MasterMgr
 
 		  switch(os) {
 		  case Unix:
-		    readPackagePlugins(pname, vid, "editors", pPackageEditorPlugins);
-		    readPackagePlugins(pname, vid, "comparators", pPackageComparatorPlugins);
-		    readPackagePlugins(pname, vid, "actions", pPackageActionPlugins);
-		    readPackagePlugins(pname, vid, "tools", pPackageToolPlugins);
-		    readPackagePlugins(pname, vid, "archivers", pPackageArchiverPlugins);
+		    readPackagePlugins(pname, vid, "editor", 
+				       pPackageEditorPlugins);
+
+		    readPackagePlugins(pname, vid, "comparator", 
+				       pPackageComparatorPlugins);
+
+		    readPackagePlugins(pname, vid, "action", 
+				       pPackageActionPlugins);
+
+		    readPackagePlugins(pname, vid, "tool", 
+				       pPackageToolPlugins);
+
+		    readPackagePlugins(pname, vid, "archiver", 
+				       pPackageArchiverPlugins);
+
+		    readPackagePlugins(pname, vid, "master extension", 
+				       pPackageMasterExtPlugins);
+
+		    readPackagePlugins(pname, vid, "queue extension", 
+				       pPackageQueueExtPlugins);
 		  }
 		}
 	      }
@@ -704,6 +762,24 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Initialize the server extensions. 
+   */
+  private void 
+  initMasterExtensions()
+    throws PipelineException
+  {
+    readMasterExtensions();
+   
+    synchronized(pMasterExtensions) {
+      for(MasterExtensionConfig config : pMasterExtensions.values()) 
+	doPostExtensionEnableTask(config);
+    }
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1276,6 +1352,26 @@ class MasterMgr
 	(LogMgr.Kind.Net, LogMgr.Level.Warning,
 	 ex.getMessage());
       LogMgr.getInstance().flush();
+    }
+
+    /* shutdown extensions */ 
+    {
+      /* disable extensions */ 
+      synchronized(pMasterExtensions) {
+	for(MasterExtensionConfig config : pMasterExtensions.values()) 
+	  doPreExtensionDisableTask(config);
+      }
+
+      /* wait for all extension tasks to complete */ 
+      try {
+	BaseExtTask.joinAll();
+      }
+      catch(InterruptedException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   "Interrupted while waiting for all Extension Tasks to complete:\n  " + 
+	   ex.getMessage());
+      }
     }
 
     /* remove the lock file */ 
@@ -2622,7 +2718,7 @@ class MasterMgr
 	    pEditorMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, "editors", 
+	writePluginMenuLayout(name, "editor", 
 			      pEditorMenuLayouts, pDefaultEditorMenuLayout);
 
 	return new SuccessRsp(timer);
@@ -2793,7 +2889,7 @@ class MasterMgr
 	  pPackageEditorPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
 	writePackagePlugins(req.getName(), req.getVersionID(), 
-			    "editors", pPackageEditorPlugins);
+			    "editor", pPackageEditorPlugins);
 
 	return new SuccessRsp(timer);
       }
@@ -2896,7 +2992,7 @@ class MasterMgr
 	    pComparatorMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, "comparators", 
+	writePluginMenuLayout(name, "comparator", 
 			      pComparatorMenuLayouts, pDefaultComparatorMenuLayout);
 
 	return new SuccessRsp(timer);
@@ -3067,7 +3163,7 @@ class MasterMgr
 	  pPackageComparatorPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
 	writePackagePlugins(req.getName(), req.getVersionID(), 
-			    "comparators", pPackageComparatorPlugins);
+			    "comparator", pPackageComparatorPlugins);
 
 	return new SuccessRsp(timer);
       }
@@ -3170,7 +3266,7 @@ class MasterMgr
 	    pActionMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, "actions", 
+	writePluginMenuLayout(name, "action", 
 			      pActionMenuLayouts, pDefaultActionMenuLayout);
 
 	return new SuccessRsp(timer);
@@ -3341,7 +3437,7 @@ class MasterMgr
 	  pPackageActionPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
 	writePackagePlugins(req.getName(), req.getVersionID(), 
-			    "actions", pPackageActionPlugins);
+			    "action", pPackageActionPlugins);
 
 	return new SuccessRsp(timer);
       }
@@ -3444,7 +3540,7 @@ class MasterMgr
 	    pToolMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, "tools", 
+	writePluginMenuLayout(name, "tool", 
 			      pToolMenuLayouts, pDefaultToolMenuLayout);
 
 	return new SuccessRsp(timer);
@@ -3615,7 +3711,7 @@ class MasterMgr
 	  pPackageToolPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
 	writePackagePlugins(req.getName(), req.getVersionID(), 
-			    "tools", pPackageToolPlugins);
+			    "tool", pPackageToolPlugins);
 
 	return new SuccessRsp(timer);
       }
@@ -3718,7 +3814,7 @@ class MasterMgr
 	    pArchiverMenuLayouts.put(name, layout);
 	}
 
-	writePluginMenuLayout(name, "archivers", 
+	writePluginMenuLayout(name, "archiver", 
 			      pArchiverMenuLayouts, pDefaultArchiverMenuLayout);
 
 	return new SuccessRsp(timer);
@@ -3889,7 +3985,7 @@ class MasterMgr
 	  pPackageArchiverPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
 
 	writePackagePlugins(req.getName(), req.getVersionID(), 
-			    "archivers", pPackageArchiverPlugins);
+			    "archiver", pPackageArchiverPlugins);
 
 	return new SuccessRsp(timer);
       }
@@ -3902,6 +3998,950 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the master extension plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getMasterExtMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getMasterExtMenuLayout(): " + name);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pMasterExtMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultMasterExtMenuLayout;
+	else 
+	  layout = pMasterExtMenuLayouts.get(name);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the master extension plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setMasterExtMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setMasterExtMenuLayout(): " + name);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the master extension menu layout!");
+
+      synchronized(pMasterExtMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  pDefaultMasterExtMenuLayout = layout;
+	}
+	else {
+	  if(layout == null) 
+	    pMasterExtMenuLayouts.remove(name);
+	  else 
+	    pMasterExtMenuLayouts.put(name, layout);
+	}
+
+	writePluginMenuLayout(name, "master extension", 
+			      pMasterExtMenuLayouts, pDefaultMasterExtMenuLayout);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the master extension plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetMasterExtPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageMasterExtPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
+		pPackageMasterExtPlugins.get(pname, pvid);
+
+	      if(table != null) {
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
+		  
+		    vids.addAll(table.get(vendor, name));
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the master extension plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageMasterExtPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageMasterExtPlugins) {
+	timer.resume();
+	
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	  pPackageMasterExtPlugins.get(req.getName(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the master extension plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageMasterExtPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the master extension plugins " + 
+	   "associated with a toolset package!"); 
+
+      synchronized(pPackageMasterExtPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageMasterExtPlugins.remove(req.getName(), req.getVersionID());
+	else 
+	  pPackageMasterExtPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
+
+	writePackagePlugins(req.getName(), req.getVersionID(), 
+			    "master extension", pPackageMasterExtPlugins);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the queue extension plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getQueueExtMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getQueueExtMenuLayout(): " + name);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pQueueExtMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultQueueExtMenuLayout;
+	else 
+	  layout = pQueueExtMenuLayouts.get(name);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the queue extension plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setQueueExtMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setQueueExtMenuLayout(): " + name);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the queue extension menu layout!");
+
+      synchronized(pQueueExtMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  pDefaultQueueExtMenuLayout = layout;
+	}
+	else {
+	  if(layout == null) 
+	    pQueueExtMenuLayouts.remove(name);
+	  else 
+	    pQueueExtMenuLayouts.put(name, layout);
+	}
+
+	writePluginMenuLayout(name, "queue extension", 
+			      pQueueExtMenuLayouts, pDefaultQueueExtMenuLayout);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the queue extension plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetQueueExtPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	new DoubleMap<String,String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pPackageQueueExtPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      
+	      DoubleMap<String,String,TreeSet<VersionID>> table = 
+		pPackageQueueExtPlugins.get(pname, pvid);
+
+	      if(table != null) {
+		for(String vendor : table.keySet()) {
+		  for(String name : table.get(vendor).keySet()) {
+		    TreeSet<VersionID> vids = plugins.get(vendor, name);
+		    if(vids == null) {
+		      vids = new TreeSet<VersionID>();
+		      plugins.put(vendor, name, vids);
+		    }
+		  
+		    vids.addAll(table.get(vendor, name));
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the queue extension plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageQueueExtPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageQueueExtPlugins) {
+	timer.resume();
+	
+	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
+	  pPackageQueueExtPlugins.get(req.getName(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the queue extension plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageQueueExtPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the queue extension plugins " + 
+	   "associated with a toolset package!"); 
+
+      synchronized(pPackageQueueExtPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageQueueExtPlugins.remove(req.getName(), req.getVersionID());
+	else 
+	  pPackageQueueExtPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
+
+	writePackagePlugins(req.getName(), req.getVersionID(), 
+			    "queue extension", pPackageQueueExtPlugins);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R V E R   E X T E N S I O N S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current master extension configurations. <P> 
+   * 
+   * @return
+   *   <CODE>MiscGetMasterExtensionsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the extensions.
+   */ 
+  public Object
+  getMasterExtensions() 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pMasterExtensions) {
+	timer.resume();
+	
+	return new MiscGetMasterExtensionsRsp(timer, pMasterExtensions);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
+   * Remove an existing the master extension configuration. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the extension.
+   */ 
+  public Object
+  removeMasterExtension
+  (
+   MiscRemoveMasterExtensionReq req
+  ) 
+  {
+    String name = req.getExtensionName();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.removeMasterExtension(): " + name); 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may remove a " + 
+	   "master extension configuration!");
+
+      synchronized(pMasterExtensions) {
+	timer.resume();
+	
+	doPreExtensionDisableTask(pMasterExtensions.get(name));
+
+	pMasterExtensions.remove(name);
+	writeMasterExtensions();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }  
+  
+  /**
+   * Add or modify an existing the master extension configuration. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the extension.
+   */ 
+  public Object
+  setMasterExtension
+  (
+   MiscSetMasterExtensionReq req
+  ) 
+  {
+    MasterExtensionConfig config = req.getExtension();
+    String name = config.getName();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.setMasterExtension(): " + name); 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may add or modify " + 
+	   "master extension configuration!");
+
+      synchronized(pMasterExtensions) {
+	timer.resume();
+	
+	doPreExtensionDisableTask(pMasterExtensions.get(name));
+
+	pMasterExtensions.put(name, config); 
+	writeMasterExtensions();
+
+	doPostExtensionEnableTask(config); 
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }  
+
+  /**
+   * Get new instances of all enabled master extension plugins indexed by 
+   * extension configuration name. <P> 
+   * 
+   * This method also will pre-cook the toolset environments for all plugins which will be
+   * spawning subprocesses.
+   * 
+   * @param timer
+   *   The task timer.
+   */ 
+  private TreeMap<String,BaseMasterExt> 
+  getMasterExts
+  (
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String,BaseMasterExt> table = new TreeMap<String,BaseMasterExt>();
+    TreeMap<String,String> toolsetNames = new TreeMap<String,String>();
+
+    /* instantiate the plugins */ 
+    timer.aquire();
+    synchronized(pMasterExtensions) {
+      timer.resume();
+	
+      for(String cname : pMasterExtensions.keySet()) {
+	MasterExtensionConfig config = pMasterExtensions.get(cname);
+	if(config.isEnabled()) {
+	  table.put(cname, config.getMasterExt());
+	  toolsetNames.put(cname, config.getToolset());
+	}
+      }
+    }
+
+    /* cook the toolset environments (if needed by plugins) */ 
+    for(String cname : table.keySet()) {
+      BaseMasterExt ext = table.get(cname); 
+      if(ext.needsEnvironment()) {
+	String tname = toolsetNames.get(cname);
+	ext.setEnvironment(getToolsetEnvironment(null, null, tname, OsType.Unix, timer));
+      }
+    }
+
+    return table;
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Run the post-enable task (in the current thread) for the given master extension.
+   */ 
+  private void 
+  doPostExtensionEnableTask
+  ( 
+   MasterExtensionConfig config
+  ) 
+  {
+    if((config != null) && config.isEnabled()) {
+      try {
+	BaseMasterExt ext = config.getMasterExt();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Info,
+	   "Enabling Server Extension: " + config.getName() + "\n" + 
+	   "  Extension Plugin (" + ext.getName() + " v" + ext.getVersionID() + ") " + 
+	   "from Vendor (" + ext.getVendor() + ")");
+
+	if(ext.hasPostEnableTask()) 
+	  ext.postEnableTask(); 
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+      }
+    }
+  }
+
+  /**
+   * Run the pre-disable task (in the current thread) for the given master extension.
+   */ 
+  private void 
+  doPreExtensionDisableTask
+  ( 
+   MasterExtensionConfig config
+  ) 
+  {
+    if((config != null) && config.isEnabled()) {
+      try {
+	BaseMasterExt ext = config.getMasterExt();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Info,
+	   "Disabling Server Extension: " + config.getName() + "\n" + 
+	   "  Extension Plugin (" + ext.getName() + " v" + ext.getVersionID() + ") " + 
+	   "from Vendor (" + ext.getVendor() + ")");
+
+	if(ext.hasPreDisableTask()) 
+	  ext.preDisableTask(); 
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether there are any enabled extensions which support the given test.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The master extension test factory.
+   */
+  public boolean
+  hasAnyExtensionTests
+  (
+   TaskTimer timer, 
+   MasterTestFactory factory
+  ) 
+  {
+    timer.aquire(); 
+    synchronized(pMasterExtensions) {
+      timer.resume();
+
+      for(MasterExtensionConfig config : pMasterExtensions.values()) {
+	if(config.isEnabled()) {
+	  try {
+	    BaseMasterExt ext = config.getMasterExt();
+	    if(factory.hasTest(ext)) 
+	      return true;
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	}
+      }
+    }
+
+    return false;
+  }
+  
+  /**
+   * Create and start threads for all enabled extensions which support the given task.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The master extension test factory.
+   * 
+   * @throws PipelineException 
+   *   If any of the enabled extension tests fail.
+   */
+  public void 
+  performExtensionTests
+  (
+   TaskTimer timer, 
+   MasterTestFactory factory
+  ) 
+    throws PipelineException
+  {
+    timer.aquire(); 
+    synchronized(pMasterExtensions) {
+      timer.resume();
+
+      for(MasterExtensionConfig config : pMasterExtensions.values()) {
+	if(config.isEnabled()) {
+	  BaseMasterExt ext = null;
+	  try {
+	    ext = config.getMasterExt();
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+
+	  if((ext != null) && factory.hasTest(ext)) 
+	    factory.performTest(ext); 
+	}
+      }
+    }
+  }
+
+  /**
+   * Whether there are any enabled extensions which support the given task.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The master extension task factory.
+   */
+  public boolean
+  hasAnyExtensionTasks
+  (
+   TaskTimer timer, 
+   MasterTaskFactory factory
+  ) 
+  {
+    timer.aquire(); 
+    synchronized(pMasterExtensions) {
+      timer.resume();
+
+      for(MasterExtensionConfig config : pMasterExtensions.values()) {
+	if(config.isEnabled()) {
+	  try {
+	    BaseMasterExt ext = config.getMasterExt();
+	    if(factory.hasTask(ext)) 
+	      return true;
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	}
+      }
+    }
+
+    return false;
+  }
+  
+  /**
+   * Create and start threads for all enabled extensions which support the given task.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The master extension task factory.
+   */
+  public void 
+  startExtensionTasks
+  (
+   TaskTimer timer, 
+   MasterTaskFactory factory
+  ) 
+  {
+    timer.aquire(); 
+    synchronized(pMasterExtensions) {
+      timer.resume();
+
+      for(MasterExtensionConfig config : pMasterExtensions.values()) {
+	if(config.isEnabled()) {
+	  try {
+	    BaseMasterExt ext = config.getMasterExt();
+	    if(factory.hasTask(ext)) 
+	      factory.startTask(config, ext); 
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	}
+      }
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4128,16 +5168,23 @@ class MasterMgr
    NodeCreateWorkingAreaReq req 
   ) 
   {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.createWorkingArea(): " + 
-		    req.getAuthor() + "|" + req.getView());
+    String author = req.getAuthor();
+    String view   = req.getView();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.createWorkingArea(): " + author + "|" + view);
     
+    /* pre-op tests */
+    CreateWorkingAreaExtFactory factory = new CreateWorkingAreaExtFactory(author, view); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      String author = req.getAuthor();
-      String view   = req.getView();
-      
       if(!pAdminPrivileges.isNodeManaged(req, author)) 
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may create working areas owned " +
@@ -4177,7 +5224,10 @@ class MasterMgr
 	  pWorkingAreaViews.put(author, views);
 	}
 	views.add(view);
-	
+		
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
     }
@@ -4208,17 +5258,24 @@ class MasterMgr
    NodeRemoveWorkingAreaReq req 
   ) 
   {
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.removeWorkingArea(): " + 
-		    req.getAuthor() + "|" + req.getView());
+    String author = req.getAuthor();
+    String view   = req.getView();
+
+    TaskTimer timer =  new TaskTimer("MasterMgr.removeWorkingArea(): " + author + "|" + view);
+
+    /* pre-op tests */
+    RemoveWorkingAreaExtFactory factory = new RemoveWorkingAreaExtFactory(author, view); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.writeLock().lock();
     try {
       timer.resume();	
-
-      String author = req.getAuthor();
-      String view   = req.getView();
 	
       if(!pAdminPrivileges.isNodeManaged(req, author)) 
 	throw new PipelineException
@@ -4291,6 +5348,9 @@ class MasterMgr
 	    ("Unable to remove the working area user database directory (" + userDir + ")!");
       }
       
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -4615,7 +5675,18 @@ class MasterMgr
   ) 
   {
     NodeID nodeID = req.getNodeID();
+    NodeMod nmod = req.getNodeMod();
+
     TaskTimer timer = new TaskTimer("MasterMgr.modifyProperties(): " + nodeID);
+    
+    /* pre-op tests */
+    ModifyPropertiesExtFactory factory = new ModifyPropertiesExtFactory(nodeID, nmod);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -4639,7 +5710,7 @@ class MasterMgr
       /* set the node properties */ 
       Date critical = mod.getLastCriticalModification();
       boolean wasActionEnabled = mod.isActionEnabled();
-      if(mod.setProperties(req.getNodeMod())) {
+      if(mod.setProperties(nmod)) {
 
 	/* make sure there are no active jobs, if this is a critical modification */ 
 	if((critical.compareTo(mod.getLastCriticalModification()) < 0) &&
@@ -4665,6 +5736,9 @@ class MasterMgr
 	  }
 	}
       }
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
@@ -4693,11 +5767,24 @@ class MasterMgr
    NodeLinkReq req 
   ) 
   {
+    LinkMod slink   = req.getSourceLink();
+    String source   = slink.getName();
     NodeID targetID = req.getTargetID();
-    String source   = req.getSourceLink().getName();
     NodeID sourceID = new NodeID(targetID, source);
 
     TaskTimer timer = new TaskTimer("MasterMgr.link(): " + targetID + " to " + sourceID);
+
+    /* pre-op tests */
+    LinkExtFactory factory = 
+      new LinkExtFactory
+        (targetID.getAuthor(), targetID.getView(), targetID.getName(), source, 
+	 slink.getPolicy(), slink.getRelationship(), slink.getFrameOffset());
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -4734,10 +5821,10 @@ class MasterMgr
       if(mod.getSource(source) == null) 
 	checkForCircularity(timer, source, targetID, 
 			    new HashSet<String>(), new Stack<String>()); 
-      mod.setSource(req.getSourceLink());
+      mod.setSource(slink);
       
       /* write the new working version to disk */ 
-      writeWorkingVersion(req.getTargetID(), mod);
+      writeWorkingVersion(targetID, mod);
       
       /* update the bundle */ 
       bundle.setVersion(mod);
@@ -4745,6 +5832,9 @@ class MasterMgr
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
       links.addWorking(sourceID, targetID.getName());
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
@@ -4779,6 +5869,17 @@ class MasterMgr
     NodeID sourceID = new NodeID(targetID, source);
 
     TaskTimer timer = new TaskTimer("MasterMgr.unlink(): " + targetID + " from " + sourceID);
+
+    /* pre-op tests */
+    UnlinkExtFactory factory = 
+      new UnlinkExtFactory
+        (targetID.getAuthor(), targetID.getView(), targetID.getName(), source);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -4824,6 +5925,9 @@ class MasterMgr
       DownstreamLinks links = getDownstreamLinks(source); 
       links.removeWorking(sourceID, targetID.getName());
 
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -4859,6 +5963,15 @@ class MasterMgr
     FileSeq fseq  = req.getFileSequence();
 
     TaskTimer timer = new TaskTimer("MasterMgr.addSecondary(): " + nodeID);
+
+    /* pre-op tests */
+    AddSecondaryExtFactory factory = new AddSecondaryExtFactory(nodeID, fseq);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -4920,6 +6033,9 @@ class MasterMgr
 	/* update the bundle */ 
 	bundle.setVersion(mod);
 	
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
       catch(PipelineException ex) { 
@@ -4960,6 +6076,15 @@ class MasterMgr
     FileSeq fseq  = req.getFileSequence();
 
     TaskTimer timer = new TaskTimer("MasterMgr.removeSecondary(): " + nodeID);
+
+    /* pre-op tests */
+    RemoveSecondaryExtFactory factory = new RemoveSecondaryExtFactory(nodeID, fseq);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -5002,6 +6127,9 @@ class MasterMgr
       /* remove the sequence from the node tree */ 
       removeSecondaryWorkingNodeTreePath(nodeID, fseq);
       
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -5047,6 +6175,15 @@ class MasterMgr
     TreeSet<FileSeq> newSeqs = null;
 
     TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + npat);
+
+    /* pre-op tests */
+    RenameExtFactory factory = new RenameExtFactory(id, npat, req.renameFiles());
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -5439,6 +6576,9 @@ class MasterMgr
 	}
       }
 
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -5480,6 +6620,15 @@ class MasterMgr
     FrameRange range = req.getFrameRange();
 
     TaskTimer timer = new TaskTimer("MasterMgr.renumber(): " + nodeID + " [" + range + "]");
+
+    /* pre-op tests */
+    RenumberExtFactory factory = new RenumberExtFactory(nodeID, range, req.removeFiles());
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -5532,6 +6681,9 @@ class MasterMgr
 	  return new GetUnfinishedJobsForNodeFilesRsp(timer, jobIDs);
       }
       
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -5942,8 +7094,18 @@ class MasterMgr
     /* node identifiers */ 
     String name   = req.getNodeMod().getName();
     NodeID nodeID = req.getNodeID();
+    NodeMod mod   = req.getNodeMod();
 
     TaskTimer timer = new TaskTimer("MasterMgr.register(): " + nodeID);
+
+    /* pre-op tests */
+    RegisterExtFactory factory = new RegisterExtFactory(nodeID, mod);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -5962,12 +7124,12 @@ class MasterMgr
 	synchronized(pNodeTreeRoot) {
 	  timer.resume();
 	  
-	  if(!isNodePrimaryUnused(name, req.getNodeMod().getPrimarySequence())) 
+	  if(!isNodePrimaryUnused(name, mod.getPrimarySequence())) 
 	    return new FailureRsp
 	      (timer, "Cannot register node (" + name + ") because its name conflicts " + 
 	       "with an existing node or one of its associated file sequences!");
 	
-	  addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
+	  addWorkingNodeTreePath(nodeID, mod.getSequences());
 	}
       }
       
@@ -5978,7 +7140,7 @@ class MasterMgr
 	timer.resume();
 	
 	/* write the new working version to disk */
-	writeWorkingVersion(nodeID, req.getNodeMod());	
+	writeWorkingVersion(nodeID, mod);	
 	
 	/* create a working bundle for the new working version */ 
 	synchronized(pWorkingBundles) {
@@ -5987,7 +7149,7 @@ class MasterMgr
 	    table = new HashMap<NodeID,WorkingBundle>();
 	    pWorkingBundles.put(name, table);
 	  }
-	  table.put(nodeID, new WorkingBundle(req.getNodeMod()));
+	  table.put(nodeID, new WorkingBundle(mod));
 	}
 	
 	/* initialize the working downstream links */ 
@@ -6004,6 +7166,9 @@ class MasterMgr
 	  downstreamLock.writeLock().unlock();
 	}      
 	
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
       finally {
@@ -6038,14 +7203,28 @@ class MasterMgr
    NodeReleaseReq req
   ) 
   {
+    String author = req.getAuthor();
+    String view = req.getView();
+    TreeSet<String> nodeNames = req.getNames();
+    boolean removeFiles = req.removeFiles();
+
     TaskTimer timer = new TaskTimer("MasterMgr.release()");
     
+    /* pre-op tests */
+    ReleaseExtFactory factory = new ReleaseExtFactory(author, view, nodeNames, removeFiles);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
     
-      if(!pAdminPrivileges.isNodeManaged(req, req.getAuthor())) 
+      if(!pAdminPrivileges.isNodeManaged(req, author)) 
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may release nodes in working " + 
 	   "areas owned by another user!");
@@ -6053,12 +7232,12 @@ class MasterMgr
       /* determine the link relationships between the nodes being released */ 
       TreeMap<String,NodeLinks> all = new TreeMap<String,NodeLinks>();
       {
-	for(String name : req.getNames()) 
+	for(String name : nodeNames) 
 	  all.put(name, new NodeLinks(name));
 
 	for(String name : all.keySet()) {
 	  NodeLinks links = all.get(name);
-	  NodeID nodeID = new NodeID(req.getAuthor(), req.getView(), name);
+	  NodeID nodeID = new NodeID(author, view, name);
 	  
 	  timer.aquire();
 	  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
@@ -6100,8 +7279,7 @@ class MasterMgr
 	NodeLinks links = all.get(name);
 
 	try {
-	  releaseHelper(new NodeID(req.getAuthor(), req.getView(), name), 
-			req.removeFiles(), true, timer);
+	  releaseHelper(new NodeID(author, view, name), removeFiles, true, timer);
 	}
 	catch(PipelineException ex) {
 	  failures.add(ex.getMessage());
@@ -6124,6 +7302,9 @@ class MasterMgr
 	  buf.append("\n\n" + msg);
 	return new FailureRsp(timer, buf.toString());
       }
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
@@ -6322,8 +7503,19 @@ class MasterMgr
   ) 
   {
     String name = req.getName();
-    
+    boolean removeFiles = req.removeFiles();
+
     TaskTimer timer = new TaskTimer("MasterMgr.delete(): " + name);
+    
+    /* pre-op tests */
+    DeleteExtFactory factory = new DeleteExtFactory(name, removeFiles);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.writeLock().lock();
     try {
@@ -6389,7 +7581,7 @@ class MasterMgr
 	}
 
 	for(NodeID nodeID : dead) {
-	  releaseHelper(nodeID, req.removeFiles(), true, timer);
+	  releaseHelper(nodeID, removeFiles, true, timer);
 	  pWorkingLocks.remove(nodeID);
 	}
 	
@@ -6459,6 +7651,9 @@ class MasterMgr
 
       /* remove the leaf node tree entry */ 
       removeNodeTreePath(name);
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
@@ -6681,9 +7876,15 @@ class MasterMgr
 	  throw new PipelineException(buf.toString());
 	}
 
+	/* are there enabled server extensions? */ 
+	CheckOutExtFactory factory = new CheckOutExtFactory();
+	boolean anyExtTests = hasAnyExtensionTests(timer, factory); 
+	boolean anyExtTasks = hasAnyExtensionTasks(timer, factory); 
+
 	/* check-out the nodes */ 
 	performCheckOut
-	  (true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
+	  (true, nodeID, req.getVersionID(), false, anyExtTests, anyExtTasks, 
+	   req.getMode(), req.getMethod(), 
 	   table, new LinkedList<String>(), new HashSet<String>(), 
 	   new HashSet<String>(), timer);
       }
@@ -6929,6 +8130,12 @@ class MasterMgr
    * @param isLocked
    *   Whether the current node should be checked-out locked.
    * 
+   * @param hasExtTests
+   *   Whether there are enabled server extension tests for this operation.
+   * 
+   * @param hasExtTasks
+   *   Whether there are enabled server extension tasks for this operation.
+   * 
    * @param mode
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
@@ -6963,6 +8170,8 @@ class MasterMgr
    NodeID nodeID, 
    VersionID vid, 
    boolean isLocked, 
+   boolean hasExtTests, 
+   boolean hasExtTasks, 
    CheckOutMode mode,
    CheckOutMethod method, 
    HashMap<String,NodeStatus> stable,
@@ -7068,6 +8277,13 @@ class MasterMgr
 	  throw new IllegalStateException(); 
       }
 
+      /* pre-op test */ 
+      if(hasExtTests) {
+	CheckOutExtFactory factory = 
+	  new CheckOutExtFactory(nodeID, new NodeVersion(vsn), mode, method);
+        performExtensionTests(timer, factory);
+      }
+
       /* mark having seen this node already */ 
       seen.add(name);
  
@@ -7166,6 +8382,7 @@ class MasterMgr
 	for(LinkVersion link : vsn.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 	  performCheckOut(false, lnodeID, link.getVersionID(), link.isLocked(), 
+			  hasExtTests, hasExtTasks, 
 			  mode, checkOutMethod, stable, branch, seen, dirty, timer);
 	  
 	  /* if any of the upstream nodes are dirty, 
@@ -7297,6 +8514,10 @@ class MasterMgr
 	  }     
 	}
       }
+
+      /* post-op tasks */  
+      if(hasExtTasks) 
+	startExtensionTasks(timer, new CheckOutExtFactory(nodeID, new NodeMod(nwork)));
     }
     finally {
       checkedInLock.readLock().unlock();  
@@ -7331,6 +8552,15 @@ class MasterMgr
     VersionID vid = req.getVersionID();
 
     TaskTimer timer = new TaskTimer("MasterMgr.lock(): " + nodeID);
+
+    /* pre-op tests */
+    LockExtFactory factory = new LockExtFactory(nodeID, vid); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -7536,6 +8766,9 @@ class MasterMgr
 	    }
 	  }
 	  
+	  /* post-op tasks */ 
+	  startExtensionTasks(timer, factory);
+
 	  return new SuccessRsp(timer);
 	}
 	catch(PipelineException ex) {
@@ -7582,6 +8815,15 @@ class MasterMgr
     TreeMap<String,VersionID> files = req.getFiles();
 
     TaskTimer timer = new TaskTimer("MasterMgr.revertFiles(): " + nodeID);
+
+    /* pre-op tests */
+    RevertFilesExtFactory factory = new RevertFilesExtFactory(nodeID, files);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -7691,6 +8933,9 @@ class MasterMgr
 	onOffLock.readLock().unlock();
       }
 
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -7727,6 +8972,15 @@ class MasterMgr
 
     TaskTimer timer = 
       new TaskTimer("MasterMgr.cloneFiles(): " + sourceID + " to " + targetID);
+
+    /* pre-op tests */
+    CloneFilesExtFactory factory = new CloneFilesExtFactory(sourceID, targetID);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -7823,6 +9077,9 @@ class MasterMgr
 	}
       }
 	
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -7854,7 +9111,19 @@ class MasterMgr
   ) 
   {
     NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName();
+    VersionID vid = req.getVersionID();
+
     TaskTimer timer = new TaskTimer("MasterMgr.evolve(): " + nodeID);
+
+    /* pre-op tests */
+    EvolveExtFactory factory = new EvolveExtFactory(nodeID, vid); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -7867,8 +9136,6 @@ class MasterMgr
 	   "areas owned by another user!");
 
       /* verify the checked-in revision number */ 
-      String name = nodeID.getName();
-      VersionID vid = req.getVersionID();
       {
 	timer.aquire();
 	ReentrantReadWriteLock lock = getCheckedInLock(name);
@@ -7953,8 +9220,6 @@ class MasterMgr
 	  
 	  /* update the bundle */ 
 	  bundle.setVersion(mod);
-
-	  return new SuccessRsp(timer);
 	}
 	finally {
 	  lock.writeLock().unlock();
@@ -7962,7 +9227,12 @@ class MasterMgr
       }
       finally {
 	onOffLock.readLock().unlock();
-      }      
+      }  
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+      
+      return new SuccessRsp(timer);    
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -8227,8 +9497,7 @@ class MasterMgr
       writeNextIDs();
       
       /* submit the jobs and job group */ 
-      pQueueMgrClient.groupJobs(group);
-      pQueueMgrClient.submitJobs(jobs.values());
+      pQueueMgrClient.submitJobs(group, jobs.values());
       
       return new NodeSubmitJobsRsp(timer, group);
     }
@@ -8976,7 +10245,18 @@ class MasterMgr
   ) 
   {
     NodeID nodeID = req.getNodeID();
+    TreeSet<Integer> indices = req.getIndices();
+
     TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
+
+    /* pre-op tests */
+    RemoveFilesExtFactory factory = new RemoveFilesExtFactory(nodeID, indices);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -9008,7 +10288,6 @@ class MasterMgr
 	pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
 				     jobIDs, jobStates);
 	
-	TreeSet<Integer> indices = req.getIndices();
 	if(indices == null) {
 	  int wk = 0;
 	  for(JobState state : jobStates) {
@@ -9068,6 +10347,9 @@ class MasterMgr
 	}
       }
       
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer); 
     }
     catch(PipelineException ex) {
@@ -9117,7 +10399,18 @@ class MasterMgr
    MiscBackupDatabaseReq req
   )
   {
-    TaskTimer timer = new TaskTimer("MasterMgr.backupDatabase: " + req.getBackupFile());
+    File backupFile = req.getBackupFile();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.backupDatabase: " + backupFile);
+
+    /* pre-op tests */
+    BackupDatabaseExtFactory factory = new BackupDatabaseExtFactory(backupFile);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.writeLock().lock();
@@ -9135,7 +10428,7 @@ class MasterMgr
       {
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("-zcvf");
-	args.add(req.getBackupFile().toString());
+	args.add(backupFile.toString());
 	args.add("downstream"); 
 	args.add("etc"); 
 	args.add("repository"); 
@@ -9160,6 +10453,8 @@ class MasterMgr
 	}
       }
 
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
@@ -9551,7 +10846,6 @@ class MasterMgr
 	TreeMap<String,String> env = 
 	  getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
 	
-	
 	/* the archive name and time stamp */ 
 	Date stamp = new Date();
 	String archiveName = (req.getPrefix() + "-" + stamp.getTime());
@@ -9561,6 +10855,16 @@ class MasterMgr
 	      ("Somehow an archive named (" + archiveName + ") already exists!");
 	}
 	
+	/* pre-op tests */
+	ArchiveExtFactory factory = 
+	  new ArchiveExtFactory(archiveName, versions, archiver, tname);
+	try {
+	  performExtensionTests(timer, factory);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
 	/* create the archive volume by runing the archiver plugin and save any 
 	   STDOUT output */
 	{
@@ -9625,6 +10929,9 @@ class MasterMgr
 	  }
 	}
 	
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new MiscArchiveRsp(timer, archiveName);
       }
       finally {
@@ -10088,7 +11395,18 @@ class MasterMgr
    MiscOfflineReq req
   ) 
   {
+    TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+      
     TaskTimer timer = new TaskTimer("MasterMgr.offline()");
+    
+    /* pre-op tests */
+    OfflineExtFactory factory = new OfflineExtFactory(versions);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -10100,8 +11418,6 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may offline checked-in versions!"); 
   
-      TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
-
       /* write lock online/offline status */ 
       timer.aquire();
       List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
@@ -10289,6 +11605,10 @@ class MasterMgr
 	}
 
 	cacheModified = true;
+
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
       finally {
@@ -10436,7 +11756,18 @@ class MasterMgr
    MiscRequestRestoreReq req
   ) 
   {
+    TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+
     TaskTimer timer = new TaskTimer("MasterMgr.requestRestore()");
+
+    /* pre-op tests */
+    RequestRestoreExtFactory factory = new RequestRestoreExtFactory(versions);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -10446,7 +11777,6 @@ class MasterMgr
       /* filter any versions which are not offline */ 
       TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
       {
-	TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
 
 	timer.aquire();
 	List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
@@ -10494,6 +11824,9 @@ class MasterMgr
 	  }
 	}
 	
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
     }
@@ -10528,7 +11861,18 @@ class MasterMgr
    MiscDenyRestoreReq req
   ) 
   {
+    TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+	
     TaskTimer timer = new TaskTimer("MasterMgr.denyRestore()");
+
+    /* pre-op tests */
+    DenyRestoreExtFactory factory = new DenyRestoreExtFactory(versions);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
 
     if(!pAdminPrivileges.isMasterAdmin(req))
       return new FailureRsp
@@ -10540,7 +11884,6 @@ class MasterMgr
       synchronized(pRestoreReqs) {
 	timer.resume();
 
-	TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
 	for(String name : versions.keySet()) {
 	  TreeMap<VersionID,RestoreRequest> reqs = pRestoreReqs.get(name);
 	  if(reqs != null) {
@@ -10556,6 +11899,9 @@ class MasterMgr
 	  }	
 	}
 	
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
     }
@@ -10869,7 +12215,6 @@ class MasterMgr
 	  }
 	}
 
-
 	/* get the toolset environment */ 
 	String tname = req.getToolset();
 	if(tname == null) 
@@ -10878,6 +12223,16 @@ class MasterMgr
 	TreeMap<String,String> env = 
 	  getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
 	
+	/* pre-op tests */
+	RestoreExtFactory factory = 
+	  new RestoreExtFactory(archiveName, versions, archiver, tname);
+	try {
+	  performExtensionTests(timer, factory);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+
 	/* extract the versions from the archive volume by running the archiver plugin and 
 	   save any STDOUT output */
 	{
@@ -11035,6 +12390,10 @@ class MasterMgr
 	}
 
 	cacheModified = true;
+
+	/* post-op tasks */ 
+	startExtensionTasks(timer, factory);
+
 	return new SuccessRsp(timer);
       }
       finally {
@@ -12221,8 +13580,9 @@ class MasterMgr
 	}
       }
 
-      /* compute link state, whether the source node can be ignored when propogating staleness 
-	 and whether the locked state of any of the common source nodes have changed */ 
+      /* compute link state, 
+	 whether the source node can be ignored when propogating staleness and 
+	 whether the locked state of any of the common source nodes have changed */ 
       LinkState linkState = null;
       TreeSet<String> nonIgnoredSources = new TreeSet<String>();
       boolean modifiedLocks = false;
@@ -13769,10 +15129,13 @@ class MasterMgr
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finer,
-	 "MasterMgr.nodeGC(): " + cached + "/" + freed + "/" + pNodeCacheLimit + 
-	 " (cached/freed/limit)\n" + timer); 
+	 "MasterMgr.nodeGC(): " + (cached-freed) + "/" + freed + " (cached/freed)\n" + 
+	 timer); 
       LogMgr.getInstance().flush();
     }
+
+    /* post-op tasks */ 
+    startExtensionTasks(timer, new NodeGarbageCollectExtFactory(cached-freed, freed));
 
     /* if we're ahead of schedule, take a nap */ 
     {
@@ -15054,6 +16417,110 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the master extension configurations to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the extensions file.
+   */ 
+  private void 
+  writeMasterExtensions() 
+    throws PipelineException
+  {
+    synchronized(pMasterExtensions) {
+      File file = new File(pNodeDir, "etc/master-extensions"); 
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old master extensions file (" + file + ")!");
+      }
+
+      if(!pMasterExtensions.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Master Extensions.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("MasterExtensions", pMasterExtensions);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the master extensions!");
+	    LogMgr.getInstance().flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the master extensions file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the master extension configurations from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the extensions file.
+   */ 
+  private void 
+  readMasterExtensions()
+    throws PipelineException
+  {
+    synchronized(pMasterExtensions) {
+      pMasterExtensions.clear();
+
+      File file = new File(pNodeDir, "etc/master-extensions"); 
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Master Extensions.");
+
+	TreeMap<String,MasterExtensionConfig> exts = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  exts = (TreeMap<String,MasterExtensionConfig>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The default toolset file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+	  LogMgr.getInstance().flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the master extensions file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+
+	if(exts != null)
+	  pMasterExtensions.putAll(exts);
+      }
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -15084,12 +16551,8 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    String uptype = null;
-    {
-      char[] cs = ptype.toCharArray();
-      cs[0] = Character.toUpperCase(cs[0]);
-      uptype = new String(cs);
-    }
+    String uptype = pluginTypeUpcaseHelper(ptype); 
+    String fptype = pluginTypeFilenameHelper(ptype); 
 
     synchronized(table) {
       File dir = null;
@@ -15105,7 +16568,7 @@ class MasterMgr
 	      ("Unable to create toolset plugin menu directory (" + dir + ")!");
       }
 
-      File file = new File(dir, ptype);
+      File file = new File(dir, fptype);
 
       PluginMenuLayout layout = null;
       if(name != null) 
@@ -15189,20 +16652,16 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    String uptype = null;
-    {
-      char[] cs = ptype.toCharArray();
-      cs[0] = Character.toUpperCase(cs[0]);
-      uptype = new String(cs);
-    }
+    String uptype = pluginTypeUpcaseHelper(ptype); 
+    String fptype = pluginTypeFilenameHelper(ptype); 
 
     synchronized(table) {
       File file = null;
       if(name != null) 
 	file = new File(pNodeDir, 
-			"toolsets/plugins/toolsets/" + name + "/Unix/" + ptype);  
+			"toolsets/plugins/toolsets/" + name + "/Unix/" + fptype);  
       else 
-	file = new File(pNodeDir, "etc/default-layouts/Unix/" + ptype);
+	file = new File(pNodeDir, "etc/default-layouts/Unix/" + fptype);
 
       if(!file.isFile())
 	return null;
@@ -15257,7 +16716,8 @@ class MasterMgr
    *   The package revision number
    * 
    * @param ptype
-   *   The type of plugins: editors, comparators, actions or tools
+   *   The type of plugins: editor, comparator, action, tool, master extension or 
+   *   queue extension.
    * 
    * @param table
    *   The plugins table.
@@ -15275,12 +16735,8 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    String uptype = null;
-    {
-      char[] cs = ptype.toCharArray();
-      cs[0] = Character.toUpperCase(cs[0]);
-      uptype = new String(cs);
-    }
+    String uptype = pluginTypeUpcaseHelper(ptype); 
+    String fptype = pluginTypeFilenameHelper(ptype); 
 
     synchronized(table) {
       File dir = new File(pNodeDir, 
@@ -15292,7 +16748,7 @@ class MasterMgr
 	      ("Unable to create toolset plugins directory (" + dir + ")!");
       }
 
-      File file = new File(dir, ptype);
+      File file = new File(dir, fptype);
 
       DoubleMap<String,String,TreeSet<VersionID>> plugins = table.get(name, vid);
       if((plugins == null) || plugins.isEmpty()) {
@@ -15305,7 +16761,7 @@ class MasterMgr
 	
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Toolset Package Plugins: " + name + " v" + vid + " " + ptype);
+	 "Writing Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
 
       try {
 	String glue = null;
@@ -15368,17 +16824,13 @@ class MasterMgr
   )
     throws PipelineException
   {
-    String uptype = null;
-    {
-      char[] cs = ptype.toCharArray();
-      cs[0] = Character.toUpperCase(cs[0]);
-      uptype = new String(cs);
-    }
+    String uptype = pluginTypeUpcaseHelper(ptype); 
+    String fptype = pluginTypeFilenameHelper(ptype); 
 
     synchronized(table) {
       File file = 
 	new File(pNodeDir, 
-		 "toolsets/plugins/packages/" + name + "/Unix/" + vid + "/" + ptype);
+		 "toolsets/plugins/packages/" + name + "/Unix/" + vid + "/" + fptype);
       if(!file.isFile())
 	return;
 
@@ -15410,6 +16862,39 @@ class MasterMgr
 	throw new IllegalStateException(); 
       table.put(name, vid, plugins);
     }
+  }
+
+  private String 
+  pluginTypeUpcaseHelper
+  (
+   String ptype
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+
+    char[] cs = ptype.toCharArray();
+    int wk;
+    boolean upcase = true;
+    for(wk=0; wk<cs.length; wk++) {
+      if(Character.isWhitespace(cs[wk])) {
+	upcase = true;
+      }
+      else {
+	buf.append(upcase ? Character.toUpperCase(cs[wk]) : cs[wk]);
+	upcase = false;
+      }
+    }
+    
+    return buf.toString();
+  }
+
+  private String 
+  pluginTypeFilenameHelper
+  (
+   String ptype
+  ) 
+  {
+    return (ptype.replaceAll("\\p{Blank}", "-") + "s");
   }
 
 
@@ -16386,8 +17871,12 @@ class MasterMgr
       
       pRequest       = req;
       pRootVersionID = rootVersionID; 
-    }
 
+      TaskTimer timer = new TaskTimer();
+      CheckInExtFactory factory = new CheckInExtFactory();
+      pHasExtTests = hasAnyExtensionTests(timer, factory);
+      pHasExtTasks = hasAnyExtensionTasks(timer, factory);
+    }
 
     /**
      * Perform the check-in operation on the given node.
@@ -16497,6 +17986,14 @@ class MasterMgr
 		 "(" + action.getName() + " v" + action.getVersionID() + ") is currently " +
 		 "under development!");
 	    }
+	  }
+
+	  /* pre-op tests */
+	  if(pHasExtTests) {
+	    CheckInExtFactory factory = 
+	      new CheckInExtFactory(nodeID, new NodeMod(work), 
+				    pRequest.getLevel(), pRequest.getMessage());
+	    performExtensionTests(timer, factory);
 	  }
 
 	  /* determine the checked-in revision numbers and locked status of 
@@ -16659,6 +18156,10 @@ class MasterMgr
 	      downstreamLock.writeLock().unlock();
 	    }     
 	  }
+
+	  /* post-op tasks */  
+	  if(pHasExtTasks) 
+	    startExtensionTasks(timer, new CheckInExtFactory(new NodeVersion(vsn)));
 	}
       }
     }
@@ -16682,6 +18183,12 @@ class MasterMgr
      * operation.
      */ 
     private VersionID  pRootVersionID; 
+
+    /**
+     * Are there any server extensions enabled for this operation.
+     */ 
+    private boolean  pHasExtTests;
+    private boolean  pHasExtTasks;
   }
   
 
@@ -17068,6 +18575,12 @@ class MasterMgr
   private TreeMap<String,PluginMenuLayout>  pArchiverMenuLayouts;
   private PluginMenuLayout                  pDefaultArchiverMenuLayout;
 
+  private TreeMap<String,PluginMenuLayout>  pMasterExtMenuLayouts;
+  private PluginMenuLayout                  pDefaultMasterExtMenuLayout;
+
+  private TreeMap<String,PluginMenuLayout>  pQueueExtMenuLayouts;
+  private PluginMenuLayout                  pDefaultQueueExtMenuLayout;
+
   /**
    * The cached tables of the vendors, names and versions of all plugins associated with a 
    * package indexed by package name and package revision number. <P> 
@@ -17084,13 +18597,27 @@ class MasterMgr
 		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageToolPlugins; 
   private DoubleMap<String,VersionID,
 		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageArchiverPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageMasterExtPlugins; 
+  private DoubleMap<String,VersionID,
+		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageQueueExtPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The cached table of filename suffix to editor mappings indexed by author user name
-   * and file suffix. <P> 
+   * The table of the master extensions configurations.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,MasterExtensionConfig>  pMasterExtensions; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The cacned table of filename suffix to editor mappings 
+   * indexed by author user nameand file suffix. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 

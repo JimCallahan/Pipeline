@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.6 2006/07/09 16:48:36 jim Exp $
+// $Id: LogMgr.java,v 1.7 2006/10/11 22:45:40 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -632,7 +632,12 @@ class LogMgr
     /**
      * Activity of the Queue Manager scheduler thread.
      */ 
-    Sch;
+    Sch,
+    
+    /**
+     * Activity of server extension threads.
+     */ 
+    Ext;
   }
 
 
@@ -677,7 +682,8 @@ class LogMgr
     "TEX", 
     "DSP", 
     "COL",
-    "SCH"
+    "SCH", 
+    "EXT"
   };
 
 

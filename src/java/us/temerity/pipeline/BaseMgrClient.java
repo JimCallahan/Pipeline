@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.20 2006/10/11 22:36:52 jim Exp $
+// $Id: BaseMgrClient.java,v 1.21 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -78,6 +78,30 @@ class BaseMgrClient
   verifyConnection() 
     throws PipelineException 
   {
+    /* police access to client methods from server extensions */ 
+    {
+      boolean illegal = false;
+      Thread current = Thread.currentThread();
+      if(current instanceof BaseExtThread) 
+	illegal = true;
+      else {
+	StackTraceElement[] elem = current.getStackTrace();
+	int wk; 
+	for(wk=0; wk<elem.length; wk++) {
+	  if(elem[wk].getMethodName().equals("performExtensionTests")) {
+	    illegal = true;
+	    break;
+	  }
+	}
+      }
+
+      if(illegal) 
+	throw new PipelineException
+	  ("Access to Pipeline server client methods is not allowed inside server " + 
+	   "extension pre-operation tests or post-operation tasks!");
+    }
+
+    /* (re)estblish the connection */ 
     if((pSocket != null) && pSocket.isConnected())
       return;
 

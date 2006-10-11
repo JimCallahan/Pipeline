@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.16 2006/08/29 06:01:31 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.17 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -237,6 +237,9 @@ class QueueMgrControlClient
   /**
    * Submit a set of jobs to be executed by the queue. <P> 
    * 
+   * @param group
+   *   The queue job group.
+   * 
    * @param jobs
    *   The queue jobs.
    * 
@@ -246,40 +249,15 @@ class QueueMgrControlClient
   public synchronized void 
   submitJobs
   (
+   QueueJobGroup group,
    Collection<QueueJob> jobs
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueSubmitJobsReq req = new QueueSubmitJobsReq(new ArrayList<QueueJob>(jobs));
+    QueueSubmitJobsReq req = new QueueSubmitJobsReq(group, new ArrayList<QueueJob>(jobs));
     Object obj = performTransaction(QueueRequest.SubmitJobs, req); 
-    handleSimpleResponse(obj);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Notify the queue that a set of previously submitted jobs make up a job group.
-   * 
-   * @param group
-   *   The queue job group.
-   * 
-   * @throws PipelineException
-   *   If unable to group the jobs.
-   */ 
-  public synchronized void 
-  groupJobs
-  (
-   QueueJobGroup group
-  ) 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    QueueGroupJobsReq req = new QueueGroupJobsReq(group);
-    Object obj = performTransaction(QueueRequest.GroupJobs, req); 
     handleSimpleResponse(obj);
   }
 

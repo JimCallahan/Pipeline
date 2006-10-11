@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.30 2006/09/25 12:11:44 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.31 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2938,7 +2938,7 @@ class JNodeDetailsPanel
 	
 	if(cjreq != null)
 	  pCheckedInMinMemoryField.setText
-	    (JByteSizeField.longToString(cjreq.getMinMemory()));
+	    (ByteSize.longToString(cjreq.getMinMemory()));
 	else 
 	  pCheckedInMinMemoryField.setText("-");
 
@@ -2965,7 +2965,7 @@ class JNodeDetailsPanel
 	
 	if(cjreq != null)
 	  pCheckedInMinDiskField.setText
-	    (JByteSizeField.longToString(cjreq.getMinDisk()));
+	    (ByteSize.longToString(cjreq.getMinDisk()));
 	else 
 	  pCheckedInMinDiskField.setText("-");
 

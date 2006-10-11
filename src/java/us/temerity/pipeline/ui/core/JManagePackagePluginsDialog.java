@@ -1,4 +1,4 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.6 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -53,6 +53,8 @@ class JManagePackagePluginsDialog
       pPluginPanels.add(new JPackageActionPluginsPanel(parent));
       pPluginPanels.add(new JPackageToolPluginsPanel(parent));
       pPluginPanels.add(new JPackageArchiverPluginsPanel(parent));
+      pPluginPanels.add(new JPackageMasterExtPluginsPanel(parent));
+      pPluginPanels.add(new JPackageQueueExtPluginsPanel(parent));
       
       JTabbedPanel tab = new JTabbedPanel();
       for(JBasePackagePluginsPanel panel : pPluginPanels) 

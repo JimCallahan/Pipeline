@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.16 2006/09/25 12:11:44 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.17 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -51,12 +51,16 @@ class JManageToolsetsDialog
       pFrozenToolsetActions     = new ToolsetLayouts();
       pFrozenToolsetTools       = new ToolsetLayouts();
       pFrozenToolsetArchivers   = new ToolsetLayouts();
+      pFrozenToolsetMasterExts  = new ToolsetLayouts();
+      pFrozenToolsetQueueExts   = new ToolsetLayouts();
 
       pToolsetEditors     = new ToolsetLayouts();
       pToolsetComparators = new ToolsetLayouts();
       pToolsetActions     = new ToolsetLayouts();
       pToolsetTools       = new ToolsetLayouts();
       pToolsetArchivers   = new ToolsetLayouts();
+      pToolsetMasterExts  = new ToolsetLayouts();
+      pToolsetQueueExts   = new ToolsetLayouts();
 
       pPackageVersions = new TripleMap<String,OsType,VersionID,PackageVersion>();
       pPackageMods     = new DoubleMap<String,OsType,PackageMod>();
@@ -66,12 +70,16 @@ class JManageToolsetsDialog
       pFrozenPackageActions     = new FrozenPackagePlugins();
       pFrozenPackageTools       = new FrozenPackagePlugins();
       pFrozenPackageArchivers   = new FrozenPackagePlugins();
+      pFrozenPackageMasterExts  = new FrozenPackagePlugins();
+      pFrozenPackageQueueExts   = new FrozenPackagePlugins();
 
       pPackageEditors     = new PackagePlugins();
       pPackageComparators = new PackagePlugins();
       pPackageActions     = new PackagePlugins();
       pPackageTools       = new PackagePlugins();
       pPackageArchivers   = new PackagePlugins();
+      pPackageMasterExts  = new PackagePlugins();
+      pPackageQueueExts   = new PackagePlugins();
     }
 
     /* toolsets popup menu */ 
@@ -981,6 +989,144 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the master extension plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   */ 
+  public PluginMenuLayout
+  getToolsetMasterExts
+  (
+   String tname
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetMasterExts.get(tname);
+    }
+    else {
+      if(!pFrozenToolsetMasterExts.isCached(tname)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetMasterExts.put(tname, client.getMasterExtMenuLayout(tname));
+      }
+      
+      return pFrozenToolsetMasterExts.get(tname);
+    }
+  }
+
+  /**
+   * Set the master extension plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetMasterExts
+  ( 
+   String tname, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetMasterExts.put(tname, layout);
+    }
+    else {
+      pFrozenToolsetMasterExts.put(tname, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setMasterExtMenuLayout(tname, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the queue extension plugin menu associated with the given tookset.
+   * 
+   * @param tname
+   *   The toolset name.
+   */ 
+  public PluginMenuLayout
+  getToolsetQueueExts
+  (
+   String tname
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+       
+    if(!toolset.isFrozen()) {
+      return pToolsetQueueExts.get(tname);
+    }
+    else {
+      if(!pFrozenToolsetQueueExts.isCached(tname)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenToolsetQueueExts.put(tname, client.getQueueExtMenuLayout(tname));
+      }
+      
+      return pFrozenToolsetQueueExts.get(tname);
+    }
+  }
+
+  /**
+   * Set the queue extension plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetQueueExts
+  ( 
+   String tname, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+
+    if(!toolset.isFrozen()) {
+      pToolsetQueueExts.put(tname, layout);
+    }
+    else {
+      pFrozenToolsetQueueExts.put(tname, layout);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setQueueExtMenuLayout(tname, layout);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Cache all of the checked-in packages associated with a toolset.
    */ 
   private void 
@@ -1430,6 +1576,142 @@ class JManageToolsetsDialog
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setPackageArchiverPlugins(pname, vid, plugins);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the master extension plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public DoubleMap<String,String,TreeSet<VersionID>>
+  getPackageMasterExts
+  (
+   String pname, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageMasterExts.get(pname);
+    }
+    else {
+      if(!pFrozenPackageMasterExts.isCached(pname, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageMasterExts.put(pname, vid, 
+				  client.getPackageMasterExtPlugins(pname, vid));
+      }
+
+      return pFrozenPackageMasterExts.get(pname, vid);
+    }
+  }
+
+  /**
+   * Set the master extension plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageMasterExts
+  ( 
+   String pname,
+   VersionID vid,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageMasterExts.put(pname, plugins);
+    }
+    else {
+      pFrozenPackageMasterExts.put(pname, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageMasterExtPlugins(pname, vid, plugins);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the queue extension plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public DoubleMap<String,String,TreeSet<VersionID>>
+  getPackageQueueExts
+  (
+   String pname, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      return pPackageQueueExts.get(pname);
+    }
+    else {
+      if(!pFrozenPackageQueueExts.isCached(pname, vid)) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pFrozenPackageQueueExts.put(pname, vid, 
+				  client.getPackageQueueExtPlugins(pname, vid));
+      }
+
+      return pFrozenPackageQueueExts.get(pname, vid);
+    }
+  }
+
+  /**
+   * Set the queue extension plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageQueueExts
+  ( 
+   String pname,
+   VersionID vid,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackageQueueExts.put(pname, plugins);
+    }
+    else {
+      pFrozenPackageQueueExts.put(pname, vid, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageQueueExtPlugins(pname, vid, plugins);
     }    
   }
 
@@ -2476,24 +2758,32 @@ class JManageToolsetsDialog
       pFrozenToolsetActions.clear();
       pFrozenToolsetTools.clear();
       pFrozenToolsetArchivers.clear();
+      pFrozenToolsetMasterExts.clear();
+      pFrozenToolsetQueueExts.clear();
       
       pToolsetEditors.clear();
       pToolsetComparators.clear();
       pToolsetActions.clear();
       pToolsetTools.clear();
       pToolsetArchivers.clear();
+      pToolsetMasterExts.clear();
+      pToolsetQueueExts.clear();
 
       pFrozenPackageEditors.clear();
       pFrozenPackageComparators.clear();
       pFrozenPackageActions.clear();
       pFrozenPackageTools.clear();
       pFrozenPackageArchivers.clear();
+      pFrozenPackageMasterExts.clear();
+      pFrozenPackageQueueExts.clear();
 
       pPackageEditors.clear();
       pPackageComparators.clear();
       pPackageActions.clear();
       pPackageTools.clear();
       pPackageArchivers.clear();
+      pPackageMasterExts.clear();
+      pPackageQueueExts.clear();
 
       
       /* hide child dialogs */ 
@@ -4236,6 +4526,8 @@ class JManageToolsetsDialog
   private ToolsetLayouts pFrozenToolsetActions;
   private ToolsetLayouts pFrozenToolsetTools;
   private ToolsetLayouts pFrozenToolsetArchivers;
+  private ToolsetLayouts pFrozenToolsetMasterExts;
+  private ToolsetLayouts pFrozenToolsetQueueExts;
 
   /**
    * A cache of working (unfrozen) toolset plugins menu layouts.
@@ -4245,6 +4537,8 @@ class JManageToolsetsDialog
   private ToolsetLayouts pToolsetActions;
   private ToolsetLayouts pToolsetTools;
   private ToolsetLayouts pToolsetArchivers;
+  private ToolsetLayouts pToolsetMasterExts;
+  private ToolsetLayouts pToolsetQueueExts;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4272,6 +4566,8 @@ class JManageToolsetsDialog
   private FrozenPackagePlugins pFrozenPackageActions;
   private FrozenPackagePlugins pFrozenPackageTools;
   private FrozenPackagePlugins pFrozenPackageArchivers;
+  private FrozenPackagePlugins pFrozenPackageMasterExts;
+  private FrozenPackagePlugins pFrozenPackageQueueExts;
 
   /**
    * A cache of plugins associated with working (unfrozen) packages.
@@ -4281,6 +4577,8 @@ class JManageToolsetsDialog
   private PackagePlugins pPackageActions;
   private PackagePlugins pPackageTools;
   private PackagePlugins pPackageArchivers;
+  private PackagePlugins pPackageMasterExts;
+  private PackagePlugins pPackageQueueExts;
 
 
   /*----------------------------------------------------------------------------------------*/

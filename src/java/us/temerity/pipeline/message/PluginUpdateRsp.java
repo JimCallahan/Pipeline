@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.5 2006/05/07 21:30:13 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.6 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,6 +51,14 @@ class PluginUpdateRsp
    * @param archivers
    *   The new or updated Archiver plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
+   * 
+   * @param masterExt
+   *   The new or updated Master Extension plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
+   * 
+   * @param queueExt
+   *   The new or updated Queue Extension plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
    */
   public
   PluginUpdateRsp
@@ -61,7 +69,9 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> actions,
    TripleMap<String,String,VersionID,Object[]> comparators,
    TripleMap<String,String,VersionID,Object[]> tools,
-   TripleMap<String,String,VersionID,Object[]> archivers
+   TripleMap<String,String,VersionID,Object[]> archivers,
+   TripleMap<String,String,VersionID,Object[]> masterExts, 
+   TripleMap<String,String,VersionID,Object[]> queueExts
   )
   { 
     super(timer);
@@ -89,6 +99,14 @@ class PluginUpdateRsp
     if(archivers == null) 
       throw new IllegalArgumentException("The Archiver plugins cannot be (null)!");
     pArchivers = archivers;
+
+    if(masterExts == null) 
+      throw new IllegalArgumentException("The Master Extension plugins cannot be (null)!");
+    pMasterExts = masterExts;
+
+    if(queueExts == null) 
+      throw new IllegalArgumentException("The Queue Extension plugins cannot be (null)!");
+    pQueueExts = queueExts;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
@@ -166,6 +184,27 @@ class PluginUpdateRsp
     return pArchivers; 
   }
 
+  /**
+   * Gets the new or updated Master Extension plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */
+  public TripleMap<String,String,VersionID,Object[]>
+  getMasterExts() 
+  {
+    return pMasterExts; 
+  }
+
+  /**
+   * Gets the new or updated Queue Extension plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */
+  public TripleMap<String,String,VersionID,Object[]>
+  getQueueExts() 
+  {
+    return pQueueExts; 
+  }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -217,6 +256,18 @@ class PluginUpdateRsp
    * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pArchivers; 
+
+  /**
+   * The new or updated Master Extension plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,Object[]>  pMasterExts; 
+
+  /**
+   * The new or updated Queue Extension plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,Object[]>  pQueueExts; 
 
 }
   

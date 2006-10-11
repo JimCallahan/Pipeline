@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.27 2006/09/25 12:11:44 jim Exp $
+// $Id: JManagerPanel.java,v 1.28 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -356,6 +356,12 @@ class JManagerPanel
 	sub.add(item);  
 
 	sub.addSeparator();
+
+	item = new JMenuItem("Server Extensions...");
+	pServerExtensionsItem = item;
+	item.setActionCommand("server-extensions");
+	item.addActionListener(this);
+	sub.add(item);  
 
 	item = new JMenuItem("Backup Database...");
 	pBackupDatabaseItem = item;
@@ -1052,10 +1058,14 @@ class JManagerPanel
     updateMenuToolTip
       (pSelectionKeysItem, prefs.getShowManageSelectionKeys(), 
        "Manage the selection keys, groups and schedules.");
-
+    
+    updateMenuToolTip
+      (pServerExtensionsItem, prefs.getShowManageServerExtensions(), 
+       "Manage the Master Server Extensions.");
     updateMenuToolTip
       (pBackupDatabaseItem, null, 
        "Backup the node database.");
+
     updateMenuToolTip
       (pArchiveItem, null, 
        "Create new node archive volumes.");
@@ -1733,6 +1743,12 @@ class JManagerPanel
       return true;
     }
 
+    else if((prefs.getShowManageServerExtensions() != null) &&
+	    prefs.getShowManageServerExtensions().wasPressed(e)) {
+      UIMaster.getInstance().showManageServerExtensionsDialog();
+      return true;
+    }
+
     else if((prefs.getQuit() != null) &&
 	    prefs.getQuit().wasPressed(e)) {
       UIMaster.getInstance().doQuit();    
@@ -1916,8 +1932,12 @@ class JManagerPanel
       UIMaster.getInstance().showManageLicenseKeysDialog();
     else if(cmd.equals("manage-selection-keys"))
       UIMaster.getInstance().showManageSelectionKeysDialog();
+
+    else if(cmd.equals("server-extensions"))
+      UIMaster.getInstance().showManageServerExtensionsDialog(); 
     else if(cmd.equals("backup-database"))
       UIMaster.getInstance().showBackupDialog();
+
     else if(cmd.equals("archive"))
       UIMaster.getInstance().showArchiveDialog();
     else if(cmd.equals("offline"))
@@ -3348,7 +3368,9 @@ class JManagerPanel
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;
 
+  private JMenuItem  pServerExtensionsItem;
   private JMenuItem  pBackupDatabaseItem;
+
   private JMenuItem  pArchiveItem;
   private JMenuItem  pOfflineItem;
   private JMenuItem  pRestoreItem;

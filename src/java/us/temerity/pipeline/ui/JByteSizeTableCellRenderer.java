@@ -1,4 +1,4 @@
-// $Id: JByteSizeTableCellRenderer.java,v 1.1 2006/07/22 05:03:47 jim Exp $
+// $Id: JByteSizeTableCellRenderer.java,v 1.2 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,7 +67,7 @@ class JByteSizeTableCellRenderer
   {
     Long size = (Long) value; 
     if(size != null) 
-      setText(JByteSizeField.longToString(size));
+      setText(ByteSize.longToString(size));
     else 
       setText("-");
 

@@ -1,11 +1,12 @@
-// $Id: QueueMgr.java,v 1.66 2006/09/29 03:03:21 jim Exp $
+// $Id: QueueMgr.java,v 1.67 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.exts.*;
 
 import java.io.*;
 import java.net.*;
@@ -84,9 +85,12 @@ class QueueMgr
       pSelectionGroupChanges    = new TreeMap<String,String>();
       pSelectionScheduleChanges = new TreeMap<String,String>();
 
+      pQueueExtensions = new TreeMap<String,QueueExtensionConfig>();
+
       pHungChanges = new TreeSet<String>();
-      
-      pSampleChanges = new TreeMap<String,LinkedList<ResourceSample>>();
+
+      pLastSampleWritten = new AtomicLong(0L);
+      pSampleChanges    = new TreeMap<String,LinkedList<ResourceSample>>();
 
       pOsTypeChanges      = new TreeMap<String,OsType>();
       pNumProcChanges     = new TreeMap<String,Integer>();
@@ -94,7 +98,6 @@ class QueueMgr
       pTotalDiskChanges   = new TreeMap<String,Long>();
 
       pHosts           = new TreeMap<String,QueueHost>(); 
-      pLastSampleWrite = new Date();
       pSampleFileLock  = new Object();
 
       pHostsInfo = new TreeMap<String,QueueHostInfo>();
@@ -139,7 +142,10 @@ class QueueMgr
 	    ("Unable to create lock file (" + file + ")!");
 	}
       }
-      
+
+      /* load and initialize the server extensions */ 
+      initQueueExtensions();
+
       /* load the license keys if any exist */ 
       readLicenseKeys();
 
@@ -189,6 +195,21 @@ class QueueMgr
 	    throw new PipelineException
 	      ("Unable to create the directory (" + dir + ")!");
       }
+    }
+  }
+
+  /**
+   * Initialize the server extensions. 
+   */
+  private void 
+  initQueueExtensions()
+    throws PipelineException
+  {
+    readQueueExtensions();
+   
+    synchronized(pQueueExtensions) {
+      for(QueueExtensionConfig config : pQueueExtensions.values()) 
+	doPostExtensionEnableTask(config);
     }
   }
 
@@ -359,7 +380,7 @@ class QueueMgr
   }
 
   /**
-   * Shutdown the node manager. <P> 
+   * Shutdown the queue manager. <P> 
    * 
    * It is crucial that this method be called when only a single thread is able to access
    * this instance!  In other words, after all request threads have already exited or by a 
@@ -370,6 +391,11 @@ class QueueMgr
   {
     /* shutdown all job servers */ 
     if(pShutdownJobMgrs.get()) { 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Shutting Down Job Servers..."); 
+      LogMgr.getInstance().flush();
+
       for(String hname : pHosts.keySet()) {
 	QueueHost host = pHosts.get(hname);
 	if(host != null) {
@@ -398,7 +424,7 @@ class QueueMgr
 	    {
 	      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
 	      for(ResourceSample s : host.getSamples()) {
-		if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
+		if(s.getTimeStamp().getTime() > pLastSampleWritten.get()) 
 		  rs.add(s);
 	      }
 	      
@@ -429,6 +455,26 @@ class QueueMgr
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     ex.getMessage());
 	}
+      }
+    }
+
+    /* shutdown extensions */ 
+    {
+      /* disable extensions */ 
+      synchronized(pQueueExtensions) {
+	for(QueueExtensionConfig config : pQueueExtensions.values()) 
+	  doPreExtensionDisableTask(config);
+      }
+
+      /* wait for all extension tasks to complete */ 
+      try {
+	BaseExtTask.joinAll();
+      }
+      catch(InterruptedException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   "Interrupted while waiting for all Extension Tasks to complete:\n  " + 
+	   ex.getMessage());
       }
     }
 
@@ -1206,6 +1252,371 @@ class QueueMgr
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R V E R   E X T E N S I O N S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current queue extension configurations. <P> 
+   * 
+   * @return
+   *   <CODE>MiscGetQueueExtensionsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the extensions.
+   */ 
+  public Object
+  getQueueExtensions() 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pQueueExtensions) {
+      timer.resume();
+
+      return new QueueGetQueueExtensionsRsp(timer, pQueueExtensions);
+    }
+  }
+  
+  /**
+   * Remove an existing the queue extension configuration. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the extension.
+   */ 
+  public Object
+  removeQueueExtension
+  (
+   QueueRemoveQueueExtensionReq req
+  ) 
+  {
+    String name = req.getExtensionName();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeQueueExtension(): " + name); 
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove a " + 
+	   "queue extension configuration!");
+
+      synchronized(pQueueExtensions) {
+	timer.resume();
+	
+	doPreExtensionDisableTask(pQueueExtensions.get(name));
+
+	pQueueExtensions.remove(name);
+	writeQueueExtensions();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }  
+  
+  /**
+   * Add or modify an existing the queue extension configuration. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the extension.
+   */ 
+  public Object
+  setQueueExtension
+  (
+   QueueSetQueueExtensionReq req
+  ) 
+  {
+    QueueExtensionConfig config = req.getExtension();
+    String name = config.getName();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.setQueueExtension(): " + name); 
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add or modify " + 
+	   "queue extension configuration!");
+
+      synchronized(pQueueExtensions) {
+	timer.resume();
+
+	doPreExtensionDisableTask(pQueueExtensions.get(name));
+
+	pQueueExtensions.put(name, config); 
+	writeQueueExtensions();
+
+	doPostExtensionEnableTask(config); 
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }  
+
+  /**
+   * Get new instances of all enabled queue extension plugins indexed by 
+   * extension configuration name. <P> 
+   * 
+   * This method also will pre-cook the toolset environments for all plugins which will be
+   * spawning subprocesses.
+   * 
+   * @param timer
+   *   The task timer.
+   */ 
+  private TreeMap<String,BaseQueueExt> 
+  getQueueExts
+  (
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String,BaseQueueExt> table = new TreeMap<String,BaseQueueExt>();
+    TreeMap<String,String> toolsetNames = new TreeMap<String,String>();
+
+    /* instantiate the plugins */ 
+    timer.aquire();
+    synchronized(pQueueExtensions) {
+      timer.resume();
+	
+      for(String cname : pQueueExtensions.keySet()) {
+	QueueExtensionConfig config = pQueueExtensions.get(cname);
+	if(config.isEnabled()) {
+	  table.put(cname, config.getQueueExt());
+	  toolsetNames.put(cname, config.getToolset());
+	}
+      }
+    }
+
+    if(!table.isEmpty()) {
+      /* fetch any toolsets not already cached */ 
+      {
+	TreeSet<String> tnames = new TreeSet<String>();
+	for(String cname : table.keySet()) {
+	  BaseQueueExt ext = table.get(cname);
+	  if(ext.needsEnvironment()) 
+	    tnames.add(toolsetNames.get(cname));
+	}
+      
+	fetchToolsets(tnames, timer);
+      }
+
+      /* cook the toolset environments (if needed by plugins) */ 
+      timer.aquire();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	for(String cname : table.keySet()) {
+	  BaseQueueExt ext = table.get(cname); 
+	  if(ext.needsEnvironment()) {
+	    String tname = toolsetNames.get(cname);
+	    Toolset tset = pToolsets.get(tname).get(OsType.Unix);
+	    ext.setEnvironment(tset.getEnvironment());
+	  }
+	}
+      }
+    }
+
+    return table;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Run the post-enable task (in the current thread) for the given queue extension.
+   */ 
+  private void 
+  doPostExtensionEnableTask
+  ( 
+   QueueExtensionConfig config
+  ) 
+  {
+    if((config != null) && config.isEnabled()) {
+      try {
+	BaseQueueExt ext = config.getQueueExt();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Info,
+	   "Enabling Server Extension: " + config.getName() + "\n" + 
+	   "  Extension Plugin (" + ext.getName() + " v" + ext.getVersionID() + ") " + 
+	   "from Vendor (" + ext.getVendor() + ")");
+
+	if(ext.hasPostEnableTask()) 
+	  ext.postEnableTask(); 
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+      }
+    }
+  }
+
+  /**
+   * Run the pre-disable task (in the current thread) for the given queue extension.
+   */ 
+  private void 
+  doPreExtensionDisableTask
+  ( 
+   QueueExtensionConfig config
+  ) 
+  {
+    if((config != null) && config.isEnabled()) {
+      try {
+	BaseQueueExt ext = config.getQueueExt();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Info,
+	   "Disabling Server Extension: " + config.getName() + "\n" + 
+	   "  Extension Plugin (" + ext.getName() + " v" + ext.getVersionID() + ") " + 
+	   "from Vendor (" + ext.getVendor() + ")");
+
+	if(ext.hasPreDisableTask()) 
+	  ext.preDisableTask(); 
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create and start threads for all enabled extensions which support the given task.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The queue extension test factory.
+   * 
+   * @throws PipelineException 
+   *   If any of the enabled extension tests fail.
+   */
+  public void 
+  performExtensionTests
+  (
+   TaskTimer timer, 
+   QueueTestFactory factory
+  ) 
+    throws PipelineException
+  {
+    timer.aquire(); 
+    synchronized(pQueueExtensions) {
+      timer.resume();
+
+      for(QueueExtensionConfig config : pQueueExtensions.values()) {
+	if(config.isEnabled()) {
+	  BaseQueueExt ext = null;
+	  try {
+	    ext = config.getQueueExt();
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+
+	  if((ext != null) && factory.hasTest(ext)) 
+	    factory.performTest(ext); 
+	}
+      }
+    }
+  }
+
+  /**
+   * Whether there are any enabled extensions which support the given task.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The queue extension task factory.
+   */
+  public boolean
+  hasAnyExtensionTasks
+  (
+   TaskTimer timer, 
+   QueueTaskFactory factory
+  ) 
+  {
+    timer.aquire(); 
+    synchronized(pQueueExtensions) {
+      timer.resume();
+
+      for(QueueExtensionConfig config : pQueueExtensions.values()) {
+	if(config.isEnabled()) {
+	  try {
+	    BaseQueueExt ext = config.getQueueExt();
+	    if(factory.hasTask(ext)) 
+	      return true;
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	}
+      }
+    }
+
+    return false;
+  }
+  
+  /**
+   * Create and start threads for all enabled extensions which support the given task.
+   * 
+   * @param timer
+   *   The parent task timer. 
+   * 
+   * @param factory
+   *   The queue extension task factory.
+   */
+  public void 
+  startExtensionTasks
+  (
+   TaskTimer timer, 
+   QueueTaskFactory factory
+  ) 
+  {
+    timer.aquire(); 
+    synchronized(pQueueExtensions) {
+      timer.resume();
+
+      for(QueueExtensionConfig config : pQueueExtensions.values()) {
+	if(config.isEnabled()) {
+	  try {
+	    BaseQueueExt ext = config.getQueueExt();
+	    if(factory.hasTask(ext)) 
+	      factory.startTask(config, ext); 
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ext, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	  }
+	}
+      }
+    }
+  }
+  
+
+
      
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   M A N A G E R   H O S T S                                                    */
@@ -1251,38 +1662,48 @@ class QueueMgr
   {
     String hname = req.getHostname();
     TaskTimer timer = new TaskTimer("QueueMgr.addHost(): " + hname);
+
+    AddHostExtFactory factory = new AddHostExtFactory(hname); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     try {
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may add hosts!"); 
 
-      boolean modified = false;
-      try {
-	synchronized(pHosts) {
-	  timer.resume();
-	  
-	  try {
-	    hname = InetAddress.getByName(hname).getCanonicalHostName();
-	  }
-	  catch(UnknownHostException ex) {
-	    throw new PipelineException
-	      ("The host (" + hname + ") could not be reached or is illegal!");
-	  }
+      synchronized(pHosts) {
+	timer.resume();
 	
-	  if(pHosts.containsKey(hname)) 
-	    throw new PipelineException
-	      ("The host (" + hname + ") is already a job server!");
-	  pHosts.put(hname, new QueueHost(hname));
-
-	  writeHosts();
+	try {
+	  hname = InetAddress.getByName(hname).getCanonicalHostName();
 	}
-      }
-      finally {
-	if(modified)       
-	  updateHostsInfo(timer);
+	catch(UnknownHostException ex) {
+	  throw new PipelineException
+	    ("The host (" + hname + ") could not be reached or is illegal!");
+	}
+	
+	if(pHosts.containsKey(hname)) 
+	  throw new PipelineException
+	    ("The host (" + hname + ") is already a job server!");
+	
+	/* pre-add host tests */
+	performExtensionTests(timer, factory);
+	
+	pHosts.put(hname, new QueueHost(hname));
+	writeHosts();
       }
 	
+      updateHostsInfo(timer);
+
+      /* post-add host tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -1309,18 +1730,36 @@ class QueueMgr
   ) 
   {
     TaskTimer timer = new TaskTimer("QueueMgr.removeHosts():");
-    timer.aquire();
+
+    TreeSet<String> deadHosts = new TreeSet<String>();
     try {
+      /* filter out non-existant hosts */ 
+      TreeSet<String> hostnames = new TreeSet<String>();
+      {
+	timer.aquire();
+	synchronized(pHosts) {
+	  timer.resume();
+	  for(String hname : req.getHostnames()) {
+	    if(pHosts.containsKey(hname)) 
+	      hostnames.add(hname);
+	  }
+	}
+      }
+      
+      /* pre-remove hosts tests */
+      performExtensionTests(timer, new RemoveHostsExtFactory(hostnames));
+
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may remove hosts!"); 
 
       boolean modified = false;
       try {
+	timer.aquire();
 	synchronized(pHosts) {
 	  timer.resume();
 	
-	  for(String hname : req.getHostnames()) {
+	  for(String hname : hostnames) {
 	    QueueHost host = pHosts.get(hname);
 	    if(host != null) {
 	      switch(host.getStatus()) {
@@ -1328,6 +1767,7 @@ class QueueMgr
 	      case Hung:
 		modified = true;
 		pHosts.remove(hname);
+		deadHosts.add(hname);
 		JobMgrControlClient.serverUnreachable(hname);
 		break;
 		
@@ -1344,6 +1784,10 @@ class QueueMgr
       finally {
 	if(modified)       
 	  updateHostsInfo(timer);
+
+	/* post-remove hosts tasks */ 
+	if(!deadHosts.isEmpty()) 
+	  startExtensionTasks(timer, new RemoveHostsExtFactory(deadHosts)); 
       }
 
       return new SuccessRsp(timer);
@@ -1477,9 +1921,11 @@ class QueueMgr
       synchronized(pHosts) {
 	timer.resume();  
 	
+	Date now = new Date(); 
+
 	pHostsInfo.clear();
 	for(String hname : pHosts.keySet()) 
-	  pHostsInfo.put(hname, pHosts.get(hname).toInfo());
+	  pHostsInfo.put(hname, pHosts.get(hname).toInfo(now));
       }
     }
       
@@ -1586,21 +2032,29 @@ class QueueMgr
   ) 
     throws PipelineException
   {
+    /* for post-modify hosts tasks */ 
+    TreeSet<String> modifiedHosts = null;
+    if(hasAnyExtensionTasks(timer, new ModifyHostsExtFactory()))
+       modifiedHosts = new TreeSet<String>();
+
     timer.aquire();
     synchronized(pHosts) {
       timer.resume();
 
       timer.suspend();
       TaskTimer tm = new TaskTimer("Dispatcher [Host Status Changes]");
-      boolean modified = false;  
+      boolean diskModified = false;  
       Date now = new Date();
       {
 	/* attempt to re-Enable previously Hung servers */ 
 	for(QueueHost host : pHosts.values()) {
 	  switch(host.getStatus()) {
 	  case Hung:
-	    if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
+	    if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) {
 	      setHostStatus(host, QueueHost.Status.Enabled);	      
+	      if(modifiedHosts != null) 
+		modifiedHosts.add(host.getName());
+	    }
 	  }
 	}
 	   
@@ -1645,14 +2099,20 @@ class QueueMgr
 	      switch(change) {
 	      case Enable:
 		setHostStatus(host, QueueHost.Status.Enabled);
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
 		break;
 		  
 	      case Disable:
 		setHostStatus(host, QueueHost.Status.Disabled);
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
 		break;
 		  
 	      case Terminate:
 		setHostStatus(host, QueueHost.Status.Shutdown);
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
 	      }
 	    }
 	  }	      
@@ -1675,6 +2135,8 @@ class QueueMgr
 		    setHostStatus(host, QueueHost.Status.Hung);
 		  else 
 		    setHostStatus(host, QueueHost.Status.Disabled);
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
 		}
 	      }
 	    }
@@ -1702,7 +2164,9 @@ class QueueMgr
 	    QueueHost host = pHosts.get(hname);
 	    if(host != null) {
 	      host.setReservation(pReservationChanges.get(hname));
-	      modified = true;
+	      if(modifiedHosts != null) 
+		modifiedHosts.add(hname);
+	      diskModified = true;
 	    }
 	  }
 
@@ -1718,7 +2182,9 @@ class QueueMgr
 	    QueueHost host = pHosts.get(hname);
 	    if(host != null) {
 	      host.setOrder(pOrderChanges.get(hname));
-	      modified = true;
+	      if(modifiedHosts != null) 
+		modifiedHosts.add(hname);
+	      diskModified = true;
 	    }
 	  }
 
@@ -1734,7 +2200,9 @@ class QueueMgr
 	    QueueHost host = pHosts.get(hname);
 	    if(host != null) {
 	      host.setJobSlots(pSlotChanges.get(hname));
-	      modified = true;
+	      if(modifiedHosts != null) 
+		modifiedHosts.add(hname);
+	      diskModified = true;
 	    }
 	  }
 	    
@@ -1753,7 +2221,9 @@ class QueueMgr
 		String name = pSelectionGroupChanges.get(hname);
 		if((name == null) || pSelectionGroups.containsKey(name)) {
 		  host.setSelectionGroup(name);
-		  modified = true;
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
+		  diskModified = true;
 		}
 	      }
 	    }
@@ -1774,7 +2244,9 @@ class QueueMgr
 		String name = pSelectionScheduleChanges.get(hname);
 		if((name == null) || pSelectionSchedules.containsKey(name)) {
 		  host.setSelectionSchedule(name);
-		  modified = true;
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
+		  diskModified = true;
 		}
 	      }
 	    }
@@ -1784,7 +2256,7 @@ class QueueMgr
 	}
 
 	/* write changes to host database file disk */ 
-	if(modified) 
+	if(diskModified) 
 	  writeHosts();
       }
       LogMgr.getInstance().logSubStage
@@ -1794,14 +2266,6 @@ class QueueMgr
 
     /* collector generated changes */ 
     {
-      /* should the last interval of samples be written to disk? */ 
-      TreeMap<String,ResourceSampleBlock> dump = null;   
-      Date now = new Date();
-      {
-	if((now.getTime() - pLastSampleWrite.getTime()) > QueueHost.getSampleInterval())
-	  dump = new TreeMap<String,ResourceSampleBlock>();
-      }
-
       /* apply changes to hosts */ 
       {
 	timer.suspend();
@@ -1827,28 +2291,6 @@ class QueueMgr
 		      for(ResourceSample sample : samples) 
 			host.addSample(sample);
 		    }
-		
-		    if(dump != null) {
-		      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
-		      for(ResourceSample s : host.getSamples()) {
-			if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
-			  rs.add(s);
-		      }
-		
-		      if(!rs.isEmpty() && 
-			 (host.getNumProcessors() != null) && 
-			 (host.getTotalMemory() != null) && 
-			 (host.getTotalDisk() != null)) {
-		    
-			ResourceSampleBlock block = 
-			  new ResourceSampleBlock(host.getJobSlots(), 
-						  host.getNumProcessors(), 
-						  host.getTotalMemory(), 
-						  host.getTotalDisk(), 
-						  rs);
-			dump.put(hname, block);
-		      }
-		    }
 		  }
 		}
 	      }
@@ -1869,6 +2311,8 @@ class QueueMgr
 		case Enabled:
 		case Disabled:
 		  host.setOsType(pOsTypeChanges.get(hname));
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
 		}
 	      }
 	    }
@@ -1888,6 +2332,8 @@ class QueueMgr
 		case Enabled:
 		case Disabled:
 		  host.setNumProcessors(pNumProcChanges.get(hname));
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
 		}
 	      }
 	    }
@@ -1907,6 +2353,8 @@ class QueueMgr
 		case Enabled:
 		case Disabled:
 		  host.setTotalMemory(pTotalMemoryChanges.get(hname));
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
 		}
 	      }
 	    }
@@ -1926,6 +2374,8 @@ class QueueMgr
 		case Enabled:
 		case Disabled:
 		  host.setTotalDisk(pTotalDiskChanges.get(hname));
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
 		}
 	      }
 	    }
@@ -1938,24 +2388,99 @@ class QueueMgr
 	   tm, timer); 
       }
     
-      /* write the last interval of samples to disk */ 
-      if(dump != null) {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Dispatcher [Write Samples]");
-	try {
-	  writeSamples(tm, now, dump);
+      /* post-modify hosts tasks */ 
+      if((modifiedHosts != null) && !modifiedHosts.isEmpty()) {
+	TreeMap<String,QueueHostInfo> mhosts = new TreeMap<String,QueueHostInfo>();
+	{
+	  timer.aquire();
+	  synchronized(pHosts) {
+	    timer.resume();
+	    
+	    for(String hname : modifiedHosts) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) 
+		mhosts.put(hname, host.toCleanInfo());
+	    }
+	  }
 	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-	     ex.getMessage());
+
+	startExtensionTasks(timer, new ModifyHostsExtFactory(mhosts));
+      }
+
+      /* write the last interval of samples to disk? */ 
+      if(pLastSampleWritten.get() > 0L) { 
+	Date now = new Date();
+	TreeMap<String,ResourceSampleBlock> dump = null;
+
+	/* when enough samples have been collected, 
+	     regularize and package them for writing to disk */ 
+	{
+	  timer.suspend();
+	  TaskTimer tm = new TaskTimer("Dispatcher [Collate Samples]");  
+	  tm.aquire();
+	  synchronized(pHosts) {
+	    tm.resume();
+
+	    if((now.getTime() - pLastSampleWritten.get()) > QueueHost.getSampleInterval()) {
+	      dump = new TreeMap<String,ResourceSampleBlock>();
+	      
+	      for(String hname : pHosts.keySet()) {
+		QueueHost host = pHosts.get(hname);
+		if(host != null) {
+		  switch(host.getStatus()) {
+		  case Enabled:
+		  case Disabled:
+		    {
+		      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
+		      for(ResourceSample s : host.getSamples()) {
+		      if(s.getTimeStamp().getTime() > pLastSampleWritten.get()) 
+			rs.add(s);
+		      }
+		      host.pruneSamples(now);
+		      
+		      if(!rs.isEmpty() && 
+			 (host.getNumProcessors() != null) && 
+			 (host.getTotalMemory() != null) && 
+			 (host.getTotalDisk() != null)) {
+			
+			ResourceSampleBlock block = 
+			  new ResourceSampleBlock(host.getJobSlots(), 
+						  host.getNumProcessors(), 
+						  host.getTotalMemory(), 
+						  host.getTotalDisk(), 
+						  rs);
+			dump.put(hname, block);
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	  LogMgr.getInstance().logSubStage
+	    (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	     tm, timer); 
 	}
-	finally {
-	  pLastSampleWrite = now;
+
+	/* write the samples to disk */ 
+	if(dump != null) {
+	  timer.suspend();
+	  TaskTimer tm = new TaskTimer("Dispatcher [Write Samples]");
+	  try {
+	    writeSamples(tm, now, dump);
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+	       ex.getMessage());
+	  }
+	  finally {
+	    pLastSampleWritten.set(now.getTime()); 
+	  }
+	  LogMgr.getInstance().logSubStage
+	    (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	     tm, timer); 
 	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	   tm, timer); 
       }
 
       /* cleanup any out-of-date sample files */ 
@@ -2485,9 +3010,20 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.submitJobs():");
 
     try {
+      QueueJobGroup group = req.getJobGroup();
+      timer.aquire();
+      synchronized(pJobGroups) {
+	timer.resume();
+	writeJobGroup(group);
+	pJobGroups.put(group.getGroupID(), group);
+      }
+
+      TreeMap<Long,QueueJob> taskJobs = new TreeMap<Long,QueueJob>();
       for(QueueJob job : req.getJobs()) {
 	long jobID = job.getJobID();
 	QueueJobInfo info = new QueueJobInfo(jobID);
+
+	taskJobs.put(jobID, job);
 	
 	timer.aquire();
 	synchronized(pJobs) {
@@ -2524,6 +3060,9 @@ class QueueMgr
 	
 	pWaiting.add(jobID);
       }
+
+      /* post-submit tasks */ 
+      startExtensionTasks(timer, new SubmitJobsExtFactory(group, taskJobs));
 
       return new SuccessRsp(timer);
     }
@@ -2674,41 +3213,6 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Notify the queue that a set of previously submitted jobs make up a job group.
-   * 
-   * @param req 
-   *   The group jobs equest.
-   *    
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable group the jobs. 
-   */ 
-  public Object
-  groupJobs
-  (
-   QueueGroupJobsReq req
-  )
-  {
-    QueueJobGroup group = req.getJobGroup();
-    long groupID = group.getGroupID();
-    
-    TaskTimer timer = new TaskTimer("QueueMgr.groupJobs(): " + groupID);
-    try {
-      timer.aquire();
-      synchronized(pJobGroups) {
-	timer.resume();
-	writeJobGroup(group);
-	pJobGroups.put(groupID, group);
-      }
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }   
-
-    return new SuccessRsp(timer);
-  }
 
   /**
    * Get the job group with the given ID.
@@ -2958,6 +3462,9 @@ class QueueMgr
     
     deleteJobGroupFile(groupID);
     pJobGroups.remove(groupID);
+
+    /* post-delete group task */ 
+    startExtensionTasks(timer, new DeleteJobGroupExtFactory(group));
   }
 
 
@@ -3090,6 +3597,7 @@ class QueueMgr
 	      synchronized(pSampleChanges) {
 		tm.resume();
 
+		boolean hasSamples = false;
 		for(String hname : samples.keySet()) {
 		  ResourceSample sample = samples.get(hname);
 		  if(sample != null) {
@@ -3100,7 +3608,19 @@ class QueueMgr
 		    }
 		    
 		    latest.add(sample);
+		    hasSamples = true;
 		  }
+		}
+		
+		/* initialize the sample output stamp */ 
+		if(hasSamples && (pLastSampleWritten.get() == 0L)) {
+		  long oldest = Long.MAX_VALUE;
+		  for(String hname : samples.keySet()) {
+		    ResourceSample sample = samples.get(hname);
+		    if(sample != null) 
+		      oldest = Math.min(oldest, sample.getTimeStamp().getTime());
+		  }
+		  pLastSampleWritten.set(oldest); 
 		}
 	      }
 	    }
@@ -3226,6 +3746,13 @@ class QueueMgr
 	if(jobID == null) 
 	  break;
 	
+	QueueJob job = null;
+	tm.aquire();
+	synchronized(pJobs) {
+	  tm.resume();
+	  job = pJobs.get(jobID);
+	}
+
 	QueueJobInfo info = null;
 	tm.aquire();
 	synchronized(pJobInfo) {
@@ -3234,6 +3761,7 @@ class QueueMgr
 	}
 	
 	if(info != null) {
+	  boolean aborted = false;
 	  switch(info.getState()) {
 	  case Queued:
 	  case Preempted:
@@ -3247,14 +3775,21 @@ class QueueMgr
 		(LogMgr.Kind.Net, LogMgr.Level.Severe,
 		 ex.getMessage()); 
 	    }
+	    aborted = true;
 	    break; 
 	    
 	  case Running:
 	    {
 	      KillTask task = new KillTask(info.getHostname(), jobID);
 	      task.start();
+	      
+	      aborted = true;
 	    }
 	  }
+
+	  /* post-abort tasks */ 
+	  if(aborted) 
+	    startExtensionTasks(tm, new JobAbortedExtFactory(job));
 	}
       }
       LogMgr.getInstance().logSubStage
@@ -3271,6 +3806,13 @@ class QueueMgr
 	if(jobID == null) 
 	  break;
 
+	QueueJob job = null;
+	tm.aquire();
+	synchronized(pJobs) {
+	  tm.resume();
+	  job = pJobs.get(jobID);
+	}
+
 	QueueJobInfo info = null;
 	tm.aquire();
 	synchronized(pJobInfo) {
@@ -3282,20 +3824,27 @@ class QueueMgr
 	  switch(info.getState()) {
 	  case Running:
 	    {
-	      String hostname = info.getHostname();
+	      QueueJobInfo preemptedInfo = new QueueJobInfo(info);
 
-	      info.preempted();
-	      try {
-		writeJobInfo(info);
-	      }
-	      catch(PipelineException ex) {
-		LogMgr.getInstance().log
+	      {
+		String hostname = info.getHostname();
+		
+		info.preempted();
+		try {
+		  writeJobInfo(info);
+		}
+		catch(PipelineException ex) {
+		  LogMgr.getInstance().log
 		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		   ex.getMessage()); 
+		}
+		
+		KillTask task = new KillTask(hostname, jobID);
+		task.start();
 	      }
-	  
-	      KillTask task = new KillTask(hostname, jobID);
-	      task.start();
+
+	      /* post-preempt tasks */ 
+	      startExtensionTasks(tm, new JobPreemptedExtFactory(job, preemptedInfo));
 	    }
 	  }
 	}
@@ -3432,30 +3981,8 @@ class QueueMgr
     {
       timer.suspend();
       TaskTimer tm = new TaskTimer("Dispatcher [Toolsets]");
-      tm.aquire();
-      synchronized(pToolsets) {
-        tm.resume();
-	for(String tname : readyToolsets) {
-	  if(!pToolsets.containsKey(tname)) {
-	    while(true) {
-	      try {
-		pToolsets.put(tname, pMasterMgrClient.getOsToolsets(tname));	
-		break;
-	      }
-	      catch(PipelineException ex) {
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-		   ex.getMessage()); 
-		
-		LogMgr.getInstance().logAndFlush
-		  (LogMgr.Kind.Net, LogMgr.Level.Info,
-		   "Reestablishing Network Connections...");
-		
-		establishMasterConnection();
-	      }
-	    }
-	  }
-	}
+      {
+	fetchToolsets(readyToolsets, tm);
       }
       LogMgr.getInstance().logSubStage
 	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
@@ -3670,14 +4197,12 @@ class QueueMgr
 		      break;
 
 		    QueueJob job = null;
-		    {
-		      tm.aquire();
-		      synchronized(pJobs) {
-			tm.resume();
-			job = pJobs.get(jobID);
-		      }
+		    tm.aquire();
+		    synchronized(pJobs) {
+		      tm.resume();
+		      job = pJobs.get(jobID);
 		    }
-		    
+
 		    QueueJobInfo info = null;
 		    {
 		      tm.aquire();
@@ -4089,13 +4614,18 @@ class QueueMgr
     }
       
     /* delete the dead jobs */ 
+    TreeMap<Long,QueueJob> deadJobs = new TreeMap<Long,QueueJob>();
+    TreeMap<Long,QueueJobInfo> deadInfos = new TreeMap<Long,QueueJobInfo>();    
     for(Long jobID : dead) {
       timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
 	try {
-	  if(pJobs.remove(jobID) != null) 
+	  QueueJob job = pJobs.remove(jobID);
+	  if(job != null) {
 	    deleteJobFile(jobID);
+	    deadJobs.put(jobID, job);
+	  }
 	}
 	catch(PipelineException ex) {
 	  LogMgr.getInstance().log
@@ -4108,8 +4638,11 @@ class QueueMgr
       synchronized(pJobInfo) {
 	timer.resume();
 	try {
-	  if(pJobInfo.remove(jobID) != null) 
+	  QueueJobInfo info = pJobInfo.remove(jobID);
+	  if(info != null) {
 	    deleteJobInfoFile(jobID);
+	    deadInfos.put(jobID, info);
+	  }
 	}
 	catch(PipelineException ex) {
 	  LogMgr.getInstance().log
@@ -4124,6 +4657,10 @@ class QueueMgr
       CleanupJobResourcesTask task = new CleanupJobResourcesTask(live);
       task.start();
     }
+
+    /* post-cleanup task */ 
+    if(!deadJobs.isEmpty() && !deadInfos.isEmpty())  
+      startExtensionTasks(timer, new CleanupJobsExtFactory(deadJobs, deadInfos));
 
     LogMgr.getInstance().logStage
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
@@ -4300,6 +4837,48 @@ class QueueMgr
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T O O L S E T S   H E L P E R S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Retrieve any of the given toolset which are not already cached.
+   */ 
+  private void 
+  fetchToolsets
+  (
+   TreeSet<String> tnames, 
+   TaskTimer timer
+  ) 
+  {
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+      for(String tname : tnames) {
+	if(!pToolsets.containsKey(tname)) {
+	  while(true) {
+	    try {
+	      pToolsets.put(tname, pMasterMgrClient.getOsToolsets(tname));	
+	      break;
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Severe,
+		 ex.getMessage()); 
+	      
+	      LogMgr.getInstance().logAndFlush
+		(LogMgr.Kind.Net, LogMgr.Level.Info,
+		 "Reestablishing Network Connections...");
+	      
+	      establishMasterConnection();
+	    }
+	  }
+	}
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4724,6 +5303,110 @@ class QueueMgr
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the queue extension configurations to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the extensions file.
+   */ 
+  private void 
+  writeQueueExtensions() 
+    throws PipelineException
+  {
+    synchronized(pQueueExtensions) {
+      File file = new File(pQueueDir, "queue/etc/queue-extensions"); 
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old queue extensions file (" + file + ")!");
+      }
+
+      if(!pQueueExtensions.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Queue Extensions.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("QueueExtensions", pQueueExtensions);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the queue extensions!");
+	    LogMgr.getInstance().flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the queue extensions file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the queue extension configurations from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the extensions file.
+   */ 
+  private void 
+  readQueueExtensions()
+    throws PipelineException
+  {
+    synchronized(pQueueExtensions) {
+      pQueueExtensions.clear();
+
+      File file = new File(pQueueDir, "queue/etc/queue-extensions"); 
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Queue Extensions.");
+
+	TreeMap<String,QueueExtensionConfig> exts = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  exts = (TreeMap<String,QueueExtensionConfig>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The default toolset file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+	  LogMgr.getInstance().flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the default toolset file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+
+	if(exts != null)
+	  pQueueExtensions.putAll(exts);
+      }
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -4754,7 +5437,7 @@ class QueueMgr
 	  try {
 	    TreeMap<String,QueueHostInfo> infos = new TreeMap<String,QueueHostInfo>();
 	    for(QueueHost host : pHosts.values()) 
-	      infos.put(host.getName(), host.toInfo());
+	      infos.put(host.getName(), host.toCleanInfo());
 
 	    GlueEncoder ge = new GlueEncoderImpl("Hosts", infos);
 	    glue = ge.getText();
@@ -4919,6 +5602,10 @@ class QueueMgr
 	}
       }
     }
+
+    /* post-resource samples tasks */ 
+    if(!samples.isEmpty()) 
+      startExtensionTasks(timer, new ResourceSamplesExtFactory(samples));
   }
 
   /**
@@ -5004,7 +5691,7 @@ class QueueMgr
    TaskTimer timer
   ) 
   {
-    if(pLastSampleWrite == null)
+    if(pLastSampleWritten.get() == 0L)
       return;
     
     timer.aquire();
@@ -5026,7 +5713,7 @@ class QueueMgr
 	    File file = files[wk];
 	    try {
 	      Long stamp = new Long(file.getName());
-	      if((pLastSampleWrite.getTime() - stamp) > sSampleCleanupInterval) {
+	      if((pLastSampleWritten.get() - stamp) > sSampleCleanupInterval) {
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 		   "Deleting Resource Sample File: " + file);
@@ -5756,8 +6443,9 @@ class QueueMgr
       TaskTimer timer = new TaskTimer("Monitor - Job " + jobID);
 
       /* attempt to start the job on the selected server, 
-	   no environment means the job has been started previously */ 
-      boolean aborted = false;
+	   no environment means the job has been started previously */  
+      QueueJobInfo startedInfo = null;
+      boolean balked = false;
       if(pEnvironments != null) {
 	timer.suspend();
 	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
@@ -5765,6 +6453,12 @@ class QueueMgr
 	JobMgrControlClient client = new JobMgrControlClient(pHostname); 
 	try {
 	  client.jobStart(pJob, pEnvironments); 
+ 
+	  tm.aquire(); 
+	  synchronized(pJobInfo) {
+	    tm.resume();
+	    startedInfo = new QueueJobInfo(pJobInfo.get(jobID));
+	  }
 	}
 	catch (Exception ex) {
 	  LogMgr.getInstance().log
@@ -5802,12 +6496,12 @@ class QueueMgr
 	    }
 	    catch(PipelineException ex2) {
 	      LogMgr.getInstance().log
-		(LogMgr.Kind.Job, LogMgr.Level.Severe,
-		 ex2.getMessage()); 
+		(LogMgr.Kind.Job, LogMgr.Level.Severe, 
+		 ex.getMessage()); 
 	    }
 	  }
 
-	  aborted = true;
+	  balked = true;
 	}
 	finally {
 	  if(client != null)
@@ -5819,9 +6513,14 @@ class QueueMgr
 	   tm, timer);
       }
 
-      /* if job was successfully started... */ 
+      /* post-started tasks */ 
+      if(startedInfo != null) 
+	startExtensionTasks(timer, new JobStartedExtFactory(pJob, startedInfo));
+      
+      /* if job was successfully started... */  
+      QueueJobInfo finishedInfo = null;
       boolean preempted = false;
-      if(!aborted) {
+      if(!balked) {
 	timer.suspend();
 	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Wait]"); 
 
@@ -5878,7 +6577,7 @@ class QueueMgr
 	}
 	tm.resume();
 	
-	/* update job information */ 
+	/* update job information */
 	tm.aquire(); 
 	synchronized(pJobInfo) {
 	  tm.resume();
@@ -5892,6 +6591,7 @@ class QueueMgr
 	      
 	    default:
 	      info.exited(results);
+	      finishedInfo = new QueueJobInfo(info);
 	    }
 	    writeJobInfo(info);
 	  }
@@ -5953,15 +6653,21 @@ class QueueMgr
 	  tm.resume();
 	}
 
-	/* if aborted or preempted, 
+	/* if balked or preempted, 
 	     put job back on the list of jobs waiting to be run */ 
-	if(aborted || preempted)
+	if(balked || preempted)
 	  pWaiting.add(jobID);
 
 	LogMgr.getInstance().logSubStage
 	  (LogMgr.Kind.Job, LogMgr.Level.Finer, 
 	   tm, timer);	
       }
+
+      /* post-execution tasks */ 
+      if(balked) 
+	startExtensionTasks(timer, new JobBalkedExtFactory(pJob, pHostname));
+      else if(finishedInfo != null) 
+	startExtensionTasks(timer, new JobFinishedExtFactory(pJob, finishedInfo));
 
       LogMgr.getInstance().logStage
 	(LogMgr.Kind.Job, LogMgr.Level.Fine,
@@ -6250,6 +6956,16 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * The table of the queue extensions configurations.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,QueueExtensionConfig>  pQueueExtensions; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
    * The cached toolsets indexed by toolset name and operating system. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
@@ -6368,9 +7084,9 @@ class QueueMgr
   /**
    * The timestamp of when the last set of resource samples was written to disk. <P> 
    * 
-   * Access to this field should be protected by a synchronized block.
+   * Will have a value of (0L) until the first sample is collected.
    */ 
-  private Date  pLastSampleWrite;
+  private AtomicLong  pLastSampleWritten;
 
   /**
    * A lock which protects resource sample files from simulatenous reads and writes.

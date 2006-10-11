@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.42 2006/09/25 12:11:44 jim Exp $
+// $Id: UIMaster.java,v 1.43 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,12 +86,18 @@ class UIMaster
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     pArchiverPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pMasterExtPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pQueueExtPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     
     pEditorLayouts     = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts = new TreeMap<String,PluginMenuLayout>();                  
     pActionLayouts     = new TreeMap<String,PluginMenuLayout>();                    
     pToolLayouts       = new TreeMap<String,PluginMenuLayout>();                   
     pArchiverLayouts   = new TreeMap<String,PluginMenuLayout>();                   
+    pMasterExtLayouts   = new TreeMap<String,PluginMenuLayout>();                   
+    pQueueExtLayouts   = new TreeMap<String,PluginMenuLayout>();                   
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
@@ -351,6 +357,12 @@ class UIMaster
     synchronized(pArchiverPlugins) {
       pArchiverPlugins.clear();
     }
+    synchronized(pMasterExtPlugins) {
+      pMasterExtPlugins.clear();
+    }
+    synchronized(pQueueExtPlugins) {
+      pQueueExtPlugins.clear();
+    }
 
     synchronized(pEditorLayouts) {
       pEditorLayouts.clear();
@@ -366,6 +378,12 @@ class UIMaster
     }  
     synchronized(pArchiverLayouts) {
       pArchiverLayouts.clear();
+    }    
+    synchronized(pMasterExtLayouts) {
+      pMasterExtLayouts.clear();
+    }    
+    synchronized(pQueueExtLayouts) {
+      pQueueExtLayouts.clear();
     }    
   }
 
@@ -1041,6 +1059,234 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new master extension plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createMasterExtSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pMasterExtPlugins) {
+	plugins = pMasterExtPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetMasterExtPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getMasterExts();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pMasterExtPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pMasterExtLayouts) {
+	layout = pMasterExtLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getMasterExtMenuLayout(tname);
+	  pMasterExtLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of an master extension plugin field for the given toolset.
+   */ 
+  public void 
+  updateMasterExtPluginField
+  (
+   String tname, 
+   JPluginSelectionField field
+  ) 
+  {
+    if(tname == null) 
+      return;
+
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      synchronized(pMasterExtPlugins) {
+	plugins = pMasterExtPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetMasterExtPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getMasterExts();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pMasterExtPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pMasterExtLayouts) {
+	layout = pMasterExtLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getMasterExtMenuLayout(tname);
+	  pMasterExtLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new queue extension plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createQueueExtSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      String tname = pMasterMgrClient.getDefaultToolsetName();
+
+      synchronized(pQueueExtPlugins) {
+	plugins = pQueueExtPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetQueueExtPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getQueueExts();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pQueueExtPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pQueueExtLayouts) {
+	layout = pQueueExtLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getQueueExtMenuLayout(tname);
+	  pQueueExtLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of an queue extension plugin field for the given toolset.
+   */ 
+  public void 
+  updateQueueExtPluginField
+  (
+   String tname, 
+   JPluginSelectionField field
+  ) 
+  {
+    if(tname == null) 
+      return;
+
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      synchronized(pQueueExtPlugins) {
+	plugins = pQueueExtPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    pMasterMgrClient.getToolsetQueueExtPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getQueueExts();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pQueueExtPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pQueueExtLayouts) {
+	layout = pQueueExtLayouts.get(tname);
+	if(layout == null) {
+	  layout = pMasterMgrClient.getQueueExtMenuLayout(tname);
+	  pQueueExtLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the node browsers panel group.
@@ -1320,6 +1566,16 @@ class UIMaster
   {
     ShowSubprocessFailureDialog task = new ShowSubprocessFailureDialog(header, proc);
     SwingUtilities.invokeLater(task);
+  }
+
+  /**
+   * Show the manage server extensions dialog.
+   */ 
+  public void 
+  showManageServerExtensionsDialog()
+  {
+    pManageServerExtensionsDialog.updateAll(); 
+    pManageServerExtensionsDialog.setVisible(true);
   }
 
   /**
@@ -2189,6 +2445,8 @@ class UIMaster
 	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
 	
 	pSubProcessFailureDialog = new JSubProcessFailureDialog(pFrame);
+
+	pManageServerExtensionsDialog = new JManageServerExtensionsDialog();
 
 	pBackupDialog = 
 	  new JFileSelectDialog(pFrame, "Backup Database", "Backup Database File:",
@@ -3469,6 +3727,10 @@ class UIMaster
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pToolPlugins;
   private TreeMap<String,
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pArchiverPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pMasterExtPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pQueueExtPlugins;
 
   /** 
    * Caches of plugin menu layouts indexed by toolset name.
@@ -3478,6 +3740,8 @@ class UIMaster
   private TreeMap<String,PluginMenuLayout>  pActionLayouts; 
   private TreeMap<String,PluginMenuLayout>  pToolLayouts; 
   private TreeMap<String,PluginMenuLayout>  pArchiverLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pMasterExtLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pQueueExtLayouts; 
 
 
 
@@ -3604,6 +3868,11 @@ class UIMaster
    * The dialog giving details of the failure of a subprocess.
    */ 
   private JSubProcessFailureDialog  pSubProcessFailureDialog;
+
+  /**
+   * The manage server extensions dialog.
+   */
+  private JManageServerExtensionsDialog  pManageServerExtensionsDialog; 
 
   /**
    * The database backup dialog.

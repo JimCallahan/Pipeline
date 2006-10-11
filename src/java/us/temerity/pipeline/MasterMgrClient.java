@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.76 2006/07/03 06:38:42 jim Exp $
+// $Id: MasterMgrClient.java,v 1.77 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2082,6 +2082,554 @@ class MasterMgrClient
 
     Object obj = performTransaction(MasterRequest.SetPackageArchiverPlugins, req); 
     handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the master extension plugin menu.
+   * 
+   * @return 
+   *   The heirarchical set of master extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the master extension menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getMasterExtMenuLayout()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
+
+    Object obj = performTransaction(MasterRequest.GetMasterExtMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the master extension plugin menu.
+   * 
+   * @param layout
+   *   The heirarchical set of master extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the master extension menu layout.
+   */ 
+  public synchronized void 
+  setMasterExtMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
+
+    Object obj = performTransaction(MasterRequest.SetMasterExtMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the master extension plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The heirarchical set of master extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the master extension menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getMasterExtMenuLayout
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetMasterExtMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the master extension plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The heirarchical set of master extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the master extension menu layout.
+   */ 
+  public synchronized void 
+  setMasterExtMenuLayout
+  (
+   String name, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
+
+    Object obj = performTransaction(MasterRequest.SetMasterExtMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the master extension plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated master extension plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  getToolsetMasterExtPlugins
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetMasterExtPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the master extension plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated master extension plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  getPackageMasterExtPlugins
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageMasterExtPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the master extension plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the associated master extension plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageMasterExtPlugins
+  ( 
+   String name,  
+   VersionID vid,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageMasterExtPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the queue extension plugin menu.
+   * 
+   * @return 
+   *   The heirarchical set of queue extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the queue extension menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getQueueExtMenuLayout()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
+
+    Object obj = performTransaction(MasterRequest.GetQueueExtMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the queue extension plugin menu.
+   * 
+   * @param layout
+   *   The heirarchical set of queue extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the queue extension menu layout.
+   */ 
+  public synchronized void 
+  setQueueExtMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
+
+    Object obj = performTransaction(MasterRequest.SetQueueExtMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the queue extension plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The heirarchical set of queue extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the queue extension menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getQueueExtMenuLayout
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetQueueExtMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the queue extension plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The heirarchical set of queue extension plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the queue extension menu layout.
+   */ 
+  public synchronized void 
+  setQueueExtMenuLayout
+  (
+   String name, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
+
+    Object obj = performTransaction(MasterRequest.SetQueueExtMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the queue extension plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated queue extension plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  getToolsetQueueExtPlugins
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetQueueExtPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the queue extension plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated queue extension plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  getPackageQueueExtPlugins
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageQueueExtPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the queue extension plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the associated queue extension plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageQueueExtPlugins
+  ( 
+   String name,  
+   VersionID vid,
+   DoubleMap<String,String,TreeSet<VersionID>> plugins
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageQueueExtPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R V E R   E X T E N S I O N S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current master extension configurations. <P> 
+   * 
+   * @param name
+   *   The name of the master extension configuration.
+   * 
+   * @return 
+   *   The extension configuration 
+   *   or <CODE>null</CODE> if no extension with the given name exists.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the extensions.
+   */ 
+  public synchronized MasterExtensionConfig
+  getMasterExtensionConfig
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    if(name == null) 
+      throw new IllegalArgumentException
+	("The extension configuration name cannot be (null)!");
+    return getMasterExtensionConfigs().get(name);
+  }
+
+  /**
+   * Get the current master extension configurations. <P> 
+   * 
+   * @return 
+   *   The extension configurations indexed by configuration name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the extensions.
+   */ 
+  public synchronized TreeMap<String,MasterExtensionConfig> 
+  getMasterExtensionConfigs() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetMasterExtension, null); 
+    if(obj instanceof MiscGetMasterExtensionsRsp) {
+      MiscGetMasterExtensionsRsp rsp = (MiscGetMasterExtensionsRsp) obj;
+      return rsp.getExtensions();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Remove an existing the master extension configuration. <P> 
+   * 
+   * @param name
+   *   The name of the master extension configuration to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the extension.
+   */ 
+  public synchronized void
+  removeMasterExtensionConfig
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscRemoveMasterExtensionReq req = new MiscRemoveMasterExtensionReq(name);
+
+    Object obj = performTransaction(MasterRequest.RemoveMasterExtension, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Add or modify an existing the master extension configuration. <P> 
+   * 
+   * @param extension
+   *   The master extension configuration to add (or modify).
+   * 
+   * @throws PipelineException
+   *   If unable to set the extension.
+   */ 
+  public synchronized void
+  setMasterExtensionConfig
+  (
+   MasterExtensionConfig extension
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetMasterExtensionReq req = new MiscSetMasterExtensionReq(extension);
+
+    Object obj = performTransaction(MasterRequest.SetMasterExtension, req); 
+    handleSimpleResponse(obj);
   }
 
 
@@ -4301,14 +4849,14 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a database backup file and write it to the given directory. <P> 
+   * Create a database backup file. <P> 
    * 
    * The backup will not be perfomed until any currently running database operations have 
    * completed.  Once the databsae backup has begun, all new database operations will blocked
    * until the backup is complete.  The this reason, the backup should be performed during 
    * non-peak hours. <P> 
    * 
-   * The database backup file will be named: <P> 
+   * The database backup file will typically be named: <P> 
    * <DIV style="margin-left: 40px;">
    *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
    * </DIV>

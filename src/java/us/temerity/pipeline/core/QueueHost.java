@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.2 2006/09/29 03:03:21 jim Exp $
+// $Id: QueueHost.java,v 1.3 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -495,13 +495,39 @@ class QueueHost
   /**
    * Get all of the system resource samples within the sample window.
    * 
+   * @param start
+   *   The date to use as the start of the window.
+   * 
+   * @return 
+   *   The samples or <CODE>null</CODE> if there are no samples within the window.
+   */ 
+  public synchronized List<ResourceSample> 
+  getWindowedSamples
+  (
+   Date start
+  ) 
+  {
+    LinkedList<ResourceSample> windowed = new LinkedList<ResourceSample>();
+
+    long startTime = start.getTime();
+    for(ResourceSample sample : pSamples) {
+      if((startTime - sample.getTimeStamp().getTime()) > sSampleInterval)
+	break;
+      windowed.add(sample);
+    }
+
+    return windowed; 
+  }
+  
+  /**
+   * Get all of the system resource samples.
+   * 
    * @return 
    *   The sample or <CODE>null</CODE> if there are no samples.
    */ 
   public synchronized List<ResourceSample> 
   getSamples() 
   {
-    pruneSamples();
     return Collections.unmodifiableList(pSamples);
   }
   
@@ -530,24 +556,23 @@ class QueueHost
   }
 
   /**
-   * Remove all samples older than the sample interval.
+   * Remove all samples older than twice the sample interval.
+   * 
+   * @param start
+   *   The date to use as the start of the window.
    */ 
-  private synchronized void
-  pruneSamples()
+  public synchronized void
+  pruneSamples
+  (
+   Date start
+  ) 
   {
-    long start = 0;
-    {
-      ResourceSample sample = getLatestSample();
-      if(sample == null) 
-	return;
-      start = sample.getTimeStamp().getTime();
-    }
-
+    long startTime = start.getTime();
     boolean strip = false;
     Iterator<ResourceSample> iter = pSamples.listIterator(0); 
     while(iter.hasNext()) {
       ResourceSample sample = iter.next();
-      if(!strip && ((start - sample.getTimeStamp().getTime()) > sSampleInterval))
+      if(!strip && ((startTime - sample.getTimeStamp().getTime()) > sSampleInterval))
 	strip = true;
 
       if(strip) 
@@ -751,14 +776,35 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Return a read-only form of information about the current status of a job server host. 
+   * Return a read-only form of information about the current status of a job server host
+   * with only those dynamic resource samples within the sample window from the given date.
+   * 
+   * @param start
+   *   The date to use as the start of the window.
    */ 
   public synchronized QueueHostInfo
-  toInfo() 
+  toInfo
+  (
+   Date start
+  ) 
   {
     return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
 			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-			     getHold(), pSamples, pSelectionSchedule, pSelectionGroup);
+			     getHold(), getWindowedSamples(start), 
+			     pSelectionSchedule, pSelectionGroup);
+  }
+
+  /**
+   * Return a read-only form of information about the current status of a job server host
+   * without any dynamic resource samples.
+   */ 
+  public synchronized QueueHostInfo
+  toCleanInfo() 
+  {
+    return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
+			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
+			     new Date(0L), null, 
+			     pSelectionSchedule, pSelectionGroup);
   }
 
 
@@ -895,7 +941,9 @@ class QueueHost
   private static final long serialVersionUID = -5965011973074654660L;
 
   /**
-   * The maximum interval of time (in milliseconds) for which samples are retained.
+   * The maximum interval of time (in milliseconds) for which samples are reported 
+   * back to clients when QueueHostInfo copies are created.  Samples are actually retained
+   * for up to twice as long on the server and periodically written to disk at this interval.
    */ 
   private static final long  sSampleInterval = 1800000;  /* 30-minutes */ 
 

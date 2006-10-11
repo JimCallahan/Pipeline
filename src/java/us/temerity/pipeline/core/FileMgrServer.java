@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.32 2006/09/29 03:03:21 jim Exp $
+// $Id: FileMgrServer.java,v 1.33 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.*;
  * class.
  */
 class FileMgrServer
-  extends Thread
+  extends BaseMgrServer
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -42,9 +42,7 @@ class FileMgrServer
     super("FileMgrServer");
 
     pFileMgr = new FileMgr();
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();    
+    pTasks   = new HashSet<HandlerTask>();    
   }
   
  
@@ -117,20 +115,20 @@ class FileMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 "IO problems on port (" + PackageInfo.sFilePort + "):\n" + 
-	 ex.getMessage());
+	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
 	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 ex.getMessage());
+	 getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 ex.getMessage());
+	 getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
@@ -147,6 +145,7 @@ class FileMgrServer
       LogMgr.getInstance().flush();  
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -418,18 +417,18 @@ class FileMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "IO problems on port (" + PackageInfo.sFilePort + "):\n" + 
-	   ex.getMessage());
+	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   "Illegal object encountered on port (" + PackageInfo.sFilePort + "):\n" + 
-	   ex.getMessage());	
+	   getFullMessage(ex));
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage());
+	   getFullMessage(ex));
       }
       finally {
 	closeConnection();
@@ -475,11 +474,6 @@ class FileMgrServer
    */
   private FileMgr  pFileMgr;
   
-  /**
-   * Has the server been ordered to shutdown?
-   */
-  private AtomicBoolean  pShutdown;
-
   /**
    * The set of currently running tasks.
    */ 

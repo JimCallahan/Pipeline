@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.13 2006/09/29 03:03:21 jim Exp $
+// $Id: QueueJobInfo.java,v 1.14 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,6 +50,30 @@ class QueueJobInfo
 
     pState = JobState.Queued;
     pSubmittedStamp = new Date();
+  }
+
+  /**
+   * Copy constructor. 
+   *
+   * @param info
+   *   The job information to copy. 
+   */ 
+  public
+  QueueJobInfo
+  (
+   QueueJobInfo info
+  ) 
+  {
+    pJobID = info.pJobID;
+    pState = info.pState; 
+
+    pSubmittedStamp = info.pSubmittedStamp;
+    pStartedStamp   = info.pStartedStamp;
+    pCompletedStamp = info.pCompletedStamp;
+    
+    pHostname = info.pHostname; 
+    pOsType   = info.pOsType;
+    pResults  = info.pResults;
   }
 
   

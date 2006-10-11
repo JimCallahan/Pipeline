@@ -1,4 +1,4 @@
-// $Id: JTopLevelDialog.java,v 1.1 2006/09/25 12:11:45 jim Exp $
+// $Id: JTopLevelDialog.java,v 1.2 2006/10/11 22:45:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -29,9 +29,6 @@ class JTopLevelDialog
    * 
    * @param title
    *   The title of the dialog window.
-   * 
-   * @param modal
-   *   Is the dialog modal?
    */ 
   protected
   JTopLevelDialog

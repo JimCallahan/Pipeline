@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.34 2006/09/29 03:03:21 jim Exp $
+// $Id: BaseAction.java,v 1.35 2006/10/11 22:45:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1122,7 +1122,8 @@ class BaseAction
 	   "specified by any the parameter layout group!");
     }
 
-    pSingleLayout = group; 
+    pSingleLayout = new LayoutGroup("ActionParameters", 
+				    "The single value Action plugin parameters.", group);
   }
 
   /**
@@ -1161,14 +1162,14 @@ class BaseAction
   getSingleLayout()
   {
     if(pSingleLayout == null) {
-      pSingleLayout = new LayoutGroup(true);
+      pSingleLayout = new LayoutGroup("ActionParameters", 
+				      "The single value Action plugin parameters.", true);
       for(String name : pSingleParams.keySet()) 
 	pSingleLayout.addEntry(name);
     }
     
     return pSingleLayout; 
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
