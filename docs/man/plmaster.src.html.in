@@ -207,6 +207,12 @@ at once.<br>
 command-line options.<br>
 </div>
 <span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">ext<br>
+</span>
+<div style="margin-left: 40px;">Logs the activity of server extension
+plugin tasks.<br>
+</div>
+<span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;">glu<br>
 </span>
 <div style="margin-left: 40px;">Logs the I/O activity related to <a

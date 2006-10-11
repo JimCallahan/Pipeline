@@ -152,6 +152,12 @@ the job server dynamics resources collector thread.<br>
 the job dispatcher thread.<br>
 <br>
 </div>
+<span style="font-weight: bold;">ext<br>
+</span>
+<div style="margin-left: 40px;">Logs the activity of server extension
+plugin tasks.<br>
+</div>
+<span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;">job<br>
 </span>
 <div style="margin-left: 40px;">Logs the activity of the threads which
