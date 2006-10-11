@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.11 2006/09/29 09:57:03 jim Exp $
+// $Id: NativeFileSys.java,v 1.12 2006/10/11 22:40:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -169,7 +169,7 @@ class NativeFileSys
    * not exist. <P> 
    * 
    * This method is required because there is no access to the change time from the 
-   * {@link File} class which only provides {@link File.lastModified} to retrieve the 
+   * {@link File} class which only provides the lastModified() method to retrieve the 
    * modification time for a file.  
    * 
    * @param path 
