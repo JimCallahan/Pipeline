@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.77 2006/10/11 22:45:40 jim Exp $
+// $Id: MasterMgrClient.java,v 1.78 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3481,7 +3481,7 @@ class MasterMgrClient
    * @throws PipelineException 
    *   If unable to renumber the given node or its associated primary files.
    */ 
- public synchronized TreeSet<Long>
+  public synchronized TreeSet<Long>
   renumber
   ( 
    String author, 
@@ -3731,12 +3731,13 @@ class MasterMgrClient
    *   The fully resolved node name.
    *
    * @return 
-   *   The checked-in links indexed by revision number and upstream node name.
+   *   The checked-in links indexed by revision number of the target node and the node 
+   *   name of the upstream node.
    * 
    * @throws PipelineException
    *   If unable to determine the checked-in links.
    */
-  public synchronized TreeMap<VersionID,TreeMap<String,LinkVersion>> 
+  public synchronized DoubleMap<VersionID,String,LinkVersion>
   getCheckedInLinks
   ( 
    String name
@@ -3757,6 +3758,47 @@ class MasterMgrClient
       return null;
     }
   }    
+
+  /**
+   * Get the links from specific checked-in version to all other checked-in 
+   * node versions downstream. 
+   * 
+   * @param name 
+   *   The fully resolved name of the upstream node.
+   *
+   * @param vid 
+   *   The revision number of the checked-in upstream node.
+   *
+   * @return 
+   *   The checked-in links indexed by the name and revision number of the downstream node. 
+   * 
+   * @throws PipelineException
+   *   If unable to determine the checked-in links.
+   */
+  public synchronized DoubleMap<String,VersionID,LinkVersion>
+  getDownstreamCheckedInLinks
+  ( 
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeGetDownstreamCheckedInLinksReq req = 
+      new NodeGetDownstreamCheckedInLinksReq(name, vid);
+    
+    Object obj = performTransaction(MasterRequest.GetDownstreamCheckedInLinks, req);
+    if(obj instanceof NodeGetDownstreamCheckedInLinksRsp) {
+      NodeGetDownstreamCheckedInLinksRsp rsp = (NodeGetDownstreamCheckedInLinksRsp) obj;
+      return rsp.getLinks();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }    
+
 
 
   /*----------------------------------------------------------------------------------------*/

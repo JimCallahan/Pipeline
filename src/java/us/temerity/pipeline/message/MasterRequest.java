@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.46 2006/10/11 22:45:40 jim Exp $
+// $Id: MasterRequest.java,v 1.47 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -479,6 +479,11 @@ enum MasterRequest
    * An instance of {@link NodeGetCheckedInLinksReq} is next.
    */
   GetCheckedInLinks, 
+
+  /**
+   * An instance of {@link NodeGetDownstreamCheckedInLinksReq} is next.
+   */
+  GetDownstreamCheckedInLinks, 
 
 
   /*----------------------------------------------------------------------------------------*/

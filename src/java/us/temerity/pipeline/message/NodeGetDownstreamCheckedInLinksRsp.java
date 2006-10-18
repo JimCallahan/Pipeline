@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInLinksRsp.java,v 1.2 2006/10/18 08:43:17 jim Exp $
+// $Id: NodeGetDownstreamCheckedInLinksRsp.java,v 1.1 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   C H E C K E D - I N   L I N K S   R S P                              */
+/*   N O D E   G E T   D O W N S T R E A M   C H E C K E D - I N   L I N K S   R S P        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a 
- * {@link NodeGetCheckedInLinksReq NodeGetCheckedInLinksReq} request.
+ * A successful response to a {@link NodeGetDownstreamCheckedInLinksReq} request.
  */
 public
-class NodeGetCheckedInLinksRsp
+class NodeGetDownstreamCheckedInLinksRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,13 +30,13 @@ class NodeGetCheckedInLinksRsp
    *   The timing statistics for a task.
    * 
    * @param links
-   *   The checked-in links indexed by revision number and upstream node name.
+   *   The checked-in links indexed by the name and revision number of the downstream node. 
    */
   public
-  NodeGetCheckedInLinksRsp
+  NodeGetDownstreamCheckedInLinksRsp
   (
    TaskTimer timer, 
-   DoubleMap<VersionID,String,LinkVersion> links
+   DoubleMap<String,VersionID,LinkVersion> links
   )
   { 
     super(timer);
@@ -54,9 +53,10 @@ class NodeGetCheckedInLinksRsp
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Gets the checked-in links indexed by revision number and upstream node name.
+   * Gets the checked-in links indexed by the name and revision number of the 
+   * downstream node. 
    */
-  public DoubleMap<VersionID,String,LinkVersion>
+  public DoubleMap<String,VersionID,LinkVersion>
   getLinks() 
   {
     return pLinks;
@@ -68,7 +68,7 @@ class NodeGetCheckedInLinksRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7325728961990878692L;
+  private static final long serialVersionUID = -6385559427371702771L;
 
   
 
@@ -77,9 +77,9 @@ class NodeGetCheckedInLinksRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The checked-in links indexed by revision number and upstream node name.
+   * The checked-in links indexed by the name and revision number of the downstream node. 
    */ 
-  private DoubleMap<VersionID,String,LinkVersion>  pLinks; 
+  private  DoubleMap<String,VersionID,LinkVersion> pLinks; 
 
 }
   

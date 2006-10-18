@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.57 2006/09/29 03:03:21 jim Exp $
+// $Id: ScriptApp.java,v 1.58 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -83,11 +83,11 @@ class ScriptApp
       if(parser != null)
 	parser.disconnect();
 
-      LogMgr.getInstance().cleanup();
-
       PluginMgrClient pclient = PluginMgrClient.getInstance();
       if(pclient != null) 
 	pclient.disconnect();
+
+      LogMgr.getInstance().cleanup();
     }
 
     System.exit(success ? 0 : 1);
@@ -2921,6 +2921,41 @@ class ScriptApp
 	  if(wk > 0) 
 	    buf.append("\n");
 	  wk--;
+	}
+      }
+
+      if(sections.contains("dlink")) {
+	DoubleMap<String,VersionID,LinkVersion> dlinks = 
+	  mclient.getDownstreamCheckedInLinks(vsn.getName(), vsn.getVersionID());
+
+	if((dlinks != null) && !dlinks.isEmpty()) {
+	  buf.append
+	    ("\n\n" +
+	     pad("-- Downstream Links ", '-', 80));
+	  
+	  boolean firstLink = true;
+	  for(String dname : dlinks.keySet()) {
+	    for(VersionID dvid : dlinks.keySet(dname)) {
+	      LinkVersion link = dlinks.get(dname, dvid); 
+
+	      if(!firstLink) 
+		buf.append("\n");
+	      firstLink = false;
+	      
+	      buf.append
+		("\n" +
+		 "Target Node       : " + dname + " (v" + dvid + ")\n" +
+		 "Link Policy       : " + link.getPolicy() + "\n" + 
+		 "Link Relationship : " + link.getRelationship());
+	  
+	      switch(link.getRelationship()) {
+	      case OneToOne:
+		buf.append
+		  ("\n" + 
+		   "Frame Offset      : " + link.getFrameOffset()); 
+	      }	  
+	    }
+	  }
 	}
       }
     }

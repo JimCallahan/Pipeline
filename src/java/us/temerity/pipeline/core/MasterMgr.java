@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.164 2006/10/11 22:45:40 jim Exp $
+// $Id: MasterMgr.java,v 1.165 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6975,18 +6975,15 @@ class MasterMgr
       catch(PipelineException ex) {
       }
 
-      TreeMap<VersionID,TreeMap<String,LinkVersion>> links = 
-	new TreeMap<VersionID,TreeMap<String,LinkVersion>>();
+      DoubleMap<VersionID,String,LinkVersion> links = 
+	new DoubleMap<VersionID,String,LinkVersion>(); 
 
       if(checkedIn != null) {
 	for(VersionID vid : checkedIn.keySet()) {
 	  NodeVersion vsn = checkedIn.get(vid).getVersion();
 	  
-	  TreeMap<String,LinkVersion> table = new TreeMap<String,LinkVersion>();
 	  for(LinkVersion link : vsn.getSources()) 
-	    table.put(link.getName(), link);
-
-	  links.put(vid, table);
+	    links.put(vid, link.getName(), link);
 	}
       }
 	
@@ -6994,6 +6991,90 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+
+  /** 
+   * Get the links from specific checked-in version to all other checked-in 
+   * node versions downstream. 
+   * 
+   * @param req 
+   *   The links request.
+   * 
+   * @return
+   *   <CODE>NodeGetDownstreamCheckedInLinksRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in links.
+   */
+  public Object
+  getDownstreamCheckedInLinks
+  ( 
+   NodeGetDownstreamCheckedInLinksReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+  
+    String name   = req.getName();
+    VersionID vid = req.getVersionID();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      TreeMap<String,VersionID> dnodes = null;
+      {
+	timer.aquire();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	downstreamLock.readLock().lock();
+	try {
+	  timer.resume();	
+
+	  DownstreamLinks dlinks = getDownstreamLinks(name);
+	  dnodes = dlinks.getCheckedIn(vid);
+	}
+	finally {
+	  downstreamLock.readLock().unlock();
+	}
+      }
+	
+      DoubleMap<String,VersionID,LinkVersion> links = 
+	new DoubleMap<String,VersionID,LinkVersion>();
+
+      if(dnodes != null) {
+	for(String dname : dnodes.keySet()) {
+	  VersionID dvid = dnodes.get(dname);
+
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getCheckedInLock(dname);
+	  lock.readLock().lock();
+	  try {
+	    timer.resume();
+
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+	    try {
+	      checkedIn = getCheckedInBundles(dname);
+	    }
+	    catch(PipelineException ex) {
+	    }
+	    
+	    if(checkedIn != null) {
+	      NodeVersion vsn = checkedIn.get(dvid).getVersion();
+	      links.put(dname, dvid, vsn.getSource(name));
+	    }
+	  }
+	  finally {
+	    lock.readLock().unlock();
+	  }
+	}
+      }
+	
+      return new NodeGetDownstreamCheckedInLinksRsp(timer, links);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
       pDatabaseLock.readLock().unlock();
     }  
   }  

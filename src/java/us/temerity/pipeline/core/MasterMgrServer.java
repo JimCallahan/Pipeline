@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.65 2006/10/11 22:45:40 jim Exp $
+// $Id: MasterMgrServer.java,v 1.66 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -972,6 +972,15 @@ class MasterMgrServer
 		NodeGetCheckedInLinksReq req = 
 		  (NodeGetCheckedInLinksReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.getCheckedInLinks(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetDownstreamCheckedInLinks:
+	      {
+		NodeGetDownstreamCheckedInLinksReq req = 
+		  (NodeGetDownstreamCheckedInLinksReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getDownstreamCheckedInLinks(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInLinksRsp.java,v 1.2 2006/10/18 08:43:17 jim Exp $
+// $Id: NodeGetDownstreamCheckedInLinksReq.java,v 1.1 2006/10/18 08:43:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,42 +9,43 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   C H E C K E D - I N   L I N K S   R S P                              */
+/*   N O D E   G E T   D O W N S T R E A M  C H E C K E D - I N   L I N K S   R E Q         */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a 
- * {@link NodeGetCheckedInLinksReq NodeGetCheckedInLinksReq} request.
+ * A request to get the upstream links of all checked-in versions of the given node.
  */
 public
-class NodeGetCheckedInLinksRsp
-  extends TimedRsp
+class NodeGetDownstreamCheckedInLinksReq
+  implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new response.
+   * Constructs a new request.
    * 
-   * @param timer 
-   *   The timing statistics for a task.
-   * 
-   * @param links
-   *   The checked-in links indexed by revision number and upstream node name.
+   * @param name 
+   *   The fully resolved name of the upstream node.
+   *
+   * @param vid 
+   *   The revision number of the checked-in upstream node.
    */
   public
-  NodeGetCheckedInLinksRsp
+  NodeGetDownstreamCheckedInLinksReq
   (
-   TaskTimer timer, 
-   DoubleMap<VersionID,String,LinkVersion> links
+   String name, 
+   VersionID vid
   )
   { 
-    super(timer);
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+    pName = name;
 
-    if(links == null) 
-      throw new IllegalArgumentException("The checked-in links cannot be (null)!");
-    pLinks = links;
+    if(vid == null) 
+      throw new IllegalArgumentException("The revision number cannot be (null)!");
+    pVersionID = vid;
   }
 
 
@@ -52,14 +53,23 @@ class NodeGetCheckedInLinksRsp
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
-   * Gets the checked-in links indexed by revision number and upstream node name.
+   * Gets the fully resolved node name.
    */
-  public DoubleMap<VersionID,String,LinkVersion>
-  getLinks() 
+  public String
+  getName() 
   {
-    return pLinks;
+    return pName;
+  }
+
+  /**
+   * Gets the revision number of the checked-in upstream node.
+   */
+  public VersionID
+  getVersionID() 
+  {
+    return pVersionID;
   }
 
 
@@ -68,7 +78,7 @@ class NodeGetCheckedInLinksRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7325728961990878692L;
+  private static final long serialVersionUID = 3688772787544768801L;
 
   
 
@@ -77,9 +87,14 @@ class NodeGetCheckedInLinksRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The checked-in links indexed by revision number and upstream node name.
+   * The fully resolved node name.
    */ 
-  private DoubleMap<VersionID,String,LinkVersion>  pLinks; 
+  private String  pName; 
+
+  /**
+   * The revision number of the checked-in upstream node.
+   */ 
+  private VersionID pVersionID; 
 
 }
   

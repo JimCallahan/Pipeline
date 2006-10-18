@@ -1184,6 +1184,7 @@ TOKEN :
 | <JREQ:             "jreq"> 
 | <KEY:              "key"> 
 | <LINK:             "link"> 
+| <DLINK:            "dlink"> 
 | <TIME:             "time"> 
 | <PROC:             "proc"> 
 | <WKDIR:            "wkdir"> 
@@ -4915,7 +4916,7 @@ CheckedInGetInfoShowSections() :
 {}
 {
   (CheckedInGetInfoShowAll() | 
-   ShowVsn() | ShowProp() |  ShowAct() | ShowJReq() | ShowKey() | ShowLink()) 
+   ShowVsn() | ShowProp() |  ShowAct() | ShowJReq() | ShowKey() | ShowLink() | ShowDLink()) 
   {}
 }
 
@@ -4931,6 +4932,7 @@ CheckedInGetInfoShowAll() :
     pSections.add("jreq");
     pSections.add("key");
     pSections.add("link");
+    pSections.add("dlink");
   }
 }
 
@@ -4947,7 +4949,7 @@ CheckedInGetInfoHideSections() :
 {}
 {
   (CheckedInGetInfoHideAll() | 
-   HideVsn() | HideProp() | HideAct() | HideJReq() | HideKey() | HideLink()) 
+   HideVsn() | HideProp() | HideAct() | HideJReq() | HideKey() | HideLink() | HideDLink()) 
   {}
 }
 
@@ -5507,6 +5509,16 @@ ShowLink() :
 }
 
 void
+ShowDLink() : 
+{}
+{
+  <DLINK> 
+  {
+    pSections.add("dlink");    
+  }
+}
+
+void
 ShowTime() : 
 {}
 {
@@ -5655,6 +5667,16 @@ HideLink() :
   <LINK> 
   {
     pSections.remove("link");    
+  }
+}
+
+void
+HideDLink() : 
+{}
+{
+  <DLINK> 
+  {
+    pSections.remove("dlink");    
   }
 }
 
