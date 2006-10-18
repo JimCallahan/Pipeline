@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.43 2006/10/11 22:45:41 jim Exp $
+// $Id: UIMaster.java,v 1.44 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -71,10 +71,19 @@ class UIMaster
    boolean traceGL
   ) 
   {
-    pMasterMgrClient = new MasterMgrClient();
-    pQueueMgrClient  = new QueueMgrClient();
+    pMasterMgrClients = new MasterMgrClient[10];
+    pQueueMgrClients  = new QueueMgrClient[10];
 
-    pOpsLock = new ReentrantLock();
+    {
+      pOpsLocks   = new ReentrantLock[10];
+      pOpsRunning = new AtomicBoolean[10];
+      pOpsTimers  = new TaskTimer[10];
+      int wk; 
+      for(wk=0; wk<pOpsLocks.length; wk++) {
+	pOpsLocks[wk]   = new ReentrantLock();
+	pOpsRunning[wk] = new AtomicBoolean(false);
+      }
+    }
 
     pEditorPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
@@ -106,6 +115,8 @@ class UIMaster
     pNodeFilesPanels   = new PanelGroup<JNodeFilesPanel>();
     pNodeLinksPanels   = new PanelGroup<JNodeLinksPanel>();
 
+    pQueueJobServersPanels = new PanelGroup<JQueueJobServersPanel>();
+    pQueueJobSlotsPanels   = new PanelGroup<JQueueJobSlotsPanel>();
     pQueueJobBrowserPanels = new PanelGroup<JQueueJobBrowserPanel>();
     pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
     pQueueJobDetailsPanels = new PanelGroup<JQueueJobDetailsPanel>();
@@ -187,8 +198,29 @@ class UIMaster
   public MasterMgrClient
   getMasterMgrClient() 
   {
-    return pMasterMgrClient;
+    return getMasterMgrClient(0);
   }
+
+  /**
+   * Get the network connection to <B>plmaster</B>(1).
+   * 
+   * @param channel
+   *   The index of the update channel.
+   */ 
+  public MasterMgrClient
+  getMasterMgrClient
+  (
+   int channel
+  ) 
+  {
+    assert((channel >= 0) && (channel < 10)); 
+
+    if(pMasterMgrClients[channel] == null) 
+      pMasterMgrClients[channel] = new MasterMgrClient();
+
+    return pMasterMgrClients[channel];
+  }
+
 
   /**
    * Get the network connection to <B>plqueuemgr</B>(1).
@@ -196,7 +228,27 @@ class UIMaster
   public QueueMgrClient
   getQueueMgrClient() 
   {
-    return pQueueMgrClient;
+    return getQueueMgrClient(0);
+  }
+
+  /**
+   * Get the network connection to <B>plqueuemgr</B>(1).
+   * 
+   * @param channel
+   *   The index of the update channel.
+   */ 
+  public QueueMgrClient
+  getQueueMgrClient
+  (
+   int channel
+  ) 
+  {
+    assert((channel >= 0) && (channel < 10)); 
+
+    if(pQueueMgrClients[channel] == null) 
+      pQueueMgrClients[channel] = new QueueMgrClient();
+
+    return pQueueMgrClients[channel];
   }
 
  
@@ -393,6 +445,9 @@ class UIMaster
   /**
    * Rebuild the contents of an editor plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -405,6 +460,7 @@ class UIMaster
   public void
   rebuildEditorMenu
   (
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -413,11 +469,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetEditorPlugins(tname);
+	    client.getToolsetEditorPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getEditors();
@@ -438,7 +496,7 @@ class UIMaster
       synchronized(pEditorLayouts) {
 	layout = pEditorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getEditorMenuLayout(tname);
+	  layout = client.getEditorMenuLayout(tname);
 	  pEditorLayouts.put(tname, layout);
 	}
       }
@@ -463,6 +521,9 @@ class UIMaster
   /**
    * Rebuild the contents of an comparator plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -475,6 +536,7 @@ class UIMaster
   public void
   rebuildComparatorMenu
   (
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -483,11 +545,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+
       synchronized(pComparatorPlugins) {
 	plugins = pComparatorPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	     pMasterMgrClient.getToolsetComparatorPlugins(tname);
+	     client.getToolsetComparatorPlugins(tname);
 	  
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getComparators();
@@ -508,7 +572,7 @@ class UIMaster
       synchronized(pComparatorLayouts) {
 	layout = pComparatorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getComparatorMenuLayout(tname);
+	  layout = client.getComparatorMenuLayout(tname);
 	  pComparatorLayouts.put(tname, layout);
 	}
       }
@@ -532,6 +596,9 @@ class UIMaster
   /**
    * Rebuild the contents of an tool plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -544,6 +611,7 @@ class UIMaster
   public void
   rebuildToolMenu
   (
+   int channel, 
    String tname, 
    JPopupMenu menu, 
    ActionListener listener
@@ -552,11 +620,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetToolPlugins(tname);
+	    client.getToolsetToolPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getTools();
@@ -577,7 +647,7 @@ class UIMaster
       synchronized(pToolLayouts) {
 	layout = pToolLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getToolMenuLayout(tname);
+	  layout = client.getToolMenuLayout(tname);
 	  pToolLayouts.put(tname, layout);
 	}
       }
@@ -601,6 +671,9 @@ class UIMaster
   /**
    * Rebuild the contents of an tool plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param menu
    *   The menu to be rebuilt.
    * 
@@ -610,6 +683,7 @@ class UIMaster
   public void
   rebuildDefaultToolMenu
   (
+   int channel, 
    JPopupMenu menu, 
    ActionListener listener
   ) 
@@ -617,13 +691,14 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient(channel);
+      String tname = client.getDefaultToolsetName();
 
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetToolPlugins(tname);
+	    client.getToolsetToolPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getTools();
@@ -644,7 +719,7 @@ class UIMaster
       synchronized(pToolLayouts) {
 	layout = pToolLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getToolMenuLayout(tname);
+	  layout = client.getToolMenuLayout(tname);
 	  pToolLayouts.put(tname, layout);
 	}
       }
@@ -721,25 +796,30 @@ class UIMaster
   /**
    * Create a new editor plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createEditorSelectionField
   (
+   int channel,
    int width  
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient(channel);
+      String tname = client.getDefaultToolsetName();
 
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetEditorPlugins(tname);
+	    client.getToolsetEditorPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getEditors();
@@ -760,7 +840,7 @@ class UIMaster
       synchronized(pEditorLayouts) {
 	layout = pEditorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getEditorMenuLayout(tname);
+	  layout = client.getEditorMenuLayout(tname);
 	  pEditorLayouts.put(tname, layout);
 	}
       }
@@ -781,6 +861,7 @@ class UIMaster
   public void 
   updateEditorPluginField
   (
+   int channel,
    String tname, 
    JPluginSelectionField field
   ) 
@@ -791,11 +872,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetEditorPlugins(tname);
+	    client.getToolsetEditorPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getEditors();
@@ -816,7 +899,7 @@ class UIMaster
       synchronized(pEditorLayouts) {
 	layout = pEditorLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getEditorMenuLayout(tname);
+	  layout = client.getEditorMenuLayout(tname);
 	  pEditorLayouts.put(tname, layout);
 	}
       }
@@ -835,25 +918,30 @@ class UIMaster
   /**
    * Create a new action plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createActionSelectionField
   (
+   int channel,
    int width  
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient(channel);
+      String tname = client.getDefaultToolsetName();
 
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetActionPlugins(tname);
+	    client.getToolsetActionPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getActions();
@@ -874,7 +962,7 @@ class UIMaster
       synchronized(pActionLayouts) {
 	layout = pActionLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getActionMenuLayout(tname);
+	  layout = client.getActionMenuLayout(tname);
 	  pActionLayouts.put(tname, layout);
 	}
       }
@@ -895,6 +983,7 @@ class UIMaster
   public void 
   updateActionPluginField
   (
+   int channel,
    String tname, 
    JPluginSelectionField field
   ) 
@@ -905,11 +994,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetActionPlugins(tname);
+	    client.getToolsetActionPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getActions();
@@ -930,7 +1021,7 @@ class UIMaster
       synchronized(pActionLayouts) {
 	layout = pActionLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getActionMenuLayout(tname);
+	  layout = client.getActionMenuLayout(tname);
 	  pActionLayouts.put(tname, layout);
 	}
       }
@@ -949,6 +1040,9 @@ class UIMaster
   /**
    * Create a new archiver plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
@@ -961,13 +1055,14 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
 
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetArchiverPlugins(tname);
+	    client.getToolsetArchiverPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getArchivers();
@@ -988,7 +1083,7 @@ class UIMaster
       synchronized(pArchiverLayouts) {
 	layout = pArchiverLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getArchiverMenuLayout(tname);
+	  layout = client.getArchiverMenuLayout(tname);
 	  pArchiverLayouts.put(tname, layout);
 	}
       }
@@ -1019,11 +1114,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient();
+
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetArchiverPlugins(tname);
+	    client.getToolsetArchiverPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getArchivers();
@@ -1044,7 +1141,7 @@ class UIMaster
       synchronized(pArchiverLayouts) {
 	layout = pArchiverLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getArchiverMenuLayout(tname);
+	  layout = client.getArchiverMenuLayout(tname);
 	  pArchiverLayouts.put(tname, layout);
 	}
       }
@@ -1075,13 +1172,14 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
 
       synchronized(pMasterExtPlugins) {
 	plugins = pMasterExtPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetMasterExtPlugins(tname);
+	    client.getToolsetMasterExtPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getMasterExts();
@@ -1102,7 +1200,7 @@ class UIMaster
       synchronized(pMasterExtLayouts) {
 	layout = pMasterExtLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getMasterExtMenuLayout(tname);
+	  layout = client.getMasterExtMenuLayout(tname);
 	  pMasterExtLayouts.put(tname, layout);
 	}
       }
@@ -1133,11 +1231,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient();
+
       synchronized(pMasterExtPlugins) {
 	plugins = pMasterExtPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetMasterExtPlugins(tname);
+	    client.getToolsetMasterExtPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getMasterExts();
@@ -1158,7 +1258,7 @@ class UIMaster
       synchronized(pMasterExtLayouts) {
 	layout = pMasterExtLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getMasterExtMenuLayout(tname);
+	  layout = client.getMasterExtMenuLayout(tname);
 	  pMasterExtLayouts.put(tname, layout);
 	}
       }
@@ -1189,13 +1289,14 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      String tname = pMasterMgrClient.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
 
       synchronized(pQueueExtPlugins) {
 	plugins = pQueueExtPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetQueueExtPlugins(tname);
+	    client.getToolsetQueueExtPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getQueueExts();
@@ -1216,7 +1317,7 @@ class UIMaster
       synchronized(pQueueExtLayouts) {
 	layout = pQueueExtLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getQueueExtMenuLayout(tname);
+	  layout = client.getQueueExtMenuLayout(tname);
 	  pQueueExtLayouts.put(tname, layout);
 	}
       }
@@ -1247,11 +1348,13 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
+      MasterMgrClient client = getMasterMgrClient();
+
       synchronized(pQueueExtPlugins) {
 	plugins = pQueueExtPlugins.get(tname);
 	if(plugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    pMasterMgrClient.getToolsetQueueExtPlugins(tname);
+	    client.getToolsetQueueExtPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getQueueExts();
@@ -1272,7 +1375,7 @@ class UIMaster
       synchronized(pQueueExtLayouts) {
 	layout = pQueueExtLayouts.get(tname);
 	if(layout == null) {
-	  layout = pMasterMgrClient.getQueueExtMenuLayout(tname);
+	  layout = client.getQueueExtMenuLayout(tname);
 	  pQueueExtLayouts.put(tname, layout);
 	}
       }
@@ -1342,6 +1445,24 @@ class UIMaster
     return pNodeLinksPanels;
   }
 
+
+  /**
+   * Get the job servers panel group.
+   */ 
+  public PanelGroup<JQueueJobServersPanel>
+  getQueueJobServersPanels() 
+  {
+    return pQueueJobServersPanels;
+  }
+
+  /**
+   * Get the job slots panel group.
+   */ 
+  public PanelGroup<JQueueJobSlotsPanel>
+  getQueueJobSlotsPanels() 
+  {
+    return pQueueJobSlotsPanels;
+  }
 
   /**
    * Get the job broswer panel group.
@@ -1642,18 +1763,84 @@ class UIMaster
   public void 
   showResourceUsageHistoryDialog
   (
-   TreeMap<String,ResourceSampleBlock> samples
+   int channel,
+   TreeSet<String> hosts
   )
   {
-    pResourceUsageHistoryDialog.updateSamples(samples);
-    pResourceUsageHistoryDialog.setVisible(true);
+    pResourceUsageHistoryDialog.updateSamples(channel, hosts);
   } 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Try to aquire a panel operation lock. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
+   */ 
+  public boolean
+  beginPanelOp()
+  {
+    return beginPanelOpHelper(0, "", false);
+  }
+
+  /**
+   * Try to aquire a panel operation lock, but generate no progress messages. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
+   */ 
+   public boolean
+   beginSilentPanelOp
+   (
+    int channel
+   ) 
+   {
+     return beginPanelOpHelper(channel, "", true);
+   }
+
+  /**
+   * Try to aquire a panel operation lock. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
+   */ 
+   public boolean
+   beginPanelOp
+   (
+    int channel
+   ) 
+   {
+     return beginPanelOpHelper(channel, "", false);
+   }
+
   /**
    * Try to aquire a panel operation lock and if successfull notify the user that 
    * an operation is in progress. <P> 
@@ -1676,31 +1863,88 @@ class UIMaster
    String msg
   )
   {
-    boolean aquired = pOpsLock.tryLock();
-
-    if(aquired) 
-      SwingUtilities.invokeLater(new BeginOpsTask(msg));
-    else 
-      Toolkit.getDefaultToolkit().beep();
-
-    return aquired;
+    return beginPanelOpHelper(0, msg, false);
   }
   
   /**
-   * Try to aquire a panel operation lock. <P> 
+   * Try to aquire a panel operation lock and if successfull notify the user that 
+   * an operation is in progress. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
    * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param msg
+   *   A short message describing the operation.
    * 
    * @return
    *   Whether the panel operation should proceed.
    */ 
   public boolean
-  beginPanelOp() 
+  beginPanelOp
+  (
+   int channel,
+   String msg
+  )
   {
-    return beginPanelOp("");
+    return beginPanelOpHelper(channel, msg, false);
   }
 
+  /**
+   * Try to aquire a panel operation lock and if successfull notify the user that 
+   * an operation is in progress. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param msg
+   *   A short message describing the operation.
+   * 
+   * @param silent
+   *   Whether the operation should be performed without progress messages.
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
+   */ 
+  private boolean
+  beginPanelOpHelper
+  (
+   int channel,
+   String msg, 
+   boolean silent
+  )
+  {
+    assert((channel >= 0) && (channel < 10)); 
+    boolean aquired = pOpsLocks[channel].tryLock();
+
+    if(!silent) {
+      pOpsRunning[channel].set(true);
+      pOpsTimers[channel] = new TaskTimer();
+    }
+
+    if(aquired) {
+      if(!silent)
+	SwingUtilities.invokeLater(new BeginOpsTask(channel, msg));
+    }
+    else {
+      Toolkit.getDefaultToolkit().beep();
+    }
+
+    return aquired;
+  }
+
+ 
   /**
    * Update the operation message in mid-operation.
    * 
@@ -1713,13 +1957,82 @@ class UIMaster
    String msg
   )
   {
-    assert(pOpsLock.isLocked());
-    SwingUtilities.invokeLater(new UpdateOpsTask(msg));
+    updatePanelOp(0, msg);
+  }
+
+  /**
+   * Update the operation message in mid-operation.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param msg
+   *   A short message describing the operation.
+   */ 
+  public void
+  updatePanelOp
+  (
+   int channel,
+   String msg
+  )
+  {
+    assert((channel >= 0) && (channel < 10)); 
+    assert(pOpsLocks[channel].isLocked());
+    SwingUtilities.invokeLater(new UpdateOpsTask(channel, msg));
+  }
+
+
+  /**
+   * Release the panel operation lock. <P>
+   * 
+   * @param msg
+   *   A short completion message.
+   */
+  public void 
+  endPanelOp
+  (
+   String msg   
+  ) 
+  {
+    endPanelOpHelper(0, msg, false);
+  }
+
+  /**
+   * Release the panel operation lock. <P>
+   * 
+   * @param channel
+   *   The index of the update channel.
+   */ 
+  public void 
+  endPanelOp
+  ( 
+   int channel
+  ) 
+  {
+    endPanelOpHelper(channel, "", false);
+  }
+
+  /**
+   * Release the panel operation lock, but generate no progress messages. <P>
+   * 
+   * @param channel
+   *   The index of the update channel.
+   */ 
+  public void 
+  endSilentPanelOp
+  ( 
+   int channel
+  ) 
+  {
+    endPanelOpHelper(channel, "", true);
   }
 
   /**
    * Release the panel operation lock and notify the user that the operation has 
    * completed. <P>
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param msg
    *   A short completion message.
@@ -1727,12 +2040,48 @@ class UIMaster
   public void 
   endPanelOp
   (
+   int channel,
    String msg
   )
   {
+    endPanelOpHelper(channel, msg, false);
+  }
+
+  /**
+   * Release the panel operation lock and notify the user that the operation has 
+   * completed. <P>
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param msg
+   *   A short completion message.
+   */ 
+  private void 
+  endPanelOpHelper
+  (
+   int channel,
+   String msg, 
+   boolean silent
+  )
+  {
+    assert((channel >= 0) && (channel < 10)); 
     try {
-      pOpsLock.unlock();  
-      SwingUtilities.invokeLater(new EndOpsTask(msg)); 
+      String timedMsg = msg;
+      if(!silent) {
+	TaskTimer timer = pOpsTimers[channel]; 
+	if(timer != null) {
+	  timer.suspend();
+	  timedMsg = (msg + "   (" + Dates.formatInterval(timer.getActiveDuration()) + ")");
+	}
+
+	pOpsRunning[channel].set(false);
+      }
+
+      pOpsLocks[channel].unlock();  
+
+      if(!silent) 
+	SwingUtilities.invokeLater(new EndOpsTask(channel, timedMsg)); 
     }
     catch(IllegalMonitorStateException ex) {
       LogMgr.getInstance().log
@@ -1742,15 +2091,38 @@ class UIMaster
     }
   }
 
+
   /**
-   * Release the panel operation lock. <P>
+   * Show only the panel operation progress components associated with used channel groups.
    */ 
   public void 
-  endPanelOp()
+  updateOpsBar() 
   {
-    endPanelOp("");
-  }
+    if(pProgressBoxes == null) 
+      return;
 
+    int idx;
+    for(idx=1; idx<pProgressBoxes.length; idx++) {
+      boolean unused = 
+ 	(pNodeBrowserPanels.isGroupUnused(idx) && 
+ 	 pNodeViewerPanels.isGroupUnused(idx) && 
+ 	 pNodeDetailsPanels.isGroupUnused(idx) && 
+ 	 pNodeHistoryPanels.isGroupUnused(idx) && 
+ 	 pNodeFilesPanels.isGroupUnused(idx) && 
+ 	 pNodeLinksPanels.isGroupUnused(idx) && 
+  	 pQueueJobServersPanels.isGroupUnused(idx) && 
+  	 pQueueJobSlotsPanels.isGroupUnused(idx) && 
+ 	 pQueueJobBrowserPanels.isGroupUnused(idx) && 
+ 	 pQueueJobViewerPanels.isGroupUnused(idx) && 
+ 	 pQueueJobDetailsPanels.isGroupUnused(idx));
+
+      if(unused) 
+	pProgressBoxes[idx].setVisible(false);
+    }
+
+    pProgressPanel.revalidate();
+    pProgressPanel.repaint();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2072,11 +2444,14 @@ class UIMaster
   {
     doUponExit();
 
-    if(pMasterMgrClient != null) 
-      pMasterMgrClient.disconnect();
-
-    if(pQueueMgrClient != null) 
-      pQueueMgrClient.disconnect();
+    int idx;
+    for(idx=0; idx<pMasterMgrClients.length; idx++) {
+      if(pMasterMgrClients[idx] != null) 
+	pMasterMgrClients[idx].disconnect();
+      
+      if(pQueueMgrClients[idx] != null) 
+	pQueueMgrClients[idx].disconnect();
+    }
 
     PluginMgrClient.getInstance().disconnect();
 
@@ -2134,7 +2509,7 @@ class UIMaster
 	    }
 	    NativeFileSys.chmod(0700, dir);
 	    
-	    pMasterMgrClient.createInitialPanelLayout
+	    getMasterMgrClient().createInitialPanelLayout
 	      ("Default", PackageInfo.sUser, "default");
 
 	    try {
@@ -2187,7 +2562,7 @@ class UIMaster
 
       /* make sure that the default working area exists */ 
       try {
-	pMasterMgrClient.createWorkingArea(PackageInfo.sUser, "default");
+	getMasterMgrClient().createWorkingArea(PackageInfo.sUser, "default");
       }
       catch(PipelineException ex) {	
 	LogMgr.getInstance().log
@@ -2364,33 +2739,64 @@ class UIMaster
 	  root.add(Box.createRigidArea(new Dimension(0, 2)));
 	  
 	  {
-	    JPanel panel = new JPanel(); 
+	    JPanel panel = new JPanel();
+	    pProgressPanel = panel;
+ 
 	    panel.setName("GreyPanel"); 
 	    panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
+	    
+	    panel.add(Box.createRigidArea(new Dimension(0, 19)));
 
-	    panel.add(Box.createRigidArea(new Dimension(2, 0)));
-	    
 	    {
-	      JLabel label = new JLabel(sProgressLightIcon);
-	      pProgressLight = label;
+	      Box hbox = new Box(BoxLayout.X_AXIS);   
+	      pNoProgressBox = hbox;
 	      
-	      Dimension size = new Dimension(15, 19);
-	      label.setMinimumSize(size);
-	      label.setMaximumSize(size);
-	      label.setPreferredSize(size);
+	      hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+	      hbox.add(UIFactory.createTextField(null, 30, JLabel.LEFT));
+	      hbox.add(Box.createRigidArea(new Dimension(6, 0)));
 	      
-	      panel.add(label);
+	      panel.add(hbox);
 	    }
-	    
+
 	    {
-	      JTextField field = UIFactory.createTextField(null, 200, JLabel.LEFT);
-	      pProgressField = field;
+	      pProgressBoxes  = new Box[10];
+	      pProgressLights = new JLabel[10];
+	      pProgressFields = new JTextField[10];
+
+	      int idx;
+	      for(idx=0; idx<pProgressLights.length; idx++) {
+		Box hbox = new Box(BoxLayout.X_AXIS);   
+		pProgressBoxes[idx] = hbox; 
+		hbox.setVisible(false);
+
+		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+
+		{
+		  JLabel label = new JLabel(sProgressFinishedIcons[idx]);
+		  pProgressLights[idx] = label;
 	      
-	      panel.add(field);
+		  Dimension size = new Dimension(19, 19);
+		  label.setMinimumSize(size);
+		  label.setMaximumSize(size);
+		  label.setPreferredSize(size);
+		  
+		  hbox.add(label);
+		}
+
+		hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		{
+		  JTextField field = UIFactory.createTextField(null, 30, JLabel.LEFT);
+		  pProgressFields[idx] = field;
+		  
+		  hbox.add(field);
+		}
+
+		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+
+		panel.add(hbox);
+	      }
 	    }
-	    
-	    panel.add(Box.createRigidArea(new Dimension(8, 0)));
-	    panel.add(Box.createHorizontalGlue());
 	    
 	    root.add(panel);
 	  }
@@ -2508,21 +2914,31 @@ class UIMaster
   { 
     BeginOpsTask
     ( 
+     int channel, 
      String msg
     ) 
     {
       super("UIMaster:BeginOpsTask");
 
+      pIdx = channel;
       pMsg = msg;
     }
 
     public void 
     run() 
-    {
-      pProgressLight.setIcon(sProgressLightOnIcon);
-      pProgressField.setText(pMsg);
+    { 
+      pProgressLights[pIdx].setIcon(sProgressRunningIcons[pIdx]);
+      pProgressFields[pIdx].setText(pMsg);
+      
+      if(pNoProgressBox.isVisible() || !pProgressBoxes[pIdx].isVisible()) {
+	pNoProgressBox.setVisible(false);
+	pProgressBoxes[pIdx].setVisible(true);
+	pProgressPanel.revalidate();
+	pProgressPanel.repaint();
+      }
     }
 
+    private int     pIdx; 
     private String  pMsg;
   }
 
@@ -2535,20 +2951,23 @@ class UIMaster
   { 
     UpdateOpsTask
     ( 
+     int channel, 
      String msg
     ) 
     {
       super("UIMaster:UpdateOpsTask");
 
+      pIdx = channel;
       pMsg = msg;
     }
 
     public void 
     run() 
     {
-      pProgressField.setText(pMsg);
+      pProgressFields[pIdx].setText(pMsg);
     }
 
+    private int     pIdx; 
     private String  pMsg;
   }
 
@@ -2561,22 +2980,105 @@ class UIMaster
   { 
     EndOpsTask
     ( 
+     int channel, 
      String msg
     ) 
     {
       super("UIMaster:EndOpsTask");
 
+      pIdx = channel;
       pMsg = msg;
     }
 
     public void 
     run() 
     {
-      pProgressField.setText(pMsg);
-      pProgressLight.setIcon(sProgressLightIcon);
+      pProgressFields[pIdx].setText(pMsg);
+      pProgressLights[pIdx].setIcon(sProgressFinishedIcons[pIdx]); 
+      
+      if(!pOpsRunning[pIdx].get()) {
+	WaitHideOpsTask task = new WaitHideOpsTask(pIdx); 
+	task.start();
+      }
     }
 
+    private int     pIdx; 
     private String  pMsg;
+  }
+
+  /**
+   * Wait a few seconds before hiding the progress box.
+   */ 
+  private
+  class WaitHideOpsTask
+    extends Thread
+  { 
+    WaitHideOpsTask
+    ( 
+     int channel
+    ) 
+    {
+      super("UIMaster:WaitHideOpsTask");
+
+      pIdx = channel;
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	sleep(5000);
+      }
+      catch(InterruptedException ex) {
+      }
+      
+      SwingUtilities.invokeLater(new HideOpsTask(pIdx)); 
+    }
+
+    private int pIdx; 
+  }
+  
+  /**
+   * Hide the progress box if no operations are currently running.
+   */ 
+  private
+  class HideOpsTask
+    extends Thread
+  { 
+    HideOpsTask
+    ( 
+     int channel
+    ) 
+    {
+      super("UIMaster:HideOpsTask");
+
+      pIdx = channel;
+    }
+
+    public void 
+    run() 
+    {
+      if(!pOpsRunning[pIdx].get() && pProgressBoxes[pIdx].isVisible()) {
+	pProgressBoxes[pIdx].setVisible(false);
+	
+	boolean anyVisible = false;
+	int wk; 
+	for(wk=0; wk< pProgressBoxes.length; wk++) {
+	  if(pProgressBoxes[wk].isVisible()) {
+	    anyVisible = true;
+	    break;
+	  }
+	}
+	
+	if(!anyVisible) 
+	  pNoProgressBox.setVisible(true);
+	
+	pProgressPanel.revalidate();
+	pProgressPanel.repaint();
+      }
+    }
+
+    private int pIdx; 
   }
 
 
@@ -2707,6 +3209,8 @@ class UIMaster
 	pNodeFilesPanels.clear();
 	pNodeLinksPanels.clear();
 	
+ 	pQueueJobServersPanels.clear();
+ 	pQueueJobSlotsPanels.clear();
 	pQueueJobBrowserPanels.clear();
 	pQueueJobViewerPanels.clear();
 	pQueueJobDetailsPanels.clear();
@@ -2796,13 +3300,25 @@ class UIMaster
 	pIsRestoring.set(false);
       }
 
-      /* restore selections and perform the initial update synchronously */ 
+      /* restore selections and perform the intial update */ 
       if(pRestoreSelections) {
-	for(JNodeViewerPanel panel : pNodeViewerPanels.getPanels()) 
-	  panel.restoreSelection();
+	TreeSet<Integer> groupIDs = new TreeSet<Integer>();
 
- 	for(JQueueJobBrowserPanel panel : pQueueJobBrowserPanels.getPanels()) 
- 	  panel.restoreSelection();
+	for(JNodeViewerPanel panel : pNodeViewerPanels.getPanels()) {
+	  Integer gid = panel.getGroupID();
+	  if(!groupIDs.contains(gid)) {
+	    groupIDs.add(gid);
+	    panel.restoreSelections();
+	  }
+	}
+
+ 	for(JQueueJobBrowserPanel panel : pQueueJobBrowserPanels.getPanels()) {
+	  Integer gid = panel.getGroupID();
+	  if(!groupIDs.contains(gid)) {
+	    groupIDs.add(gid);
+	    panel.restoreSelections();
+	  }
+	}
       }
       
       /* set window titles and placement */ 
@@ -3007,12 +3523,14 @@ class UIMaster
     BaseNodeTask
     (
      String tname, 
+     int channel, 
      String author, 
      String view
     ) 
     {
       super(tname);
 
+      pChannel    = channel; 
       pAuthorName = author;
       pViewName   = view; 
     }
@@ -3021,6 +3539,7 @@ class UIMaster
     postOp() 
     {}
 
+    protected int     pChannel; 
     protected String  pAuthorName; 
     protected String  pViewName; 
   }
@@ -3035,13 +3554,14 @@ class UIMaster
     public 
     EditTask
     (
+     int channel, 
      NodeCommon com,
      boolean useDefault,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:EditTask", author, view);
+      super("UIMaster:EditTask", channel, author, view);
 
       pNodeCommon = com;
       pUseDefault = useDefault;
@@ -3050,6 +3570,7 @@ class UIMaster
     public 
     EditTask
     (
+     int channel, 
      NodeCommon com, 
      String ename, 
      VersionID evid, 
@@ -3058,7 +3579,7 @@ class UIMaster
      String view
     ) 
     {
-      super("UIMaster:EditTask", author, view);
+      super("UIMaster:EditTask", channel, author, view);
 
       pNodeCommon    = com;
       pEditorName    = ename;
@@ -3073,9 +3594,9 @@ class UIMaster
       SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
-	if(master.beginPanelOp("Launching Node Editor...")) {
+	if(master.beginPanelOp(pChannel, "Launching Node Editor...")) {
 	  try {
-	    MasterMgrClient client = master.getMasterMgrClient();
+	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
 
 	    NodeMod mod = null;
 	    if(pNodeCommon instanceof NodeMod) 
@@ -3160,7 +3681,7 @@ class UIMaster
 	    return;
 	  }
 	  finally {
-	    master.endPanelOp("Done.");
+	    master.endPanelOp(pChannel, "Done.");
 	  }
 	}
 
@@ -3195,6 +3716,7 @@ class UIMaster
     public 
     QueueJobsTask
     (
+     int channel, 
      String name,
      String author, 
      String view, 
@@ -3204,7 +3726,7 @@ class UIMaster
      TreeSet<String> selectionKeys
     ) 
     {
-      super("UIMaster:QueueJobsTask", author, view);
+      super("UIMaster:QueueJobsTask", channel, author, view);
 
       pNames = new TreeSet<String>();
       pNames.add(name);
@@ -3218,6 +3740,7 @@ class UIMaster
     public 
     QueueJobsTask
     (
+     int channel, 
      TreeSet<String> names,
      String author, 
      String view, 
@@ -3227,7 +3750,7 @@ class UIMaster
      TreeSet<String> selectionKeys
     ) 
     {
-      super("UIMaster:QueueJobsTask", author, view);
+      super("UIMaster:QueueJobsTask", channel, author, view);
 
       pNames = names;
 
@@ -3241,13 +3764,14 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
+      if(master.beginPanelOp(pChannel)) {
 	try {
 	  for(String name : pNames) {
-	    master.updatePanelOp("Submitting Jobs to the Queue: " + name);
-	    master.getMasterMgrClient().submitJobs(pAuthorName, pViewName, name, null, 
-						   pBatchSize, pPriority, pRampUp, 
-						   pSelectionKeys);
+	    master.updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
+	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	    client.submitJobs(pAuthorName, pViewName, name, null, 
+			      pBatchSize, pPriority, pRampUp, 
+			      pSelectionKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3255,7 +3779,7 @@ class UIMaster
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -3279,12 +3803,13 @@ class UIMaster
     public 
     PauseJobsTask
     (
+     int channel, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:PauseJobsTask", author, view);
+      super("UIMaster:PauseJobsTask", channel, author, view);
 
       pJobIDs = jobIDs; 
     }
@@ -3293,16 +3818,16 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Pausing Jobs...")) {
+      if(master.beginPanelOp(pChannel, "Pausing Jobs...")) {
 	try {
-	  master.getQueueMgrClient().pauseJobs(pAuthorName, pJobIDs);
+	  master.getQueueMgrClient(pChannel).pauseJobs(pAuthorName, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -3322,12 +3847,13 @@ class UIMaster
     public 
     ResumeJobsTask
     (
+     int channel, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:ResumeJobsTask", author, view);
+      super("UIMaster:ResumeJobsTask", channel, author, view);
 
       pJobIDs = jobIDs; 
     }
@@ -3336,16 +3862,16 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+      if(master.beginPanelOp(pChannel, "Resuming Paused Jobs...")) {
 	try {
-	  master.getQueueMgrClient().resumeJobs(pAuthorName, pJobIDs);
+	  master.getQueueMgrClient(pChannel).resumeJobs(pAuthorName, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -3365,12 +3891,13 @@ class UIMaster
     public 
     PreemptJobsTask
     (
+     int channel, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:PreemptJobsTask", author, view);
+      super("UIMaster:PreemptJobsTask", channel, author, view);
 
       pJobIDs = jobIDs; 
     }
@@ -3379,16 +3906,16 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Preempting Jobs...")) {
+      if(master.beginPanelOp(pChannel, "Preempting Jobs...")) {
 	try {
-	  master.getQueueMgrClient().preemptJobs(pAuthorName, pJobIDs);
+	  master.getQueueMgrClient(pChannel).preemptJobs(pAuthorName, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -3408,12 +3935,13 @@ class UIMaster
     public 
     KillJobsTask
     (
+     int channel, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:KillJobsTask", author, view);
+      super("UIMaster:KillJobsTask", channel, author, view);
 
       pJobIDs = jobIDs; 
     }
@@ -3422,16 +3950,16 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Killing Jobs...")) {
+      if(master.beginPanelOp(pChannel, "Killing Jobs...")) {
 	try {
-	  master.getQueueMgrClient().killJobs(pAuthorName, pJobIDs);
+	  master.getQueueMgrClient(pChannel).killJobs(pAuthorName, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -3454,12 +3982,13 @@ class UIMaster
     public 
     RemoveFilesTask
     (
+     int channel, 
      String name,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:RemoveFilesTask", author, view);
+      super("UIMaster:RemoveFilesTask", channel, author, view);
 
       pNames = new TreeSet<String>();
       pNames.add(name);
@@ -3468,12 +3997,13 @@ class UIMaster
     public 
     RemoveFilesTask
     (
+     int channel, 
      TreeSet<String> names,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:RemoveFilesTask", author, view);
+      super("UIMaster:RemoveFilesTask", channel, author, view);
 
       pNames = names; 
     }
@@ -3482,11 +4012,12 @@ class UIMaster
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
+      if(master.beginPanelOp(pChannel)) {
 	try {
 	  for(String name : pNames) {
-	    master.updatePanelOp("Removing Files: " + name);
-	    master.getMasterMgrClient().removeFiles(pAuthorName, pViewName, name, null);
+	    master.updatePanelOp(pChannel, "Removing Files: " + name);
+	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	    client.removeFiles(pAuthorName, pViewName, name, null);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3494,7 +4025,7 @@ class UIMaster
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -3565,27 +4096,46 @@ class UIMaster
   private static final Icon sRestoreSplashIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("RestoreSplash.png"));
 
-  private static final Icon sProgressLightIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightIcon.png"));
+  private static final Icon sProgressFinishedIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Finished.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Finished.png"))
+  };
 
-  private static final Icon sProgressLightOnIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightOnIcon.png"));
-
-
+  private static final Icon sProgressRunningIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group0Running.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group1Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group2Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group3Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group4Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group5Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group6Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group7Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group8Running.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Group9Running.png"))
+  };
+ 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The network interface to the <B>plmaster</B>(1) daemon.
+   * The network interfaces to the <B>plmaster</B>(1) daemon.
    */ 
-  private MasterMgrClient  pMasterMgrClient;
+  private MasterMgrClient[]  pMasterMgrClients;
 
   /**
-   * The network interface to the <B>plqueuemgr</B>(1) daemon.
+   * The network interfaces to the <B>plqueuemgr</B>(1) daemon.
    */ 
-  private QueueMgrClient  pQueueMgrClient;
+  private QueueMgrClient[]  pQueueMgrClients;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3660,17 +4210,38 @@ class UIMaster
   /**
    * A lock used to serialize panel operations.
    */ 
-  private ReentrantLock pOpsLock;
+  private ReentrantLock[] pOpsLocks;
 
   /**
-   * The light which warns users that a panel operation is in progress.
+   * Whether a panel operation is currently running.
    */ 
-  private JLabel  pProgressLight;
+  private AtomicBoolean[] pOpsRunning;
 
   /**
-   * The progress message field.
+   * Timers used to measure and report the duration of panel operations.
    */ 
-  private JTextField  pProgressField;
+  private TaskTimer[] pOpsTimers; 
+
+  /**
+   * The top-level progress message container.
+   */ 
+  private JPanel  pProgressPanel; 
+
+  /**
+   * The channel progress message containiers.
+   */ 
+  private Box[]  pProgressBoxes;
+  private Box    pNoProgressBox;
+
+  /**
+   * The icons warning that a panel operation is in progress for a given channel.
+   */ 
+  private JLabel[]  pProgressLights;
+
+  /**
+   * The channel progress message fields.
+   */ 
+  private JTextField[]  pProgressFields;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3777,6 +4348,16 @@ class UIMaster
    */ 
   private PanelGroup<JNodeLinksPanel>  pNodeLinksPanels;
 
+
+  /**
+   * The active job servers panels. <P> 
+   */ 
+  private PanelGroup<JQueueJobServersPanel>  pQueueJobServersPanels;
+
+  /**
+   * The active job slots panels. <P> 
+   */ 
+  private PanelGroup<JQueueJobSlotsPanel>  pQueueJobSlotsPanels;
 
   /**
    * The active job browser panels. <P> 

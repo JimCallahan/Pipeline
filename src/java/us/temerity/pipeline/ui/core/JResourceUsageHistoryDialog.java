@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.14 2006/10/04 13:20:27 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.15 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -342,15 +342,16 @@ class JResourceUsageHistoryDialog
   public synchronized void 
   updateSamples
   (
-   TreeMap<String,ResourceSampleBlock> samples   
+   int channel,
+   TreeSet<String> hosts
   ) 
-  {
-    pSamples.clear();
-    pSamples.putAll(samples);
+  {  
+    pGroupID = channel;
 
-    pBorderResized = true;
+    pBorderResized = true;  
 
-    doRefresh();
+    UpdateTask task = new UpdateTask(this, hosts, true);
+    task.start();
   }
 
   /**
@@ -2451,9 +2452,9 @@ class JResourceUsageHistoryDialog
    * Get the latest resource samples and update the display.
    */ 
   private synchronized void 
-  doUpdate()
+  doUpdate() 
   {
-    UpdateTask task = new UpdateTask(new TreeSet<String>(pSamples.keySet()));
+    UpdateTask task = new UpdateTask(this, new TreeSet<String>(pSamples.keySet()), false);
     task.start();
   }
 
@@ -2549,28 +2550,34 @@ class JResourceUsageHistoryDialog
     public 
     UpdateTask
     (
-     TreeSet<String> hostnames
+     JResourceUsageHistoryDialog parent,
+     TreeSet<String> hostnames, 
+     boolean makeVisible
     ) 
     {
       super("JResourceUsageHistoryDialog:UpdateTask");
-      pHostnames = hostnames; 
+
+      pParent      = parent; 
+      pHostnames   = hostnames; 
+      pMakeVisible = makeVisible;
     }
     
     public void
     run()
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient qclient = master.getQueueMgrClient();
-      
-      TreeMap<String,ResourceSampleBlock> samples = new TreeMap<String,ResourceSampleBlock>();
-      if(master.beginPanelOp()) {
+
+      if(master.beginPanelOp(pGroupID)) {
 	try {
+	  QueueMgrClient qclient = master.getQueueMgrClient(pGroupID);
+
+	  pSamples.clear();
 	  for(String hname : pHostnames) {
 	    try {
-	      master.updatePanelOp("Loading History: " + hname);
+	      master.updatePanelOp(pGroupID, "Loading History: " + hname);
 	      ResourceSampleBlock block = qclient.getHostResourceSamples(hname);
 	      if(block != null) 
-		samples.put(hname, block);
+		pSamples.put(hname, block);
 	    }
 	    catch(PipelineException ex) {
 	      master.showErrorDialog(ex);
@@ -2578,13 +2585,49 @@ class JResourceUsageHistoryDialog
 	  }
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
       }
-      updateSamples(samples);
+
+      SwingUtilities.invokeLater(new RefreshTask(pParent, pMakeVisible));
     }
 
-    private TreeSet<String>  pHostnames;
+    private JResourceUsageHistoryDialog  pParent;
+    private TreeSet<String>              pHostnames;
+    private boolean                      pMakeVisible; 
+  }
+
+  /** 
+   * Update the resource usage history.
+   */ 
+  private
+  class RefreshTask
+    extends Thread
+  {
+    public 
+    RefreshTask
+    (
+     JResourceUsageHistoryDialog parent,
+     boolean makeVisible
+    ) 
+    {
+      super("JResourceUsageHistoryDialog:RefreshTask");
+
+      pParent      = parent; 
+      pMakeVisible = makeVisible;
+    }
+    
+    public void
+    run()
+    {
+      doRefresh();
+
+      if(pMakeVisible) 
+	pParent.setVisible(true);
+    }
+
+    private JResourceUsageHistoryDialog  pParent;
+    private boolean                      pMakeVisible; 
   }
 
 
@@ -2627,6 +2670,11 @@ class JResourceUsageHistoryDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update channel ID.
+   */ 
+  private int  pGroupID;
 
   /**
    * The resource usage samples indexed by hostname.

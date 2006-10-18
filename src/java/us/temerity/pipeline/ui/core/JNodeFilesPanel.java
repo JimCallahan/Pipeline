@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.27 2006/09/25 12:11:44 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.28 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -337,6 +337,8 @@ class JNodeFilesPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -364,22 +366,48 @@ class JNodeFilesPanel
     return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
   }
 
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    updatePanels();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the per-file status.
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
    * 
    * @param status
-   *   The current node status.
+   *   The current status for the node being displayed. 
    * 
    * @param novelty
    *   The per-file novelty flags.
@@ -388,20 +416,23 @@ class JNodeFilesPanel
    *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
-  updateNodeStatus
+  applyPanelUpdates
   (
    String author, 
-   String view, 
-   NodeStatus status, 
+   String view,
+   NodeStatus status,
    TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty, 
    TreeSet<VersionID> offline
-  ) 
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
     updateNodeStatus(status, novelty, offline);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the UI components to reflect the current per-file status.
@@ -415,7 +446,7 @@ class JNodeFilesPanel
    * @param offline
    *   The revision numbers of the offline checked-in versions.
    */
-  public synchronized void 
+  private synchronized void 
   updateNodeStatus
   (
    NodeStatus status, 
@@ -809,29 +840,6 @@ class JNodeFilesPanel
 		for(VersionID vid : vids) {
 		  JFileHeaderButton btn = 
 		    new JFileHeaderButton(this, fseq, vid, bvid, pOffline.contains(vid));
-
-// 		  JButton btn = new JButton("v" + vid);
-// 		  btn.setName("TableHeaderButton");
-		    
-// 		  boolean isOffline = pOffline.contains(vid);
-
-// 		  if((bvid != null) && bvid.equals(vid)) 
-// 		    btn.setForeground(Color.cyan);
-// 		  else if(isOffline) 
-// 		    btn.setForeground(new Color(0.75f, 0.75f, 0.75f));
-		    
-// 		  if(!isOffline) {
-// 		    btn.addActionListener(this);
-// 		    btn.setActionCommand("version-pressed:" + fseq + ":" + vid);
-// 		  }
-		    
-// 		  btn.setFocusable(false);
-		    
-// 		  Dimension size = new Dimension(70, 23);
-// 		  btn.setMinimumSize(size);
-// 		  btn.setMaximumSize(size);
-// 		  btn.setPreferredSize(size);
-		    
 		  hbox.add(btn);
 		}
 		  
@@ -966,7 +974,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -991,7 +999,7 @@ class JNodeFilesPanel
 
     if((toolset != null) && !toolset.equals(pComparatorMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildComparatorMenu(toolset, pCompareWithMenu, this);
+      master.rebuildComparatorMenu(pGroupID, toolset, pCompareWithMenu, this);
       
       pComparatorMenuToolset = toolset;
     }
@@ -2771,71 +2779,76 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       SubProcessLight proc = null;
       {
-	try {
-	  String name = pStatus.getName();
-	  MasterMgrClient client = master.getMasterMgrClient();
-
-	  NodeCommon com = null;
-	  {
-	    NodeMod mod = pStatus.getDetails().getWorkingVersion();
-	    if(mod != null) 
-	      com = mod;
-	    else 
-	      com = client.getCheckedInVersion(name, pVersionID);	    
-	  }
-
-	  /* create an editor plugin instance */ 
-	  BaseEditor editor = null;
-	  {
-	    if(pEditorName != null) {
-	      PluginMgrClient pclient = PluginMgrClient.getInstance();
-	      editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
-	    }
-	    else if(pUseDefault) {
-	      FilePattern fpat = com.getPrimarySequence().getFilePattern();
-	      String suffix = fpat.getSuffix();
-	      if(suffix != null) 
-		editor = client.getEditorForSuffix(suffix);
+	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
+	  try {
+	    String name = pStatus.getName();
+	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	    
+	    NodeCommon com = null;
+	    {
+	      NodeMod mod = pStatus.getDetails().getWorkingVersion();
+	      if(mod != null) 
+		com = mod;
+	      else 
+		com = client.getCheckedInVersion(name, pVersionID);	    
 	    }
 	    
-	    if(editor == null) 
-	      editor = com.getEditor();
+	    /* create an editor plugin instance */ 
+	    BaseEditor editor = null;
+	    {
+	      if(pEditorName != null) {
+		PluginMgrClient pclient = PluginMgrClient.getInstance();
+		editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
+	      }
+	      else if(pUseDefault) {
+		FilePattern fpat = com.getPrimarySequence().getFilePattern();
+		String suffix = fpat.getSuffix();
+		if(suffix != null) 
+		  editor = client.getEditorForSuffix(suffix);
+	      }
 	    
-	    if(editor == null) 
-	      throw new PipelineException
-		("No editor was specified for node (" + com.getName() + ")!");
-	  }
+	      if(editor == null) 
+		editor = com.getEditor();
+	    
+	      if(editor == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + com.getName() + ")!");
+	    }
 
-	  /* lookup the toolset environment */ 
-	  TreeMap<String,String> env = null;
-	  {
-	    String tname = com.getToolset();
-	    if(tname == null) 
-	      throw new PipelineException
-		("No toolset was specified for node (" + name + ")!");
+	    /* lookup the toolset environment */ 
+	    TreeMap<String,String> env = null;
+	    {
+	      String tname = com.getToolset();
+	      if(tname == null) 
+		throw new PipelineException
+		  ("No toolset was specified for node (" + name + ")!");
 	      
-	    /* passes pAuthor so that WORKING will correspond to the current view */ 
-	    env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
-	  }
+	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
+	    }
 
-	  /* working directory */ 
-	  File dir = null;
-	  if(pVersionID != null) {
-	    Path path = new Path(PackageInfo.sRepoPath, name + "/" + pVersionID);
-	    dir = path.toFile();
-	  }
-	  else {
-	    Path path = new Path(PackageInfo.sWorkPath, pAuthor + "/" + pView + name);
-	    dir = path.getParentPath().toFile();
-	  }
+	    /* working directory */ 
+	    File dir = null;
+	    if(pVersionID != null) {
+	      Path path = new Path(PackageInfo.sRepoPath, name + "/" + pVersionID);
+	      dir = path.toFile();
+	    }
+	    else {
+	      Path path = new Path(PackageInfo.sWorkPath, pAuthor + "/" + pView + name);
+	      dir = path.getParentPath().toFile();
+	    }
 
-	  /* start the editor */ 
-	  editor.makeWorkingDirs(dir);
-	  proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);	   
-	}
-	catch(Exception ex) {
-	  master.showErrorDialog(ex);
-	  return;
+	    /* start the editor */ 
+	    editor.makeWorkingDirs(dir);
+	    proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);	   
+	  }
+	  catch(Exception ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp(pGroupID, "Done.");
+	  }
 	}
       }
 
@@ -2896,10 +2909,10 @@ class JNodeFilesPanel
       SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
-	if(master.beginPanelOp("Launching Node Comparator...")) {
+	if(master.beginPanelOp(pGroupID, "Launching Node Comparator...")) {
 	  try {
 	    String name = pStatus.getName();
-	    MasterMgrClient client = master.getMasterMgrClient();
+	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 
 	    NodeCommon com = null;
 	    {
@@ -2952,7 +2965,7 @@ class JNodeFilesPanel
 	    return;
 	  }
 	  finally {
-	    master.endPanelOp("Done.");
+	    master.endPanelOp(pGroupID, "Done.");
 	  }
 	}
 
@@ -3002,24 +3015,20 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Reverting Files...")) {
+      if(master.beginPanelOp(pGroupID, "Reverting Files...")) {
 	try {
-	  master.getMasterMgrClient().revertFiles(pAuthor, pView, pStatus.getName(), pFiles);
+	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	  client.revertFiles(pAuthor, pView, pStatus.getName(), pFiles);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -3068,26 +3077,22 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Submitting Jobs to the Queue...")) {
+      if(master.beginPanelOp(pGroupID, "Submitting Jobs to the Queue...")) {
 	try {
-	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
-						 pBatchSize, pPriority, pRampUp, 
-						 pSelectionKeys);
+	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	  client.submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
+			    pBatchSize, pPriority, pRampUp, 
+			    pSelectionKeys);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -3120,24 +3125,19 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Pausing Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
 	try {
-	  master.getQueueMgrClient().pauseJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).pauseJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -3166,24 +3166,19 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
 	try {
-	  master.getQueueMgrClient().resumeJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).resumeJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -3212,24 +3207,19 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Preempting Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
 	try {
-	  master.getQueueMgrClient().preemptJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).preemptJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -3258,24 +3248,19 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Killing Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
 	try {
-	  master.getQueueMgrClient().killJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).killJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -3298,7 +3283,7 @@ class JNodeFilesPanel
      TreeSet<Integer> indices
     ) 
     {
-      super("JNodeViewerPanel:RemoveFilesTask");
+      super("JNodeFilesPanel:RemoveFilesTask");
 
       pIndices = new TreeSet<Integer>(indices);
     }
@@ -3307,9 +3292,9 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Removing Files: " + pStatus.getName())) {
+      if(master.beginPanelOp(pGroupID, "Removing Files: " + pStatus.getName())) {
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  client.removeFiles(pAuthor, pView, pStatus.getName(), pIndices);
 	}
 	catch(PipelineException ex) {
@@ -3317,15 +3302,10 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 	
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 

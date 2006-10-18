@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.23 2006/09/25 12:11:44 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.24 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -25,7 +25,7 @@ import javax.swing.table.*;
 public 
 class JQueueJobBrowserPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ActionListener, AdjustmentListener
+  implements MouseListener, KeyListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -70,111 +70,12 @@ class JQueueJobBrowserPanel
       pSelectedIDs = new TreeSet<Long>();
 
       pViewFilter = ViewFilter.SingleView; 
-
-      /* the canonical names of this host */ 
-      pLocalHostnames = new TreeSet<String>();
-      try {
-	Enumeration nets = NetworkInterface.getNetworkInterfaces();  
-	while(nets.hasMoreElements()) {
-	  NetworkInterface net = (NetworkInterface) nets.nextElement();
-	  Enumeration addrs = net.getInetAddresses();
-	  while(addrs.hasMoreElements()) {
-	    InetAddress addr = (InetAddress) addrs.nextElement();
-	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
-	      pLocalHostnames.add(addr.getCanonicalHostName());
-	  }
-	}
-      }
-      catch(Exception ex) {
-	UIMaster.getInstance().showErrorDialog
-	  ("Warning:",      
-	   "Could not determine the name of this machine!");
-      }
-    }    
+    }
 
     /* initialize the popup menus */ 
     {
       JMenuItem item;
       	
-      {
-	pHostsPopup = new JPopupMenu();
-
-	item = new JMenuItem("Update");
-	pHostsUpdateItem = item;
-	item.setActionCommand("update");
-	item.addActionListener(this);
-	pHostsPopup.add(item);
-
-	item = new JMenuItem("History");
-	pHostsHistoryItem = item;
-	item.setActionCommand("hosts-history");
-	item.addActionListener(this);
-	pHostsPopup.add(item);
-
-	pHostsPopup.addSeparator();
-
-	item = new JMenuItem("Apply Changes");
-	pHostsApplyItem = item;
-	item.setActionCommand("hosts-apply");
-	item.addActionListener(this);
-	pHostsPopup.add(item);
-
-	pHostsPopup.addSeparator();
-
-	item = new JMenuItem("Add Server");
-	pHostsAddItem = item;
-	item.setActionCommand("hosts-add");
-	item.addActionListener(this);
-	pHostsPopup.add(item);
-	
-	item = new JMenuItem("Remove Server");
-	pHostsRemoveItem = item;
-	item.setActionCommand("hosts-remove");
-	item.addActionListener(this);
-	pHostsPopup.add(item);
-      }
-
-      {	
-	pSlotsPopup = new JPopupMenu();
-
-	item = new JMenuItem("Update");
-	pSlotsUpdateItem = item;
-	item.setActionCommand("update");
-	item.addActionListener(this);
-	pSlotsPopup.add(item);
-
-	pSlotsPopup.addSeparator();
-	
-	item = new JMenuItem("View");
-	pSlotsViewItem = item;
-	item.setActionCommand("slots-edit");
-	item.addActionListener(this);
-	pSlotsPopup.add(item);
-	
-	pSlotsViewWithMenu = new JMenu("View With");
-	pSlotsPopup.add(pSlotsViewWithMenu);
-	
-	item = new JMenuItem("View With Default");
-	pSlotsViewWithDefaultItem = item;
-	item.setActionCommand("slots-edit-with-default");
-	item.addActionListener(this);
-	pSlotsPopup.add(item);
-
-	pSlotsPopup.addSeparator();
-
-	item = new JMenuItem("Preempt Jobs");
-	pSlotsPreemptItem = item;
-	item.setActionCommand("slots-preempt-jobs");
-	item.addActionListener(this);
-	pSlotsPopup.add(item);
-
-	item = new JMenuItem("Kill Jobs");
-	pSlotsKillItem = item;
-	item.setActionCommand("slots-kill-jobs");
-	item.addActionListener(this);
-	pSlotsPopup.add(item);
-      }
-
       {	
 	pGroupsPopup = new JPopupMenu();
 
@@ -266,434 +167,111 @@ class JQueueJobBrowserPanel
     
     /* initialize the panel components */ 
     {
-      setLayout(new BorderLayout());
-
-      JTabbedPanel tab = new JTabbedPanel();
-      pTab = tab;
-
-      /* job servers panel */ 
+      setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
+      
       {
-	JPanel body = new JPanel();
-	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
-      
+	JPanel panel = new JPanel();
+	pGroupsHeaderPanel = panel;
+	panel.setName("DialogHeader");	
+	  
+	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	  
+	panel.addMouseListener(this); 
+	panel.setFocusable(true);
+	panel.addKeyListener(this);
+	panel.addMouseListener(new KeyFocuser(panel));
+	  
 	{
-	  JPanel panel = new JPanel();
-	  pHostsHeaderPanel = panel;
-	  panel.setName("DialogHeader");	
-	  
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(panel));
-	  
-	  {
-	    JLabel label = new JLabel("Job Servers:");
-	    label.setName("DialogHeaderLabel");	
+	  JLabel label = new JLabel("Job Groups:");
+	  label.setName("DialogHeaderLabel");	
 	    
-	    panel.add(label);	  
-	  }
-	  
-	  panel.add(Box.createHorizontalGlue());
-
-	  {
-	    JToggleButton btn = new JToggleButton();		
-	    pStatButton = btn;
-	    btn.setName("StatButton");
-	    
-	    Dimension size = new Dimension(30, 10);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setSelected(true);
-	    btn.setActionCommand("toggle-stat-columns");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	     ("Toggle display of the Status and OS columns."));
-	    
-	    panel.add(btn);
-	  } 
-	  
-	  panel.add(Box.createRigidArea(new Dimension(15, 0)));
-
-	  {
-	    JToggleButton btn = new JToggleButton();		
-	    pDynButton = btn;
-	    btn.setName("DynButton");
-	    
-	    Dimension size = new Dimension(30, 10);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setSelected(true);
-	    btn.setActionCommand("toggle-dyn-columns");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	     ("Toggle display of the System Load, Free Memory and Free Disk Space columns."));
-	    
-	    panel.add(btn);
-	  } 
-	  
-	  panel.add(Box.createRigidArea(new Dimension(15, 0)));
-
-	  {
-	    JToggleButton btn = new JToggleButton();		
-	    pJobButton = btn;
-	    btn.setName("JobButton");
-	    
-	    Dimension size = new Dimension(30, 10);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setSelected(true);
-	    btn.setActionCommand("toggle-job-columns");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Toggle display of the Jobs and Slots columns."));
-	  
-	    panel.add(btn);
-	  } 
-
-	  panel.add(Box.createRigidArea(new Dimension(15, 0)));
-
-	  {
-	    JToggleButton btn = new JToggleButton();		
-	    pDspButton = btn;
-	    btn.setName("DspButton");
-	    
-	    Dimension size = new Dimension(30, 10);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setSelected(true);
-	    btn.setActionCommand("toggle-dsp-columns");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Toggle display of the Reservation, Order, Group and Schedule columns."));
-	    
-	    panel.add(btn);
-	  } 
-	  
-	  panel.add(Box.createRigidArea(new Dimension(45, 0)));
-
-	  {
-	    JButton btn = new JButton();		
-	    pHostsApplyButton = btn;
-	    btn.setName("ApplyHeaderButton");
-	    
-	    Dimension size = new Dimension(19, 19);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setActionCommand("hosts-apply");
-	    btn.addActionListener(this);
-	    
-	    panel.add(btn);
-	  } 
-	  
-	  body.add(panel);
+	  panel.add(label);	  
 	}
-	
+	  
+	panel.add(Box.createHorizontalGlue());
+	  
 	{
-	  JPanel panel = new JPanel();
-	  panel.setName("MainPanel");
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));  
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(panel));
-	  
-	  {
-	    pHostsTableModel = new QueueHostsTableModel(this, pLocalHostnames);
-	    pHostnamesTableModel = new QueueHostnamesTableModel(this, pHostsTableModel);
-	  }
-
-	  {	
-	    Box vbox = new Box(BoxLayout.Y_AXIS);
-	    vbox.setAlignmentX(0.5f);
-
-	    {
-	      JTablePanel tpanel =
-		new JTablePanel(pHostnamesTableModel, 
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-	      pHostnamesTablePanel = tpanel;
-	      
-	      {
-		JScrollPane scroll = tpanel.getTableScroll();
-		scroll.addMouseListener(this); 
-		scroll.setFocusable(true);
-		scroll.addKeyListener(this);
-		scroll.addMouseListener(new KeyFocuser(scroll));
-	      }
-
-	      {
-		JTable table = tpanel.getTable();
-		table.addMouseListener(this); 
-		table.setFocusable(true);
-		table.addKeyListener(this);
-		table.addMouseListener(new KeyFocuser(table));
-	      }
-
-	      vbox.add(tpanel);
-	    }
-
-	    vbox.add(Box.createRigidArea(new Dimension(0, 14)));
-
-	    vbox.setMinimumSize(new Dimension(206, 30));
-	    vbox.setMaximumSize(new Dimension(206, Integer.MAX_VALUE));
-
-	    panel.add(vbox);
-	  }
-
-	  panel.add(Box.createRigidArea(new Dimension(2, 0)));
-
-	  {	    
-	    JTablePanel tpanel = new JTablePanel(pHostsTableModel);
-	    pHostsTablePanel = tpanel;
-	  
-	    {
-	      JScrollPane scroll = tpanel.getTableScroll();
-
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-	      
-	      scroll.getVerticalScrollBar().addAdjustmentListener(this);
-	  
-	      scroll.addMouseListener(this); 
-	      scroll.setFocusable(true);
-	      scroll.addKeyListener(this);
-	      scroll.addMouseListener(new KeyFocuser(scroll));
-	    }
+	  JButton btn = new JButton();		
+	  pDeleteCompletedButton = btn;
+	  btn.setName("DeleteCompletedButton");
 	    
-	    {
-	      JTable table = tpanel.getTable();
-	      table.addMouseListener(this); 
-	      table.setFocusable(true);
-	      table.addKeyListener(this);
-	      table.addMouseListener(new KeyFocuser(table));
-	    }
-
-	    panel.add(tpanel);
-	  }
+	  btn.setSelected(true);
 	    
-	  body.add(panel);
-	}
-
-        tab.addTab(body);
-
-	/* synchronize the selected rows in the two hosts tables */ 
+	  Dimension size = new Dimension(19, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	    
+	  btn.setActionCommand("delete-completed");
+	  btn.addActionListener(this);
+	    
+	  panel.add(btn);
+	} 
+	  
+	panel.add(Box.createRigidArea(new Dimension(10, 0)));
+	  
 	{
-	  JTable ntable = pHostnamesTablePanel.getTable();
-	  JTable htable = pHostsTablePanel.getTable();
-
-	  ntable.getSelectionModel().addListSelectionListener
-	    (new TableSyncSelector(ntable, htable));
-
-	  htable.getSelectionModel().addListSelectionListener
-	    (new TableSyncSelector(htable, ntable));
-	}
+	  JButton btn = new JButton();		
+	  pViewFilterButton = btn;
+	  btn.setName(pViewFilter + "Button");
+	    
+	  Dimension size = new Dimension(19, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	    
+	  btn.setActionCommand("view-filter-changed"); 
+	  btn.addActionListener(this);
+	    
+	  panel.add(btn);
+	} 
+	  
+	add(panel);
       }
-
-      /* job slots panel */ 
+	
       {
-	JPanel body = new JPanel();
-	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
-      
+	JPanel panel = new JPanel();
+	panel.setName("MainPanel");
+	panel.setLayout(new BorderLayout());
+	  
+	panel.addMouseListener(this); 
+	panel.setFocusable(true);
+	panel.addKeyListener(this);
+	panel.addMouseListener(new KeyFocuser(panel));
+
 	{
-	  JPanel panel = new JPanel();
-	  pSlotsHeaderPanel = panel;
-	  panel.setName("DialogHeader");	
-	  
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(panel));
-	  
+	  QueueJobGroupsTableModel model = new QueueJobGroupsTableModel();
+	  pGroupsTableModel = model;
+	    
+	  pGroupsListSelector = new GroupsListSelector();
+
+	  JGroupsTablePanel tpanel = new JGroupsTablePanel(model, pGroupsListSelector);
+	  pGroupsTablePanel = tpanel;
+	    
 	  {
-	    JLabel label = new JLabel("Job Server Slots:");
-	    label.setName("DialogHeaderLabel");	
-	    
-	    panel.add(label);	  
-	  }
-	  
-	  panel.add(Box.createHorizontalGlue());
-
-	  body.add(panel);
-	}
-	
-	{
-	  JPanel panel = new JPanel();
-	  panel.setName("MainPanel");
-	  panel.setLayout(new BorderLayout());
-	   
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(panel));
-
-	  {
-	    QueueSlotsTableModel model = new QueueSlotsTableModel(this, pLocalHostnames);
-	    pSlotsTableModel = model;
-	    
-	    JTablePanel tpanel = new JTablePanel(model);
-	    pSlotsTablePanel = tpanel;
-	    
-	    pSlotsListSelector = new SlotsListSelector();
-	    ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
-	    smodel.addListSelectionListener(pSlotsListSelector);
-
-	    {
-	      JScrollPane scroll = tpanel.getTableScroll();
-	      scroll.addMouseListener(this); 
-	      scroll.setFocusable(true);
-	      scroll.addKeyListener(this);
-	      scroll.addMouseListener(new KeyFocuser(scroll));
-	    }
-
-	    {
-	      JTable table = tpanel.getTable();
-	      table.addMouseListener(this); 
-	      table.setFocusable(true);
-	      table.addKeyListener(this);
-	      table.addMouseListener(new KeyFocuser(table));
-	    }
-
-	    panel.add(tpanel);
+	    JScrollPane scroll = tpanel.getTableScroll();
+	    scroll.addMouseListener(this); 
+	    scroll.setFocusable(true);
+	    scroll.addKeyListener(this);
+	    scroll.addMouseListener(new KeyFocuser(scroll));
 	  }
 
-	  body.add(panel);
-	}
+	  {
+	    JTable table = tpanel.getTable();
+	    table.addMouseListener(this); 
+	    table.setFocusable(true);
+	    table.addKeyListener(this);
+	    table.addMouseListener(new KeyFocuser(table));
+	  }
 
-        tab.addTab(body);
+	  panel.add(tpanel);
+	}
+	  
+	add(panel);
       }
-
-      /* job groups panel */ 
-      {
-	JPanel body = new JPanel();
-	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
-      
-	{
-	  JPanel panel = new JPanel();
-	  pGroupsHeaderPanel = panel;
-	  panel.setName("DialogHeader");	
-	  
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(panel));
-	  
-	  {
-	    JLabel label = new JLabel("Job Groups:");
-	    label.setName("DialogHeaderLabel");	
-	    
-	    panel.add(label);	  
-	  }
-	  
-	  panel.add(Box.createHorizontalGlue());
-	  
-	  {
-	    JButton btn = new JButton();		
-	    pDeleteCompletedButton = btn;
-	    btn.setName("DeleteCompletedButton");
-	    
-	    btn.setSelected(true);
-	    
-	    Dimension size = new Dimension(19, 19);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setActionCommand("delete-completed");
-	    btn.addActionListener(this);
-	    
-	    panel.add(btn);
-	  } 
-	  
-	  panel.add(Box.createRigidArea(new Dimension(10, 0)));
-	  
-	  {
-	    JButton btn = new JButton();		
-	    pViewFilterButton = btn;
-	    btn.setName(pViewFilter + "Button");
-	    
-	    Dimension size = new Dimension(19, 19);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.setActionCommand("view-filter-changed"); 
-	    btn.addActionListener(this);
-	    
-	    panel.add(btn);
-	  } 
-	  
-	  body.add(panel);
-	}
-	
-	{
-	  JPanel panel = new JPanel();
-	  panel.setName("MainPanel");
-	  panel.setLayout(new BorderLayout());
-	  
-	  panel.addMouseListener(this); 
-	  panel.setFocusable(true);
-	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(panel));
-
-	  {
-	    QueueJobGroupsTableModel model = new QueueJobGroupsTableModel();
-	    pGroupsTableModel = model;
-	    
-	    pGroupsListSelector = new GroupsListSelector();
-
-	    JGroupsTablePanel tpanel = new JGroupsTablePanel(model, pGroupsListSelector);
-	    pGroupsTablePanel = tpanel;
-	    
-	    {
-	      JScrollPane scroll = tpanel.getTableScroll();
-	      scroll.addMouseListener(this); 
-	      scroll.setFocusable(true);
-	      scroll.addKeyListener(this);
-	      scroll.addMouseListener(new KeyFocuser(scroll));
-	    }
-
-	    {
-	      JTable table = tpanel.getTable();
-	      table.addMouseListener(this); 
-	      table.setFocusable(true);
-	      table.addKeyListener(this);
-	      table.addMouseListener(new KeyFocuser(table));
-	    }
-
-	    panel.add(tpanel);
-	  }
-	  
-	  body.add(panel);
-	}
-
-        tab.addTab(body);
-      }
-      
-      add(tab);
-    } 
+    }
  
-    updateJobs(null, null, null, null, null, null);
+    updateJobs(null, null);
   }
 
 
@@ -740,6 +318,8 @@ class JQueueJobBrowserPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -780,60 +360,11 @@ class JQueueJobBrowserPanel
   {
     super.setAuthorView(author, view);    
 
-    if(pJobGroups != null)
-      updateAll();
+    updatePanels();
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get names of the selected hosts in the hosts table.
-   */ 
-  public TreeSet<String> 
-  getSelectedHostnames() 
-  {
-    TreeSet<String> hostnames = new TreeSet<String>();
-    int rows[] = pHostsTablePanel.getTable().getSelectedRows();
-    int wk;
-    for(wk=0; wk<rows.length; wk++) {
-      String hname = pHostsTableModel.getHostname(rows[wk]);
-      hostnames.add(hname);
-    }
-
-    return hostnames;
-  }
-
-  /**
-   * Get IDs of the jobs running on the selected job server slots.
-   */ 
-  public TreeSet<Long> 
-  getSelectedSlotJobIDs() 
-  {
-    TreeSet<Long> jobIDs = new TreeSet<Long>();
-    int rows[] = pSlotsTablePanel.getTable().getSelectedRows();
-    int wk;
-    for(wk=0; wk<rows.length; wk++) {
-      Long jobID = pSlotsTableModel.getJobID(rows[wk]);
-      if(jobID != null) 
-	jobIDs.add(jobID);
-    }
-
-    return jobIDs;
-  }
-
-  /**
-   * Get ID of job running on the singly selected job server slot.
-   */ 
-  public Long
-  getSelectedSlotJobID()
-  {
-    int rows[] = pSlotsTablePanel.getTable().getSelectedRows();
-    if(rows.length == 1) 
-      return pSlotsTableModel.getJobID(rows[0]);
-    return null;
-  }
-  
 
   /**
    * Get IDs of the selected job groups. 
@@ -852,132 +383,85 @@ class JQueueJobBrowserPanel
     return groupIDs;
   }
   
-
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Reset the caches of toolset plugins and plugin menu layouts.
+   * Get the ID of a single just selected job group, otherwise return <CODE>null</CODE>.
    */ 
-  public void 
-  clearPluginCache()
+  public Long 
+  getJustSelectedGroupID() 
   {
-    pSlotsEditorMenuToolset = null;
+    if(pGroupsListSelector != null) 
+      return pGroupsListSelector.getJustSelected();
+    return null;
   }
-
-  /**
-   * Update the slots editor plugin menus.
-   */ 
-  private void 
-  updateSlotsEditorMenus()
-  {
-    String toolset = null;
-    {
-      int row = pSlotsTablePanel.getTable().getSelectedRow();
-      if(row != -1) {
-	Long jobID = pSlotsTableModel.getJobID(row);
-	if(jobID != null) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  if(status != null) 
-	    toolset = status.getToolset();
-	}
-      }
-    }
-	  
-    if((toolset != null) && !toolset.equals(pSlotsEditorMenuToolset)) {
-      UIMaster master = UIMaster.getInstance();
-      master.rebuildEditorMenu(toolset, pSlotsViewWithMenu, this);
-      
-      pSlotsEditorMenuToolset = toolset;
-    }
-  }
-
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Perform the initial update which restores the selected job groups synchronously.
-   */ 
-  public void 
-  restoreSelection() 
-  { 
-    QueryTask task = new QueryTask();
-    try {
-      task.start();
-      task.join();
-    }
-    catch(InterruptedException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
-    }
-  }
- 
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the current jobs groups, servers and slots asynchronously.
+   * Perform the inial update after restoring a layout. 
    */ 
   public void 
-  updateAll() 
+  restoreSelections() 
   {
-    if(UIMaster.getInstance().isRestoring())
-      return;
-
-    UIMaster.getInstance().getMasterMgrClient().invalidateCachedPrivilegeDetails();
-
-    QueryTask task = new QueryTask();
-    task.start();
+    updatePanels();
   }
 
   /**
-   * Update the jobs groups, servers and slots asynchronously.
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    updatePanels(false);
+  }
+
+  /**
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels
+  (
+   boolean selectionOnly
+  ) 
+  {
+    PanelUpdater pu = new PanelUpdater(this, selectionOnly);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
    * 
    * @param groups
    *   The queue job groups indexe by job group ID.
    * 
    * @param jobStatus
    *   The job status indexed by job ID.
-   * 
-   * @param jobInfo
-   *   The information about the running jobs indexed by job ID.
-   * 
-   * @param hosts
-   *   The job server hosts indexex by fully resolved hostnames.
-   * 
-   * @param selectionGroups
-   *   The valid selection group names. 
-   * 
-   * @param selectionSchedules
-   *   The valid selection schedule names. 
-   */ 
-  public synchronized void
-  updateJobs
+   */
+  public synchronized void 
+  applyPanelUpdates
   (
    String author, 
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> jobStatus, 
-   TreeMap<Long,QueueJobInfo> jobInfo, 
-   TreeMap<String,QueueHostInfo> hosts, 
-   TreeSet<String> selectionGroups, 
-   TreeSet<String> selectionSchedules
-  ) 
+   TreeMap<Long,JobStatus> jobStatus
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
-    updateJobs(groups, jobStatus, jobInfo, hosts, selectionGroups, selectionSchedules);
+    updateJobs(groups, jobStatus);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the jobs groups, servers and slots. 
@@ -987,60 +471,54 @@ class JQueueJobBrowserPanel
    * 
    * @param jobStatus
    *   The job status indexed by job ID.
-   * 
-   * @param jobInfo
-   *   The information about the running jobs indexed by job ID.
-   * 
-   * @param hosts
-   *   The job server hosts indexex by fully resolved hostnames.
-   * 
-   * @param selectionGroups
-   *   The valid selection group names. 
-   * 
-   * @param selectionSchedules
-   *   The valid selection schedule names. 
    */ 
-  public synchronized void
+  private synchronized void
   updateJobs
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> jobStatus, 
-   TreeMap<Long,QueueJobInfo> jobInfo, 
-   TreeMap<String,QueueHostInfo> hosts, 
-   TreeSet<String> selectionGroups, 
-   TreeSet<String> selectionSchedules
+   TreeMap<Long,JobStatus> jobStatus
   ) 
   {
     updatePrivileges();
 
-    /* update the groups and job status */ 
-    {
-      pJobGroups.clear();
-      if(groups != null) {
-	for(QueueJobGroup group : groups.values()) {
-	  NodeID nodeID = group.getNodeID();
-	  
-	  switch(pViewFilter) {
-	  case SingleView:
-	    if(nodeID.getAuthor().equals(pAuthor) && nodeID.getView().equals(pView)) 
-	      pJobGroups.put(group.getGroupID(), group);
-	    break;
-	    
-	  case OwnedViews:
-	    if(nodeID.getAuthor().equals(pAuthor)) 
-	      pJobGroups.put(group.getGroupID(), group);
-	    break;
-	    
-	  case AllViews:
+    /* enable/disable the DeleteCompleted button */ 
+    switch(pViewFilter) {
+    case SingleView:
+    case OwnedViews:
+      pDeleteCompletedButton.setEnabled(!isLocked());
+      break;
+      
+    case AllViews:
+      pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
+    }
+
+    /* update the groups after applying the current groups filter */ 
+    pJobGroups.clear();
+    if(groups != null) {
+      for(QueueJobGroup group : groups.values()) {
+	NodeID nodeID = group.getNodeID();
+	
+	switch(pViewFilter) {
+	case SingleView:
+	  if(nodeID.getAuthor().equals(pAuthor) && nodeID.getView().equals(pView)) 
 	    pJobGroups.put(group.getGroupID(), group);
-	  }
+	  break;
+	  
+	case OwnedViews:
+	  if(nodeID.getAuthor().equals(pAuthor)) 
+	    pJobGroups.put(group.getGroupID(), group);
+	  break;
+	  
+	case AllViews:
+	  pJobGroups.put(group.getGroupID(), group);
 	}
       }
-      
-      pJobStatus.clear();
-      if(jobStatus != null) 
-	pJobStatus.putAll(jobStatus);
     }
+    
+    /* update the job status */ 
+    pJobStatus.clear();
+    if(jobStatus != null) 
+      pJobStatus.putAll(jobStatus);
     
     /* update the groups table, 
          reselects any of the previously selected job groups which still exist */
@@ -1066,96 +544,11 @@ class JQueueJobBrowserPanel
       }      
       smodel.addListSelectionListener(pGroupsListSelector);
     }
-
-    /* job server panel */ 
-    if((hosts != null) && (selectionGroups != null) && (selectionSchedules != null)) {
-      pHostnamesTableModel.setHostnames(hosts.keySet());
-
-      pHostsTableModel.setQueueHosts
-	(hosts, selectionGroups, selectionSchedules, pPrivilegeDetails);
-
-      updateHostsHeaderButtons();
-      pHostsTablePanel.tableStructureChanged();  
-      pHostsTablePanel.adjustmentValueChanged(null);
-
-      pHostsApplyItem.setEnabled(false);
-      pHostsApplyButton.setEnabled(false);
-    }
-
-    /* job slots panel */ 
-    if((hosts != null) && (jobInfo != null)) {
-      ListSelectionModel smodel = pSlotsTablePanel.getTable().getSelectionModel();
-      smodel.removeListSelectionListener(pSlotsListSelector);
-      {
-	pSlotsTableModel.setSlots(hosts, pJobStatus, jobInfo);
-      }
-      smodel.addListSelectionListener(pSlotsListSelector);      
-    }
-    
-    /* update any connected JobViewer */ 
-    if(pGroupID > 0) {
-      UIMaster master = UIMaster.getInstance();      
-      PanelGroup<JQueueJobViewerPanel> panels = master.getQueueJobViewerPanels();
-      JQueueJobViewerPanel panel = panels.getPanel(pGroupID);
-      if(panel != null) {
-	TreeMap<Long,QueueJobGroup> sgroups = new TreeMap<Long,QueueJobGroup>();
-	for(Long groupID : pSelectedIDs) {
-	  QueueJobGroup group = pJobGroups.get(groupID);
-	  if(group != null) 
-	    sgroups.put(groupID, group);
-	}
-
-	/* if a single job group containing a single job was just selected, 
-  	     get the viewer to update any attached job details panel with this job */ 
-	Long justSelected = pGroupsListSelector.getJustSelected();
-	if(justSelected != null) {
-	  QueueJobGroup group = sgroups.get(justSelected);
-	  if(group != null) {
-	    SortedSet<Long> jobIDs = group.getJobIDs();
-	    if(jobIDs.size() == 1)
-	      panel.enableDetailsUpdate(jobIDs.first());
-	  }
-	}
-	  
-	/* update the viewer */ 
-	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus);
-      }
-    }
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Update the job server hosts menu.
-   */ 
-  public void 
-  updateHostsMenu() 
-  {
-    boolean selected = (pHostsTablePanel.getTable().getSelectedRowCount() > 0);
-    pHostsHistoryItem.setEnabled(selected);
-    pHostsAddItem.setEnabled(pPrivilegeDetails.isQueueAdmin()); 
-    pHostsRemoveItem.setEnabled(pPrivilegeDetails.isQueueAdmin() && selected); 
-  }
-
-  /**
-   * Update the job server slots menu.
-   */ 
-  public void 
-  updateSlotsMenu() 
-  {
-    boolean single = (getSelectedSlotJobID() != null); 
-    pSlotsViewItem.setEnabled(single); 
-    pSlotsViewWithMenu.setEnabled(single); 
-    if(single) 
-      updateSlotsEditorMenus();
-    pSlotsViewWithDefaultItem.setEnabled(single); 
-
-    boolean selected = (!getSelectedSlotJobIDs().isEmpty()); 
-    pSlotsPreemptItem.setEnabled(selected);
-    pSlotsKillItem.setEnabled(selected);
-  }
 
   /**
    * Update the job groups menu.
@@ -1194,112 +587,6 @@ class JQueueJobBrowserPanel
 
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Update the sort of the hostnames table to match the hosts table.
-   */ 
-  public void
-  sortHostnamesTable
-  (
-   int[] rowToIndex
-  )
-  {
-    if(pHostnamesTableModel != null) 
-      pHostnamesTableModel.externalSort(rowToIndex);
-  }
-
-  /** 
-   * Update the sort of the hosts table to match the hostnames table.
-   */ 
-  public void
-  sortHostsTable
-  (
-   int[] rowToIndex
-  )
-  {
-    if(pHostsTableModel != null) 
-      pHostsTableModel.externalSort(rowToIndex);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Update the state of the column visiblity buttons.
-   */ 
-  public void 
-  updateHostsHeaderButtons()
-  {
-    {
-      TreeSet<String> cnames = new TreeSet<String>();
-      cnames.add("Status");
-      cnames.add("OS");
-    
-      boolean selected = true;
-      for(String cname : cnames) {
-	if(!pHostsTablePanel.isColumnVisible(cname)) {
-	  selected = false;
-	  break;
-	}
-      }
-      
-      pStatButton.setSelected(selected);
-    }
-
-    {
-      TreeSet<String> cnames = new TreeSet<String>();
-      cnames.add("System Load");
-      cnames.add("Free Memory");
-      cnames.add("Free Disk Space");
-    
-      boolean selected = true;
-      for(String cname : cnames) {
-	if(!pHostsTablePanel.isColumnVisible(cname)) {
-	  selected = false;
-	  break;
-	}
-      }
-      
-      pDynButton.setSelected(selected);
-    }
-
-    {
-      TreeSet<String> cnames = new TreeSet<String>();
-      cnames.add("Jobs");
-      cnames.add("Slots");
-    
-      boolean selected = true;
-      for(String cname : cnames) {
-	if(!pHostsTablePanel.isColumnVisible(cname)) {
-	  selected = false;
-	  break;
-	}
-      }
-      
-      pJobButton.setSelected(selected);
-    }
-
-    {
-      TreeSet<String> cnames = new TreeSet<String>();
-      cnames.add("Reservation");
-      cnames.add("Order");
-      cnames.add("Group");
-      cnames.add("Schedule");
-
-      boolean selected = true;
-      for(String cname : cnames) {
-	if(!pHostsTablePanel.isColumnVisible(cname)) {
-	  selected = false;
-	  break;
-	}
-      }
-
-      pDspButton.setSelected(selected);
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
    * Refocus keyboard events on this panel if it contains the mouse.
    * 
@@ -1309,34 +596,9 @@ class JQueueJobBrowserPanel
   public boolean 
   refocusOnPanel() 
   {
-    switch(pTab.getSelectedIndex()) {
-    case 0:
-      if(pHostsHeaderPanel.getMousePosition(true) != null) {
-	pHostsHeaderPanel.requestFocusInWindow();
-	return true;
-      }
-      break;
-
-    case 1:
-      if(pSlotsHeaderPanel.getMousePosition(true) != null) {
-	pSlotsHeaderPanel.requestFocusInWindow();
-	return true;
-      }
-      else if(pSlotsTablePanel.getMousePosition(true) != null) {
-	pSlotsTablePanel.requestFocusInWindow();
-	return true;
-      }
-      else if(pSlotsTablePanel.getTable().getMousePosition(true) != null) {
-	pSlotsTablePanel.getTable().requestFocusInWindow();
-	return true;
-      }
-      break;
-      
-    case 2:
-      if(pGroupsHeaderPanel.getMousePosition(true) != null) {
-	pGroupsHeaderPanel.requestFocusInWindow();
-	return true;
-      }
+    if(pGroupsHeaderPanel.getMousePosition(true) != null) {
+      pGroupsHeaderPanel.requestFocusInWindow();
+      return true;
     }
 
     return false;
@@ -1363,41 +625,8 @@ class JQueueJobBrowserPanel
     UserPrefs prefs = UserPrefs.getInstance();
        
     updateMenuToolTip
-      (pHostsUpdateItem, prefs.getUpdate(),
-       "Update the job servers, slots and groups.");
-    updateMenuToolTip
-      (pHostsHistoryItem, prefs.getJobBrowserHostsHistory(),
-       "Show the resource usage history for the selected servers.");
-    updateMenuToolTip
-      (pHostsApplyItem, prefs.getApplyChanges(),
-       "Apply the changes to job server properties.");
-    updateMenuToolTip
-      (pHostsAddItem, prefs.getJobBrowserHostsAdd(),
-       "Add a new job server.");
-    updateMenuToolTip
-      (pHostsRemoveItem, prefs.getJobBrowserHostsRemove(),
-       "Remove the selected job servers.");
-       
-    updateMenuToolTip
-      (pSlotsUpdateItem, prefs.getUpdate(),
-       "Update the job servers, slots and groups.");
-    updateMenuToolTip
-      (pSlotsViewItem, prefs.getEdit(), 
-       "View the target files of the selected job server slot.");
-    updateMenuToolTip
-      (pSlotsViewWithDefaultItem, prefs.getEdit(), 
-       "View the target files of the selected job server slot using the default" + 
-       "editor for the file type.");
-    updateMenuToolTip
-      (pSlotsPreemptItem, prefs.getPreemptJobs(), 
-       "Preempt all jobs associated with the selected groups.");
-    updateMenuToolTip
-      (pSlotsKillItem, prefs.getKillJobs(), 
-       "Kill all jobs associated with the selected groups.");
-
-    updateMenuToolTip
       (pGroupsUpdateItem, prefs.getUpdate(),
-       "Update the job servers, slots and groups.");
+       "Update the status of all jobs and job groups.");
     updateMenuToolTip
       (pGroupsSingleViewItem, prefs.getJobBrowserSingleViewFilter(),
       "Show only job groups owned by the current view.");
@@ -1488,21 +717,8 @@ class JQueueJobBrowserPanel
 
 	/* BUTTON3: popup menus */ 
 	if((mods & (on1 | off1)) == on1) {
-	  switch(pTab.getSelectedIndex()) {      
-	  case 0:
-	    updateHostsMenu();
-	    pHostsPopup.show(e.getComponent(), e.getX(), e.getY());
-	    break;
-	    
-	  case 1:
-	    updateSlotsMenu();
-	    pSlotsPopup.show(e.getComponent(), e.getX(), e.getY());
-	    break;
-	    
-	  case 2:
-	    updateGroupsMenu();
-	    pGroupsPopup.show(e.getComponent(), e.getX(), e.getY());      
-	  }
+	  updateGroupsMenu();
+	  pGroupsPopup.show(e.getComponent(), e.getX(), e.getY());      
 	}
 	else {
 	  Toolkit.getDefaultToolkit().beep();
@@ -1539,79 +755,44 @@ class JQueueJobBrowserPanel
     UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getUpdate() != null) &&
        prefs.getUpdate().wasPressed(e))
-      updateAll();
+      updatePanels();
     else {
-      switch(pTab.getSelectedIndex()) {      
-      case 0:
-	if((prefs.getJobBrowserHostsHistory() != null) &&
-	   prefs.getJobBrowserHostsHistory().wasPressed(e))
-	  doHostsHistory();
-	else if((prefs.getApplyChanges() != null) &&
-		prefs.getApplyChanges().wasPressed(e))
-	  doHostsApply();
-	else if((prefs.getJobBrowserHostsAdd() != null) &&
-		prefs.getJobBrowserHostsAdd().wasPressed(e))
-	  doHostsAdd();
-	else if((prefs.getJobBrowserHostsRemove() != null) &&
-		prefs.getJobBrowserHostsRemove().wasPressed(e))
-	  doHostsRemove();
-	else 
-	  unsupported = true;
-	break;
-
-      case 1:
-	if((prefs.getKillJobs() != null) &&
-	   prefs.getKillJobs().wasPressed(e))
-	  doSlotsKillJobs();
-
-	else if((prefs.getEdit() != null) &&
-		prefs.getEdit().wasPressed(e)) 
-	  doSlotsView();
-	else if((prefs.getEditWithDefault() != null) &&
-		prefs.getEditWithDefault().wasPressed(e))
-	  doSlotsViewWithDefault();
-	else 
-	  unsupported = true;
-	break;
-
-      case 2:
-	if((prefs.getJobBrowserToggleViewsFilter() != null) &&
-	   prefs.getJobBrowserToggleViewsFilter().wasPressed(e))
-	  doViewFilterChanged();
-	else if((prefs.getJobBrowserSingleViewFilter() != null) &&
-	   prefs.getJobBrowserSingleViewFilter().wasPressed(e))
-	  doSingleViewFilter();
-	else if((prefs.getJobBrowserOwnedViewsFilter() != null) &&
-	   prefs.getJobBrowserOwnedViewsFilter().wasPressed(e))
-	  doOwnedViewsFilter();
-	else if((prefs.getJobBrowserAllViewsFilter() != null) &&
-	   prefs.getJobBrowserAllViewsFilter().wasPressed(e))
-	  doAllViewsFilter();
-
-	else if((prefs.getQueueJobs() != null) &&
-		prefs.getQueueJobs().wasPressed(e))
-	  doGroupsQueueJobs();
-	else if((prefs.getQueueJobsSpecial() != null) &&
-		prefs.getQueueJobsSpecial().wasPressed(e))
-	  doGroupsQueueJobsSpecial();
-	else if((prefs.getPauseJobs() != null) &&
-		prefs.getPauseJobs().wasPressed(e))
-	  doGroupsPauseJobs();
-	else if((prefs.getResumeJobs() != null) &&
-		prefs.getResumeJobs().wasPressed(e))
-	  doGroupsResumeJobs();
-	else if((prefs.getKillJobs() != null) &&
-		prefs.getKillJobs().wasPressed(e))
-	  doGroupsKillJobs();
-	else if((prefs.getJobBrowserGroupsDelete() != null) &&
-		prefs.getJobBrowserGroupsDelete().wasPressed(e))
-	  doGroupsDelete();
-	else if((prefs.getJobBrowserGroupsDeleteCompleted() != null) &&
-		prefs.getJobBrowserGroupsDeleteCompleted().wasPressed(e))
-	  doGroupsDeleteCompleted();
-	else 
-	  unsupported = true;
-      }
+      if((prefs.getJobBrowserToggleViewsFilter() != null) &&
+	 prefs.getJobBrowserToggleViewsFilter().wasPressed(e))
+	doViewFilterChanged();
+      else if((prefs.getJobBrowserSingleViewFilter() != null) &&
+	      prefs.getJobBrowserSingleViewFilter().wasPressed(e))
+	doSingleViewFilter();
+      else if((prefs.getJobBrowserOwnedViewsFilter() != null) &&
+	      prefs.getJobBrowserOwnedViewsFilter().wasPressed(e))
+	doOwnedViewsFilter();
+      else if((prefs.getJobBrowserAllViewsFilter() != null) &&
+	      prefs.getJobBrowserAllViewsFilter().wasPressed(e))
+	doAllViewsFilter();
+      
+      else if((prefs.getQueueJobs() != null) &&
+	      prefs.getQueueJobs().wasPressed(e))
+	doGroupsQueueJobs();
+      else if((prefs.getQueueJobsSpecial() != null) &&
+	      prefs.getQueueJobsSpecial().wasPressed(e))
+	doGroupsQueueJobsSpecial();
+      else if((prefs.getPauseJobs() != null) &&
+	      prefs.getPauseJobs().wasPressed(e))
+	doGroupsPauseJobs();
+      else if((prefs.getResumeJobs() != null) &&
+	      prefs.getResumeJobs().wasPressed(e))
+	doGroupsResumeJobs();
+      else if((prefs.getKillJobs() != null) &&
+	      prefs.getKillJobs().wasPressed(e))
+	doGroupsKillJobs();
+      else if((prefs.getJobBrowserGroupsDelete() != null) &&
+	      prefs.getJobBrowserGroupsDelete().wasPressed(e))
+	doGroupsDelete();
+      else if((prefs.getJobBrowserGroupsDeleteCompleted() != null) &&
+	      prefs.getJobBrowserGroupsDeleteCompleted().wasPressed(e))
+	doGroupsDeleteCompleted();
+      else 
+	unsupported = true;
     }
 
     if(unsupported) {
@@ -1654,38 +835,7 @@ class JQueueJobBrowserPanel
   {
     String cmd = e.getActionCommand();
     if(cmd.equals("update")) 
-      updateAll();
-
-    else if(cmd.equals("hosts-history")) 
-      doHostsHistory();
-    else if(cmd.equals("hosts-apply")) 
-      doHostsApply();
-    else if(cmd.equals("hosts-add")) 
-      doHostsAdd();
-    else if(cmd.equals("hosts-remove")) 
-      doHostsRemove();
-
-    else if(cmd.equals("toggle-stat-columns"))
-      doHostsToggleStatColumns();
-    else if(cmd.equals("toggle-dyn-columns"))
-      doHostsToggleDynColumns();
-    else if(cmd.equals("toggle-job-columns"))
-      doHostsToggleJobColumns();
-    else if(cmd.equals("toggle-dsp-columns"))
-      doHostsToggleDspColumns();
-
-    else if(cmd.equals("slots-preempt-jobs")) 
-      doSlotsPreemptJobs();
-
-    else if(cmd.equals("slots-edit"))
-      doSlotsView();
-    else if(cmd.equals("slots-edit-with-default"))
-      doSlotsViewWithDefault();
-    else if(cmd.startsWith("slots-edit-with:"))
-      doSlotsViewWith(cmd.substring(10));    
-
-    else if(cmd.equals("slots-kill-jobs")) 
-      doSlotsKillJobs();
+      updatePanels();
 
     else if(cmd.equals("view-filter-changed")) 
       doViewFilterChanged();
@@ -1718,324 +868,10 @@ class JQueueJobBrowserPanel
   }
 
 
-  /*-- ADJUSTMENT LISTENER METHODS ---------------------------------------------------------*/
-
-  /**
-   * Invoked when the value of the adjustable has changed.
-   */ 
-  public void
-  adjustmentValueChanged
-  (
-   AdjustmentEvent e
-  )
-  { 
-    JViewport nview = pHostnamesTablePanel.getTableScroll().getViewport();
-    JViewport hview = pHostsTablePanel.getTableScroll().getViewport();
-    if((nview != null) && (hview != null)) {
-      Point npos = nview.getViewPosition();    
-      Point hpos = hview.getViewPosition();    
-      
-      if(npos.y != hpos.y) {
- 	npos.y = hpos.y;
- 	nview.setViewPosition(npos);
-      }
-    }  
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Signals that the hosts properties have been edited.
-   */ 
-  public void 
-  doHostsEdited() 
-  {
-    pHostsApplyItem.setEnabled(true);
-    pHostsApplyButton.setEnabled(true);
-  }
-
-  /**
-   * Show the resource usage history dialogs for the selected hosts.
-   */ 
-  public void   
-  doHostsHistory()
-  {
-    pHostsTablePanel.cancelEditing();
-
-    GetHistoryTask task = new GetHistoryTask(getSelectedHostnames());
-    task.start();      
-  }
-
-  /**
-   * Apply the changes to server properties. 
-   */ 
-  public void 
-  doHostsApply()
-  {
-    EditHostsTask task = new EditHostsTask();
-    task.start();
-  }
-
-  /**
-   * Add a new server. 
-   */ 
-  public void 
-  doHostsAdd()
-  {
-    pHostsTablePanel.cancelEditing();
-
-    JNewJobServerDialog diag = new JNewJobServerDialog(getTopFrame());
-    diag.setVisible(true);
-    
-    if(diag.wasConfirmed()) {
-      String hname = diag.getName();
-      if((hname != null) && (hname.length() > 0)) {
-	AddHostTask task = new AddHostTask(hname);
-	task.start();    
-      }
-    }
-
-  }
-
-  /**
-   * Remove the servers on the selected rows.
-   */ 
-  public void 
-  doHostsRemove()
-  {
-    pHostsTablePanel.cancelEditing();
-
-    TreeSet<String> hostnames = getSelectedHostnames();    
-    if(!hostnames.isEmpty()) {
-      RemoveHostsTask task = new RemoveHostsTask(hostnames);
-      task.start();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Toggle display of the Status, Reservation and Order columns."
-   */ 
-  public void 
-  doHostsToggleStatColumns()
-  { 
-    TreeSet<String> cnames = new TreeSet<String>();
-    cnames.add("Status");
-    cnames.add("OS");
-    
-    boolean isVisible = false;
-    for(String cname : cnames) {
-      if(!pHostsTablePanel.isColumnVisible(cname)) {
-	isVisible = true;
-	break;
-      }
-    }
-    
-    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
-  }
-
-  /**
-   * Toggle display of the System Load, Free Memory and Free Disk Space columns."
-   */ 
-  public void 
-  doHostsToggleDynColumns()
-  { 
-    TreeSet<String> cnames = new TreeSet<String>();
-    cnames.add("System Load");
-    cnames.add("Free Memory");
-    cnames.add("Free Disk Space");
-    
-    boolean isVisible = false;
-    for(String cname : cnames) {
-      if(!pHostsTablePanel.isColumnVisible(cname)) {
-	isVisible = true;
-	break;
-      }
-    }
-    
-    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
-  }
-
-  /**
-   * Toggle display of the Jobs and Slots columns.
-   */ 
-  public void 
-  doHostsToggleJobColumns()
-  {
-    TreeSet<String> cnames = new TreeSet<String>();
-    cnames.add("Jobs");
-    cnames.add("Slots");
-    
-    boolean isVisible = false;
-    for(String cname : cnames) {
-      if(!pHostsTablePanel.isColumnVisible(cname)) {
-	isVisible = true;
-	break;
-      }
-    }
-    
-    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
-  }
-
-  /**
-   * Toggle display of the selection key bias columns.
-   */ 
-  public void 
-  doHostsToggleDspColumns()
-  {
-    TreeSet<String> cnames = new TreeSet<String>();
-      cnames.add("Reservation");
-      cnames.add("Order");
-      cnames.add("Group");
-      cnames.add("Schedule");
-
-    boolean isVisible = false;
-    for(String cname : cnames) {
-      if(!pHostsTablePanel.isColumnVisible(cname)) {
-	isVisible = true;
-	break;
-      }
-    }
-    
-    pHostsTablePanel.setColumnsVisible(cnames, isVisible);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Preempt the jobs running on the selected job server slots.
-   */ 
-  public void 
-  doSlotsPreemptJobs()
-  {
-    TreeMap<String,TreeSet<Long>> jobs = new TreeMap<String,TreeSet<Long>>();
-    for(Long jobID : getSelectedSlotJobIDs()) {
-      JobStatus status = pJobStatus.get(jobID);
-      String author = null;
-      if(status != null) 
-	author = status.getNodeID().getAuthor();
-      
-      if((author != null) && 
-	 (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
-	TreeSet<Long> dead = jobs.get(author);
-	if(dead == null) {
-	  dead = new TreeSet<Long>();
-	  jobs.put(author, dead);
-	}
-	dead.add(jobID);
-      }
-    }
-
-    if(!jobs.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(jobs);
-      task.start();
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * View the target files of the job running on the selected slot.
-   */ 
-  private void 
-  doSlotsView() 
-  {
-    Long jobID = getSelectedSlotJobID();
-    if(jobID != null) {
-      JobStatus status = pJobStatus.get(jobID);
-      if(status != null) {
-	ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence());
-	task.start();
-      }
-    }
-  }
-
-  /**
-   * View the target files of the job running on the selected slot using the default 
-   * editor for the file type.
-   */ 
-  private void 
-  doSlotsViewWithDefault() 
-  {
-    Long jobID = getSelectedSlotJobID();
-    if(jobID != null) {
-      JobStatus status = pJobStatus.get(jobID);
-      if(status != null) {
-	ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), true);
-	task.start();
-      }
-    }
-  }
-
-  /**
-   * View the target files of the job running on the selected slot with the given editor.
-   */ 
-  private void 
-  doSlotsViewWith
-  (
-   String editor
-  ) 
-  {
-    String parts[] = editor.split(":");
-    assert(parts.length == 3);
-    
-    String ename   = parts[0];
-    VersionID evid = new VersionID(parts[1]);
-    String evendor = parts[2];
-
-    Long jobID = getSelectedSlotJobID();
-    if(jobID != null) {
-      JobStatus status = pJobStatus.get(jobID);
-      if(status != null) {
-	ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), false, 
-				     ename, evid, evendor);
-	task.start();
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Kill the jobs running on the selected job server slots.
-   */ 
-  public void 
-  doSlotsKillJobs()
-  {
-    TreeMap<String,TreeSet<Long>> jobs = new TreeMap<String,TreeSet<Long>>();
-    for(Long jobID : getSelectedSlotJobIDs()) {
-      JobStatus status = pJobStatus.get(jobID);
-      String author = null;
-      if(status != null) 
-	author = status.getNodeID().getAuthor();
-      
-      if((author != null) &&
-	 (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
-	TreeSet<Long> dead = jobs.get(author);
-	if(dead == null) {
-	  dead = new TreeSet<Long>();
-	  jobs.put(author, dead);
-	}
-	dead.add(jobID);
-      }
-    }
-
-    if(!jobs.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(jobs);
-      task.start();
-    }
-  }
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -2058,7 +894,7 @@ class JQueueJobBrowserPanel
     }
 
     pViewFilterButton.setName(pViewFilter + "Button");
-    updateAll();
+    updatePanels();
   }
   
   /**
@@ -2069,7 +905,7 @@ class JQueueJobBrowserPanel
   {
     pViewFilter = ViewFilter.SingleView;
     pViewFilterButton.setName(pViewFilter + "Button");
-    updateAll();
+    updatePanels();
   }
   
   /**
@@ -2080,7 +916,7 @@ class JQueueJobBrowserPanel
   {
     pViewFilter = ViewFilter.OwnedViews;
     pViewFilterButton.setName(pViewFilter + "Button");
-    updateAll();
+    updatePanels();
   }
   
   /**
@@ -2091,7 +927,7 @@ class JQueueJobBrowserPanel
   {
     pViewFilter = ViewFilter.AllViews;
     pViewFilterButton.setName(pViewFilter + "Button");
-    updateAll();
+    updatePanels();
   }
   
 
@@ -2396,7 +1232,6 @@ class JQueueJobBrowserPanel
     super.toGlue(encoder);
     
     encoder.encode("ViewFilter", pViewFilter);
-    encoder.encode("SelectedTabIndex", pTab.getSelectedIndex());
 
     if(!pSelectedIDs.isEmpty())
       encoder.encode("SelectedIDs", pSelectedIDs);
@@ -2414,10 +1249,6 @@ class JQueueJobBrowserPanel
       pViewFilter = filter; 
       pViewFilterButton.setName(pViewFilter + "Button");
     }
-
-    Integer idx = (Integer) decoder.decode("SelectedTabIndex");
-    if(idx != null) 
-      pTab.setSelectedIndex(idx);    
 
     if(UIMaster.getInstance().restoreSelections()) {
       TreeSet<Long> selected = (TreeSet<Long>) decoder.decode("SelectedIDs");
@@ -2500,68 +1331,6 @@ class JQueueJobBrowserPanel
 
     private Component  pComp;
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class TableSyncSelector
-    implements ListSelectionListener
-  {
-    public 
-    TableSyncSelector
-    (
-     JTable source,
-     JTable target
-    ) 
-    {
-      pSourceTable = source;
-      pTargetTable = target;
-    }
-
-    /**
-     * Called whenever the value of the selection changes.
-     */ 
-    public void 	
-    valueChanged
-    (
-     ListSelectionEvent e
-    )
-    {
-      if(e.getValueIsAdjusting()) 
-	return;
-      
-      DefaultListSelectionModel smodel = 
-	(DefaultListSelectionModel) pTargetTable.getSelectionModel();
-
-      ListSelectionListener[] listeners = smodel.getListSelectionListeners();
-      {
-	int wk;
-	for(wk=0; wk<listeners.length; wk++) 
-	  smodel.removeListSelectionListener(listeners[wk]);
-      }
-
-      smodel.clearSelection();
-
-      {
-	int rows[] = pSourceTable.getSelectedRows();
-	int wk; 
-	for(wk=0; wk<rows.length; wk++) 
-	  smodel.addSelectionInterval(rows[wk], rows[wk]);	  
-      }
-      
-      {
-	int wk;
-	for(wk=0; wk<listeners.length; wk++) 
-	  smodel.addListSelectionListener(listeners[wk]);
-      }
-
-      pTargetTable.repaint();
-    }
-
-    private JTable pSourceTable;
-    private JTable pTargetTable;
-  }  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2651,651 +1420,13 @@ class JQueueJobBrowserPanel
       if((pSelectedIDs.size() == 1) && (numPrevSelected <= 1))
 	pJustSelected = pSelectedIDs.first();
   
-      updateAll();      
+      updatePanels(true);      
     }
 
     private Long  pJustSelected; 
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class SlotsListSelector
-    implements ListSelectionListener
-  {
-    public 
-    SlotsListSelector() 
-    {}
-
-    /**
-     * Called whenever the value of the selection changes.
-     */ 
-    public void 	
-    valueChanged
-    (
-     ListSelectionEvent e
-    )
-    {
-      if(e.getValueIsAdjusting()) 
-	return;
-
-      if(pGroupID > 0) {
-	Long jobID = null;
-	{
-	  int rows[] = pSlotsTablePanel.getTable().getSelectedRows();
-	  int wk;
-	  for(wk=0; wk<rows.length; wk++) 
-	    jobID = pSlotsTableModel.getJobID(rows[wk]);
-	}
-	
-	GetJobInfoTask task = new GetJobInfoTask(pGroupID, jobID);
-	task.start();
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the current job information. 
-   */ 
-  private 
-  class GetJobInfoTask
-    extends Thread
-  {
-    public 
-    GetJobInfoTask
-    (
-     int groupID,
-     Long jobID
-    ) 
-    {
-      super("JQueueJobBrowserPanel:GetJobInfoTask");
-
-      pGroupID = groupID;
-      pJobID   = jobID;
-    }
-
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();      
-
-      QueueJob job = null;
-      QueueJobInfo info = null; 
-      SubProcessExecDetails details = null; 
-      if((pGroupID > 0) && (pJobID != null)) {
-	if(master.beginPanelOp("Updating Job Details...")) {
-	  try {
-	    QueueMgrClient client = master.getQueueMgrClient();
-	    job  = client.getJob(pJobID);
-	    info = client.getJobInfo(pJobID);
-
-	    String hostname = info.getHostname();
-	    if(hostname != null) {
-	      JobMgrClient jclient = new JobMgrClient(hostname);
-	      details = jclient.getExecDetails(pJobID);
-	    }
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
-	}
-      }
-	
-      UpdateSlotsSelectionTask task = 
-	new UpdateSlotsSelectionTask(pGroupID, job, info, details);
-      SwingUtilities.invokeLater(task);
-    }
-
-    private int   pGroupID;
-    private Long  pJobID; 
-  }
-
-  /** 
-   * Update the JobViewer/JobDetails subpanels that the Job Slots selection has changed.
-   */ 
-  private
-  class UpdateSlotsSelectionTask
-    extends Thread
-  {
-    private 
-    UpdateSlotsSelectionTask
-    (
-     int groupID, 
-     QueueJob job, 
-     QueueJobInfo info, 
-     SubProcessExecDetails details
-    ) 
-    {
-      super("JQueueJobBrowserPanel:UpdateSlotsSelectionTask");
-
-      pGroupID     = groupID;
-      pJob         = job; 
-      pJobInfo     = info; 
-      pExecDetails = details;
-    }
-
-    public void 
-    run()     
-    {
-      UIMaster master = UIMaster.getInstance();
-
-      /* update any connected JobViewer panel */ 
-      if(pGroupID > 0) {
-	PanelGroup<JQueueJobViewerPanel> panels = master.getQueueJobViewerPanels();
-	JQueueJobViewerPanel panel = panels.getPanel(pGroupID);
-	if(panel != null) {
-	  if((pJob != null) && (pJobInfo != null))
-	    panel.disableDetailsUpdate();
-	  else 
-	    panel.enableDetailsUpdate();
-	}
-      }
-
-      /* update any connected JobDetails panel */ 
-      if(pGroupID > 0) {
-	PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
-	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
-	if(panel != null) {
-	  panel.updateJob(pAuthor, pView, pJob, pJobInfo, pExecDetails);
-	}
-      }
-    }
-
-    private int                    pGroupID;
-    private QueueJob               pJob; 
-    private QueueJobInfo           pJobInfo; 
-    private SubProcessExecDetails  pExecDetails; 
-  }
-
-
-
  
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Query the queue manager.
-   */ 
-  private
-  class QueryTask
-    extends Thread
-  {
-    public 
-    QueryTask() 
-    {
-      super("JQueueJobBrowserPanel:QueryTask");
-    }
- 
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-
-      TreeMap<Long,QueueJobGroup> groups = null;
-      TreeMap<Long,JobStatus> jobStatus = null;
-      TreeMap<Long,QueueJobInfo> jobInfo = null;
-      TreeMap<String,QueueHostInfo> hosts = null;
-      TreeSet<String> selectionGroups = null;
-      TreeSet<String> selectionSchedules = null;
-
-      if(master.beginPanelOp("Updating...")) {
-	try {
-	  QueueMgrClient client = master.getQueueMgrClient();
-	  
-	  groups     = client.getJobGroups(); 
-	  jobStatus  = client.getJobStatus(new TreeSet<Long>(groups.keySet()));
-	  jobInfo    = client.getRunningJobInfo();
-	  hosts      = client.getHosts(); 
-
-	  selectionGroups    = client.getSelectionGroupNames();
-	  selectionSchedules = client.getSelectionScheduleNames();
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-	
-      UpdateTask task = new UpdateTask(groups, jobStatus, jobInfo, 
-				       hosts, selectionGroups, selectionSchedules); 
-      SwingUtilities.invokeLater(task);
-    }
-  }
-  
-  /** 
-   * Update the UI components with the new job group and job state information.
-   */ 
-  private
-  class UpdateTask
-    extends Thread
-  {
-    public 
-    UpdateTask
-    (
-     TreeMap<Long,QueueJobGroup> groups, 
-     TreeMap<Long,JobStatus> jobStatus, 
-     TreeMap<Long,QueueJobInfo> jobInfo, 
-     TreeMap<String,QueueHostInfo> hosts, 
-     TreeSet<String> selectionGroups, 
-     TreeSet<String> selectionSchedules
-    ) 
-    {
-      super("JQueueJobBrowserPanel:UpdateTask");
-
-      pGroups = groups;
-      pStatus = jobStatus; 
-      pInfo   = jobInfo;
-      pHosts  = hosts; 
-
-      pSelectionGroups    = selectionGroups; 
-      pSelectionSchedules = selectionSchedules; 
-    }
-
-    public void 
-    run() 
-    {
-      /* enable/disable the DeleteCompleted button */ 
-      switch(pViewFilter) {
-      case SingleView:
-      case OwnedViews:
-	pDeleteCompletedButton.setEnabled(!isLocked());
-	break;
-	
-      case AllViews:
-	pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
-      }
-
-      /* update the panels */ 
-      updateJobs(pGroups, pStatus, pInfo, pHosts, pSelectionGroups, pSelectionSchedules);
-    }
-    
-    private TreeMap<Long,QueueJobGroup>   pGroups; 
-    private TreeMap<Long,JobStatus>       pStatus; 
-    private TreeMap<Long,QueueJobInfo>    pInfo; 
-    private TreeMap<String,QueueHostInfo> pHosts;
-
-    private TreeSet<String>  pSelectionGroups; 
-    private TreeSet<String>  pSelectionSchedules;
-  }
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the full resource usage history.
-   */ 
-  private
-  class GetHistoryTask
-    extends Thread
-  {
-    public 
-    GetHistoryTask
-    (
-     TreeSet<String> hostnames
-    ) 
-    {
-      super("JQueueJobBrowserPanel:GetHistoryTask");
-
-      pHostnames = hostnames; 
-    }
-    
-    public void
-    run()
-    {
-      UIMaster master = UIMaster.getInstance();
-      QueueMgrClient qclient = master.getQueueMgrClient();
-      
-      TreeMap<String,ResourceSampleBlock> samples = new TreeMap<String,ResourceSampleBlock>();
-      if(master.beginPanelOp()) {
-	try {
-	  for(String hname : pHostnames) {
-	    try {
-	      master.updatePanelOp("Loading History: " + hname);
-	      ResourceSampleBlock block = qclient.getHostResourceSamples(hname);
-	      if(block != null) 
-		samples.put(hname, block);
-	    }
-	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
-	    }
-	  }
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-	  
-      ShowHistoryTask task = new ShowHistoryTask(samples);
-      SwingUtilities.invokeLater(task);
-    }
-
-    private TreeSet<String>  pHostnames;
-  }
-
-  /** 
-   * Display the full resource usage history dialog.
-   */ 
-  private
-  class ShowHistoryTask
-    extends Thread
-  {
-    public 
-    ShowHistoryTask
-    (
-     TreeMap<String,ResourceSampleBlock> samples
-    ) 
-    {
-      super("JQueueJobBrowserPanel:ShowHistoryTask");
-
-      pSamples = samples;
-    }
-    
-    public void
-    run()
-    {
-      UIMaster.getInstance().showResourceUsageHistoryDialog(pSamples);
-    }
-
-    private TreeMap<String,ResourceSampleBlock> pSamples;
-  }
-
-
-  /** 
-   * Edit the properties of existing hosts.
-   */ 
-  private
-  class EditHostsTask
-    extends Thread
-  {
-    public 
-    EditHostsTask() 
-    {
-      super("JQueueJobBrowserPanel:EditHostsTask");
-
-      pStatus       = pHostsTableModel.getHostStatus();
-      pReservations = pHostsTableModel.getHostReservations();
-      pOrders       = pHostsTableModel.getHostOrders();
-      pSlots   	    = pHostsTableModel.getHostSlots(); 
-
-      pSelectionGroups    = pHostsTableModel.getHostSelectionGroups();
-      pSelectionSchedules = pHostsTableModel.getHostSelectionSchedules();
-    }
-
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-
-      if(master.beginPanelOp("Modifying Servers...")) {
-	try {
-	  QueueMgrClient client = master.getQueueMgrClient();
-	  client.editHosts(pStatus, pReservations, pOrders, pSlots, 
-			   pSelectionGroups, pSelectionSchedules);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-	
-      QueryTask task = new QueryTask();
-      task.start();
-    }
-
-    private TreeMap<String,QueueHostStatusChange>  pStatus; 
-    private TreeMap<String,String>                 pReservations; 
-    private TreeMap<String,Integer>                pOrders;  
-    private TreeMap<String,Integer>                pSlots;  
-    private TreeMap<String,String>                 pSelectionGroups; 
-    private TreeMap<String,String>                 pSelectionSchedules; 
-  }
-
-  /** 
-   * Add a new job server.
-   */ 
-  private
-  class AddHostTask
-    extends Thread
-  {
-    public 
-    AddHostTask
-    (
-     String hostname
-    ) 
-    {
-      super("JQueueJobBrowserPanel:AddHostTask");
-
-      pHostname = hostname;
-    }
- 
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Adding Server...")) {
-	try {
-	  QueueMgrClient client = master.getQueueMgrClient();
-	  client.addHost(pHostname);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-      
-      QueryTask task = new QueryTask();
-      task.start();
-    }
-
-    private String  pHostname; 
-  }
-
-  /** 
-   * Remove a new job server.
-   */ 
-  private
-  class RemoveHostsTask
-    extends Thread
-  {
-    public 
-    RemoveHostsTask
-    (
-     TreeSet<String> hostnames
-    ) 
-    {
-      super("JQueueJobBrowserPanel:RemoveHostsTask");
-
-      pHostnames = hostnames;
-    }
- 
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Removing Servers...")) {
-	try {
-	  QueueMgrClient client = master.getQueueMgrClient();
-	  client.removeHosts(pHostnames);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-      
-      QueryTask task = new QueryTask();
-      task.start();
-    }
-
-    private TreeSet<String>  pHostnames; 
-  }
-
- 
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * View the given working file sequence with the given editor.
-   */ 
-  private
-  class ViewTask
-    extends Thread
-  {
-    public 
-    ViewTask
-    (
-     NodeID nodeID, 
-     FileSeq fseq
-    ) 
-    {
-      this(nodeID, fseq, false, null, null, null);
-    }
-
-    public 
-    ViewTask
-    (
-     NodeID nodeID, 
-     FileSeq fseq, 
-     boolean useDefault
-    ) 
-    {
-      this(nodeID, fseq, useDefault, null, null, null);
-    }
-
-    public 
-    ViewTask
-    (
-     NodeID nodeID, 
-     FileSeq fseq,
-     boolean useDefault,
-     String ename,
-     VersionID evid, 
-     String evendor
-    ) 
-    {
-      super("JQueueJobBrowserPanel:ViewTask");
-
-      pNodeID        = nodeID;
-      pFileSeq       = fseq; 
-      pUseDefault    = useDefault;
-      pEditorName    = ename;
-      pEditorVersion = evid; 
-      pEditorVendor  = evendor;       
-    }
-
-     public void 
-     run() 
-     {
-       SubProcessLight proc = null;
-       {
- 	UIMaster master = UIMaster.getInstance();
- 	if(master.beginPanelOp("Launching Node Editor...")) {
- 	  try {
- 	    MasterMgrClient client = master.getMasterMgrClient();
-
- 	    NodeMod mod = client.getWorkingVersion(pNodeID);
- 	    String author = pNodeID.getAuthor();
- 	    String view = pNodeID.getView();
-
- 	    /* create an editor plugin instance */ 
- 	    BaseEditor editor = null;
- 	    {
-	      if(pEditorName != null) {
-		PluginMgrClient pclient = PluginMgrClient.getInstance();
-		editor = pclient.newEditor(pEditorName, pEditorVersion, pEditorVendor);
-	      }
-	      else if (pUseDefault) {
-		FilePattern fpat = mod.getPrimarySequence().getFilePattern();
-		String suffix = fpat.getSuffix();
-		if(suffix != null) 
-		  editor = client.getEditorForSuffix(suffix);
-	      }
-
-	      if(editor == null) 
-		editor = mod.getEditor();
-		
-	      if(editor == null) 
-		throw new PipelineException
-		  ("No editor was specified for node (" + mod.getName() + ")!");
- 	    }
-
- 	    /* lookup the toolset environment */ 
- 	    TreeMap<String,String> env = null;
- 	    {
- 	      String tname = mod.getToolset();
- 	      if(tname == null) 
- 		throw new PipelineException
- 		  ("No toolset was specified for node (" + mod.getName() + ")!");
-
- 	      /* passes author so that WORKING will correspond to the current view */ 
- 	      env = client.getToolsetEnvironment(author, view, tname, PackageInfo.sOsType);
- 	    }
-	    
- 	    /* get the primary file sequence */ 
- 	    FileSeq fseq = null;
- 	    File dir = null; 
- 	    {
- 	      Path path = null;
- 	      {
-		Path wpath = new Path(PackageInfo.sWorkPath, 
-				      author + "/" + view + "/" + mod.getName());
-		path = wpath.getParentPath();
- 	      }
-
- 	      fseq = new FileSeq(path.toString(), pFileSeq);
- 	      dir = path.toFile();
- 	    }
-	    
- 	    /* start the editor */ 
-	    editor.makeWorkingDirs(dir);
- 	    proc = editor.launch(fseq, env, dir);
- 	  }
- 	  catch(PipelineException ex) {
- 	    master.showErrorDialog(ex);
- 	    return;
- 	  }
- 	  finally {
- 	    master.endPanelOp("Done.");
- 	  }
- 	}
-
- 	/* wait for the editor to exit */ 
- 	if(proc != null) {
- 	  try {
- 	    proc.join();
- 	    if(!proc.wasSuccessful()) 
- 	      master.showSubprocessFailureDialog("Editor Failure:", proc);
- 	  }
- 	  catch(InterruptedException ex) {
- 	    master.showErrorDialog(ex);
- 	  }
- 	}
-       }
-     }
-
-     private NodeID     pNodeID;
-     private FileSeq    pFileSeq;
-     private boolean    pUseDefault; 
-     private String     pEditorName;
-     private VersionID  pEditorVersion; 
-     private String     pEditorVendor; 
-   }
-
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -3337,13 +1468,14 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
+      if(master.beginPanelOp(pGroupID)) {
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
-	    master.updatePanelOp("Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    master.getMasterMgrClient().resubmitJobs(nodeID, pTargets.get(nodeID), 
-						     pBatchSize, pPriority, pRampUp, 
-						     pSelectionKeys);
+	    master.updatePanelOp(pGroupID, 
+				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
+	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	    client.resubmitJobs
+	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, pSelectionKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3351,10 +1483,10 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3387,11 +1519,11 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Pausing Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) {
 	    TreeSet<Long> jobIDs = pJobs.get(author);
-	    master.getQueueMgrClient().pauseJobs(author, jobIDs);
+	    master.getQueueMgrClient(pGroupID).pauseJobs(author, jobIDs);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3399,10 +1531,10 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3431,11 +1563,11 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) {
 	    TreeSet<Long> jobIDs = pJobs.get(author);
-	    master.getQueueMgrClient().resumeJobs(author, jobIDs);
+	    master.getQueueMgrClient(pGroupID).resumeJobs(author, jobIDs);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3443,10 +1575,10 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3475,11 +1607,11 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Preempting Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) {
 	    TreeSet<Long> jobIDs = pJobs.get(author);
-	    master.getQueueMgrClient().preemptJobs(author, jobIDs);
+	    master.getQueueMgrClient(pGroupID).preemptJobs(author, jobIDs);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3487,10 +1619,10 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3519,11 +1651,11 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Killing Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) {
 	    TreeSet<Long> jobIDs = pJobs.get(author);
-	    master.getQueueMgrClient().killJobs(author, jobIDs);
+	    master.getQueueMgrClient(pGroupID).killJobs(author, jobIDs);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3531,10 +1663,10 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3563,19 +1695,19 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Deleting Job Groups...")) {
+      if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
 	try {
-	  master.getQueueMgrClient().deleteJobGroups(pGroups);
+	  master.getQueueMgrClient(pGroupID).deleteJobGroups(pGroups);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3604,10 +1736,10 @@ class JQueueJobBrowserPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Deleting Job Groups...")) {
+      if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
 	try {
-	  MasterMgrClient mclient = master.getMasterMgrClient();
-	  QueueMgrClient qclient  = master.getQueueMgrClient();
+	  MasterMgrClient mclient = master.getMasterMgrClient(pGroupID);
+	  QueueMgrClient qclient  = master.getQueueMgrClient(pGroupID);
 	  switch(pFilter) {
 	  case SingleView:
 	    qclient.deleteViewJobGroups(pAuthor, pView);
@@ -3633,10 +1765,10 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateAll();
+	updatePanels();
       }
     }
 
@@ -3671,130 +1803,9 @@ class JQueueJobBrowserPanel
   private TreeSet<Long>  pSelectedIDs; 
 
   /**
-   * The toolset used to build the editor menus.
-   */ 
-  private String  pGroupsEditorMenuToolset;
-  private String  pSlotsEditorMenuToolset;
-
-  /**
    * The working area view filter.
    */
   private ViewFilter  pViewFilter; 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * The tabbed panel.
-   */ 
-  private JTabbedPanel  pTab;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The hosts popup menu.
-   */ 
-  private JPopupMenu  pHostsPopup;
-  
-  /**
-   * The hosts popup menu items.
-   */ 
-  private JMenuItem  pHostsUpdateItem;
-  private JMenuItem  pHostsHistoryItem;
-  private JMenuItem  pHostsApplyItem;
-  private JMenuItem  pHostsAddItem;
-  private JMenuItem  pHostsRemoveItem;
-
-
-  /**
-   * The header panel.
-   */ 
-  private JPanel pHostsHeaderPanel; 
-
-  /** 
-   * Column display buttons.
-   */ 
-  private JToggleButton  pStatButton;
-  private JToggleButton  pDynButton;
-  private JToggleButton  pJobButton;
-  private JToggleButton  pDspButton;
-
-  /**
-   * The button used to apply changes to the host properties.
-   */ 
-  private JButton  pHostsApplyButton; 
-
-
-  /**
-   * The job server names table model.
-   */ 
-  private QueueHostnamesTableModel  pHostnamesTableModel;
-
-  /**
-   * The job server names table panel.
-   */ 
-  private JTablePanel  pHostnamesTablePanel;
-
-
-  /**
-   * The job servers table model.
-   */ 
-  private QueueHostsTableModel  pHostsTableModel;
-
-  /**
-   * The job servers table panel.
-   */ 
-  private JTablePanel  pHostsTablePanel;
-
-
-  /**
-   * The container of the header buttons for the selection key columns.
-   */ 
-  private Box  pSelectionKeyHeaderBox; 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The slots popup menu.
-   */ 
-  private JPopupMenu  pSlotsPopup;
-  
-  /**
-   * The slots popup menu items.
-   */ 
-  private JMenuItem  pSlotsUpdateItem;
-  private JMenuItem  pSlotsViewItem;
-  private JMenuItem  pSlotsViewWithDefaultItem;
-  private JMenuItem  pSlotsPreemptItem;
-  private JMenuItem  pSlotsKillItem;
-
-  /**
-   * The view with submenu.
-   */ 
-  private JMenu  pSlotsViewWithMenu; 
-
-
-  /**
-   * The header panel.
-   */ 
-  private JPanel pSlotsHeaderPanel; 
-
-  /**
-   * The job slots table model.
-   */ 
-  private QueueSlotsTableModel  pSlotsTableModel;
-
-  /**
-   * The job slots table panel.
-   */ 
-  private JTablePanel  pSlotsTablePanel;
-
-  /**
-   * The list selection listener.
-   */ 
-  private SlotsListSelector  pSlotsListSelector;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3850,14 +1861,5 @@ class JQueueJobBrowserPanel
    * The list selection listener.
    */ 
   private GroupsListSelector  pGroupsListSelector;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The canonical names of this host.
-   */ 
-  private TreeSet<String>  pLocalHostnames;
-
 
 }

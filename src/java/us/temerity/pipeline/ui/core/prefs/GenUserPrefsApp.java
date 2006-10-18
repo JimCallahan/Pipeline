@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -273,26 +273,36 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
+	("Create a new window containing a Job Servers panel.",
+	 "ManagerJobServersWindow", "Job Servers:",
+	 false, true, false, 118),  /* ALT+F7 */ 
+	
+	new HotKeyPref
+	("Create a new window containing a Job Slots panel.",
+	 "ManagerJobSlotsWindow", "Job Slots:",
+	 false, true, false, 119),  /* ALT+F8 */ 
+	
+	new HotKeyPref
 	("Create a new window containing a Job Browser panel.",
 	 "ManagerJobBrowserWindow", "Job Browser:",
-	 false, true, false, 118),  /* ALT+F7 */ 
+	 false, true, false, 120),  /* ALT+F9 */ 
 	
 	new HotKeyPref
 	("Create a new window containing a Job Viewer panel.", 
 	 "ManagerJobViewerWindow", "Job Viewer:",
-	 false, true, false, 119),  /* ALT+F8 */ 
+	 false, true, false, 121),  /* ALT+F10 */ 
 
 	new HotKeyPref
 	("Create a new window containing a Job Details panel.", 
 	 "ManagerJobDetailsWindow", "Job Details:",
-	 false, true, false, 120),  /* ALT+F9 */ 
+	 false, true, false, 122),  /* ALT+F11 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Create a new window containing an empty panel.", 
 	 "ManagerEmptyWindow", "None:",
-	 false, true, false, 121),  /* ALT+F10 */ 	
+	 false, true, false, 123),  /* ALT+F12 */ 	
       };
 
       pPrefs.put("Main Menu|Panel Window|Hot Keys", prefs);
@@ -335,26 +345,36 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
+	("Change the panel type to a Job Servers panel.",
+	 "ManagerJobServersPanel", "Job Servers:",
+	 false, false, false, 118),  /* F7 */ 
+	
+	new HotKeyPref
+	("Change the panel type to a Job Slots panel.",
+	 "ManagerJobSlotsPanel", "Job Slots:",
+	 false, false, false, 119),  /* F8 */ 
+	
+	new HotKeyPref
 	("Change the panel type to a Job Browser panel.",
 	 "ManagerJobBrowserPanel", "Job Browser:",
-	 false, false, false, 118),  /* F7 */ 
+	 false, false, false, 120),  /* F9 */ 
 	
 	new HotKeyPref
 	("Change the panel type to a Job Viewer panel.", 
 	 "ManagerJobViewerPanel", "Job Viewer:",
-	 false, false, false, 119),  /* F8 */ 
+	 false, false, false, 121),  /* F10 */ 
 	
 	new HotKeyPref
 	("Change the panel type to a Job Details panel.", 
 	 "ManagerJobDetailsPanel", "Job Details:",
-	 false, false, false, 120),  /* F9 */ 
+	 false, false, false, 122),  /* F11 */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
 	("Change the panel type to an empty panel.", 
 	 "ManagerEmptyPanel", "None:",
-	 false, false, false, 121),  /* F9 */ 
+	 false, false, false, 123),  /* F12 */ 
       };
 
       pPrefs.put("Main Menu|Panel Type|Hot Keys", prefs);
@@ -1064,52 +1084,72 @@ class GenUserPrefsApp
 
       pPrefs.put("Panels|Node History|Hot Keys", prefs);
     }
-
+ 
     {
       BasePref prefs[] = {
 	new DuplicateHotKeyPref
-	("Update the job servers, slots and groups.", 
-	 "JobBrowserUpdate", "Update:", "Update"), 
+	("Update the job servers.", 
+	 "JobServersUpdate", "Update:", "Update"), 
 	
 	new BasePref(),
 
 	new HotKeyPref
 	("Show the resource usage history for the selected servers.", 
-	 "JobBrowserHostsHistory", "History:"), 
+	 "JobServersHistory", "History:"), 
 
 	new DuplicateHotKeyPref
 	("Apply the changes to job server properties.", 
-	 "JobBrowserHostsApply", "Apply Changes:", "ApplyChanges"), 
+	 "JobServersApply", "Apply Changes:", "ApplyChanges"), 
 	
 	new HotKeyPref
 	("Add a new job server.", 
-	 "JobBrowserHostsAdd", "Add Server:"), 
+	 "JobServersAdd", "Add Server:"), 
 
 	new HotKeyPref
 	("Remove the selected job servers.", 
-	 "JobBrowserHostsRemove", "Remove Server:"), 
+	 "JobServersRemove", "Remove Server:")
+      }; 
+	
+      pPrefs.put("Panels|Job Servers|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new DuplicateHotKeyPref
+	("Update the jobs server slots.", 
+	 "JobSlotsUpdate", "Update:", "Update"), 
 	
 	new BasePref(),
 	
 	new DuplicateHotKeyPref
 	("Preempt the jobs running on the selected job server slots.", 
-	 "JobBrowserSlotsPreemptJobs", "Preempt Slot Jobs:", "PreemptJobs"), 
+	 "JobSlotsPreemptJobs", "Preempt Slot Jobs:", "PreemptJobs"), 
 	
 	new DuplicateHotKeyPref
 	("Kill the jobs running on the selected job server slots.", 
-	 "JobBrowserSlotsKillJobs", "Kill Slot Jobs:", "KillJobs"), 
+	 "JobSlotsKillJobs", "Kill Slot Jobs:", "KillJobs"), 
 	
 	new BasePref(),
 	
 	new DuplicateHotKeyPref
 	("View the target files of the selected job server slot.", 
-	 "JobBrowserSlotsView", "View:", "Edit"), 
+	 "JobSlotsView", "View:", "Edit"), 
 
 	new DuplicateHotKeyPref
 	("View the target files of the selected job server slot using the default" + 
 	 "editor for the file type.", 
-	 "JobBrowserSlotsViewWithDefault", "View With Default:", "EditWithDefault"), 
+	 "JobSlotsViewWithDefault", "View With Default:", "EditWithDefault")
+      };
 
+      pPrefs.put("Panels|Job Slots|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new DuplicateHotKeyPref
+	("Update the jobs and job groups.", 
+	 "JobBrowserUpdate", "Update:", "Update"), 
+	
 	new BasePref(),
 
 	new HotKeyPref
@@ -1295,7 +1335,7 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new DuplicateHotKeyPref
 	("Update the status of all jobs.", 
-	 "JobViewerUpdate", "Update Jobs:", "Update"), 
+	 "JobViewerUpdate", "Update:", "Update"), 
 	
 	new BasePref(),
 	
@@ -1615,6 +1655,8 @@ class GenUserPrefsApp
       pPrefPanels.add("Panels|Node Links|Hot Keys");
       pPrefPanels.add("Panels|Node History|Hot Keys");
 
+      pPrefPanels.add("Panels|Job Servers|Hot Keys");
+      pPrefPanels.add("Panels|Job Slots|Hot Keys");
       pPrefPanels.add("Panels|Job Browser|Hot Keys");
       pPrefPanels.add("Panels|Job Viewer|Job|Hot Keys");
 
@@ -1641,6 +1683,8 @@ class GenUserPrefsApp
 	manager.add("ManagerNodeFilesWindow");
 	manager.add("ManagerNodeLinksWindow");
 	manager.add("ManagerNodeHistoryWindow");
+	manager.add("ManagerJobServersWindow");
+	manager.add("ManagerJobSlotsWindow");
 	manager.add("ManagerJobBrowserWindow");
 	manager.add("ManagerJobViewerWindow");
 	manager.add("ManagerJobDetailsWindow");
@@ -1655,6 +1699,8 @@ class GenUserPrefsApp
 	manager.add("ManagerNodeFilesPanel");
 	manager.add("ManagerNodeLinksPanel");
 	manager.add("ManagerNodeHistoryPanel");
+	manager.add("ManagerJobServersPanel");
+	manager.add("ManagerJobSlotsPanel");
 	manager.add("ManagerJobBrowserPanel");
 	manager.add("ManagerJobViewerPanel");
 	manager.add("ManagerJobDetailsPanel");
@@ -1859,26 +1905,26 @@ class GenUserPrefsApp
     
       {
 	TreeSet<String> group = new TreeSet<String>();
-	pHotKeyGroups.put("JobBrowserServer", group);
+	pHotKeyGroups.put("JobServers", group);
       
 	group.addAll(manager);
 	group.add(update);
-	group.add("JobBrowserHostsHistory");
+	group.add("JobServersHistory");
 	group.add(applyChanges);
-	group.add("JobBrowserHostsAdd");
-	group.add("JobBrowserHostsRemove");
+	group.add("JobServersAdd");
+	group.add("JobServersRemove");
       }
 
       {
 	TreeSet<String> group = new TreeSet<String>();
-	pHotKeyGroups.put("JobBrowserSlot", group);
+	pHotKeyGroups.put("JobSlots", group);
       
 	group.addAll(manager);
 	group.add(update);
-	group.add("JobBrowserSlotsView");
-	group.add("JobBrowserSlotsViewWithDefault");
-	group.add("JobBrowserSlotsPreemptJobs");
-	group.add("JobBrowserSlotsKillJobs");
+	group.add("JobSlotsView");
+	group.add("JobSlotsViewWithDefault");
+	group.add("JobSlotsPreemptJobs");
+	group.add("JobSlotsKillJobs");
       }
     
       {
@@ -2018,7 +2064,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2275,7 +2321,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3632,7 +3678,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.32 2006/10/11 22:45:41 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

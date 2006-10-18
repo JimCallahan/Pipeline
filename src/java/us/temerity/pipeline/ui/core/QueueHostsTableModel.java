@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.10 2006/07/02 00:27:50 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.11 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -33,7 +33,7 @@ class QueueHostsTableModel
   public 
   QueueHostsTableModel
   (
-   JQueueJobBrowserPanel parent, 
+   JQueueJobServersPanel parent, 
    TreeSet<String> localHostnames
   ) 
   {
@@ -952,7 +952,7 @@ class QueueHostsTableModel
   /**
    * The parent panel.
    */ 
-  private JQueueJobBrowserPanel pParent;
+  private JQueueJobServersPanel pParent;
   
 
   /*----------------------------------------------------------------------------------------*/

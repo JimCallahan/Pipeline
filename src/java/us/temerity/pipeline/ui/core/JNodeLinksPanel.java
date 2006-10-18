@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.13 2006/10/08 17:12:04 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.14 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -343,6 +343,8 @@ class JNodeLinksPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -370,6 +372,21 @@ class JNodeLinksPanel
     return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
   }
 
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    updatePanels();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -377,16 +394,26 @@ class JNodeLinksPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the UI components to reflect the current check-in log messages.
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
    * 
    * @param status
-   *   The current node status.
+   *   The current status for the node being displayed. 
    * 
    * @param links
    *   The check-in links. 
@@ -395,20 +422,23 @@ class JNodeLinksPanel
    *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
-  updateNodeStatus
+  applyPanelUpdates
   (
    String author, 
-   String view, 
+   String view,
    NodeStatus status,
    TreeMap<VersionID,TreeMap<String,LinkVersion>> links,
    TreeSet<VersionID> offline
-  ) 
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
     updateNodeStatus(status, links, offline);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the UI components to reflect the current check-in log messages.
@@ -422,7 +452,7 @@ class JNodeLinksPanel
    * @param offline
    *   The revision numbers of the offline checked-in versions. 
    */
-  public synchronized void 
+  private synchronized void 
   updateNodeStatus
   (
    NodeStatus status,
@@ -872,7 +902,7 @@ class JNodeLinksPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -2371,9 +2401,9 @@ class JNodeLinksPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Modifying Link Properties...")) {
+      if(master.beginPanelOp(pGroupID, "Modifying Link Properties...")) {
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  for(String sname : pLinks.keySet()) {
 	    LinkCommon link = pLinks.get(sname);
 	    client.link(pAuthor, pView, pStatus.getName(), sname, 
@@ -2385,15 +2415,10 @@ class JNodeLinksPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -2425,9 +2450,9 @@ class JNodeLinksPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Unlinking Node...")) {
+      if(master.beginPanelOp(pGroupID, "Unlinking Node...")) {
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  master.getMasterMgrClient().unlink(pAuthor, pView, pStatus.getName(), pSourceName);
 	}
 	catch(PipelineException ex) {
@@ -2435,15 +2460,10 @@ class JNodeLinksPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -2466,7 +2486,7 @@ class JNodeLinksPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(com, false, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView);
       setName("JNodeLinksPanel:EditTask");
     }
 
@@ -2477,7 +2497,7 @@ class JNodeLinksPanel
      boolean useDefault
     ) 
     {
-      UIMaster.getInstance().super(com, useDefault, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView);
       setName("JNodeLinksPanel:EditTask");
     }
 
@@ -2490,7 +2510,7 @@ class JNodeLinksPanel
      String evendor
     ) 
     {
-      UIMaster.getInstance().super(com, ename, evid, evendor, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, ename, evid, evendor, pAuthor, pView);
       setName("JNodeLinksPanel:EditTask");
     }
   }
@@ -2525,7 +2545,7 @@ class JNodeLinksPanel
      TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView, 
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
 				   batchSize, priority, rampUp, selectionKeys);
       setName("JNodeLinksPanel:QueueJobsTask");
     }
@@ -2533,12 +2553,7 @@ class JNodeLinksPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      } 
+      updatePanels();
     }
   }
 
@@ -2555,7 +2570,7 @@ class JNodeLinksPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeLinksPanel:PauseJobsTask");
 
       pJobIDs = jobIDs; 
@@ -2564,12 +2579,7 @@ class JNodeLinksPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -2588,7 +2598,7 @@ class JNodeLinksPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeLinksPanel:ResumeJobsTask");
 
       pJobIDs = jobIDs; 
@@ -2597,12 +2607,7 @@ class JNodeLinksPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -2621,7 +2626,7 @@ class JNodeLinksPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeLinksPanel:PreemptJobsTask");
 
       pJobIDs = jobIDs; 
@@ -2630,12 +2635,7 @@ class JNodeLinksPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -2654,7 +2654,7 @@ class JNodeLinksPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeLinksPanel:KillJobsTask");
 
       pJobIDs = jobIDs; 
@@ -2663,12 +2663,7 @@ class JNodeLinksPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -2690,19 +2685,14 @@ class JNodeLinksPanel
      String name
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView);
       setName("JNodeLinksPanel:RemoveFilesTask");
     }
     
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }      
+      updatePanels();
     }    
   }
 

@@ -1,4 +1,4 @@
-// $Id: JRequestRestoreDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
+// $Id: JRequestRestoreDialog.java,v 1.3 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -32,16 +32,22 @@ class JRequestRestoreDialog
   /**
    * Construct a new dialog.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param owner
    *   The parent frame.
    */ 
   public 
   JRequestRestoreDialog
   (
+   int channel, 
    Frame owner
   )
   {
     super(owner, "Request Restore");
+
+    pChannel = channel;
 
     /* create dialog body components */ 
     {
@@ -231,7 +237,7 @@ class JRequestRestoreDialog
       TreeMap<String,TreeSet<VersionID>> versions = null;
       if(master.beginPanelOp("Searching for Offline Versions...")) {
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.getMasterMgrClient(pChannel);
 	  versions = client.restoreQuery(pPattern); 
 	}
 	catch(PipelineException ex) {
@@ -302,6 +308,12 @@ class JRequestRestoreDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The index of the update channel.
+   */ 
+  private int  pChannel; 
+
 
   /**
    * The versions table model.

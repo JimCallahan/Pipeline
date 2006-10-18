@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.31 2006/10/11 22:45:41 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.32 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -431,7 +431,7 @@ class JNodeDetailsPanel
 
 		{
 		  JPluginSelectionField field = 
-		    UIMaster.getInstance().createEditorSelectionField(sVSize);
+		    UIMaster.getInstance().createEditorSelectionField(pGroupID, sVSize);
 		  pWorkingEditorField = field;
 		  
 		  field.setActionCommand("editor-changed");
@@ -612,7 +612,7 @@ class JNodeDetailsPanel
 		
 		{
 		  JPluginSelectionField field = 
-		    UIMaster.getInstance().createActionSelectionField(sVSize);
+		    UIMaster.getInstance().createActionSelectionField(pGroupID, sVSize);
 		  pWorkingActionField = field;
 		
 		  field.setActionCommand("action-changed");
@@ -1393,7 +1393,7 @@ class JNodeDetailsPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null);
+    updateNodeStatus(null, null, null);
   }
 
   /**
@@ -1460,6 +1460,8 @@ class JNodeDetailsPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -1487,6 +1489,21 @@ class JNodeDetailsPanel
     return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
   }
   
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    updatePanels();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1632,46 +1649,77 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the UI components to reflect the given node status.
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
    * 
    * @param status
-   *   The current node status.
+   *   The current status for the node being displayed. 
+   * 
+   * @param licenseKeys
+   *   The current license keys.
+   * 
+   * @param selectionKeys
+   *   The current selection keys.
    */
   public synchronized void 
-  updateNodeStatus
+  applyPanelUpdates
   (
    String author, 
-   String view, 
-   NodeStatus status
-  ) 
+   String view,
+   NodeStatus status, 
+   ArrayList<LicenseKey> licenseKeys, 
+   ArrayList<SelectionKey> selectionKeys
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
-    updateNodeStatus(status);
+    updateNodeStatus(status, licenseKeys, selectionKeys);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the UI components to reflect the given node status.
    * 
    * @param status
    *   The current node status.
+   * 
+   * @param licenseKeys
+   *   The current license keys.
+   * 
+   * @param selectionKeys
+   *   The current selection keys.
    */
-  public synchronized void 
+  private synchronized void 
   updateNodeStatus
   (
-   NodeStatus status
+   NodeStatus status, 
+   ArrayList<LicenseKey> licenseKeys, 
+   ArrayList<SelectionKey> selectionKeys
   ) 
   {
     updatePrivileges();
 
-    pStatus = status;
+    pStatus        = status;
+    pLicenseKeys   = licenseKeys; 
+    pSelectionKeys = selectionKeys;
 
     NodeDetails details = null;
     if(pStatus != null) 
@@ -2064,8 +2112,8 @@ class JNodeDetailsPanel
     if(hasWorking()) {
       UIMaster master = UIMaster.getInstance();
       String toolset = pWorkingToolsetField.getSelected();
-      master.updateActionPluginField(toolset, pWorkingActionField);
-      master.updateEditorPluginField(toolset, pWorkingEditorField);
+      master.updateActionPluginField(pGroupID, toolset, pWorkingActionField);
+      master.updateEditorPluginField(pGroupID, toolset, pWorkingEditorField);
     }
   }
 
@@ -2975,13 +3023,9 @@ class JNodeDetailsPanel
       /* selection keys */ 
       {
 	TreeMap<String,String> keys = new TreeMap<String,String>();
-	UIMaster master = UIMaster.getInstance();
-	try {
-	  for(SelectionKey key : master.getQueueMgrClient().getSelectionKeys())
+	if(pSelectionKeys != null) {
+	  for(SelectionKey key : pSelectionKeys)
 	    keys.put(key.getName(), key.getDescription());
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
 	}
 
 	pSelectionKeysBox.removeAll();
@@ -3086,13 +3130,9 @@ class JNodeDetailsPanel
       /* license keys */ 
       {
 	TreeMap<String,String> keys = new TreeMap<String,String>();
-	UIMaster master = UIMaster.getInstance();
-	try {
-	  for(LicenseKey key : master.getQueueMgrClient().getLicenseKeys())
+	if(pLicenseKeys != null) {
+	  for(LicenseKey key : pLicenseKeys)
 	    keys.put(key.getName(), key.getDescription());
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
 	}
 
 	pLicenseKeysBox.removeAll();
@@ -3421,7 +3461,7 @@ class JNodeDetailsPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -5342,7 +5382,7 @@ class JNodeDetailsPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Modifying Node...")) {
+      if(master.beginPanelOp(pGroupID, "Modifying Node...")) {
 	try {
 	  master.getMasterMgrClient().modifyProperties(pAuthor, pView, pNodeMod);
 	}
@@ -5351,15 +5391,10 @@ class JNodeDetailsPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	if(pGroupID > 0) {
-	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	  if(viewer != null) 
-	    viewer.updateRoots();
-	}
+	updatePanels();
       }
     }
 
@@ -5382,7 +5417,7 @@ class JNodeDetailsPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(com, false, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView);
       setName("JNodeDetailsPanel:EditTask");
     }
 
@@ -5393,7 +5428,7 @@ class JNodeDetailsPanel
      boolean useDefault
     ) 
     {
-      UIMaster.getInstance().super(com, useDefault, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView);
       setName("JNodeDetailsPanel:EditTask");
     }
 
@@ -5406,7 +5441,7 @@ class JNodeDetailsPanel
      String evendor
     ) 
     {
-      UIMaster.getInstance().super(com, ename, evid, evendor, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, ename, evid, evendor, pAuthor, pView);
       setName("JNodeDetailsPanel:EditTask");
     }
   }
@@ -5441,7 +5476,7 @@ class JNodeDetailsPanel
      TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView, 
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
 				   batchSize, priority, rampUp, selectionKeys);
       setName("JNodeDetailsPanel:QueueJobsTask");
     }
@@ -5449,12 +5484,7 @@ class JNodeDetailsPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      } 
+      updatePanels();
     }
   }
 
@@ -5471,7 +5501,7 @@ class JNodeDetailsPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeDetailsPanel:PauseJobsTask");
 
       pJobIDs = jobIDs; 
@@ -5480,12 +5510,7 @@ class JNodeDetailsPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels(); 
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -5504,7 +5529,7 @@ class JNodeDetailsPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeDetailsPanel:ResumeJobsTask");
 
       pJobIDs = jobIDs; 
@@ -5513,12 +5538,7 @@ class JNodeDetailsPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels(); 
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -5537,7 +5557,7 @@ class JNodeDetailsPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeDetailsPanel:PreemptJobsTask");
 
       pJobIDs = jobIDs; 
@@ -5546,12 +5566,7 @@ class JNodeDetailsPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels(); 
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -5570,7 +5585,7 @@ class JNodeDetailsPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeDetailsPanel:KillJobsTask");
 
       pJobIDs = jobIDs; 
@@ -5579,12 +5594,7 @@ class JNodeDetailsPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels(); 
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -5606,19 +5616,14 @@ class JNodeDetailsPanel
      String name
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView);
       setName("JNodeDetailsPanel:RemoveFilesTask");
     }
     
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }      
+      updatePanels(); 
     }    
   }
 
@@ -5661,6 +5666,16 @@ class JNodeDetailsPanel
    * The toolset used to build the editor menu.
    */ 
   private String  pEditorMenuToolset;
+
+  /**
+   * The current license keys.
+   */
+  private ArrayList<LicenseKey>  pLicenseKeys; 
+
+  /**
+   * The current selection keys.
+   */
+  private ArrayList<SelectionKey>  pSelectionKeys; 
 
 
   /*----------------------------------------------------------------------------------------*/

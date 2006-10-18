@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.2 2005/04/02 20:56:52 jim Exp $
+// $Id: JExportPanel.java,v 1.3 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,6 +35,7 @@ class JExportPanel
   public 
   JExportPanel
   (
+   int channel, 
    String title, 
    int tsize, 
    int vsize 
@@ -44,6 +45,8 @@ class JExportPanel
 
     /* initialize fields */ 
     {
+      pChannel = channel;
+
       pTSize = tsize; 
       pVSize = vsize; 
 
@@ -807,6 +810,11 @@ class JExportPanel
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The index of the update channel.
+   */ 
+  private int  pChannel; 
 
   /**
    * Title and value panel widths.

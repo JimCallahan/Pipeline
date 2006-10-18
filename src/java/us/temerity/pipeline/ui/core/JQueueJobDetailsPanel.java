@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.8 2006/07/03 06:38:42 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.9 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -590,7 +590,7 @@ class JQueueJobDetailsPanel
       addMouseListener(this); 
     }
 
-    updateJob(null, null, null);
+    updateJob(null, null, null, null, null);
   }
 
   /**
@@ -658,6 +658,8 @@ class JQueueJobDetailsPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -686,6 +688,21 @@ class JQueueJobDetailsPanel
     return (super.isLocked() && !pPrivilegeDetails.isQueueManaged(pAuthor));
   }
   
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    updatePanels();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -693,13 +710,23 @@ class JQueueJobDetailsPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the UI components to reflect the current job group. 
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
    * 
    * @param job
    *   The queue job.
@@ -709,22 +736,33 @@ class JQueueJobDetailsPanel
    * 
    * @param details
    *   The job execution details.
+   * 
+   * @param licenseKeys
+   *   The current license keys.
+   * 
+   * @param selectionKeys
+   *   The current selection keys.
    */
   public synchronized void 
-  updateJob
+  applyPanelUpdates
   (
    String author, 
-   String view, 
+   String view,
    QueueJob job,
    QueueJobInfo info, 
-   SubProcessExecDetails details
-  ) 
+   SubProcessExecDetails details,
+   ArrayList<LicenseKey> licenseKeys, 
+   ArrayList<SelectionKey> selectionKeys
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
-    updateJob(job, info, details); 
+    updateJob(job, info, details, licenseKeys, selectionKeys);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the UI components to reflect the current job. 
@@ -737,20 +775,30 @@ class JQueueJobDetailsPanel
    * 
    * @param details
    *   The job execution details.
+   * 
+   * @param licenseKeys
+   *   The current license keys.
+   * 
+   * @param selectionKeys
+   *   The current selection keys.
    */
-  public synchronized void 
+  private synchronized void 
   updateJob
   (
    QueueJob job,
    QueueJobInfo info, 
-   SubProcessExecDetails details
+   SubProcessExecDetails details, 
+   ArrayList<LicenseKey> licenseKeys, 
+   ArrayList<SelectionKey> selectionKeys
   ) 
   {
     updatePrivileges();
 
-    pJob         = job;
-    pJobInfo     = info;
-    pExecDetails = details; 
+    pJob           = job;
+    pJobInfo       = info;
+    pExecDetails   = details; 
+    pLicenseKeys   = licenseKeys; 
+    pSelectionKeys = selectionKeys;
 
     ActionAgenda agenda = null;
     if(pJob != null) 
@@ -962,19 +1010,12 @@ class JQueueJobDetailsPanel
 	pMinDiskField.setValue(null);
       }
 
-      UIMaster master = UIMaster.getInstance();
-
       /* selection keys */ 
       {
 	TreeMap<String,String> keys = new TreeMap<String,String>();
-	if(pJob != null) {
-	  try {
-	    for(SelectionKey key : master.getQueueMgrClient().getSelectionKeys())
-	      keys.put(key.getName(), key.getDescription());
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
+	if((pJob != null) && (pSelectionKeys != null)) {
+	  for(SelectionKey key : pSelectionKeys)
+	    keys.put(key.getName(), key.getDescription());
 	}
 
 	Component comps[] = createCommonPanels();
@@ -1009,14 +1050,9 @@ class JQueueJobDetailsPanel
       /* license keys */ 
       {
 	TreeMap<String,String> keys = new TreeMap<String,String>();
-	if(pJob != null) {
-	  try {
-	    for(LicenseKey key : master.getQueueMgrClient().getLicenseKeys())
-	      keys.put(key.getName(), key.getDescription());
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
+	if((pJob != null) && (pLicenseKeys != null)) {
+	  for(LicenseKey key : pLicenseKeys)
+	    keys.put(key.getName(), key.getDescription());
 	}
 
 	Component comps[] = createCommonPanels();
@@ -1458,88 +1494,88 @@ class JQueueJobDetailsPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-   public void 
-   toGlue
-   ( 
-    GlueEncoder encoder   
-   ) 
-     throws GlueException
-   {
-     super.toGlue(encoder);
-
-     encoder.encode("SummaryDrawerOpen",     pSummaryDrawer.isOpen());
-
-     encoder.encode("ProcessDrawerOpen",     pProcessDrawer.isOpen());
-
-     encoder.encode("JobReqsDrawerOpen",     pJobReqsDrawer.isOpen());
-     encoder.encode("SelectionDrawerOpen",   pSelectionDrawer.isOpen());
-     encoder.encode("LicenseDrawerOpen",     pLicenseDrawer.isOpen());
-
-     encoder.encode("FilesDrawerOpen",       pFilesDrawer.isOpen());
-     encoder.encode("TargetFilesDrawerOpen", pTargetFilesDrawer.isOpen());
-     encoder.encode("SourceFilesDrawerOpen", pSourceFilesDrawer.isOpen());
-   }
-
-   public void 
-   fromGlue
-   (
-    GlueDecoder decoder 
-   ) 
-     throws GlueException
-   {
-     {
-       Boolean open = (Boolean) decoder.decode("SummaryDrawerOpen");
-       if(open != null) 
-	 pSummaryDrawer.setIsOpen(open);
-     }
-
-
-     {
-       Boolean open = (Boolean) decoder.decode("ProcessDrawerOpen");
-       if(open != null) 
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+    
+    encoder.encode("SummaryDrawerOpen",     pSummaryDrawer.isOpen());
+    
+    encoder.encode("ProcessDrawerOpen",     pProcessDrawer.isOpen());
+    
+    encoder.encode("JobReqsDrawerOpen",     pJobReqsDrawer.isOpen());
+    encoder.encode("SelectionDrawerOpen",   pSelectionDrawer.isOpen());
+    encoder.encode("LicenseDrawerOpen",     pLicenseDrawer.isOpen());
+    
+    encoder.encode("FilesDrawerOpen",       pFilesDrawer.isOpen());
+    encoder.encode("TargetFilesDrawerOpen", pTargetFilesDrawer.isOpen());
+    encoder.encode("SourceFilesDrawerOpen", pSourceFilesDrawer.isOpen());
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    {
+      Boolean open = (Boolean) decoder.decode("SummaryDrawerOpen");
+      if(open != null) 
+	pSummaryDrawer.setIsOpen(open);
+    }
+    
+    
+    {
+      Boolean open = (Boolean) decoder.decode("ProcessDrawerOpen");
+      if(open != null) 
  	pProcessDrawer.setIsOpen(open);
-     }
-
-
-     {
-       Boolean open = (Boolean) decoder.decode("JobReqsDrawerOpen");
-       if(open != null) 
+    }
+    
+    
+    {
+      Boolean open = (Boolean) decoder.decode("JobReqsDrawerOpen");
+      if(open != null) 
  	pJobReqsDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("SelectionDrawerOpen");
-       if(open != null) 
+    }
+    
+    {
+      Boolean open = (Boolean) decoder.decode("SelectionDrawerOpen");
+      if(open != null) 
  	pSelectionDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("LicenseDrawerOpen");
-       if(open != null) 
+    }
+    
+    {
+      Boolean open = (Boolean) decoder.decode("LicenseDrawerOpen");
+      if(open != null) 
  	pLicenseDrawer.setIsOpen(open);
-     }
+    }
 
 
-     {
-       Boolean open = (Boolean) decoder.decode("FilesDrawerOpen");
-       if(open != null) 
+    {
+      Boolean open = (Boolean) decoder.decode("FilesDrawerOpen");
+      if(open != null) 
  	pFilesDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("TargetFilesDrawerOpen");
-       if(open != null) 
+    }
+    
+    {
+      Boolean open = (Boolean) decoder.decode("TargetFilesDrawerOpen");
+      if(open != null) 
  	pTargetFilesDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("SourceFilesDrawerOpen");
-       if(open != null) 
+    }
+    
+    {
+      Boolean open = (Boolean) decoder.decode("SourceFilesDrawerOpen");
+      if(open != null) 
  	pSourceFilesDrawer.setIsOpen(open);
-     }
-
-     super.fromGlue(decoder);
-   }
+    }
+    
+    super.fromGlue(decoder);
+  }
 
 
 
@@ -1590,7 +1626,15 @@ class JQueueJobDetailsPanel
    */ 
   private SubProcessExecDetails  pExecDetails; 
 
+  /**
+   * The current license keys.
+   */
+  private ArrayList<LicenseKey>  pLicenseKeys; 
 
+  /**
+   * The current selection keys.
+   */
+  private ArrayList<SelectionKey>  pSelectionKeys; 
 
 
   /*----------------------------------------------------------------------------------------*/

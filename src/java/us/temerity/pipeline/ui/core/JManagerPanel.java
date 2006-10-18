@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.28 2006/10/11 22:45:41 jim Exp $
+// $Id: JManagerPanel.java,v 1.29 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -112,6 +112,18 @@ class JManagerPanel
 	
 	sub.addSeparator();
 
+	item = new JMenuItem("Job Servers");
+	pJobServersWindowItem = item;
+	item.setActionCommand("job-servers-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Job Slots");
+	pJobSlotsWindowItem = item;
+	item.setActionCommand("job-slots-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
 	item = new JMenuItem("Job Browser");
 	pJobBrowserWindowItem = item;
 	item.setActionCommand("job-browser-window");
@@ -190,6 +202,18 @@ class JManagerPanel
 	sub.add(item);  
 	
 	sub.addSeparator();
+
+	item = new JMenuItem("Job Servers");
+	pJobServersPanelItem = item;
+	item.setActionCommand("job-servers");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Job Slots");
+	pJobSlotsPanelItem = item;
+	item.setActionCommand("job-slots");
+	item.addActionListener(this);
+	sub.add(item);  
 
 	item = new JMenuItem("Job Browser");
 	pJobBrowserPanelItem = item;
@@ -951,6 +975,12 @@ class JManagerPanel
       (pNodeHistoryWindowItem, prefs.getManagerNodeHistoryWindow(), 
        "Create a new window containing a Node History panel.");
     updateMenuToolTip
+      (pJobServersWindowItem, prefs.getManagerJobServersWindow(), 
+       "Create a new window containing a Job Servers panel.");
+    updateMenuToolTip
+      (pJobSlotsWindowItem, prefs.getManagerJobSlotsWindow(), 
+       "Create a new window containing a Job Slots panel.");
+    updateMenuToolTip
       (pJobBrowserWindowItem, prefs.getManagerJobBrowserWindow(), 
        "Create a new window containing a Job Browser panel.");
     updateMenuToolTip
@@ -986,6 +1016,12 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeHistoryPanelItem, prefs.getManagerNodeHistoryPanel(), 
        "Change the panel type to a Node History panel.");
+    updateMenuToolTip
+      (pJobServersPanelItem, prefs.getManagerJobServersPanel(), 
+       "Change the panel type to a Job Servers panel.");
+    updateMenuToolTip
+      (pJobSlotsPanelItem, prefs.getManagerJobSlotsPanel(), 
+       "Change the panel type to a Job Slots panel.");
     updateMenuToolTip
       (pJobBrowserPanelItem, prefs.getManagerJobBrowserPanel(), 
        "Change the panel type to a Job Browser panel.");
@@ -1505,6 +1541,16 @@ class JManagerPanel
       return true;
     }
 
+    else if((prefs.getManagerJobServersWindow() != null) &&
+	    prefs.getManagerJobServersWindow().wasPressed(e)) {
+      doJobServersWindow();
+      return true;
+    }
+    else if((prefs.getManagerJobSlotsWindow() != null) &&
+	    prefs.getManagerJobSlotsWindow().wasPressed(e)) {
+      doJobSlotsWindow();
+      return true;
+    }
     else if((prefs.getManagerJobBrowserWindow() != null) &&
 	    prefs.getManagerJobBrowserWindow().wasPressed(e)) {
       doJobBrowserWindow();
@@ -1565,6 +1611,16 @@ class JManagerPanel
       return true;
     }
 
+    else if((prefs.getManagerJobServersPanel() != null) &&
+	    prefs.getManagerJobServersPanel().wasPressed(e)) {
+      doJobServersPanel();
+      return true;
+    }
+    else if((prefs.getManagerJobSlotsPanel() != null) &&
+	    prefs.getManagerJobSlotsPanel().wasPressed(e)) {
+      doJobSlotsPanel();
+      return true;
+    }
     else if((prefs.getManagerJobBrowserPanel() != null) &&
 	    prefs.getManagerJobBrowserPanel().wasPressed(e)) {
       doJobBrowserPanel();
@@ -1843,6 +1899,10 @@ class JManagerPanel
     else if(cmd.equals("node-history-window"))
       doNodeHistoryWindow();
 
+    else if(cmd.equals("job-servers-window"))
+      doJobServersWindow();
+    else if(cmd.equals("job-slots-window"))
+      doJobSlotsWindow();
     else if(cmd.equals("job-browser-window"))
       doJobBrowserWindow();
     else if(cmd.equals("job-viewer-window"))
@@ -1870,6 +1930,10 @@ class JManagerPanel
     else if(cmd.equals("node-history"))
       doNodeHistoryPanel();
 
+    else if(cmd.equals("job-servers"))
+      doJobServersPanel();
+    else if(cmd.equals("job-slots"))
+      doJobSlotsPanel();
     else if(cmd.equals("job-browser"))
       doJobBrowserPanel();
     else if(cmd.equals("job-viewer"))
@@ -1990,7 +2054,10 @@ class JManagerPanel
     frame.setSize(300, 600);
 
     JManagerPanel mgr = frame.getManagerPanel();
-    mgr.setContents(new JNodeBrowserPanel(pTopLevelPanel));
+    JNodeBrowserPanel panel = new JNodeBrowserPanel(pTopLevelPanel);
+    mgr.setContents(panel); 
+
+    updateFromNodeViewer(panel.getGroupID());
 
     frame.validate();
     frame.repaint();
@@ -2006,7 +2073,10 @@ class JManagerPanel
     frame.setSize(600, 600);
 
     JManagerPanel mgr = frame.getManagerPanel();
-    mgr.setContents(new JNodeViewerPanel(pTopLevelPanel));
+    JNodeViewerPanel panel = new JNodeViewerPanel(pTopLevelPanel);
+    mgr.setContents(panel); 
+
+    updateFromNodeBrowser(panel.getGroupID());
 
     frame.validate();
     frame.repaint();
@@ -2025,7 +2095,7 @@ class JManagerPanel
     JNodeDetailsPanel panel = new JNodeDetailsPanel(pTopLevelPanel);
     mgr.setContents(panel);
 
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
 
     frame.validate();
     frame.repaint();
@@ -2044,7 +2114,7 @@ class JManagerPanel
     JNodeFilesPanel panel = new JNodeFilesPanel(pTopLevelPanel);
     mgr.setContents(panel); 
     
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
 
     frame.validate();
     frame.repaint();
@@ -2063,7 +2133,7 @@ class JManagerPanel
     JNodeLinksPanel panel = new JNodeLinksPanel(pTopLevelPanel);
     mgr.setContents(panel); 
     
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
 
     frame.validate();
     frame.repaint();
@@ -2082,7 +2152,7 @@ class JManagerPanel
     JNodeHistoryPanel panel = new JNodeHistoryPanel(pTopLevelPanel);
     mgr.setContents(panel); 
 
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
 
     frame.validate();
     frame.repaint();
@@ -2090,6 +2160,38 @@ class JManagerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Create a new secondary panel frame containing a JQueueJobServersPanel. 
+   */ 
+  private void 
+  doJobServersWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(1137, 350);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JQueueJobServersPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JQueueJobSlotsPanel. 
+   */ 
+  private void 
+  doJobSlotsWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(1137, 350);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JQueueJobSlotsPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
+  }
 
   /** 
    * Create a new secondary panel frame containing a JQueueJobBrowserPanel. 
@@ -2197,10 +2299,13 @@ class JManagerPanel
     }
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
-    setContents(new JNodeBrowserPanel(dead));
+    JNodeBrowserPanel panel = new JNodeBrowserPanel(dead);
+    setContents(panel); 
     dead.setGroupID(0);
     dead.freeDisplayLists();
     refocusOnChildPanel();
+
+    updateFromNodeViewer(panel.getGroupID());
   }
 
   /**
@@ -2215,10 +2320,13 @@ class JManagerPanel
     }
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
-    setContents(new JNodeViewerPanel(dead));
+    JNodeViewerPanel panel = new JNodeViewerPanel(dead);
+    setContents(panel); 
     dead.setGroupID(0);
     dead.freeDisplayLists();
     refocusOnChildPanel();
+
+    updateFromNodeBrowser(panel.getGroupID());
   }
 
   /**
@@ -2239,7 +2347,7 @@ class JManagerPanel
     dead.freeDisplayLists();
     refocusOnChildPanel();
     
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
   }
 
   /**
@@ -2260,7 +2368,7 @@ class JManagerPanel
     dead.freeDisplayLists();
     refocusOnChildPanel();
 
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
   }
 
   /**
@@ -2281,7 +2389,7 @@ class JManagerPanel
     dead.freeDisplayLists();
     refocusOnChildPanel();
 
-    updateNodeSubpanels(panel.getGroupID());
+    updateFromNodeViewer(panel.getGroupID());
   }
 
   /**
@@ -2302,29 +2410,48 @@ class JManagerPanel
     dead.freeDisplayLists();
     refocusOnChildPanel();
 
-    updateNodeSubpanels(panel.getGroupID());
-  }
-
-  /**
-   * Helper method for updating all node subpanels for the given group.
-   */ 
-  private void 
-  updateNodeSubpanels
-  (
-   int groupID
-  ) 
-  {
-    if(groupID > 0) {
-      PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-      JNodeViewerPanel viewer = panels.getPanel(groupID);
-      if(viewer != null) 
-	viewer.updateSubPanels(false);
-    }    
+    updateFromNodeViewer(panel.getGroupID());
   }
 
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Change the contents of this panel to a JQueueJobServersPanel. 
+   */ 
+  private void 
+  doJobServersPanel()
+  {
+    if(getContents() instanceof JQueueJobServersPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JQueueJobServersPanel(dead));
+    dead.setGroupID(0);
+    dead.freeDisplayLists();
+    refocusOnChildPanel();   
+  }
+
+  /**
+   * Change the contents of this panel to a JQueueJobSlotsPanel. 
+   */ 
+  private void 
+  doJobSlotsPanel()
+  {
+    if(getContents() instanceof JQueueJobSlotsPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JQueueJobSlotsPanel(dead));
+    dead.setGroupID(0);
+    dead.freeDisplayLists();
+    refocusOnChildPanel();   
+  }
+
   /**
    * Change the contents of this panel to a JQueueJobBrowserPanel. 
    */ 
@@ -2340,7 +2467,7 @@ class JManagerPanel
     setContents(new JQueueJobBrowserPanel(dead));
     dead.setGroupID(0);
     dead.freeDisplayLists();
-    refocusOnChildPanel();
+    refocusOnChildPanel();   
   }
 
   /**
@@ -2399,6 +2526,7 @@ class JManagerPanel
     dead.freeDisplayLists();
     refocusOnChildPanel();  
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2793,8 +2921,54 @@ class JManagerPanel
       System.exit(0);
     }
   }
+
 	
       
+  /*----------------------------------------------------------------------------------------*/
+  /*  H E L P E R S                                                                         */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Helper method for updating the panels for the given group from any 
+   * existing Node Viewer panel.
+   */ 
+  private void 
+  updateFromNodeViewer
+  (
+   int groupID
+  ) 
+  {
+    if(groupID > 0) {
+      PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+      JNodeViewerPanel viewer = panels.getPanel(groupID);
+      if(viewer != null) {
+	PanelUpdater pu = new PanelUpdater(viewer, false);
+	pu.start();
+      }
+    }    
+  }
+
+  /**
+   * Helper method for updating the panels for the given group from any 
+   * existing Node Browser panel.
+   */ 
+  private void 
+  updateFromNodeBrowser
+  (
+   int groupID
+  ) 
+  {
+    if(groupID > 0) {
+      PanelGroup<JNodeBrowserPanel> panels = UIMaster.getInstance().getNodeBrowserPanels();
+      JNodeBrowserPanel viewer = panels.getPanel(groupID);
+      if(viewer != null) {
+	PanelUpdater pu = new PanelUpdater(viewer, true);
+	pu.start();
+      }
+    }    
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L   C L A S S E S                                                       */
@@ -3326,6 +3500,8 @@ class JManagerPanel
   private JMenuItem  pNodeFilesWindowItem;
   private JMenuItem  pNodeLinksWindowItem;
   private JMenuItem  pNodeHistoryWindowItem;
+  private JMenuItem  pJobServersWindowItem;
+  private JMenuItem  pJobSlotsWindowItem;
   private JMenuItem  pJobBrowserWindowItem;
   private JMenuItem  pJobViewerWindowItem;
   private JMenuItem  pJobDetailsWindowItem;
@@ -3339,6 +3515,8 @@ class JManagerPanel
   private JMenuItem  pNodeFilesPanelItem;
   private JMenuItem  pNodeLinksPanelItem;
   private JMenuItem  pNodeHistoryPanelItem;
+  private JMenuItem  pJobServersPanelItem;
+  private JMenuItem  pJobSlotsPanelItem;
   private JMenuItem  pJobBrowserPanelItem;
   private JMenuItem  pJobViewerPanelItem;
   private JMenuItem  pJobDetailsPanelItem;

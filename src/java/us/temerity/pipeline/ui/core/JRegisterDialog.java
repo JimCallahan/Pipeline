@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.15 2006/09/25 12:11:44 jim Exp $
+// $Id: JRegisterDialog.java,v 1.16 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,12 +31,16 @@ class JRegisterDialog
   /**
    * Construct a new dialog.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param owner
    *   The parent frame.
    */ 
   public 
   JRegisterDialog
   (
+   int channel, 
    Frame owner
   )
   {
@@ -44,6 +48,7 @@ class JRegisterDialog
 
     /* initialize fields */ 
     {
+      pChannel = channel;
       pRegistered = new TreeSet<String>();
     }
 
@@ -295,8 +300,9 @@ class JRegisterDialog
       TreeSet<String> tsets = new TreeSet<String>();
       {
 	try {
-	  tsets.addAll(master.getMasterMgrClient().getActiveToolsetNames());
-	  defaultToolset = master.getMasterMgrClient().getDefaultToolsetName();
+	  MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	  tsets.addAll(client.getActiveToolsetNames());
+	  defaultToolset = client.getDefaultToolsetName();
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
@@ -318,7 +324,7 @@ class JRegisterDialog
       else 
 	pToolsetField.setSelected(defaultToolset);
 
-      master.updateEditorPluginField(pToolsetField.getSelected(), pEditorField);
+      master.updateEditorPluginField(pChannel, pToolsetField.getSelected(), pEditorField);
     }
 
     pFileSeqDialog.updateHeader(author, view);
@@ -456,7 +462,7 @@ class JRegisterDialog
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp("Registering New Node: " + mod.getName())) {
       try {
-	master.getMasterMgrClient().register(pAuthor, pView, mod);
+	master.getMasterMgrClient(pChannel).register(pAuthor, pView, mod);
 	synchronized(pRegistered) {
 	  pRegistered.add(mod.getName());
 	}
@@ -623,7 +629,7 @@ class JRegisterDialog
     if((suffix != null) && (suffix.length() > 0)) {
       UIMaster master = UIMaster.getInstance();
       try {
-	editor = master.getMasterMgrClient().getEditorForSuffix(suffix);
+	editor = master.getMasterMgrClient(pChannel).getEditorForSuffix(suffix);
       }
       catch(PipelineException ex) {
       }
@@ -658,7 +664,7 @@ class JRegisterDialog
     if(toolset.equals("-")) 
       toolset = null;
 
-    UIMaster.getInstance().updateEditorPluginField(toolset, pEditorField);    
+    UIMaster.getInstance().updateEditorPluginField(pChannel, toolset, pEditorField);    
   }
 
 
@@ -811,7 +817,7 @@ class JRegisterDialog
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Registering New Node: " + pNodeMod.getName())) {
 	try {
-	  master.getMasterMgrClient().register(pAuthor, pView, pNodeMod);
+	  master.getMasterMgrClient(pChannel).register(pAuthor, pView, pNodeMod);
 	  synchronized(pRegistered) {
 	    pRegistered.add(pNodeMod.getName());
 	  }
@@ -886,6 +892,11 @@ class JRegisterDialog
    * The names of the registered nodes.
    */ 
   private TreeSet<String>  pRegistered; 
+
+  /**
+   * The index of the update channel.
+   */ 
+  private int  pChannel; 
 
 
   /*----------------------------------------------------------------------------------------*/

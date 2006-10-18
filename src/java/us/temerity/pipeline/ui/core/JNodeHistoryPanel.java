@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.15 2006/01/15 06:29:26 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.16 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -286,6 +286,8 @@ class JNodeHistoryPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -313,22 +315,47 @@ class JNodeHistoryPanel
     return (super.isLocked() && !pPrivilegeDetails.isNodeManaged(pAuthor));
   }
 
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    updatePanels();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the UI components to reflect the current check-in log messages.
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
    * 
    * @param status
-   *   The current node status.
+   *   The current status for the node being displayed. 
    * 
    * @param history
    *   The check-in log messages.
@@ -337,20 +364,23 @@ class JNodeHistoryPanel
    *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
-  updateNodeStatus
+  applyPanelUpdates
   (
    String author, 
-   String view, 
+   String view,
    NodeStatus status,
    TreeMap<VersionID,LogMessage> history,
    TreeSet<VersionID> offline
-  ) 
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
     updateNodeStatus(status, history, offline);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the UI components to reflect the current check-in log messages.
@@ -364,7 +394,7 @@ class JNodeHistoryPanel
    * @param offline
    *   The revision numbers of the offline checked-in versions.
    */
-  public synchronized void 
+  private synchronized void 
   updateNodeStatus
   (
    NodeStatus status,
@@ -711,7 +741,7 @@ class JNodeHistoryPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -1309,7 +1339,7 @@ class JNodeHistoryPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(com, false, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView);
       setName("JNodeHistoryPanel:EditTask");
     }
 
@@ -1320,7 +1350,7 @@ class JNodeHistoryPanel
      boolean useDefault
     ) 
     {
-      UIMaster.getInstance().super(com, useDefault, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView);
       setName("JNodeHistoryPanel:EditTask");
     }
 
@@ -1333,7 +1363,7 @@ class JNodeHistoryPanel
      String evendor
     ) 
     {
-      UIMaster.getInstance().super(com, ename, evid, evendor, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, ename, evid, evendor, pAuthor, pView);
       setName("JNodeHistoryPanel:EditTask");
     }
   }
@@ -1368,7 +1398,7 @@ class JNodeHistoryPanel
      TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView, 
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
 				   batchSize, priority, rampUp, selectionKeys);
       setName("JNodeHistoryPanel:QueueJobsTask");
     }
@@ -1376,12 +1406,7 @@ class JNodeHistoryPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      } 
+      updatePanels();
     }
   }
 
@@ -1398,7 +1423,7 @@ class JNodeHistoryPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeHistoryPanel:PauseJobsTask");
 
       pJobIDs = jobIDs; 
@@ -1407,12 +1432,7 @@ class JNodeHistoryPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -1431,7 +1451,7 @@ class JNodeHistoryPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeHistoryPanel:ResumeJobsTask");
 
       pJobIDs = jobIDs; 
@@ -1440,12 +1460,7 @@ class JNodeHistoryPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -1464,7 +1479,7 @@ class JNodeHistoryPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeHistoryPanel:PreemptJobsTask");
 
       pJobIDs = jobIDs; 
@@ -1473,12 +1488,7 @@ class JNodeHistoryPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -1497,7 +1507,7 @@ class JNodeHistoryPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
       setName("JNodeHistoryPanel:KillJobsTask");
 
       pJobIDs = jobIDs; 
@@ -1506,12 +1516,7 @@ class JNodeHistoryPanel
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }
+      updatePanels();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -1533,19 +1538,14 @@ class JNodeHistoryPanel
      String name
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView);
       setName("JNodeHistoryPanel:RemoveFilesTask");
     }
     
     protected void
     postOp() 
     {
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.updateRoots();
-      }      
+      updatePanels();
     }    
   }
 

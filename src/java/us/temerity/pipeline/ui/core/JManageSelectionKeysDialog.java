@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.12 2006/09/25 12:11:44 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.13 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -518,29 +518,31 @@ class JManageSelectionKeysDialog
   private void 
   updateJobBrowsers() 
   {
-    UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
-    if(master.beginPanelOp("Updating...")) {
-      try {
-	TreeMap<Long,QueueJobGroup> groups = client.getJobGroups(); 
-	TreeMap<Long,JobStatus> jobStatus = 
-	  client.getJobStatus(new TreeSet<Long>(groups.keySet()));
-	TreeMap<Long,QueueJobInfo> jobInfo = client.getRunningJobInfo();
-	TreeMap<String,QueueHostInfo> hosts = client.getHosts(); 
-	TreeSet<String> selectionGroups = client.getSelectionGroupNames();
-	TreeSet<String> selectionSchedules = client.getSelectionScheduleNames();
+    // FIX THIS!!!
 
-	for(JQueueJobBrowserPanel panel : master.getQueueJobBrowserPanels().getPanels()) 
-	  panel.updateJobs(groups, jobStatus, jobInfo, 
-			   hosts, selectionGroups, selectionSchedules); 
-      }
-      catch(PipelineException ex) {
-	showErrorDialog(ex);
-      }
-      finally {
-	master.endPanelOp("Done.");
-      }
-    }
+//     UIMaster master = UIMaster.getInstance();
+//     QueueMgrClient client = master.getQueueMgrClient();
+//     if(master.beginPanelOp("Updating...")) {
+//       try {
+// 	TreeMap<Long,QueueJobGroup> groups = client.getJobGroups(); 
+// 	TreeMap<Long,JobStatus> jobStatus = 
+// 	  client.getJobStatus(new TreeSet<Long>(groups.keySet()));
+// 	TreeMap<Long,QueueJobInfo> jobInfo = client.getRunningJobInfo();
+// 	TreeMap<String,QueueHostInfo> hosts = client.getHosts(); 
+// 	TreeSet<String> selectionGroups = client.getSelectionGroupNames();
+// 	TreeSet<String> selectionSchedules = client.getSelectionScheduleNames();
+
+// 	for(JQueueJobBrowserPanel panel : master.getQueueJobBrowserPanels().getPanels()) 
+// 	  panel.updateJobs(groups, jobStatus, jobInfo, 
+// 			   hosts, selectionGroups, selectionSchedules); 
+//       }
+//       catch(PipelineException ex) {
+// 	showErrorDialog(ex);
+//       }
+//       finally {
+// 	master.endPanelOp("Done.");
+//       }
+//     }
   }
 
   /**

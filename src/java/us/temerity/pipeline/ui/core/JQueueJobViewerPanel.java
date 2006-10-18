@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.26 2006/07/03 06:38:42 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.27 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -333,6 +333,8 @@ class JQueueJobViewerPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -361,6 +363,33 @@ class JQueueJobViewerPanel
     return (super.isLocked() && !pPrivilegeDetails.isQueueManaged(pAuthor));
   }
   
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    updatePanels();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the ID of job displayed in the job details panel.
+   */ 
+  public Long
+  getDetailedJobID()
+  {
+    return pDetailedJobID; 
+  }
+ 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -368,38 +397,70 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Update the job groups and status.
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    updatePanels(false);
+  }
+
+  /**
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels
+  (
+   boolean detailsOnly
+  ) 
+  {
+    PanelUpdater pu = new PanelUpdater(this, detailsOnly);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
+   * @param author
+   *   Owner of the current working area.
    * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param view
+   *   Name of the current working area view.
+   * 
+   * @param detailedID
+   *   The ID of the job displayed in the job details panel.
    * 
    * @param groups
-   *   The queue job groups indexe by job group ID.
+   *   The selected queue job groups indexed by job group ID.
    * 
    * @param status
    *   The job status indexed by job ID.
-   */ 
-  public synchronized void
-  updateQueueJobs
+   */
+  public synchronized void 
+  applyPanelUpdates
   (
    String author, 
-   String view, 
+   String view,
+   Long detailedID, 
    TreeMap<Long,QueueJobGroup> groups, 
    TreeMap<Long,JobStatus> status
-  ) 
+  )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);
+      super.setAuthorView(author, view);    
 
-    updateQueueJobs(groups, status);
+    updateQueueJobs(detailedID, groups, status);
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Update the job groups and status.
+   * 
+   * @param detailedID
+   *   The ID of the job displayed in the job details panel.
    * 
    * @param groups
    *   The queue job groups indexed by job group ID.
@@ -410,6 +471,7 @@ class JQueueJobViewerPanel
   public synchronized void
   updateQueueJobs
   (
+   Long detailedID, 
    TreeMap<Long,QueueJobGroup> groups, 
    TreeMap<Long,JobStatus> status
   ) 
@@ -421,6 +483,8 @@ class JQueueJobViewerPanel
     
     /* update the job groups and status tables */ 
     {
+      pDetailedJobID = detailedID; 
+
       pJobGroups.clear();
       if(groups != null) 
 	pJobGroups.putAll(groups);
@@ -430,92 +494,8 @@ class JQueueJobViewerPanel
 	pJobStatus.putAll(status);
     }
 
-    /* clear the job details panel if the job is no longer a member of a visible group */ 
-    if(pLastJobID != null) {
-      boolean found = false;
-      for(QueueJobGroup group : pJobGroups.values()) {
-	if(group.getAllJobIDs().contains(pLastJobID)) {
-	  found = true;
-	  break;
-	}
-      }
-
-      if(!found) 
-	pLastJobID = null;
-    }
-
     /* update the visualization graphics */ 
     updateUniverse();
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Enable the update of the Job Details panel with the given job ID.
-   */ 
-  public synchronized void 
-  enableDetailsUpdate
-  (
-   long jobID
-  )
-  {
-    pLastJobID = jobID;
-  }
-
-  /**
-   * Enable the update of the Job Details panel, but clear any last updated job ID.
-   */ 
-  public synchronized void 
-  enableDetailsUpdate()
-  {
-    pLastJobID = null;
-  }
-
-  /**
-   * Disable the update of the Job Details panel.
-   */ 
-  public synchronized void 
-  disableDetailsUpdate()
-  {
-    pLastJobID = -1L;
-  }
-  
-  /**
-   * Update the connected job details panel with the given job.
-   */ 
-  private synchronized void 
-  updateJobDetails
-  (
-   Long jobID
-  ) 
-  {
-    if(pGroupID > 0) {
-      if(jobID != null) {
-	if(jobID > 0) {
-	  GetJobInfoTask task = new GetJobInfoTask(pGroupID, jobID);
-	  task.start();
-	}
-	else {
-	  return;
-	}
-      }
-      else {
-	UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(pGroupID, null, null, null);
-	SwingUtilities.invokeLater(task);
-      }
-    }
-
-    pLastJobID = jobID;
-  }
-
-  /**
-   * Update the connected job details panel.
-   */ 
-  private synchronized void 
-  updateJobDetails() 
-  {
-    updateJobDetails(pLastJobID);
   }
 
 
@@ -576,8 +556,8 @@ class JQueueJobViewerPanel
 
     if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildEditorMenu(toolset, pViewWithMenu, this);
-      master.rebuildEditorMenu(toolset, pGroupViewWithMenu, this);
+      master.rebuildEditorMenu(pGroupID, toolset, pViewWithMenu, this);
+      master.rebuildEditorMenu(pGroupID, toolset, pGroupViewWithMenu, this);
       
       pEditorMenuToolset = toolset;
     }
@@ -693,25 +673,10 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the visualization graphics and any connected subpanels.
+   * Update the visualization graphics.
    */
   private synchronized void 
   updateUniverse()
-  {
-    updateUniverse(true);
-  }
-
-  /**
-   * Update the visualization graphics.
-   * 
-   * @param updateSubPanels
-   *   Whether to also update any connected subpanels.
-   */
-  private synchronized void 
-  updateUniverse
-  (
-   boolean updateSubPanels
-  )
   {  
     /* get the paths to the currently collapsed jobs */ 
     TreeSet<JobPath> wasCollapsed = new TreeSet<JobPath>();
@@ -780,10 +745,6 @@ class JQueueJobViewerPanel
    
     /* render the changes */ 
     refresh();
-
-    /* update the connected job details panels */ 
-    if(updateSubPanels) 
-      updateJobDetails();
   }
   
   /**
@@ -1450,7 +1411,7 @@ class JQueueJobViewerPanel
 	  if((mods & (on1 | off1)) == on1) {
 	    if(vunder.getJobStatus().hasSources()) {
 	      vunder.toggleCollapsed();
-	      updateUniverse(false);
+	      updateUniverse();
 	    }
 	  }
 	}
@@ -1748,7 +1709,7 @@ class JQueueJobViewerPanel
     else {
       if((prefs.getUpdate() != null) &&
 	 prefs.getUpdate().wasPressed(e))
-	doUpdate();
+	updatePanels();
 
       else if((prefs.getFrameSelection() != null) &&
 	      prefs.getFrameSelection().wasPressed(e))
@@ -1870,7 +1831,7 @@ class JQueueJobViewerPanel
     /* panel menu events */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("update"))
-      doUpdate();
+      updatePanels();
     else if(cmd.equals("frame-selection"))
       doFrameSelection();
     else if(cmd.equals("frame-all"))
@@ -1923,26 +1884,6 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the status of all jobs.
-   */ 
-  private synchronized void
-  doUpdate()
-  { 
-    UIMaster master = UIMaster.getInstance();
-    if((pGroupID > 0) && !master.isRestoring()) {
-      PanelGroup<JQueueJobBrowserPanel> panels = master.getQueueJobBrowserPanels();
-      JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
-      if(panel != null) {
-	panel.updateAll();
-	return; 
-      }
-    }  
-  }
-  
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Move the camera to frame the bounds of the currently selected jobs.
    */ 
   private synchronized void 
@@ -1986,7 +1927,7 @@ class JQueueJobViewerPanel
   ) 
   {
     pExpandDepth = depth;
-    updateUniverse(false);
+    updateUniverse();
   }
 
   /**
@@ -1998,7 +1939,7 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
-    updateUniverse(false);
+    updateUniverse();
   }
 
   /**
@@ -2010,7 +1951,7 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
-    updateUniverse(false);
+    updateUniverse();
   }
 
   /**
@@ -2022,7 +1963,7 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
-    updateUniverse(false);
+    updateUniverse();
   }
 
 
@@ -2034,8 +1975,10 @@ class JQueueJobViewerPanel
   private synchronized void
   doDetails()
   {
-    if((pGroupID > 0) && (pPrimary != null))
-      updateJobDetails(pPrimary.getJobStatus().getJobID());
+    if(pPrimary != null)
+      pDetailedJobID = pPrimary.getJobStatus().getJobID();
+
+    updatePanels(true);
 
     clearSelection();
     refresh(); 
@@ -2459,109 +2402,109 @@ class JQueueJobViewerPanel
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Get the current job information. 
-   */ 
-  private 
-  class GetJobInfoTask
-    extends Thread
-  {
-    public 
-    GetJobInfoTask
-    (
-     int groupID,
-     long jobID
-    ) 
-    {
-      super("JQueueJobViewerPanel:GetJobInfoTask");
+//   /**
+//    * Get the current job information. 
+//    */ 
+//   private 
+//   class GetJobInfoTask
+//     extends Thread
+//   {
+//     public 
+//     GetJobInfoTask
+//     (
+//      int groupID,
+//      long jobID
+//     ) 
+//     {
+//       super("JQueueJobViewerPanel:GetJobInfoTask");
 
-      pGroupID = groupID;
-      pJobID   = jobID;
-    }
+//       pGroupID = groupID;
+//       pJobID   = jobID;
+//     }
 
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();      
+//     public void 
+//     run() 
+//     {
+//       UIMaster master = UIMaster.getInstance();      
 
-      if(pGroupID > 0) {
-	QueueJob job = null;
-	QueueJobInfo info = null; 
-	SubProcessExecDetails details = null; 
-	if(master.beginPanelOp("Updating Job Details...")) {
-	  try {
-	    QueueMgrClient client = master.getQueueMgrClient();
-	    job  = client.getJob(pJobID);
-	    info = client.getJobInfo(pJobID);
+//       if(pGroupID > 0) {
+// 	QueueJob job = null;
+// 	QueueJobInfo info = null; 
+// 	SubProcessExecDetails details = null; 
+// 	if(master.beginPanelOp("Updating Job Details...")) {
+// 	  try {
+// 	    QueueMgrClient client = master.getQueueMgrClient();
+// 	    job  = client.getJob(pJobID);
+// 	    info = client.getJobInfo(pJobID);
 
-	    String hostname = info.getHostname();
-	    if(hostname != null) {
-	      JobMgrClient jclient = new JobMgrClient(hostname);
-	      details = jclient.getExecDetails(pJobID);
-	    }
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
-	}
+// 	    String hostname = info.getHostname();
+// 	    if(hostname != null) {
+// 	      JobMgrClient jclient = new JobMgrClient(hostname);
+// 	      details = jclient.getExecDetails(pJobID);
+// 	    }
+// 	  }
+// 	  catch(PipelineException ex) {
+// 	    master.showErrorDialog(ex);
+// 	  }
+// 	  finally {
+// 	    master.endPanelOp("Done.");
+// 	  }
+// 	}
 
-	UpdateDetailsPanelTask task = 
-	  new UpdateDetailsPanelTask(pGroupID, job, info, details);
-	SwingUtilities.invokeLater(task);
-      }
-    }
+// 	UpdateDetailsPanelTask task = 
+// 	  new UpdateDetailsPanelTask(pGroupID, job, info, details);
+// 	SwingUtilities.invokeLater(task);
+//       }
+//     }
 
-    private int   pGroupID;
-    private long  pJobID; 
-  }
+//     private int   pGroupID;
+//     private long  pJobID; 
+//   }
 
 
-  /**
-   * Update the job details panel.
-   */
-  private 
-  class UpdateDetailsPanelTask
-    extends Thread
-  {
-    public 
-    UpdateDetailsPanelTask
-    (
-     int groupID, 
-     QueueJob job, 
-     QueueJobInfo info, 
-     SubProcessExecDetails details
-    ) 
-    {
-      super("JQueueJobViewerPanel:UpdateDetailsPanelTask");
+//   /**
+//    * Update the job details panel.
+//    */
+//   private 
+//   class UpdateDetailsPanelTask
+//     extends Thread
+//   {
+//     public 
+//     UpdateDetailsPanelTask
+//     (
+//      int groupID, 
+//      QueueJob job, 
+//      QueueJobInfo info, 
+//      SubProcessExecDetails details
+//     ) 
+//     {
+//       super("JQueueJobViewerPanel:UpdateDetailsPanelTask");
 
-      pGroupID     = groupID;
-      pJob         = job; 
-      pJobInfo     = info; 
-      pExecDetails = details;
-    }
+//       pGroupID     = groupID;
+//       pJob         = job; 
+//       pJobInfo     = info; 
+//       pExecDetails = details;
+//     }
 
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();      
+//     public void 
+//     run() 
+//     {
+//       UIMaster master = UIMaster.getInstance();      
 
-      if(pGroupID > 0) {
-	PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
-	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
-	if(panel != null) {
-	  panel.updateJob(pAuthor, pView, pJob, pJobInfo, pExecDetails);
-	}
-      }
-    }    
+//       if(pGroupID > 0) {
+// 	PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
+// 	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
+// 	if(panel != null) {
+// 	  panel.updateJob(pAuthor, pView, pJob, pJobInfo, pExecDetails);
+// 	}
+//       }
+//     }    
 
-    private int                    pGroupID;
-    private QueueJob               pJob; 
-    private QueueJobInfo           pJobInfo; 
-    private SubProcessExecDetails  pExecDetails; 
-  }
+//     private int                    pGroupID;
+//     private QueueJob               pJob; 
+//     private QueueJobInfo           pJobInfo; 
+//     private SubProcessExecDetails  pExecDetails; 
+//   }
 
  
   /*----------------------------------------------------------------------------------------*/
@@ -2615,15 +2558,15 @@ class JQueueJobViewerPanel
       pEditorVendor  = evendor;       
     }
 
-     public void 
-     run() 
-     {
-       SubProcessLight proc = null;
-       {
+    public void 
+    run() 
+    {
+      SubProcessLight proc = null;
+      {
  	UIMaster master = UIMaster.getInstance();
- 	if(master.beginPanelOp("Launching Node Editor...")) {
+ 	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
  	  try {
- 	    MasterMgrClient client = master.getMasterMgrClient();
+ 	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 
  	    NodeMod mod = client.getWorkingVersion(pNodeID);
  	    String author = pNodeID.getAuthor();
@@ -2687,10 +2630,10 @@ class JQueueJobViewerPanel
  	    return;
  	  }
  	  finally {
- 	    master.endPanelOp("Done.");
+ 	    master.endPanelOp(pGroupID, "Done.");
  	  }
  	}
-
+	
  	/* wait for the editor to exit */ 
  	if(proc != null) {
  	  try {
@@ -2702,16 +2645,16 @@ class JQueueJobViewerPanel
  	    master.showErrorDialog(ex);
  	  }
  	}
-       }
-     }
+      }
+    }
 
-     private NodeID     pNodeID;
-     private FileSeq    pFileSeq;
-     private boolean    pUseDefault; 
-     private String     pEditorName;
-     private VersionID  pEditorVersion; 
-     private String     pEditorVendor; 
-   }
+    private NodeID     pNodeID;
+    private FileSeq    pFileSeq;
+    private boolean    pUseDefault; 
+    private String     pEditorName;
+    private VersionID  pEditorVersion; 
+    private String     pEditorVendor; 
+  }
 
 
 
@@ -2756,13 +2699,14 @@ class JQueueJobViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
+      if(master.beginPanelOp(pGroupID)) {
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
-	    master.updatePanelOp("Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    master.getMasterMgrClient().resubmitJobs(nodeID, pTargets.get(nodeID), 
-						     pBatchSize, pPriority, pRampUp, 
-						     pSelectionKeys);
+	    master.updatePanelOp(pGroupID, 
+				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
+	    MasterMgrClient client = master.getMasterMgrClient(pGroupID); 
+	    client.resubmitJobs
+	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, pSelectionKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -2770,10 +2714,10 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	doUpdate();
+	updatePanels();
       }
     }
 
@@ -2806,20 +2750,20 @@ class JQueueJobViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Pausing Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient().pauseJobs(author, pJobs.get(author));
+	    master.getQueueMgrClient(pGroupID).pauseJobs(author, pJobs.get(author));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	doUpdate();
+	updatePanels();
       }
     }
 
@@ -2848,20 +2792,20 @@ class JQueueJobViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient().resumeJobs(author, pJobs.get(author));
+	    master.getQueueMgrClient(pGroupID).resumeJobs(author, pJobs.get(author));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	doUpdate();
+	updatePanels();
       }
     }
 
@@ -2890,20 +2834,20 @@ class JQueueJobViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Preempting Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient().preemptJobs(author, pJobs.get(author));
+	    master.getQueueMgrClient(pGroupID).preemptJobs(author, pJobs.get(author));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	doUpdate();
+	updatePanels();
       }
     }
 
@@ -2932,20 +2876,20 @@ class JQueueJobViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Killing Jobs...")) {
+      if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
 	try {
 	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient().killJobs(author, pJobs.get(author));
+	    master.getQueueMgrClient(pGroupID).killJobs(author, pJobs.get(author));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	doUpdate();
+	updatePanels();
       }
     }
 
@@ -2974,19 +2918,19 @@ class JQueueJobViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Deleting Job Groups...")) {
+      if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
 	try {
-	  master.getQueueMgrClient().deleteJobGroups(pGroupAuthors);
+	  master.getQueueMgrClient(pGroupID).deleteJobGroups(pGroupAuthors);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	doUpdate();
+	updatePanels();
       }
     }
 
@@ -3060,9 +3004,9 @@ class JQueueJobViewerPanel
 
 
   /**
-   * The ID of the last job sent to the job details panel.
+   * The ID of job displayed in the job details panel.
    */ 
-  private Long  pLastJobID; 
+  private Long  pDetailedJobID; 
 
 
   /*----------------------------------------------------------------------------------------*/

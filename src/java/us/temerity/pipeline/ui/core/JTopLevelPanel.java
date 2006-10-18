@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.7 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -226,7 +226,7 @@ class JTopLevelPanel
   updatePrivileges() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
     try {
       pPrivilegeDetails = client.getCachedPrivilegeDetails();
     }

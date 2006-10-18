@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
+// $Id: JExportDialog.java,v 1.5 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,23 +31,30 @@ class JExportDialog
   /**
    * Construct a new dialog.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param owner
    *   The parent frame.
    */ 
   public 
   JExportDialog
   (
+   int channel, 
    Frame owner
   ) 
   {
     super(owner, "Export");
+
+    pChannel = channel;
 
     /* create dialog body components */ 
     {
       Box vbox = new Box(BoxLayout.Y_AXIS);
 
       {
-	JExportPanel panel = new JExportPanel("Export All Properties:", sTSize, sVSize);
+	JExportPanel panel = 
+	  new JExportPanel(pChannel, "Export All Properties:", sTSize, sVSize);
 	pExportPanel = panel;
 
 	vbox.add(panel);
@@ -291,6 +298,11 @@ class JExportDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The index of the update channel.
+   */ 
+  private int  pChannel; 
 
   /**
    * The export fields panel. 

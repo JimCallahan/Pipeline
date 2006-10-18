@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.8 2006/09/25 12:11:44 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.9 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -170,6 +170,8 @@ class JNodeBrowserPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+
+    master.updateOpsBar();
   }
 
   /**
@@ -210,15 +212,8 @@ class JNodeBrowserPanel
     super.setAuthorView(author, view);
 
     if(pTree != null) {
+      updatePanels(); 
       updateNodeTree();
-
-      UIMaster master = UIMaster.getInstance();
-      if((pGroupID > 0) && !master.isRestoring()) {
-	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) 
-	  viewer.setRoots(pAuthor, pView, pSelected);
-      }
     }
   }
 
@@ -229,12 +224,66 @@ class JNodeBrowserPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels() 
+  {
+    updatePanels(false);
+  }
+
+  /**
+   * Update all panels which share the current update channel.
+   */ 
+  private void 
+  updatePanels
+  (
+   boolean forceUpdate
+  ) 
+  {
+    pSelectionModified = false;
+
+    PanelUpdater pu = new PanelUpdater(this, forceUpdate);
+    pu.start();
+  }
+
+  /**
+   * Apply the updated information to this panel.
+   * 
+   * @param author
+   *   Owner of the current working area.
+   * 
+   * @param view
+   *   Name of the current working area view.
+   * 
+   * @param selected
+   *   The nodes which should be currently selected in the browser.
+   */
+  public synchronized void 
+  applyPanelUpdates
+  (
+   String author, 
+   String view,
+   TreeSet<String> selected
+  )
+  {
+    if(!pAuthor.equals(author) || !pView.equals(view)) 
+      super.setAuthorView(author, view);  
+
+    updateSelection(selected);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the fully resolved names of the nodes associated with the current tree selection.
    */ 
   public TreeSet<String>
   getSelected() 
   {
-    return pSelected;
+    return new TreeSet<String>(pSelected);
   }
 
   /**
@@ -249,21 +298,11 @@ class JNodeBrowserPanel
     return pSelected.contains(treePathToNodeName(tpath));
   }
 
-  /**
-   * Clear the current tree node selection. <P> 
-   * 
-   * Does not notify any associated node viewer of the change.
-   */ 
-  public void 
-  clearSelection() 
-  {
-    pSelected.clear();
-  }
 
   /**
    * Replace the current tree node selection with the given set of nodes. <P> 
    * 
-   * Does not notify any associated node viewer of the change.
+   * Does not cause a multi-panel update.
    * 
    * @param names
    *   The fully resolved names of the nodes to select.
@@ -330,7 +369,7 @@ class JNodeBrowserPanel
    *   The paths of the expanded tree nodes.
    * 
    * @param deep
-   *   If not <CODE>null</CODE>, update and expande all node paths under this path.
+   *   If not <CODE>null</CODE>, update and expand all node paths under this path.
    */ 
   private void 
   updateNodeTree
@@ -342,34 +381,35 @@ class JNodeBrowserPanel
     if(pTree == null) 
       return;
 
-    updatePrivileges();
-
     /* get the updated node tree */ 
     NodeTreeComp comp = null;
     {
       UIMaster master = UIMaster.getInstance();
-      if(!master.beginPanelOp()) 
-	return;
-      try { 
-	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
-	for(String path : expanded)
-	  paths.put(path, (deep != null) && path.equals(deep));
-	for(String path : pSelected) 
-	  paths.put(path, false);
+      if(master.beginSilentPanelOp(pGroupID)) {
 
-	comp = master.getMasterMgrClient().updatePaths(pAuthor, pView, paths); 
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-	return;
-      }
-      finally {
-	master.endPanelOp();
+	updatePrivileges();
+    
+	try { 
+	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	  for(String path : expanded)
+	    paths.put(path, (deep != null) && path.equals(deep));
+	  for(String path : pSelected) 
+	    paths.put(path, false);
+	  
+	  comp = master.getMasterMgrClient(pGroupID).updatePaths(pAuthor, pView, paths); 
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endSilentPanelOp(pGroupID);
+	}
       }
     }
 
     /* rebuild the tree model based on the updated node tree */ 
-    {
+    if(comp != null) {
       DefaultMutableTreeNode root = new DefaultMutableTreeNode(new NodeTreeComp());
       rebuildTreeModel("", comp, root, expanded, deep);
       
@@ -544,30 +584,6 @@ class JNodeBrowserPanel
        "Show the node filter dialog."); 
   }
 
- 
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Update the root nodes of the viewer panel.
-   */ 
-  private void 
-  updateViewerPanel()
-  {
-    UIMaster master = UIMaster.getInstance();
-    if(pGroupID > 0) {
-      PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-      JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-      if(viewer != null) {
-	viewer.setRoots(pAuthor, pView, pSelected);
-	pSelectionModified = false;
-	return;
-      }
-    }
-	
-    clearSelection();
-    repaint();
-  }
-  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -631,7 +647,7 @@ class JNodeBrowserPanel
     KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
 
     if(pSelectionModified) 
-      updateViewerPanel();
+      updatePanels();
   }
   
   /**
@@ -735,7 +751,7 @@ class JNodeBrowserPanel
 		  pSelected.add(sname);
 		  repaint();
 		  
-		  updateViewerPanel();
+		  updatePanels();
 		}
 		
 		/* BUTTON1+SHIFT: toggle selection */ 
@@ -812,7 +828,7 @@ class JNodeBrowserPanel
     UserPrefs prefs = UserPrefs.getInstance(); 
     if((prefs.getUpdate() != null) &&
        prefs.getUpdate().wasPressed(e)) 
-      doUpdate();
+      updatePanels(true);
     
     else if((prefs.getNodeBrowserNodeFilter() != null) &&
        prefs.getNodeBrowserNodeFilter().wasPressed(e)) 
@@ -853,7 +869,7 @@ class JNodeBrowserPanel
 		      MouseEvent.CTRL_DOWN_MASK);
 
 	  if((mods & (on1 | off1)) == on1) 
-	    updateViewerPanel();
+	    updatePanels();
 	}      
       }
     }
@@ -892,31 +908,6 @@ class JNodeBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the contents of the expanded node tree paths and any selected nodes.
-   */ 
-  private void 
-  doUpdate()
-  {
-    if(pSelected.isEmpty()) {
-      updateNodeTree();
-    }
-    else {      
-      UIMaster master = UIMaster.getInstance();
-      if(pGroupID > 0) {
-	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	if(viewer != null) {
-	  master.getMasterMgrClient().invalidateCachedPrivilegeDetails();
-	  viewer.setRoots(pAuthor, pView, pSelected);
-	  return;
-	}
-      }
-
-      updateNodeTree();
-    }
-  }
-
-  /**
    * Modify the node filter. 
    */ 
   public void 
@@ -928,6 +919,7 @@ class JNodeBrowserPanel
     pFilterDialog.updateFilter(pFilter);
     pFilterDialog.setVisible(true);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

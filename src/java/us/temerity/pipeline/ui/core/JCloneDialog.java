@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.9 2006/09/25 12:11:44 jim Exp $
+// $Id: JCloneDialog.java,v 1.10 2006/10/18 06:34:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,18 +31,26 @@ class JCloneDialog
   /**
    * Construct a new dialog.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param owner
    *   The parent frame.
    */ 
   public 
   JCloneDialog
   (
+   int channel, 
    Frame owner
   ) 
   {
     super(owner, "Clone Node");
 
-    pRegistered = new TreeSet<String>();
+    /* initialize fields */ 
+    {
+      pChannel = channel;
+      pRegistered = new TreeSet<String>();
+    }
 
     /* create dialog body components */ 
     {
@@ -168,7 +176,8 @@ class JCloneDialog
       }
 
       {
-	JExportPanel panel = new JExportPanel("Clone All Properties:", sTSize, sVSize);
+	JExportPanel panel = 
+	  new JExportPanel(pChannel, "Clone All Properties:", sTSize, sVSize);
 	pExportPanel = panel;
 
 	vbox.add(panel);
@@ -571,13 +580,13 @@ class JCloneDialog
       if(pExportPanel.exportEditor()) 
 	editor = pNodeMod.getEditor();
       else 
-	editor = master.getMasterMgrClient().getEditorForSuffix(suffix);
+	editor = master.getMasterMgrClient(pChannel).getEditorForSuffix(suffix);
 
       String toolset = null;
       if(pExportPanel.exportToolset()) 
 	toolset = pNodeMod.getToolset();
       else 
-	toolset = master.getMasterMgrClient().getDefaultToolsetName();
+	toolset = master.getMasterMgrClient(pChannel).getDefaultToolsetName();
       
       mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
     }
@@ -600,7 +609,7 @@ class JCloneDialog
     throws PipelineException 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.getMasterMgrClient(pChannel);
     
     /* register the node */ 
     String name = mod.getName();
@@ -814,6 +823,12 @@ class JCloneDialog
    * The names of the registered nodes.
    */ 
   private TreeSet<String>  pRegistered; 
+
+  /**
+   * The index of the update channel.
+   */ 
+  private int  pChannel; 
+
 
 
   /*----------------------------------------------------------------------------------------*/
