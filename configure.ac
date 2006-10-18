@@ -1498,17 +1498,18 @@ AC_CONFIG_FILES([
   rpm/rpmmacros
 
   www/Makefile
-#  www/gcstats/Makefile
-#  www/gcstats/etc/Makefile
-#  www/gcstats/sql/Makefile
   www/plstats/Makefile
   www/plstats/etc/Makefile
   www/plstats/sql/Makefile
-#  www/swfcharts/Makefile
-#  www/swfcharts/charts_library/Makefile
 
 ])
 
 AC_OUTPUT
 
 
+
+#  www/gcstats/Makefile
+#  www/gcstats/etc/Makefile
+#  www/gcstats/sql/Makefile
+#  www/swfcharts/Makefile
+#  www/swfcharts/charts_library/Makefile
