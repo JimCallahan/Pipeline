@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.21 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseMgrClient.java,v 1.22 2006/10/18 06:14:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -152,7 +152,7 @@ class BaseMgrClient
 	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Fine,
-	     "Connection Opened: " + pSocket.getInetAddress());
+	     "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
 	  LogMgr.getInstance().flush();
 	}
       }
@@ -398,11 +398,12 @@ class BaseMgrClient
 
       TaskTimer timer = null;
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
-	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + "]: " + kind.toString());
+	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + ":" + pPort + "] " + 
+			      kind.toString());
 	timer.aquire();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Send [" + pSocket.getInetAddress() + "]: " + kind.toString());	  
+	   "Send [" + pSocket.getInetAddress() + ":" + pPort + "]: " + kind.toString());
       }
 
       OutputStream out = pSocket.getOutputStream();
@@ -482,11 +483,12 @@ class BaseMgrClient
 
       TaskTimer timer = null;
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
-	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + "]: " + kind.toString());
+	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + ":" + pPort + "] " + 
+			      kind.toString());
 	timer.aquire();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Send [" + pSocket.getInetAddress() + "]: " + kind.toString());	  
+	   "Send [" + pSocket.getInetAddress() + ":" + pPort + "]: " + kind.toString()); 
       }
 
       OutputStream out = pSocket.getOutputStream();
