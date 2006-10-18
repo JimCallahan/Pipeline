@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.9 2006/10/18 06:34:22 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.10 2006/10/18 23:32:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,12 +80,17 @@ class JNodeBrowserPanel
       
       pPanelPopup = new JPopupMenu(); 
       
+      pChangeAuthorViewMenu = new JMenu("Change Owner|View");
+      pPanelPopup.add(pChangeAuthorViewMenu);
+
+      pPanelPopup.addSeparator();
+
       item = new JMenuItem("Node Filter...");
       pNodeFilterItem = item;
       item.setActionCommand("node-filter");
       item.addActionListener(this);
       pPanelPopup.add(item);  
-
+      
       updateMenuToolTips();
     }
 
@@ -211,10 +216,8 @@ class JNodeBrowserPanel
   {
     super.setAuthorView(author, view);
 
-    if(pTree != null) {
-      updatePanels(); 
-      updateNodeTree();
-    }
+    if(pTree != null) 
+      updatePanels(true); 
   }
 
 
@@ -585,6 +588,111 @@ class JNodeBrowserPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Rebuild the Change Owner|View menu to for the working areas containig the given node.
+   */ 
+  private void 
+  rebuildWorkingAreaMenu
+  (
+   String name
+  ) 
+  {  
+    if(name == null) {
+      pChangeAuthorViewMenu.setEnabled(false);
+      return;
+    }
+
+    pChangeAuthorViewMenu.removeAll();
+      
+    TreeMap<String,TreeSet<String>> views = null;
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginSilentPanelOp(pGroupID)) {
+	try {
+	  views = master.getMasterMgrClient(pGroupID).getWorkingAreasContaining(name); 
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endSilentPanelOp(pGroupID);
+	}
+      }
+    }
+    
+    int numAuthors = views.size();
+    int maxPerMenu = 12;
+    if(numAuthors > maxPerMenu) {
+      ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>(); 
+      {
+	int numMenus = Math.max(numAuthors / maxPerMenu, 2);
+	int perMenu  = numAuthors / numMenus;
+	int extra    = numAuthors % perMenu;
+
+	int cnt = 0;
+	int max = 0;
+	TreeSet<String> agroup = null;
+	for(String author : views.keySet()) {
+	  if(cnt == 0) {
+	    agroup = new TreeSet<String>();
+	    authors.add(agroup);
+
+	    max = perMenu - 1;
+	    if(extra > 0) 
+	      max++;
+	    extra--;
+	  }
+	  
+	  agroup.add(author);
+	  cnt++;
+
+	  if(cnt > max) 
+	    cnt = 0;
+	}
+      }
+
+      for(TreeSet<String> agroup : authors) {
+	JMenu gsub = new JMenu(agroup.first().substring(0, 3).toUpperCase() + "-" + 
+			       agroup.last().substring(0, 3).toUpperCase());      
+	pChangeAuthorViewMenu.add(gsub);
+	for(String author : agroup) 
+	  addChangeAuthorMenu(gsub, author, views);
+      }
+    }
+    else {
+      for(String author : views.keySet()) 
+	addChangeAuthorMenu(pChangeAuthorViewMenu, author, views);
+    }
+    
+    pChangeAuthorViewMenu.setEnabled(true);
+  }
+
+  /**
+   * Helper method for adding working area submenus.
+   */ 
+  private void 
+  addChangeAuthorMenu
+  (
+   JMenu pmenu, 
+   String author, 
+   TreeMap<String,TreeSet<String>> views
+  ) 
+  {
+    JMenu sub = new JMenu(author); 
+    pmenu.add(sub);
+	
+    for(String view : views.get(author)) {
+      JMenuItem item = new JMenuItem(author + " | " + view);
+      item.setActionCommand("author-view:" + author + ":" + view);
+      item.addActionListener(this);
+      sub.add(item);
+    }
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -663,12 +771,13 @@ class JNodeBrowserPanel
     if(pManagerPanel.handleManagerMouseEvent(e)) 
       return;
 
+    TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
+
     /* local mouse events */ 
     int mods = e.getModifiersEx();
     switch(e.getButton()) {
     case MouseEvent.BUTTON1:
       {
-	TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
 	if(tpath != null) {
 	  DefaultMutableTreeNode tnode = 
 	    (DefaultMutableTreeNode) tpath.getLastPathComponent();
@@ -793,6 +902,24 @@ class JNodeBrowserPanel
 	
 	/* BUTTON3: panel popup menu */ 
 	if((mods & (on1 | off1)) == on1) {
+	  
+	  String sname = null;
+	  if(tpath != null) {
+	    DefaultMutableTreeNode tnode = 
+	      (DefaultMutableTreeNode) tpath.getLastPathComponent();
+	    NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
+	    if(comp != null) {
+	      switch(comp.getState()) {
+	      case WorkingCurrentCheckedInSome:
+	      case WorkingOtherCheckedInSome:
+	      case WorkingNoneCheckedInSome:
+	      case WorkingCurrentCheckedInNone:
+		sname = treePathToNodeName(tpath);
+	      }
+	    }
+	  }
+	  rebuildWorkingAreaMenu(sname); 
+
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
@@ -897,8 +1024,8 @@ class JNodeBrowserPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("node-filter"))
       doNodeFilter();
-
-    // .. toggle individual filters hot keys
+    else if(cmd.startsWith("author-view:")) 
+      doChangeAuthorView(cmd.substring(12));    
   }
 
 
@@ -920,6 +1047,19 @@ class JNodeBrowserPanel
     pFilterDialog.setVisible(true);
   }
 
+  /**
+   * Change working area view.
+   */ 
+  private void 
+  doChangeAuthorView
+  (
+   String view
+  ) 
+  {
+    String parts[] = view.split(":");
+    assert(parts.length == 2);
+    setAuthorView(parts[0], parts[1]);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1001,6 +1141,11 @@ class JNodeBrowserPanel
    * The panel popup menu.
    */ 
   private JPopupMenu  pPanelPopup; 
+
+  /**
+   * The dynamic working area submenu.
+   */ 
+  private JMenu  pChangeAuthorViewMenu;
 
   /**
    * The panel layout popup menu items.

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.165 2006/10/18 08:43:17 jim Exp $
+// $Id: MasterMgr.java,v 1.166 2006/10/18 23:32:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5124,7 +5124,7 @@ class MasterMgr
    * 
    * @return
    *   <CODE>NodeUpdatePathRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   *   <CODE>FailureRsp</CODE> if unable to determine the working areas.
    */
   public Object
   getWorkingAreas()
@@ -5142,6 +5142,55 @@ class MasterMgr
 	  views.put(author, (TreeSet<String>) pWorkingAreaViews.get(author).clone());
 	
 	return new NodeGetWorkingAreasRsp(timer, views);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the table of the working areas containing the given node. <P> 
+   * 
+   * @return
+   *   <CODE>NodeUpdatePathRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the working areas.
+   */
+  public Object
+  getWorkingAreasContaining
+  (
+   NodeGetWorkingAreasContainingReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pNodeTreeRoot) {
+	timer.resume();	
+	
+	String comps[] = req.getName().split("/"); 
+	
+	NodeTreeEntry parentEntry = pNodeTreeRoot;
+	int wk;
+	for(wk=1; wk<comps.length; wk++) {
+	  NodeTreeEntry entry = parentEntry.get(comps[wk]); 
+	  if(entry == null) {
+	    parentEntry = null;
+	    break;
+	  }
+
+	  parentEntry = entry;
+	}
+
+	TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+	if((parentEntry != null) && parentEntry.isLeaf() && parentEntry.hasWorking()) {
+	  for(String author : parentEntry.getWorkingAuthors()) 
+	    views.put(author, new TreeSet<String>(parentEntry.getWorkingViews(author)));
+	}
+	
+        return new NodeGetWorkingAreasRsp(timer, views);
       }
     }
     finally {

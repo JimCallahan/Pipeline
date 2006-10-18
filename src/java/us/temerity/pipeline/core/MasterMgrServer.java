@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.66 2006/10/18 08:43:17 jim Exp $
+// $Id: MasterMgrServer.java,v 1.67 2006/10/18 23:32:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -827,6 +827,15 @@ class MasterMgrServer
 	    case GetWorkingAreas:
 	      {
 		objOut.writeObject(pMasterMgr.getWorkingAreas());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetWorkingAreasContaining:
+	      {
+		NodeGetWorkingAreasContainingReq req = 
+		  (NodeGetWorkingAreasContainingReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getWorkingAreasContaining(req));
 		objOut.flush(); 
 	      }
 	      break;

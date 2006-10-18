@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.47 2006/10/18 08:43:17 jim Exp $
+// $Id: MasterRequest.java,v 1.48 2006/10/18 23:32:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -384,6 +384,11 @@ enum MasterRequest
    * Get the table of current working area authors and views.
    */
   GetWorkingAreas,  
+
+  /**
+   * An instance of {@link NodeGetWorkingAreasContaining} is next.
+   */
+  GetWorkingAreasContaining,  
 
   /**
    * An instance of {@link NodeCreateWorkingAreaReq} is next.

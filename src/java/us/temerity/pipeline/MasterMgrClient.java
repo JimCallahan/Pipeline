@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.78 2006/10/18 08:43:17 jim Exp $
+// $Id: MasterMgrClient.java,v 1.79 2006/10/18 23:32:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2776,6 +2776,40 @@ class MasterMgrClient
     verifyConnection();
 	 
     Object obj = performTransaction(MasterRequest.GetWorkingAreas, null);
+    if(obj instanceof NodeGetWorkingAreasRsp) {
+      NodeGetWorkingAreasRsp rsp = (NodeGetWorkingAreasRsp) obj;
+      return rsp.getTable();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Get the table of the working areas containing the given node. <P> 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The table of working area view names indexed by author user name.  
+   * 
+   * @throws PipelineException
+   *   If unable to determine the working areas.
+   */
+  public synchronized TreeMap<String,TreeSet<String>>
+  getWorkingAreasContaining
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeGetWorkingAreasContainingReq req = new NodeGetWorkingAreasContainingReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetWorkingAreasContaining, req);
     if(obj instanceof NodeGetWorkingAreasRsp) {
       NodeGetWorkingAreasRsp rsp = (NodeGetWorkingAreasRsp) obj;
       return rsp.getTable();
