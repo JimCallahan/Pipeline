@@ -4094,6 +4094,16 @@ upstream nodes linked to the checked-in version and the properties of
 these links. This section will be skipped if the checked-in version has
 no upstream links.
 </div>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: bold;">dlink</span><br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Prints the names and versions of the
+downstream nodes linked to the checked-in version and the properties of
+these links. This section will be skipped if checked-in version has
+no downstream links.<br>
+<br>
+</div>
 </div>
 <span style="font-weight: normal;"><br>
 </span><span style="font-weight: bold;"><a name="checked-in_--history"></a>checked-in</span><span
