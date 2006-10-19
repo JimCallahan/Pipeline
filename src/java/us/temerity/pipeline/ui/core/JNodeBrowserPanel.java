@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.10 2006/10/18 23:32:36 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.11 2006/10/19 09:09:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -588,111 +588,6 @@ class JNodeBrowserPanel
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Rebuild the Change Owner|View menu to for the working areas containig the given node.
-   */ 
-  private void 
-  rebuildWorkingAreaMenu
-  (
-   String name
-  ) 
-  {  
-    if(name == null) {
-      pChangeAuthorViewMenu.setEnabled(false);
-      return;
-    }
-
-    pChangeAuthorViewMenu.removeAll();
-      
-    TreeMap<String,TreeSet<String>> views = null;
-    {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginSilentPanelOp(pGroupID)) {
-	try {
-	  views = master.getMasterMgrClient(pGroupID).getWorkingAreasContaining(name); 
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endSilentPanelOp(pGroupID);
-	}
-      }
-    }
-    
-    int numAuthors = views.size();
-    int maxPerMenu = 12;
-    if(numAuthors > maxPerMenu) {
-      ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>(); 
-      {
-	int numMenus = Math.max(numAuthors / maxPerMenu, 2);
-	int perMenu  = numAuthors / numMenus;
-	int extra    = numAuthors % perMenu;
-
-	int cnt = 0;
-	int max = 0;
-	TreeSet<String> agroup = null;
-	for(String author : views.keySet()) {
-	  if(cnt == 0) {
-	    agroup = new TreeSet<String>();
-	    authors.add(agroup);
-
-	    max = perMenu - 1;
-	    if(extra > 0) 
-	      max++;
-	    extra--;
-	  }
-	  
-	  agroup.add(author);
-	  cnt++;
-
-	  if(cnt > max) 
-	    cnt = 0;
-	}
-      }
-
-      for(TreeSet<String> agroup : authors) {
-	JMenu gsub = new JMenu(agroup.first().substring(0, 3).toUpperCase() + "-" + 
-			       agroup.last().substring(0, 3).toUpperCase());      
-	pChangeAuthorViewMenu.add(gsub);
-	for(String author : agroup) 
-	  addChangeAuthorMenu(gsub, author, views);
-      }
-    }
-    else {
-      for(String author : views.keySet()) 
-	addChangeAuthorMenu(pChangeAuthorViewMenu, author, views);
-    }
-    
-    pChangeAuthorViewMenu.setEnabled(true);
-  }
-
-  /**
-   * Helper method for adding working area submenus.
-   */ 
-  private void 
-  addChangeAuthorMenu
-  (
-   JMenu pmenu, 
-   String author, 
-   TreeMap<String,TreeSet<String>> views
-  ) 
-  {
-    JMenu sub = new JMenu(author); 
-    pmenu.add(sub);
-	
-    for(String view : views.get(author)) {
-      JMenuItem item = new JMenuItem(author + " | " + view);
-      item.setActionCommand("author-view:" + author + ":" + view);
-      item.addActionListener(this);
-      sub.add(item);
-    }
-  }
-
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -918,7 +813,9 @@ class JNodeBrowserPanel
 	      }
 	    }
 	  }
-	  rebuildWorkingAreaMenu(sname); 
+	  
+	  UIMaster master = UIMaster.getInstance();
+	  master.rebuildWorkingAreaMenu(pGroupID, sname, pChangeAuthorViewMenu, this);
 
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
@@ -1053,12 +950,16 @@ class JNodeBrowserPanel
   private void 
   doChangeAuthorView
   (
-   String view
+   String workingArea
   ) 
   {
-    String parts[] = view.split(":");
+    String parts[] = workingArea.split(":");
     assert(parts.length == 2);
-    setAuthorView(parts[0], parts[1]);
+
+    String author = parts[0];
+    String view   = parts[1];
+    if(!pAuthor.equals(author) || !pView.equals(view)) 
+      setAuthorView(author, view);       
   }
 
 

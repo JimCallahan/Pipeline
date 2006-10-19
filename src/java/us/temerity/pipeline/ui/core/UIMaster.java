@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.44 2006/10/18 06:34:22 jim Exp $
+// $Id: UIMaster.java,v 1.45 2006/10/19 09:09:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -253,6 +253,8 @@ class UIMaster
 
  
   /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Create and show a new secondary panel frame.
@@ -372,8 +374,278 @@ class UIMaster
     pFrame.setTitle(title);    
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Save the collapsed state of the given viewer node.
+   * 
+   * @param path
+   *   The unique path to the viewer node.
+   * 
+   * @param wasCollapsed
+   *   Whether the viewer node is currently collapsed.
+   */ 
+  public void 
+  setNodeCollapsed
+  (
+   String path,
+   boolean wasCollapsed
+  ) 
+  {
+    synchronized(pCollapsedNodePaths) {
+      if(wasCollapsed) 
+	pCollapsedNodePaths.add(path);
+      else 
+	pCollapsedNodePaths.remove(path);
+    }
+  }
+
+  /**
+   * Whether the given viewer node was previously collapsed.
+   * 
+   * @param path
+   *   The unique path to the viewer node.
+   */ 
+  public boolean
+  wasNodeCollapsed
+  (
+   String path 
+  ) 
+  {
+    synchronized(pCollapsedNodePaths) {
+      return pCollapsedNodePaths.contains(path);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Rebuild the Change Owner|View menu to for the working areas containing the given node.
+   *
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void 
+  rebuildWorkingAreaMenu
+  ( 
+   int channel, 
+   String name,
+   JMenu menu,
+   ActionListener listener
+  ) 
+  {
+    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+    ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>();
+    
+    rebuildWorkingAreaMenuCache(channel, name, views, authors); 
+    rebuildWorkingAreaMenuSingle(menu, listener, views, authors);    
+  }
+
+  /**
+   * Rebuild the Change Owner|View menu to for the working areas containing the given node.
+   *
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param menus
+   *   The menus to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void 
+  rebuildWorkingAreaMenus
+  ( 
+   int channel, 
+   String name,
+   JMenu menus[],
+   ActionListener listener
+  ) 
+  {
+    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+    ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>();
+    
+    rebuildWorkingAreaMenuCache(channel, name, views, authors); 
+
+    int wk;
+    for(wk=0; wk<menus.length; wk++) 
+      rebuildWorkingAreaMenuSingle(menus[wk], listener, views, authors);    
+  }
+
+  /**
+   * Recompute the working area menus for a given node. 
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param views
+   *   The names of the working area views indexed by author name.
+   * 
+   * @param authors
+   *   The names of the working area authors grouped by submenu.
+   */ 
+  private void 
+  rebuildWorkingAreaMenuCache
+  (
+   int channel, 
+   String name, 
+   TreeMap<String,TreeSet<String>> views, 
+   ArrayList<TreeSet<String>> authors
+  )
+  {
+    if(name == null) 
+      return;
+
+    UIMaster master = UIMaster.getInstance();
+    if(master.beginSilentPanelOp(channel)) {
+      try {
+	MasterMgrClient client = master.getMasterMgrClient(channel);
+	views.putAll(client.getWorkingAreasContaining(name));
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+      finally {
+	master.endSilentPanelOp(channel);
+      }
+    }
+
+    int numAuthors = views.size();
+    int maxPerMenu = 12;
+    if(numAuthors > maxPerMenu) {
+      int numMenus = Math.max(numAuthors / maxPerMenu, 2);
+      int perMenu  = numAuthors / numMenus;
+      int extra    = numAuthors % perMenu;
+      
+      int cnt = 0;
+      int max = 0;
+      TreeSet<String> agroup = null;
+      for(String author : views.keySet()) {
+	if(cnt == 0) {
+	  agroup = new TreeSet<String>();
+	  authors.add(agroup);
+	  
+	  max = perMenu - 1;
+	  if(extra > 0) 
+	    max++;
+	  extra--;
+	}
+	  
+	agroup.add(author);
+	cnt++;
+	
+	if(cnt > max) 
+	  cnt = 0;
+      }
+    }
+  }
+
+  /**
+   * Rebuild the Change Owner|View menu to for the working areas containing the given node.
+   *
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   * 
+   * @param views
+   *   The names of the working area views indexed by author name.
+   * 
+   * @param authors
+   *   The names of the working area authors grouped by submenu.
+   */ 
+  private synchronized void 
+  rebuildWorkingAreaMenuSingle
+  ( 
+   JMenu menu,
+   ActionListener listener, 
+   TreeMap<String,TreeSet<String>> views, 
+   ArrayList<TreeSet<String>> authors
+  ) 
+  {  
+    if(views.isEmpty()) {
+      menu.setEnabled(false);
+      return;
+    }
+
+    menu.removeAll();
+      
+    if(!authors.isEmpty()) {
+      for(TreeSet<String> agroup : authors) {
+	JMenu gsub = new JMenu(agroup.first().substring(0, 3).toUpperCase() + "-" + 
+			       agroup.last().substring(0, 3).toUpperCase());      
+	menu.add(gsub);
+	
+	for(String author : agroup) 
+	  rebuildWorkingAreaMenuHelper(gsub, author, listener, views);
+      }
+    }
+    else {
+      for(String author : views.keySet()) 
+	rebuildWorkingAreaMenuHelper(menu, author, listener, views);
+    }
+    
+    menu.setEnabled(true);
+  }
+
+  /**
+   * Helper method for adding working area submenus.
+   * 
+   * @param pmenu
+   *   The parent menu.
+   * 
+   * @param author
+   *   The owner of the working area.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   * 
+   * @param views
+   *   The names of the working area views indexed by author name.
+   */ 
+  private void 
+  rebuildWorkingAreaMenuHelper
+  (
+   JMenu pmenu, 
+   String author, 
+   ActionListener listener,
+   TreeMap<String,TreeSet<String>> views
+  ) 
+  {
+    JMenu sub = new JMenu(author); 
+    pmenu.add(sub);
+	
+    for(String view : views.get(author)) {
+      JMenuItem item = new JMenuItem(author + " | " + view);
+      item.setActionCommand("author-view:" + author + ":" + view);
+      item.addActionListener(listener);
+      sub.add(item);
+    }
+  }
+
     
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P L U G I N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1390,7 +1662,9 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
-
+  /*   P A N E L   G R O U P S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Get the node browsers panel group.
    */ 
@@ -1491,50 +1765,6 @@ class UIMaster
     return pQueueJobDetailsPanels;
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Save the collapsed state of the given viewer node.
-   * 
-   * @param path
-   *   The unique path to the viewer node.
-   * 
-   * @param wasCollapsed
-   *   Whether the viewer node is currently collapsed.
-   */ 
-  public void 
-  setNodeCollapsed
-  (
-   String path,
-   boolean wasCollapsed
-  ) 
-  {
-    synchronized(pCollapsedNodePaths) {
-      if(wasCollapsed) 
-	pCollapsedNodePaths.add(path);
-      else 
-	pCollapsedNodePaths.remove(path);
-    }
-  }
-
-  /**
-   * Whether the given viewer node was previously collapsed.
-   * 
-   * @param path
-   *   The unique path to the viewer node.
-   */ 
-  public boolean
-  wasNodeCollapsed
-  (
-   String path 
-  ) 
-  {
-    synchronized(pCollapsedNodePaths) {
-      return pCollapsedNodePaths.contains(path);
-    }    
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/

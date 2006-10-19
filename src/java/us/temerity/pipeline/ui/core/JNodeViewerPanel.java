@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.55 2006/10/18 06:34:22 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.56 2006/10/19 09:09:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -186,7 +186,8 @@ class JNodeViewerPanel
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
 
-      pEditWithMenus = new JMenu[4];
+      pChangeAuthorViewMenus = new JMenu[5];
+      pEditWithMenus         = new JMenu[4];
 
       JPopupMenu menus[] = { 
 	pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
@@ -238,6 +239,11 @@ class JNodeViewerPanel
 	item.setActionCommand("remove-root");
 	item.addActionListener(this);
 	menus[wk].add(item);  
+	
+	menus[wk].addSeparator();
+
+	pChangeAuthorViewMenus[wk] = new JMenu("Change Owner|View");
+	menus[wk].add(pChangeAuthorViewMenus[wk]);
 	
 	if(wk > 0) {
 	  menus[wk].addSeparator();
@@ -1077,6 +1083,7 @@ class JNodeViewerPanel
 
     pRemoveSecondaryMenu.setEnabled(false);
 
+    updateWorkingAreaMenus();
     updateEditorMenus();
 
     /* rebuild remove secondary items */ 
@@ -1101,6 +1108,20 @@ class JNodeViewerPanel
       
       pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
     }
+  }
+
+  /**
+   * Update the 
+   */ 
+  private synchronized void 
+  updateWorkingAreaMenus()
+  {    
+    String name = null;
+    if(pPrimary != null) 
+      name = pPrimary.getNodePath().getCurrentName();
+    
+    UIMaster master = UIMaster.getInstance();
+    master.rebuildWorkingAreaMenus(pGroupID, name, pChangeAuthorViewMenus, this);
   }
 
   /**
@@ -2024,6 +2045,7 @@ class JNodeViewerPanel
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
 		if(isLocked()) {
+		  updateWorkingAreaMenus();
 		  updateEditorMenus();
 		  pPanelLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
@@ -2032,6 +2054,7 @@ class JNodeViewerPanel
 		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion().isFrozen()) {
+		  updateWorkingAreaMenus();
 		  updateEditorMenus();
 		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
@@ -2542,6 +2565,9 @@ class JNodeViewerPanel
     else if(cmd.equals("remove-all-roots"))
       doRemoveAllRoots();
 
+    else if(cmd.startsWith("author-view:")) 
+      doChangeAuthorView(cmd.substring(12));    
+
     else if(cmd.equals("edit"))
       doEdit();
     else if(cmd.equals("edit-with-default"))
@@ -2740,6 +2766,27 @@ class JNodeViewerPanel
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Change working area view.
+   */ 
+  private void 
+  doChangeAuthorView
+  (
+   String workingArea
+  ) 
+  {
+    String parts[] = workingArea.split(":");
+    assert(parts.length == 2);
+
+    String author = parts[0];
+    String view   = parts[1];
+    if(!pAuthor.equals(author) || !pView.equals(view)) 
+      setAuthorView(author, view);       
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -5633,9 +5680,10 @@ class JNodeViewerPanel
   private JMenuItem  pDeleteItem;
 
   /**
-   * The edit with submenus.
+   * The dynamic submenus.
    */ 
   private JMenu[]  pEditWithMenus; 
+  private JMenu[]  pChangeAuthorViewMenus;
 
   /**
    * The remove secondary node submenu.
