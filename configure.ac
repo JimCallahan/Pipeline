@@ -999,7 +999,7 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Java GC Options:])
 
-java_gc_opts="-XX:+UseParallelGC"
+java_gc_opts=""
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_GC_OPTS)
