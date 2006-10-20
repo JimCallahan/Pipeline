@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.7 2006/10/20 21:01:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -802,8 +802,8 @@ class JBaseToolsetPluginsPanel
   public void 
   doNewMenu()
   {
-    JNewIdentifierDialog diag = 
-      new JNewIdentifierDialog(pParent, "New Menu", "New Menu Name:", null, "Add");
+    JNewNameDialog diag = 
+      new JNewNameDialog(pParent, "New Menu", "New Menu Name:", null, "Add");
 
     diag.setVisible(true);
     if(diag.wasConfirmed()) {
@@ -835,8 +835,8 @@ class JBaseToolsetPluginsPanel
   {
     PluginMenuLayout pml = getSelectedPluginMenuLayout();
     if(pml != null) {
-      JNewIdentifierDialog diag = 
-	new JNewIdentifierDialog(pParent, "Rename Menu", "Menu Name:", pml.getTitle(), "Add");
+      JNewNameDialog diag = 
+	new JNewNameDialog(pParent, "Rename Menu", "Menu Name:", pml.getTitle(), "Add");
 
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
