@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.15 2006/10/18 06:16:06 jim Exp $
+// $Id: QueueJobInfo.java,v 1.16 2006/10/20 11:09:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,7 +55,7 @@ class QueueJobInfo
   /**
    * Copy constructor. 
    *
-   * @param infox
+   * @param info
    *   The job information to copy. 
    */ 
   public
