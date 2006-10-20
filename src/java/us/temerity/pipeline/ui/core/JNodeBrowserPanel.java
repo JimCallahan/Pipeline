@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.11 2006/10/19 09:09:45 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.12 2006/10/20 06:16:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -807,8 +807,8 @@ class JNodeBrowserPanel
 	      switch(comp.getState()) {
 	      case WorkingCurrentCheckedInSome:
 	      case WorkingOtherCheckedInSome:
-	      case WorkingNoneCheckedInSome:
 	      case WorkingCurrentCheckedInNone:
+	      case WorkingOtherCheckedInNone:
 		sname = treePathToNodeName(tpath);
 	      }
 	    }
