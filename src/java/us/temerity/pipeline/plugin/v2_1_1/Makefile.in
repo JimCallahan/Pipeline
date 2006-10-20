@@ -258,6 +258,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
      PLUGIN_JARS = QueueStatsExt.jar
 
       PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
+  PLUGIN_XTR_DIR = $(ROOT_INST_DIR)/plugins-extra/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
      EXAMPLE_DIR = $(ROOT_INST_DIR)/examples/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
 
 
@@ -298,9 +299,9 @@ QueueStatsExt.jar: java-all
 
 #--------------------------------------------------------------------------------------------#
 
-install: all installdirs install-sources install-classes 
+install: all installdirs install-sources install-classes install-extra-classes
 
-install-classes: $(shell find . -type f -name "*.class") $(PLUGIN_JARS)
+install-classes: $(shell find . -type f -name "*.class") 
 	@list='$^'; for p in $$list; do \
           if test -f $$p; then \
             echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR); \
@@ -308,9 +309,18 @@ install-classes: $(shell find . -type f -name "*.class") $(PLUGIN_JARS)
           fi; \
          done
 
+install-extra-classes: QueueStatsExt.jar
+	@list='$^'; for p in $$list; do \
+          if test -f $$p; then \
+            echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_XTR_DIR); \
+            $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_XTR_DIR); \
+          fi; \
+         done
+
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)
 	$(mkinstalldirs) $(DESTDIR)$(PLUGIN_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(PLUGIN_XTR_DIR)
 
 install-sources: $(JAVA_SOURCES)
 	@list='$^'; for p in $$list; do \
