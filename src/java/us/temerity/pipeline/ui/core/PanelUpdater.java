@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.1 2006/10/18 06:34:22 jim Exp $
+// $Id: PanelUpdater.java,v 1.2 2006/10/20 06:15:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,6 +38,7 @@ class PanelUpdater
   {
     initPanels(panel);
 
+    pNodeStatusModified = true;
     pNodeBrowserSelection = panel.getSelected(); 
 
     if(pNodeViewerPanel != null) {
@@ -69,10 +70,8 @@ class PanelUpdater
       }
       /* just get rid of the obsolete roots, no update will be performed */ 
       else {
-	for(String name : dead) {
+	for(String name : dead) 
 	  pNodeViewerRoots.remove(name);
-	  pNodeStatusModified = true;
-	}
       }
     }
   }
@@ -91,6 +90,7 @@ class PanelUpdater
   {
     pNodeDetailsOnly = detailsOnly; 
     initPanels(panel);
+    pNodeStatusModified = true;
     pNodeViewerRoots = panel.getRoots();
   }
 
@@ -299,12 +299,14 @@ class PanelUpdater
 	      TreeSet<String> dead = new TreeSet<String>();
 	      for(String name : pNodeViewerRoots.keySet()) {
 		if(pNodeViewerRoots.get(name) == null) {
-		  master.updatePanelOp(pGroupID, "Updating Node Status...");
-		  
-		  NodeStatus status = mclient.status(pAuthor, pView, name);
-		  pNodeViewerRoots.put(name, status);
-		  
-		  pNodeStatusModified = true;
+		  try {
+		    master.updatePanelOp(pGroupID, "Updating Node Status...");
+		    NodeStatus status = mclient.status(pAuthor, pView, name);
+		    pNodeViewerRoots.put(name, status);
+		  }
+		  catch(PipelineException ex) {
+		    dead.add(name);
+		  }
 		}
 	      }	 
 	      
