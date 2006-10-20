@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.2 2006/10/20 06:15:47 jim Exp $
+// $Id: PanelUpdater.java,v 1.3 2006/10/20 20:16:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -341,8 +341,11 @@ class PanelUpdater
 	    
 	    /* node check-in history */ 
 	    if(pNodeHistoryPanel != null) {
-	      master.updatePanelOp(pGroupID, "Updating Node History...");
-	      pNodeHistory = mclient.getHistory(pDetailedNodeName);
+	      NodeDetails details = pDetailedNode.getDetails();
+	      if((details != null) && (details.getLatestVersion() != null)) {
+		master.updatePanelOp(pGroupID, "Updating Node History...");
+		pNodeHistory = mclient.getHistory(pDetailedNodeName);
+	      }
 	    }
 	    
 	    /* online version IDs */ 
@@ -445,21 +448,25 @@ class PanelUpdater
 	    /* use the last job selected */ 
 	    if(pDetailedJobID != null) {
 	      master.updatePanelOp(pGroupID, "Updating Job Details...");
+	      try {
+		pDetailedJob = qclient.getJob(pDetailedJobID);
 	    
-	      pDetailedJob = qclient.getJob(pDetailedJobID);
-	    
-	      if(pJobInfo != null) 
-		pDetailedJobInfo = pJobInfo.get(pDetailedJobID);
-	    
-	      if(pDetailedJobInfo == null) 
-		pDetailedJobInfo = qclient.getJobInfo(pDetailedJobID);
-	    
-	      if(pDetailedJobInfo != null) {
-		String hostname = pDetailedJobInfo.getHostname();
-		if(hostname != null) {
-		  JobMgrClient jclient = new JobMgrClient(hostname);
-		  pDetailedJobExecDetails = jclient.getExecDetails(pDetailedJobID);
+		if(pJobInfo != null) 
+		  pDetailedJobInfo = pJobInfo.get(pDetailedJobID);
+		
+		if(pDetailedJobInfo == null) 
+		  pDetailedJobInfo = qclient.getJobInfo(pDetailedJobID);
+
+		if(pDetailedJobInfo != null) {
+		  String hostname = pDetailedJobInfo.getHostname();
+		  if(hostname != null) {
+		    JobMgrClient jclient = new JobMgrClient(hostname);
+		    pDetailedJobExecDetails = jclient.getExecDetails(pDetailedJobID);
+		  }
 		}
+	      }
+	      catch(PipelineException ex) {
+		// ignore jobs which may no longer exist...
 	      }
 	    }
 	  }
