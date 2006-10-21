@@ -1,37 +1,68 @@
-ToolsMenuLayout <PluginMenuLayout> #1 {
+ToolMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
-      Title <String> #5 { "DisableAction" }
-      Name <String> #6 { "DisableAction" }
-      VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "2.0.9" }
+      Title <String> #5 { "Maya" }
+      Children <LinkedList> #6 {
+        <PluginMenuLayout> #7 {
+          Title <String> #8 { "MayaTextureSync" }
+          Name <String> #9 { "MayaTextureSync" }
+          VersionID <VersionID> #10 {
+            RevisionNumber <String> #11 { "2.0.11" }
+          }
+          Vendor <String> #12 { "Temerity" }
+        }
+        <PluginMenuLayout> #13 {
+          Title <String> #14 { "MayaAddReference" }
+          Name <String> #15 { "MayaAddReference" }
+          VersionID <VersionID> #16 {
+            RevisionNumber <String> #17 { "2.0.10" }
+          }
+          Vendor <String> #18 { "Temerity" }
+        }
+        <PluginMenuLayout> #19 {
+          Title <String> #20 { "MayaRemoveReference" }
+          Name <String> #21 { "MayaRemoveReference" }
+          VersionID <VersionID> #22 {
+            RevisionNumber <String> #23 { "2.0.9" }
+          }
+          Vendor <String> #24 { "Temerity" }
+        }
       }
-      Vendor <String> #9 { "Temerity" }
     }
-    <PluginMenuLayout> #10 {
-      Title <String> #11 { "Renumber" }
-      Name <String> #12 { "Renumber" }
-      VersionID <VersionID> #13 {
-        RevisionNumber <String> #14 { "2.0.9" }
+    <PluginMenuLayout> #25 {
+      Title <String> #26 { "MentalRay" }
+      Children <LinkedList> #27 {
+        <PluginMenuLayout> #28 {
+          Title <String> #29 { "RegisterMap" }
+          Name <String> #30 { "RegisterMap" }
+          VersionID <VersionID> #31 {
+            RevisionNumber <String> #32 { "2.0.9" }
+          }
+          Vendor <String> #33 { "Temerity" }
+        }
       }
-      Vendor <String> #15 { "Temerity" }
     }
-    <PluginMenuLayout> #16 {
-      Title <String> #17 { "RegisterMap" }
-      Name <String> #18 { "RegisterMap" }
-      VersionID <VersionID> #19 {
-        RevisionNumber <String> #20 { "2.0.9" }
+    <PluginMenuLayout> #34 {
+      Title <String> #35 { "Utils" }
+      Children <LinkedList> #36 {
+        <PluginMenuLayout> #37 {
+          Title <String> #38 { "Renumber" }
+          Name <String> #39 { "Renumber" }
+          VersionID <VersionID> #40 {
+            RevisionNumber <String> #41 { "2.0.9" }
+          }
+          Vendor <String> #42 { "Temerity" }
+        }
+        <PluginMenuLayout> #43 {
+          Title <String> #44 { "DisableAction" }
+          Name <String> #45 { "DisableAction" }
+          VersionID <VersionID> #46 {
+            RevisionNumber <String> #47 { "2.0.9" }
+          }
+          Vendor <REF> #33
+        }
       }
-      Vendor <REF> #9
-    }
-    <PluginMenuLayout> #21 {
-      Title <String> #22 { "Maya Texture Sync" }
-      Name <String> #23 { "MayaTextureSync" }
-      VersionID <VersionID> #24 {
-        RevisionNumber <String> #25 { "2.0.10" }
-      }
-      Vendor <REF> #9
     }
   }
 }

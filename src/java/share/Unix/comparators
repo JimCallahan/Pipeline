@@ -1,4 +1,4 @@
-ComparatorsMenuLayout <PluginMenuLayout> #1 {
+ComparatorMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
