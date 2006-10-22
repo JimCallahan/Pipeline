@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.3 2006/07/22 05:27:49 jim Exp $
+// $Id: NativeOS.java,v 1.4 2006/10/22 01:09:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.*;
  */
 public
 class NativeOS
-  extends Native
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
@@ -69,10 +68,49 @@ class NativeOS
       break;
 
     case MacOS:
-    case Windows:
-      loadLibrary();
-      memory = getTotalMemoryNative();    
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("-n");
+	args.add("hw.physmem");
+	
+	SubProcessLight proc = 
+	  new SubProcessLight("TotalMemory", "/usr/sbin/sysctl", 
+			      args, new TreeMap<String,String>(), 
+			      PackageInfo.sTempPath.toFile());
+	proc.start();
+	
+	try {
+	  proc.join();
+	}
+	catch(InterruptedException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	     ex.getMessage());
+	}
+	
+	if(!proc.wasSuccessful()) 
+	  throw new IOException
+	    ("Unable to determine the amount of free memory:\n" + 
+	     proc.getStdErr());
+	
+	String output[] = proc.getStdOut().split("\\n");
+	if(output.length < 1)
+	  throw new IOException
+	    ("Missing output from sysctl(8)!");
+
+	try {
+	  memory = Long.valueOf(output[0]);
+	}
+	catch(NumberFormatException ex) {
+	  throw new IOException
+	    ("Incomprehensible output from sysctl(8):\n" + 
+	     getFullMessage(ex));
+	}
+      }
       break;
+
+    case Windows:
+      throw new IOException("The Windows operating system is not supported!");
     }
 
     return memory;
@@ -92,7 +130,7 @@ class NativeOS
     switch(PackageInfo.sOsType) {
     case Unix:
       {
-    	long unused   = 0;
+    	long unused = 0;
 	long cached = 0;
 	
 	FileReader reader = new FileReader("/proc/meminfo");
@@ -199,8 +237,7 @@ class NativeOS
       break;  
 
     case Windows:
-      loadLibrary();
-      return getFreeMemoryNative(); 
+      throw new IOException("The Windows operating system is not supported!");
     }
 
     return memory;
@@ -279,10 +316,49 @@ class NativeOS
       break;
 
     case MacOS:
-    case Windows:
-      loadLibrary();
-      procs = getNumProcessorsNative();
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("-n");
+	args.add("hw.ncpu");
+	
+	SubProcessLight proc = 
+	  new SubProcessLight("TotalMemory", "/usr/sbin/sysctl", 
+			      args, new TreeMap<String,String>(), 
+			      PackageInfo.sTempPath.toFile());
+	proc.start();
+	
+	try {
+	  proc.join();
+	}
+	catch(InterruptedException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	     ex.getMessage());
+	}
+	
+	if(!proc.wasSuccessful()) 
+	  throw new IOException
+	    ("Unable to determine the number of processors:\n" + 
+	     proc.getStdErr());
+	
+	String output[] = proc.getStdOut().split("\\n");
+	if(output.length < 1)
+	  throw new IOException
+	    ("Missing output from sysctl(8)!");
+
+	try {
+	  procs = Integer.valueOf(output[0]);
+	}
+	catch(NumberFormatException ex) {
+	  throw new IOException
+	    ("Incomprehensible output from sysctl(8):\n" + 
+	     getFullMessage(ex));
+	}
+      }
       break;
+
+    case Windows:
+      throw new IOException("The Windows operating system is not supported!");
     }
     
     return procs;
@@ -318,81 +394,57 @@ class NativeOS
       break;
       
     case MacOS:
-      loadLibrary();
-      load = getLoadAverageNative();
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("-n");
+	args.add("vm.loadavg");
+	
+	SubProcessLight proc = 
+	  new SubProcessLight("LoadAverage", "/usr/sbin/sysctl", 
+			      args, new TreeMap<String,String>(), 
+			      PackageInfo.sTempPath.toFile());
+	proc.start();
+	
+	try {
+	  proc.join();
+	}
+	catch(InterruptedException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	     ex.getMessage());
+	}
+	
+	if(!proc.wasSuccessful()) 
+	  throw new IOException
+	    ("Unable to determine the number of processors:\n" + 
+	     proc.getStdErr());
+	
+	String output[] = proc.getStdOut().split("\\n");
+	if(output.length < 1)
+	  throw new IOException
+	    ("Missing output from sysctl(8)!");
+
+	String values[] = output[0].split("\\s");
+	if(values.length < 3)
+	  throw new IOException
+	    ("Missing output from sysctl(8)!");
+
+	try {
+	  load = Float.valueOf(values[0]);
+	}
+	catch(NumberFormatException ex) {
+	  throw new IOException
+	    ("Incomprehensible output from sysctl(8):\n" + 
+	     getFullMessage(ex));
+	}
+      }
       break;
 
     case Windows:
-      loadLibrary();      
-      sLoadSamples.add(getLoadAverageNative());
-      for(Float sample : sLoadSamples) 
-	load += sample;
-      load /= sLoadSamples.size();
-      break;
+      throw new IOException("The Windows operating system is not supported!");
     }
 
     return load;
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N A T I V E    H E L P E R S                                                         */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the amount of free system memory (in bytes). 
-   * 
-   * @throws IOException 
-   *   If unable to determine the amount of total memory.
-   */ 
-  private static native long 
-  getFreeMemoryNative() 
-    throws IOException;
-  
-  /**
-   * Get the total amount of system memory (in bytes).
-   * 
-   * @throws IOException 
-   *   If unable to determine the amount of total memory.
-   */ 
-  private static native long 
-  getTotalMemoryNative() 
-    throws IOException;
-  
-  /**
-   * Get the number of processors (CPUs).
-   * 
-   * @throws IOException 
-   *   If unable to determine the load.
-   */
-  private static native int
-  getNumProcessorsNative() 
-    throws IOException;
-
-  /**
-   * Get the system load factor (1-minute average).
-   * 
-   * @throws IOException 
-   *   If unable to determine the load.
-   */
-  private static native float
-  getLoadAverageNative() 
-    throws IOException;
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * A ring buffer used to store the last 12 instantaneous processor active percentage 
-   * samples (collected at 5-second intervals) from a Windows system to be used to compute 
-   * a 1-minute average system load equilavent. <P> 
-   * 
-   * The values are initialized to (1.0) to over report the system load during the 
-   * first minute of sampling.
-   */ 
-  private static Ring<Float>  sLoadSamples = new Ring<Float>(12, new Float(1.0f));
 }
