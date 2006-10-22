@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.3 2006/10/20 20:16:02 jim Exp $
+// $Id: PanelUpdater.java,v 1.4 2006/10/22 01:08:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -307,6 +307,8 @@ class PanelUpdater
 		  catch(PipelineException ex) {
 		    dead.add(name);
 		  }
+
+		  pNodeStatusModified = true;
 		}
 	      }	 
 	      
