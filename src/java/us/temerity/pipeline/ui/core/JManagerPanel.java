@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.29 2006/10/18 06:34:22 jim Exp $
+// $Id: JManagerPanel.java,v 1.30 2006/10/23 18:31:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2892,11 +2892,19 @@ class JManagerPanel
   private void 
   doShutdownServer() 
   {
+    UIMaster master = UIMaster.getInstance();
+     
+    /* last chance to save toolsets/packages */ 
+    if(!master.discardWorkingToolsets()) {
+      master.showManageToolsetsDialog();
+      return;
+    }
+
+    /* shutdown options */ 
     JShutdownDialog diag = new JShutdownDialog(getTopFrame());
     diag.setVisible(true);
 
     if(diag.wasConfirmed()) {
-      UIMaster master = UIMaster.getInstance();
       master.doUponExit();
       master.getQueueMgrClient().disconnect();
 

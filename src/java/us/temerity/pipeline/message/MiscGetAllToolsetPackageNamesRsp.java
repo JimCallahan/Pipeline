@@ -1,4 +1,4 @@
-// $Id: MiscGetAllToolsetPackageNamesRsp.java,v 1.1 2005/06/12 17:58:00 jim Exp $
+// $Id: MiscGetAllToolsetPackageNamesRsp.java,v 1.2 2006/10/23 18:31:20 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,7 +36,7 @@ class MiscGetAllToolsetPackageNamesRsp
   MiscGetAllToolsetPackageNamesRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>> names 
+   DoubleMap<String,OsType,TreeSet<VersionID>> names 
   )
   { 
     super(timer);
@@ -61,7 +61,7 @@ class MiscGetAllToolsetPackageNamesRsp
   /**
    * Gets the names of all toolset packages.
    */
-  public TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>>
+  public DoubleMap<String,OsType,TreeSet<VersionID>>
   getNames() 
   {
     return pNames;
@@ -84,7 +84,7 @@ class MiscGetAllToolsetPackageNamesRsp
   /**
    * The names of all toolset packages.
    */ 
-  private TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>>  pNames; 
+  private DoubleMap<String,OsType,TreeSet<VersionID>>  pNames; 
 
 }
   

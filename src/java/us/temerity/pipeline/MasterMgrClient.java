@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.80 2006/10/23 11:30:20 jim Exp $
+// $Id: MasterMgrClient.java,v 1.81 2006/10/23 18:31:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -790,7 +790,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to determine the package names.
    */ 
-  public synchronized TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>>
+  public synchronized DoubleMap<String,OsType,TreeSet<VersionID>>
   getAllToolsetPackageNames()
     throws PipelineException    
   {

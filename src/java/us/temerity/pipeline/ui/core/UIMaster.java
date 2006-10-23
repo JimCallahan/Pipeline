@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.45 2006/10/19 09:09:45 jim Exp $
+// $Id: UIMaster.java,v 1.46 2006/10/23 18:31:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1864,6 +1864,24 @@ class UIMaster
     pManageToolsetsDialog.setVisible(true);
   }
 
+  /**
+   * If unfrozen Toolsets/Packages exist, 
+   *   show a confirmation dialog for discarding the unsaved changes.
+   */ 
+  public boolean
+  discardWorkingToolsets() 
+  {
+    String msg = pManageToolsetsDialog.getUnfrozenWarning();
+    if(msg != null) {
+      JConfirmDialog diag = 
+	new JConfirmDialog(pFrame, "Discard Working Toolsets/Packages?", 
+			   "The following unsaved changes to Toolsets were found.\n\n" + msg);
+      diag.setVisible(true);
+      return diag.wasConfirmed();
+    }
+
+    return true;
+  }
 
   /**
    * Show the manage license keys dialog.
@@ -2672,6 +2690,12 @@ class UIMaster
   public void 
   doQuit()
   {
+    /* last chance to save toolsets/packages */ 
+    if(!discardWorkingToolsets()) {
+      showManageToolsetsDialog();
+      return;
+    }
+
     doUponExit();
 
     int idx;

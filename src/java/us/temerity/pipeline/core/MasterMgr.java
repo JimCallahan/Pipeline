@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.167 2006/10/23 11:30:20 jim Exp $
+// $Id: MasterMgr.java,v 1.168 2006/10/23 18:31:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2334,18 +2334,14 @@ class MasterMgr
 	
 	OsType os = req.getOsType();
 
-	TreeMap<String,TreeSet<VersionID>> names = new TreeMap<String,TreeSet<VersionID>>();
+	TreeMap<String,TreeSet<VersionID>> names = 
+	  new TreeMap<String,TreeSet<VersionID>>();
+
 	for(String name : pToolsetPackages.keySet()) {
-	  if(pToolsetPackages.get(name).containsKey(os)) {
-	    for(VersionID vid : pToolsetPackages.get(name).get(os).keySet()) {
-	      TreeSet<VersionID> vids = names.get(name);
-	      if(vids == null) {
-		vids = new TreeSet<VersionID>();
-		names.put(name, vids);
-	      }
-	      
-	      vids.add(vid);
-	    }
+	  if(pToolsetPackages.containsKey(name, os)) {
+	    TreeSet<VersionID> vids = new TreeSet<VersionID>();
+	    vids.addAll(pToolsetPackages.keySet(name, os));
+	    names.put(name, vids);
 	  }
 	}
 	
@@ -2375,23 +2371,17 @@ class MasterMgr
       synchronized(pToolsetPackages) {
 	timer.resume();
 	
-	TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>> names = 
-	  new TreeMap<String,TreeMap<OsType,TreeSet<VersionID>>>();
+	DoubleMap<String,OsType,TreeSet<VersionID>> names = 
+	  new DoubleMap<String,OsType,TreeSet<VersionID>>();
 
 	for(String name : pToolsetPackages.keySet()) {
-	  TreeMap<OsType,TreeSet<VersionID>> versions = 
-	    new TreeMap<OsType,TreeSet<VersionID>>();
-	  names.put(name, versions);
-
-	  for(OsType os : pToolsetPackages.get(name).keySet()) {
+	  for(OsType os : pToolsetPackages.keySet(name)) {
 	    TreeSet<VersionID> vids = new TreeSet<VersionID>();
-	    versions.put(os, vids);
-	    
-	    for(VersionID vid : pToolsetPackages.get(name).get(os).keySet()) 
-	      vids.add(vid);
+	    vids.addAll(pToolsetPackages.keySet(name, os));
+	    names.put(name, os, vids);
 	  }
 	}
-	
+
 	return new MiscGetAllToolsetPackageNamesRsp(timer, names);
       }  
     }
