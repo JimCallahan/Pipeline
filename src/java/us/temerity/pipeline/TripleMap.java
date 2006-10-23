@@ -1,4 +1,4 @@
-// $Id: TripleMap.java,v 1.4 2006/10/23 11:30:20 jim Exp $
+// $Id: TripleMap.java,v 1.5 2006/10/23 18:29:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,6 +40,44 @@ class TripleMap<A,B,C,V>
     super();
     putAll(tmap);
   }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns true if this map contains a mapping for the specified set of keys.
+   */ 
+  public boolean 	
+  containsKey
+  (
+   A keyA,
+   B keyB
+  ) 
+  {
+    TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
+    return ((tableB != null) && tableB.containsKey(keyB));
+  }
+
+  /**
+   * Returns true if this map contains a mapping for the specified set of keys.
+   */ 
+  public boolean 	
+  containsKey
+  (
+   A keyA,
+   B keyB,
+   C keyC
+  ) 
+  {
+    TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
+    if(tableB != null) {
+      TreeMap<C,V> tableC = tableB.get(keyB);
+      return ((tableC != null) && tableC.containsKey(keyC));
+    }
+    return false;
+  }
 
 
 

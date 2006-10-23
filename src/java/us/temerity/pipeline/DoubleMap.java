@@ -1,4 +1,4 @@
-// $Id: DoubleMap.java,v 1.2 2006/05/07 21:18:17 jim Exp $
+// $Id: DoubleMap.java,v 1.3 2006/10/23 18:29:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,6 +40,26 @@ class DoubleMap<A,B,V>
     super();
     putAll(tmap);
   }  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns true if this map contains a mapping for the specified set of keys.
+   */ 
+  public boolean 	
+  containsKey
+  (
+   A keyA,
+   B keyB
+  ) 
+  {
+    TreeMap<B,V> tableB = super.get(keyA);
+    return ((tableB != null) && tableB.containsKey(keyB));
+  }
 
 
 
