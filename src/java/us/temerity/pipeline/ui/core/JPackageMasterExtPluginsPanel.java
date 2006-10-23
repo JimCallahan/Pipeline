@@ -1,4 +1,4 @@
-// $Id: JPackageMasterExtPluginsPanel.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: JPackageMasterExtPluginsPanel.java,v 1.2 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class JPackageMasterExtPluginsPanel
   ) 
     throws PipelineException
   {
-    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins = getPlugins(pname, vid);
+    PluginSet includedPlugins = getPlugins(pname, vid);
     
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     updateHelper(pname, vid, includedPlugins, pclient.getMasterExts(), privileges);
@@ -81,7 +81,7 @@ class JPackageMasterExtPluginsPanel
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
-  protected DoubleMap<String,String,TreeSet<VersionID>>
+  protected PluginSet
   getPlugins
   (
    String pname, 
@@ -109,7 +109,7 @@ class JPackageMasterExtPluginsPanel
   (
    String pname, 
    VersionID vid, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   )
     throws PipelineException
   {

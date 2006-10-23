@@ -1,4 +1,4 @@
-// $Id: MiscGetPackagePluginsRsp.java,v 1.3 2006/10/23 11:30:20 jim Exp $
+// $Id: MiscGetPluginMenuLayoutsRsp.java,v 1.1 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   P A C K A G E   P L U G I N S   R S P                                */
+/*   M I S C   G E T   P L U G I N   M E N U   L A Y O U T S   R S P                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the plugins associated with a toolset package.
+ * Get the layout plugin menus for all plugin types associated with a toolset.
  */
 public
-class MiscGetPackagePluginsRsp
+class MiscGetPluginMenuLayoutsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,21 +29,21 @@ class MiscGetPackagePluginsRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param plugins
-   *   The vendors, names and revision numbers of the associated plugins.
+   * @param layout
+   *   The heirarchical set of editor plugin menus indexed by plugin type.
    */ 
   public
-  MiscGetPackagePluginsRsp
+  MiscGetPluginMenuLayoutsRsp
   (
    TaskTimer timer, 
-   PluginSet plugins
+   TreeMap<PluginType,PluginMenuLayout> layouts
   )
   { 
     super(timer);
 
-    if(plugins == null) 
-      throw new IllegalArgumentException("The associated plugins cannot be (null)!");
-    pPlugins = plugins;
+    if(layouts == null) 
+      throw new IllegalArgumentException("The plugin menu layouts cannot be (null)!");
+    pLayouts = layouts;
     
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
@@ -59,13 +59,12 @@ class MiscGetPackagePluginsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets vendors, names and revision numbers of the associated plugins 
-   * or <CODE>null</CODE> if none exist.
+   * Gets the heirarchical set of editor plugin menus indexed by plugin type.
    */
-  public PluginSet
-  getPlugins() 
+  public TreeMap<PluginType,PluginMenuLayout>
+  getLayouts() 
   {
-    return pPlugins;
+    return pLayouts;
   }
   
 
@@ -74,7 +73,7 @@ class MiscGetPackagePluginsRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7867696279645229500L;
+  private static final long serialVersionUID = -373332227743249616L;
 
   
 
@@ -83,9 +82,9 @@ class MiscGetPackagePluginsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The vendors, names and revision numbers of the associated plugins.
+   * The heirarchical set of editor plugin menus indexed by plugin type.
    */ 
-  private PluginSet  pPlugins;
+  private TreeMap<PluginType,PluginMenuLayout>  pLayouts;
 
 }
   

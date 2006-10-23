@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.11 2006/07/10 10:30:29 jim Exp $
+// $Id: BaseTool.java,v 1.12 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -97,12 +97,12 @@ class BaseTool
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "Tool";
+    return PluginType.Tool;
   }
 
  

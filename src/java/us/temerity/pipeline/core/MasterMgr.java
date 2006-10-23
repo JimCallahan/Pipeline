@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.166 2006/10/18 23:32:36 jim Exp $
+// $Id: MasterMgr.java,v 1.167 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -324,20 +324,13 @@ class MasterMgr
       pMasterExtMenuLayouts  = new TreeMap<String,PluginMenuLayout>();
       pQueueExtMenuLayouts   = new TreeMap<String,PluginMenuLayout>();
 
-      pPackageEditorPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageComparatorPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageActionPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageToolPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageArchiverPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageMasterExtPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
-      pPackageQueueExtPlugins = 
-	new DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>();
+      pPackageEditorPlugins     = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageComparatorPlugins = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageActionPlugins     = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageToolPlugins       = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageArchiverPlugins   = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageMasterExtPlugins  = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageQueueExtPlugins   = new DoubleMap<String,VersionID,PluginSet>();
 
       pMasterExtensions = new TreeMap<String,MasterExtensionConfig>();
 
@@ -2630,7 +2623,258 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   T O O L S E T   P L U G I N S  /  M E N U   L A Y O U T S                            */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  /**
+   * Get the layout plugin menus for all plugin types associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getPluginMenuLayouts
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getPluginMenuLayout(): " + name);
+
+    if(name == null) 
+      return new FailureRsp(timer, "The toolset name cannot be (null)!");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<PluginType,PluginMenuLayout> layouts = 
+	new TreeMap<PluginType,PluginMenuLayout>();
+
+      timer.aquire();
+      synchronized(pEditorMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pEditorMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.Editor, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.Editor, new PluginMenuLayout());
+      }
+
+      timer.aquire();
+      synchronized(pComparatorMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pComparatorMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.Comparator, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.Comparator, new PluginMenuLayout());
+      }
+
+      timer.aquire();
+      synchronized(pActionMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pActionMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.Action, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.Action, new PluginMenuLayout());
+      }
+
+      timer.aquire();
+      synchronized(pToolMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pToolMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.Tool, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.Tool, new PluginMenuLayout());
+      }
+
+      timer.aquire();
+      synchronized(pArchiverMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pArchiverMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.Archiver, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.Archiver, new PluginMenuLayout());
+      }
+
+      timer.aquire();
+      synchronized(pMasterExtMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pMasterExtMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.MasterExt, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.MasterExt, new PluginMenuLayout());
+      }
+
+      timer.aquire();
+      synchronized(pQueueExtMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pQueueExtMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.QueueExt, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.QueueExt, new PluginMenuLayout());
+      }
+      
+      return new MiscGetPluginMenuLayoutsRsp(timer, layouts);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get all types of plugins associated with the given packages.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetSelectPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getSelectPackagePlugins
+  (
+   MiscGetSelectPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      TreeMap<String,TreeSet<VersionID>> packages = req.getPackages(); 
+
+      TripleMap<String,VersionID,PluginType,PluginSet> allPlugins = 
+	new TripleMap<String,VersionID,PluginType,PluginSet>();
+      
+      timer.aquire();
+      synchronized(pPackageEditorPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageEditorPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.Editor, plugins);
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageComparatorPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageComparatorPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.Comparator, plugins);
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageActionPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageActionPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.Action, plugins);
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageToolPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageToolPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.Tool, plugins);
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageArchiverPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageArchiverPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.Archiver, plugins);
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageMasterExtPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageMasterExtPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.MasterExt, plugins);
+	  }
+	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageQueueExtPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageQueueExtPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.QueueExt, plugins);
+	  }
+	}
+      }
+
+      return new MiscGetSelectPackagePluginsRsp(timer, allPlugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the layout of the editor plugin menu associated with a toolset.
    *
@@ -2779,8 +3023,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageEditorPlugins) {
@@ -2788,23 +3031,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageEditorPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageEditorPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -2841,10 +3070,9 @@ class MasterMgr
       synchronized(pPackageEditorPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageEditorPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageEditorPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -3053,8 +3281,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageComparatorPlugins) {
@@ -3062,23 +3289,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageComparatorPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageComparatorPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -3115,10 +3328,9 @@ class MasterMgr
       synchronized(pPackageComparatorPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageComparatorPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageComparatorPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -3327,8 +3539,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageActionPlugins) {
@@ -3336,23 +3547,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageActionPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageActionPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -3389,10 +3586,9 @@ class MasterMgr
       synchronized(pPackageActionPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageActionPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageActionPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -3601,8 +3797,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageToolPlugins) {
@@ -3610,23 +3805,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageToolPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageToolPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -3663,10 +3844,9 @@ class MasterMgr
       synchronized(pPackageToolPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageToolPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageToolPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -3875,8 +4055,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageArchiverPlugins) {
@@ -3884,23 +4063,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageArchiverPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageArchiverPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -3937,10 +4102,9 @@ class MasterMgr
       synchronized(pPackageArchiverPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageArchiverPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageArchiverPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -4149,8 +4313,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageMasterExtPlugins) {
@@ -4158,23 +4321,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageMasterExtPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageMasterExtPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -4211,10 +4360,9 @@ class MasterMgr
       synchronized(pPackageMasterExtPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageMasterExtPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageMasterExtPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -4423,8 +4571,7 @@ class MasterMgr
 	}
       }
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = new PluginSet();
       {
 	timer.aquire();
 	synchronized(pPackageQueueExtPlugins) {
@@ -4432,23 +4579,9 @@ class MasterMgr
 	  
 	  for(String pname : packages.keySet()) {
 	    for(VersionID pvid : packages.get(pname)) {
-	      
-	      DoubleMap<String,String,TreeSet<VersionID>> table = 
-		pPackageQueueExtPlugins.get(pname, pvid);
-
-	      if(table != null) {
-		for(String vendor : table.keySet()) {
-		  for(String name : table.get(vendor).keySet()) {
-		    TreeSet<VersionID> vids = plugins.get(vendor, name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		      plugins.put(vendor, name, vids);
-		    }
-		  
-		    vids.addAll(table.get(vendor, name));
-		  }
-		}
-	      }
+	      PluginSet pset = pPackageQueueExtPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
 	    }
 	  }
 	}
@@ -4485,10 +4618,9 @@ class MasterMgr
       synchronized(pPackageQueueExtPlugins) {
 	timer.resume();
 	
-	DoubleMap<String,String,TreeSet<VersionID>> plugins = 
-	  pPackageQueueExtPlugins.get(req.getName(), req.getVersionID());
+	PluginSet plugins = pPackageQueueExtPlugins.get(req.getName(), req.getVersionID());
 	if(plugins == null)
-	  plugins = new DoubleMap<String,String,TreeSet<VersionID>>();
+	  plugins = new PluginSet(); 
 
 	return new MiscGetPackagePluginsRsp(timer, plugins); 
       }
@@ -16861,7 +16993,7 @@ class MasterMgr
    String name, 
    VersionID vid, 
    String ptype,
-   DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>> table 
+   DoubleMap<String,VersionID,PluginSet> table 
   ) 
     throws PipelineException
   {
@@ -16880,7 +17012,7 @@ class MasterMgr
 
       File file = new File(dir, fptype);
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = table.get(name, vid);
+      PluginSet plugins = table.get(name, vid);
       if((plugins == null) || plugins.isEmpty()) {
 	if(file.exists())
 	  if(!file.delete()) 
@@ -16896,7 +17028,9 @@ class MasterMgr
       try {
 	String glue = null;
 	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Package" + uptype + "Plugins", plugins);
+	  GlueEncoder ge = 
+	    new GlueEncoderImpl("Package" + uptype + "Plugins", 
+				(DoubleMap<String,String,TreeSet<VersionID>>) plugins);
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
@@ -16950,7 +17084,7 @@ class MasterMgr
    String name, 
    VersionID vid, 
    String ptype,
-   DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>> table 
+   DoubleMap<String,VersionID,PluginSet> table 
   )
     throws PipelineException
   {
@@ -16968,11 +17102,19 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
 
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = null;
+      PluginSet plugins = null;
       try {
 	FileReader in = new FileReader(file);
 	GlueDecoder gd = new GlueDecoderImpl(in);
-	plugins = (DoubleMap<String,String,TreeSet<VersionID>>) gd.getObject();
+	Object data = gd.getObject();
+
+	if(data instanceof PluginSet) 
+	  plugins = (PluginSet) data;
+	else {
+	  /* backward compatibility for GLUE files written before PluginSet existed */ 
+	  plugins = new PluginSet((DoubleMap<String,String,TreeSet<VersionID>>) data);
+	}
+
 	in.close();
       }
       catch(Exception ex) {
@@ -18717,20 +18859,13 @@ class MasterMgr
    * 
    * Access to these fields should be protected by a synchronized block.
    */ 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageEditorPlugins; 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageComparatorPlugins; 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageActionPlugins; 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageToolPlugins; 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageArchiverPlugins; 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageMasterExtPlugins; 
-  private DoubleMap<String,VersionID,
-		    DoubleMap<String,String,TreeSet<VersionID>>>  pPackageQueueExtPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageEditorPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageComparatorPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageActionPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageToolPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageArchiverPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageMasterExtPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageQueueExtPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseMasterExt.java,v 1.2 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -89,13 +89,13 @@ class BaseMasterExt
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "MasterExt";
-  } 
+    return PluginType.MasterExt; 
+  }
 
 
 

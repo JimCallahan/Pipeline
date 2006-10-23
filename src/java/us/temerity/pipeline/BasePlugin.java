@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.8 2006/10/18 08:42:00 jim Exp $
+// $Id: BasePlugin.java,v 1.9 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -207,12 +207,12 @@ class BasePlugin
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "Plugin";
+    return null;
   }
     
 
@@ -262,7 +262,7 @@ class BasePlugin
     buf.append
       ("\n" +
        "Description       : " + wordWrap(getDescription(), 14, 80) + "\n" + 
-       "Catagory          : " + getPluginCatagory() + "\n" +
+       "PluginType        : " + getPluginType() + "\n" +
        "Status            : " + 
          (isUnderDevelopment() ? "Under Development" : "Permanent") + "\n" + 
        "Class             : " + getClass().getName());

@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.8 2006/05/07 20:34:01 jim Exp $
+// $Id: BaseComparator.java,v 1.9 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,13 +99,14 @@ class BaseComparator
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "Comparator";
+    return PluginType.Comparator;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

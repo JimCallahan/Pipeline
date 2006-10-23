@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.35 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseAction.java,v 1.36 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -117,12 +117,12 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "Action";
+    return PluginType.Action;
   }
 
 

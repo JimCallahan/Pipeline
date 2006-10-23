@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.79 2006/10/18 23:32:36 jim Exp $
+// $Id: MasterMgrClient.java,v 1.80 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -979,6 +979,88 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Get the layout plugin menus for all plugin types associated with a toolset.<P> 
+   * 
+   * This is a convience method for getting the plugin menu layouts for all plugin 
+   * types at one time.  It provides the same functionality as the get*MenuLayout() 
+   * methods below, but avoids the network overhead of calling the more specialized 
+   * methods individually.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The heirarchical set of editor plugin menus indexed by plugin type.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the editor menu layout.
+   */ 
+  public synchronized TreeMap<PluginType,PluginMenuLayout> 
+  getPluginMenuLayouts
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetPluginMenuLayouts, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutsRsp) {
+      MiscGetPluginMenuLayoutsRsp rsp = (MiscGetPluginMenuLayoutsRsp) obj;
+      return rsp.getLayouts();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Get all types of plugins associated with the given packages. <P> 
+   * 
+   * This is a convience method for getting the various plugin types for a large number
+   * of package versions all at once.  It provides the same functionality as the 
+   * getPackage*Plugins() methods below, but avoids the network overhead of calling the 
+   * more specialized methods individually for each package.
+   * 
+   * @param packages
+   *   The names and revision numbers of the packages.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated plugins indexed by
+   *   the package names, revision numbers and plugin type.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TripleMap<String,VersionID,PluginType,PluginSet>
+  getSelectPackagePlugins
+  (
+   TreeMap<String,TreeSet<VersionID>> packages
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetSelectPackagePluginsReq req = new MiscGetSelectPackagePluginsReq(packages);
+
+    Object obj = performTransaction(MasterRequest.GetSelectPackagePlugins, req);
+    if(obj instanceof MiscGetSelectPackagePluginsRsp) {
+      MiscGetSelectPackagePluginsRsp rsp = (MiscGetSelectPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the default layout of the editor plugin menu.
    * 
    * @return 
@@ -1104,7 +1186,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetEditorPlugins
   (
    String name
@@ -1141,7 +1223,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageEditorPlugins
   (
    String name, 
@@ -1184,7 +1266,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {
@@ -1326,7 +1408,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetComparatorPlugins
   (
    String name
@@ -1363,7 +1445,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageComparatorPlugins
   (
    String name, 
@@ -1406,7 +1488,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {
@@ -1548,7 +1630,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetActionPlugins
   (
    String name
@@ -1585,7 +1667,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageActionPlugins
   (
    String name, 
@@ -1628,7 +1710,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {
@@ -1770,7 +1852,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetToolPlugins
   (
    String name
@@ -1807,7 +1889,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageToolPlugins
   (
    String name, 
@@ -1850,7 +1932,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {
@@ -1992,7 +2074,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetArchiverPlugins
   (
    String name
@@ -2029,7 +2111,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageArchiverPlugins
   (
    String name, 
@@ -2072,7 +2154,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {
@@ -2213,7 +2295,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetMasterExtPlugins
   (
    String name
@@ -2250,7 +2332,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageMasterExtPlugins
   (
    String name, 
@@ -2293,7 +2375,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {
@@ -2434,7 +2516,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getToolsetQueueExtPlugins
   (
    String name
@@ -2471,7 +2553,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to get the plugins.
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<VersionID>>
+  public synchronized PluginSet
   getPackageQueueExtPlugins
   (
    String name, 
@@ -2514,7 +2596,7 @@ class MasterMgrClient
   ( 
    String name,  
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException  
   {

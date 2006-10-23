@@ -1,4 +1,4 @@
-// $Id: MiscSetPackagePluginsReq.java,v 1.5 2006/10/23 11:30:20 jim Exp $
+// $Id: MiscGetSelectPackagePluginsRsp.java,v 1.1 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,55 +9,48 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   S E T   P A C K A G E   P L U G I N S   R E Q                                */
+/*   M I S C   G E T   S E L E C T   P A C K A G E   P L U G I N S   R S P                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to set the plugins associated with a toolset package.
+ * Get all types of plugins associated with the given packages.
  */
 public
-class MiscSetPackagePluginsReq
-  extends PrivilegedReq
+class MiscGetSelectPackagePluginsRsp
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request.
+   * Constructs a new response.
    * 
-   * @param name
-   *   The toolset package name.
-   * 
-   * @param vid
-   *   The revision number of the package.
+   * @param timer 
+   *   The timing statistics for a task.
    * 
    * @param plugins
-   *   The vendors, names and revision numbers of the associated editor plugins.
-   */
+   *   The vendors, names and revision numbers of the associated plugins indexed by
+   *   the package names and revision numbers.
+   */ 
   public
-  MiscSetPackagePluginsReq
+  MiscGetSelectPackagePluginsRsp
   (
-   String name, 
-   VersionID vid, 
-   PluginSet plugins
+   TaskTimer timer, 
+   TripleMap<String,VersionID,PluginType,PluginSet> plugins
   )
-  {
-    super();
-
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The package name cannot be (null)!");
-    pName = name;
-
-    if(vid == null) 
-      throw new IllegalArgumentException
-	("The package revision number cannot be (null)!");
-    pVersionID = vid;
+  { 
+    super(timer);
 
     if(plugins == null) 
       throw new IllegalArgumentException("The associated plugins cannot be (null)!");
     pPlugins = plugins;
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       getTimer().toString());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 
@@ -67,39 +60,21 @@ class MiscSetPackagePluginsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the toolset package name.
+   * Gets the vendors, names and revision numbers of the associated plugins indexed by
+   * the package names and revision numbers.
    */
-  public String
-  getName() 
-  {
-    return pName;
-  }
-  
-  /**
-   * Gets the revision number of the package.
-   */
-  public VersionID
-  getVersionID() 
-  {
-    return pVersionID;
-  }
-  
-  /**
-   * Gets the vendors, names and revision numbers of the associated plugins.
-   */
-  public PluginSet
+  public TripleMap<String,VersionID,PluginType,PluginSet>
   getPlugins() 
   {
     return pPlugins;
   }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -672715010346885082L;
+  private static final long serialVersionUID = 4239247427443660544L;
 
   
 
@@ -108,19 +83,10 @@ class MiscSetPackagePluginsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The toolset package name.
-   */
-  private String  pName;
-  
-  /**
-   * The revision number of the package.
-   */
-  private VersionID  pVersionID;
-  
-  /**
-   * The vendors, names and revision numbers of the associated plugins.
+   * The vendors, names and revision numbers of the associated plugins indexed by
+   * the package names and revision numbers.
    */ 
-  private PluginSet  pPlugins;
+  private TripleMap<String,VersionID,PluginType,PluginSet>  pPlugins;
 
 }
   

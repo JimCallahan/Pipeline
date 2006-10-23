@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.7 2006/10/11 22:45:41 jim Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.8 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -140,6 +140,7 @@ class JManageToolsetPluginsDialog
 	pPrivilegeDetails = privileges;
 
       pclient.update();
+      pParent.cacheFrozenPluginsAndLayouts(toolset);
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 
 	panel.update(toolset, pPrivilegeDetails);
 

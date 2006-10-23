@@ -1,4 +1,4 @@
-// $Id: JBasePackagePluginsPanel.java,v 1.4 2006/05/07 21:30:14 jim Exp $
+// $Id: JBasePackagePluginsPanel.java,v 1.5 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,7 +44,7 @@ class JBasePackagePluginsPanel
   {
     /* initialize fields */ 
     {
-      pIncludedVersions = new DoubleMap<String,String,TreeSet<VersionID>>();
+      pIncludedVersions = new PluginSet();
       pAllVersions      = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 
       pPrivilegeDetails = new PrivilegeDetails(); 
@@ -259,7 +259,7 @@ class JBasePackagePluginsPanel
   (
    String pname, 
    VersionID vid, 
-   DoubleMap<String,String,TreeSet<VersionID>> includedPlugins,
+   PluginSet includedPlugins,
    TripleMap<String,String,VersionID,TreeSet<OsType>> allPlugins,
    PrivilegeDetails privileges
   ) 
@@ -352,7 +352,7 @@ class JBasePackagePluginsPanel
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
-  protected abstract DoubleMap<String,String,TreeSet<VersionID>>
+  protected abstract PluginSet
   getPlugins
   (
    String pname, 
@@ -377,7 +377,7 @@ class JBasePackagePluginsPanel
   (
    String pname, 
    VersionID vid, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   )
     throws PipelineException;
 
@@ -509,7 +509,7 @@ class JBasePackagePluginsPanel
   private void 
   rebuildPluginTree
   (
-   DoubleMap<String,String,TreeSet<VersionID>> versions,
+   PluginSet versions,
    JTree tree
   )
   {
@@ -707,7 +707,7 @@ class JBasePackagePluginsPanel
   /**
    * The names and versions of the plugins associated with the package. 
    */ 
-  protected DoubleMap<String,String,TreeSet<VersionID>>  pIncludedVersions;
+  protected PluginSet  pIncludedVersions;
 
   /**
    * The vendors, names, versions and supported operating systems of all currently 

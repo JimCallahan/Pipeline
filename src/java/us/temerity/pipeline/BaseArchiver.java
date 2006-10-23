@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.11 2006/05/07 20:34:01 jim Exp $
+// $Id: BaseArchiver.java,v 1.12 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -97,12 +97,12 @@ class BaseArchiver
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "Archiver";
+    return PluginType.Archiver;
   } 
 
   

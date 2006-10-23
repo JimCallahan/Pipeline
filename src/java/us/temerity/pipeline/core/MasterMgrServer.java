@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.67 2006/10/18 23:32:36 jim Exp $
+// $Id: MasterMgrServer.java,v 1.68 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -439,6 +439,24 @@ class MasterMgrServer
 
 
 	    /*-- PLUGIN MENUS / LAYOUTS ----------------------------------------------------*/
+	    case GetPluginMenuLayouts:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPluginMenuLayouts(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetSelectPackagePlugins:
+	      {
+		MiscGetSelectPackagePluginsReq req = 
+		  (MiscGetSelectPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getSelectPackagePlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
 	    case GetEditorMenuLayout:
 	      {
 		MiscGetPluginMenuLayoutReq req = 

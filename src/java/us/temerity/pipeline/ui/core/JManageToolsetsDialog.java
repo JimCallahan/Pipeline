@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.17 2006/10/11 22:45:41 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.18 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,40 +46,14 @@ class JManageToolsetsDialog
       pActiveToolsets = new TreeSet<String>();
       pToolsets       = new TreeMap<String,TreeMap<OsType,Toolset>>();
 
-      pFrozenToolsetEditors     = new ToolsetLayouts();
-      pFrozenToolsetComparators = new ToolsetLayouts();
-      pFrozenToolsetActions     = new ToolsetLayouts();
-      pFrozenToolsetTools       = new ToolsetLayouts();
-      pFrozenToolsetArchivers   = new ToolsetLayouts();
-      pFrozenToolsetMasterExts  = new ToolsetLayouts();
-      pFrozenToolsetQueueExts   = new ToolsetLayouts();
-
-      pToolsetEditors     = new ToolsetLayouts();
-      pToolsetComparators = new ToolsetLayouts();
-      pToolsetActions     = new ToolsetLayouts();
-      pToolsetTools       = new ToolsetLayouts();
-      pToolsetArchivers   = new ToolsetLayouts();
-      pToolsetMasterExts  = new ToolsetLayouts();
-      pToolsetQueueExts   = new ToolsetLayouts();
+      pFrozenToolsetLayouts = new DoubleMap<String,PluginType,PluginMenuLayout>();
+      pToolsetLayouts       = new DoubleMap<String,PluginType,PluginMenuLayout>();
 
       pPackageVersions = new TripleMap<String,OsType,VersionID,PackageVersion>();
       pPackageMods     = new DoubleMap<String,OsType,PackageMod>();
-
-      pFrozenPackageEditors     = new FrozenPackagePlugins();
-      pFrozenPackageComparators = new FrozenPackagePlugins();
-      pFrozenPackageActions     = new FrozenPackagePlugins();
-      pFrozenPackageTools       = new FrozenPackagePlugins();
-      pFrozenPackageArchivers   = new FrozenPackagePlugins();
-      pFrozenPackageMasterExts  = new FrozenPackagePlugins();
-      pFrozenPackageQueueExts   = new FrozenPackagePlugins();
-
-      pPackageEditors     = new PackagePlugins();
-      pPackageComparators = new PackagePlugins();
-      pPackageActions     = new PackagePlugins();
-      pPackageTools       = new PackagePlugins();
-      pPackageArchivers   = new PackagePlugins();
-      pPackageMasterExts  = new PackagePlugins();
-      pPackageQueueExts   = new PackagePlugins();
+      
+      pFrozenPackagePlugins = new TripleMap<String,VersionID,PluginType,PluginSet>();
+      pPackagePlugins       = new DoubleMap<String,PluginType,PluginSet>();
     }
 
     /* toolsets popup menu */ 
@@ -662,16 +636,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetEditors.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.Editor);
     }
     else {
-      if(!pFrozenToolsetEditors.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetEditors.put(tname, client.getEditorMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetEditors.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Editor);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -698,16 +669,17 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetEditors.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.Editor, layout);
     }
     else {
-      pFrozenToolsetEditors.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Editor, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setEditorMenuLayout(tname, layout);
     }    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -731,16 +703,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetComparators.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.Comparator);
     }
     else {
-      if(!pFrozenToolsetComparators.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetComparators.put(tname, client.getComparatorMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetComparators.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Comparator);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -767,16 +736,17 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetComparators.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.Comparator, layout);
     }
     else {
-      pFrozenToolsetComparators.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Comparator, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setComparatorMenuLayout(tname, layout);
     }    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -800,16 +770,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetActions.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.Action);
     }
     else {
-      if(!pFrozenToolsetActions.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetActions.put(tname, client.getActionMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetActions.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Action);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -836,16 +803,17 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetActions.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.Action, layout);
     }
     else {
-      pFrozenToolsetActions.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Action, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setActionMenuLayout(tname, layout);
     }    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -869,16 +837,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetTools.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.Tool);
     }
     else {
-      if(!pFrozenToolsetTools.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetTools.put(tname, client.getToolMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetTools.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Tool);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -905,16 +870,17 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetTools.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.Tool, layout);
     }
     else {
-      pFrozenToolsetTools.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Tool, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setToolMenuLayout(tname, layout);
     }    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -938,16 +904,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetArchivers.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.Archiver);
     }
     else {
-      if(!pFrozenToolsetArchivers.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetArchivers.put(tname, client.getArchiverMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetArchivers.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Archiver);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -974,16 +937,17 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetArchivers.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.Archiver, layout);
     }
     else {
-      pFrozenToolsetArchivers.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Archiver, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setArchiverMenuLayout(tname, layout);
     }    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1007,16 +971,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetMasterExts.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.MasterExt);
     }
     else {
-      if(!pFrozenToolsetMasterExts.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetMasterExts.put(tname, client.getMasterExtMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetMasterExts.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.MasterExt);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -1043,16 +1004,17 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetMasterExts.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.MasterExt, layout);
     }
     else {
-      pFrozenToolsetMasterExts.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.MasterExt, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setMasterExtMenuLayout(tname, layout);
     }    
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1076,16 +1038,13 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
        
     if(!toolset.isFrozen()) {
-      return pToolsetQueueExts.get(tname);
+      return pToolsetLayouts.get(tname, PluginType.QueueExt);
     }
     else {
-      if(!pFrozenToolsetQueueExts.isCached(tname)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenToolsetQueueExts.put(tname, client.getQueueExtMenuLayout(tname));
-      }
-      
-      return pFrozenToolsetQueueExts.get(tname);
+      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.QueueExt);
+      if(layout == null) 
+	layout = new PluginMenuLayout();
+      return layout;
     }
   }
 
@@ -1112,10 +1071,10 @@ class JManageToolsetsDialog
 	("No toolset named (" + tname + ") exists!");
 
     if(!toolset.isFrozen()) {
-      pToolsetQueueExts.put(tname, layout);
+      pToolsetLayouts.put(tname, PluginType.QueueExt, layout);
     }
     else {
-      pFrozenToolsetQueueExts.put(tname, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.QueueExt, layout);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1241,6 +1200,61 @@ class JManageToolsetsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Make sure all of the plugins associated with all packages and the plugin menu layouts
+   * for the given frozen toolset are currently locally cached.
+   */ 
+  public void 
+  cacheFrozenPluginsAndLayouts
+  (
+   Toolset toolset
+  ) 
+    throws PipelineException
+  {
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
+
+    /* cache package plugins */ 
+    {
+      TreeMap<String,TreeSet<VersionID>> uncached = new TreeMap<String,TreeSet<VersionID>>();
+      {
+	int wk;
+	for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	  String pname = toolset.getPackageName(wk);
+	  VersionID pvid = toolset.getPackageVersionID(wk);
+	  
+	  /* its a frozen and uncached package */ 
+	  if(pvid != null && (pFrozenPackagePlugins.keySet(pname, pvid) == null)) {
+	    TreeSet<VersionID> vids = uncached.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      uncached.put(pname, vids);
+	    }
+	    vids.add(pvid);
+	  }
+	}
+      }
+      
+      if(!uncached.isEmpty()) {
+	TripleMap<String,VersionID,PluginType,PluginSet> psets = 
+	  client.getSelectPackagePlugins(uncached);
+	
+	for(String pname : psets.keySet()) {
+	  for(VersionID pvid : psets.keySet(pname)) 
+	    pFrozenPackagePlugins.put(pname, pvid, psets.get(pname).get(pvid));
+	}
+      }
+    }
+
+    /* cache menu layouts */ 
+    String tname = toolset.getName();
+    if(!pFrozenToolsetLayouts.containsKey(tname))
+       pFrozenToolsetLayouts.put(tname, client.getPluginMenuLayouts(tname));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the editor plugins associated with the given package.
@@ -1251,7 +1265,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageEditors
   (
    String pname, 
@@ -1260,17 +1274,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageEditors.get(pname);
+      return pPackagePlugins.get(pname, PluginType.Editor); 
     }
     else {
-      if(!pFrozenPackageEditors.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageEditors.put(pname, vid, 
-				  client.getPackageEditorPlugins(pname, vid));
-      }
-
-      return pFrozenPackageEditors.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Editor);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1291,15 +1301,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageEditors.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.Editor, plugins); 
     }
     else {
-      pFrozenPackageEditors.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.Editor, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1319,7 +1329,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageComparators
   (
    String pname, 
@@ -1328,17 +1338,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageComparators.get(pname);
+      return pPackagePlugins.get(pname, PluginType.Comparator); 
     }
     else {
-      if(!pFrozenPackageComparators.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageComparators.put(pname, vid, 
-				  client.getPackageComparatorPlugins(pname, vid));
-      }
-
-      return pFrozenPackageComparators.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Comparator);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1359,15 +1365,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageComparators.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.Comparator, plugins); 
     }
     else {
-      pFrozenPackageComparators.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.Comparator, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1387,7 +1393,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageActions
   (
    String pname, 
@@ -1396,17 +1402,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageActions.get(pname);
+      return pPackagePlugins.get(pname, PluginType.Action); 
     }
     else {
-      if(!pFrozenPackageActions.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageActions.put(pname, vid, 
-				  client.getPackageActionPlugins(pname, vid));
-      }
-
-      return pFrozenPackageActions.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Action);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1427,15 +1429,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageActions.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.Action, plugins); 
     }
     else {
-      pFrozenPackageActions.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.Action, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1455,7 +1457,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageTools
   (
    String pname, 
@@ -1464,17 +1466,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageTools.get(pname);
+      return pPackagePlugins.get(pname, PluginType.Tool); 
     }
     else {
-      if(!pFrozenPackageTools.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageTools.put(pname, vid, 
-				  client.getPackageToolPlugins(pname, vid));
-      }
-
-      return pFrozenPackageTools.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Tool);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1495,15 +1493,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageTools.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.Tool, plugins); 
     }
     else {
-      pFrozenPackageTools.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.Tool, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1523,7 +1521,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageArchivers
   (
    String pname, 
@@ -1532,17 +1530,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageArchivers.get(pname);
+      return pPackagePlugins.get(pname, PluginType.Archiver); 
     }
     else {
-      if(!pFrozenPackageArchivers.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageArchivers.put(pname, vid, 
-				  client.getPackageArchiverPlugins(pname, vid));
-      }
-
-      return pFrozenPackageArchivers.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Archiver);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1563,15 +1557,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageArchivers.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.Archiver, plugins); 
     }
     else {
-      pFrozenPackageArchivers.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.Archiver, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1591,7 +1585,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageMasterExts
   (
    String pname, 
@@ -1600,17 +1594,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageMasterExts.get(pname);
+      return pPackagePlugins.get(pname, PluginType.MasterExt); 
     }
     else {
-      if(!pFrozenPackageMasterExts.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageMasterExts.put(pname, vid, 
-				  client.getPackageMasterExtPlugins(pname, vid));
-      }
-
-      return pFrozenPackageMasterExts.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.MasterExt);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1631,15 +1621,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageMasterExts.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.MasterExt, plugins); 
     }
     else {
-      pFrozenPackageMasterExts.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.MasterExt, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -1659,7 +1649,7 @@ class JManageToolsetsDialog
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
    */ 
-  public DoubleMap<String,String,TreeSet<VersionID>>
+  public PluginSet
   getPackageQueueExts
   (
    String pname, 
@@ -1668,17 +1658,13 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     if(vid == null) {
-      return pPackageQueueExts.get(pname);
+      return pPackagePlugins.get(pname, PluginType.QueueExt); 
     }
     else {
-      if(!pFrozenPackageQueueExts.isCached(pname, vid)) {
-	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pFrozenPackageQueueExts.put(pname, vid, 
-				  client.getPackageQueueExtPlugins(pname, vid));
-      }
-
-      return pFrozenPackageQueueExts.get(pname, vid);
+      PluginSet pset = pFrozenPackagePlugins.get(pname, vid, PluginType.QueueExt);
+      if(pset == null) 
+	pset = new PluginSet();
+      return pset;
     }
   }
 
@@ -1699,15 +1685,15 @@ class JManageToolsetsDialog
   ( 
    String pname,
    VersionID vid,
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   ) 
     throws PipelineException
   {
     if(vid == null) {
-      pPackageQueueExts.put(pname, plugins);
+      pPackagePlugins.put(pname, PluginType.QueueExt, plugins); 
     }
     else {
-      pFrozenPackageQueueExts.put(pname, vid, plugins);
+      pFrozenPackagePlugins.put(pname, vid, PluginType.QueueExt, plugins);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
@@ -2752,39 +2738,12 @@ class JManageToolsetsDialog
       pToolsets.clear();
       pPackageVersions.clear();
       pPackageMods.clear();
-      
-      pFrozenToolsetEditors.clear();
-      pFrozenToolsetComparators.clear();
-      pFrozenToolsetActions.clear();
-      pFrozenToolsetTools.clear();
-      pFrozenToolsetArchivers.clear();
-      pFrozenToolsetMasterExts.clear();
-      pFrozenToolsetQueueExts.clear();
-      
-      pToolsetEditors.clear();
-      pToolsetComparators.clear();
-      pToolsetActions.clear();
-      pToolsetTools.clear();
-      pToolsetArchivers.clear();
-      pToolsetMasterExts.clear();
-      pToolsetQueueExts.clear();
 
-      pFrozenPackageEditors.clear();
-      pFrozenPackageComparators.clear();
-      pFrozenPackageActions.clear();
-      pFrozenPackageTools.clear();
-      pFrozenPackageArchivers.clear();
-      pFrozenPackageMasterExts.clear();
-      pFrozenPackageQueueExts.clear();
+      pFrozenToolsetLayouts.clear();
+      pToolsetLayouts.clear();
 
-      pPackageEditors.clear();
-      pPackageComparators.clear();
-      pPackageActions.clear();
-      pPackageTools.clear();
-      pPackageArchivers.clear();
-      pPackageMasterExts.clear();
-      pPackageQueueExts.clear();
-
+      pFrozenPackagePlugins.clear();
+      pPackagePlugins.clear();
       
       /* hide child dialogs */ 
       pPackageDetailsDialog.setVisible(false);
@@ -3548,10 +3507,13 @@ class JManageToolsetsDialog
 
 	    updateToolset(os, ntoolset);
 
-	    setToolsetEditors(tname, pToolsetEditors.get(tname));
-	    setToolsetComparators(tname, pToolsetComparators.get(tname));
-	    setToolsetActions(tname, pToolsetActions.get(tname));
-	    setToolsetTools(tname, pToolsetTools.get(tname));
+	    setToolsetEditors(tname, pToolsetLayouts.get(tname, PluginType.Editor));
+	    setToolsetComparators(tname, pToolsetLayouts.get(tname, PluginType.Comparator));
+	    setToolsetActions(tname, pToolsetLayouts.get(tname, PluginType.Action));
+	    setToolsetTools(tname, pToolsetLayouts.get(tname, PluginType.Tool));
+	    setToolsetArchivers(tname, pToolsetLayouts.get(tname, PluginType.Archiver));
+	    setToolsetMasterExts(tname, pToolsetLayouts.get(tname, PluginType.MasterExt));
+	    setToolsetQueueExts(tname, pToolsetLayouts.get(tname, PluginType.QueueExt));
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
@@ -4297,7 +4259,7 @@ class JManageToolsetsDialog
    */ 
   private class
   FrozenPackagePlugins
-    extends DoubleMap<String,VersionID,DoubleMap<String,String,TreeSet<VersionID>>>
+    extends DoubleMap<String,VersionID,PluginSet>
   {
     public FrozenPackagePlugins() 
     {
@@ -4314,25 +4276,17 @@ class JManageToolsetsDialog
       return (super.get(pname, vid) != null);
     }
 
-    public DoubleMap<String,String,TreeSet<VersionID>>
+    public PluginSet
     get
     (
      String pname,
      VersionID vid
     ) 
     {
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = super.get(pname, vid);
-      if(plugins != null) {
-	DoubleMap<String,String,TreeSet<VersionID>> table = 
-	  new DoubleMap<String,String,TreeSet<VersionID>>();
-	for(String vendor : plugins.keySet()) {
-	  for(String name : plugins.get(vendor).keySet()) 
-	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
-	}
-	return table;
-      }
-      
-      return new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = super.get(pname, vid);
+      if(plugins != null) 
+	return new PluginSet(plugins);
+      return new PluginSet();
     }
      
     public void 
@@ -4340,22 +4294,13 @@ class JManageToolsetsDialog
     (
      String pname,
      VersionID vid,
-     DoubleMap<String,String,TreeSet<VersionID>> plugins
+     PluginSet plugins
     ) 
     {
-      if(plugins != null) {
-	DoubleMap<String,String,TreeSet<VersionID>> table = 
-	  new DoubleMap<String,String,TreeSet<VersionID>>();
-	for(String vendor : plugins.keySet()) {
-	  for(String name : plugins.get(vendor).keySet()) 
-	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
-	}
-
-	super.put(pname, vid, table);
-      }
-      else {
+      if(plugins != null) 
+	super.put(pname, vid, new PluginSet(plugins));
+      else 
 	super.remove(pname, vid);
-      }
     }
 
     private static final long serialVersionUID = 7809754910797720803L;
@@ -4366,54 +4311,36 @@ class JManageToolsetsDialog
    */ 
   private class
   PackagePlugins
-    extends TreeMap<String,DoubleMap<String,String,TreeSet<VersionID>>>
+    extends TreeMap<String,PluginSet>
   {
     public PackagePlugins() 
     {
       super();
     }
 
-    public DoubleMap<String,String,TreeSet<VersionID>>
+    public PluginSet
     get
     (
      String pname
     ) 
     {
-      DoubleMap<String,String,TreeSet<VersionID>> plugins = super.get(pname);
-      if(plugins != null) {
-	DoubleMap<String,String,TreeSet<VersionID>> table = 
-	  new DoubleMap<String,String,TreeSet<VersionID>>();
-	for(String vendor : plugins.keySet()) {
-	  for(String name : plugins.get(vendor).keySet()) 
-	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
-	}
-
-	return table;
-      }
-      
-      return new DoubleMap<String,String,TreeSet<VersionID>>();
+      PluginSet plugins = super.get(pname);
+      if(plugins != null) 
+	return new PluginSet(plugins);
+      return new PluginSet();
     }
      
-    public DoubleMap<String,String,TreeSet<VersionID>>
+    public PluginSet
     put
     (
      String pname,
-     DoubleMap<String,String,TreeSet<VersionID>> plugins
+     PluginSet plugins
     ) 
     {
-      if(plugins != null) {
-	DoubleMap<String,String,TreeSet<VersionID>> table = 
-	  new DoubleMap<String,String,TreeSet<VersionID>>();
-	for(String vendor : plugins.keySet()) {
-	  for(String name : plugins.get(vendor).keySet()) 
-	    table.put(vendor, name, new TreeSet<VersionID>(plugins.get(vendor).get(name)));
-	}
-
-	super.put(pname, table);
-      }
-      else {
+      if(plugins != null) 
+	super.put(pname, new PluginSet(plugins));
+      else 
 	super.remove(pname);
-      }
 
       return null;
     }
@@ -4521,24 +4448,12 @@ class JManageToolsetsDialog
   /**
    * A cache of frozen toolset plugins menu layouts.
    */ 
-  private ToolsetLayouts pFrozenToolsetEditors;
-  private ToolsetLayouts pFrozenToolsetComparators;
-  private ToolsetLayouts pFrozenToolsetActions;
-  private ToolsetLayouts pFrozenToolsetTools;
-  private ToolsetLayouts pFrozenToolsetArchivers;
-  private ToolsetLayouts pFrozenToolsetMasterExts;
-  private ToolsetLayouts pFrozenToolsetQueueExts;
+  private DoubleMap<String,PluginType,PluginMenuLayout>  pFrozenToolsetLayouts; 
 
   /**
    * A cache of working (unfrozen) toolset plugins menu layouts.
    */ 
-  private ToolsetLayouts pToolsetEditors;
-  private ToolsetLayouts pToolsetComparators;
-  private ToolsetLayouts pToolsetActions;
-  private ToolsetLayouts pToolsetTools;
-  private ToolsetLayouts pToolsetArchivers;
-  private ToolsetLayouts pToolsetMasterExts;
-  private ToolsetLayouts pToolsetQueueExts;
+  private DoubleMap<String,PluginType,PluginMenuLayout>  pToolsetLayouts; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4561,24 +4476,12 @@ class JManageToolsetsDialog
   /**
    * A cache of plugins associated with frozen packages.
    */ 
-  private FrozenPackagePlugins pFrozenPackageEditors;
-  private FrozenPackagePlugins pFrozenPackageComparators;
-  private FrozenPackagePlugins pFrozenPackageActions;
-  private FrozenPackagePlugins pFrozenPackageTools;
-  private FrozenPackagePlugins pFrozenPackageArchivers;
-  private FrozenPackagePlugins pFrozenPackageMasterExts;
-  private FrozenPackagePlugins pFrozenPackageQueueExts;
+  private TripleMap<String,VersionID,PluginType,PluginSet>  pFrozenPackagePlugins; 
 
   /**
    * A cache of plugins associated with working (unfrozen) packages.
    */ 
-  private PackagePlugins pPackageEditors;
-  private PackagePlugins pPackageComparators;
-  private PackagePlugins pPackageActions;
-  private PackagePlugins pPackageTools;
-  private PackagePlugins pPackageArchivers;
-  private PackagePlugins pPackageMasterExts;
-  private PackagePlugins pPackageQueueExts;
+  private DoubleMap<String,PluginType,PluginSet>  pPackagePlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JPackageToolPluginsPanel.java,v 1.4 2006/05/07 21:30:14 jim Exp $
+// $Id: JPackageToolPluginsPanel.java,v 1.5 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class JPackageToolPluginsPanel
   ) 
     throws PipelineException
   {
-    DoubleMap<String,String,TreeSet<VersionID>> includedPlugins = getPlugins(pname, vid);
+    PluginSet includedPlugins = getPlugins(pname, vid);
     
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     updateHelper(pname, vid, includedPlugins, pclient.getTools(), privileges);
@@ -81,7 +81,7 @@ class JPackageToolPluginsPanel
    * @param vid
    *   The revision number of the package or <CODE>null</CODE> for working package.
    */ 
-  protected DoubleMap<String,String,TreeSet<VersionID>>
+  protected PluginSet
   getPlugins
   (
    String pname, 
@@ -109,7 +109,7 @@ class JPackageToolPluginsPanel
   (
    String pname, 
    VersionID vid, 
-   DoubleMap<String,String,TreeSet<VersionID>> plugins
+   PluginSet plugins
   )
     throws PipelineException
   {

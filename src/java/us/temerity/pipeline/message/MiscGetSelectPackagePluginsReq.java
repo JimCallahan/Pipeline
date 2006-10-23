@@ -1,4 +1,4 @@
-// $Id: MiscSetPackagePluginsReq.java,v 1.5 2006/10/23 11:30:20 jim Exp $
+// $Id: MiscGetSelectPackagePluginsReq.java,v 1.1 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   S E T   P A C K A G E   P L U G I N S   R E Q                                */
+/*   M I S C   G E T   S E L E C T   P A C K A G E   P L U G I N S   R E Q                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to set the plugins associated with a toolset package.
+ * A request to get all types of plugins associated with the given packages.
  */
 public
-class MiscSetPackagePluginsReq
-  extends PrivilegedReq
+class MiscGetSelectPackagePluginsReq
+  implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -26,38 +26,19 @@ class MiscSetPackagePluginsReq
   /** 
    * Constructs a new request.
    * 
-   * @param name
-   *   The toolset package name.
-   * 
-   * @param vid
-   *   The revision number of the package.
-   * 
-   * @param plugins
-   *   The vendors, names and revision numbers of the associated editor plugins.
+   * @param packages
+   *   The names and revision numbers of the packages.
    */
   public
-  MiscSetPackagePluginsReq
+  MiscGetSelectPackagePluginsReq
   (
-   String name, 
-   VersionID vid, 
-   PluginSet plugins
+   TreeMap<String,TreeSet<VersionID>> packages
   )
   {
-    super();
-
-    if(name == null) 
+    if(packages == null) 
       throw new IllegalArgumentException
-	("The package name cannot be (null)!");
-    pName = name;
-
-    if(vid == null) 
-      throw new IllegalArgumentException
-	("The package revision number cannot be (null)!");
-    pVersionID = vid;
-
-    if(plugins == null) 
-      throw new IllegalArgumentException("The associated plugins cannot be (null)!");
-    pPlugins = plugins;
+	("The packages cannot be (null)!");
+    pPackages = packages;
   }
 
 
@@ -67,39 +48,21 @@ class MiscSetPackagePluginsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the toolset package name.
+   * Gets the names and revision numbers of the packages.
    */
-  public String
-  getName() 
+  public TreeMap<String,TreeSet<VersionID>>
+  getPackages() 
   {
-    return pName;
+    return pPackages; 
   }
   
-  /**
-   * Gets the revision number of the package.
-   */
-  public VersionID
-  getVersionID() 
-  {
-    return pVersionID;
-  }
   
-  /**
-   * Gets the vendors, names and revision numbers of the associated plugins.
-   */
-  public PluginSet
-  getPlugins() 
-  {
-    return pPlugins;
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -672715010346885082L;
+  private static final long serialVersionUID = 6942862605401569051L;
 
   
 
@@ -108,19 +71,9 @@ class MiscSetPackagePluginsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The toolset package name.
+   * The names and revision numbers of the packages.
    */
-  private String  pName;
+  private TreeMap<String,TreeSet<VersionID>>  pPackages; 
   
-  /**
-   * The revision number of the package.
-   */
-  private VersionID  pVersionID;
-  
-  /**
-   * The vendors, names and revision numbers of the associated plugins.
-   */ 
-  private PluginSet  pPlugins;
-
 }
   

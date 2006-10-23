@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.7 2006/10/20 21:01:35 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.8 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -324,7 +324,7 @@ class JBaseToolsetPluginsPanel
       for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	String pname = toolset.getPackageName(wk);
 	VersionID pvid = toolset.getPackageVersionID(wk);
-	
+
 	DoubleMap<String,String,TreeSet<VersionID>> table = getPackagePlugins(pname, pvid);
 
 	for(String vendor : table.keySet()) {

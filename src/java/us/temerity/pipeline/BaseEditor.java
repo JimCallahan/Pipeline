@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.15 2006/06/25 23:29:27 jim Exp $
+// $Id: BaseEditor.java,v 1.16 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -118,12 +118,12 @@ class BaseEditor
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the catagory of this plugin.
+   * Get which general type of plugin this is. 
    */ 
-  public String 
-  getPluginCatagory() 
+  public PluginType
+  getPluginType()
   {
-    return "Editor";
+    return PluginType.Editor;
   }
     
 

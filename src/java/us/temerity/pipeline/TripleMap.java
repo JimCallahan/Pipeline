@@ -1,4 +1,4 @@
-// $Id: TripleMap.java,v 1.3 2006/05/07 21:18:17 jim Exp $
+// $Id: TripleMap.java,v 1.4 2006/10/23 11:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -93,6 +93,44 @@ class TripleMap<A,B,C,V>
     }
 
     tableC.put(keyC, value);
+  }
+
+  /**
+   * Associates a value with the specified set of keys in this map.
+   * 
+   * @param keyA
+   *   The first key.
+   * 
+   * @param keyB
+   *   The second key. 
+   * 
+   * @param values
+   *   The values indexed by the third key. 
+   */ 
+  public void
+  put
+  (
+   A keyA,
+   B keyB,
+   TreeMap<C,V> values
+  )  
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
+    if((values == null) || values.isEmpty()) 
+      throw new IllegalArgumentException("The values cannot be (null) or empty!");
+
+    TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
+    if(tableB == null) {
+      tableB = new TreeMap<B,TreeMap<C,V>>();
+      put(keyA, tableB);
+    }
+
+    tableB.put(keyB, values); 
   }
 
   /**
