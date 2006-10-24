@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.81 2006/10/23 18:31:20 jim Exp $
+// $Id: MasterMgrClient.java,v 1.82 2006/10/24 20:07:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1050,6 +1050,64 @@ class MasterMgrClient
     if(obj instanceof MiscGetSelectPackagePluginsRsp) {
       MiscGetSelectPackagePluginsRsp rsp = (MiscGetSelectPackagePluginsRsp) obj;
       return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get all types of plugins associated with the given packages. <P> 
+   * 
+   * This is a convience method for getting the various plugin types for specific 
+   * package versions all at once.  It provides the same functionality as the 
+   * getPackage*Plugins() methods below, but avoids the network overhead of calling the 
+   * more specialized methods individually for each package.
+   * 
+   * @param pname
+   *   The package name. 
+   * 
+   * @parma pvid
+   *   The package revision number.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated plugins indexed by
+   *   plugin type.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized TreeMap<PluginType,PluginSet>
+  getSelectPackagePlugins
+  (
+   String pname, 
+   VersionID pvid 
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    if(pname == null) 
+      throw new PipelineException
+	("The package name cannot be (null)!"); 
+
+    if(pvid == null) 
+      throw new PipelineException
+	("The package revisios number cannot be (null)!"); 
+
+    TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+    TreeSet<VersionID> vids = new TreeSet<VersionID>();
+    packages.put(pname, vids); 
+    vids.add(pvid); 
+
+    MiscGetSelectPackagePluginsReq req = new MiscGetSelectPackagePluginsReq(packages);
+
+    Object obj = performTransaction(MasterRequest.GetSelectPackagePlugins, req);
+    if(obj instanceof MiscGetSelectPackagePluginsRsp) {
+      MiscGetSelectPackagePluginsRsp rsp = (MiscGetSelectPackagePluginsRsp) obj;
+      TripleMap<String,VersionID,PluginType,PluginSet> psets = rsp.getPlugins();
+      return psets.get(pname).get(pvid);
     }
     else {
       handleFailure(obj);

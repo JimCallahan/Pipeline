@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.19 2006/10/23 18:31:21 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.20 2006/10/24 20:07:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1294,6 +1294,26 @@ class JManageToolsetsDialog
        pFrozenToolsetLayouts.put(tname, client.getPluginMenuLayouts(tname));
   }
 
+  /**
+   * Make sure all of the plugins associated with a given frozen package are locally cached.
+   */ 
+  public void 
+  cacheFrozenPlugins
+  (
+   String pname, 
+   VersionID pvid 
+  ) 
+    throws PipelineException
+  {
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
+
+    /* cache package plugins */ 
+    if(pvid != null) 
+      pFrozenPackagePlugins.put(pname, pvid, client.getSelectPackagePlugins(pname, pvid));
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1317,8 +1337,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.Editor); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Editor);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageEditorPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.Editor, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -1382,8 +1409,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.Comparator); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Comparator);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageComparatorPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.Comparator, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -1447,8 +1481,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.Action); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Action);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageActionPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.Action, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -1512,8 +1553,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.Tool); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Tool);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageToolPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.Tool, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -1577,8 +1625,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.Archiver); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Archiver);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageArchiverPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.Archiver, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -1642,8 +1697,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.MasterExt); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.MasterExt);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageMasterExtPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.MasterExt, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -1707,8 +1769,15 @@ class JManageToolsetsDialog
     PluginSet pset = null;
     if(vid == null) 
       pset = pPackagePlugins.get(pname, PluginType.QueueExt); 
-    else 
+    else {
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.QueueExt);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageQueueExtPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.QueueExt, pset);
+      }
+    }
 
     if(pset == null) 
       pset = new PluginSet();
@@ -4005,7 +4074,7 @@ class JManageToolsetsDialog
 	
 	/* remove the deleted package from all working toolsets */ 
 	for(String tname : pToolsets.keySet()) {
-	  Toolset toolset = lookupToolset(tname, os);
+	  Toolset toolset = pToolsets.get(tname, os); 
 	  if((toolset != null) && !toolset.isFrozen()) {
 	    boolean modified = false;
 	    ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();

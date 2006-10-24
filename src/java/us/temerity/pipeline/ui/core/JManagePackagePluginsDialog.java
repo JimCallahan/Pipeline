@@ -1,4 +1,4 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.6 2006/10/11 22:45:41 jim Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.7 2006/10/24 20:07:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -120,7 +120,8 @@ class JManagePackagePluginsDialog
       if(privileges != null) 
 	pPrivilegeDetails = privileges;
 
-      pclient.update();
+      pclient.update();     
+      pParent.cacheFrozenPlugins(pname, vid);
       for(JBasePackagePluginsPanel panel : pPluginPanels) 
 	panel.update(pname, vid, pPrivilegeDetails);
 
