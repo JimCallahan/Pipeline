@@ -7,7 +7,7 @@
 #sitep=060519
 
 # OLD FILE SERVER / NEW PIPELINE SERVER
-sitep=060821
+sitep=061020
 
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
