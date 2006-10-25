@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.168 2006/10/23 18:31:20 jim Exp $
+// $Id: MasterMgr.java,v 1.169 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5890,22 +5890,23 @@ class MasterMgr
 	    ("Unable to modify critical properties of node (" + nodeID + ") " + 
 	     "while there are active jobs associated with the node!");
 
-	/* write the new working version to disk */ 
-	writeWorkingVersion(nodeID, mod);
-
-	/* update the bundle */ 
-	bundle.setVersion(mod);
-
 	/* change working file write permissions? */ 
 	if(wasActionEnabled != mod.isActionEnabled()) {
 	  FileMgrClient fclient = getFileMgrClient();
 	  try {
 	    fclient.changeMode(nodeID, mod, !mod.isActionEnabled());
+	    mod.updateLastCTimeUpdate();
 	  }
 	  finally {
 	    freeFileMgrClient(fclient);
 	  }
 	}
+
+	/* write the new working version to disk */ 
+	writeWorkingVersion(nodeID, mod);
+
+	/* update the bundle */ 
+	bundle.setVersion(mod);
       }
 
       /* post-op tasks */ 
@@ -13970,7 +13971,12 @@ class MasterMgr
 	      if(latest != null) 
 		vid = latest.getVersionID();
 
-	      fclient.states(nodeID, work, versionState, workIsFrozen, vid, fileStates, stamps);
+	      Date critical = null;
+	      if(work != null)
+		critical = work.getLastCTimeUpdate(); 
+
+	      fclient.states(nodeID, work, versionState, workIsFrozen, vid, critical, 
+			     fileStates, stamps);
 	    }
 	    finally {
 	      freeFileMgrClient(fclient);

@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.4 2006/08/15 05:59:12 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.5 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -141,6 +141,9 @@ class FileMgrNetClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param critical
+   *   The last legitimate change time (ctime) of the file.
+   * 
    * @param states
    *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
    *   primary and secondary file associated with the working version indexed by file 
@@ -162,6 +165,7 @@ class FileMgrNetClient
    VersionState vstate, 
    boolean isFrozen, 
    VersionID latest, 
+   Date critical, 
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Date[]> timestamps
   ) 
@@ -170,7 +174,8 @@ class FileMgrNetClient
     verifyConnection();
 
     FileStateReq req = 
-      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, mod.getSequences());
+      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, critical, 
+		       mod.getSequences());
 
     Object obj = performLongTransaction(FileRequest.State, req, 15000, 60000);  
 

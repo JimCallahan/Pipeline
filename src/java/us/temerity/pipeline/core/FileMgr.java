@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.56 2006/09/29 03:03:21 jim Exp $
+// $Id: FileMgr.java,v 1.57 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -520,6 +520,7 @@ class FileMgr
 	/* lookup the last modification timestamps */ 
 	TreeMap<FileSeq, Date[]> timestamps = timestamps = new TreeMap<FileSeq, Date[]>();
 	{
+	  Date critical = req.getCriticalStamp();
 	  for(FileSeq fseq : states.keySet()) {
 	    Date stamps[] = new Date[fseq.numFrames()];
 
@@ -528,7 +529,7 @@ class FileMgr
 	      File work = new File(pProdDir, 
 				   req.getNodeID().getWorkingParent() + "/" + file);
 
-	      long when = NativeFileSys.lastChanged(work); 
+	      long when = NativeFileSys.lastCriticalChange(work, critical); 
 	      if(when > 0) 
 		stamps[wk] = new Date(when);
 

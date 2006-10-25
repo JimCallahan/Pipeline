@@ -41,11 +41,11 @@ JNIEXPORT jstring JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
- * Method:    lastChangedNative
- * Signature: (Ljava/lang/String;)J
+ * Method:    lastStamps
+ * Signature: (Ljava/lang/String;J)J
  */
-JNIEXPORT jlong JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
-  (JNIEnv *, jclass, jstring);
+JNIEXPORT jlong JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
+  (JNIEnv *, jclass, jstring, jlong);
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys

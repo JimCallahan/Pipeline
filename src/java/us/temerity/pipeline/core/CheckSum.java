@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.12 2006/09/29 03:03:21 jim Exp $
+// $Id: CheckSum.java,v 1.13 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -200,8 +200,8 @@ class CheckSum
     /* abort early if the checksum file is up-to-date */ 
     File sfile = checkSumFile(path);    
     if(sfile.isFile()) {
-      long sstamp = NativeFileSys.lastChanged(sfile);
-      long stamp  = NativeFileSys.lastChanged(file);
+      long sstamp = NativeFileSys.lastModOrChange(sfile);
+      long stamp  = NativeFileSys.lastModOrChange(file);
       if(sstamp >= stamp)
 	return; 
     }

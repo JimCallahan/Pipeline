@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.50 2006/09/29 03:03:21 jim Exp $
+// $Id: NodeMod.java,v 1.51 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -229,6 +229,7 @@ class NodeMod
     pTimeStamp       = mod.getTimeStamp();
     pLastMod         = mod.getLastModification();
     pLastCriticalMod = mod.getLastCriticalModification();
+    pLastCTimeUpdate = mod.getLastCTimeUpdate(); 
   }
 
 
@@ -314,6 +315,7 @@ class NodeMod
     return (Date) pTimeStamp.clone();
   }
 
+
   /** 
    * Get the timestamp of the last modification of this working version.
    */
@@ -357,6 +359,27 @@ class NodeMod
     pLastCriticalMod = pLastMod;
   }
 
+
+  /** 
+   * Get the timestamp of the last update of the change time (ctime) for any file 
+   * associated with the node. 
+   */
+  public Date
+  getLastCTimeUpdate() 
+  {
+    if(pLastCTimeUpdate != null) 
+      return pLastCTimeUpdate;
+    return pLastCriticalMod;
+  }
+
+  /**
+   * Update the last critical modification timestamp.
+   */
+  public void 
+  updateLastCTimeUpdate() 
+  {
+    pLastCTimeUpdate = Dates.now();
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -1377,6 +1400,9 @@ class NodeMod
     encoder.encode("TimeStamp", pTimeStamp.getTime());
     encoder.encode("LastModification", pLastMod.getTime());
     encoder.encode("LastCriticalModification", pLastCriticalMod.getTime());
+
+    if(pLastCTimeUpdate != null) 
+      encoder.encode("LastCTimeUpdate", pLastCTimeUpdate.getTime());
     
     if(!pSources.isEmpty())
       encoder.encode("Sources", pSources);
@@ -1407,6 +1433,13 @@ class NodeMod
     pWorkingID = (VersionID) decoder.decode("WorkingID");
 
     {
+      Long stamp = (Long) decoder.decode("TimeStamp");
+      if(stamp == null) 
+ 	throw new GlueException("The \"TimeStamp\" was missing!");
+      pTimeStamp = new Date(stamp);
+    }
+
+    {
       Long stamp = (Long) decoder.decode("LastModification");
       if(stamp == null) 
 	throw new GlueException("The \"LastModification\" was missing!");
@@ -1421,10 +1454,9 @@ class NodeMod
     }
 
     {
-      Long stamp = (Long) decoder.decode("TimeStamp");
-      if(stamp == null) 
- 	throw new GlueException("The \"TimeStamp\" was missing!");
-      pTimeStamp = new Date(stamp);
+      Long stamp = (Long) decoder.decode("LastCTimeUpdate");
+      if(stamp != null) 
+	pLastCTimeUpdate = new Date(stamp);
     }
     
     TreeMap<String,LinkMod> sources = 
@@ -1482,6 +1514,12 @@ class NodeMod
    * the up-to-date status of the files associated with the node.
    */
   private Date  pLastCriticalMod;
+
+  /** 
+   * The timestamp of the last update of the change time (ctime) for any file 
+   * associated with the node.
+   */
+  private Date  pLastCTimeUpdate; 
 
 
   /**

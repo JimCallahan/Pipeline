@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.36 2005/09/07 21:11:16 jim Exp $
+// $Id: FileMgrClient.java,v 1.37 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -101,6 +101,9 @@ interface FileMgrClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param critical
+   *   The last legitimate change time (ctime) of the file.
+   * 
    * @param states
    *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
    *   primary and secondary file associated with the working version indexed by file 
@@ -122,6 +125,7 @@ interface FileMgrClient
    VersionState vstate, 
    boolean isFrozen, 
    VersionID latest, 
+   Date critical, 
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Date[]> timestamps
   ) 

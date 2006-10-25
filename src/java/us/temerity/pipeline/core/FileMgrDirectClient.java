@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.3 2006/06/25 23:30:32 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.4 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -131,6 +131,9 @@ class FileMgrDirectClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param critical
+   *   The last legitimate change time (ctime) of the file.
+   * 
    * @param states
    *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
    *   primary and secondary file associated with the working version indexed by file 
@@ -152,13 +155,15 @@ class FileMgrDirectClient
    VersionState vstate, 
    boolean isFrozen, 
    VersionID latest, 
+   Date critical, 
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Date[]> timestamps
   ) 
     throws PipelineException 
   {
     FileStateReq req = 
-      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, mod.getSequences());
+      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, critical, 
+		       mod.getSequences());
 
     Object obj = pFileMgr.states(req); 
     if(obj instanceof FileStateRsp) {

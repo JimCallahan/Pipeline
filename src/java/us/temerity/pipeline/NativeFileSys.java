@@ -1,8 +1,9 @@
-// $Id: NativeFileSys.java,v 1.12 2006/10/11 22:40:10 jim Exp $
+// $Id: NativeFileSys.java,v 1.13 2006/10/25 08:04:23 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.io.*; 
+import java.util.*; 
 import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -55,7 +56,6 @@ class NativeFileSys
     chmodNative(mode, file.getPath());
   }
 
-   
   /**
    * Set the file creation mask. <P> 
    * 
@@ -88,8 +88,10 @@ class NativeFileSys
 	("Not supported on Windows systems!");
     }
   }
+
   
-  
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Create a symbolic link which points to the given file. <P> 
    * 
@@ -128,6 +130,9 @@ class NativeFileSys
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Determine the canonicalized absolute pathname of the given path. <P> 
    * 
@@ -158,28 +163,23 @@ class NativeFileSys
     return new File(realpathNative(path.getPath()));
   }
 
-  /** 
-   * Returns the newest of change and modification time for the given file. <P> 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the last modification time of the given file. <P> 
    * 
-   * The change time (ctime) changed by writing or by setting inode information 
-   * (owner, group, link count, mode, etc.).  The modification time (mtime) is changed by 
-   * file modifications, e.g. by mknod(2), truncate(2), utime(2) and write(2) (of more than 
-   * zero bytes).  This method will return the newer (larger) of the time stamps, measured in 
-   * milliseconds since the epoch (00:00:00 GMT, January 1, 1970) or OL if the file does
-   * not exist. <P> 
-   * 
-   * This method is required because there is no access to the change time from the 
-   * {@link File} class which only provides the lastModified() method to retrieve the 
-   * modification time for a file.  
+   * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
+   * truncate(2), utime(2) and write(2). <P> 
    * 
    * @param path 
-   *   The file/directory to test.
+   *   The file to test.
    * 
    * @return
-   *   The newest of change and modification time or OL if non-existant.
-   */
+   *   The modification time or OL if non-existant.
+   */ 
   public static long
-  lastChanged
+  lastModification
   (
    File path
   ) 
@@ -187,12 +187,93 @@ class NativeFileSys
     loadLibrary();
 
     try { 
-      return (lastChangedNative(path.getPath()) * 1000L);
+      return lastStamps(path.getPath(), -1L);
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	 "NativeFileSys.lastChanged(): " + ex.getMessage()); 
+	 "NativeFileSys.lastModification(): " + ex.getMessage()); 
+      return 0L;
+    }
+  }
+
+  /**
+   * Returns the newest of the last modification or change time of the given file. <P> 
+   * 
+   * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
+   * truncate(2), utime(2) and write(2). The change time (ctime) changed by writing or 
+   * by setting inode information (owner, group, link count, mode, etc.). <P> 
+   * 
+   * @param path 
+   *   The file to test.
+   * 
+   * @return
+   *   The modification/change time or OL if non-existant.
+   */ 
+  public static long
+  lastModOrChange
+  (
+   File path
+  ) 
+  {
+    loadLibrary();
+
+    try { 
+      return lastStamps(path.getPath(), -2L);
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	 "NativeFileSys.lastModOrChange(): " + ex.getMessage()); 
+      return 0L;
+    }
+  }
+
+  /** 
+   * Returns the time of the last critical modification of the given file. <P> 
+   * 
+   * The modification time (mtime) is changed by file modifications, e.g. by mknod(2), 
+   * truncate(2), utime(2) and write(2).The change time (ctime) changed by writing or 
+   * by setting inode information (owner, group, link count, mode, etc.). <P> 
+   * 
+   * When a file on a Unix filesystem is copied from one location to another on a Windows 
+   * workstation, the ctime is updated and the mtime is unchanged.  This is clearly 
+   * incorrect, but presents problems in a mixed Unix/Windows environment for determining
+   * when a file has been modified in the Unix mtime sense.  This method is an attempt to 
+   * solve this issue. <P> 
+   * 
+   * A timestamp of the last time the ctime of the file should legitimately have been 
+   * updated (critical) from Unix is passed to this method along with the file to test.  If 
+   * this timestamp is older (less-than) than the files current ctime, then the newest of 
+   * the ctime mtime is returned.  Otherwise, just the mtime is returned. <P> 
+   * 
+   * All times are measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
+   * 
+   * @param path 
+   *   The file to test.
+   * 
+   * @param critical
+   *   The last legitimate change time (ctime) of the file.
+   * 
+   * @return
+   *   The modification time or OL if non-existant.
+   */
+  public static long
+  lastCriticalChange
+  (
+   File path, 
+   Date critical 
+  ) 
+  {
+    loadLibrary();
+
+    try { 
+      return lastStamps(path.getPath(), critical.getTime());
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	 "NativeFileSys.lastCriticalChange(): " + ex.getMessage()); 
       return 0L;
     }
   }
@@ -321,22 +402,24 @@ class NativeFileSys
     throws IOException;
 
   /** 
-   * Returns the newest of change and modification time for the given file. <P> 
+   * Returns various combinations of last change and last modification times for a file.
    * 
    * @param path 
-   *   The file/directory to test.
+   *   The file to test.
    * 
-   * @return
-   *   The newest of change and modification time or OL if non-existant.
+   * @param 
+   *   The last legitimate change time (ctime) of the file, (-1L) for mtime only or 
+   *   (-2L) for newest of ctime/mtime.
    * 
    * @throws IOException 
    *   If unable to determine the status of an existing file or some other I/O problem was 
    *   encountered.
    */
   public static native long
-  lastChangedNative
+  lastStamps
   (
-   String path
+   String path, 
+   long critical
   ) 
     throws IOException; 
 

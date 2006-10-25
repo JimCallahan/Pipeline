@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.4 2006/09/29 11:13:15 jim Exp $
+// $Id: NativeFileSys.cc,v 1.5 2006/10/25 08:04:23 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -186,14 +186,16 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   return env->NewStringUTF(resolved);
 }
 
-/* Returns the newest of change and modification time for the given file. */ 
+/* Returns various combinations of last change and last modification times for a file. */ 
 extern "C" 
 JNIEXPORT jlong 
-JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
+JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
 (
  JNIEnv *env, 
  jclass cls, 
- jstring jpath  /* IN: the file/directory to test */ 
+ jstring jpath,  /* IN: the file to test */ 
+ jlong stamp     /* IN: the last legitimate change time (ctime) of the file, 
+		        (-1L) for mtime only or (-2L) for newest of ctime/mtime. */ 
 )
 {
   /* exception initialization */ 
@@ -201,7 +203,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeFileSys.lastChangedNative(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeFileSys.lastCriticalChange(), unable to lookup \"java/lang/IOException\"");
     return 0L;
   }
 
@@ -216,7 +218,27 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastChangedNative
   struct stat buf;
   switch(stat(path, &buf)) {
   case 0:
-    return ((jlong) ((buf.st_mtime > buf.st_ctime) ? buf.st_mtime : buf.st_ctime));
+    {
+      jlong rtime = 0L;
+
+      switch(stamp) {
+      case -1L:
+	rtime = ((jlong) buf.st_mtime);
+	break;
+	
+      case -2L:
+	rtime = ((jlong) buf.st_ctime);
+	break;
+	
+      default:
+	if((((jlong) buf.st_ctime) * 1000L) > stamp) 
+	  rtime = ((jlong) ((buf.st_mtime > buf.st_ctime) ? buf.st_mtime : buf.st_ctime));
+	else 
+	  rtime = ((jlong) buf.st_mtime);
+      }
+
+      return (rtime * 1000L);
+    }
 
   case ENOMEM:
   case ENAMETOOLONG:
