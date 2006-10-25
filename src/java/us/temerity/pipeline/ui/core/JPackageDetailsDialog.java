@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.8 2006/09/25 12:11:44 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.9 2006/10/25 18:35:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -27,6 +27,7 @@ import javax.swing.tree.*;
 public 
 class JPackageDetailsDialog
   extends JTopLevelDialog
+  implements DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -43,8 +44,13 @@ class JPackageDetailsDialog
   {
     super("Package Details");
 
-    pParent = parent;
-
+    /* initialize fields */ 
+    {
+      pParent = parent;
+      pValueFields  = new TreeMap<String,JTextField>();
+      pPolicyFields = new TreeMap<String,JCollectionField>(); 
+    }
+      
     /* create dialog body components */ 
     {
       JPanel body = new JPanel();
@@ -194,11 +200,36 @@ class JPackageDetailsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the name of the package currently displayed.
+   */ 
+  public String
+  getPackageName() 
+  {
+    if(pPackage != null) 
+      return pPackage.getName();
+    return null;
+  }
+
+  /**
+   * Get the operating system of the package currently displayed.
+   */ 
+  public OsType
+  getPackageOsType() 
+  {
+    if(pPackage != null) 
+      return pOsType; 
+    return null;
+  }
+
+  /**
    * Get the package currently displayed.
    */ 
   public PackageCommon 
   getPackage() 
   {
+    if((pPackage != null) && (pPackage instanceof PackageMod)) 
+      updateEntries((PackageMod) pPackage);
+
     return pPackage;
   }
 
@@ -276,6 +307,9 @@ class JPackageDetailsDialog
     pTitlePanel.removeAll();
     pValuePanel.removeAll();
 
+    pValueFields.clear(); 
+    pPolicyFields.clear();
+
     if((pPackage != null) && (pOsType != null)) {
       pTestButton.setEnabled(pOsType.equals(PackageInfo.sOsType));
 
@@ -300,7 +334,6 @@ class JPackageDetailsDialog
       
       boolean showConflicts = 
 	((pToolset != null) && !pToolset.isFrozen() && (pPackageIndex != -1));
-
 
       for(String ename : com.getEnvNames()) {
 	String evalue = com.getEnvValue(ename);
@@ -333,7 +366,9 @@ class JPackageDetailsDialog
 
 	  if(mod != null) {
 	    {
-	      JVariableTextField field = new JVariableTextField(ename, evalue);
+	      JTextField field = new JTextField(evalue);
+	      pValueFields.put(ename, field);
+
 	      field.setName("EditableTextField");
 	      field.setForeground(fg);
 
@@ -346,8 +381,10 @@ class JPackageDetailsDialog
 	      field.setEditable(true);
 	      
 	      field.addActionListener(this);
-	      field.setActionCommand("set-value");
+	      field.setActionCommand("set-entries");
 	      
+	      field.getDocument().addDocumentListener(this); 
+
 	      hbox.add(field);
 	    }
 	    
@@ -355,6 +392,8 @@ class JPackageDetailsDialog
 	    
 	    {
 	      JCollectionField field = new JCollectionField(pnames);
+	      pPolicyFields.put(ename, field);
+
 	      field.setSelectedIndex(policy.ordinal());
 	      field.setForeground(fg);
 
@@ -364,7 +403,7 @@ class JPackageDetailsDialog
 	      field.setPreferredSize(size);
 	      
 	      field.addActionListener(this);
-	      field.setActionCommand("set-policy:" + ename);
+	      field.setActionCommand("force-set-entries"); 
 	      
 	      hbox.add(field);
 	    }
@@ -430,6 +469,27 @@ class JPackageDetailsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Shows or hides this component.
+   */ 
+  public void 
+  setVisible
+  (
+   boolean isVisible
+  )
+  {
+    if(!isVisible)
+      doSetEntries();
+
+    super.setVisible(isVisible);
+  }
+    
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -447,16 +507,12 @@ class JPackageDetailsDialog
     String cmd = e.getActionCommand();
     if(cmd.equals("add-entry")) 
       doAddEntry();
-    else if(cmd.equals("set-value")) {
-      JVariableTextField field = (JVariableTextField) e.getSource(); 
-      doSetValue(field.getVariableName(), field.getText());
-    }
-    else if(cmd.startsWith("set-policy:")) {
-      JCollectionField field = (JCollectionField) e.getSource();
-      doSetPolicy(cmd.substring(11), MergePolicy.valueOf(field.getSelected()));
-    }
     else if(cmd.startsWith("remove-entry:")) 
       doRemoveEntry(cmd.substring(13));
+    else if(cmd.equals("set-entries")) 
+      doSetEntries(); 
+    else if(cmd.equals("force-set-entries")) 
+      doForceSetEntries(); 
     else if(cmd.equals("clear-entries")) 
       doClearEntries();
     else if(cmd.equals("load-script"))
@@ -465,6 +521,43 @@ class JPackageDetailsDialog
       doTestPackage();
     else 
       super.actionPerformed(e);
+  }
+
+  
+  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
+  
+  /**
+   * Gives notification that an attribute or set of attributes changed.
+   */ 
+  public void 	
+  changedUpdate
+  (
+   DocumentEvent e
+  )
+  {}
+          
+  /**
+   *Gives notification that there was an insert into the document.
+   */ 
+  public void 
+  insertUpdate
+  (
+   DocumentEvent e
+  )
+  {
+    pHasUnsavedChanges = true;
+  }
+          
+  /**
+   * Gives notification that a portion of the document has been removed.
+   */ 
+  public void 	
+  removeUpdate
+  (
+   DocumentEvent e
+  )
+  {
+    pHasUnsavedChanges = true;
   }
 
 
@@ -476,7 +569,7 @@ class JPackageDetailsDialog
   /**
    * Add an environmental variable entry to the package.
    */ 
-  public void 
+  private void 
   doAddEntry()
   {
     if(pPackage instanceof PackageMod) {
@@ -485,82 +578,98 @@ class JPackageDetailsDialog
       
       if(diag.wasConfirmed()) {
 	PackageMod pkg = (PackageMod) pPackage;
-	String name = diag.getName();
-	if(!pkg.getEnvNames().contains(name)) {
-	  pkg.createEntry(name);
-	  pParent.refreshPackage(pOsType, pkg);
+	String ename = diag.getName();
+	if(!pkg.getEnvNames().contains(ename)) {
+	  pkg.createEntry(ename);
+	  updateEntries(pkg);
+	  pParent.refreshPackage(pOsType, pkg, true);
 	}
       }
     }
   }
 
   /**
-   * Update the value of the given entry.
-   */ 
-  public void 
-  doSetValue
-  (
-   String name, 
-   String value
-  )
-  {
-    if(pPackage instanceof PackageMod) {
-      PackageMod pkg = (PackageMod) pPackage;
-      pkg.setValue(name, value);
-      pParent.refreshPackage(pOsType, pkg);
-    }
-  }
-
-  /**
-   * Update the policy of the given entry.
-   */ 
-  public void 
-  doSetPolicy
-  (
-   String name, 
-   MergePolicy policy
-  )
-  {
-    if(pPackage instanceof PackageMod) {
-      PackageMod pkg = (PackageMod) pPackage;
-      pkg.setMergePolicy(name, policy);
-      pParent.refreshPackage(pOsType, pkg);
-    }
-  }
-
-  /**
    * Remove the environmental variable with the given name from the package.
    */ 
-  public void 
+  private void 
   doRemoveEntry
   (
-   String name
+   String ename
   )
   {
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
-      pkg.removeEntry(name);
-      pParent.refreshPackage(pOsType, pkg);
+      pkg.removeEntry(ename);
+      updateEntries(pkg);
+      pParent.refreshPackage(pOsType, pkg, true);
     }
+  }
+
+  /**
+   * Update all entries. 
+   */ 
+  private void 
+  doSetEntries() 
+  {
+    if(pPackage instanceof PackageMod) {
+      PackageMod pkg = (PackageMod) pPackage;
+      if(updateEntries(pkg)) 
+	pParent.refreshPackage(pOsType, pkg, true);
+    }
+  }
+
+  /**
+   * Update all entries regardless of whether there have been changes.
+   */ 
+  private void 
+  doForceSetEntries() 
+  {
+    if(pPackage instanceof PackageMod) {
+      pHasUnsavedChanges = true;
+      doSetEntries();
+    }
+  }
+
+  /**
+   * Update all entries the given package from the value/policy fields.
+   */ 
+  public boolean
+  updateEntries
+  (
+   PackageMod pkg 
+  ) 
+  {
+    if(!pHasUnsavedChanges) 
+      return false;
+
+    for(String name : pValueFields.keySet()) {
+      String value = pValueFields.get(name).getText();
+      MergePolicy policy = MergePolicy.valueOf(pPolicyFields.get(name).getSelected());
+      pkg.setEntry(name, value, policy);
+    }
+
+    pHasUnsavedChanges = false;
+
+    return true;
   }
 
   /**
    * Remove all environmental variables from the package.
    */ 
-  public void 
+  private void 
   doClearEntries()
   {
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.removeAllEntries();
-      pParent.refreshPackage(pOsType, pkg);
+      pParent.refreshPackage(pOsType, pkg, true);
     }
   }
 
   /**
    * Set the environment of this package by evaluating a <B>bash</B>(1) shell script.
    */ 
-  public void 
+  private void 
   doLoadScript()
   {
     if(pPackage instanceof PackageMod) {
@@ -573,7 +682,7 @@ class JPackageDetailsDialog
 	if(script != null) {
 	  try {
 	    pkg.loadShellScript(script);
-	    pParent.refreshPackage(pOsType, pkg);
+	    pParent.refreshPackage(pOsType, pkg, true);
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
@@ -586,45 +695,10 @@ class JPackageDetailsDialog
   /**
    * Test executing a shell command using the environment of the selected package.
    */ 
-  public void 
+  private void 
   doTestPackage() 
   {
     pParent.showTestPackageDialog(pPackage);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * A JTextField which knows the name of the environmental variable it edits.
-   */ 
-  private 
-  class JVariableTextField
-    extends JTextField
-  {
-    public 
-    JVariableTextField
-    (
-     String name, 
-     String value
-    ) 
-    {
-      super(value);
-      pVariableName = name;
-    }
-
-    public String
-    getVariableName()
-    {
-      return pVariableName;
-    }
-    
-    private static final long serialVersionUID = 3789232604084374866L;
-
-    private String  pVariableName;
   }
 
 
@@ -672,7 +746,12 @@ class JPackageDetailsDialog
    */ 
   private int  pPackageIndex;
 
-
+  /**
+   * Whether any changes have been made to the UI which are not currently saved in 
+   * the package itself.
+   */ 
+  private boolean  pHasUnsavedChanges; 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -711,6 +790,12 @@ class JPackageDetailsDialog
    * The value panel.
    */ 
   private JPanel  pValuePanel;
+
+  /**
+   * The environmental variable value fields.
+   */ 
+  private TreeMap<String,JTextField>        pValueFields; 
+  private TreeMap<String,JCollectionField>  pPolicyFields; 
 
   /**
    * The popup menu items.

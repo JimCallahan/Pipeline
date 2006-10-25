@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.20 2006/10/24 20:07:41 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.21 2006/10/25 18:35:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1188,13 +1188,17 @@ class JManageToolsetsDialog
    * 
    * @param vid
    *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param queryDialogChanges
+   *   Whether to incorporate any unsaved changed from the details dialog.
    */ 
   public PackageCommon
   lookupPackage
   (
    String pname, 
    OsType os, 
-   VersionID vid
+   VersionID vid, 
+   boolean queryDialogChanges
   ) 
   {
     if((pname != null) && (os != null)) {
@@ -1215,6 +1219,15 @@ class JManageToolsetsDialog
 	return pkg;
       }
       else {
+	if(queryDialogChanges) {
+	  String dname = pPackageDetailsDialog.getPackageName(); 
+	  if(pname.equals(dname) && os.equals(pPackageDetailsDialog.getPackageOsType())) {
+	    PackageCommon com = pPackageDetailsDialog.getPackage();
+	    if((com != null) && (com instanceof PackageMod)) 
+	      pPackageMods.put(pname, os, (PackageMod) com);
+	  }
+	}
+	
 	return pPackageMods.get(pname, os);
       }
     }
@@ -2060,7 +2073,7 @@ class JManageToolsetsDialog
   {
     PackageListData data = getSelectedIncludedPackageData();
     if(data != null) 
-      return lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
+      return lookupPackage(data.getName(), data.getOsType(), data.getVersionID(), false);
 
     return null;
   }
@@ -2117,7 +2130,7 @@ class JManageToolsetsDialog
   {
     PackageTreeData data = getSelectedPackageData();
     if(data != null) 
-      return lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
+      return lookupPackage(data.getName(), data.getOsType(), data.getVersionID(), true);
 
     return null;
   }
@@ -2320,13 +2333,17 @@ class JManageToolsetsDialog
   refreshPackage
   (
    OsType os, 
-   PackageMod pkg
+   PackageMod pkg, 
+   boolean updateUI
   ) 
   {
-    if(pkg == null) 
+    if(pkg == null)
       return;
 
     String rname = pkg.getName();
+    if(!pPackageMods.containsKey(rname)) 
+      return;
+
     pPackageMods.put(rname, os, pkg);
 
     {
@@ -2347,7 +2364,7 @@ class JManageToolsetsDialog
  	  for(wk=0; wk<tset.getNumPackages(); wk++) {
  	    String pname  = tset.getPackageName(wk);
  	    VersionID vid = tset.getPackageVersionID(wk);
-	    packages.add(lookupPackage(pname, os, vid));
+	    packages.add(lookupPackage(pname, os, vid, false));
  	  }
  	}
 	
@@ -2355,8 +2372,10 @@ class JManageToolsetsDialog
       }
     }
 
-    updateAll();
-    updateDialogs();
+    if(updateUI) {
+      updateAll();
+      updateDialogs();
+    }
   }
 
 
@@ -2566,7 +2585,7 @@ class JManageToolsetsDialog
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname  = toolset.getPackageName(wk); 
 	    VersionID vid = toolset.getPackageVersionID(wk); 
-	    PackageCommon pkg = lookupPackage(pname, os, vid);
+	    PackageCommon pkg = lookupPackage(pname, os, vid, false);
 	      
 	    model.addElement(new PackageListData(pname, os, vid));
 	  }
@@ -3514,7 +3533,7 @@ class JManageToolsetsDialog
 		for(wk=0; wk<stoolset.getNumPackages(); wk++) {
 		  String pname  = stoolset.getPackageName(wk);
 		  VersionID vid = stoolset.getPackageVersionID(wk);
-		  packages.add(lookupPackage(pname, os, vid));
+		  packages.add(lookupPackage(pname, os, vid, true));
 		}
 		
 		updateToolset(os, new Toolset(tname, packages, os));
@@ -3602,7 +3621,7 @@ class JManageToolsetsDialog
 	      String pname  = toolset.getPackageName(wk);
 	      VersionID vid = toolset.getPackageVersionID(wk);
 	      assert(vid != null);
-	      packages.add((PackageVersion) lookupPackage(pname, os, vid));
+	      packages.add((PackageVersion) lookupPackage(pname, os, vid, false));
 	    }
 	
 	    Toolset ntoolset = client.createToolset(tname, desc, packages, os);
@@ -3780,6 +3799,13 @@ class JManageToolsetsDialog
   public void 
   doPackageDetails()
   {
+    /* first record any unsaved package changes */ 
+    {
+      PackageCommon com = pPackageDetailsDialog.getPackage();
+      if((com != null) && (com instanceof PackageMod)) 
+	refreshPackage(pPackageDetailsDialog.getPackageOsType(), (PackageMod) com, false); 
+    }      
+
     updateDialogs(true);
     pPackageDetailsDialog.setVisible(true);
   }
@@ -3820,7 +3846,7 @@ class JManageToolsetsDialog
 	    {
 	      String pname  = toolset.getPackageName(oldIdx);
 	      VersionID vid = toolset.getPackageVersionID(oldIdx);
-	      oldPkg = lookupPackage(pname, os, vid);
+	      oldPkg = lookupPackage(pname, os, vid, true);
 	    }
 	    
 	    int wk, idx;
@@ -3833,7 +3859,7 @@ class JManageToolsetsDialog
 	      if(wk != oldIdx) {
 		String pname  = toolset.getPackageName(wk);
 		VersionID vid = toolset.getPackageVersionID(wk);
-		packages.add(lookupPackage(pname, os, vid));
+		packages.add(lookupPackage(pname, os, vid, true));
 		idx++;
 	      }
 	    }
@@ -3910,7 +3936,7 @@ class JManageToolsetsDialog
       OsType os = data.getOsType();
       VersionID vid = data.getVersionID();
       if((pname != null) && (os != null) && (vid != null)) {
-	PackageCommon com = lookupPackage(pname, os, vid);
+	PackageCommon com = lookupPackage(pname, os, vid, false);
 	if(com != null) {
 	  pPackageMods.put(pname, os, new PackageMod(com));
 
@@ -3984,7 +4010,7 @@ class JManageToolsetsDialog
     if((data != null) && data.isPackage() && (data.getVersionID() == null)) {
       String pname = data.getName();
       OsType os = data.getOsType();
-      PackageCommon pcom = lookupPackage(pname, os, null);
+      PackageCommon pcom = lookupPackage(pname, os, null, true);
       if((pcom != null) && (pcom instanceof PackageMod)) {
 	PackageMod pmod = (PackageMod) pcom;
 	
@@ -4026,7 +4052,7 @@ class JManageToolsetsDialog
 	  
 	  /* replace the working package with the frozen package in all working toolsets */ 
 	  for(String tname : pToolsets.keySet()) {
-	    Toolset toolset = lookupToolset(tname, os);
+	    Toolset toolset =  pToolsets.get(tname, os);
 	    if((toolset != null) && !toolset.isFrozen()) {
 	      boolean modified = false;
 	      ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
@@ -4039,7 +4065,7 @@ class JManageToolsetsDialog
 		  modified = true;
 		}
 		else {
-		  packages.add(lookupPackage(name, os, vid));
+		  packages.add(lookupPackage(name, os, vid, false));
 		}
 	      }
 	      
@@ -4083,7 +4109,7 @@ class JManageToolsetsDialog
 	      String pname  = toolset.getPackageName(wk);
 	      VersionID vid = toolset.getPackageVersionID(wk);
 	      if(!pname.equals(dpname) || (vid != null)) 
-		packages.add(lookupPackage(pname, os, vid));
+		packages.add(lookupPackage(pname, os, vid, false));
 	      else 
 		modified = true;
 	    }
@@ -4121,16 +4147,15 @@ class JManageToolsetsDialog
     PackageTreeData data = getSelectedPackageData();
     if((data != null) && (toolset != null) && !toolset.isFrozen()) {
       OsType os = data.getOsType();
-      PackageCommon com = lookupPackage(data.getName(), os, data.getVersionID());
+      PackageCommon com = lookupPackage(data.getName(), os, data.getVersionID(), true);
       if(com != null) {
-  
 	/* rebuild the toolset adding the new package */ 
 	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
 	int wk;
 	for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	  String pname  = toolset.getPackageName(wk);
 	  VersionID vid = toolset.getPackageVersionID(wk);
-	  packages.add(lookupPackage(pname, os, vid));
+	  packages.add(lookupPackage(pname, os, vid, false));
 	}
 	packages.add(com);
 
@@ -4161,7 +4186,7 @@ class JManageToolsetsDialog
 	  String pname  = toolset.getPackageName(wk);
 	  VersionID vid = toolset.getPackageVersionID(wk);
 	  if(wk != idx) 
-	    packages.add(lookupPackage(pname, os, vid));
+	    packages.add(lookupPackage(pname, os, vid, false));
 	}
 
 	updateToolset(os, new Toolset(toolset.getName(), packages, os));
@@ -4208,12 +4233,7 @@ class JManageToolsetsDialog
   {
     String tname = toolset.getName();
 
-    TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
-    if(toolsets == null) {
-      toolsets = new TreeMap<OsType,Toolset>();
-      pToolsets.put(tname, toolsets);
-    }
-    toolsets.put(os, toolset);
+    pToolsets.put(tname, os, toolset); 
 
     {
       Toolset dtoolset = pToolsetDetailsDialog.getToolset();
@@ -4295,7 +4315,7 @@ class JManageToolsetsDialog
 	 ((pPackageDetailsDialog.isVisible() || alwaysPackageDetails) ||
 	  (pPackagePluginsDialog.isVisible() && (data.getOsType() == OsType.Unix)))) { 
 
-	com = lookupPackage(data.getName(), data.getOsType(), data.getVersionID());
+	com = lookupPackage(data.getName(), data.getOsType(), data.getVersionID(), false);
 	if((com != null) && (pPackageDetailsDialog.isVisible() || alwaysPackageDetails))
 	  pPackageDetailsDialog.updatePackage(data.getOsType(), com, null, -1);
 
