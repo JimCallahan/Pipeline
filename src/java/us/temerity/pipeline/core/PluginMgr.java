@@ -1,15 +1,16 @@
-// $Id: PluginMgr.java,v 1.12 2006/10/11 22:45:40 jim Exp $
+// $Id: PluginMgr.java,v 1.13 2006/10/26 07:03:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.*;
 
+import java.lang.reflect.*; 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 import java.util.jar.*; 
-import java.util.zip.*; 
+import java.util.zip.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R                                                                    */
@@ -54,6 +55,8 @@ class PluginMgr
       pArchivers   = new TripleMap<String,String,VersionID,Plugin>();  
       pMasterExts  = new TripleMap<String,String,VersionID,Plugin>();  
       pQueueExts   = new TripleMap<String,String,VersionID,Plugin>();  
+
+      pSerialVersionUIDs = new TreeMap<Long,String>(); 
     }
 
     loadAllPlugins(); 
@@ -610,6 +613,27 @@ class PluginMgr
 	  ("The plugin class (" + cname + ") does not support execution under any " + 
 	   "type of operating system!  At least one OS must be supported.");	
       
+      {
+	ObjectStreamClass osc = ObjectStreamClass.lookup(cls);
+	if(osc == null) 
+	  throw new PipelineException
+	    ("The plugin (" + cname + ") does not implement Serializable!");
+
+	long serialID = osc.getSerialVersionUID();
+	if(serialID == 0L) 
+	  throw new PipelineException
+	    ("No member (serialVersionUID) was declared for plugin (" + cname + ")!");
+
+	String sname = pSerialVersionUIDs.get(serialID); 
+	if((sname != null) && !sname.equals(cname)) 
+	  throw new PipelineException
+	    ("The member (serialVersionUID) of plugin (" + cname + ") with a value " + 
+	     "of (" +  serialID + ") is already being used by the installed plugin " + 
+	     "(" + sname + ")!"); 
+	
+	pSerialVersionUIDs.put(serialID, cname); 
+      }
+
       if(plg instanceof BaseEditor) 
 	addPlugin(plg, cname, contents, pEditors);
       else if(plg instanceof BaseAction) 
@@ -812,6 +836,12 @@ class PluginMgr
    */
   private TripleMap<String,String,VersionID,Plugin>  pQueueExts; 
 
+  /**
+   * The serialVersionUIDs of all loaded plugins used to test for conflicts.
+   * 
+   * The table contains plugin identifying strings indexed by the serialVersionUID of
+   * the plugin.
+   */ 
+  private TreeMap<Long,String>  pSerialVersionUIDs;
 
 }
-
