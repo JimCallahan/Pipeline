@@ -1,4 +1,4 @@
-// $Id: EnumParam.java,v 1.5 2006/09/25 18:47:10 jim Exp $
+// $Id: EnumParam.java,v 1.6 2006/10/26 07:06:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,7 +12,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An plugin parameter with an Enum value. <P> 
+ * An plugin parameter which is a single choice from a set of enumerated values. <P> 
  */
 public 
 class EnumParam
