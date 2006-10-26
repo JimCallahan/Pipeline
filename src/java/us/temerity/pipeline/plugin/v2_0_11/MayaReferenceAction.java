@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.3 2006/07/14 18:06:40 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.4 2006/10/26 06:37:29 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
@@ -674,7 +674,7 @@ class MayaReferenceAction
   private static final String aAngularUnits = "AngularUnits";
   private static final String aTimeUnits    = "TimeUnits";
   
-  private static final long serialVersionUID = 1450452157993251521L;
+  private static final long serialVersionUID = 1450452157993251522L;
 
 }
 

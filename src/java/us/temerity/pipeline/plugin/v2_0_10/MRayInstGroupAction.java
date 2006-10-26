@@ -1,4 +1,4 @@
-// $Id: MRayInstGroupAction.java,v 1.1 2006/09/05 02:58:20 jim Exp $
+// $Id: MRayInstGroupAction.java,v 1.2 2006/10/26 06:37:29 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -324,6 +324,6 @@ MRayInstGroupAction
   private final String renderStateParam = "GenerateRender";
   private final String includeParam = "GenerateIncludes";
 
-  private static final long serialVersionUID = -1743719262350206597L;
+  private static final long serialVersionUID = -1743719262350206598L;
 
 }

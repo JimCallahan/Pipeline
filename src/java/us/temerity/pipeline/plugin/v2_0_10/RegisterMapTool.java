@@ -1,4 +1,4 @@
-// $Id: RegisterMapTool.java,v 1.1 2006/10/10 22:22:32 jim Exp $
+// $Id: RegisterMapTool.java,v 1.2 2006/10/26 06:37:29 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -307,7 +307,7 @@ RegisterMapTool
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7016387231644670393L;
+  private static final long serialVersionUID = 7016387231644670394L;
 
   private static final int sTSize = 120;
   private static final int sVSize2 = 400;
