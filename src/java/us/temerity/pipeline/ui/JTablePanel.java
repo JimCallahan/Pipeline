@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.16 2006/01/15 06:29:25 jim Exp $
+// $Id: JTablePanel.java,v 1.17 2006/11/03 21:31:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -561,6 +561,9 @@ class JTablePanel
    int col
   )
   { 
+    if(pTable.getRowCount() == 0) 
+      return;
+
     int[] selected = pTable.getSelectedRows();
 
     stopEditing();
