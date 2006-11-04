@@ -29,6 +29,9 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/bin/realpath
 @ROOT_INST_DIR@/MacOS/bin/pls
 
+@ROOT_INST_DIR@/MacOS/G5/bin/realpath
+@ROOT_INST_DIR@/MacOS/G5/bin/pls
+
 @ROOT_INST_DIR@/MacOS/bin/plplugin
 @ROOT_INST_DIR@/MacOS/bin/plscript
 @ROOT_INST_DIR@/MacOS/bin/plui
@@ -43,6 +46,7 @@ Pipeline configuration process.
 
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/MacOS/sbin/plrun
+@ROOT_INST_DIR@/MacOS/G5/sbin/plrun
 
 @ROOT_INST_DIR@/MacOS/sbin/pljobmgr
 

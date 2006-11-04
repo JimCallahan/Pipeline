@@ -1,8 +1,8 @@
-// $Id: PackageInfo.java.src.in,v 1.19 2006/09/29 03:03:21 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.20 2006/11/04 02:14:25 jim Exp $
 
 package us.temerity.pipeline;
 
-import java.io.File;
+import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A C K A G E   I N F O                                                                */
@@ -26,14 +26,16 @@ class PackageInfo
    */ 
   static {
     String opsys = null;
+    String oarch = null;
     try {
       opsys = System.getProperty("os.name");
+      oarch = System.getProperty("os.arch");
     }
     catch(Exception ex) {
     }
     if(opsys == null)
       throw new IllegalStateException(); 
-
+    
     OsType os = null;
     if(opsys.equals("Linux")) 
       os = OsType.Unix;
@@ -41,11 +43,61 @@ class PackageInfo
       os = OsType.MacOS;
     else if(opsys.equals("Windows XP") || 
 	    opsys.equals("Windows 2000") ||
-	    opsys.equals("Windows NT"))
+	    opsys.equals("Windows NT")) 
       os = OsType.Windows; 
     else 
       throw new IllegalStateException("Unsupported OS type (" + opsys + ")!");
-    sOsType = os; 
+    sOsType = os;
+
+    ArchType arch = null;
+    switch(os) {
+    case Unix:
+    case Windows:
+      if(oarch.equals("i386"))
+	arch = ArchType.x86;
+      break;
+
+    case MacOS: 
+      {
+	String str = null;
+	try {
+	  String args[] = new String[1];
+	  args[0] = "/usr/bin/machine";
+	  
+	  String env[] = new String[0];
+	  
+	  Process proc = Runtime.getRuntime().exec(args, env);
+	  
+	  StringBuffer buf = new StringBuffer();
+	  InputStreamReader in = new InputStreamReader(proc.getInputStream());
+	  char cs[] = new char[512];
+	  while(true) {
+	    int cnt = in.read(cs);
+	    if(cnt == -1) 
+	      break;
+	    
+	    buf.append(cs, 0, cnt);
+	  }
+	  
+	  int exitCode = proc.waitFor();
+	  if(exitCode != 0)
+	    throw new IOException();
+	  
+	  str = buf.toString();
+	}
+	catch(Exception ex) {
+	  throw new IllegalStateException("Unable to determine the PPC architecture type!");
+	}
+	
+	if(str.startsWith("ppc7450"))
+	  arch = ArchType.G4; 
+	else if(str.startsWith("ppc970")) 
+	  arch = ArchType.G5; 
+
+	// check for x86 Mac's here eventually... 
+      }
+    }
+    sArchType = arch;
 
     switch(os) {
     case Unix:
@@ -729,6 +781,11 @@ class PackageInfo
    * The operating system type of the host running the Java VM.
    */ 
   public static final OsType sOsType; 
+  
+  /**
+   * The machine archtecture type of the host running the Java VM.
+   */ 
+  public static final ArchType sArchType; 
   
 
   /*----------------------------------------------------------------------------------------*/
