@@ -32,7 +32,7 @@ case $build in
     NATIVE_OSTYPE=Unix;
     AC_DEFINE([OS_IS_UNIX], [], [The OS is a standard UNIX variant.]);;
 
-  (powerpc-apple-darwin8.1.0 | powerpc-apple-darwin8.3.0 | powerpc-apple-darwin8.6.0)  
+  (powerpc-apple-darwin8.1.0 | powerpc-apple-darwin8.3.0 | powerpc-apple-darwin8.6.0 | powerpc-apple-darwin8.8.0)  
     NATIVE_OSTYPE=MacOS;
     AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Mac OS X (Darwin) system.]);;
 
