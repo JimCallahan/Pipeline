@@ -1,4 +1,4 @@
-// $Id: WorkGroups.java,v 1.3 2006/02/27 17:54:51 jim Exp $
+// $Id: WorkGroups.java,v 1.4 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -238,11 +238,11 @@ class WorkGroups
   {
     Integer uid = pUserIDs.get(uname);
     if(uid == null) 
-      return false;
+      return null; 
 
     Integer gid = pGroupIDs.get(gname);
     if(gid == null) 
-      return false;
+      return null; 
       
     TreeSet<Integer> gids = pUserGroups.get(uid);
     if(gids != null) {

@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.11 2006/10/18 06:34:22 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.12 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -48,6 +48,9 @@ class QueueHostsTableModel
       pQueueHosts = new ArrayList<QueueHostInfo>();
       pQueueHostStatusChanges = new ArrayList<QueueHostStatusChange>();
 
+      pWorkGroups = new TreeSet<String>();
+      pWorkUsers  = new TreeSet<String>();
+      
       pSelectionGroups    = new TreeSet<String>();
       pSelectionSchedules = new TreeSet<String>();
       
@@ -169,7 +172,7 @@ class QueueHostsTableModel
 	  null, 
 	  null, 
 	  slots, 
-	  reservation, 
+	  null, 
 	  order
 	};
 	pEditors = editors;
@@ -264,6 +267,8 @@ class QueueHostsTableModel
 	value = host.getReservation();
 	if(value == null)
 	  value = "";
+	else if(pWorkGroups.contains(value)) 
+	  value = ("[" + value + "]");
 	break;
 	
       case 8:
@@ -277,7 +282,7 @@ class QueueHostsTableModel
 	break;
 	
       case 10:
-	value = host.getReservation();
+	value = host.getSelectionSchedule();
 	if(value == null)
 	  value = "";
 	break;
@@ -355,6 +360,20 @@ class QueueHostsTableModel
   )
   {
     switch(col) {
+    case 7:
+      {
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("-");
+	for(String group : pWorkGroups) 
+	  choices.add("[" + group + "]");
+	choices.addAll(pWorkUsers); 
+
+	JCollectionTableCellEditor editor = new JCollectionTableCellEditor(choices, 120);
+	editor.setSynthPrefix("Purple");
+
+	return editor;
+      }
+
     case 9:
       {
 	ArrayList<String> choices = new ArrayList<String>();
@@ -435,6 +454,12 @@ class QueueHostsTableModel
    * @param hosts
    *   Current job server hosts indexed by fully resolved hostname.
    * 
+   * @param workGroups
+   *   The names of the user work groups.
+   * 
+   * @param workUsers
+   *   The names of the work group members.
+   * 
    * @param groups
    *   The valid selection group names. 
    * 
@@ -448,8 +473,10 @@ class QueueHostsTableModel
   setQueueHosts
   (
    TreeMap<String,QueueHostInfo> hosts, 
-   TreeSet<String> groups, 
-   TreeSet<String> schedules, 
+   Set<String> workGroups, 
+   Set<String> workUsers,
+   TreeSet<String> selectionGroups, 
+   TreeSet<String> selectionSchedules, 
    PrivilegeDetails privileges
   ) 
   {
@@ -461,13 +488,21 @@ class QueueHostsTableModel
     for(String hname : hosts.keySet()) 
       pQueueHostStatusChanges.add(null);
 
+    pWorkGroups.clear();
+    if(workGroups != null) 
+      pWorkGroups.addAll(workGroups);
+
+    pWorkUsers.clear();
+    if(workUsers != null) 
+      pWorkUsers.addAll(workUsers);
+
     pSelectionGroups.clear();
-    if(groups != null) 
-      pSelectionGroups.addAll(groups);
+    if(selectionGroups != null) 
+      pSelectionGroups.addAll(selectionGroups);
 
     pSelectionSchedules.clear();
-    if(schedules != null) 
-      pSelectionSchedules.addAll(schedules);
+    if(selectionSchedules != null) 
+      pSelectionSchedules.addAll(selectionSchedules);
 
     pPrivilegeDetails = privileges; 
     
@@ -768,7 +803,14 @@ class QueueHostsTableModel
       return host.getJobSlots();
 
     case 7:
-      return host.getReservation();
+      {
+	String res = host.getReservation();
+	if(res == null) 
+	  return "-"; 
+	if(pWorkGroups.contains(res)) 
+	  return ("[" + res + "]");
+	return res;
+      }
 
     case 8:
       return host.getOrder();
@@ -883,10 +925,13 @@ class QueueHostsTableModel
       
     case 7:
       {
-	String author = (String) value;
-	if((author != null) && (author.length() == 0)) 
-	  author = null;
-	host.setReservation(author);
+	String res = (String) value;
+	if(res.equals("-")) 
+	  host.setReservation(null); 
+	else if(res.startsWith("[") && res.endsWith("]"))
+	  host.setReservation(res.substring(1, res.length()-1));
+	else 
+	  host.setReservation(res);
 
 	pEditedReserveIndices.add(srow);
 	return true;
@@ -976,6 +1021,16 @@ class QueueHostsTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The names of the user work groups.
+   */
+  private TreeSet<String>  pWorkGroups; 
+  
+  /**
+   * The names of the work group members.
+   */
+  private TreeSet<String> pWorkUsers;
 
   /**
    * The valid selection group names. 

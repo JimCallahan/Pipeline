@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.3 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueHost.java,v 1.4 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -741,6 +741,9 @@ class QueueHost
    * @param author
    *   The name of the user submitting the job.
    * 
+   * @param privs
+   *   The current admin privileges. 
+   * 
    * @param jreqs
    *   The requirements that this host must meet in order to be eligable to run the job. 
    * 
@@ -751,10 +754,12 @@ class QueueHost
   isEligible
   (
    String author, 
+   AdminPrivileges privs,
    JobReqs jreqs
   )
   {
-    if((pReservation != null) && (!pReservation.equals(author)))
+    if((pReservation != null) &&
+       !(author.equals(pReservation) || privs.isWorkGroupMember(author, pReservation)))
       return false;
 
     ResourceSample sample = getLatestSample();

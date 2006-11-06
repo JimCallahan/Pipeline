@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.1 2006/10/18 06:34:22 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.2 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -361,7 +361,7 @@ class JQueueJobServersPanel
       }
     }
 
-    updateJobs(null, null, null);
+    updateJobs(null, null, null, null, null);
   }
 
 
@@ -499,6 +499,12 @@ class JQueueJobServersPanel
    * @param hosts
    *   The job server hosts indexex by fully resolved hostnames.
    * 
+   * @param workGroups
+   *   The names of the user work groups.
+   * 
+   * @param workUsers
+   *   The names of the users with working areas and/or special privileges.
+   * 
    * @param selectionGroups
    *   The valid selection group names. 
    * 
@@ -511,6 +517,8 @@ class JQueueJobServersPanel
    String author, 
    String view, 
    TreeMap<String,QueueHostInfo> hosts, 
+   Set<String> workGroups, 
+   Set<String> workUsers,
    TreeSet<String> selectionGroups, 
    TreeSet<String> selectionSchedules
   )
@@ -518,7 +526,7 @@ class JQueueJobServersPanel
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJobs(hosts, selectionGroups, selectionSchedules);
+    updateJobs(hosts, workGroups, workUsers, selectionGroups, selectionSchedules);
   }
 
 
@@ -530,6 +538,12 @@ class JQueueJobServersPanel
    * @param hosts
    *   The job server hosts indexex by fully resolved hostnames.
    * 
+   * @param workGroups
+   *   The names of the user work groups.
+   * 
+   * @param workUsers
+   *   The names of the work group members.
+   * 
    * @param selectionGroups
    *   The valid selection group names. 
    * 
@@ -540,6 +554,8 @@ class JQueueJobServersPanel
   updateJobs
   (
    TreeMap<String,QueueHostInfo> hosts, 
+   Set<String> workGroups, 
+   Set<String> workUsers,
    TreeSet<String> selectionGroups, 
    TreeSet<String> selectionSchedules
   ) 
@@ -551,7 +567,8 @@ class JQueueJobServersPanel
       pHostnamesTableModel.setHostnames(hosts.keySet());
 
       pHostsTableModel.setQueueHosts
-	(hosts, selectionGroups, selectionSchedules, pPrivilegeDetails);
+	(hosts, workGroups, workUsers, selectionGroups, selectionSchedules, 
+	 pPrivilegeDetails);
 
       updateHostsHeaderButtons();
       pHostsTablePanel.tableStructureChanged();  
@@ -1226,10 +1243,10 @@ class JQueueJobServersPanel
     {
       super("JQueueJobServersPanel:EditHostsTask");
 
-      pStatus       = pHostsTableModel.getHostStatus();
-      pReservations = pHostsTableModel.getHostReservations();
-      pOrders       = pHostsTableModel.getHostOrders();
-      pSlots   	    = pHostsTableModel.getHostSlots(); 
+      pStatus         = pHostsTableModel.getHostStatus();
+      pReservations   = pHostsTableModel.getHostReservations();
+      pOrders         = pHostsTableModel.getHostOrders();
+      pSlots   	      = pHostsTableModel.getHostSlots(); 
 
       pSelectionGroups    = pHostsTableModel.getHostSelectionGroups();
       pSelectionSchedules = pHostsTableModel.getHostSelectionSchedules();
@@ -1259,6 +1276,7 @@ class JQueueJobServersPanel
 
     private TreeMap<String,QueueHostStatusChange>  pStatus; 
     private TreeMap<String,String>                 pReservations; 
+    private TreeSet<String>                        pReservedGroups; 
     private TreeMap<String,Integer>                pOrders;  
     private TreeMap<String,Integer>                pSlots;  
     private TreeMap<String,String>                 pSelectionGroups; 

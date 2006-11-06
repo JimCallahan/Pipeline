@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.67 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueMgr.java,v 1.68 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -507,10 +507,34 @@ class QueueMgr
   ) 
   {
     TaskTimer timer = new TaskTimer("QueueMgr.updateAdminPrivileges()");
-
     timer.aquire();
-    pAdminPrivileges.updateAdminPrivileges(timer, req);
-    return new SuccessRsp(timer);
+    try {
+      synchronized(pHosts) {
+	timer.resume();
+
+	{
+	  timer.aquire();
+	  pAdminPrivileges.updateAdminPrivileges(timer, req);
+	}
+	
+	boolean modified = false;
+	for(QueueHost host : pHosts.values()) {
+	  String res = host.getReservation();
+	  if((res != null) && !pAdminPrivileges.isValidName(res)) {
+	    host.setReservation(null); 
+	    modified = true;
+	  }
+	}
+	
+	if(modified) 
+	  writeHosts();
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
   }
 
 
@@ -4097,8 +4121,8 @@ class QueueMgr
 			  }
 
 			  if(supportsOsToolset && 
-			     job.getAction().supports(host.getOsType()) && 
-			     host.isEligible(author, jreqs)) {
+			     job.getAction().supports(host.getOsType()) &&
+			     host.isEligible(author, pAdminPrivileges, jreqs)) {
 
 			    if(jreqs.getSelectionKeys().isEmpty()) 
 			      score = 0;

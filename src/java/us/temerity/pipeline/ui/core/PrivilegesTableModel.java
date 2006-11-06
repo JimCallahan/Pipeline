@@ -1,4 +1,4 @@
-// $Id: PrivilegesTableModel.java,v 1.1 2006/01/15 06:29:26 jim Exp $
+// $Id: PrivilegesTableModel.java,v 1.2 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -97,6 +97,9 @@ class PrivilegesTableModel
   public void 
   sort()
   {
+    if((pSortColumn-5) >= pGroupNames.size()) 
+      pSortColumn = 0;
+
     ArrayList<Comparable> values = new ArrayList<Comparable>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
@@ -124,7 +127,11 @@ class PrivilegesTableModel
 	break;
       
       default:
-	value = pGroupMemberships.get(idx).get(pSortColumn-5);
+	Boolean tf = pGroupMemberships.get(idx).get(pSortColumn-5);
+	if(tf == null) 
+	  value = "";
+	else 
+	  value = tf.toString();	  
       }
 
       int wk;

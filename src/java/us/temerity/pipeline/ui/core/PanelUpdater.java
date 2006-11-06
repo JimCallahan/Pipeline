@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.4 2006/10/22 01:08:18 jim Exp $
+// $Id: PanelUpdater.java,v 1.5 2006/11/06 00:58:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -395,6 +395,10 @@ class PanelUpdater
 		pHosts              = qclient.getHosts();
 		pSelectionGroups    = qclient.getSelectionGroupNames();
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
+
+		WorkGroups wgroups = mclient.getWorkGroups();
+		pWorkGroups = wgroups.getGroups();
+		pWorkUsers  = wgroups.getUsers();
 	      }
 	      
 	      /* job slots panel related */
@@ -599,7 +603,8 @@ class PanelUpdater
 	    /* job servers */ 
 	    if(pQueueJobServersPanel != null) 
 	      pQueueJobServersPanel.applyPanelUpdates
-		(pAuthor, pView, pHosts, pSelectionGroups, pSelectionSchedules);
+		(pAuthor, pView, pHosts, 
+		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules);
 	    
 	    /* job slots */ 
 	    if(pQueueJobSlotsPanel != null) 
@@ -778,7 +783,7 @@ class PanelUpdater
   private TreeMap<String,QueueHostInfo>  pHosts; 
 
   /**
-   * The current selection groups
+   * The current selection groups,
    */
   private TreeSet<String>  pSelectionGroups;
 
@@ -786,8 +791,18 @@ class PanelUpdater
    * The current selection keys.
    */
   private TreeSet<String>  pSelectionSchedules;
-
   
+  /**
+   * The names of the user work groups.
+   */
+  private Set<String>  pWorkGroups; 
+  
+  /**
+   * The names of the work group members.
+   */
+  private Set<String> pWorkUsers;
+
+
   /**
    * The IDs of all selected job groups; 
    */ 

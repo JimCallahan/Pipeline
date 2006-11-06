@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.3 2006/09/29 03:03:21 jim Exp $
+// $Id: AdminPrivileges.java,v 1.4 2006/11/06 00:58:33 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -209,6 +209,42 @@ class AdminPrivileges
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether a user is a member or manager of a particular group.
+   * 
+   * @param uname
+   *   The unique name of the user.
+   * 
+   * @param gname
+   *   The unique name of the group.
+   */
+  public synchronized boolean 
+  isWorkGroupMember
+  (
+   String uname, 
+   String gname
+  )
+  {
+    return (pWorkGroups.isMemberOrManager(uname, gname) != null);
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the given name is a known user or work group.
+   */ 
+  public synchronized boolean 
+  isValidName
+  (
+   String name
+  ) 
+  {
+    return (pWorkGroups.isUser(name) || pWorkGroups.isGroup(name));
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   R E Q U E S T S                                                                      */
