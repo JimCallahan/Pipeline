@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.21 2006/10/25 18:35:33 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.22 2006/11/09 20:30:29 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3538,8 +3538,10 @@ class JManageToolsetsDialog
 		
 		updateToolset(os, new Toolset(tname, packages, os));
 
-		if(os == OsType.Unix) 
+		if(os == OsType.Unix) {
+		  pToolsetPluginsDialog.update(data.getName(), pPrivilegeDetails);
 		  pToolsetPluginsDialog.clone(stname, tname);
+		}
 	      }
 	    }
 
