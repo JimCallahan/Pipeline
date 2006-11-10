@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.56 2006/10/19 09:09:45 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.57 2006/11/10 08:04:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1083,7 +1083,6 @@ class JNodeViewerPanel
 
     pRemoveSecondaryMenu.setEnabled(false);
 
-    updateWorkingAreaMenus();
     updateEditorMenus();
 
     /* rebuild remove secondary items */ 
@@ -2041,11 +2040,12 @@ class JNodeViewerPanel
 
 	      primarySelect(vunder);
 	      refresh();
+
+	      updateWorkingAreaMenus();
 	    
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
 		if(isLocked()) {
-		  updateWorkingAreaMenus();
 		  updateEditorMenus();
 		  pPanelLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
@@ -2054,7 +2054,6 @@ class JNodeViewerPanel
 		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion().isFrozen()) {
-		  updateWorkingAreaMenus();
 		  updateEditorMenus();
 		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
