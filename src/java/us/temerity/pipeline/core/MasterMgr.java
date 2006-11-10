@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.169 2006/10/25 08:04:23 jim Exp $
+// $Id: MasterMgr.java,v 1.170 2006/11/10 22:33:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -337,7 +337,7 @@ class MasterMgr
       pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
 
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
-      pNodeTreeRoot     = new NodeTreeEntry();
+      pNodeTree         = new NodeTree();
 
       pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
       pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
@@ -489,6 +489,7 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Rebuilding Archive Caches...");   
+      LogMgr.getInstance().flush();
 
       /* scan archive volume GLUE files */ 
       {
@@ -555,7 +556,8 @@ class MasterMgr
 	else {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     "Rebuilding Offlined Cache...");   
+	     "Rebuilding Offlined Cache...");    
+	  LogMgr.getInstance().flush();
 
 	  FileMgrClient fclient = getFileMgrClient();
 	  try {
@@ -836,7 +838,8 @@ class MasterMgr
     if(pRebuildCache) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Rebuilding Node Tree Cache...");   
+	 "Rebuilding Node Tree Cache...");    
+      LogMgr.getInstance().flush();
       
       {
 	File dir = new File(pNodeDir, "repository");
@@ -868,11 +871,11 @@ class MasterMgr
       } 
     }
     else {
-      readNodeTree();
+      pNodeTree.readGlueFile(new File(pNodeDir, "etc/node-tree"));
       removeNodeTreeCache();
     }
 
-    logNodeTree();
+    pNodeTree.logNodeTree();
   }
 
   /**
@@ -917,7 +920,7 @@ class MasterMgr
       if(path.length() > 0) {
 	TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(path);
 	for(CheckedInBundle bundle : table.values()) 
-	  addCheckedInNodeTreePath(bundle.getVersion());
+	  pNodeTree.addCheckedInNodeTreePath(bundle.getVersion());
       }
     }
     else if(allDirs) {
@@ -1033,6 +1036,7 @@ class MasterMgr
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Rebuilding Downstream Links Cache...");   
+    LogMgr.getInstance().flush(); 
 
     /* process checked-in versions */ 
     {
@@ -1319,7 +1323,7 @@ class MasterMgr
       for(DownstreamLinks links : pDownstream.values()) 
 	writeDownstreamLinks(links);
 
-      writeNodeTree();
+      pNodeTree.writeGlueFile(new File(pNodeDir, "etc/node-tree"));
     }
     catch(Exception ex) {
       removeArchivesCache();
@@ -1558,6 +1562,114 @@ class MasterMgr
     }    
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O G G I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current logging levels.
+   * 
+   * @return
+   *   <CODE>MiscGetLogControlsRsp</CODE>.
+   */ 
+  public Object
+  getLogControls() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    LogControls lc = new LogControls();
+    {
+      LogMgr mgr = LogMgr.getInstance(); 
+      lc.setLevel(LogMgr.Kind.Ext, mgr.getLevel(LogMgr.Kind.Ext));
+      lc.setLevel(LogMgr.Kind.Glu, mgr.getLevel(LogMgr.Kind.Glu));
+      lc.setLevel(LogMgr.Kind.Ops, mgr.getLevel(LogMgr.Kind.Ops));
+      lc.setLevel(LogMgr.Kind.Mem, mgr.getLevel(LogMgr.Kind.Mem));
+      lc.setLevel(LogMgr.Kind.Net, mgr.getLevel(LogMgr.Kind.Net));
+      lc.setLevel(LogMgr.Kind.Plg, mgr.getLevel(LogMgr.Kind.Plg));
+      lc.setLevel(LogMgr.Kind.Sub, mgr.getLevel(LogMgr.Kind.Sub));
+    }
+
+    return new MiscGetLogControlsRsp(timer, lc);
+  }
+
+  /**
+   * Set the current logging levels.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE>.
+   */ 
+  public synchronized Object
+  setLogControls
+  (
+   MiscSetLogControlsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may change the logging levels!");
+
+      LogControls lc = req.getControls(); 
+      {
+	LogMgr mgr = LogMgr.getInstance(); 
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Ext);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Ext, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Glu);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Glu, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Ops);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Ops, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Mem);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Mem, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Net);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Net, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Plg);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Plg, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sub);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Sub, level);
+	}
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5242,36 +5354,6 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the table of current working area authors and views.
-   * 
-   * @return
-   *   <CODE>NodeUpdatePathRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the working areas.
-   */
-  public Object
-  getWorkingAreas()
-  {
-    TaskTimer timer = new TaskTimer();
-    
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      synchronized(pWorkingAreaViews) {
-	timer.resume();	
-	
-	TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
-	for(String author : pWorkingAreaViews.keySet()) 
-	  views.put(author, (TreeSet<String>) pWorkingAreaViews.get(author).clone());
-	
-	return new NodeGetWorkingAreasRsp(timer, views);
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }
-
-  /**
    * Get the table of the working areas containing the given node. <P> 
    * 
    * @return
@@ -5289,31 +5371,9 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      synchronized(pNodeTreeRoot) {
-	timer.resume();	
+      timer.resume();	
 	
-	String comps[] = req.getName().split("/"); 
-	
-	NodeTreeEntry parentEntry = pNodeTreeRoot;
-	int wk;
-	for(wk=1; wk<comps.length; wk++) {
-	  NodeTreeEntry entry = parentEntry.get(comps[wk]); 
-	  if(entry == null) {
-	    parentEntry = null;
-	    break;
-	  }
-
-	  parentEntry = entry;
-	}
-
-	TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
-	if((parentEntry != null) && parentEntry.isLeaf() && parentEntry.hasWorking()) {
-	  for(String author : parentEntry.getWorkingAuthors()) 
-	    views.put(author, new TreeSet<String>(parentEntry.getWorkingViews(author)));
-	}
-	
-        return new NodeGetWorkingAreasRsp(timer, views);
-      }
+      return new NodeGetWorkingAreasRsp(timer, pNodeTree.getViewsContaining(req.getName()));
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -5356,11 +5416,14 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       if(!pAdminPrivileges.isNodeManaged(req, author)) 
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may create working areas owned " +
 	   "by another user!");
 
+      timer.aquire();
       synchronized(pWorkingAreaViews) {
 	timer.resume();	
 
@@ -5395,12 +5458,12 @@ class MasterMgr
 	  pWorkingAreaViews.put(author, views);
 	}
 	views.add(view);
-		
-	/* post-op tasks */ 
-	startExtensionTasks(timer, factory);
-
-	return new SuccessRsp(timer);
       }
+		
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+      
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -5453,26 +5516,14 @@ class MasterMgr
 	  ("Only a user with Node Manager privileges may remove working areas owned " +
 	   "by another user!");
 
-      /* abort if it doesn't exist */ 
-      TreeSet<String> views = pWorkingAreaViews.get(author);
-      if((views == null) || !views.contains(view))
-	return new SuccessRsp(timer);
-
       /* make sure no working versions exist in the view */ 
       {
-	TreeSet<String> matches = new TreeSet<String>();
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  timer.resume();
-
-	  for(NodeTreeEntry entry : pNodeTreeRoot.values())
-	    matchingWorkingNodes(author, view, null, "", entry, matches);
-	}
+	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, null);
 
 	if(!matches.isEmpty()) {
 	  StringBuffer buf = new StringBuffer();
 	  buf.append
-	    ("The working area view (" + view + " owned by user (" + author + ") " + 
+	    ("The working area view (" + view + ") owned by user (" + author + ") " + 
 	     "cannot be removed because it still contains unreleased nodes!\n\n" + 
 	     "The unreleased node are: ");
 	  for(String name : matches) 
@@ -5480,43 +5531,54 @@ class MasterMgr
 	  throw new PipelineException(buf.toString());
 	}
       }
-
-      /* whether to remove the user as well */ 
-      boolean removeUser = false;
-      if(view.equals("default")) {
-	if(views.size() > 1) 
-	  throw new PipelineException
-	    ("The default view (and therefore the user) can only be removed if it is " + 
-	     "the only remaining view!");
-	removeUser = true;
-      }
-
-      /* remove the working area files directory */ 
-      FileMgrClient fclient = getFileMgrClient();
-      try {
-	fclient.removeWorkingArea(author, removeUser ? null : view);
-      }
-      finally {
-	freeFileMgrClient(fclient);
-      }
       
-      /* remove the empty working area database directory */ 
-      File viewDir = new File(pNodeDir, "working/" + author + "/" + view);
-      if(!viewDir.delete()) 
-	throw new PipelineException 
-	  ("Unable to remove the working area view database directory (" + viewDir + ")!");
+      timer.aquire();
+      synchronized(pWorkingAreaViews) {
+	timer.resume();	
 
-      /* remove view from the runtime table */ 
-      views.remove(view);
+	/* abort if it doesn't exist */  
+	TreeSet<String> views = pWorkingAreaViews.get(author);
+	if((views == null) || !views.contains(view))
+	  return new SuccessRsp(timer);
 
-      /* if no views remain, remove the user as well */ 
-      if(views.isEmpty()) {
-	pWorkingAreaViews.remove(author);
-	
-	File userDir = new File(pNodeDir, "working/" + author);
-	if(!userDir.delete()) 
+	/* determine whether to remove the user as well */
+	boolean removeUser = false;
+	if(view.equals("default")) {
+	  if(views.size() > 1) 
+	    throw new PipelineException
+	      ("The default view (and therefore the user) can only be removed if it is " + 
+	       "the only remaining view!");
+	  removeUser = true;
+	}
+
+	/* remove the working area files directory */ 
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.removeWorkingArea(author, removeUser ? null : view);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      
+	/* remove the empty working area database directory */ 
+	File viewDir = new File(pNodeDir, "working/" + author + "/" + view);
+	if(!viewDir.delete()) 
 	  throw new PipelineException 
-	    ("Unable to remove the working area user database directory (" + userDir + ")!");
+	    ("Unable to remove the working area view database directory (" + viewDir + ")!");
+
+	/* remove view from the runtime table */ 
+	views.remove(view);
+
+	/* if no views remain, remove the user as well */ 
+	if(views.isEmpty()) {
+	  pWorkingAreaViews.remove(author);
+	  
+	  File userDir = new File(pNodeDir, "working/" + author);
+	  if(!userDir.delete()) 
+	    throw new PipelineException 
+	      ("Unable to remove the working area user database directory " + 
+	       "(" + userDir + ")!");
+	}
       }
       
       /* post-op tasks */ 
@@ -5561,33 +5623,99 @@ class MasterMgr
       String pattern = req.getPattern();  
 
       /* get the node names which match the pattern */ 
-      TreeSet<String> matches = new TreeSet<String>();
-      {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  try {
-	    timer.resume();
-	    
-	    Pattern pat = null;
-	    if(pattern != null) 
-	      pat = Pattern.compile(pattern);
-	    
-	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
-	      matchingWorkingNodes(author, view, pat, "", entry, matches);
-	  }
-	  catch(PatternSyntaxException ex) {
-	    return new FailureRsp(timer, 
-				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
-	  }
-	}
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+	
+	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, pat);
+
+	return new NodeGetWorkingNamesRsp(timer, matches);
       }
-                  
-      return new NodeGetWorkingNamesRsp(timer, matches);
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp(timer, 
+			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+      }
     }
     finally {
       pDatabaseLock.readLock().unlock();
     }
   }  
+
+  /**
+   * Get the table of current working area authors and views.
+   * 
+   * @return
+   *   <CODE>NodeUpdatePathRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the working areas.
+   */
+  public Object
+  getWorkingAreas()
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pWorkingAreaViews) {
+	timer.resume();	
+	
+	TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+	for(String author : pWorkingAreaViews.keySet()) 
+	  views.put(author, new TreeSet<String>(pWorkingAreaViews.get(author))); 
+	
+	return new NodeGetWorkingAreasRsp(timer, views);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the name of the working area containing node to those currently managed.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   */ 
+  private void 
+  addWorkingAreaForNode
+  (
+   NodeID nodeID
+  ) 
+  {
+    synchronized(pWorkingAreaViews) {
+      TreeSet<String> views = pWorkingAreaViews.get(nodeID.getAuthor());
+      if(views == null) {
+	views = new TreeSet<String>();
+	pWorkingAreaViews.put(nodeID.getAuthor(), views);
+      }
+      views.add(nodeID.getView());
+    }
+  }
+
+  /**
+   * Add the given working version to the node path tree. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param fseqs
+   *   The file sequences associated with the working version.
+   */ 
+  private void 
+  addWorkingNodeTreePath
+  (
+   NodeID nodeID, 
+   SortedSet<FileSeq> fseqs
+  )
+  {
+    addWorkingAreaForNode(nodeID);    
+    pNodeTree.addWorkingNodeTreePath(nodeID, fseqs);
+  }
 
 
 
@@ -5617,78 +5745,19 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      synchronized(pNodeTreeRoot) {
-	timer.resume();	
-	
-	NodeTreeComp rootComp = new NodeTreeComp();
-	TreeMap<String,Boolean> paths = req.getPaths();
-	for(String path : paths.keySet()) {
-	  String comps[] = path.split("/"); 
-	  
-	  NodeTreeComp parentComp   = rootComp;
-	  NodeTreeEntry parentEntry = pNodeTreeRoot;
-	  int wk;
-	  for(wk=1; wk<comps.length; wk++) {
-	    for(NodeTreeEntry entry : parentEntry.values()) {
-	      if(!parentComp.containsKey(entry.getName())) {
-		NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
-		parentComp.put(comp.getName(), comp);
-	      }
-	    }
-	    
-	    NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
-	    if(entry == null) {
-	      parentEntry = null;
-	      break;
-	    }
-	    
-	    NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
-	    if(comp == null)
-	      throw new IllegalStateException(); 
-	    
-	    parentEntry = entry;
-	    parentComp  = comp;
-	  }
-	  
-	  if((parentEntry != null) && (parentComp != null)) {
-	    boolean recursive = paths.get(path);
-	    updatePathsBelow(req.getAuthor(), req.getView(), 
-			     parentEntry, parentComp, recursive);
-	  }
-	}
-	
-	return new NodeUpdatePathsRsp(timer, req.getAuthor(), req.getView(), rootComp);
-      }
+      timer.resume();	
+
+      String author = req.getAuthor();
+      String view   = req.getView();
+
+      NodeTreeComp rootComp = pNodeTree.getUpdatedPaths(author, view, req.getPaths());
+      
+      return new NodeUpdatePathsRsp(timer, author, view, rootComp);
     }
     finally {
       pDatabaseLock.readLock().unlock();
     }
   }
-
-  private void 
-  updatePathsBelow
-  (
-   String author, 
-   String view, 
-   NodeTreeEntry parentEntry, 
-   NodeTreeComp parentComp,
-   boolean recursive
-  ) 
-  {
-    synchronized(pNodeTreeRoot) {
-      for(NodeTreeEntry entry : parentEntry.values()) {
-	if(!parentComp.containsKey(entry.getName())) {
-	  NodeTreeComp comp = new NodeTreeComp(entry, author, view);
-	  parentComp.put(comp.getName(), comp);
-	  if(recursive) 
-	    updatePathsBelow(author, view, entry, comp, true);
-	}
-      } 
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the name of the node associated with the given file. <P> 
@@ -5711,67 +5780,15 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      synchronized(pNodeTreeRoot) {
-	timer.resume();	
-	
-	String nodeName = null;
-	{
-	  String path = req.getPath();
-	  String comps[] = path.split("/"); 
-	  
-	  NodeTreeEntry parentEntry = pNodeTreeRoot;
-	  int wk;
-	  for(wk=1; wk<(comps.length-1); wk++) {
-	    NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
-	    if(entry == null) {
-	      parentEntry = null;
-	      break;
-	    }
-	    
-	    parentEntry = entry;
-	  }
-	  
-	  if((parentEntry != null) && !parentEntry.isLeaf())  {
-	    String parts[] = comps[comps.length-1].split("\\.");
+      timer.resume();	
 
-	    String prefix = null; 
-	    String suffix = null; 
-	    switch(parts.length) {
-	    case 1:
-	      prefix = parts[0];
-	      break;
-
-	    case 2: 
-	      prefix = parts[0];
-	      suffix = parts[1];
-	      break;
-
-	    case 3:
-	      prefix = parts[0];
-	      suffix = parts[2];
-	    }	      
-
-	    if(prefix != null) {
-	      String key = (prefix + "|" + suffix);
-	      for(String name : parentEntry.keySet()) {
-		NodeTreeEntry entry = parentEntry.get(name);
-		if(entry.isLeaf() && entry.getSequences().contains(key)) {
-		  File file = new File(path);
-		  nodeName = (file.getParent() + "/" + name);
-		  break;
-		}
-	      }
-	    }
-	  }
-	}
-
-	return new NodeGetNodeOwningRsp(timer, nodeName);
-      }
+      return new NodeGetNodeOwningRsp(timer, pNodeTree.getNodeOwning(req.getPath()));
     }
     finally {
       pDatabaseLock.readLock().unlock();
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -6157,20 +6174,9 @@ class MasterMgr
 
       /* reserve the node name, 
            after verifying that it doesn't conflict with existing nodes */ 
-      timer.aquire();
-      synchronized(pNodeTreeRoot) {
-	timer.resume();
-	
-	if(!isNodeSecondaryUnused(nodeID.getName(), fseq))
-	  return new FailureRsp
-	    (timer, "Cannot add secondary file sequence (" + fseq + ") " + 
-	     "to node (" + nodeID.getName() + ") because its name conflicts with " + 
-	     "an existing node or one of its associated file sequences!");
-	
-	TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
-	secondary.add(fseq);
-	
-	addWorkingNodeTreePath(nodeID, secondary);
+      {
+	pNodeTree.reserveSecondarySeqName(nodeID, fseq);
+	addWorkingAreaForNode(nodeID);	
       }
 
       timer.aquire();
@@ -6212,7 +6218,7 @@ class MasterMgr
       }
       catch(PipelineException ex) { 
 	timer.aquire();
-	removeSecondaryWorkingNodeTreePath(nodeID, fseq);
+	pNodeTree.removeSecondaryWorkingNodeTreePath(nodeID, fseq);
 
 	return new FailureRsp(timer, ex.getMessage());
       }
@@ -6297,7 +6303,7 @@ class MasterMgr
       bundle.setVersion(mod);
 
       /* remove the sequence from the node tree */ 
-      removeSecondaryWorkingNodeTreePath(nodeID, fseq);
+      pNodeTree.removeSecondaryWorkingNodeTreePath(nodeID, fseq);
       
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
@@ -6439,40 +6445,12 @@ class MasterMgr
 
       /* verifying that the new node name doesn't conflict with existing node and
          reserve the new name */ 
-      {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  timer.resume();
-
-	  /* remove the old working node entry, primary and secondary sequences */ 
-	  removeWorkingNodeTreePath(id, oldSeqs); 
-	  
-	  try {
-	    if(!isNodePrimaryUnused(nname, primary)) 
-	    throw new PipelineException
-	      ("Cannot rename node (" + name + ") to (" + nname + ") because the " + 
-	       "new primary sequence name (" + primary + ") conflicts with an existing " + 
-	       "node or one of its associated file sequences!");
-
-	    for(FileSeq fseq : secondary) {
-	      if(!isNodePrimaryUnused(nname, fseq)) 
-		throw new PipelineException 
-		  ("Cannot rename node (" + name + ") to (" + nname + ") because the " + 
-		   "new secondary sequence name (" + fseq + ") conflicts with an existing " + 
-		   "node or one of its associated file sequences!");
-	    }
-	  }
-	  catch(PipelineException ex) {
-	    /* restore the old working node entry, primary and secondary sequences */ 
-	    addWorkingNodeTreePath(id, oldSeqs);
-
-	    /* abort */ 
-	    return new FailureRsp(timer, ex.getMessage());
-	  }
-	    
-	  /* add the new working node entry, primary and secondary sequences */ 
-	  addWorkingNodeTreePath(nid, newSeqs);
-	}
+      try {
+	pNodeTree.reserveRename(id, oldSeqs, nid, primary, secondary, newSeqs);
+	addWorkingAreaForNode(nid);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
       }
 
       /* if the prefix is different, 
@@ -6755,7 +6733,7 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       /* remove the new working node entry, primary and secondary sequences */ 
-      removeWorkingNodeTreePath(nid, newSeqs); 
+      pNodeTree.removeWorkingNodeTreePath(nid, newSeqs); 
       
       /* restore the old working node entry, primary and secondary sequences */ 
       addWorkingNodeTreePath(id, oldSeqs);
@@ -7373,16 +7351,12 @@ class MasterMgr
       /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
       if(checkName) {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  timer.resume();
-	  
-	  if(!isNodePrimaryUnused(name, mod.getPrimarySequence())) 
-	    return new FailureRsp
-	      (timer, "Cannot register node (" + name + ") because its name conflicts " + 
-	       "with an existing node or one of its associated file sequences!");
-	
-	  addWorkingNodeTreePath(nodeID, mod.getSequences());
+	try {
+	  pNodeTree.reserveNewName(nodeID, mod.getPrimarySequence(), mod.getSequences());
+	  addWorkingAreaForNode(nodeID);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
 	}
       }
       
@@ -7717,7 +7691,7 @@ class MasterMgr
 	
       /* remove the node tree path */ 
       if(removeNodeTreePath) 
-	removeWorkingNodeTreePath(id, mod.getSequences());
+	pNodeTree.removeWorkingNodeTreePath(id, mod.getSequences());
 
       /* remove the associated files */ 
       if(removeFiles) {
@@ -7903,7 +7877,7 @@ class MasterMgr
       }
 
       /* remove the leaf node tree entry */ 
-      removeNodeTreePath(name);
+      pNodeTree.removeNodeTreePath(name);
 
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
@@ -8679,11 +8653,7 @@ class MasterMgr
       /* initialize new working version */ 
       if(working == null) {
 	/* register the node name and sequences */ 
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  timer.resume();
-	  addWorkingNodeTreePath(nodeID, nwork.getSequences());
-	}
+	addWorkingNodeTreePath(nodeID, nwork.getSequences());
 
 	/* create a new working bundle */ 
 	synchronized(pWorkingBundles) {
@@ -8716,12 +8686,8 @@ class MasterMgr
       else {
 	/* unregister the old working node name and sequences,
 	   register the new node name and sequences */ 
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  timer.resume();
-	  removeWorkingNodeTreePath(nodeID, work.getSequences());
-	  addWorkingNodeTreePath(nodeID, nwork.getSequences());
-	}
+	pNodeTree.updateWorkingNodeTreePath
+	  (nodeID, work.getSequences(), nwork.getSequences());
 	
 	/* update the working bundle */ 
 	working.setVersion(nwork);
@@ -8962,11 +8928,7 @@ class MasterMgr
 	  /* initialize new working version */ 
 	  if(working == null) {
 	    /* register the node name */ 
-	    timer.aquire();
-	    synchronized(pNodeTreeRoot) {
-	      timer.resume();
-	      addWorkingNodeTreePath(nodeID, nwork.getSequences());
-	    }
+	    addWorkingNodeTreePath(nodeID, nwork.getSequences());
 	  
 	    /* create a new working bundle */ 
 	    synchronized(pWorkingBundles) {
@@ -10755,26 +10717,17 @@ class MasterMgr
 	   "(" + maxArchives + ") must be positive!");
 
       /* get the node names which match the pattern */ 
-      TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
-	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
-      {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  try {
-	    timer.resume();
-	    
-	    Pattern pat = null;
-	    if(pattern != null) 
-	      pat = Pattern.compile(pattern);
-	    
-	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
-	      matchingCheckedInNodes(pat, "", entry, matches);
-	  }
-	  catch(PatternSyntaxException ex) {
-	    return new FailureRsp(timer, 
-				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
-	  }
-	}
+      DoubleMap<String,String,TreeSet<String>> matches = null;
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+	
+	matches = pNodeTree.getMatchingCheckedInNodes(pat);
+      }
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp
+	  (timer, "Illegal Node Name Pattern:\n\n" + ex.getMessage());
       }
       
       /* lock online/offline status */ 
@@ -11242,26 +11195,17 @@ class MasterMgr
 	   "(" + minArchives + ") cannot be negative!");
 
       /* get the node names which match the pattern */ 
-      TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
-	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
-      {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  try {
-	    timer.resume();
-	    
-	    Pattern pat = null;
-	    if(pattern != null) 
-	      pat = Pattern.compile(pattern);
-	    
-	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
-	      matchingCheckedInNodes(pat, "", entry, matches);
-	  }
-	  catch(PatternSyntaxException ex) {
-	    throw new PipelineException 
-	      ("Illegal Node Name Pattern:\n\n" + ex.getMessage());
-	  }
-	}
+      DoubleMap<String,String,TreeSet<String>> matches = null;
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+	
+	matches = pNodeTree.getMatchingCheckedInNodes(pat);
+      }
+      catch(PatternSyntaxException ex) {
+	throw new PipelineException 
+	  ("Illegal Node Name Pattern:\n\n" + ex.getMessage());
       }
       
       /* lock online/offline status */ 
@@ -11683,7 +11627,7 @@ class MasterMgr
 	  ArrayList<ReentrantReadWriteLock> workingLocks = 
 	    new ArrayList<ReentrantReadWriteLock>();
 	  {
-	    TreeMap<String,TreeSet<String>> views = getViewsContaining(name);
+	    TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
 	    for(String author : views.keySet()) {
 	      for(String view : views.get(author)) {
 		NodeID nodeID = new NodeID(author, view, name);
@@ -11744,7 +11688,7 @@ class MasterMgr
 
 		/* make sure it is not being referenced by an existing working version */ 
 		{
-		  TreeMap<String,TreeSet<String>> views = getViewsContaining(name);
+		  TreeMap<String,TreeSet<String>> views = pNodeTree.getViewsContaining(name);
 		  for(String author : views.keySet()) {
 		    for(String view : views.get(author)) {
 		      NodeID nodeID = new NodeID(author, view, name);
@@ -13001,453 +12945,6 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }  
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   P A T H   T R E E   H E L P E R S                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Add the given checked-in version to the node path tree. <P> 
-   * 
-   * Creates any branch components which do not already exist.
-   * 
-   * @param vsn
-   *   The checked-in version of the node.
-   */ 
-  private void 
-  addCheckedInNodeTreePath
-  (
-   NodeVersion vsn
-  )
-  {
-    synchronized(pNodeTreeRoot) {
-      String comps[] = vsn.getName().split("/"); 
-      
-      NodeTreeEntry parent = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<(comps.length-1); wk++) {
-	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
-	if(entry == null) {
-	  entry = new NodeTreeEntry(comps[wk]);
-	  parent.put(entry.getName(), entry);
-	}
-	parent = entry;
-      }
-      
-      String name = comps[comps.length-1];
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
-      if(entry == null) {
-	entry = new NodeTreeEntry(name, true);
-	parent.put(entry.getName(), entry);
-      }
-      else {
-	entry.setCheckedIn(true);
-      }
-
-      for(FileSeq fseq : vsn.getSequences())
-	entry.addSequence(fseq);
-    }
-  }
-
-  /**
-   * Add the given working version to the node path tree. <P> 
-   * 
-   * Creates any branch components which do not already exist.
-   * 
-   * @param nodeID
-   *   The unique working version identifier.
-   * 
-   * @param fseqs
-   *   The file sequences associated with the working version.
-   */ 
-  private void 
-  addWorkingNodeTreePath
-  (
-   NodeID nodeID, 
-   SortedSet<FileSeq> fseqs
-  )
-  {
-    synchronized(pWorkingAreaViews) {
-      TreeSet<String> views = pWorkingAreaViews.get(nodeID.getAuthor());
-      if(views == null) {
-	views = new TreeSet<String>();
-	pWorkingAreaViews.put(nodeID.getAuthor(), views);
-      }
-      views.add(nodeID.getView());
-    }
-
-    synchronized(pNodeTreeRoot) {
-      String comps[] = nodeID.getName().split("/"); 
-      
-      NodeTreeEntry parent = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<(comps.length-1); wk++) {
-	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
-	if(entry == null) {
-	  entry = new NodeTreeEntry(comps[wk]);
-	  parent.put(entry.getName(), entry);
-	}
-	parent = entry;
-      }
-      
-      String name = comps[comps.length-1];
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
-      if(entry == null) {
-	entry = new NodeTreeEntry(name, false);
-	parent.put(entry.getName(), entry);
-      }
-      
-      entry.addWorking(nodeID.getAuthor(), nodeID.getView());
-      
-      for(FileSeq fseq : fseqs)
-	entry.addSequence(fseq);
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Remove the given working version from the node path tree. <P> 
-   * 
-   * Removes any branch components which become empty due to the working version removal.
-   * 
-   * @param nodeID
-   *   The unique working version identifier.
-   *
-   * @param fseq
-   *   The file sequences associated with the working version.
-   */
-  private void 
-  removeWorkingNodeTreePath
-  (
-   NodeID nodeID,
-   TreeSet<FileSeq> fseqs
-  )
-  {
-    synchronized(pNodeTreeRoot) {
-      String comps[] = nodeID.getName().split("/"); 
-      
-      Stack<NodeTreeEntry> stack = new Stack<NodeTreeEntry>();
-      stack.push(pNodeTreeRoot);
-
-      int wk;
-      for(wk=1; wk<comps.length; wk++) {
-	NodeTreeEntry entry = (NodeTreeEntry) stack.peek().get(comps[wk]);
-	if(entry == null)
-	  throw new IllegalStateException(); 
-	stack.push(entry);
-      }
-
-      NodeTreeEntry entry = stack.pop();
-      if(entry == null)
-	throw new IllegalStateException(); 
-      if(!entry.isLeaf())
-	throw new IllegalStateException(); 
-
-      entry.removeWorking(nodeID.getAuthor(), nodeID.getView());
-      for(FileSeq fseq : fseqs)
-	entry.removeSequence(fseq);
-
-      if(!entry.hasWorking() && !entry.isCheckedIn()) {
-	while(!stack.isEmpty()) {
-	  NodeTreeEntry parent = stack.pop();
-	  if(parent.isLeaf())
-	    throw new IllegalStateException(); 
-	  
-	  parent.remove(entry.getName());
-	  if(!parent.isEmpty()) 
-	    break;
-
-	  entry = parent;
-	}
-      }
-    }
-  }
-
-  /**
-   * Remove the given secondary file sequence of the working version from the node 
-   * path tree. <P> 
-   * 
-   * @param nodeID
-   *   The unique working version identifier.
-   * 
-   * @param fseq
-   *   The secondary file sequence to remove.
-   */ 
-  private void 
-  removeSecondaryWorkingNodeTreePath
-  (
-   NodeID nodeID, 
-   FileSeq fseq
-  )
-  {
-    synchronized(pNodeTreeRoot) {
-      String comps[] = nodeID.getName().split("/"); 
-      
-      NodeTreeEntry parent = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<(comps.length-1); wk++) 
-	parent = (NodeTreeEntry) parent.get(comps[wk]);
-      
-      String name = comps[comps.length-1];
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
-      entry.removeSequence(fseq);
-    }
-  }
-
-  /**
-   * Remove all entries for the given node. <P> 
-   * 
-   * Removes any branch components which become empty due to the node entry removal.
-   * 
-   * @param name
-   *   The fully resolved node name.
-   */ 
-  private void
-  removeNodeTreePath
-  (
-   String name
-  )
-  {
-    synchronized(pNodeTreeRoot) {
-      String comps[] = name.split("/"); 
-      
-      Stack<NodeTreeEntry> stack = new Stack<NodeTreeEntry>();
-      stack.push(pNodeTreeRoot);
-
-      int wk;
-      for(wk=1; wk<comps.length; wk++) {
-	NodeTreeEntry entry = (NodeTreeEntry) stack.peek().get(comps[wk]);
-	if(entry == null)
-	  return;
-	stack.push(entry);
-      }
-
-      NodeTreeEntry entry = stack.pop();
-      if(entry == null)
-	throw new IllegalStateException(); 
-      if(!entry.isLeaf())
-	throw new IllegalStateException(); 
-
-      while(!stack.isEmpty()) {
-	NodeTreeEntry parent = stack.pop();
-	if(parent.isLeaf())
-	  throw new IllegalStateException(); 
-	
-	parent.remove(entry.getName());
-	if(!parent.isEmpty()) 
-	  break;
-
-	entry = parent;
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Is the given fully resolved node name and sequence unused?
-   * 
-   * @param name
-   *   The fully resolved node name.
-   * 
-   * @param fseq
-   *   The file sequence to test.
-   * 
-   * @param checkSeqsOnly
-   *   Whether to only check the file sequences, ignoring node name conflicts.
-   */ 
-  private boolean
-  isNodePrimaryUnused
-  (
-   String name, 
-   FileSeq fseq
-  ) 
-  {
-    return isNodeSeqUnused(name, fseq, false);
-  }
-
-  /** 
-   * Is the given fully resolved node name and sequence unused?
-   * 
-   * @param name
-   *   The fully resolved node name.
-   * 
-   * @param fseq
-   *   The file sequence to test.
-   * 
-   * @param checkSeqsOnly
-   *   Whether to only check the file sequences, ignoring node name conflicts.
-   */ 
-  private boolean
-  isNodeSecondaryUnused
-  (
-   String name, 
-   FileSeq fseq
-  ) 
-  {
-    return isNodeSeqUnused(name, fseq, true);
-  }
-
-  /** 
-   * Is the given fully resolved node name and sequence unused?
-   * 
-   * @param name
-   *   The fully resolved node name.
-   * 
-   * @param fseq
-   *   The file sequence to test.
-   * 
-   * @param checkSeqsOnly
-   *   Whether to only check the file sequences, ignoring node name conflicts.
-   */ 
-  private boolean
-  isNodeSeqUnused
-  (
-   String name, 
-   FileSeq fseq, 
-   boolean checkSeqsOnly 
-  ) 
-  {
-    synchronized(pNodeTreeRoot) {
-      String comps[] = name.split("/"); 
-      
-      NodeTreeEntry parent = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<comps.length; wk++) {
-	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
-	if(wk < (comps.length-1)) {
-	  if(entry == null) 
-	    return true;
-	}
-	else {
-	  if(!checkSeqsOnly && (entry != null)) 
-	    return false;
-
-	  for(NodeTreeEntry child : parent.values()) {
-	    if(child.isLeaf() && !child.isSequenceUnused(fseq)) 
-	      return false;	      
-	  }
-
-	  return true;
-	}
-
-	parent = entry;
-      }
-      
-      throw new IllegalStateException();
-    }
-  }
-
-  /**
-   * Get the names of the working area views containing the given node.
-   * 
-   * @param name
-   *   The fully resolved node name.
-   * 
-   * @return
-   *   The named of the working area views indexed by owning user name.
-   */ 
-  private TreeMap<String,TreeSet<String>> 
-  getViewsContaining
-  (
-   String name
-  ) 
-  {
-    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
-    
-    synchronized(pNodeTreeRoot) {
-      String comps[] = name.split("/"); 
-      
-      NodeTreeEntry parent = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<comps.length; wk++) {
-	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
-	if(entry == null) 
-	  return views;
-	parent = entry;
-      }
-      
-      for(String author : parent.getWorkingAuthors()) 
-	views.put(author, new TreeSet<String>(parent.getWorkingViews(author)));
-    }
-
-    return views;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Log the node tree contents.
-   */ 
-  public void 
-  logNodeTree() 
-  {
-    synchronized(pNodeTreeRoot) {
-      if(!pNodeTreeRoot.isEmpty() && 
-	 LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer)) {
-	StringBuffer buf = new StringBuffer(); 
-	buf.append("Node Tree:\n");
-	logNodeTreeHelper(pNodeTreeRoot, 1, buf);
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
-	   buf.toString());
-      }
-    }
-  }
-
-  private void 
-  logNodeTreeHelper
-  (
-   NodeTreeEntry entry,
-   int indent,
-   StringBuffer buf
-  ) 
-  {
-    String istr = null;
-    {
-      StringBuffer ibuf = new StringBuffer();
-      int wk;
-      for(wk=0; wk<indent; wk++) 
-	ibuf.append("  ");
-      istr = ibuf.toString();
-    }
-
-    buf.append(istr + "[" + entry.getName() + "]\n");
-
-    if(entry.isLeaf()) {
-      buf.append(istr + "  CheckedIn = " + entry.isCheckedIn() + "\n");
-      if(entry.hasWorking()) {
-	buf.append(istr + "  Working =\n");
-	for(String author : entry.getWorkingAuthors()) {
-	  buf.append(istr + "    " + author + ": ");
-	  for(String view : entry.getWorkingViews(author)) 
-	    buf.append(view + " ");
-	  buf.append("\n");
-	}
-      }
-
-      {
-	Set<String> keys = entry.getSequences();
-	if(!keys.isEmpty()) {
-	  buf.append(istr + "  Sequences =\n");
-	  for(String key : keys) {
-	    Integer cnt = entry.getSequenceCount(key);
-	    buf.append(istr + "    " + key + " [" + cnt + "]\n");
-	  }
-	  buf.append("\n");
-	}
-      }	
-    }
-    else {
-      for(NodeTreeEntry child : entry.values()) 
-	logNodeTreeHelper(child, indent+1, buf);
-    }
   }
 
 
@@ -15289,16 +14786,44 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     long cached = 0;
     long freed = 0;
-    
+
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+    pDatabaseLock.writeLock().lock();
     try {
-      /* sort the cached versions by last access time */ 
+      timer.resume();
+
+      /* sort the cached versions by newest last access time */ 
       TreeMap<Long,String> sorted = new TreeMap<Long,String>();
-      synchronized(pNodeTreeRoot) {
-	timer.resume();
-	for(NodeTreeEntry entry : pNodeTreeRoot.values()) 
-	  cached += sortNodesByLastAccess("", entry, sorted, timer);
+      {
+	TreeSet<String> names = new TreeSet<String>();
+	names.addAll(pCheckedInBundles.keySet());
+	names.addAll(pWorkingBundles.keySet());
+
+	for(String name : names) {
+	  long newest = 0L;
+	  
+	  {
+	    TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
+	    if(table != null) {
+	      for(CheckedInBundle bundle : table.values()) {
+		newest = Math.max(newest, bundle.getLastAccess());
+		cached++;
+	      }
+	    }
+	  }
+
+	  {
+	    HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	    if(table != null) {
+	      for(WorkingBundle bundle : table.values()) {
+		newest = Math.max(newest, bundle.getLastAccess());
+		cached++;		
+	      }
+	    }
+	  }
+
+	  sorted.put(newest, name);
+	}
       }
       
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
@@ -15321,67 +14846,25 @@ class MasterMgr
 	
 	/* free working versions */ 
 	{
-	  TreeSet<NodeID> nodeIDs = null;
-	  {
-	    timer.aquire();
-	    synchronized(pWorkingBundles) {
-	      timer.resume();
-	      
-	      HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	      if(table != null) 
-		nodeIDs = new TreeSet<NodeID>(table.keySet());
-	    }
-	  }
-
-	  if(nodeIDs != null) {
-	    for(NodeID nodeID : nodeIDs) {
-	      timer.aquire();
-	      ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-	      workingLock.writeLock().lock(); 
-	      try {
-		synchronized(pWorkingBundles) {
-		  timer.resume();
-		  
-		  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-		  if(table != null) {
-		    freed += table.size();
-		    pWorkingBundles.remove(name);
-		  }
-		}
-	      }
-	      finally {
-		workingLock.writeLock().unlock();
-	      }    
-	    }
+	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  if(table != null) {
+	    freed += table.size();
+	    pWorkingBundles.remove(name);
 	  }
 	}
-
+	 
 	/* free checked-in versions */ 
 	{
-	  timer.aquire();
-	  ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-	  checkedInLock.writeLock().lock();	
-	  try {
-	    synchronized(pCheckedInBundles) {
-	      timer.resume();
-	      
-	      synchronized(pCheckedInBundles) {
-		TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-		if(table != null) {
-		  freed += table.size();
-		  pCheckedInBundles.remove(name);
-		}
-	      }
-	    }
+	  TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
+	  if(table != null) {
+	    freed += table.size();
+	    pCheckedInBundles.remove(name);
 	  }
-	  finally {
-	    checkedInLock.writeLock().unlock();
-	  }    
 	}
       }
     }
     finally {
-      pDatabaseLock.readLock().unlock();
+      pDatabaseLock.writeLock().unlock();
     } 
     
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
@@ -15389,7 +14872,6 @@ class MasterMgr
 	(LogMgr.Kind.Mem, LogMgr.Level.Finer,
 	 "MasterMgr.nodeGC(): " + (cached-freed) + "/" + freed + " (cached/freed)\n" + 
 	 timer); 
-      LogMgr.getInstance().flush();
     }
 
     /* post-op tasks */ 
@@ -15409,118 +14891,44 @@ class MasterMgr
     }
   }
   
-      
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J V M   M E M O R Y   S T A T I S T I C S                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
-   * Build a table of working/checked-in versions of nodes sorted by the newest last access 
-   * timestamp among the node versions by recursively walking the node tree.
-   *
-   * @param path
-   *   The fully resolved node path up to the current entry.
-   * 
-   * @param entry
-   *   The current node tree entry.
-   * 
-   * @param sorted
-   *   A table of fully resolved node named indexed by last access time.
-   * 
-   * @param timer
-   *   The shared task timer.
-   *
-   * @return 
-   *   The total count of all node versions.
+   * Report the current JVM heap statistics.
    */ 
-  private long
-  sortNodesByLastAccess
-  (
-   String path, 
-   NodeTreeEntry entry,
-   TreeMap<Long,String> sorted,  
-   TaskTimer timer
-  ) 
+  public void 
+  heapStats() 
   {
-    String name = (path + "/" + entry.getName());
-    long total = 0;
+    TaskTimer timer = new TaskTimer();
 
-    if(entry.isLeaf()) {
-      long newest = 0;
-    
-      if(entry.hasWorking()) {
-	TreeSet<NodeID> nodeIDs = null;
-	{
-	  timer.aquire();
-	  synchronized(pWorkingBundles) {
-	    timer.resume();
-	    
-	    HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	    if(table != null) 
-	      nodeIDs = new TreeSet<NodeID>(table.keySet());
-	  }
-	}
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
+      Runtime rt = Runtime.getRuntime();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	 "JVM Memory Stats: " + 
+	 rt.freeMemory() + "/" + rt.totalMemory() + "/" + rt.maxMemory() + 
+	 " (free/total/max)"); 
+      LogMgr.getInstance().flush();
+    }
 
-	if(nodeIDs != null) {
-	  for(NodeID nodeID : nodeIDs) {
-	    timer.aquire();
-	    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-	    workingLock.readLock().lock(); 
-	    try {
-	      WorkingBundle bundle = null;
-	      synchronized(pWorkingBundles) {
-		timer.resume();
-
-		HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-		if(table != null) {
-		  bundle = table.get(nodeID);
-		}
-	      }
-
-	      newest = Math.max(newest, bundle.getLastAccess());
-	      total++;
-	    }
-	    finally {
-	      workingLock.readLock().unlock();
-	    }    
-	  }
-	}
-      }
-
-      if(entry.isCheckedIn()) {
-	timer.aquire();
-	ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-	checkedInLock.readLock().lock();	
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      timer.suspend();
+      long nap = sHeapStatsInterval - timer.getTotalDuration();
+      if(nap > 0) {
 	try {
-	  synchronized(pCheckedInBundles) {
-	    timer.resume();
-
-	    TreeMap<VersionID,CheckedInBundle> table = null;
-	    synchronized(pCheckedInBundles) {
-	      table = pCheckedInBundles.get(name);
-	    }
-
-	    if(table != null) {
-	      for(CheckedInBundle bundle : table.values()) {
-		newest = Math.max(newest, bundle.getLastAccess());
-		total++;
-	      }
-	    }
-	  }
+	  Thread.sleep(nap);
 	}
-	finally {
-	  checkedInLock.readLock().unlock();
-	}    
+	catch(InterruptedException ex) {
+	}
       }
-
-      if(total > 0) 
-	sorted.put(newest, name);
     }
-    else {
-      for(NodeTreeEntry child : entry.values()) 
-	total += sortNodesByLastAccess(name, child, sorted, timer);
-    }
-
-    return total;
   }
-      
-   
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -17885,187 +17293,6 @@ class MasterMgr
 
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Write the node tree to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the node tree file.
-   */ 
-  private void 
-  writeNodeTree() 
-    throws PipelineException
-  {
-    File file = new File(pNodeDir, "etc/node-tree");
-    try {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Node Tree Cache...");
-      
-      String glue = null;
-      try {
-	GlueEncoder ge = new GlueEncoderImpl("NodeTree", pNodeTreeRoot);
-	glue = ge.getText();
-      }
-      catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the node tree!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
-      }
-    }
-    catch(IOException ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the node tree cache...\n" +
-	 "    " + ex.getMessage());
-    }
-  }
-
-  /**
-   * Read the node tree from disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If the node tree cache file is corrupted in some manner.
-   */ 
-  private void 
-  readNodeTree() 
-    throws PipelineException
-  {
-    File file = new File(pNodeDir, "etc/node-tree");
-    try {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Reading Node Tree Cache...");
-      
-      try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
-	pNodeTreeRoot = (NodeTreeEntry) gd.getObject();
-	in.close();
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
-	   "The node tree cache file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw ex;
-      }
-    }
-    catch(Exception ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to read the node tree cache file...\n" +
-	 "    " + ex.getMessage());
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   T R E E   H E L P E R S                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Recursively check the names of all nodes in the given working area against the given 
-   * regular expression pattern.
-   * 
-   * @param author
-   *   The name of the user owning the working area.
-   * 
-   * @param view 
-   *   The name of the working area.
-   * 
-   * @param pattern
-   *   The regular expression used to match the fully resolved node name.
-   * 
-   * @param path
-   *   The current partial node name path.
-   * 
-   * @param entry
-   *   The current node tree entry. 
-   * 
-   * @param matches
-   *   The fully resolved names of the matching nodes.
-   * 
-   * @return 
-   *   The names of the working areas indexed by fully resolved node name and author.
-   */ 
-  private void 
-  matchingWorkingNodes
-  (
-   String author, 
-   String view, 
-   Pattern pattern, 
-   String path,
-   NodeTreeEntry entry, 
-   TreeSet<String> matches
-  ) 
-  {
-    String name = (path + "/" + entry.getName());
-    if(entry.isLeaf() && entry.hasWorking(author, view)) {
-      if((pattern == null) || pattern.matcher(name).matches()) 
-	matches.add(name);
-    }
-    else {
-      for(NodeTreeEntry child : entry.values())
-	matchingWorkingNodes(author, view, pattern, name, child, matches);
-    }
-  }
-
-  /** 
-   * Recursively check the names of all nodes with at least one checked-in versions 
-   * against the given regular expression pattern.
-   * 
-   * @param pattern
-   *   The regular expression used to match the fully resolved node name.
-   * 
-   * @param path
-   *   The current partial node name path.
-   * 
-   * @param entry
-   *   The current node tree entry. 
-   * 
-   * @return 
-   *   The names of the working areas indexed by fully resolved node name and author.
-   */ 
-  private void 
-  matchingCheckedInNodes
-  ( 
-   Pattern pattern, 
-   String path,
-   NodeTreeEntry entry,
-   TreeMap<String,TreeMap<String,TreeSet<String>>> matches
-  ) 
-  {
-    String name = (path + "/" + entry.getName());
-    if(entry.isLeaf() && entry.isCheckedIn()) {
-      if((pattern == null) || pattern.matcher(name).matches()) {
-	TreeMap<String,TreeSet<String>> areas = new TreeMap<String,TreeSet<String>>();
-	for(String author : entry.getWorkingAuthors()) 
-	  areas.put(author, new TreeSet<String>(entry.getWorkingViews(author)));
-	matches.put(name, areas);
-      }
-    }
-    else {
-      for(NodeTreeEntry child : entry.values())
-	matchingCheckedInNodes(pattern, name, child, matches);
-    }
-  }
-
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   O P   C L A S S E S                                                        */
@@ -18389,7 +17616,7 @@ class MasterMgr
 	  status.setDetails(ndetails);
 
 	  /* update the node tree entry */ 
-	  addCheckedInNodeTreePath(vsn);
+	  pNodeTree.addCheckedInNodeTreePath(vsn);
 
 	  /* initialize the downstream links for the new checked-in version of this node */ 
 	  {
@@ -18638,7 +17865,13 @@ class MasterMgr
    * The minimum time a cycle of the node cache garbage collector loop should 
    * take (in milliseconds).
    */ 
-  private static long  sNodeGCInterval = 10800000L;  /* 90-minutes */
+  private static long  sNodeGCInterval = 3600000L;  /* 60-minutes */
+
+  /**
+   * The time (in milliseconds) between reports of the JVM heap statistics.
+   */ 
+  //  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
+  private static long  sHeapStatsInterval = 30000L; 
 
 
  
@@ -18723,7 +17956,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
-  //private DoubleMap<String,VersionID,TreeSet<String>>  pArchivedIn;
+  //private PathMap<TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
 
   /**
    * The timestamps of when each archive volume was created indexed by unique archive 
@@ -18755,6 +17988,7 @@ class MasterMgr
    * node.
    */
   private HashMap<String,ReentrantReadWriteLock>  pOnlineOfflineLocks;
+  // private PathMap<ReentrantReadWriteLock>  pOnlineOfflineLocks;
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which
@@ -18767,13 +18001,13 @@ class MasterMgr
   private TreeMap<String,TreeSet<VersionID>>  pOfflined;
 
   /**
-   * Thre pending restore requests indexed by the fully resolved node names and 
+   * The pending restore requests indexed by the fully resolved node names and 
    * revision numbers of the checked-in versions to restore. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */  
   private TreeMap<String,TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
-  //private DoubleMap<String,VersionID,RestoreRequest>  pRestoreReqs;  
+  //private PathMap<TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -18877,7 +18111,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The cacned table of filename suffix to editor mappings 
+   * The cached table of filename suffix to editor mappings 
    * indexed by author user nameand file suffix. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
@@ -18895,13 +18129,13 @@ class MasterMgr
   private TreeMap<String,TreeSet<String>>  pWorkingAreaViews;
 
   /**
-   * The root of the tree of node path components currently in use.
+   * Maintains the the current table of used node names. <P> 
    * 
-   * Access to this field should be protected by a synchronized block.
+   * All methods of this class are synchronized so no manual locking is required.
    */ 
-  private NodeTreeEntry  pNodeTreeRoot;
+  private NodeTree  pNodeTree; 
 
-  
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -18920,12 +18154,14 @@ class MasterMgr
    * these tables should ever be modified.
    */
   private HashMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
+  //private PathMap<ReentrantReadWriteLock>  pCheckedInLocks;
 
   /**
    * The checked-in version related information of nodes indexed by fully resolved node 
    * name and revision number.
    */ 
   private HashMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
+  //private PathMap<TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
 
 
   /**
@@ -18938,12 +18174,18 @@ class MasterMgr
    * or removing existing working versions.
    */
   private HashMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
+  // private PathMap<DoubleMap<String,String,ReentrantReadWriteLock>>  pWorkingLocks;
 
   /**
    * The working version related information of nodes indexed by fully resolved node 
    * name and working version node ID.
    */ 
   private HashMap<String,HashMap<NodeID,WorkingBundle>>  pWorkingBundles;
+  /**
+   * The working version related information of nodes indexed by fully resolved node 
+   * path, working area author and view. 
+   */ 
+  // private PathMap<DoubleMap<String,String,WorkingBundle>>  pWorkingBundles;
  
 
   /**
@@ -18954,6 +18196,7 @@ class MasterMgr
    * The per-node write-lock should be aquired when adding or removing links for a node.
    */
   private HashMap<String,ReentrantReadWriteLock>  pDownstreamLocks;
+  //  private PathMap<ReentrantReadWriteLock>  pDownstreamLocks;
   
   /**
    * The table of downstream links indexed by fully resolved node name. <P> 
@@ -18961,6 +18204,7 @@ class MasterMgr
    * Access to this table should be protected by a synchronized block.
    */
   private HashMap<String,DownstreamLinks>  pDownstream;
+  //private PathMap<DownstreamLinks>  pDownstream;
   
   
   /*----------------------------------------------------------------------------------------*/
