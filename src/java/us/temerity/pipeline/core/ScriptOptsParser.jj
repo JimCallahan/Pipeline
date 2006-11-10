@@ -152,11 +152,19 @@ ScriptOptsParser
   private Boolean  pIsNodeManager; 
 
   /**
-   * admin --shutdown options. 
+   * admin options. 
    */ 
   private boolean  pShutdownJobMgrs;
   private boolean  pShutdownPluginMgr;
 
+  /**
+   * runtime options. 
+   */ 
+  private LogControls  pLogControls; 
+
+  /**
+   * archive-volume options. 
+   */ 
   private String     pArchivePattern; 
   private Integer    pMaxArchives; 
   private Long       pMinSize; 
@@ -289,6 +297,7 @@ TOKEN :
 | <WORK_GROUP:        "work-group">       : WORK_GROUP_OPTS 
 | <PRIVILEGE:         "privilege">        : PRIVILEGE_OPTS 
 | <ADMIN:             "admin">            : ADMIN_OPTS
+| <RUNTIME:           "runtime">          : RUNTIME_OPTS
 | <ARCHIVE_VOLUME:    "archive-volume">   : ARCHIVE_VOLUME_OPTS
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
 | <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
@@ -337,7 +346,8 @@ TOKEN :
 | <QUEUE_MANAGER:      "--queue-manager">    
 | <NODE_MANAGER:       "--node-manager">    
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
-| <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr">   
+| <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr"> 
+| <REMOTE_LOG:         "--remote-log">          : LOG_SEP
 | <PATTERN:            "--pattern">         	: STRING_SEP	      
 | <MAX_ARCHIVES:       "--max-archives">    	: INTEGER_SEP	      
 | <MIN_SIZE:           "--min-size">        	: BYTE_SIZE_SEP	      
@@ -1252,10 +1262,19 @@ TOKEN :
 {
   <LOG_ALL:          "all">       
 | <LOG_ARG: 	     "arg">        
-| <LOG_OPS: 	     "ops">     
-| <LOG_NET: 	     "net">       
-| <LOG_PLG: 	     "plg">     
-| <LOG_SUB: 	     "sub"> 
+| <LOG_SUM: 	     "sum">        
+| <LOG_GLU: 	     "glu">        
+| <LOG_JOB: 	     "job">        
+| <LOG_MEM: 	     "mem">        
+| <LOG_NET: 	     "net">        
+| <LOG_OPS: 	     "ops">        
+| <LOG_PLG: 	     "plg">        
+| <LOG_SUB: 	     "sub">        
+| <LOG_TEX: 	     "tex">        
+| <LOG_DSP: 	     "dsp">        
+| <LOG_COL: 	     "col">        
+| <LOG_SCH: 	     "sch">        
+| <LOG_EXT: 	     "ext">
 | <COLON7:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -1321,15 +1340,26 @@ TOKEN :
 <ADMIN_OPTS>
 TOKEN :
 {
-  <SHUTDOWN2: "--shutdown">  : OPTIONS    
-| <BACKUP:    "--backup">    : PATH_SEP
-| <ARCHIVE:   "--archive">   : ARCHIVE_PREFIX_SEP
-| <OFFLINE:   "--offline">   : OPTIONS
-| <RESTORE:   "--restore">   : ARCHIVE_PREFIX_SEP
-
+  <SHUTDOWN2:          "--shutdown">  : OPTIONS    	 
+| <BACKUP:    	       "--backup">    : PATH_SEP		 
+| <ARCHIVE:   	       "--archive">   : ARCHIVE_PREFIX_SEP
+| <OFFLINE:   	       "--offline">   : OPTIONS		 
+| <RESTORE:   	       "--restore">   : ARCHIVE_PREFIX_SEP
 | <AE45:               ["\0"]>   
 | <UNKNOWN_OPTION19:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN19:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
+}
+
+
+/* runtime command options */ 
+<RUNTIME_OPTS>
+TOKEN :
+{  
+  <MASTER_RT:          "--master"> : OPTIONS     
+| <QUEUE_RT:           "--queue">  : OPTIONS  
+| <AE55:               ["\0"]>   
+| <UNKNOWN_OPTION23:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN23:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
 }
 
 
@@ -1604,8 +1634,8 @@ Commands()
   pQueueMgrClient  = new QueueMgrClient();
 }
 {
-  (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | ArchiveVolumeCmds() |
-   DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
+  (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | RuntimeCmds() | 
+   ArchiveVolumeCmds() | DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
@@ -1717,8 +1747,8 @@ BatchCommand()
   throws PipelineException : 
 {}
 {
-  (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | ArchiveVolumeCmds() |
-   DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
+  (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | RuntimeCmds() | 
+   ArchiveVolumeCmds() | DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
@@ -1855,6 +1885,17 @@ void Log() :
   {}
 }
 
+void RemoteLog() : 
+{
+  pLogControls = new LogControls();
+}
+{
+  (<REMOTE_LOG> EQ() LoggerArg() (COMMA() LoggerArg())*)
+  {}
+}
+
+  
+
 void LoggerArg() : 
 {}
 {
@@ -1870,7 +1911,10 @@ void LoggerAll() :
 {
   (<LOG_ALL> COLON() v=LogLevel())
   {
-    LogMgr.getInstance().setLevels(v);
+    if(pLogControls != null) 
+      pLogControls.setLevels(v);
+    else
+      LogMgr.getInstance().setLevels(v);
   }
 }
 
@@ -1882,7 +1926,10 @@ void LoggerPair() :
 {
   (k=LogKind() COLON() v=LogLevel())
   {
-    LogMgr.getInstance().setLevel(k, v);
+    if(pLogControls != null) 
+      pLogControls.setLevel(k, v);
+    else
+      LogMgr.getInstance().setLevel(k, v);
   }
 }
 
@@ -1891,7 +1938,9 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=PlgKind())
+  (g=ArgKind() | g=SumKind() | g=GluKind() | g=JobKind() | g=MemKind() | g=NetKind() | 
+   g=OpsKind() | g=PlgKind() | g=SubKind() | g=TexKind() | g=DspKind() | g=ColKind() | 
+   g=SchKind() | g=ExtKind())
   {
     return g;
   }
@@ -1906,12 +1955,39 @@ LogMgr.Kind ArgKind() :
   }
 }
 
-LogMgr.Kind OpsKind() : 
+LogMgr.Kind SumKind() : 
 {}
 {
-  <LOG_OPS>
+  <LOG_SUM>
   {
-    return LogMgr.Kind.Ops;
+    return LogMgr.Kind.Sum;
+  }
+}
+
+LogMgr.Kind GluKind() : 
+{}
+{
+  <LOG_GLU>
+  {
+    return LogMgr.Kind.Glu;
+  }
+}
+
+LogMgr.Kind JobKind() : 
+{}
+{
+  <LOG_JOB>
+  {
+    return LogMgr.Kind.Job;
+  }
+}
+
+LogMgr.Kind MemKind() : 
+{}
+{
+  <LOG_MEM>
+  {
+    return LogMgr.Kind.Mem;
   }
 }
 
@@ -1924,12 +2000,12 @@ LogMgr.Kind NetKind() :
   }
 }
 
-LogMgr.Kind SubKind() : 
+LogMgr.Kind OpsKind() : 
 {}
 {
-  <LOG_SUB>
+  <LOG_OPS>
   {
-    return LogMgr.Kind.Sub;
+    return LogMgr.Kind.Ops;
   }
 }
 
@@ -1942,6 +2018,59 @@ LogMgr.Kind PlgKind() :
   }
 }
 
+LogMgr.Kind SubKind() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return LogMgr.Kind.Sub;
+  }
+}
+
+LogMgr.Kind TexKind() : 
+{}
+{
+  <LOG_TEX>
+  {
+    return LogMgr.Kind.Tex;
+  }
+}
+
+LogMgr.Kind DspKind() : 
+{}
+{
+  <LOG_DSP>
+  {
+    return LogMgr.Kind.Dsp;
+  }
+}
+
+LogMgr.Kind ColKind() : 
+{}
+{
+  <LOG_COL>
+  {
+    return LogMgr.Kind.Col;
+  }
+}
+
+LogMgr.Kind SchKind() : 
+{}
+{
+  <LOG_SCH>
+  {
+    return LogMgr.Kind.Sch;
+  }
+}
+
+LogMgr.Kind ExtKind() : 
+{}
+{
+  <LOG_EXT>
+  {
+    return LogMgr.Kind.Ext;
+  }
+}
 
 LogMgr.Level LogLevel() : 
 {
@@ -2795,6 +2924,59 @@ VersionName() :
     return t.image;
   }
 }
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   R U N T I M E   C O M M A N D S                                                        */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+RuntimeCmds() 
+  throws PipelineException : 
+{}
+{
+  <RUNTIME> AE() (RuntimeMaster() | RuntimeQueue())
+  {}
+}
+
+void 
+RuntimeMaster() 
+  throws PipelineException : 
+{}
+{
+  <MASTER_RT> AE() (RuntimeMasterOpts())* 
+  {
+    pMasterMgrClient.setLogControls(pLogControls);
+  }
+}
+
+void 
+RuntimeMasterOpts() : 
+{}
+{
+  (RemoteLog() AE()) 
+  {}
+}
+
+void 
+RuntimeQueue() 
+  throws PipelineException : 
+{}
+{
+  <QUEUE_RT> AE() (RuntimeQueueOpts())* 
+  {
+    pQueueMgrClient.setLogControls(pLogControls);
+  }
+}
+
+void 
+RuntimeQueueOpts() : 
+{}
+{
+  (RemoteLog() AE()) 
+  {}
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -6907,7 +7089,7 @@ AE() :
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
    t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50> | 
-   t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54>)
+   t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54> | t=<AE55>)
   { 
     return t; 
   }

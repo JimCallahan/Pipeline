@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.68 2006/10/23 11:30:20 jim Exp $
+// $Id: MasterMgrServer.java,v 1.69 2006/11/10 21:57:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -109,6 +109,9 @@ class MasterMgrServer
       NodeGCTask nodeGC = new NodeGCTask();
       nodeGC.start();
 
+      HeapStatsTask heapStats = new HeapStatsTask();
+      heapStats.start();
+
 //    LicenseTask lic = new LicenseTask();
 //    lic.start();
 
@@ -128,6 +131,9 @@ class MasterMgrServer
       try {
 // 	lic.interrupt();
 // 	lic.join();
+
+	heapStats.interrupt();
+	heapStats.join();
 
 	nodeGC.interrupt();
 	nodeGC.join();
@@ -306,6 +312,23 @@ class MasterMgrServer
 		MiscGetPrivilegeDetailsReq req = 
 		  (MiscGetPrivilegeDetailsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.getPrivilegeDetails(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- LOGGING -------------------------------------------------------------------*/
+	    case GetLogControls:
+	      {
+		objOut.writeObject(pMasterMgr.getLogControls());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetLogControls:
+	      {
+		MiscSetLogControlsReq req = (MiscSetLogControlsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setLogControls(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -1453,6 +1476,47 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Node Garbage Collector Finished.");	
+	LogMgr.getInstance().flush();
+      }
+    }
+  }
+
+  /**
+   * Heap statistics reporting.
+   */
+  private 
+  class HeapStatsTask
+    extends Thread
+  {
+    public 
+    HeapStatsTask() 
+    {
+      super("MasterMgrServer:HeapStatsTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "JVM Memory Statistics Started.");	
+	LogMgr.getInstance().flush();
+
+	while(!pShutdown.get()) {
+	  pMasterMgr.heapStats();
+	}
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
+	   "JVM Memory Statistics Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();	
+      }
+      finally {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "JVM Memory Statistics Finished.");	
 	LogMgr.getInstance().flush();
       }
     }

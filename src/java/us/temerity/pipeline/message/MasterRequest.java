@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.49 2006/10/23 11:30:20 jim Exp $
+// $Id: MasterRequest.java,v 1.50 2006/11/10 21:57:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,6 +46,19 @@ enum MasterRequest
    */ 
   GetPrivilegeDetails, 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current logging levels.
+   */ 
+  GetLogControls,
+  
+  /**
+   * An instance of {@link MiscSetLogControlsReq} is next.
+   */ 
+  SetLogControls,
+  
 
   /*----------------------------------------------------------------------------------------*/
 

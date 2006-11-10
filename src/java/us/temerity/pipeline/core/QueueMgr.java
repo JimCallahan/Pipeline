@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.68 2006/11/06 00:58:33 jim Exp $
+// $Id: QueueMgr.java,v 1.69 2006/11/10 21:57:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -537,6 +537,137 @@ class QueueMgr
     }    
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O G G I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current logging levels.
+   * 
+   * @return
+   *   <CODE>MiscGetLogControlsRsp</CODE>.
+   */ 
+  public Object
+  getLogControls() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    LogControls lc = new LogControls();
+    {
+      LogMgr mgr = LogMgr.getInstance(); 
+      lc.setLevel(LogMgr.Kind.Glu, mgr.getLevel(LogMgr.Kind.Glu));
+      lc.setLevel(LogMgr.Kind.Ops, mgr.getLevel(LogMgr.Kind.Ops));
+      lc.setLevel(LogMgr.Kind.Mem, mgr.getLevel(LogMgr.Kind.Mem));
+      lc.setLevel(LogMgr.Kind.Net, mgr.getLevel(LogMgr.Kind.Net));
+      lc.setLevel(LogMgr.Kind.Plg, mgr.getLevel(LogMgr.Kind.Plg));
+      lc.setLevel(LogMgr.Kind.Dsp, mgr.getLevel(LogMgr.Kind.Dsp));
+      lc.setLevel(LogMgr.Kind.Job, mgr.getLevel(LogMgr.Kind.Job));
+      lc.setLevel(LogMgr.Kind.Col, mgr.getLevel(LogMgr.Kind.Col));
+      lc.setLevel(LogMgr.Kind.Sch, mgr.getLevel(LogMgr.Kind.Sch));
+      lc.setLevel(LogMgr.Kind.Ext, mgr.getLevel(LogMgr.Kind.Ext));
+
+    }
+
+    return new MiscGetLogControlsRsp(timer, lc);
+  }
+
+  /**
+   * Set the current logging levels.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE>.
+   */ 
+  public synchronized Object
+  setLogControls
+  (
+   MiscSetLogControlsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may change the logging levels!");
+
+      LogControls lc = req.getControls(); 
+      {
+	LogMgr mgr = LogMgr.getInstance(); 
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Glu);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Glu, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Ops);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Ops, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Mem);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Mem, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Net);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Net, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Plg);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Plg, level);
+	}
+	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Dsp);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Dsp, level);
+	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Job);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Job, level);
+	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Col);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Col, level);
+	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sch);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Sch, level);
+	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Ext);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Ext, level);
+	}
+	
+      }
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4864,6 +4995,44 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   J V M   M E M O R Y   S T A T I S T I C S                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Report the current JVM heap statistics.
+   */ 
+  public void 
+  heapStats() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
+      Runtime rt = Runtime.getRuntime();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	 "JVM Memory Stats: " + 
+	 rt.freeMemory() + "/" + rt.totalMemory() + "/" + rt.maxMemory() + 
+	 " (free/total/max)"); 
+      LogMgr.getInstance().flush();
+    }
+
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      timer.suspend();
+      long nap = sHeapStatsInterval - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   T O O L S E T S   H E L P E R S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -6896,6 +7065,12 @@ class QueueMgr
    * on the results of a job. 
    */ 
   private static final int  sMaxWaitReconnects = 5;
+
+  /**
+   * The time (in milliseconds) between reports of the JVM heap statistics.
+   */ 
+  //  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
+  private static long  sHeapStatsInterval = 30000L; 
 
 
 

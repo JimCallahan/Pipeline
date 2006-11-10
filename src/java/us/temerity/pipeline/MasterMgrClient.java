@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.82 2006/10/24 20:07:41 jim Exp $
+// $Id: MasterMgrClient.java,v 1.83 2006/11/10 21:57:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -303,6 +303,50 @@ class MasterMgrClient
     }    
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O G G I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current logging levels.
+   */ 
+  public synchronized LogControls
+  getLogControls() 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(MasterRequest.GetLogControls, null);
+    if(obj instanceof MiscGetLogControlsRsp) {
+      MiscGetLogControlsRsp rsp = (MiscGetLogControlsRsp) obj;
+      return rsp.getControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Set the current logging levels.
+   */ 
+  public synchronized void
+  setLogControls
+  (
+   LogControls controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    MiscSetLogControlsReq req = new MiscSetLogControlsReq(controls);
+
+    Object obj = performTransaction(MasterRequest.SetLogControls, req);
+    handleSimpleResponse(obj);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

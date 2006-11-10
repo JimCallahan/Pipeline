@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.19 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueRequest.java,v 1.20 2006/11/10 21:57:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -25,6 +25,19 @@ enum QueueRequest
    */
   UpdateAdminPrivileges, 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current logging levels.
+   */ 
+  GetLogControls,
+  
+  /**
+   * An instance of {@link MiscSetLogControlsReq} is next.
+   */ 
+  SetLogControls,
+  
 
   /*----------------------------------------------------------------------------------------*/
 

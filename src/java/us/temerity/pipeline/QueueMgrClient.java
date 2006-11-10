@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.31 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueMgrClient.java,v 1.32 2006/11/10 21:57:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -56,6 +56,50 @@ class QueueMgrClient
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O G G I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current logging levels.
+   */ 
+  public synchronized LogControls
+  getLogControls() 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(QueueRequest.GetLogControls, null);
+    if(obj instanceof MiscGetLogControlsRsp) {
+      MiscGetLogControlsRsp rsp = (MiscGetLogControlsRsp) obj;
+      return rsp.getControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Set the current logging levels.
+   */ 
+  public synchronized void
+  setLogControls
+  (
+   LogControls controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    MiscSetLogControlsReq req = new MiscSetLogControlsReq(controls);
+
+    Object obj = performTransaction(QueueRequest.SetLogControls, req);
+    handleSimpleResponse(obj);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
