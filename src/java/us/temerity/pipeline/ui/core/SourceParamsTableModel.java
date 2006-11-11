@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.5 2006/07/22 05:14:23 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.6 2006/11/11 07:17:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -249,7 +249,7 @@ class SourceParamsTableModel
 	{
 	  ActionParam params[] = pParams[row];
 	  if(params != null) 
-	    value = params[pSortColumn-1].getValue();
+	    value = params[pSortColumn-2].getValue();
 	}
       }
 
