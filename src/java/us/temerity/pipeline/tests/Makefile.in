@@ -259,6 +259,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                    FileMgr \
 #                    FileMgr2 \
 #                    FileSeq \
+#                    JarReader \
 #                    Glue \
 #                    MasterMgr \
 #                    MasterMgr2 \
@@ -275,7 +276,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                    VersionID \
 
 
-           TESTS = JarReader
+           TESTS = QueueOps
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
 
