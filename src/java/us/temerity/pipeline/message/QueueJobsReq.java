@@ -1,4 +1,4 @@
-// $Id: QueuePreemptJobsReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: QueueJobsReq.java,v 1.1 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   P R E E M P T   J O B S   R E Q                                            */
+/*   Q U E U E   J O B S   R E Q                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to preempt the jobs with the given IDs. <P> 
+ * A request to perform an operation on jobs with the given IDs. <P> 
  */
 public
-class QueuePreemptJobsReq
+class QueueJobsReq
   extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,24 +26,16 @@ class QueuePreemptJobsReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param author 
-   *   The name of the user which owns the jobs.
-   * 
    * @param jobIDs
    *   The unique job identifiers.
    */
   public
-  QueuePreemptJobsReq
+  QueueJobsReq
   (
-   String author, 
    TreeSet<Long> jobIDs
   )
   { 
     super();
-
-    if(author == null) 
-      throw new IllegalArgumentException("The author cannot be (null)!");
-    pAuthor = author;
 
     if(jobIDs == null) 
       throw new IllegalArgumentException("The job IDs cannot be (null)!");
@@ -55,15 +47,6 @@ class QueuePreemptJobsReq
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the name of user which owens the jobs.
-   */ 
-  public String
-  getAuthor() 
-  {
-    return pAuthor;
-  }
 
   /**
    * Get the unique job identifiers.
@@ -80,18 +63,13 @@ class QueuePreemptJobsReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3795126549333532935L;
+  private static final long serialVersionUID = 5346988266848429849L;
 
   
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * The name of user which owens the jobs.
-   */
-  private String  pAuthor;
 
   /**
    * The unique job identifiers.

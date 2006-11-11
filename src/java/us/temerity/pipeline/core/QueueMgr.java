@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.69 2006/11/10 21:57:23 jim Exp $
+// $Id: QueueMgr.java,v 1.70 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3239,19 +3239,34 @@ class QueueMgr
   public Object
   preemptJobs
   (
-   QueuePreemptJobsReq req
+   QueueJobsReq req
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.preemptJobs()");
 
     try {
-      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+      boolean unprivileged = false; 
+
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : req.getJobIDs()) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+	    String author = job.getActionAgenda().getNodeID().getAuthor();
+	    if(pAdminPrivileges.isQueueManaged(req, author)) 
+	      pPreemptList.add(jobID);
+	    else 
+	      unprivileged = true;
+	  }
+	}
+      }
+
+      if(unprivileged)
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may preempt jobs owned by another user!");
 
-      for(Long jobID : req.getJobIDs())
-	pPreemptList.add(jobID);
-      
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3272,19 +3287,34 @@ class QueueMgr
   public Object
   killJobs
   (
-   QueueKillJobsReq req
+   QueueJobsReq req
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.killJobs()");
 
     try {
-      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+      boolean unprivileged = false; 
+
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : req.getJobIDs()) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+	    String author = job.getActionAgenda().getNodeID().getAuthor();
+	    if(pAdminPrivileges.isQueueManaged(req, author)) 
+	      pHitList.add(jobID);
+	    else 
+	      unprivileged = true;
+	  }
+	}
+      }
+
+      if(unprivileged)
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may kill jobs owned by another user!");
 
-      for(Long jobID : req.getJobIDs())
-	pHitList.add(jobID);
-      
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3305,23 +3335,34 @@ class QueueMgr
   public Object
   pauseJobs
   (
-   QueuePauseJobsReq req
+   QueueJobsReq req
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.pauseJobs()");
 
     try {
-      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+      boolean unprivileged = false; 
+
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : req.getJobIDs()) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+	    String author = job.getActionAgenda().getNodeID().getAuthor();
+	    if(pAdminPrivileges.isQueueManaged(req, author)) 
+	      pPaused.add(jobID);
+	    else 
+	      unprivileged = true;
+	  }
+	}
+      }
+
+      if(unprivileged)
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may pause jobs owned by another user!");
 
-      timer.aquire();
-      synchronized(pPaused) {
-	timer.resume();
-	for(Long jobID : req.getJobIDs())
-	  pPaused.add(jobID);
-      }
-      
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3342,23 +3383,34 @@ class QueueMgr
   public Object
   resumeJobs
   (
-   QueueResumeJobsReq req
+   QueueJobsReq req
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.resumeJobs()");
 
     try {
-      if(!pAdminPrivileges.isQueueManaged(req, req.getAuthor()))
+      boolean unprivileged = false; 
+
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : req.getJobIDs()) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+	    String author = job.getActionAgenda().getNodeID().getAuthor();
+	    if(pAdminPrivileges.isQueueManaged(req, author)) 
+	      pPaused.remove(jobID);
+	    else 
+	      unprivileged = true;
+	  }
+	}
+      }
+
+      if(unprivileged)
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may resume jobs owned by another user!");
 
-      timer.aquire();
-      synchronized(pPaused) {
-	timer.resume();
-	for(Long jobID : req.getJobIDs())
-	  pPaused.remove(jobID);
-      }
-      
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {

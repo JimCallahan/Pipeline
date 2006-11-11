@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.32 2006/11/10 21:57:23 jim Exp $
+// $Id: QueueMgrClient.java,v 1.33 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1148,13 +1148,8 @@ class QueueMgrClient
    * If successful, the jobs will be killed but instead of failing, the jobs will be
    * automatically requeued and will be rerun at the next available opportunity. <P> 
    * 
-   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
-   * 
-   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * If the owner of the jobs are different than the current user, this method 
    * will fail unless the current user has privileged access status.
-   * 
-   * @param author 
-   *   The name of the user which owns the jobs.
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1165,14 +1160,13 @@ class QueueMgrClient
   public synchronized void
   preemptJobs
   (
-   String author, 
    TreeSet<Long> jobIDs
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    QueuePreemptJobsReq req = new QueuePreemptJobsReq(author, jobIDs);
+    QueueJobsReq req = new QueueJobsReq(jobIDs);
     Object obj = performTransaction(QueueRequest.PreemptJobs, req); 
     handleSimpleResponse(obj);
   }
@@ -1180,13 +1174,8 @@ class QueueMgrClient
   /**
    * Kill the jobs with the given IDs. <P> 
    * 
-   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
-   * 
-   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * If the owner of the jobs are different than the current user, this method 
    * will fail unless the current user has privileged access status.
-   * 
-   * @param author 
-   *   The name of the user which owns the jobs.
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1197,14 +1186,13 @@ class QueueMgrClient
   public synchronized void
   killJobs
   (
-   String author, 
    TreeSet<Long> jobIDs
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    QueueKillJobsReq req = new QueueKillJobsReq(author, jobIDs);
+    QueueJobsReq req = new QueueJobsReq(jobIDs);
     Object obj = performTransaction(QueueRequest.KillJobs, req); 
     handleSimpleResponse(obj);
   }
@@ -1212,13 +1200,8 @@ class QueueMgrClient
   /**
    * Pause the jobs with the given IDs. <P> 
    * 
-   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
-   * 
-   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * If the owner of the jobs are different than the current user, this method 
    * will fail unless the current user has privileged access status.
-   * 
-   * @param author 
-   *   The name of the user which owns the jobs.
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1229,16 +1212,147 @@ class QueueMgrClient
   public synchronized void
   pauseJobs
   (
-   String author, 
    TreeSet<Long> jobIDs
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    QueuePauseJobsReq req = new QueuePauseJobsReq(author, jobIDs);
+    QueueJobsReq req = new QueueJobsReq(jobIDs);
     Object obj = performTransaction(QueueRequest.PauseJobs, req); 
     handleSimpleResponse(obj);
+  }
+
+  /**
+   * Resume execution of the paused jobs with the given IDs. <P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to resume the jobs.
+   */  
+  public synchronized void
+  resumeJobs
+  ( 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueJobsReq req = new QueueJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.ResumeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+  
+
+  /**
+   * Kill and requeue the jobs with the given IDs. <P> 
+   * 
+   * If successful, the jobs will be killed but instead of failing, the jobs will be
+   * automatically requeued and will be rerun at the next available opportunity. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @deprecated 
+   *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
+   *   this method.  Please use the other form of this method which does not take an
+   *   <CODE>author</CODE> in future code.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to preempt the jobs.
+   */ 
+  @Deprecated 
+  public synchronized void
+  preemptJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    preemptJobs(jobIDs);
+  }
+
+  /**
+   * Kill the jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @deprecated 
+   *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
+   *   this method.  Please use the other form of this method which does not take an
+   *   <CODE>author</CODE> in future code.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */  
+  @Deprecated 
+  public synchronized void
+  killJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    killJobs(jobIDs);
+  }
+
+  /**
+   * Pause the jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @deprecated 
+   *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
+   *   this method.  Please use the other form of this method which does not take an
+   *   <CODE>author</CODE> in future code.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to pause the jobs.
+   */  
+  @Deprecated 
+  public synchronized void
+  pauseJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    pauseJobs(jobIDs);
   }
 
   /**
@@ -1249,6 +1363,11 @@ class QueueMgrClient
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
    * 
+   * @deprecated 
+   *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
+   *   this method.  Please use the other form of this method which does not take an
+   *   <CODE>author</CODE> in future code.
+   * 
    * @param author 
    *   The name of the user which owns the jobs.
    * 
@@ -1258,6 +1377,7 @@ class QueueMgrClient
    * @throws PipelineException 
    *   If unable to resume the jobs.
    */  
+  @Deprecated 
   public synchronized void
   resumeJobs
   (
@@ -1266,14 +1386,10 @@ class QueueMgrClient
   ) 
     throws PipelineException
   {
-    verifyConnection();
-
-    QueueResumeJobsReq req = new QueueResumeJobsReq(author, jobIDs);
-    Object obj = performTransaction(QueueRequest.ResumeJobs, req); 
-    handleSimpleResponse(obj);
+    resumeJobs(jobIDs);
   }
-  
 
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**

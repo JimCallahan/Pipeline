@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.20 2006/11/10 21:57:23 jim Exp $
+// $Id: QueueRequest.java,v 1.21 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -247,22 +247,22 @@ enum QueueRequest
   SubmitJobs, 
 
   /**
-   * An instance {@link QueuePreemptJobsReq QueuePreemptJobsReq} is next.
+   * Kill and requeue the jobs with the given IDs. <P> 
    */
   PreemptJobs, 
 
   /**
-   * An instance {@link QueueKillJobsReq QueueKillJobsReq} is next.
+   * Kill the jobs with the given IDs. <P> 
    */
   KillJobs, 
 
   /**
-   * An instance {@link QueuePauseJobsReq QueuePauseJobsReq} is next.
+   * Pause the jobs with the given IDs. <P> 
    */
   PauseJobs, 
 
   /**
-   * An instance {@link QueueResumeJobsReq QueueResumeJobsReq} is next.
+   * Resume execution of the paused jobs with the given IDs. <P> 
    */
   ResumeJobs, 
 

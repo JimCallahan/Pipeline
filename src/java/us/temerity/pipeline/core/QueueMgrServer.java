@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.37 2006/11/10 21:57:23 jim Exp $
+// $Id: QueueMgrServer.java,v 1.38 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -611,7 +611,7 @@ class QueueMgrServer
 	    
 	    case PreemptJobs:
 	      {
-		QueuePreemptJobsReq req = (QueuePreemptJobsReq) objIn.readObject();
+		QueueJobsReq req = (QueueJobsReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.preemptJobs(req));
 		objOut.flush(); 
 	      }
@@ -619,7 +619,7 @@ class QueueMgrServer
 
 	    case KillJobs:
 	      {
-		QueueKillJobsReq req = (QueueKillJobsReq) objIn.readObject();
+		QueueJobsReq req = (QueueJobsReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.killJobs(req));
 		objOut.flush(); 
 	      }
@@ -627,7 +627,7 @@ class QueueMgrServer
 
 	    case PauseJobs:
 	      {
-		QueuePauseJobsReq req = (QueuePauseJobsReq) objIn.readObject();
+		QueueJobsReq req = (QueueJobsReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.pauseJobs(req));
 		objOut.flush(); 
 	      }
@@ -635,7 +635,7 @@ class QueueMgrServer
 
 	    case ResumeJobs:
 	      {
-		QueueResumeJobsReq req = (QueueResumeJobsReq) objIn.readObject();
+		QueueJobsReq req = (QueueJobsReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.resumeJobs(req));
 		objOut.flush(); 
 	      }

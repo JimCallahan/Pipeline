@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.27 2006/10/18 06:34:22 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.28 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2211,18 +2211,10 @@ class JQueueJobViewerPanel
   private synchronized void 
   doPauseJobs() 
   {
-    TreeMap<String,TreeSet<Long>> paused = new TreeMap<String,TreeSet<Long>>();
+    TreeSet<Long> paused = new TreeSet<Long>();
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
-
-      String author = status.getNodeID().getAuthor();
-      TreeSet<Long> ids = paused.get(author);
-      if(ids == null) {
-	ids = new TreeSet<Long>();
-	paused.put(author, ids);
-      }  
-
-      ids.add(status.getJobID());
+      paused.add(status.getJobID());
     }
 
     if(!paused.isEmpty()) {
@@ -2240,23 +2232,10 @@ class JQueueJobViewerPanel
   private synchronized void 
   doResumeJobs() 
   {
-    TreeMap<String,TreeSet<Long>> resumed = new TreeMap<String,TreeSet<Long>>();
+    TreeSet<Long> resumed = new TreeSet<Long>();
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
-
-      switch(status.getState()) {
-      case Paused:
-	{
-	  String author = status.getNodeID().getAuthor();
-	  TreeSet<Long> ids = resumed.get(author);
-	  if(ids == null) {
-	    ids = new TreeSet<Long>();
-	    resumed.put(author, ids);
-	  }  
-	  
-	  ids.add(status.getJobID());
-	}
-      }
+      resumed.add(status.getJobID());
     }
 
     if(!resumed.isEmpty()) {
@@ -2274,21 +2253,12 @@ class JQueueJobViewerPanel
   private synchronized void 
   doPreemptJobs() 
   {
-    TreeMap<String,TreeSet<Long>> preempt = new TreeMap<String,TreeSet<Long>>();
+    TreeSet<Long> preempt = new TreeSet<Long>();
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
       switch(status.getState()) {
       case Running:
-	{
-	  String author = status.getNodeID().getAuthor();
-	  TreeSet<Long> ids = preempt.get(author);
-	  if(ids == null) {
-	    ids = new TreeSet<Long>();
-	    preempt.put(author, ids);
-	  }  
-	  
-	  ids.add(status.getJobID());
-	}
+	preempt.add(status.getJobID());
       }
     }
 
@@ -2307,7 +2277,7 @@ class JQueueJobViewerPanel
   private synchronized void 
   doKillJobs() 
   {
-    TreeMap<String,TreeSet<Long>> dead = new TreeMap<String,TreeSet<Long>>();
+    TreeSet<Long> dead = new TreeSet<Long>();
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
       switch(status.getState()) {
@@ -2315,16 +2285,7 @@ class JQueueJobViewerPanel
       case Preempted:
       case Paused:
       case Running:
-	{
-	  String author = status.getNodeID().getAuthor();
-	  TreeSet<Long> ids = dead.get(author);
-	  if(ids == null) {
-	    ids = new TreeSet<Long>();
-	    dead.put(author, ids);
-	  }  
-	  
-	  ids.add(status.getJobID());
-	}
+	dead.add(status.getJobID());
       }
     }
 
@@ -2738,12 +2699,12 @@ class JQueueJobViewerPanel
     public 
     PauseJobsTask
     (
-     TreeMap<String,TreeSet<Long>> jobs
+     TreeSet<Long> jobIDs
     ) 
     {
       super("JQueueJobsViewerPanel:PauseJobsTask");
 
-      pJobs = jobs;
+      pJobIDs = jobIDs;
     }
 
     public void 
@@ -2751,9 +2712,8 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
-	try {
-	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient(pGroupID).pauseJobs(author, pJobs.get(author));
+	try { 
+	  master.getQueueMgrClient(pGroupID).pauseJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2767,7 +2727,7 @@ class JQueueJobViewerPanel
       }
     }
 
-    private TreeMap<String,TreeSet<Long>>  pJobs; 
+    private TreeSet<Long>  pJobIDs;
   }
 
   /** 
@@ -2780,12 +2740,12 @@ class JQueueJobViewerPanel
     public 
     ResumeJobsTask
     (
-     TreeMap<String,TreeSet<Long>> jobs
+     TreeSet<Long> jobIDs
     ) 
     {
       super("JQueueJobsViewerPanel:ResumeJobsTask");
 
-      pJobs = jobs;
+      pJobIDs = jobIDs;
     }
 
     public void 
@@ -2794,8 +2754,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
 	try {
-	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient(pGroupID).resumeJobs(author, pJobs.get(author));
+	  master.getQueueMgrClient(pGroupID).resumeJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2809,7 +2768,7 @@ class JQueueJobViewerPanel
       }
     }
 
-    private TreeMap<String,TreeSet<Long>>  pJobs; 
+    private TreeSet<Long>  pJobIDs;
   }
 
   /** 
@@ -2821,13 +2780,13 @@ class JQueueJobViewerPanel
   {
     public 
     PreemptJobsTask
-    (
-     TreeMap<String,TreeSet<Long>> jobs     
+    (   
+     TreeSet<Long> jobIDs
     ) 
     {
       super("JQueueJobsViewerPanel:PreemptJobsTask");
 
-      pJobs = jobs;
+      pJobIDs = jobIDs;
     }
 
     public void 
@@ -2836,8 +2795,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
 	try {
-	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient(pGroupID).preemptJobs(author, pJobs.get(author));
+	  master.getQueueMgrClient(pGroupID).preemptJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2851,7 +2809,7 @@ class JQueueJobViewerPanel
       }
     }
 
-    private TreeMap<String,TreeSet<Long>>  pJobs; 
+    private TreeSet<Long>  pJobIDs;
   }
 
   /** 
@@ -2863,13 +2821,13 @@ class JQueueJobViewerPanel
   {
     public 
     KillJobsTask
-    (
-     TreeMap<String,TreeSet<Long>> jobs     
+    (    
+     TreeSet<Long> jobIDs
     ) 
     {
       super("JQueueJobsViewerPanel:KillJobsTask");
 
-      pJobs = jobs;
+      pJobIDs = jobIDs;
     }
 
     public void 
@@ -2878,8 +2836,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
 	try {
-	  for(String author : pJobs.keySet()) 
-	    master.getQueueMgrClient(pGroupID).killJobs(author, pJobs.get(author));
+	  master.getQueueMgrClient(pGroupID).killJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2893,7 +2850,7 @@ class JQueueJobViewerPanel
       }
     }
 
-    private TreeMap<String,TreeSet<Long>>  pJobs; 
+    private TreeSet<Long>  pJobIDs;
   }
 
   /** 

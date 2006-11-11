@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.170 2006/11/10 22:33:33 jim Exp $
+// $Id: MasterMgr.java,v 1.171 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10437,7 +10437,7 @@ class MasterMgr
     }
 
     if(!activeIDs.isEmpty()) 
-      pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
+      pQueueMgrClient.killJobs(activeIDs);
   }
 
     
@@ -10550,7 +10550,7 @@ class MasterMgr
 	throw new IllegalStateException(); 
       
       if(!activeIDs.isEmpty()) 
-	pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
+	pQueueMgrClient.killJobs(activeIDs);
 
       {
 	FileMgrClient fclient = getFileMgrClient();

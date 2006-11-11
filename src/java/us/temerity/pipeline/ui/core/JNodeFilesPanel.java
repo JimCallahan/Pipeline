@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.28 2006/10/18 06:34:22 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.29 2006/11/11 20:45:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3127,7 +3127,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
 	try {
-	  master.getQueueMgrClient(pGroupID).pauseJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).pauseJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3168,7 +3168,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
 	try {
-	  master.getQueueMgrClient(pGroupID).resumeJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).resumeJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3209,7 +3209,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
 	try {
-	  master.getQueueMgrClient(pGroupID).preemptJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).preemptJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3250,7 +3250,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
 	try {
-	  master.getQueueMgrClient(pGroupID).killJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient(pGroupID).killJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
