@@ -1,4 +1,4 @@
-// $Id: MayaShaderExportAction.java,v 1.1 2006/10/10 22:22:57 jim Exp $
+// $Id: MayaShaderExportAction.java,v 1.2 2006/11/12 01:19:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_12;
 
@@ -78,7 +78,10 @@ class MayaShaderExportAction
       layout.addEntry(aSelectionPrefix);
 
       {
-	LayoutGroup sub = new LayoutGroup(false);
+	LayoutGroup sub = new LayoutGroup
+	  ("MEL Scripts", 
+	   "MEL scripts run at various stages of the export process.", 
+	   true);
 	sub.addEntry(aPreExportMEL);
 	sub.addEntry(aPostExportMEL);
 	layout.addSubGroup(sub);
