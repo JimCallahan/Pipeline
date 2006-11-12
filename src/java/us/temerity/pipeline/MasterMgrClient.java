@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.83 2006/11/10 21:57:23 jim Exp $
+// $Id: MasterMgrClient.java,v 1.84 2006/11/12 01:04:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4634,6 +4634,134 @@ class MasterMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Register a new node who's properties are identical to an existing working version.
+   * 
+   * Clones all properties, actions, links and files. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *  
+   * @param author 
+   *   The name of the user which owns the cloned version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @param oldName
+   *   The fully resolved name of the source node to clone.
+   * 
+   * @param newName
+   *   The fully resolved name of the cloned node.
+   * 
+   * @throws PipelineException
+   *   If unable to clone the given node.
+   */
+  public synchronized void 
+  clone
+  ( 
+   String author, 
+   String view, 
+   String oldName, 
+   String newName
+  ) 
+    throws PipelineException
+  {
+    clone(author, view, oldName, newName, true, true, true);
+  }
+
+  /**
+   * Register a new node who's properties are identical to an existing working version.
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *  
+   * @param author 
+   *   The name of the user which owns the cloned version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @param oldName
+   *   The fully resolved name of the source node to clone.
+   * 
+   * @param newName
+   *   The fully resolved name of the cloned node.
+   * 
+   * @param cloneAction
+   *   Whether to clone the action and action parameters of source node.
+   * 
+   * @param cloneLinks
+   *   Whether to clone the links of the source node as well.
+   * 
+   * @param cloneFiles
+   *   Whether to copy the files of source node as well.
+   * 
+   * @throws PipelineException
+   *   If unable to clone the given node.
+   */
+  public synchronized void 
+  clone
+  ( 
+   String author, 
+   String view, 
+   String oldName, 
+   String newName, 
+   boolean cloneAction, 
+   boolean cloneLinks, 
+   boolean cloneFiles
+  ) 
+    throws PipelineException
+  {
+    NodeMod oldMod = getWorkingVersion(author, view, oldName);
+
+    FileSeq newSeq = null;
+    {
+      FileSeq oldSeq = oldMod.getPrimarySequence();
+      FilePattern oldPat = oldSeq.getFilePattern();
+
+      Path path = new Path(newName);
+      String name = path.getName();
+
+      FrameRange range = null;
+      FilePattern pat = null;
+
+      if(oldSeq.hasFrameNumbers()) {
+	range = oldSeq.getFrameRange();
+	pat = new FilePattern(name, oldPat.getPadding(), oldPat.getSuffix());
+      }
+      else {
+	pat = new FilePattern(name, oldPat.getSuffix());
+      }
+   
+      newSeq = new FileSeq(pat, range);
+    }
+
+    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(),
+				 oldMod.getToolset(), oldMod.getEditor());
+
+    register(author, view, newMod);
+
+    if(cloneLinks) {
+      for(LinkMod link : oldMod.getSources()) {
+	link(author, view, newName, 
+	     link.getName(), link.getPolicy(), link.getRelationship(), link.getFrameOffset());
+      }
+    }
+
+    if(cloneAction) {
+      BaseAction action = new BaseAction(oldMod.getAction());
+      newMod.setAction(action);
+      modifyProperties(author, view, newMod);
+    }
+
+    if(cloneFiles) {
+      NodeID source = new NodeID(author, view, oldName);
+      NodeID target = new NodeID(author, view, newName);
+      cloneFiles(source, target);
+    }
+  } 
 
   /**
    * Replace the primary files associated with one node with the primary files of 
