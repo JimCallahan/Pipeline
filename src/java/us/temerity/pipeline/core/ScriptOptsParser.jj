@@ -202,6 +202,12 @@ ScriptOptsParser
   private Integer        pMaxHostSlots;
   
   /**
+   * view options
+   */ 
+  private String   pViewPattern; 
+  private Boolean  pRemoveArea; 
+
+  /**
    * working node version command option temporaries
    */   
   private ArrayList  pFrames; 
@@ -404,6 +410,7 @@ TOKEN :
 | <FILE_PATTERN:       "--file-pattern">    	: FILE_PAT_SEP  	      
 | <RENAME_FILES:       "--rename-files">    				      
 | <REMOVE_FILES:       "--remove-files">    				      
+| <REMOVE_AREA:        "--remove-area">    				      
 | <RANGE:              "--range">           	: FRAME_RANGE_SEP	      
 | <FRAME:              "--frame">           	: FRAME_NUMBERS_SEP	      
 | <INDEX:              "--index">           	: FRAME_INDICES_SEP	      
@@ -1514,6 +1521,7 @@ TOKEN :
 {
   <VIEW_GET:            "--get">                   : OPTIONS
 | <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
+| <VIEW_RELEASE:        "--release">               : VIEW_NAME_SEP
 | <AE36:                ["\0"]>   
 | <UNKNOWN_OPTION13:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN13:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
@@ -4266,19 +4274,22 @@ ViewCmds()
 {}
 {
   <VIEW1> AE() 
-     (ViewGet() | ViewCreate()) 
+     (ViewGet() | ViewCreate() | ViewRelease()) 
   {}
 }
+
 
 void 
 ViewGet() 
   throws PipelineException : 
-{}
 {
-  <VIEW_GET> AE()
+  pAuthor = PackageInfo.sUser;
+}
+{
+  <VIEW_GET> AE() (ViewGetOpts())*
   {
     TreeMap table = pMasterMgrClient.getWorkingAreas();
-    TreeSet views = (TreeSet) table.get(PackageInfo.sUser);
+    TreeSet views = (TreeSet) table.get(pAuthor);
     Iterator iter = views.iterator();
     while(iter.hasNext()) {
       String vname = (String) iter.next();
@@ -4290,18 +4301,79 @@ ViewGet()
   }
 }
 
+void
+ViewGetOpts() :
+{}
+{
+  (Author()) 
+  {}
+}
+
+
 void 
 ViewCreate() 
   throws PipelineException : 
 {
   String vname = null;
+  pAuthor = PackageInfo.sUser;
 }
 {
-  <VIEW_CREATE> EQ() vname=ViewName() AE()
+  <VIEW_CREATE> EQ() vname=ViewName() AE() (ViewCreateOpts())*
   {
-    pMasterMgrClient.createWorkingArea(PackageInfo.sUser, vname);
+    pMasterMgrClient.createWorkingArea(pAuthor, vname);
   }
 }
+
+void
+ViewCreateOpts() :
+{}
+{
+  (Author()) 
+  {}
+}
+
+
+void 
+ViewRelease() 
+  throws PipelineException : 
+{
+  String vname = null;
+
+  pAuthor      = PackageInfo.sUser;
+  pViewPattern = null;
+  pRemoveFiles = false;
+  pRemoveArea  = false; 
+}
+{
+  <VIEW_RELEASE> EQ() vname=ViewName() AE() (ViewReleaseOpts())*
+  {
+    pApp.releaseView(pAuthor, vname, pViewPattern, pRemoveFiles, pRemoveArea, 
+		     pMasterMgrClient);
+  }
+}
+
+void
+ViewReleaseOpts() :
+{}
+{
+  (Author() | ViewPattern() | RemoveFiles() | RemoveArea())
+  {}
+}
+
+
+void 
+ViewPattern() : 
+{
+  String p;
+}
+{
+  <PATTERN> EQ() p=StringLiteral() AE()
+  {
+    if((p != null) && (p.length() > 0))
+      pViewPattern = p;
+  }
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -6567,6 +6639,16 @@ RemoveFiles() :
   <REMOVE_FILES> AE() 
   {
     pRemoveFiles = true;
+  }
+}
+
+void 
+RemoveArea() : 
+{}
+{
+  <REMOVE_AREA> AE() 
+  {
+    pRemoveArea = true;
   }
 }
 

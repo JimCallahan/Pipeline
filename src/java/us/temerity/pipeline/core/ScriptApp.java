@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.59 2006/11/12 01:04:56 jim Exp $
+// $Id: ScriptApp.java,v 1.60 2006/11/12 08:58:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -244,6 +244,10 @@ class ScriptApp
        "    view\n" + 
        "      --get\n" + 
        "      --create=view-name\n" + 
+       "      --get [--author=user-name]\n" + 
+       "      --create=view-name [--author=user-name]\n" + 
+       "      --release=view-name [--author=user-name] [--pattern='node-regex']\n" + 
+       "        [--remove-files] [--remove-area]\n" + 
        "\n" + 
        "  Working Node Versions\n" +
        "    working\n" +
@@ -1787,6 +1791,48 @@ class ScriptApp
   {
     TreeSet<SuffixEditor> editors = client.getDefaultSuffixEditors();
     client.setSuffixEditors(editors);
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   V I E W                                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove all nodes within the given working area which match the pattern.
+   */ 
+  public void
+  releaseView
+  (
+   String author, 
+   String view, 
+   String pattern, 
+   boolean removeFiles, 
+   boolean removeArea,
+   MasterMgrClient mclient
+  ) 
+    throws PipelineException
+  {
+    TreeSet<String> names = mclient.getWorkingNames(author, view, pattern);
+    if(!names.isEmpty()) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Releasing Nodes:");
+      for(String name : names)
+	buf.append("\n  " + name);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 buf.toString());
+
+      mclient.release(author, view, names, removeFiles);
+    }
+
+    if(removeArea) {
+      mclient.removeWorkingArea(author, view);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Working Area (" + author + "|" + view + ") Removed.");
+    }
   }
   
 

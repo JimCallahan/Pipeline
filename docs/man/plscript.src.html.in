@@ -530,13 +530,34 @@ Area Views</a><br>
       <li style="font-weight: bold;">view<br>
       </li>
       <ul>
-        <li style="font-weight: bold;"><a href="#view_--get">--get</a></li>
+        <li style="font-weight: bold;"><a href="#view_--get">--get</a> <span
+ style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+          </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><span style="font-style: italic;"><span
  style="font-weight: bold;"><span style="font-style: italic;"><span
  style="font-style: italic;"></span></span></span></span><a
  href="#view_--create"><span style="font-weight: bold;">--create</span></a>=<span
- style="font-style: italic;">view-name</span></span></li>
+ style="font-style: italic;">view-name </span>[</span><a
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#view_--release"><span
+ style="font-weight: bold;">--release</span></a>=<span
+ style="font-style: italic;">view-name</span> </span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>[</span><a
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span
+ style="font-style: italic;"></span><span style="font-weight: normal;">]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--remove-files</span>]
+[<span style="font-weight: bold;">--remove-area</span>]</span><span
+ style="font-weight: normal;"></span></li>
       </ul>
     </ul>
   </ul>
@@ -3340,24 +3361,59 @@ default values for the current user.<br>
 <h3><a name="Working_Area_Views"></a>Working Area Views</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="view_--get"></a>view
---get<br>
-<br>
+--get</span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>
+[</span><a style="font-weight: bold;" href="#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><br>
+<span style="font-weight: bold;"><br>
 </span>
 <div style="margin-left: 40px;">Print the names of the working areas
-for the current user.<br>
+for the given user.<br>
 </div>
 <span style="font-weight: bold;"><br>
 </span><span style="font-weight: bold;"><a name="view_--create"></a>view
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--create</span>=<span
- style="font-style: italic;">view-name</span></span><br>
+ style="font-style: italic;">view-name </span></span><span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span><br>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span></div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span>
-<div style="margin-left: 80px;">Create a new working area for the
-current user named (<span style="font-style: italic;">view-name</span>).<br>
+<div style="margin-left: 80px;">Create a new working area for the given
+user named (<span style="font-style: italic;">view-name</span>).<br>
 </div>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span>
+<span style="font-weight: normal;"><br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="view_--release"></a>--release</span>=<span
+ style="font-style: italic;">view-name</span> </span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>[</span><a
+ style="font-weight: bold;" href="#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]
+</span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span
+ style="font-style: italic;"></span><span style="font-weight: normal;">]</span><span
+ style="font-weight: normal;"> <br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]
+[<span style="font-weight: bold;">--remove-area</span>]<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Release all of the nodes in the given working area which match the
+given regular expression (node-regex).&nbsp; If no <span
+ style="font-weight: bold;">--pattern</span> option is given, then all
+nodes in the working area will be released.&nbsp; If <span
+ style="font-weight: bold;">--remove-files</span> is given, then also
+remove the working area file associated with the released nodes.&nbsp;
+If <span style="font-weight: bold;">--remove-area</span> if given and
+no nodes remain in the working area, then remove the entire working
+area directory and all of its contents.<br>
+</div>
+</div>
 <h3><a name="Working_Node_Versions"></a>Working Node Versions</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="working_--get-info"></a>working
