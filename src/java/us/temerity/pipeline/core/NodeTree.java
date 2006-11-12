@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.1 2006/11/10 22:33:33 jim Exp $
+// $Id: NodeTree.java,v 1.2 2006/11/12 08:57:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -744,7 +744,7 @@ class NodeTree
     TreeSet<String> matches = new TreeSet<String>();
 
     for(NodeTreeEntry entry : pNodeTreeRoot.values())
-      matchingWorkingNodesHelper(author, view, null, "", entry, matches);
+      matchingWorkingNodesHelper(author, view, pattern, "", entry, matches);
 
     return matches;
   }
