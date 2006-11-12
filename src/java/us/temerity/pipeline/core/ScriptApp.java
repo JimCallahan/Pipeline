@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.58 2006/10/18 08:43:17 jim Exp $
+// $Id: ScriptApp.java,v 1.59 2006/11/12 01:04:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -156,6 +156,13 @@ class ScriptApp
        "        [--min-archives=integer]\n" + 
        "      --restore=archive-name [--param=name:value ...] [--toolset=...]\n" + 
        "        [--vsn=node-name:major.minor.micro ...]\n" + 
+       "    runtime\n" + 
+       "      --master --remote-log=logger:level[,logger:level[...]]\n" + 
+       "      --queue --remote-log=logger:level[,logger:level[...]]\n" + 
+       "    archive-volume\n" + 
+       "      --get\n" + 
+       "      --get-info=archive-name [--show=section[,section ...]]\n" + 
+       "        [--hide=section[,section ...]]\n" + 
        "\n" + 
        "  Toolset Administration\n" + 
        "    default-toolset\n" + 
@@ -255,6 +262,9 @@ class ScriptApp
        "        [--max-load=real] [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
        "        [--license-key=key-name[:true|false] ...]\n" +
        "        [--selection-key=key-name[:true|false] ...]\n" +
+       "      --clone=node-name\n" + 
+       "        [--author=user-name] [--view=view-name]\n" + 
+       "        --clone-source=node-name\n" + 
        "      --release=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
        "        [--remove-files]\n" +

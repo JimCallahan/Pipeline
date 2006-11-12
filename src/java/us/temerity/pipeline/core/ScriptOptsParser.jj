@@ -243,6 +243,8 @@ ScriptOptsParser
   private FilePattern pNewFilePattern; 
   private FrameRange  pFrameRange; 
 
+  private String  pCloneSource; 
+
   private String            pLinkSourceName;  
   private LinkPolicy        pLinkPolicy;      
   private LinkRelationship  pLinkRelationship;
@@ -393,7 +395,8 @@ TOKEN :
 | <MIN_MEMORY:         "--min-memory">      	: BYTE_SIZE_SEP	      
 | <MIN_DISK:           "--min-disk">        	: BYTE_SIZE_SEP	      
 | <LICENSE_KEY2:       "--license-key">     	: KEY_TOGGLE_SEP	      
-| <SELECTION_KEY2:     "--selection-key">   	: KEY_TOGGLE_SEP	      
+| <SELECTION_KEY2:     "--selection-key">   	: KEY_TOGGLE_SEP
+| <CLONE_SOURCE:       "--clone-source">        : NODE_NAME_SEP
 | <REF:                "--ref">             	: LINK_PARAM_SEP	      
 | <DEPEND:             "--depend">          	: LINK_PARAM_SEP	      
 | <SOURCE:             "--source">          	: LINK_PARAM_SEP	      
@@ -1523,6 +1526,7 @@ TOKEN :
 {
   <WORKING_GET_INFO:          "--get-info">              : NODE_NAME_SEP
 | <WORKING_REGISTER:          "--register">              : NODE_NAME_SEP
+| <WORKING_CLONE:             "--clone">                 : NODE_NAME_SEP
 | <WORKING_RELEASE:           "--release">               : NODE_NAME_SEP
 | <WORKING_SET:               "--set">                   : NODE_NAME_SEP
 | <WORKING_LINK:              "--link">                  : NODE_NAME_SEP
@@ -4310,10 +4314,10 @@ WorkingCmds()
 {}
 {
   <WORKING> AE() 
-     (WorkingGetInfo() | WorkingRegister() | WorkingRelease() | WorkingSet() | 
-      WorkingLink() | WorkingUnlink() | WorkingAddSecondary() | WorkingRemoveSecondary() |
-      WorkingRename() | WorkingRenumber() | WorkingEdit() | WorkingSubmitJobs() | 
-      WorkingRemoveFiles()) 
+     (WorkingGetInfo() | WorkingRegister() | WorkingClone() | WorkingRelease() | 
+      WorkingSet() | WorkingLink() | WorkingUnlink() | WorkingAddSecondary() | 
+      WorkingRemoveSecondary() | WorkingRename() | WorkingRenumber() | WorkingEdit() | 
+      WorkingSubmitJobs() | WorkingRemoveFiles()) 
   {}
 }
 
@@ -4475,6 +4479,58 @@ WorkingRegisterOpts()
    LicenseKey() | SelectionKey()) 
   {}
 }
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingClone() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor      = PackageInfo.sUser;
+  pView        = "default";
+  pCloneSource = null;
+}
+{
+  <WORKING_CLONE> EQ() name=NodeName() AE() (WorkingCloneOpts())*
+  {
+    if(pCloneSource == null) 
+      throw new PipelineException
+        ("The --clone-source option is required!");
+
+    pMasterMgrClient.clone(pAuthor, pView, pCloneSource, name); 
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Cloned Node: " + name);
+    LogMgr.getInstance().flush();
+  }
+}
+
+void
+WorkingCloneOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | CloneSource()) 
+  {}
+}
+
+void
+CloneSource() : 
+{
+  String sname = null;
+}
+{
+  <CLONE_SOURCE> EQ() sname=NodeName() AE()
+  {
+    pCloneSource = sname;
+  }
+}
+
+
+
 
 
 /*------------------------------------------------------------------------------------------*/

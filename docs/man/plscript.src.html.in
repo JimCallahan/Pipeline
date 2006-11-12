@@ -631,6 +631,18 @@ Node Versions</a></li>
  style="font-style: italic;">key-name</span>[:true|false] ...] [<a
  href="#--selection-key"><span style="font-weight: bold;">--selection-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#working_--clone"><span
+ style="font-weight: bold;">--clone</span></a>=<span
+ style="font-style: italic;">node-name</span> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[</span><a
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span> <span
+ style="font-weight: normal;">[</span><a href="#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
+          <span style="font-weight: bold;">--clone-source</span>=node-name
+          <br>
+          </span></li>
         <li style="font-weight: bold;"><a href="#working_--release"><span
  style="font-weight: normal;"><span
  style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
@@ -3522,6 +3534,27 @@ links.<br>
 version (<span style="font-style: italic;">node-name</span>) in the
 working area (<span style="font-style: italic;">view-name</span>) owned
 by the user (<span style="font-style: italic;">user-name</span>). <br>
+</div>
+<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="working_--clone"></a>--clone</span>=<span
+ style="font-style: italic;">node-name</span> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span> <span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="#--view">--view</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">view-name</span>] <span
+ style="font-weight: bold;"><br>
+&nbsp;&nbsp;&nbsp; <a name="--source"></a>--clone-source</span>=node-name<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Registers a new working version which is identical to an existing
+working version except for its name.&nbsp; All node properties,
+actions, links and primary files are copied from the node specified by
+the required <span style="font-weight: bold;">--clone-source</span>
+option.<br>
 </div>
 <br>
 <span style="font-weight: bold;"><a name="working_--release"></a>working</span><span
