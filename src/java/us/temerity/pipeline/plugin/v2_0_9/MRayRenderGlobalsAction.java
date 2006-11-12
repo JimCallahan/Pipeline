@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.1 2006/05/26 17:06:34 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.2 2006/11/12 05:55:16 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -2054,10 +2054,21 @@ class MRayRenderGlobalsAction
     /* sanity checks */ 
     NodeID nodeID = agenda.getNodeID();
     FileSeq fseq = agenda.getPrimaryTarget();
-    if(!fseq.isSingle() || !fseq.getFilePattern().getSuffix().equals("mel"))
-      throw new PipelineException
-	("The MRayRenderGlobals Action requires that primary target file sequence must " + 
-	 "be a single MEL script!"); 
+
+    /* check target MEL script */ 
+    {
+      boolean isTargetValid = false;
+
+      if(fseq.isSingle()) {
+	String suffix = fseq.getFilePattern().getSuffix();
+	isTargetValid = ((suffix != null) && suffix.equals("mel"));
+      }
+      
+      if(!isTargetValid) 
+	throw new PipelineException
+	  ("The MRayRenderGlobals Action requires that primary target file sequence must " + 
+	   "be a single MEL script!"); 
+    }
 
     /* create a temporary shell script */ 
     File script = createTemp(agenda, 0644, "bash");
