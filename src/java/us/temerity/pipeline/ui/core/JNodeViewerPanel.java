@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.57 2006/11/10 08:04:32 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.58 2006/11/12 07:30:03 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3083,7 +3083,7 @@ class JNodeViewerPanel
 	      FilePattern fpat = pRenameDialog.getNewFilePattern();
 
 	      RenameTask task = 
-		new RenameTask(mod.getName(), fpat, pRenameDialog.renameFiles());
+		new RenameTask(pPrimary.getNodePath(), fpat, pRenameDialog.renameFiles());
 	      task.start();
 	    }
 	    catch(PipelineException ex) {
@@ -4522,14 +4522,14 @@ class JNodeViewerPanel
     public 
     RenameTask
     (
-     String oldName, 
+     NodePath oldPath,
      FilePattern pattern, 
      boolean renameFiles
     ) 
     {
       super("JNodeViewerPanel:RenameTask");
       
-      pOldName     = oldName; 
+      pOldPath     = new NodePath(oldPath);
       pPattern     = pattern; 
       pRenameFiles = renameFiles;
     }
@@ -4537,11 +4537,14 @@ class JNodeViewerPanel
     public void 
     run() 
     {
+      String oname = pOldPath.getCurrentName();
+      String nname = pPattern.getPrefix();
+
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Renaming Node...")) {
 	try {
 	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
-	  client.rename(pAuthor, pView, pOldName, pPattern, pRenameFiles);
+	  client.rename(pAuthor, pView, oname, pPattern, pRenameFiles);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4551,15 +4554,26 @@ class JNodeViewerPanel
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	String nname = pPattern.getPrefix();
-	if(!pOldName.equals(nname)) 
-	  renameRoot(pOldName, nname);
-	else 
+	if(!oname.equals(nname)) {
+	  LinkedList<String> comps = new LinkedList<String>(pOldPath.getNames());
+	  comps.removeLast();
+	  comps.add(nname);
+
+	  NodePath npath = new NodePath(comps);
+
+	  boolean wasCollapsed = master.wasNodeCollapsed(pOldPath.toString());
+	  master.setNodeCollapsed(npath.toString(), wasCollapsed); 
+	  master.setNodeCollapsed(pOldPath.toString(), false);
+
+	  renameRoot(oname, nname);
+	}
+	else {
 	  updateRoots();
+	}
       }
     }
 
-    private String       pOldName; 
+    private NodePath     pOldPath; 
     private FilePattern  pPattern; 
     private boolean      pRenameFiles; 
   }

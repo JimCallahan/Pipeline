@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: NodePath.java,v 1.2 2006/11/12 07:30:03 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -64,6 +64,23 @@ class NodePath
   }
 
   /** 
+   * Construct node path from the given components.<P>
+   * 
+   * @param comps
+   *   The path components. 
+   */
+  public
+  NodePath
+  ( 
+   Collection<String> comps
+  ) 
+  {
+    pNames = new LinkedList<String>(comps); 
+
+    buildCache();
+  }
+
+  /** 
    * Copy constructor.
    */
   public
@@ -119,6 +136,7 @@ class NodePath
     return pNames.getLast();
   }
 
+  
 
 
   /*----------------------------------------------------------------------------------------*/
