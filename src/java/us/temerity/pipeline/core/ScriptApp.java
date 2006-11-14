@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.60 2006/11/12 08:58:03 jim Exp $
+// $Id: ScriptApp.java,v 1.61 2006/11/14 22:43:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2182,7 +2182,7 @@ class ScriptApp
 	}
 	
 	{
-	  BaseEditor editor = null;
+	  BaseEditor editor = mod.getEditor(); 
 	  if(editorName != null) {
 	    PluginMgrClient pclient = PluginMgrClient.getInstance();
 	    editor = pclient.newEditor(editorName, editorVersionID, editorVendor);
