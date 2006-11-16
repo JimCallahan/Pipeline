@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.5 2006/10/25 08:04:23 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.6 2006/11/16 07:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -787,6 +787,19 @@ class FileMgrNetClient
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the object input given a socket input stream.
+   */ 
+  protected ObjectInput
+  getObjectInput
+  (
+   InputStream in
+  ) 
+    throws IOException
+  {
+    return new PluginInputStream(in);
+  }
 
   /**
    * Get the error message to be shown when the server cannot be contacted.

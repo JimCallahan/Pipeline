@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.84 2006/11/12 01:04:08 jim Exp $
+// $Id: MasterMgrClient.java,v 1.85 2006/11/16 07:29:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6029,6 +6029,20 @@ class MasterMgrClient
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Get the object input given a socket input stream.
+   */ 
+  protected ObjectInput
+  getObjectInput
+  (
+   InputStream in
+  ) 
+    throws IOException
+  {
+    return new PluginInputStream(in);
+  }
+
+  
   /**
    * Get the error message to be shown when the server cannot be contacted.
    */ 

@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.24 2006/10/11 22:45:40 jim Exp $
+// $Id: JobMgrServer.java,v 1.25 2006/11/16 07:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19,11 +19,11 @@ import java.util.concurrent.atomic.*;
 /**
  * The server-side manager of job queries and operations. <P> 
  * 
- * This class handles network communication with {@link JobMgrClient JobMgrClient} 
- * and {@link JobMgrControlClient JobMgrControlClient} instances running on remote hosts.  
- * This class listens for new connections from clients and creats a thread to manage each 
- * connection.  Each of these threads then listens for requests for job related operations 
- * and dispatches these requests to an underlying instance of the {@link JobMgr JobMgr}
+ * This class handles network communication with {@link JobMgrClient JobMgrClient},
+ * {@link JobMgrControlClient} and {@link JobMgrPlgControlClient} instances running on 
+ * remote hosts.  This class listens for new connections from clients and creats a thread to 
+ * manage each connection.  Each of these threads then listens for requests for job related 
+ * operations and dispatches these requests to an underlying instance of the {@link JobMgr}
  * class.
  */
 class JobMgrServer

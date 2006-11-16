@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.22 2006/10/18 06:14:14 jim Exp $
+// $Id: BaseMgrClient.java,v 1.23 2006/11/16 07:29:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -129,8 +129,8 @@ class BaseMgrClient
 	objOut.writeObject(cinfo);
 	objOut.flush(); 
 
-	InputStream in  = pSocket.getInputStream();
-	ObjectInput objIn  = new PluginInputStream(in);
+	InputStream in = pSocket.getInputStream();
+	ObjectInput objIn = getObjectInput(in); 
 	Object rsp = objIn.readObject();
 	
 	pSocket.setSoTimeout(0);
@@ -335,6 +335,22 @@ class BaseMgrClient
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the object input given a socket input stream.
+   */ 
+  protected ObjectInput
+  getObjectInput
+  (
+   InputStream in
+  ) 
+    throws IOException
+  {
+    return new ObjectInputStream(in);
+  }
+
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**

@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.20 2006/07/05 21:07:10 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.21 2006/11/16 07:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -14,7 +14,8 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A control connection to a Pipeline job server daemon. <P> 
+ * A control connection to a Pipeline job server daemon without Pipeline plugin handling
+ * ability for faster startup.
  * 
  * This class handles network communication with a Pipeline job server daemon 
  * <A HREF="../../../../man/plmaster.html"><B>pljobmgr</B><A>(1) running on one of the 
@@ -169,34 +170,6 @@ class JobMgrControlClient
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   E X E C U T I O N                                                            */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Starts execution of the job on the server.
-   * 
-   * @param job 
-   *   The job to execute.
-   * 
-   * @param envs  
-   *   The cooked toolset environments indexed by operating system type.
-   * 
-   * @throws PipelineException 
-   *   If unable to contact the job server. 
-   */ 
-  public synchronized void
-  jobStart
-  (
-   QueueJob job, 
-   DoubleMap<OsType,String,String> envs
-  ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    JobStartReq req = new JobStartReq(job, envs);
-
-    Object obj = performTransaction(JobRequest.Start, req, 60000); 
-    handleSimpleResponse(obj);
-  }
 
   /**
    * Kill the job with the given ID running on the server.

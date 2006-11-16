@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.70 2006/11/11 20:45:36 jim Exp $
+// $Id: QueueMgr.java,v 1.71 2006/11/16 07:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6695,7 +6695,7 @@ class QueueMgr
 	timer.suspend();
 	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
 
-	JobMgrControlClient client = new JobMgrControlClient(pHostname); 
+	JobMgrPlgControlClient client = new JobMgrPlgControlClient(pHostname); 
 	try {
 	  client.jobStart(pJob, pEnvironments); 
  
@@ -7080,7 +7080,7 @@ class QueueMgr
   /**
    * The maximum number of job servers per collection sub-thread.
    */ 
-  private static int  sMaxServersPerCollector = 15;
+  private static int  sMaxServersPerCollector = 50;
 
   /**
    * The maximum age of a sample file before it is deleted (in milliseconds).

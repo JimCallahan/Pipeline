@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.33 2006/11/11 20:45:36 jim Exp $
+// $Id: QueueMgrClient.java,v 1.34 2006/11/16 07:29:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1533,6 +1533,20 @@ class QueueMgrClient
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Get the object input given a socket input stream.
+   */ 
+  protected ObjectInput
+  getObjectInput
+  (
+   InputStream in
+  ) 
+    throws IOException
+  {
+    return new PluginInputStream(in);
+  }
+
+  
   /**
    * Get the error message to be shown when the server cannot be contacted.
    */ 
