@@ -1,0 +1,15 @@
+
+
+
+           Sum   Glu  Job  Mem  Net  Ops  Plg  Sub  Tex  Dsp  Col  Sch  Ext
+
+FileMgr:    X     -    -    -    X    X    -    X    -    -    -    -    -
+				      			             	  	  
+MasterMgr:  -     X    -    X    X    X    X	X    -	  -    -    -	 X
+				      		      	             	 	  
+QueueMgr:   -     X    X    -    X    X    X	X    -	  X    X    X	 X
+				      		      	             	  	  
+PluginMgr:  -     -    -    -    X    X    X	X    -	  -    -    -	 -
+				      			             	  	  
+JobMgr:     -     X    -    -    X    X    X	X    -	  -    -    -	 -
+
