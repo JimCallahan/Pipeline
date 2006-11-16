@@ -1131,7 +1131,7 @@ then
   prof_base=$with_prof_base
 fi
 
-java_prof_opts="-Xrunyjpagent:sampling,alloc,onexit=both,port="
+java_prof_opts="-agentlib:yjpagent=onexit=memory,port="
 java_prof_dir=",dir=/usr/tmp/pipeline-profile/"
 
 AC_MSG_CHECKING([plmaster])
