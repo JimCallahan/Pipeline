@@ -5,10 +5,10 @@ HomeDirectory = /home
 HostIDs = 
     crimson.crimson               -131322380283255058195990585033897743511
 JavaClassVersion = 49.0
-JavaHome = /usr/java/jdk1.5.0_08/jre
+JavaHome = /usr/java/jdk1.5.0_09/jre
 JavaName = Java HotSpot(TM) Server VM
 JavaVendor = Sun Microsystems Inc.
-JavaVersion = 1.5.0_08
+JavaVersion = 1.5.0_09
 JobPort = 53140
 LegacyPlugins = true
 LicenseEnd = Sun Aug 17 02:12:55 EST 292278994
