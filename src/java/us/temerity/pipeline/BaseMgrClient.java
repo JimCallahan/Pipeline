@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.23 2006/11/16 07:29:24 jim Exp $
+// $Id: BaseMgrClient.java,v 1.24 2006/11/21 19:57:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -430,7 +430,7 @@ class BaseMgrClient
       objOut.flush(); 
 
       InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = new PluginInputStream(in);
+      ObjectInput objIn  = getObjectInput(in); 
       Object rsp = objIn.readObject();
 
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
@@ -517,7 +517,7 @@ class BaseMgrClient
       pSocket.setSoTimeout(rspTimeout);
 
       InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = new PluginInputStream(in);
+      ObjectInput objIn = getObjectInput(in); 
       
       Object rsp = null;
       while(rsp == null) {
