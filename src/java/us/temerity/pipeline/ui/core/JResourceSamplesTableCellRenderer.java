@@ -1,4 +1,4 @@
-// $Id: JResourceSamplesTableCellRenderer.java,v 1.4 2006/07/02 00:27:50 jim Exp $
+// $Id: JResourceSamplesTableCellRenderer.java,v 1.5 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -41,9 +41,11 @@ class JResourceSamplesTableCellRenderer
   public 
   JResourceSamplesTableCellRenderer
   (
+   QueueHostsTableModel parent, 
    SampleType type
   ) 
   {
+    pParent = parent; 
     pSampleType = type; 
 
     String prefix = null;
@@ -97,6 +99,7 @@ class JResourceSamplesTableCellRenderer
       JPanel panel = new JPanel();
       pPanel = panel;
 
+
       panel.setName(prefix + "ValuePanel");  
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
@@ -143,94 +146,95 @@ class JResourceSamplesTableCellRenderer
    int column
   )
   {
-    QueueHostInfo host = (QueueHostInfo) value; 
-
+    ResourceSampleCache cache = (ResourceSampleCache) value; 
+    QueueHostInfo host = pParent.getHostInfo(row);
+    
     Color fg = new Color(0.75f, 0.75f, 0.75f);
-    switch(host.getStatus()) {
-    case Enabled:
-      fg = (isSelected ? Color.yellow : Color.white);
+    if(host != null) {
+      switch(host.getStatus()) {
+      case Enabled:
+	fg = (isSelected ? Color.yellow : Color.white);
+	break;
+
+      case Disabled:
+	break;
+
+      default:
+	cache = null;
+      }
     }
 
-    List<ResourceSample> samples = host.getSamples();
-    if((host != null) && 
-       (samples != null) && !samples.isEmpty()) { 
+    /* display the graph */ 
+    if((host != null) &&
+       (cache != null) && cache.hasSamples()) {
 
       /* update the numeric label */ 
       {
-	ResourceSample first = samples.get(0);
+	ResourceSample latest = cache.getLatestSample(); 
 	switch(pSampleType) {
 	case Load:
-	  pLabel.setText(String.format("%1$.1f", first.getLoad()));
+	  pLabel.setText(String.format("%1$.1f", latest.getLoad()));
 	  break;		       
 	  
 	case Memory:
 	  pLabel.setText(String.format("%1$.1f", 
-				       ((double) first.getMemory()) / 1073741824.0));
+				       ((double) latest.getMemory()) / 1073741824.0));
 	  break; 
 	  
 	case Disk:
 	  pLabel.setText(String.format("%1$.1f", 
-				       ((double) first.getDisk()) / 1073741824.0));
+				       ((double) latest.getDisk()) / 1073741824.0));
 	  break;
-	
+	  
 	case Jobs:
-	  pLabel.setText(String.valueOf(first.getNumJobs()));
+	  pLabel.setText(String.valueOf(latest.getNumJobs()));
 	}
-
+	
 	pLabel.setForeground(fg);
       }
 
       /* update the value graph */ 
       {
-	float vs[] = new float[samples.size()];
-	switch(pSampleType) {
-	case Load:
-	  {
-	    int wk = 0;
-	    for(ResourceSample sample : samples) {
-	      float v = sample.getLoad() / ((float) host.getNumProcessors());
-	      vs[wk] = Math.max(0.0f, Math.min(1.0f, v));
-	      wk++;
+	int size = cache.getNumSamples();
+	
+	float vs[] = new float[size];
+	int i, wk;
+	for(i=size-1, wk=0; wk<size; i--, wk++) {
+	  float v = 0.0f;
+	  switch(pSampleType) {
+	  case Load:
+	    {
+	      Integer numProcs = host.getNumProcessors();
+	      if(numProcs != null) 
+		v = cache.getLoad(i) / ((float) numProcs);
 	    }
-	  }
-	  break;		       
-	  
-	case Memory:
-	  {
-	    int wk = 0;
-	    for(ResourceSample sample : samples) {
-	      float v = ((float) sample.getMemory()) / ((float) host.getTotalMemory());
-	      vs[wk] = Math.max(0.0f, Math.min(1.0f, v));
-	      wk++;
+	    break;
+
+	  case Memory:
+	    {
+	      Long totalMem =  host.getTotalMemory();
+	      if(totalMem != null) 
+		v = ((float) cache.getMemory(i)) / ((float) totalMem); 
 	    }
-	  }
-	  break; 
-	  
-	case Disk:
-	  {
-	    int wk = 0;
-	    for(ResourceSample sample : samples) {
-	      float v = ((float) sample.getDisk()) / ((float) host.getTotalDisk());
-	      vs[wk] = Math.max(0.0f, Math.min(1.0f, v));
-	      wk++;
+	    break; 
+	    
+	  case Disk:
+	    {
+	      Long totalDisk = host.getTotalDisk();
+	      if(totalDisk != null) 
+		v = ((float) cache.getDisk(i)) / ((float) totalDisk);
 	    }
+	    break;
+	    
+	  case Jobs:
+	    v = ((float) cache.getNumJobs(i)) / ((float) host.getJobSlots());
 	  }
-	  break;
-	  
-	case Jobs:
-	  {
-	    int wk = 0;
-	    for(ResourceSample sample : samples) {
-	      float v = ((float) sample.getNumJobs()) / ((float) host.getJobSlots());
-	      vs[wk] = Math.max(0.0f, Math.min(1.0f, v));
-	      wk++;
-	    }
-	  }
+
+	  vs[wk] = Math.max(0.0f, Math.min(1.0f, v));
 	}
 	
 	pBarGraph.setValues(vs, true);	
-
-
+	
 	switch(host.getStatus()) {
 	case Enabled:
 	  pBarGraph.setForeground(pBarForeground[0]);
@@ -242,7 +246,7 @@ class JResourceSamplesTableCellRenderer
 	  pBarGraph.setHighlight(pBarHighlight[1]);
 	}	  
       }
-
+    
       return pPanel;
     }
     else {
@@ -296,6 +300,11 @@ class JResourceSamplesTableCellRenderer
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The parent table model.
+   */ 
+  private QueueHostsTableModel  pParent;
+  
   /**
    * The type of sample being displayed.
    */ 

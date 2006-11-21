@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1464,6 +1464,14 @@ class GenUserPrefsApp
 	 "ToggleFullLoadBar", "Show/Hide Full Load Bar"),
 
 	new HotKeyPref
+	("Toggle the display of the low memory threshold bar.",
+	 "ToggleLowMemoryBar", "Show/Hide Low Memory Bar"),
+
+	new HotKeyPref
+	("Toggle the display of the low disk space threshold bar.",
+	 "ToggleLowDiskBar", "Show/Hide Low Disk Bar"),
+
+	new HotKeyPref
 	("Toggle the display of the job slots level bar.", 
 	 "ToggleJobSlotsBar", "Show/Hide Job Slots Bar")
       };
@@ -1491,7 +1499,7 @@ class GenUserPrefsApp
 	 "SystemLoadRange", "System Load Range:", 1, 15, 3), 
 
 	new ColorPref
-	("The color used to mark the level of full processor utilization.", 
+	("The color used to mark the level of full processor utilization bar.", 
 	 "FullLoadColor", "Full Load Color:", Color.yellow),
 	
 	new BooleanPref
@@ -1508,16 +1516,50 @@ class GenUserPrefsApp
 	("The color used to render free memory sample values.", 
 	 "FreeMemoryFgColor", "Free Mem Foreground:", new Color(0.0f, 0.59f, 1.0f)),
 	
+	new ColorPref
+	("The color used to render free memory sample values which are less than the " + 
+	 "low memory threshold value.", 
+	 "LowMemoryFgColor", "Low Memory Foreground:", new Color(0.5f, 0.79f, 1.0f)), 
+
+	new BoundedDoublePref
+	("The low memory warning threshold value.", 
+	 "LowMemoryThreshold", "Low Memory Threshold", 0.0, 1.0, 0.1), 
+	
+	new ColorPref
+	("The color used to mark the low memory threshold bar.", 
+	 "LowMemoryColor", "Low Memory Color:", Color.yellow),
+	
+	new BooleanPref
+	("Whether to initially render the low memory level bar.", 
+	 "ShowLowMemoryBar", "Show Low Memory Bar:", true),
+
 	new BasePref(),
 	
 	new ColorPref
-	("The color used to render the free disk background.", 
+	("The color used to render the free disk space background.", 
 	 "FreeDiskBgColor", "Free Disk Background:", new Color(0.0f, 0.27f, 0.45f)), 
 	
 	new ColorPref
-	("The color used to render free disk sample values.", 
+	("The color used to render free disk space sample values.", 
 	 "FreeDiskFgColor", "Free Disk Foreground:", new Color(0.0f, 0.59f, 1.0f)),
 	
+	new ColorPref
+	("The color used to render free disk space sample values which are less than the " + 
+	 "low disk threshold value.", 
+	 "LowDiskFgColor", "Low Disk Foreground:", new Color(0.5f, 0.79f, 1.0f)), 
+
+	new BoundedDoublePref
+	("The low disk space warning threshold value.", 
+	 "LowDiskThreshold", "Low Disk Threshold", 0.0, 1.0, 0.1), 
+	
+	new ColorPref
+	("The color used to mark the low disk space threshold bar.", 
+	 "LowDiskColor", "Low Disk Color:", Color.yellow),
+	
+	new BooleanPref
+	("Whether to initially render the low disk level bar.", 
+	 "ShowLowDiskBar", "Show Low Disk Bar:", true),
+
 	new BasePref(),
 	
 	new ColorPref
@@ -1991,6 +2033,16 @@ class GenUserPrefsApp
       
 	group.add("Update");
 	group.add("FrameAll");
+
+	group.add("ToggleSystemLoad"); 
+	group.add("ToggleFreeMemory"); 
+	group.add("ToggleFreeDisk"); 
+	group.add("ToggleJobCount"); 
+
+	group.add("ToggleFullLoadBar"); 
+	group.add("ToggleLowMemoryBar"); 
+	group.add("ToggleLowDiskBar"); 
+	group.add("ToggleJobSlotsBar"); 
       }
 
       {
@@ -2064,7 +2116,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2321,7 +2373,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3678,7 +3730,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.33 2006/10/18 06:34:22 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

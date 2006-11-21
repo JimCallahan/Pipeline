@@ -1,4 +1,4 @@
-// $Id: LogQueueActivityExt.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: LogQueueActivityExt.java,v 1.2 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -701,7 +701,7 @@ LogQueueActivityExt
   public void
   postResourceSamplesTask
   (
-   TreeMap<String,ResourceSampleBlock> samples
+   TreeMap<String,ResourceSampleCache> samples
   ) 
   {
     DecimalFormat fmt = new DecimalFormat("###0.0");   
@@ -714,8 +714,8 @@ LogQueueActivityExt
 
       buf.append("Job Server [" + hname + "] - RESOURCE SAMPLES\n");
 
-      ResourceSampleBlock block = samples.get(hname); 
-      int numSamples = block.getNumSamples();
+      ResourceSampleCache cache = samples.get(hname); 
+      int numSamples = cache.getNumSamples();
       if(numSamples > 0) {
 	int minJobs = Integer.MAX_VALUE;
 	int maxJobs = 0;
@@ -731,32 +731,31 @@ LogQueueActivityExt
 
 	int wk;
 	for(wk=0; wk<numSamples; wk++) {
-	  int jobs = block.getNumJobs(wk);
+	  int jobs = cache.getNumJobs(wk);
 	  minJobs = Math.min(minJobs, jobs);
 	  maxJobs = Math.max(maxJobs, jobs);
 
-	  float load = block.getLoad(wk);
+	  float load = cache.getLoad(wk);
 	  minLoad = Math.min(minLoad, load);
 	  maxLoad = Math.max(maxLoad, load);
 
-	  long mem = block.getMemory(wk);
+	  long mem = cache.getMemory(wk);
 	  minMem = Math.min(minMem, mem);
 	  maxMem = Math.max(maxMem, mem);
 
-	  long disk = block.getDisk(wk);
+	  long disk = cache.getDisk(wk);
 	  minDisk = Math.min(minDisk, disk);
 	  maxDisk = Math.max(maxDisk, disk);
 	}
 
 	buf.append
-	  ("      Started : " + Dates.format(block.getStartTimeStamp()) + "\n" + 
-	   "        Ended : " + Dates.format(block.getEndTimeStamp()) + "\n" + 
+	  ("      Started : " + Dates.format(cache.getFirstTimeStamp()) + "\n" + 
+	   "        Ended : " + Dates.format(cache.getLastTimeStamp()) + "\n" + 
 	   "  Num Samples : " + numSamples);
 	
 	if(numSamples > 0) {
 	  buf.append
 	    ("\n" + 
-	     "  Last Sample : " + Dates.format(block.getLastTimeStamp()) + "\n" + 
 	     "     Num Jobs : " + minJobs + " / " + maxJobs + " (min/max)\n" + 
 	     "  System Load : " + minLoad + " / " + maxLoad + " (min/max)\n" + 
 	     "  Free Memory : " + minMem + " / " + maxMem + " (min/max)\n" + 

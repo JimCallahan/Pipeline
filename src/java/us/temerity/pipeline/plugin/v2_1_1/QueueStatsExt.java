@@ -1,4 +1,4 @@
-// $Id: QueueStatsExt.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueStatsExt.java,v 1.2 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -286,7 +286,7 @@ QueueStatsExt
   public void
   postResourceSamplesTask
   (
-   TreeMap<String,ResourceSampleBlock> samples
+   TreeMap<String,ResourceSampleCache> samples
   ) 
   {
     try {

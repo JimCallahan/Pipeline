@@ -1,4 +1,4 @@
-// $Id: ResourceSample.java,v 1.7 2006/02/27 17:54:52 jim Exp $
+// $Id: ResourceSample.java,v 1.8 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,8 +55,38 @@ class ResourceSample
    long disk
   )  
   {
-    pTimeStamp = new Date(); 
+    this(new Date(), jobs, load, memory, disk); 
+  }
 
+  /**
+   * Construct a new sample.
+   * 
+   * @param stamp
+   *   The time stamp of when the sample was recorded.
+   * 
+   * @param jobs
+   *   The number of currently running jobs.
+   * 
+   * @param load
+   *   The system load.
+   * 
+   * @param memory
+   *   The available free memory (in bytes).
+   * 
+   * @param disk 
+   *   The available free temporary disk space (in bytes).
+   */ 
+  public 
+  ResourceSample
+  (
+   Date stamp, 
+   int jobs, 
+   float load, 
+   long memory, 
+   long disk
+  )  
+  {
+    pTimeStamp = stamp; 
     pNumJobs   = jobs;
     pLoad      = load; 
     pMemory    = memory; 

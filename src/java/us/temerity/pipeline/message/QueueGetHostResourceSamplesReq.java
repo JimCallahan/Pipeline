@@ -1,4 +1,4 @@
-// $Id: QueueGetHostResourceSamplesReq.java,v 1.1 2004/08/01 15:48:53 jim Exp $
+// $Id: QueueGetHostResourceSamplesReq.java,v 1.2 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,19 +26,26 @@ class QueueGetHostResourceSamplesReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param hostname
-   *   The fully resolved name of the host.
+   * @param intervals
+   *   The sample intervals to retrieve indexed by fully resolved hostnames.
+   * 
+   * @param runtimeOnly
+   *   Whether to only read samples from the runtime cache ignoring any saved samples
+   *   on disk.
    */
   public
   QueueGetHostResourceSamplesReq
   (
-   String hostname
+   TreeMap<String,DateInterval> intervals,
+   boolean runtimeOnly
   )
   { 
-    if(hostname == null) 
+    if(intervals == null) 
       throw new IllegalArgumentException
-	("The hostname cannot be (null)!");
-    pHostname = hostname;
+	("The intervals cannot be (null)!");
+    pIntervals = intervals;
+
+    pRuntimeOnly = runtimeOnly;
   }
 
 
@@ -48,14 +55,23 @@ class QueueGetHostResourceSamplesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved name of the host.
+   * Gets the sample intervals to retrieve indexed by fully resolved hostnames.
    */
-  public String
-  getHostname() 
+  public TreeMap<String,DateInterval>
+  getIntervals() 
   {
-    return pHostname; 
+    return pIntervals; 
   }
 
+  /**
+   * Whether to only read samples from the runtime cache ignoring any saved samples
+   * on disk.
+   */
+  public boolean
+  runtimeOnly() 
+  {
+    return pRuntimeOnly;
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -71,9 +87,14 @@ class QueueGetHostResourceSamplesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved name of the host.
+   * The sample intervals to retrieve indexed by fully resolved hostnames.
    */ 
-  private String  pHostname; 
+  private TreeMap<String,DateInterval>  pIntervals; 
 
+  /**
+   * Whether to only read samples from the runtime cache ignoring any saved samples
+   * on disk.
+   */ 
+  private boolean  pRuntimeOnly; 
 }
   

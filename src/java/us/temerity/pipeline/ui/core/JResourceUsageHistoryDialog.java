@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.15 2006/10/18 06:34:22 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.16 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -52,10 +52,13 @@ class JResourceUsageHistoryDialog
     /* initialize fields */ 
     {
       UserPrefs prefs = UserPrefs.getInstance();
-      pShowFullLoadBar = prefs.getShowFullLoadBar();
-      pShowJobSlotsBar = prefs.getShowJobSlotsBar();
+      pShowFullLoadBar  = prefs.getShowFullLoadBar();
+      pShowLowMemoryBar = prefs.getShowLowMemoryBar();
+      pShowLowDiskBar   = prefs.getShowLowDiskBar();
+      pShowJobSlotsBar  = prefs.getShowJobSlotsBar();
 
-      pSamples = new TreeMap<String,ResourceSampleBlock>();
+      pSamples = new TreeMap<String,ResourceSampleCache>();
+      pHosts = new TreeMap<String,QueueHostInfo>();
 
       pRefreshGraphBars = true; 
       pRefreshLabels    = true;
@@ -137,6 +140,18 @@ class JResourceUsageHistoryDialog
       item = new JMenuItem();
       pShowHideFullLoadBarItem = item;
       item.setActionCommand("show-hide-load-bar");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      item = new JMenuItem();
+      pShowHideLowMemoryBarItem = item;
+      item.setActionCommand("show-hide-memory-bar");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      item = new JMenuItem();
+      pShowHideLowDiskBarItem = item;
+      item.setActionCommand("show-hide-disk-bar");
       item.addActionListener(this);
       pPopup.add(item);  
       
@@ -339,7 +354,7 @@ class JResourceUsageHistoryDialog
   /**
    * Update the resource usage history samples.
    */ 
-  public synchronized void 
+  public void 
   updateSamples
   (
    int channel,
@@ -397,6 +412,12 @@ class JResourceUsageHistoryDialog
       (pShowHideFullLoadBarItem, prefs.getToggleFullLoadBar(), 
        "Toggle the display of the full load bar.");
     updateMenuToolTip
+      (pShowHideLowMemoryBarItem, prefs.getToggleLowMemoryBar(), 
+       "Toggle the display of the low memory threshold bar.");
+    updateMenuToolTip
+      (pShowHideLowDiskBarItem, prefs.getToggleLowDiskBar(), 
+       "Toggle the display of the low disk space threshold bar.");
+    updateMenuToolTip
       (pShowHideJobSlotsBarItem, prefs.getToggleJobSlotsBar(), 
        "Toggle the display of the job slots level bar.");
   }
@@ -453,6 +474,12 @@ class JResourceUsageHistoryDialog
 
     pShowHideFullLoadBarItem.setText
       ((pShowFullLoadBar ? "Hide" : "Show") + " Full Load Bar");
+
+    pShowHideLowMemoryBarItem.setText
+      ((pShowLowMemoryBar ? "Hide" : "Show") + " Low Memory Bar");
+
+    pShowHideLowDiskBarItem.setText
+      ((pShowLowDiskBar ? "Hide" : "Show") + " Low Disk Bar");
 
     pShowHideJobSlotsBarItem.setText
       ((pShowJobSlotsBar ? "Hide" : "Show") + " Job Slots Bar");
@@ -532,7 +559,7 @@ class JResourceUsageHistoryDialog
 
     if(pBorderResized) {  
       try {
-	double bx = 0.0;
+	double bx = 0.0; 
 	for(String hname : pSamples.keySet()) {
 	  double x = mgr.getTextWidth("CharterBTRoman", hname, 0.05) * sHostnameSize;
 	  bx = Math.max(bx, x);
@@ -645,76 +672,84 @@ class JResourceUsageHistoryDialog
 
       if(!pSamples.isEmpty()) {
 	pMinTime = null;
-	for(ResourceSampleBlock block : pSamples.values()) {
-	  Date stamp = block.getStartTimeStamp();
+	for(ResourceSampleCache cache : pSamples.values()) {
+	  Date stamp = cache.getFirstTimeStamp();
 	  if((pMinTime == null) || (stamp.compareTo(pMinTime) < 0))
 	    pMinTime = stamp;
 	}
 	  
 	for(String hname : pSamples.keySet()) {
-	  ResourceSampleBlock block = pSamples.get(hname);
-	  if(block != null) {
-	    Date first = block.getStartTimeStamp();
-	    Date last  = block.getEndTimeStamp();
+	  QueueHostInfo qinfo = pHosts.get(hname);
+	  ResourceSampleCache cache = pSamples.get(hname);
+	  if((cache != null) && cache.hasSamples()) {
+	    long first = cache.getFirstTimeStamp().getTime();
+	    long last  = cache.getLastTimeStamp().getTime();
 	      
-	    double offset = ((double) (first.getTime() - pMinTime.getTime())) / 60000.0;
-	    double range  = ((double) (last.getTime() - first.getTime())) / 60000.0;
-
-	    Vector2d span = new Vector2d(offset, range+1.0);
-	    pGraphSpans.put(hname, span);
-
+	    /* duration of sample (in minutes) */ 
+	    double deltaX = ((double) (PackageInfo.sCollectorInterval)) / 60000.0;
+	      
+	    /* offset/range of all samples (in minutes) */ 
+	    Vector2d span = null;
+	    {
+	      double offset = (double) ((first - pMinTime.getTime()) / 60000);
+	      double range  = (double) ((last - first) / 60000.0);
+	      span = new Vector2d(offset, range+deltaX);
+	      pGraphSpans.put(hname, span);
+	    }
+	      
 	    /* system load graphs */ 
-	    if(block.getNumSamples() > 0) {
+	    int numSamples = cache.getNumSamples();
+	    if(numSamples > 0) {
 	      Integer dl = UIMaster.getInstance().getDisplayList(gl);
 	      pLoadDLs.put(hname, dl);			    
-	      
+		
 	      double maxLoad = (double) prefs.getSystemLoadRange();
-
+		
 	      gl.glNewList(dl, GL.GL_COMPILE);
-	      {
+	      { 
 		gl.glBegin(gl.GL_QUADS);
 		{
-		  /* background */ 
-		  {
-		    Color3d color = prefs.getSystemLoadBgColor();
-		    gl.glColor3d(color.r(), color.g(), color.b());
-		    
-		    gl.glVertex2d(0.0,      0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 1.0+sGraphBorder);
-		    gl.glVertex2d(0.0,      1.0+sGraphBorder);
-		  }
+		  /* background */
+		  renderSampleBackground(gl, prefs.getSystemLoadBgColor(), span.y());
 
 		  /* graph */ 
 		  {
 		    Color3d fg = prefs.getSystemLoadFgColor();
 		    Color3d oc = prefs.getSystemLoadOverflowColor();
-
-		    boolean over = false;
-		    gl.glColor3d(fg.r(), fg.g(), fg.b());
-
+		    boolean over = updateOverflowColor(gl, fg, oc, true, 0.0);
+		    
+		    boolean firstSample = true;
+		    long lastTime = 0L;
+		    double lastLoad = 0.0; 
+		    double lastX = 0.0;
 		    int wk;
-		    for(wk=0; wk<block.getNumSamples(); wk++) {
-		      double load = ((double) block.getLoad(wk)) / maxLoad;
+		    for(wk=0; wk<numSamples; wk++) {
+		      long time = cache.getTime(wk);
+		      double load = ((double) cache.getLoad(wk)) / maxLoad;
 		      if(load > 0.0) {
-			if(load > 1.0) {
-			  if(!over) {
-			    gl.glColor3d(oc.r(), oc.g(), oc.b());
-			    over = true;
-			  }
-			}
-			else if(over) {
-			  gl.glColor3d(fg.r(), fg.g(), fg.b());
-			  over = false;
+			double limitLoad = Math.min(load, 1.0);
+						
+			double dx = lastX + deltaX;
+			double nx = ((double) (time - first)) / 60000.0;
+
+			if(!firstSample) {
+			  double x = (nx > (dx+deltaX)) ? dx : nx;
+			  renderSample(gl, lastX, x, lastLoad);
 			}
 
-			load = Math.min(load, 1.0);
+			over = updateOverflowColor(gl, fg, oc, over, load);
 
-			gl.glVertex2d((double) wk,     0.0);
-			gl.glVertex2d((double) (wk+1), 0.0);
-			gl.glVertex2d((double) (wk+1), load);
-			gl.glVertex2d((double) wk,     load);
+			lastTime = time; 
+			lastLoad = limitLoad; 
+			lastX    = nx; 
+
+			firstSample = false;
 		      }
+		    }
+		    
+		    if(!firstSample) {
+		      double x = lastX + deltaX;
+		      renderSample(gl, lastX, x, lastLoad);
 		    }
 		  }
 		}
@@ -722,18 +757,24 @@ class JResourceUsageHistoryDialog
 
 		/* full load bar */ 
 		if(pShowFullLoadBar) {
-		  double procs = (double) block.getNumProcessors();
-		  double v = procs / maxLoad; 
-		  if(v <= 1.0) {
-		    gl.glBegin(gl.GL_LINES);
-		    {
-		      Color3d color = prefs.getFullLoadColor();
-		      gl.glColor3d(color.r(), color.g(), color.b());
-		      
-		      gl.glVertex2d(0.0,      v);
-		      gl.glVertex2d(span.y(), v);
+		  Integer numProcs = null;
+		  if(qinfo != null) 
+		    numProcs = qinfo.getNumProcessors();
+		  
+		  if(numProcs != null) {
+		    double procs = (double) numProcs; 
+		    double v = procs / maxLoad; 
+		    if(v <= 1.0) {
+		      gl.glBegin(gl.GL_LINES);
+		      {
+			Color3d color = prefs.getFullLoadColor();
+			gl.glColor3d(color.r(), color.g(), color.b());
+			
+			gl.glVertex2d(0.0,      v);
+			gl.glVertex2d(span.y(), v);
+		      }
+		      gl.glEnd();
 		    }
-		    gl.glEnd();
 		  }
 		}
 	      }
@@ -745,40 +786,76 @@ class JResourceUsageHistoryDialog
 	      Integer dl = UIMaster.getInstance().getDisplayList(gl);
 	      pMemDLs.put(hname, dl);			    
 	      
-	      double totalMem = (double) block.getTotalMemory();
-
 	      gl.glNewList(dl, GL.GL_COMPILE);
 	      {
 		gl.glBegin(gl.GL_QUADS);
 		{
 		  /* background */ 
-		  {
-		    Color3d color = prefs.getFreeMemoryBgColor();
-		    gl.glColor3d(color.r(), color.g(), color.b());
-		    
-		    gl.glVertex2d(0.0,      0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 1.0+sGraphBorder);
-		    gl.glVertex2d(0.0,      1.0+sGraphBorder);
-		  }
+		  renderSampleBackground(gl, prefs.getFreeMemoryBgColor(), span.y());
 
 		  /* graph */ 
 		  {
-		    Color3d fg = prefs.getFreeMemoryFgColor();
-		    gl.glColor3d(fg.r(), fg.g(), fg.b());
+		    Color3d fg  = prefs.getFreeMemoryFgColor();
+		    Color3d low = prefs.getLowMemoryFgColor();
+		    double lowMemory = prefs.getLowMemoryThreshold();
+		    boolean thresh = updateThresholdColor(gl, fg, low, true, lowMemory, 1.0);
 
-		    int wk;
-		    for(wk=0; wk<block.getNumSamples(); wk++) {
-		      double mem = ((double) block.getMemory(wk)) / totalMem;
+		    Long totalMem = null;
+		    if(qinfo != null) 
+		      totalMem = qinfo.getTotalMemory();
 
-		      gl.glVertex2d((double) wk,     0.0);
-		      gl.glVertex2d((double) (wk+1), 0.0);
-		      gl.glVertex2d((double) (wk+1), mem);
-		      gl.glVertex2d((double) wk,     mem);
+		    if(totalMem != null) {
+		      double total = (double) totalMem;
+
+		      boolean firstSample = true;
+		      long lastTime = 0L;
+		      double lastMem = 0.0; 
+		      double lastX = 0.0;
+		      int wk;
+		      for(wk=0; wk<cache.getNumSamples(); wk++) {
+			long time = cache.getTime(wk);
+			double mem = ((double) cache.getMemory(wk)) / total;
+			if(mem > 0.0) {
+			  double dx = lastX + deltaX;
+			  double nx = ((double) (time - first)) / 60000.0;
+			  
+			  if(!firstSample) {
+			    double x = (nx > (dx+deltaX)) ? dx : nx;
+			    renderSample(gl, lastX, x, lastMem);
+			  }
+
+			  thresh = updateThresholdColor(gl, fg, low, thresh, lowMemory, mem);
+
+			  lastTime = time; 
+			  lastMem  = mem; 
+			  lastX    = nx; 
+
+			  firstSample = false;
+			}
+		      }
+		      
+		      if(!firstSample) {
+			double x = lastX + deltaX;
+			renderSample(gl, lastX, x, lastMem);
+		      }
 		    }
 		  }
 		}
 		gl.glEnd();
+
+		/* low memory bar */ 
+		if(pShowLowMemoryBar) {
+		  gl.glBegin(gl.GL_LINES);
+		  {
+		    Color3d color = prefs.getFullLoadColor();
+		    gl.glColor3d(color.r(), color.g(), color.b());
+		    
+		    double v = prefs.getLowMemoryThreshold();
+		    gl.glVertex2d(0.0,      v);
+		    gl.glVertex2d(span.y(), v);
+		  }
+		  gl.glEnd();
+		}
 	      }
 	      gl.glEndList();
 	    }
@@ -788,40 +865,76 @@ class JResourceUsageHistoryDialog
 	      Integer dl = UIMaster.getInstance().getDisplayList(gl);
 	      pDiskDLs.put(hname, dl);			    
 	      
-	      double totalDisk = (double) block.getTotalDisk();
-
 	      gl.glNewList(dl, GL.GL_COMPILE);
 	      {
 		gl.glBegin(gl.GL_QUADS);
 		{
 		  /* background */ 
-		  {
-		    Color3d color = prefs.getFreeDiskBgColor();
-		    gl.glColor3d(color.r(), color.g(), color.b());
-		    
-		    gl.glVertex2d(0.0,      0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 1.0+sGraphBorder);
-		    gl.glVertex2d(0.0,      1.0+sGraphBorder);
-		  }
+		  renderSampleBackground(gl, prefs.getFreeDiskBgColor(), span.y());
 
 		  /* graph */ 
 		  {
-		    Color3d fg = prefs.getFreeDiskFgColor();
-		    gl.glColor3d(fg.r(), fg.g(), fg.b());
+		    Color3d fg  = prefs.getFreeDiskFgColor();
+		    Color3d low = prefs.getLowDiskFgColor();
+		    double lowDisk = prefs.getLowDiskThreshold();
+		    boolean thresh = updateThresholdColor(gl, fg, low, true, lowDisk, 1.0);
 
-		    int wk;
-		    for(wk=0; wk<block.getNumSamples(); wk++) {
-		      double disk = ((double) block.getDisk(wk)) / totalDisk;
+		    Long totalDisk = null;
+		    if(qinfo != null) 
+		      totalDisk = qinfo.getTotalDisk();
 
-		      gl.glVertex2d((double) wk,     0.0);
-		      gl.glVertex2d((double) (wk+1), 0.0);
-		      gl.glVertex2d((double) (wk+1), disk);
-		      gl.glVertex2d((double) wk,     disk);
+		    if(totalDisk != null) {
+		      double total = (double) totalDisk;
+
+		      boolean firstSample = true;
+		      long lastTime = 0L;
+		      double lastDisk = 0.0; 
+		      double lastX = 0.0;
+		      int wk;
+		      for(wk=0; wk<cache.getNumSamples(); wk++) {
+			long time = cache.getTime(wk);
+			double disk = ((double) cache.getDisk(wk)) / total;
+			if(disk > 0.0) {
+			  double dx = lastX + deltaX;
+			  double nx = ((double) (time - first)) / 60000.0;
+			  
+			  if(!firstSample) {
+			    double x = (nx > (dx+deltaX)) ? dx : nx;
+			    renderSample(gl, lastX, x, lastDisk);
+			  }
+
+			  thresh = updateThresholdColor(gl, fg, low, thresh, lowDisk, disk);
+
+			  lastTime = time; 
+			  lastDisk = disk; 
+			  lastX    = nx; 
+
+			  firstSample = false;
+			}
+		      }
+		      
+		      if(!firstSample) {
+			double x = lastX + deltaX;
+			renderSample(gl, lastX, x, lastDisk); 
+		      }
 		    }
 		  }
 		}
 		gl.glEnd();
+
+		/* low disk bar */ 
+		if(pShowLowDiskBar) {
+		  gl.glBegin(gl.GL_LINES);
+		  {
+		    Color3d color = prefs.getFullLoadColor();
+		    gl.glColor3d(color.r(), color.g(), color.b());
+		    
+		    double v = prefs.getLowDiskThreshold();
+		    gl.glVertex2d(0.0,      v);
+		    gl.glVertex2d(span.y(), v);
+		  }
+		  gl.glEnd();
+		}
 	      }
 	      gl.glEndList();
 	    }
@@ -838,46 +951,46 @@ class JResourceUsageHistoryDialog
 		gl.glBegin(gl.GL_QUADS);
 		{
 		  /* background */ 
-		  {
-		    Color3d color = prefs.getJobCountBgColor();
-		    gl.glColor3d(color.r(), color.g(), color.b());
-		    
-		    gl.glVertex2d(0.0,      0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 0.0-sGraphBorder);
-		    gl.glVertex2d(span.y(), 1.0+sGraphBorder);
-		    gl.glVertex2d(0.0,      1.0+sGraphBorder);
-		  }
+		  renderSampleBackground(gl, prefs.getJobCountBgColor(), span.y());
 
 		  /* graph */ 
 		  {
 		    Color3d fg = prefs.getJobCountFgColor();
 		    Color3d oc = prefs.getJobCountOverflowColor();
+		    boolean over = updateOverflowColor(gl, fg, oc, true, 0.0);
 
-		    boolean over = false;		    
-		    gl.glColor3d(fg.r(), fg.g(), fg.b());
-
+		    boolean firstSample = true;
+		    long lastTime = 0L;
+		    double lastJobs = 0.0; 
+		    double lastX = 0.0;
 		    int wk;
-		    for(wk=0; wk<block.getNumSamples(); wk++) {
-		      double jobs = ((double) block.getNumJobs(wk)) / totalJobs;
+		    for(wk=0; wk<cache.getNumSamples(); wk++) {
+		      long time = cache.getTime(wk);
+		      double jobs = ((double) cache.getNumJobs(wk)) / totalJobs;
 		      if(jobs > 0.0) {
-			if(jobs > 1.0) {
-			  if(!over) {
-			    gl.glColor3d(oc.r(), oc.g(), oc.b());
-			    over = true;
-			  }
+			double limitJobs = Math.min(jobs, 1.0);
+
+			double dx = lastX + deltaX;
+			double nx = ((double) (time - first)) / 60000.0;
+
+			if(!firstSample) {
+			  double x = (nx > (dx+deltaX)) ? dx : nx;
+			  renderSample(gl, lastX, x, lastJobs);
 			}
-			else if(over) {
-			  gl.glColor3d(fg.r(), fg.g(), fg.b());
-			  over = false;
-			}
-			
-			jobs = Math.min(jobs, 1.0);
-		      
-			gl.glVertex2d((double) wk,     0.0);
-			gl.glVertex2d((double) (wk+1), 0.0);
-			gl.glVertex2d((double) (wk+1), jobs);
-			gl.glVertex2d((double) wk,     jobs);
+
+			over = updateOverflowColor(gl, fg, oc, over, jobs);
+
+			lastTime = time; 
+			lastJobs = limitJobs; 
+			lastX    = nx; 
+
+			firstSample = false;
 		      }
+		    }
+		    
+		    if(!firstSample) {
+		      double x = lastX + deltaX;
+		      renderSample(gl, lastX, x, lastJobs);
 		    }
 		  }
 		}
@@ -885,18 +998,20 @@ class JResourceUsageHistoryDialog
 
 		/* job slots level */ 
 		if(pShowJobSlotsBar) {
-		  double slots = (double) block.getJobSlots();
-		  double v = slots / totalJobs; 
-		  if(v <= 1.0) {
-		    gl.glBegin(gl.GL_LINES);
-		    {
-		      Color3d color = prefs.getJobSlotsColor();
-		      gl.glColor3d(color.r(), color.g(), color.b());
-		      
-		      gl.glVertex2d(0.0,      v);
-		      gl.glVertex2d(span.y(), v);
+		  if(qinfo != null) {
+		    double slots = (double) qinfo.getJobSlots();
+		    double v = slots / totalJobs; 
+		    if(v <= 1.0) {
+		      gl.glBegin(gl.GL_LINES);
+		      {
+			Color3d color = prefs.getJobSlotsColor();
+			gl.glColor3d(color.r(), color.g(), color.b());
+			
+			gl.glVertex2d(0.0,      v);
+			gl.glVertex2d(span.y(), v);
+		      }
+		      gl.glEnd();
 		    }
-		    gl.glEnd();
 		  }
 		}
 	      }
@@ -931,14 +1046,18 @@ class JResourceUsageHistoryDialog
 	/* time range */ 
 	if(pLoadButton.isSelected() || pMemButton.isSelected()  || 
 	   pDiskButton.isSelected() || pJobButton.isSelected()) {
+	  
+	  ResourceSampleCache cache = pSamples.get(hname);
+	  Date first = cache.getFirstTimeStamp();
+	  Date last  = cache.getLastTimeStamp();
 
-	  ResourceSampleBlock block = pSamples.get(hname);
+	  if((startStamp == null) || 
+	     ((first != null) && first.compareTo(startStamp) < 0))
+	    startStamp = first;
 
-	  if((startStamp == null) || (block.getStartTimeStamp().compareTo(startStamp) < 0)) 
-	    startStamp = block.getStartTimeStamp();
-
-	  if((endStamp == null) || (block.getEndTimeStamp().compareTo(endStamp) > 0)) 
-	    endStamp = block.getEndTimeStamp();
+	  if((endStamp == null) || 
+	     ((last != null) && last.compareTo(endStamp) > 0))
+	    endStamp = last;
 	}
 	  
 	dy -= sGraphGap*2.0; 
@@ -992,40 +1111,55 @@ class JResourceUsageHistoryDialog
 	      
 	      double top = 1.0;
 	      for(String hname : pSamples.keySet()) {
-		ResourceSampleBlock block = pSamples.get(hname);
+		QueueHostInfo qinfo = pHosts.get(hname);
+		ResourceSampleCache cache = pSamples.get(hname);
 		
 		if(pLoadButton.isSelected() && renderGraphBars(gl, top)) {
 		  if(pShowFullLoadBar) {
-		    double v = (((double) block.getNumProcessors()) / 
-				((double) prefs.getSystemLoadRange()));
-		    if((v > 0.0) && (v < 1.0)) {
-		      Color3d color = prefs.getFullLoadColor();
-		      color.mult(0.8);
-		      gl.glColor3d(color.r(), color.g(), color.b());
-		      
-		      gl.glBegin(gl.GL_LINES);
-		      {	
-			gl.glVertex2d(-pGraphArea.x(), top-1.0+v);
-			gl.glVertex2d( pGraphArea.x(), top-1.0+v);
+		    Integer numProcs = null;
+		    if(qinfo != null) 
+		      numProcs = qinfo.getNumProcessors();
+		    
+		    if(numProcs != null) {
+		      double v = (((double) numProcs) / 
+				  ((double) prefs.getSystemLoadRange()));
+		      if((v > 0.0) && (v < 1.0)) {
+			Color3d color = prefs.getFullLoadColor();
+			color.mult(0.8);
+			gl.glColor3d(color.r(), color.g(), color.b());
+			
+			gl.glBegin(gl.GL_LINES);
+			{	
+			  gl.glVertex2d(-pGraphArea.x(), top-1.0+v);
+			  gl.glVertex2d( pGraphArea.x(), top-1.0+v);
+			}
+			gl.glEnd();
+			
+			gl.glColor3d(0.8, 0.8, 0.8);
 		      }
-		      gl.glEnd();
-		      
-		      gl.glColor3d(0.8, 0.8, 0.8);
 		    }
 		  }
 		  
 		  top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		}
 		
-		if(pMemButton.isSelected() && renderGraphBars(gl, top))
+		if(pMemButton.isSelected() && renderGraphBars(gl, top)) {
+		  
+		  // ...
+
 		  top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+		}
 		
-		if(pDiskButton.isSelected() && renderGraphBars(gl, top))
+		if(pDiskButton.isSelected() && renderGraphBars(gl, top)){
+		  
+		  // ...
+
 		  top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+		}
 		
 		if(pJobButton.isSelected() && renderGraphBars(gl, top)) {
-		  if(pShowJobSlotsBar) {
-		    double v = (((double) block.getJobSlots()) / 
+		  if((pShowJobSlotsBar) && (qinfo != null)) {
+		    double v = (((double) qinfo.getJobSlots()) / 
 				((double) prefs.getJobCountRange()));
 		    if((v > 0.0) && (v < 1.0)) {
 		      Color3d color = prefs.getJobSlotsColor();
@@ -1540,63 +1674,107 @@ class JResourceUsageHistoryDialog
 	      if(pShowGraphBrackets) {
 		{
 		  int v = 0;
-		  int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
-					 GeometryMgr.TextAlignment.Center, 0.05);
-		  pIntegerLabelDLs.put(v, dl);
+		  if(!pIntegerLabelDLs.containsKey(v)) {
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pIntegerLabelDLs.put(v, dl);
+		  }
 		}
 
 		{
 		  int v = prefs.getSystemLoadRange();
-		  int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
-					 GeometryMgr.TextAlignment.Center, 0.05);
-		  pIntegerLabelDLs.put(v, dl);
+		  if(!pIntegerLabelDLs.containsKey(v)) {
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pIntegerLabelDLs.put(v, dl);
+		  }
 		}
 
 		{
 		  int v = prefs.getJobCountRange();
-		  int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
-					 GeometryMgr.TextAlignment.Center, 0.05);
-		  pIntegerLabelDLs.put(v, dl);
+		  if(!pIntegerLabelDLs.containsKey(v)) {
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pIntegerLabelDLs.put(v, dl);
+		  }
 		}
 		
 		{
-		  String text = "0.0";
-		  int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
-					 GeometryMgr.TextAlignment.Center, 0.05);
-		  pDoubleLabelDLs.put(text, dl);
+		  String label = "0.0";
+		  if(!pDoubleLabelDLs.containsKey(label)) {
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pDoubleLabelDLs.put(label, dl);
+		  }
 		}
 		
 		for(String hname : pSamples.keySet()) {
-		  ResourceSampleBlock block = pSamples.get(hname);
+		  QueueHostInfo qinfo = pHosts.get(hname);
 		  
 		  {
-		    int v = block.getNumProcessors();
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
-					   GeometryMgr.TextAlignment.Center, 0.05);
-		    pIntegerLabelDLs.put(v, dl);
+		    Integer numProcs = null;
+		    if(qinfo != null) 
+		      numProcs = qinfo.getNumProcessors();
+		    
+		    if(numProcs != null) {
+		      String label = String.valueOf(numProcs); 
+
+		      if(!pIntegerLabelDLs.containsKey(numProcs)) {
+			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+					       GeometryMgr.TextAlignment.Center, 0.05);
+			pIntegerLabelDLs.put(numProcs, dl);
+		      }
+		    }
 		  }
 
 		  {
-		    int v = block.getJobSlots();
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
-					   GeometryMgr.TextAlignment.Center, 0.05);
-		    pIntegerLabelDLs.put(v, dl);
-		  }	
+		    Integer slots = null;
+		    if(qinfo != null) 
+		      slots = qinfo.getJobSlots();
+		    
+		    if(slots != null) {
+		      String label = String.valueOf(slots); 
+
+		      if(!pIntegerLabelDLs.containsKey(slots)) {
+			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+					       GeometryMgr.TextAlignment.Center, 0.05);
+			pIntegerLabelDLs.put(slots, dl);
+		      }
+		    }
+		  }
 
 		  {
-		    double v = ((double) block.getTotalMemory()) / 1073741824.0;
-		    String text = String.format("%1$.1f", v);
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
-					   GeometryMgr.TextAlignment.Center, 0.05);
-		    pDoubleLabelDLs.put(text, dl);
+		    Long totalMem = null; 
+		    if(qinfo != null) 
+		      totalMem = qinfo.getTotalMemory();
+
+		    if(totalMem != null) {
+		      String label = 
+			String.format("%1$.1f", ((double) totalMem) / 1073741824.0);
+
+		      if(!pDoubleLabelDLs.containsKey(label)) {
+			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+					       GeometryMgr.TextAlignment.Center, 0.05);
+			pDoubleLabelDLs.put(label, dl);
+		      }
+		    }
 		  }
 		  
 		  {
-		    double v = ((double) block.getTotalDisk()) / 1073741824.0;
-		    String text = String.format("%1$.1f", v);
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
-					   GeometryMgr.TextAlignment.Center, 0.05);
-		    pDoubleLabelDLs.put(text, dl);
+		    Long totalDisk = null; 
+		    if(qinfo != null) 
+		      totalDisk = qinfo.getTotalDisk(); 
+
+		    if(totalDisk != null) {
+		      String label = 
+			String.format("%1$.1f", ((double) totalDisk) / 1073741824.0);
+
+		      if(!pDoubleLabelDLs.containsKey(label)) {
+			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+					       GeometryMgr.TextAlignment.Center, 0.05);
+			pDoubleLabelDLs.put(label, dl);
+		      }
+		    }
 		  }
 		}
 	      }
@@ -1686,42 +1864,67 @@ class JResourceUsageHistoryDialog
 		}
 	      
 		/* graph labels */ 
-		{
-		  double top = 1.0;
-		  for(String hname : pSamples.keySet()) {
-		    ResourceSampleBlock block = pSamples.get(hname);
+	 	{
+ 		  double top = 1.0;
+ 		  for(String hname : pSamples.keySet()) {
+ 		    QueueHostInfo qinfo = pHosts.get(hname);
 
-		    if(pLoadButton.isSelected()) {
-		      renderGraphLabel(gl, cpuDL, top, lx);
-		      renderGraphTickLabels
-			(gl, block.getNumProcessors(), prefs.getFullLoadColor(), 
-			 pShowFullLoadBar, prefs.getSystemLoadRange(), top);
+ 		    if(pLoadButton.isSelected()) {
+ 		      renderGraphLabel(gl, cpuDL, top, lx);
 
-		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-		    }
-		  
-		    if(pMemButton.isSelected()) {
-		      renderGraphLabel(gl, memDL, top, lx);
-		      renderGraphTickLabels(gl, (double) block.getTotalMemory(), top);
-		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-		    }
-		  
-		    if(pDiskButton.isSelected()) {
-		      renderGraphLabel(gl, diskDL, top, lx);
-		      renderGraphTickLabels(gl, (double) block.getTotalDisk(), top);
-		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-		    }
-		  
-		    if(pJobButton.isSelected()) {
-		      renderGraphLabel(gl, jobDL, top, lx);
-		      renderGraphTickLabels
-			(gl, block.getJobSlots(), prefs.getJobSlotsColor(), 
-			 pShowJobSlotsBar, prefs.getJobCountRange(), top);
-		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-		    }
+		      Integer numProcs = null;
+		      if(qinfo != null) 
+			numProcs = qinfo.getNumProcessors();
+		      
+ 		      renderGraphTickLabels
+ 			(gl, numProcs, prefs.getFullLoadColor(), 
+ 			 pShowFullLoadBar, prefs.getSystemLoadRange(), top);
 
-		    top -= sGraphGap*2.0;
-		  }
+ 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+ 		    }
+		  
+ 		    if(pMemButton.isSelected()) {
+ 		      renderGraphLabel(gl, memDL, top, lx);
+		      
+		      Long totalMem = null; 
+		      if(qinfo != null) 
+			totalMem = qinfo.getTotalMemory();
+		      
+		      if(totalMem != null) 
+			renderGraphTickLabels(gl, (double) totalMem, top);
+
+ 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+ 		    }
+		  
+ 		    if(pDiskButton.isSelected()) {
+ 		      renderGraphLabel(gl, diskDL, top, lx);
+
+		      Long totalDisk = null; 
+		      if(qinfo != null) 
+			totalDisk = qinfo.getTotalDisk(); 
+
+		      if(totalDisk != null) 
+			renderGraphTickLabels(gl, (double) totalDisk, top);
+
+ 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+ 		    }
+		  
+ 		    if(pJobButton.isSelected()) {
+ 		      renderGraphLabel(gl, jobDL, top, lx);
+		      
+		      Integer slots = null;
+		      if(qinfo != null) 
+			slots = qinfo.getJobSlots();
+
+ 		      renderGraphTickLabels
+ 			(gl, slots, prefs.getJobSlotsColor(), 
+ 			 pShowJobSlotsBar, prefs.getJobCountRange(), top);
+
+ 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+ 		    }
+
+ 		    top -= sGraphGap*2.0;
+ 		  }
 		}
 	      }
 	      gl.glPopMatrix();
@@ -1778,6 +1981,111 @@ class JResourceUsageHistoryDialog
     }
     
     return false;
+  }
+
+  /**
+   * Render a background box.
+   */ 
+  private void
+  renderSampleBackground
+  (
+   GL gl, 
+   Color3d color,
+   double range
+  ) 
+  {
+    gl.glColor3d(color.r(), color.g(), color.b());
+    
+    gl.glVertex2d(0.0,   0.0-sGraphBorder);
+    gl.glVertex2d(range, 0.0-sGraphBorder);
+    gl.glVertex2d(range, 1.0+sGraphBorder);
+    gl.glVertex2d(0.0,   1.0+sGraphBorder);
+  }
+
+  /** 
+   * Render an individual sample.
+   */ 
+  private void 
+  renderSample
+  (
+   GL gl,
+   double minX, 
+   double maxX, 
+   double value
+  ) 
+  {
+    gl.glVertex2d(minX, 0.0);
+    gl.glVertex2d(minX, value);
+    gl.glVertex2d(maxX, value);
+    gl.glVertex2d(maxX, 0.0);
+  }
+
+  /**
+   * Set the vertex color. 
+   */ 
+  private void
+  renderColor
+  (
+   GL gl,
+   Color3d color
+  ) 
+  {
+    gl.glColor3d(color.r(), color.g(), color.b());
+  }
+
+  /**
+   * Switch between the normal and overflow vertex colors.
+   */ 
+  private boolean
+  updateOverflowColor
+  (
+   GL gl, 
+   Color3d color, 
+   Color3d overflowColor, 
+   boolean isOverflowColor, 
+   double value
+  ) 
+  {
+    if(value > 1.0) {
+      if(!isOverflowColor) {
+	gl.glColor3d(overflowColor.r(), overflowColor.g(), overflowColor.b());
+	return true;
+      }
+    }
+    else if(isOverflowColor) {
+      gl.glColor3d(color.r(), color.g(), color.b());
+      return false;
+    }
+
+    return isOverflowColor; 
+  }
+
+  /**
+   * Switch between the normal and overflow vertex colors.
+   */ 
+  private boolean
+  updateThresholdColor
+  (
+   GL gl, 
+   Color3d color, 
+   Color3d thresholdColor, 
+   boolean isThresholdColor, 
+   double threshold, 
+   double value
+  ) 
+  {
+    if(value < threshold) {
+      if(!isThresholdColor) {
+	gl.glColor3d(thresholdColor.r(), thresholdColor.g(), thresholdColor.b());
+	return true;
+      }
+    }
+    else if(isThresholdColor) {
+      gl.glColor3d(color.r(), color.g(), color.b());
+      return false;
+    }
+
+    return isThresholdColor; 
   }
 
   /**
@@ -1889,7 +2197,7 @@ class JResourceUsageHistoryDialog
   renderGraphTickLabels
   (
    GL gl, 
-   int level, 
+   Integer level, 
    Color3d lcolor, 
    boolean drawBar, 
    int range, 
@@ -1897,11 +2205,9 @@ class JResourceUsageHistoryDialog
   ) 
   {
     double x = ExtraMath.lerp(-33.0, -8.0, 0.5);
-    double y = ((double) level) / ((double) range);
     
     if(pShowGraphBrackets) {
       double s = 12.0;
-      double sy = y * pScale.y();
       double sp = s*1.5;
 
       {
@@ -1936,24 +2242,30 @@ class JResourceUsageHistoryDialog
 	}
       }
 
-      if(drawBar && ((y*pScale.y()) > sp) && (((1.0-y)*pScale.y()) > sp)) {
-	Integer dl = pIntegerLabelDLs.get(level);
-	if(dl != null) {
-	  gl.glPushMatrix();
-	  {
-	    gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
-	  
-	    gl.glTranslated(x, top-1.0+y, 0.0);
-	    gl.glScaled(s, s/pScale.y(), 1.0);
-	    gl.glTranslated(0.0, -0.35, 0.0);
-	    gl.glCallList(dl);
+      if(level != null) {
+	double y = ((double) level) / ((double) range);
+
+	if(drawBar && ((y*pScale.y()) > sp) && (((1.0-y)*pScale.y()) > sp)) {
+	  Integer dl = pIntegerLabelDLs.get(level);
+	  if(dl != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
+	      
+	      gl.glTranslated(x, top-1.0+y, 0.0);
+	      gl.glScaled(s, s/pScale.y(), 1.0);
+	      gl.glTranslated(0.0, -0.35, 0.0);
+	      gl.glCallList(dl);
+	    }
+	    gl.glPopMatrix();
 	  }
-	  gl.glPopMatrix();
 	}
       }
     }
 
-    if(drawBar) {
+    if((drawBar) && (level != null)) {
+      double y = ((double) level) / ((double) range);
+
       gl.glBegin(gl.GL_LINES);
       {
 	gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
@@ -2323,6 +2635,12 @@ class JResourceUsageHistoryDialog
     else if((prefs.getToggleFullLoadBar() != null) &&
        prefs.getToggleFullLoadBar().wasPressed(e))
       doToggleLoadBar();
+    else if((prefs.getToggleLowMemoryBar() != null) &&
+       prefs.getToggleLowMemoryBar().wasPressed(e))
+      doToggleMemoryBar();
+    else if((prefs.getToggleLowDiskBar() != null) &&
+       prefs.getToggleLowDiskBar().wasPressed(e))
+      doToggleDiskBar();
     else if((prefs.getToggleJobSlotsBar() != null) &&
        prefs.getToggleJobSlotsBar().wasPressed(e))
       doToggleSlotsBar();
@@ -2433,6 +2751,10 @@ class JResourceUsageHistoryDialog
       pJobButton.doClick();
     else if(cmd.equals("show-hide-load-bar")) 
       doToggleLoadBar();
+    else if(cmd.equals("show-hide-memory-bar")) 
+      doToggleMemoryBar();
+    else if(cmd.equals("show-hide-disk-bar")) 
+      doToggleDiskBar();
     else if(cmd.equals("show-hide-slots-bar")) 
       doToggleSlotsBar();
     else {
@@ -2509,6 +2831,26 @@ class JResourceUsageHistoryDialog
   }
 
   /**
+   * Toggle the display of the low memory bars.
+   */ 
+  private void 
+  doToggleMemoryBar()
+  {
+    pShowLowMemoryBar = !pShowLowMemoryBar; 
+    doRefresh();
+  }
+
+  /**
+   * Toggle the display of the low disk bars.
+   */ 
+  private void 
+  doToggleDiskBar()
+  {
+    pShowLowDiskBar = !pShowLowDiskBar; 
+    doRefresh();
+  }
+
+  /**
    * Toggle the display of the job slots bars.
    */ 
   private void 
@@ -2567,21 +2909,78 @@ class JResourceUsageHistoryDialog
     {
       UIMaster master = UIMaster.getInstance();
 
-      if(master.beginPanelOp(pGroupID)) {
+      Date now = new Date();
+      Date oldest = new Date(now.getTime() - PackageInfo.sSampleCleanupInterval); 
+      DateInterval fullInterval = new DateInterval(oldest, now);
+      
+      int sz = (int) (PackageInfo.sSampleCleanupInterval / PackageInfo.sCollectorInterval);
+
+      if(master.beginPanelOp(pGroupID, "Loading History...")) {
 	try {
 	  QueueMgrClient qclient = master.getQueueMgrClient(pGroupID);
 
-	  pSamples.clear();
-	  for(String hname : pHostnames) {
-	    try {
-	      master.updatePanelOp(pGroupID, "Loading History: " + hname);
-	      ResourceSampleBlock block = qclient.getHostResourceSamples(hname);
-	      if(block != null) 
-		pSamples.put(hname, block);
+	  /* determine which samples are needed */ 
+	  TreeMap<String,DateInterval> intervals = new TreeMap<String,DateInterval>();
+	  synchronized(pParent) {
+	    for(String hname : pHostnames) {
+	      ResourceSampleCache cache = pSamples.get(hname);
+	      if(cache != null) {
+		intervals.put(hname, new DateInterval(cache.getLastTimeStamp(), now));
+	      }
+	      else {
+		pSamples.put(hname, new ResourceSampleCache(sz)); 
+		intervals.put(hname, fullInterval);
+	      }
 	    }
-	    catch(PipelineException ex) {
-	      master.showErrorDialog(ex);
+	  }
+
+	  /* get the missing samples */ 
+	  TreeMap<String,ResourceSampleCache> samples = null;
+	  TreeMap<String,QueueHostInfo> hosts = null;
+	  try {
+	    samples = qclient.getHostResourceSamples(intervals, false);
+	    hosts = qclient.getHosts(); // should get only the selected hosts... 
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	  
+	  if(hosts != null) {
+	    synchronized(pParent) {
+	      pHosts.clear();
+	      pHosts.putAll(hosts); 
+	    }	  
+	  }
+
+	  synchronized(pParent) {
+	    /* add the new samples to those already cached */ 
+	    if(samples != null) {
+	      for(String hname : samples.keySet()) {
+		ResourceSampleCache ocache = pSamples.get(hname);
+		if(ocache != null) {
+		  ResourceSampleCache ncache = samples.get(hname);
+		  if(ncache != null)
+		    ocache.addAllSamples(ncache);
+		}
+	      }
 	    }
+
+	    /* clean up samples from hosts no longer being displayed */ 
+	    {
+	      LinkedList<String> dead = new LinkedList<String>();
+	      for(String hname : pSamples.keySet()) {
+		ResourceSampleCache cache = pSamples.get(hname);
+		if((cache == null) || !cache.hasSamples() || !pHostnames.contains(hname)) 
+		  dead.add(hname);
+	      }
+
+	      for(String hname : dead) 
+		pSamples.remove(hname);
+	    }
+	    
+	    /* remove expired samples */ 
+	    for(ResourceSampleCache cache : samples.values()) 
+	      cache.pruneSamplesBefore(oldest);
 	  }
 	}
 	finally {
@@ -2677,9 +3076,14 @@ class JResourceUsageHistoryDialog
   private int  pGroupID;
 
   /**
-   * The resource usage samples indexed by hostname.
+   * The cached resource usage samples indexed by hostname.
+   */
+  private TreeMap<String,ResourceSampleCache>  pSamples;
+
+  /**
+   * The latest job server host status information.
    */ 
-  private TreeMap<String,ResourceSampleBlock>  pSamples;
+  private TreeMap<String,QueueHostInfo>  pHosts; 
 
 	
   /*----------------------------------------------------------------------------------------*/
@@ -2704,14 +3108,13 @@ class JResourceUsageHistoryDialog
    */ 
   private JToggleButton  pJobButton; 
 
-  /**
-   * Whether to display the full load bars.
-   */ 
-  private boolean pShowFullLoadBar; 
 
   /**
-   * Whether to display the job slots bars.
+   * Whether to display the value bars.
    */ 
+  private boolean pShowFullLoadBar; 
+  private boolean pShowLowMemoryBar; 
+  private boolean pShowLowDiskBar; 
   private boolean pShowJobSlotsBar; 
 
 
@@ -2732,6 +3135,8 @@ class JResourceUsageHistoryDialog
   private JMenuItem  pShowHideDiskItem;
   private JMenuItem  pShowHideJobItem;
   private JMenuItem  pShowHideFullLoadBarItem;
+  private JMenuItem  pShowHideLowMemoryBarItem;
+  private JMenuItem  pShowHideLowDiskBarItem;
   private JMenuItem  pShowHideJobSlotsBarItem;
 
 

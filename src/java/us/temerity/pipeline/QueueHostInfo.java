@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.2 2006/07/08 10:02:55 jim Exp $
+// $Id: QueueHostInfo.java,v 1.3 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,7 +12,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Read-only information about the current and/or pending status of a job server host. 
+ * The current and pending status of a job server host. 
  */
 public
 class QueueHostInfo
@@ -32,7 +32,6 @@ class QueueHostInfo
   {
     pStatus = QueueHostStatus.Shutdown; 
     pHoldTimeStamp = new Date(0L); 
-    pSamples = new ArrayList<ResourceSample>();
   }
 
   /**
@@ -72,16 +71,16 @@ class QueueHostInfo
    * @param hold 
    *   The timestamp of when all ramp-up intervals will have expired.
    * 
-   * @param samples
-   *   The system resource usage samples (newest to oldest).
-   * 
-   * @param schedule
-   *   The name of the current selection schedule 
-   *   or <CODE>null</CODE> if the choice of selection group is currently manual.
+   * @param sample
+   *   The latest sample or <CODE>null</CODE> if there are no samples.
    * 
    * @param group
    *   The name of the current selection group 
    *   or <CODE>null</CODE> not a member of any selection group. 
+   * 
+   * @param schedule
+   *   The name of the current selection schedule 
+   *   or <CODE>null</CODE> if the choice of selection group is currently manual.
    */ 
   public
   QueueHostInfo
@@ -96,9 +95,9 @@ class QueueHostInfo
    Long totalMem, 
    Long totalDisk, 
    Date hold, 
-   Collection<ResourceSample> samples, 
-   String schedule, 
-   String group
+   ResourceSample sample, 
+   String group,
+   String schedule
   ) 
   {
     super(name);
@@ -121,13 +120,10 @@ class QueueHostInfo
     else 
       pHoldTimeStamp = hold; 
 
-    if(samples == null) 
-      pSamples = new ArrayList<ResourceSample>();
-    else 
-      pSamples = new ArrayList<ResourceSample>(samples);
+    pSample = sample;
 
-    pSelectionSchedule = schedule; 
     pSelectionGroup = group; 
+    pSelectionSchedule = schedule; 
   }
 
 
@@ -137,7 +133,7 @@ class QueueHostInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether a change in reservation is pending.
+   * Whether a change in the status of the host is pending.
    */ 
   public synchronized boolean
   isPending()
@@ -388,7 +384,6 @@ class QueueHostInfo
     return pHoldTimeStamp;
   }
 
-   
   /**
    * Get the latest system resource sample.
    * 
@@ -398,23 +393,9 @@ class QueueHostInfo
   public synchronized ResourceSample
   getLatestSample() 
   {
-    if(!pSamples.isEmpty()) 
-      return pSamples.get(0);
-    return null;
+    return pSample;
   }
 
-  /**
-   * Get all of the system resource samples within the sample window.
-   * 
-   * @return 
-   *   The sample or <CODE>null</CODE> if there are no samples.
-   */ 
-  public synchronized List<ResourceSample> 
-  getSamples() 
-  {
-    return Collections.unmodifiableList(pSamples);
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -614,13 +595,20 @@ class QueueHostInfo
   private Date pHoldTimeStamp;
 
   /**
-   * The system resource usage samples (newest to oldest).
+   * The lastest resource usage sample or <CODE>null</CODE> if no samples exist.
    */ 
-  private ArrayList<ResourceSample>  pSamples;
+  private ResourceSample  pSample;
 
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The name of the current selection group or <CODE>null</CODE> not a member of any 
+   * selection group. 
+   */ 
+  private String  pSelectionGroup; 
+  private boolean pSelectionGroupPending; 
+
   /**
    * The name of the current selection schedule or <CODE>null</CODE> if the choice of 
    * selection group is currently manual.
@@ -628,11 +616,5 @@ class QueueHostInfo
   private String  pSelectionSchedule; 
   private boolean pSelectionSchedulePending; 
 
-  /**
-   * The name of the current selection group or <CODE>null</CODE> not a member of any 
-   * selection group. 
-   */ 
-  private String  pSelectionGroup; 
-  private boolean pSelectionGroupPending; 
 
 }

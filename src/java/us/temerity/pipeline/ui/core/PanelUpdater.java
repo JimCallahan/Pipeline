@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.5 2006/11/06 00:58:33 jim Exp $
+// $Id: PanelUpdater.java,v 1.6 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -256,6 +256,9 @@ class PanelUpdater
       }
     }
 
+    if(pQueueJobServersPanel != null) 
+      pSampleIntervals = pQueueJobServersPanel.getSampleIntervals(); 
+      
     if(pQueueJobBrowserPanel != null) 
       pSelectedJobGroupIDs = pQueueJobBrowserPanel.getSelectedGroupIDs();
 
@@ -395,6 +398,20 @@ class PanelUpdater
 		pHosts              = qclient.getHosts();
 		pSelectionGroups    = qclient.getSelectionGroupNames();
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
+
+		/* add full intervals for missing hosts */ 
+		{
+		  Date now = new Date();
+		  Date oldest = new Date(now.getTime() - sCacheInterval);
+		  DateInterval full = new DateInterval(oldest, now);
+
+		  for(String hname : pHosts.keySet()) {
+		    if(!pSampleIntervals.containsKey(hname)) 
+		      pSampleIntervals.put(hname, full);
+		  }
+		  
+		  pSamples = qclient.getHostResourceSamples(pSampleIntervals, true);
+		}
 
 		WorkGroups wgroups = mclient.getWorkGroups();
 		pWorkGroups = wgroups.getGroups();
@@ -603,7 +620,7 @@ class PanelUpdater
 	    /* job servers */ 
 	    if(pQueueJobServersPanel != null) 
 	      pQueueJobServersPanel.applyPanelUpdates
-		(pAuthor, pView, pHosts, 
+		(pAuthor, pView, pHosts, pSamples, 
 		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules);
 	    
 	    /* job slots */ 
@@ -631,6 +648,17 @@ class PanelUpdater
       }
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The interval of time displayed by the job server resource sample bar graphs.
+   */ 
+  private static final long sCacheInterval = 1800000L;   /* 30-minutes */ 
 
 
   
@@ -781,6 +809,17 @@ class PanelUpdater
    * The current status of job servers in the queue.
    */
   private TreeMap<String,QueueHostInfo>  pHosts; 
+
+  /**
+   * The time intervals which need to updated with resource samples 
+   * indexed by fully resolved hostname.
+   */
+  private TreeMap<String,DateInterval>  pSampleIntervals; 
+
+  /**
+   * The latest resource samples indexed by fully resolved hostname.
+   */ 
+  private TreeMap<String,ResourceSampleCache>  pSamples; 
 
   /**
    * The current selection groups,

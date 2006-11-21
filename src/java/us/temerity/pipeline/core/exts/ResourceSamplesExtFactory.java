@@ -1,4 +1,4 @@
-// $Id: ResourceSamplesExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: ResourceSamplesExtFactory.java,v 1.2 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -23,6 +23,13 @@ class ResourceSamplesExtFactory
 
   /**
    * Construct a task factory.
+   */ 
+  public 
+  ResourceSamplesExtFactory() 
+  {}
+
+  /**
+   * Construct a task factory.
    * 
    * @param samples
    *   The dynamic resource samples indexed by fully resolved hostname.
@@ -30,7 +37,7 @@ class ResourceSamplesExtFactory
   public 
   ResourceSamplesExtFactory
   (
-   TreeMap<String,ResourceSampleBlock> samples
+   TreeMap<String,ResourceSampleCache> samples
   )      
   {
     pSamples = samples; 
@@ -108,7 +115,7 @@ class ResourceSamplesExtFactory
   /**
    * The dynamic resource samples indexed by fully resolved hostname.
    */ 
-  private TreeMap<String,ResourceSampleBlock>  pSamples; 
+  private TreeMap<String,ResourceSampleCache>  pSamples; 
 
 }
 

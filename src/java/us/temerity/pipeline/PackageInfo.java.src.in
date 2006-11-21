@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.20 2006/11/04 02:14:25 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.21 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -663,6 +663,17 @@ class PackageInfo
    */
   @Deprecated
   public static final File sQueueDir = new File("@QUEUEDIR@"); 
+
+
+  /**
+   * The job server resource sample collection interval (in milliseconds).
+   */ 
+  public static final long  sCollectorInterval = 15000L;  /* 15-seconds */
+
+  /**
+   * The maximum age of a resource sample file before it is deleted (in milliseconds).
+   */ 
+  public static long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
 
   
   /*----------------------------------------------------------------------------------------*/

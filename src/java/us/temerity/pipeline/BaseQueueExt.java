@@ -1,4 +1,4 @@
-// $Id: BaseQueueExt.java,v 1.2 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseQueueExt.java,v 1.3 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -403,7 +403,8 @@ class BaseQueueExt
    * 
    * The queue manager periodically writes a block of resource samples it has been caching
    * to disk to free up memory.  This method is invoked whenever the samples are saved. 
-   * The default configuration is to write 1-minute averaged values at 30-minute intervals.
+   * The default configuration is to write the set of samples collected every 15-seconds 
+   * during a 4-hour interval at the end of that period.
    * 
    * @param samples
    *   The dynamic resource samples indexed by fully resolved hostname.
@@ -411,7 +412,7 @@ class BaseQueueExt
   public void
   postResourceSamplesTask
   (
-   TreeMap<String,ResourceSampleBlock> samples
+   TreeMap<String,ResourceSampleCache> samples
   ) 
   {}
   

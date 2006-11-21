@@ -1,4 +1,4 @@
-// $Id: QueueGetHostResourceSamplesRsp.java,v 1.4 2005/01/22 06:10:10 jim Exp $
+// $Id: QueueGetHostResourceSamplesRsp.java,v 1.5 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,21 +29,21 @@ class QueueGetHostResourceSamplesRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param block
-   *   The resource usage samples.
+   * @param samples
+   *   The requested samples indexed by fully resolved hostname. 
    */ 
   public
   QueueGetHostResourceSamplesRsp
   (
    TaskTimer timer, 
-   ResourceSampleBlock block
+   TreeMap<String,ResourceSampleCache> samples
   )
   { 
     super(timer);
 
-    if(block == null) 
-      throw new IllegalArgumentException("The resource samples block cannot be (null)!");
-    pBlock = block;
+    if(samples == null) 
+      throw new IllegalArgumentException("The resource samples cannot be (null)!");
+    pSamples = samples;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
@@ -59,12 +59,12 @@ class QueueGetHostResourceSamplesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the resource usage samples.
+   * Gets the requested samples indexed by fully resolved hostname. 
    */
-  public ResourceSampleBlock
+  public TreeMap<String,ResourceSampleCache> 
   getSamples() 
   {
-    return pBlock; 
+    return pSamples; 
   }
   
 
@@ -82,9 +82,9 @@ class QueueGetHostResourceSamplesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The resource usage samples.
+   * The requested samples indexed by fully resolved hostname. 
    */ 
-  private ResourceSampleBlock  pBlock; 
+  private TreeMap<String,ResourceSampleCache>   pSamples; 
 
 }
   

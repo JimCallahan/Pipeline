@@ -1,4 +1,4 @@
-// $Id: QueueStatsDb.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueStatsDb.java,v 1.2 2006/11/21 19:55:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -318,7 +318,7 @@ QueueStatsDb
   public synchronized void
   insertResourceSamples
   (
-   TreeMap<String,ResourceSampleBlock> samples   
+   TreeMap<String,ResourceSampleCache> samples   
   ) 
     throws SQLException
   {
@@ -339,23 +339,19 @@ QueueStatsDb
 
     /* insert the samples */ 
     for(String host : samples.keySet()) {
-      ResourceSampleBlock block = samples.get(host);
+      ResourceSampleCache cache = samples.get(host);
       Integer hostID = hosts.get(host); 
 
-      long tm = block.getStartTimeStamp().getTime();
+      int size = cache.getNumSamples();
       int wk;
-      for(wk=0; wk<block.getNumSamples(); wk++) {
-	Timestamp stamp = new Timestamp(tm); 
-	
+      for(wk=0; wk<size; wk++) {
 	pInsertSampleSt.setInt(1, hostID);
-	pInsertSampleSt.setTimestamp(2, stamp);
-	pInsertSampleSt.setInt(3, block.getNumJobs(wk));
-	pInsertSampleSt.setFloat(4, block.getLoad(wk));
-	pInsertSampleSt.setLong(5, block.getMemory(wk));
-	pInsertSampleSt.setLong(6, block.getDisk(wk));
+	pInsertSampleSt.setTimestamp(2, new Timestamp(cache.getTimeStamp(wk).getTime()));
+	pInsertSampleSt.setInt(3, cache.getNumJobs(wk));
+	pInsertSampleSt.setFloat(4, cache.getLoad(wk));
+	pInsertSampleSt.setLong(5, cache.getMemory(wk));
+	pInsertSampleSt.setLong(6, cache.getDisk(wk));
 	pInsertSampleSt.executeUpdate();
-
-	tm += 1000;
       }
     }
   }
