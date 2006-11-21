@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.71 2006/11/16 07:29:25 jim Exp $
+// $Id: QueueMgr.java,v 1.72 2006/11/21 20:00:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -76,31 +76,22 @@ class QueueMgr
       pSelectionGroups    = new TreeMap<String,SelectionGroup>();
       pSelectionSchedules = new TreeMap<String,SelectionSchedule>();
       
-      pToolsets = new DoubleMap<String,OsType,Toolset>();
-
-      pStatusChanges            = new TreeMap<String,QueueHostStatusChange>();
-      pReservationChanges       = new TreeMap<String,String>();
-      pOrderChanges             = new TreeMap<String,Integer>();
-      pSlotChanges              = new TreeMap<String,Integer>();
-      pSelectionGroupChanges    = new TreeMap<String,String>();
-      pSelectionScheduleChanges = new TreeMap<String,String>();
-
       pQueueExtensions = new TreeMap<String,QueueExtensionConfig>();
 
-      pHungChanges = new TreeSet<String>();
+      pToolsets = new DoubleMap<String,OsType,Toolset>();
 
-      pLastSampleWritten = new AtomicLong(0L);
-      pSampleChanges    = new TreeMap<String,LinkedList<ResourceSample>>();
-
+      pHostsMod           = new TreeMap<String,QueueHostMod>(); 
+      pHungChanges        = new TreeSet<String>();
       pOsTypeChanges      = new TreeMap<String,OsType>();
       pNumProcChanges     = new TreeMap<String,Integer>();
       pTotalMemoryChanges = new TreeMap<String,Long>();
       pTotalDiskChanges   = new TreeMap<String,Long>();
+      pHosts              = new TreeMap<String,QueueHost>(); 
+      pHostsInfo          = new TreeMap<String,QueueHostInfo>();
 
-      pHosts           = new TreeMap<String,QueueHost>(); 
-      pSampleFileLock  = new Object();
-
-      pHostsInfo = new TreeMap<String,QueueHostInfo>();
+      pLastSampleWritten = new AtomicLong(0L);
+      pSamples           = new TreeMap<String,ResourceSampleCache>();
+      pSampleFileLock    = new Object();
 
       pPreemptList = new ConcurrentLinkedQueue<Long>();
       pHitList     = new ConcurrentLinkedQueue<Long>();
@@ -414,47 +405,14 @@ class QueueMgr
 
     /* write the last interval of samples to disk */ 
     {
-      Date now = new Date();
-      TreeMap<String,ResourceSampleBlock> dump = new TreeMap<String,ResourceSampleBlock>();
-      for(String hname : pHosts.keySet()) {
-	QueueHost host = pHosts.get(hname);
-	if(host != null) {
-	  switch(host.getStatus()) {
-	  case Enabled:
-	    {
-	      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
-	      for(ResourceSample s : host.getSamples()) {
-		if(s.getTimeStamp().getTime() > pLastSampleWritten.get()) 
-		  rs.add(s);
-	      }
-	      
-	      if(!rs.isEmpty() && 
-		 (host.getNumProcessors() != null) && 
-		 (host.getTotalMemory() != null) && 
-		 (host.getTotalDisk() != null)) {
-		
-		ResourceSampleBlock block = 
-		  new ResourceSampleBlock(host.getJobSlots(), 
-					  host.getNumProcessors(), 
-					  host.getTotalMemory(), 
-					  host.getTotalDisk(), 
-					  rs);
-		dump.put(hname, block);
-	      }
-	    }
-	  }
-	}
+      TaskTimer tm = new TaskTimer();  
+      try {
+	writeSamples(tm, true); 
       }
-
-      if(!dump.isEmpty()) {
-	try {
-	  writeSamples(new TaskTimer(), now, dump);
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     ex.getMessage());
-	}
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
     }
 
@@ -1910,6 +1868,7 @@ class QueueMgr
 
       boolean modified = false;
       try {
+	/* remove the hosts */ 
 	timer.aquire();
 	synchronized(pHosts) {
 	  timer.resume();
@@ -1934,6 +1893,15 @@ class QueueMgr
 	  }
 	  
 	  writeHosts();
+	}
+
+	/* remove the resource samples cached for the hosts */ 
+	timer.aquire();
+	synchronized(pSamples) {
+	  timer.resume();
+
+	  for(String hname : hostnames)
+	    pSamples.remove(hname);
 	}
       }
       finally {
@@ -1995,9 +1963,11 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
 
     try {
+      TreeMap<String,QueueHostMod> changes = req.getChanges();
+
       if(!pAdminPrivileges.isQueueAdmin(req)) {
 	TreeSet<String> localHostnames = req.getLocalHostnames();
-	for(String hname : req.getEditedHostnames()) {
+	for(String hname : changes.keySet()) {
 	  if(!localHostnames.contains(hname)) 
 	    throw new PipelineException
 	      ("Only a user with Queue Admin privileges may may edit the properties of a " + 
@@ -2005,52 +1975,10 @@ class QueueMgr
 	}
       }	
 
-      if(req.getStatusChanges() != null) {
-	timer.aquire();
-	synchronized(pStatusChanges) {
-	  timer.resume();
-	  pStatusChanges.putAll(req.getStatusChanges());
-	}
-      }
-
-      if(req.getReservations() != null) {
-	timer.aquire();
-	synchronized(pReservationChanges) {
-	  timer.resume();
-	  pReservationChanges.putAll(req.getReservations());
-	}
-      }
-
-      if(req.getJobOrders() != null) {
-	timer.aquire();
-	synchronized(pOrderChanges) {
-	  timer.resume();
-	  pOrderChanges.putAll(req.getJobOrders());
-	}
-      }
-
-      if(req.getJobSlots() != null) {
-	timer.aquire();
-	synchronized(pSlotChanges) {
-	  timer.resume();
-	  pSlotChanges.putAll(req.getJobSlots());
-	}
-      }
-
-      if(req.getSelectionGroups() != null) {
-	timer.aquire();
-	synchronized(pSelectionGroupChanges) {
-	  timer.resume();
-	  pSelectionGroupChanges.putAll(req.getSelectionGroups());
-	}
-      }
-
-      if(req.getSelectionSchedules() != null) {
-	timer.aquire();
-	synchronized(pSelectionScheduleChanges) {
-	  timer.resume();
-	  pSelectionScheduleChanges.putAll(req.getSelectionSchedules());
-	}
+      timer.aquire();
+      synchronized(pHostsMod) {
+	timer.resume();
+	pHostsMod.putAll(changes);
       }
 
       updatePendingHostChanges(timer);
@@ -2076,11 +2004,9 @@ class QueueMgr
       synchronized(pHosts) {
 	timer.resume();  
 	
-	Date now = new Date(); 
-
 	pHostsInfo.clear();
 	for(String hname : pHosts.keySet()) 
-	  pHostsInfo.put(hname, pHosts.get(hname).toInfo(now));
+	  pHostsInfo.put(hname, pHosts.get(hname).toInfo());
       }
     }
       
@@ -2088,7 +2014,8 @@ class QueueMgr
   }
 
   /**
-   * Update the current read-only cache of job server info to reflect pending state changes.
+   * Update the client copy of the host info table to reflect pending changes to the 
+   * hosts which have not yet been applied.
    */ 
   private void 
   updatePendingHostChanges
@@ -2098,85 +2025,49 @@ class QueueMgr
   {
     timer.aquire();
     synchronized(pHostsInfo) {
-      synchronized(pStatusChanges) {
+      synchronized(pHostsMod) {
 	timer.resume();
       
-	for(String hname : pStatusChanges.keySet()) {
+	for(String hname : pHostsMod.keySet()) {
 	  QueueHostInfo qinfo = pHostsInfo.get(hname);
 	  if(qinfo != null) {
-	    switch(pStatusChanges.get(hname)) {
-	    case Enable:
-	      qinfo.setStatus(QueueHostStatus.Enabling);
-	      break;
-	      
-	    case Disable:
-	      qinfo.setStatus(QueueHostStatus.Disabling);
-	      break;
-	      
-	    case Terminate:
-	      qinfo.setStatus(QueueHostStatus.Terminating);
+	    QueueHostMod qmod = pHostsMod.get(hname);
+
+	    if(qmod.isStatusModified()) {
+	      switch(qmod.getStatus()) {
+	      case Enable:
+		qinfo.setStatus(QueueHostStatus.Enabling);
+		break;
+		
+	      case Disable:
+		qinfo.setStatus(QueueHostStatus.Disabling);
+		break;
+		
+	      case Terminate:
+		qinfo.setStatus(QueueHostStatus.Terminating);
+	      }
 	    }
+
+	    if(qmod.isReservationModified()) 
+	      qinfo.setReservation(qmod.getReservation()); 
+
+	    if(qmod.isOrderModified()) 
+	      qinfo.setOrder(qmod.getOrder()); 
+
+	    if(qmod.isJobSlotsModified()) 
+	      qinfo.setJobSlots(qmod.getJobSlots()); 
+
+	    if(qmod.isSelectionGroupModified()) 
+	      qinfo.setSelectionGroup(qmod.getSelectionGroup()); 
+
+	    if(qmod.isSelectionScheduleModified()) 
+	      qinfo.setSelectionSchedule(qmod.getSelectionSchedule()); 
 	  }
-	}
-      }
-      
-      timer.aquire();
-      synchronized(pReservationChanges) {
-	timer.resume();
-	
-	for(String hname : pReservationChanges.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  if(qinfo != null) 
-	    qinfo.setReservation(pReservationChanges.get(hname));
-	}
-      }
-
-      timer.aquire();
-      synchronized(pOrderChanges) {
-	timer.resume();
-
-	for(String hname : pOrderChanges.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  if(qinfo != null) 
-	    qinfo.setOrder(pOrderChanges.get(hname));
-	}
-      }
-
-      timer.aquire();
-      synchronized(pSlotChanges) {
-	timer.resume();
-	
-	for(String hname : pSlotChanges.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  if(qinfo != null) 
-	    qinfo.setJobSlots(pSlotChanges.get(hname));
-	}
-      }
-
-      timer.aquire();
-      synchronized(pSelectionGroupChanges) {
-	timer.resume();
-
-	for(String hname : pSelectionGroupChanges.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  if(qinfo != null) 
-	    qinfo.setSelectionGroup(pSelectionGroupChanges.get(hname));
-	}
-      }
-
-      timer.aquire();
-      synchronized(pSelectionScheduleChanges) {
-	timer.resume();
-      
-	for(String hname : pSelectionScheduleChanges.keySet()) {
-	  QueueHostInfo qinfo = pHostsInfo.get(hname);
-	  if(qinfo != null) 
-	    qinfo.setSelectionSchedule(pSelectionScheduleChanges.get(hname));
 	}
       }
     }
   }
-  
+
   /**
    * Apply the changes previously requested to the hosts.
    */ 
@@ -2215,62 +2106,71 @@ class QueueMgr
 	   
 	/* status */ 
 	{
-	  /* make a copy of pending changes before attempting network communication */
+	  /* make a copy of pending status changes before attempting network communication 
+	     so that the pHostsMod lock will be held for only a short amount of time */ 
 	  TreeMap<String,QueueHostStatusChange> changes = null;
-	  tm.aquire();
-	  synchronized(pStatusChanges) {
-	    tm.resume();
-	    changes = new TreeMap<String,QueueHostStatusChange>(pStatusChanges);
-	    pStatusChanges.clear();
-	  }
-
-	  for(String hname : changes.keySet()) {
-	    QueueHostStatusChange change = changes.get(hname);
-	    QueueHost host = pHosts.get(hname);
-	    if((change != null) && (host != null)) {
-	      switch(change) {
-	      case Enable:
-	      case Disable:
-		try {
-		  JobMgrControlClient client = new JobMgrControlClient(hname);
-		  client.verifyConnection();
-		  client.disconnect();
-		}
-		catch(PipelineException ex) {
-		  change = QueueHostStatusChange.Terminate;
-		}	    	    
-	      }
-		
-	      switch(change) {
-	      case Terminate:
-		try {
-		  JobMgrControlClient client = new JobMgrControlClient(hname);
-		  client.shutdown();
-		}
-		catch(PipelineException ex) {
-		}	    
-	      }
-		
-	      switch(change) {
-	      case Enable:
-		setHostStatus(host, QueueHost.Status.Enabled);
-		if(modifiedHosts != null) 
-		  modifiedHosts.add(hname);
-		break;
-		  
-	      case Disable:
-		setHostStatus(host, QueueHost.Status.Disabled);
-		if(modifiedHosts != null) 
-		  modifiedHosts.add(hname);
-		break;
-		  
-	      case Terminate:
-		setHostStatus(host, QueueHost.Status.Shutdown);
-		if(modifiedHosts != null) 
-		  modifiedHosts.add(hname);
+	  {
+	    tm.aquire();
+	    synchronized(pHostsMod) {
+	      tm.resume();
+	      changes = new TreeMap<String,QueueHostStatusChange>(); 
+	      for(String hname : pHostsMod.keySet()) {
+		QueueHostMod qmod = pHostsMod.get(hname);
+		if(qmod.isStatusModified()) 
+		  changes.put(hname, qmod.getStatus());
 	      }
 	    }
-	  }	      
+	  }
+
+	  if(changes != null) {
+	    for(String hname : changes.keySet()) {
+	      QueueHostStatusChange change = changes.get(hname);
+	      QueueHost host = pHosts.get(hname);
+	      if((change != null) && (host != null)) {
+		switch(change) {
+		case Enable:
+		case Disable:
+		  try {
+		    JobMgrControlClient client = new JobMgrControlClient(hname);
+		    client.verifyConnection();
+		    client.disconnect();
+		  }
+		  catch(PipelineException ex) {
+		    change = QueueHostStatusChange.Terminate;
+		  }	    	    
+		}
+		
+		switch(change) {
+		case Terminate:
+		  try {
+		    JobMgrControlClient client = new JobMgrControlClient(hname);
+		    client.shutdown();
+		  }
+		  catch(PipelineException ex) {
+		  }	    
+		}
+		
+		switch(change) {
+		case Enable:
+		  setHostStatus(host, QueueHost.Status.Enabled);
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
+		  break;
+		  
+		case Disable:
+		  setHostStatus(host, QueueHost.Status.Disabled);
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
+		  break;
+		  
+		case Terminate:
+		  setHostStatus(host, QueueHost.Status.Shutdown);
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
+		}
+	      }
+	    }	      
+	  }	  
 	}
 
 	/* hung servers */ 
@@ -2310,104 +2210,75 @@ class QueueMgr
 	  }
 	}	
 
-	/* user reservations */ 
+	/* other host property changes... */
 	tm.aquire();
-	synchronized(pReservationChanges) {
+	synchronized(pHostsMod) {
 	  tm.resume();
 
-	  for(String hname : pReservationChanges.keySet()) {
+	  for(String hname : pHostsMod.keySet()) {
 	    QueueHost host = pHosts.get(hname);
 	    if(host != null) {
-	      host.setReservation(pReservationChanges.get(hname));
-	      if(modifiedHosts != null) 
-		modifiedHosts.add(hname);
-	      diskModified = true;
-	    }
-	  }
+	      QueueHostMod qmod = pHostsMod.get(hname);
 
-	  pReservationChanges.clear();
-	}
+	      /* user reservations */ 
+	      if(qmod.isReservationModified()) {
+		host.setReservation(qmod.getReservation());
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
+		diskModified = true;
+	      }
 	    
-	/* job orders */ 
-	tm.aquire();
-	synchronized(pOrderChanges) {
-	  tm.resume();
+	      /* job orders */ 
+	      if(qmod.isOrderModified()) {
+		host.setOrder(qmod.getOrder());
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
+		diskModified = true;
+	      }
 
-	  for(String hname : pOrderChanges.keySet()) {
-	    QueueHost host = pHosts.get(hname);
-	    if(host != null) {
-	      host.setOrder(pOrderChanges.get(hname));
-	      if(modifiedHosts != null) 
-		modifiedHosts.add(hname);
-	      diskModified = true;
-	    }
-	  }
+	      /* job slots */ 
+	      if(qmod.isJobSlotsModified()) {
+		host.setJobSlots(qmod.getJobSlots()); 
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
+		diskModified = true;
+	      }
 
-	  pOrderChanges.clear();
-	}
-	    
-	/* job slots */ 
-	tm.aquire();
-	synchronized(pSlotChanges) {
-	  tm.resume();
-
-	  for(String hname : pSlotChanges.keySet()) {
-	    QueueHost host = pHosts.get(hname);
-	    if(host != null) {
-	      host.setJobSlots(pSlotChanges.get(hname));
-	      if(modifiedHosts != null) 
-		modifiedHosts.add(hname);
-	      diskModified = true;
-	    }
-	  }
-	    
-	  pSlotChanges.clear();
-	}
-	    
-	/* selection groups */ 
-	tm.aquire();
-	synchronized(pSelectionGroupChanges) {
-	  synchronized(pSelectionGroups) {
-	    tm.resume();
-
-	    for(String hname : pSelectionGroupChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		String name = pSelectionGroupChanges.get(hname);
-		if((name == null) || pSelectionGroups.containsKey(name)) {
-		  host.setSelectionGroup(name);
-		  if(modifiedHosts != null) 
-		    modifiedHosts.add(hname);
-		  diskModified = true;
+	      /* selection groups */ 
+	      if(qmod.isSelectionGroupModified()) {
+		tm.aquire();
+		synchronized(pSelectionGroups) {
+		  tm.resume();
+		  
+		  String name = qmod.getSelectionGroup(); 
+		  if((name == null) || pSelectionGroups.containsKey(name)) {
+		    host.setSelectionGroup(name);
+		    if(modifiedHosts != null) 
+		      modifiedHosts.add(hname);
+		    diskModified = true;
+		  }
 		}
 	      }
-	    }
-	  }
-	      
-	  pSelectionGroupChanges.clear();
-	}
 
-	/* selection schedules */ 
-	tm.aquire();
-	synchronized(pSelectionScheduleChanges) {
-	  synchronized(pSelectionSchedules) {
-	    tm.resume();
+	      /* selection schedules */ 
+	      if(qmod.isSelectionScheduleModified()) {
+		tm.aquire();
+		synchronized(pSelectionSchedules) {
+		  tm.resume();
 	      
-	    for(String hname : pSelectionScheduleChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		String name = pSelectionScheduleChanges.get(hname);
-		if((name == null) || pSelectionSchedules.containsKey(name)) {
-		  host.setSelectionSchedule(name);
-		  if(modifiedHosts != null) 
-		    modifiedHosts.add(hname);
-		  diskModified = true;
+		  String name = qmod.getSelectionSchedule();
+		  if((name == null) || pSelectionSchedules.containsKey(name)) {
+		    host.setSelectionSchedule(name);
+		    if(modifiedHosts != null) 
+		      modifiedHosts.add(hname);
+		    diskModified = true;
+		  }
 		}
 	      }
 	    }
 	  }
 	    
-	  pSelectionScheduleChanges.clear();
+	  pHostsMod.clear(); 
 	}
 
 	/* write changes to host database file disk */ 
@@ -2419,236 +2290,146 @@ class QueueMgr
 	 tm, timer); 
     }
 
-    /* collector generated changes */ 
+
+    /* apply collector generated changes to the hosts */ 
     {
-      /* apply changes to hosts */ 
-      {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Dispatcher [Sample Changes]");
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Collector Changes]");
+      tm.aquire();
+      synchronized(pHosts) {
+	tm.resume();
+	
+	/* latest resource samples */ 
 	tm.aquire();
-	synchronized(pHosts) {
+	synchronized(pSamples) {
 	  tm.resume();
-
-	  /* resource samples */ 
-	  tm.aquire();
-	  synchronized(pSampleChanges) {
-	    tm.resume();
-
-	    for(String hname : pSampleChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		switch(host.getStatus()) {
-		case Enabled:
-		case Disabled:
-		  {
-		    LinkedList<ResourceSample> samples = pSampleChanges.get(hname);
-		    if(samples != null) {
-		      for(ResourceSample sample : samples) 
-			host.addSample(sample);
-		    }
+	  
+	  for(String hname : pSamples.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Enabled:
+	      case Disabled:
+		{
+		  ResourceSampleCache cache = pSamples.get(hname);
+		  if(cache != null) {
+		    ResourceSample sample = host.getLatestSample();
+		    if((sample == null) || 
+		       (sample.getTimeStamp().compareTo(cache.getLastTimeStamp()) < 0)) 
+		      host.setLatestSample(cache.getLatestSample());
 		  }
 		}
 	      }
 	    }
-
-	    pSampleChanges.clear();
-	  }
-
-	  /* operating system type */ 
-	  tm.aquire();
-	  synchronized(pOsTypeChanges) {
-	    tm.resume();
-      
-	    for(String hname : pOsTypeChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		switch(host.getStatus()) {
-		case Enabled:
-		case Disabled:
-		  host.setOsType(pOsTypeChanges.get(hname));
-		  if(modifiedHosts != null) 
-		    modifiedHosts.add(hname);
-		}
-	      }
-	    }
-
-	    pOsTypeChanges.clear();
-	  }
-
-	  /* number of processors */ 
-	  tm.aquire();
-	  synchronized(pNumProcChanges) {
-	    tm.resume();
-      
-	    for(String hname : pNumProcChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		switch(host.getStatus()) {
-		case Enabled:
-		case Disabled:
-		  host.setNumProcessors(pNumProcChanges.get(hname));
-		  if(modifiedHosts != null) 
-		    modifiedHosts.add(hname);
-		}
-	      }
-	    }
-
-	    pNumProcChanges.clear();
-	  }
-      
-	  /* total memory */ 
-	  tm.aquire();
-	  synchronized(pTotalMemoryChanges) {
-	    tm.resume();
-      
-	    for(String hname : pTotalMemoryChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		switch(host.getStatus()) {
-		case Enabled:
-		case Disabled:
-		  host.setTotalMemory(pTotalMemoryChanges.get(hname));
-		  if(modifiedHosts != null) 
-		    modifiedHosts.add(hname);
-		}
-	      }
-	    }
-
-	    pTotalMemoryChanges.clear();
-	  }
-      
-	  /* total disk */ 
-	  tm.aquire();
-	  synchronized(pTotalDiskChanges) {
-	    tm.resume();
-      
-	    for(String hname : pTotalDiskChanges.keySet()) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) {
-		switch(host.getStatus()) {
-		case Enabled:
-		case Disabled:
-		  host.setTotalDisk(pTotalDiskChanges.get(hname));
-		  if(modifiedHosts != null) 
-		    modifiedHosts.add(hname);
-		}
-	      }
-	    }
-
-	    pTotalDiskChanges.clear();
 	  }
 	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	   tm, timer); 
+	
+	/* operating system type */ 
+	tm.aquire();
+	synchronized(pOsTypeChanges) {
+	  tm.resume();
+	  
+	  for(String hname : pOsTypeChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Enabled:
+	      case Disabled:
+		host.setOsType(pOsTypeChanges.get(hname));
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
+	      }
+	    }
+	  }
+	  
+	  pOsTypeChanges.clear();
+	}
+	
+	/* number of processors */ 
+	tm.aquire();
+	synchronized(pNumProcChanges) {
+	  tm.resume();
+	  
+	  for(String hname : pNumProcChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Enabled:
+	      case Disabled:
+		host.setNumProcessors(pNumProcChanges.get(hname));
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
+	      }
+	    }
+	  }
+	  
+	  pNumProcChanges.clear();
+	}
+	
+	/* total memory */ 
+	tm.aquire();
+	synchronized(pTotalMemoryChanges) {
+	  tm.resume();
+	  
+	  for(String hname : pTotalMemoryChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Enabled:
+	      case Disabled:
+		host.setTotalMemory(pTotalMemoryChanges.get(hname));
+		if(modifiedHosts != null) 
+		  modifiedHosts.add(hname);
+	      }
+	    }
+	  }
+
+	  pTotalMemoryChanges.clear();
+	}
+	
+	/* total disk */ 
+	tm.aquire();
+	synchronized(pTotalDiskChanges) {
+	  tm.resume();
+	  
+	  for(String hname : pTotalDiskChanges.keySet()) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) {
+	      switch(host.getStatus()) {
+	      case Enabled:
+	      case Disabled:
+		host.setTotalDisk(pTotalDiskChanges.get(hname));
+		  if(modifiedHosts != null) 
+		    modifiedHosts.add(hname);
+	      }
+	    }
+	  }
+	  
+	  pTotalDiskChanges.clear();
+	}
       }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+	 tm, timer); 
+    }
     
-      /* post-modify hosts tasks */ 
-      if((modifiedHosts != null) && !modifiedHosts.isEmpty()) {
-	TreeMap<String,QueueHostInfo> mhosts = new TreeMap<String,QueueHostInfo>();
-	{
-	  timer.aquire();
-	  synchronized(pHosts) {
-	    timer.resume();
-	    
-	    for(String hname : modifiedHosts) {
-	      QueueHost host = pHosts.get(hname);
-	      if(host != null) 
-		mhosts.put(hname, host.toCleanInfo());
-	    }
-	  }
-	}
-
-	startExtensionTasks(timer, new ModifyHostsExtFactory(mhosts));
-      }
-
-      /* write the last interval of samples to disk? */ 
-      if(pLastSampleWritten.get() > 0L) { 
-	Date now = new Date();
-	TreeMap<String,ResourceSampleBlock> dump = null;
-
-	/* when enough samples have been collected, 
-	     regularize and package them for writing to disk */ 
-	{
-	  timer.suspend();
-	  TaskTimer tm = new TaskTimer("Dispatcher [Collate Samples]");  
-	  tm.aquire();
-	  synchronized(pHosts) {
-	    tm.resume();
-
-	    if((now.getTime() - pLastSampleWritten.get()) > QueueHost.getSampleInterval()) {
-	      dump = new TreeMap<String,ResourceSampleBlock>();
-	      
-	      for(String hname : pHosts.keySet()) {
-		QueueHost host = pHosts.get(hname);
-		if(host != null) {
-		  switch(host.getStatus()) {
-		  case Enabled:
-		  case Disabled:
-		    {
-		      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
-		      for(ResourceSample s : host.getSamples()) {
-		      if(s.getTimeStamp().getTime() > pLastSampleWritten.get()) 
-			rs.add(s);
-		      }
-		      host.pruneSamples(now);
-		      
-		      if(!rs.isEmpty() && 
-			 (host.getNumProcessors() != null) && 
-			 (host.getTotalMemory() != null) && 
-			 (host.getTotalDisk() != null)) {
-			
-			ResourceSampleBlock block = 
-			  new ResourceSampleBlock(host.getJobSlots(), 
-						  host.getNumProcessors(), 
-						  host.getTotalMemory(), 
-						  host.getTotalDisk(), 
-						  rs);
-			dump.put(hname, block);
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	  LogMgr.getInstance().logSubStage
-	    (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	     tm, timer); 
-	}
-
-	/* write the samples to disk */ 
-	if(dump != null) {
-	  timer.suspend();
-	  TaskTimer tm = new TaskTimer("Dispatcher [Write Samples]");
-	  try {
-	    writeSamples(tm, now, dump);
-	  }
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-	       ex.getMessage());
-	  }
-	  finally {
-	    pLastSampleWritten.set(now.getTime()); 
-	  }
-	  LogMgr.getInstance().logSubStage
-	    (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	     tm, timer); 
-	}
-      }
-
-      /* cleanup any out-of-date sample files */ 
+    /* post-modify hosts tasks */ 
+    if((modifiedHosts != null) && !modifiedHosts.isEmpty()) {
+      TreeMap<String,QueueHostInfo> mhosts = new TreeMap<String,QueueHostInfo>();
       {
-	timer.suspend();
-	TaskTimer tm = new TaskTimer("Dispatcher [Clean Samples]");
-	{
-	  cleanupSamples(tm);
+	timer.aquire();
+	synchronized(pHosts) {
+	  timer.resume();
+	  
+	  for(String hname : modifiedHosts) {
+	    QueueHost host = pHosts.get(hname);
+	    if(host != null) 
+	      mhosts.put(hname, host.toInfo());
+	  }
 	}
-	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
-	   tm, timer); 
       }
+      
+      startExtensionTasks(timer, new ModifyHostsExtFactory(mhosts));
     }
   }
 
@@ -2687,63 +2468,49 @@ class QueueMgr
   )
   {
     TaskTimer timer = new TaskTimer();
+
+    TreeMap<String,ResourceSampleCache> samples = new TreeMap<String,ResourceSampleCache>();
+
     timer.aquire();
-    try {
+    synchronized(pSamples) {
       timer.resume();
       
-      ArrayList<ResourceSampleBlock> all = new ArrayList<ResourceSampleBlock>();
-      {
-	TreeMap<Long,ResourceSampleBlock> blocks = readSamples(timer, req.getHostname()); 
-	all.addAll(blocks.values());
+      TreeMap<String,DateInterval> intervals = req.getIntervals(); 
+      for(String hname : intervals.keySet()) {
+	DateInterval interval = intervals.get(hname);
+	if(interval != null) {
+	  ResourceSampleCache cache = pSamples.get(hname);
 
-	Date latest = null;
-	if(!blocks.isEmpty()) {
-	  ResourceSampleBlock lastBlock = blocks.get(blocks.lastKey());
-	  latest = lastBlock.getLastTimeStamp();
-	}
-
-	timer.aquire();
-	synchronized(pHosts) {
-	  timer.resume();
-	  
-	  QueueHost host = pHosts.get(req.getHostname());
-	  ArrayList<ResourceSample> samples = new ArrayList<ResourceSample>();
-
-	  if(latest != null) {
-	    for(ResourceSample sample : host.getSamples()) {
-	      if(sample.getTimeStamp().compareTo(latest) > 0) 
-		samples.add(sample);
-	    }
+	  /* see if any of the samples are in the runtime cache */ 
+	  int liveSamples = 0;
+	  Date first = null;
+	  if(cache != null) {
+	    liveSamples = cache.getNumSamplesDuring(interval);
+	    first = cache.getFirstTimeStamp();
 	  }
-	  else {
-	    samples.addAll(host.getSamples());
+		  
+	  /* load earlier sampls from disk? */ 
+	  ResourceSampleCache tcache = null;
+	  if(!req.runtimeOnly() && 
+	     ((first == null) || (interval.getStartStamp().compareTo(first) < 0)))
+	    tcache = readSamples(timer, hname, interval, liveSamples);
+
+	  /* combine runtime and newly read disk samples */ 
+	  if(tcache != null) {
+	    if(liveSamples > 0) 
+	      tcache.addAllSamplesDuring(cache, interval);
+	    samples.put(hname, tcache);
 	  }
-	  
-	  if(!samples.isEmpty() && 
-	     (host.getNumProcessors() != null) && 
-	     (host.getTotalMemory() != null) && 
-	     (host.getTotalDisk() != null)) {
-	    
-	    ResourceSampleBlock block = 
-	      new ResourceSampleBlock(host.getJobSlots(), 
-				      host.getNumProcessors(), 
-				      host.getTotalMemory(), 
-				      host.getTotalDisk(), 
-				      samples);
-	    all.add(block);
-	  }	
+	  else if((cache != null) && (liveSamples > 0)) {
+	    ResourceSampleCache ncache = cache.cloneDuring(interval);
+	    if(ncache != null) 
+	      samples.put(hname, ncache); 
+	  }
 	}
       }
-
-      if(all.isEmpty()) 
-	throw new PipelineException 
-	  ("No resource usage information exists for host (" + req.getHostname() + ")!");
-
-      return new QueueGetHostResourceSamplesRsp(timer, new ResourceSampleBlock(all));
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }    
+      
+    return new QueueGetHostResourceSamplesRsp(timer, samples);
   }
 
 
@@ -3715,7 +3482,7 @@ class QueueMgr
 	 tm, timer);
     }
 
-    /* collect system resource usage samples from the hosts */ 
+    /* collect system resource usage samples and other stats from the hosts */ 
     {
       ArrayList<SubCollectorTask> cthreads = new ArrayList<SubCollectorTask>();
       {
@@ -3776,11 +3543,19 @@ class QueueMgr
 	    TreeSet<String> dead = thread.getDead();
 	    if(!dead.isEmpty()) {
 	      tm.aquire();
-	      synchronized(pStatusChanges) {
+	      synchronized(pHostsMod) {
 		tm.resume();
 		
-		for(String hname : dead) 
-		  pStatusChanges.put(hname, QueueHostStatusChange.Terminate);
+		for(String hname : dead) {
+		  QueueHostMod qmod = pHostsMod.get(hname);
+		  if(qmod == null) {
+		    qmod = new QueueHostMod(QueueHostStatusChange.Terminate);
+		    pHostsMod.put(hname, qmod);
+		  }
+		  else {
+		    qmod.setStatus(QueueHostStatusChange.Terminate);
+		  }
+		}
 	      }
 	    }
 	  }
@@ -3798,38 +3573,40 @@ class QueueMgr
 	  }
 	  
 	  {
+	    boolean hasSamples = false;
+
+	    /* cache the latest resource samples */ 
 	    TreeMap<String,ResourceSample> samples = thread.getSamples();
 	    if(!samples.isEmpty()) {
 	      tm.aquire();
-	      synchronized(pSampleChanges) {
+	      synchronized(pSamples) {
 		tm.resume();
 
-		boolean hasSamples = false;
 		for(String hname : samples.keySet()) {
 		  ResourceSample sample = samples.get(hname);
 		  if(sample != null) {
-		    LinkedList<ResourceSample> latest = pSampleChanges.get(hname);
-		    if(latest == null) {
-		      latest = new LinkedList<ResourceSample>(); 
-		      pSampleChanges.put(hname, latest);
+		    ResourceSampleCache cache = pSamples.get(hname);
+		    if(cache == null) {
+		      cache = new ResourceSampleCache(sCollectedSamples);
+		      pSamples.put(hname, cache);
 		    }
-		    
-		    latest.add(sample);
+		
+		    cache.addSample(sample);
 		    hasSamples = true;
 		  }
 		}
-		
-		/* initialize the sample output stamp */ 
-		if(hasSamples && (pLastSampleWritten.get() == 0L)) {
-		  long oldest = Long.MAX_VALUE;
-		  for(String hname : samples.keySet()) {
-		    ResourceSample sample = samples.get(hname);
-		    if(sample != null) 
-		      oldest = Math.min(oldest, sample.getTimeStamp().getTime());
-		  }
-		  pLastSampleWritten.set(oldest); 
-		}
 	      }
+	    }
+
+	    /* initialize the sample output stamp */ 
+	    if(hasSamples && (pLastSampleWritten.get() == 0L)) {
+	      long oldest = Long.MAX_VALUE;
+	      for(String hname : samples.keySet()) {
+		ResourceSample sample = samples.get(hname);
+		if(sample != null) 
+		  oldest = Math.min(oldest, sample.getTimeStamp().getTime());
+	      }
+	      pLastSampleWritten.set(oldest); 
 	    }
 	  }
 
@@ -3887,13 +3664,50 @@ class QueueMgr
       }
     }
 
+    /* when enough samples have been collected, write them disk... */ 
+    if(pLastSampleWritten.get() > 0L) { 
+      Date now = new Date();
+      long sinceLastWrite = (now.getTime() - pLastSampleWritten.get());
+
+      if(sinceLastWrite > (PackageInfo.sCollectorInterval * sCollectedSamples)) {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Collector [Write Samples]");  
+	try {
+	  writeSamples(tm, false); 
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+	     ex.getMessage());
+	}
+	finally {
+	  pLastSampleWritten.set(now.getTime()); 
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
+	   tm, timer); 
+      }
+
+      /* cleanup any out-of-date sample files */ 
+      {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("Dispatcher [Clean Samples]");
+	{
+	  cleanupSamples(tm);
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	   tm, timer); 
+      }
+    }
+
     /* if we're ahead of schedule, take a nap */ 
     {
       LogMgr.getInstance().logStage
 	(LogMgr.Kind.Col, LogMgr.Level.Fine,
 	 timer); 
 
-      long nap = sCollectorInterval - timer.getTotalDuration();
+      long nap = PackageInfo.sCollectorInterval - timer.getTotalDuration();
       if(nap > 0) {
 	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
@@ -5682,7 +5496,7 @@ class QueueMgr
 	  try {
 	    TreeMap<String,QueueHostInfo> infos = new TreeMap<String,QueueHostInfo>();
 	    for(QueueHost host : pHosts.values()) 
-	      infos.put(host.getName(), host.toCleanInfo());
+	      infos.put(host.getName(), host.toInfo());
 
 	    GlueEncoder ge = new GlueEncoderImpl("Hosts", infos);
 	    glue = ge.getText();
@@ -5770,8 +5584,9 @@ class QueueMgr
    * @param stamp
    *   The timestamp of the end of the sample interval.
    * 
-   * @param samples 
-   *   The resource usage samples indexed by fully resolved host name.
+   * @param compact
+   *   Whether to create a copy of the cache with no empty entries and write this instead
+   *   of the original cache.
    * 
    * @throws PipelineException
    *   If unable to write the samples file.
@@ -5780,81 +5595,105 @@ class QueueMgr
   writeSamples
   (
    TaskTimer timer, 
-   Date stamp, 
-   TreeMap<String,ResourceSampleBlock> samples
+   boolean compact
   ) 
     throws PipelineException
   {
+    /* determine whether to make a compact copy of the live samples */ 
+    TreeMap<String,ResourceSampleCache> samples = null;
+    if(compact || hasAnyExtensionTasks(timer, new ResourceSamplesExtFactory()))
+      samples = new TreeMap<String,ResourceSampleCache>();
+
     timer.aquire();
-    synchronized(pSampleFileLock) { 
-      timer.resume();
-
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Resource Samples: " + stamp.getTime());
-
-      File dir = new File(pQueueDir, "queue/job-servers/samples");
-      timer.aquire();
-      synchronized(pMakeDirLock) {
+    synchronized(pSamples) { 
+      synchronized(pSampleFileLock) { 
 	timer.resume();
-	if(!dir.isDirectory())
-	  if(!dir.mkdirs()) 
-	    throw new PipelineException
-	      ("Unable to create the samples directory (" + dir + ")!");
-      }
-         
-      for(String hname : samples.keySet()) {    
-	ResourceSampleBlock hsamples = samples.get(hname);
-	File hdir = new File(dir, hname);
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Resource Samples..."); 
+
+	File dir = new File(pQueueDir, "queue/job-servers/samples");
+	timer.aquire();
 	synchronized(pMakeDirLock) {
-	  if(!hdir.isDirectory())
-	    if(!hdir.mkdirs()) 
+	  timer.resume();
+	  if(!dir.isDirectory())
+	    if(!dir.mkdirs()) 
 	      throw new PipelineException
-		("Unable to create the samples host directory (" + hdir + ")!");
+		("Unable to create the samples directory (" + dir + ")!");
 	}
+         
+	Date last = new Date(pLastSampleWritten.get());
+
+	for(String hname : pSamples.keySet()) {    
+	  ResourceSampleCache cache = pSamples.get(hname);
+	  cache.pruneSamplesBefore(last);
+	  if(cache.hasSamples()) {
+	    ResourceSampleCache gcache = cache;
+	    if(samples != null) {
+	      gcache = cache.cloneDuring(new DateInterval(last, cache.getLastTimeStamp()));
+	      samples.put(hname, gcache);
+	    }
+
+	    File hdir = new File(dir, hname);
+	    synchronized(pMakeDirLock) {
+	      if(!hdir.isDirectory())
+		if(!hdir.mkdirs()) 
+		  throw new PipelineException
+		    ("Unable to create the samples host directory (" + hdir + ")!");
+	    }
 	  
-	File file = new File(hdir, String.valueOf(stamp.getTime()));
-	if(file.exists()) 
-	  throw new PipelineException
-	    ("Somehow the host resource samples file (" + file + ") already exists!"); 
-	  
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("Samples", hsamples);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the resource samples!");
+	    String fname = (cache.getFirstTimeStamp().getTime() + ":" + 
+			    cache.getLastTimeStamp().getTime() + ":" + 
+			    cache.getNumSamples());
+
+	    File file = new File(hdir, fname);
+	    if(file.exists()) 
+	      throw new PipelineException
+		("Somehow the host resource samples file (" + file + ") already exists!"); 
 	    
-	    throw new IOException(ex.getMessage());
+	    try {
+	      String glue = null;
+	      try {
+		GlueEncoder ge = new GlueEncoderImpl("Samples", gcache);
+		glue = ge.getText();
+	      }
+	      catch(GlueException ex) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+		   "Unable to generate a Glue format representation of the " + 
+		   "resource samples!");
+		
+		throw new IOException(ex.getMessage());
+	      }
+	      
+	      {
+		FileWriter out = new FileWriter(file);
+		out.write(glue);
+		out.flush();
+		out.close();
+	      }
+	    }
+	    catch(IOException ex) {
+	      throw new PipelineException
+		("I/O ERROR: \n" + 
+		 "  While attempting to write the resource samples file " + 
+		 "(" + file + ")...\n" + 
+		 "    " + ex.getMessage());
+	    }
 	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the resource samples file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
 	}
       }
     }
 
     /* post-resource samples tasks */ 
-    if(!samples.isEmpty()) 
+    if((samples != null) && (!samples.isEmpty()))
       startExtensionTasks(timer, new ResourceSamplesExtFactory(samples));
   }
 
   /**
-   * Read all of the resource sample blocks from disk for the given host.
+   * Read the resource sample blocks from disk for the given host collected within the 
+   * given interval. 
    * 
    * @param timer
    *   The task timer.
@@ -5862,65 +5701,98 @@ class QueueMgr
    * @param hostname
    *   The fully resolved name of the host.
    * 
-   * @return
-   *   The sample blocks indexed by the timestamp of the earliest sample in each block.
+   * @param interval
+   *   The time interval to read.
    * 
-   * @throws PipelineException
-   *   If unable to read the samples files.
+   * @param extraSamples
+   *   The number of additional samples to allocate to the cache.
+   * 
+   * @return 
+   *   The samples or <CODE>null</CODE> if no samples exist within the interval.
    */ 
-  private TreeMap<Long,ResourceSampleBlock>
+  private ResourceSampleCache
   readSamples
   (
    TaskTimer timer, 
-   String hostname
+   String hostname, 
+   DateInterval interval, 
+   int extraSamples
   ) 
-    throws PipelineException
   {
     timer.aquire();
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      TreeMap<Long,ResourceSampleBlock> blocks = new TreeMap<Long,ResourceSampleBlock>();
       File dir = new File(pQueueDir, "queue/job-servers/samples/" + hostname);
       if(!dir.isDirectory()) 
-	return blocks;
+	return null;
 	
-      File files[] = dir.listFiles(); 
-      int wk;
-      for(wk=files.length-1; wk>=0; wk--) {
-	File file = files[wk];
-	if(file.isFile()) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	     "Reading Resource Samples: " + 
-	     hostname + " [" + file.getName() + "]");
-	  
-	  ResourceSampleBlock block = null;
-	  try {
-	    FileReader in = new FileReader(file);
-	    GlueDecoder gd = new GlueDecoderImpl(in);
-	    block = (ResourceSampleBlock) gd.getObject();
-	    in.close();
+      long first = interval.getStartStamp().getTime(); 
+      long last  = interval.getEndStamp().getTime(); 
+
+      int numSamples = extraSamples; 
+      TreeSet<File> sfiles = new TreeSet<File>();
+      {
+	File files[] = dir.listFiles(); 
+	int wk;
+	for(wk=files.length-1; wk>=0; wk--) {
+	  File file = files[wk];
+	  if(file.isFile()) {
+	    try {
+	      String parts[] = file.getName().split(":");
+	      if(parts.length != 3) 
+		throw new NumberFormatException(); 
+
+	      Long fstamp  = new Long(parts[0]);
+	      Long lstamp  = new Long(parts[1]);
+	      Integer size = new Integer(parts[2]);
+
+	      if((fstamp <= last) && (lstamp >= first)) {
+		sfiles.add(file);
+		numSamples += size;
+	      }
+	    }
+	    catch(NumberFormatException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
+		 "Ignoring illegally named resource sample file (" + file + ")!"); 
+	    }	    
 	  }
-	  catch(Exception ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "The resource samples file (" + file + ") appears to be corrupted:\n" + 
-	       "  " + ex.getMessage());
-	    
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
-	       "  While attempting to read the resource samples file (" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
-	  if(block == null) 
-	    throw new IllegalStateException("The resource sample block cannot be (null)!");
-	  
-	  blocks.put(block.getLastTimeStamp().getTime(), block);
 	}
       }
-    
-      return blocks;
+	      
+      if(sfiles.isEmpty()) 
+	return null;
+
+      ResourceSampleCache tcache = new ResourceSampleCache(numSamples);
+      for(File file : sfiles) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Resource Samples: " + 
+	   hostname + " [" + file.getName() + "]");
+	  
+	ResourceSampleCache cache = null; 
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  cache = (ResourceSampleCache) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Ignoring corrupted resource sample file (" + file + "):\n" + 
+	     "  " + ex.getMessage());
+	}
+	
+	if(cache != null) 
+	  tcache.addAllSamples(cache); 
+      }
+
+      if(tcache.getNumSamples() == 0) 
+	return null;
+	
+      return tcache;
     }
   }
 
@@ -5957,8 +5829,12 @@ class QueueMgr
 	  for(wk=0; wk<files.length; wk++) {
 	    File file = files[wk];
 	    try {
-	      Long stamp = new Long(file.getName());
-	      if((pLastSampleWritten.get() - stamp) > sSampleCleanupInterval) {
+	      String parts[] = file.getName().split(":");
+	      if(parts.length != 3) 
+		throw new NumberFormatException();
+
+	      Long stamp = new Long(parts[1]);
+	      if((pLastSampleWritten.get() - stamp) > PackageInfo.sSampleCleanupInterval) {
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 		   "Deleting Resource Sample File: " + file);
@@ -6634,13 +6510,13 @@ class QueueMgr
     private TreeSet<String>  pNeedsCollect; 
     private TreeSet<String>  pNeedsTotals; 
 
-    private TreeSet<String>  pDead; 
-    private TreeSet<String>  pHung; 
+    private TreeSet<String>                 pDead; 
+    private TreeSet<String>                 pHung; 
     private TreeMap<String,ResourceSample>  pSamples;
-    private TreeMap<String,OsType>  pOsTypes; 
-    private TreeMap<String,Integer>  pNumProcs; 
-    private TreeMap<String,Long>  pTotalMemory; 
-    private TreeMap<String,Long>  pTotalDisk; 
+    private TreeMap<String,OsType>          pOsTypes; 
+    private TreeMap<String,Integer>         pNumProcs; 
+    private TreeMap<String,Long>            pTotalMemory; 
+    private TreeMap<String,Long>            pTotalDisk; 
   }
 
   /**
@@ -7051,7 +6927,7 @@ class QueueMgr
     if(msec <= 0L) 
       throw new IllegalArgumentException
 	("The sample cleanup interval (" + msec + ") must be positive!"); 
-    sSampleCleanupInterval = msec;
+    PackageInfo.sSampleCleanupInterval = msec;
   }
 
   public static void 
@@ -7073,19 +6949,15 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The minimum time a cycle of the collector loop should take (in milliseconds).
-   */ 
-  private static final long  sCollectorInterval = 15000L;  /* 15-second */ 
-
-  /**
    * The maximum number of job servers per collection sub-thread.
    */ 
   private static int  sMaxServersPerCollector = 50;
 
   /**
-   * The maximum age of a sample file before it is deleted (in milliseconds).
+   * The maximum number of samples cached in memory.
    */ 
-  private static long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
+  private static final int  sCollectedSamples = 960;   /* 4-hours */ 
+
 
   /**
    * The interval between attempts to automatically enable Hung job servers. 
@@ -7121,8 +6993,7 @@ class QueueMgr
   /**
    * The time (in milliseconds) between reports of the JVM heap statistics.
    */ 
-  //  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
-  private static long  sHeapStatsInterval = 30000L; 
+  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
 
 
 
@@ -7227,53 +7098,12 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Pending changes to per-host status 
+   * Pending changes to per-host status and other user modifiable properties 
    * indexed by by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private TreeMap<String,QueueHostStatusChange>  pStatusChanges; 
-
-  /**
-   * Pending changes to per-host reservations 
-   * indexed by by fully resolved host name. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeMap<String,String>  pReservationChanges; 
-
-  /**
-   * Pending changes to per-host server order 
-   * indexed by by fully resolved host name. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeMap<String,Integer>  pOrderChanges; 
-
-  /**
-   * Pending changes to per-host number of slots 
-   * indexed by by fully resolved host name. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeMap<String,Integer>  pSlotChanges; 
-
-  /**
-   * Pending changes to per-host selection groups 
-   * indexed by by fully resolved host name. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeMap<String,String>  pSelectionGroupChanges; 
-
-  /**
-   * Pending changes to per-host selection schedules 
-   * indexed by by fully resolved host name.<P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeMap<String,String>  pSelectionScheduleChanges; 
-  
+  private TreeMap<String,QueueHostMod>  pHostsMod; 
 
   /**
    * Pending hosts marked as hung.<P> 
@@ -7281,16 +7111,6 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeSet<String> pHungChanges;
-
-
-  /**
-   * Pending per-host resource samples
-   * indexed by by fully resolved host name.<P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeMap<String,LinkedList<ResourceSample>>  pSampleChanges; 
-
 
   /**
    * Pending changes to per-host OS type 
@@ -7332,6 +7152,26 @@ class QueueMgr
    */
   private TreeMap<String,QueueHost>  pHosts; 
 
+
+  /**
+   * Last read-only copy of per-host status information indexed by fully resolved host name. 
+   * <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<String,QueueHostInfo>  pHostsInfo; 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Fixed size ring buffers containing the last N resource samples
+   * indexed by by fully resolved host name.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,ResourceSampleCache>  pSamples; 
+
   /**
    * The timestamp of when the last set of resource samples was written to disk. <P> 
    * 
@@ -7344,15 +7184,6 @@ class QueueMgr
    */ 
   private Object  pSampleFileLock; 
 
-  
-  /**
-   * Last read-only copy of per-host status information indexed by fully resolved host name. 
-   * <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */
-  private TreeMap<String,QueueHostInfo>  pHostsInfo; 
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -7488,40 +7319,7 @@ class QueueMgr
    * }
    *
    * synchronized(pHostsInfo) {
-   *   synchronized(pStatusChanges) {
-   *     ...
-   *   }
-   *   synchronized(pHungChanges) {
-   *     ...
-   *   }
-   *   synchronized(pSampleChanges) {
-   *     ...
-   *   }
-   *   synchronized(pOsTypeChanges) {
-   *     ...
-   *   }
-   *   synchronized(pNumProcChanges) {
-   *     ...
-   *   }
-   *   synchronized(pTotalMemoryChanges) {
-   *     ...
-   *   }
-   *   synchronized(pTotalDiskChanges) {
-   *     ...
-   *   }
-   *   synchronized(pReservationChanges) {
-   *     ...
-   *   }
-   *   synchronized(pOrderChanges) {
-   *     ...
-   *   }
-   *   synchronized(pSlotChanges) {
-   *     ...
-   *   }
-   *   synchronized(pSelectionGroupChanges) {
-   *     ...
-   *   }
-   *   synchronized(pSelectionScheduleChanges) {
+   *   synchronized(pHostsMod) {
    *     ...
    *   }
    *   synchronized(pHosts) {
@@ -7540,40 +7338,18 @@ class QueueMgr
    *   synchronized(pJobInfo) {
    *     ...
    *   }
-   *   synchronized(pStatusChanges) {
-   *     ...
-   *   }
-   *   synchronized(pHungChanges) {
-   *     ...
-   *   }
-   *   synchronized(pReservationChanges) {
-   *     ...
-   *   }
-   *   synchronized(pOrderChanges) {
-   *     ...
-   *   }
-   *   synchronized(pSlotChanges) {
-   *     ...
-   *   }
-   *   synchronized(pSelectionGroups) {
-   *     ...
-   *   }
-   *   synchronized(pSelectionGroupChanges) {
+   *   synchronized(pHostsMod) {
    *     synchronized(pSelectionGroups) {
    *       ...
    *     }
-   *   }
-   *   synchronized(pSelectionScheduleChanges) {
    *     synchronized(pSelectionSchedules) {
    *       ...
    *     }
    *   }
-   *   synchronized(pSelectionSchedules) {
-   *     synchronized(pSelectionGroups) {
-   *       ...
-   *     }
+   *   synchronized(pHungChanges) {
+   *     ...
    *   }
-   *   synchronized(pSampleChanges) {
+   *   synchronized(pSamples) {
    *     ...
    *   }
    *   synchronized(pOsTypeChanges) {
@@ -7602,15 +7378,11 @@ class QueueMgr
    *   }
    * }
    * 
-   * synchronized(pSampleFileLock) { 
-   *   synchronized(pMakeDirLock) {
-   *     ...
-   *   }
-   * }
-   * 
-   * synchronized(pSampleFileLock) { 
-   *    synchronized(pMakeDirLock) {
-   *     ...
+   * synchronized(pSamples) {
+   *   synchronized(pSampleFileLock) { 
+   *     synchronized(pMakeDirLock) {
+   *       ...
+   *     }
    *   }
    * }
    */

@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.12 2006/11/06 00:58:33 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.13 2006/11/21 20:00:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,9 +44,10 @@ class QueueHostsTableModel
       pParent = parent;
 
       pPrivilegeDetails = new PrivilegeDetails();  
-
       pQueueHosts = new ArrayList<QueueHostInfo>();
       pQueueHostStatusChanges = new ArrayList<QueueHostStatusChange>();
+
+      pSamples = new TreeMap<String,ResourceSampleCache>();
 
       pWorkGroups = new TreeSet<String>();
       pWorkUsers  = new TreeSet<String>();
@@ -71,8 +72,8 @@ class QueueHostsTableModel
       {
 	Class classes[] = { 
 	  String.class, String.class, 
-	  QueueHostInfo.class, QueueHostInfo.class, QueueHostInfo.class,
-	  QueueHostInfo.class, Integer.class,
+	  ResourceSampleCache.class, ResourceSampleCache.class, ResourceSampleCache.class,
+	  ResourceSampleCache.class, Integer.class,
 	  String.class, Integer.class, String.class, String.class
 	}; 
 	pColumnClasses = classes;
@@ -125,13 +126,13 @@ class QueueHostsTableModel
 	  new JQHostStatusTableCellRenderer(this), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JResourceSamplesTableCellRenderer
-	        (JResourceSamplesTableCellRenderer.SampleType.Load), 
+	        (this, JResourceSamplesTableCellRenderer.SampleType.Load), 
 	  new JResourceSamplesTableCellRenderer
-                (JResourceSamplesTableCellRenderer.SampleType.Memory), 
+                (this, JResourceSamplesTableCellRenderer.SampleType.Memory), 
 	  new JResourceSamplesTableCellRenderer
-                (JResourceSamplesTableCellRenderer.SampleType.Disk), 
+                (this, JResourceSamplesTableCellRenderer.SampleType.Disk), 
 	  new JResourceSamplesTableCellRenderer
-                (JResourceSamplesTableCellRenderer.SampleType.Jobs), 
+                (this, JResourceSamplesTableCellRenderer.SampleType.Jobs), 
 	  new JQHostSlotsTableCellRenderer(this), 
 	  new JQHostReservationTableCellRenderer(this), 
 	  new JQHostOrderTableCellRenderer(this), 
@@ -454,6 +455,9 @@ class QueueHostsTableModel
    * @param hosts
    *   Current job server hosts indexed by fully resolved hostname.
    * 
+   * @param samples
+   *   The latest resource samples indexed by fully resolved hostname.
+   * 
    * @param workGroups
    *   The names of the user work groups.
    * 
@@ -473,6 +477,7 @@ class QueueHostsTableModel
   setQueueHosts
   (
    TreeMap<String,QueueHostInfo> hosts, 
+   TreeMap<String,ResourceSampleCache> samples, 
    Set<String> workGroups, 
    Set<String> workUsers,
    TreeSet<String> selectionGroups, 
@@ -483,6 +488,27 @@ class QueueHostsTableModel
     pQueueHosts.clear();
     if(hosts != null)
       pQueueHosts.addAll(hosts.values());
+
+    if(samples != null) {
+      for(String hname : samples.keySet()) {
+	ResourceSampleCache ncache = samples.get(hname);
+	if(ncache != null) {
+	  ResourceSampleCache ocache = pSamples.get(hname); 
+	  if(ocache == null) {
+	    ocache = new ResourceSampleCache(sCacheSize);
+	    pSamples.put(hname, ocache);
+	  }
+	  
+	  ocache.addAllSamples(ncache);
+	  
+	  Date latest = ocache.getLastTimeStamp(); 
+	  if(latest != null) {
+	    Date oldest = new Date(latest.getTime() - sCacheInterval);
+	    ocache.pruneSamplesBefore(oldest); 
+	  }
+	}
+      }
+    }
 
     pQueueHostStatusChanges.clear();
     for(String hname : hosts.keySet()) 
@@ -604,18 +630,59 @@ class QueueHostsTableModel
  /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Get the changes to host state. 
+   * Get the changes to host state or other properties.
    */ 
-  public TreeMap<String,QueueHostStatusChange> 
-  getHostStatus() 
+  public TreeMap<String,QueueHostMod> 
+  getHostChanges() 
   {
-    TreeMap<String,QueueHostStatusChange> table = new TreeMap<String,QueueHostStatusChange>();
+    TreeMap<String,QueueHostMod> table = new TreeMap<String,QueueHostMod>();
+    
     int idx; 
-    for(idx=0; idx<pQueueHostStatusChanges.size(); idx++) {
-      QueueHostStatusChange change = pQueueHostStatusChanges.get(idx);
+    for(idx=0; idx<pQueueHosts.size(); idx++) {
       QueueHostInfo host = pQueueHosts.get(idx);
-      if((change != null) && (host != null)) 
-	table.put(host.getName(), change);
+      if(host != null) {
+	QueueHostStatusChange change = pQueueHostStatusChanges.get(idx);
+	
+	String reservation = null;
+	boolean reservationModified = false;
+	if(pEditedReserveIndices.contains(idx)) {
+	  reservation = host.getReservation();
+	  reservationModified = true;
+	}
+	
+	Integer order = null;
+	if(pEditedOrderIndices.contains(idx)) 
+	  order = host.getOrder();
+	
+	Integer slots = null;
+	if(pEditedSlotsIndices.contains(idx)) 
+	  slots = host.getJobSlots();
+	
+	String group = null;
+	boolean groupModified = false;
+	if(pEditedGroupIndices.contains(idx)) {
+	  group = host.getSelectionGroup(); 
+	  groupModified = true;
+	}
+
+	String schedule = null;
+	boolean scheduleModified = false;
+	if(pEditedScheduleIndices.contains(idx)) {
+	  schedule = host.getSelectionSchedule(); 
+	  scheduleModified = true;
+	}
+
+	if((change != null) || reservationModified || 
+	   (order != null) || (slots != null) ||
+	   groupModified || scheduleModified) {
+
+	  QueueHostMod qmod = 
+	    new QueueHostMod(change, reservation, reservationModified, order, slots, 
+			     group, groupModified, schedule, scheduleModified);
+
+	  table.put(host.getName(), qmod);	
+	}
+      }
     }
 
     if(!table.isEmpty()) 
@@ -624,103 +691,35 @@ class QueueHostsTableModel
     return null;
   }
 
-  /**
-   * Get the changes to host user reservations. 
-   */ 
-  public TreeMap<String,String>
-  getHostReservations() 
-  {
-    TreeMap<String,String> table = new TreeMap<String,String>();
-    for(Integer idx : pEditedReserveIndices) {
-      QueueHostInfo host = pQueueHosts.get(idx);
-      if(host != null) 
-	table.put(host.getName(), host.getReservation());
-    }
-    
-    if(!table.isEmpty()) 
-      return table;
 
-    return null;
-  }
 
-  /**
-   * Get the changes to host dispatch order. 
-   */ 
-  public TreeMap<String,Integer>
-  getHostOrders() 
-  {
-    TreeMap<String,Integer> table = new TreeMap<String,Integer>();
-    for(Integer idx : pEditedOrderIndices) {
-      QueueHostInfo host = pQueueHosts.get(idx);
-      if(host != null) 
-	table.put(host.getName(), host.getOrder());
-    }
-    
-    if(!table.isEmpty()) 
-      return table;
-
-    return null;
-  }
-
-  /**
-   * Get the changes to host user reservations. 
-   */ 
-  public TreeMap<String,Integer>
-  getHostSlots() 
-  {
-    TreeMap<String,Integer> table = new TreeMap<String,Integer>();
-    for(Integer idx : pEditedSlotsIndices) {
-      QueueHostInfo host = pQueueHosts.get(idx);
-      if(host != null) 
-	table.put(host.getName(), host.getJobSlots());
-    }
-    
-    if(!table.isEmpty()) 
-      return table;
-
-    return null;
-  }
-
-  /**
-   * Get the changes to host selection groups.
-   */ 
-  public TreeMap<String,String>
-  getHostSelectionGroups() 
-  {
-    TreeMap<String,String> table = new TreeMap<String,String>();
-    for(Integer idx : pEditedGroupIndices) {
-      QueueHostInfo host = pQueueHosts.get(idx);
-      if(host != null) 
-	table.put(host.getName(), host.getSelectionGroup());
-    }
-    
-    if(!table.isEmpty()) 
-      return table;
-
-    return null;
-  }
+  /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the changes to host selection groups.
+   * Get the intervals of time not currently included in the resource samples cache.
    */ 
-  public TreeMap<String,String>
-  getHostSelectionSchedules() 
+  public TreeMap<String,DateInterval>
+  getSampleIntervals() 
   {
-    TreeMap<String,String> table = new TreeMap<String,String>();
-    for(Integer idx : pEditedScheduleIndices) {
-      QueueHostInfo host = pQueueHosts.get(idx);
-      if(host != null) 
-	table.put(host.getName(), host.getSelectionSchedule());
-    }
+    Date now = new Date();
+    Date oldest = new Date(now.getTime() - sCacheInterval);
     
-    if(!table.isEmpty()) 
-      return table;
+    TreeMap<String,DateInterval> intervals = new TreeMap<String,DateInterval>();
 
-    return null;
+    for(String hname : pSamples.keySet()) {   
+      ResourceSampleCache cache = pSamples.get(hname); 
+      if((cache != null) && (cache.getLastTimeStamp() != null)) {
+	Date latest = cache.getLastTimeStamp();
+	if(latest.compareTo(oldest) > 0) 
+	  intervals.put(hname, new DateInterval(latest, now)); 
+      }
+    }
+      
+    return intervals;
   }
+  
 
-
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
@@ -797,7 +796,7 @@ class QueueHostsTableModel
     case 3:
     case 4:
     case 5:
-      return host;
+      return pSamples.get(host.getName());
       
     case 6:
       return host.getJobSlots();
@@ -988,6 +987,16 @@ class QueueHostsTableModel
 
   private static final long serialVersionUID = -8796631808173092560L;
 
+  /**
+   * The number of samples to cache (at 15-second intervals). 
+   */ 
+  private static final int sCacheSize = 120;  
+
+  /**
+   * The interval of time displayed by the bar graphs 
+   */ 
+  private static final long sCacheInterval = 1800000L;   /* 30-minutes */ 
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1018,6 +1027,11 @@ class QueueHostsTableModel
    */ 
   private ArrayList<QueueHostStatusChange> pQueueHostStatusChanges;
 
+  /**
+   * The cached resource samples for each host.
+   */ 
+  private TreeMap<String,ResourceSampleCache> pSamples;
+  
 
 
   /*----------------------------------------------------------------------------------------*/

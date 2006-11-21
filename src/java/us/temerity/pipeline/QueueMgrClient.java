@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.34 2006/11/16 07:29:25 jim Exp $
+// $Id: QueueMgrClient.java,v 1.35 2006/11/21 20:00:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -885,54 +885,13 @@ class QueueMgrClient
   /**
    * Change the editable properties of the given hosts. <P> 
    * 
-   * Any of the arguments may be <CODE>null</CODE> if no changes are do be made for
-   * the type of host property the argument controls. <P> 
-   * 
    * A <B>pljobmgr</B>(1) daemon must first be running on a host before a change can be 
    * made to its status. <P> 
-   * 
-   * When a host is reserved, only jobs submitted by the reserving user will be assigned
-   * to the host.  The reservation can be cleared by setting the reserving user name to
-   * <CODE>null</CODE> for the host in the <CODE>reservations</CODE> argument. <P> 
-   * 
-   * Each host has a maximum number of jobs which it can be assigned at any one time 
-   * regardless of the other limits on system resources.  This method allows the number
-   * of slots to be changed for a number of hosts at once.  The number of slots cannot 
-   * be negative and probably should not be set considerably higher than the number of 
-   * CPUs on the host.  A good value is probably (1.5 * number of CPUs). <P>
-   * 
-   * The selection group contains the selection key biases and preemption flags used to 
-   * compute the total selection score on the host.  If <CODE>null</CODE> is passed as the 
-   * selection group for a host, then the host will behave as if a member of a selection 
-   * group with no selection keys defined. <P> 
-   * 
-   * The selection schedule determines how selection groups are automatically changed based 
-   * on a predefined schedule.  If <CODE>null</CODE> is passed as the name of the schedule for
-   * a host, then the selection schedule will be cleared and the selection group will be 
-   * specified manually. <P> 
-   * 
-   * For an detailed explanation of how selection keys are used to determine the assignment
-   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
    * @param changes
-   *   The changes in host status indexed by fully resolved names of the hosts.
-   * 
-   * @param reservations
-   *   The names of reserving users indexed by fully resolved names of the hosts.
-   * 
-   * @param orders
-   *   The server dispatch order indexed by fully resolved names of the hosts.
-   * 
-   * @param slots 
-   *   The number of job slots indexed by fully resolved names of the hosts.
-   * 
-   * @param groups
-   *   The names of the selection groups indexed by fully resolved names of the hosts.
-   * 
-   * @param schedules
-   *   The names of the selection schedules indexed by fully resolved names of the hosts.
+   *   The changes in host properties indexed by fully resolved names of the hosts.
    * 
    * @throws PipelineException 
    *   If unable to change the status of the hosts.
@@ -940,46 +899,65 @@ class QueueMgrClient
   public synchronized void
   editHosts
   (
-   TreeMap<String,QueueHostStatusChange> changes, 
-   TreeMap<String,String> reservations, 
-   TreeMap<String,Integer> orders, 
-   TreeMap<String,Integer> slots, 
-   TreeMap<String,String> groups,
-   TreeMap<String,String> schedules
+   TreeMap<String,QueueHostMod> changes
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueEditHostsReq req = 
-      new QueueEditHostsReq(changes, reservations, orders, slots, groups, schedules, 
-			    pLocalHostnames);
+    QueueEditHostsReq req = new QueueEditHostsReq(changes, pLocalHostnames);
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);
   }
 
   /**
-   * Get the full system resource usage history of the given host.
+   * Get the dynamic resource sample history of the given host.<P> 
    * 
-   * @param hostname
-   *   The fully resolved name of the host.
+   * If the <CODE>runtimeOnly</CODE> argument is <CODE>true</CODE> then only samples already
+   * stored in the 30-minute runtime cache for the selected hosts will be returned.  Note that
+   * this is much faster for cases wanting only recent samples since no resource sample cache 
+   * files need to be read by the server.  If <CODE>runtimeOnly</CODE> is <CODE>false</CODE> 
+   * and the <CODE>interval</CODE> specified for a host overlaps the time period stored in an 
+   * existing resource sample file, this file will be loaded every time this method is called.
+   * Since these files can be quite large, care should be taken calling this method for large 
+   * numbers of hosts using large sample intervals.<P> 
+   * 
+   * The intended usage is to call this method only once using a large sample interval and 
+   * then to update a local ResourceSampleCache using a small interval spanning the time 
+   * since the last update until now for all subsequent calls. This will minimize both the
+   * load on the server and the amount of data which must be transmitted over the network.<P> 
+   * 
+   * If you only want to know the most recent resource sample collected for a host, it is 
+   * much more efficient to use the {@link #getHosts} method to obtain the current job server
+   * host information and then accessing the last collected resource sample using the 
+   * {@link QueueHostInfo#getLatestSample QueueHostInfo.getLatestSample} method.
+   * 
+   * @param intervals
+   *   The sample intervals to retrieve indexed by fully resolved hostnames.
+   * 
+   * @param runtimeOnly
+   *   Whether to only read samples from the runtime cache ignoring any saved samples
+   *   on disk.
    * 
    * @return 
-   *   The resource usage samples.
+   *   The requested samples indexed by fully resolved hostname. 
    * 
    * @throws PipelineException
    *   If unable to lookup the resource usage.
    */ 
-  public synchronized ResourceSampleBlock
+  public synchronized TreeMap<String,ResourceSampleCache> 
   getHostResourceSamples
   (
-   String hostname
+   TreeMap<String,DateInterval> intervals,
+   boolean runtimeOnly
   ) 
     throws PipelineException  
   {
     verifyConnection();
     
-    QueueGetHostResourceSamplesReq req = new QueueGetHostResourceSamplesReq(hostname);
+    QueueGetHostResourceSamplesReq req = 
+      new QueueGetHostResourceSamplesReq(intervals, runtimeOnly);
+
     Object obj = performTransaction(QueueRequest.GetHostResourceSamples, req);
     if(obj instanceof QueueGetHostResourceSamplesRsp) {
       QueueGetHostResourceSamplesRsp rsp = (QueueGetHostResourceSamplesRsp) obj;

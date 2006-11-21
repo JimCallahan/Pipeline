@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.2 2006/11/06 00:58:33 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.3 2006/11/21 20:00:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -361,7 +361,7 @@ class JQueueJobServersPanel
       }
     }
 
-    updateJobs(null, null, null, null, null);
+    updateJobs(null, null, null, null, null, null);
   }
 
 
@@ -471,7 +471,18 @@ class JQueueJobServersPanel
     return hostnames;
   }
 
-  
+  /**
+   * Get the intervals of time not currently included in the resource samples cache. 
+   */ 
+  public TreeMap<String,DateInterval>
+  getSampleIntervals() 
+  {
+    if(pHostsTablePanel != null)
+      return pHostsTableModel.getSampleIntervals(); 
+    return new TreeMap<String,DateInterval>();
+  }
+
+    
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -497,7 +508,10 @@ class JQueueJobServersPanel
    *   Name of the current working area view.
    * 
    * @param hosts
-   *   The job server hosts indexex by fully resolved hostnames.
+   *   The job server hosts indexed by fully resolved hostname.
+   * 
+   * @param samples
+   *   The latest resource samples indexed by fully resolved hostname.
    * 
    * @param workGroups
    *   The names of the user work groups.
@@ -517,6 +531,7 @@ class JQueueJobServersPanel
    String author, 
    String view, 
    TreeMap<String,QueueHostInfo> hosts, 
+   TreeMap<String,ResourceSampleCache> samples, 
    Set<String> workGroups, 
    Set<String> workUsers,
    TreeSet<String> selectionGroups, 
@@ -526,7 +541,7 @@ class JQueueJobServersPanel
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJobs(hosts, workGroups, workUsers, selectionGroups, selectionSchedules);
+    updateJobs(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules);
   }
 
 
@@ -537,6 +552,9 @@ class JQueueJobServersPanel
    * 
    * @param hosts
    *   The job server hosts indexex by fully resolved hostnames.
+   * 
+   * @param samples
+   *   The latest resource samples indexed by fully resolved hostname.
    * 
    * @param workGroups
    *   The names of the user work groups.
@@ -554,6 +572,7 @@ class JQueueJobServersPanel
   updateJobs
   (
    TreeMap<String,QueueHostInfo> hosts, 
+   TreeMap<String,ResourceSampleCache>  samples, 
    Set<String> workGroups, 
    Set<String> workUsers,
    TreeSet<String> selectionGroups, 
@@ -567,7 +586,7 @@ class JQueueJobServersPanel
       pHostnamesTableModel.setHostnames(hosts.keySet());
 
       pHostsTableModel.setQueueHosts
-	(hosts, workGroups, workUsers, selectionGroups, selectionSchedules, 
+	(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules, 
 	 pPrivilegeDetails);
 
       updateHostsHeaderButtons();
@@ -1242,14 +1261,8 @@ class JQueueJobServersPanel
     EditHostsTask() 
     {
       super("JQueueJobServersPanel:EditHostsTask");
-
-      pStatus         = pHostsTableModel.getHostStatus();
-      pReservations   = pHostsTableModel.getHostReservations();
-      pOrders         = pHostsTableModel.getHostOrders();
-      pSlots   	      = pHostsTableModel.getHostSlots(); 
-
-      pSelectionGroups    = pHostsTableModel.getHostSelectionGroups();
-      pSelectionSchedules = pHostsTableModel.getHostSelectionSchedules();
+      
+      pChanges = pHostsTableModel.getHostChanges();
     }
 
     public void 
@@ -1260,8 +1273,7 @@ class JQueueJobServersPanel
       if(master.beginPanelOp(pGroupID, "Modifying Servers...")) {
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient(pGroupID);
-	  client.editHosts(pStatus, pReservations, pOrders, pSlots, 
-			   pSelectionGroups, pSelectionSchedules);
+	  client.editHosts(pChanges); 
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -1274,13 +1286,7 @@ class JQueueJobServersPanel
       updatePanels();
     }
 
-    private TreeMap<String,QueueHostStatusChange>  pStatus; 
-    private TreeMap<String,String>                 pReservations; 
-    private TreeSet<String>                        pReservedGroups; 
-    private TreeMap<String,Integer>                pOrders;  
-    private TreeMap<String,Integer>                pSlots;  
-    private TreeMap<String,String>                 pSelectionGroups; 
-    private TreeMap<String,String>                 pSelectionSchedules; 
+    private TreeMap<String,QueueHostMod>  pChanges; 
   }
 
   /** 

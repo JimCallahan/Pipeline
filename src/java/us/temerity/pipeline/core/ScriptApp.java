@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.61 2006/11/14 22:43:17 jim Exp $
+// $Id: ScriptApp.java,v 1.62 2006/11/21 20:00:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1408,20 +1408,25 @@ class ScriptApp
 	buf.append(os.toString());
       else 
 	buf.append("-");
-
+      
       ResourceSample sample = host.getLatestSample();
       if(sample != null) {
-	buf.append
-	  ("\n" + 
-	   "System Load        : " + (String.format("%1$.2f", sample.getLoad()) + 
-				  " (procs " + host.getNumProcessors()) + ")\n" +
-	   "Free Memory        : " + (formatLong(sample.getMemory()) + " (total " + 
-				  formatLong(host.getTotalMemory()) + ")") + "\n" +
-	   "Free Disk          : " + (formatLong(sample.getDisk()) + " (total " +
-				      formatLong(host.getTotalDisk()) + ")") + "\n" +
-	   "Jobs               : " + (sample.getNumJobs() + 
-				      " (slots " + host.getJobSlots() + ")"));
+	Integer numProcs = host.getNumProcessors();
+	Long totalMem    = host.getTotalMemory();
+	Long totalDisk   = host.getTotalDisk();
 
+	if((numProcs != null) && (totalMem != null) && (totalDisk != null)) {
+	  buf.append
+	    ("\n" + 
+	     "System Load        : " + 
+	     String.format("%1$.2f", sample.getLoad()) + " (procs " + numProcs + ")\n" +
+	     "Free Memory        : " + 
+	     formatLong(sample.getMemory()) + " (total " + formatLong(totalMem) + ")" + "\n" +
+	     "Free Disk          : " + 
+	     formatLong(sample.getDisk()) + " (total " + formatLong(totalDisk) + ")" + "\n" +
+	     "Jobs               : " + 
+	     sample.getNumJobs() + " (slots " + host.getJobSlots() + ")");
+	}
       }
 
       buf.append("\n" + 
@@ -1475,39 +1480,32 @@ class ScriptApp
     TreeMap<String,QueueHostInfo> hosts = client.getHosts();
     QueueHostInfo host = hosts.get(hname);
     if(host != null) {
-      TreeMap<String,QueueHostStatusChange> statusTable = 
-	new TreeMap<String,QueueHostStatusChange>();
-      if(status != null) {
-	client.verifyConnection();
-	statusTable.put(hname, status);
+      String group = null;
+      boolean groupModified = false;
+      if(selectionGroup != null) {
+	group = selectionGroup;
+	groupModified = true;
       }
+      else if(noSelectionGroup)
+	groupModified = true;
 
-      TreeMap<String,String> reserveTable = new TreeMap<String,String>();
-      if(setReserve) 
-	reserveTable.put(hname, reserve);
+      String schedule = null;
+      boolean scheduleModified = false;
+      if(selectionSchedule != null) {
+	schedule = selectionSchedule;
+	scheduleModified = true;
+      }
+      else if(noSelectionSchedule)
+	scheduleModified = true;
 
-      TreeMap<String,Integer> orderTable = new TreeMap<String,Integer>();
-      if(order != null) 
-	orderTable.put(hname, order);
+      QueueHostMod change = 
+	new QueueHostMod(status, reserve, setReserve,  order, slots, 
+			 group, groupModified, schedule, scheduleModified); 
 
-      TreeMap<String,Integer> slotsTable = new TreeMap<String,Integer>();
-      if(slots != null) 
-	slotsTable.put(hname, slots);
+      TreeMap<String,QueueHostMod> changes = new TreeMap<String,QueueHostMod>();
+      changes.put(hname, change);
 
-      TreeMap<String,String> schedulesTable = new TreeMap<String,String>();
-      if(selectionSchedule != null) 
-	schedulesTable.put(hname, selectionSchedule);
-      else if(noSelectionSchedule) 
-	schedulesTable.put(hname, null);
-
-      TreeMap<String,String> groupsTable = new TreeMap<String,String>();
-      if(selectionGroup != null) 
-	groupsTable.put(hname, selectionGroup);
-      else if(noSelectionGroup) 
-	groupsTable.put(hname, null);
-	        
-      client.editHosts(statusTable, reserveTable, orderTable, slotsTable, 
-		       schedulesTable, groupsTable);
+      client.editHosts(changes);
     }
   }
   

@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.4 2006/11/06 00:58:33 jim Exp $
+// $Id: QueueHost.java,v 1.5 2006/11/21 20:00:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -88,7 +88,6 @@ class QueueHost
     pLastModified = new Date();
 
     pHoldTimeStamps = new TreeMap<Long,Date>();
-    pSamples = new LinkedList<ResourceSample>();
   }
 
 
@@ -144,7 +143,7 @@ class QueueHost
 
     switch(pStatus) {
     case Shutdown:
-      pSamples.clear();
+      pSample  = null; 
       pNumJobs = null;
       break;
 
@@ -469,16 +468,6 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the maximum interval of time (in milliseconds) that system resource samples 
-   * are retained.
-   */
-  public static long
-  getSampleInterval()
-  {
-    return sSampleInterval;
-  }
-
-  /**
    * Get the latest system resource sample.
    * 
    * @return 
@@ -487,97 +476,25 @@ class QueueHost
   public synchronized ResourceSample
   getLatestSample() 
   {
-    if(!pSamples.isEmpty()) 
-      return pSamples.getFirst();
-    return null;
+    return pSample;
   }
 
   /**
-   * Get all of the system resource samples within the sample window.
-   * 
-   * @param start
-   *   The date to use as the start of the window.
-   * 
-   * @return 
-   *   The samples or <CODE>null</CODE> if there are no samples within the window.
-   */ 
-  public synchronized List<ResourceSample> 
-  getWindowedSamples
-  (
-   Date start
-  ) 
-  {
-    LinkedList<ResourceSample> windowed = new LinkedList<ResourceSample>();
-
-    long startTime = start.getTime();
-    for(ResourceSample sample : pSamples) {
-      if((startTime - sample.getTimeStamp().getTime()) > sSampleInterval)
-	break;
-      windowed.add(sample);
-    }
-
-    return windowed; 
-  }
-  
-  /**
-   * Get all of the system resource samples.
-   * 
-   * @return 
-   *   The sample or <CODE>null</CODE> if there are no samples.
-   */ 
-  public synchronized List<ResourceSample> 
-  getSamples() 
-  {
-    return Collections.unmodifiableList(pSamples);
-  }
-  
-  /**
-   * Add a system resource usage sample.
+   * Set the latest system resource usage sample.
    * 
    * @param sample
    *   The sample of system resources.
    */ 
   public synchronized void 
-  addSample
+  setLatestSample
   (
    ResourceSample sample
   ) 
   {
-    if(!(pSamples.isEmpty() || 
-	 (pSamples.getFirst().getTimeStamp().compareTo(sample.getTimeStamp()) < 0)))
-      throw new IllegalStateException("Illegal resource sample data!");
+    pSample = sample; 
 
-    if(pNumJobs != null) 
-      sample.setNumJobs(pNumJobs);
-    else 
-      pNumJobs = sample.getNumJobs();
-
-    pSamples.addFirst(sample);
-  }
-
-  /**
-   * Remove all samples older than twice the sample interval.
-   * 
-   * @param start
-   *   The date to use as the start of the window.
-   */ 
-  public synchronized void
-  pruneSamples
-  (
-   Date start
-  ) 
-  {
-    long startTime = start.getTime();
-    boolean strip = false;
-    Iterator<ResourceSample> iter = pSamples.listIterator(0); 
-    while(iter.hasNext()) {
-      ResourceSample sample = iter.next();
-      if(!strip && ((startTime - sample.getTimeStamp().getTime()) > sSampleInterval))
-	strip = true;
-
-      if(strip) 
-	iter.remove();
-    }
+    if(pNumJobs == null) 
+      pNumJobs = pSample.getNumJobs();
   }
 
 
@@ -702,7 +619,7 @@ class QueueHost
     }
 
     Date now = Dates.now();
-    if(((now.getTime() - sample.getTimeStamp().getTime()) > sSampleInterval) ||
+    if(((now.getTime() - sample.getTimeStamp().getTime()) > PackageInfo.sCollectorInterval) ||
        (getHold().compareTo(now) > 0)) {
       LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
@@ -781,36 +698,16 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Return a read-only form of information about the current status of a job server host
-   * with only those dynamic resource samples within the sample window from the given date.
-   * 
-   * @param start
-   *   The date to use as the start of the window.
+   * Return a read-only form of information about the current status of a job server host.
    */ 
   public synchronized QueueHostInfo
-  toInfo
-  (
-   Date start
-  ) 
+  toInfo() 
   {
     return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
 			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-			     getHold(), getWindowedSamples(start), 
-			     pSelectionSchedule, pSelectionGroup);
+			     getHold(), pSample, pSelectionGroup, pSelectionSchedule); 
   }
 
-  /**
-   * Return a read-only form of information about the current status of a job server host
-   * without any dynamic resource samples.
-   */ 
-  public synchronized QueueHostInfo
-  toCleanInfo() 
-  {
-    return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
-			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-			     new Date(0L), null, 
-			     pSelectionSchedule, pSelectionGroup);
-  }
 
 
 
@@ -945,13 +842,6 @@ class QueueHost
 
   private static final long serialVersionUID = -5965011973074654660L;
 
-  /**
-   * The maximum interval of time (in milliseconds) for which samples are reported 
-   * back to clients when QueueHostInfo copies are created.  Samples are actually retained
-   * for up to twice as long on the server and periodically written to disk at this interval.
-   */ 
-  private static final long  sSampleInterval = 1800000;  /* 30-minutes */ 
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1022,9 +912,9 @@ class QueueHost
   private TreeMap<Long,Date>  pHoldTimeStamps;
 
   /**
-   * The system resource usage samples (newest to oldest).
+   * The lastest resource usage sample or <CODE>null</CODE> if no samples exist.
    */ 
-  private LinkedList<ResourceSample>  pSamples;
+  private ResourceSample  pSample;
 
   /**
    * The number of job currently running on the host or <CODE>null</CODE> if unknown.
