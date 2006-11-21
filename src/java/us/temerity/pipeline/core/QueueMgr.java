@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.72 2006/11/21 20:00:04 jim Exp $
+// $Id: QueueMgr.java,v 1.73 2006/11/21 20:29:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3467,8 +3467,7 @@ class QueueMgr
 	for(String hname : pHostsInfo.keySet()) {
 	  QueueHostInfo qinfo = pHostsInfo.get(hname);
 	  switch(qinfo.getStatus()) {
-	  case Enabled:
-	  case Disabled:
+	  case Enabled:	 
 	    needsCollect.add(hname);
 	    if((qinfo.getNumProcessors() == null) || 
 	       (qinfo.getTotalMemory() == null) ||
