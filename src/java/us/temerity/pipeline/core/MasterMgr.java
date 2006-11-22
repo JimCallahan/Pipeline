@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.172 2006/11/22 09:08:01 jim Exp $
+// $Id: MasterMgr.java,v 1.173 2006/11/22 09:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10292,6 +10292,39 @@ class MasterMgr
     /* submit and collect the IDs of the jobs associated with the upstream nodes */ 
     for(LinkMod link : work.getSources()) {
       NodeStatus lstatus = status.getSource(link.getName());
+      // DEBUG (remove this once the bug is fixed) 
+      if(lstatus == null) {
+	StringBuilder buf = new StringBuilder();
+	
+	buf.append("EXTRA DEBUGGING INFO: 817 - Null Pointer in collectNoActionJobs\n" +
+		   "  http://www.temerity.us/community/forums/viewtopic.php?t=817\n" +
+		   "NodeID = " + nodeID + "\n" + 
+		   "LinkName = " + link.getName() + "\n-----\n");
+
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("CurrentWorkingVersion", work);
+	  buf.append(ge.getText() + "\n-----\n");
+	}
+	catch(GlueException ex) {
+	}
+
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("CurrentLink", link);
+	  buf.append(ge.getText() + "\n-----\n");
+	}
+	catch(GlueException ex) {
+	}
+
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("CurrentStatus", status);
+	  buf.append(ge.getText() + "\n-----\n");
+	}
+	catch(GlueException ex) {
+	}
+
+	throw new NullPointerException(buf.toString());
+      } 
+      // DEBUG
       NodeID lnodeID = lstatus.getNodeID();
 
       submitJobs(lstatus, null, 
