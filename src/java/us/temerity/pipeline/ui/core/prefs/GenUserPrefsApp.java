@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.36 2006/11/22 11:37:11 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1492,7 +1492,7 @@ class GenUserPrefsApp
 	new ColorPref
 	("The color used to render system load sample values which are larger than the " + 
 	 "maximum value which can be shown.", 
-	 "SystemLoadOverflowColor", "System Load Overflow:", new Color(0.5f, 0.79f, 1.0f)), 
+	 "SystemLoadOverflowColor", "System Load Overflow:", new Color(1.0f, 0.87f, 0.5f)), 
 	
 	new BoundedIntegerPref
 	("The range of system load values displayed.", 
@@ -1519,7 +1519,7 @@ class GenUserPrefsApp
 	new ColorPref
 	("The color used to render free memory sample values which are less than the " + 
 	 "low memory threshold value.", 
-	 "LowMemoryFgColor", "Low Memory Foreground:", new Color(0.5f, 0.79f, 1.0f)), 
+	 "LowMemoryFgColor", "Low Memory Foreground:", new Color(1.0f, 0.87f, 0.5f)), 
 
 	new BoundedDoublePref
 	("The low memory warning threshold value.", 
@@ -1546,7 +1546,7 @@ class GenUserPrefsApp
 	new ColorPref
 	("The color used to render free disk space sample values which are less than the " + 
 	 "low disk threshold value.", 
-	 "LowDiskFgColor", "Low Disk Foreground:", new Color(0.5f, 0.79f, 1.0f)), 
+	 "LowDiskFgColor", "Low Disk Foreground:", new Color(1.0f, 0.87f, 0.5f)), 
 
 	new BoundedDoublePref
 	("The low disk space warning threshold value.", 
@@ -1580,8 +1580,8 @@ class GenUserPrefsApp
 	 "JobCountRange", "Job Count Range:", 1, 10, 3), 
 
 	new ColorPref
-	("The color used to mark the current number of job slots.", 
-	 "JobSlotsColor", "Job Slots Color:", Color.yellow), 
+	("The color used to mark the current number of job slots bar.", 
+	 "JobSlotsColor", "Job Slots Color:", new Color(0.88f, 0.13f, 0.13f)),
 	
 	new BooleanPref
 	("Whether to initially render the job slots level bar.", 
@@ -2116,7 +2116,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.36 2006/11/22 11:37:11 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2373,7 +2373,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.36 2006/11/22 11:37:11 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3730,7 +3730,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.36 2006/11/22 11:37:11 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

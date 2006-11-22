@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.16 2006/11/21 19:55:51 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.17 2006/11/22 11:37:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -375,6 +375,12 @@ class JResourceUsageHistoryDialog
   public void 
   updateUserPrefs() 
   {
+    UserPrefs prefs = UserPrefs.getInstance();
+    pShowFullLoadBar  = prefs.getShowFullLoadBar();
+    pShowLowMemoryBar = prefs.getShowLowMemoryBar();
+    pShowLowDiskBar   = prefs.getShowLowDiskBar();
+    pShowJobSlotsBar  = prefs.getShowJobSlotsBar();
+
     doRefresh();
     updateMenuToolTips();
   }
@@ -847,7 +853,7 @@ class JResourceUsageHistoryDialog
 		if(pShowLowMemoryBar) {
 		  gl.glBegin(gl.GL_LINES);
 		  {
-		    Color3d color = prefs.getFullLoadColor();
+		    Color3d color = prefs.getLowMemoryColor();
 		    gl.glColor3d(color.r(), color.g(), color.b());
 		    
 		    double v = prefs.getLowMemoryThreshold();
@@ -926,7 +932,7 @@ class JResourceUsageHistoryDialog
 		if(pShowLowDiskBar) {
 		  gl.glBegin(gl.GL_LINES);
 		  {
-		    Color3d color = prefs.getFullLoadColor();
+		    Color3d color = prefs.getLowDiskColor();
 		    gl.glColor3d(color.r(), color.g(), color.b());
 		    
 		    double v = prefs.getLowDiskThreshold();
