@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.171 2006/11/11 20:45:36 jim Exp $
+// $Id: MasterMgr.java,v 1.172 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1070,7 +1070,7 @@ class MasterMgr
 
     if(!pDownstream.isEmpty() && 
        LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer)) { 
-      StringBuffer buf = new StringBuffer(); 
+      StringBuilder buf = new StringBuilder(); 
       buf.append("Rebuilt Links:\n");
       for(String name : pDownstream.keySet()) 
 	buf.append("  " + name + "\n");
@@ -5521,7 +5521,7 @@ class MasterMgr
 	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, null);
 
 	if(!matches.isEmpty()) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append
 	    ("The working area view (" + view + ") owned by user (" + author + ") " + 
 	     "cannot be removed because it still contains unreleased nodes!\n\n" + 
@@ -7523,7 +7523,7 @@ class MasterMgr
       }
       
       if(!failures.isEmpty()) {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("Unable to release all of the selected nodes!");
 	for(String msg : failures) 
 	  buf.append("\n\n" + msg);
@@ -7768,7 +7768,7 @@ class MasterMgr
            another node */ 
       {
 	boolean failed = false;
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	for(VersionID vid : checkedIn.keySet()) {
 	  TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
 	  if(dlinks == null) 
@@ -8075,7 +8075,7 @@ class MasterMgr
 
 	/* abort if all required versions are not online */ 
 	if(!offlineVersions.isEmpty()) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  {
 	    buf.append
 	      ("Unable to perform check-out because the following checked-in versions " + 
@@ -8812,7 +8812,7 @@ class MasterMgr
 	
 	/* abort if the target version is offline */ 
 	if(isOffline) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append
 	    ("Unable to lock node (" + name + ") to checked-in version (" + vid + ") " + 
 	     "because that version is currently offline!\n\n");
@@ -9106,7 +9106,7 @@ class MasterMgr
 	      new TreeMap<String,TreeSet<VersionID>>();
 	    vsns.put(name, ovids);
 	    
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    {
 	      buf.append
 		("Unable to revert files because the following checked-in versions " + 
@@ -12728,7 +12728,7 @@ class MasterMgr
       if(file.length() > 0) {
 	FileReader in = new FileReader(file);
 	  
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	char[] cs = new char[4096];
 	while(true) {
 	  int cnt = in.read(cs);
@@ -12777,7 +12777,7 @@ class MasterMgr
       if(file.length() > 0) {
 	FileReader in = new FileReader(file);
 	  
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	char[] cs = new char[4096];
 	while(true) {
 	  int cnt = in.read(cs);
@@ -12914,7 +12914,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     try {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       try {
 	File file = new File(pNodeDir, "etc/initial-panel-layout");
 	FileReader in = new FileReader(file);
@@ -12986,7 +12986,7 @@ class MasterMgr
       return;
 
     if(targetID.getName().equals(name)) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("Potential link circularity detected: \n" + 
 		 "  " + targetID.getName() + " -> ");
       for(String bname : branch) 
@@ -13042,7 +13042,7 @@ class MasterMgr
     if(!branch.contains(name)) 
       return;
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("Link circularity detected: \n" + 
 	       "  ");
     boolean found = false;
@@ -16546,7 +16546,7 @@ class MasterMgr
    String ptype
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     char[] cs = ptype.toCharArray();
     int wk;

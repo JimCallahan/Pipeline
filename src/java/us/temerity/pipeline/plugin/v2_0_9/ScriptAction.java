@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.1 2006/05/26 17:06:35 jim Exp $
+// $Id: ScriptAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -270,7 +270,7 @@ class ScriptAction
    FileSeq fseq 
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for(File file : fseq.getFiles()) 
       buf.append(file + ":");
     return buf.substring(0, buf.length()-1);

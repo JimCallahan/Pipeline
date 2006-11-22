@@ -1,4 +1,4 @@
-// $Id: MayaMRayRenderAction.java,v 1.2 2006/10/10 22:27:46 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -479,7 +479,7 @@ public class MayaMRayRenderAction
 	}
       }
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for (String arg : args) 
 	buf.append(arg + " ");
 

@@ -1,4 +1,4 @@
-// $Id: JBaseToolsetPluginsPanel.java,v 1.8 2006/10/23 11:30:20 jim Exp $
+// $Id: JBaseToolsetPluginsPanel.java,v 1.9 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1029,7 +1029,7 @@ class JBaseToolsetPluginsPanel
    TreePath tpath
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     Object[] path = tpath.getPath(); 
     int wk;

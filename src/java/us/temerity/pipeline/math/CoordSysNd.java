@@ -603,7 +603,7 @@ class CoordSysNd
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     int i; 
     for(i=0; i<dimens(); i++) {

@@ -1,4 +1,4 @@
-// $Id: MayaAnimExportAction.java,v 1.4 2006/01/17 18:39:22 jim Exp $
+// $Id: MayaAnimExportAction.java,v 1.5 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -429,7 +429,7 @@ class MayaAnimExportAction
     TreeMap<String,String> senv = new TreeMap<String,String>(agenda.getEnvironment());
     {
       {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	for(String prefix : targetAnims.keySet()) 
 	  buf.append(prefix + ":");
 	String value = buf.toString();

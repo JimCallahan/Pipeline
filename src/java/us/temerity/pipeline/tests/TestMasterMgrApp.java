@@ -1,4 +1,4 @@
-// $Id: TestMasterMgrApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $
+// $Id: TestMasterMgrApp.java,v 1.10 2006/11/22 09:08:01 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -459,7 +459,7 @@ class TestMasterMgrApp
   ) 
     throws GlueException
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append("-----------------------------------------------------------------------\n" +
 	       "  N O D E   S T A T U S: " + status.getNodeID() + "\n" +
@@ -483,7 +483,7 @@ class TestMasterMgrApp
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -503,7 +503,7 @@ class TestMasterMgrApp
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -522,7 +522,7 @@ class TestMasterMgrApp
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -542,13 +542,13 @@ class TestMasterMgrApp
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
     String indent = null;
     {
-      StringBuffer ibuf = new StringBuffer();
+      StringBuilder ibuf = new StringBuilder();
       ibuf.append("->");
       int wk;
       for(wk=0; wk<level; wk++) 
@@ -619,7 +619,7 @@ class TestMasterMgrApp
    String title, 
    Glueable obj, 
    String indent,
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -644,7 +644,7 @@ class TestMasterMgrApp
    NodeTreeComp rootComp
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("Node Components:\n"); 
     printNodePathHelper(rootComp, 1, buf);
     System.out.print(buf.toString());
@@ -655,12 +655,12 @@ class TestMasterMgrApp
   (
    NodeTreeComp comp, 
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
   {
     String istr = null;
     {
-      StringBuffer ibuf = new StringBuffer();
+      StringBuilder ibuf = new StringBuilder();
       int wk;
       for(wk=0; wk<level; wk++) 
 	ibuf.append("  ");

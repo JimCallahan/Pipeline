@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.10 2004/12/29 22:11:42 jim Exp $
+// $Id: TupleNf.java,v 1.11 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -1143,7 +1143,7 @@ class TupleNf
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append("[");
     int i; 

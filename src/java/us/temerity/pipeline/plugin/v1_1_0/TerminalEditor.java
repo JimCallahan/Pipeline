@@ -1,4 +1,4 @@
-// $Id: TerminalEditor.java,v 1.2 2005/09/07 19:17:08 jim Exp $
+// $Id: TerminalEditor.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -83,7 +83,7 @@ class TerminalEditor
       args.add("tell application \"Terminal\"");
 
       args.add("-e");
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for(String key : env.keySet()) 
 	buf.append("export " + key + "='" + env.get(key) + "'; ");
       buf.append("cd " + dir + "; clear");

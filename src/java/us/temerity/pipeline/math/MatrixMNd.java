@@ -1127,7 +1127,7 @@ class MatrixMNd
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     int i; 
     for(i=0; i<rows(); i++) {

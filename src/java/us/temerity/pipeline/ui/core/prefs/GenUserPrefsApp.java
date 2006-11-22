@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -2113,10 +2113,10 @@ class GenUserPrefsApp
    File file
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2370,10 +2370,10 @@ class GenUserPrefsApp
    File file
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2651,7 +2651,7 @@ class GenUserPrefsApp
    String title
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append(genBar(94) + 
 	       "/*  ");
@@ -2675,7 +2675,7 @@ class GenUserPrefsApp
    String title
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append("  " + genBar(92) + 
 	       "  /*  ");
@@ -2699,7 +2699,7 @@ class GenUserPrefsApp
    int size
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append("/*");
     int wk;
@@ -2716,7 +2716,7 @@ class GenUserPrefsApp
    int level
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int wk;
     for(wk=0; wk<level; wk++) 
       buf.append("  ");
@@ -2743,7 +2743,7 @@ class GenUserPrefsApp
     public void 
     genAccessors
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {} 
@@ -2751,7 +2751,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -2759,7 +2759,7 @@ class GenUserPrefsApp
     public void 
     genToGlue
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {} 
@@ -2767,7 +2767,7 @@ class GenUserPrefsApp
     public void
     genFromGlue
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -2775,7 +2775,7 @@ class GenUserPrefsApp
     public void 
     genDeclare
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {} 
@@ -2783,7 +2783,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -2795,7 +2795,7 @@ class GenUserPrefsApp
     public void 
     genKeyGroupDeclare
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -2803,7 +2803,7 @@ class GenUserPrefsApp
     public void 
     genKeyGroupAdd
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -2811,7 +2811,7 @@ class GenUserPrefsApp
     public void 
     genKeyExcludeAdd
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -2827,7 +2827,7 @@ class GenUserPrefsApp
     public void 
     genKeyGetter
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -2835,7 +2835,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {} 
@@ -2843,7 +2843,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {} 
@@ -2851,7 +2851,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {} 
@@ -2896,7 +2896,7 @@ class GenUserPrefsApp
     public void 
     genAccessors
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {
@@ -2928,7 +2928,7 @@ class GenUserPrefsApp
     public void 
     genToGlue
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {
@@ -2939,7 +2939,7 @@ class GenUserPrefsApp
     public void
     genFromGlue
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {
@@ -2955,7 +2955,7 @@ class GenUserPrefsApp
     public void 
     genDeclare
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {
@@ -3000,7 +3000,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {      
@@ -3011,7 +3011,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3032,7 +3032,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3042,7 +3042,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3052,7 +3052,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3085,7 +3085,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {      
@@ -3096,7 +3096,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3113,7 +3113,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3123,7 +3123,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3133,7 +3133,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3169,7 +3169,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3191,7 +3191,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3201,7 +3201,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3211,7 +3211,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3245,7 +3245,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {      
@@ -3256,7 +3256,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3273,7 +3273,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3283,7 +3283,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3293,7 +3293,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3329,7 +3329,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3351,7 +3351,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3362,7 +3362,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3373,7 +3373,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3407,7 +3407,7 @@ class GenUserPrefsApp
     public void 
     genAccessors
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {
@@ -3439,7 +3439,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {      
@@ -3452,7 +3452,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3479,7 +3479,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3489,7 +3489,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3499,7 +3499,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3534,7 +3534,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {      
@@ -3545,7 +3545,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3576,7 +3576,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3586,7 +3586,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3596,7 +3596,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3648,7 +3648,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {      
@@ -3666,7 +3666,7 @@ class GenUserPrefsApp
     public void 
     genUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level,
      boolean isLast
     )
@@ -3688,7 +3688,7 @@ class GenUserPrefsApp
     public void 
     genKeyGroupDeclare
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3699,7 +3699,7 @@ class GenUserPrefsApp
     public void 
     genKeyGroupAdd
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3710,7 +3710,7 @@ class GenUserPrefsApp
     public void 
     genKeyExcludeAdd
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3728,9 +3728,9 @@ class GenUserPrefsApp
     {
       String cname = (pTitle + "KeyExclude");
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.34 2006/11/21 19:55:51 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.35 2006/11/22 09:08:01 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
@@ -3853,7 +3853,7 @@ class GenUserPrefsApp
     public void 
     genKeyGetter
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3872,7 +3872,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3882,7 +3882,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3892,7 +3892,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -3930,7 +3930,7 @@ class GenUserPrefsApp
     public void 
     genAccessors
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {}
@@ -3938,7 +3938,7 @@ class GenUserPrefsApp
     public void 
     genToGlue
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {}
@@ -3946,7 +3946,7 @@ class GenUserPrefsApp
     public void
     genFromGlue
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {}
@@ -3954,7 +3954,7 @@ class GenUserPrefsApp
     public void 
     genDeclare
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     ) 
     {}
@@ -3962,7 +3962,7 @@ class GenUserPrefsApp
     public void 
     genReset
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -3970,7 +3970,7 @@ class GenUserPrefsApp
     public void 
     genKeyGroupDeclare
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {}
@@ -3978,7 +3978,7 @@ class GenUserPrefsApp
     public void 
     genKeyGroupAdd
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -4005,7 +4005,7 @@ class GenUserPrefsApp
     public void 
     genSavePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -4015,7 +4015,7 @@ class GenUserPrefsApp
     public void 
     genUpdatePrefs
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {
@@ -4025,7 +4025,7 @@ class GenUserPrefsApp
     public void 
     genDeclareUI
     (
-     StringBuffer buf,
+     StringBuilder buf,
      int level
     )
     {

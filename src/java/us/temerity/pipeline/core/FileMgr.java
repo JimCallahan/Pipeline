@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.57 2006/10/25 08:04:23 jim Exp $
+// $Id: FileMgr.java,v 1.58 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -576,7 +576,7 @@ class FileMgr
   {
     TaskTimer timer = null;
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("FileMgr.checkIn(): " + req.getNodeID() + " (" + req.getVersionID() + ") ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
@@ -884,7 +884,7 @@ class FileMgr
   {
     TaskTimer timer = null;
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("FileMgr.checkOut(): " + req.getNodeID() + " (" + req.getVersionID() + ") ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
@@ -997,7 +997,7 @@ class FileMgr
 
 	  ArrayList<String> args = new ArrayList<String>();
 	  {
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    String comps[] = wpath.getPath().split("/");
 	    int wk;
 	    for(wk=1; wk<comps.length; wk++) 
@@ -1771,7 +1771,7 @@ class FileMgr
   {
     TaskTimer timer = null;
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("FileMgr.removeAll(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
@@ -1806,7 +1806,7 @@ class FileMgr
   {
     TaskTimer timer = null;
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("FileMgr.rename(): " + req.getNodeID() + " to " + req.getFilePattern());
       timer = new TaskTimer(buf.toString());
     }
@@ -2235,7 +2235,7 @@ class FileMgr
   {
     TaskTimer timer = null;
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("FileMgr.changeMode(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
@@ -2457,7 +2457,7 @@ class FileMgr
 	  if(errFile.length() > 0) {
 	    FileReader in = new FileReader(errFile);
 	    
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    char[] cs = new char[4096];
 	    while(true) {
 	      int cnt = in.read(cs);
@@ -2486,7 +2486,7 @@ class FileMgr
 	if(outFile.length() > 0) {
 	  FileReader in = new FileReader(outFile);
 
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  char[] cs = new char[4096];
 	  while(true) {
 	    int cnt = in.read(cs);
@@ -3002,7 +3002,7 @@ class FileMgr
 	    if(errFile.length() > 0) {
 	      FileReader in = new FileReader(errFile);
 	      
-	      StringBuffer buf = new StringBuffer();
+	      StringBuilder buf = new StringBuilder();
 	      char[] cs = new char[4096];
 	      while(true) {
 		int cnt = in.read(cs);
@@ -3032,7 +3032,7 @@ class FileMgr
 	if(outFile.length() > 0) {
 	  FileReader in = new FileReader(outFile);
 	  
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  char[] cs = new char[4096];
 	  while(true) {
 	    int cnt = in.read(cs);
@@ -3360,7 +3360,7 @@ class FileMgr
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

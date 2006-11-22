@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.3 2006/09/29 03:03:21 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.4 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
@@ -424,7 +424,7 @@ class GlueEncoderImpl
     if(pLevel < 0)
       throw new IllegalStateException("Indent level (" + pLevel + ") cannot be negative!"); 
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int wk;
     for(wk=0; wk<pLevel; wk++) 
       buf.append("  ");

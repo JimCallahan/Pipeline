@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.7 2006/09/29 03:03:21 jim Exp $
+// $Id: Toolset.java,v 1.8 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -220,7 +220,7 @@ class Toolset
 		
 		String nvalue = null;
 		{
-		  StringBuffer buf = new StringBuffer();
+		  StringBuilder buf = new StringBuilder();
 		  for(String path : paths) 
 		  buf.append(path + pathSep);
 		  String str = buf.toString();

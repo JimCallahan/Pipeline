@@ -1,4 +1,4 @@
-// $Id: TimeService.java,v 1.2 2006/02/24 14:03:56 jim Exp $
+// $Id: TimeService.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -66,7 +66,7 @@ class TimeService
   getTime() 
     throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     int wk;
     for(wk=0; wk<sNtpServers.length; wk++) {
@@ -104,7 +104,7 @@ class TimeService
   ) 
     throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     int checked = 0;
     int wk;

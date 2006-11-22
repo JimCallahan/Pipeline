@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.10 2006/09/29 03:03:21 jim Exp $
+// $Id: SubProcessLight.java,v 1.11 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -653,7 +653,7 @@ class SubProcessLight
 	 getName() + " [working directory]: " + getWorkingDir());
       
       String[] env = getEnvironment();
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append(getName() + " [environment]:\n");
       int wk;
       for(wk=0; wk<env.length; wk++) 
@@ -732,7 +732,7 @@ class SubProcessLight
     }
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sub, LogMgr.Level.Fine)) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append(getName() + " [exit]: ");
       
       if(pExitCode != null) {

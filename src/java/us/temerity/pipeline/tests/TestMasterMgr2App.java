@@ -1,4 +1,4 @@
-// $Id: TestMasterMgr2App.java,v 1.9 2005/01/22 06:10:10 jim Exp $
+// $Id: TestMasterMgr2App.java,v 1.10 2006/11/22 09:08:01 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -385,7 +385,7 @@ class TestMasterMgr2App
   ) 
     throws GlueException
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append("-----------------------------------------------------------------------\n" +
 	       "  N O D E   S T A T U S: " + status.getNodeID() + "\n" +
@@ -409,7 +409,7 @@ class TestMasterMgr2App
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -429,7 +429,7 @@ class TestMasterMgr2App
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -448,7 +448,7 @@ class TestMasterMgr2App
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
@@ -468,13 +468,13 @@ class TestMasterMgr2App
   (
    NodeStatus status,
    int level, 
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {
     String indent = null;
     {
-      StringBuffer ibuf = new StringBuffer();
+      StringBuilder ibuf = new StringBuilder();
       ibuf.append("->");
       int wk;
       for(wk=0; wk<level; wk++) 
@@ -545,7 +545,7 @@ class TestMasterMgr2App
    String title, 
    Glueable obj, 
    String indent,
-   StringBuffer buf
+   StringBuilder buf
   ) 
     throws GlueException
   {

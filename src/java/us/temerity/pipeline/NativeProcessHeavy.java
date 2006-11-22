@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.java,v 1.4 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeProcessHeavy.java,v 1.5 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -144,7 +144,7 @@ class NativeProcessHeavy
   public String
   getCommand() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int wk;
     for(wk=0; wk<pCmd.length-1; wk++) 
       buf.append(pCmd[wk] + " ");

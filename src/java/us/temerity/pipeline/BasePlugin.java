@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.9 2006/10/23 11:30:20 jim Exp $
+// $Id: BasePlugin.java,v 1.10 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -248,7 +248,7 @@ class BasePlugin
   public String
   toString()
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append
       ("Name              : " + getName() + "\n" + 
@@ -325,7 +325,7 @@ class BasePlugin
    int size
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int wk;
     for(wk=0; wk<size; wk++) 
       buf.append(c);
@@ -346,7 +346,7 @@ class BasePlugin
     if(str.length() + indent < size) 
       return str;
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     String words[] = str.split("\\p{Blank}");
     int cnt = indent;
     int wk;
@@ -393,7 +393,7 @@ class BasePlugin
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

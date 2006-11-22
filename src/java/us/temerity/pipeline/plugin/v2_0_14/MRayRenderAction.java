@@ -1,4 +1,4 @@
-// $Id: MRayRenderAction.java,v 1.1 2006/07/04 06:12:29 jim Exp $
+// $Id: MRayRenderAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_14;
 
@@ -565,7 +565,7 @@ MRayRenderAction
 	}
       }
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for (String arg : args) 
 	buf.append(arg + " ");
 

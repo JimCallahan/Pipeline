@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.32 2006/09/29 03:03:21 jim Exp $
+// $Id: JobMgr.java,v 1.33 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1223,7 +1223,7 @@ class JobMgr
      Throwable ex
     ) 
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       
       if(ex.getMessage() != null) 
 	buf.append(ex.getMessage() + "\n\n"); 	

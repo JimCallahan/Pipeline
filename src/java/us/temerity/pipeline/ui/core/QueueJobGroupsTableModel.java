@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.4 2005/03/21 07:01:57 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.5 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -122,7 +122,7 @@ class QueueJobGroupsTableModel
       case 1:
 	{
 	  int[] counts = pStateCounts.get(group.getGroupID());
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  int wk;
 	  for(wk=0; wk<counts.length; wk++) 
 	    buf.append(counts[wk]);

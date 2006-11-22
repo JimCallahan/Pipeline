@@ -1,4 +1,4 @@
-// $Id: Path.java,v 1.2 2006/09/29 03:03:21 jim Exp $
+// $Id: Path.java,v 1.3 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -632,7 +632,7 @@ class Path
   private void
   buildCache() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     if(pPrefix != null) 
       buf.append(pPrefix);
 

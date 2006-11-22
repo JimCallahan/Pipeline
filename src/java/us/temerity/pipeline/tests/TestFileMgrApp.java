@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.17 2005/01/22 06:10:10 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.18 2006/11/22 09:08:01 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -392,7 +392,7 @@ ex.getMessage());
     ) 
     {
       if(true) {
-	StringBuffer buf = new StringBuffer(); 
+	StringBuilder buf = new StringBuilder(); 
 	buf.append(pNodeID + ":\n");
 	
 	for(FileSeq fseq : states.keySet()) {

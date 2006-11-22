@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.13 2005/01/22 06:10:09 jim Exp $
+// $Id: FileStateRsp.java,v 1.14 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -67,7 +67,7 @@ class FileStateRsp
     pTimeStamps = timestamps;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("FileMgr.computeFileStates(): " + id + " ");
       for(FileSeq fseq : states.keySet()) 
 	buf.append("[" + fseq + "]");

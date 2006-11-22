@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.4 2006/10/22 01:09:29 jim Exp $
+// $Id: NativeOS.java,v 1.5 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,7 +37,7 @@ class NativeOS
 	FileReader reader = new FileReader("/proc/meminfo");
 	while(true) {
 	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  while(true) {
 	    int next = reader.read();
 	    if(next == -1) 
@@ -136,7 +136,7 @@ class NativeOS
 	FileReader reader = new FileReader("/proc/meminfo");
 	while(true) {
 	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  while(true) {
 	    int next = reader.read();
 	    if(next == -1) 
@@ -255,7 +255,7 @@ class NativeOS
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	
@@ -292,7 +292,7 @@ class NativeOS
 	boolean done = false;
 	while(!done) {
 	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  while(true) {
 	    int next = reader.read();
 	    if(next == -1) {

@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -1702,7 +1702,7 @@ LogMasterActivityExt
    boolean removeFiles
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("RELEASED NODES\n" +
        "  Working Area : " + author + "|" + view + "\n" + 
@@ -2187,7 +2187,7 @@ LogMasterActivityExt
    TreeMap<String,VersionID> files
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("REVERTED FILES\n" + 
        "  Reverted Node : " + nodeID.getName() + "\n" +
@@ -2515,7 +2515,7 @@ LogMasterActivityExt
    String toolset
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("ARCHIVED VERSIONS\n" + 
        "  Archive Volume : " + name + "\n" + 
@@ -2597,7 +2597,7 @@ LogMasterActivityExt
    TreeMap<String,TreeSet<VersionID>> versions
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("OFFLINED VERSIONS\n" + 
        "  Node Versions : ");
@@ -2671,7 +2671,7 @@ LogMasterActivityExt
    TreeMap<String,TreeSet<VersionID>> versions
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("RESTORE VERSIONS REQUESTED\n" + 
        "  Node Versions : ");
@@ -2749,7 +2749,7 @@ LogMasterActivityExt
    TreeMap<String,TreeSet<VersionID>> versions
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("RESTORE VERSIONS DENIED\n" + 
        "  Node Versions : ");
@@ -2853,7 +2853,7 @@ LogMasterActivityExt
    String toolset
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("RESTORED VERSIONS\n" + 
        "  Archive Volume : " + name + "\n" + 

@@ -1,4 +1,4 @@
-// $Id: MRayTextureAction.java,v 1.1 2006/06/06 11:16:29 jim Exp $
+// $Id: MRayTextureAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -327,7 +327,7 @@ class MRayTextureAction
 
 	String cmdopts = null;
 	{
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append("imf_copy");
 	  for(String arg : args) 
 	    buf.append(" " + arg);

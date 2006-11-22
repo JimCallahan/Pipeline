@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.22 2006/11/09 20:30:29 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.23 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -586,7 +586,7 @@ class JManageToolsetsDialog
     String toolsetMsg = null;
     {
       boolean hasUnfrozen = false;
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for(String tname : pToolsets.keySet()) {
 	for(OsType os : pToolsets.keySet(tname)) {
 	  Toolset toolset = pToolsets.get(tname, os);
@@ -602,7 +602,7 @@ class JManageToolsetsDialog
     }
 
     if((toolsetMsg != null) || !pPackageMods.isEmpty()) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       if(toolsetMsg != null) 
 	buf.append("Working Toolsets:\n" + toolsetMsg + "\n");
@@ -3406,7 +3406,7 @@ class JManageToolsetsDialog
  	File file = pExportToolsetDialog.getSelectedFile();
  	if(file != null) {
  	  try {
- 	    StringBuffer buf = new StringBuffer();
+ 	    StringBuilder buf = new StringBuilder();
 
 	    switch(os) {
 	    case Unix:
@@ -3578,7 +3578,7 @@ class JManageToolsetsDialog
 	}
 
 	if(toolset.hasModifiablePackages()) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  int wk;
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    if(toolset.getPackageVersionID(wk) == null) 
@@ -3594,7 +3594,7 @@ class JManageToolsetsDialog
 	}
    
 	if(toolset.hasConflicts()) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  for(String ename : toolset.getConflictedEnvNames()) 
 	    buf.append("  " + ename + "\n");
 	  

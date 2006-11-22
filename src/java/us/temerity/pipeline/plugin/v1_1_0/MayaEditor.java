@@ -1,4 +1,4 @@
-// $Id: MayaEditor.java,v 1.2 2005/09/07 19:17:08 jim Exp $
+// $Id: MayaEditor.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -89,7 +89,7 @@ class MayaEditor
 	ExecPath epath = new ExecPath(env.get("PATH"));
 	File mpath = epath.which("maya");
 	if((mpath == null) || !mpath.getPath().endsWith("/Contents/bin/maya")) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append("Could not find the Maya binary in any of the directories which " + 
 		     "make up the PATH:\n");
 	  for(File edir : epath.getDirectories()) 

@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.12 2006/10/20 06:16:16 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.13 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -461,7 +461,7 @@ class JNodeBrowserPanel
    TreePath tpath
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     Object[] path = tpath.getPath();
     int wk;
     for(wk=1; wk<path.length; wk++) 

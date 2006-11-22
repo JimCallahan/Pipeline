@@ -1,4 +1,4 @@
-// $Id: JobPath.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JobPath.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -236,7 +236,7 @@ class JobPath
   private void
   buildCache() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(":");
     for(Long jobID : pJobIDs) {
       buf.append(jobID + ":");

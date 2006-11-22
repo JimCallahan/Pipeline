@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.14 2006/09/29 03:03:21 jim Exp $
+// $Id: VersionID.java,v 1.15 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -482,7 +482,7 @@ class VersionID
   buildCache() 
   {
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       
       int wk;
       for(wk=0; wk<3; wk++) {

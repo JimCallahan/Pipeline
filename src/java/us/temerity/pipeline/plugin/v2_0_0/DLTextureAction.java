@@ -1,4 +1,4 @@
-// $Id: DLTextureAction.java,v 1.5 2006/05/07 21:30:13 jim Exp $
+// $Id: DLTextureAction.java,v 1.6 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -637,7 +637,7 @@ class DLTextureAction
 
 	String cmdopts = null;
 	{
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append("tdlmake");
 	  for(String arg : args) 
 	    buf.append(" " + arg);

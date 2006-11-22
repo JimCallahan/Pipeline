@@ -1,4 +1,4 @@
-// $Id: JConfirmListDialog.java,v 1.3 2006/09/25 12:11:45 jim Exp $
+// $Id: JConfirmListDialog.java,v 1.4 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -107,7 +107,7 @@ class JConfirmListDialog
 	{
 	  String text = null;
 	  {
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    for(String item : items) 
 	      buf.append(item + "\n");
 	    text = buf.toString();

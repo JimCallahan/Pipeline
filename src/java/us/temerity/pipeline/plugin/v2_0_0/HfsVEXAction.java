@@ -1,4 +1,4 @@
-// $Id: HfsVEXAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsVEXAction.java,v 1.4 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -181,7 +181,7 @@ class HfsVEXAction
 
       String options = null;
       {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	{
 	  Boolean encrypt = (Boolean) getSingleParamValue("Encrypt");
 	  if((encrypt != null) && encrypt) 

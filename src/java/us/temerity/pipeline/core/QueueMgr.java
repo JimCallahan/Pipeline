@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.73 2006/11/21 20:29:32 jim Exp $
+// $Id: QueueMgr.java,v 1.74 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4701,7 +4701,7 @@ class QueueMgr
     if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
       return;
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("JOBS: " + title + "\n");
 	       
     buf.append("  HitList: ");

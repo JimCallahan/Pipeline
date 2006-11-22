@@ -1,4 +1,4 @@
-// $Id: JavaBuildAction.java,v 1.1 2006/07/22 05:14:00 jim Exp $
+// $Id: JavaBuildAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_15;
 
@@ -307,7 +307,7 @@ JavaBuildAction
       }
 
       {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("javac -source 1.5"); 
 	 
 	String extra = (String) getSingleParamValue(aExtraOptions);
@@ -402,7 +402,7 @@ JavaBuildAction
       out.write("cd " + getTempPath(agenda).toOsString() + "\n");
 
       {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("jar cvf " + targetJAR.toOsString());
 
 	for(Path cname : sourceClasses) 

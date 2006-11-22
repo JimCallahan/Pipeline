@@ -1,4 +1,4 @@
-// $Id: LogQueueActivityExt.java,v 1.2 2006/11/21 19:55:51 jim Exp $
+// $Id: LogQueueActivityExt.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -366,7 +366,7 @@ LogQueueActivityExt
    TreeMap<Long,QueueJob> jobs
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     {
       NodeID nodeID = group.getNodeID();
@@ -598,7 +598,7 @@ LogQueueActivityExt
    TreeSet<String> hostnames
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for(String hname : hostnames) 
       buf.append("Job Server [" + hname + "] - REMOVED"); 
 
@@ -640,7 +640,7 @@ LogQueueActivityExt
    TreeMap<String,QueueHostInfo> hosts
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean first = true;
     for(String hname : hosts.keySet()) {
       QueueHostInfo info = hosts.get(hname); 
@@ -705,7 +705,7 @@ LogQueueActivityExt
   ) 
   {
     DecimalFormat fmt = new DecimalFormat("###0.0");   
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean first = true;
     for(String hname : samples.keySet()) {
       if(!first) 
@@ -931,7 +931,7 @@ LogQueueActivityExt
    QueueJobInfo info
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       ("Job " + job.getJobID() + " - ");
     

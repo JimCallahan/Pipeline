@@ -1,4 +1,4 @@
-// $Id: FileMonitor.java,v 1.2 2006/05/07 21:20:48 jim Exp $
+// $Id: FileMonitor.java,v 1.3 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -116,7 +116,7 @@ class FileMonitor
     long epos = ((start+lines) < pLinePos.size()) ? pLinePos.get(start+lines) : pFileSize;
     long size = epos - spos;
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int cnt = 0;
     while(cnt < size) {
       pBuf.clear();

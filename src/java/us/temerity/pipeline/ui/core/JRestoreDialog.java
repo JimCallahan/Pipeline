@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.9 2006/09/25 12:11:44 jim Exp $
+// $Id: JRestoreDialog.java,v 1.10 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1018,7 +1018,7 @@ class JRestoreDialog
 	  diag.setVisible(true);
 	  
 	  if(!diag.wasConfirmed()) {
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    buf.append("Restore operation aborted early without restoring:\n");
 	      
 	    int wk;
@@ -1038,7 +1038,7 @@ class JRestoreDialog
 	task.start();
       }
       else {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("Restore operation aborted early without restoring:\n");
 	
 	int wk;
@@ -1096,7 +1096,7 @@ class JRestoreDialog
  	    client.restore(aname, versions, pArchiver, pToolset);
  	  }
  	  catch(PipelineException ex) {
- 	    StringBuffer buf = new StringBuffer();
+ 	    StringBuilder buf = new StringBuilder();
  	    buf.append(ex.getMessage() + "\n\n" + 
  		       "Restore operation aborted early without restoring:\n");
 	    

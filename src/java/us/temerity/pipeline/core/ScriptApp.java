@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.62 2006/11/21 20:00:04 jim Exp $
+// $Id: ScriptApp.java,v 1.63 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -372,7 +372,7 @@ class ScriptApp
       throw new PipelineException
 	("No work group named (" + gname + ") exists!");
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     printWorkGroupMembersHelper(gname, groups, buf, true);
 
     LogMgr.getInstance().log
@@ -394,7 +394,7 @@ class ScriptApp
     WorkGroups groups = client.getWorkGroups();
 
     boolean first = true;
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for(String gname : groups.getGroups()) {
       printWorkGroupMembersHelper(gname, groups, buf, first);
       first = false;
@@ -414,7 +414,7 @@ class ScriptApp
   (
    String gname, 
    WorkGroups groups, 
-   StringBuffer buf, 
+   StringBuilder buf, 
    boolean first
   ) 
     throws PipelineException
@@ -485,7 +485,7 @@ class ScriptApp
     if(privs == null) 
       privs = new Privileges();
     
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     printUserPrivilegesHelper(uname, privs, buf, true);
     
     LogMgr.getInstance().log
@@ -507,7 +507,7 @@ class ScriptApp
     TreeMap<String,Privileges> privileges = client.getPrivileges();
 
     boolean first = true;
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for(String uname : privileges.keySet()) {
       Privileges privs = privileges.get(uname);
       printUserPrivilegesHelper(uname, privs, buf, first);
@@ -528,7 +528,7 @@ class ScriptApp
   (
    String uname, 
    Privileges privs,
-   StringBuffer buf, 
+   StringBuilder buf, 
    boolean first
   ) 
     throws PipelineException
@@ -656,7 +656,7 @@ class ScriptApp
 	  else if(aparam instanceof EnumArchiverParam) {
 	    EnumArchiverParam eparam = (EnumArchiverParam) aparam;
 	    if(!eparam.getValues().contains(value)) {
-	      StringBuffer buf = new StringBuffer();
+	      StringBuilder buf = new StringBuilder();
 	      buf.append("The value (" + value + ") is not one of the enumerations of " +
 			 "parameter (" + pname + ")!  The valid values are:\n");
 	      for(String evalue : eparam.getValues()) 
@@ -761,7 +761,7 @@ class ScriptApp
 
     /* create the archive volume */ 
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("Archiving Checked-In Versions:\n");
       for(String name : selected.keySet()) {
 	for(VersionID vid : selected.get(name)) {
@@ -819,7 +819,7 @@ class ScriptApp
 	vids.add(info.getVersionID());
       }
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("Offlining Checked-In Versions:\n");
       for(String name : versions.keySet()) {
 	for(VersionID vid : versions.get(name)) 
@@ -885,7 +885,7 @@ class ScriptApp
 	else if(aparam instanceof EnumArchiverParam) {
 	  EnumArchiverParam eparam = (EnumArchiverParam) aparam;
 	  if(!eparam.getValues().contains(value)){
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    buf.append("The value (" + value + ") is not one of the enumerations of " +
 		       "parameter (" + pname + ")!  The valid values are:\n");
 	    for(String evalue : eparam.getValues()) 
@@ -933,7 +933,7 @@ class ScriptApp
   {
     TreeMap<String,Date> archives = client.getArchivedOn();
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for(String name : archives.keySet()) 
       buf.append(name + "\n");
 
@@ -957,7 +957,7 @@ class ScriptApp
   {
     ArchiveVolume vol = client.getArchive(archiveName);
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       (tbar(80) + "\n" +
        "Archive Volume    : " + archiveName + "\n" + 
@@ -1047,7 +1047,7 @@ class ScriptApp
       selected.add(client.getToolset(tname));
     }
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean first = true;
     for(Toolset tset : selected) {
       if(!first) 
@@ -1107,7 +1107,7 @@ class ScriptApp
     Toolset tset = client.getToolset(tname);
     TreeMap<String,String> env = tset.getEnvironment();
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     switch(PackageInfo.sOsType) {
     case Unix:
     case MacOS:
@@ -1158,7 +1158,7 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-    StringBuffer buf = new StringBuffer(); 
+    StringBuilder buf = new StringBuilder(); 
     boolean first = true;
     boolean found = false;
     ArrayList<LicenseKey> keys = client.getLicenseKeys();
@@ -1334,7 +1334,7 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-    StringBuffer buf = new StringBuffer(); 
+    StringBuilder buf = new StringBuilder(); 
     boolean first = true;
     boolean found = false;
     ArrayList<SelectionKey> keys = client.getSelectionKeys();
@@ -1389,7 +1389,7 @@ class ScriptApp
 	selected.add(qinfo); 
     }
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean first = true;
     for(QueueHostInfo host : selected) {
       if(first) 
@@ -1699,7 +1699,7 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-    StringBuffer buf = new StringBuffer(); 
+    StringBuilder buf = new StringBuilder(); 
     boolean first = true;
     boolean found = false;
     TreeSet<SuffixEditor> editors = client.getSuffixEditors();
@@ -1814,7 +1814,7 @@ class ScriptApp
   {
     TreeSet<String> names = mclient.getWorkingNames(author, view, pattern);
     if(!names.isEmpty()) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("Releasing Nodes:");
       for(String name : names)
 	buf.append("\n  " + name);
@@ -1855,7 +1855,7 @@ class ScriptApp
     NodeMod mod = mclient.getWorkingVersion(nodeID);
     VersionID vid = mod.getWorkingID();
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       (tbar(80) + "\n" +
        "Working Node      : " + mod.getName() + "\n");
@@ -1902,7 +1902,7 @@ class ScriptApp
   public void
   printCommon
   (
-   StringBuffer buf, 
+   StringBuilder buf, 
    NodeCommon com,
    VersionID vid, 
    TreeSet sections, 
@@ -2035,7 +2035,7 @@ class ScriptApp
   (
    BaseAction action, 
    LayoutGroup group, 
-   StringBuffer buf, 
+   StringBuilder buf, 
    int level 
   ) 
     throws PipelineException 
@@ -2301,7 +2301,7 @@ class ScriptApp
 	    else if(aparam instanceof EnumActionParam) {
 	      EnumActionParam eparam = (EnumActionParam) aparam;
 	      if(!eparam.getValues().contains(value)) {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("The value (" + value + ") is not one of the enumerations of " +
 			   "parameter (" + pname + ")!  The valid values are:\n");
 		for(String evalue : eparam.getValues()) 
@@ -2366,7 +2366,7 @@ class ScriptApp
 		else if(aparam instanceof EnumActionParam) {
 		  EnumActionParam eparam = (EnumActionParam) aparam;
 		  if(!eparam.getValues().contains(value)) {
-		    StringBuffer buf = new StringBuffer();
+		    StringBuilder buf = new StringBuilder();
 		    buf.append("The value (" + value + ") is not one of the enumerations " + 
 			       "of the per-source parameter (" + pname + ")!  The valid " + 
 			       "values are:\n");
@@ -2938,7 +2938,7 @@ class ScriptApp
       }
     }
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean first = true;
     for(NodeVersion vsn : versions) {
       if(!first) 
@@ -3061,7 +3061,7 @@ class ScriptApp
       }		
     }
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append
       (tbar(80) + "\n" +
        "Checked-In Node  : " + name);
@@ -3141,7 +3141,7 @@ class ScriptApp
 	table.put(root.getName(), root);
     }
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean first = true;
     for(String name : table.keySet()) {
       NodeStatus status = table.get(name);
@@ -3659,7 +3659,7 @@ class ScriptApp
    BaseAction mAction, 
    BaseAction vAction, 
    LayoutGroup group, 
-   StringBuffer buf, 
+   StringBuilder buf, 
    int level 
   ) 
     throws PipelineException 
@@ -3699,7 +3699,7 @@ class ScriptApp
   (
    BaseAction vAction, 
    LayoutGroup group, 
-   StringBuffer buf, 
+   StringBuilder buf, 
    int level 
   ) 
     throws PipelineException 
@@ -3743,7 +3743,7 @@ class ScriptApp
   private void 
   printGraph
   (
-   StringBuffer buf, 
+   StringBuilder buf, 
    NodeStatus status, 
    int indent
   ) 

@@ -1,4 +1,4 @@
-// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
+// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -56,7 +56,7 @@ class JConfirmKillObsoleteJobsDialog
 
       JTextArea area = null;
       {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("The following unfinished jobs will regenerate frames which have been " +
 		   "made obsolete by the renumber operation:\n" +
 		   "\n");

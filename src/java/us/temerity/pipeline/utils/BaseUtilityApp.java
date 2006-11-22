@@ -1,4 +1,4 @@
-// $Id: BaseUtilityApp.java,v 1.1 2006/07/22 05:14:00 jim Exp $
+// $Id: BaseUtilityApp.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.utils;  
 
@@ -138,7 +138,7 @@ class BaseUtilityApp
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

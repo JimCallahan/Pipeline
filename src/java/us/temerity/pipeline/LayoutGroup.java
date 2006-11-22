@@ -1,4 +1,4 @@
-// $Id: LayoutGroup.java,v 1.5 2006/10/11 22:45:40 jim Exp $
+// $Id: LayoutGroup.java,v 1.6 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -121,7 +121,7 @@ class LayoutGroup
   public String
   getNameUI()
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     char c[] = getName().toCharArray();
     int wk;
     buf.append(c[0]);

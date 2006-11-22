@@ -1,4 +1,4 @@
-// $Id: TestBigIntegerApp.java,v 1.1 2006/02/27 16:17:57 jim Exp $
+// $Id: TestBigIntegerApp.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -83,7 +83,7 @@ class TestBigIntegerApp
    BigInteger i
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     if(name != null) 
       buf.append(name);

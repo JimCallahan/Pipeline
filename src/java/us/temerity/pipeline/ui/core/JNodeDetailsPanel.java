@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.32 2006/10/18 06:34:22 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.33 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2744,7 +2744,7 @@ class JNodeDetailsPanel
    String name
   )
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     char c[] = name.toCharArray();
     int wk;
     buf.append(c[0]);

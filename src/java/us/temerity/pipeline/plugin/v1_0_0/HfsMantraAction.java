@@ -1,4 +1,4 @@
-// $Id: HfsMantraAction.java,v 1.3 2005/09/07 19:17:08 jim Exp $
+// $Id: HfsMantraAction.java,v 1.4 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -736,7 +736,7 @@ class HfsMantraAction
 
     String options = null;
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       {
 	Integer procs = (Integer) getSingleParamValue("Processors"); 

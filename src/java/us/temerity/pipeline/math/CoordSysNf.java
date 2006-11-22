@@ -1,4 +1,4 @@
-// $Id: CoordSysNf.java,v 1.3 2004/12/29 22:11:13 jim Exp $
+// $Id: CoordSysNf.java,v 1.4 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -603,7 +603,7 @@ class CoordSysNf
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     int i; 
     for(i=0; i<dimens(); i++) {

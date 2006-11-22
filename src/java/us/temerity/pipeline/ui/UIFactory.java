@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.9 2006/09/25 12:11:45 jim Exp $
+// $Id: UIFactory.java,v 1.10 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3003,7 +3003,7 @@ class UIFactory
       return ("<html><font color=\"#000000\">" + text + "</font></html>");
     }
     else {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append("<html><font color=\"#000000\">");
       int wk, cnt;
       String words[] = text.split("\\s");

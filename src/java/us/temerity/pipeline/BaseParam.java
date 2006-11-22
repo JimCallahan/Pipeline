@@ -1,4 +1,4 @@
-// $Id: BaseParam.java,v 1.3 2006/02/27 17:54:05 jim Exp $
+// $Id: BaseParam.java,v 1.4 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -74,7 +74,7 @@ class BaseParam
   public String
   getNameUI()
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     char c[] = getName().toCharArray();
     int wk;
     buf.append(c[0]);

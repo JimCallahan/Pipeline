@@ -1,4 +1,4 @@
-// $Id: TestReadWriteLockApp.java,v 1.1 2004/03/07 02:47:50 jim Exp $
+// $Id: TestReadWriteLockApp.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -118,7 +118,7 @@ class TestReadWriteLockApp
     public void 
     printData() 
     {
-     //  StringBuffer buf = new StringBuffer();
+     //  StringBuilder buf = new StringBuilder();
 
 //       buf.append(pTitle + "Thread [" + Thread.currentThread().getId() + "]:\n" + 
 // 		 "  Value   = " + pValue + "\n" + 

@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.13 2006/11/04 02:14:25 jim Exp $
+// $Id: BaseSubProcess.java,v 1.14 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -117,7 +117,7 @@ class BaseSubProcess
 	ExecPath epath = new ExecPath(path);
 	File absolute = epath.which(prog);
 	if(absolute == null) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append("The program (" + prog + ") was not absolute and could not be " +
 		     "found using the PATH of the given environment!\n\n" +
 		     "The directories which make up the PATH are: \n");
@@ -500,7 +500,7 @@ class BaseSubProcess
 	  for(wk=0; wk<procs.length; wk++) {
 	    try {
 	      FileReader reader = new FileReader("/proc/" + procs[wk] + "/stat");
-	      StringBuffer buf = new StringBuffer();
+	      StringBuilder buf = new StringBuilder();
 	      while(true) {
 		int next = reader.read();
 		if(next == -1) 
@@ -574,7 +574,7 @@ class BaseSubProcess
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

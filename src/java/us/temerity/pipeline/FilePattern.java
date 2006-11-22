@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.13 2006/09/29 03:03:21 jim Exp $
+// $Id: FilePattern.java,v 1.14 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -296,7 +296,7 @@ class FilePattern
     if(!hasFrameNumbers())
       throw new IllegalStateException(); 
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(pPrefix);
 
     String fstr = String.valueOf(frame);
@@ -353,7 +353,7 @@ class FilePattern
     if(!hasFrameNumbers())
       throw new IllegalStateException(); 
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(pPrefix);
 
     String fstr = String.valueOf(frame);
@@ -564,7 +564,7 @@ class FilePattern
   buildCache() 
   {
     {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append(pPrefix);
       
       switch(pPadding) {

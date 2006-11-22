@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.4 2005/12/10 15:37:03 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.5 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -218,7 +218,7 @@ class DLCatRIBAction
 
     String options = null;
     {
-      StringBuffer buf = new StringBuffer(); 
+      StringBuilder buf = new StringBuilder(); 
 
       Boolean eval = (Boolean) getSingleParamValue("EvaluateProcedurals");
       if((eval != null) && eval)

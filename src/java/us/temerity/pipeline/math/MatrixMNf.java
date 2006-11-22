@@ -1,4 +1,4 @@
-// $Id: MatrixMNf.java,v 1.5 2004/12/29 22:27:22 jim Exp $
+// $Id: MatrixMNf.java,v 1.6 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -1127,7 +1127,7 @@ class MatrixMNf
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     int i; 
     for(i=0; i<rows(); i++) {

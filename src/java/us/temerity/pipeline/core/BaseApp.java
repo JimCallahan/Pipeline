@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.17 2006/05/07 21:30:08 jim Exp $
+// $Id: BaseApp.java,v 1.18 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -290,7 +290,7 @@ class BaseApp
    String[] args
   )  
   {  
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     
     int wk;
     for(wk=0; wk<args.length; wk++) 
@@ -343,7 +343,7 @@ class BaseApp
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	
@@ -369,7 +369,7 @@ class BaseApp
    ParseException ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     try {
       /* build a non-duplicate set of expected token strings */ 
       TreeSet expected = new TreeSet();
@@ -460,7 +460,7 @@ class BaseApp
    String str
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     char ch;
     for (int i = 0; i < str.length(); i++) {
@@ -516,7 +516,7 @@ class BaseApp
    int size
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int wk;
     for(wk=0; wk<size; wk++) 
       buf.append(c);
@@ -588,7 +588,7 @@ class BaseApp
     if(str.length() + indent < size) 
       return str;
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     String words[] = str.split("\\p{Blank}");
     int cnt = indent;
     int wk;

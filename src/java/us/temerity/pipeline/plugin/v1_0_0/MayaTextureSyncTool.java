@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.17 2006/09/29 03:03:21 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.18 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -979,7 +979,7 @@ class MayaTextureSyncTool
       
       /* read the collected information in from the texture info file written by Maya */ 
       {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	try {
 	  FileReader in = new FileReader(info);
 	  char cs[] = new char[4096];
@@ -1201,7 +1201,7 @@ class MayaTextureSyncTool
       try {
 	TreeSet<FileSeq> fseqs = FileSeq.collate(files, false);
 	if(fseqs.size() != 1) {
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  buf.append
 	    ("Unable to register node for the following texture files because they cannot " + 
 	     "be members of the same file sequence:\n\n");
@@ -1323,7 +1323,7 @@ class MayaTextureSyncTool
 	{
 	  TreeSet<FileSeq> fseqs = FileSeq.collate(files, false);
 	  if(fseqs.size() != 1) {
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    buf.append
 	      ("Unable to register node (" + nodeID.getName() + ") for the following " +
 	       "texture files because they cannot be members of the same file sequence:\n\n");

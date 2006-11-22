@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseMgrServer.java,v 1.2 2006/11/22 09:08:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,7 +58,7 @@ class BaseMgrServer
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.2 2006/09/29 03:03:21 jim Exp $
+// $Id: GlueParserState.java,v 1.3 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
@@ -149,7 +149,7 @@ class GlueParserState
 	obj = Array.newInstance(cls, size);
       }
       else if(depth > 1) {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 
 	int wk;
 	for(wk=1; wk<depth; wk++) 

@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.7 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -180,7 +180,7 @@ class JTestEnvironmentDialog
       String argv[] = text.split("\\s");
       program = argv[0];
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append(program);
 
       int wk;

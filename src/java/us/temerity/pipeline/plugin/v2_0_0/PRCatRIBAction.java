@@ -1,4 +1,4 @@
-// $Id: PRCatRIBAction.java,v 1.1 2005/12/10 15:36:47 jim Exp $
+// $Id: PRCatRIBAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_0;
 
@@ -201,7 +201,7 @@ class PRCatRIBAction
 
     String options = null;
     {
-      StringBuffer buf = new StringBuffer(); 
+      StringBuilder buf = new StringBuilder(); 
       
       {
 	EnumActionParam param = (EnumActionParam) getSingleParam("OutputFormat");

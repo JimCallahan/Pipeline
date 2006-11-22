@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.10 2006/09/25 12:11:45 jim Exp $
+// $Id: JErrorDialog.java,v 1.11 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -149,7 +149,7 @@ class JErrorDialog
    Exception ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

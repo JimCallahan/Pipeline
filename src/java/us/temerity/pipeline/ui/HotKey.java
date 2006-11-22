@@ -1,4 +1,4 @@
-// $Id: HotKey.java,v 1.3 2005/01/09 23:11:44 jim Exp $
+// $Id: HotKey.java,v 1.4 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -172,7 +172,7 @@ class HotKey
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     if(pShiftDown) 
       buf.append("SHIFT+");

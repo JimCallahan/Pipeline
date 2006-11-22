@@ -1,4 +1,4 @@
-// $Id: BaseExtTask.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseExtTask.java,v 1.2 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -81,7 +81,7 @@ class BaseExtTask
    Throwable ex
   ) 
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
      
     if(ex.getMessage() != null) 
       buf.append(ex.getMessage() + "\n\n"); 	

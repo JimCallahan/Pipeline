@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.7 2006/11/22 09:08:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -317,7 +317,7 @@ class JBaseUserPrefsDialog
       if(tnode.isLeaf()) {
 	String title = null;
 	{
-	  StringBuffer buf = new StringBuffer();
+	  StringBuilder buf = new StringBuilder();
 	  TreeNode path[] = tnode.getPath();
 	  int wk;
 	  for(wk=1; wk<path.length-1; wk++) 
