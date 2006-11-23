@@ -1,4 +1,4 @@
-// $Id: BaseExt.java,v 1.2 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseExt.java,v 1.3 2006/11/23 00:46:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -758,8 +758,10 @@ class BaseExt
 
     TreeMap<String,ExtensionParam> single = 
       (TreeMap<String,ExtensionParam>) decoder.decode("Params");   
-    if(single != null) 
-      pParams.putAll(single);
+    if(single != null) {
+      for(ExtensionParam param : single.values()) 
+	pParams.put(param.getName(), param); 
+    }
   }
 
 

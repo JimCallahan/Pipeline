@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.36 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseAction.java,v 1.37 2006/11/23 00:46:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1559,19 +1559,39 @@ class BaseAction
 
     TreeMap<String,ActionParam> single = 
       (TreeMap<String,ActionParam>) decoder.decode("SingleParams");   
-    if(single != null) 
-      pSingleParams.putAll(single);
+    if(single != null) {
+      for(ActionParam param : single.values()) 
+	pSingleParams.put(param.getName(), param); 
+    }
 
     TreeMap<String,TreeMap<String,ActionParam>> source = 
       (TreeMap<String,TreeMap<String,ActionParam>>) decoder.decode("SourceParams");   
-    if(source != null) 
-      pSourceParams.putAll(source);
+    if(source != null) {
+      for(String sname : source.keySet()) {
+	TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
+	for(ActionParam param : source.get(sname).values()) 
+	  params.put(param.getName(), param);
+	pSourceParams.put(sname, params); 
+      }
+    }
 
     TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>> secondary = 
       (TreeMap<String,TreeMap<FilePattern,TreeMap<String,ActionParam>>>) 
         decoder.decode("SecondarySourceParams");   
-    if(secondary != null) 
-      pSecondaryParams.putAll(secondary);
+    if(secondary != null) {
+      for(String sname : secondary.keySet()) {
+	TreeMap<FilePattern,TreeMap<String,ActionParam>> otable = secondary.get(sname);
+	TreeMap<FilePattern,TreeMap<String,ActionParam>> table = 
+	  new TreeMap<FilePattern,TreeMap<String,ActionParam>>();
+	for(FilePattern fpat : otable.keySet()) {
+	  TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
+	  for(ActionParam param : otable.get(fpat).values()) 
+	    params.put(param.getName(), param);
+	  table.put(fpat, params); 
+	}
+	pSecondaryParams.put(sname, table);
+      }
+    }
   }
 
 

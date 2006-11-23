@@ -1,4 +1,4 @@
-// $Id: JavaBuildAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
+// $Id: JavaBuildAction.java,v 1.3 2006/11/23 00:46:59 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_15;
 
@@ -461,7 +461,7 @@ JavaBuildAction
   private static final String aUsesAPI      = "UsesAPI";
   private static final String aExtraOptions = "ExtraOptions";
   private static final String aDeprecation  = "Deprecation"; 
-  private static final String aUnchecked    = "Unchecked ";  
+  private static final String aUnchecked    = "Unchecked";  
   private static final String aFallthrough  = "Fallthrough"; 
   private static final String aPath         = "Path";        
   private static final String aSerial       = "Serial";      

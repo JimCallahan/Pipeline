@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.12 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseArchiver.java,v 1.13 2006/11/23 00:46:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -895,8 +895,10 @@ class BaseArchiver
 
     TreeMap<String,ArchiverParam> single = 
       (TreeMap<String,ArchiverParam>) decoder.decode("Params");   
-    if(single != null) 
-      pParams.putAll(single);
+    if(single != null) {
+      for(ArchiverParam param : single.values()) 
+	pParams.put(param.getName(), param); 
+    }
   }
 
 

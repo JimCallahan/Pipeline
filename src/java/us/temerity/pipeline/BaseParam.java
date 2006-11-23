@@ -1,4 +1,4 @@
-// $Id: BaseParam.java,v 1.4 2006/11/22 09:08:00 jim Exp $
+// $Id: BaseParam.java,v 1.5 2006/11/23 00:46:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -54,6 +54,12 @@ class BaseParam
   ) 
   {
     super(name, desc);
+
+    if(!isValidName(pName)) 
+      throw new IllegalArgumentException
+	("The parameter name (" + name + ") may contain only alphanumeric characters " + 
+	 "without whitespace!");
+
     pValue = value;
   }
 
@@ -177,7 +183,79 @@ class BaseParam
   {
     super.fromGlue(decoder);
 
+    pName = stripInvalid(pName);
+
     pValue = (Comparable) decoder.decode("Value"); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Does the given name contain only alphanumeric characters.
+   */ 
+  private boolean
+  isValidName
+  (
+   String name
+  ) 
+  {
+    char cs[] = name.toCharArray();
+
+    int wk;
+    for(wk=0; wk<cs.length; wk++) {
+      if(!Character.isLetterOrDigit(cs[wk])) 
+	return false;
+    }
+
+    return true; 
+  }
+
+  /**
+   * Strip any non-alphanumeric characters from the name.
+   */ 
+  private String
+  stripInvalid
+  (
+   String name
+  ) 
+    throws GlueException
+  {
+    char cs[] = name.toCharArray();
+
+    boolean hasSpaces = false;
+    {
+      int wk;
+      for(wk=0; wk<cs.length; wk++) {
+	if(!Character.isLetterOrDigit(cs[wk])) {
+	  hasSpaces = true;
+	  break;
+	}
+      }
+    }
+
+    if(!hasSpaces) 
+      return name;
+
+    StringBuilder buf = new StringBuilder(cs.length);
+    {
+      int wk;
+      for(wk=0; wk<cs.length; wk++) {
+	if(Character.isLetterOrDigit(cs[wk])) 
+	  buf.append(cs[wk]);
+      }
+    }
+    
+    String vname = buf.toString();
+    if(vname.length() > 0)
+      return vname;
+
+    throw new GlueException
+      ("Unable to convert invalid GLUE parameter name (" + name + ") to a legal name by " + 
+       "stripping away non-alphanumeric characters!");
   }
 
 
