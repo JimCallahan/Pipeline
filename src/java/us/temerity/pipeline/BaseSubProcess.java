@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.14 2006/11/22 09:08:00 jim Exp $
+// $Id: BaseSubProcess.java,v 1.15 2006/11/23 13:37:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -81,6 +81,26 @@ class BaseSubProcess
       throw new IllegalArgumentException("The environment cannot be (null)!");
     String[] procEnv = null;
     {
+      /* if the process is to be run by the same user as that which owns the parent process
+	 and the X11 authority and display settings do not already exist in the child 
+	 process environment, then clone their values from the parent environenment */ 
+      if((user == null) || (PackageInfo.sUser.equals(user))) {
+	switch(PackageInfo.sOsType) {
+	case Unix:
+	  if(!env.containsKey("XAUTHORITY")) {
+	    String xauth = System.getenv("XAUTHORITY");
+	    if((xauth != null) && (xauth.length() > 0))
+	      env.put("XAUTHORITY", xauth);
+	  }
+	  
+	  if(!env.containsKey("DISPLAY")) {
+	    String display = System.getenv("DISPLAY");
+	    if((display != null) && (display.length() > 0))
+	      env.put("DISPLAY", display);
+	  }
+	}
+      }
+
       procEnv = new String[env.size()];
       int wk = 0;
       for(String name : env.keySet()) {

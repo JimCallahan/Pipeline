@@ -1,4 +1,4 @@
-// $Id: TerminalEditor.java,v 1.1 2006/11/22 18:16:02 jim Exp $
+// $Id: TerminalEditor.java,v 1.2 2006/11/23 13:37:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -89,6 +89,20 @@ class TerminalEditor
       FileCleaner.add(script);
       
       FileWriter out = new FileWriter(script);
+
+      if(PackageInfo.sOsType == OsType.Unix) {    
+	if(!env.containsKey("XAUTHORITY")) {
+	  String xauth = System.getenv("XAUTHORITY");
+	  if((xauth != null) && (xauth.length() > 0))
+	    env.put("XAUTHORITY", xauth);
+	}
+	  
+	if(!env.containsKey("DISPLAY")) {
+	  String display = System.getenv("DISPLAY");
+	  if((display != null) && (display.length() > 0))
+	    env.put("DISPLAY", display);
+	}
+      }
       
       for(String key : env.keySet()) 
 	out.write("export " + key + "='" + env.get(key) + "'\n");	  
