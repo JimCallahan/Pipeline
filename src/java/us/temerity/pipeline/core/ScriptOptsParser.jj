@@ -1425,6 +1425,7 @@ TOKEN :
   <JOB_GET:            "--get">                   : OPTIONS
 | <JOB_GET_INFO:       "--get-info">              : HOST_NAME_SEP  
 | <JOB_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <JOB_GET_HISTOGRAMS: "--get-histograms">        : OPTIONS
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
@@ -3514,7 +3515,7 @@ JobServerCmds()
 {}
 {
   <JOB_SERVER> AE() 
-     (JobServerGet() | JobServerGetInfo() | JobServerGetInfoAll() | 
+     (JobServerGet() | JobServerGetInfo() | JobServerGetInfoAll() | JobServerGetHistograms() |
       JobServerAdd() | JobServerSet() | JobServerRemove())
   {}
 }
@@ -3559,6 +3560,17 @@ JobServerGetInfoAll()
   <JOB_GET_INFO_ALL> AE()
   {
     pApp.printHosts(null, pQueueMgrClient);
+  }
+}
+
+void 
+JobServerGetHistograms() 
+  throws PipelineException : 
+{}
+{
+  <JOB_GET_HISTOGRAMS> AE()
+  {
+    pApp.printHistograms(pQueueMgrClient);
   }
 }
 

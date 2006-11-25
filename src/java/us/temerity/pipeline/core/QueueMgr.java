@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.74 2006/11/22 09:08:01 jim Exp $
+// $Id: QueueMgr.java,v 1.75 2006/11/25 15:32:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -390,14 +390,19 @@ class QueueMgr
       for(String hname : pHosts.keySet()) {
 	QueueHost host = pHosts.get(hname);
 	if(host != null) {
-	  try {
-	    JobMgrControlClient client = new JobMgrControlClient(hname);
-	    client.shutdown();
-	  }
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       ex.getMessage());
+	  switch(host.getStatus()) {
+	  case Enabled:
+	  case Disabled: 
+	  case Hung: 
+	    try {
+	      JobMgrControlClient client = new JobMgrControlClient(hname);
+	      client.shutdown();
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 ex.getMessage());
+	    }
 	  }
 	}
       }

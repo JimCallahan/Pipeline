@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.63 2006/11/22 09:08:01 jim Exp $
+// $Id: ScriptApp.java,v 1.64 2006/11/25 15:32:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1456,6 +1456,41 @@ class ScriptApp
        buf.toString());
     LogMgr.getInstance().flush();      
   }
+  
+  /**
+   * Print a text representation of job server histograms.
+   */ 
+  public void 
+  printHistograms
+  (
+   QueueMgrClient client
+  ) 
+    throws PipelineException 
+  {
+    QueueHostHistograms hist = 
+      client.getHostHistograms(QueueHostHistogramSpecs.getDefault());
+
+    StringBuilder buf = new StringBuilder();
+    {
+      // TEMPORARY
+      try {
+	GlueEncoder ge = new GlueEncoderImpl("Histograms", hist);
+	buf.append(ge.getText());
+      }
+      catch(GlueException ex) {
+	buf.append
+	  ("Unable to generate a Glue format representation of the histograms:\n  " + 
+	   ex.getMessage());
+      }
+      // TEMPORARY
+    }
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();      
+  }
+
 
   /**
    * Edit the properties of the given host.
