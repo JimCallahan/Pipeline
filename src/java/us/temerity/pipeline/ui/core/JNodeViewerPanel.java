@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.59 2006/11/22 09:08:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.60 2006/11/28 17:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1291,7 +1291,10 @@ class JNodeViewerPanel
 	     they did when the layout was saved */ 
 	else if(pInitialCenter != null) {
 	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
-	  delta = new Vector2d(bbox.getCenter(), pInitialCenter);
+	  if(bbox != null) 
+	    delta = new Vector2d(bbox.getCenter(), pInitialCenter);
+	  else 
+	    delta = new Vector2d(0.0, 0.0);
 	  pInitialCenter = null;
 	}
 
