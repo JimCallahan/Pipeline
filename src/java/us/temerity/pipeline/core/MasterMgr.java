@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.174 2006/11/22 09:43:44 jim Exp $
+// $Id: MasterMgr.java,v 1.175 2006/11/28 17:45:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17874,8 +17874,7 @@ class MasterMgr
   /**
    * The time (in milliseconds) between reports of the JVM heap statistics.
    */ 
-  //  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
-  private static long  sHeapStatsInterval = 30000L; 
+  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
 
 
  
