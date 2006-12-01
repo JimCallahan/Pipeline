@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.176 2006/12/01 18:33:41 jim Exp $
+// $Id: MasterMgr.java,v 1.177 2006/12/01 20:00:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15268,7 +15268,7 @@ class MasterMgr
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Cached Working Version: " + nodeID.getName() + 
 	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached =" + pNodeCacheSize.get()); 
+	 "  Total Cached = " + pNodeCacheSize.get()); 
     }
   }
 
@@ -15288,7 +15288,7 @@ class MasterMgr
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Freed Working Version: " +  nodeID.getName() + 
 	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
-	 "  Total Cached =" + pNodeCacheSize.get()); 
+	 "  Total Cached = " + pNodeCacheSize.get()); 
     }
   }
 
@@ -15311,7 +15311,7 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Cached Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached =" + pNodeCacheSize.get()); 
+	 "  Total Cached = " + pNodeCacheSize.get()); 
     }
   }
 
@@ -15331,7 +15331,7 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
 	 "Freed Checked-In Version: " + name + " v" + vid + "\n" + 
-	 "  Total Cached =" + pNodeCacheSize.get()); 
+	 "  Total Cached = " + pNodeCacheSize.get()); 
     }
   }
 
