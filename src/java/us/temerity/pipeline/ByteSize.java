@@ -1,4 +1,4 @@
-// $Id: ByteSize.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: ByteSize.java,v 1.2 2006/12/01 18:40:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -24,7 +24,8 @@ class ByteSize
    *   The byte size string.
    * 
    * @return 
-   *   The value or <CODE>null</CODE> if the given string is <CODE>null</CODE> or empty.
+   *   The value or <CODE>null</CODE> if the given string is <CODE>null</CODE>, empty or 
+   *   "-".
    * 
    * @throws NumberFormatException
    *   If the given string is invalid.
@@ -66,10 +67,10 @@ class ByteSize
    * Convert the given Long value into a byte size String.
    * 
    * @param value
-   *   The integer value or <CODE>null</CODE> to clear.
+   *   The integer value.
    * 
    * @return 
-   *   The value or <CODE>null</CODE> if the given value is <CODE>null</CODE>..
+   *   The value or <CODE>"-"</CODE> if the given value is <CODE>null</CODE>..
    */ 
   public static String
   longToString
@@ -89,6 +90,41 @@ class ByteSize
     }
     else {
       return ("-");
+    }
+  }
+
+  /**
+   * Generates a formatted floating point string representation of a large integer number.
+   * 
+   * @param value
+   *   The integer value.
+   * 
+   * @return 
+   *   The value or <CODE>"-"</CODE> if the given value is <CODE>null</CODE>..
+   */ 
+  public static String
+  longToFloatString
+  (
+   Long value
+  ) 
+  {
+    if(value == null) 
+      return "-";
+
+    if(value < 1024) {
+      return value.toString();
+    }
+    else if(value < 1048576) {
+      double k = ((double) value) / 1024.0;
+      return String.format("%1$.1fK", k);
+    }
+    else if(value < 1073741824) {
+      double m = ((double) value) / 1048576.0;
+      return String.format("%1$.1fM", m);
+    }
+    else {
+      double g = ((double) value) / 1073741824.0;
+      return String.format("%1$.1fG", g);
     }
   }
 }
