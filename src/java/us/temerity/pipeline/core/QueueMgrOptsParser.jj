@@ -181,7 +181,8 @@ TOKEN :
   <LOG_ALL:          "all">       
 | <LOG_ARG: 	     "arg">     
 | <LOG_GLU: 	     "glu">        
-| <LOG_OPS: 	     "ops">     
+| <LOG_OPS: 	     "ops">      
+| <LOG_MEM: 	     "mem">     
 | <LOG_NET: 	     "net">    
 | <LOG_PLG: 	     "plg">      
 | <LOG_DSP: 	     "dsp">        
@@ -434,7 +435,8 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
-   g=DspKind() | g=JobKind() | g=ColKind() | g=SchKind() | g=ExtKind())
+   g=DspKind() | g=JobKind() | g=ColKind() | g=SchKind() | g=ExtKind() | 
+   g=MemKind())
   {
     return g;
   }
@@ -455,6 +457,15 @@ LogMgr.Kind OpsKind() :
   <LOG_OPS>
   {
     return LogMgr.Kind.Ops;
+  }
+}
+
+LogMgr.Kind MemKind() : 
+{}
+{
+  <LOG_MEM>
+  {
+    return LogMgr.Kind.Mem;
   }
 }
 
