@@ -1,0 +1,5 @@
+// Run this from the project directory (../)
+
+source "renderFont.mel";
+renderFont("Helvetica-Regular", "/Network/Servers/dimetrodon/base/tmp/New_Project", "HelveticaRegular");
+	   

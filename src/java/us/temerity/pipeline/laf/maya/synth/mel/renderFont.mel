@@ -187,13 +187,27 @@ renderFont
       $extX[$wk] = `getAttr ($c[0] + ".boundingBoxMaxX")` - $originX[$wk];
       $extY[$wk] = `getAttr ($c[0] + ".boundingBoxMaxY")` - $originY[$wk];
 
+      setAttr ($p[$wk] + ".scaleX") 0.05;
+      setAttr ($p[$wk] + ".scaleY") 0.05;
+      setAttr ($p[$wk] + ".scaleZ") 0.05;
+
       delete $c[0];
     }
   }
+
+  /* set the shader to white */ 
+  setAttr "lambert1.color" -type double3 0 0 0 ;
+  setAttr "lambert1.incandescence" -type double3 0.95348 0.95348 0.95348 ;
   
+  /* save the scene */
+  $sname = ($dir + "/scenes/" + $class + ".ma");   
+  print ("Saving: " + $sname + "\n");
+  file -rename $sname;
+  file -f -save -type "mayaAscii";
+
   /* open the character UV info file */ 
   $cname = ($class + "FontGeometry");
-  int $out = `fopen ($dir + "/" + $cname + ".java") "w"`;
+  int $out = `fopen ($dir + "/java/" + $cname + ".java") "w"`;
   if($out == 0) 
     error("Unable to open the Java class file for writing: " + $dir + "/" + $cname + ".java");
 
@@ -258,7 +272,8 @@ renderFont
     for($wk=0; $wk<128; $wk++) {
       if(size($ascii[$wk]) != 0) 
 	fprint $out 
-	  ("    new Point3d(" + $originX[$wk] + ", " + $originY[$wk] + ", 0.0)," + $nl);
+	  ("    new Point3d(" + ($originX[$wk]*0.05) + ", " + ($originY[$wk]*0.05) + 
+	                    ", 0.0)," + $nl);
       else 
 	fprint $out ("    null," + $nl);
     }
@@ -271,7 +286,8 @@ renderFont
     for($wk=0; $wk<128; $wk++) {
       if(size($ascii[$wk]) != 0) 
 	fprint $out 
-	  ("    new Vector3d(" + $extX[$wk] + ", " + $extY[$wk] + ", 0.0)," + $nl);
+	  ("    new Vector3d(" + ($extX[$wk]*0.05) + ", " + ($extY[$wk]*0.05) + 
+	                     ", 0.0)," + $nl);
       else 
 	fprint $out ("    null," + $nl);
     }
@@ -286,7 +302,7 @@ renderFont
 
 
   /* open printable character list file */ 
-  int $list = `fopen ("data/" + $class + ".txt") "w"`;
+  int $list = `fopen ($dir + "/data/" + $class + ".txt") "w"`;
   if($list == 0) 
     error("Unable to open the printable character list file: data/" + $class + ".txt");
   
