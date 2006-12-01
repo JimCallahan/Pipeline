@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.21 2006/11/21 19:55:51 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.22 2006/12/01 18:12:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -798,6 +798,14 @@ class PackageInfo
    */ 
   public static final ArchType sArchType; 
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the font used for OpenGL textured text.
+   */ 
+  public static final String sGLFont = "CharcoalRegular";
+
 
   /*----------------------------------------------------------------------------------------*/
 

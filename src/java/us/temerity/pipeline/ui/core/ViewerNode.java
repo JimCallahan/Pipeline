@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.6 2006/05/07 21:30:15 jim Exp $
+// $Id: ViewerNode.java,v 1.7 2006/12/01 18:12:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -212,11 +212,11 @@ class ViewerNode
 	}
 
 	if(text1 != null) 
-	  pLabelDLs[0] = mgr.getTextDL(gl, "CharterBTRoman", text1, 
+	  pLabelDLs[0] = mgr.getTextDL(gl, PackageInfo.sGLFont, text1, 
 				       GeometryMgr.TextAlignment.Center, 0.05);
 
 	if(text2 != null) 
-	  pLabelDLs[1] = mgr.getTextDL(gl, "CharterBTRoman", text2, 
+	  pLabelDLs[1] = mgr.getTextDL(gl, PackageInfo.sGLFont, text2, 
 				       GeometryMgr.TextAlignment.Center, 0.05);
       }
 

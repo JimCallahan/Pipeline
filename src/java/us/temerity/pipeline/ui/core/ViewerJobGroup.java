@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.4 2006/12/01 18:12:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -61,7 +61,7 @@ class ViewerJobGroup
 
     try {
       GeometryMgr mgr = GeometryMgr.getInstance();
-      pLabelWidth = 0.35 * mgr.getTextWidth("CharterBTRoman", pLabelText, 0.05);
+      pLabelWidth = 0.35 * mgr.getTextWidth(PackageInfo.sGLFont, pLabelText, 0.05);
     }
     catch(IOException ex) {
       throw new IllegalArgumentException(ex.getMessage());
@@ -190,7 +190,7 @@ class ViewerJobGroup
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
       if(pLabelDL == null) 
-	pLabelDL = mgr.getTextDL(gl, "CharterBTRoman", pLabelText, 
+	pLabelDL = mgr.getTextDL(gl, PackageInfo.sGLFont, pLabelText, 
 				 GeometryMgr.TextAlignment.Left, 0.05);
 
       if(pIconDL == null) {

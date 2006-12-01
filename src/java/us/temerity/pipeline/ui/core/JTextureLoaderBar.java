@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.9 2005/12/31 20:40:44 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.10 2006/12/01 18:12:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -277,8 +277,8 @@ class JTextureLoaderBar
 	pCanvas.repaint();
       }
       else if(!pFontLoaded) {
-	mgr.registerFont("CharterBTRoman", new CharterBTRomanFontGeometry());
-	mgr.verifyFontTextures(gl, "CharterBTRoman");
+	mgr.registerFont(PackageInfo.sGLFont, new CharcoalRegularFontGeometry());
+	mgr.verifyFontTextures(gl, PackageInfo.sGLFont);
 
 	pFontLoaded = true;
 	pPercent += pInc * 15.0;

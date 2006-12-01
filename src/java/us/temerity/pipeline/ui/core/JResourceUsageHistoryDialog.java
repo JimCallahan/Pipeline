@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.17 2006/11/22 11:37:11 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.18 2006/12/01 18:12:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -567,7 +567,7 @@ class JResourceUsageHistoryDialog
       try {
 	double bx = 0.0; 
 	for(String hname : pSamples.keySet()) {
-	  double x = mgr.getTextWidth("CharterBTRoman", hname, 0.05) * sHostnameSize;
+	  double x = mgr.getTextWidth(PackageInfo.sGLFont, hname, 0.05) * sHostnameSize;
 	  bx = Math.max(bx, x);
 	}
 
@@ -1325,7 +1325,7 @@ class JResourceUsageHistoryDialog
 	    
 	      while(cal.getTime().compareTo(endDate) < 0) {
 		String text = sDateFormat.format(cal.getTime());
-		int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
+		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, text, 
 				       GeometryMgr.TextAlignment.Left, 0.05);
 		dateLabelDLs.add(dl);
 		cal.add(Calendar.DAY_OF_YEAR, 1);
@@ -1363,7 +1363,7 @@ class JResourceUsageHistoryDialog
 	    
 	      while(cal.getTime().compareTo(endDate) < 0) {
 		String text = sTimeFormat.format(cal.getTime());
-		int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
+		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, text, 
 				       GeometryMgr.TextAlignment.Left, 0.05);
 		timeLabelDLs.add(dl);
 		cal.add(Calendar.MINUTE, minc);
@@ -1648,7 +1648,7 @@ class JResourceUsageHistoryDialog
 	    TreeMap<String,Integer> labelDLs = new TreeMap<String,Integer>();
 	    try {
 	      for(String hname : pSamples.keySet()) {
-		int dl = mgr.getTextDL(gl, "CharterBTRoman", hname, 
+		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, hname, 
 				       GeometryMgr.TextAlignment.Right, 0.05);
 		labelDLs.put(hname, dl);
 	      }
@@ -1681,7 +1681,7 @@ class JResourceUsageHistoryDialog
 		{
 		  int v = 0;
 		  if(!pIntegerLabelDLs.containsKey(v)) {
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+		    int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, String.valueOf(v), 
 					   GeometryMgr.TextAlignment.Center, 0.05);
 		    pIntegerLabelDLs.put(v, dl);
 		  }
@@ -1690,7 +1690,7 @@ class JResourceUsageHistoryDialog
 		{
 		  int v = prefs.getSystemLoadRange();
 		  if(!pIntegerLabelDLs.containsKey(v)) {
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+		    int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, String.valueOf(v), 
 					   GeometryMgr.TextAlignment.Center, 0.05);
 		    pIntegerLabelDLs.put(v, dl);
 		  }
@@ -1699,7 +1699,7 @@ class JResourceUsageHistoryDialog
 		{
 		  int v = prefs.getJobCountRange();
 		  if(!pIntegerLabelDLs.containsKey(v)) {
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+		    int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, String.valueOf(v), 
 					   GeometryMgr.TextAlignment.Center, 0.05);
 		    pIntegerLabelDLs.put(v, dl);
 		  }
@@ -1708,7 +1708,7 @@ class JResourceUsageHistoryDialog
 		{
 		  String label = "0.0";
 		  if(!pDoubleLabelDLs.containsKey(label)) {
-		    int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+		    int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
 					   GeometryMgr.TextAlignment.Center, 0.05);
 		    pDoubleLabelDLs.put(label, dl);
 		  }
@@ -1726,7 +1726,7 @@ class JResourceUsageHistoryDialog
 		      String label = String.valueOf(numProcs); 
 
 		      if(!pIntegerLabelDLs.containsKey(numProcs)) {
-			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+			int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
 					       GeometryMgr.TextAlignment.Center, 0.05);
 			pIntegerLabelDLs.put(numProcs, dl);
 		      }
@@ -1742,7 +1742,7 @@ class JResourceUsageHistoryDialog
 		      String label = String.valueOf(slots); 
 
 		      if(!pIntegerLabelDLs.containsKey(slots)) {
-			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+			int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
 					       GeometryMgr.TextAlignment.Center, 0.05);
 			pIntegerLabelDLs.put(slots, dl);
 		      }
@@ -1759,7 +1759,7 @@ class JResourceUsageHistoryDialog
 			String.format("%1$.1f", ((double) totalMem) / 1073741824.0);
 
 		      if(!pDoubleLabelDLs.containsKey(label)) {
-			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+			int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
 					       GeometryMgr.TextAlignment.Center, 0.05);
 			pDoubleLabelDLs.put(label, dl);
 		      }
@@ -1776,7 +1776,7 @@ class JResourceUsageHistoryDialog
 			String.format("%1$.1f", ((double) totalDisk) / 1073741824.0);
 
 		      if(!pDoubleLabelDLs.containsKey(label)) {
-			int dl = mgr.getTextDL(gl, "CharterBTRoman", label, 
+			int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
 					       GeometryMgr.TextAlignment.Center, 0.05);
 			pDoubleLabelDLs.put(label, dl);
 		      }

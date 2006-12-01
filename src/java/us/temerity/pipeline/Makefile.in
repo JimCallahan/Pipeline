@@ -449,9 +449,15 @@ PackageInfo.java: PackageInfo.java.src
 textures: laf/scripts/filter-textures
 	$(BASH) laf/scripts/filter-textures $(srcdir)/laf/maya/synth/images
 
-fonts: CharterBTRoman
+fonts: CharcoalRegular
 
-CharterBTRoman: laf/scripts/filter-fonts
+# CharterBTRoman: laf/scripts/filter-fonts
+# 	$(BASH) laf/scripts/filter-fonts $@ $(srcdir)/laf/maya/synth/images
+
+# HelveticaRegular: laf/scripts/filter-fonts
+# 	$(BASH) laf/scripts/filter-fonts $@ $(srcdir)/laf/maya/synth/images
+
+CharcoalRegular: laf/scripts/filter-fonts
 	$(BASH) laf/scripts/filter-fonts $@ $(srcdir)/laf/maya/synth/images
 
 
