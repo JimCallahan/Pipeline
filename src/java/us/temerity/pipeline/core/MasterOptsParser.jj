@@ -47,8 +47,12 @@ MasterOptsParser
   private void 
   init()
   {
-    pNodeCacheLimit = PackageInfo.sDefaultNodeCacheLimit;
-    pLogBackups     = 10;
+    Runtime rt = Runtime.getRuntime();
+    double maxMemory = (double) rt.maxMemory();
+    pMinOverhead = (long) (maxMemory * 0.2);
+    pMaxOverhead = (long) (maxMemory * 0.3);
+
+    pLogBackups = 10;
   }
  
 
@@ -78,12 +82,33 @@ MasterOptsParser
    */ 
   private boolean  pInternalFileMgr; 
 
-  /**
-   * Override of the node cache limit.
-   */ 
-  private long  pNodeCacheLimit; 
 
-  
+  /**
+   * The minimum time a cycle of the node cache garbage collector loop should 
+   * take (in milliseconds).
+   */ 
+  private long  pNodeGCInterval = 300000L;  /* 5-minutes */ 
+
+  /**
+   * The minimum amount of memory overhead to maintain at all times.  The maximum amount of 
+   * memory overhead required to be available after a node garbage collection.
+   */ 
+  private long  pMinOverhead;
+  private long  pMaxOverhead;
+
+  /**
+   * The estimated memory size of a node version (in bytes).
+   */ 
+  private long  pAvgNodeSize = 4000L;
+
+  /**
+   * The maximum age of a resolved (Restored or Denied) restore request before it 
+   * is deleted (in milliseconds).
+   */ 
+  private long  pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -124,7 +149,9 @@ TOKEN :
   /* performance tuning options */ 
 | <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
 | <NODE_GC_INTERVAL:          "--node-gc-interval">          : INTEGER_SEP
-| <NODE_CACHE_LIMIT:          "--node-cache-limit">          : INTEGER_SEP  
+| <MIN_OVERHEAD:              "--min-overhead">              : INTEGER_SEP  
+| <MAX_OVERHEAD:              "--max-overhead">              : INTEGER_SEP  
+| <AVG_NODE_SIZE:             "--avg-node-size">             : INTEGER_SEP  
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -283,8 +310,11 @@ Commands()
 	 "host (" + PackageInfo.sMasterServer + ")!");
 
     /* create the server */ 
-    return (new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, 
-				pInternalFileMgr, pNodeCacheLimit));
+    MasterMgrServer server = 
+      new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, pInternalFileMgr,
+			  pAvgNodeSize, pMinOverhead, pMaxOverhead, pNodeGCInterval, 
+			  pRestoreCleanupInterval);
+    return server;
   }
 }
     
@@ -375,7 +405,8 @@ GlobalOpts()
 {
   (Rebuild() | PreserveOfflined() | FileMgr() |
    Log() | LogFile() | StandardLogFile() | LogBackups() |
-   RestoreCleanupInterval() | NodeGCInterval() | NodeCacheLimit())
+   NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() |
+   RestoreCleanupInterval())
   {}
 }
 
@@ -643,22 +674,6 @@ LogMgr.Level FinestLevel() :
 
 /*------------------------------------------------------------------------------------------*/
 
-void RestoreCleanupInterval()
-  throws PipelineException : 
-{
-  Token t;
-}
-{
-  <RESTORE_CLEANUP_INTERVAL> EQ() t=<INTEGER>
-  {
-    Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
-      throw new PipelineException
-        ("The restore cleanup interval (" + msec + ") must be positive!");
-    MasterMgr.setRestoreCleanupInterval(msec);
-  }
-}
-
 void NodeGCInterval()
   throws PipelineException : 
 {
@@ -671,25 +686,74 @@ void NodeGCInterval()
     if(msec <= 0) 
       throw new PipelineException
         ("The node garbage collection interval (" + msec + ") must be positive!");
-    MasterMgr.setNodeGCInterval(msec);
+    pNodeGCInterval = msec;
   }
 }
 
-void NodeCacheLimit() : 
+void MinOverhead()
+  throws PipelineException : 
 {
   Token t;
 }
 {
-  <NODE_CACHE_LIMIT> EQ() t=<INTEGER>
-  { 
-    pNodeCacheLimit = Long.parseLong(t.image);
-
-    if(pNodeCacheLimit < 100)
-      throw new ParseException
-        ("The node cache limit must be at least (100) node versions!");
+  <MIN_OVERHEAD> EQ() t=<INTEGER>
+  {
+    Long size = Long.parseLong(t.image);
+    if(size <= 0) 
+      throw new PipelineException
+        ("The minimum overhead (" + size + ") must be positive!");
+    pMinOverhead = size;
   }
 }
 
+void MaxOverhead()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <MAX_OVERHEAD> EQ() t=<INTEGER>
+  {
+    Long size = Long.parseLong(t.image);
+    if(size <= 0) 
+      throw new PipelineException
+        ("The maximum overhead (" + size + ") must be positive!");
+    pMaxOverhead = size;
+  }
+}
+
+void AvgNodeSize()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <AVG_NODE_SIZE> EQ() t=<INTEGER>
+  {
+    Long size = Long.parseLong(t.image);
+    if(size <= 0) 
+      throw new PipelineException
+        ("The average node size (" + size + ") must be positive!");
+    pAvgNodeSize = size;
+  }
+}
+
+
+void RestoreCleanupInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <RESTORE_CLEANUP_INTERVAL> EQ() t=<INTEGER>
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The restore cleanup interval (" + msec + ") must be positive!");
+    pRestoreCleanupInterval = msec;
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/

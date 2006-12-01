@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.35 2006/11/21 20:00:04 jim Exp $
+// $Id: QueueMgrClient.java,v 1.36 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -100,6 +100,50 @@ class QueueMgrClient
     handleSimpleResponse(obj);
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   C O N T R O L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   */ 
+  public synchronized QueueControls
+  getRuntimeControls() 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(QueueRequest.GetQueueControls, null);
+    if(obj instanceof QueueGetQueueControlsRsp) {
+      QueueGetQueueControlsRsp rsp = (QueueGetQueueControlsRsp) obj;
+      return rsp.getControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   */ 
+  public synchronized void
+  setRuntimeControls
+  (
+   QueueControls controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    QueueSetQueueControlsReq req = new QueueSetQueueControlsReq(controls);
+
+    Object obj = performTransaction(QueueRequest.SetQueueControls, req);
+    handleSimpleResponse(obj);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -909,6 +953,9 @@ class QueueMgrClient
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the dynamic resource sample history of the given host.<P> 

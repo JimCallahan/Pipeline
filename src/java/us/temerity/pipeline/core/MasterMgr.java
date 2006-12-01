@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.175 2006/11/28 17:45:17 jim Exp $
+// $Id: MasterMgr.java,v 1.176 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -205,8 +205,23 @@ class MasterMgr
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
-   * @param nodeCacheLimit
-   *   The maximum number of node versions to cache in memory.
+   * @param avgNodeSize
+   *   The estimated memory size of a node version (in bytes).
+   * 
+   * @param minOverhead
+   *   The minimum amount of memory overhead to maintain at all times.
+   * 
+   * @param maxOverhead
+   *   The maximum amount of memory overhead required to be available after a node garbage
+   *   collection.
+   * 
+   * @param nodeGCInterval
+   *   The minimum time a cycle of the node cache garbage collector loop should 
+   *   take (in milliseconds).
+   * 
+   * @param restoreCleanupInterval
+   *   The maximum age of a resolved (Restored or Denied) restore request before it 
+   *   is deleted (in milliseconds).
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
@@ -217,14 +232,49 @@ class MasterMgr
    boolean rebuildCache, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
-   long nodeCacheLimit
+   long avgNodeSize, 
+   long minOverhead, 
+   long maxOverhead, 
+   long nodeGCInterval, 
+   long restoreCleanupInterval
   )
     throws PipelineException 
   { 
     pRebuildCache          = rebuildCache;
     pPreserveOfflinedCache = preserveOfflinedCache;
     pInternalFileMgr       = internalFileMgr;
-    pNodeCacheLimit        = nodeCacheLimit;
+
+    pNodeCacheSize = new AtomicLong(0L);
+
+    if(avgNodeSize <= 2048L) 
+      throw new PipelineException
+	("The average node size (" + avgNodeSize + " bytes) must be at least 2K!");
+    pAverageNodeSize = new AtomicLong(avgNodeSize); 
+
+    if(minOverhead <= 8388608L) 
+      throw new PipelineException 
+	("The minimum memory overhead (" + minOverhead + " bytes) must at least 8M!"); 
+    if(maxOverhead <= 16777216L) 
+      throw new PipelineException 
+	("The maximum memory overhead (" + maxOverhead + " bytes) must at least 16M!"); 
+    if(maxOverhead <= minOverhead) 
+      throw new PipelineException 
+	("The maximum memory overhead (" + maxOverhead + " bytes) must greater-than the " + 
+	 "minimum memory overhead (" + minOverhead + " bytes)!"); 
+    pMinimumOverhead = new AtomicLong(minOverhead); 
+    pMaximumOverhead = new AtomicLong(maxOverhead);
+
+    if(nodeGCInterval < 15000L) 
+      throw new PipelineException
+	("The node garbage collection interval (" + nodeGCInterval + " ms) must be at " +
+	 "least 15 seconds!");
+    pNodeGCInterval  = new AtomicLong(nodeGCInterval); 
+
+    if(restoreCleanupInterval < 3600000L) 
+      throw new PipelineException
+	("The restore cleanup interval (" + restoreCleanupInterval + " ms) must be at " + 
+	 "least 1 hour!"); 
+    pRestoreCleanupInterval = new AtomicLong(restoreCleanupInterval); 
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
@@ -1663,6 +1713,98 @@ class MasterMgr
 	}
       }
       
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   P A R A M E T E R S                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   * 
+   * @return
+   *   <CODE>MiscGetMasterControlsRsp</CODE>.
+   */ 
+  public Object
+  getRuntimeControls() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    MasterControls controls = 
+      new MasterControls(pAverageNodeSize.get(), 
+			 pMinimumOverhead.get(), pMaximumOverhead.get(), 
+			 pNodeGCInterval.get(), pRestoreCleanupInterval.get());
+
+    return new MiscGetMasterControlsRsp(timer, controls);
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE>.
+   */ 
+  public synchronized Object
+  setRuntimeControls
+  (
+   MiscSetMasterControlsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may change the runtime parameters!");
+
+      MasterControls controls = req.getControls();
+
+      {
+	Long size = controls.getAverageNodeSize();
+	if(size != null) 
+	  pAverageNodeSize.set(size); 
+      }
+
+      {
+	Long min = controls.getMinimumOverhead();
+	if(min == null) 
+	  min = pMinimumOverhead.get();
+
+	Long max = controls.getMaximumOverhead();
+	if(max == null) 
+	  max = pMaximumOverhead.get();
+
+	if(max <= min)
+	  throw new PipelineException
+	    ("The maximum memory overhead (" + max + " bytes) must greater-than the " + 
+	     "minimum memory overhead (" + min + " bytes)!"); 
+
+	pMinimumOverhead.set(min);
+	pMaximumOverhead.set(max);
+      }
+
+      {
+	Long interval = controls.getNodeGCInterval();
+	if(interval != null) 
+	  pNodeGCInterval.set(interval);
+      }
+
+      {
+	Long interval = controls.getRestoreCleanupInterval();
+	if(interval != null) 
+	  pRestoreCleanupInterval.set(interval);
+      }
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -7379,6 +7521,9 @@ class MasterMgr
 	  table.put(nodeID, new WorkingBundle(mod));
 	}
 	
+	/* keep track of the change to the node version cache */ 
+	incrementWorkingCounter(nodeID); 
+
 	/* initialize the working downstream links */ 
 	timer.aquire();
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
@@ -7624,6 +7769,9 @@ class MasterMgr
 	table.remove(id);
       }
 	
+      /* keep track of the change to the node version cache */ 
+      decrementWorkingCounter(id);
+
       /* remove the working version node file(s) */ 
       {
 	File file   = new File(pNodeDir, id.getWorkingPath().toString());
@@ -7862,6 +8010,10 @@ class MasterMgr
 	/* remove the checked-in version entries */ 
 	pCheckedInLocks.remove(name);
 	pCheckedInBundles.remove(name);
+
+	/* keep track of the change to the node version cache */ 
+	for(VersionID vid : checkedIn.keySet()) 
+	  decrementCheckedInCounter(name, vid);
       }
 
       /* remove the downstream links file and entry */ 
@@ -8665,6 +8817,9 @@ class MasterMgr
 	  table.put(nodeID, new WorkingBundle(nwork));
 	}
 
+	/* keep track of the change to the node version cache */ 
+	incrementWorkingCounter(nodeID);
+
 	/* initialize the working downstream links */ 
 	{
 	  timer.aquire();
@@ -8940,6 +9095,9 @@ class MasterMgr
 	      table.put(nodeID, new WorkingBundle(nwork));
 	    }
 	  
+	    /* keep track of the change to the node version cache */ 
+	    incrementWorkingCounter(nodeID);
+
 	    /* initialize the working downstream links */ 
 	    {
 	      timer.aquire();
@@ -12148,7 +12306,7 @@ class MasterMgr
 	    switch(rr.getState()) {
 	    case Restored:
 	    case Denied:
-	      if((rr.getResolvedStamp().getTime()+sRestoreCleanupInterval) < now) {
+	      if((rr.getResolvedStamp().getTime()+pRestoreCleanupInterval.get()) < now) {
 		TreeSet<VersionID> vids = dead.get(name);
 		if(vids == null) {
 		  vids = new TreeSet<VersionID>();
@@ -14679,6 +14837,10 @@ class MasterMgr
       pCheckedInBundles.put(name, table);
     }    
 
+    /* keep track of the change to the node version cache */ 
+    for(VersionID vid : table.keySet()) 
+      incrementCheckedInCounter(name, vid);
+
     return table;
   }
 
@@ -14733,6 +14895,9 @@ class MasterMgr
       pWorkingBundles.get(name).put(id, bundle);
     }
     
+    /* keep track of the change to the node version cache */ 
+    incrementWorkingCounter(id); 
+
     return bundle;
   }
 
@@ -14777,152 +14942,303 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   B U N D L E   G A R B A G E   C O L L E C T O R                                      */
+  /*   N O D E   G A R B A G E   C O L L E C T O R                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * If the node cache limit has been exceeded, set the oldest working/checked-in bundles 
-   * to (null) so that the JVM garbage collector will clean them up.
+   * Monitors the amount of memory held by the node version caches (both checked-in and
+   * working) and the amount of free memory to determine when the size of the node cache
+   * should be reduced.  When the cache needs to be reduced, the nodes with the oldest 
+   * last accessed timestamps will be removed from the checked-in/working node bundle
+   * tables.
    */ 
   public void 
   nodeGC() 
   {
     TaskTimer timer = new TaskTimer();
-    long cached = 0;
-    long freed = 0;
 
-    timer.aquire();
-    pDatabaseLock.writeLock().lock();
-    try {
-      timer.resume();
-
-      /* sort the cached versions by newest last access time */ 
-      TreeMap<Long,String> sorted = new TreeMap<Long,String>();
-      {
-	TreeSet<String> names = new TreeSet<String>();
-	names.addAll(pCheckedInBundles.keySet());
-	names.addAll(pWorkingBundles.keySet());
-
-	for(String name : names) {
-	  long newest = 0L;
-	  
-	  {
-	    TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-	    if(table != null) {
-	      for(CheckedInBundle bundle : table.values()) {
-		newest = Math.max(newest, bundle.getLastAccess());
-		cached++;
-	      }
-	    }
-	  }
-
-	  {
-	    HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	    if(table != null) {
-	      for(WorkingBundle bundle : table.values()) {
-		newest = Math.max(newest, bundle.getLastAccess());
-		cached++;		
-	      }
-	    }
-	  }
-
-	  sorted.put(newest, name);
-	}
-      }
-      
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
-	for(Long stamp : sorted.keySet()) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	     "Cached: " + stamp + " " + sorted.get(stamp));
-	}
-      }
-
-      /* collect versions until the total is below the limit */ 
-      for(String name : sorted.values()) {
- 	if((cached-freed) < pNodeCacheLimit) 
- 	  break;
-
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest))
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Mem, LogMgr.Level.Finest,
-	     "Freed: " + name);
-	
-	/* free working versions */ 
-	{
-	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	  if(table != null) {
-	    freed += table.size();
-	    pWorkingBundles.remove(name);
-	  }
-	}
-	 
-	/* free checked-in versions */ 
-	{
-	  TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-	  if(table != null) {
-	    freed += table.size();
-	    pCheckedInBundles.remove(name);
-	  }
-	}
-      }
-    }
-    finally {
-      pDatabaseLock.writeLock().unlock();
-    } 
+    /* estimate the amount of memory currently held in the node cache */ 
+    long cacheMemory = pNodeCacheSize.get() * pAverageNodeSize.get();
     
+    /* lookup the amount of memory currenting being used by the JVM */ 
+    Runtime rt = Runtime.getRuntime();
+    long freeMemory  = rt.freeMemory();
+    long totalMemory = rt.totalMemory();
+    long maxMemory   = rt.maxMemory();
+    long overhead    = maxMemory - totalMemory + freeMemory;
+
+    /* if the overhead is below the minimun, 
+         first force a JVM garbage collection in order to see if enough overhead can 
+	 by freed up without a node collection and recompute the memory stats */ 
+    if(overhead < pMinimumOverhead.get()) {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("NodeGC [JVM Pre-GC]");
+      {
+	rt.gc();
+
+	/* wait for the garbage collector to finish */ 
+	tm.aquire();
+	try {
+	  Thread.sleep(3000);
+	}
+	catch(InterruptedException ex) {
+	}
+	finally {
+	  tm.resume();
+	}
+	
+	freeMemory  = rt.freeMemory();
+	totalMemory = rt.totalMemory();
+	maxMemory   = rt.maxMemory();
+	overhead    = maxMemory - totalMemory + freeMemory;
+      }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Mem, LogMgr.Level.Finer, 
+	 tm, timer);
+    }
+    
+    /* report the current memory statistics */ 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Finer,
-	 "MasterMgr.nodeGC(): " + (cached-freed) + "/" + freed + " (cached/freed)\n" + 
-	 timer); 
-    }
-
-    /* post-op tasks */ 
-    startExtensionTasks(timer, new NodeGarbageCollectExtFactory(cached-freed, freed));
-
-    /* if we're ahead of schedule, take a nap */ 
-    {
-      timer.suspend();
-      long nap = sNodeGCInterval - timer.getTotalDuration();
-      if(nap > 0) {
-	try {
-	  Thread.sleep(nap);
-	}
-	catch(InterruptedException ex) {
-	}
-      }
-    }
-  }
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   J V M   M E M O R Y   S T A T I S T I C S                                            */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Report the current JVM heap statistics.
-   */ 
-  public void 
-  heapStats() 
-  {
-    TaskTimer timer = new TaskTimer();
-
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
-      Runtime rt = Runtime.getRuntime();
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	 "JVM Memory Stats: " + 
-	 rt.freeMemory() + "/" + rt.totalMemory() + "/" + rt.maxMemory() + 
-	 " (free/total/max)"); 
+	 "Pre-GC Memory Stats:\n" + 
+	 "  ---- JVM HEAP ----------------------\n" + 
+	 "    Free = " + freeMemory + 
+	             " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 
+	 "   Total = " + totalMemory + 
+	             " (" + ByteSize.longToFloatString(totalMemory) + ")\n" +
+	 "     Max = " + maxMemory + 
+	             " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
+	 "  ---- OVERHEAD ----------------------\n" + 
+	 "     Avl = " + overhead + 
+	             " (" + ByteSize.longToFloatString(overhead) + ")\n" +
+	 "     Min = " + pMinimumOverhead.get() + 
+	             " (" + ByteSize.longToFloatString(pMinimumOverhead.get()) + ")\n" +
+	 "     Max = " + pMaximumOverhead.get() + 
+	             " (" + ByteSize.longToFloatString(pMaximumOverhead.get()) + ")\n" +
+	 "  ---- NODE CACHE --------------------\n" + 
+	 "   Cache = " + pNodeCacheSize.get() + " (node versions)\n" + 
+	 "    Node = " + pAverageNodeSize.get() + " (bytes/version)\n" +
+	 "     Mem = " + cacheMemory +
+	             " (" + ByteSize.longToFloatString(cacheMemory) + ")\n" +
+	 "  ------------------------------------");
       LogMgr.getInstance().flush();
     }
 
+    /* nothing cached, so no reason to run the node garbage collector */ 
+    if(pNodeCacheSize.get() == 0) {
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	   "NodeGC: (empty cache)\n  " + timer); 
+      }
+    }
+    else {
+      /* if the amount of overhead is less than the minimum, 
+	   free up enough node versions from the cache to raise the overhead up to 
+	   the maximum */
+      long exceeded = 0L;
+      if(overhead < pMinimumOverhead.get()) {
+	timer.suspend();
+	TaskTimer tm = new TaskTimer("NodeGC [Reducing Node Cache]");
+	{
+	  /* the estimated number of nodes to free */ 
+	  exceeded = (pMaximumOverhead.get() - overhead) / pAverageNodeSize.get();
+	  
+	  /* make sure we don't try to free more versions than are available to be freed */
+	  if(exceeded > pNodeCacheSize.get()) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Mem, LogMgr.Level.Warning,
+	       "The maximum overhead (" + pMaximumOverhead.get() + ") cannot be achieved " + 
+	       "even by freeing all (" + pNodeCacheSize.get() + ") versions from the node " + 
+	       "cache!  Either the maximum overhead is set too high or the maximum heap " + 
+	       "size (" + maxMemory + ") is set too low to provide a sufficent amount of " + 
+	       "node cache needed for efficient operation."); 
+	    
+	    exceeded = pNodeCacheSize.get();
+	  }
+	  
+	  tm.aquire();
+	  pDatabaseLock.writeLock().lock();
+	  try {
+	    tm.resume();
+	    
+	    /* sort the cached versions by newest last access time */
+	    long cached = 0L;
+	    TreeMap<Long,String> sorted = new TreeMap<Long,String>();
+	    {
+	      TreeSet<String> names = new TreeSet<String>();
+	      names.addAll(pCheckedInBundles.keySet());
+	      names.addAll(pWorkingBundles.keySet());
+	      
+	      for(String name : names) {
+		long newest = 0L;
+		long count = 0L;
+		{
+		  TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
+		  if(table != null) {
+		    for(CheckedInBundle bundle : table.values()) {
+		      newest = Math.max(newest, bundle.getLastAccess());
+		      count++;
+		    }
+		  }
+		}
+		
+		{
+		  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+		  if(table != null) {
+		    for(WorkingBundle bundle : table.values()) {
+		      newest = Math.max(newest, bundle.getLastAccess());
+		      count++;		
+		    }
+		  }
+		}
+	    
+		sorted.put(newest, name);
+		cached += count;
+	      }
+	    }
+
+	    /* sanity check */ 
+	    if(pNodeCacheSize.get() != cached) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Mem, LogMgr.Level.Warning,
+		 "The number of nodes computed by analyzing the node cache " +
+		 "(" + cached + ") did not match the node size counter " + 
+		 "(" + pNodeCacheSize.get() + ")!  " + 
+		 "Resetting the node size counter to actual cache size.");
+	  
+	      pNodeCacheSize.set(cached);
+	    }
+
+	    /* collect enough versions to lower the cache below the exceeded level */ 
+	    long freed = 0L;
+	    for(String name : sorted.values()) {
+	      if(freed >= exceeded) 
+		break;
+	  
+	      /* free working versions */ 
+	      {
+		HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+		if(table != null) {
+		  freed += table.size();
+		  pWorkingBundles.remove(name);
+
+		  for(NodeID id : table.keySet()) 
+		    decrementWorkingCounter(id);
+		}
+	      }
+	  
+	      /* free checked-in versions */ 
+	      {
+		TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
+		if(table != null) {
+		  freed += table.size();
+		  pCheckedInBundles.remove(name);
+
+		  for(VersionID vid : table.keySet()) 
+		    decrementCheckedInCounter(name, vid);
+		}
+	      }
+	    }
+	  }
+	  finally {
+	    pDatabaseLock.writeLock().unlock();
+	  } 
+	}
+	LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Mem, LogMgr.Level.Finer, 
+	   tm, timer);
+      
+	/* force another JVM garbage collection in order to determine how much memory 
+	   was actually freed and adjust the average size of a node version */ 
+	long avgNodeSize = 0L;
+	{
+	  timer.suspend();
+	  TaskTimer tm2 = new TaskTimer("NodeGC [JVM Post-GC]");
+	  {
+	    rt.gc();
+	  
+	    /* wait for the garbage collector to finish */ 
+	    tm2.aquire();
+	    try {
+	      Thread.sleep(3000);
+	    }
+	    catch(InterruptedException ex) {
+	    }
+	    finally {
+	      tm2.resume();
+	    }
+	  
+	    long oldOverhead = overhead; 
+
+	    freeMemory  = rt.freeMemory();
+	    totalMemory = rt.totalMemory();
+	    maxMemory   = rt.maxMemory();
+	    overhead    = maxMemory - totalMemory + freeMemory;
+
+	    avgNodeSize = (overhead - oldOverhead) / exceeded;
+	    if(avgNodeSize > 0L) {
+	      long newSize = (long) (pAverageNodeSize.get()*0.85 + avgNodeSize*0.15);
+	      if((newSize > 2048L) && (newSize < 16384L))
+		pAverageNodeSize.set(newSize);
+	    }
+
+	    cacheMemory = pNodeCacheSize.get() * pAverageNodeSize.get();
+	  }
+	  LogMgr.getInstance().logSubStage
+	    (LogMgr.Kind.Mem, LogMgr.Level.Finer, 
+	     tm2, timer);
+	}
+
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Mem, LogMgr.Level.Fine,
+	     "NodeGC: " + pNodeCacheSize.get() + "/" + exceeded + " (cached/freed)\n  " + 
+	     timer); 
+	}
+
+	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finer)) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Mem, LogMgr.Level.Finer,
+	     "Post-GC Memory Stats:\n" + 
+	     "  ---- JVM HEAP ----------------------\n" + 
+	     "    Free = " + freeMemory + 
+	                 " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 
+	     "   Total = " + totalMemory + 
+	                 " (" + ByteSize.longToFloatString(totalMemory) + ")\n" +
+	     "     Max = " + maxMemory + 
+	                 " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
+	     "  ---- OVERHEAD ----------------------\n" + 
+	     "     Avl = " + overhead + 
+	                 " (" + ByteSize.longToFloatString(overhead) + ")\n" +
+	     "     Min = " + pMinimumOverhead.get() + 
+	                 " (" + ByteSize.longToFloatString(pMinimumOverhead.get()) + ")\n" +
+	     "     Max = " + pMaximumOverhead.get() + 
+           	         " (" + ByteSize.longToFloatString(pMaximumOverhead.get()) + ")\n" +
+	     "  ---- NODE CACHE --------------------\n" + 
+	     "   Cache = " + pNodeCacheSize.get() + " (node versions)\n" + 
+	     "     Est = " + avgNodeSize + " (bytes/version)\n" + 
+	     "    Node = " + pAverageNodeSize.get() + " (bytes/version)\n" +
+	     "     Mem = " + cacheMemory +
+	                 " (" + ByteSize.longToFloatString(cacheMemory) + ")\n" +
+	     "  ------------------------------------");
+	  LogMgr.getInstance().flush();
+	}
+
+	/* post-op tasks */ 
+	if(exceeded > 0L) {
+	  MasterTaskFactory factory = 
+	    new NodeGarbageCollectExtFactory(pNodeCacheSize.get(), exceeded);
+	  startExtensionTasks(timer, factory);			    
+	}
+      }
+    }
+
     /* if we're ahead of schedule, take a nap */ 
     {
       timer.suspend();
-      long nap = sHeapStatsInterval - timer.getTotalDuration();
+      long nap = pNodeGCInterval.get() - timer.getTotalDuration();
       if(nap > 0) {
 	try {
 	  Thread.sleep(nap);
@@ -14932,7 +15248,93 @@ class MasterMgr
       }
     }
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Record that a new working version has been added to the node cache.
+   */ 
+  private void 
+  incrementWorkingCounter
+  (
+   NodeID nodeID
+  ) 
+  {
+    pNodeCacheSize.getAndAdd(1L);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Cached Working Version: " + nodeID.getName() + 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
+	 "  Total Cached =" + pNodeCacheSize.get()); 
+    }
+  }
+
+  /**
+   * Record that a working version has been freed from the node cache. 
+   */ 
+  private void 
+  decrementWorkingCounter
+  (
+   NodeID nodeID
+  ) 
+  {
+    pNodeCacheSize.getAndAdd(-1L);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Freed Working Version: " +  nodeID.getName() + 
+	 " (" + nodeID.getAuthor() + "|" + nodeID.getView() + ")\n" + 
+	 "  Total Cached =" + pNodeCacheSize.get()); 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Record that a new checked-in version has been added to the node cache.
+   */ 
+  private void 
+  incrementCheckedInCounter
+  (
+   String name, 
+   VersionID vid
+  ) 
+  {
+    pNodeCacheSize.getAndAdd(1L);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Cached Checked-In Version: " + name + " v" + vid + "\n" + 
+	 "  Total Cached =" + pNodeCacheSize.get()); 
+    }
+  }
+
+  /**
+   * Record that a checked-in version has been freed from the node cache. 
+   */ 
+  private void 
+  decrementCheckedInCounter
+  (
+   String name, 
+   VersionID vid
+  ) 
+  {
+    pNodeCacheSize.getAndAdd(-1L);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Freed Checked-In Version: " + name + " v" + vid + "\n" + 
+	 "  Total Cached =" + pNodeCacheSize.get()); 
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -17559,6 +17961,9 @@ class MasterMgr
 	    synchronized(pCheckedInBundles) {
 	      pCheckedInBundles.put(name, checkedIn);
 	    }
+
+	    /* keep track of the change to the node version cache */ 
+	    incrementCheckedInCounter(name, vid);
 	  }
 	  checkedIn.put(vid, new CheckedInBundle(vsn));
 	  
@@ -17824,59 +18229,6 @@ class MasterMgr
   }
 
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   A C C E S O R S                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  public static void
-  setRestoreCleanupInterval
-  (
-   long msec
-  ) 
-  {
-    if(msec <= 0L)
-      throw new IllegalArgumentException
-	("The restore cleanup interval (" + msec + ") must be positive!"); 
-    sRestoreCleanupInterval = msec;
-  }
-
-  public static void 
-  setNodeGCInterval
-  (
-   long msec
-  ) 
-  {
-    if(msec <= 0L)
-      throw new IllegalArgumentException
-	("The node garbage collector interval (" + msec + ") must be positive!"); 
-    sNodeGCInterval = msec;
-  }
-
-  
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The maximum age of a resolved (Restored or Denied) restore request before it 
-   * is deleted (in milliseconds).
-   */ 
-  private static long  sRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
-  
-  /**
-   * The minimum time a cycle of the node cache garbage collector loop should 
-   * take (in milliseconds).
-   */ 
-  private static long  sNodeGCInterval = 3600000L;  /* 60-minutes */
-
-  /**
-   * The time (in milliseconds) between reports of the JVM heap statistics.
-   */ 
-  private static long  sHeapStatsInterval = 900000L;  /* 15-minutes */
-
-
  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -17944,6 +18296,13 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The maximum age of a resolved (Restored or Denied) restore request before it 
+   * is deleted (in milliseconds).
+   */ 
+  private AtomicLong  pRestoreCleanupInterval; 
+  
 
   /**
    * A lock which serializes access to the archive manifest file I/O operations.
@@ -18142,9 +18501,31 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The maximum number of node versions to cache in memory.
+   * The current number of node versions (checked-in and working) cached in memory.
    */ 
-  private long  pNodeCacheLimit;
+  private AtomicLong  pNodeCacheSize; 
+
+  /**
+   * The estimated memory size of a node version (in bytes).
+   */ 
+  private AtomicLong  pAverageNodeSize; 
+
+  /**
+   * The minimum and maximum amount of memory overhead which should be maintained at 
+   * all times.  Overhead is defined as the difference between the max heap size and 
+   * the total non-garbage heap allocation.  When the minimum amount of overhead is 
+   * no longer available a node garbage collection will take place which frees enough
+   * memory from the node version caches (checked-in and working) to raise the overhead
+   * up to the maximum value.
+   */ 
+  private AtomicLong  pMinimumOverhead; 
+  private AtomicLong  pMaximumOverhead; 
+
+  /**
+   * The minimum time a cycle of the node cache garbage collector loop should 
+   * take (in milliseconds).
+   */ 
+  private AtomicLong  pNodeGCInterval; 
 
 
   /**

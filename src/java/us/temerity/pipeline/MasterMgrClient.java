@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.85 2006/11/16 07:29:25 jim Exp $
+// $Id: MasterMgrClient.java,v 1.86 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -344,6 +344,50 @@ class MasterMgrClient
     MiscSetLogControlsReq req = new MiscSetLogControlsReq(controls);
 
     Object obj = performTransaction(MasterRequest.SetLogControls, req);
+    handleSimpleResponse(obj);
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   C O N T R O L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   */ 
+  public synchronized MasterControls
+  getRuntimeControls() 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(MasterRequest.GetMasterControls, null);
+    if(obj instanceof MiscGetMasterControlsRsp) {
+      MiscGetMasterControlsRsp rsp = (MiscGetMasterControlsRsp) obj;
+      return rsp.getControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   */ 
+  public synchronized void
+  setRuntimeControls
+  (
+   MasterControls controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    MiscSetMasterControlsReq req = new MiscSetMasterControlsReq(controls);
+
+    Object obj = performTransaction(MasterRequest.SetMasterControls, req);
     handleSimpleResponse(obj);
   }
   

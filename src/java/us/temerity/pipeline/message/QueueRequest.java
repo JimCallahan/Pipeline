@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.21 2006/11/11 20:45:36 jim Exp $
+// $Id: QueueRequest.java,v 1.22 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,6 +37,19 @@ enum QueueRequest
    * An instance of {@link MiscSetLogControlsReq} is next.
    */ 
   SetLogControls,
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current queueging levels.
+   */ 
+  GetQueueControls,
+  
+  /**
+   * An instance of {@link QueueSetQueueControlsReq} is next.
+   */ 
+  SetQueueControls,
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -193,6 +206,12 @@ enum QueueRequest
    * is next.
    */
   GetHostResourceSamples, 
+  
+  /**
+   * An instance {@link QueueGetHostHistogramsReq QueueGetHostHistogramsReq} 
+   * is next.
+   */
+  GetHostHistograms, 
   
 
   /*----------------------------------------------------------------------------------------*/

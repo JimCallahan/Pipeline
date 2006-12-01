@@ -281,50 +281,103 @@ increasingly more detailed command tracing messages. <br>
 </div>
 </div>
 </div>
-<h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--restore-cleanup-interval"></a>-</span><span class="postbody"><span
- style="font-weight: bold;">-restore-cleanup-interval</span>=<span
- style="font-style: italic;">msec</span><br>
+<h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options<br>
+</h3>
+<div style="margin-left: 40px;">
+<h4><span class="postbody"><span style="font-weight: bold;">Node
+Garbage Collector Parameters<br>
+</span></span></h4>
+Pipeline maintains an
+in memory cache of frequently accessed node
+version information to accelerate status updates and other node related
+operations.&nbsp; This cache contains both working and checked-in
+versions and mirrors the information stored on disk for frequently
+accessed nodes.&nbsp; When the size of non-garbage data maintained in
+the JVM heap grows to a level close to the maximum heap size, Pipeline
+will removed a number of least frequently used nodes from the cache to
+free up memory for other purposes in the JVM.&nbsp; The following
+options control the conditions under which this freeing of old node
+versions takes place.<br>
+<span class="postbody"><span style="font-weight: bold;"><span
+ style="font-weight: bold;"></span><br>
+<a name="--node-gc-interval"></a>--node-gc-interval</span>=<span
+ style="font-style: italic;">msec<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Overrides the node garbage collection interval (<span
+ style="font-style: italic;">msec</span>).&nbsp;&nbsp;
+Controls the maximum amount of time between runs of the Pipeline node
+garbage collector.&nbsp; Note that node collection will only take place
+when less than the minimum amount of memory overhead is
+available.&nbsp; When this occurs, enough node versions will be freed
+from the cache to increase the memory overhead to the maximum overhead
+level.&nbsp; See <span style="font-weight: bold;">--min-overhead</span>
+and <span style="font-weight: bold;">--max-overhead</span>
+below for details.<br>
+<br>
+The default value is (300000) msec.&nbsp; Which is (5) minutes.<br>
+<br>
+</div>
+<span style="font-weight: bold;"><a name="--min-overhead"></a>--min-overhead</span>=<span
+ style="font-style: italic;">min</span><span style="font-weight: bold;"><br>
+<a name="--max-overhead"></a>--max-overhead</span>=<span
+ style="font-style: italic;">max</span><span style="font-style: italic;"><br>
+</span><span style="font-style: italic;"><br>
+</span>
+<div style="margin-left: 40px;">Sets the minimum (<span
+ style="font-style: italic;">min</span>) and maximum (<span
+ style="font-style: italic;">max</span>) memory overhead sizes in
+bytes.&nbsp; Memory overhead is defined as the difference between the
+JVM maximum heap size (-Xmx) and the total amount of allocated
+non-garbage (total - free) memory.&nbsp; In other words, the amount of
+potential memory that could be allocated without causing the JVM to
+throw an OutOfMemoryError exception.&nbsp; The minimum and maximum
+overhead parameters control when and how often the node garbage
+collector is invoked.&nbsp; When overhead falls below the minimum, the
+node garbage collector frees enough nodes to increase the overhead up
+the maximum.<br>
+<br>
+The default minimum and maximum overhead sizes are set to 20% and 30%
+of the JVM maximum heap size respectively. <br>
+<br>
+</div>
+<span style="font-weight: bold;"><a name="--avg-node-size"></a>--avg-node-size</span>=<span
+ style="font-style: italic;">size<br>
 </span>
 <div style="margin-left: 40px;"><br>
-Overrides the maximum age (msec) of a resolved (Restored or Denied)
+Overrides the estimated average amout of memory required to cache a
+node version.&nbsp; This average size is used to calculate the number
+node versions to free from the cache in order to increase the memory
+overhead.&nbsp;&nbsp; Pipeline automatically adjusts this value after
+each node garbage collection based on the actual amount of memory freed
+by the collection cycle.&nbsp; Under normal circumstances this should
+not be manually changed, but is provided to allow resetting of the
+average size in emergency situations.<br>
+<br>
+The default value is (4000) bytes. <br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<h4><span style="font-weight: bold;">Miscellaneous Tuning Parameters<br>
+</span></h4>
+<span style="font-weight: bold;">
+<a name="--restore-cleanup-interval"></a>-</span><span class="postbody"><span
+ style="font-weight: bold;">-restore-cleanup-interval</span>=<span
+ style="font-style: italic;">msec<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;"><span class="postbody"></span>Overrides
+the maximum age (msec) of a resolved (Restored or Denied)
 restore request before it is deleted.&nbsp; Pipeline automatically
 cleans up these processed requests after a reasonable interval.&nbsp;
 Unresolved requests are never automatically removed.<br>
 <br>
 The default value is (172800000) msec.&nbsp; Which is (48) hours.<br>
-<br>
 </div>
-<span class="postbody"><span style="font-weight: bold;"><a
- name="--node-gc-interval"></a>--node-gc-interval</span>=<span
- style="font-style: italic;">msec<br>
+</div>
+<span class="postbody"><span style="font-weight: bold;">
 </span></span>
-<div style="margin-left: 40px;"><br>
-Overrides the node garbage collection interval (msec).&nbsp;&nbsp;
-Pipeline maintains an in memory cache of frequently accessed node
-database information to accelerate node status updates.&nbsp; When the
-cache grows to a significant portion of the JVM's heap, less frequently
-used nodes are removed from the cache so that Java can free up the
-memory.&nbsp; This option controls how frequently the node cache is
-processed to reduce memory usage.&nbsp; <br>
-<br>
-The default value is (10800000) msec.&nbsp; Which is (90) minutes.<br>
-<br>
-</div>
-<span style="font-weight: bold;"><a name="--node-cache-limit"></a>--node-cache-limit</span>=<span
- style="font-style: italic;">size </span><br>
-<div style="margin-left: 40px;"><br>
-Overrides the limit (<span style="font-style: italic;">size</span>) on
-the number of node versions cached in memory.&nbsp; By default, the
-limit is automatically calculated based on the maximum heap size of the
-Java
-VM set by the <span style="font-weight: bold;">--master-heap-size</span>
-option to <a
- href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-</div>
-</div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.75 2006/11/25 15:32:09 jim Exp $
+// $Id: QueueMgr.java,v 1.76 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,14 +32,25 @@ class QueueMgr
    * 
    * @param server
    *   The parent queue manager server.
+   * 
+   * @param collectorBatchSize
+   *   The maximum number of job servers per collection sub-thread.
+   * 
+   * @param dispatcherInterval
+   *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */
   public
   QueueMgr
   (
-   QueueMgrServer server 
+   QueueMgrServer server,
+   int collectorBatchSize,
+   long dispatcherInterval
   ) 
   { 
     pServer = server;
+
+    pCollectorBatchSize = new AtomicInteger(collectorBatchSize);
+    pDispatcherInterval = new AtomicLong(dispatcherInterval);
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
@@ -390,19 +401,14 @@ class QueueMgr
       for(String hname : pHosts.keySet()) {
 	QueueHost host = pHosts.get(hname);
 	if(host != null) {
-	  switch(host.getStatus()) {
-	  case Enabled:
-	  case Disabled: 
-	  case Hung: 
-	    try {
-	      JobMgrControlClient client = new JobMgrControlClient(hname);
-	      client.shutdown();
-	    }
-	    catch(PipelineException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Warning,
-		 ex.getMessage());
-	    }
+	  try {
+	    JobMgrControlClient client = new JobMgrControlClient(hname);
+	    client.shutdown();
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       ex.getMessage());
 	  }
 	}
       }
@@ -624,6 +630,72 @@ class QueueMgr
 	
       }
       
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   P A R A M E T E R S                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   * 
+   * @return
+   *   <CODE>QueueGetQueueControlsRsp</CODE>.
+   */ 
+  public Object
+  getRuntimeControls() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    QueueControls controls = 
+      new QueueControls(pCollectorBatchSize.get(), pDispatcherInterval.get());
+
+    return new QueueGetQueueControlsRsp(timer, controls);
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE>.
+   */ 
+  public synchronized Object
+  setRuntimeControls
+  (
+   QueueSetQueueControlsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    try {
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may change the runtime parameters!");
+
+      QueueControls controls = req.getControls();
+
+      {
+	Integer size = controls.getCollectorBatchSize();
+	if(size != null) 
+	  pCollectorBatchSize.set(size); 
+      }
+
+      {
+	Long interval = controls.getDispatcherInterval();
+	if(interval != null) 
+	  pDispatcherInterval.set(interval);
+      }
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -2456,6 +2528,9 @@ class QueueMgr
     host.setStatus(status);
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the full system resource usage history of the given host.
    * 
@@ -3499,7 +3574,7 @@ class QueueMgr
 	  int wk = 0;
 	  int id = 0;
 	  for(String hname : needsCollect) {
-	    if((wk % sMaxServersPerCollector) == 0) {
+	    if((wk % pCollectorBatchSize.get()) == 0) {
 	      if(thread != null) {
 		cthreads.add(thread);
 		thread.start();
@@ -4445,7 +4520,7 @@ class QueueMgr
 	(LogMgr.Kind.Dsp, LogMgr.Level.Fine,
 	 timer); 
 
-      long nap = sDispatcherInterval - timer.getTotalDuration();
+      long nap = pDispatcherInterval.get() - timer.getTotalDuration();
       if(nap > 0) {
 	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
@@ -4878,11 +4953,25 @@ class QueueMgr
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Fine)) {
       Runtime rt = Runtime.getRuntime();
+      long freeMemory  = rt.freeMemory();
+      long totalMemory = rt.totalMemory();
+      long maxMemory   = rt.maxMemory();
+      long overhead    = maxMemory - totalMemory + freeMemory;
+      
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	 "JVM Memory Stats: " + 
-	 rt.freeMemory() + "/" + rt.totalMemory() + "/" + rt.maxMemory() + 
-	 " (free/total/max)"); 
+	 "Memory Stats: " + 
+	 "  ---- JVM HEAP ----------------------\n" + 
+	 "    Free = " + freeMemory + 
+	             " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 
+	 "   Total = " + totalMemory + 
+	             " (" + ByteSize.longToFloatString(totalMemory) + ")\n" +
+	 "     Max = " + maxMemory + 
+	             " (" + ByteSize.longToFloatString(maxMemory) + ")\n" +
+	 "  ---- OVERHEAD ----------------------\n" + 
+	 "     Avl = " + overhead + 
+	             " (" + ByteSize.longToFloatString(overhead) + ")\n" +
+	 "  ------------------------------------");
       LogMgr.getInstance().flush();
     }
 
@@ -6907,55 +6996,8 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   A C C E S O R S                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  public static void
-  setMaxServersPerCollector
-  (
-   int num
-  ) 
-  {
-    if(num <= 0) 
-      throw new IllegalArgumentException
-	("The servers per collector (" + num + ") must be positive!");    
-    sMaxServersPerCollector = num;
-  }
-
-  public static void
-  setSampleCleanupInterval
-  (
-   long msec
-  ) 
-  {
-    if(msec <= 0L) 
-      throw new IllegalArgumentException
-	("The sample cleanup interval (" + msec + ") must be positive!"); 
-    PackageInfo.sSampleCleanupInterval = msec;
-  }
-
-  public static void 
-  setDispatcherInterval
-  (
-   long msec
-  ) 
-  {
-    if(msec <= 0L) 
-      throw new IllegalArgumentException
-	("The dispatcher interval (" + msec + ") must be positive!"); 
-    sDispatcherInterval = msec;
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The maximum number of job servers per collection sub-thread.
-   */ 
-  private static int  sMaxServersPerCollector = 50;
 
   /**
    * The maximum number of samples cached in memory.
@@ -6972,11 +7014,6 @@ class QueueMgr
    * Job servers Hung more than once within this interval will be changed to Disabled.
    */ 
   private static final long  sDisableInterval = 3600000L;  /* 60-minutes */ 
-
-  /**
-   * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
-   */ 
-  private static long  sDispatcherInterval = 2000L;  /* 2-seconds */ 
 
   /**
    * The number of dispatcher cycles between garbage collection of jobs.
@@ -7169,6 +7206,11 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
  
   /**
+   * The maximum number of job servers per collection sub-thread.
+   */ 
+  private AtomicInteger pCollectorBatchSize; 
+
+  /**
    * Fixed size ring buffers containing the last N resource samples
    * indexed by by fully resolved host name.<P> 
    * 
@@ -7192,6 +7234,11 @@ class QueueMgr
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
+   */ 
+  private AtomicLong  pDispatcherInterval; 
+
   /**
    * The IDs of jobs which should be preempted as soon as possible. 
    * 

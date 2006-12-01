@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.22 2006/12/01 18:12:08 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.23 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -530,9 +530,9 @@ class PackageInfo
 
 
   /**
-   * The default maximum number of node versions to cache in memory. <P> 
+   * The default maximum JVM heap size for the Pipeline master server. <P> 
    */ 
-  public static final long sDefaultNodeCacheLimit = (@PL_MASTER_HEAP_SIZE@L / 12288L);
+  public static final long sMasterHeapSize = @PL_MASTER_HEAP_SIZE@L;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -672,8 +672,8 @@ class PackageInfo
 
   /**
    * The maximum age of a resource sample file before it is deleted (in milliseconds).
-   */ 
-  public static long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
+   */
+  public static final long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
 
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.69 2006/11/10 21:57:23 jim Exp $
+// $Id: MasterMgrServer.java,v 1.70 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -50,8 +50,23 @@ class MasterMgrServer
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
-   * @param nodeCacheLimit
-   *   The maximum number of node versions to cache in memory.
+   * @param avgNodeSize
+   *   The estimated memory size of a node version (in bytes).
+   * 
+   * @param minOverhead
+   *   The minimum amount of memory overhead to maintain at all times.
+   * 
+   * @param maxOverhead
+   *   The maximum amount of memory overhead required to be available after a node garbage
+   *   collection.
+   * 
+   * @param nodeGCInterval
+   *   The minimum time a cycle of the node cache garbage collector loop should 
+   *   take (in milliseconds).
+   * 
+   * @param restoreCleanupInterval
+   *   The maximum age of a resolved (Restored or Denied) restore request before it 
+   *   is deleted (in milliseconds).
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
@@ -63,15 +78,21 @@ class MasterMgrServer
    boolean rebuildCache, 
    boolean preserveOfflinedCache, 
    boolean internalFileMgr, 
-   long nodeCacheLimit
+   long avgNodeSize, 
+   long minOverhead, 
+   long maxOverhead, 
+   long nodeGCInterval, 
+   long restoreCleanupInterval
   )
     throws PipelineException 
   { 
     super("MasterMgrServer");
 
     pMasterApp = app;
-    pMasterMgr = new MasterMgr(rebuildCache, preserveOfflinedCache, 
-			       internalFileMgr, nodeCacheLimit);
+    pMasterMgr = 
+      new MasterMgr(rebuildCache, preserveOfflinedCache, internalFileMgr,  
+		    avgNodeSize, minOverhead, maxOverhead, nodeGCInterval, 
+		    restoreCleanupInterval);
 
     pTasks = new HashSet<HandlerTask>();
   }
@@ -109,9 +130,6 @@ class MasterMgrServer
       NodeGCTask nodeGC = new NodeGCTask();
       nodeGC.start();
 
-      HeapStatsTask heapStats = new HeapStatsTask();
-      heapStats.start();
-
 //    LicenseTask lic = new LicenseTask();
 //    lic.start();
 
@@ -131,9 +149,6 @@ class MasterMgrServer
       try {
 // 	lic.interrupt();
 // 	lic.join();
-
-	heapStats.interrupt();
-	heapStats.join();
 
 	nodeGC.interrupt();
 	nodeGC.join();
@@ -329,6 +344,23 @@ class MasterMgrServer
 	      {
 		MiscSetLogControlsReq req = (MiscSetLogControlsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.setLogControls(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- RUNTIME PARAMETERS --------------------------------------------------------*/
+	    case GetMasterControls:
+	      {
+		objOut.writeObject(pMasterMgr.getRuntimeControls());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetMasterControls:
+	      {
+		MiscSetMasterControlsReq req = (MiscSetMasterControlsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setRuntimeControls(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -1476,47 +1508,6 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Node Garbage Collector Finished.");	
-	LogMgr.getInstance().flush();
-      }
-    }
-  }
-
-  /**
-   * Heap statistics reporting.
-   */
-  private 
-  class HeapStatsTask
-    extends Thread
-  {
-    public 
-    HeapStatsTask() 
-    {
-      super("MasterMgrServer:HeapStatsTask");
-    }
-
-    public void 
-    run() 
-    {
-      try {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	   "JVM Memory Statistics Started.");	
-	LogMgr.getInstance().flush();
-
-	while(!pShutdown.get()) {
-	  pMasterMgr.heapStats();
-	}
-      }
-      catch (Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
-	   "JVM Memory Statistics Failed: " + getFullMessage(ex));	
-	LogMgr.getInstance().flush();	
-      }
-      finally {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	   "JVM Memory Statistics Finished.");	
 	LogMgr.getInstance().flush();
       }
     }

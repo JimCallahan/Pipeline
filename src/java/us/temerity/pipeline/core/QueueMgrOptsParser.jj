@@ -65,6 +65,19 @@ QueueMgrOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The maximum number of job servers per collection sub-thread.
+   */ 
+  private int  pCollectorBatchSize = 50;
+
+  /**
+   * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
+   */ 
+  private long  pDispatcherInterval = 2000L;  /* 2-seconds */ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The name of the log file.
    */ 
   private Path  pLogFile; 
@@ -99,7 +112,6 @@ TOKEN :
   /* performance tuning options */ 
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">     : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">      : INTEGER_SEP
-| <SAMPLE_CLEANUP_INTERVAL:  "--sample-cleanup-interval">  : INTEGER_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -251,8 +263,10 @@ Commands()
       System.exit(1);
     }
 
-    /* create the server */ 
-    return (new QueueMgrServer());
+    /* create the server */
+    QueueMgrServer server = new QueueMgrServer(pCollectorBatchSize, pDispatcherInterval);
+
+    return server; 
   }
 }
     
@@ -342,7 +356,7 @@ GlobalOpts()
 {}
 {
   (Log() | LogFile() | StandardLogFile() | LogBackups() |
-   CollectorBatchSize() | DispatcherInterval() | SampleCleanupInterval())
+   CollectorBatchSize() | DispatcherInterval())
   {}
 }
 
@@ -608,10 +622,10 @@ void CollectorBatchSize()
   <COLLECTOR_BATCH_SIZE> EQ() t=<INTEGER>
   {
     Integer num = Integer.parseInt(t.image);
-    if(num <= 0) 
+    if(num <= 0L) 
       throw new PipelineException
         ("The collector batch size (" + num + ") must be positive!");
-    QueueMgr.setMaxServersPerCollector(num);
+    pCollectorBatchSize = num;
   }
 }
 
@@ -624,28 +638,13 @@ void DispatcherInterval()
   <DISPATCHER_INTERVAL> EQ() t=<INTEGER>
   {
     Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
+    if(msec < 500L) 
       throw new PipelineException
-        ("The dispatcher interval (" + msec + ") must be positive!");
-    QueueMgr.setDispatcherInterval(msec);
+        ("The dispatcher interval (" + msec + ") must be at least 500ms!");
+    pDispatcherInterval = msec; 
   }
 }
 
-void SampleCleanupInterval() 
-  throws PipelineException : 
-{
-  Token t;
-}
-{
-  <SAMPLE_CLEANUP_INTERVAL> EQ() t=<INTEGER>
-  {
-    Long msec = Long.parseLong(t.image);
-    if(msec <= 0) 
-      throw new PipelineException
-        ("The sample cleanup interval (" + msec + ") must be positive!");
-    QueueMgr.setSampleCleanupInterval(msec);
-  }
-}
 
 
 

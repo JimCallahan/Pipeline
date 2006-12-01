@@ -191,18 +191,49 @@ Privileges<br>
       </ul>
       <li style="font-weight: bold;">runtime</li>
       <ul>
-        <li style="font-weight: bold;"><a href="#runtime_--master">--master</a>
---remote-log<span style="font-weight: normal;">=</span><span
+        <li style="font-weight: bold;"><a href="#runtime_--set-master">--set-master</a>
+          <span style="font-weight: normal;">[</span>--remote-log<span
+ style="font-weight: normal;">=</span><span
  style="font-style: italic; font-weight: normal;">logger:level</span><span
  style="font-weight: normal;">[</span><span
  style="font-style: italic; font-weight: normal;">,logger:level</span><span
- style="font-weight: normal;">[...]]&nbsp;</span></li>
-        <li style="font-weight: bold;"><a href="#runtime_--queue">--queue</a>
---remote-log<span style="font-weight: normal;">=</span><span
+ style="font-weight: normal;">[...]]] [</span><span class="postbody"><span
+ style="font-weight: bold;">--node-gc-interval</span><span
+ style="font-weight: normal;">=</span><span
+ style="font-style: italic; font-weight: normal;">msec</span><span
+ style="font-weight: normal;">] [</span></span><span
+ style="font-weight: bold;">--min-overhead</span>=<span
+ style="font-style: italic; font-weight: normal;">min</span><span
+ class="postbody"><span style="font-weight: normal;">] [</span></span><span
+ style="font-weight: bold;">--max-overhead</span>=<span
+ style="font-style: italic; font-weight: normal;">max</span><span
+ class="postbody"><span style="font-weight: normal;">] [</span></span><span
+ style="font-weight: bold;">--avg-node-size</span>=<span
+ style="font-style: italic; font-weight: normal;">size</span><span
+ class="postbody"><span style="font-weight: normal;">] [</span></span><span
+ style="font-weight: bold;">-</span><span class="postbody"><span
+ style="font-weight: bold;">-restore-cleanup-interval</span>=<span
+ style="font-style: italic; font-weight: normal;">msec</span></span><span
+ class="postbody"><span style="font-weight: normal;">]</span></span></li>
+        <li style="font-weight: bold;"><a href="#runtime_--set-queue">--set-queue</a>
+          <span style="font-weight: normal;">[</span>--remote-log<span
+ style="font-weight: normal;">=</span><span
  style="font-style: italic; font-weight: normal;">logger:level</span><span
  style="font-weight: normal;">[</span><span
  style="font-style: italic; font-weight: normal;">,logger:level</span><span
- style="font-weight: normal;">[...]] </span></li>
+ style="font-weight: normal;">[...]]] [</span><span
+ style="font-weight: bold;">--collector-batch-size</span>=<span
+ style="font-style: italic; font-weight: normal;">num</span><span
+ style="font-weight: normal;">] [</span><span style="font-weight: bold;">--dispatcher-interval</span>=<span
+ style="font-style: italic; font-weight: normal;">msec</span><span
+ style="font-weight: normal;">]</span></li>
+        <li style="font-weight: bold;"><a href="#runtime_--get-master"><span
+ class="postbody"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-master</span></span></span></a></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#runtime_--get-queue"><span
+ style="font-weight: bold;">--get-queue</span></a><br>
+          </span></li>
       </ul>
       <li style="font-weight: bold;">archive-volume</li>
       <ul>
@@ -365,6 +396,10 @@ Administration</span></span></a><br>
         <li style="font-weight: bold;"><a
  href="#job-server_--get-info-all"><span style="font-weight: normal;"><span
  style="font-weight: bold;">--get-info-all</span></span></a></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><a
+ href="#job-server_--get-histograms">--get-histograms</a><br>
+          </span></span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#job-server_--add"><span
  style="font-weight: bold;">--add</span></a>=<span
@@ -2434,22 +2469,61 @@ environment.&nbsp; Otherwise, the archiver plugin will be run under the
 original toolset environment used to create the archive volume.<br>
 <br>
 </span></div>
-<span style="font-weight: bold;"><a name="runtime_--master"></a>runtime
---master --remote-log</span>=<span style="font-weight: normal;"></span><span
- style="font-style: italic; font-weight: normal;">logger:level</span><span
- style="font-weight: normal;">[</span><span
- style="font-style: italic; font-weight: normal;">,logger:level</span><span
- style="font-weight: normal;">[...]] </span><span
- style="font-weight: bold;"><br>
-<a name="runtime_--queue"></a>runtime --queue --remote-log</span><span
+<span style="font-weight: bold;"><a name="runtime_--set_master"></a>runtime
+--set-master </span><span style="font-weight: normal;">[</span><span
+ style="font-weight: bold;">--remote-log</span><span
  style="font-weight: normal;">=</span><span
  style="font-style: italic; font-weight: normal;">logger:level</span><span
  style="font-weight: normal;">[</span><span
  style="font-style: italic; font-weight: normal;">,logger:level</span><span
- style="font-weight: normal;">[...]]</span><br>
+ style="font-weight: normal;">[...]]] <br>
+&nbsp; [</span><span class="postbody"><a
+ href="plmaster.html#--node-gc-interval"><span
+ style="font-weight: bold;">--node-gc-interval</span></a><span
+ style="font-weight: normal;">=</span><span
+ style="font-style: italic; font-weight: normal;">msec</span><span
+ style="font-weight: normal;">] [</span></span><a
+ href="plmaster.html#--min-overhead"><span style="font-weight: bold;">--min-overhead</span></a>=<span
+ style="font-style: italic; font-weight: normal;">min</span><span
+ class="postbody"><span style="font-weight: normal;">] [</span></span><a
+ href="plmaster.html#--max-overhead"><span style="font-weight: bold;">--max-overhead</span></a>=<span
+ style="font-style: italic; font-weight: normal;">max</span><span
+ class="postbody"><span style="font-weight: normal;">] [</span></span><a
+ href="plmaster.html#--avg-node-size"><span style="font-weight: bold;">--avg-node-size</span></a>=<span
+ style="font-style: italic; font-weight: normal;">size</span><span
+ class="postbody"><span style="font-weight: normal;">] <br>
+&nbsp; [</span></span><a href="plmaster.html#--restore-cleanup-interval"><span
+ style="font-weight: bold;">-</span></a><span class="postbody"><a
+ href="plmaster.html#--restore-cleanup-interval"><span
+ style="font-weight: bold;">-restore-cleanup-interval</span></a>=<span
+ style="font-style: italic; font-weight: normal;">msec</span></span><span
+ class="postbody"><span style="font-weight: normal;">]<br>
+<br>
+</span></span><span style="font-weight: normal;"></span><span
+ style="font-weight: bold;"><a name="runtime_--set_queue"></a>runtime
+--set-queue </span><span style="font-weight: normal;">[</span><span
+ style="font-weight: bold;">--remote-log</span><span
+ style="font-weight: normal;">=</span><span
+ style="font-style: italic; font-weight: normal;">logger:level</span><span
+ style="font-weight: normal;">[</span><span
+ style="font-style: italic; font-weight: normal;">,logger:level</span><span
+ style="font-weight: normal;">[...]]] <br>
+&nbsp; [</span><a href="plqueuemgr.html#--collector-batch-size"><span
+ style="font-weight: bold;">--collector-batch-size</span></a>=<span
+ style="font-style: italic; font-weight: normal;">num</span><span
+ style="font-weight: normal;">] [</span><a
+ href="plqueuemgr.html#--dispatcher-interval"><span
+ style="font-weight: bold;">--dispatcher-interval</span></a>=<span
+ style="font-style: italic; font-weight: normal;">msec</span><span
+ style="font-weight: normal;">]</span><span style="font-weight: normal;"></span>
 <div style="margin-left: 40px;"><br>
 Controls various runtime configurable parameters of the server daemons
-remotely.&nbsp; <br>
+remotely.&nbsp; The options behave identically as it given on the
+command-line when starting <a href="plmaster.html"><span
+ style="font-weight: bold;">plmaster</span></a>(1) or <a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
+respectively.&nbsp; See the man pages for those server daemons for
+details on these options.<br>
 <br>
 <span style="font-weight: bold;">--remote-log</span><span
  style="font-weight: bold;"></span><br>
@@ -2458,9 +2532,18 @@ remotely.&nbsp; <br>
 Changes the logging level of Pipeline server daemons using the same
 parameters as the <span style="font-weight: bold;">--log</span>
 options specified by these daemons on startup.<br>
-</div>
 <br>
-<span style="font-weight: bold;"><a name="archive-volume_--get"></a>archive-volume
+</div>
+<span style="font-weight: bold;"><a name="runtime_--get-master"></a>runtime
+--get-master<br>
+<a name="runtime_--get-queue"></a>runtime --get-queue<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints all runtime configurable parameters and logging level settings
+for <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1)
+or <a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1).</div>
+<span style="font-weight: bold;"><br>
+<a name="archive-volume_--get"></a>archive-volume
 --get</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names of all archive volumes
@@ -2910,6 +2993,13 @@ resource statistics and the biases for all supported selection keys.<br>
 job servers.&nbsp; Equivalent to performing a <a
  href="#job-server_--get-info"><span style="font-weight: bold;">job-server
 --get-info</span></a> for each existing job server.</div>
+<span style="font-weight: bold;"><br>
+<a name="job-server_--get-histograms"></a>job-server --get-histograms<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints frequency distribution data about the key information of all job
+servers.<br>
+</div>
 <span style="font-weight: bold;"><br>
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="job-server_--add"></a>job-server</span></span><span

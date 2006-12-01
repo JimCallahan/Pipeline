@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.64 2006/11/25 15:32:09 jim Exp $
+// $Id: ScriptApp.java,v 1.65 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -157,8 +157,13 @@ class ScriptApp
        "      --restore=archive-name [--param=name:value ...] [--toolset=...]\n" + 
        "        [--vsn=node-name:major.minor.micro ...]\n" + 
        "    runtime\n" + 
-       "      --master --remote-log=logger:level[,logger:level[...]]\n" + 
-       "      --queue --remote-log=logger:level[,logger:level[...]]\n" + 
+       "      --set-master [--remote-log=logger:level[,logger:level[...]]]\n" + 
+       "        [--node-gc-interval=msec] [--min-overhead=min] [--max-overhead=max]\n" + 
+       "        [--avg-node-size=size] [--restore-cleanup-interval=msec]\n" + 
+       "      --set-queue [--remote-log=logger:level[,logger:level[...]]]\n" + 
+       "        [--collector-batch-size=num] [--dispatcher-interval=msec]\n" + 
+       "      --get-master\n" + 
+       "      --get-queue\n" +
        "    archive-volume\n" + 
        "      --get\n" + 
        "      --get-info=archive-name [--show=section[,section ...]]\n" + 
@@ -1018,6 +1023,112 @@ class ScriptApp
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
     LogMgr.getInstance().flush();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   P A R A M E T E R S                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print the master controls and logging levels.
+   */ 
+  public void 
+  printRuntimeMaster
+  (
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  { 
+    StringBuilder buf = new StringBuilder();
+
+    {
+      MasterControls controls = client.getRuntimeControls();
+      buf.append
+	(tbar(80) + "\n" +
+	 " Average Node Size : " + controls.getAverageNodeSize() + " (bytes)\n" + 
+	 "  Minimum Overhead : " + controls.getMinimumOverhead() + 
+	 " (" + ByteSize.longToFloatString(controls.getMinimumOverhead()) + ")\n" +
+	 "  Maximum Overhead : " + controls.getMaximumOverhead() + 
+	 " (" + ByteSize.longToFloatString(controls.getMaximumOverhead()) + ")\n" +
+	 "  Node GC Interval : " + controls.getNodeGCInterval() + " (msec)\n" + 
+	 "  Restore Interval : " + controls.getRestoreCleanupInterval() + " (msec)\n" + 
+	 "\n" + 
+	 pad("-- Logging Levels ", '-', 80) + "\n");
+    }
+     
+    {
+      LogControls controls = client.getLogControls();
+      logLevelMessage(controls, LogMgr.Kind.Glu, buf);
+      logLevelMessage(controls, LogMgr.Kind.Sub, buf);
+      logLevelMessage(controls, LogMgr.Kind.Ops, buf);
+      logLevelMessage(controls, LogMgr.Kind.Net, buf);
+      logLevelMessage(controls, LogMgr.Kind.Plg, buf);
+      logLevelMessage(controls, LogMgr.Kind.Mem, buf);
+      logLevelMessage(controls, LogMgr.Kind.Ext, buf);
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
+  }
+
+
+  /**
+   * Print the queue controls and logging levels.
+   */ 
+  public void 
+  printRuntimeQueue
+  (
+   QueueMgrClient client
+  ) 
+    throws PipelineException
+  {
+    StringBuilder buf = new StringBuilder();
+
+    {
+      QueueControls controls = client.getRuntimeControls();    
+      buf.append
+	(tbar(80) + "\n" +
+	 " Collector Batch Size : " + controls.getCollectorBatchSize() + "\n" + 
+	 "  Dispatcher Interval : " + controls.getDispatcherInterval() + " (msec)\n" +
+	 "\n" + 
+	 pad("-- Logging Levels ", '-', 80) + "\n");
+    }
+
+    {
+      LogControls controls = client.getLogControls();
+      logLevelMessage(controls, LogMgr.Kind.Col, buf);
+      logLevelMessage(controls, LogMgr.Kind.Dsp, buf);
+      logLevelMessage(controls, LogMgr.Kind.Sch, buf);
+      logLevelMessage(controls, LogMgr.Kind.Job, buf);
+      logLevelMessage(controls, LogMgr.Kind.Glu, buf);
+      logLevelMessage(controls, LogMgr.Kind.Ops, buf);
+      logLevelMessage(controls, LogMgr.Kind.Net, buf);
+      logLevelMessage(controls, LogMgr.Kind.Plg, buf);
+      logLevelMessage(controls, LogMgr.Kind.Mem, buf);
+      logLevelMessage(controls, LogMgr.Kind.Ext, buf);
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
+  }
+
+  /**
+   * Generate a logging level message.
+   */ 
+  private void 
+  logLevelMessage
+  (
+   LogControls controls, 
+   LogMgr.Kind kind, 
+   StringBuilder buf
+  ) 
+  {
+    buf.append("  " + kind + " : " + controls.getLevel(kind) + "\n");
   }
 
 
@@ -3815,30 +3926,7 @@ class ScriptApp
   )
     throws NumberFormatException
   {
-    if((text != null) && (text.length() > 0) && !text.equals("-")) {
-      String istr = text;
-      long scale = 1;
-      if(text.endsWith("K")) {
-	istr = text.substring(0, text.length()-1);
-	scale = 1024L;
-      }
-      else if(text.endsWith("M")) {
-	istr = text.substring(0, text.length()-1);
-	scale = 1048576L;
-      }
-      else if(text.endsWith("G")) {
-	istr = text.substring(0, text.length()-1);
-	scale = 1073741824L;
-      }
-
-      Long value = new Long(istr);
-      if(value < 0) 
-	throw new NumberFormatException();
-
-      return (value * scale);
-    }
-
-    return null;
+    return ByteSize.stringToLong(text);
   }
 
   /**
@@ -3850,24 +3938,7 @@ class ScriptApp
    Long value
   ) 
   {
-    if(value == null) 
-      return "-";
-
-    if(value < 1024) {
-      return value.toString();
-    }
-    else if(value < 1048576) {
-      double k = ((double) value) / 1024.0;
-      return String.format("%1$.1fK", k);
-    }
-    else if(value < 1073741824) {
-      double m = ((double) value) / 1048576.0;
-      return String.format("%1$.1fM", m);
-    }
-    else {
-      double g = ((double) value) / 1073741824.0;
-      return String.format("%1$.1fG", g);
-    }
+    return ByteSize.longToFloatString(value); 
   }
 
 

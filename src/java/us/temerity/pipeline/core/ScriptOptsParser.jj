@@ -162,6 +162,15 @@ ScriptOptsParser
    */ 
   private LogControls  pLogControls; 
 
+  private Integer pCollectorBatchSize;
+  private Long    pDispatcherInterval;
+  
+  private Long  pNodeGCInterval;
+  private Long  pMinOverhead;
+  private Long  pMaxOverhead;
+  private Long  pAvgNodeSize;
+  private Long  pRestoreCleanupInterval;
+
   /**
    * archive-volume options. 
    */ 
@@ -356,6 +365,13 @@ TOKEN :
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
 | <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr"> 
 | <REMOTE_LOG:         "--remote-log">          : LOG_SEP
+| <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">       : INTEGER_SEP
+| <DISPATCHER_INTERVAL:      "--dispatcher-interval">        : INTEGER_SEP
+| <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
+| <NODE_GC_INTERVAL:          "--node-gc-interval">          : INTEGER_SEP
+| <MIN_OVERHEAD:              "--min-overhead">              : INTEGER_SEP  
+| <MAX_OVERHEAD:              "--max-overhead">              : INTEGER_SEP  
+| <AVG_NODE_SIZE:             "--avg-node-size">             : INTEGER_SEP  
 | <PATTERN:            "--pattern">         	: STRING_SEP	      
 | <MAX_ARCHIVES:       "--max-archives">    	: INTEGER_SEP	      
 | <MIN_SIZE:           "--min-size">        	: BYTE_SIZE_SEP	      
@@ -1365,8 +1381,10 @@ TOKEN :
 <RUNTIME_OPTS>
 TOKEN :
 {  
-  <MASTER_RT:          "--master"> : OPTIONS     
-| <QUEUE_RT:           "--queue">  : OPTIONS  
+  <SET_MASTER_RT:      "--set-master"> : OPTIONS     
+| <SET_QUEUE_RT:       "--set-queue">  : OPTIONS  
+| <GET_MASTER_RT:      "--get-master"> : OPTIONS     
+| <GET_QUEUE_RT:       "--get-queue">  : OPTIONS  
 | <AE55:               ["\0"]>   
 | <UNKNOWN_OPTION23:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN23:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
@@ -1894,7 +1912,7 @@ void LogBackups() :
 void Log() : 
 {}
 {
-  (<LOG> EQ() LoggerArg() (COMMA() LoggerArg())*)
+  (<LOG> EQ() LoggerArg() (COMMA() LoggerArg())*) 
   {}
 }
 
@@ -1903,7 +1921,7 @@ void RemoteLog() :
   pLogControls = new LogControls();
 }
 {
-  (<REMOTE_LOG> EQ() LoggerArg() (COMMA() LoggerArg())*)
+  (<REMOTE_LOG> EQ() LoggerArg() (COMMA() LoggerArg())*) AE() 
   {}
 }
 
@@ -2948,48 +2966,232 @@ RuntimeCmds()
   throws PipelineException : 
 {}
 {
-  <RUNTIME> AE() (RuntimeMaster() | RuntimeQueue())
+  <RUNTIME> AE() (SetRuntimeMaster() | SetRuntimeQueue() | 
+		  GetRuntimeMaster() | GetRuntimeQueue())
   {}
 }
 
 void 
-RuntimeMaster() 
+SetRuntimeMaster() 
   throws PipelineException : 
-{}
 {
-  <MASTER_RT> AE() (RuntimeMasterOpts())* 
+  pLogControls = null;
+  pNodeGCInterval = null;
+  pMinOverhead = null;
+  pMaxOverhead = null;
+  pAvgNodeSize = null;
+  pRestoreCleanupInterval = null;
+}
+{
+  <SET_MASTER_RT> AE() (RuntimeMasterOpts())* 
   {
-    pMasterMgrClient.setLogControls(pLogControls);
+    boolean noOpts = true;
+    if(pLogControls != null) {
+      pMasterMgrClient.setLogControls(pLogControls);
+      noOpts = false;
+    }
+
+    if((pNodeGCInterval != null) || (pMinOverhead != null) || (pMaxOverhead != null) || 
+       (pAvgNodeSize != null) || (pRestoreCleanupInterval != null)) {
+      MasterControls controls =
+	new MasterControls(pAvgNodeSize, pMinOverhead, pMaxOverhead, 
+			   pNodeGCInterval, pRestoreCleanupInterval);
+      pMasterMgrClient.setRuntimeControls(controls);
+      noOpts = false;
+    }
+
+    if(noOpts)
+      throw new PipelineException
+	("No runtime parameters specified for the Master Manager server!");
   }
 }
 
 void 
-RuntimeMasterOpts() : 
-{}
-{
-  (RemoteLog() AE()) 
-  {}
-}
-
-void 
-RuntimeQueue() 
+GetRuntimeMaster() 
   throws PipelineException : 
 {}
 {
-  <QUEUE_RT> AE() (RuntimeQueueOpts())* 
+  <GET_MASTER_RT> AE()
   {
-    pQueueMgrClient.setLogControls(pLogControls);
+    pApp.printRuntimeMaster(pMasterMgrClient); 
   }
 }
 
 void 
-RuntimeQueueOpts() : 
+RuntimeMasterOpts() 
+  throws PipelineException : 
 {}
 {
-  (RemoteLog() AE()) 
+  (RemoteLog() | NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() | 
+   RestoreCleanupInterval())
   {}
 }
 
+void NodeGCInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <NODE_GC_INTERVAL> EQ() t=<INTEGER> AE()
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The node garbage collection interval (" + msec + ") must be positive!");
+    pNodeGCInterval = msec;
+  }
+}
+
+void MinOverhead()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <MIN_OVERHEAD> EQ() t=<INTEGER> AE()
+  {
+    Long size = Long.parseLong(t.image);
+    if(size <= 0) 
+      throw new PipelineException
+        ("The minimum overhead (" + size + ") must be positive!");
+    pMinOverhead = size;
+  }
+}
+
+void MaxOverhead()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <MAX_OVERHEAD> EQ() t=<INTEGER> AE()
+  {
+    Long size = Long.parseLong(t.image);
+    if(size <= 0) 
+      throw new PipelineException
+        ("The maximum overhead (" + size + ") must be positive!");
+    pMaxOverhead = size;
+  }
+}
+
+void AvgNodeSize()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <AVG_NODE_SIZE> EQ() t=<INTEGER> AE()
+  {
+    Long size = Long.parseLong(t.image);
+    if(size <= 0) 
+      throw new PipelineException
+        ("The average node size (" + size + ") must be positive!");
+    pAvgNodeSize = size;
+  }
+}
+
+
+void RestoreCleanupInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <RESTORE_CLEANUP_INTERVAL> EQ() t=<INTEGER> AE()
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The restore cleanup interval (" + msec + ") must be positive!");
+    pRestoreCleanupInterval = msec;
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+SetRuntimeQueue() 
+  throws PipelineException : 
+{
+  pLogControls = null;
+  pCollectorBatchSize = null;
+  pDispatcherInterval = null;
+}
+{
+  <SET_QUEUE_RT> AE() (RuntimeQueueOpts())* 
+  {
+    boolean noOpts = true;
+    if(pLogControls != null) {
+      pQueueMgrClient.setLogControls(pLogControls);
+      noOpts = false;
+    }
+    
+    if((pCollectorBatchSize != null) || (pDispatcherInterval != null)) {
+      QueueControls controls = new QueueControls(pCollectorBatchSize, pDispatcherInterval);
+      pQueueMgrClient.setRuntimeControls(controls);
+      noOpts = false;
+    }
+      
+    if(noOpts)
+      throw new PipelineException
+	("No runtime parameters specified for the Queue Manager server!");
+  }
+}
+
+void 
+GetRuntimeQueue() 
+  throws PipelineException : 
+{}
+{
+  <GET_QUEUE_RT> AE()
+  {
+    pApp.printRuntimeQueue(pQueueMgrClient); 
+  }
+}
+
+void 
+RuntimeQueueOpts() 
+  throws PipelineException : 
+{}
+{
+  (RemoteLog() | CollectorBatchSize() | DispatcherInterval()) 
+  {}
+}
+
+void CollectorBatchSize() 
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <COLLECTOR_BATCH_SIZE> EQ() t=<INTEGER> AE()
+  {
+    Integer num = Integer.parseInt(t.image);
+    if(num <= 0) 
+      throw new PipelineException
+        ("The collector batch size (" + num + ") must be positive!");
+    pCollectorBatchSize = num;
+  }
+}
+
+void DispatcherInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <DISPATCHER_INTERVAL> EQ() t=<INTEGER> AE()
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The dispatcher interval (" + msec + ") must be positive!");
+    pDispatcherInterval = msec; 
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/

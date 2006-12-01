@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.39 2006/11/25 15:32:09 jim Exp $
+// $Id: QueueMgrServer.java,v 1.40 2006/12/01 18:33:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,13 +36,23 @@ class QueueMgrServer
 
   /** 
    * Construct a new queue manager server.
+   * 
+   * @param collectorBatchSize
+   *   The maximum number of job servers per collection sub-thread.
+   * 
+   * @param dispatcherInterval
+   *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */
   public
-  QueueMgrServer()
+  QueueMgrServer
+  (
+   int collectorBatchSize,
+   long dispatcherInterval
+  ) 
   { 
     super("QueueMgrServer");
 
-    pQueueMgr = new QueueMgr(this);
+    pQueueMgr = new QueueMgr(this, collectorBatchSize, dispatcherInterval);
     pTasks = new HashSet<HandlerTask>();
   }
  
@@ -298,6 +308,23 @@ class QueueMgrServer
 	      {
 		MiscSetLogControlsReq req = (MiscSetLogControlsReq) objIn.readObject();
 		objOut.writeObject(pQueueMgr.setLogControls(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- RUNTIME PARAMETERS --------------------------------------------------------*/
+	    case GetQueueControls:
+	      {
+		objOut.writeObject(pQueueMgr.getRuntimeControls());
+		objOut.flush(); 
+	      }
+	      break;
+	      
+	    case SetQueueControls:
+	      {
+		QueueSetQueueControlsReq req = (QueueSetQueueControlsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.setRuntimeControls(req));
 		objOut.flush(); 
 	      }
 	      break;
