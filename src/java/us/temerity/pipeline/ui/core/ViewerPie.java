@@ -1,4 +1,4 @@
-// $Id: ViewerPie.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: ViewerPie.java,v 1.2 2006/12/05 22:17:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -126,10 +126,23 @@ class ViewerPie
   ) 
   {
     pColors = new Color3d[pHistogram.getNumCatagories()];
-    int wk;
-    for(wk=0; wk<pColors.length; wk++) {
-      double t = ((double) wk) / ((double) (pColors.length-1));
-      pColors[wk] = Color3d.lerp(lowColor, highColor, t);
+    
+    switch(pHistogram.getNumCatagories()) {
+    case 0:
+      break;
+
+    case 1:
+      pColors[0] = lowColor;
+      break;
+
+    default: 
+      {
+	int wk;
+	for(wk=0; wk<pColors.length; wk++) {
+	  double t = ((double) wk) / ((double) (pColors.length-1));
+	  pColors[wk] = Color3d.lerp(lowColor, highColor, t);
+	}
+      }
     }
   }
 

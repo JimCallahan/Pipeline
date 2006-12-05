@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.2 2006/12/05 22:17:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -285,7 +285,8 @@ class JQueueJobServerStatsPanel
     pNewHistogramSpecs = null;
 
     pWorkGroups.clear();
-    pWorkGroups.addAll(workGroups);
+    if(workGroups != null) 
+      pWorkGroups.addAll(workGroups);
 
     /* update the visualization graphics */ 
     updateUniverse();
