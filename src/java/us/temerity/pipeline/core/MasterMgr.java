@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.177 2006/12/01 20:00:05 jim Exp $
+// $Id: MasterMgr.java,v 1.178 2006/12/05 19:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -432,8 +432,22 @@ class MasterMgr
   initPrivileges()
     throws PipelineException
   {
-    pAdminPrivileges.readAll();
-    updateAdminPrivileges();
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading Privileges...");   
+    LogMgr.getInstance().flush();
+
+    {
+      pAdminPrivileges.readAll();
+      updateAdminPrivileges();
+    }
+
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -536,66 +550,89 @@ class MasterMgr
     throws PipelineException
   {
     if(pRebuildCache) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Rebuilding Archive Caches...");   
-      LogMgr.getInstance().flush();
-
       /* scan archive volume GLUE files */ 
       {
-	File dir = new File(pNodeDir, "archives/manifests");
-	File files[] = dir.listFiles(); 
-	int wk;
-	for(wk=0; wk<files.length; wk++) {
-	  ArchiveVolume archive = readArchive(files[wk].getName());
-	  
-	  for(String name : archive.getNames()) {
-	    TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
-	    if(versions == null) {
-	      versions = new TreeMap<VersionID,TreeSet<String>>();
-	      pArchivedIn.put(name, versions);
-	    }
+	TaskTimer timer = new TaskTimer();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   "Rebuilding ArchiveOn Cache...");   
+	LogMgr.getInstance().flush();
+	
+	{
+	  File dir = new File(pNodeDir, "archives/manifests");
+	  File files[] = dir.listFiles(); 
+	  int wk;
+	  for(wk=0; wk<files.length; wk++) {
+	    ArchiveVolume archive = readArchive(files[wk].getName());
 	    
-	    for(VersionID vid : archive.getVersionIDs(name)) { 
-	      TreeSet<String> anames = versions.get(vid);
-	      if(anames == null) {
-		anames = new TreeSet<String>();
-		versions.put(vid, anames);
+	    for(String name : archive.getNames()) {
+	      TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	      if(versions == null) {
+		versions = new TreeMap<VersionID,TreeSet<String>>();
+		pArchivedIn.put(name, versions);
 	      }
 	      
-	      anames.add(archive.getName());
+	      for(VersionID vid : archive.getVersionIDs(name)) { 
+		TreeSet<String> anames = versions.get(vid);
+		if(anames == null) {
+		  anames = new TreeSet<String>();
+		  versions.put(vid, anames);
+		}
+		
+		anames.add(archive.getName());
+	      }
 	    }
+	    
+	    pArchivedOn.put(archive.getName(), archive.getTimeStamp());
 	  }
-	  
-	  pArchivedOn.put(archive.getName(), archive.getTimeStamp());
 	}
+	
+	timer.suspend();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	LogMgr.getInstance().flush();
       }
-      
+ 
       /* scan restore output files */ 
       {
-	File dir = new File(pNodeDir, "archives/output/restore");
-	File files[] = dir.listFiles(); 
-	int wk;
-	for(wk=0; wk<files.length; wk++) {
-	  String fname = files[wk].getName();
-	  for(String aname : pArchivedOn.keySet()) {
-	    if(fname.startsWith(aname)) {
-	      try {
-		Date stamp = new Date(Long.parseLong(fname.substring(aname.length()+1)));
-		TreeSet<Date> stamps = pRestoredOn.get(aname);
-		if(stamps == null) {
-		  stamps = new TreeSet<Date>();
-		  pRestoredOn.put(aname, stamps);
+	TaskTimer timer = new TaskTimer();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   "Rebuilding RestoredOn Cache...");   
+	LogMgr.getInstance().flush();
+
+	{
+	  File dir = new File(pNodeDir, "archives/output/restore");
+	  File files[] = dir.listFiles(); 
+	  int wk;
+	  for(wk=0; wk<files.length; wk++) {
+	    String fname = files[wk].getName();
+	    for(String aname : pArchivedOn.keySet()) {
+	      if(fname.startsWith(aname)) {
+		try {
+		  Date stamp = new Date(Long.parseLong(fname.substring(aname.length()+1)));
+		  TreeSet<Date> stamps = pRestoredOn.get(aname);
+		  if(stamps == null) {
+		    stamps = new TreeSet<Date>();
+		    pRestoredOn.put(aname, stamps);
+		  }
+		  stamps.add(stamp);
 		}
-		stamps.add(stamp);
+		catch(NumberFormatException ex) {
+		}
+		break;
 	      }
-	      catch(NumberFormatException ex) {
-	      }
-	      break;
 	    }
-	  }
-	}    
-      }      
+	  }    
+	}      
+
+	timer.suspend();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Info,
+	   "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	LogMgr.getInstance().flush();
+      }
 
       /* rebuild (or reread) offlined versions cache */ 
       {
@@ -604,6 +641,7 @@ class MasterMgr
 	  readOfflined();
 	}
 	else {
+	  TaskTimer timer = new TaskTimer();
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Rebuilding Offlined Cache...");    
@@ -616,16 +654,34 @@ class MasterMgr
 	  finally {
 	    freeFileMgrClient(fclient);
 	  }
+
+	  timer.suspend();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	  LogMgr.getInstance().flush();
 	}
       }
     }
     else {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Loading Archive Caches...");   
+      LogMgr.getInstance().flush();
+
       readArchivedIn();
       readArchivedOn();
       readRestoredOn();
       readOfflined();
 
       removeArchivesCache();
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();
     }
 
     readRestoreReqs();
@@ -674,6 +730,12 @@ class MasterMgr
   initToolsets()
     throws PipelineException
   {
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading Toolsets...");   
+    LogMgr.getInstance().flush();
+
     readDefaultToolset();
     readActiveToolsets();
 
@@ -805,6 +867,12 @@ class MasterMgr
 	}
       }
     }
+
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();
   }
 
 
@@ -817,12 +885,26 @@ class MasterMgr
   initMasterExtensions()
     throws PipelineException
   {
-    readMasterExtensions();
-   
-    synchronized(pMasterExtensions) {
-      for(MasterExtensionConfig config : pMasterExtensions.values()) 
-	doPostExtensionEnableTask(config);
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading Extensions...");   
+    LogMgr.getInstance().flush();
+
+    {
+      readMasterExtensions();
+      
+      synchronized(pMasterExtensions) {
+	for(MasterExtensionConfig config : pMasterExtensions.values()) 
+	  doPostExtensionEnableTask(config);
+      }
     }
+
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();    
   }
   
 
@@ -834,34 +916,48 @@ class MasterMgr
   private void 
   initWorkingAreas() 
   {
-    File dir = new File(pNodeDir, "working");
-    File authors[] = dir.listFiles(); 
-    int ak;
-    for(ak=0; ak<authors.length; ak++) {
-      if(!authors[ak].isDirectory())
-	throw new IllegalStateException
-	  ("Non-directory file found in the root working area directory!"); 
-      String author = authors[ak].getName();
-      
-      File views[] = authors[ak].listFiles();  
-      int vk;
-      for(vk=0; vk<views.length; vk++) {
-	if(!views[vk].isDirectory())
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading Working Areas...");   
+    LogMgr.getInstance().flush();
+
+    {
+      File dir = new File(pNodeDir, "working");
+      File authors[] = dir.listFiles(); 
+      int ak;
+      for(ak=0; ak<authors.length; ak++) {
+	if(!authors[ak].isDirectory())
 	  throw new IllegalStateException
-	    ("Non-directory file found in the user (" + author + ") root working " + 
-	     "area directory!"); 
-	String view = views[vk].getName();
+	    ("Non-directory file found in the root working area directory!"); 
+	String author = authors[ak].getName();
 	
-	synchronized(pWorkingAreaViews) {
-	  TreeSet<String> vs = pWorkingAreaViews.get(author);
-	  if(vs == null) {
-	    vs = new TreeSet<String>();
+	File views[] = authors[ak].listFiles();  
+	int vk;
+	for(vk=0; vk<views.length; vk++) {
+	  if(!views[vk].isDirectory())
+	    throw new IllegalStateException
+	      ("Non-directory file found in the user (" + author + ") root working " + 
+	     "area directory!"); 
+	  String view = views[vk].getName();
+	  
+	  synchronized(pWorkingAreaViews) {
+	    TreeSet<String> vs = pWorkingAreaViews.get(author);
+	    if(vs == null) {
+	      vs = new TreeSet<String>();
 	    pWorkingAreaViews.put(author, vs);
+	    }
+	    vs.add(view);
 	  }
-	  vs.add(view);
 	}
       }
     }
+    
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();    
   }
 
 
@@ -885,6 +981,7 @@ class MasterMgr
   initNodeTree()
     throws PipelineException 
   {
+    TaskTimer timer = new TaskTimer();
     if(pRebuildCache) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -919,10 +1016,27 @@ class MasterMgr
 	  }
 	}
       } 
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();
     }
     else {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Loading Node Tree Cache...");   
+      LogMgr.getInstance().flush();
+
       pNodeTree.readGlueFile(new File(pNodeDir, "etc/node-tree"));
       removeNodeTreeCache();
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();
     }
 
     pNodeTree.logNodeTree();
@@ -1083,6 +1197,7 @@ class MasterMgr
 	  ("Unable to create the downstream links directory (" + dir + ")!");
     }
 
+    TaskTimer timer = new TaskTimer();
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Rebuilding Downstream Links Cache...");   
@@ -1131,6 +1246,12 @@ class MasterMgr
 
     /* write cached downstream links */ 
     writeAllDownstreamLinks();
+
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();
   }
 
   /**

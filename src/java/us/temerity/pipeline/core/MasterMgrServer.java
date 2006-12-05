@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.70 2006/12/01 18:33:41 jim Exp $
+// $Id: MasterMgrServer.java,v 1.71 2006/12/05 19:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -88,6 +88,8 @@ class MasterMgrServer
   { 
     super("MasterMgrServer");
 
+    pTimer = new TaskTimer();
+
     pMasterApp = app;
     pMasterMgr = 
       new MasterMgr(rebuildCache, preserveOfflinedCache, internalFileMgr,  
@@ -122,10 +124,13 @@ class MasterMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sMasterPort);
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Ready.");
+	 "Server Ready.\n" + 
+	 "  Started in " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
+      pTimer = new TaskTimer();
 
       NodeGCTask nodeGC = new NodeGCTask();
       nodeGC.start();
@@ -207,9 +212,11 @@ class MasterMgrServer
 
       pMasterMgr.shutdown();
 
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Shutdown.");
+	 "Server Shutdown.\n" + 
+	 "  Uptime " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
     }
   }
@@ -1554,6 +1561,11 @@ class MasterMgrServer
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Times server startup and uptime.
+   */ 
+  private TaskTimer  pTimer; 
 
   /**
    * The application instance.

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.77 2006/12/05 18:23:30 jim Exp $
+// $Id: QueueMgr.java,v 1.78 2006/12/05 19:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -148,16 +148,11 @@ class QueueMgr
       /* load and initialize the server extensions */ 
       initQueueExtensions();
 
-      /* load the license keys if any exist */ 
-      readLicenseKeys();
-
-      /* load the selection keys, groups and schedules if any exist */ 
-      readSelectionKeys();
-      readSelectionGroups();
-      readSelectionSchedules();
+      /* load the license and selection keys */ 
+      initLicenseSelectionKeys(); 
 
       /* load the hosts if any exist */ 
-      readHosts();
+      initHosts();
 
       /* initialize the job related tables from disk files */ 
       initJobTables();
@@ -207,12 +202,76 @@ class QueueMgr
   initQueueExtensions()
     throws PipelineException
   {
-    readQueueExtensions();
-   
-    synchronized(pQueueExtensions) {
-      for(QueueExtensionConfig config : pQueueExtensions.values()) 
-	doPostExtensionEnableTask(config);
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading Extensions...");   
+    LogMgr.getInstance().flush();
+
+    {
+      readQueueExtensions();
+      
+      synchronized(pQueueExtensions) {
+	for(QueueExtensionConfig config : pQueueExtensions.values()) 
+	  doPostExtensionEnableTask(config);
+      }
     }
+
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();    
+  }
+
+  /**
+   * Initialize the license and selection keys. 
+   */ 
+  private void 
+  initLicenseSelectionKeys() 
+    throws PipelineException
+  {
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading License/Selection Keys...");   
+    LogMgr.getInstance().flush();
+
+    /* load the license keys if any exist */ 
+    readLicenseKeys();
+    
+    /* load the selection keys, groups and schedules if any exist */ 
+    readSelectionKeys();
+    readSelectionGroups();
+    readSelectionSchedules();
+
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();    
+  }
+
+  /**
+   * Initialize the job server hosts. 
+   */ 
+  private void 
+  initHosts() 
+    throws PipelineException
+  {
+    TaskTimer timer = new TaskTimer();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Loading Job Servers Info...");   
+    LogMgr.getInstance().flush();
+
+    readHosts();
+    
+    timer.suspend();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+    LogMgr.getInstance().flush();    
   }
 
   /**
@@ -225,6 +284,12 @@ class QueueMgr
     /* read the existing queue jobs files (in oldest to newest order) */ 
     TreeMap<Long,String> running = new TreeMap<Long,String>();
     {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Loading Jobs...");   
+      LogMgr.getInstance().flush();
+
       File dir = new File(pQueueDir, "queue/jobs");
       File files[] = dir.listFiles(); 
       int wk;
@@ -289,10 +354,22 @@ class QueueMgr
 	  }
 	}
       }
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();    
     }
 
     /* initialize the job groups */ 
     {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Loading Job Groups...");   
+      LogMgr.getInstance().flush();
+
       File dir = new File(pQueueDir, "queue/job-groups");
       File files[] = dir.listFiles(); 
       int wk;
@@ -314,10 +391,30 @@ class QueueMgr
 	  }
 	}
       }
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();    
     }
     
     /* garbage collect all jobs no longer referenced by a job group */ 
-    garbageCollectJobs(new TaskTimer());
+    {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Cleaning Old Jobs...");   
+      LogMgr.getInstance().flush();
+
+      garbageCollectJobs(timer);
+      
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Cleaned in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();    
+    }
 
     /* start tasks to record the results of the already running jobs */ 
     for(Long jobID : running.keySet()) {

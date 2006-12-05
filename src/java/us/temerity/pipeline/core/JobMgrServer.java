@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.26 2006/11/22 09:08:01 jim Exp $
+// $Id: JobMgrServer.java,v 1.27 2006/12/05 19:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,6 +41,8 @@ class JobMgrServer
   { 
     super("JobMgrServer");
 
+    pTimer = new TaskTimer();
+
     pJobMgr = new JobMgr();
 
     pShutdown = new AtomicBoolean(false);
@@ -72,10 +74,13 @@ class JobMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sJobPort);
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Ready.");
+	 "Server Ready.\n" + 
+	 "  Started in " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
+      pTimer = new TaskTimer();
 
       CollectorTask collector = null;
       if(PackageInfo.sOsType == OsType.Unix) {
@@ -163,9 +168,11 @@ class JobMgrServer
       
       PluginMgrClient.getInstance().disconnect();
 
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Shutdown.");  
+	 "Server Shutdown.\n" + 
+	 "  Uptime " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();  
     }  
   }
@@ -551,6 +558,11 @@ class JobMgrServer
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Times server startup and uptime.
+   */ 
+  private TaskTimer  pTimer; 
 
   /**
    * The shared job manager. 

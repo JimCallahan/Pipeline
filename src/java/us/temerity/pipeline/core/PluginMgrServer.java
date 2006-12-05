@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.8 2006/10/11 22:45:40 jim Exp $
+// $Id: PluginMgrServer.java,v 1.9 2006/12/05 19:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,6 +41,7 @@ class PluginMgrServer
   { 
     super("PluginMgrServer");
 
+    pTimer     = new TaskTimer();
     pPluginMgr = new PluginMgr();
     pTasks     = new HashSet<HandlerTask>();    
   }
@@ -70,10 +71,13 @@ class PluginMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Fine,
 	 "Listening on Port: " + PackageInfo.sPluginPort);
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Ready.");
+	 "Server Ready.\n" + 
+	 "  Started in " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
+      pTimer = new TaskTimer();
 
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
@@ -139,9 +143,11 @@ class PluginMgrServer
 	}
       }
 
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Shutdown.");    
+	 "Server Shutdown.\n" + 
+	 "  Uptime " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();  
     }
   }
@@ -329,6 +335,11 @@ class PluginMgrServer
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Times server startup and uptime.
+   */ 
+  private TaskTimer  pTimer; 
 
   /**
    * The shared plugin manager. 

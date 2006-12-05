@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.41 2006/12/05 18:23:30 jim Exp $
+// $Id: QueueMgrServer.java,v 1.42 2006/12/05 19:55:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,6 +52,7 @@ class QueueMgrServer
   { 
     super("QueueMgrServer");
 
+    pTimer = new TaskTimer();
     pQueueMgr = new QueueMgr(this, collectorBatchSize, dispatcherInterval);
     pTasks = new HashSet<HandlerTask>();
   }
@@ -187,9 +188,11 @@ class QueueMgrServer
       PluginMgrClient.getInstance().disconnect();
       pQueueMgr.shutdown();
 
+      pTimer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Shutdown."); 
+	 "Server Shutdown.\n" + 
+	 "  Uptime " + Dates.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();  
     }
   }
@@ -854,10 +857,13 @@ class QueueMgrServer
    
 	pQueueMgr.establishMasterConnection();
 
+	pTimer.suspend();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "Server Ready.");
+	   "Server Ready.\n" + 
+	   "  Started in " + Dates.formatInterval(pTimer.getTotalDuration()));
 	LogMgr.getInstance().flush();
+	pTimer = new TaskTimer();
 	
 	pCollector.start();
 	pDispatcher.start();
@@ -1047,6 +1053,11 @@ class QueueMgrServer
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Times server startup and uptime.
+   */ 
+  private TaskTimer  pTimer; 
 
   /**
    * The shared queue manager. 
