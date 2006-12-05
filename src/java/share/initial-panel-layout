@@ -3,146 +3,470 @@ PanelLayout <LinkedList> #1 {
     RootPanel <ui.core.JManagerPanel> #3 {
       Contents <ui.JHorzSplitPanel> #4 {
         Left <ui.core.JManagerPanel> #5 {
-          Contents <ui.core.JTabbedPanel> #6 {
-            Tabs <LinkedList> #7 {
-              <ui.core.JManagerPanel> #8 {
-                Contents <ui.core.JNodeBrowserPanel> #9 {
-                  GroupID <Integer> #10 { 1 }
-                  Author <String> #11 { "@CALLING_AUTHOR@" }
-                  View <String> #12 { "@CALLING_VIEW@" }
-                  ExpandedPaths <TreeSet> #13 {
-                    <String> #14 { "/" }
-                  }
-                  Filter <TreeMap> #15 {
-                    {
-                      Key <NodeTreeComp$State> #16 { :WorkingCurrentCheckedInSome: }
-                      Val <Boolean> #17 { true }
-                    }
-                    {
-                      Key <NodeTreeComp$State> #18 { :WorkingOtherCheckedInSome: }
-                      Val <REF> #17
-                    }
-                    {
-                      Key <NodeTreeComp$State> #19 { :WorkingNoneCheckedInSome: }
-                      Val <REF> #17
-                    }
-                    {
-                      Key <NodeTreeComp$State> #20 { :WorkingCurrentCheckedInNone: }
-                      Val <REF> #17
-                    }
-                    {
-                      Key <NodeTreeComp$State> #21 { :WorkingOtherCheckedInNone: }
-                      Val <REF> #17
-                    }
-                  }
-                }
+          Contents <ui.core.JNodeBrowserPanel> #6 {
+            GroupID <Integer> #7 { 1 }
+            Author <String> #8 { "@CALLING_AUTHOR@" }
+            View <String> #9 { "@CALLING_VIEW@" }
+            ExpandedPaths <TreeSet> #10 {
+              <String> #11 { "/" }
+            }
+            Filter <TreeMap> #12 {
+              {
+                Key <NodeTreeComp$State> #13 { :WorkingCurrentCheckedInSome: }
+                Val <Boolean> #14 { true }
               }
-              <ui.core.JManagerPanel> #22 {
-                Contents <ui.core.JNodeDetailsPanel> #23 {
-                  GroupID <REF> #10
-                  Author <REF> #11
-                  View <REF> #12
-                  VersionDrawerOpen <Boolean> #24 { true }
-                  PropertyDrawerOpen <REF> #24
-                  ActionDrawerOpen <REF> #24
-                  JobReqsDrawerOpen <REF> #24
-                  SelectionDrawerOpen <Boolean> #25 { false }
-                  LicenseDrawerOpen <REF> #25
-                }
+              {
+                Key <NodeTreeComp$State> #15 { :WorkingOtherCheckedInSome: }
+                Val <REF> #14
               }
-              <ui.core.JManagerPanel> #26 {
-                Contents <ui.core.JNodeFilesPanel> #27 {
-                  GroupID <REF> #10
-                  Author <REF> #11
-                  View <REF> #12
-                }
+              {
+                Key <NodeTreeComp$State> #16 { :WorkingNoneCheckedInSome: }
+                Val <REF> #14
               }
-              <ui.core.JManagerPanel> #28 {
-                Contents <ui.core.JNodeHistoryPanel> #29 {
-                  GroupID <REF> #10
-                  Author <REF> #11
-                  View <REF> #12
-                }
+              {
+                Key <NodeTreeComp$State> #17 { :WorkingCurrentCheckedInNone: }
+                Val <REF> #14
+              }
+              {
+                Key <NodeTreeComp$State> #18 { :WorkingOtherCheckedInNone: }
+                Val <Boolean> #19 { true }
               }
             }
-            SelectedIndex <Integer> #30 { 0 }
           }
         }
-        Right <ui.core.JManagerPanel> #31 {
-          Contents <ui.core.JNodeViewerPanel> #32 {
-            GroupID <REF> #10
-            Author <REF> #11
-            View <REF> #12
-            CameraPos <math.Point3d> #33 {
-              Comps <double[3]> #34 {
-                0 <double> { -0.00000 }
-                1 <double> { 1.00000 }
-                2 <double> { -7.42969 }
+        Right <ui.core.JManagerPanel> #20 {
+          Contents <ui.core.JNodeViewerPanel> #21 {
+            GroupID <REF> #7
+            Author <REF> #8
+            View <REF> #9
+            CameraPos <math.Point3d> #22 {
+              Comps <double[3]> #23 {
+                0 <double> { -3.50000 }
+                1 <double> { 19.00000 }
+                2 <double> { -13.33218 }
               }
             }
-            ShowDownstream <REF> #25
+            ShowDownstream <Boolean> #24 { false }
           }
         }
-        DividerLocation <Integer> #35 { 581 }
+        DividerLocation <Integer> #25 { 265 }
       }
     }
-    FramePosX <REF> #30
-    FramePosY <REF> #30
-    FrameWidth <Integer> #36 { 1292 }
-    FrameHeight <Integer> #37 { 1049 }
+    FramePosX <Integer> #26 { 79 }
+    FramePosY <Integer> #27 { 0 }
+    FrameWidth <Integer> #28 { 1377 }
+    FrameHeight <Integer> #29 { 1045 }
   }
-  <ui.core.PanelLayout> #38 {
-    RootPanel <ui.core.JManagerPanel> #39 {
-      Contents <ui.JVertSplitPanel> #40 {
-        Top <ui.core.JManagerPanel> #41 {
-          Contents <ui.core.JQueueJobBrowserPanel> #42 {
-            GroupID <Integer> #43 { 2 }
-            Author <REF> #11
-            View <REF> #12
-            ViewFilter <ui.core.JQueueJobBrowserPanel$ViewFilter> #44 { :SingleView: }
-            SelectedTabIndex <REF> #43
+  <ui.core.PanelLayout> #30 {
+    RootPanel <ui.core.JManagerPanel> #31 {
+      Contents <ui.JVertSplitPanel> #32 {
+        Top <ui.core.JManagerPanel> #33 {
+          Contents <ui.core.JQueueJobServerStatsPanel> #34 {
+            GroupID <Integer> #35 { 3 }
+            Author <REF> #8
+            View <REF> #9
+            CameraPos <math.Point3d> #38 {
+              Comps <double[3]> #39 {
+                0 <double> { -18.12500 }
+                1 <double> { 2.50000 }
+                2 <double> { -6.00000 }
+              }
+            }
+            HistogramSpecs <QueueHostHistogramSpecs> #40 {
+              Status <HistogramSpec> #41 {
+                Name <String> #42 { "ServerStatus" }
+                Ranges <HistogramRange[7]> #43 {
+                  0 <HistogramRange> #44 {
+                    Single <QueueHostStatus> #45 { :Enabling: }
+                  }
+                  1 <HistogramRange> #46 {
+                    Single <QueueHostStatus> #47 { :Enabled: }
+                  }
+                  2 <HistogramRange> #48 {
+                    Single <QueueHostStatus> #49 { :Disabling: }
+                  }
+                  3 <HistogramRange> #50 {
+                    Single <QueueHostStatus> #51 { :Disabled: }
+                  }
+                  4 <HistogramRange> #52 {
+                    Single <QueueHostStatus> #53 { :Terminating: }
+                  }
+                  5 <HistogramRange> #54 {
+                    Single <QueueHostStatus> #55 { :Shutdown: }
+                  }
+                  6 <HistogramRange> #56 {
+                    Single <QueueHostStatus> #57 { :Hung: }
+                  }
+                }
+                Included <boolean[7]> #58 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                  3 <boolean> { false }
+                  4 <boolean> { false }
+                  5 <boolean> { false }
+                  6 <boolean> { false }
+                }
+              }
+              OsType <HistogramSpec> #59 {
+                Name <String> #60 { "ServerOS" }
+                Ranges <HistogramRange[3]> #61 {
+                  0 <HistogramRange> #62 {
+                    Single <OsType> #63 { :Unix: }
+                  }
+                  1 <HistogramRange> #64 {
+                    Single <OsType> #65 { :Windows: }
+                  }
+                  2 <HistogramRange> #66 {
+                    Single <OsType> #67 { :MacOS: }
+                  }
+                }
+                Included <boolean[3]> #68 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                }
+              }
+              Load <HistogramSpec> #69 {
+                Name <String> #70 { "SystemLoad" }
+                Ranges <HistogramRange[8]> #71 {
+                  0 <FloatRange> #72 {
+                    Min <Float> #73 { 0.000 }
+                    Max <Float> #74 { 0.500 }
+                  }
+                  1 <FloatRange> #75 {
+                    Min <Float> #76 { 0.500 }
+                    Max <Float> #77 { 1.000 }
+                  }
+                  2 <FloatRange> #78 {
+                    Min <Float> #79 { 1.000 }
+                    Max <Float> #80 { 1.500 }
+                  }
+                  3 <FloatRange> #81 {
+                    Min <Float> #82 { 1.500 }
+                    Max <Float> #83 { 2.000 }
+                  }
+                  4 <FloatRange> #84 {
+                    Min <Float> #85 { 2.000 }
+                    Max <Float> #86 { 3.000 }
+                  }
+                  5 <FloatRange> #87 {
+                    Min <Float> #88 { 3.000 }
+                    Max <Float> #89 { 4.000 }
+                  }
+                  6 <FloatRange> #90 {
+                    Min <Float> #91 { 4.000 }
+                    Max <Float> #92 { 6.000 }
+                  }
+                  7 <FloatRange> #93 {
+                    Min <Float> #94 { 6.000 }
+                    Max <NULL>
+                  }
+                }
+                Included <boolean[8]> #95 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                  3 <boolean> { false }
+                  4 <boolean> { false }
+                  5 <boolean> { false }
+                  6 <boolean> { false }
+                  7 <boolean> { false }
+                }
+              }
+              Memory <HistogramSpec> #96 {
+                Name <String> #97 { "FreeMemory" }
+                Ranges <HistogramRange[7]> #98 {
+                  0 <ByteSizeRange> #99 {
+                    Min <Long> #100 { 0 }
+                    Max <Long> #101 { 67108864 }
+                  }
+                  1 <ByteSizeRange> #102 {
+                    Min <Long> #103 { 67108864 }
+                    Max <Long> #104 { 134217728 }
+                  }
+                  2 <ByteSizeRange> #105 {
+                    Min <Long> #106 { 134217728 }
+                    Max <Long> #107 { 536870912 }
+                  }
+                  3 <ByteSizeRange> #108 {
+                    Min <Long> #109 { 536870912 }
+                    Max <Long> #110 { 1073741824 }
+                  }
+                  4 <ByteSizeRange> #111 {
+                    Min <Long> #112 { 1073741824 }
+                    Max <Long> #113 { 1610612736 }
+                  }
+                  5 <ByteSizeRange> #114 {
+                    Min <Long> #115 { 1610612736 }
+                    Max <Long> #116 { 2147483648 }
+                  }
+                  6 <ByteSizeRange> #117 {
+                    Min <Long> #118 { 2147483648 }
+                    Max <NULL>
+                  }
+                }
+                Included <boolean[7]> #119 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                  3 <boolean> { false }
+                  4 <boolean> { false }
+                  5 <boolean> { false }
+                  6 <boolean> { false }
+                }
+              }
+              Disk <HistogramSpec> #120 {
+                Name <String> #121 { "FreeDisk" }
+                Ranges <HistogramRange[7]> #122 {
+                  0 <ByteSizeRange> #123 {
+                    Min <REF> #100
+                    Max <Long> #124 { 134217728 }
+                  }
+                  1 <ByteSizeRange> #125 {
+                    Min <Long> #126 { 134217728 }
+                    Max <Long> #127 { 536870912 }
+                  }
+                  2 <ByteSizeRange> #128 {
+                    Min <Long> #129 { 536870912 }
+                    Max <Long> #130 { 1073741824 }
+                  }
+                  3 <ByteSizeRange> #131 {
+                    Min <Long> #132 { 1073741824 }
+                    Max <Long> #133 { 4294967296 }
+                  }
+                  4 <ByteSizeRange> #134 {
+                    Min <Long> #135 { 4294967296 }
+                    Max <Long> #136 { 17179869184 }
+                  }
+                  5 <ByteSizeRange> #137 {
+                    Min <Long> #138 { 17179869184 }
+                    Max <Long> #139 { 68719476736 }
+                  }
+                  6 <ByteSizeRange> #140 {
+                    Min <Long> #141 { 68719476736 }
+                    Max <NULL>
+                  }
+                }
+                Included <boolean[7]> #142 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                  3 <boolean> { false }
+                  4 <boolean> { false }
+                  5 <boolean> { false }
+                  6 <boolean> { false }
+                }
+              }
+              NumJobs <HistogramSpec> #143 {
+                Name <String> #144 { "JobCounts" }
+                Ranges <HistogramRange[7]> #145 {
+                  0 <HistogramRange> #146 {
+                    Single <Integer> #147 { 0 }
+                  }
+                  1 <HistogramRange> #148 {
+                    Single <Integer> #149 { 1 }
+                  }
+                  2 <HistogramRange> #150 {
+                    Single <Integer> #151 { 2 }
+                  }
+                  3 <HistogramRange> #152 {
+                    Single <Integer> #153 { 3 }
+                  }
+                  4 <HistogramRange> #154 {
+                    Single <Integer> #155 { 4 }
+                  }
+                  5 <HistogramRange> #156 {
+                    Single <Integer> #157 { 5 }
+                  }
+                  6 <HistogramRange> #158 {
+                    Min <Integer> #159 { 6 }
+                    Max <NULL>
+                  }
+                }
+                Included <boolean[7]> #160 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                  3 <boolean> { false }
+                  4 <boolean> { false }
+                  5 <boolean> { false }
+                  6 <boolean> { false }
+                }
+              }
+              Slots <HistogramSpec> #161 {
+                Name <String> #162 { "JobSlots" }
+                Ranges <HistogramRange[7]> #163 {
+                  0 <HistogramRange> #164 {
+                    Single <REF> #147
+                  }
+                  1 <HistogramRange> #165 {
+                    Single <REF> #149
+                  }
+                  2 <HistogramRange> #166 {
+                    Single <REF> #151
+                  }
+                  3 <HistogramRange> #167 {
+                    Single <REF> #153
+                  }
+                  4 <HistogramRange> #168 {
+                    Single <REF> #155
+                  }
+                  5 <HistogramRange> #169 {
+                    Single <REF> #157
+                  }
+                  6 <HistogramRange> #170 {
+                    Min <REF> #159
+                    Max <NULL>
+                  }
+                }
+                Included <boolean[7]> #171 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                  3 <boolean> { false }
+                  4 <boolean> { false }
+                  5 <boolean> { false }
+                  6 <boolean> { false }
+                }
+              }
+              Reservations <HistogramSpec> #172 {
+                Name <String> #173 { "Reserved" }
+                Ranges <HistogramRange[1]> #174 {
+                  0 <HistogramRange> #175 {
+                    Single <String> #176 { "-" }
+                  }
+                }
+                Included <boolean[1]> #177 {
+                  0 <boolean> { false }
+                }
+              }
+              Order <HistogramSpec> #178 {
+                Name <String> #179 { "Order" }
+                Ranges <HistogramRange[3]> #180 {
+                  0 <HistogramRange> #181 {
+                    Single <Integer> #182 { 0 }
+                  }
+                  1 <HistogramRange> #183 {
+                    Single <Integer> #184 { 1 }
+                  }
+                  2 <HistogramRange> #185 {
+                    Single <Integer> #186 { 2 }
+                  }
+                }
+                Included <boolean[3]> #187 {
+                  0 <boolean> { false }
+                  1 <boolean> { false }
+                  2 <boolean> { false }
+                }
+              }
+              Groups <HistogramSpec> #188 {
+                Name <String> #189 { "Groups" }
+                Ranges <HistogramRange[1]> #190 {
+                  0 <HistogramRange> #191 {
+                    Single <REF> #176
+                  }
+                }
+                Included <boolean[1]> #202 {
+                  0 <boolean> { false }
+                }
+              }
+              Schedules <HistogramSpec> #203 {
+                Name <String> #204 { "Schedules" }
+                Ranges <HistogramRange[1]> #205 {
+                  0 <HistogramRange> #206 {
+                    Single <REF> #176
+                  }
+                }
+                Included <boolean[1]> #211 {
+                  0 <boolean> { false }
+                }
+              }
+            }
           }
         }
-        Bottom <ui.core.JManagerPanel> #45 {
-          Contents <ui.JHorzSplitPanel> #46 {
-            Left <ui.core.JManagerPanel> #47 {
-              Contents <ui.core.JQueueJobViewerPanel> #48 {
-                GroupID <REF> #43
-                Author <REF> #11
-                View <REF> #12
-                CameraPos <math.Point3d> #49 {
-                  Comps <double[3]> #50 {
-                    0 <double> { 0.00000 }
-                    1 <double> { 0.00000 }
-                    2 <double> { -20.00000 }
+        Bottom <ui.core.JManagerPanel> #212 {
+          Contents <ui.core.JTabbedPanel> #213 {
+            Tabs <LinkedList> #214 {
+              <ui.core.JManagerPanel> #215 {
+                Contents <ui.core.JQueueJobServersPanel> #216 {
+                  GroupID <REF> #35
+                  Author <REF> #8
+                  View <REF> #9
+                }
+              }
+              <ui.core.JManagerPanel> #217 {
+                Contents <ui.core.JQueueJobSlotsPanel> #218 {
+                  GroupID <REF> #35
+                  Author <REF> #8
+                  View <REF> #9
+                }
+              }
+            }
+            SelectedIndex <REF> #27
+          }
+        }
+        DividerLocation <Integer> #219 { 441 }
+      }
+    }
+    Name <String> #220 { "Queue" }
+    FramePosX <Integer> #221 { 31 }
+    FramePosY <Integer> #222 { 81 }
+    FrameWidth <Integer> #223 { 1523 }
+    FrameHeight <Integer> #224 { 842 }
+  }
+  <ui.core.PanelLayout> #225 {
+    RootPanel <ui.core.JManagerPanel> #226 {
+      Contents <ui.JVertSplitPanel> #227 {
+        Top <ui.core.JManagerPanel> #228 {
+          Contents <ui.core.JQueueJobBrowserPanel> #229 {
+            GroupID <Integer> #230 { 2 }
+            Author <REF> #8
+            View <REF> #9
+            ViewFilter <ui.core.JQueueJobBrowserPanel$ViewFilter> #231 { :OwnedViews: }
+          }
+        }
+        Bottom <ui.core.JManagerPanel> #232 {
+          Contents <ui.JHorzSplitPanel> #233 {
+            Left <ui.core.JManagerPanel> #234 {
+              Contents <ui.core.JQueueJobViewerPanel> #235 {
+                GroupID <REF> #230
+                Author <REF> #8
+                View <REF> #9
+                CameraPos <math.Point3d> #236 {
+                  Comps <double[3]> #237 {
+                    0 <double> { -2.05051 }
+                    1 <double> { 9.15000 }
+                    2 <double> { -9.90000 }
                   }
                 }
               }
             }
-            Right <ui.core.JManagerPanel> #51 {
-              Contents <ui.core.JQueueJobDetailsPanel> #52 {
-                GroupID <REF> #43
-                Author <REF> #11
-                View <REF> #12
-                SummaryDrawerOpen <REF> #24
-                ProcessDrawerOpen <REF> #24
-                JobReqsDrawerOpen <REF> #25
-                SelectionDrawerOpen <REF> #25
-                LicenseDrawerOpen <REF> #25
-                FilesDrawerOpen <REF> #25
-                TargetFilesDrawerOpen <REF> #24
-                SourceFilesDrawerOpen <REF> #24
+            Right <ui.core.JManagerPanel> #238 {
+              Contents <ui.core.JQueueJobDetailsPanel> #239 {
+                GroupID <REF> #230
+                Author <REF> #8
+                View <REF> #9
+                SummaryDrawerOpen <Boolean> #240 { true }
+                ProcessDrawerOpen <REF> #240
+                JobReqsDrawerOpen <REF> #240
+                SelectionDrawerOpen <REF> #240
+                LicenseDrawerOpen <REF> #240
+                FilesDrawerOpen <REF> #24
+                TargetFilesDrawerOpen <REF> #240
+                SourceFilesDrawerOpen <REF> #240
               }
             }
-            DividerLocation <Integer> #53 { 773 }
+            DividerLocation <Integer> #241 { 526 }
           }
         }
-        DividerLocation <Integer> #54 { 377 }
+        DividerLocation <Integer> #242 { 320 }
       }
     }
-    FramePosX <REF> #30
-    FramePosY <REF> #30
-    FrameWidth <Integer> #55 { 1292 }
-    FrameHeight <Integer> #56 { 1049 }
+    Name <String> #243 { "Jobs" }
+    FramePosX <Integer> #244 { 505 }
+    FramePosY <Integer> #245 { 143 }
+    FrameWidth <Integer> #246 { 1083 }
+    FrameHeight <Integer> #247 { 1015 }
   }
 }

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.48 2006/12/05 18:23:30 jim Exp $
+// $Id: UIMaster.java,v 1.49 2006/12/05 21:51:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2638,6 +2638,31 @@ class UIMaster
     catch(Exception ex) {
       showErrorDialog(ex);
     }    
+  }
+
+  /**
+   * Reset the current layout to a standardized panel layout.
+   */
+  public void 
+  doResetLayout()
+  {
+    JConfirmDialog diag = new JConfirmDialog(pFrame, "Reset Current Layout?"); 
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      Path path = pLayoutPath;
+      if(path == null) 
+	path = new Path("Default"); 
+
+      try {
+	getMasterMgrClient().createInitialPanelLayout
+	  (path.toString(), PackageInfo.sUser, "default");
+      }
+      catch(Exception ex) {
+	showErrorDialog(ex);
+      }    
+
+      doRestoreSavedLayout(path, false);
+    }  
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.37 2006/12/05 18:23:30 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -71,6 +71,10 @@ class GenUserPrefsApp
 	("Make the current panel layout the default layout.",
 	 "SetDefaultLayout", "Set Default Layout:"),  
 	
+	new HotKeyPref
+	("Reset the current layout to a standardized panel layout.", 
+	 "ResetLayout", "Reset Layout:"),  
+
 	new BasePref(),
 
 	new HotKeyPref
@@ -2158,7 +2162,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.37 2006/12/05 18:23:30 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2415,7 +2419,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.37 2006/12/05 18:23:30 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3772,7 +3776,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.37 2006/12/05 18:23:30 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.31 2006/12/05 18:23:30 jim Exp $
+// $Id: JManagerPanel.java,v 1.32 2006/12/05 21:51:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -340,6 +340,12 @@ class JManagerPanel
       item = new JMenuItem("Manage Layouts...");
       pManageLayoutsItem = item;
       item.setActionCommand("manage-layouts");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      item = new JMenuItem("Reset Current...");
+      pResetLayoutItem = item;
+      item.setActionCommand("reset-layout");
       item.addActionListener(this);
       pPopup.add(item);  
 
@@ -1097,6 +1103,9 @@ class JManagerPanel
     updateMenuToolTip
       (pManageLayoutsItem, prefs.getShowManageLayouts(), 
        "Manage the saved panel layouts."); 
+    updateMenuToolTip
+      (pResetLayoutItem, prefs.getResetLayout(), 
+       "Reset the current layout to a standardized panel layout."); 
    
     /* admin */ 
     updateMenuToolTip
@@ -2029,6 +2038,8 @@ class JManagerPanel
       UIMaster.getInstance().doRestoreSavedLayout(new Path(cmd.substring(25)), false);
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
+    else if(cmd.equals("reset-layout"))
+      UIMaster.getInstance().doResetLayout();
 
     else if(cmd.equals("preferences"))
       UIMaster.getInstance().showUserPrefsDialog();
@@ -3628,6 +3639,7 @@ class JManagerPanel
   private JMenuItem  pSaveLayoutItem;
   private JMenuItem  pSaveLayoutAsItem;
   private JMenuItem  pManageLayoutsItem;       
+  private JMenuItem  pResetLayoutItem;       
   private JMenu      pRestoreLayoutMenu;
   private JMenu      pRestoreLayoutNoSelectMenu;
 
