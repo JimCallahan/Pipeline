@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.5 2006/11/22 09:08:01 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.6 2006/12/05 22:02:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -194,6 +194,9 @@ class QueueJobGroupsTableModel
    int row
   ) 
   {
+    if(row >= pRowToIndex.length) 
+      return null;
+
     QueueJobGroup group = pQueueJobGroups.get(pRowToIndex[row]);
     if(group != null) 
       return group.getGroupID();

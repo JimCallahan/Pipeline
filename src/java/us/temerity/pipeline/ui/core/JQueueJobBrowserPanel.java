@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.25 2006/11/11 20:45:36 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.26 2006/12/05 22:02:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -377,7 +377,8 @@ class JQueueJobBrowserPanel
     int wk;
     for(wk=0; wk<rows.length; wk++) {
       Long groupID = pGroupsTableModel.getGroupID(rows[wk]);
-      groupIDs.add(groupID);
+      if(groupID != null) 
+	groupIDs.add(groupID);
     }
 
     return groupIDs;
@@ -1388,7 +1389,8 @@ class JQueueJobBrowserPanel
 	int wk;
 	for(wk=0; wk<rows.length; wk++) {
 	  Long groupID = pGroupsTableModel.getGroupID(rows[wk]);
-	  pSelectedIDs.add(groupID);
+	  if(groupID != null) 
+	    pSelectedIDs.add(groupID);
 	}
       }
 
