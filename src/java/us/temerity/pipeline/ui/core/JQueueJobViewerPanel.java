@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.28 2006/11/11 20:45:36 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.29 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -22,8 +22,7 @@ import net.java.games.jogl.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The viewer of {@link NodeStatus NodeStatus} trees as graphs of state icons connected by
- * lines showing the upstream/downstream connectivity between nodes.
+ * The viewer of {@link QueueJobInfo} and {@link QueueJobGroup} data.
  */ 
 public  
 class JQueueJobViewerPanel
@@ -66,7 +65,7 @@ class JQueueJobViewerPanel
   private synchronized void 
   initUI()
   {  
-    super.initUI(128.0);
+    super.initUI(128.0, true);
 
     /* initialize fields */ 
     {
@@ -2361,113 +2360,6 @@ class JQueueJobViewerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-//   /**
-//    * Get the current job information. 
-//    */ 
-//   private 
-//   class GetJobInfoTask
-//     extends Thread
-//   {
-//     public 
-//     GetJobInfoTask
-//     (
-//      int groupID,
-//      long jobID
-//     ) 
-//     {
-//       super("JQueueJobViewerPanel:GetJobInfoTask");
-
-//       pGroupID = groupID;
-//       pJobID   = jobID;
-//     }
-
-//     public void 
-//     run() 
-//     {
-//       UIMaster master = UIMaster.getInstance();      
-
-//       if(pGroupID > 0) {
-// 	QueueJob job = null;
-// 	QueueJobInfo info = null; 
-// 	SubProcessExecDetails details = null; 
-// 	if(master.beginPanelOp("Updating Job Details...")) {
-// 	  try {
-// 	    QueueMgrClient client = master.getQueueMgrClient();
-// 	    job  = client.getJob(pJobID);
-// 	    info = client.getJobInfo(pJobID);
-
-// 	    String hostname = info.getHostname();
-// 	    if(hostname != null) {
-// 	      JobMgrClient jclient = new JobMgrClient(hostname);
-// 	      details = jclient.getExecDetails(pJobID);
-// 	    }
-// 	  }
-// 	  catch(PipelineException ex) {
-// 	    master.showErrorDialog(ex);
-// 	  }
-// 	  finally {
-// 	    master.endPanelOp("Done.");
-// 	  }
-// 	}
-
-// 	UpdateDetailsPanelTask task = 
-// 	  new UpdateDetailsPanelTask(pGroupID, job, info, details);
-// 	SwingUtilities.invokeLater(task);
-//       }
-//     }
-
-//     private int   pGroupID;
-//     private long  pJobID; 
-//   }
-
-
-//   /**
-//    * Update the job details panel.
-//    */
-//   private 
-//   class UpdateDetailsPanelTask
-//     extends Thread
-//   {
-//     public 
-//     UpdateDetailsPanelTask
-//     (
-//      int groupID, 
-//      QueueJob job, 
-//      QueueJobInfo info, 
-//      SubProcessExecDetails details
-//     ) 
-//     {
-//       super("JQueueJobViewerPanel:UpdateDetailsPanelTask");
-
-//       pGroupID     = groupID;
-//       pJob         = job; 
-//       pJobInfo     = info; 
-//       pExecDetails = details;
-//     }
-
-//     public void 
-//     run() 
-//     {
-//       UIMaster master = UIMaster.getInstance();      
-
-//       if(pGroupID > 0) {
-// 	PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
-// 	JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
-// 	if(panel != null) {
-// 	  panel.updateJob(pAuthor, pView, pJob, pJobInfo, pExecDetails);
-// 	}
-//       }
-//     }    
-
-//     private int                    pGroupID;
-//     private QueueJob               pJob; 
-//     private QueueJobInfo           pJobInfo; 
-//     private SubProcessExecDetails  pExecDetails; 
-//   }
-
- 
   /*----------------------------------------------------------------------------------------*/
 
   /** 

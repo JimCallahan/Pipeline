@@ -1968,7 +1968,7 @@ void RemoteLog() :
   pLogControls = new LogControls();
 }
 {
-  (<REMOTE_LOG> EQ() LoggerArg() (COMMA() LoggerArg())*) AE() 
+  <REMOTE_LOG> EQ() LoggerArg() (COMMA() LoggerArg())* AE() 
   {}
 }
 

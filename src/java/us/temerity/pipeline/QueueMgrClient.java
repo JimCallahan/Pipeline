@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.36 2006/12/01 18:33:41 jim Exp $
+// $Id: QueueMgrClient.java,v 1.37 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -843,7 +843,46 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current state of the hosts capable of executing jobs for the Pipeline queue. <P> 
+   * Get the current state of the hosts participating in the Pipeline queue filtered
+   * by the given histogram specs. <P> 
+   * 
+   * In order to be considered a match, the individual histogram spec for each host property 
+   * with any included catagories must include the catagory (see 
+   * {@link HistogramSpec#isIncluded}) which contains the host property.
+   * 
+   * @param specs
+   *   The set of histogram specifications to match.
+   * 
+   * @return 
+   *   The per-host information indexed by fully resolved host name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the host information.
+   */
+  public synchronized TreeMap<String,QueueHostInfo>
+  getHosts
+  (
+   QueueHostHistogramSpecs specs
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetHostsReq req = new QueueGetHostsReq(specs);
+
+    Object obj = performTransaction(QueueRequest.GetHosts, req);
+    if(obj instanceof QueueGetHostsRsp) {
+      QueueGetHostsRsp rsp = (QueueGetHostsRsp) obj;
+      return rsp.getHosts();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the current state of all hosts participating in the Pipeline queue. <P> 
    * 
    * In other words, the hosts which run the <B>pljobmgr</B>(1) daemon.
    * 
@@ -857,17 +896,7 @@ class QueueMgrClient
   getHosts()
     throws PipelineException  
   {
-    verifyConnection();
-
-    Object obj = performTransaction(QueueRequest.GetHosts, null);
-    if(obj instanceof QueueGetHostsRsp) {
-      QueueGetHostsRsp rsp = (QueueGetHostsRsp) obj;
-      return rsp.getHosts();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }        
+    return getHosts(null);
   }
 
   /**
@@ -1017,6 +1046,43 @@ class QueueMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets frequency distribution data for significant catagories of information shared 
+   * by all job server hosts. 
+   * 
+   * @param specs
+   *   The histogram catagory specifications.
+   * 
+   * @return 
+   *   The histograms which fulfill the given specifications. 
+   * 
+   * @throws PipelineException
+   *   If unable to lookup the host information.
+   */
+  public synchronized QueueHostHistograms
+  getHostHistograms
+  (
+   QueueHostHistogramSpecs specs
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueGetHostHistogramsReq req = new QueueGetHostHistogramsReq(specs);
+    Object obj = performTransaction(QueueRequest.GetHostHistograms, req);
+    if(obj instanceof QueueGetHostHistogramsRsp) {
+      QueueGetHostHistogramsRsp rsp = (QueueGetHostHistogramsRsp) obj;
+      return rsp.getHistograms();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B S                                                                              */

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.30 2006/10/23 18:31:21 jim Exp $
+// $Id: JManagerPanel.java,v 1.31 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -112,17 +112,25 @@ class JManagerPanel
 	
 	sub.addSeparator();
 
-	item = new JMenuItem("Job Servers");
+	item = new JMenuItem("Queue Stats");
+	pJobServerStatsWindowItem = item;
+	item.setActionCommand("job-server-stats-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Queue Servers");
 	pJobServersWindowItem = item;
 	item.setActionCommand("job-servers-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Job Slots");
+	item = new JMenuItem("Queue Slots");
 	pJobSlotsWindowItem = item;
 	item.setActionCommand("job-slots-window");
 	item.addActionListener(this);
 	sub.add(item);  
+
+	sub.addSeparator();
 
 	item = new JMenuItem("Job Browser");
 	pJobBrowserWindowItem = item;
@@ -203,17 +211,25 @@ class JManagerPanel
 	
 	sub.addSeparator();
 
-	item = new JMenuItem("Job Servers");
+	item = new JMenuItem("Queue Stats");
+	pJobServerStatsPanelItem = item;
+	item.setActionCommand("job-server-stats");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Queue Servers");
 	pJobServersPanelItem = item;
 	item.setActionCommand("job-servers");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Job Slots");
+	item = new JMenuItem("Queue Slots");
 	pJobSlotsPanelItem = item;
 	item.setActionCommand("job-slots");
 	item.addActionListener(this);
 	sub.add(item);  
+
+	sub.addSeparator();
 
 	item = new JMenuItem("Job Browser");
 	pJobBrowserPanelItem = item;
@@ -962,6 +978,7 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeViewerWindowItem, prefs.getManagerNodeViewerWindow(), 
        "Create a new window containing a Node Viewer panel.");
+
     updateMenuToolTip
       (pNodeDetailsWindowItem, prefs.getManagerNodeDetailsWindow(), 
        "Create a new window containing a Node Details panel.");
@@ -974,12 +991,17 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeHistoryWindowItem, prefs.getManagerNodeHistoryWindow(), 
        "Create a new window containing a Node History panel.");
+
+    updateMenuToolTip
+      (pJobServerStatsWindowItem, prefs.getManagerJobServerStatsWindow(), 
+       "Create a new window containing a Queue Stats panel.");
     updateMenuToolTip
       (pJobServersWindowItem, prefs.getManagerJobServersWindow(), 
-       "Create a new window containing a Job Servers panel.");
+       "Create a new window containing a Queue Servers panel.");
     updateMenuToolTip
       (pJobSlotsWindowItem, prefs.getManagerJobSlotsWindow(), 
-       "Create a new window containing a Job Slots panel.");
+       "Create a new window containing a Queue Slots panel.");
+
     updateMenuToolTip
       (pJobBrowserWindowItem, prefs.getManagerJobBrowserWindow(), 
        "Create a new window containing a Job Browser panel.");
@@ -1004,6 +1026,7 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeViewerPanelItem, prefs.getManagerNodeViewerPanel(), 
        "Change the panel type to a Node Viewer panel.");
+
     updateMenuToolTip
       (pNodeDetailsPanelItem, prefs.getManagerNodeDetailsPanel(), 
        "Change the panel type to a Node Details panel.");
@@ -1016,12 +1039,17 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeHistoryPanelItem, prefs.getManagerNodeHistoryPanel(), 
        "Change the panel type to a Node History panel.");
+
+    updateMenuToolTip
+      (pJobServerStatsPanelItem, prefs.getManagerJobServerStatsPanel(), 
+       "Change the panel type to a Queue Stats panel.");
     updateMenuToolTip
       (pJobServersPanelItem, prefs.getManagerJobServersPanel(), 
-       "Change the panel type to a Job Servers panel.");
+       "Change the panel type to a Queue Servers panel.");
     updateMenuToolTip
       (pJobSlotsPanelItem, prefs.getManagerJobSlotsPanel(), 
-       "Change the panel type to a Job Slots panel.");
+       "Change the panel type to a Queue Slots panel.");
+
     updateMenuToolTip
       (pJobBrowserPanelItem, prefs.getManagerJobBrowserPanel(), 
        "Change the panel type to a Job Browser panel.");
@@ -1520,6 +1548,7 @@ class JManagerPanel
       doNodeViewerWindow();
       return true;
     }
+
     else if((prefs.getManagerNodeDetailsWindow() != null) &&
 	    prefs.getManagerNodeDetailsWindow().wasPressed(e)) {
       doNodeDetailsWindow();
@@ -1541,6 +1570,11 @@ class JManagerPanel
       return true;
     }
 
+    else if((prefs.getManagerJobServerStatsWindow() != null) &&
+	    prefs.getManagerJobServerStatsWindow().wasPressed(e)) {
+      doJobServerStatsWindow();
+      return true;
+    }
     else if((prefs.getManagerJobServersWindow() != null) &&
 	    prefs.getManagerJobServersWindow().wasPressed(e)) {
       doJobServersWindow();
@@ -1551,6 +1585,7 @@ class JManagerPanel
       doJobSlotsWindow();
       return true;
     }
+
     else if((prefs.getManagerJobBrowserWindow() != null) &&
 	    prefs.getManagerJobBrowserWindow().wasPressed(e)) {
       doJobBrowserWindow();
@@ -1590,6 +1625,7 @@ class JManagerPanel
       doNodeViewerPanel();
       return true;
     }
+
     else if((prefs.getManagerNodeDetailsPanel() != null) &&
 	    prefs.getManagerNodeDetailsPanel().wasPressed(e)) {
       doNodeDetailsPanel();
@@ -1611,6 +1647,11 @@ class JManagerPanel
       return true;
     }
 
+    else if((prefs.getManagerJobServerStatsPanel() != null) &&
+	    prefs.getManagerJobServerStatsPanel().wasPressed(e)) {
+      doJobServerStatsPanel();
+      return true;
+    }
     else if((prefs.getManagerJobServersPanel() != null) &&
 	    prefs.getManagerJobServersPanel().wasPressed(e)) {
       doJobServersPanel();
@@ -1621,6 +1662,7 @@ class JManagerPanel
       doJobSlotsPanel();
       return true;
     }
+
     else if((prefs.getManagerJobBrowserPanel() != null) &&
 	    prefs.getManagerJobBrowserPanel().wasPressed(e)) {
       doJobBrowserPanel();
@@ -1890,6 +1932,7 @@ class JManagerPanel
       doNodeBrowserWindow();
     else if(cmd.equals("node-viewer-window"))
       doNodeViewerWindow();
+
     else if(cmd.equals("node-details-window"))
       doNodeDetailsWindow();
     else if(cmd.equals("node-files-window"))
@@ -1899,10 +1942,13 @@ class JManagerPanel
     else if(cmd.equals("node-history-window"))
       doNodeHistoryWindow();
 
+    else if(cmd.equals("job-server-stats-window"))
+      doJobServerStatsWindow();
     else if(cmd.equals("job-servers-window"))
       doJobServersWindow();
     else if(cmd.equals("job-slots-window"))
       doJobSlotsWindow();
+
     else if(cmd.equals("job-browser-window"))
       doJobBrowserWindow();
     else if(cmd.equals("job-viewer-window"))
@@ -1921,6 +1967,7 @@ class JManagerPanel
       doNodeBrowserPanel();
     else if(cmd.equals("node-viewer"))
       doNodeViewerPanel();
+
     else if(cmd.equals("node-details"))
       doNodeDetailsPanel();
     else if(cmd.equals("node-files"))
@@ -1930,10 +1977,13 @@ class JManagerPanel
     else if(cmd.equals("node-history"))
       doNodeHistoryPanel();
 
+    else if(cmd.equals("job-server-stats"))
+      doJobServerStatsPanel();
     else if(cmd.equals("job-servers"))
       doJobServersPanel();
     else if(cmd.equals("job-slots"))
       doJobSlotsPanel();
+
     else if(cmd.equals("job-browser"))
       doJobBrowserPanel();
     else if(cmd.equals("job-viewer"))
@@ -2160,6 +2210,22 @@ class JManagerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Create a new secondary panel frame containing a JQueueJobServerStatsPanel. 
+   */ 
+  private void 
+  doJobServerStatsWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(1137, 440);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JQueueJobServerStatsPanel(pTopLevelPanel));
+
+    frame.validate();
+    frame.repaint();
+  }
 
   /** 
    * Create a new secondary panel frame containing a JQueueJobServersPanel. 
@@ -2416,6 +2482,24 @@ class JManagerPanel
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Change the contents of this panel to a JQueueJobServerStatsPanel. 
+   */ 
+  private void 
+  doJobServerStatsPanel()
+  {
+    if(getContents() instanceof JQueueJobServerStatsPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JQueueJobServerStatsPanel(dead));
+    dead.setGroupID(0);
+    dead.freeDisplayLists();
+    refocusOnChildPanel();   
+  }
+
   /**
    * Change the contents of this panel to a JQueueJobServersPanel. 
    */ 
@@ -3508,6 +3592,7 @@ class JManagerPanel
   private JMenuItem  pNodeFilesWindowItem;
   private JMenuItem  pNodeLinksWindowItem;
   private JMenuItem  pNodeHistoryWindowItem;
+  private JMenuItem  pJobServerStatsWindowItem;
   private JMenuItem  pJobServersWindowItem;
   private JMenuItem  pJobSlotsWindowItem;
   private JMenuItem  pJobBrowserWindowItem;
@@ -3523,6 +3608,7 @@ class JManagerPanel
   private JMenuItem  pNodeFilesPanelItem;
   private JMenuItem  pNodeLinksPanelItem;
   private JMenuItem  pNodeHistoryPanelItem;
+  private JMenuItem  pJobServerStatsPanelItem;
   private JMenuItem  pJobServersPanelItem;
   private JMenuItem  pJobSlotsPanelItem;
   private JMenuItem  pJobBrowserPanelItem;

@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.2 2005/01/30 02:05:22 jim Exp $
+// $Id: GeometryMgr.java,v 1.3 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -297,6 +297,68 @@ class GeometryMgr
 	  
 	  gl.glTexCoord2d(0.0, 0.0);
 	  gl.glVertex2d(-0.25, 0.25);
+	}
+	gl.glEnd();
+
+	gl.glDisable(GL.GL_TEXTURE_2D); 
+      }
+      gl.glEndList();
+    }
+
+    return dl;
+  }
+
+  /** 
+   * Get an OpenGL display list which renders an icon without setting the color. <P> 
+   * 
+   * The display list renders a single square quad on the XY plane which is (1.0) units wide
+   * and centered around the origin. 
+   * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
+   * @param name
+   *   The icon name. 
+   * 
+   * @return 
+   *   The display list handle.
+   * 
+   * @throws IOException
+   *   If unable to lookup or generate the display list.
+   */ 
+  public synchronized int
+  getIconDL
+  (
+   GL gl,
+   String name
+  ) 
+    throws IOException
+  { 
+    Integer dl = pNodeIconDLs.get(name);
+    if(dl == null) {
+      int texID = TextureMgr.getInstance().getTexture(gl, name);
+
+      dl = gl.glGenLists(1);
+      pNodeIconDLs.put(name, dl);
+
+      gl.glNewList(dl, GL.GL_COMPILE);
+      {
+	gl.glEnable(GL.GL_TEXTURE_2D);
+	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+	
+	gl.glBegin(GL.GL_QUADS);
+	{
+	  gl.glTexCoord2d(0.0, 1.0);
+	  gl.glVertex2d(-0.5, -0.5);
+	  
+	  gl.glTexCoord2d(1.0, 1.0);
+	  gl.glVertex2d(0.5, -0.5);
+	  
+	  gl.glTexCoord2d(1.0, 0.0);	
+	  gl.glVertex2d(0.5, 0.5);
+	  
+	  gl.glTexCoord2d(0.0, 0.0);
+	  gl.glVertex2d(-0.5, 0.5);
 	}
 	gl.glEnd();
 

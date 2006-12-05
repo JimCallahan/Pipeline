@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.47 2006/11/11 20:45:36 jim Exp $
+// $Id: UIMaster.java,v 1.48 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,11 +115,12 @@ class UIMaster
     pNodeFilesPanels   = new PanelGroup<JNodeFilesPanel>();
     pNodeLinksPanels   = new PanelGroup<JNodeLinksPanel>();
 
-    pQueueJobServersPanels = new PanelGroup<JQueueJobServersPanel>();
-    pQueueJobSlotsPanels   = new PanelGroup<JQueueJobSlotsPanel>();
-    pQueueJobBrowserPanels = new PanelGroup<JQueueJobBrowserPanel>();
-    pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
-    pQueueJobDetailsPanels = new PanelGroup<JQueueJobDetailsPanel>();
+    pQueueJobServersPanels     = new PanelGroup<JQueueJobServersPanel>();
+    pQueueJobServerStatsPanels = new PanelGroup<JQueueJobServerStatsPanel>();
+    pQueueJobSlotsPanels       = new PanelGroup<JQueueJobSlotsPanel>();
+    pQueueJobBrowserPanels     = new PanelGroup<JQueueJobBrowserPanel>();
+    pQueueJobViewerPanels      = new PanelGroup<JQueueJobViewerPanel>();
+    pQueueJobDetailsPanels     = new PanelGroup<JQueueJobDetailsPanel>();
 
     pOverrideLayoutPath = layout;
     pRestoreLayout      = restoreLayout;
@@ -1730,6 +1731,15 @@ class UIMaster
   }
 
   /**
+   * Get the job server stats panel group.
+   */ 
+  public PanelGroup<JQueueJobServerStatsPanel>
+  getQueueJobServerStatsPanels() 
+  {
+    return pQueueJobServerStatsPanels;
+  }
+
+  /**
    * Get the job slots panel group.
    */ 
   public PanelGroup<JQueueJobSlotsPanel>
@@ -2359,6 +2369,7 @@ class UIMaster
  	 pNodeFilesPanels.isGroupUnused(idx) && 
  	 pNodeLinksPanels.isGroupUnused(idx) && 
   	 pQueueJobServersPanels.isGroupUnused(idx) && 
+  	 pQueueJobServerStatsPanels.isGroupUnused(idx) && 
   	 pQueueJobSlotsPanels.isGroupUnused(idx) && 
  	 pQueueJobBrowserPanels.isGroupUnused(idx) && 
  	 pQueueJobViewerPanels.isGroupUnused(idx) && 
@@ -3464,6 +3475,7 @@ class UIMaster
 	pNodeLinksPanels.clear();
 	
  	pQueueJobServersPanels.clear();
+ 	pQueueJobServerStatsPanels.clear();
  	pQueueJobSlotsPanels.clear();
 	pQueueJobBrowserPanels.clear();
 	pQueueJobViewerPanels.clear();
@@ -4607,6 +4619,11 @@ class UIMaster
    * The active job servers panels. <P> 
    */ 
   private PanelGroup<JQueueJobServersPanel>  pQueueJobServersPanels;
+
+  /**
+   * The active job server stats panels. <P> 
+   */ 
+  private PanelGroup<JQueueJobServerStatsPanel>  pQueueJobServerStatsPanels;
 
   /**
    * The active job slots panels. <P> 

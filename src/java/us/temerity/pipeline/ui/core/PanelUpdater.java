@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.6 2006/11/21 19:55:51 jim Exp $
+// $Id: PanelUpdater.java,v 1.7 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -144,7 +144,19 @@ class PanelUpdater
 
 
   /**
-   * A panel update originating from the Job Servers panel. 
+   * A panel update originating from the Queue Stats panel. 
+   */ 
+  public
+  PanelUpdater
+  (
+   JQueueJobServerStatsPanel panel
+  ) 
+  {
+    initPanels(panel);
+  }
+  
+  /**
+   * A panel update originating from the Queue Servers panel. 
    */ 
   public
   PanelUpdater
@@ -156,7 +168,7 @@ class PanelUpdater
   }
   
   /**
-   * A panel update originating from the Job Slots panel. 
+   * A panel update originating from the Queue Slots panel. 
    */ 
   public
   PanelUpdater
@@ -231,14 +243,18 @@ class PanelUpdater
 
     pGroupID = panel.getGroupID();
     if(pGroupID > 0) {
-      pNodeBrowserPanel     = master.getNodeBrowserPanels().getPanel(pGroupID);    
-      pNodeViewerPanel      = master.getNodeViewerPanels().getPanel(pGroupID);  
-      pNodeDetailsPanel     = master.getNodeDetailsPanels().getPanel(pGroupID); 
-      pNodeHistoryPanel     = master.getNodeHistoryPanels().getPanel(pGroupID); 
-      pNodeFilesPanel       = master.getNodeFilesPanels().getPanel(pGroupID);   
-      pNodeLinksPanel       = master.getNodeLinksPanels().getPanel(pGroupID);   
-      pQueueJobServersPanel = master.getQueueJobServersPanels().getPanel(pGroupID);
-      pQueueJobSlotsPanel   = master.getQueueJobSlotsPanels().getPanel(pGroupID);
+      pNodeBrowserPanel = master.getNodeBrowserPanels().getPanel(pGroupID);    
+      pNodeViewerPanel  = master.getNodeViewerPanels().getPanel(pGroupID);  
+
+      pNodeDetailsPanel = master.getNodeDetailsPanels().getPanel(pGroupID); 
+      pNodeHistoryPanel = master.getNodeHistoryPanels().getPanel(pGroupID); 
+      pNodeFilesPanel   = master.getNodeFilesPanels().getPanel(pGroupID);   
+      pNodeLinksPanel   = master.getNodeLinksPanels().getPanel(pGroupID);   
+
+      pQueueJobServerStatsPanel = master.getQueueJobServerStatsPanels().getPanel(pGroupID);
+      pQueueJobServersPanel     = master.getQueueJobServersPanels().getPanel(pGroupID);
+      pQueueJobSlotsPanel       = master.getQueueJobSlotsPanels().getPanel(pGroupID);
+
       pQueueJobBrowserPanel = master.getQueueJobBrowserPanels().getPanel(pGroupID);
       pQueueJobViewerPanel  = master.getQueueJobViewerPanels().getPanel(pGroupID);
       pQueueJobDetailsPanel = master.getQueueJobDetailsPanels().getPanel(pGroupID);
@@ -255,6 +271,9 @@ class PanelUpdater
 	  pNodeViewerRoots.put(name, null);
       }
     }
+
+    if(pQueueJobServerStatsPanel != null) 
+      pServerHistogramSpecs = pQueueJobServerStatsPanel.getHistogramSpecs(); 
 
     if(pQueueJobServersPanel != null) 
       pSampleIntervals = pQueueJobServersPanel.getSampleIntervals(); 
@@ -390,12 +409,23 @@ class PanelUpdater
 	      }
 	    }
 	    
+	    /* this is a full jobs/queue update... */
 	    if(!pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
+
+	      /* job server stats panel related */ 
+	      if(pQueueJobServerStatsPanel != null) {
+		master.updatePanelOp(pGroupID, "Updating Queue Stats...");
+		pServerHistograms = qclient.getHostHistograms(pServerHistogramSpecs);
+
+		WorkGroups wgroups = mclient.getWorkGroups();
+		pWorkGroups = wgroups.getGroups();
+		pWorkUsers  = wgroups.getUsers();
+	      }
 
 	      /* job servers panel related */ 
 	      if(pQueueJobServersPanel != null) {
-		master.updatePanelOp(pGroupID, "Updating Job Servers...");
-		pHosts              = qclient.getHosts();
+		master.updatePanelOp(pGroupID, "Updating Queue Servers...");
+		pHosts              = qclient.getHosts(pServerHistogramSpecs);
 		pSelectionGroups    = qclient.getSelectionGroupNames();
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
 
@@ -413,19 +443,21 @@ class PanelUpdater
 		  pSamples = qclient.getHostResourceSamples(pSampleIntervals, true);
 		}
 
-		WorkGroups wgroups = mclient.getWorkGroups();
-		pWorkGroups = wgroups.getGroups();
-		pWorkUsers  = wgroups.getUsers();
+		if((pWorkGroups == null) || (pWorkUsers == null)) {
+		  WorkGroups wgroups = mclient.getWorkGroups();
+		  pWorkGroups = wgroups.getGroups();
+		  pWorkUsers  = wgroups.getUsers();
+		}
 	      }
 	      
 	      /* job slots panel related */
 	      if(pQueueJobSlotsPanel != null) {
-		master.updatePanelOp(pGroupID, "Updating Job Slots...");
+		master.updatePanelOp(pGroupID, "Updating Queue Slots...");
 		if(pJobStatus == null) 
 		  pJobStatus = qclient.getRunningJobStatus(); 
 		
 		if(pHosts == null) 
-		  pHosts = qclient.getHosts();
+		  pHosts = qclient.getHosts(pServerHistogramSpecs);
 		
 		pJobInfo = qclient.getRunningJobInfo();
 	      }
@@ -617,6 +649,11 @@ class PanelUpdater
 	if(!pJobDetailsOnly) {
 	  if(!pJobBrowserSelectionOnly) {
 
+	    /* job server stats */ 
+	    if(pQueueJobServerStatsPanel != null) 
+	      pQueueJobServerStatsPanel.applyPanelUpdates
+		(pAuthor, pView, pServerHistograms, pWorkGroups);
+
 	    /* job servers */ 
 	    if(pQueueJobServersPanel != null) 
 	      pQueueJobServersPanel.applyPanelUpdates
@@ -691,14 +728,18 @@ class PanelUpdater
   /**
    * Panels sharing the group or <NULL> if not in the group.
    */ 
-  private JNodeBrowserPanel      pNodeBrowserPanel;
-  private JNodeViewerPanel       pNodeViewerPanel;  
-  private JNodeDetailsPanel      pNodeDetailsPanel;
-  private JNodeHistoryPanel      pNodeHistoryPanel; 
-  private JNodeFilesPanel        pNodeFilesPanel;     
-  private JNodeLinksPanel        pNodeLinksPanel;     
-  private JQueueJobServersPanel  pQueueJobServersPanel;
-  private JQueueJobSlotsPanel    pQueueJobSlotsPanel;
+  private JNodeBrowserPanel  pNodeBrowserPanel;
+  private JNodeViewerPanel   pNodeViewerPanel;  
+
+  private JNodeDetailsPanel  pNodeDetailsPanel;
+  private JNodeHistoryPanel  pNodeHistoryPanel; 
+  private JNodeFilesPanel    pNodeFilesPanel;     
+  private JNodeLinksPanel    pNodeLinksPanel;     
+
+  private JQueueJobServerStatsPanel  pQueueJobServerStatsPanel;
+  private JQueueJobServersPanel      pQueueJobServersPanel;
+  private JQueueJobSlotsPanel        pQueueJobSlotsPanel;
+
   private JQueueJobBrowserPanel  pQueueJobBrowserPanel;
   private JQueueJobViewerPanel   pQueueJobViewerPanel;
   private JQueueJobDetailsPanel  pQueueJobDetailsPanel;
@@ -804,6 +845,16 @@ class PanelUpdater
    * More detailed timing and exit status information for running jobs.
    */
   private TreeMap<Long,QueueJobInfo>  pJobInfo;
+
+  /**
+   * The previous job server histogram specifications.
+   */ 
+  private QueueHostHistogramSpecs  pServerHistogramSpecs;
+
+  /**
+   * The current job server histograms.
+   */ 
+  private QueueHostHistograms  pServerHistograms;
 
   /**
    * The current status of job servers in the queue.

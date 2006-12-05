@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.40 2006/12/01 18:33:41 jim Exp $
+// $Id: QueueMgrServer.java,v 1.41 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -523,7 +523,8 @@ class QueueMgrServer
 	    /*-- JOB MANAGER HOSTS ---------------------------------------------------------*/
 	    case GetHosts:
 	      {
-		objOut.writeObject(pQueueMgr.getHosts());
+		QueueGetHostsReq req = (QueueGetHostsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getHosts(req));
 		objOut.flush(); 
 	      }
 	      break;

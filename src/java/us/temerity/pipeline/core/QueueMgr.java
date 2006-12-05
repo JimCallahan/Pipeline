@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.76 2006/12/01 18:33:41 jim Exp $
+// $Id: QueueMgr.java,v 1.77 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1815,18 +1815,160 @@ class QueueMgr
   /**
    * Get the current state of the hosts capable of executing jobs for the Pipeline queue.
    * 
+   * @param req
+   *   The request.
+   * 
    * @return
-   *   <CODE>QueueGetHostsRsp</CODE> if successful.
+   *   <CODE>QueueGetHostsRsp</CODE> if successful
+   *   <CODE>FailureRsp</CODE> if unable to get the hosts.
    */ 
   public Object
-  getHosts() 
+  getHosts
+  (
+   QueueGetHostsReq req
+  ) 
   {
     TaskTimer timer = new TaskTimer();
+
+    /* determine which histograms are to be used to filter the hosts */ 
+    HistogramSpec[] active = null; 
+    {
+      QueueHostHistogramSpecs specs = req.getSpecs();
+      if(specs != null) {
+	updateHistogramSpecs(timer, specs); 
+
+	active = new HistogramSpec[11];
+	active[0]  = specs.getStatusSpec(); 
+	active[1]  = specs.getOsTypeSpec(); 
+	active[2]  = specs.getLoadSpec(); 
+	active[3]  = specs.getMemorySpec(); 
+	active[4]  = specs.getDiskSpec(); 
+	active[5]  = specs.getNumJobsSpec(); 
+	active[6]  = specs.getSlotsSpec(); 
+	active[7]  = specs.getReservationSpec(); 
+	active[8]  = specs.getOrderSpec(); 
+	active[9]  = specs.getGroupsSpec(); 
+	active[10] = specs.getSchedulesSpec(); 
+
+	boolean anyIncluded = false;
+	int wk;
+	for(wk=0; wk<active.length; wk++) {
+	  if(active[wk].anyIncluded() && !active[wk].allIncluded()) 
+	    anyIncluded = true;
+	  else 
+	    active[wk] = null;
+	}
+
+	/* if there are no included catagoried for any histogram, 
+	     just return all hosts */ 
+	if(!anyIncluded) 
+	  active = null;
+      }
+    }
+
+    /* proces the hosts */ 
     timer.aquire();
     synchronized(pHostsInfo) {
       timer.resume();
-      
-      return new QueueGetHostsRsp(timer, new TreeMap<String,QueueHostInfo>(pHostsInfo));
+
+      TreeMap<String,QueueHostInfo> hosts = new TreeMap<String,QueueHostInfo>(); 
+      if(active == null) {
+	hosts.putAll(pHostsInfo);
+      }
+      else {
+	for(String hname : pHostsInfo.keySet()) {
+	  QueueHostInfo qinfo = pHostsInfo.get(hname);
+	  ResourceSample sample = qinfo.getLatestSample(); 
+
+	  boolean included = true;
+	  int wk;
+	  for(wk=0; wk<active.length; wk++) {
+	    if(active[wk] != null) {
+	      switch(wk) {
+	      case 0:
+		if(!active[wk].isIncludedItem(qinfo.getStatus()))
+		  included = false;
+		break;
+		
+	      case 1:
+		{
+		  OsType os = qinfo.getOsType(); 
+		  if((os == null) || !active[wk].isIncludedItem(os))
+		    included = false;
+		}
+		break;
+		
+	      case 2:
+		if((sample == null) || !active[wk].isIncludedItem(sample.getLoad()))
+		  included = false;
+		break;
+		
+	      case 3:
+		if((sample == null) || !active[wk].isIncludedItem(sample.getMemory()))
+		  included = false;
+		break;
+		
+	      case 4:
+		if((sample == null) || !active[wk].isIncludedItem(sample.getDisk()))
+		  included = false;
+		break;
+		
+	      case 5:
+		if((sample == null) || !active[wk].isIncludedItem(sample.getNumJobs()))
+		  included = false;
+		break;
+		
+	      case 6:
+		if(!active[wk].isIncludedItem(qinfo.getJobSlots()))
+		  included = false;
+		break;
+		
+	      case 7:
+		{
+		  String res = qinfo.getReservation();
+		  if(res == null) 
+		    res = "-";
+		  if(!active[wk].isIncludedItem(res))
+		    included = false;
+		}
+		break;
+		
+	      case 8:
+		if(!active[wk].isIncludedItem(qinfo.getOrder()))
+		  included = false;
+		break;
+		
+	      case 9:
+		{
+		  String group = qinfo.getSelectionGroup();
+		  if(group == null) 
+		    group = "-";
+		  if(!active[wk].isIncludedItem(group))
+		    included = false;
+		}
+		break;
+		
+	      case 10:
+		{
+		  String sched = qinfo.getSelectionSchedule();
+		  if(sched == null) 
+		    sched = "-";
+		  if(!active[wk].isIncludedItem(sched))
+		    included = false;
+		}
+	      }
+	    }
+
+	    if(!included) 
+	      break;
+	  }
+	
+	  if(included) 
+	    hosts.put(hname, qinfo);
+	}	
+      }
+
+      return  new QueueGetHostsRsp(timer, hosts);
     }
   }
   
@@ -2591,6 +2733,135 @@ class QueueMgr
     }
       
     return new QueueGetHostResourceSamplesRsp(timer, samples);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets frequency distribution data for significant catagories of information shared 
+   * by all job server hosts.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>QueueGetHostHistogramsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to compute the histograms.
+   */ 
+  public Object
+  getHostHistograms
+  (
+   QueueGetHostHistogramsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    /* create the empty histograms from the specs */ 
+    QueueHostHistogramSpecs specs = req.getSpecs();
+    updateHistogramSpecs(timer, specs); 
+    QueueHostHistograms hists = new QueueHostHistograms(specs);
+
+    /* sort the host information into histogram catagories */ 
+    timer.aquire();
+    synchronized(pHostsInfo) {
+      timer.resume();
+      
+      for(QueueHostInfo qinfo : pHostsInfo.values()) 
+	hists.catagorize(qinfo);
+
+      return new QueueGetHostHistogramsRsp(timer, hists);
+    }
+  }
+  
+  /**
+   * Update the catagories for the dynamically determined histograms.
+   */ 
+  private void
+  updateHistogramSpecs
+  (
+   TaskTimer timer, 
+   QueueHostHistogramSpecs specs
+  ) 
+  {
+    if(specs == null) 
+      return;
+
+    TreeSet<String> usedReservations = new TreeSet<String>();
+    TreeSet<Integer> usedOrders = new TreeSet<Integer>();
+    {
+      timer.aquire();
+      synchronized(pHostsInfo) {
+	timer.resume();
+	
+	for(QueueHostInfo qinfo : pHostsInfo.values()) {
+	  String reserve = qinfo.getReservation();
+	  if(reserve != null) 
+	    usedReservations.add(reserve); 
+	  
+	  usedOrders.add(qinfo.getOrder());
+	}
+      }
+    }
+      
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange("-"));
+      for(String reserve : usedReservations) 
+	ranges.add(new HistogramRange(reserve));
+      
+      HistogramSpec oldSpec = specs.getReservationSpec();
+      HistogramSpec newSpec =	new HistogramSpec("Reserved", ranges);
+      for(HistogramRange range : oldSpec.getIncluded())
+	newSpec.setIncluded(range, true);
+      
+      specs.setReservationSpec(newSpec); 
+    }
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      for(Integer order : usedOrders) 
+	ranges.add(new HistogramRange(order));
+      
+      HistogramSpec oldSpec = specs.getOrderSpec();
+      HistogramSpec newSpec =	new HistogramSpec("Order", ranges);
+      for(HistogramRange range : oldSpec.getIncluded())
+	newSpec.setIncluded(range, true);
+      
+      specs.setOrderSpec(newSpec); 
+    }
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange("-"));
+      synchronized(pSelectionGroups) {
+	for(String sname : pSelectionGroups.keySet())
+	  ranges.add(new HistogramRange(sname));
+      }
+      
+      HistogramSpec oldSpec = specs.getGroupsSpec();
+      HistogramSpec newSpec =	new HistogramSpec("Groups", ranges);
+      for(HistogramRange range : oldSpec.getIncluded())
+	newSpec.setIncluded(range, true);
+      
+      specs.setGroupsSpec(newSpec); 
+    }
+    
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange("-"));
+      synchronized(pSelectionSchedules) {
+	for(String sname : pSelectionSchedules.keySet())
+	  ranges.add(new HistogramRange(sname));
+      }
+      
+      HistogramSpec oldSpec = specs.getSchedulesSpec();
+      HistogramSpec newSpec =	new HistogramSpec("Schedules", ranges); 
+      for(HistogramRange range : oldSpec.getIncluded())
+	  newSpec.setIncluded(range, true);
+      
+      specs.setSchedulesSpec(newSpec); 
+    }
   }
 
 
@@ -4960,7 +5231,7 @@ class QueueMgr
       
       LogMgr.getInstance().log
 	(LogMgr.Kind.Mem, LogMgr.Level.Fine,
-	 "Memory Stats: " + 
+	 "Memory Stats:\n" + 
 	 "  ---- JVM HEAP ----------------------\n" + 
 	 "    Free = " + freeMemory + 
 	             " (" + ByteSize.longToFloatString(freeMemory) + ")\n" + 

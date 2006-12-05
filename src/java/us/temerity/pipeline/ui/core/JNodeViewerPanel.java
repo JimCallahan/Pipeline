@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.60 2006/11/28 17:07:15 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.61 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -69,7 +69,7 @@ class JNodeViewerPanel
   protected synchronized void 
   initUI()
   {  
-    super.initUI(128.0);
+    super.initUI(128.0, true);
 
     /* initialize fields */ 
     {

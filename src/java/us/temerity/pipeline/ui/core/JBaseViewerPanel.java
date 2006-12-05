@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.11 2006/08/14 22:38:30 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.12 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,8 @@ class JBaseViewerPanel
   protected void 
   initUI
   (
-   double maxFactor
+   double maxFactor,
+   boolean enableRubberband
   )
   {  
     /* initialize fields */ 
@@ -78,6 +79,8 @@ class JBaseViewerPanel
       setClip(0.1, 500.0);
 
       pCanvasToScreen = new Vector2d(1.0, 1.0);
+
+      pRbEnabled = enableRubberband;
 
       pZoomSpeed = 0.1;
       pMaxFactor = maxFactor;
@@ -101,6 +104,22 @@ class JBaseViewerPanel
       }
     }
   }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether rubberband selection is enabled.
+   */ 
+  public boolean
+  isRubberbandEnabled() 
+  {
+    return pRbEnabled;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -137,8 +156,9 @@ class JBaseViewerPanel
     pNear = near;
     pFar  = far;
   }
-
   
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -219,7 +239,7 @@ class JBaseViewerPanel
     }
 
     /* draw rubber band geometry */ 
-    if((pRbStart != null) && (pRbEnd != null)) {
+    if(pRbEnabled && (pRbStart != null) && (pRbEnd != null)) {
 
       /* compute world space coordinates */ 
       Point2d rs = new Point2d(pRbStart);
@@ -409,9 +429,10 @@ class JBaseViewerPanel
 		    MouseEvent.BUTTON3_DOWN_MASK | 
 		    MouseEvent.ALT_DOWN_MASK);
 
-	rb = (((mods & (on1 | off1)) == on1) || 
+	rb = (pRbEnabled && 
+	      (((mods & (on1 | off1)) == on1) || 
 	      ((mods & (on2 | off2)) == on2) || 
-	      ((mods & (on3 | off3)) == on3));
+	      ((mods & (on3 | off3)) == on3)));
       }
       
       /* <BUTTON2+ALT>: pan start */ 
@@ -530,9 +551,10 @@ class JBaseViewerPanel
 		    MouseEvent.BUTTON3_DOWN_MASK | 
 		    MouseEvent.ALT_DOWN_MASK);
 
-	rb = (((mods & (on1 | off1)) == on1) || 
+	rb = (pRbEnabled && 
+	      (((mods & (on1 | off1)) == on1) || 
 	      ((mods & (on2 | off2)) == on2) || 
-	      ((mods & (on3 | off3)) == on3));
+	      ((mods & (on3 | off3)) == on3)));
       }
       
       /* <BUTTON2+ALT>: pan start */ 
@@ -827,6 +849,11 @@ class JBaseViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether rubberband selection is enabled.
+   */ 
+  private boolean pRbEnabled; 
 
   /**
    * The location of the start of a rubberband drag in canvas coordinates.

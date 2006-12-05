@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.3 2006/11/21 20:00:04 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.4 2006/12/05 18:23:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -146,7 +146,7 @@ class JQueueJobServersPanel
 	panel.addMouseListener(new KeyFocuser(panel));
 	
 	{
-	  JLabel label = new JLabel("Job Servers:");
+	  JLabel label = new JLabel("Queue Servers:");
 	  label.setName("DialogHeaderLabel");	
 	  
 	  panel.add(label);	  
@@ -376,7 +376,7 @@ class JQueueJobServersPanel
   public String 
   getTypeName() 
   {
-    return "Job Servers";
+    return "Queue Servers";
   }
   
 
