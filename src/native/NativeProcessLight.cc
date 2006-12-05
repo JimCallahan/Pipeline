@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cc,v 1.2 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeProcessLight.cc,v 1.3 2006/12/05 17:40:52 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -204,7 +204,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_readFromStdOut
   jint stdout_fd = env->GetIntField(obj, pStdOutFileDesc);
 
   /* read the STDOUT */ 
-  char* buf = new char[size+1];
+  char buf[size+1];
   ssize_t bytes = read(stdout_fd, buf, size);
   if(bytes == -1) {
     sprintf(msg, "failed to read from parent STDOUT pipe: %s", strerror(errno));
@@ -300,7 +300,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_readFromStdErr
   jint stderr_fd = env->GetIntField(obj, pStdErrFileDesc);
 
   /* read the STDERR */ 
-  char* buf = new char[size+1];
+  char buf[size+1];
   ssize_t bytes = read(stderr_fd, buf, size);
   if(bytes == -1) {
     sprintf(msg, "failed to read from parent STDERR pipe: %s", strerror(errno));
@@ -487,7 +487,9 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
   
   /* repackage the arguments */ 
   const char *dir = NULL; 
+  int cmdsize = 0;
   char** cmdarray = NULL;
+  int envsize = 0;
   char** envp = NULL;
   {
     {
@@ -517,6 +519,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	return -1;
       }
 
+      cmdsize = len;
       cmdarray = new char*[len+1];
       jsize i;
       for(i=0; i<len; i++) {
@@ -530,6 +533,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
     {
       jsize len = env->GetArrayLength(jenvp);
 
+      envsize = len;
       envp = new char*[len+1];      
       jsize i;
       for(i=0; i<len; i++) {
@@ -687,7 +691,19 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
     }
 
     /* parent process */
-    {      
+    {  
+      /* deallocated memory used to store the environment and command-line arguments */ 
+      {
+	jsize i;
+	for(i=0; i<envsize; i++) 
+	  free(envp[i]);
+	delete[] envp;
+
+	for(i=0; i<cmdsize; i++) 
+	  free(cmdarray[i]);
+	delete[] cmdarray;
+      }      
+    
       /* close the READ side of the STDIN pipe */ 
       if(close(pipeIn[0]) == -1) {
 	sprintf(msg, "unable to close the READ side of the parent STDIN pipe: %s", 

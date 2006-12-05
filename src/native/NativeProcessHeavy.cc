@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cc,v 1.2 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeProcessHeavy.cc,v 1.3 2006/12/05 17:40:52 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -293,7 +293,9 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
   const char *dir = NULL; 
   const char *outFile = NULL;
   const char *errFile = NULL;
+  int cmdsize = 0;
   char** cmdarray = NULL;
+  int envsize = 0;
   char** envp = NULL;
   {
     {
@@ -339,6 +341,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	return -1;
       }
 
+      cmdsize = len;
       cmdarray = new char*[len+1];
       jsize i;
       for(i=0; i<len; i++) {
@@ -352,7 +355,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       jsize len = env->GetArrayLength(jenvp);
 
-      envp = new char*[len+1];      
+      envsize = len;
+      envp = new char*[len+1];       
       jsize i;
       for(i=0; i<len; i++) {
 	const char* keyval = 
@@ -476,7 +480,19 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     }
 
     /* parent process */
-    {      
+    {   
+      /* deallocated memory used to store the environment and command-line arguments */ 
+      {
+	jsize i;
+	for(i=0; i<envsize; i++) 
+	  free(envp[i]);
+	delete[] envp;
+
+	for(i=0; i<cmdsize; i++) 
+	  free(cmdarray[i]);
+	delete[] cmdarray;
+      }      
+
       /* close the READ side of the STDIN pipe */ 
       if(close(pipeIn[0]) == -1) {
 	sprintf(msg, "unable to close the READ side of the parent STDIN pipe: %s", 
