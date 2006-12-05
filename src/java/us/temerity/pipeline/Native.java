@@ -1,4 +1,4 @@
-// $Id: Native.java,v 1.8 2006/05/07 21:30:07 jim Exp $
+// $Id: Native.java,v 1.9 2006/12/05 17:45:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,9 +8,6 @@ package us.temerity.pipeline;
 
 /**
  * Loads the shared library containing JNI based methods used by subclasses.
- * 
- * @see NativeProcesss
- * @see NativeSystem
  */
 class Native
 {  
