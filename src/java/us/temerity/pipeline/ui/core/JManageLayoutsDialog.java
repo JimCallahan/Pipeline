@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.6 2006/12/05 20:35:29 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -57,9 +57,9 @@ class JManageLayoutsDialog
     /* create dialog body components */ 
     {
       String[][] extra = {
-	{ "Rename", "rename-layout" },
-	{ "Delete",    "delete-layout" }, 
-	{ "Default",   "default-layout" }
+	{ "Rename",   "rename-layout" },
+	{ "Delete",   "delete-layout" }, 
+	{ "Default",  "default-layout" }
       };
 
       JButton[] extraBtns = super.initUI("Manage Saved Layouts:", null, null, extra, "Close");
