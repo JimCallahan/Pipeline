@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessLightApp.java,v 1.1 2006/05/07 21:33:59 jim Exp $
+// $Id: TestNativeProcessLightApp.java,v 1.2 2006/12/05 18:21:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -61,8 +61,8 @@ class TestNativeProcessLightApp
 	args.add(argv[wk]);
 
       TreeMap<String,String> env = new TreeMap<String,String>(System.getenv());
-      env.put("PATH", "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\system32\\WBEM" + 
-	      ";C:\\Progra~1\\Alias\\Maya7.0\\bin");
+//       env.put("PATH", "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\system32\\WBEM" + 
+// 	      ";C:\\Progra~1\\Alias\\Maya7.0\\bin");
 
       File dir = PackageInfo.sTempPath.toFile(); 
       
