@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.32 2006/12/05 21:51:27 jim Exp $
+// $Id: JManagerPanel.java,v 1.33 2006/12/07 09:42:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -469,8 +469,7 @@ class JManagerPanel
 	  
 	item = new JMenuItem("User Manual...");
 	pUserManualItem = item;
-	item.setEnabled(false);
-	item.setActionCommand("user-anual");
+	item.setActionCommand("user-manual");
 	item.addActionListener(this);
 	sub.add(item);  
 	  
@@ -510,6 +509,12 @@ class JManagerPanel
 	sub.add(item);  
       }
       
+      item = new JMenuItem("Log History...");
+      pShowLogsItem = item;
+      item.setActionCommand("show-logs");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
       pPopup.addSeparator();
       pPopup.addSeparator();
       
@@ -1183,8 +1188,12 @@ class JManagerPanel
        "Display the Pipeline license agreement.");
 
     updateMenuToolTip
-       (pQuitItem, prefs.getQuit(), 
-	"Quit.");
+      (pShowLogsItem, null, 
+       "Display a history of log messages.");
+
+    updateMenuToolTip
+      (pQuitItem, prefs.getQuit(), 
+       "Quit.");
     
     /* panel groups */ 
     updateMenuToolTip
@@ -1870,14 +1879,12 @@ class JManagerPanel
     }
     else if((prefs.getShowQuickReference() != null) &&
 	    prefs.getShowQuickReference().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
-		      "/share/docs/manuals/quick-reference.html");
+      BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php"); 
       return true;
     }
     else if((prefs.getShowUserManual() != null) &&
 	    prefs.getShowUserManual().wasPressed(e)) {
-      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
-		      "/share/docs/manuals/user-manual.html");
+      BaseApp.showURL("http://temerity.us/products/pipeline/docs/PipelineManual.pdf");
       return true;
     }
 
@@ -2094,6 +2101,9 @@ class JManagerPanel
     else if(cmd.equals("license-agreement"))
       BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
 		      "/share/docs/legal/license.html");
+
+    else if(cmd.equals("show-logs"))
+      UIMaster.getInstance().showLogsDialog(); 
 
     else if(cmd.equals("quit"))
       UIMaster.getInstance().doQuit();    
@@ -3669,6 +3679,8 @@ class JManagerPanel
   private JMenuItem  pBugDatabaseItem;
   private JMenuItem  pSiteConfigurationItem;
   private JMenuItem  pLicenseAgreementItem;
+  private JMenuItem  pShowLogsItem;
+
   private JMenuItem  pQuitItem;
 
 

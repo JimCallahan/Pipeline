@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.7 2006/10/11 22:45:40 jim Exp $
+// $Id: LogMgr.java,v 1.8 2006/12/07 09:42:01 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -6,6 +6,8 @@ import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
 import java.util.*;
+
+import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L O G   M G R                                                                          */
@@ -29,6 +31,7 @@ class LogMgr
   {
     pLevels = new EnumMap<Kind,Level>(Kind.class);
     setLevels(Level.Info);
+    pTextAreaLock = new Object();
   }
 
 
@@ -293,7 +296,10 @@ class LogMgr
 		msg + "\n");
       }
 
+      boolean written = false;
       if(pWriter != null) {
+	written = true;
+
 	rotateLogs();
 
 	try {
@@ -319,7 +325,15 @@ class LogMgr
 	  pWriter = null;
 	}
       }
-      else {
+      
+      synchronized(pTextAreaLock) {
+	if(pTextArea != null) {
+	  written = true;
+	  SwingUtilities.invokeLater(new AppendMessageTask(text));
+	}
+      }
+
+      if(!written) {
 	switch(level) { 
 	case Severe:
 	case Warning:
@@ -518,6 +532,26 @@ class LogMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write log messages to a Swing text area component. 
+   * 
+   * @param area 
+   *   The text area which will display the log messages or <CODE>null</CODE> to disable.
+   */ 
+  public synchronized void 
+  logToTextArea
+  (
+   JTextArea area
+  ) 
+  {
+    synchronized(pTextAreaLock) {
+      pTextArea = area;
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P U B L I C    C L A S S E S                                                         */
@@ -558,6 +592,21 @@ class LogMgr
      * Log all messages (STDOUT).
      */ 
     Finest;
+
+
+    /**
+     * Get the list of all possible states.
+     */ 
+    public static ArrayList<Level>
+    all() 
+    {
+      Level values[] = values();
+      ArrayList<Level> all = new ArrayList<Level>(values.length);
+      int wk;
+      for(wk=0; wk<values.length; wk++)
+	all.add(values[wk]);
+      return all;
+    }
   }
 
   
@@ -638,6 +687,56 @@ class LogMgr
      * Activity of server extension threads.
      */ 
     Ext;
+
+
+    /**
+     * Get the list of all possible states.
+     */ 
+    public static ArrayList<Kind>
+    all() 
+    {
+      Kind values[] = values();
+      ArrayList<Kind> all = new ArrayList<Kind>(values.length);
+      int wk;
+      for(wk=0; wk<values.length; wk++)
+	all.add(values[wk]);
+      return all;
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Append a log message to the text area.
+   */ 
+  private
+  class AppendMessageTask
+    extends Thread
+  {
+    public 
+    AppendMessageTask
+    (
+     String msg
+    ) 
+    {
+      super("LogMgr:AppendMessageTask");
+      pMsg = msg; 
+    }
+
+    public void 
+    run() 
+    {	
+      synchronized(pTextAreaLock) {
+	if(pTextArea != null) 
+	  pTextArea.append(pMsg);
+      }
+    }
+
+    private String  pMsg; 
   }
 
 
@@ -724,7 +823,17 @@ class LogMgr
    * The current log file writer or <CODE>null</CODE> if logging to STDOUT/STDERR.
    */ 
   private FileWriter  pWriter; 
+
+
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The text area componet which will display log messages 
+   * or <CODE>null</CODE> if not enabled.
+   */ 
+  private Object     pTextAreaLock; 
+  private JTextArea  pTextArea;
+
 }
 
 

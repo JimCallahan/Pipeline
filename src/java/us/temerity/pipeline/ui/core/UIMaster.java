@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.49 2006/12/05 21:51:27 jim Exp $
+// $Id: UIMaster.java,v 1.50 2006/12/07 09:42:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2016,6 +2016,18 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
  
   /**
+   * Show the log history dialog. 
+   */ 
+  public void 
+  showLogsDialog()
+  {
+    pLogsDialog.setVisible(true);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
    * Show a dialog which graphs the resource usage history of queue servers.
    */ 
   public void 
@@ -3153,6 +3165,14 @@ class UIMaster
 	pOfflineDialog        = new JOfflineDialog();
 	pRestoreDialog        = new JRestoreDialog();
 	pArchiveVolumesDialog = new JArchiveVolumesDialog();
+
+	{
+	  ArrayList<LogMgr.Kind> kinds = new ArrayList<LogMgr.Kind>();
+	  kinds.add(LogMgr.Kind.Net);
+	  kinds.add(LogMgr.Kind.Sub);
+
+	  pLogsDialog = new JLogsDialog(kinds);
+	}
 
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
 
@@ -4775,6 +4795,11 @@ class UIMaster
    * The archive volumes dialog.
    */
   private JArchiveVolumesDialog  pArchiveVolumesDialog; 
+
+  /**
+   * The log history dialog. 
+   */
+  private JLogsDialog  pLogsDialog; 
 
   /**
    * The server resource usage history dialog.
