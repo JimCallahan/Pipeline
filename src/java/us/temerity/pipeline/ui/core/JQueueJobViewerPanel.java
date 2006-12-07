@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.29 2006/12/05 18:23:30 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.30 2006/12/07 23:28:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -123,6 +123,14 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Collapse All");
       pCollapseAllItem = item;
       item.setActionCommand("collapse-all");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      pPanelPopup.addSeparator();
+      
+      item = new JMenuItem("Hide All Groups");
+      pHideAllItem = item;
+      item.setActionCommand("hide-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
     }
@@ -266,6 +274,12 @@ class JQueueJobViewerPanel
       
       pGroupPopup.addSeparator();
       
+      item = new JMenuItem("Hide Groups");
+      pGroupHideGroupsItem = item;
+      item.setActionCommand("hide-groups");
+      item.addActionListener(this);
+      pGroupPopup.add(item);  
+
       item = new JMenuItem("Delete Groups");
       pGroupDeleteGroupsItem = item;
       item.setActionCommand("delete-group");
@@ -604,6 +618,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pCollapseAllItem, prefs.getCollapseAll(), 
        "Collapse all jobs.");
+    updateMenuToolTip
+      (pHideAllItem, prefs.getHideAll(), 
+       "Hide all of the job groups.");
 
     /* job menu */ 
     updateMenuToolTip
@@ -660,6 +677,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pGroupKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupHideGroupsItem, prefs.getHideSelected(), 
+       "Hide the selected job groups.");
     updateMenuToolTip
       (pGroupDeleteGroupsItem, prefs.getDeleteJobGroups(), 
        "Delete the selected completed job groups.");  
@@ -1692,6 +1712,9 @@ class JQueueJobViewerPanel
 	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
 
+      else if((prefs.getHideSelected() != null) &&
+	      prefs.getHideSelected().wasPressed(e))
+	doHideGroups();
       else if((prefs.getDeleteJobGroups() != null) &&
 	      prefs.getDeleteJobGroups().wasPressed(e))
 	doDeleteJobGroups();
@@ -1726,6 +1749,10 @@ class JQueueJobViewerPanel
       else if((prefs.getExpandAll() != null) &&
 	      prefs.getExpandAll().wasPressed(e))
 	doExpandAll();
+
+      else if((prefs.getHideAll() != null) &&
+	      prefs.getHideAll().wasPressed(e))
+	doHideAll();
 
       else if((prefs.getExpand1Level() != null) &&
 	      prefs.getExpand1Level().wasPressed(e))
@@ -1841,6 +1868,8 @@ class JQueueJobViewerPanel
       doExpandAll();
     else if(cmd.equals("collapse-all"))
       doCollapseAll();
+    else if(cmd.equals("hide-all"))
+      doHideAll();
 
     /* job/group events */ 
     else if(cmd.equals("details"))
@@ -1865,6 +1894,8 @@ class JQueueJobViewerPanel
       doPreemptJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
+    else if(cmd.equals("hide-groups"))
+      doHideGroups();
     else if(cmd.equals("delete-group"))
       doDeleteJobGroups();
     else if(cmd.equals("show-node"))
@@ -1963,6 +1994,21 @@ class JQueueJobViewerPanel
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
     updateUniverse();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Hide all job groups.
+   */ 
+  private synchronized void 
+  doHideAll() 
+  {
+    UIMaster master = UIMaster.getInstance();
+    JQueueJobBrowserPanel panel = master.getQueueJobBrowserPanels().getPanel(pGroupID);
+    if(panel != null) 
+      panel.deselectAllGroups();
   }
 
 
@@ -2300,6 +2346,18 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Hide the selected job groups.
+   */ 
+  private synchronized void 
+  doHideGroups() 
+  {
+    UIMaster master = UIMaster.getInstance();
+    JQueueJobBrowserPanel panel = master.getQueueJobBrowserPanels().getPanel(pGroupID);
+    if(panel != null) 
+      panel.deselectGroups(new TreeSet<Long>(pSelectedGroups.keySet()));
+  }
 
   /**
    * Delete the primary selected job group.
@@ -2874,7 +2932,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pAutomaticExpandItem;
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;
-
+  private JMenuItem  pHideAllItem;
 
   /**
    * The job popup menu.
@@ -2917,6 +2975,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupResumeJobsItem;
   private JMenuItem  pGroupPreemptJobsItem;
   private JMenuItem  pGroupKillJobsItem;
+  private JMenuItem  pGroupHideGroupsItem;
   private JMenuItem  pGroupDeleteGroupsItem;
   private JMenuItem  pGroupShowNodeItem;
 

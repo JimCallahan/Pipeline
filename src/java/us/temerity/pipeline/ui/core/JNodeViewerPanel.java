@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.62 2006/12/07 05:18:25 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.63 2006/12/07 23:28:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -918,7 +918,7 @@ class JNodeViewerPanel
       (pShowHideDownstreamItem, prefs.getNodeViewerShowHideDownstreamNodes(), 
        "Show/hide nodes downstream of the focus node.");
     updateMenuToolTip
-      (pRemoveAllRootsItem, prefs.getNodeViewerRemoveAllRoots(), 
+      (pRemoveAllRootsItem, prefs.getHideAll(), 
        "Hide all of the root nodes.");
 
     /* node menus */ 
@@ -938,7 +938,7 @@ class JNodeViewerPanel
 	 "Replace the root node of the current primary selection with the " +
 	 "primary selection.");
       updateMenuToolTip
-	(pRemoveRootItems[wk], prefs.getNodeViewerRemoveRoot(), 
+	(pRemoveRootItems[wk], prefs.getHideSelected(), 
 	 "Remove the root node of the current primary selection from the set " +
 	 "of roots nodes.");
     }
@@ -1858,6 +1858,7 @@ class JNodeViewerPanel
 	gl.glCallList(pSceneDL.get());
       }
 
+      pViewerNodeStatus.rebuild(gl);
       pViewerNodeStatus.render(gl);
     }
   }
@@ -1874,7 +1875,6 @@ class JNodeViewerPanel
     for(ViewerNode vnode : pViewerNodes.values()) 
       vnode.rebuild(gl);
     pViewerLinks.rebuild(gl);
-    pViewerNodeStatus.rebuild(gl);
   }
   
   /** 
@@ -2354,8 +2354,8 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerReplaceRoot() != null) &&
 	      prefs.getNodeViewerReplaceRoot().wasPressed(e))
 	doReplaceRoot();
-      else if((prefs.getNodeViewerRemoveRoot() != null) &&
-	      prefs.getNodeViewerRemoveRoot().wasPressed(e))
+      else if((prefs.getHideSelected() != null) &&
+	      prefs.getHideSelected().wasPressed(e))
 	doRemoveRoot();
       
       else if((prefs.getEdit() != null) &&
@@ -2523,8 +2523,8 @@ class JNodeViewerPanel
 		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
 	doShowHideDownstream();
       
-      else if((prefs.getNodeViewerRemoveAllRoots() != null) &&
-	      prefs.getNodeViewerRemoveAllRoots().wasPressed(e))
+      else if((prefs.getHideAll() != null) &&
+	      prefs.getHideAll().wasPressed(e))
 	doRemoveAllRoots();
 
       else

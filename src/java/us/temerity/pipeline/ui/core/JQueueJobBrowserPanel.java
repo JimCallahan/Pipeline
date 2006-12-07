@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.26 2006/12/05 22:02:50 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.27 2006/12/07 23:28:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -394,6 +394,49 @@ class JQueueJobBrowserPanel
       return pGroupsListSelector.getJustSelected();
     return null;
   }
+
+  /**
+   * Deselect the given job groups.
+   */ 
+  public void 
+  deselectGroups
+  (
+   TreeSet<Long> groupIDs
+  ) 
+  {
+    if(groupIDs.isEmpty()) 
+      return;
+
+    JTable table = pGroupsTablePanel.getTable();
+    ListSelectionModel smodel = table.getSelectionModel();
+    
+    smodel.removeListSelectionListener(pGroupsListSelector);
+    { 
+      int rows[] = table.getSelectedRows();
+      int wk;
+      for(wk=0; wk<rows.length; wk++) {
+	Long gid = pGroupsTableModel.getGroupID(rows[wk]);
+	if((gid != null) && groupIDs.contains(gid)) 
+	  table.removeRowSelectionInterval(wk, wk);
+      }
+
+      pSelectedIDs.removeAll(groupIDs); 
+    }      
+    smodel.addListSelectionListener(pGroupsListSelector);
+
+    updatePanels(true);      
+  }
+
+  /**
+   * Deselect all job groups. 
+   */ 
+  public void 
+  deselectAllGroups() 
+  {
+    pGroupsTablePanel.getTable().clearSelection();
+  }
+
+  
 
 
   /*----------------------------------------------------------------------------------------*/

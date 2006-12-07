@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -588,7 +588,7 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Hide the root node of the current primary selection.",
-	 "NodeViewerRemoveRoot", "Hide Root:"),
+	 "HideSelected", "Hide Root:"),
 
 	new BasePref(),
 	
@@ -890,7 +890,7 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Hide all of the roots nodes.",
-	 "NodeViewerRemoveAllRoots", "Hide All Roots:")
+	 "HideAll", "Hide All Roots:")
       };
 
       pPrefs.put("Panels|Node Viewer|Hot Keys", prefs);
@@ -1402,6 +1402,16 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new DuplicateHotKeyPref
+	("Hide the selected job groups.",
+	 "JobViewerHideSelected", "Hide Groups:", "HideSelected"), 
+
+	new DuplicateHotKeyPref
+	("Hide all of the job groups.",
+	 "JobViewerHideAll", "Hide All Groups:", "HideAll"), 
+
+	new BasePref(),
+
+	new DuplicateHotKeyPref
 	("Expand 1 level of jobs.",
 	 "JobViewerExpand1Level", "Expand 1 Level:", "Expand1Level"), 
 
@@ -1877,6 +1887,8 @@ class GenUserPrefsApp
       String applyChanges = "ApplyChanges";
       String removeFiles  = "RemoveFiles";
       String showNode     = "ShowNode"; 
+      String hideAll      = "HideAll"; 
+      String hideSelected = "HideSelected"; 
 
       pHotKeyGroups = new TreeMap<String,TreeSet<String>>();
 
@@ -1898,7 +1910,7 @@ class GenUserPrefsApp
 	group.add(update);
 	group.addAll(camera);
 	group.add("NodeViewerShowHideDownstreamNodes");
-	group.add("NodeViewerRemoveAllRoots");
+	group.add(hideAll);
       }
 
       {
@@ -1910,7 +1922,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerMakeRoot");
 	group.add("NodeViewerAddRoot");
 	group.add("NodeViewerReplaceRoot");
-	group.add("NodeViewerRemoveRoot");
+	group.add(hideSelected); 
 	group.add(edit);
 	group.add(editDefault);
 	group.add("NodeViewerLink");
@@ -2043,6 +2055,8 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(update);
 	group.addAll(camera);
+	group.add(hideAll);
+	group.add(hideSelected);
       }
     
       {
@@ -2168,7 +2182,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2425,7 +2439,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3782,7 +3796,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
