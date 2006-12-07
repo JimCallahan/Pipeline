@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.78 2006/12/05 19:55:40 jim Exp $
+// $Id: QueueMgr.java,v 1.79 2006/12/07 19:12:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2629,10 +2629,13 @@ class QueueMgr
 		{
 		  ResourceSampleCache cache = pSamples.get(hname);
 		  if(cache != null) {
+		    Date lastStamp = cache.getLastTimeStamp();
 		    ResourceSample sample = host.getLatestSample();
-		    if((sample == null) || 
-		       (sample.getTimeStamp().compareTo(cache.getLastTimeStamp()) < 0)) 
-		      host.setLatestSample(cache.getLatestSample());
+		    if(lastStamp != null) {
+		      if((sample == null) || 
+			 (sample.getTimeStamp().compareTo(lastStamp) < 0))
+			host.setLatestSample(cache.getLatestSample());
+		    }
 		  }
 		}
 	      }
