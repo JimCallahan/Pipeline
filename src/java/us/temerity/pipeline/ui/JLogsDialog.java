@@ -1,4 +1,4 @@
-// $Id: JLogsDialog.java,v 1.1 2006/12/07 09:42:01 jim Exp $
+// $Id: JLogsDialog.java,v 1.2 2006/12/07 09:48:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -50,8 +50,6 @@ class JLogsDialog
       body.setName("MainDialogPanel");
       body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
 
-      body.setMinimumSize(new Dimension(700, 180));
-
       if(!controls.isEmpty()) {
 	ArrayList<String> values = new ArrayList<String>();
 	for(LogMgr.Level level : LogMgr.Level.all())
@@ -92,7 +90,7 @@ class JLogsDialog
 	    }
 	  }
 
-	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
+	  hbox.add(Box.createRigidArea(new Dimension(15, 0)));
 	  hbox.add(Box.createHorizontalGlue());
 
 	  body.add(hbox);
@@ -100,6 +98,8 @@ class JLogsDialog
 
 	body.add(Box.createRigidArea(new Dimension(0, 20)));
       }
+
+      body.add(Box.createRigidArea(new Dimension(700, 0)));
 
       {
 	JTextArea area = new JTextArea(8, 35); 
