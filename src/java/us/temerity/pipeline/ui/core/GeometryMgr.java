@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.3 2006/12/05 18:23:30 jim Exp $
+// $Id: GeometryMgr.java,v 1.4 2006/12/07 05:18:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -16,9 +16,7 @@ import net.java.games.jogl.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Manages a set of resuable OpenGL display lists for common geometry components used in 
- * the {@link JNodeViewerPanel JNodeViewerPanel} and 
- * {@link JQueueJobViewerPanel.JQueueJobViewerPanel}.
+ * Manages a set of resuable OpenGL display lists for common geometry components.
  */ 
 public
 class GeometryMgr
@@ -553,6 +551,79 @@ class GeometryMgr
       }
       gl.glEndList();
     }
+
+    return dl;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Create an OpenGL display list for rendering a rectangle with rounded corners.
+   * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
+   * @param width
+   *   The horizontal dimensions of the rectangle.
+   * 
+   * @param height
+   *   The vertical dimensions of the rectangle.
+   * 
+   * @param radius
+   *   The corner radius. 
+   * 
+   * @param fill
+   *   The color used to fill the rectangle.
+   * 
+   * @param border 
+   *   The color of the rectangle border.
+   * 
+   * @param borderWidth
+   *   The line width of the border.
+   */ 
+  public synchronized int
+  getRoundedRectDL
+  (
+   GL gl,
+   double width, 
+   double height, 
+   double radius, 
+   Color4d fill, 
+   Color4d border, 
+   float borderWidth 
+  ) 
+  { 
+    int dl = gl.glGenLists(1);
+
+    gl.glNewList(dl, GL.GL_COMPILE);
+    {
+      double x = width * 0.5; 
+      double y = height * 0.5;
+      
+      gl.glColor4d(fill.r(), fill.g(), fill.b(), fill.a());
+      gl.glBegin(GL.GL_QUADS);
+      {
+	gl.glVertex2d(-x,  y); 
+	gl.glVertex2d( x,  y); 
+	gl.glVertex2d( x, -y); 
+	gl.glVertex2d(-x, -y); 
+      }
+      gl.glEnd();
+      
+      gl.glColor4d(border.r(), border.g(), border.b(), border.a());
+      gl.glLineWidth(borderWidth);
+      gl.glBegin(GL.GL_LINE_LOOP);
+      {
+	gl.glVertex2d(-x,  y); 
+	gl.glVertex2d( x,  y); 
+	gl.glVertex2d( x, -y); 
+	gl.glVertex2d(-x, -y); 
+      }
+      gl.glEnd();
+    }
+    gl.glEndList();	  
 
     return dl;
   }

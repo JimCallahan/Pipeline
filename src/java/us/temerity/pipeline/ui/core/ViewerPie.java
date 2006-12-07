@@ -1,4 +1,4 @@
-// $Id: ViewerPie.java,v 1.2 2006/12/05 22:17:33 jim Exp $
+// $Id: ViewerPie.java,v 1.3 2006/12/07 05:18:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -19,7 +19,7 @@ import net.java.games.jogl.*;
  */
 public 
 class ViewerPie
-  extends ViewerIcon
+  extends ViewerGraphic
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -209,45 +209,6 @@ class ViewerPie
     }
 
     return null;
-  }
-  
-
-  /**
-   * Whether any portion of the pie chart is inside the given bounding box.
-   */ 
-  public boolean
-  isInsideOf
-  (
-   BBox2d bbox
-  ) 
-  {
-    Point2d minC = bbox.getMin();
-    Point2d maxC = bbox.getMax();
-
-    if(pPos.x() < minC.x()) {
-      if(pPos.y() < minC.y()) 
-	return isInside(minC);
-      else if(pPos.y() > maxC.y()) 
-	return isInside(new Point2d(minC.x(), maxC.y()));
-      else 
-	return ((minC.x() - pPos.x()) < 0.45);
-    }
-    else if(pPos.x() > maxC.x()) {
-      if(pPos.y() < minC.y()) 
-	return isInside(new Point2d(maxC.x(), minC.y()));
-      else if(pPos.y() > maxC.y()) 
-	return isInside(maxC);
-      else 
-	return ((pPos.x() - maxC.x()) < 0.45);
-    }
-    else {
-      if(pPos.y() < minC.y()) 
-	return ((minC.y() - pPos.y()) < 0.45);
-      else if(pPos.y() > maxC.y()) 
-	return ((pPos.y() - maxC.y()) < 0.45);
-      else 
-	return true;
-    }
   }
 
 

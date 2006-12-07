@@ -1,4 +1,4 @@
-// $Id: ViewerIcon.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: ViewerIcon.java,v 1.2 2006/12/07 05:18:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -19,6 +19,7 @@ import net.java.games.jogl.*;
  */
 public abstract
 class ViewerIcon
+  extends ViewerGraphic
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,13 +31,64 @@ class ViewerIcon
   protected
   ViewerIcon() 
   {
+    super();
     pMode = SelectionMode.Normal;
-    pPos = new Point2d();
   }
+
 
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the given position is inside the node icon.
+   */ 
+  public abstract boolean
+  isInside
+  (
+   Point2d pos
+  );
+
+  /**
+   * Whether any portion of the node icon is inside the given bounding box.
+   */ 
+  public boolean
+  isInsideOf
+  (
+   BBox2d bbox
+  )
+  {
+    Point2d minC = bbox.getMin();
+    Point2d maxC = bbox.getMax();
+
+    if(pPos.x() < minC.x()) {
+      if(pPos.y() < minC.y()) 
+	return isInside(minC);
+      else if(pPos.y() > maxC.y()) 
+	return isInside(new Point2d(minC.x(), maxC.y()));
+      else 
+	return ((minC.x() - pPos.x()) < 0.45);
+    }
+    else if(pPos.x() > maxC.x()) {
+      if(pPos.y() < minC.y()) 
+	return isInside(new Point2d(maxC.x(), minC.y()));
+      else if(pPos.y() > maxC.y()) 
+	return isInside(maxC);
+      else 
+	return ((pPos.x() - maxC.x()) < 0.45);
+    }
+    else {
+      if(pPos.y() < minC.y()) 
+	return ((minC.y() - pPos.y()) < 0.45);
+      else if(pPos.y() > maxC.y()) 
+	return ((pPos.y() - maxC.y()) < 0.45);
+      else 
+	return true;
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -94,93 +146,6 @@ class ViewerIcon
   }
 
   
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether the given position is inside the node icon.
-   */ 
-  public abstract boolean
-  isInside
-  (
-   Point2d pos
-  );
-
-  /**
-   * Whether any portion of the node icon is inside the given bounding box.
-   */ 
-  public abstract boolean
-  isInsideOf
-  (
-   BBox2d bbox
-  );
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the 2D position of the node (center of icon).
-   */ 
-  public Point2d
-  getPosition()
-  {
-    return new Point2d(pPos);
-  }
-
-  /**
-   * Set the 2D position of the node (center of icon). 
-   */
-  public void 
-  setPosition
-  (
-   Point2d pos    
-  ) 
-  {
-    pPos.set(pos);
-  }
-
-  /**
-   * Move the node position by the given amount.
-   */ 
-  public void 
-  movePosition
-  (
-   Vector2d delta
-  ) 
-  {
-    pPos.add(delta);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   R E N D E R I N G                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Rebuild any OpenGL display list needed to render the node.
-   *
-   * @param gl
-   *   The OpenGL interface.
-   */ 
-  public abstract void 
-  rebuild
-  (
-   GL gl
-  );
-
-  /**
-   * Render the OpenGL geometry for the node.
-   *
-   * @param gl
-   *   The OpenGL interface.
-   */ 
-  public abstract void 
-  render
-  (
-   GL gl
-  );
-  
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -195,13 +160,5 @@ class ViewerIcon
    * Whether to display the collapsed icon. 
    */
   protected boolean  pIsCollapsed;
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The 2D position of the node (center of icon).
-   */ 
-  protected Point2d  pPos;         
 
 }

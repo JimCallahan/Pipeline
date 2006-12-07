@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -553,7 +553,13 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("The size of disabled action graphics.", 
-	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15)
+	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15), 
+
+	new BasePref(),
+
+	new BooleanPref
+	("Whether to show node status detail hints.",
+	 "ShowNodeDetailHints", "Show Node Detail Hints:", true)	
       };
 
       pPrefs.put("Panels|Node Viewer|Node|Appearance", prefs);
@@ -2162,7 +2168,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2419,7 +2425,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3776,7 +3782,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.38 2006/12/05 21:51:27 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.39 2006/12/07 05:18:25 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

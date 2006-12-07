@@ -1,6 +1,8 @@
-// $Id: LinkState.java,v 1.5 2004/06/14 22:39:17 jim Exp $
+// $Id: LinkState.java,v 1.6 2006/12/07 05:18:25 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I N K   S T A T E                                                                    */
@@ -83,6 +85,26 @@ enum LinkState
    * {@link VersionState#NeedsCheckOut NeedsCheckOut}.
    */
   Conflicted;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the list of all possible states.
+   */ 
+  public static ArrayList<LinkState>
+  all() 
+  {
+    LinkState values[] = values();
+    ArrayList<LinkState> all = new ArrayList<LinkState>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
+  }
 
 
 

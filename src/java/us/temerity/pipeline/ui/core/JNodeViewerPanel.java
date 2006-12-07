@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.61 2006/12/05 18:23:30 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.62 2006/12/07 05:18:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -77,6 +77,7 @@ class JNodeViewerPanel
 
       pShowDownstream = UserPrefs.getInstance().getShowDownstream();
 
+      pViewerNodeStatus = new ViewerNodeStatus();
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
       pSelected = new TreeMap<NodePath,ViewerNode>();
@@ -1229,6 +1230,7 @@ class JNodeViewerPanel
     /* remove all previous nodes and links */ 
     pViewerNodes.clear();
     pViewerLinks.clear();
+    pLastViewerNodeStatus = null;
 
     /* rebuild the viewer nodes and links */ 
     if(!pRoots.isEmpty()) {
@@ -1855,6 +1857,8 @@ class JNodeViewerPanel
       else {
 	gl.glCallList(pSceneDL.get());
       }
+
+      pViewerNodeStatus.render(gl);
     }
   }
 
@@ -1870,6 +1874,7 @@ class JNodeViewerPanel
     for(ViewerNode vnode : pViewerNodes.values()) 
       vnode.rebuild(gl);
     pViewerLinks.rebuild(gl);
+    pViewerNodeStatus.rebuild(gl);
   }
   
   /** 
@@ -2246,6 +2251,49 @@ class JNodeViewerPanel
     /* refresh the view */ 
     pCanvas.setCursor(Cursor.getDefaultCursor());
     refresh();
+  }
+
+
+  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
+ 
+  /**
+   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
+   * been pushed. 
+   */ 
+  public void 	
+  mouseMoved 
+  (
+   MouseEvent e
+  ) 
+  {
+    super.mouseMoved(e);
+
+    UserPrefs prefs = UserPrefs.getInstance();
+    if(prefs.getShowNodeDetailHints()) {  
+      Object under = objectAtMousePos();
+      if((under != null) && (under instanceof ViewerNode)) {
+	ViewerNode vunder = (ViewerNode) under;
+
+	if((pLastViewerNodeStatus == null) || 
+	   !pLastViewerNodeStatus.getName().equals(vunder.getNodeStatus().getName())) {
+	  pLastViewerNodeStatus = vunder.getNodeStatus(); 
+	  pViewerNodeStatus.setNodeStatus(pLastViewerNodeStatus);
+	  pViewerNodeStatus.setPosition(vunder.getPosition());
+	  pViewerNodeStatus.setVisible(true);
+	  refresh();
+	}
+      }
+      else if(pViewerNodeStatus.isVisible()) {
+	pLastViewerNodeStatus = null;
+	pViewerNodeStatus.setVisible(false);
+	refresh();
+      }
+    }
+    else if(pViewerNodeStatus.isVisible()) {
+      pLastViewerNodeStatus = null;
+      pViewerNodeStatus.setVisible(false);
+      refresh();
+    }
   }
 
 
@@ -5573,6 +5621,13 @@ class JNodeViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The node status hint graphic.
+   */ 
+  private NodeStatus        pLastViewerNodeStatus; 
+  private ViewerNodeStatus  pViewerNodeStatus; 
+
 
   /**
    * The currently displayed nodes indexed by <CODE>NodePath</CODE>.
