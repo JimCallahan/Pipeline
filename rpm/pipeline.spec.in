@@ -97,7 +97,6 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/images
 @ROOT_INST_DIR@/share/docs/javadoc
 @ROOT_INST_DIR@/share/docs/legal
-@ROOT_INST_DIR@/share/docs/manuals
 
 @ROOT_INST_DIR@/share/docs/man/plfilemgr.html 
 @ROOT_INST_DIR@/share/docs/man/pljobmgr.html 
