@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.7 2006/12/05 18:23:30 jim Exp $
+// $Id: PanelUpdater.java,v 1.8 2006/12/07 05:28:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -272,7 +272,7 @@ class PanelUpdater
       }
     }
 
-    if(pQueueJobServerStatsPanel != null) 
+    if((pQueueJobServerStatsPanel != null) && !pJobSlotsSelectionOnly) 
       pServerHistogramSpecs = pQueueJobServerStatsPanel.getHistogramSpecs(); 
 
     if(pQueueJobServersPanel != null) 
@@ -647,7 +647,7 @@ class PanelUpdater
       /* full update... */ 
       if(!pNodeDetailsOnly) {
 	if(!pJobDetailsOnly) {
-	  if(!pJobBrowserSelectionOnly) {
+	  if(!pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
 
 	    /* job server stats */ 
 	    if(pQueueJobServerStatsPanel != null) 
