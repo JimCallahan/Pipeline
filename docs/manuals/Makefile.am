@@ -1,7 +1,5 @@
 
-htmldir = @ROOT_INST_DIR@/share/docs/manuals
+docdir = @ROOT_INST_DIR@/share/docs/manuals
 
-html_DATA = \
-  index.html
-
+doc_DATA =
 
