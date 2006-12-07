@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.10 2006/11/22 09:08:00 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.11 2006/12/07 23:26:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -485,14 +485,13 @@ class SubProcessHeavy
       throw new IllegalStateException("The subprocess thread was already run!");
 
     /* log it... */ 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sub, LogMgr.Level.Fine,
+       getName() + " [command]: \"" + getCommand() + "\"");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sub, LogMgr.Level.Finer,
+       getName() + " [working directory]: " + getWorkingDir());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sub, LogMgr.Level.Finest)) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
-	 getName() + " [command]: \"" + getCommand() + "\"");
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sub, LogMgr.Level.Finer,
-	 getName() + " [working directory]: " + getWorkingDir());
-      
       String[] env = getEnvironment();
       StringBuilder buf = new StringBuilder();
       buf.append(getName() + " [environment]:\n");
