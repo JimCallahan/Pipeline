@@ -1,4 +1,4 @@
-// $Id: ViewerNodeStatus.java,v 1.1 2006/12/07 05:18:25 jim Exp $
+// $Id: ViewerNodeStatus.java,v 1.2 2006/12/07 23:26:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -32,7 +32,11 @@ class ViewerNodeStatus
   ViewerNodeStatus()
   {
     super();
+
+    pFileStates  = new TreeMap<FileState,Integer>();
+    pQueueStates = new TreeMap<QueueState,Integer>();
   }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -47,6 +51,7 @@ class ViewerNodeStatus
   {
     return pIsVisible;
   }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -79,8 +84,9 @@ class ViewerNodeStatus
   {              
     pVersionState  = null;
     pPropertyState = null;
-    pFileState     = null; 
     pLinkState     = null;
+    pFileStates.clear();
+    pQueueStates.clear();
 
     if(status == null)
       return;
@@ -93,70 +99,29 @@ class ViewerNodeStatus
     pPropertyState = details.getPropertyState();
     pLinkState     = details.getLinkState();
 
-    pFileState = FileState.Identical;
-    switch(details.getVersionState()) {
-    case Pending:
-      pFileState = FileState.Pending;
-      break;
-
-    case CheckedIn:
-      pFileState = FileState.CheckedIn;
-      break;
-
-    default:
-      {
-	boolean anyNeedsCheckOut = false;
-	boolean anyObsolete      = false;
-	boolean anyModified      = false;
-	boolean anyAdded         = false;
-	boolean anyConflicted    = false;
-	boolean anyMissing       = false;
-
-	for(FileSeq fseq : details.getFileStateSequences()) {
-	  FileState fs[] = details.getFileState(fseq);
-	  int wk;
-	  for(wk=0; wk<fs.length; wk++) {
-	    switch(fs[wk]) {
-	    case NeedsCheckOut:
-	      anyNeedsCheckOut = true;
-	      break;
-	      
-	    case Obsolete:
-	      anyObsolete = true;
-	      break;
-
-	    case Modified:
-	      anyModified = true;
-	      break; 
-
-	    case Added:
-	      anyAdded = true;
-	      break; 
-	      
-	    case Conflicted:
-	      anyConflicted = true;	
-	      break;
-	      
-	    case Missing: 
-	      anyMissing = true;
-	    }
-	  }
-	}
-	
-	if(anyMissing) 
-	  pFileState = FileState.Missing;
-	else if(anyConflicted) 
-	  pFileState = FileState.Conflicted;
-	else if(anyModified) 
-	  pFileState = FileState.Modified;
-	else if(anyAdded) 
-	  pFileState = FileState.Added;
-	else if(anyObsolete) 
-	  pFileState = FileState.Obsolete;
-	else if(anyNeedsCheckOut) 
-	  pFileState = FileState.NeedsCheckOut;
+    for(FileSeq fseq : details.getFileStateSequences()) {
+      FileState fs[] = details.getFileState(fseq);
+      int wk;
+      for(wk=0; wk<fs.length; wk++) {
+	Integer fcnt = pFileStates.get(fs[wk]);
+	if(fcnt == null)
+	  fcnt = new Integer(0);
+	pFileStates.put(fs[wk], fcnt+1);
       }
     }
+
+    {
+      QueueState qs[] = details.getQueueState();
+      int wk;
+      for(wk=0; wk<qs.length; wk++) {
+	Integer qcnt = pQueueStates.get(qs[wk]);
+	if(qcnt == null)
+	  qcnt = new Integer(0);
+	pQueueStates.put(qs[wk], qcnt+1);
+      }
+    }
+	
+    pCountDLs = null;
   }
 
 
@@ -180,40 +145,48 @@ class ViewerNodeStatus
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
       /* background */ 
-      if(pBackgroundDL == null) 
-	pBackgroundDL = 
-	  mgr.getRoundedRectDL(gl, 3.4+sBorder*2.0, sTextHeight*4.0+sBorder*2.0, sBorder, 
-			       new Color4d(0.45, 0.45, 0.45, 0.85), 
-			       new Color4d(0.65, 0.65, 0.65, 1.0), 2.0f); 
+      if(pBackgroundDL == null) {
+	pBackgroundDL = gl.glGenLists(1);
+	
+	gl.glNewList(pBackgroundDL, GL.GL_COMPILE);
+	{
+	  double x = 1.9 + sBorder; 
+	  
+	  gl.glColor4d(0.45, 0.45, 0.45, 0.85);
+	  gl.glBegin(GL.GL_QUADS);
+	  {
+	    gl.glVertex2d(-x,  0.0); 
+	    gl.glVertex2d( x,  0.0); 
+	    gl.glVertex2d( x, -1.0); 
+	    gl.glVertex2d(-x, -1.0); 
+	  }
+	  gl.glEnd();
+	  
+	  gl.glColor4d(0.65, 0.65, 0.65, 1.0);
+	  gl.glLineWidth(2.0f);
+	  gl.glBegin(GL.GL_LINE_LOOP);
+	  {
+	    gl.glVertex2d(-x,  0.0); 
+	    gl.glVertex2d( x,  0.0); 
+	    gl.glVertex2d( x, -1.0); 
+	    gl.glVertex2d(-x, -1.0); 
+	  }
+	  gl.glEnd();
+	}
+	gl.glEndList();	  
+      }
 
       /* state titles */ 
-      if(pTitlesDL == null) {
-	pTitlesDL = gl.glGenLists(1);
-
-	String titles[] = { "Version:", "Property:", "File:", "Link:" };
-	int titleDLs[] = new int[titles.length];
+      if(pTitleDLs == null) {
+	String titles[] = { "Version:", "Property:", "Link:", "File:", "Queue:" };
+	pTitleDLs = new int[titles.length];
 
 	int wk;
 	for(wk=0; wk<titles.length; wk++) {
-	  titleDLs[wk] = 
+	  pTitleDLs[wk] = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, titles[wk],
 			  GeometryMgr.TextAlignment.Right, 0.05);
 	}
-
-	gl.glNewList(pTitlesDL, GL.GL_COMPILE);
-	{
-	  double y;
-	  for(wk=0, y=0.0; wk<titles.length; wk++, y-=sTextHeight) {
-	    gl.glPushMatrix();
-	    {
-	      gl.glTranslated(-0.1, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(titleDLs[wk]);
-	    }
-	    gl.glPopMatrix();
-	  }
-	}
-	gl.glEndList();	  
       }
 
       /* version state labels */ 
@@ -242,19 +215,6 @@ class ViewerNodeStatus
 	}
       }
 
-      /* file state labels */ 
-      if(pFileStateDLs == null) {
-	ArrayList<FileState> states = FileState.all();
-	pFileStateDLs = new int[states.size()];
-
-	int wk;
-	for(wk=0; wk<pFileStateDLs.length; wk++) {
-	  pFileStateDLs[wk] = 
-	    mgr.getTextDL(gl, PackageInfo.sGLFont, fixTitle(states.get(wk).toTitle()), 
-			  GeometryMgr.TextAlignment.Left, 0.05);
-	}
-      }
-
       /* link state labels */ 
       if(pLinkStateDLs == null) {
 	ArrayList<LinkState> states = LinkState.all();
@@ -265,6 +225,57 @@ class ViewerNodeStatus
 	  pLinkStateDLs[wk] = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, fixTitle(states.get(wk).toTitle()), 
 			  GeometryMgr.TextAlignment.Left, 0.05);
+	}
+      }
+
+      /* file state labels */ 
+      if(pFileStateDLs == null) {
+	ArrayList<FileState> states = FileState.all();
+	pFileStateDLs = new int[states.size()];
+	pFileWidths   = new double[states.size()];
+
+	int wk;
+	for(wk=0; wk<pFileStateDLs.length; wk++) {
+	  String title = fixTitle(states.get(wk).toTitle());
+
+	  pFileStateDLs[wk] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, title, 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pFileWidths[wk] = mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05);
+	}
+      }
+
+      /* queue state labels */ 
+      if(pQueueStateDLs == null) {
+	ArrayList<QueueState> states = QueueState.all();
+	pQueueStateDLs = new int[states.size()];
+	pQueueWidths   = new double[states.size()];
+
+	int wk;
+	for(wk=0; wk<pQueueStateDLs.length; wk++) {
+	  String title = fixTitle(states.get(wk).toTitle());
+
+	  pQueueStateDLs[wk] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, title, 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pQueueWidths[wk] = mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05);
+	}
+      }
+
+      /* count labels */ 
+      if(pCountDLs == null) {
+	pCountDLs = new TreeMap<Integer,Integer>();
+	
+	TreeSet<Integer> counts = new TreeSet<Integer>();
+	counts.addAll(pFileStates.values());
+	counts.addAll(pQueueStates.values());
+
+	for(Integer cnt : counts) {
+	  int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, "(" + cnt + ")", 
+				 GeometryMgr.TextAlignment.Left, 0.05);
+	  pCountDLs.put(cnt, dl);
 	}
       }
     }
@@ -306,8 +317,9 @@ class ViewerNodeStatus
 
     if((pVersionState != null) &&  
        (pPropertyState != null) && 
-       (pFileState != null) &&  
-       (pLinkState != null)) {
+       (pLinkState != null) && 
+       !pFileStates.isEmpty() && 
+       !pQueueStates.isEmpty()) {
 
       gl.glPushMatrix();
       {
@@ -317,64 +329,123 @@ class ViewerNodeStatus
 	if(pBackgroundDL != null) {
 	  gl.glPushMatrix();
 	  {
-	    gl.glTranslated(0.0, -1.2*sTextHeight, 0.0);
+	    double rows = (double) (3 + pFileStates.size() + pQueueStates.size());
+	    gl.glTranslated(0.0, 0.8*sTextHeight+sBorder, 0.0);
+	    gl.glScaled(1.0, sTextHeight*rows+sBorder*2.0, 0.0);
 	    gl.glCallList(pBackgroundDL);
 	  }
 	  gl.glPopMatrix();
 	}
 
 	gl.glColor4d(1.0, 1.0, 1.0, 1.0); 
-	if(pTitlesDL != null)
-	  gl.glCallList(pTitlesDL);
-	
-	gl.glTranslated(0.1, 0, 0.0);
+	if(pTitleDLs != null) {
+	  double y;
+	  int wk;
+	  for(wk=0, y=0.0; wk<pTitleDLs.length; wk++, y-=sTextHeight) {
+	    if(wk == 4) 
+	      y -= (pFileStates.size() - 1) * sTextHeight;
 
-	if(pVersionStateDLs != null) {
-	  gl.glPushMatrix();
-	  {
-	    gl.glTranslated(-0.1, 0.0, 0.0);
-	    gl.glScaled(0.35, 0.35, 0.35);
-	    gl.glCallList(pVersionStateDLs[pVersionState.ordinal()]);
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(-0.3, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pTitleDLs[wk]);
+	    }
+	    gl.glPopMatrix();
 	  }
-	  gl.glPopMatrix();
 	}
 
-	if(pPropertyStateDLs != null) {
-	  gl.glPushMatrix();
-	  {
-	    gl.glTranslated(-0.1, -sTextHeight, 0.0);
-	    gl.glScaled(0.35, 0.35, 0.35);
-	    gl.glCallList(pPropertyStateDLs[pPropertyState.ordinal()]);
-	  }
-	  gl.glPopMatrix();
-	}
+	{
+	  double y = 0.0;
 
-	if(pFileStateDLs != null) {
-	  gl.glPushMatrix();
-	  {
-	    gl.glTranslated(-0.1, -sTextHeight*2.0, 0.0);
-	    gl.glScaled(0.35, 0.35, 0.35);
-	    gl.glCallList(pFileStateDLs[pFileState.ordinal()]);
-	  }
-	  gl.glPopMatrix();
-	}
+	  gl.glTranslated(-0.2, 0.0, 0.0);
 
-	if(pLinkStateDLs != null) {
-	  gl.glPushMatrix();
-	  {
-	    gl.glTranslated(-0.1, -sTextHeight*3.0, 0.0);
-	    gl.glScaled(0.35, 0.35, 0.35);
-	    gl.glCallList(pLinkStateDLs[pLinkState.ordinal()]);
+	  if(pVersionStateDLs != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.0, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pVersionStateDLs[pVersionState.ordinal()]);
+	    }
+	    gl.glPopMatrix();
 	  }
-	  gl.glPopMatrix();
+	  
+	  y -= sTextHeight; 
+	  if(pPropertyStateDLs != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.0, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pPropertyStateDLs[pPropertyState.ordinal()]);
+	    }
+	    gl.glPopMatrix();
+	  }
+
+	  y -= sTextHeight; 
+	  if(pLinkStateDLs != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.0, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pLinkStateDLs[pLinkState.ordinal()]);
+	    }
+	    gl.glPopMatrix();
+	  }
+
+	  if((pFileStateDLs != null) && (pCountDLs != null)) {
+	    boolean single = (pFileStates.size() == 1);
+	    for(FileState state : pFileStates.keySet()) {
+	      Integer cnt = pFileStates.get(state);
+
+	      y -= sTextHeight; 
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(0.0, y, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pFileStateDLs[state.ordinal()]);
+	      }
+	      gl.glPopMatrix();
+
+	      if(!single) {
+		gl.glPushMatrix();
+		{
+		  gl.glTranslated(pFileWidths[state.ordinal()]*0.35, y, 0.0);
+		  gl.glScaled(0.35, 0.35, 0.35);
+		  gl.glCallList(pCountDLs.get(cnt));
+		}
+		gl.glPopMatrix();
+	      }
+	    }
+	  }
+
+	  if((pQueueStateDLs != null) && (pCountDLs != null)) {
+	    boolean single = (pQueueStates.size() == 1);
+	    for(QueueState state : pQueueStates.keySet()) {
+	      Integer cnt = pQueueStates.get(state);
+
+	      y -= sTextHeight; 
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(0.0, y, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pQueueStateDLs[state.ordinal()]);
+	      }
+	      gl.glPopMatrix();
+
+	      if(!single) {
+		gl.glPushMatrix();
+		{
+		  gl.glTranslated(pQueueWidths[state.ordinal()]*0.35, y, 0.0);
+		  gl.glScaled(0.35, 0.35, 0.35);
+		  gl.glCallList(pCountDLs.get(cnt));
+		}
+		gl.glPopMatrix();
+	      }
+	    }
+	  }
 	}
       }
       gl.glPopMatrix();
-    }
-    else {
-
-      // ...
-      
     }
   }  
 
@@ -402,10 +473,11 @@ class ViewerNodeStatus
   /**
    * The node states. 
    */ 
-  private VersionState   pVersionState; 
-  private PropertyState  pPropertyState; 
-  private FileState      pFileState; 
-  private LinkState      pLinkState;      
+  private VersionState                pVersionState; 
+  private PropertyState               pPropertyState; 
+  private LinkState                   pLinkState;      
+  private TreeMap<FileState,Integer>  pFileStates; 
+  private TreeMap<QueueState,Integer> pQueueStates; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -418,14 +490,21 @@ class ViewerNodeStatus
   /**
    * The OpenGL display list handle for state titles.
    */ 
-  private Integer  pTitlesDL; 
+  private int[]  pTitleDLs; 
   
   /**
    * The OpenGL display list handle for the state values.
    */ 
   private int[]  pVersionStateDLs;   
   private int[]  pPropertyStateDLs;  
-  private int[]  pFileStateDLs; 	  
   private int[]  pLinkStateDLs;      
+
+  private int[]     pFileStateDLs; 	  
+  private double[]  pFileWidths;
+
+  private int[]     pQueueStateDLs; 	  
+  private double[]  pQueueWidths;
+
+  private TreeMap<Integer,Integer>  pCountDLs; 
 
 }
