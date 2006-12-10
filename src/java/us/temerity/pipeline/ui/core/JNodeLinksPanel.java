@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.14 2006/10/18 06:34:22 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.15 2006/12/10 07:09:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -631,8 +631,21 @@ class JNodeLinksPanel
 	      vpanel.add(hbox);
 	    }
 
-	    UIFactory.createTitledTextField(tpanel, "Revision Number:", sTSize, 
-					    vpanel, "-", sVSize);
+	    {
+	      String vstr = "-";
+	      NodeStatus lstatus = pStatus.getSource(lname);
+	      if(lstatus != null) {
+		NodeDetails ldetails = lstatus.getDetails();
+		if(ldetails != null) {
+		  NodeVersion lvsn = ldetails.getBaseVersion(); 
+		  if(lvsn != null) 
+		    vstr = ("v" + lvsn.getVersionID());
+		}
+	      }
+	      
+	      UIFactory.createTitledTextField(tpanel, "Revision Number:", sTSize, 
+					      vpanel, vstr, sVSize);
+	    }
 	
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);	    
 
