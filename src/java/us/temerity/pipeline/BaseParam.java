@@ -1,4 +1,4 @@
-// $Id: BaseParam.java,v 1.5 2006/11/23 00:46:59 jim Exp $
+// $Id: BaseParam.java,v 1.6 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -60,7 +60,7 @@ class BaseParam
 	("The parameter name (" + name + ") may contain only alphanumeric characters " + 
 	 "without whitespace!");
 
-    pValue = value;
+    setValue(value);
   }
 
 
@@ -110,14 +110,37 @@ class BaseParam
   /**
    * Sets the value of the parameter. 
    */
-  public abstract void 
+  public void 
   setValue
   (
    Comparable value  
-  );
+  )
+  {
+    validate(value);
+    pValue = value;
+  }
    
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * A method to confirm that the input to the param is correct.
+   * <P>
+   * Override this method in each individual param class. 
+   */
+  protected void 
+  validate
+  (
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
+  {}
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -275,7 +298,7 @@ class BaseParam
   /**
    * The value of the parameter.                
    */     
-  protected Comparable  pValue;
+  private Comparable  pValue;
 
 }
 

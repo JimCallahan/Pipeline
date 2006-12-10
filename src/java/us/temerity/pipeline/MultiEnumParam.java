@@ -1,4 +1,4 @@
-// $Id: MultiEnumParam.java,v 1.1 2006/10/26 07:13:02 jim Exp $
+// $Id: MultiEnumParam.java,v 1.2 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -59,20 +59,12 @@ public class MultiEnumParam
   {
     super(name, desc, value);
 
-    if(value == null)
-      pValue = new ComparableTreeSet<String>();
-
-    if((pValues == null) || pValues.isEmpty())
+    if((values == null) || values.isEmpty())
       throw new IllegalArgumentException
 	("The values parameter must contain at least one value.");
     pValues = values;
 
-    for(String each : (ComparableTreeSet<String>) pValue) {
-      if(!pValues.contains(each))
-	throw new IllegalArgumentException
-	  ("The value (" + each + ") is not a valid option in the Map Paramter " + 
-	   "(" + pName + ")");
-    }
+    validate(value);
   }
 
 
@@ -85,32 +77,21 @@ public class MultiEnumParam
    * Gets the value of the parameter.
    */
   public ComparableTreeSet<String> 
-  getMapValue()
+  getSetValue()
   {
     return ((ComparableTreeSet<String>) getValue());
   }
-
+  
   /**
    * Sets the value of the parameter.
-   */
-  public void 
-  setValue
-  (
-   Comparable value
-  )
+   */ 
+  @Override
+  public void setValue(Comparable value)
   {
-    if((value != null) && !(value instanceof ComparableTreeSet))
-      throw new IllegalArgumentException
-	("The parameter (" + pName + ") only accepts (ComparableTreeSet) values!");
-
-    pValue = value;
-
-    for(String each : (ComparableTreeSet<String>) pValue) {
-      if(!pValues.contains(each))
-	throw new IllegalArgumentException
-	  ("The value (" + each + ") is not a valid option in the Map Paramter " + 
-	   "(" + pName + ")");
-    }
+    if (value == null)
+      super.setValue(new ComparableTreeSet<String>());
+    else
+      super.setValue(value);
   }
 
   /**
@@ -125,8 +106,8 @@ public class MultiEnumParam
     if(!pValues.contains(name))
       throw new IllegalArgumentException
 	("The value (" + name + ") is not one of the supported values of the " + 
-	 "(" + pName + ") MultiMap parameter.");
-    ((ComparableTreeSet<String>) pValue).add(name);
+	 "(" + pName + ") MultiEnum parameter.");
+    getSetValue().add(name);
   }
 
   /**
@@ -141,8 +122,8 @@ public class MultiEnumParam
     if(!pValues.contains(name))
       throw new IllegalArgumentException
 	("The value (" + name + ") is not one of the supported values of the " + 
-	 "(" + pName + ") MultiMap parameter.");
-    ((ComparableTreeSet<String>) pValue).remove(name);
+	 "(" + pName + ") MultiEnum parameter.");
+    getSetValue().remove(name);
   }
 
   /**
@@ -162,13 +143,50 @@ public class MultiEnumParam
   getValuesMapping()
   {
     TreeMap<String, Boolean> toReturn = new TreeMap<String, Boolean>();
+    ComparableTreeSet<String> pValue = getSetValue();
     for(String name : pValues) {
-      if(((ComparableTreeSet<String>) pValue).contains(name))
+      if(pValue.contains(name))
 	toReturn.put(name, true);
       else
 	toReturn.put(name, false);
     }
     return toReturn;
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A method to confirm that the input to the param is correct.
+   * <P>
+   */
+  protected void 
+  validate
+  (
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
+  {
+    if((value != null) && !(value instanceof ComparableTreeSet))
+      throw new IllegalArgumentException
+	("The parameter (" + pName + ") only accepts (ComparableTreeSet) values!");
+
+    /*
+     * Null check is necessary since validate is called in the constructor before
+     * pValues is set.  Since the constructor also checks if pValues is null, 
+     * the exception will only apply there.
+     */
+    if(pValues != null) {
+      for(String each : getSetValue()) {
+        if(!pValues.contains(each))
+	  throw new IllegalArgumentException
+  	  ("The value (" + each + ") is not a valid option in the Map Paramter " + 
+  	   "(" + pName + ")");
+      }
+    }
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: ByteSizeParam.java,v 1.3 2006/02/28 19:43:34 jim Exp $
+// $Id: ByteSizeParam.java,v 1.4 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -70,23 +70,28 @@ class ByteSizeParam
   {
     return ((Long) getValue());
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets the value of the parameter. 
+   * A method to confirm that the input to the param is correct.
+   * <P>
    */
-  public void 
-  setValue
+  protected void 
+  validate
   (
-   Comparable value  
-  ) 
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
   {
     if((value != null) && !(value instanceof Long))
       throw new IllegalArgumentException
 	("The parameter (" + pName + ") only accepts (Long) values!");
-
-    pValue = value;
   }
-  
 
 
   /*----------------------------------------------------------------------------------------*/

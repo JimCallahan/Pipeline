@@ -1,4 +1,4 @@
-// $Id: PathParam.java,v 1.1 2006/08/25 20:02:06 jim Exp $
+// $Id: PathParam.java,v 1.2 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -63,28 +63,42 @@ class PathParam
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the value of the parameter. 
+   * Gets the {@link Path} value of the parameter. 
    */ 
   public Path
   getPathValue() 
   {
     return ((Path) getValue());
   }
+  
+  /**
+   * Gets the {@link String} value of the parameter. 
+   */ 
+  public String
+  getStringValue() 
+  {
+    return (getPathValue().toString());
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets the value of the parameter. 
+   * A method to confirm that the input to the param is correct.
+   * <P>
    */
-  public void 
-  setValue
+  protected void 
+  validate
   (
-   Comparable value  
-  ) 
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
   {
     if((value != null) && !(value instanceof Path))
       throw new IllegalArgumentException
 	("The parameter (" + pName + ") only accepts (Path) values!");
-
-    pValue = value;
   }
 
 

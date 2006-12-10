@@ -1,4 +1,4 @@
-// $Id: BooleanParam.java,v 1.3 2006/02/28 19:43:34 jim Exp $
+// $Id: BooleanParam.java,v 1.4 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -54,9 +54,6 @@ class BooleanParam
   ) 
   {
     super(name, desc, value);
-
-    if(value == null)
-      throw new IllegalArgumentException("The value cannot be (null)!");
   }
 
 
@@ -73,24 +70,30 @@ class BooleanParam
   {
     return ((Boolean) getValue());
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets the value of the parameter. 
+   * A method to confirm that the input to the param is correct.
+   * <P>
    */
-  public void 
-  setValue
+  protected void 
+  validate
   (
-   Comparable value  
-  ) 
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
   {
     if((value != null) && !(value instanceof Boolean))
       throw new IllegalArgumentException
-	("The parameter (" + pName + ") only accepts (Boolean) values!");
-
-    pValue = value;
+      ("The parameter (" + getName()  + ") only accepts (Boolean) values!");
   }
-  
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

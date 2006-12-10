@@ -1,4 +1,4 @@
-// $Id: EnumParam.java,v 1.6 2006/10/26 07:06:23 jim Exp $
+// $Id: EnumParam.java,v 1.7 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -59,10 +59,15 @@ class EnumParam
    ArrayList<String> values
   ) 
   {
-    super(name, desc, null);
-
+    super(name, desc, value);
+    
+    if (values == null || values.isEmpty())
+      throw new IllegalArgumentException
+	("The values parameter must contain at least one value.");
+    
     pValues = values;
-    setValue(value);
+    
+    validate(value);
   }
 
 
@@ -71,6 +76,15 @@ class EnumParam
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Gets the value of the parameter. 
+   */ 
+  public String
+  getStringValue() 
+  {
+    return ((String) getValue());
+  }
+  
   /**
    * Get the enumeration value based on the ordinal index.
    */ 
@@ -89,7 +103,7 @@ class EnumParam
   public int 
   getIndex() 
   {
-    return pValues.indexOf(pValue);
+    return pValues.indexOf(getStringValue());
   }
 
 
@@ -101,15 +115,23 @@ class EnumParam
   {
     return Collections.unmodifiableCollection(pValues);
   }  
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets the value of the parameter. 
+   * A method to confirm that the input to the param is correct.
+   * <P>
    */
-  public void 
-  setValue
+  protected void 
+  validate
   (
-   Comparable value  
-  ) 
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
   {
     if(value == null)
       throw new IllegalArgumentException
@@ -119,12 +141,16 @@ class EnumParam
       throw new IllegalArgumentException
 	("The parameter (" + pName + ") only accepts (String) values!");
 
-    if(!pValues.contains(value)) 
-      throw new IllegalArgumentException
-	("The value (" + value + ") was not a member of the enumeration for the " + 
-	 "(" + pName + ") parameter!");
-
-    pValue = value;
+    /*
+     * Null check is necessary since validate is called in the constructor before
+     * pValues is set.  Since the constructor also checks if pValues is null, 
+     * the exception will only apply there.
+     */
+    if (pValues != null)
+      if(!pValues.contains(value)) 
+        throw new IllegalArgumentException
+  	("The value (" + value + ") was not a member of the enumeration for the " + 
+  	 "(" + pName + ") parameter!");
   }
 
 

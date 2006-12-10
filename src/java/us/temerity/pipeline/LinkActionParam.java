@@ -1,4 +1,4 @@
-// $Id: LinkActionParam.java,v 1.5 2006/02/28 19:43:34 jim Exp $
+// $Id: LinkActionParam.java,v 1.6 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -71,22 +71,27 @@ class LinkActionParam
     return ((String) getValue());
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Sets the value of the parameter. 
+   * A method to confirm that the input to the param is correct.
+   * <P>
    */
-  public void 
-  setValue
+  protected void 
+  validate
   (
-   Comparable value  
-  ) 
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
   {
     if((value != null) && !(value instanceof String))
       throw new IllegalArgumentException
 	("The parameter (" + pName + ") only accepts (String) values!");
-
-    pValue = value;
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/

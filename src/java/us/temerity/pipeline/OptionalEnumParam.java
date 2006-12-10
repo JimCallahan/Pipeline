@@ -1,4 +1,4 @@
-// $Id: OptionalEnumParam.java,v 1.1 2006/10/26 07:06:02 jim Exp $
+// $Id: OptionalEnumParam.java,v 1.2 2006/12/10 22:52:54 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -56,8 +56,9 @@ class OptionalEnumParam
   {
     super(name, desc, value);
 
-    if(value == null)
-      throw new IllegalArgumentException("The value cannot be (null)!");
+    if (values == null || values.isEmpty())
+      throw new IllegalArgumentException
+	("The values parameter must contain at least one value.");
 
     pValues = values;
   }
@@ -68,6 +69,15 @@ class OptionalEnumParam
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Gets the value of the parameter. 
+   */ 
+  public String
+  getStringValue() 
+  {
+    return ((String) getValue());
+  }
+  
   /**
    * Get the enumeration value based on the ordinal index.
    */ 
@@ -86,7 +96,7 @@ class OptionalEnumParam
   public int 
   getIndex() 
   {
-    return pValues.indexOf(pValue);
+    return pValues.indexOf(getStringValue());
   }
 
 
@@ -99,24 +109,30 @@ class OptionalEnumParam
     return Collections.unmodifiableCollection(pValues);
   }  
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Sets the value of the parameter. 
+   * A method to confirm that the input to the param is correct.
+   * <P>
    */
-  public void 
-  setValue
+  protected void 
+  validate
   (
-   Comparable value  
-  ) 
+    Comparable value	  
+  )
+    throws IllegalArgumentException 
   {
     if(value == null)
       throw new IllegalArgumentException
-        ("The parameter (" + pName + ") cannot accept (null) values!");
+	("The parameter (" + pName + ") cannot accept (null) values!");
       
     if(!(value instanceof String)) 
       throw new IllegalArgumentException
-        ("The parameter (" + pName + ") only accepts (String) values!");
-
-    pValue = value;
+	("The parameter (" + pName + ") only accepts (String) values!");
   }
 
 
