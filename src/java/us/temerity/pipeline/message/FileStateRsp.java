@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.14 2006/11/22 09:08:01 jim Exp $
+// $Id: FileStateRsp.java,v 1.15 2006/12/10 00:21:26 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -41,7 +41,7 @@ class FileStateRsp
    * 
    * @param timestamps
    *   The last modification timestamp of each the primary and secondary file associated with 
-   *   the working version indexed by file sequence. 
+   *   the working version indexed by file sequence or <CODE>null</CODE> if frozen.
    */
   public
   FileStateRsp
@@ -62,8 +62,6 @@ class FileStateRsp
       throw new IllegalArgumentException("The working file states cannot (null)!");
     pStates = states;
 
-    if(timestamps == null) 
-      throw new IllegalArgumentException("The working file timestamps cannot (null)!");
     pTimeStamps = timestamps;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
