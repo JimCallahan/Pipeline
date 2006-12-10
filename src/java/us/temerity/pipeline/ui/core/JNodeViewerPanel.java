@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.64 2006/12/10 07:50:07 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.65 2006/12/10 22:38:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5593,18 +5593,24 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Running " + pTool.getName() + pMessage)) {
+	String doneMsg = ("Completed " + pTool.getName() + " Phase.");
 	try {
 	  if(pTool.executePhase(master.getMasterMgrClient(pGroupID), 
-				master.getQueueMgrClient(pGroupID))) 
+				master.getQueueMgrClient(pGroupID))) {
 	    SwingUtilities.invokeLater(new ToolInputTask(pTool));
-	  else if(pTool.updateOnExit()) 
-	    setRoots(pTool.rootsOnExit());
+	  }
+	  else {
+	    doneMsg = "Done.";
+
+	    if(pTool.updateOnExit()) 
+	      setRoots(pTool.rootsOnExit());
+	  }
 	}
 	catch(Exception ex) {
 	  master.showErrorDialog(ex);
 	}
 	finally {
-	  master.endPanelOp(pGroupID, "Done.");
+	  master.endPanelOp(pGroupID, doneMsg);
 	}
       }
     }
