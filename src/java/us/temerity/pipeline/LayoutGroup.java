@@ -1,11 +1,10 @@
-// $Id: LayoutGroup.java,v 1.6 2006/11/22 09:08:00 jim Exp $
+// $Id: LayoutGroup.java,v 1.7 2006/12/10 22:50:26 jesse Exp $
 
 package us.temerity.pipeline;
 
 import  us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L A Y O U T   G R O U P                                                                */
@@ -17,7 +16,7 @@ import java.io.*;
  */
 public 
 class LayoutGroup
-  extends Described
+  extends AdvancedLayoutGroup
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -31,8 +30,7 @@ class LayoutGroup
   public 
   LayoutGroup() 
   {
-    pEntries   = new LinkedList<String>();
-    pSubGroups = new LinkedList<LayoutGroup>();
+    super();
   }
 
   /**
@@ -70,11 +68,7 @@ class LayoutGroup
    boolean isOpen
   ) 
   {
-    super(name, desc);
-
-    pIsOpen    = isOpen;
-    pEntries   = new LinkedList<String>();
-    pSubGroups = new LinkedList<LayoutGroup>();
+    super(name, desc, name, isOpen);
   }
 
   /**
@@ -98,11 +92,7 @@ class LayoutGroup
    LayoutGroup group
   ) 
   {
-    super(name, desc);
-
-    pIsOpen    = group.pIsOpen;
-    pEntries   = new LinkedList<String>(group.pEntries);
-    pSubGroups = new LinkedList<LayoutGroup>(group.pSubGroups);
+    super(name, desc, group);
   }
 
 
@@ -138,6 +128,23 @@ class LayoutGroup
     return (buf.toString());
   }
 
+  /** 
+   * Overriden to throw an Exception if you attempt to add a column. <P>
+   * 
+   * If multiple columns as needed, then an {@link AdvancedLayoutGroup} needs to
+   * be used.
+   * 
+   * @throws IllegalStateException
+   * @see us.temerity.pipeline.AdvancedLayoutGroup#addColumn(java.lang.String, boolean)
+   */
+  @Override
+  public Integer addColumn(String colName, boolean isOpen)
+  {
+    throw new IllegalStateException
+      ("This method cannot be called on a LayoutGroup.\n" +
+       "If multiple columns are needed, then an AdvancedLayoutGroup must be used.");
+  }
+
   /**
    * Whether the group is initially open. <P> 
    * 
@@ -148,7 +155,7 @@ class LayoutGroup
   public boolean
   isOpen() 
   {
-    return pIsOpen;
+    return isOpen(1);
   }
   
 
@@ -164,7 +171,7 @@ class LayoutGroup
   public List<String>
   getEntries() 
   {
-    return Collections.unmodifiableList(pEntries);
+    return Collections.unmodifiableList(getEntries(1));
   }
 
   /**
@@ -179,7 +186,22 @@ class LayoutGroup
    String name
   ) 
   {
-    pEntries.add(name);
+    addEntry(1, name);
+  }
+  
+  /**
+   * Adds the given parameter/preset name to the beginning of the group. <P> 
+   * 
+   * @param name
+   *   The name of the parameter.
+   */ 
+  public void 
+  prependEntry
+  (
+   String name
+  ) 
+  {
+    prependEntry(1, name);
   }
 
   /**
@@ -188,7 +210,7 @@ class LayoutGroup
   public void 
   addSeparator() 
   {
-    pEntries.add(null);
+    addSeparator(1);
   }
 
 
@@ -200,7 +222,7 @@ class LayoutGroup
   public List<LayoutGroup>
   getSubGroups() 
   {
-    return Collections.unmodifiableList(pSubGroups);
+    return Collections.unmodifiableList(getSubGroups(1));
   }
 
   /**
@@ -215,76 +237,29 @@ class LayoutGroup
    LayoutGroup group
   ) 
   {
-    pSubGroups.add(group);
+    addSubGroup(1, group);
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
+  /**
+   * Add the given parameter subgroup to the beginning of the group.
+   * 
+   * @param group
+   *   The parameter subgroup.
+   */ 
   public void 
-  toGlue
-  ( 
-   GlueEncoder encoder   
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-
-    if(!pEntries.isEmpty()) 
-      encoder.encode("Entries", pEntries);
-
-    if(!pSubGroups.isEmpty())     
-      encoder.encode("SubGroups", pSubGroups);
-  }
-
-  public void 
-  fromGlue
+  prependSubGroup
   (
-   GlueDecoder decoder 
+   LayoutGroup group
   ) 
-    throws GlueException
   {
-    super.fromGlue(decoder);
-    
-    LinkedList<String> names = (LinkedList<String>) decoder.decode("Entries");
-    if(names != null) 
-      pEntries = names;
-
-    LinkedList<LayoutGroup> groups = (LinkedList<LayoutGroup>) decoder.decode("SubGroups");
-    if(groups != null) 
-      pSubGroups = groups;
+    prependSubGroup(1, group);
   }
 
-
-
+ 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -6353586503001120251L;
       
-
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The names of the member parameters.
-   */ 
-  private LinkedList<String>  pEntries; 
-
-  /**
-   * The layout subgroups.
-   */ 
-  private LinkedList<LayoutGroup>  pSubGroups; 
-
-  /**
-   * Whether the group is initially open.
-   */ 
-  private boolean  pIsOpen;
-
 }
