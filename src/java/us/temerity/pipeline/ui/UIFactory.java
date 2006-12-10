@@ -1,8 +1,10 @@
-// $Id: UIFactory.java,v 1.10 2006/11/22 09:08:01 jim Exp $
+// $Id: UIFactory.java,v 1.11 2006/12/10 22:46:59 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.MayaContext;
+import us.temerity.pipeline.builder.UtilContext;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
@@ -930,8 +932,114 @@ class UIFactory
 
     return field;
   }
+  
+  /**
+   * Create a UtilContext field.
+   * 
+   * @param value
+   * 	The initial value
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * @throws PipelineException 
+   */ 
+  public static JUtilContextField
+  createUtilContextField
+  (
+    UtilContext value, 
+    JDialog parent, 
+    int width
+  ) 
+    throws PipelineException 
+  {
+    JUtilContextField field = new JUtilContextField(parent);
+    field.setValue(value);
 
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
 
+    return field;
+  }
+
+  /**
+   * Create a UtilContext field.
+   *
+   * @param value
+   * 	The initial value
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * @throws PipelineException 
+   */ 
+  public static JUtilContextField
+  createUtilContextField
+  (
+    UtilContext value, 
+    int width
+  ) 
+    throws PipelineException 
+  {
+    return createUtilContextField(value, null, width);
+  }
+  
+  /**
+   * Create a MayaContext field.
+   * 
+   * @param value
+   * 	The initial value
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * @throws PipelineException 
+   */ 
+  public static JMayaContextField
+  createMayaContextField
+  (
+    MayaContext value, 
+    JDialog parent, 
+    int width
+  ) 
+    throws PipelineException 
+  {
+    JMayaContextField field = new JMayaContextField(parent);
+    field.setValue(value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create a MayaContext field.
+   *
+   * @param value
+   * 	The initial value
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * @throws PipelineException 
+   */ 
+  public static JMayaContextField
+  createMayaContextField
+  (
+    MayaContext value, 
+    int width
+  ) 
+    throws PipelineException 
+  {
+    return createMayaContextField(value, null, width);
+  }
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -2840,6 +2948,273 @@ class UIFactory
     return field;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new UtilContext field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * @throws PipelineException 
+   */ 
+  public static JUtilContextField
+  createTitledUtilContextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   UtilContext value,
+   JDialog parent,
+   int vwidth,
+   String tooltip
+  ) 
+    throws PipelineException
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JUtilContextField field = createUtilContextField(value, parent, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+  
+  /**
+   * Create a new UtilContext field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * @throws PipelineException 
+   */ 
+  public static JUtilContextField
+  createTitledUtilContextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   UtilContext value,
+   int vwidth,
+   String tooltip
+  ) 
+    throws PipelineException
+  {
+    return UIFactory.createTitledUtilContextField(tpanel, title, twidth, vpanel, 
+      						  value, null, vwidth, 
+      						  tooltip);
+  }
+  
+  /**
+   * Create a new UtilContext field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * @throws PipelineException 
+   */ 
+  public static JUtilContextField
+  createTitledUtilContextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   UtilContext value,
+   int vwidth
+  ) 
+    throws PipelineException
+  {
+    return UIFactory.createTitledUtilContextField(tpanel, title, twidth, vpanel, 
+      						  value, null, vwidth, 
+      						  null);
+  }
+
+ /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new MayaContext field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * @throws PipelineException 
+   */ 
+  public static JMayaContextField
+  createTitledMayaContextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   MayaContext value,
+   JDialog parent,
+   int vwidth,
+   String tooltip
+  ) 
+    throws PipelineException
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JMayaContextField field = createMayaContextField(value, parent, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+  
+  /**
+   * Create a new MayaContext field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * @throws PipelineException 
+   */ 
+  public static JMayaContextField
+  createTitledMayaContextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   MayaContext value,
+   int vwidth,
+   String tooltip
+  ) 
+    throws PipelineException
+  {
+    return UIFactory.createTitledMayaContextField(tpanel, title, twidth, vpanel, 
+      						  value, null, vwidth, 
+      						  tooltip);
+  }
+  
+  /**
+   * Create a new MayaContext field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * @throws PipelineException 
+   */ 
+  public static JMayaContextField
+  createTitledMayaContextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   MayaContext value,
+   int vwidth
+  ) 
+    throws PipelineException
+  {
+    return UIFactory.createTitledMayaContextField(tpanel, title, twidth, vpanel, 
+      						  value, null, vwidth, 
+      						  null);
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
