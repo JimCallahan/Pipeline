@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.180 2006/12/10 00:20:44 jim Exp $
+// $Id: MasterMgr.java,v 1.181 2006/12/10 22:29:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13799,19 +13799,9 @@ class MasterMgr
 	{
 	  overallNodeState = OverallNodeState.Pending;
 
-	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
-	  OverallNodeState testState = null;
- 	  int wk;
- 	  for(wk=0; wk<anyMissing.length; wk++) {
- 	    if(anyMissing[wk]) {
-	      testState = OverallNodeState.Missing;
- 	      break;
- 	    }
- 	  }
-	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
-
 	  /* check for missing files */ 
 	  for(FileState fs[] : fileStates.values()) {
+	    int wk;
 	    for(wk=0; wk<fs.length; wk++) {
 	      if(fs[wk] == FileState.Missing) {
 		overallNodeState = OverallNodeState.Missing;
@@ -13819,15 +13809,6 @@ class MasterMgr
 	      }
 	    }
 	  }
-	  
-	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
-	  if(!(((testState == null) && (overallNodeState == null)) ||
-	       ((testState != null) && (testState == overallNodeState))))
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-	       "Missing state speedup failed!\n" + 
-	       "See MasterMgr.java (line 13820) for details!");
-	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
 	}	      
 	break;
 
