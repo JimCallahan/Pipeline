@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -553,13 +553,7 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("The size of disabled action graphics.", 
-	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15), 
-
-	new BasePref(),
-
-	new BooleanPref
-	("Whether to show node status detail hints.",
-	 "ShowNodeDetailHints", "Show Node Detail Hints:", true)	
+	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15)	
       };
 
       pPrefs.put("Panels|Node Viewer|Node|Appearance", prefs);
@@ -786,7 +780,13 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to initially show downstream links.",
-	 "ShowDownstream", "Show Downstream:", false)
+	 "ShowDownstream", "Show Downstream:", false), 
+
+	new BasePref(),
+
+	new BooleanPref
+	("Whether to show node status detail hints.",
+	 "ShowDetailHints", "Show Node Detail Hints:", true)
       };
 
       pPrefs.put("Panels|Node Viewer|Appearance", prefs);
@@ -880,6 +880,11 @@ class GenUserPrefsApp
 	 false, true, false, 57),  /* ALT+9 */
 
 	new BasePref(),
+
+	new HotKeyPref
+	("Show/hide node status detail hints.",
+	 "NodeViewerShowHideDetailHints", "Show/Hide Node Detail Hints:", 
+	 false, false, false, 72),  /* H */
 
 	new HotKeyPref
 	("Show/hide nodes downstream of the focus node.",
@@ -1336,6 +1341,10 @@ class GenUserPrefsApp
 
 	new BasePref(),
 
+	new DuplicateHotKeyPref
+	("Hide the selected job groups.",
+	 "JobGroupHideSelected", "Hide Groups:", "HideSelected"), 
+
 	new HotKeyPref
 	("Delete the completed job groups.",
 	 "DeleteJobGroups", "Delete Groups:",
@@ -1400,10 +1409,6 @@ class GenUserPrefsApp
 	 "JobViewerCollapseAll", "Collapse All:", "CollapseAll"), 
 
 	new BasePref(),
-
-	new DuplicateHotKeyPref
-	("Hide the selected job groups.",
-	 "JobViewerHideSelected", "Hide Groups:", "HideSelected"), 
 
 	new DuplicateHotKeyPref
 	("Hide all of the job groups.",
@@ -1909,6 +1914,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerRegisterNewNode");
 	group.add(update);
 	group.addAll(camera);
+	group.add("NodeViewerShowHideDetailHints"); 
 	group.add("NodeViewerShowHideDownstreamNodes");
 	group.add(hideAll);
       }
@@ -2056,7 +2062,6 @@ class GenUserPrefsApp
 	group.add(update);
 	group.addAll(camera);
 	group.add(hideAll);
-	group.add(hideSelected);
       }
     
       {
@@ -2079,6 +2084,7 @@ class GenUserPrefsApp
 	group.add(edit);
 	group.add(editDefault);
 	group.addAll(jobs);
+	group.add(hideSelected);
 	group.add("DeleteJobGroups");
 	group.add(showNode);
       }
@@ -2182,7 +2188,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2439,7 +2445,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3796,7 +3802,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.40 2006/12/07 23:28:08 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

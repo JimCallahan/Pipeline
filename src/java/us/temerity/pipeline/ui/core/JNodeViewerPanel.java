@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.63 2006/12/07 23:28:08 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.64 2006/12/10 07:50:07 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -75,7 +75,8 @@ class JNodeViewerPanel
     {
       pRoots = new TreeMap<String,NodeStatus>();
 
-      pShowDownstream = UserPrefs.getInstance().getShowDownstream();
+      pShowDetailHints = UserPrefs.getInstance().getShowDetailHints();
+      pShowDownstream  = UserPrefs.getInstance().getShowDownstream();
 
       pViewerNodeStatus = new ViewerNodeStatus();
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
@@ -164,7 +165,15 @@ class JNodeViewerPanel
       pRemoveAllRootsItem = item;
       item.setActionCommand("remove-all-roots");
       item.addActionListener(this);
-      pPanelPopup.add(item);  
+      pPanelPopup.add(item); 
+
+      pPanelPopup.addSeparator();
+
+      item = new JMenuItem();
+      pShowHideDetailHintsItem = item;
+      item.setActionCommand("show-hide-detail-hints");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
     }
 
     /* node popup menus */ 
@@ -872,6 +881,9 @@ class JNodeViewerPanel
   public void 
   updateUserPrefs() 
   {
+    pShowDetailHints = UserPrefs.getInstance().getShowDetailHints();
+    pShowDownstream  = UserPrefs.getInstance().getShowDownstream();
+
     updateUniverse();
     updateMenuToolTips();
   }
@@ -920,6 +932,11 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pRemoveAllRootsItem, prefs.getHideAll(), 
        "Hide all of the root nodes.");
+
+    updateMenuToolTip
+      (pShowHideDetailHintsItem, prefs.getNodeViewerShowHideDetailHints(), 
+       "Show/hide node status detail hints..");
+    
 
     /* node menus */ 
     int wk;
@@ -1051,6 +1068,9 @@ class JNodeViewerPanel
 
     pShowHideDownstreamItem.setText
       ((pShowDownstream ? "Hide" : "Show") + " Downstream");
+
+    pShowHideDetailHintsItem.setText
+      ((pShowDetailHints ? "Hide" : "Show") + " Detail Hints");
   }
 
   /**
@@ -2269,7 +2289,7 @@ class JNodeViewerPanel
     super.mouseMoved(e);
 
     UserPrefs prefs = UserPrefs.getInstance();
-    if(prefs.getShowNodeDetailHints()) {  
+    if(pShowDetailHints) {  
       Object under = objectAtMousePos();
       if((under != null) && (under instanceof ViewerNode)) {
 	ViewerNode vunder = (ViewerNode) under;
@@ -2521,11 +2541,14 @@ class JNodeViewerPanel
       
       else if((prefs.getNodeViewerShowHideDownstreamNodes() != null) &&
 		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
-	doShowHideDownstream();
-      
+	doShowHideDownstream();      
       else if((prefs.getHideAll() != null) &&
 	      prefs.getHideAll().wasPressed(e))
 	doRemoveAllRoots();
+
+      else if((prefs.getNodeViewerShowHideDetailHints() != null) &&
+	      prefs.getNodeViewerShowHideDetailHints().wasPressed(e))
+	doShowHideDetailHints();
 
       else
 	undefined = true;
@@ -2700,6 +2723,8 @@ class JNodeViewerPanel
       doCollapseAll();
     else if(cmd.equals("show-hide-downstream"))
       doShowHideDownstream();
+    else if(cmd.equals("show-hide-detail-hints"))
+      doShowHideDetailHints();
 
     /* tool menu events */ 
     else if(cmd.startsWith("run-tool:")) 
@@ -4007,6 +4032,16 @@ class JNodeViewerPanel
     updateUniverse();
   }
 
+  /**
+   * Show/Hide the downstream node tree.
+   */ 
+  private synchronized void
+  doShowHideDetailHints()
+  {
+    clearSelection();
+    pShowDetailHints = !pShowDetailHints;
+    updateUniverse();
+  }
   
   /**
    * Show/Hide the downstream node tree.
@@ -4018,7 +4053,6 @@ class JNodeViewerPanel
     pShowDownstream = !pShowDownstream;
     updateUniverse();
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4096,6 +4130,7 @@ class JNodeViewerPanel
     } 
 
     /* whether to show the downstram links */
+    encoder.encode("ShowDetailHints", pShowDetailHints);
     encoder.encode("ShowDownstream", pShowDownstream);
   }
 
@@ -4120,10 +4155,19 @@ class JNodeViewerPanel
     /* the initial center of the node layout */ 
     pInitialCenter = (Point2d) decoder.decode("InitialCenter");
     
+    /* whether to show the node status detail hints */    
+    {
+      Boolean show = (Boolean) decoder.decode("ShowDetailHints");
+      if(show != null) 
+	pShowDetailHints = show; 
+    }
+
     /* whether to show the downstram links */    
-    Boolean show = (Boolean) decoder.decode("ShowDownstream");
-    if(show != null) 
-      pShowDownstream = show; 
+    {
+      Boolean show = (Boolean) decoder.decode("ShowDownstream");
+      if(show != null) 
+	pShowDownstream = show; 
+    }
   }
   
 
@@ -5593,6 +5637,11 @@ class JNodeViewerPanel
   private TreeMap<String,NodeStatus>  pRoots;
 
   /**
+   * Whether to display the node status detail hints.
+   */ 
+  private boolean  pShowDetailHints;
+
+  /**
    * Whether to display the downstream tree of nodes.
    */ 
   private boolean  pShowDownstream;
@@ -5695,6 +5744,7 @@ class JNodeViewerPanel
   private JMenuItem  pCollapseAllItem;
   private JMenuItem  pShowHideDownstreamItem;
   private JMenuItem  pRemoveAllRootsItem;
+  private JMenuItem  pShowHideDetailHintsItem;
   
 
   /*----------------------------------------------------------------------------------------*/
