@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.58 2006/11/22 09:08:00 jim Exp $
+// $Id: FileMgr.java,v 1.59 2006/12/10 00:12:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -356,8 +356,8 @@ class FileMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    if(req.isFrozen())
-      throw new IllegalStateException(); 
+//     if(req.isFrozen())
+//       throw new IllegalStateException(); 
 
     timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
@@ -371,175 +371,224 @@ class FileMgr
 
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
+	TreeMap<FileSeq, Date[]> timestamps = null; 
 
-	switch(req.getVersionState()) {
-	case Pending:
-	  if((req.getWorkingVersionID() != null) || (req.getLatestVersionID() != null))
-	    throw new PipelineException("Internal Error");
-
-	  for(FileSeq fseq : req.getFileSequences()) {
-	    FileState fs[] = new FileState[fseq.numFrames()];
-	    
-	    int wk = 0;
-	    for(File file : fseq.getFiles()) {
-	      File work = new File(pProdDir, 
-				   req.getNodeID().getWorkingParent() + "/" + file);
-
-	      if(work.isFile())
-		fs[wk] = FileState.Pending;
-	      else 
-		fs[wk] = FileState.Missing;
+	/* if frozen, the possibilities are more limited... */ 
+	if(req.isFrozen()) {
+	  switch(req.getVersionState()) {
+	  case Identical:
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
 	      
-	      wk++;
+	      int wk; 
+	      for(wk=0; wk<fs.length; wk++) 
+		fs[wk] = FileState.Identical;
+
+	      states.put(fseq, fs);
 	    }
-	    
-	    states.put(fseq, fs);
-	  }
-	  break;
-	  
-	case CheckedIn:
-	  throw new PipelineException("Internal Error");
-	  
-	case Identical:
-	  if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
-	    throw new PipelineException("Internal Error");
+	    break;
 
-	  for(FileSeq fseq : req.getFileSequences()) {
-	    FileState fs[] = new FileState[fseq.numFrames()];
-	    
-	    int wk = 0;
-	    for(File file : fseq.getFiles()) {
-	      File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-	      File work  = new File(pProdDir, wpath.getPath());
+	  case NeedsCheckOut:
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
 	      
-	      if(!work.isFile()) 
-		fs[wk] = FileState.Missing;
-	      else {
-		VersionID lvid = req.getLatestVersionID();
-		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		File latest = new File(pProdDir, lpath.getPath());
+	      int wk = 0;
+	      for(File file : fseq.getFiles()) {
+		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
+		File work  = new File(pProdDir, wpath.getPath());
 		
-		if(!latest.isFile()) 
-		  fs[wk] = FileState.Added;
-		else if(work.length() != latest.length()) 
-		  fs[wk] = FileState.Modified;
-		else if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
-		  fs[wk] = FileState.Identical;
-		else {
-		  checkSum.refresh(wpath);
-		  if(checkSum.compare(wpath, lpath))
-		    fs[wk] = FileState.Identical;
-		  else 
-		    fs[wk] = FileState.Modified;
-		}
-	      }
-	      
-	      wk++;
-	    }
-	    
-	    states.put(fseq, fs);
-	  }
-	  break;
-	  
-	case NeedsCheckOut:
-	  if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
-	    throw new PipelineException("Internal Error");
-
-	  for(FileSeq fseq : req.getFileSequences()) {
-	    FileState fs[] = new FileState[fseq.numFrames()];
-	    
-	    int wk = 0;
-	    for(File file : fseq.getFiles()) {
-	      File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-	      File work  = new File(pProdDir, wpath.getPath());
-
-	      if(!work.isFile()) 
-		fs[wk] = FileState.Missing;
-	      else {
 		VersionID lvid = req.getLatestVersionID();
 		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
 		File latest = new File(pProdDir, lpath.getPath());
-
-		VersionID bvid = req.getWorkingVersionID();
-		File bpath = new File(req.getNodeID().getCheckedInPath(bvid) + "/" + file);
-		File base  = new File(pProdDir, bpath.getPath());
 		
 		if(!latest.isFile()) {
-		  if(!base.isFile()) 
-		    fs[wk] = FileState.Added;
-		  else 
-		    fs[wk] = FileState.Obsolete;
+		  fs[wk] = FileState.Obsolete;
 		}
 		else {
-		  boolean workRefreshed = false;
-		  boolean workEqLatest = false;
 		  if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
-		    workEqLatest = true;
-		  else if(work.length() == latest.length()) {
-		    checkSum.refresh(wpath);
-		    workRefreshed = true;
-		    workEqLatest = checkSum.compare(wpath, lpath);
-		  }
-
-		  if(workEqLatest) {
 		    fs[wk] = FileState.Identical;
-		  }
-		  else if(!base.isFile()) {
-		    fs[wk] = FileState.Conflicted;
-		  }
-		  else { 
-		    if(NativeFileSys.realpath(base).equals(NativeFileSys.realpath(latest)))
-		      fs[wk] = FileState.Modified;
-		    else {
-		      boolean workEqBase = false;
-		      if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(base)))
-			workEqBase = true;
-		      else if(work.length() == base.length()) {
-			if(!workRefreshed) 
-			  checkSum.refresh(wpath);
-			workEqBase = checkSum.compare(wpath, bpath);
-		      }
-
-		      if(workEqBase)
-			fs[wk] = FileState.NeedsCheckOut;
-		      else 
-			fs[wk] = FileState.Conflicted;
-		    }
-		  }
+		  else 
+		    fs[wk] = FileState.NeedsCheckOut;
 		}
+
+		wk++;
 	      }
 
-	      wk++;
+	      states.put(fseq, fs);
 	    }
-	    
-	    states.put(fseq, fs);
-	  }
-	  break;
-	}
-
-	/* lookup the last modification timestamps */ 
-	TreeMap<FileSeq, Date[]> timestamps = timestamps = new TreeMap<FileSeq, Date[]>();
-	{
-	  Date critical = req.getCriticalStamp();
-	  for(FileSeq fseq : states.keySet()) {
-	    Date stamps[] = new Date[fseq.numFrames()];
-
-	    int wk = 0;
-	    for(File file : fseq.getFiles()) {
-	      File work = new File(pProdDir, 
-				   req.getNodeID().getWorkingParent() + "/" + file);
-
-	      long when = NativeFileSys.lastCriticalChange(work, critical); 
-	      if(when > 0) 
-		stamps[wk] = new Date(when);
-
-	      wk++;
-	    }
-
-	    timestamps.put(fseq, stamps);
 	  }
 	}
 	
+	/* if not frozen, do a more thorough set of tests... */ 
+	else {
+	  switch(req.getVersionState()) {
+	  case Pending:
+	    if((req.getWorkingVersionID() != null) || (req.getLatestVersionID() != null))
+	      throw new PipelineException("Internal Error");
+
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
+	    
+	      int wk = 0;
+	      for(File file : fseq.getFiles()) {
+		File work = new File(pProdDir, 
+				     req.getNodeID().getWorkingParent() + "/" + file);
+
+		if(work.isFile())
+		  fs[wk] = FileState.Pending;
+		else 
+		  fs[wk] = FileState.Missing;
+	      
+		wk++;
+	      }
+	    
+	      states.put(fseq, fs);
+	    }
+	    break;
+	  
+	  case CheckedIn:
+	    throw new PipelineException("Internal Error");
+	  
+	  case Identical:
+	    if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
+	      throw new PipelineException("Internal Error");
+
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
+	    
+	      int wk = 0;
+	      for(File file : fseq.getFiles()) {
+		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
+		File work  = new File(pProdDir, wpath.getPath());
+	      
+		if(!work.isFile()) 
+		  fs[wk] = FileState.Missing;
+		else {
+		  VersionID lvid = req.getLatestVersionID();
+		  File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
+		  File latest = new File(pProdDir, lpath.getPath());
+		
+		  if(!latest.isFile()) 
+		    fs[wk] = FileState.Added;
+		  else if(work.length() != latest.length()) 
+		    fs[wk] = FileState.Modified;
+		  else if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
+		    fs[wk] = FileState.Identical;
+		  else {
+		    checkSum.refresh(wpath);
+		    if(checkSum.compare(wpath, lpath))
+		      fs[wk] = FileState.Identical;
+		    else 
+		      fs[wk] = FileState.Modified;
+		  }
+		}
+	      
+		wk++;
+	      }
+	    
+	      states.put(fseq, fs);
+	    }
+	    break;
+	  
+	  case NeedsCheckOut:
+	    if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
+	      throw new PipelineException("Internal Error");
+
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
+	    
+	      int wk = 0;
+	      for(File file : fseq.getFiles()) {
+		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
+		File work  = new File(pProdDir, wpath.getPath());
+
+		if(!work.isFile()) 
+		  fs[wk] = FileState.Missing;
+		else {
+		  VersionID lvid = req.getLatestVersionID();
+		  File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
+		  File latest = new File(pProdDir, lpath.getPath());
+
+		  VersionID bvid = req.getWorkingVersionID();
+		  File bpath = new File(req.getNodeID().getCheckedInPath(bvid) + "/" + file);
+		  File base  = new File(pProdDir, bpath.getPath());
+		
+		  if(!latest.isFile()) {
+		    if(!base.isFile()) 
+		      fs[wk] = FileState.Added;
+		    else 
+		      fs[wk] = FileState.Obsolete;
+		  }
+		  else {
+		    boolean workRefreshed = false;
+		    boolean workEqLatest = false;
+		    if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
+		      workEqLatest = true;
+		    else if(work.length() == latest.length()) {
+		      checkSum.refresh(wpath);
+		      workRefreshed = true;
+		      workEqLatest = checkSum.compare(wpath, lpath);
+		    }
+
+		    if(workEqLatest) {
+		      fs[wk] = FileState.Identical;
+		    }
+		    else if(!base.isFile()) {
+		      fs[wk] = FileState.Conflicted;
+		    }
+		    else { 
+		      if(NativeFileSys.realpath(base).equals(NativeFileSys.realpath(latest)))
+			fs[wk] = FileState.Modified;
+		      else {
+			boolean workEqBase = false;
+			if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(base)))
+			  workEqBase = true;
+			else if(work.length() == base.length()) {
+			  if(!workRefreshed) 
+			    checkSum.refresh(wpath);
+			  workEqBase = checkSum.compare(wpath, bpath);
+			}
+
+			if(workEqBase)
+			  fs[wk] = FileState.NeedsCheckOut;
+			else 
+			  fs[wk] = FileState.Conflicted;
+		      }
+		    }
+		  }
+		}
+
+		wk++;
+	      }
+	    
+	      states.put(fseq, fs);
+	    }
+	  }
+
+	  /* lookup the last modification timestamps */ 
+	  timestamps = new TreeMap<FileSeq, Date[]>();
+	  {
+	    Date critical = req.getCriticalStamp();
+	    for(FileSeq fseq : states.keySet()) {
+	      Date stamps[] = new Date[fseq.numFrames()];
+
+	      int wk = 0;
+	      for(File file : fseq.getFiles()) {
+		File work = new File(pProdDir, 
+				     req.getNodeID().getWorkingParent() + "/" + file);
+
+		long when = NativeFileSys.lastCriticalChange(work, critical); 
+		if(when > 0) 
+		  stamps[wk] = new Date(when);
+
+		wk++;
+	      }
+
+	      timestamps.put(fseq, stamps);
+	    }
+	  }
+	}
+
 	return new FileStateRsp(timer, req.getNodeID(), states, timestamps);
       }
     }

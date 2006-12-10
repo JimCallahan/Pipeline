@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.178 2006/12/05 19:55:40 jim Exp $
+// $Id: MasterMgr.java,v 1.179 2006/12/10 00:12:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13660,8 +13660,12 @@ class MasterMgr
 	    }
 	  }
 
-	  if(work.identicalLinks(latest)) 
-	    linkState = LinkState.Identical;
+	  if(work.identicalLinks(latest)) {
+	    linkState = LinkState.Identical;    // WRONG?!  
+	    // Doesn't compare the revision number of the checked-in latest links to the
+	    // base version of the upstream working nodes.  Should compute a "workEqLatest"
+	    // while computing "workEqBase" and use it instead of the above test.
+	  }
 	  else {
 	    switch(versionState) {
 	    case Identical:
@@ -13712,39 +13716,8 @@ class MasterMgr
 	  /* get the per-file states and timestamps */
 	  TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
 	  
-	  /* frozen nodes are always Identical and use the working node version timestamp */ 
-	  if(workIsFrozen) {
-	    boolean primarySeq = true;
-	    for(FileSeq fseq : work.getSequences()) {
-	      FileState fs[] = new FileState[fseq.numFrames()];
-	      Date ts[] = new Date[fs.length];
-
-	      if(newestStamps == null) 
-		newestStamps = new Date[fs.length];	  
-	      
-	      if(oldestStamps == null) 
-		oldestStamps = new Date[fs.length];
-
-	      int wk;
-	      for(wk=0; wk<fs.length; wk++) {
-		fs[wk] = FileState.Identical;
-		ts[wk] = work.getTimeStamp();
-
-		if(primarySeq) {
-		  newestStamps[wk] = ts[wk];
-		  oldestStamps[wk] = ts[wk];
-		}
-	      }
-
-	      fileStates.put(fseq, fs);
-	      stamps.put(fseq, ts);
-
-	      primarySeq = false;
-	    }
-	  }
-
-	  /* non-frozen nodes need to query the file manager */
-	  else {	     
+	  /* query the file manager */
+	  {	     
 	    FileMgrClient fclient = getFileMgrClient();
 	    try {
 	      VersionID vid = null;
@@ -13757,33 +13730,46 @@ class MasterMgr
 
 	      fclient.states(nodeID, work, versionState, workIsFrozen, vid, critical, 
 			     fileStates, stamps);
+
+	      /* if frozen, all the files are just links so use the working time stamp */ 
+	      if(workIsFrozen) {
+		for(FileSeq fseq : work.getSequences()) {
+		  Date ts[] = new Date[fseq.numFrames()];
+
+		  int wk;
+		  for(wk=0; wk<ts.length; wk++) 
+		    ts[wk] = work.getTimeStamp();
+
+		  stamps.put(fseq, ts);
+		}
+	      }
 	    }
 	    finally {
 	      freeFileMgrClient(fclient);
 	    }
+	  }
 
-	    /* get the newest/oldest of the timestamp for each file sequence index */ 
-	    for(FileSeq fseq : stamps.keySet()) {
-	      Date[] ts = stamps.get(fseq);
+	  /* get the newest/oldest of the timestamp for each file sequence index */ 
+	  for(FileSeq fseq : stamps.keySet()) {
+	    Date[] ts = stamps.get(fseq);
+	    
+	    if(newestStamps == null) 
+	      newestStamps = new Date[ts.length];
+	    
+	    if(oldestStamps == null) 
+	      oldestStamps = new Date[ts.length];
+	    
+	    int wk;
+	    for(wk=0; wk<ts.length; wk++) {
+	      /* the newest among the primary/secondary files for the index */ 
+	      if((newestStamps[wk] == null) || 
+		 ((ts[wk] != null) && (ts[wk].compareTo(newestStamps[wk]) > 0)))
+		newestStamps[wk] = ts[wk];
 	      
-	      if(newestStamps == null) 
-		newestStamps = new Date[ts.length];
-	      
-	      if(oldestStamps == null) 
-		oldestStamps = new Date[ts.length];
-	      
-	      int wk;
-	      for(wk=0; wk<ts.length; wk++) {
-		/* the newest among the primary/secondary files for the index */ 
-		if((newestStamps[wk] == null) || 
-		   ((ts[wk] != null) && (ts[wk].compareTo(newestStamps[wk]) > 0)))
-		  newestStamps[wk] = ts[wk];
-		
-		/* the oldest among the primary/secondary files for the index */ 
-		if((oldestStamps[wk] == null) || 
-		   ((ts[wk] != null) && (ts[wk].compareTo(oldestStamps[wk]) < 0)))
-		  oldestStamps[wk] = ts[wk];
-	      }
+	      /* the oldest among the primary/secondary files for the index */ 
+	      if((oldestStamps[wk] == null) || 
+		 ((ts[wk] != null) && (ts[wk].compareTo(oldestStamps[wk]) < 0)))
+		oldestStamps[wk] = ts[wk];
 	    }
 	  }
 
@@ -13810,9 +13796,19 @@ class MasterMgr
 	{
 	  overallNodeState = OverallNodeState.Pending;
 
+	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
+	  OverallNodeState testState = null;
+ 	  int wk;
+ 	  for(wk=0; wk<anyMissing.length; wk++) {
+ 	    if(anyMissing[wk]) {
+	      testState = OverallNodeState.Missing;
+ 	      break;
+ 	    }
+ 	  }
+	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
+
 	  /* check for missing files */ 
 	  for(FileState fs[] : fileStates.values()) {
-	    int wk;
 	    for(wk=0; wk<fs.length; wk++) {
 	      if(fs[wk] == FileState.Missing) {
 		overallNodeState = OverallNodeState.Missing;
@@ -13820,6 +13816,15 @@ class MasterMgr
 	      }
 	    }
 	  }
+	  
+	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
+	  if(!(((testState == null) && (overallNodeState == null)) ||
+	       ((testState != null) && (testState == overallNodeState))))
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+	       "Missing state speedup failed!\n" + 
+	       "See MasterMgr.java (line 13820) for details!");
+	  // SPEED UP: Shouldn't this use anyMissing[] to do this check instead?  
 	}	      
 	break;
 
