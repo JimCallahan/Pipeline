@@ -1,7 +1,8 @@
-// $Id: NodePathBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
+// $Id: NodePathBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.builder;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.GlueDecoder;
 
 import java.util.*;
@@ -16,7 +17,7 @@ import java.io.*;
  */
 public 
 class NodePathBuilderParam
-  extends StringParam
+  extends PathParam
   implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -51,10 +52,50 @@ class NodePathBuilderParam
   (
    String name,  
    String desc, 
-   String value
+   Path value
   ) 
   {
     super(name, desc, value);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A method to confirm that the input to the param is correct.
+   * <P>
+   */
+  public void
+  validate
+  (
+    Comparable value
+  )
+    throws IllegalArgumentException
+  {
+    IllegalArgumentException ex = 
+      new IllegalArgumentException("Path (" + value + ") is not a valid node name");
+    
+    if(value== null || !(value instanceof Path))
+      throw ex;
+    
+    Path p = (Path) value;
+
+    String text = p.toString();
+    
+    String comps[] = text.split("/", -1);
+    if(comps.length > 0) {
+      if(comps[0].length() > 0) 
+	throw ex;
+      
+      int wk;
+      for(wk=1; wk<(comps.length-1); wk++) {
+	if(comps[wk].length() == 0) 
+	  throw ex;
+      }
+    }
   }
 
 

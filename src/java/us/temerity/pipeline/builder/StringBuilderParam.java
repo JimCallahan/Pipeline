@@ -1,11 +1,8 @@
-// $Id: StringBuilderParam.java,v 1.1 2006/09/25 11:32:52 jim Exp $
+// $Id: StringBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.builder;
 
-import us.temerity.pipeline.glue.GlueDecoder;
-
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.StringParam;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S T R I N G   B U I D E R   P A R A M                                                  */
