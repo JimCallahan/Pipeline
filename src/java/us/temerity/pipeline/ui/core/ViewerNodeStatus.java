@@ -1,4 +1,4 @@
-// $Id: ViewerNodeStatus.java,v 1.2 2006/12/07 23:26:36 jim Exp $
+// $Id: ViewerNodeStatus.java,v 1.3 2006/12/10 06:37:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -91,16 +91,15 @@ class ViewerNodeStatus
     if(status == null)
       return;
 
-    NodeDetails details = status.getDetails();
-    if(details == null) 
+    pDetails = status.getDetails();
+    if(pDetails == null) 
       return;
 
-    pVersionState  = details.getVersionState();
-    pPropertyState = details.getPropertyState();
-    pLinkState     = details.getLinkState();
+    pBaseVersionDL   = null;
+    pLatestVersionDL = null;
 
-    for(FileSeq fseq : details.getFileStateSequences()) {
-      FileState fs[] = details.getFileState(fseq);
+    for(FileSeq fseq : pDetails.getFileStateSequences()) {
+      FileState fs[] = pDetails.getFileState(fseq);
       int wk;
       for(wk=0; wk<fs.length; wk++) {
 	Integer fcnt = pFileStates.get(fs[wk]);
@@ -111,7 +110,7 @@ class ViewerNodeStatus
     }
 
     {
-      QueueState qs[] = details.getQueueState();
+      QueueState qs[] = pDetails.getQueueState();
       int wk;
       for(wk=0; wk<qs.length; wk++) {
 	Integer qcnt = pQueueStates.get(qs[wk]);
@@ -120,7 +119,7 @@ class ViewerNodeStatus
 	pQueueStates.put(qs[wk], qcnt+1);
       }
     }
-	
+
     pCountDLs = null;
   }
 
@@ -144,36 +143,28 @@ class ViewerNodeStatus
   {
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
-      /* background */ 
-      if(pBackgroundDL == null) {
-	pBackgroundDL = gl.glGenLists(1);
-	
-	gl.glNewList(pBackgroundDL, GL.GL_COMPILE);
-	{
-	  double x = 1.9 + sBorder; 
-	  
-	  gl.glColor4d(0.45, 0.45, 0.45, 0.85);
-	  gl.glBegin(GL.GL_QUADS);
-	  {
-	    gl.glVertex2d(-x,  0.0); 
-	    gl.glVertex2d( x,  0.0); 
-	    gl.glVertex2d( x, -1.0); 
-	    gl.glVertex2d(-x, -1.0); 
+      if(pDetails != null) {
+	/* base version */ 
+	if(pBaseVersionDL == null) {
+	  NodeVersion vsn = pDetails.getBaseVersion(); 
+	  if(vsn != null) {
+	    VersionID vid = vsn.getVersionID();
+	    pBaseVersionDL = 
+	      mgr.getTextDL(gl, PackageInfo.sGLFont, "v" + vid, 
+			    GeometryMgr.TextAlignment.Center, 0.05);
 	  }
-	  gl.glEnd();
-	  
-	  gl.glColor4d(0.65, 0.65, 0.65, 1.0);
-	  gl.glLineWidth(2.0f);
-	  gl.glBegin(GL.GL_LINE_LOOP);
-	  {
-	    gl.glVertex2d(-x,  0.0); 
-	    gl.glVertex2d( x,  0.0); 
-	    gl.glVertex2d( x, -1.0); 
-	    gl.glVertex2d(-x, -1.0); 
-	  }
-	  gl.glEnd();
 	}
-	gl.glEndList();	  
+
+	/* latest version */ 
+	if(pLatestVersionDL == null) {
+	  NodeVersion vsn = pDetails.getLatestVersion(); 
+	  if(vsn != null) {
+	    VersionID vid = vsn.getVersionID();
+	    pLatestVersionDL = 
+	      mgr.getTextDL(gl, PackageInfo.sGLFont, "v" + vid, 
+			    GeometryMgr.TextAlignment.Center, 0.05);
+	  }
+	}
       }
 
       /* state titles */ 
@@ -315,33 +306,83 @@ class ViewerNodeStatus
     if(!pIsVisible) 
       return;
 
-    if((pVersionState != null) &&  
-       (pPropertyState != null) && 
-       (pLinkState != null) && 
-       !pFileStates.isEmpty() && 
-       !pQueueStates.isEmpty()) {
+    if((pDetails != null) && !pFileStates.isEmpty() && !pQueueStates.isEmpty()) {
 
       gl.glPushMatrix();
       {
 	gl.glTranslated(pPos.x(), pPos.y()-0.85, 0.0);
 	gl.glScaled(sTextScale, sTextScale, sTextScale);
 	
-	if(pBackgroundDL != null) {
-	  gl.glPushMatrix();
+	{
+	  double rows = (double) (4 + pFileStates.size() + pQueueStates.size());
+	  
+	  double x  = sWidth*0.5 + sBorder; 
+	  double y1 = 0.8*sTextHeight + sBorder;
+	  double y2 = y1 - (sTextHeight + sBorder*2.0); 
+	  double y3 = y1 - (sTextHeight*rows + sBorder*4.0); 
+	  
+	  gl.glColor4d(0.45, 0.45, 0.45, 0.9);
+	  gl.glBegin(GL.GL_QUADS);
 	  {
-	    double rows = (double) (3 + pFileStates.size() + pQueueStates.size());
-	    gl.glTranslated(0.0, 0.8*sTextHeight+sBorder, 0.0);
-	    gl.glScaled(1.0, sTextHeight*rows+sBorder*2.0, 0.0);
-	    gl.glCallList(pBackgroundDL);
+	    gl.glVertex2d(-x, y1); 
+	    gl.glVertex2d( x, y1); 
+	    gl.glVertex2d( x, y3); 
+	    gl.glVertex2d(-x, y3); 
 	  }
-	  gl.glPopMatrix();
+	  gl.glEnd();
+	  
+	  gl.glColor4d(0.65, 0.65, 0.65, 1.0);
+	  gl.glLineWidth(2.0f);
+	  gl.glBegin(GL.GL_LINE_LOOP);
+	  {
+	    gl.glVertex2d(-x, y1); 
+	    gl.glVertex2d( x, y1); 
+	    gl.glVertex2d( x, y3); 
+	    gl.glVertex2d(-x, y3); 
+	  }
+	  gl.glEnd();
+	  
+	  gl.glBegin(GL.GL_LINES);
+	  {
+	    gl.glVertex2d(-x, y2); 
+	    gl.glVertex2d( x, y2); 
+	    
+	    gl.glVertex2d(0.0, y1); 
+	    gl.glVertex2d(0.0, y2); 
+	  }
+	  gl.glEnd();
 	}
 
 	gl.glColor4d(1.0, 1.0, 1.0, 1.0); 
+	
+	{
+	  double x = sWidth*0.25 + sBorder*0.5; 
+
+	  if(pBaseVersionDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(-x, 0.0, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pBaseVersionDL);
+	    }
+	    gl.glPopMatrix();
+	  }
+
+	  if(pLatestVersionDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(x, 0.0, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pLatestVersionDL);
+	    }
+	    gl.glPopMatrix();
+	  }
+	}
+
 	if(pTitleDLs != null) {
-	  double y;
+	  double y = -sTextHeight - sBorder*2.0; 
 	  int wk;
-	  for(wk=0, y=0.0; wk<pTitleDLs.length; wk++, y-=sTextHeight) {
+	  for(wk=0; wk<pTitleDLs.length; wk++, y-=sTextHeight) {
 	    if(wk == 4) 
 	      y -= (pFileStates.size() - 1) * sTextHeight;
 
@@ -356,16 +397,15 @@ class ViewerNodeStatus
 	}
 
 	{
-	  double y = 0.0;
-
 	  gl.glTranslated(-0.2, 0.0, 0.0);
 
+	  double y = -sTextHeight-sBorder*2.0; 
 	  if(pVersionStateDLs != null) {
 	    gl.glPushMatrix();
 	    {
 	      gl.glTranslated(0.0, y, 0.0);
 	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(pVersionStateDLs[pVersionState.ordinal()]);
+	      gl.glCallList(pVersionStateDLs[pDetails.getVersionState().ordinal()]);
 	    }
 	    gl.glPopMatrix();
 	  }
@@ -376,7 +416,7 @@ class ViewerNodeStatus
 	    {
 	      gl.glTranslated(0.0, y, 0.0);
 	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(pPropertyStateDLs[pPropertyState.ordinal()]);
+	      gl.glCallList(pPropertyStateDLs[pDetails.getPropertyState().ordinal()]);
 	    }
 	    gl.glPopMatrix();
 	  }
@@ -387,7 +427,7 @@ class ViewerNodeStatus
 	    {
 	      gl.glTranslated(0.0, y, 0.0);
 	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(pLinkStateDLs[pLinkState.ordinal()]);
+	      gl.glCallList(pLinkStateDLs[pDetails.getLinkState().ordinal()]);
 	    }
 	    gl.glPopMatrix();
 	  }
@@ -409,7 +449,8 @@ class ViewerNodeStatus
 	      if(!single) {
 		gl.glPushMatrix();
 		{
-		  gl.glTranslated(pFileWidths[state.ordinal()]*0.35, y, 0.0);
+		  double x = 0.05 + pFileWidths[state.ordinal()]*0.35;
+		  gl.glTranslated(x, y, 0.0);
 		  gl.glScaled(0.35, 0.35, 0.35);
 		  gl.glCallList(pCountDLs.get(cnt));
 		}
@@ -435,7 +476,8 @@ class ViewerNodeStatus
 	      if(!single) {
 		gl.glPushMatrix();
 		{
-		  gl.glTranslated(pQueueWidths[state.ordinal()]*0.35, y, 0.0);
+		  double x = 0.05 + pQueueWidths[state.ordinal()]*0.35;
+		  gl.glTranslated(x, y, 0.0);
 		  gl.glScaled(0.35, 0.35, 0.35);
 		  gl.glCallList(pCountDLs.get(cnt));
 		}
@@ -455,6 +497,7 @@ class ViewerNodeStatus
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  private final double  sWidth      = 3.8;
   private final double  sBorder     = 0.15;
   private final double  sTextHeight = 0.35;
   private final double  sTextScale  = 0.75;
@@ -469,6 +512,11 @@ class ViewerNodeStatus
    * Whether the graphic is displayed.
    */ 
   private boolean  pIsVisible; 
+
+  /**
+   * The node status details. 
+   */ 
+  private NodeDetails  pDetails; 
 
   /**
    * The node states. 
@@ -486,6 +534,12 @@ class ViewerNodeStatus
    * The OpenGL display list handle for the background geometry.
    */ 
   private Integer  pBackgroundDL; 
+  
+  /**
+   * The OpenGL display list handle for version labels. 
+   */ 
+  private Integer  pBaseVersionDL; 
+  private Integer  pLatestVersionDL; 
 
   /**
    * The OpenGL display list handle for state titles.
