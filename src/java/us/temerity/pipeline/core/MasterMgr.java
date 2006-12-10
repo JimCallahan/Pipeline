@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.179 2006/12/10 00:12:13 jim Exp $
+// $Id: MasterMgr.java,v 1.180 2006/12/10 00:20:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13631,47 +13631,50 @@ class MasterMgr
       case Identical:
       case NeedsCheckOut:
 	{
-	  boolean workEqBase = true;
+	  boolean workEqBase   = true;
+	  boolean workEqLatest = true;
 	  if(!workIsLocked) {
 	    for(LinkMod link : work.getSources()) {
 	      String lname = link.getName(); 
+
 	      LinkVersion blink = base.getSource(lname); 
-	      NodeDetails ldetails = table.get(lname).getDetails();
+	      LinkVersion llink = latest.getSource(lname); 
+
+	      NodeDetails sdetails = table.get(lname).getDetails();
+	      VersionID svid = sdetails.getWorkingVersion().getWorkingID();
 	   
-	      if((blink == null) || !link.equals(blink)) {
+	      if((blink == null) || 
+		 !link.equals(blink) || 
+		 !blink.getVersionID().equals(svid)) {
 		workEqBase = false;
 		nonIgnoredSources.add(lname);
 	      }
-	      else {
-		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-		if(!blink.getVersionID().equals(lvid)) {
-		  workEqBase = false;
-		  nonIgnoredSources.add(lname);
-		}
+	     
+	      if((llink == null) || 
+		 !link.equals(llink) || 
+		 !llink.getVersionID().equals(svid)) {
+		workEqLatest = false;
 	      }
 	     
- 	      if(ldetails.getOverallNodeState() == OverallNodeState.ModifiedLocks) 
+ 	      if(sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks) 
  		nonIgnoredSources.remove(lname);
 	      
 	      if(((blink != null) && 
-		  (ldetails.getWorkingVersion().isLocked() != blink.isLocked())) ||
-		 (ldetails.getOverallNodeState() == OverallNodeState.ModifiedLocks))
+		  (sdetails.getWorkingVersion().isLocked() != blink.isLocked())) ||
+		 (sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks))
 		modifiedLocks = true;
 	    }
 	  }
 
-	  if(work.identicalLinks(latest)) {
-	    linkState = LinkState.Identical;    // WRONG?!  
-	    // Doesn't compare the revision number of the checked-in latest links to the
-	    // base version of the upstream working nodes.  Should compute a "workEqLatest"
-	    // while computing "workEqBase" and use it instead of the above test.
+	  if(workEqLatest) {
+	    linkState = LinkState.Identical;    
 	  }
 	  else {
 	    switch(versionState) {
 	    case Identical:
 	      linkState = LinkState.Modified;
 	      break;
-	      
+	    
 	    case NeedsCheckOut:
 	      if(workEqBase) 
 		linkState = LinkState.NeedsCheckOut;
@@ -13901,14 +13904,6 @@ class MasterMgr
 		case Missing:
 		case MissingNewer:
 		  overallNodeState = OverallNodeState.Conflicted;
-		  
-		case Identical:
-		case NeedsCheckOut:
-		  {
-		    LinkVersion blink = base.getSource(link.getName());
-		    if((blink == null) || !blink.getVersionID().equals(lvid)) 
-		      overallNodeState = OverallNodeState.Conflicted;
-		  }
 		}
 	      }
 	    }
@@ -13941,8 +13936,14 @@ class MasterMgr
 		  
 		case Identical:
 		case NeedsCheckOut:
-		  if(!link.getVersionID().equals(lvid)) 
+		  if(!link.getVersionID().equals(lvid)) {
 		    overallNodeState = OverallNodeState.ModifiedLinks;
+		    LogMgr.getInstance().log
+		      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+		       "This test should never be reached since LinkState should have " + 
+		       "been Modified if this is true and the (anyModified) test " + 
+		       "above should have been selected instead of this section!");
+		  }
 		}
 	      }
 	    }
