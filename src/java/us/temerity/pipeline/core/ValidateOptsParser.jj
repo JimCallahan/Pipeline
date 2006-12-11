@@ -1,0 +1,567 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(ValidateOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.core.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+import javax.swing.*;        
+
+/*------------------------------------------------------------------------------------------*/
+/*   G R A P H I C A L   O P T S   P A R S E R                                              */
+/*                                                                                          */
+/*    The parser for the plui(1) graphical client program.                                  */
+/*------------------------------------------------------------------------------------------*/
+
+class 
+ValidateOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   ValidateApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private void 
+  init()
+  {
+    pLogBackups = 10;
+
+    pProdPath = PackageInfo.sProdPath; 
+  }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private ValidateApp  pApp;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private Path  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The root production directory.
+   */ 
+  private Path  pProdPath; 
+
+}
+
+
+PARSER_END(ValidateOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* global options */	
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
+
+| <PROD_DIR:          "--prod-dir">           : PATH_SEP 
+
+  /* seperators */ 
+| <AE1: (["\0"])+> 
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
+}
+
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
+
+/* --log arguments */ 
+<LOG_SEP> 
+TOKEN :
+{
+  <EQ3:               "=">   : LOG_TYPE
+| <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LOG_TYPE> 
+TOKEN :
+{
+  <LOG_ALL:          "all">       
+| <LOG_ARG: 	     "arg">        
+| <LOG_OPS: 	     "ops">     
+| <COLON:  	     ":">        : LOG_LEVEL  
+| <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
+}
+
+<LOG_LEVEL> 
+TOKEN : 
+{
+  <SEVERE:  	      "severe">  
+| <WARNING: 	      "warning"> 
+| <INFO:    	      "info">    
+| <FINE:    	      "fine">    
+| <FINER:  	      "finer">   
+| <FINEST:    	      "finest">  
+| <COMMA:  	      ",">             : LOG_TYPE
+| <AE2:               (["\0"])+>       : DEFAULT
+| <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
+}
+
+
+/* layout name arguments */ 
+<LAYOUT_SEP> 
+TOKEN :
+{
+  <EQ4:                "=">     : LAYOUT_STATE
+| <MISSING_LAYOUT_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LAYOUT_STATE> 
+TOKEN :
+{
+  <LAYOUT_NAME:      ("/" (["a"-"z","A"-"Z","0"-"9","-","_"])+)* 
+		       ("/" ["a"-"z","A"-"Z"] 
+		            (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  : DEFAULT
+| <MISSING_LAYOUT:   ["\0"]>                                         : IGNORE_STATE
+| <ILLEGAL_LAYOUT:   (~["\0"])+>                                     : IGNORE_STATE
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() 
+  throws PipelineException :
+{}
+{
+  (InformationOpts() | Commands()) <EOF>
+  {}
+}
+
+
+void 
+Commands() 
+  throws PipelineException :
+{
+  init();
+}
+{
+  (GlobalOpts() AE())*
+  {
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    pApp.validate(pProdPath);
+  }
+}
+    
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> AE()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> AE()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> AE()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> AE()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> AE() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> AE() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts() :
+{}
+{
+  (Log() | LogFile() | StandardLogFile() | LogBackups() |
+   ProdDir()) 
+  {}
+}
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = new Path(t.image);
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = new Path(PackageInfo.sInstPath, "/logs/plvalidate.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
+
+void Log() : 
+{}
+{
+  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  {}
+}
+
+void LoggerArg() : 
+{}
+{
+  (LoggerAll() | LoggerPair()) 
+  {}
+}
+
+
+void LoggerAll() : 
+{
+  LogMgr.Level v;
+}
+{
+  (<LOG_ALL> <COLON> v=LogLevel())
+  {
+    LogMgr.getInstance().setLevels(v);
+  }
+}
+
+void LoggerPair() : 
+{
+  LogMgr.Kind k;
+  LogMgr.Level v;
+}
+{
+  (k=LogKind() <COLON> v=LogLevel())
+  {
+    LogMgr.getInstance().setLevel(k, v);
+  }
+}
+
+LogMgr.Kind LogKind() : 
+{
+  LogMgr.Kind g;
+}
+{
+  (g=ArgKind() | g=OpsKind())
+  {
+    return g;
+  }
+}
+
+LogMgr.Kind ArgKind() : 
+{}
+{
+  <LOG_ARG>
+  {
+    return LogMgr.Kind.Arg;
+  }
+}
+
+LogMgr.Kind OpsKind() : 
+{}
+{
+  <LOG_OPS>
+  {
+    return LogMgr.Kind.Ops;
+  }
+}
+
+
+
+LogMgr.Level LogLevel() : 
+{
+  LogMgr.Level v;
+}
+{
+  (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+  {
+    return v;
+  }
+}
+
+LogMgr.Level SevereLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <SEVERE> 
+  {
+    return LogMgr.Level.Severe;
+  }
+}
+
+LogMgr.Level WarningLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <WARNING> 
+  {
+    return LogMgr.Level.Warning;
+  }
+}
+
+LogMgr.Level InfoLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <INFO> 
+  {
+    return LogMgr.Level.Info;
+  }
+}
+
+LogMgr.Level FineLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINE> 
+  {
+    return LogMgr.Level.Fine;
+  }
+}
+
+LogMgr.Level FinerLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINER> 
+  {
+    return LogMgr.Level.Finer;
+  }
+}
+
+LogMgr.Level FinestLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINEST> 
+  {
+    return LogMgr.Level.Finest;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void ProdDir() : 
+{
+  Token t;
+}
+{
+  <PROD_DIR> EQ() t=<PATH_ARG>
+  { 
+    pProdPath = new Path(t.image);
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1> | t=<AE2>)
+  { 
+    return t; 
+  }
+}
+
+Token
+EQ() :
+{
+  Token t;
+}
+{ 
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
+  { 
+    return t; 
+  }
+}

@@ -1374,6 +1374,7 @@ AC_CONFIG_FILES([
   docs/man/plrestore.src.html
   docs/man/plscript.src.html
   docs/man/plui.src.html
+  docs/man/plvalidate.src.html
   docs/manuals/Makefile
 
   src/Makefile
@@ -1416,6 +1417,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plqueuemgr
   src/java/scripts/plscript
   src/java/scripts/plui
+  src/java/scripts/plvalidate
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
   src/java/scripts/upgrade-hosts-file
@@ -1430,6 +1432,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plui
   src/java/scripts/debug/pltestnative
+  src/java/scripts/debug/plvalidate
 
   src/java/scripts/profile/Makefile
   src/java/scripts/profile/plfilemgr

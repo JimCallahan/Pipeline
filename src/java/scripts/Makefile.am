@@ -16,7 +16,7 @@ admin_scripts = \
   plpluginmgr \
   plqueuemgr \
   plrestore \
-  upgrade-hosts-file
+  plvalidate
 endif
 
 instsbin_SCRIPTS = \
