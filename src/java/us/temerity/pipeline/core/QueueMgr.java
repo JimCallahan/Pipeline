@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.79 2006/12/07 19:12:00 jim Exp $
+// $Id: QueueMgr.java,v 1.80 2006/12/11 01:22:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4954,11 +4954,7 @@ class QueueMgr
  	timer.resume();
  	for(String kname : jreqs.getLicenseKeys()) {
  	  LicenseKey key = pLicenseKeys.get(kname);
- 	  if(key == null) {
- 	    available = false; 
- 	    break;
- 	  }
- 	  else {
+ 	  if(key != null) {
  	    if(key.aquire(host.getName())) 
  	      aquiredKeys.add(kname);
  	    else {
@@ -4969,8 +4965,12 @@ class QueueMgr
  	}
 	
  	if(!available) {
- 	  for(String kname : aquiredKeys) 
- 	    pLicenseKeys.get(kname).release(host.getName());
+ 	  for(String kname : aquiredKeys) {
+	    LicenseKey key = pLicenseKeys.get(kname);
+	    if(key != null) 
+	      key.release(host.getName());
+	  }
+
  	  return false;
  	}
       }
@@ -7202,8 +7202,11 @@ class QueueMgr
 	synchronized(pLicenseKeys) {
 	  tm.resume();
 
-	  for(String kname : pAquiredKeys) 
-	    pLicenseKeys.get(kname).release(pHostname);
+	  for(String kname : pAquiredKeys) {
+	    LicenseKey key = pLicenseKeys.get(kname);
+	    if(key != null) 
+	      key.release(pHostname);
+	  }
 	}
 	
 	/* update the number of currently running jobs and release any ramp-up holds */ 
