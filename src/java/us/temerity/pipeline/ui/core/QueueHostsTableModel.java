@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.13 2006/11/21 20:00:04 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.14 2006/12/12 03:57:29 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -902,14 +902,15 @@ class QueueHostsTableModel
     QueueHostInfo host = pQueueHosts.get(srow);
     switch(col) {
     case 0:
-      {
-	if(QueueHostStatusChange.titles().contains((String) value)) {
-	  QueueHostStatusChange change = 
-	    QueueHostStatusChange.valueOf(QueueHostStatusChange.class, (String) value);
-
-	  pQueueHostStatusChanges.set(srow, change);
-	  return true;
-	}
+      if(QueueHostStatusChange.titles().contains((String) value)) {
+	QueueHostStatusChange change = 
+	  QueueHostStatusChange.valueOf(QueueHostStatusChange.class, (String) value);
+	
+	pQueueHostStatusChanges.set(srow, change);
+	return true;
+      }
+      else {
+	return false;
       }
 
     case 6:
