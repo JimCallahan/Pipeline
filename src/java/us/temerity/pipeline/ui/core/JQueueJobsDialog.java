@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.3 2006/12/12 00:06:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,6 +46,7 @@ class JQueueJobsDialog
     /* initialize fields */ 
     {
       pSelectionKeyFields = new TreeMap<String,JBooleanField>();
+      pLicenseKeyFields   = new TreeMap<String,JBooleanField>();
     }
 
     /* create dialog body components */ 
@@ -155,11 +156,42 @@ class JQueueJobsDialog
 	pSelectionKeysBox = new Box(BoxLayout.Y_AXIS);
 	box.add(pSelectionKeysBox);
 	  
-	JDrawer drawer = new JDrawer("Selection Keys:", box, true);
+	JDrawer drawer = new JDrawer("Selection Keys:", box, false);
 	vbox.add(drawer);
       }
 
-      /* initialize the selection keys */ 
+      /* license keys */ 
+      {
+	Box box = new Box(BoxLayout.Y_AXIS);
+
+	Component comps[] = UIFactory.createTitledPanels();
+	{
+	  JPanel tpanel = (JPanel) comps[0];
+	  tpanel.setName("TopTitlePanel");
+	  JPanel vpanel = (JPanel) comps[1];
+	  vpanel.setName("TopValuePanel");
+	  
+	  {
+	    JBooleanField field = 
+	      UIFactory.createTitledBooleanField(tpanel, "Override License Keys:", sTSize,
+						vpanel, sVSize);
+	    pOverrideLicenseKeysField = field;
+
+	    field.addActionListener(this);
+	    field.setActionCommand("license-keys-changed");
+	  }
+	
+	  box.add(comps[2]);
+	}
+	  
+	pLicenseKeysBox = new Box(BoxLayout.Y_AXIS);
+	box.add(pLicenseKeysBox);
+	  
+	JDrawer drawer = new JDrawer("License Keys:", box, false);
+	vbox.add(drawer);
+      }
+
+      /* initialize the selection/license keys */ 
       doApply();
 
       {
@@ -189,13 +221,132 @@ class JQueueJobsDialog
       super.initUI("Queue Jobs Special:", scroll, "Submit", "Reset", null, "Cancel");
       pack();
     }
-    
-//     setSize(new Dimension(419, 342));
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S                                                                            */
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Display the current selection/license keys.
+   */ 
+  public void 
+  updateKeys() 
+  {
+    /* lookup latestselection/license keys */ 
+    TreeSet<String> sknames = new TreeSet<String>();
+    TreeSet<String> lknames = new TreeSet<String>();
+    {
+      QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
+      try {
+	sknames.addAll(qclient.getSelectionKeyNames());
+	lknames.addAll(qclient.getLicenseKeyNames());
+      }
+      catch(PipelineException ex) {
+	showErrorDialog(ex);
+      }
+    }
+      
+    /* selection keys panel */ 
+    {
+      boolean override = pOverrideSelectionKeysField.getValue();
+
+      TreeSet<String> selected = new TreeSet<String>();
+      for(String kname : pSelectionKeyFields.keySet()) {
+	JBooleanField field = pSelectionKeyFields.get(kname);
+	if(field != null) {
+	  Boolean value = field.getValue(); 
+	  if((value != null) && value) 
+	    selected.add(kname);
+	}
+      }
+
+      pSelectionKeysBox.removeAll();
+      pSelectionKeyFields.clear();
+
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      tpanel.setName("BottomTitlePanel");
+      JPanel vpanel = (JPanel) comps[1];
+      vpanel.setName("BottomValuePanel");
+
+      if(sknames.isEmpty()) {
+	tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	vpanel.add(Box.createHorizontalGlue());
+      }
+      else {
+	boolean first = true;
+	for(String kname : sknames) {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, first ? 6 : 3);
+	  first = false;
+
+	  JBooleanField field = 
+	    UIFactory.createTitledBooleanField(tpanel, kname + ":", sTSize,
+					       vpanel, sVSize);
+
+	  field.setEnabled(override);
+	  field.setValue(override && selected.contains(kname));
+
+	  pSelectionKeyFields.put(kname, field);
+	}
+      }
+
+      pSelectionKeysBox.add(comps[2]);
+    }
+      
+    /* license keys panel */ 
+    {
+      boolean override = pOverrideLicenseKeysField.getValue();
+
+      TreeSet<String> selected = new TreeSet<String>();
+      for(String kname : pLicenseKeyFields.keySet()) {
+	JBooleanField field = pLicenseKeyFields.get(kname);
+	if(field != null) {
+	  Boolean value = field.getValue(); 
+	  if((value != null) && value) 
+	    selected.add(kname);
+	}
+      }
+
+      pLicenseKeysBox.removeAll();
+      pLicenseKeyFields.clear();
+
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      tpanel.setName("BottomTitlePanel");
+      JPanel vpanel = (JPanel) comps[1];
+      vpanel.setName("BottomValuePanel");
+
+      if(lknames.isEmpty()) {
+	tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	vpanel.add(Box.createHorizontalGlue());
+      }
+      else {
+	boolean first = true;
+	for(String kname : lknames) {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, first ? 6 : 3);
+	  first = false;
+
+	  JBooleanField field = 
+	    UIFactory.createTitledBooleanField(tpanel, kname + ":", sTSize,
+					       vpanel, sVSize);
+
+	  field.setEnabled(override);
+	  field.setValue(override && selected.contains(kname));
+
+	  pLicenseKeyFields.put(kname, field);
+	}
+      }
+
+      pLicenseKeysBox.add(comps[2]);
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -288,6 +439,34 @@ class JQueueJobsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to override the license keys. 
+   */ 
+  public boolean 
+  overrideLicenseKeys() 
+  {
+    return pOverrideLicenseKeysField.getValue();
+  }
+
+  /**
+   * The names of the overriden license keys. 
+   */ 
+  public TreeSet<String> 
+  getLicenseKeys() 
+  {
+    TreeSet<String> keys = new TreeSet<String>();
+    for(String kname : pLicenseKeyFields.keySet()) {
+      JBooleanField field = pLicenseKeyFields.get(kname);
+      if((field != null) && (field.getValue() != null) && field.getValue())
+	keys.add(kname);
+    }
+
+    return keys;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -352,9 +531,13 @@ class JQueueJobsDialog
       doRampUpChanged();
     else if(cmd.equals("selection-keys-changed")) 
       doSelectionKeysChanged();
+    else if(cmd.equals("license-keys-changed")) 
+      doLicenseKeysChanged();
     else 
       super.actionPerformed(e);
   }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
@@ -435,6 +618,32 @@ class JQueueJobsDialog
   }
 
   /**
+   * The value of the override license keys field has changed.
+   */ 
+  public void 
+  doLicenseKeysChanged()
+  {
+    if(pOverrideLicenseKeysField.getValue()) {
+      for(String kname : pLicenseKeyFields.keySet()) {
+	JBooleanField field = pLicenseKeyFields.get(kname);
+	if(field != null) {
+	  field.setEnabled(true);
+	  field.setValue(false);
+	}
+      }
+    }
+    else {
+      for(String kname : pLicenseKeyFields.keySet()) {
+	JBooleanField field = pLicenseKeyFields.get(kname);
+	if(field != null) {
+	  field.setEnabled(false);
+	  field.setValue(null);
+	}
+      }
+    }
+  }
+
+  /**
    * Reset the fields to default values. 
    */ 
   public void 
@@ -451,21 +660,24 @@ class JQueueJobsDialog
       pPriorityField.setValue(null);
     }
 
+    /* lookup latestselection/license keys */ 
+    TreeSet<String> sknames = new TreeSet<String>();
+    TreeSet<String> lknames = new TreeSet<String>();
+    {
+      QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
+      try {
+	sknames.addAll(qclient.getSelectionKeyNames());
+	lknames.addAll(qclient.getLicenseKeyNames());
+      }
+      catch(PipelineException ex) {
+	showErrorDialog(ex);
+      }
+    }
+      
     /* selection keys panel */ 
     {
       pOverrideSelectionKeysField.setValue(false);
 
-      TreeSet<String> knames = new TreeSet<String>();
-      {
-	UIMaster master = UIMaster.getInstance();
-	try {
-	  knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-      }
-      
       pSelectionKeysBox.removeAll();
       pSelectionKeyFields.clear();
 
@@ -475,19 +687,19 @@ class JQueueJobsDialog
       JPanel vpanel = (JPanel) comps[1];
       vpanel.setName("BottomValuePanel");
 
-      if(knames.isEmpty()) {
+      if(sknames.isEmpty()) {
 	tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
 	vpanel.add(Box.createHorizontalGlue());
       }
       else {
 	boolean first = true;
-	for(String kname : knames) {
+	for(String kname : sknames) {
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, first ? 6 : 3);
 	  first = false;
 
 	  JBooleanField field = 
 	    UIFactory.createTitledBooleanField(tpanel, kname + ":", sTSize,
-					      vpanel, sVSize);
+					       vpanel, sVSize);
 	  field.setEnabled(false);
 	  field.setValue(null);
 
@@ -496,6 +708,42 @@ class JQueueJobsDialog
       }
 
       pSelectionKeysBox.add(comps[2]);
+    }
+      
+    /* license keys panel */ 
+    {
+      pOverrideLicenseKeysField.setValue(false);
+
+      pLicenseKeysBox.removeAll();
+      pLicenseKeyFields.clear();
+
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      tpanel.setName("BottomTitlePanel");
+      JPanel vpanel = (JPanel) comps[1];
+      vpanel.setName("BottomValuePanel");
+
+      if(lknames.isEmpty()) {
+	tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	vpanel.add(Box.createHorizontalGlue());
+      }
+      else {
+	boolean first = true;
+	for(String kname : lknames) {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, first ? 6 : 3);
+	  first = false;
+
+	  JBooleanField field = 
+	    UIFactory.createTitledBooleanField(tpanel, kname + ":", sTSize,
+					       vpanel, sVSize);
+	  field.setEnabled(false);
+	  field.setValue(null);
+
+	  pLicenseKeyFields.put(kname, field);
+	}
+      }
+
+      pLicenseKeysBox.add(comps[2]);
     }
       
     pTopBox.revalidate();
@@ -576,5 +824,22 @@ class JQueueJobsDialog
    */ 
   private TreeMap<String,JBooleanField>  pSelectionKeyFields;
   
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to override the license keys.
+   */ 
+  private JBooleanField  pOverrideLicenseKeysField;
+
+  /**
+   * The license keys container.
+   */ 
+  private Box  pLicenseKeysBox;
+
+  /**
+   * Whether to export each license key indexed by license key name.
+   */ 
+  private TreeMap<String,JBooleanField>  pLicenseKeyFields;
   
 }

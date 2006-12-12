@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.30 2006/12/07 23:28:08 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.31 2006/12/12 00:06:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2151,11 +2151,17 @@ class JQueueJobViewerPanel
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
 	
-	TreeSet<String> keys = null;
+	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
-	  keys = diag.getSelectionKeys();
+	  selectionKeys = diag.getSelectionKeys();
 
-	QueueJobsTask task = new QueueJobsTask(targets, batchSize, priority, interval, keys);
+	TreeSet<String> licenseKeys = null;
+	if(diag.overrideLicenseKeys()) 
+	  licenseKeys = diag.getLicenseKeys();
+
+	QueueJobsTask task = 
+	  new QueueJobsTask(targets, batchSize, priority, interval,
+			    selectionKeys, licenseKeys);
 	task.start();
       }
     }
@@ -2584,7 +2590,7 @@ class JQueueJobViewerPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null);
+      this(targets, null, null, null, null, null);
     }
     
     public 
@@ -2594,7 +2600,8 @@ class JQueueJobViewerPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
-     TreeSet<String> selectionKeys
+     TreeSet<String> selectionKeys,
+     TreeSet<String> licenseKeys
     ) 
     {
       super("JQueueJobsViewerPanel:QueueJobsTask");
@@ -2604,6 +2611,7 @@ class JQueueJobViewerPanel
       pPriority      = priority; 
       pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
+      pSelectionKeys = licenseKeys;
     }
 
     public void 
@@ -2617,7 +2625,8 @@ class JQueueJobViewerPanel
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
 	    MasterMgrClient client = master.getMasterMgrClient(pGroupID); 
 	    client.resubmitJobs
-	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, pSelectionKeys);
+	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, 
+	       pSelectionKeys, pLicenseKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -2637,6 +2646,7 @@ class JQueueJobViewerPanel
     private Integer                           pPriority;
     private Integer                           pRampUp;
     private TreeSet<String>                   pSelectionKeys;
+    private TreeSet<String>                   pLicenseKeys;
   }
 
   /** 

@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsReq.java,v 1.6 2006/01/15 06:29:25 jim Exp $
+// $Id: NodeSubmitJobsReq.java,v 1.7 2006/12/12 00:06:44 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,6 +51,10 @@ class NodeSubmitJobsReq
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
+   * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
    */
   public
   NodeSubmitJobsReq
@@ -60,7 +64,8 @@ class NodeSubmitJobsReq
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
-   Set<String> selectionKeys  
+   Set<String> selectionKeys,
+   Set<String> licenseKeys   
   )
     throws PipelineException
   { 
@@ -76,6 +81,7 @@ class NodeSubmitJobsReq
     pPriority      = priority;
     pRampUp        = rampUp; 
     pSelectionKeys = selectionKeys;
+    pLicenseKeys   = licenseKeys; 
   }
 
 
@@ -158,6 +164,19 @@ class NodeSubmitJobsReq
     return pSelectionKeys;
   }
 
+  /**
+   * Overrides the set of license keys required by them job associated with the root 
+   * node of the job submission.
+   * 
+   * @return 
+   *   The license keys or <CODE>null</CODE> to use node's original license keys.
+   */
+  public Set<String>
+  getLicenseKeys()
+  {
+    return pLicenseKeys;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -206,6 +225,12 @@ class NodeSubmitJobsReq
    * associated with the root node of the job submission.
    */
   private Set<String>  pSelectionKeys;
+
+  /**
+   * Overrides the set of license keys required by them job associated with the root 
+   * node of the job submission.
+   */
+  private Set<String>  pLicenseKeys;
 
 }
   

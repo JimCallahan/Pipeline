@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.181 2006/12/10 22:29:26 jim Exp $
+// $Id: MasterMgr.java,v 1.182 2006/12/12 00:06:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9777,7 +9777,7 @@ class MasterMgr
       /* submit the jobs */ 
       return submitJobsCommon(status, req.getFileIndices(),
 			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
-			      req.getSelectionKeys(), 
+			      req.getSelectionKeys(), req.getLicenseKeys(), 
 			      timer);
     }
     catch(PipelineException ex) {
@@ -9857,7 +9857,8 @@ class MasterMgr
       /* submit the jobs */ 
       return submitJobsCommon(status, indices, 
 			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
-			      req.getSelectionKeys(), timer);
+			      req.getSelectionKeys(), req.getLicenseKeys(), 
+			      timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -9892,6 +9893,10 @@ class MasterMgr
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
    * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
    * @param timer
    *   The task timer.
    */ 
@@ -9903,7 +9908,8 @@ class MasterMgr
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
-   Set<String> selectionKeys, 
+   Set<String> selectionKeys,
+   Set<String> licenseKeys,
    TaskTimer timer 
   )
     throws PipelineException 
@@ -9917,7 +9923,7 @@ class MasterMgr
       TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
       
       submitJobs(status, indices, 
-		 true, batchSize, priority, rampUp, selectionKeys, 
+		 true, batchSize, priority, rampUp, selectionKeys, licenseKeys,
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
 		 timer);
       
@@ -10033,6 +10039,10 @@ class MasterMgr
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
    * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
    * @param extJobIDs
    *   The per-file IDs of pre-existing jobs which will regenerate the files indexed 
    *   by working version node ID. 
@@ -10063,7 +10073,8 @@ class MasterMgr
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
-   Set<String> selectionKeys, 
+   Set<String> selectionKeys,
+   Set<String> licenseKeys,
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
@@ -10344,7 +10355,7 @@ class MasterMgr
 	  if((lindices != null) && (!lindices.isEmpty())) {
 	    NodeStatus lstatus = status.getSource(link.getName());
 	    submitJobs(lstatus, lindices, 
-		       false, null, null, null, null, 
+		       false, null, null, null, null, null, 
 		       extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 		       jobs, timer);
 	  }
@@ -10440,6 +10451,11 @@ class MasterMgr
 	    if(isRoot && (selectionKeys != null)) {
 	      jreqs.removeAllSelectionKeys(); 
 	      jreqs.addSelectionKeys(selectionKeys);
+	    }
+
+	    if(isRoot && (licenseKeys != null)) {
+	      jreqs.removeAllLicenseKeys(); 
+	      jreqs.addLicenseKeys(licenseKeys);
 	    }
 	  }
 
@@ -10578,7 +10594,7 @@ class MasterMgr
       NodeID lnodeID = lstatus.getNodeID();
 
       submitJobs(lstatus, null, 
-		 false, null, null, null, null, 
+		 false, null, null, null, null, null, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 		 jobs, timer);
       

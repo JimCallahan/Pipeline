@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.29 2006/11/11 20:45:36 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.30 2006/12/12 00:06:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1809,12 +1809,17 @@ class JNodeFilesPanel
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
 	
-	TreeSet<String> keys = null;
+	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
-	  keys = diag.getSelectionKeys();
+	  selectionKeys = diag.getSelectionKeys();
+
+	TreeSet<String> licenseKeys = null;
+	if(diag.overrideLicenseKeys()) 
+	  licenseKeys = diag.getLicenseKeys();
 	
 	QueueJobsTask task = 
-	  new QueueJobsTask(pSelected, batchSize, priority, interval, keys);
+	  new QueueJobsTask(pSelected, batchSize, priority, interval, 
+			    selectionKeys, licenseKeys);
 	task.start();
       }
     }
@@ -3051,7 +3056,7 @@ class JNodeFilesPanel
      TreeSet<Integer> indices
     ) 
     {
-      this(indices, null, null, null, null);
+      this(indices, null, null, null, null, null);
     }
     
     public 
@@ -3061,7 +3066,8 @@ class JNodeFilesPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
-     TreeSet<String> selectionKeys
+     TreeSet<String> selectionKeys, 
+     TreeSet<String> licenseKeys
     ) 
     {
       super("JNodeFilesPanel:QueueJobsTask");
@@ -3071,6 +3077,7 @@ class JNodeFilesPanel
       pPriority      = priority; 
       pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
+      pLicenseKeys   = licenseKeys; 
     }
 
     public void 
@@ -3082,7 +3089,7 @@ class JNodeFilesPanel
 	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  client.submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
 			    pBatchSize, pPriority, pRampUp, 
-			    pSelectionKeys);
+			    pSelectionKeys, pLicenseKeys);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3101,6 +3108,7 @@ class JNodeFilesPanel
     private Integer          pPriority;
     private Integer          pRampUp; 
     private TreeSet<String>  pSelectionKeys;
+    private TreeSet<String>  pLicenseKeys;
   }
 
   /** 

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.50 2006/12/07 09:42:01 jim Exp $
+// $Id: UIMaster.java,v 1.51 2006/12/12 00:06:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1929,6 +1929,7 @@ class UIMaster
   public JQueueJobsDialog
   showQueueJobsDialog()
   {
+    pQueueJobsDialog.updateKeys();
     pQueueJobsDialog.setVisible(true);
     return pQueueJobsDialog;
   }
@@ -4034,7 +4035,8 @@ class UIMaster
      Integer batchSize, 
      Integer priority, 
      Integer interval, 
-     TreeSet<String> selectionKeys
+     TreeSet<String> selectionKeys,
+     TreeSet<String> licenseKeys
     ) 
     {
       super("UIMaster:QueueJobsTask", channel, author, view);
@@ -4046,6 +4048,7 @@ class UIMaster
       pPriority      = priority; 
       pRampUp        = interval;
       pSelectionKeys = selectionKeys;
+      pLicenseKeys   = licenseKeys; 
     }
 
     public 
@@ -4058,7 +4061,8 @@ class UIMaster
      Integer batchSize, 
      Integer priority, 
      Integer interval, 
-     TreeSet<String> selectionKeys
+     TreeSet<String> selectionKeys,
+     TreeSet<String> licenseKeys
     ) 
     {
       super("UIMaster:QueueJobsTask", channel, author, view);
@@ -4069,6 +4073,7 @@ class UIMaster
       pPriority      = priority; 
       pRampUp        = interval;
       pSelectionKeys = selectionKeys;
+      pLicenseKeys   = licenseKeys; 
     }
 
     public void 
@@ -4082,7 +4087,7 @@ class UIMaster
 	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
 	    client.submitJobs(pAuthorName, pViewName, name, null, 
 			      pBatchSize, pPriority, pRampUp, 
-			      pSelectionKeys);
+			      pSelectionKeys, pLicenseKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -4102,6 +4107,7 @@ class UIMaster
     private Integer          pPriority;
     private Integer          pRampUp; 
     private TreeSet<String>  pSelectionKeys;
+    private TreeSet<String>  pLicenseKeys;
   }
 
   /** 

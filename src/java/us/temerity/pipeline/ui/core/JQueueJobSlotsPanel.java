@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.3 2006/12/05 18:23:30 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.4 2006/12/12 00:06:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1066,7 +1066,7 @@ class JQueueJobSlotsPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null);
+      this(targets, null, null, null, null, null);
     }
     
     public 
@@ -1076,7 +1076,8 @@ class JQueueJobSlotsPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
-     TreeSet<String> selectionKeys
+     TreeSet<String> selectionKeys,
+     TreeSet<String> licenseKeys
     ) 
     {
       super("JQueueJobsBrowserPanel:QueueJobsTask");
@@ -1086,6 +1087,7 @@ class JQueueJobSlotsPanel
       pPriority      = priority; 
       pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
+      pSelectionKeys = licenseKeys;
     }
 
     public void 
@@ -1100,7 +1102,8 @@ class JQueueJobSlotsPanel
 	    
  	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	    client.resubmitJobs(nodeID, pTargets.get(nodeID), 
-				pBatchSize, pPriority, pRampUp, pSelectionKeys);
+				pBatchSize, pPriority, pRampUp, 
+				pSelectionKeys, pLicenseKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -1120,6 +1123,7 @@ class JQueueJobSlotsPanel
     private Integer                           pPriority;
     private Integer                           pRampUp; 
     private TreeSet<String>                   pSelectionKeys;
+    private TreeSet<String>                   pLicenseKeys;
   }
 
   /** 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.86 2006/12/01 18:33:41 jim Exp $
+// $Id: MasterMgrClient.java,v 1.87 2006/12/12 00:06:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4962,7 +4962,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null);
+    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null, null);
   }
 
   /**
@@ -5006,6 +5006,10 @@ class MasterMgrClient
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
    * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
    * @return 
    *   The submitted job group.
    * 
@@ -5022,12 +5026,13 @@ class MasterMgrClient
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
-   Set<String> selectionKeys   
+   Set<String> selectionKeys,
+   Set<String> licenseKeys 
   ) 
     throws PipelineException
   {
     return submitJobs(new NodeID(author, view, name), indices, 
-		      batchSize, priority, rampUp, selectionKeys);
+		      batchSize, priority, rampUp, selectionKeys, licenseKeys);
   }
 
   /**
@@ -5058,7 +5063,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(nodeID, indices, null, null, null, null);
+    return submitJobs(nodeID, indices, null, null, null, null, null);
   }
 
   /**
@@ -5096,6 +5101,10 @@ class MasterMgrClient
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
    * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
    * @return 
    *   The submitted job group.
    * 
@@ -5110,14 +5119,16 @@ class MasterMgrClient
    Integer batchSize, 
    Integer priority,  
    Integer rampUp, 
-   Set<String> selectionKeys   
+   Set<String> selectionKeys,
+   Set<String> licenseKeys   
   ) 
     throws PipelineException
   {
     verifyConnection();
 
     NodeSubmitJobsReq req = 
-      new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, rampUp, selectionKeys);
+      new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, rampUp, 
+			    selectionKeys, licenseKeys);
 
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
@@ -5170,6 +5181,10 @@ class MasterMgrClient
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
    * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
    * @return 
    *   The submitted job group.
    * 
@@ -5184,14 +5199,16 @@ class MasterMgrClient
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
-   Set<String> selectionKeys   
+   Set<String> selectionKeys,
+   Set<String> licenseKeys   
   ) 
     throws PipelineException
   {
     verifyConnection();
 
     NodeResubmitJobsReq req = 
-      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, priority, rampUp, selectionKeys);
+      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, priority, rampUp, 
+			      selectionKeys, licenseKeys);
 
     Object obj = performTransaction(MasterRequest.ResubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {

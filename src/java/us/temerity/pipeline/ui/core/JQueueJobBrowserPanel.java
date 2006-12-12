@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.27 2006/12/07 23:28:08 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.28 2006/12/12 00:06:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1013,11 +1013,17 @@ class JQueueJobBrowserPanel
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
 	  
-	TreeSet<String> keys = null;
+	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
-	  keys = diag.getSelectionKeys();
+	  selectionKeys = diag.getSelectionKeys();
+
+	TreeSet<String> licenseKeys = null;
+	if(diag.overrideLicenseKeys()) 
+	  licenseKeys = diag.getLicenseKeys();
 	
-	QueueJobsTask task = new QueueJobsTask(targets, batchSize, priority, interval, keys);
+	QueueJobsTask task = 
+	  new QueueJobsTask(targets, batchSize, priority, interval,
+			    selectionKeys, licenseKeys);
 	task.start();
       }
     }
@@ -1463,7 +1469,7 @@ class JQueueJobBrowserPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null);
+      this(targets, null, null, null, null, null);
     }
     
     public 
@@ -1473,7 +1479,8 @@ class JQueueJobBrowserPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
-     TreeSet<String> selectionKeys
+     TreeSet<String> selectionKeys,
+     TreeSet<String> licenseKeys
     ) 
     {
       super("JQueueJobsBrowserPanel:QueueJobsTask");
@@ -1483,6 +1490,7 @@ class JQueueJobBrowserPanel
       pPriority      = priority; 
       pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
+      pSelectionKeys = licenseKeys;
     }
 
     public void 
@@ -1496,7 +1504,8 @@ class JQueueJobBrowserPanel
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
 	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	    client.resubmitJobs
-	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, pSelectionKeys);
+	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, 
+	       pSelectionKeys, pLicenseKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -1516,6 +1525,7 @@ class JQueueJobBrowserPanel
     private Integer                           pPriority;
     private Integer                           pRampUp; 
     private TreeSet<String>                   pSelectionKeys;
+    private TreeSet<String>                   pLicenseKeys;
   }
 
   /** 
