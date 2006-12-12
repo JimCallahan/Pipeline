@@ -279,8 +279,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
  BUILDER_SOURCES = $(shell ls $(srcdir)/builder/*.java)
 
-BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) $(shell ls $(srcdir)/builder/names/*.java) \
-		   $(shell ls $(srcdir)/builder/stages/*.java) $(shell ls $(srcdir)/builder/interfaces/*.java) 
+BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) \
+                   $(shell ls $(srcdir)/builder/names/*.java) \
+		   $(shell ls $(srcdir)/builder/stages/*.java) \
+                   $(shell ls $(srcdir)/builder/interfaces/*.java) 
 
     GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java $(srcdir)/glue/io/*.java) 
 
@@ -320,7 +322,9 @@ BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) $(shell ls $(sr
                    QueueMgrOptsParser \
                    ScriptOptsParser \
                    TestNativeOptsParser \
+                   ValidateOptsParser \
                    GlueParser
+
 
     GLUE_PARSERS = GlueParser
 

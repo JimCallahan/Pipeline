@@ -59,14 +59,14 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix/sbin/plqueuemgr
 @ROOT_INST_DIR@/Unix/sbin/plrestore
-@ROOT_INST_DIR@/Unix/sbin/upgrade-hosts-file
+@ROOT_INST_DIR@/Unix/sbin/plvalidate
 
 @ROOT_INST_DIR@/Unix/debug/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix/debug/sbin/pljobmgr
 @ROOT_INST_DIR@/Unix/debug/sbin/plmaster
 @ROOT_INST_DIR@/Unix/debug/sbin/plpluginmgr
 @ROOT_INST_DIR@/Unix/debug/sbin/plqueuemgr
-#@ROOT_INST_DIR@/Unix/debug/sbin/plinsert-gcstats
+@ROOT_INST_DIR@/Unix/debug/sbin/plvalidate
 
 @ROOT_INST_DIR@/Unix/profile/sbin/plfilemgr
 @ROOT_INST_DIR@/Unix/profile/sbin/pljobmgr
@@ -107,6 +107,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/plrestore.html 
 @ROOT_INST_DIR@/share/docs/man/plscript.html 
 @ROOT_INST_DIR@/share/docs/man/plui.html 
+@ROOT_INST_DIR@/share/docs/man/plvalidate.html 
 
 @ROOT_INST_DIR@/share/docs/man/pls.html
 @ROOT_INST_DIR@/share/docs/man/plshakeio.html

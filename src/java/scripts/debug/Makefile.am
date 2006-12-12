@@ -14,7 +14,8 @@ admin_scripts = \
   plfilemgr \
   plmaster \
   plpluginmgr \
-  plqueuemgr
+  plqueuemgr \
+  plvalidate
 endif
 
 instsbin_SCRIPTS = \
