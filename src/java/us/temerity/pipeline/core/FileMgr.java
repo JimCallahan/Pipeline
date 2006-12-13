@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.59 2006/12/10 00:12:13 jim Exp $
+// $Id: FileMgr.java,v 1.60 2006/12/13 10:40:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -355,9 +355,6 @@ class FileMgr
   ) 
   {
     TaskTimer timer = new TaskTimer();
-
-//     if(req.isFrozen())
-//       throw new IllegalStateException(); 
 
     timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
@@ -806,7 +803,26 @@ class FileMgr
 	    }
 	    
 	    for(File file : copies) {
+	      File work = new File(wdir, file.getPath());
 	      File repo = new File(rdir, file.getPath());
+
+	      if(!repo.isFile())
+		throw new PipelineException
+		  ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+
+	      long repoSize = repo.length();
+	      long workSize = work.length();
+	      if(repoSize != workSize) 
+		throw new PipelineException
+		  ("The newly created repository file (" + repo + ") was NOT the same " + 
+		   "size as the working area file (" + work + ") being checked-in!  The " + 
+		   "repository file size was (" + repoSize + ") bytes compared to the " + 
+		   "working file size of (" + workSize + ") bytes.\n\n" + 
+		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+
 	      repo.setReadOnly();
 	    }
 	  }
@@ -859,6 +875,13 @@ class FileMgr
 
 	    for(File file : files) {
 	      File repo = new File(crdir, file.getPath());
+
+	      if(!repo.isFile()) 
+		throw new PipelineException
+		  ("The newly created repository checksum (" + repo + ") was missing!\n\n" + 
+		   "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+		   "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+
 	      repo.setReadOnly();
 	    }
 	  }
