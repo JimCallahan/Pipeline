@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.60 2006/12/13 10:40:48 jim Exp $
+// $Id: FileMgr.java,v 1.61 2006/12/13 10:41:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -927,6 +927,9 @@ class FileMgr
       }
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -1264,6 +1267,9 @@ class FileMgr
       }
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -1503,6 +1509,9 @@ class FileMgr
       }
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -1794,6 +1803,9 @@ class FileMgr
       }
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
   }
@@ -2178,6 +2190,9 @@ class FileMgr
       }
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
   }
@@ -2278,6 +2293,9 @@ class FileMgr
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -2364,6 +2382,9 @@ class FileMgr
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
   }
@@ -3619,6 +3640,9 @@ class FileMgr
       }
     }
     catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
       return new FailureRsp(timer, ex.getMessage());
     }
   }
