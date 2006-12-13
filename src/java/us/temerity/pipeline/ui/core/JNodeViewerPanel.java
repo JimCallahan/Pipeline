@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.67 2006/12/13 04:08:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.68 2006/12/13 05:05:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1897,26 +1897,6 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /*-- GL EVENT LISTENER METHODS -----------------------------------------------------------*/
-
-//   /**
-//    * Called by the drawable immediately after the OpenGL context is initialized for the 
-//    * first time.
-//    */ 
-//   public void 
-//   init
-//   (
-//    GLDrawable drawable
-//   )
-//   {    
-//     super.init(drawable);
-//     GL gl = drawable.getGL();
-
-//     /* global OpenGL state */ 
-//     {
-//       gl.glEnable(GL.GL_LINE_SMOOTH);
-//       gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_DONT_CARE);
-//     }
-//   }
 
   /**
    * Called by the drawable to initiate OpenGL rendering by the client.
