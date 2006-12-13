@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.5 2006/12/07 23:26:36 jim Exp $
+// $Id: GeometryMgr.java,v 1.6 2006/12/13 04:08:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -553,6 +553,215 @@ class GeometryMgr
     }
 
     return dl;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Renders an outlined 2D box using OpenGL.
+   * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
+   * @param boxExtent
+   *   The bounds of the box.
+   * 
+   * @param boxColor
+   *   The color to render the box background.
+   * 
+   * @param outlineWidth
+   *   The width of the outline.
+   * 
+   * @param outlineColor
+   *   The color to render the box outline. 
+   */ 
+  public void 
+  renderOutlinedBox
+  (
+   GL gl,
+   BBox2d boxExtent, 
+   Color4d boxColor, 
+   float outlineWidth, 
+   Color4d outlineColor
+  ) 
+  { 
+    Point2d bmin = boxExtent.getMin();
+    Point2d bmax = boxExtent.getMax();
+
+    gl.glColor4d(boxColor.r(), boxColor.g(), boxColor.b(), boxColor.a());
+    gl.glBegin(GL.GL_QUADS);
+    {
+      gl.glVertex2d(bmin.x(), bmin.y()); 
+      gl.glVertex2d(bmax.x(), bmin.y()); 
+      gl.glVertex2d(bmax.x(), bmax.y()); 
+      gl.glVertex2d(bmin.x(), bmax.y()); 
+    }
+    gl.glEnd();
+    
+    gl.glColor4d(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+    gl.glLineWidth(outlineWidth);
+    gl.glBegin(GL.GL_LINE_LOOP);
+    {
+      gl.glVertex2d(bmin.x(), bmin.y()); 
+      gl.glVertex2d(bmax.x(), bmin.y()); 
+      gl.glVertex2d(bmax.x(), bmax.y()); 
+      gl.glVertex2d(bmin.x(), bmax.y()); 
+    }
+    gl.glEnd();
+  }
+
+  /** 
+   * Renders an outlined 2D box using OpenGL.
+   * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
+   * @param cornerRadius
+   *   The radius of the rounded corners.
+   * 
+   * @param cornerDivs
+   *   The number of divisions of the corner radius.
+   * 
+   * @param boxExtent
+   *   The bounds of the box.
+   * 
+   * @param boxColor
+   *   The color to render the box background.
+   * 
+   * @param outlineWidth
+   *   The width of the outline.
+   * 
+   * @param outlineColor
+   *   The color to render the box outline. 
+   */ 
+  public void 
+  renderOutlinedRoundedBox
+  (
+   GL gl,
+   double cornerRadius, 
+   int cornerDivs, 
+   BBox2d boxExtent, 
+   Color4d boxColor, 
+   float outlineWidth, 
+   Color4d outlineColor
+  ) 
+  { 
+    Vector2d range = boxExtent.getRange();
+    if(cornerRadius >= (Math.min(range.x(), range.y()) * 2.0))
+      throw new IllegalArgumentException
+	("The corner radius (" + cornerRadius + ") is too large for a box of size " + 
+	 range + "!");
+
+    if(cornerDivs < 1) 
+      throw new IllegalArgumentException
+	("The number of divisions of the corner radius (" + cornerDivs + ") must be at " +
+	 "least (1)!");
+
+    Point2d bmin = boxExtent.getMin();
+    Point2d bmax = boxExtent.getMax();
+
+    Point2d cs[] = new Point2d[cornerDivs+1];
+    int wk;
+    for(wk=0; wk<cs.length; wk++) {
+      double t = Math.PI * 0.5 * (((double) wk) / ((double) cornerDivs));
+      cs[wk] = new Point2d(Math.sin(t)*cornerRadius, Math.cos(t)*cornerRadius);
+    }
+
+    double x1 = bmin.x(); 
+    double x2 = bmin.x() + cornerRadius;
+    double x3 = bmax.x() - cornerRadius; 
+    double x4 = bmax.x();
+      
+    double y1 = bmin.y(); 
+    double y2 = bmin.y() + cornerRadius;
+    double y3 = bmax.y() - cornerRadius; 
+    double y4 = bmax.y();
+
+    gl.glColor4d(boxColor.r(), boxColor.g(), boxColor.b(), boxColor.a());
+    gl.glBegin(GL.GL_QUADS);
+    {
+      gl.glVertex2d(x1, y2); 
+      gl.glVertex2d(x2, y2); 
+      gl.glVertex2d(x2, y3); 
+      gl.glVertex2d(x1, y3); 
+
+      gl.glVertex2d(x2, y1); 
+      gl.glVertex2d(x3, y1); 
+      gl.glVertex2d(x3, y4); 
+      gl.glVertex2d(x2, y4); 
+
+      gl.glVertex2d(x3, y2); 
+      gl.glVertex2d(x4, y2); 
+      gl.glVertex2d(x4, y3); 
+      gl.glVertex2d(x3, y3); 
+    }
+    gl.glEnd();
+    
+    gl.glBegin(GL.GL_TRIANGLE_FAN);
+    {
+      gl.glVertex2d(x2, y2); 
+      for(wk=0; wk<cs.length; wk++) 
+	gl.glVertex2d(x3+cs[wk].x(), y3+cs[wk].y()); 
+    }
+    gl.glEnd();
+
+    gl.glBegin(GL.GL_TRIANGLE_FAN);
+    {
+      gl.glVertex2d(x3, y2); 
+      for(wk=0; wk<cs.length; wk++) 
+	gl.glVertex2d(x3+cs[wk].x(), y2-cs[wk].y()); 
+    }
+    gl.glEnd();
+    
+    gl.glBegin(GL.GL_TRIANGLE_FAN);
+    {
+      gl.glVertex2d(x2, y2); 
+      for(wk=0; wk<cs.length; wk++) 
+	gl.glVertex2d(x2-cs[wk].x(), y2-cs[wk].y()); 
+    }
+    gl.glEnd();
+    
+    gl.glBegin(GL.GL_TRIANGLE_FAN);
+    {
+      gl.glVertex2d(x2, y2); 
+      for(wk=0; wk<cs.length; wk++) 
+	gl.glVertex2d(x2-cs[wk].x(), y3+cs[wk].y()); 
+    }
+    gl.glEnd();
+
+
+    gl.glColor4d(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+    gl.glLineWidth(outlineWidth);
+    gl.glEnable(GL.GL_LINE_SMOOTH); 
+    gl.glBegin(GL.GL_LINE_LOOP);
+    {
+      for(wk=0; wk<cs.length; wk++) 
+	gl.glVertex2d(x3+cs[wk].x(), y3+cs[wk].y()); 
+
+      gl.glVertex2d(x4, y3); 
+      gl.glVertex2d(x4, y2); 
+
+      for(wk=cs.length-1; wk>=0; wk--) 
+	gl.glVertex2d(x3+cs[wk].x(), y2-cs[wk].y()); 
+
+      gl.glVertex2d(x3, y1); 
+      gl.glVertex2d(x2, y1); 
+      
+      for(wk=0; wk<cs.length; wk++) 
+	gl.glVertex2d(x2-cs[wk].x(), y2-cs[wk].y()); 
+
+      gl.glVertex2d(x1, y2); 
+      gl.glVertex2d(x1, y3);
+      
+      for(wk=cs.length-1; wk>=0; wk--) 
+	gl.glVertex2d(x2-cs[wk].x(), y3+cs[wk].y()); 
+      
+      gl.glVertex2d(x2, y4); 
+      gl.glVertex2d(x3, y4);
+    }
+    gl.glEnd();
+    gl.glDisable(GL.GL_LINE_SMOOTH);
   }
 
 

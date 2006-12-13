@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -777,16 +777,36 @@ class GenUserPrefsApp
     }
 
     {
+      LinkedList<String> styles = new LinkedList();
+      styles.add("Scales with Nodes");
+      styles.add("Fixed Size");
+
+      LinkedList<String> looks = new LinkedList();
+      looks.add("Rounded");
+      looks.add("Square");
+
       BasePref prefs[] = {
 	new BooleanPref
-	("Whether to initially show downstream links.",
+	("Whether to initially show downstream links by default.",
 	 "ShowDownstream", "Show Downstream:", false), 
 
 	new BasePref(),
 
 	new BooleanPref
-	("Whether to show node status detail hints.",
-	 "ShowDetailHints", "Show Node Detail Hints:", true)
+	("Whether to show node status detail hints by default.",
+	 "ShowDetailHints", "Show Node Detail Hints:", true), 
+
+	new ChoicePref
+	("How to determine the size of the node detail hints.", 
+	 "DetailHintLook", "Detail Hint Look:", looks, "Rounded"), 
+
+	new ChoicePref
+	("How to determine the size of the node detail hints.", 
+	 "DetailHintStyle", "Detail Hint Style:", styles, "Scales with Nodes"), 
+
+	new BoundedDoublePref
+	("The size of node detail hints.", 
+	 "DetailHintSize", "Detail Hint Size:", 0.5, 1.5, 1.0)
       };
 
       pPrefs.put("Panels|Node Viewer|Appearance", prefs);
@@ -885,6 +905,20 @@ class GenUserPrefsApp
 	("Show/hide node status detail hints.",
 	 "NodeViewerShowHideDetailHints", "Show/Hide Node Detail Hints:", 
 	 false, false, false, 72),  /* H */
+
+	new HotKeyPref
+	("Show/hide the Toolset property as part of the node detail hints.",
+	 "NodeViewerShowHideToolsetHint", "Show/Hide Toolset Hint:"), 
+	
+	new HotKeyPref
+	("Show/hide the Editor property as part of the node detail hints.",
+	 "NodeViewerShowHideEditorHint", "Show/Hide Editor Hint:"), 
+	
+	new HotKeyPref
+	("Show/hide the Action property as part of the node detail hints.",
+	 "NodeViewerShowHideActionHint", "Show/Hide Action Hint:"), 
+
+	new BasePref(),
 
 	new HotKeyPref
 	("Show/hide nodes downstream of the focus node.",
@@ -1915,6 +1949,9 @@ class GenUserPrefsApp
 	group.add(update);
 	group.addAll(camera);
 	group.add("NodeViewerShowHideDetailHints"); 
+	group.add("NodeViewerShowHideToolsetHint"); 
+	group.add("NodeViewerShowHideEditorHint"); 
+	group.add("NodeViewerShowHideActionHint"); 
 	group.add("NodeViewerShowHideDownstreamNodes");
 	group.add(hideAll);
       }
@@ -2188,7 +2225,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2445,7 +2482,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3802,7 +3839,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.41 2006/12/10 07:50:07 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

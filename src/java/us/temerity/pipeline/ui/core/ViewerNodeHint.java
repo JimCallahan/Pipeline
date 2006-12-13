@@ -1,4 +1,4 @@
-// $Id: ViewerNodeStatus.java,v 1.3 2006/12/10 06:37:09 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.1 2006/12/13 04:08:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -18,7 +18,7 @@ import net.java.games.jogl.*;
  * Renders tool tip hint graphic which describes the node's status.
  */
 public 
-class ViewerNodeStatus
+class ViewerNodeHint
   extends ViewerGraphic
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,12 +29,19 @@ class ViewerNodeStatus
    * Constuct a new node status hint.
    */ 
   public 
-  ViewerNodeStatus()
+  ViewerNodeHint
+  (
+   JNodeViewerPanel parent
+  ) 
   {
     super();
 
+    pParent = parent; 
+
     pFileStates  = new TreeMap<FileState,Integer>();
     pQueueStates = new TreeMap<QueueState,Integer>();
+
+    pShowAction = true;
   }
 
 
@@ -50,6 +57,33 @@ class ViewerNodeStatus
   isVisible()
   {
     return pIsVisible;
+  }
+
+  /**
+   * Whether to display the Toolset hint.
+   */ 
+  public boolean
+  showToolset()
+  {
+    return pShowToolset; 
+  }
+
+  /**
+   * Whether to display the Editor hint.
+   */ 
+  public boolean
+  showEditor()
+  {
+    return pShowEditor; 
+  }
+
+  /**
+   * Whether to display the Action hint.
+   */ 
+  public boolean
+  showAction()
+  {
+    return pShowAction; 
   }
 
 
@@ -70,6 +104,42 @@ class ViewerNodeStatus
     pIsVisible = tf;
   }
 
+  /**
+   * Set whether to display the Toolset hint.
+   */ 
+  public void 
+  setShowToolset
+  (
+   boolean tf
+  ) 
+  {
+    pShowToolset = tf;
+  }
+
+  /**
+   * Set whether to display the Editor hint.
+   */ 
+  public void 
+  setShowEditor
+  (
+   boolean tf
+  ) 
+  {
+    pShowEditor = tf;
+  }
+
+  /**
+   * Set whether to display the Action hint.
+   */ 
+  public void 
+  setShowAction
+  (
+   boolean tf
+  ) 
+  {
+    pShowAction = tf;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -87,6 +157,10 @@ class ViewerNodeStatus
     pLinkState     = null;
     pFileStates.clear();
     pQueueStates.clear();
+
+    pToolset = null;
+    pEditor  = null; 
+    pAction  = null;
 
     if(status == null)
       return;
@@ -121,6 +195,17 @@ class ViewerNodeStatus
     }
 
     pCountDLs = null;
+
+    NodeMod mod = pDetails.getWorkingVersion();
+    if(mod != null) {
+      pToolset = mod.getToolset();
+      pEditor  = mod.getEditor();
+      pAction  = mod.getAction();
+    }
+
+    pToolsetDL = null; 
+    pEditorDLs = null;
+    pActionDLs = null;
   }
 
 
@@ -169,7 +254,7 @@ class ViewerNodeStatus
 
       /* state titles */ 
       if(pTitleDLs == null) {
-	String titles[] = { "Version:", "Property:", "Link:", "File:", "Queue:" };
+	String titles[] = { "Version:", "Props:", "Link:", "File:", "Queue:" };
 	pTitleDLs = new int[titles.length];
 
 	int wk;
@@ -269,6 +354,88 @@ class ViewerNodeStatus
 	  pCountDLs.put(cnt, dl);
 	}
       }
+      
+      /* toolset title */ 
+      if(pToolsetTitleDL == null) {
+	pToolsetTitleDL = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Toolset:", 
+			GeometryMgr.TextAlignment.Right, 0.05);
+      }
+
+      /* toolset */ 
+      if(pShowToolset && (pToolset != null)) {
+	if(pToolsetDL == null) {
+	  pToolsetDL = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, pToolset, 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+	}	
+      }
+      
+      /* plugin titles */ 
+      if(pPluginTitleDLs == null) {
+	pPluginTitleDLs = new int[4];
+	
+	pPluginTitleDLs[0] = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Editor:", 
+			GeometryMgr.TextAlignment.Right, 0.05);
+	
+	pPluginTitleDLs[1] = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Action:", 
+			GeometryMgr.TextAlignment.Right, 0.05);
+	
+	pPluginTitleDLs[2] = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Version:", 
+			GeometryMgr.TextAlignment.Right, 0.05);
+	
+	pPluginTitleDLs[3] = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Vendor:", 
+			GeometryMgr.TextAlignment.Right, 0.05);
+      }
+
+      /* null value */ 
+      if(pNullDL == null) {
+	pNullDL = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "-", 
+			GeometryMgr.TextAlignment.Center, 0.05);
+      }
+      
+      /* editor */ 
+      if(pShowEditor && (pEditor != null)) {
+	if(pEditorDLs == null) {
+	  pEditorDLs = new int[3];
+
+	  pEditorDLs[0] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, pEditor.getName(), 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pEditorDLs[1] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, "v" + pEditor.getVersionID(), 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pEditorDLs[2] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, pEditor.getVendor(), 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+	}
+      }
+
+      /* action */ 
+      if(pShowAction && (pAction != null)) {
+	if(pActionDLs == null) {
+	  pActionDLs = new int[3];
+
+	  pActionDLs[0] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, pAction.getName(), 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pActionDLs[1] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, "v" + pAction.getVersionID(), 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pActionDLs[2] = 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, pAction.getVendor(), 
+			  GeometryMgr.TextAlignment.Left, 0.05);
+	}
+      }
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
@@ -306,42 +473,69 @@ class ViewerNodeStatus
     if(!pIsVisible) 
       return;
 
+    UserPrefs prefs = UserPrefs.getInstance();
+    GeometryMgr mgr = GeometryMgr.getInstance();
+
     if((pDetails != null) && !pFileStates.isEmpty() && !pQueueStates.isEmpty()) {
 
       gl.glPushMatrix();
       {
-	gl.glTranslated(pPos.x(), pPos.y()-0.85, 0.0);
-	gl.glScaled(sTextScale, sTextScale, sTextScale);
-	
+	double scale;
 	{
-	  double rows = (double) (4 + pFileStates.size() + pQueueStates.size());
+	  String style = prefs.getDetailHintStyle();
+	  if(style.equals("Scales with Nodes")) 
+	    scale = sTextScale * prefs.getDetailHintSize();
+	  else 
+	    scale = 48.0 * pParent.getCanvasScale() * prefs.getDetailHintSize();
+	}
+	  
+	gl.glTranslated(pPos.x(), pPos.y()-0.6, 0.0);
+	gl.glScaled(scale, scale, scale); 
+	gl.glTranslated(0.0, -0.8*sTextHeight-sBorder, 0.0);
+
+	/* background and borders */ 
+	{
+	  double srows    = (double) (3 + pFileStates.size() + pQueueStates.size());
+	  double sborders = 2.0;
+
+	  double orows    = 0.0;
+	  double oborders = 0.0;
+	  if(pShowToolset) {
+	    orows += 1.0;
+	    oborders += 2.0;
+	  }
+
+	  if(pShowEditor) {
+	    orows += (pEditorDLs != null) ? 3.0 : 1.0;
+	    oborders += 2.0;
+	  }
+
+	  if(pShowAction) {
+	    orows += (pActionDLs != null) ? 3.0 : 1.0;
+	    oborders += 2.0;
+	  }
 	  
 	  double x  = sWidth*0.5 + sBorder; 
 	  double y1 = 0.8*sTextHeight + sBorder;
 	  double y2 = y1 - (sTextHeight + sBorder*2.0); 
-	  double y3 = y1 - (sTextHeight*rows + sBorder*4.0); 
-	  
-	  gl.glColor4d(0.45, 0.45, 0.45, 0.9);
-	  gl.glBegin(GL.GL_QUADS);
+	  double y3 = y1 - (sTextHeight*(1.0+srows+orows) + sBorder*(2.0+sborders+oborders)); 
+
 	  {
-	    gl.glVertex2d(-x, y1); 
-	    gl.glVertex2d( x, y1); 
-	    gl.glVertex2d( x, y3); 
-	    gl.glVertex2d(-x, y3); 
+	    BBox2d extent = new BBox2d(new Point2d(-x, y1), new Point2d(x, y3));
+	    Color4d bgColor = new Color4d(0.45, 0.45, 0.45, 0.9); 
+	    Color4d lineColor = new Color4d(0.65, 0.65, 0.65, 1.0); 
+
+	    String look = prefs.getDetailHintLook();
+	    if(look.equals("Rounded")) {
+	      mgr.renderOutlinedRoundedBox
+		(gl, 0.5*sTextHeight + sBorder, 15, extent, bgColor, 2.0f, lineColor); 
+	    }
+	    else {
+	      mgr.renderOutlinedBox
+		(gl, extent, bgColor, 2.0f, lineColor); 
+	    }
 	  }
-	  gl.glEnd();
-	  
-	  gl.glColor4d(0.65, 0.65, 0.65, 1.0);
-	  gl.glLineWidth(2.0f);
-	  gl.glBegin(GL.GL_LINE_LOOP);
-	  {
-	    gl.glVertex2d(-x, y1); 
-	    gl.glVertex2d( x, y1); 
-	    gl.glVertex2d( x, y3); 
-	    gl.glVertex2d(-x, y3); 
-	  }
-	  gl.glEnd();
-	  
+
 	  gl.glBegin(GL.GL_LINES);
 	  {
 	    gl.glVertex2d(-x, y2); 
@@ -349,12 +543,36 @@ class ViewerNodeStatus
 	    
 	    gl.glVertex2d(0.0, y1); 
 	    gl.glVertex2d(0.0, y2); 
+
+	    double y = y2 - (sTextHeight*srows + sBorder*sborders); 
+	    if(pShowToolset) {
+	      gl.glVertex2d(-x, y); 
+	      gl.glVertex2d( x, y); 
+
+	      y -= sTextHeight + sBorder*2.0;
+	    }
+
+	    if(pShowEditor) {
+	      gl.glVertex2d(-x, y); 
+	      gl.glVertex2d( x, y); 
+
+	      if(pEditorDLs == null) 
+		y -= sTextHeight + sBorder*2.0;
+	      else 
+		y -= sTextHeight*3.0 + sBorder*2.0;
+	    }
+	    
+	    if(pShowAction) {
+	      gl.glVertex2d(-x, y); 
+	      gl.glVertex2d( x, y); 
+	    }
 	  }
 	  gl.glEnd();
 	}
 
 	gl.glColor4d(1.0, 1.0, 1.0, 1.0); 
 	
+	/* versions */ 
 	{
 	  double x = sWidth*0.25 + sBorder*0.5; 
 
@@ -379,6 +597,7 @@ class ViewerNodeStatus
 	  }
 	}
 
+	/* state titles */ 
 	if(pTitleDLs != null) {
 	  double y = -sTextHeight - sBorder*2.0; 
 	  int wk;
@@ -388,7 +607,7 @@ class ViewerNodeStatus
 
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(-0.3, y, 0.0);
+	      gl.glTranslated(-0.5, y, 0.0);
 	      gl.glScaled(0.35, 0.35, 0.35);
 	      gl.glCallList(pTitleDLs[wk]);
 	    }
@@ -396,94 +615,263 @@ class ViewerNodeStatus
 	  }
 	}
 
+	/* state values */ 
+	double y = -sTextHeight-sBorder*2.0; 
 	{
-	  gl.glTranslated(-0.2, 0.0, 0.0);
+	  gl.glPushMatrix();
+	  {
+	    gl.glTranslated(-0.4, 0.0, 0.0);
 
-	  double y = -sTextHeight-sBorder*2.0; 
-	  if(pVersionStateDLs != null) {
-	    gl.glPushMatrix();
-	    {
-	      gl.glTranslated(0.0, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(pVersionStateDLs[pDetails.getVersionState().ordinal()]);
+	    if(pVersionStateDLs != null) {
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(0.0, y, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pVersionStateDLs[pDetails.getVersionState().ordinal()]);
+	      }
+	      gl.glPopMatrix();
 	    }
-	    gl.glPopMatrix();
-	  }
 	  
-	  y -= sTextHeight; 
-	  if(pPropertyStateDLs != null) {
-	    gl.glPushMatrix();
-	    {
-	      gl.glTranslated(0.0, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(pPropertyStateDLs[pDetails.getPropertyState().ordinal()]);
-	    }
-	    gl.glPopMatrix();
-	  }
-
-	  y -= sTextHeight; 
-	  if(pLinkStateDLs != null) {
-	    gl.glPushMatrix();
-	    {
-	      gl.glTranslated(0.0, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
-	      gl.glCallList(pLinkStateDLs[pDetails.getLinkState().ordinal()]);
-	    }
-	    gl.glPopMatrix();
-	  }
-
-	  if((pFileStateDLs != null) && (pCountDLs != null)) {
-	    boolean single = (pFileStates.size() == 1);
-	    for(FileState state : pFileStates.keySet()) {
-	      Integer cnt = pFileStates.get(state);
-
-	      y -= sTextHeight; 
+	    y -= sTextHeight; 
+	    if(pPropertyStateDLs != null) {
 	      gl.glPushMatrix();
 	      {
 		gl.glTranslated(0.0, y, 0.0);
 		gl.glScaled(0.35, 0.35, 0.35);
-		gl.glCallList(pFileStateDLs[state.ordinal()]);
+		gl.glCallList(pPropertyStateDLs[pDetails.getPropertyState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
-
-	      if(!single) {
-		gl.glPushMatrix();
-		{
-		  double x = 0.05 + pFileWidths[state.ordinal()]*0.35;
-		  gl.glTranslated(x, y, 0.0);
-		  gl.glScaled(0.35, 0.35, 0.35);
-		  gl.glCallList(pCountDLs.get(cnt));
-		}
-		gl.glPopMatrix();
-	      }
 	    }
-	  }
 
-	  if((pQueueStateDLs != null) && (pCountDLs != null)) {
-	    boolean single = (pQueueStates.size() == 1);
-	    for(QueueState state : pQueueStates.keySet()) {
-	      Integer cnt = pQueueStates.get(state);
-
-	      y -= sTextHeight; 
+	    y -= sTextHeight; 
+	    if(pLinkStateDLs != null) {
 	      gl.glPushMatrix();
 	      {
 		gl.glTranslated(0.0, y, 0.0);
 		gl.glScaled(0.35, 0.35, 0.35);
-		gl.glCallList(pQueueStateDLs[state.ordinal()]);
+		gl.glCallList(pLinkStateDLs[pDetails.getLinkState().ordinal()]);
+	      }
+	      gl.glPopMatrix();
+	    }
+
+	    if((pFileStateDLs != null) && (pCountDLs != null)) {
+	      boolean single = (pFileStates.size() == 1);
+	      for(FileState state : pFileStates.keySet()) {
+		Integer cnt = pFileStates.get(state);
+
+		y -= sTextHeight; 
+		gl.glPushMatrix();
+		{
+		  gl.glTranslated(0.0, y, 0.0);
+		  gl.glScaled(0.35, 0.35, 0.35);
+		  gl.glCallList(pFileStateDLs[state.ordinal()]);
+		}
+		gl.glPopMatrix();
+
+		if(!single) {
+		  gl.glPushMatrix();
+		  {
+		    double x = 0.05 + pFileWidths[state.ordinal()]*0.35;
+		    gl.glTranslated(x, y, 0.0);
+		    gl.glScaled(0.35, 0.35, 0.35);
+		    gl.glCallList(pCountDLs.get(cnt));
+		  }
+		  gl.glPopMatrix();
+		}
+	      }
+	    }
+
+	    if((pQueueStateDLs != null) && (pCountDLs != null)) {
+	      boolean single = (pQueueStates.size() == 1);
+	      for(QueueState state : pQueueStates.keySet()) {
+		Integer cnt = pQueueStates.get(state);
+
+		y -= sTextHeight; 
+		gl.glPushMatrix();
+		{
+		  gl.glTranslated(0.0, y, 0.0);
+		  gl.glScaled(0.35, 0.35, 0.35);
+		  gl.glCallList(pQueueStateDLs[state.ordinal()]);
+		}
+		gl.glPopMatrix();
+
+		if(!single) {
+		  gl.glPushMatrix();
+		  {
+		    double x = 0.05 + pQueueWidths[state.ordinal()]*0.35;
+		    gl.glTranslated(x, y, 0.0);
+		    gl.glScaled(0.35, 0.35, 0.35);
+		    gl.glCallList(pCountDLs.get(cnt));
+		  }
+		  gl.glPopMatrix();
+		}
+	      }
+	    }
+
+	    y -= sTextHeight + sBorder*2.0;
+	  }
+	  gl.glPopMatrix();
+	}
+
+	/* toolset */ 
+	if(pShowToolset) {
+	  if(pToolsetTitleDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(-0.5, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pToolsetTitleDL); 
+	    }
+	    gl.glPopMatrix();
+	  }
+
+	  if(pToolsetDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(-0.4, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pToolsetDL); 
+	    }
+	    gl.glPopMatrix();
+	  }
+	  else if(pNullDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.35, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pNullDL); 
+	    }
+	    gl.glPopMatrix();
+	  }
+
+	  y -= sTextHeight + sBorder*2.0;
+	}
+
+	/* editor */ 
+	if(pShowEditor) {
+	  if(pPluginTitleDLs != null) {
+	    double py = y;
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(-0.5, py, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pPluginTitleDLs[0]); 
+	    }
+	    gl.glPopMatrix();
+
+	    if(pEditorDLs != null) {
+	      py -= sTextHeight;
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(-0.5, py, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pPluginTitleDLs[2]); 
 	      }
 	      gl.glPopMatrix();
 
-	      if(!single) {
-		gl.glPushMatrix();
-		{
-		  double x = 0.05 + pQueueWidths[state.ordinal()]*0.35;
-		  gl.glTranslated(x, y, 0.0);
-		  gl.glScaled(0.35, 0.35, 0.35);
-		  gl.glCallList(pCountDLs.get(cnt));
-		}
-		gl.glPopMatrix();
+	      py -= sTextHeight;
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(-0.5, py, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pPluginTitleDLs[3]); 
 	      }
+	      gl.glPopMatrix();	      
 	    }
+	  }
+
+	  if(pEditorDLs != null) {
+	    int wk;
+	    for(wk=0; wk<pEditorDLs.length; wk++) {
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(-0.4, y, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pEditorDLs[wk]); 
+	      }
+	      gl.glPopMatrix();
+	      
+	      y -= sTextHeight;
+	    }
+	  }
+	  else if(pNullDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.35, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pNullDL); 
+	    }
+	    gl.glPopMatrix();
+
+	    y -= sTextHeight;
+	  }
+	  else {
+	    y -= sTextHeight;
+	  }
+
+	  y -= sBorder*2.0;
+	}
+
+	/* action */ 
+	if(pShowAction) {
+	  if(pPluginTitleDLs != null) {
+	    double py = y;
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(-0.5, py, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pPluginTitleDLs[1]); 
+	    }
+	    gl.glPopMatrix();
+
+	    if(pActionDLs != null) {
+	      py -= sTextHeight;
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(-0.5, py, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pPluginTitleDLs[2]); 
+	      }
+	      gl.glPopMatrix();
+
+	      py -= sTextHeight;
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(-0.5, py, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pPluginTitleDLs[3]); 
+	      }
+	      gl.glPopMatrix();	      
+	    }
+	  }
+
+	  if(pActionDLs != null) {
+	    int wk;
+	    for(wk=0; wk<pActionDLs.length; wk++) {
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(-0.4, y, 0.0);
+		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glCallList(pActionDLs[wk]); 
+	      }
+	      gl.glPopMatrix();
+	      
+	      y -= sTextHeight;
+	    }
+	  }
+	  else if(pNullDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.35, y, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pNullDL); 
+	    }
+	    gl.glPopMatrix();
+
+	    y -= sTextHeight;
+	  }
+	  else {
+	    y -= sTextHeight;
 	  }
 	}
       }
@@ -507,6 +895,14 @@ class ViewerNodeStatus
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The parent panel.
+   */ 
+  private JNodeViewerPanel  pParent; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Whether the graphic is displayed.
@@ -514,9 +910,19 @@ class ViewerNodeStatus
   private boolean  pIsVisible; 
 
   /**
+   * Whether to display the optional hint components. 
+   */ 
+  private boolean  pShowToolset; 
+  private boolean  pShowEditor; 
+  private boolean  pShowAction; 
+
+  /**
    * The node status details. 
    */ 
   private NodeDetails  pDetails; 
+  private String       pToolset; 
+  private BaseEditor   pEditor; 
+  private BaseAction   pAction; 
 
   /**
    * The node states. 
@@ -561,4 +967,13 @@ class ViewerNodeStatus
 
   private TreeMap<Integer,Integer>  pCountDLs; 
 
+  /**
+   * The OpenGL display list handles for the optional properties. 
+   */ 
+  private Integer  pToolsetTitleDL;
+  private Integer  pToolsetDL;
+  private int[]    pPluginTitleDLs; 
+  private Integer  pNullDL; 
+  private int[]    pEditorDLs; 
+  private int[]    pActionDLs; 
 }

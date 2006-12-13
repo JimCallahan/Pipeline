@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.66 2006/12/12 00:06:44 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.67 2006/12/13 04:08:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -78,7 +78,7 @@ class JNodeViewerPanel
       pShowDetailHints = UserPrefs.getInstance().getShowDetailHints();
       pShowDownstream  = UserPrefs.getInstance().getShowDownstream();
 
-      pViewerNodeStatus = new ViewerNodeStatus();
+      pViewerNodeHint = new ViewerNodeHint(this);
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
       pSelected = new TreeMap<NodePath,ViewerNode>();
@@ -172,6 +172,24 @@ class JNodeViewerPanel
       item = new JMenuItem();
       pShowHideDetailHintsItem = item;
       item.setActionCommand("show-hide-detail-hints");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
+
+      item = new JMenuItem();
+      pShowHideToolsetHintItem = item;
+      item.setActionCommand("show-hide-toolset-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideEditorHintItem = item;
+      item.setActionCommand("show-hide-editor-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item); 
+ 
+      item = new JMenuItem();
+      pShowHideActionHintItem = item;
+      item.setActionCommand("show-hide-action-hint");
       item.addActionListener(this);
       pPanelPopup.add(item);   
     }
@@ -935,7 +953,16 @@ class JNodeViewerPanel
 
     updateMenuToolTip
       (pShowHideDetailHintsItem, prefs.getNodeViewerShowHideDetailHints(), 
-       "Show/hide node status detail hints..");
+       "Show/hide node status detail hints.");
+    updateMenuToolTip
+      (pShowHideToolsetHintItem, prefs.getNodeViewerShowHideToolsetHint(), 
+       "Show/hide the Toolset property as part of the node detail hints."); 
+    updateMenuToolTip
+      (pShowHideEditorHintItem, prefs.getNodeViewerShowHideEditorHint(), 
+       "Show/hide the Editor property as part of the node detail hints."); 
+    updateMenuToolTip
+      (pShowHideActionHintItem, prefs.getNodeViewerShowHideActionHint(), 
+       "Show/hide the Action property as part of the node detail hints."); 
     
 
     /* node menus */ 
@@ -1071,6 +1098,31 @@ class JNodeViewerPanel
 
     pShowHideDetailHintsItem.setText
       ((pShowDetailHints ? "Hide" : "Show") + " Detail Hints");
+    pShowHideDetailHintsItem.setEnabled(true);
+
+    if(pViewerNodeHint != null) {
+      pShowHideToolsetHintItem.setText
+	((pViewerNodeHint.showToolset() ? "Hide" : "Show") + " Toolset Hint");
+      pShowHideToolsetHintItem.setEnabled(true);
+
+      pShowHideEditorHintItem.setText
+	((pViewerNodeHint.showEditor() ? "Hide" : "Show") + " Editor Hint");
+      pShowHideEditorHintItem.setEnabled(true);
+
+      pShowHideActionHintItem.setText
+	((pViewerNodeHint.showAction() ? "Hide" : "Show") + " Action Hint");
+      pShowHideActionHintItem.setEnabled(true);
+    }
+    else {
+      pShowHideToolsetHintItem.setText("Show Toolset Hint");
+      pShowHideToolsetHintItem.setEnabled(false);
+
+      pShowHideEditorHintItem.setText("Show Editor Hint");
+      pShowHideEditorHintItem.setEnabled(false);
+
+      pShowHideActionHintItem.setText("Show Action Hint");
+      pShowHideActionHintItem.setEnabled(false);
+    }
   }
 
   /**
@@ -1250,7 +1302,7 @@ class JNodeViewerPanel
     /* remove all previous nodes and links */ 
     pViewerNodes.clear();
     pViewerLinks.clear();
-    pLastViewerNodeStatus = null;
+    pLastViewerNodeHint = null;
 
     /* rebuild the viewer nodes and links */ 
     if(!pRoots.isEmpty()) {
@@ -1846,6 +1898,26 @@ class JNodeViewerPanel
 
   /*-- GL EVENT LISTENER METHODS -----------------------------------------------------------*/
 
+//   /**
+//    * Called by the drawable immediately after the OpenGL context is initialized for the 
+//    * first time.
+//    */ 
+//   public void 
+//   init
+//   (
+//    GLDrawable drawable
+//   )
+//   {    
+//     super.init(drawable);
+//     GL gl = drawable.getGL();
+
+//     /* global OpenGL state */ 
+//     {
+//       gl.glEnable(GL.GL_LINE_SMOOTH);
+//       gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_DONT_CARE);
+//     }
+//   }
+
   /**
    * Called by the drawable to initiate OpenGL rendering by the client.
    */ 
@@ -1878,8 +1950,8 @@ class JNodeViewerPanel
 	gl.glCallList(pSceneDL.get());
       }
 
-      pViewerNodeStatus.rebuild(gl);
-      pViewerNodeStatus.render(gl);
+      pViewerNodeHint.rebuild(gl);
+      pViewerNodeHint.render(gl);
     }
   }
 
@@ -2294,24 +2366,24 @@ class JNodeViewerPanel
       if((under != null) && (under instanceof ViewerNode)) {
 	ViewerNode vunder = (ViewerNode) under;
 
-	if((pLastViewerNodeStatus == null) || 
-	   !pLastViewerNodeStatus.getName().equals(vunder.getNodeStatus().getName())) {
-	  pLastViewerNodeStatus = vunder.getNodeStatus(); 
-	  pViewerNodeStatus.setNodeStatus(pLastViewerNodeStatus);
-	  pViewerNodeStatus.setPosition(vunder.getPosition());
-	  pViewerNodeStatus.setVisible(true);
+	if((pLastViewerNodeHint == null) || 
+	   !pLastViewerNodeHint.getName().equals(vunder.getNodeStatus().getName())) {
+	  pLastViewerNodeHint = vunder.getNodeStatus(); 
+	  pViewerNodeHint.setNodeStatus(pLastViewerNodeHint);
+	  pViewerNodeHint.setPosition(vunder.getPosition());
+	  pViewerNodeHint.setVisible(true);
 	  refresh();
 	}
       }
-      else if(pViewerNodeStatus.isVisible()) {
-	pLastViewerNodeStatus = null;
-	pViewerNodeStatus.setVisible(false);
+      else if(pViewerNodeHint.isVisible()) {
+	pLastViewerNodeHint = null;
+	pViewerNodeHint.setVisible(false);
 	refresh();
       }
     }
-    else if(pViewerNodeStatus.isVisible()) {
-      pLastViewerNodeStatus = null;
-      pViewerNodeStatus.setVisible(false);
+    else if(pViewerNodeHint.isVisible()) {
+      pLastViewerNodeHint = null;
+      pViewerNodeHint.setVisible(false);
       refresh();
     }
   }
@@ -2549,6 +2621,15 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerShowHideDetailHints() != null) &&
 	      prefs.getNodeViewerShowHideDetailHints().wasPressed(e))
 	doShowHideDetailHints();
+      else if((prefs.getNodeViewerShowHideToolsetHint() != null) &&
+	      prefs.getNodeViewerShowHideToolsetHint().wasPressed(e))
+	doShowHideToolsetHint();
+      else if((prefs.getNodeViewerShowHideEditorHint() != null) &&
+	      prefs.getNodeViewerShowHideEditorHint().wasPressed(e))
+	doShowHideEditorHint();
+      else if((prefs.getNodeViewerShowHideActionHint() != null) &&
+	      prefs.getNodeViewerShowHideActionHint().wasPressed(e))
+	doShowHideActionHint();
 
       else
 	undefined = true;
@@ -2725,6 +2806,12 @@ class JNodeViewerPanel
       doShowHideDownstream();
     else if(cmd.equals("show-hide-detail-hints"))
       doShowHideDetailHints();
+    else if(cmd.equals("show-hide-toolset-hint"))
+      doShowHideToolsetHint();
+    else if(cmd.equals("show-hide-editor-hint"))
+      doShowHideEditorHint();
+    else if(cmd.equals("show-hide-action-hint"))
+      doShowHideActionHint();
 
     /* tool menu events */ 
     else if(cmd.startsWith("run-tool:")) 
@@ -4039,13 +4126,49 @@ class JNodeViewerPanel
   }
 
   /**
-   * Show/Hide the downstream node tree.
+   * Show/Hide the node status detail hints.
    */ 
   private synchronized void
   doShowHideDetailHints()
   {
     clearSelection();
     pShowDetailHints = !pShowDetailHints;
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the Toolset property as part of the node detail hints.
+   */ 
+  private synchronized void
+  doShowHideToolsetHint()
+  {
+    clearSelection();
+    if(pViewerNodeHint != null) 
+      pViewerNodeHint.setShowToolset(!pViewerNodeHint.showToolset());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the Editor property as part of the node detail hints.
+   */ 
+  private synchronized void
+  doShowHideEditorHint()
+  {
+    clearSelection();
+    if(pViewerNodeHint != null) 
+      pViewerNodeHint.setShowEditor(!pViewerNodeHint.showEditor());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the Action property as part of the node detail hints.
+   */ 
+  private synchronized void
+  doShowHideActionHint()
+  {
+    clearSelection();
+    if(pViewerNodeHint != null) 
+      pViewerNodeHint.setShowAction(!pViewerNodeHint.showAction());
     updateUniverse();
   }
   
@@ -5688,8 +5811,8 @@ class JNodeViewerPanel
   /**
    * The node status hint graphic.
    */ 
-  private NodeStatus        pLastViewerNodeStatus; 
-  private ViewerNodeStatus  pViewerNodeStatus; 
+  private NodeStatus      pLastViewerNodeHint; 
+  private ViewerNodeHint  pViewerNodeHint; 
 
 
   /**
@@ -5759,6 +5882,9 @@ class JNodeViewerPanel
   private JMenuItem  pShowHideDownstreamItem;
   private JMenuItem  pRemoveAllRootsItem;
   private JMenuItem  pShowHideDetailHintsItem;
+  private JMenuItem  pShowHideToolsetHintItem;
+  private JMenuItem  pShowHideEditorHintItem;
+  private JMenuItem  pShowHideActionHintItem;
   
 
   /*----------------------------------------------------------------------------------------*/

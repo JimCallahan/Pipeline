@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.12 2006/12/05 18:23:30 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.13 2006/12/13 04:08:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -157,6 +157,14 @@ class JBaseViewerPanel
     pFar  = far;
   }
   
+  /**
+   * Get scaling factor to go from canvase coordinates to world space.
+   */ 
+  public double 
+  getCanvasScale() 
+  {
+    return pCameraPos.z() * pPerspFactor * pCanvasToScreen.y();
+  }
 
 
 
