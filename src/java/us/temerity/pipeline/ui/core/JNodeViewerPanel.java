@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.68 2006/12/13 05:05:30 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.69 2006/12/13 09:42:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4198,10 +4198,10 @@ class JNodeViewerPanel
       }
 
       TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-
       tool.initExecution(primary, selected, roots);
 
-      SwingUtilities.invokeLater(new ToolInputTask(tool));
+      ToolOpTask task = new ToolOpTask(tool, pGroupID);
+      task.start();
     }
     catch(PipelineException ex) {
       UIMaster.getInstance().showErrorDialog(ex);
@@ -5645,6 +5645,87 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Aquire the channel operation lock and release it when the tool is done.
+   */ 
+  private
+  class ToolOpTask
+    extends Thread
+  {
+    public 
+    ToolOpTask
+    (
+     BaseTool tool, 
+     int groupID
+    ) 
+    {
+      super("JNodeViewerPanel:ToolOpTask");
+
+      pTool = tool;
+      pGID  = groupID;
+      pLock = new Object(); 
+    }
+
+    public void 
+    endTool
+    (
+     boolean success
+    ) 
+    {
+      synchronized(pLock) {
+	pSuccess = success;
+	pMessage = pTool.getName() + (pSuccess ? " Done." : " Aborted.");
+	pLock.notify();
+      }
+    }
+
+    public void 
+    updateTool
+    (
+     String msg
+    ) 
+    {
+      synchronized(pLock) {
+	pMessage = msg;
+	pLock.notify();
+      }
+    }
+
+    public void 
+    run() 
+    {	
+      UIMaster master = UIMaster.getInstance();
+      if(!master.beginPanelOp(pGID, "Running " + pTool.getName() + pMessage))
+	return;
+
+      try {
+	SwingUtilities.invokeLater(new ToolInputTask(pTool, pGID, this));
+
+	synchronized(pLock) {
+	  while(pSuccess == null) {
+	    pLock.wait();
+	    
+	    if(pMessage != null) 
+	      master.updatePanelOp(pGID, pMessage);
+	  }
+	}
+      }
+      catch(Exception ex) {
+	pMessage = "Unexpected Failure!";
+	master.showErrorDialog(ex);
+      }
+      finally {
+	master.endPanelOp(pGID, pMessage);
+      }
+    }
+
+    private BaseTool  pTool;
+    private int       pGID; 
+    private Object    pLock; 
+    private Boolean   pSuccess;
+    private String    pMessage; 
+  }
+
+  /** 
    * Collect user input for the next tool phase.
    */ 
   private
@@ -5654,11 +5735,16 @@ class JNodeViewerPanel
     public 
     ToolInputTask
     (
-     BaseTool tool
+     BaseTool tool, 
+     int groupID,
+     ToolOpTask task
     ) 
     {
       super("JNodeViewerPanel:ToolInputTask");
-      pTool = tool;
+
+      pTool   = tool;
+      pGID    = groupID;
+      pOpTask = task;
     }
 
     public void 
@@ -5668,16 +5754,22 @@ class JNodeViewerPanel
       try {
 	String msg = pTool.collectPhaseInput();
 	if(msg != null) {
-	  RunToolTask task = new RunToolTask(msg, pTool);
+	  RunToolTask task = new RunToolTask(pTool, pGID, pOpTask, msg);
 	  task.start();	
+	}
+	else {
+	  pOpTask.endTool(true); 
 	}
       }
       catch(Exception ex) {
+	pOpTask.endTool(false); 
 	master.showErrorDialog(ex);
       }
     }
 
-    private BaseTool  pTool;
+    private BaseTool    pTool;
+    private int         pGID; 
+    private ToolOpTask  pOpTask; 
   }
 
   /** 
@@ -5690,44 +5782,49 @@ class JNodeViewerPanel
     public 
     RunToolTask
     (
-     String msg, 
-     BaseTool tool
+     BaseTool tool, 
+     int groupID,
+     ToolOpTask task, 
+     String msg
     ) 
     {
       super("JNodeViewerPanel:RunToolTask");
-      pMessage = msg; 
+
       pTool    = tool;
+      pGID     = groupID;
+      pOpTask  = task;
+      pMessage = msg; 
     }
 
     public void 
     run() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pGroupID, "Running " + pTool.getName() + pMessage)) {
-	String doneMsg = ("Completed " + pTool.getName() + " Phase.");
-	try {
-	  if(pTool.executePhase(master.getMasterMgrClient(pGroupID), 
-				master.getQueueMgrClient(pGroupID))) {
-	    SwingUtilities.invokeLater(new ToolInputTask(pTool));
-	  }
-	  else {
-	    doneMsg = "Done.";
+      pOpTask.updateTool("Running " + pTool.getName() + pMessage); 
 
-	    if(pTool.updateOnExit()) 
-	      setRoots(pTool.rootsOnExit());
-	  }
+      UIMaster master = UIMaster.getInstance();
+      try {
+	MasterMgrClient mclient = master.getMasterMgrClient(pGID); 
+	QueueMgrClient  qclient = master.getQueueMgrClient(pGID); 
+	if(pTool.executePhase(mclient, qclient)) {
+	  pOpTask.updateTool("Completed " + pTool.getName() + " Phase.");
+	  SwingUtilities.invokeLater(new ToolInputTask(pTool, pGID, pOpTask));
 	}
-	catch(Exception ex) {
-	  master.showErrorDialog(ex);
+	else {
+	  pOpTask.endTool(true);
+	  if(pTool.updateOnExit()) 
+	    setRoots(pTool.rootsOnExit());
 	}
-	finally {
-	  master.endPanelOp(pGroupID, doneMsg);
-	}
+      }
+      catch(Exception ex) {
+	pOpTask.endTool(false); 
+	master.showErrorDialog(ex);
       }
     }
 
-    private String    pMessage; 
-    private BaseTool  pTool;
+    private BaseTool    pTool;
+    private int         pGID; 
+    private ToolOpTask  pOpTask; 
+    private String      pMessage; 
   }
 
 
