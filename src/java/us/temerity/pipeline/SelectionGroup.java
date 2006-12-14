@@ -1,4 +1,4 @@
-// $Id: SelectionGroup.java,v 1.4 2006/02/27 17:54:52 jim Exp $
+// $Id: SelectionGroup.java,v 1.5 2006/12/14 02:39:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -70,6 +70,8 @@ class SelectionGroup
 
     for(String key : group.getKeys()) 
       addBias(key, group.getBias(key));
+
+    pFavorMethod = group.getFavorMethod();
   }
 
 
@@ -82,6 +84,7 @@ class SelectionGroup
   init() 
   {
     pSelectionBiases = new TreeMap<String,Integer>();
+    pFavorMethod = JobGroupFavorMethod.None;
   }
 
 
@@ -164,6 +167,33 @@ class SelectionGroup
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the job group favor method.
+   */ 
+  public synchronized JobGroupFavorMethod
+  getFavorMethod() 
+  {
+    return pFavorMethod;
+  }
+
+  /**
+   * Set the job group favor method.
+   */ 
+  public synchronized void 
+  setFavorMethod
+  ( 
+   JobGroupFavorMethod method
+  ) 
+  {
+    if(method == null) 
+      throw new IllegalArgumentException
+	("The job group favor method cannot be (null)!");
+    pFavorMethod = method; 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   S E L E C T I O N                                                            */
@@ -222,6 +252,8 @@ class SelectionGroup
     
     if(!pSelectionBiases.isEmpty()) 
       encoder.encode("SelectionBiases", pSelectionBiases);
+    
+    encoder.encode("FavorMethod", pFavorMethod);
   }
 
   public void 
@@ -237,6 +269,10 @@ class SelectionGroup
       (TreeMap<String,Integer>) decoder.decode("SelectionBiases"); 
     if(biases != null) 
       pSelectionBiases = biases;
+
+    JobGroupFavorMethod method = (JobGroupFavorMethod) decoder.decode("FavorMethod"); 
+    if(method != null) 
+      pFavorMethod = method;
   }
   
   
@@ -257,5 +293,10 @@ class SelectionGroup
    * The selection key biases of the host indexed by selection key name.
    */ 
   private TreeMap<String,Integer>  pSelectionBiases; 
+
+  /**
+   * The job group favor method.
+   */  
+  private JobGroupFavorMethod  pFavorMethod;
 
 }

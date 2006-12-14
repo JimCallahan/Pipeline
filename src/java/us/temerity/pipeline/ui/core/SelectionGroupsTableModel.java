@@ -1,4 +1,4 @@
-// $Id: SelectionGroupsTableModel.java,v 1.3 2006/01/15 06:29:26 jim Exp $
+// $Id: SelectionGroupsTableModel.java,v 1.4 2006/12/14 02:39:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -51,9 +51,15 @@ class SelectionGroupsTableModel
       pEditedIndices = new TreeSet<Integer>();
     }
 
-    /* all columns are dynamic, just initialize the shared renderer/editor */ 
+    /* all columns are dynamic, just initialize the shared renderers/editors */ 
     pSelectionBiasRenderer = new JSimpleTableCellRenderer(JLabel.CENTER);
     pSelectionBiasEditor   = new JIntegerTableCellEditor(120, JLabel.CENTER);
+
+    pFavorRenderer = new JSimpleTableCellRenderer(JLabel.CENTER); 
+    pFavorRenderer.setName("BlueTableCellRenderer");
+
+    pFavorEditor = new JCollectionTableCellEditor(JobGroupFavorMethod.titles(), 140);
+    pFavorEditor.setSynthPrefix("Blue");
   }
  
 
@@ -73,9 +79,18 @@ class SelectionGroupsTableModel
     int idx = 0;
     for(SelectionGroup group : pSelectionGroups) {
       Comparable value = null;
-      String kname = pSelectionKeys.get(pSortColumn);
-      if(kname != null) 
-	value = group.getBias(kname);
+      switch(pSortColumn) {
+      case 0:
+	value = group.getFavorMethod().toString();
+	break;
+
+      default:
+	{
+	  String kname = pSelectionKeys.get(pSortColumn-1);
+	  if(kname != null) 
+	    value = group.getBias(kname);
+	}
+      }
       
       int wk;
       for(wk=0; wk<values.size(); wk++) {
@@ -133,7 +148,13 @@ class SelectionGroupsTableModel
    int col   
   )
   {
-    return 120;
+    switch(col) {
+    case 0:
+      return 140;
+      
+    default:
+      return 120;
+    }
   }
 
   /**
@@ -145,8 +166,14 @@ class SelectionGroupsTableModel
   (
    int col
   )
-  {
-    return "";
+  {  
+    switch(col) {
+    case 0:
+      return "Blue"; 
+
+    default:
+      return "";
+    }
   }
 
   /**
@@ -158,7 +185,13 @@ class SelectionGroupsTableModel
    int col
   ) 
   {
-    return pSelectionDescriptions.get(col);
+    switch(col) {
+    case 0:
+      return "The job group favor method."; 
+
+    default:
+      return pSelectionDescriptions.get(col-1);
+    }
   }
   
   /**
@@ -170,7 +203,13 @@ class SelectionGroupsTableModel
    int col   
   )
   {
-    return pSelectionBiasRenderer; 
+    switch(col) {
+    case 0:
+      return pFavorRenderer; 
+      
+    default:
+      return pSelectionBiasRenderer; 
+    }
   }
 
   /**
@@ -182,7 +221,13 @@ class SelectionGroupsTableModel
    int col   
   )
   {
-    return pSelectionBiasEditor; 
+    switch(col) {
+    case 0:
+      return pFavorEditor; 
+      
+    default:
+      return pSelectionBiasEditor; 
+    }
   }
 
 
@@ -200,7 +245,13 @@ class SelectionGroupsTableModel
    int col
   )
   {
-    return Integer.class;
+    switch(col) {
+    case 0:
+      return String.class; 
+      
+    default:
+      return Integer.class;
+    }
   }
   
   /**
@@ -209,7 +260,7 @@ class SelectionGroupsTableModel
   public int
   getColumnCount()
   {
-    return pSelectionKeys.size();
+    return pSelectionKeys.size() + 1;
   }
 
   /**
@@ -221,7 +272,13 @@ class SelectionGroupsTableModel
    int col
   ) 
   {
-    return pSelectionKeys.get(col);
+    switch(col) {
+    case 0:
+      return "Favor Groups";
+      
+    default:
+      return pSelectionKeys.get(col-1);
+    }
   }
 
 
@@ -405,9 +462,19 @@ class SelectionGroupsTableModel
   )
   {
     SelectionGroup group = pSelectionGroups.get(pRowToIndex[row]);
-    String kname = pSelectionKeys.get(col);
-    if(kname != null) 
-      return group.getBias(kname);
+
+    switch(col) {
+    case 0:
+      return group.getFavorMethod().toTitle();
+      
+    default:
+      {
+	String kname = pSelectionKeys.get(col-1);
+	if(kname != null) 
+	  return group.getBias(kname);
+      }
+    }
+
     return null;
   }
 
@@ -450,16 +517,35 @@ class SelectionGroupsTableModel
   ) 
   {
     SelectionGroup group = pSelectionGroups.get(srow);
-    String kname = pSelectionKeys.get(col);
-    if(kname != null) {
-      Integer bias = (Integer) value;
-      if(bias == null) 
-	group.removeBias(kname);
-      else 
-	group.addBias(kname, bias);
 
-      pEditedIndices.add(srow);
-      return true;
+    switch(col) {
+    case 0:
+      {
+	String favor = (String) value; 
+	for(JobGroupFavorMethod method : JobGroupFavorMethod.all()) {
+	  if(method.toTitle().equals(value)) {
+	    group.setFavorMethod(method); 
+	    pEditedIndices.add(srow);
+	    return true;
+	  }
+	}
+      }
+      break;
+
+    default:
+      {
+	String kname = pSelectionKeys.get(col-1);
+	if(kname != null) {
+	  Integer bias = (Integer) value;
+	  if(bias == null) 
+	    group.removeBias(kname);
+	  else 
+	    group.addBias(kname, bias);
+	  
+	  pEditedIndices.add(srow);
+	  return true;
+	}
+      }
     }
 
     return false;
@@ -507,6 +593,17 @@ class SelectionGroupsTableModel
    */ 
   private ArrayList<String>  pSelectionDescriptions; 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The indices of groups which have had their selection biases edited.
+   */ 
+  private TreeSet<Integer>  pEditedIndices; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The shared renderer for all selection bias cells.
    */ 
@@ -518,11 +615,13 @@ class SelectionGroupsTableModel
   private TableCellEditor  pSelectionBiasEditor;
 
 
-  /*----------------------------------------------------------------------------------------*/
+  /**
+   * The renderer for the "Favor" cells.
+   */ 
+  private JSimpleTableCellRenderer  pFavorRenderer; 
 
   /**
-   * The indices of groups which have had their selection biases edited.
+   * The renderer for the "Favor" cells.
    */ 
-  private TreeSet<Integer>  pEditedIndices; 
-
+  private JCollectionTableCellEditor  pFavorEditor; 
 }

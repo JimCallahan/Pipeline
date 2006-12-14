@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.13 2006/10/18 06:34:22 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.14 2006/12/14 02:39:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -220,6 +220,27 @@ class JManageSelectionKeysDialog
 	  }
 	  
 	  panel.add(Box.createHorizontalGlue());
+
+	  {
+	    JToggleButton btn = new JToggleButton();		
+	    btn.setName("FavButton");
+	    
+	    Dimension size = new Dimension(30, 10);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.setSelected(true);
+	    btn.setActionCommand("toggle-favor-column");
+	    btn.addActionListener(this);
+	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Toggle display of the job group favor method column."));
+	    
+	    panel.add(btn);
+	  } 
+
+	  panel.add(Box.createRigidArea(new Dimension(30, 0)));
 
 	  body.add(panel);
 	}
@@ -948,6 +969,8 @@ class JManageSelectionKeysDialog
       doGroupsClone();
     else if(cmd.equals("group-remove")) 
       doGroupsRemove();
+    else if(cmd.equals("toggle-favor-column"))
+      doGroupsToggleFavorColumn();    
 
     else if(cmd.equals("schedule-add")) 
       doSchedulesAdd();
@@ -1249,6 +1272,16 @@ class JManageSelectionKeysDialog
       updateAll();
       updateJobBrowsers();
     }
+  }
+
+  /**
+   * Toggle the display of the "Favor Groups" column.
+   */ 
+  private void 
+  doGroupsToggleFavorColumn()
+  {
+    boolean isVisible = !pGroupsTablePanel.isColumnVisible("Favor Groups");
+    pGroupsTablePanel.setColumnVisible("Favor Groups", isVisible); 
   }
 
 

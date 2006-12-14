@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.14 2006/12/12 03:57:29 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.15 2006/12/14 02:39:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,10 +156,6 @@ class QueueHostsTableModel
 	JIntegerTableCellEditor slots = 
 	  new JIntegerTableCellEditor(60, JLabel.CENTER);
 	slots.setName("GreenEditableTextField");
-
-	JIdentifierTableCellEditor reservation = 
-	  new JIdentifierTableCellEditor(120, JLabel.CENTER);
-	reservation.setName("PurpleEditableTextField");
 
 	JIntegerTableCellEditor order = 
 	  new JIntegerTableCellEditor(90, JLabel.CENTER);

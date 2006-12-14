@@ -524,6 +524,26 @@
 
 
 
+  <!--  F A V   B U T T O N  -->
+
+  <style id="FavButton"> 
+    <state>
+      <imagePainter path="FavButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="FavButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="FavButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="FavButton" type="name" key="FavButton"/>
+
+
+
   <!--  R A I S E D    B U T T O N  -->
 
   <style id="RaisedButton">

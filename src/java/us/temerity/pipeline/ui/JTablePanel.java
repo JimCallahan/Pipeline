@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.17 2006/11/03 21:31:48 jim Exp $
+// $Id: JTablePanel.java,v 1.18 2006/12/14 02:39:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -306,6 +306,19 @@ class JTablePanel
 
   /**
    * Set whether the given column should be visible.
+   */ 
+  public void 
+  setColumnVisible
+  (
+   String name, 
+   boolean tf
+  ) 
+  {
+    pTableModel.setColumnVisible(name, tf);
+  }
+
+  /**
+   * Set whether the given columns should be visible.
    */ 
   public void 
   setColumnsVisible

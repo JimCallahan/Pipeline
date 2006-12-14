@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.80 2006/12/11 01:22:52 jim Exp $
+// $Id: QueueMgr.java,v 1.81 2006/12/14 02:39:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -120,7 +120,9 @@ class QueueMgr
       pNodeJobIDs = new TreeMap<NodeID,TreeMap<File,Long>>(); 
 
       pJobGroupFileLocks = new TreeMap<Long,Object>();
-      pJobGroups         = new TreeMap<Long,QueueJobGroup>();
+      pJobGroups         = new TreeMap<Long,QueueJobGroup>(); 
+
+      pJobCounters = new QueueJobCounters(); 
     }
 
     try {
@@ -398,7 +400,7 @@ class QueueMgr
 	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
-    
+
     /* garbage collect all jobs no longer referenced by a job group */ 
     {
       TaskTimer timer = new TaskTimer();
@@ -413,6 +415,31 @@ class QueueMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "  Cleaned in " + Dates.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();    
+    }
+
+    /* initialize the job counters */ 
+    {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Initializing Job Counters...");   
+      LogMgr.getInstance().flush();
+
+      synchronized(pJobGroups) {
+	for(QueueJobGroup group : pJobGroups.values()) 
+	  pJobCounters.initCounters(timer, group);
+      } 
+      
+      synchronized(pJobInfo) {
+	for(QueueJobInfo info : pJobInfo.values())
+	  pJobCounters.update(timer, info);
+      }
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Initialized in " + Dates.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
 
@@ -1210,6 +1237,11 @@ class QueueMgr
       if(!pAdminPrivileges.isQueueAdmin(req))
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may add selection groups!"); 
+
+      if(name.equals("Favor Groups")) 
+	throw new PipelineException
+	  ("The name (Favor Groups) is reserved and cannot be used as the name of a " + 
+	   "Selection Group!");
 
       synchronized(pSelectionGroups) {
 	timer.resume();
@@ -3388,7 +3420,8 @@ class QueueMgr
       synchronized(pJobGroups) {
 	timer.resume();
 	writeJobGroup(group);
-	pJobGroups.put(group.getGroupID(), group);
+	pJobGroups.put(group.getGroupID(), group); 
+	pJobCounters.initCounters(timer, group);
       }
 
       TreeMap<Long,QueueJob> taskJobs = new TreeMap<Long,QueueJob>();
@@ -3410,6 +3443,7 @@ class QueueMgr
 	  timer.resume();
 	  writeJobInfo(info);
 	  pJobInfo.put(jobID, info);
+	  pJobCounters.update(timer, info);
 	} 
 	
 	{
@@ -3886,7 +3920,14 @@ class QueueMgr
     }
     
     deleteJobGroupFile(groupID);
-    pJobGroups.remove(groupID);
+
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      
+      pJobGroups.remove(groupID);
+      pJobCounters.initCounters(timer, group);
+    }
 
     /* post-delete group task */ 
     startExtensionTasks(timer, new DeleteJobGroupExtFactory(group));
@@ -4246,6 +4287,7 @@ class QueueMgr
 		(LogMgr.Kind.Net, LogMgr.Level.Severe,
 		 ex.getMessage()); 
 	    }
+	    pJobCounters.update(tm, info);
 	    aborted = true;
 	    break; 
 	    
@@ -4310,6 +4352,8 @@ class QueueMgr
 		   ex.getMessage()); 
 		}
 		
+		pJobCounters.update(tm, info);
+
 		KillTask task = new KillTask(hostname, jobID);
 		task.start();
 	      }
@@ -4363,6 +4407,8 @@ class QueueMgr
 		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		       ex.getMessage()); 
 		  }
+
+		  pJobCounters.update(tm, info);
 		}
 
 		waiting.add(jobID);
@@ -4433,6 +4479,8 @@ class QueueMgr
 		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
 		       ex.getMessage()); 
 		  }
+
+		  pJobCounters.update(tm, info);
 		}
 	      }
 
@@ -4541,11 +4589,13 @@ class QueueMgr
 		  TaskTimer tm = new TaskTimer
 		    ("Dispatcher [Rank Jobs - " + hostname + ":" + slots + "]");
 
-		  TreeMap<Integer,TreeMap<Integer,TreeMap<Date,Long>>> byScore = 
-		    new TreeMap<Integer,TreeMap<Integer,TreeMap<Date,Long>>>();
+		  /* job ID indexed by selection score, percent, priority and timestamp */ 
+		TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>>> byScore =
+		  new TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>>>();
+
 		  for(Long jobID : pReady) {
 		    /* selection score */ 
-		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = null;	
+		    TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>> byPercent = null;
 		    {
 		      Integer score = null;
 		      tm.aquire();
@@ -4592,14 +4642,47 @@ class QueueMgr
 		      }
 		    
 		      if(score != null) {
-			byPriority = byScore.get(score);
-			if(byPriority == null) {
-			  byPriority = new TreeMap<Integer,TreeMap<Date,Long>>();
-			  byScore.put(score, byPriority);
+			byPercent = byScore.get(score);
+			if(byPercent == null) {
+			  byPercent = 
+			    new TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>>();
+			  byScore.put(score, byPercent);
 			}
 		      }
 		    }
-		  
+		    
+		    /* percent engaged/pending */ 
+		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = null;
+		    {
+		      double percent = 0.0;
+		      {
+			String gname = host.getSelectionGroup();
+			if(gname != null) {
+			  tm.aquire();
+			  synchronized(pSelectionGroups) {
+			    tm.resume();
+			    SelectionGroup sg = pSelectionGroups.get(gname);
+			    if(sg != null) {
+			      switch(sg.getFavorMethod()) {
+			      case MostEngaged:
+				percent = pJobCounters.percentEngaged(tm, jobID);
+				break;
+
+			      case MostPending:
+				percent = pJobCounters.percentPending(tm, jobID);
+			      }
+			    }
+			  }
+			}
+		      }
+
+		      byPriority = byPercent.get(percent);
+		      if(byPriority == null) {
+			byPriority = new TreeMap<Integer,TreeMap<Date,Long>>();
+			byPercent.put(percent, byPriority);
+		      }
+		    }
+
 		    /* job priority */ 
 		    TreeMap<Date,Long> byAge = null;
 		    if(byPriority != null) {
@@ -4637,16 +4720,32 @@ class QueueMgr
 		    }
 		  }
 
-		  LinkedList<Integer> scores = new LinkedList<Integer>(byScore.keySet());
-		  Collections.reverse(scores);
-		  for(Integer score : scores) {
-		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = byScore.get(score);
-		    LinkedList<Integer> priorities = 
-		      new LinkedList<Integer>(byPriority.keySet());
-		    Collections.reverse(priorities);
-		    for(Integer priority : priorities) {
-		      for(Long jobID : byPriority.get(priority).values()) 
-			rankedJobIDs.add(jobID);
+		  /* process into a simple list of ranked job IDs */ 
+		  {
+		    LinkedList<Integer> scores = new LinkedList<Integer>(byScore.keySet());
+		    Collections.reverse(scores);
+
+		    for(Integer score : scores) {
+
+		      TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>> byPercent = 
+			byScore.get(score);
+		      LinkedList<Double> percents =  
+			new LinkedList<Double>(byPercent.keySet());
+		      Collections.reverse(percents);
+		      
+		      for(Double percent : percents) {
+			
+			TreeMap<Integer,TreeMap<Date,Long>> byPriority = 
+			  byPercent.get(percent); 
+			LinkedList<Integer> priorities = 
+			  new LinkedList<Integer>(byPriority.keySet());
+			Collections.reverse(priorities);
+			
+			for(Integer priority : priorities) {
+			  for(Long jobID : byPriority.get(priority).values()) 
+			    rankedJobIDs.add(jobID);
+			}
+		      }
 		    }
 		  }
 		  LogMgr.getInstance().logSubStage
@@ -4705,6 +4804,8 @@ class QueueMgr
 				(LogMgr.Kind.Net, LogMgr.Level.Severe,
 				 ex.getMessage()); 
 			    }
+
+			    pJobCounters.update(tm, info);
 			  }
 			  
 			  pWaiting.add(jobID);
@@ -4786,6 +4887,8 @@ class QueueMgr
 		     ex.getMessage()); 
 		}
 		
+		pJobCounters.update(tm, info);
+
 		pWaiting.add(jobID);
 		processed.add(jobID);
 	      }
@@ -5028,6 +5131,8 @@ class QueueMgr
 	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	     ex.getMessage()); 
 	}
+
+	pJobCounters.update(timer, info);
       }
 
       host.setHold(job.getJobID(), jreqs.getRampUp());
@@ -7074,9 +7179,9 @@ class QueueMgr
 	  synchronized(pJobInfo) {
 	    tm.resume();
 
+	    QueueJobInfo info = pJobInfo.get(jobID);
+	    info.preempted();
 	    try {
-	      QueueJobInfo info = pJobInfo.get(jobID);
-	      info.preempted();
 	      writeJobInfo(info);
 	    }
 	    catch(PipelineException ex2) {
@@ -7084,6 +7189,8 @@ class QueueMgr
 		(LogMgr.Kind.Job, LogMgr.Level.Severe, 
 		 ex.getMessage()); 
 	    }
+
+	    pJobCounters.update(tm, info);
 	  }
 
 	  balked = true;
@@ -7176,6 +7283,7 @@ class QueueMgr
 	      
 	    default:
 	      info.exited(results);
+	      pJobCounters.update(tm, info);
 	      finishedInfo = new QueueJobInfo(info);
 	    }
 	    writeJobInfo(info);
@@ -7730,6 +7838,14 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<Long,QueueJobGroup>  pJobGroups; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Counts of the Running, Finished and total number of jobs in each job group.
+   */ 
+  private QueueJobCounters  pJobCounters; 
 
 
   /*----------------------------------------------------------------------------------------*/
