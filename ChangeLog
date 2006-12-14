@@ -1,3 +1,542 @@
+2006-12-13  author  <author@dimetrodon>
+
+	* docs/Makefile.am: removed manuals subdirectory
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	commented builder packages not ready for release
+
+	* src/java/us/temerity/pipeline/JobGroupFavorMethod.java, src/java/us/temerity/pipeline/SelectionGroup.java, src/java/us/temerity/pipeline/core/QueueJobCounters.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/laf/FavButton.png, src/java/us/temerity/pipeline/laf/FavButtonPressed.png, src/java/us/temerity/pipeline/laf/FavButtonSelected.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JTablePanel.java, src/java/us/temerity/pipeline/ui/core/JManageSelectionKeysDialog.java, src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java, src/java/us/temerity/pipeline/ui/core/SelectionGroupsTableModel.java:
+	implemented 848 - Most/Least Completed Dispatch Criteria
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	implemented 867 - Log All File System Exceptions
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	implemented 866 - Verify Check-In File Sizes
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	implemented 865 - Change Status Message from a Tool
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	removed commented obsolete code
+
+2006-12-12  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/JBaseViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeHint.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeStatus.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java, src/java/us/temerity/pipeline/ui/core/GeometryMgr.java:
+	implemented 852 - Display Select Properties in Node Tooltip
+
+2006-12-11  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java:
+	fixed 864 - ClassCastException in QueueHosts
+
+	* src/java/us/temerity/pipeline/Makefile.in, rpm/pipeline.spec.in, src/java/scripts/debug/Makefile.am, src/java/scripts/debug/plvalidate.in:
+	implemented 862 - Repository Validator
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/NodeResubmitJobsReq.java, src/java/us/temerity/pipeline/message/NodeSubmitJobsReq.java, src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeHistoryPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeLinksPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobsDialog.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 846 - Override License Keys in Queue Special
+
+	* configure.ac, docs/man/Makefile.am, docs/man/plvalidate.src.html.in, src/java/scripts/Makefile.am, src/java/scripts/plvalidate.in, src/java/us/temerity/pipeline/core/ValidateApp.java, src/java/us/temerity/pipeline/core/ValidateOptsParser.jj:
+	implemented 862 - Repository Validator
+
+2006-12-10  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	fixed 861 - Obsolete License Keys
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	updated Makefile.in adding all the builder related directories
+
+	* src/java/us/temerity/pipeline/builder/PluginContext.java:
+	implemented [Bug #860] - PluginContext
+
+	* src/java/us/temerity/pipeline/builder/BaseUtil.java:
+	implemented [Bug #859] - BaseUtil class
+
+	* src/java/us/temerity/pipeline/ui/JMayaContextField.java, src/java/us/temerity/pipeline/ui/JUtilContextField.java:
+	implemented [Bug #858] - Swing classes for Builder Contexts
+
+	* plconfig/customers/crimson/061209, plconfig/customers/crimson/061209.txt:
+	Latest plconfig for crimson
+
+	* src/java/us/temerity/pipeline/builder/BooleanBuilderParam.java, src/java/us/temerity/pipeline/builder/BuilderParam.java, src/java/us/temerity/pipeline/builder/DoubleBuilderParam.java, src/java/us/temerity/pipeline/builder/EnumBuilderParam.java, src/java/us/temerity/pipeline/builder/IdentifierBuilderParam.java, src/java/us/temerity/pipeline/builder/IntegerBuilderParam.java, src/java/us/temerity/pipeline/builder/NodePathBuilderParam.java, src/java/us/temerity/pipeline/builder/PathBuilderParam.java, src/java/us/temerity/pipeline/builder/StringBuilderParam.java:
+	implemented [Bug #806] - BuilderParams in Wrong Package
+
+	* src/java/us/temerity/pipeline/builder/MayaContext.java, src/java/us/temerity/pipeline/builder/UtilContext.java:
+	implemented [Bug #857] - Add Contexts for Builders
+
+	* src/java/us/temerity/pipeline/BaseParam.java, src/java/us/temerity/pipeline/BooleanParam.java, src/java/us/temerity/pipeline/ByteSizeParam.java, src/java/us/temerity/pipeline/DoubleParam.java, src/java/us/temerity/pipeline/EnumParam.java, src/java/us/temerity/pipeline/IntegerParam.java, src/java/us/temerity/pipeline/LinkActionParam.java, src/java/us/temerity/pipeline/MultiEnumParam.java, src/java/us/temerity/pipeline/OptionalEnumParam.java, src/java/us/temerity/pipeline/PathParam.java, src/java/us/temerity/pipeline/StringParam.java:
+	implemented [Bug #811] - Redesign of setValue in BaseParam
+
+	* src/java/us/temerity/pipeline/AdvancedLayoutGroup.java, src/java/us/temerity/pipeline/LayoutGroup.java, src/java/us/temerity/pipeline/PassLayoutGroup.java:
+	implemented [Bug #824] - Support for Multiple Pass Layouts and Multiple Column Layout
+
+	* src/java/us/temerity/pipeline/ui/UIFactory.java:
+	implemented [Bug #814] - Extend UIFactory for new Param Types
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	implemented 856 - New Message For Tool Phase Complete
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	removed alternative missing file checks
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 844 - Hotkey for Tooltips
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeLinksPanel.java:
+	implemented 842 - Display Base Version in Node Links Panel
+
+	* src/java/us/temerity/pipeline/ui/core/ViewerNodeStatus.java:
+	implemented 843 - Display Version in Node ToolTip
+
+2006-12-09  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf, configure.ac:
+	v2.1.6
+
+	* src/java/us/temerity/pipeline/message/FileStateRsp.java:
+	fixed 853 - File State Ignored if Frozen
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 854 - Conflict Wrongly Generated by Links
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 853 - File State Ignored if Frozen
+
+2006-12-07  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented - 773 Hide and a Hide All commands for the Job Viewer
+
+	* src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java:
+	fixed Sub logging
+
+	* src/java/us/temerity/pipeline/ui/core/GeometryMgr.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeStatus.java:
+	improvements to 816 - Node Viewer Status Tooltip
+
+	* rpm/pipeline.spec.in: removed manual directory
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	fixed 839 - Dispatcher Failure
+
+	* src/java/us/temerity/pipeline/ui/JLogsDialog.java: fixed layout
+
+	* src/java/us/temerity/pipeline/LogMgr.java, src/java/us/temerity/pipeline/ui/JLogsDialog.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 833 - JTextArea Logging
+
+	* docs/manuals/Makefile.am, docs/manuals/bits.html, docs/manuals/index.html:
+	obsolete
+
+	* src/java/us/temerity/pipeline/ui/core/PanelUpdater.java:
+	fixed 836 - Queue Stats Exception
+
+	* src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/PropertyState.java, src/java/us/temerity/pipeline/VersionState.java, src/java/us/temerity/pipeline/ui/core/GeometryMgr.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/ViewerGraphic.java, src/java/us/temerity/pipeline/ui/core/ViewerIcon.java, src/java/us/temerity/pipeline/ui/core/ViewerNode.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeStatus.java, src/java/us/temerity/pipeline/ui/core/ViewerPie.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 816 - Node Viewer Status Tooltip
+
+2006-12-07  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented - 773 Hide and a Hide All commands for the Job Viewer
+
+	* src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java:
+	fixed Sub logging
+
+	* src/java/us/temerity/pipeline/ui/core/GeometryMgr.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeStatus.java:
+	improvements to 816 - Node Viewer Status Tooltip
+
+	* rpm/pipeline.spec.in: removed manual directory
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	fixed 839 - Dispatcher Failure
+
+	* src/java/us/temerity/pipeline/ui/JLogsDialog.java: fixed layout
+
+	* src/java/us/temerity/pipeline/LogMgr.java, src/java/us/temerity/pipeline/ui/JLogsDialog.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 833 - JTextArea Logging
+
+	* docs/manuals/Makefile.am, docs/manuals/bits.html, docs/manuals/index.html:
+	obsolete
+
+	* src/java/us/temerity/pipeline/ui/core/PanelUpdater.java:
+	fixed 836 - Queue Stats Exception
+
+	* src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/PropertyState.java, src/java/us/temerity/pipeline/VersionState.java, src/java/us/temerity/pipeline/ui/core/GeometryMgr.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/ViewerGraphic.java, src/java/us/temerity/pipeline/ui/core/ViewerIcon.java, src/java/us/temerity/pipeline/ui/core/ViewerNode.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeStatus.java, src/java/us/temerity/pipeline/ui/core/ViewerPie.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 816 - Node Viewer Status Tooltip
+
+2006-12-06  author  <author@dimetrodon>
+
+	* config/bootstrap-rhinofx.sh: 061206 profile
+
+	* plconfig/customers/rhinofx/061206, plconfig/customers/rhinofx/061206.txt:
+	initial revision
+
+2006-12-05  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/laf/source/Splash.xcf, configure.ac, src/java/us/temerity/pipeline/laf/Splash.png:
+	v2.1.5
+
+	* config/bootstrap-SCEACSG.sh: 061230 profile
+
+	* plconfig/customers/SCEACSG/061205, plconfig/customers/SCEACSG/061205.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobServerStatsPanel.java, src/java/us/temerity/pipeline/ui/core/ViewerPie.java:
+	last minute fixes to: 756 - Job Server Histograms
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/QueueJobGroupsTableModel.java:
+	fixed 830 - Job Browser Exception
+
+	* src/java/share/initial-panel-layout, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 832 - Updated Default Layout
+
+	* src/java/us/temerity/pipeline/ui/core/JManageLayoutsDialog.java:
+	comments
+
+	* src/java/us/temerity/pipeline/core/JobMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/PluginMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java:
+	implemented 829 - Startup Timing Messages
+
+	* config/bootstrap.sh: 061130 site profile
+
+	* src/java/us/temerity/pipeline/ByteSizeRange.java, src/java/us/temerity/pipeline/ComparableRange.java, src/java/us/temerity/pipeline/FloatRange.java, src/java/us/temerity/pipeline/Histogram.java, src/java/us/temerity/pipeline/HistogramRange.java, src/java/us/temerity/pipeline/HistogramSpec.java, src/java/us/temerity/pipeline/QueueHostHistogramSpecs.java, src/java/us/temerity/pipeline/QueueHostHistograms.java, src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/message/QueueGetHostHistogramsReq.java, src/java/us/temerity/pipeline/message/QueueGetHostHistogramsRsp.java, src/java/us/temerity/pipeline/message/QueueGetHostsReq.java, src/java/us/temerity/pipeline/ui/core/GeometryMgr.java, src/java/us/temerity/pipeline/ui/core/JBaseViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServerStatsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServersPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JTextureLoaderBar.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/ReservedViewerPie.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/java/us/temerity/pipeline/ui/core/ViewerPie.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 756 - Job Server Histograms
+
+	* src/java/us/temerity/pipeline/core/TestNativeProcessHeavyApp.java, src/java/us/temerity/pipeline/core/TestNativeProcessLightApp.java:
+	commented windows PATH stuff
+
+	* src/java/us/temerity/pipeline/Native.java: comments
+
+	* src/native/NativeProcessHeavy.cc, src/native/NativeProcessLight.cc:
+	fixed 834 - Native Memory Leak
+
+2006-12-01  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/QueueMgrOptsParser.jj:
+	added missing --log=mem:... logger kind
+
+	* src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	fixed --remote-log bug
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	memory logging messages
+
+	* src/java/us/temerity/pipeline/MasterControls.java, src/java/us/temerity/pipeline/QueueControls.java:
+	implemented 825 - Runtime Performance Tuning
+
+	* src/java/us/temerity/pipeline/ByteSize.java:
+	comments, added longToFloatString() method
+
+	* docs/man/plmaster.src.html.in, docs/man/plqueuemgr.src.html.in, docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrOptsParser.jj, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscGetMasterControlsRsp.java, src/java/us/temerity/pipeline/message/MiscSetMasterControlsReq.java, src/java/us/temerity/pipeline/message/QueueGetQueueControlsRsp.java, src/java/us/temerity/pipeline/message/QueueRequest.java, src/java/us/temerity/pipeline/message/QueueSetQueueControlsReq.java:
+	implemented 825 - Runtime Performance Tuning, 823 - Node Caching and Out-of-Memory Errors
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/ui/core/ArialBoldFontGeometry.java, src/java/us/temerity/pipeline/ui/core/ArialRegularFontGeometry.java, src/java/us/temerity/pipeline/ui/core/AyuthayaRegularFontGeometry.java, src/java/us/temerity/pipeline/ui/core/BaskervilleBoldFontGeometry.java, src/java/us/temerity/pipeline/ui/core/CharcoalRegularFontGeometry.java, src/java/us/temerity/pipeline/ui/core/HelveticaRegularFontGeometry.java, src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java, src/java/us/temerity/pipeline/ui/core/JTextureLoaderBar.java, src/java/us/temerity/pipeline/ui/core/ViewerJobGroup.java, src/java/us/temerity/pipeline/ui/core/ViewerNode.java, src/java/us/temerity/pipeline/laf/maya/synth/data/ArialBold.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/ArialRegular.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/AyuthayaRegular.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/BaskervilleBold.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/CharcoalRegular.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/HelveticaRegular.txt, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0044.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0045.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0046.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0047.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0048.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0049.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0050.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0051.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0052.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0053.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0054.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0055.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0056.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0057.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0058.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0059.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0060.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0061.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0062.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0063.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0064.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0065.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0066.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0067.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0068.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0069.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0070.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0071.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0072.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0073.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0074.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0075.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0076.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0077.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0078.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0079.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0080.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0081.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0082.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0083.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0084.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0085.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0086.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0087.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0088.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0089.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0090.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0091.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0092.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0093.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0094.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0095.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0096.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0097.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0098.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0099.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0100.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0101.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0102.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0103.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0104.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0105.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0106.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0107.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0108.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0109.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0110.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0111.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0112.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0113.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0114.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0115.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0116.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0117.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0118.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0119.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0120.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0121.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0122.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0123.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0124.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0125.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0126.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/CharcoalRegular.0127.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0044.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0045.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0046.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0047.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0048.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0049.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0050.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0051.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0052.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0053.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0054.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0055.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0056.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0057.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0058.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0059.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0060.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0061.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0062.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0063.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0064.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0065.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0066.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0067.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0068.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0069.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0070.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0071.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0072.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0073.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0074.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0075.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0076.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0077.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0078.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0079.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0080.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0081.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0082.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0083.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0084.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0085.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0086.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0087.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0088.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0089.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0090.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0091.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0092.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0093.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0094.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0095.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0096.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0097.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0098.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0099.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0100.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0101.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0102.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0103.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0104.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0105.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0106.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0107.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0108.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0109.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0110.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0111.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0112.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0113.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0114.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0115.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0116.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0117.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0118.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0119.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0120.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0121.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0122.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0123.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0124.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0125.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0126.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/HelveticaRegular.0127.sgi, src/java/us/temerity/pipeline/laf/maya/synth/mel/ArialBold.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/ArialRegular.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/AyuthayaRegular.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/BaskervilleBold.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/CharcoalRegular.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/HelveticaRegular.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/renderFont.mel, src/java/us/temerity/pipeline/laf/maya/synth/scenes/ArialBold.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/ArialRegular.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/AyuthayaRegular.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/BaskervilleBold.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/CharcoalRegular.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/HelveticaRegular.ma, src/java/us/temerity/pipeline/laf/maya/synth/scripts/both.bash, src/java/us/temerity/pipeline/laf/maya/synth/scripts/build.bash, src/java/us/temerity/pipeline/laf/maya/synth/scripts/render.bash:
+	implemented - 831 Improved OpenGL Font
+
+2006-11-30  author  <author@dimetrodon>
+
+	* plconfig/customers/dimetrodon/061130, plconfig/customers/dimetrodon/061130.txt:
+	initial revision
+
+2006-11-28  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	made heap stats interval reasonable
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	fixed 822 - Node Viewer Exception
+
+2006-11-27  author  <author@dimetrodon>
+
+	* config/bootstrap-rhinofx.sh: latest
+
+	* plconfig/customers/rhinofx/061127, plconfig/customers/rhinofx/061127.txt:
+	initial revision
+
+2006-11-25  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	fixed 820 - Ignore Job Servers Already Shutdown
+
+2006-11-23  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/plugin/v2_0_10/TerminalEditor.java:
+	implemented 819 - X11 Environment Passthrough
+
+2006-11-22  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/BaseArchiver.java, src/java/us/temerity/pipeline/BaseExt.java, src/java/us/temerity/pipeline/BaseParam.java, src/java/us/temerity/pipeline/plugin/v2_0_15/JavaBuildAction.java:
+	fixed 781 - Spaces in Plugin Parameter Names
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_10/TerminalEditor.java:
+	implemented 818 - More Flexilble Terminal Editor
+
+	* src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	fixed 815 - Resource Usage History Prefs Update
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 817 - Null Pointer in collectNoActionJobs
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	added extra debugging for: 817 - Null Pointer in collectNoActionJobs
+
+	* src/java/us/temerity/pipeline/BaseParam.java, src/java/us/temerity/pipeline/BasePlugin.java, src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/FileMonitor.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/LayoutGroup.java, src/java/us/temerity/pipeline/NativeOS.java, src/java/us/temerity/pipeline/NativeProcessHeavy.java, src/java/us/temerity/pipeline/NativeProcessLight.java, src/java/us/temerity/pipeline/Path.java, src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java, src/java/us/temerity/pipeline/VersionID.java, src/java/us/temerity/pipeline/core/BaseApp.java, src/java/us/temerity/pipeline/core/BaseMgrServer.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/GlueEncoderImpl.java, src/java/us/temerity/pipeline/core/GlueParserState.java, src/java/us/temerity/pipeline/core/JobMgr.java, src/java/us/temerity/pipeline/core/JobMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/TimeService.java, src/java/us/temerity/pipeline/core/exts/BaseExtTask.java, src/java/us/temerity/pipeline/glue/io/GlueEncoderImpl.java, src/java/us/temerity/pipeline/glue/io/GlueParserState.java, src/java/us/temerity/pipeline/math/CoordSysNd.java, src/java/us/temerity/pipeline/math/CoordSysNf.java, src/java/us/temerity/pipeline/math/MatrixMNd.java, src/java/us/temerity/pipeline/math/MatrixMNf.java, src/java/us/temerity/pipeline/math/TupleNd.java, src/java/us/temerity/pipeline/math/TupleNf.java, src/java/us/temerity/pipeline/math/TupleNi.java, src/java/us/temerity/pipeline/math/TupleNl.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/plugin/v1_0_0/AirEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/AirShadowAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/AirTextureAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/DLEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/DLShadowAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/DLTextureAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/DsmToTifAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/HdrToTifAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/HfsEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/HfsIConvertAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/HfsMantraAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/HfsVEXAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/MayaAnimExportAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v1_0_0/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v1_1_0/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/TerminalEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_0/AirEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/AirShadowAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/AirTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/DLCatRIBAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/DLEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/DLShadowAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/DLTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/DsmToTifAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GelEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GelEnvProbeAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GelShadowAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GelTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GelVolShadowAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/HdrToTifAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/HfsEnvMapAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/HfsIConvertAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/HfsMantraAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/HfsVEXAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/MayaAnimExportAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_0/PRCatRIBAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/PREnvMapAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/PRShadowAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/PRTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_0_0/TerminalEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_1/MayaRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaMRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaMRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_12/MayaAnimExportAction.java, src/java/us/temerity/pipeline/plugin/v2_0_14/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_15/JavaBuildAction.java, src/java/us/temerity/pipeline/plugin/v2_0_15/JavaUtilityAction.java, src/java/us/temerity/pipeline/plugin/v2_0_4/HfsMantraAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MRayTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MayaAnimExportAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MayaMRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_9/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_1_1/LogMasterActivityExt.java, src/java/us/temerity/pipeline/plugin/v2_1_1/LogQueueActivityExt.java, src/java/us/temerity/pipeline/tests/TestBigIntegerApp.java, src/java/us/temerity/pipeline/tests/TestFileMgr2App.java, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, src/java/us/temerity/pipeline/tests/TestMasterMgr2App.java, src/java/us/temerity/pipeline/tests/TestMasterMgrApp.java, src/java/us/temerity/pipeline/tests/TestReadWriteLockApp.java, src/java/us/temerity/pipeline/toolset/Toolset.java, src/java/us/temerity/pipeline/ui/HotKey.java, src/java/us/temerity/pipeline/ui/JConfirmListDialog.java, src/java/us/temerity/pipeline/ui/JErrorDialog.java, src/java/us/temerity/pipeline/ui/UIFactory.java, src/java/us/temerity/pipeline/ui/core/JBaseToolsetPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JBaseUserPrefsDialog.java, src/java/us/temerity/pipeline/ui/core/JConfirmKillObsoleteJobsDialog.java, src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java, src/java/us/temerity/pipeline/ui/core/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JRestoreDialog.java, src/java/us/temerity/pipeline/ui/core/JTestEnvironmentDialog.java, src/java/us/temerity/pipeline/ui/core/JobPath.java, src/java/us/temerity/pipeline/ui/core/NodePath.java, src/java/us/temerity/pipeline/ui/core/QueueJobGroupsTableModel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java, src/java/us/temerity/pipeline/utils/BaseUtilityApp.java:
+	implemented 809 - Replace StringBuffer with StringBuilder
+
+2006-11-21  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	implemented 812 - Don't Collect Stats from Disabled Job Servers
+
+	* src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/QueueHost.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServersPanel.java, src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java:
+	implemented 803 - Queue Resource Stats Efficiency, 808 - Simplified Host Edits
+
+	* src/java/us/temerity/pipeline/QueueHostMod.java, src/java/us/temerity/pipeline/message/QueueEditHostsReq.java:
+	implemented 808 - Simplified Host Edits
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java:
+	implemented 804 - Faster Resource Sample Collection (more)
+
+	* src/java/us/temerity/pipeline/BaseQueueExt.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/QueueHostInfo.java, src/java/us/temerity/pipeline/ResourceSample.java, src/java/us/temerity/pipeline/ResourceSampleBlock.java, src/java/us/temerity/pipeline/ResourceSampleCache.java, src/java/us/temerity/pipeline/core/exts/ResourceSamplesExtFactory.java, src/java/us/temerity/pipeline/message/QueueGetHostResourceSamplesReq.java, src/java/us/temerity/pipeline/message/QueueGetHostResourceSamplesRsp.java, src/java/us/temerity/pipeline/plugin/v2_1_1/LogQueueActivityExt.java, src/java/us/temerity/pipeline/plugin/v2_1_1/QueueStatsDb.java, src/java/us/temerity/pipeline/plugin/v2_1_1/QueueStatsExt.java, src/java/us/temerity/pipeline/ui/core/JResourceSamplesTableCellRenderer.java, src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 803 - Queue Resource Stats Efficiency
+
+	* src/java/us/temerity/pipeline/DateInterval.java: initial revision
+
+2006-11-17  author  <author@dimetrodon>
+
+	* plconfig/customers/crimson/061117, plconfig/customers/crimson/061117.txt:
+	Actually put java version 1.5.0_09 in
+
+	* config/bootstrap-crimson.sh: Updated with latest profile 061117
+
+	* plconfig/customers/crimson/061117, plconfig/customers/crimson/061117.txt:
+	Initial Version
+
+	* plconfig/customers/crimson/061026, plconfig/customers/crimson/061026.txt:
+	initial revision
+
+	* config/bootstrap-crimson.sh: latest
+
+2006-11-16  author  <author@dimetrodon>
+
+	* plconfig/customers/SCEACSG/061116, plconfig/customers/SCEACSG/061116.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrNetClient.java, src/java/us/temerity/pipeline/core/JobMgrControlClient.java, src/java/us/temerity/pipeline/core/JobMgrPlgControlClient.java, src/java/us/temerity/pipeline/core/JobMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgr.java:
+	implemented 804 - Faster Resource Sample Collection
+
+2006-11-15  author  <author@dimetrodon>
+
+	* configure.ac: upgreaded YJP profiler options
+
+	* docs/misc/logger-usage.txt: initial revision
+
+2006-11-14  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/ScriptApp.java:
+	fixed 801 - plscript loses Editor setting when setting other properties
+
+	* configure.ac, src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.1.4
+
+2006-11-13  author  <author@dimetrodon>
+
+	* plconfig/customers/SCEACSG/061113, plconfig/customers/SCEACSG/061113.txt:
+	initial revision
+
+2006-11-12  author  <author@dimetrodon>
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	implemented 672 - Release View from plscript(1)
+
+	* src/java/us/temerity/pipeline/core/NodeTree.java:
+	fixed bug in getMatchingWorkingNodes which ignored pattern
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/NodePath.java:
+	fixed 762 - Rename Loses Collapsed Preferences
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_9/MRayRenderGlobalsAction.java:
+	fixed 787 - NullPointer in MRayRenderGlobals
+
+2006-11-11  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_10/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_0_12/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MayaShaderExportAction.java:
+	fixed 785 - Name of the MelScript drawer for MayaShaderExport
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	implemented 789 - cloning in plscript
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java:
+	implemented 790 - cloning in the api
+
+	* src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/message/QueueJobsReq.java, src/java/us/temerity/pipeline/message/QueueKillJobsReq.java, src/java/us/temerity/pipeline/message/QueuePauseJobsReq.java, src/java/us/temerity/pipeline/message/QueuePreemptJobsReq.java, src/java/us/temerity/pipeline/message/QueueRequest.java, src/java/us/temerity/pipeline/message/QueueResumeJobsReq.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	fixed 732 - Preempting in API doesn't Respect Privileges
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestQueueOpsApp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/SourceParamsTableModel.java:
+	fixed 786 - Source Param Dialog Sorting Exception
+
+2006-11-10  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/NodeTree.java:
+	fixed 796 - Node Tree Deadlock
+
+	* config/bootstrap.sh: latest
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/LogControls.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscGetLogControlsRsp.java, src/java/us/temerity/pipeline/message/MiscSetLogControlsReq.java, src/java/us/temerity/pipeline/message/QueueRequest.java:
+	implemented 727 - Runtime Logging Levels
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	fixed 794 - Owner|View Menus Incorrect
+
+2006-11-09  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java:
+	fixed 793 - Plugin Menus not Cloned
+
+	* plconfig/customers/dimetrodon/061109, plconfig/customers/dimetrodon/061109.txt:
+	initial revision
+
+2006-11-05  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/WorkGroups.java, src/java/us/temerity/pipeline/core/AdminPrivileges.java, src/java/us/temerity/pipeline/core/QueueHost.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServersPanel.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/PrivilegesTableModel.java, src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java:
+	implemented 681 - Work Group Reservations
+
+2006-11-03  author  <author@dimetrodon>
+
+	* rpm/plmac.spec.in, src/java/us/temerity/pipeline/ArchType.java, src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/utils/src/Makefile.am:
+	fixed 783 - plrun(1) on G5's
+
+	* configure.ac: added support for darwin-8.8.0
+
+	* src/java/us/temerity/pipeline/ui/JTablePanel.java:
+	initialization exception
+
+2006-11-02  author  <author@dimetrodon>
+
+	* plconfig/customers/stfc/061102, plconfig/customers/stfc/061102.txt:
+	initial revision
+
+2006-10-26  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/MultiEnumParam.java:
+	implemented 730 - Multi-Enum Param
+
+	* src/java/us/temerity/pipeline/EnumParam.java: comments
+
+	* src/java/us/temerity/pipeline/OptionalEnumParam.java:
+	implemented 731 - Optional Enum Param
+
+	* configure.ac, src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.1.3
+
+	* src/java/us/temerity/pipeline/core/PluginMgr.java:
+	implemented 683 - Check for duplicate Serial UIDs at plugin install
+
+	* src/java/us/temerity/pipeline/plugin/v1_2_0/TestAction.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MRayInstGroupAction.java, src/java/us/temerity/pipeline/plugin/v2_0_10/RegisterMapTool.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaReferenceAction.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaTextureSyncTool.java:
+	fixed duplicate serialVersionUIDs
+
+	* config/bootstrap-mattdaw.sh: v2.1.2
+
+	* plconfig/customers/mattdaw/061026, plconfig/customers/mattdaw/061026.txt:
+	initial revision
+
+2006-10-25  author  <author@dimetrodon>
+
+	* config/bootstrap-stfc.sh, config/bootstrap-rhinofx.sh: v2.1.2
+
+	* plconfig/customers/crimson/061025, plconfig/customers/crimson/061025.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java, src/java/us/temerity/pipeline/ui/core/JPackageDetailsDialog.java:
+	more fixes 724 - Package Variable Editing
+
+	* plconfig/customers/stfc/061024, plconfig/customers/stfc/061024.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrDirectClient.java, src/java/us/temerity/pipeline/core/FileMgrNetClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/native/NativeFileSys.cc, src/native/NativeFileSys.hh:
+	fixed 733 - Windows Timestamp problem (again)
+
+2006-10-24  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/ui/core/JManagePackagePluginsDialog.java, src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java:
+	more fixes 697 - Toolset Plugin Menu Dialog Performance
+
+2006-10-23  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/MiscGetAllToolsetPackageNamesRsp.java, src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	fixed 725 - Working Toolsets/Packages Discarded
+
+	* src/java/us/temerity/pipeline/ui/JConfirmDialog.java:
+	added an optional longer message
+
+	* src/java/us/temerity/pipeline/DoubleMap.java, src/java/us/temerity/pipeline/TripleMap.java:
+	added mutiple key containsKey() methods
+
+	* configure.ac, src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.1.2
+
+	* src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/BaseArchiver.java, src/java/us/temerity/pipeline/BaseComparator.java, src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/BaseExt.java, src/java/us/temerity/pipeline/BaseMasterExt.java, src/java/us/temerity/pipeline/BasePlugin.java, src/java/us/temerity/pipeline/BaseQueueExt.java, src/java/us/temerity/pipeline/BaseTool.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/PluginSet.java, src/java/us/temerity/pipeline/PluginType.java, src/java/us/temerity/pipeline/TripleMap.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscGetPackagePluginsRsp.java, src/java/us/temerity/pipeline/message/MiscGetPluginMenuLayoutsRsp.java, src/java/us/temerity/pipeline/message/MiscGetSelectPackagePluginsReq.java, src/java/us/temerity/pipeline/message/MiscGetSelectPackagePluginsRsp.java, src/java/us/temerity/pipeline/message/MiscSetPackagePluginsReq.java, src/java/us/temerity/pipeline/ui/core/JBasePackagePluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JBaseToolsetPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JManageToolsetPluginsDialog.java, src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java, src/java/us/temerity/pipeline/ui/core/JPackageActionPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageArchiverPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageComparatorPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageEditorPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageMasterExtPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageQueueExtPluginsPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageToolPluginsPanel.java:
+	fixed 697 - Toolset Plugin Menu Dialog Performance
+
+2006-10-21  author  <author@dimetrodon>
+
+	* configure.ac: v2.1.1c
+
+	* src/java/us/temerity/pipeline/NativeOS.java, src/native/Makefile.am, src/native/NativeOS.cc, src/native/NativeOS.hh:
+	node uses sysctrl(1) subprocess instead of C-Library function
+
+	* src/java/us/temerity/pipeline/ui/core/PanelUpdater.java:
+	fixed post-apply update of Node Viewer when update originated from other panels bug
+
+	* src/java/share/Unix/actions, src/java/share/Unix/comparators, src/java/share/Unix/editors, src/java/share/Unix/tools:
+	latest
+
+2006-10-20  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/JNewNameDialog.java, src/java/us/temerity/pipeline/ui/core/JBaseToolsetPluginsPanel.java:
+	fixed 770 - No Spaces in Toolset Plugin Menu Items
+
+	* configure.ac: v2.1.1b
+
+	* plconfig/customers/rhinofx/061020, plconfig/customers/rhinofx/061020.txt:
+	initial revision
+
+	* rpm/pipeline.spec.in, src/java/us/temerity/pipeline/plugin/v2_1_1/Makefile.in:
+	added optional plugin installation
+
+	* src/java/us/temerity/pipeline/ui/core/PanelUpdater.java:
+	fixed Node History and Job Details update bugs
+
+	* src/java/us/temerity/pipeline/QueueJobInfo.java: comments
+
+	* config/bootstrap-mattdaw.sh, plconfig/customers/mattdaw/061019, plconfig/customers/mattdaw/061019.txt:
+	initial revision
+
+	* config/bootstrap-SCEACSG.sh: v2.1.1
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeBrowserPanel.java:
+	fixed 765 - Change Owner/View menu in Node Browser not good on pending
+
+	* src/java/us/temerity/pipeline/ui/core/PanelUpdater.java:
+	fixed 766 - Refresh problem with the viewer window
+
+2006-10-19  author  <author@dimetrodon>
+
+	* ChangeLog: latest
+
+	* configure.ac:
+	implemented 763 - Parallel Java Garbage Collector Inefficient
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 740 - Owner|View Node Browser Menus (the Node Viewer part)
+
+	* docs/man/plscript.src.html.in:
+	implemented 742 - Downstream Links of a Checked-in Node
+
+	* plconfig/customers/SCEACSG/061018, plconfig/customers/SCEACSG/061018.txt:
+	initial revision
+
 2006-10-19  author  <author@dimetrodon>
 
 	* configure.ac:
