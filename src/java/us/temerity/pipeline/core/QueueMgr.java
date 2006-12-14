@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.81 2006/12/14 02:39:05 jim Exp $
+// $Id: QueueMgr.java,v 1.82 2006/12/14 05:25:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4653,7 +4653,7 @@ class QueueMgr
 		    
 		    /* percent engaged/pending */ 
 		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = null;
-		    {
+		    if(byPercent != null) {
 		      double percent = 0.0;
 		      {
 			String gname = host.getSelectionGroup();
