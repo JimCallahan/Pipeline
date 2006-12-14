@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.182 2006/12/12 00:06:44 jim Exp $
+// $Id: MasterMgr.java,v 1.183 2006/12/14 19:47:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13885,8 +13885,14 @@ class MasterMgr
 	      (anyNeedsCheckOut ? OverallNodeState.MissingNewer : OverallNodeState.Missing);
 	  else if(anyConflicted || (anyNeedsCheckOut && (anyModified || modifiedLocks)))
 	    overallNodeState = OverallNodeState.Conflicted;
-	  else if(anyModified) 
-	    overallNodeState = OverallNodeState.Modified;
+	  else if(anyModified) {
+	    if((propertyState == PropertyState.Identical) &&
+	       (linkState == LinkState.Modified) &&
+	       !anyModifiedFs)
+	      overallNodeState = OverallNodeState.ModifiedLinks;
+	    else 
+	      overallNodeState = OverallNodeState.Modified;
+	  }
 	  else if(anyNeedsCheckOut) {
 	    if(!workIsLocked) {
 	      for(LinkMod link : work.getSources()) {
