@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.31 2006/12/12 00:06:45 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.32 2006/12/14 19:02:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2611,7 +2611,7 @@ class JQueueJobViewerPanel
       pPriority      = priority; 
       pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
-      pSelectionKeys = licenseKeys;
+      pLicenseKeys   = licenseKeys;
     }
 
     public void 
