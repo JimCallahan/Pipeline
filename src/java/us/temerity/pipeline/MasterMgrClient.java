@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.87 2006/12/12 00:06:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.88 2006/12/14 19:01:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1156,7 +1156,7 @@ class MasterMgrClient
    * @param pname
    *   The package name. 
    * 
-   * @parma pvid
+   * @param pvid
    *   The package revision number.
    * 
    * @return 

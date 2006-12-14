@@ -1,8 +1,14 @@
-// $Id: OptionalEnumParam.java,v 1.2 2006/12/10 22:52:54 jesse Exp $
+// $Id: OptionalEnumParam.java,v 1.3 2006/12/14 19:01:31 jim Exp $
 
 package us.temerity.pipeline;
 
+import us.temerity.pipeline.glue.*;
+
 import java.util.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   O P T I O N A L   E N U M   P A R A M                                                  */
+/*------------------------------------------------------------------------------------------*/
 
 /**
  * A plugin parameter with an optional Enum value, allowing selection from the enum or the

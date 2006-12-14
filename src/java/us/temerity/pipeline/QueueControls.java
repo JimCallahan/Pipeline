@@ -1,4 +1,4 @@
-// $Id: QueueControls.java,v 1.1 2006/12/01 18:41:57 jim Exp $
+// $Id: QueueControls.java,v 1.2 2006/12/14 19:01:31 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -106,7 +106,7 @@ class QueueControls
   /**
    * Set the minimum time a cycle of the dispatcher loop should take (in milliseconds).
    * 
-   * @param age
+   * @param interval
    *   The interval or <CODE>null</CODE> to unset.
    */
   public void 

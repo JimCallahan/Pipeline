@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.1 2006/12/01 18:41:57 jim Exp $
+// $Id: MasterControls.java,v 1.2 2006/12/14 19:01:31 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -222,8 +222,8 @@ class MasterControls
    * Set the maximum age of a resolved (Restored or Denied) restore request before it 
    * is deleted (in milliseconds).
    * 
-   * @param age
-   *   The interval or <CODE>null</CODE> to unset.
+   * @param interval
+   *   The cleanup internval or <CODE>null</CODE> to unset.
    */
   public void 
   setRestoreCleanupInterval
@@ -233,7 +233,7 @@ class MasterControls
   {
     if((interval != null) && (interval < 3600000L)) 
       throw new IllegalArgumentException
-	("The restore cleanup interval (" +interval  + " ms) must be at " + 
+	("The restore cleanup interval (" + interval + " ms) must be at " + 
 	 "least 1 hour!"); 
     pRestoreCleanupInterval = interval; 
   }

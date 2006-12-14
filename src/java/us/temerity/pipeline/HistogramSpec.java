@@ -1,4 +1,4 @@
-// $Id: HistogramSpec.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: HistogramSpec.java,v 1.2 2006/12/14 19:01:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ import java.io.*;
  * 
  * Besides catagorizing values, the histogram spcification also maintains a flag for 
  * each catagory which determines whether it is a member of the matching set.  A given 
- * value can be tested using the {@link #isIncludedValue} method to test whether it 
+ * value can be tested using the {@link #isIncludedItem} method to test whether it 
  * belongs to one of the catagories which are included in this matching set.
  */
 public

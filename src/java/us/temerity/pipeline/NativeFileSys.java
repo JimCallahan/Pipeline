@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.13 2006/10/25 08:04:23 jim Exp $
+// $Id: NativeFileSys.java,v 1.14 2006/12/14 19:01:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -407,7 +407,7 @@ class NativeFileSys
    * @param path 
    *   The file to test.
    * 
-   * @param 
+   * @param critical
    *   The last legitimate change time (ctime) of the file, (-1L) for mtime only or 
    *   (-2L) for newest of ctime/mtime.
    * 

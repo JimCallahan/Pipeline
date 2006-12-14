@@ -1,6 +1,8 @@
-// $Id: MultiEnumParam.java,v 1.2 2006/12/10 22:52:54 jesse Exp $
+// $Id: MultiEnumParam.java,v 1.3 2006/12/14 19:01:31 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 
