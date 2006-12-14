@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.3 2006/12/12 00:06:45 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.4 2006/12/14 19:48:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -216,6 +216,7 @@ class JQueueJobsDialog
 	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 	
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+	scroll.getVerticalScrollBar().setUnitIncrement(23);
       }
 	
       super.initUI("Queue Jobs Special:", scroll, "Submit", "Reset", null, "Cancel");
