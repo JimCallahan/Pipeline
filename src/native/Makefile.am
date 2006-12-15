@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = no-dependencies
+
 
 dsodir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@
 
@@ -18,8 +20,22 @@ libNative_so_SOURCES = \
 libNative_so_LDADD = \
   @JNI_LDADD@
 
+
+if IS_MAC_OS
+
+libNative_so_CXXFLAGS = \
+  -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+
+libNative_so_LDFLAGS  = \
+  -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 \
+  @JNI_LDFLAGS@
+
+else 
+
 libNative_so_LDFLAGS = \
   @JNI_LDFLAGS@
+
+endif
 
 
 EXTRA_DIST = \

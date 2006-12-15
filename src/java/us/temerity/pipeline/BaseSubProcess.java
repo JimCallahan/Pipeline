@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.15 2006/11/23 13:37:45 jim Exp $
+// $Id: BaseSubProcess.java,v 1.16 2006/12/15 23:49:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -156,11 +156,6 @@ class BaseSubProcess
 	
 	if(user != null) {
 	  String plrun = ("/" + PackageInfo.sOsType + "/sbin/plrun");
-	  switch(PackageInfo.sArchType) {
-	  case G5:
-	    plrun = ("/" + PackageInfo.sOsType + "/G5/sbin/plrun");
-	  }
-  
 	  switch(PackageInfo.sOsType) {
 	  case Unix:
 	  case MacOS:
