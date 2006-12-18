@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasContainingReq.java,v 1.1 2006/10/18 23:32:36 jim Exp $
+// $Id: NodeGetWorkingAreasContainingReq.java,v 1.2 2006/12/18 08:00:55 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   C H E C K E D - I N   V E R S I O N   I D S   R E Q                  */
+/*   N O D E   G E T   W O R K I N G   A R E A S   C O N T A I N I N G   R E Q              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
