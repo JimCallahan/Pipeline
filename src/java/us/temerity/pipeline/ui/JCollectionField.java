@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.13 2006/07/02 00:27:49 jim Exp $
+// $Id: JCollectionField.java,v 1.14 2006/12/19 03:11:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -227,7 +227,9 @@ class JCollectionField
    int idx
   ) 
   {
-    assert(idx < pValues.size());
+    if(idx >= pValues.size())
+      throw new IllegalArgumentException
+	("The index (" + idx + ") was not valid!");
     pSelectedIdx = idx;
 
     if(pSelectedIdx >= 0) 
