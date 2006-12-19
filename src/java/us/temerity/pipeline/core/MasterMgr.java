@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.183 2006/12/14 19:47:38 jim Exp $
+// $Id: MasterMgr.java,v 1.184 2006/12/19 01:28:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13647,8 +13647,8 @@ class MasterMgr
       case Identical:
       case NeedsCheckOut:
 	{
-	  boolean workEqBase   = true;
-	  boolean workEqLatest = true;
+	  boolean workEqBase   = work.identicalLinks(base);
+	  boolean workEqLatest = work.identicalLinks(latest);
 	  if(!workIsLocked) {
 	    for(LinkMod link : work.getSources()) {
 	      String lname = link.getName(); 
@@ -13921,10 +13921,10 @@ class MasterMgr
 	       anyNeedsCheckOutFs || anyModifiedFs || anyConflictedFs)
 	      throw new IllegalStateException(); 
 
-	    /* the work and base version have the same set of links 
+	    /* the work and latest version have the same set of links 
 		 because (linkState == Identical) */
 	    if(!workIsLocked) {
-	      for(LinkVersion link : base.getSources()) {
+	      for(LinkVersion link : latest.getSources()) {
 		NodeDetails ldetails = table.get(link.getName()).getDetails();
 		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 		
