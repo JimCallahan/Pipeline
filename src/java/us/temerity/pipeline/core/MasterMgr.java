@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.184 2006/12/19 01:28:25 jim Exp $
+// $Id: MasterMgr.java,v 1.185 2006/12/19 02:59:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13958,6 +13958,17 @@ class MasterMgr
 		overallNodeState = OverallNodeState.Identical;
 	    }
 	  }
+	}
+      }
+
+      /* if the node is modified, don't ignore any timestamps from upstream files */ 
+      switch(overallNodeState) {
+      case Modified:
+      case ModifiedLinks:
+      case Conflicted:
+	for(LinkMod link : work.getSources()) {
+	  String lname = link.getName(); 
+	  nonIgnoredSources.add(lname);
 	}
       }
 
