@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.14 2006/12/19 03:11:48 jim Exp $
+// $Id: JCollectionField.java,v 1.15 2006/12/20 15:12:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -166,6 +166,10 @@ class JCollectionField
    Collection<String> values
   ) 
   {
+    if(values.isEmpty()) 
+      throw new IllegalArgumentException
+	("At least one value must be supplied!");
+
     pValues = new ArrayList<String>(values);
 
     pPopup.removeAll();
