@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.42 2006/12/05 19:55:40 jim Exp $
+// $Id: QueueMgrServer.java,v 1.43 2006/12/20 15:11:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -113,7 +113,7 @@ class QueueMgrServer
 
 	{
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Collector...");
 	  LogMgr.getInstance().flush();
 
@@ -122,7 +122,7 @@ class QueueMgrServer
 
 	{
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
 	     "Waiting on Dispatcher...");
 	  LogMgr.getInstance().flush();
 
