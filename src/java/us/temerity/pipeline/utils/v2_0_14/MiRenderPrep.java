@@ -1,4 +1,4 @@
-// $Id: MiRenderPrep.java,v 1.3 2006/07/06 18:44:06 jim Exp $
+// $Id: MiRenderPrep.java,v 1.4 2006/12/20 15:10:44 jim Exp $
 
 package us.temerity.pipeline.utils.v2_0_14;
 
@@ -570,8 +570,7 @@ public class MiRenderPrep
     ArrayList<String> output;
     BaseAction action;
     try {
-      FileReader in = new FileReader(fileName);
-      GlueDecoderImpl decode = new GlueDecoderImpl(in);
+      GlueDecoderImpl decode = new GlueDecoderImpl(new File(fileName));
 
       TreeMap<String, Object> fromGlue = (TreeMap<String, Object>) decode.getObject();
       agenda = (ActionAgenda) fromGlue.get("agenda");
@@ -580,9 +579,6 @@ public class MiRenderPrep
     }
     catch(GlueException e) {
       throw new PipelineException("Error decoding Glue file\n" + e.getMessage());
-    }
-    catch(FileNotFoundException e) {
-      throw new PipelineException("Cannot find Glue file\n" + e.getMessage());
     }
 
     MiRenderPrep object = new MiRenderPrep(output, agenda, action);

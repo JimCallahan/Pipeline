@@ -1,10 +1,11 @@
-// $Id: AdminPrivileges.java,v 1.4 2006/11/06 00:58:33 jim Exp $
+// $Id: AdminPrivileges.java,v 1.5 2006/12/20 15:10:43 jim Exp $
  
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -560,10 +561,8 @@ class AdminPrivileges
 	 "Reading Work Groups.");
       
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	pWorkGroups = (WorkGroups) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -662,10 +661,8 @@ class AdminPrivileges
 	 "Reading Administrative Privileges.");
       
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	pPrivileges = (TreeMap<String,Privileges>) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log

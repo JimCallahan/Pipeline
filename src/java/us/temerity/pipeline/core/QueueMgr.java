@@ -1,9 +1,10 @@
-// $Id: QueueMgr.java,v 1.82 2006/12/14 05:25:51 jim Exp $
+// $Id: QueueMgr.java,v 1.83 2006/12/20 15:10:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.core.exts.*;
@@ -5590,10 +5591,8 @@ class QueueMgr
 
 	ArrayList<LicenseKey> keys = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file); 
 	  keys = (ArrayList<LicenseKey>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -5695,10 +5694,8 @@ class QueueMgr
 
 	ArrayList<SelectionKey> keys = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  keys = (ArrayList<SelectionKey>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -5800,10 +5797,8 @@ class QueueMgr
 
 	ArrayList<SelectionGroup> groups = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  groups = (ArrayList<SelectionGroup>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -5905,10 +5900,8 @@ class QueueMgr
 
 	ArrayList<SelectionSchedule> schedules = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  schedules = (ArrayList<SelectionSchedule>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -6010,10 +6003,8 @@ class QueueMgr
 
 	TreeMap<String,QueueExtensionConfig> exts = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  exts = (TreeMap<String,QueueExtensionConfig>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -6116,10 +6107,8 @@ class QueueMgr
 
 	TreeMap<String,QueueHostInfo> infos = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  infos = (TreeMap<String,QueueHostInfo>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -6342,10 +6331,8 @@ class QueueMgr
 	  
 	ResourceSampleCache cache = null; 
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  cache = (ResourceSampleCache) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -6535,10 +6522,8 @@ class QueueMgr
 	
 	QueueJob job = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  job = (QueueJob) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -6705,10 +6690,8 @@ class QueueMgr
 	
 	QueueJobInfo info = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  info = (QueueJobInfo) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -6870,10 +6853,8 @@ class QueueMgr
 	
 	QueueJobGroup group = null; 
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  group = (QueueJobGroup) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log

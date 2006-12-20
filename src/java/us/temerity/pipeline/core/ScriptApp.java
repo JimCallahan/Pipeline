@@ -1,9 +1,10 @@
-// $Id: ScriptApp.java,v 1.65 2006/12/01 18:33:41 jim Exp $
+// $Id: ScriptApp.java,v 1.66 2006/12/20 15:10:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.toolset.*;
 
 import java.io.*; 

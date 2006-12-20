@@ -1,10 +1,11 @@
-// $Id: JobMgr.java,v 1.33 2006/11/22 09:08:01 jim Exp $
+// $Id: JobMgr.java,v 1.34 2006/12/20 15:10:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -359,10 +360,8 @@ class JobMgr
 	     "Reading Job Results: " + req.getJobID());
 	  
 	  try {
-	    FileReader in = new FileReader(file);
-	    GlueDecoder gd = new GlueDecoderImpl(in);
+	    GlueDecoder gd = new GlueDecoderImpl(file);
 	    results = (QueueJobResults) gd.getObject();
-	    in.close();
 	  }
 	  catch(Exception ex) {
 	    LogMgr.getInstance().log
@@ -598,10 +597,8 @@ class JobMgr
 	     "Reading Job Execution Details: " + req.getJobID());
 	  
 	  try {
-	    FileReader in = new FileReader(file);
-	    GlueDecoder gd = new GlueDecoderImpl(in);
+	    GlueDecoder gd = new GlueDecoderImpl(file);
 	    details = (SubProcessExecDetails) gd.getObject();
-	    in.close();
 	  }
 	  catch(Exception ex) {
 	    LogMgr.getInstance().log

@@ -1,4 +1,4 @@
-// $Id: BaseUtilityApp.java,v 1.2 2006/11/22 09:08:01 jim Exp $
+// $Id: BaseUtilityApp.java,v 1.3 2006/12/20 15:10:44 jim Exp $
 
 package us.temerity.pipeline.utils;  
 
@@ -101,8 +101,7 @@ class BaseUtilityApp
 
     String file = args[0];
     try {
-      FileReader in = new FileReader(file);
-      GlueDecoderImpl decode = new GlueDecoderImpl(in);
+      GlueDecoderImpl decode = new GlueDecoderImpl(file);
 
       TreeMap<String, Object> fromGlue = (TreeMap<String, Object>) decode.getObject();
       pAction = (BaseAction) fromGlue.get("Action");
@@ -111,11 +110,6 @@ class BaseUtilityApp
     catch(GlueException e) {
       throw new PipelineException
 	("Unable to parse the input GLUE file (" + file + "):\n" + 
-	 e.getMessage());
-    }
-    catch(FileNotFoundException e) {
-      throw new PipelineException
-	("Cannot find the input GLUE file (" +  file + "):\n" + 
 	 e.getMessage());
     }
   }

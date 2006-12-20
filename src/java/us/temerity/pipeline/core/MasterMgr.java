@@ -1,9 +1,10 @@
-// $Id: MasterMgr.java,v 1.185 2006/12/19 02:59:38 jim Exp $
+// $Id: MasterMgr.java,v 1.186 2006/12/20 15:10:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.core.exts.*;
@@ -15616,10 +15617,8 @@ class MasterMgr
 
       ArchiveVolume archive = null;
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	archive = (ArchiveVolume) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -15717,11 +15716,9 @@ class MasterMgr
 	 "Reading Archived In Cache...");
 
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	pArchivedIn.putAll
 	  ((TreeMap<String,TreeMap<VersionID,TreeSet<String>>>) gd.getObject());
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -15818,14 +15815,11 @@ class MasterMgr
 	 "Reading Archived On Cache...");
 
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	
 	TreeMap<String,Long> archivedOn = (TreeMap<String,Long>) gd.getObject();
 	for(String aname : archivedOn.keySet()) 
 	  pArchivedOn.put(aname, new Date(archivedOn.get(aname)));	
-
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -15926,8 +15920,7 @@ class MasterMgr
 	 "Reading Restored On Cache...");
 
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 
 	TreeMap<String,TreeSet<Long>> restoredOn = 
 	  (TreeMap<String,TreeSet<Long>>) gd.getObject();
@@ -15938,8 +15931,6 @@ class MasterMgr
 	  for(Long stamp : restoredOn.get(aname)) 
 	    stamps.add(new Date(stamp));
 	}
-
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -16032,10 +16023,8 @@ class MasterMgr
 	 "Reading Offlined Cache...");
 
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	pOfflined.putAll((TreeMap<String,TreeSet<VersionID>>) gd.getObject());
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -16132,10 +16121,8 @@ class MasterMgr
 
 	TreeMap<String,TreeMap<VersionID,RestoreRequest>> requests = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  requests = (TreeMap<String,TreeMap<VersionID,RestoreRequest>>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -16233,10 +16220,8 @@ class MasterMgr
 	   "Reading Default Toolset.");
 
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  pDefaultToolset = (String) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -16333,10 +16318,8 @@ class MasterMgr
 
 	TreeSet<String> tsets = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  tsets = (TreeSet<String>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -16462,10 +16445,8 @@ class MasterMgr
 
       Toolset tset = null;
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	tset = (Toolset) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -16604,10 +16585,8 @@ class MasterMgr
 
       PackageVersion pkg = null;
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	pkg = (PackageVersion) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -16709,10 +16688,8 @@ class MasterMgr
 
 	TreeMap<String,MasterExtensionConfig> exts = null;
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  exts = (TreeMap<String,MasterExtensionConfig>) gd.getObject();
-	  in.close();
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -16889,10 +16866,8 @@ class MasterMgr
 
       PluginMenuLayout layout = null;
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	layout = (PluginMenuLayout) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -17055,8 +17030,7 @@ class MasterMgr
 
       PluginSet plugins = null;
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	Object data = gd.getObject();
 
 	if(data instanceof PluginSet) 
@@ -17065,8 +17039,6 @@ class MasterMgr
 	  /* backward compatibility for GLUE files written before PluginSet existed */ 
 	  plugins = new PluginSet((DoubleMap<String,String,TreeSet<VersionID>>) data);
 	}
-
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -17214,10 +17186,8 @@ class MasterMgr
 
       TreeSet<SuffixEditor> editors = null;
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	editors = (TreeSet<SuffixEditor>) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -17322,10 +17292,8 @@ class MasterMgr
 	 "Reading Next IDs.");
       
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file);
 	TreeMap<String,Long> table = (TreeMap<String,Long>) gd.getObject();
-	in.close();
 
 	synchronized(pQueueSubmitLock) {
 	  pNextJobID      = table.get("JobID");
@@ -17472,10 +17440,8 @@ class MasterMgr
 
       NodeVersion vsn = null;
       try {
-	FileReader in = new FileReader(files[wk]);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(files[wk]);
 	vsn = (NodeVersion) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -17618,10 +17584,8 @@ class MasterMgr
 	   "Reading Working Version: " + id);
 
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file); 
 	  NodeMod mod = (NodeMod) gd.getObject();
-	  in.close();
 	  
 	  return mod;
 	}
@@ -17639,10 +17603,8 @@ class MasterMgr
 
 	    NodeMod mod = null;
 	    try {
-	      FileReader in = new FileReader(backup);
-	      GlueDecoder gd = new GlueDecoderImpl(in);
+	      GlueDecoder gd = new GlueDecoderImpl(backup);
 	      mod = (NodeMod) gd.getObject();
-	      in.close();
 	    }
 	    catch(Exception ex2) {
 	      LogMgr.getInstance().log
@@ -17810,10 +17772,8 @@ class MasterMgr
 	   "Reading Downstream Links: " + name);
 
 	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  GlueDecoder gd = new GlueDecoderImpl(file);
 	  DownstreamLinks links = (DownstreamLinks) gd.getObject();
-	  in.close();
 	  
 	  return links;
 	}

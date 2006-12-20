@@ -1,4 +1,4 @@
-// $Id: GlueDecoderImpl.java,v 1.3 2006/05/07 21:30:08 jim Exp $
+// $Id: GlueDecoderImpl.java,v 1.4 2006/12/20 15:10:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,6 +36,9 @@ class GlueDecoderImpl
    * 
    * @param text 
    *   The Glue format text to be decoded.
+   * 
+   * @throws GlueException 
+   *   If unable to decode the string.
    */
   public 
   GlueDecoderImpl
@@ -52,7 +55,7 @@ class GlueDecoderImpl
       GlueParser parser = new GlueParser(in);
       pRoot = parser.Decode(this, pState);
     }
-    catch(ParseException ex) {
+    catch(Exception ex) {
       throw new GlueException(ex);
     }
     finally {
@@ -65,6 +68,9 @@ class GlueDecoderImpl
    * 
    * @param stream 
    *   The input stream of bytes containing the Glue text to be decoded.
+   * 
+   * @throws GlueException 
+   *   If unable to decode the stream.
    */
   public 
   GlueDecoderImpl
@@ -76,10 +82,10 @@ class GlueDecoderImpl
     pState = new GlueParserState();
 
     try {
-      GlueParser parser = new GlueParser(stream);
+      GlueParser parser = new GlueParser(stream, "UTF-8");
       pRoot = parser.Decode(this, pState);
     }
-    catch(ParseException ex) {
+    catch(Exception ex) {
       throw new GlueException(ex);
     }
     finally {
@@ -93,11 +99,57 @@ class GlueDecoderImpl
   }
 
   /** 
+   * Decode objects read from a file containing Glue text.
+   * 
+   * @param file 
+   *   The file to read. 
+   * 
+   * @throws GlueException 
+   *   If unable to decode the file.
+   */
+  public 
+  GlueDecoderImpl
+  (
+   File file
+  ) 
+    throws GlueException
+  {
+    pState = new GlueParserState();
+
+    try {
+      FileInputStream in = new FileInputStream(file);
+
+      try {
+	GlueParser parser = new GlueParser(in, "UTF-8");
+	pRoot = parser.Decode(this, pState);
+      }
+      catch(ParseException ex) {
+	throw new GlueException(ex);
+      }
+      finally {
+	in.close();  
+      }
+    }
+    catch(IOException ex) {
+      throw new GlueException(ex);
+    }
+  }
+
+  /** 
    * Decode objects read from a character stream containing Glue text.
    * 
    * @param reader 
    *   The character stream reader providing the Glue text to be decoded.
+   * 
+   * @throws GlueException 
+   *   If unable to decode the text.
+   * 
+   * @deprecated 
+   *   This form does not property handly UTF-8 encoded GLUE files.  Use the constructor
+   *   which takes a {@link File} or {@link InputStream} argument instead when reading 
+   *   GLUE files.
    */
+  @Deprecated
   public 
   GlueDecoderImpl
   (
@@ -106,7 +158,7 @@ class GlueDecoderImpl
     throws GlueException
   {
     pState = new GlueParserState();
-
+    
     try {
       GlueParser parser = new GlueParser(reader);
       pRoot = parser.Decode(this, pState);

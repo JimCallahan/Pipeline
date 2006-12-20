@@ -1,9 +1,10 @@
-// $Id: NodeTree.java,v 1.2 2006/11/12 08:57:24 jim Exp $
+// $Id: NodeTree.java,v 1.3 2006/12/20 15:10:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -1005,10 +1006,8 @@ class NodeTree
 	 "Reading Node Tree Cache...");
       
       try {
-	FileReader in = new FileReader(file);
-	GlueDecoder gd = new GlueDecoderImpl(in);
+	GlueDecoder gd = new GlueDecoderImpl(file); 
 	pNodeTreeRoot = (NodeTreeEntry) gd.getObject();
-	in.close();
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
