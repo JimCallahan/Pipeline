@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.15 2006/05/07 19:58:06 jim Exp $
+// $Id: PackageInfo.hh,v 1.16 2006/12/21 10:37:41 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -59,6 +59,11 @@ public:
    */ 
   static const int sPipelineGID;
 
+
+  /**
+   * The OS specific home directory.
+   */ 
+  static const char* sNativeHomeDir; 
 
 
   /** 	

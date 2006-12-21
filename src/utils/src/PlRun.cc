@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.6 2004/08/29 09:18:24 jim Exp $
+// $Id: PlRun.cc,v 1.7 2006/12/21 10:37:41 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -98,7 +98,7 @@ main
     if(setuid(uid) != 0) {
       switch(errno) {
       case EPERM:
-	sprintf(msg, "unable to substitute user (%s)!", uid);
+	sprintf(msg, "unable to substitute to user with UID (%s)!", uidStr);
 	FB::error(msg);
 	
       default:
@@ -119,6 +119,15 @@ main
       }
     }
 
+    char* homedir = new char[strlen(PackageInfo::sNativeHomeDir) + 7];
+    strcpy(homedir, "HOME="); 
+    strcat(homedir, PackageInfo::sNativeHomeDir);
+    strcat(homedir, "/");
+
+    char* phomedir = new char[strlen(homedir) + strlen("pipeline") + 1];
+    strcpy(phomedir, homedir);
+    strcat(phomedir, "pipeline");
+
     envp2 = new char*[cnt+1];
     {
       int wk = 0;
@@ -130,12 +139,12 @@ main
 	}
 	else if(strcmp(*p, "USER=pipeline") == 0) {
 	  envp2[wk] = new char[strlen(username) + 6];
-	  strncpy(envp2[wk], *p, 5);
+	  strcpy(envp2[wk], "USER=");
 	  strcat(envp2[wk], username);
 	}
-	else if(strcmp(*p, "HOME=/home/pipeline") == 0) {
-	  envp2[wk] = new char[strlen(username) + 12];
-	  strncpy(envp2[wk], *p, 11);
+	else if(strcmp(*p, phomedir) == 0) {
+	  envp2[wk] = new char[strlen(homedir) + strlen(username) + 1];
+	  strcpy(envp2[wk], homedir);
 	  strcat(envp2[wk], username);
 	}
 	else {
@@ -145,6 +154,8 @@ main
 	wk++;
 	p++;
       }
+
+      envp2[cnt] = NULL;
     }
   }
   assert(envp2);

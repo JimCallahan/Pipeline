@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.1.7)   
+AM_INIT_AUTOMAKE(Pipeline, 2.1.7a)
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -760,6 +760,27 @@ then
 fi 
 
 AM_CONDITIONAL(HAS_WINDOWS, test x$has_windows = xtrue)
+
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Native Home Directory])
+
+AC_SUBST(NATIVE_HOMEDIR)
+
+case "$NATIVE_OSTYPE" in 
+  (Unix)  
+    NATIVE_HOMEDIR=$HOMEDIR;;
+
+  (MacOS) 
+    NATIVE_HOMEDIR=$MAC_HOMEDIR;;
+
+  (Windows) 
+    NATIVE_HOMEDIR=$WIN_HOMEDIR;;
+esac
+
+AC_MSG_RESULT([$HOMEDIR])
 
 
 
