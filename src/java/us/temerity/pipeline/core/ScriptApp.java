@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.66 2006/12/20 15:10:44 jim Exp $
+// $Id: ScriptApp.java,v 1.67 2006/12/31 20:44:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -322,6 +322,8 @@ class ScriptApp
        "      --remove-files=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
        "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+       "      --views-containing=node-name\n" + 
+       "      --views-editing=node-name\n" + 
        "\n" +
        "  Checked-In Node Versions\n" +
        "    checked-in\n" +
@@ -2801,7 +2803,7 @@ class ScriptApp
     }
 
     /* launch an editor for each file sequence */ 
-    ArrayList<SubProcessLight> procs = new ArrayList<SubProcessLight>();
+    TreeMap<Long,SubProcessLight> procs = new TreeMap<Long,SubProcessLight>();
     for(FileSeq fs : editSeqs) {
       editor.makeWorkingDirs(dir);
 
@@ -2809,7 +2811,10 @@ class ScriptApp
 	(LogMgr.Kind.Ops, LogMgr.Level.Info, 
 	 "Editing: " + fs + " with " + 
 	 editor.getName() + " (v" + editor.getVersionID() + ")");
-      procs.add(editor.launch(fs, env, dir));
+      
+      SubProcessLight proc = editor.launch(fs, env, dir);
+      Long editID = client.editingStarted(nodeID, editor);
+      procs.put(editID, proc);
     }
     LogMgr.getInstance().flush();
       
@@ -2819,7 +2824,8 @@ class ScriptApp
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "\n" + 
 	 "Waiting for Editor(s) to exit...");
-      for(SubProcessLight proc : procs) {
+      for(Long editID : procs.keySet()) {
+	SubProcessLight proc = procs.get(editID); 
 	try {
 	  proc.join();
 	  
@@ -2840,6 +2846,28 @@ class ScriptApp
 	    (LogMgr.Kind.Sub, LogMgr.Level.Severe, 
 	     "Interrupted while waiting on an Editor Process to exit!");
 	}
+	finally {
+	  client.editingFinished(editID);
+	}
+      }
+    }
+
+    /* give the Editor threads a chance to start... */ 
+    else {
+      for(Long editID : procs.keySet()) {
+	SubProcessLight proc = procs.get(editID); 
+	while(true) {
+	  if(proc.hasStarted()) 
+	    break;
+
+	  try {
+	    Thread.sleep(500);
+	  }
+	  catch(InterruptedException ex) {
+	  }
+	}
+
+	client.editingFinished(editID);
       }
     }
   }  
@@ -3031,7 +3059,50 @@ class ScriptApp
     return frameIndices;
   }
 
-
+  /**
+   * Print the working area views containing the given node. 
+   */ 
+  public void 
+  viewsContaining
+  (
+   String name, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  { 
+    TreeMap<String,TreeSet<String>> areas = client.getWorkingAreasContaining(name);
+    for(String author : areas.keySet()) {
+      for(String view : areas.get(author)) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   author + "|" + view); 
+      }
+    }
+    LogMgr.getInstance().flush();   
+  }  
+  
+  /**
+   * Print the working area views currently editing the given node. 
+   */ 
+  public void 
+  viewsEditing
+  (
+   String name, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  { 
+    TreeMap<String,TreeSet<String>> areas = client.getWorkingAreasEditing(name);
+    for(String author : areas.keySet()) {
+      for(String view : areas.get(author)) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   author + "|" + view); 
+      }
+    }
+    LogMgr.getInstance().flush();   
+  }  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                      */

@@ -284,6 +284,10 @@ ScriptOptsParser
   private CheckOutMode     pCheckOutMode; 
   private CheckOutMethod   pCheckOutMethod; 
 
+  private TreeSet<String>   pEventNames;
+  private TreeSet<String>   pEventUsers;
+  private DateInterval      pEventInterval; 
+
 }
 
 
@@ -1612,6 +1616,8 @@ TOKEN :
 | <WORKING_EDIT:              "--edit">                  : NODE_NAME_SEP
 | <WORKING_SUBMIT_JOBS:       "--submit-jobs">           : NODE_NAME_SEP
 | <WORKING_REMOVE_FILES:      "--remove-files">          : NODE_NAME_SEP
+| <WORKING_VIEWS_CONTAINING:  "--views-containing">      : NODE_NAME_SEP
+| <WORKING_VIEWS_EDITING:     "--views-editing">         : NODE_NAME_SEP
 | <AE37:                      ["\0"]>   
 | <UNKNOWN_OPTION14:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN14:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
@@ -4650,7 +4656,8 @@ WorkingCmds()
      (WorkingGetInfo() | WorkingRegister() | WorkingClone() | WorkingRelease() | 
       WorkingSet() | WorkingLink() | WorkingUnlink() | WorkingAddSecondary() | 
       WorkingRemoveSecondary() | WorkingRename() | WorkingRenumber() | WorkingEdit() | 
-      WorkingSubmitJobs() | WorkingRemoveFiles()) 
+      WorkingSubmitJobs() | WorkingRemoveFiles() | WorkingViewsContaining() | 
+      WorkingViewsEditing())
   {}
 }
 
@@ -5428,6 +5435,38 @@ WorkingRemoveFilesOpts()
 {
   (Author() | View() | Frame() | Index())
   {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingViewsContaining() 
+  throws PipelineException : 
+{
+  String name = null;
+}
+{
+  <WORKING_VIEWS_CONTAINING> EQ() name=NodeName() AE()
+  {
+    pApp.viewsContaining(name, pMasterMgrClient); 
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingViewsEditing() 
+  throws PipelineException : 
+{
+  String name = null;
+}
+{
+  <WORKING_VIEWS_EDITING> EQ() name=NodeName() AE()
+  {
+    pApp.viewsEditing(name, pMasterMgrClient); 
+  }
 }
 
 

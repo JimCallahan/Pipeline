@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.51 2006/12/12 00:06:45 jim Exp $
+// $Id: UIMaster.java,v 1.52 2006/12/31 20:44:54 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -423,7 +423,7 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Rebuild the Change Owner|View menu to for the working areas containing the given node.
+   * Rebuild the Views Containing menu for the given node.
    *
    * @param channel
    *   The index of the update channel.
@@ -438,7 +438,7 @@ class UIMaster
    *   The listener for menu selection events.
    */ 
   public void 
-  rebuildWorkingAreaMenu
+  rebuildWorkingAreaContainingMenu
   ( 
    int channel, 
    String name,
@@ -446,15 +446,14 @@ class UIMaster
    ActionListener listener
   ) 
   {
-    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
-    ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>();
-    
-    rebuildWorkingAreaMenuCache(channel, name, views, authors); 
+    TreeMap<String,TreeSet<String>> views = lookupWorkingAreaContainingMenus(channel, name); 
+    ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
+
     rebuildWorkingAreaMenuSingle(menu, listener, views, authors);    
   }
 
   /**
-   * Rebuild the Change Owner|View menu to for the working areas containing the given node.
+   * Rebuild the Views Containing menu for the given node.
    *
    * @param channel
    *   The index of the update channel.
@@ -469,7 +468,7 @@ class UIMaster
    *   The listener for menu selection events.
    */ 
   public void 
-  rebuildWorkingAreaMenus
+  rebuildWorkingAreaContainingMenus
   ( 
    int channel, 
    String name,
@@ -477,18 +476,78 @@ class UIMaster
    ActionListener listener
   ) 
   {
-    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
-    ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>();
+    TreeMap<String,TreeSet<String>> views = lookupWorkingAreaContainingMenus(channel, name);
+    ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
     
-    rebuildWorkingAreaMenuCache(channel, name, views, authors); 
-
     int wk;
     for(wk=0; wk<menus.length; wk++) 
       rebuildWorkingAreaMenuSingle(menus[wk], listener, views, authors);    
   }
 
   /**
-   * Recompute the working area menus for a given node. 
+   * Rebuild the Views Editing menu for the given node.
+   *
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void 
+  rebuildWorkingAreaEditingMenu
+  ( 
+   int channel, 
+   String name,
+   JMenu menu,
+   ActionListener listener
+  ) 
+  {
+    TreeMap<String,TreeSet<String>> views = lookupWorkingAreaEditingMenus(channel, name); 
+    ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
+
+    rebuildWorkingAreaMenuSingle(menu, listener, views, authors);    
+  }
+
+  /**
+   * Rebuild the Views Editing menu to for the given node.
+   *
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param menus
+   *   The menus to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void 
+  rebuildWorkingAreaEditingMenus
+  ( 
+   int channel, 
+   String name,
+   JMenu menus[],
+   ActionListener listener
+  ) 
+  {
+    TreeMap<String,TreeSet<String>> views = lookupWorkingAreaEditingMenus(channel, name); 
+    ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
+    
+    int wk;
+    for(wk=0; wk<menus.length; wk++) 
+      rebuildWorkingAreaMenuSingle(menus[wk], listener, views, authors);    
+  }
+
+  /**
+   * Lookup the working areas containing a given node. 
    * 
    * @param channel
    *   The index of the update channel.
@@ -496,38 +555,93 @@ class UIMaster
    * @param name
    *   The fully resolved name of the node. 
    * 
+   * @return
+   *   The names of the working area views indexed by author name.
+   */ 
+  private TreeMap<String,TreeSet<String>>
+  lookupWorkingAreaContainingMenus
+  (
+   int channel, 
+   String name
+  )
+  {
+    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+    
+    if(name != null) {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginSilentPanelOp(channel)) {
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient(channel);
+	  views.putAll(client.getWorkingAreasContaining(name));
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	}
+	finally {
+	  master.endSilentPanelOp(channel);
+	}
+      }
+    }
+
+    return views;
+  }
+
+  /**
+   * Lookup the working areas currently editing a given node. 
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @return
+   *   The names of the working area views indexed by author name.
+   */ 
+  private TreeMap<String,TreeSet<String>>
+  lookupWorkingAreaEditingMenus
+  (
+   int channel, 
+   String name
+  )
+  {
+    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+    
+    if(name != null) {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginSilentPanelOp(channel)) {
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient(channel);
+	  views.putAll(client.getWorkingAreasEditing(name));
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	}
+	finally {
+	  master.endSilentPanelOp(channel);
+	}
+      }
+    }
+
+    return views;
+  }
+
+  /**
+   * Group the working area views into reasonable submenus.
+   * 
    * @param views
    *   The names of the working area views indexed by author name.
    * 
-   * @param authors
+   * @return
    *   The names of the working area authors grouped by submenu.
    */ 
-  private void 
-  rebuildWorkingAreaMenuCache
+  private ArrayList<TreeSet<String>> 
+  groupWorkingAreaSubmenus
   (
-   int channel, 
-   String name, 
-   TreeMap<String,TreeSet<String>> views, 
-   ArrayList<TreeSet<String>> authors
-  )
+   TreeMap<String,TreeSet<String>> views
+  ) 
   {
-    if(name == null) 
-      return;
-
-    UIMaster master = UIMaster.getInstance();
-    if(master.beginSilentPanelOp(channel)) {
-      try {
-	MasterMgrClient client = master.getMasterMgrClient(channel);
-	views.putAll(client.getWorkingAreasContaining(name));
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-	return;
-      }
-      finally {
-	master.endSilentPanelOp(channel);
-      }
-    }
+    ArrayList<TreeSet<String>> authors = new ArrayList<TreeSet<String>>();
 
     int numAuthors = views.size();
     int maxPerMenu = 12;
@@ -557,6 +671,8 @@ class UIMaster
 	  cnt = 0;
       }
     }
+
+    return authors;
   }
 
   /**
@@ -3903,12 +4019,14 @@ class UIMaster
     public void 
     run() 
     {
+      MasterMgrClient client = null;
       SubProcessLight proc = null;
+      Long editID = null;
       {
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp(pChannel, "Launching Node Editor...")) {
 	  try {
-	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	    client = master.getMasterMgrClient(pChannel);
 
 	    NodeMod mod = null;
 	    if(pNodeCommon instanceof NodeMod) 
@@ -3983,6 +4101,11 @@ class UIMaster
 	    /* start the editor */ 
 	    editor.makeWorkingDirs(dir);
 	    proc = editor.launch(fseq, env, dir);
+
+	    if(mod != null) {
+	      NodeID nodeID = new NodeID(pAuthorName, pViewName, pNodeCommon.getName());
+	      editID = client.editingStarted(nodeID, editor);
+	    }
 	  }
 	  catch(IllegalArgumentException ex) {
 	    master.showErrorDialog("Error:", ex.getMessage());	    
@@ -4003,8 +4126,11 @@ class UIMaster
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
 	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+
+	    if((client != null) && (editID != null))
+	      client.editingFinished(editID);
 	  }
-	  catch(InterruptedException ex) {
+	  catch(Exception ex) {
 	    master.showErrorDialog(ex);
 	  }
 	}

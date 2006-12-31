@@ -1,9 +1,10 @@
-// $Id: MasterMgrServer.java,v 1.71 2006/12/05 19:55:40 jim Exp $
+// $Id: MasterMgrServer.java,v 1.72 2006/12/31 20:44:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.core.exts.*;
 
 import java.io.*;
@@ -135,6 +136,9 @@ class MasterMgrServer
       NodeGCTask nodeGC = new NodeGCTask();
       nodeGC.start();
 
+      EventWriterTask ewriter = new EventWriterTask();
+      ewriter.start();
+
 //    LicenseTask lic = new LicenseTask();
 //    lic.start();
 
@@ -154,6 +158,15 @@ class MasterMgrServer
       try {
 // 	lic.interrupt();
 // 	lic.join();
+
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Event Writer...");
+	  LogMgr.getInstance().flush();
+
+	  ewriter.join();
+	}
 
 	nodeGC.interrupt();
 	nodeGC.join();
@@ -241,6 +254,7 @@ class MasterMgrServer
     {
       super("MasterMgrServer:HandlerTask");
       pChannel = channel;
+      pRunningEditorIDs = new TreeSet<Long>(); 
     }
 
     public void 
@@ -1183,6 +1197,54 @@ class MasterMgrServer
 	      break;
 
 
+	    /*-- NODE EVENTS ---------------------------------------------------------------*/
+	    case EditingStarted: 
+	      {
+		NodeEditingStartedReq req = (NodeEditingStartedReq) objIn.readObject();
+
+		TaskTimer timer = new TaskTimer(); 
+		try {
+		  InetAddress addr = (InetAddress) pSocket.getInetAddress();
+		  String hostname = addr.getCanonicalHostName();
+
+		  EditedNodeEvent event = req.getEvent(hostname);
+		  Long editID = pMasterMgr.editingStarted(timer, event); 
+		  pRunningEditorIDs.add(editID); 
+		  
+		  objOut.writeObject(new NodeEditingStartedRsp(timer, editID)); 
+		}
+		catch(Exception ex) {
+		  objOut.writeObject(new FailureRsp(timer, ex.getMessage()));
+		}
+
+		objOut.flush(); 
+	      }
+	      break;    
+
+	    case EditingFinished: 
+	      {
+		NodeEditingFinishedReq req = (NodeEditingFinishedReq) objIn.readObject();
+
+		TaskTimer timer = new TaskTimer(); 
+		{
+		  Long editID = req.getEditID();
+		  pMasterMgr.editingFinished(timer, editID);
+		  pRunningEditorIDs.remove(editID);
+		}
+		objOut.writeObject(new SuccessRsp(timer)); 
+		objOut.flush(); 
+	      }
+	      break;
+	      
+	    case GetWorkingAreasEditing: 
+	      {
+		NodeGetWorkingAreasEditingReq req = 
+		  (NodeGetWorkingAreasEditingReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getWorkingAreasEditing(req));
+		objOut.flush(); 
+	      }
+	      break;
+	   
 	    /*-- JOBS ----------------------------------------------------------------------*/
 	    case SubmitJobs: 
 	      {
@@ -1449,6 +1511,9 @@ class MasterMgrServer
       finally {
 	closeConnection();
 
+	for(Long editID : pRunningEditorIDs) 
+	  pMasterMgr.editingFinished(new TaskTimer(), editID);
+
 	if(!pShutdown.get()) {
 	  synchronized(pTasks) {
 	    pTasks.remove(this);
@@ -1477,6 +1542,8 @@ class MasterMgrServer
     
     private SocketChannel  pChannel; 
     private Socket         pSocket;
+
+    private TreeSet<Long>  pRunningEditorIDs; 
   }
   
   /**
@@ -1515,6 +1582,47 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Fine,
 	   "Node Garbage Collector Finished.");	
+	LogMgr.getInstance().flush();
+      }
+    }
+  }
+
+  /**
+   * Writes pending events to disk.
+   */
+  private 
+  class EventWriterTask
+    extends Thread
+  {
+    public 
+    EventWriterTask() 
+    {
+      super("MasterMgrServer:EventWriterTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	   "Event Writer Started.");	
+	LogMgr.getInstance().flush();
+
+	while(!pShutdown.get()) {
+	  pMasterMgr.eventWriter();
+	}
+      }
+      catch (Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   "Event Writer Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();
+      }
+      finally {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	   "Event Writer Finished.");	
 	LogMgr.getInstance().flush();
       }
     }

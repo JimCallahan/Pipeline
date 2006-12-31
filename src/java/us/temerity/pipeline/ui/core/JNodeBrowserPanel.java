@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.13 2006/11/22 09:08:01 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.14 2006/12/31 20:44:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,8 +80,11 @@ class JNodeBrowserPanel
       
       pPanelPopup = new JPopupMenu(); 
       
-      pChangeAuthorViewMenu = new JMenu("Change Owner|View");
-      pPanelPopup.add(pChangeAuthorViewMenu);
+      pViewsContainingMenu = new JMenu("Views Containing");
+      pPanelPopup.add(pViewsContainingMenu);
+
+      pViewsEditingMenu = new JMenu("Views Editing");
+      pPanelPopup.add(pViewsEditingMenu);
 
       pPanelPopup.addSeparator();
 
@@ -815,7 +818,10 @@ class JNodeBrowserPanel
 	  }
 	  
 	  UIMaster master = UIMaster.getInstance();
-	  master.rebuildWorkingAreaMenu(pGroupID, sname, pChangeAuthorViewMenu, this);
+	  master.rebuildWorkingAreaContainingMenu
+	    (pGroupID, sname, pViewsContainingMenu, this);
+	  master.rebuildWorkingAreaEditingMenu
+	    (pGroupID, sname, pViewsEditingMenu, this);
 
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
@@ -1046,7 +1052,8 @@ class JNodeBrowserPanel
   /**
    * The dynamic working area submenu.
    */ 
-  private JMenu  pChangeAuthorViewMenu;
+  private JMenu  pViewsContainingMenu;
+  private JMenu  pViewsEditingMenu;
 
   /**
    * The panel layout popup menu items.

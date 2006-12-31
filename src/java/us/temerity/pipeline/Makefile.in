@@ -296,7 +296,7 @@ BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) \
 
      MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
 
-    TASK_SOURCES = $(shell ls $(srcdir)/task/*.java)
+   EVENT_SOURCES = $(shell ls $(srcdir)/event/*.java)
 
       TS_SOURCES = $(shell ls $(srcdir)/toolset/*.java)
 
@@ -308,7 +308,7 @@ BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) \
 
 
      ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) $(MATH_SOURCES) \
-                   $(TASK_SOURCES) $(TS_SOURCES) $(UTIL_SOURCES) $(BUILDER_SOURCS) \
+                   $(EVENT_SOURCES) $(TS_SOURCES) $(UTIL_SOURCES) $(BUILDER_SOURCS) \
                    $(BUILDEXP_SOURCES)
 
     CORE_PARSERS = BatchParser \
@@ -369,7 +369,7 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/math/*.class \
                     us/temerity/pipeline/message/*.class \
-                    us/temerity/pipeline/task/*.class \
+                    us/temerity/pipeline/event/*.class \
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/ui/core/*.class \
@@ -395,7 +395,7 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/math/*.class \
                     us/temerity/pipeline/message/*.class \
-                    us/temerity/pipeline/task/*.class \
+                    us/temerity/pipeline/event/*.class \
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/utils/*.class \
@@ -543,7 +543,7 @@ clean-class:
 	rm -f glue/io/*.class
 	rm -f laf/*.class
 	rm -f message/*.class
-	rm -f task/*.class
+	rm -f event/*.class
 	rm -f toolset/*.class
 	rm -f ui/*.class
 	rm -f ui/core/*.class
@@ -559,7 +559,9 @@ clean-aux:
 	rm -f bootstrap/BootStrapLoader.java
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
-	rm -f glue/io/ParseException.java glue/io/SimpleCharStream.java 
+	rm -f glue/io/ParseException.java 
+	rm -f glue/io/SimpleCharStream.java 
+	rm -f glue/io/JavaCharStream.java 
 	rm -f glue/io/Token.java glue/io/TokenMgrError.java
 	rm -f core/PackageInfo.java core/VerifiedApp.java
 	rm -f ui/core/JUserPrefsDialog.java ui/core/UserPrefs.java

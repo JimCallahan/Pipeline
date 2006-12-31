@@ -974,6 +974,15 @@ Node Versions</a></li>
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
  style="font-style: italic;">end</span>[,...] ...]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#working_--views-containing"><span
+ style="font-weight: bold;">--views-containing</span></a>=<span
+ style="font-style: italic;">node-name</span></span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#working_--views-editing"><span
+ style="font-weight: bold;">--views-editing</span></a>=<span
+ style="font-style: italic;">node-name</span><br>
+          </span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Checked-In_Node_Versions">Checked-In
@@ -4221,7 +4230,32 @@ assciated with the target working node version (<span
 options can be used to select which of the files associated with the
 target node should be deleted.&nbsp; If none of these options are
 specified, all files associated with the
-target node will be regenerated.</div>
+target node will be regenerated.<br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="working_--views-containing"></a>working --views-containing</span>=<span
+ style="font-style: italic;">node-name</span><span
+ style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;"><br>
+List the working areas in (<span style="font-style: italic;">author</span>|<span
+ style="font-style: italic;">view</span>) format which contain a
+working version of the given node (<span style="font-weight: bold;"></span><span
+ style="font-style: italic;">node-name</span>).</div>
+<span style="font-weight: bold;"><br>
+</span><span style="font-weight: bold;"><a
+ name="working_--views-editing"></a>working --views-editing</span><span
+ style="font-weight: bold;"></span>=<span style="font-style: italic;">node-name<br>
+</span>
+<div style="margin-left: 40px;"><br>
+List the working areas in (<span style="font-style: italic;">author</span>|<span
+ style="font-style: italic;">view</span>) format in which an Editor
+plugin is currently being used to edit/view the files associated with a
+working version of the given node (<span style="font-weight: bold;"></span><span
+ style="font-style: italic;">node-name</span>).<br>
+</div>
+</div>
 <h3><a name="Checked-In_Node_Versions"></a>Checked-In Node Versions</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="checked-in_--get-info"></a>checked-in</span>

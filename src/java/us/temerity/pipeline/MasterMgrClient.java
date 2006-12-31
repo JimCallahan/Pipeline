@@ -1,10 +1,11 @@
-// $Id: MasterMgrClient.java,v 1.88 2006/12/14 19:01:31 jim Exp $
+// $Id: MasterMgrClient.java,v 1.89 2006/12/31 20:44:53 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.event.*;
 
 import java.io.*;
 import java.nio.*;
@@ -4918,6 +4919,111 @@ class MasterMgrClient
     
     Object obj = performTransaction(MasterRequest.Evolve, req);
     handleSimpleResponse(obj);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   E V E N T S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Signal that an Editor plugin has started editing files associated with the 
+   * given working version of a node.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param editor 
+   *   The Editor plugin instance. 
+   * 
+   * @return
+   *   A unique ID for the editing session.
+   * 
+   * @throws PipelineException
+   *   If unable to contact the server.
+   */ 
+  public synchronized Long
+  editingStarted
+  (
+   NodeID nodeID,  
+   BaseEditor editor
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeEditingStartedReq req = new NodeEditingStartedReq(nodeID, editor); 
+    
+    Object obj = performTransaction(MasterRequest.EditingStarted, req);
+    if(obj instanceof NodeEditingStartedRsp) {
+      NodeEditingStartedRsp rsp = (NodeEditingStartedRsp) obj;
+      return rsp.getEditID(); 
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+   
+  /**
+   * Signal that an Editor plugin has finished editing files associated with the 
+   * working version of a node.
+   * 
+   * @param editID 
+   *   The unique ID for the editing session.
+   * 
+   * @throws PipelineException
+   *   If unable to contact the server.
+   */ 
+  public synchronized void 
+  editingFinished
+  (
+   Long editID  
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeEditingFinishedReq req = new NodeEditingFinishedReq(editID);  
+    
+    Object obj = performTransaction(MasterRequest.EditingFinished, req);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the table of the working areas in which the given node is currently being 
+   * edited. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The table of working area view names indexed by author user name.  
+   * 
+   * @throws PipelineException
+   *   If unable to determine the working areas.
+   */
+  public synchronized TreeMap<String,TreeSet<String>>
+  getWorkingAreasEditing
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeGetWorkingAreasEditingReq req = new NodeGetWorkingAreasEditingReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetWorkingAreasEditing, req);
+    if(obj instanceof NodeGetWorkingAreasRsp) {
+      NodeGetWorkingAreasRsp rsp = (NodeGetWorkingAreasRsp) obj;
+      return rsp.getTable();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
 

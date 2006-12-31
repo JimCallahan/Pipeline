@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.69 2006/12/13 09:42:06 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.70 2006/12/31 20:44:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -214,8 +214,10 @@ class JNodeViewerPanel
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
 
-      pChangeAuthorViewMenus = new JMenu[5];
-      pEditWithMenus         = new JMenu[4];
+      pViewsContainingMenus = new JMenu[5];
+      pViewsEditingMenus    = new JMenu[5];
+
+      pEditWithMenus = new JMenu[4];
 
       JPopupMenu menus[] = { 
 	pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
@@ -270,8 +272,11 @@ class JNodeViewerPanel
 	
 	menus[wk].addSeparator();
 
-	pChangeAuthorViewMenus[wk] = new JMenu("Change Owner|View");
-	menus[wk].add(pChangeAuthorViewMenus[wk]);
+	pViewsContainingMenus[wk] = new JMenu("Views Containing");
+	menus[wk].add(pViewsContainingMenus[wk]);
+
+	pViewsEditingMenus[wk] = new JMenu("Views Editing");
+	menus[wk].add(pViewsEditingMenus[wk]);
 	
 	if(wk > 0) {
 	  menus[wk].addSeparator();
@@ -1193,7 +1198,8 @@ class JNodeViewerPanel
       name = pPrimary.getNodePath().getCurrentName();
     
     UIMaster master = UIMaster.getInstance();
-    master.rebuildWorkingAreaMenus(pGroupID, name, pChangeAuthorViewMenus, this);
+    master.rebuildWorkingAreaContainingMenus(pGroupID, name, pViewsContainingMenus, this);
+    master.rebuildWorkingAreaEditingMenus(pGroupID, name, pViewsEditingMenus, this);
   }
 
   /**
@@ -6021,7 +6027,8 @@ class JNodeViewerPanel
    * The dynamic submenus.
    */ 
   private JMenu[]  pEditWithMenus; 
-  private JMenu[]  pChangeAuthorViewMenus;
+  private JMenu[]  pViewsContainingMenus;
+  private JMenu[]  pViewsEditingMenus;
 
   /**
    * The remove secondary node submenu.

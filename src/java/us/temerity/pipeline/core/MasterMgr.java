@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.186 2006/12/20 15:10:43 jim Exp $
+// $Id: MasterMgr.java,v 1.187 2006/12/31 20:44:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,12 +7,14 @@ import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.ui.core.NodeStyles;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.atomic.*;
 import java.text.*;
@@ -387,6 +389,12 @@ class MasterMgr
 
       pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
 
+      pEventWriterInterval = new AtomicLong(5000L);
+      pNodeEventFileLock   = new Object();
+      pPendingEvents       = new ConcurrentLinkedQueue<BaseNodeEvent>();
+      pNextEditorID        = 1L;
+      pRunningEditors      = new TreeMap<Long,EditedNodeEvent>();
+
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
       pNodeTree         = new NodeTree();
 
@@ -492,6 +500,8 @@ class MasterMgr
     dirs.add(new File(pNodeDir, "toolsets/plugins/toolsets"));
     dirs.add(new File(pNodeDir, "etc"));
     dirs.add(new File(pNodeDir, "etc/suffix-editors"));
+    dirs.add(new File(pNodeDir, "events/nodes"));
+    dirs.add(new File(pNodeDir, "events/authors"));
     dirs.add(new File(pNodeDir, "archives/manifests"));
     dirs.add(new File(pNodeDir, "archives/output/archive"));
     dirs.add(new File(pNodeDir, "archives/output/restore"));
@@ -9738,6 +9748,111 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   E V E N T S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Signal that an Editor plugin has started editing files associated with the 
+   * given working version of a node.
+   * 
+   * @param timer
+   *   The task timer.
+   * 
+   * @param event
+   *   The editing event.
+   * 
+   * @return 
+   *   The unique editing session identifier.
+   */ 
+  public long
+  editingStarted
+  (
+   TaskTimer timer, 
+   EditedNodeEvent event
+  ) 
+  {
+    timer.aquire();
+    synchronized(pRunningEditors) {
+      timer.resume();	
+      
+      long editID = pNextEditorID;
+      pRunningEditors.put(editID, event);
+      pNextEditorID++;
+
+      return editID;
+    }
+  }
+   
+  /**
+   * Signal that an Editor plugin has finished editing files associated with the 
+   * working version of a node.
+   * 
+   * @param timer
+   *   The task timer.
+   * 
+   * @param editID 
+   *   The unique ID for the editing session.
+   */ 
+  public void 
+  editingFinished
+  (
+   TaskTimer timer, 
+   long editID  
+  ) 
+  {
+    timer.aquire();
+    synchronized(pRunningEditors) {
+      timer.resume();	
+      
+      EditedNodeEvent event = pRunningEditors.remove(editID);
+      if(event != null) {
+	event.setFinishedStamp(new Date()); 
+	pPendingEvents.add(event);
+      }
+    }
+  }
+
+  /**
+   * Get the table of the working areas in which the given node is currently being 
+   * edited. 
+   * 
+   * @param req 
+   *   The request.
+   *
+   * @return
+   *   <CODE>NodeGetWorkingAreasRsp</CODE>.
+   */
+  public Object 
+  getWorkingAreasEditing
+  (
+   NodeGetWorkingAreasEditingReq req
+  ) 
+    throws PipelineException
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pRunningEditors) {
+      timer.resume();
+    
+      TreeMap<String,TreeSet<String>> areas = new TreeMap<String,TreeSet<String>>();
+
+      for(EditedNodeEvent event : pRunningEditors.values()) {
+	TreeSet<String> views = areas.get(event.getAuthor());
+	if(views == null) {
+	  views = new TreeSet<String>();
+	  areas.put(event.getAuthor(), views);
+	}
+
+	views.add(event.getView());
+      }
+
+      return new NodeGetWorkingAreasRsp(timer, areas);
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   Q U E U E                                                                    */
@@ -15480,6 +15595,59 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*  N O D E   E V E N T   W R I T E R                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write pending node events to disk. 
+   */ 
+  public void 
+  eventWriter() 
+  {
+    TaskTimer timer = new TaskTimer("Event Writer");
+  
+    while(true) {
+      BaseNodeEvent event = pPendingEvents.poll();
+      if(event == null) 
+	break;
+
+      try {
+	writeNodeEvent(event);
+      }
+      catch(PipelineException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+      }
+    }
+
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	 timer); 
+
+      long nap = pEventWriterInterval.get() - timer.getTotalDuration();
+      if(nap > 0) {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+	   "Event Writer: Sleeping for (" + nap + ") ms...");
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+      else {
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+	   "Event Writer: Overbudget by (" + (-nap) + ") ms...");
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
   /*----------------------------------------------------------------------------------------*/
   
@@ -17215,6 +17383,100 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write a node event to disk. 
+   * 
+   * @param event
+   *   The node event. 
+   * 
+   * @throws PipelineException
+   *   If unable to write the event to file. 
+   */ 
+  private void 
+  writeNodeEvent
+  (
+   BaseNodeEvent event
+  ) 
+    throws PipelineException
+  {
+    String today = sTodayFormat.format(event.getTimeStamp());
+
+    File adir = new File(pNodeDir, "events/authors/" + event.getAuthor() + "/" + today);
+    File ndir = new File(pNodeDir, "events/nodes" + event.getNodeName());
+    
+    synchronized(pMakeDirLock) {
+      if(!adir.isDirectory())
+	if(!adir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create the directory (" + adir + ")!");
+
+      if(!ndir.isDirectory())
+	if(!ndir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create the directory (" + ndir + ")!");
+    }
+    
+    String stamp = String.valueOf(event.getTimeStamp().getTime()); 
+
+    File nfile = new File(ndir, stamp);
+    if(nfile.isFile()) 
+      throw new PipelineException
+	("The node event file (" + nfile + ") already exists!");
+
+    File afile = new File(adir, stamp);
+    if(afile.isFile()) 
+      throw new PipelineException
+	("The node event file (" + afile + ") already exists!");
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Node Event File: " + nfile); 
+
+    synchronized(pNodeEventFileLock) {
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Event", event);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of the node event!");
+	  LogMgr.getInstance().flush();
+	
+	  throw new IOException(ex.getMessage());
+	}
+      
+	{
+	  FileWriter out = new FileWriter(nfile);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the node event file (" + nfile + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      
+      try {
+	File rel = new File("../../../nodes" + event.getNodeName() + "/" + stamp);
+	NativeFileSys.symlink(rel, afile);
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to link the node event file (" + afile + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -18336,6 +18598,17 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
  
   /**
+   * A standardized date formatter.
+   */ 
+  private static SimpleDateFormat sTodayFormat = new SimpleDateFormat("yyyyMMdd"); 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
    * The common back-end directories.
    * 
    * Since the master manager should always be run on a Unix system, these variables are 
@@ -18419,7 +18692,6 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
-  //private PathMap<TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
 
   /**
    * The timestamps of when each archive volume was created indexed by unique archive 
@@ -18451,7 +18723,6 @@ class MasterMgr
    * node.
    */
   private HashMap<String,ReentrantReadWriteLock>  pOnlineOfflineLocks;
-  // private PathMap<ReentrantReadWriteLock>  pOnlineOfflineLocks;
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which
@@ -18470,7 +18741,6 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */  
   private TreeMap<String,TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
-  //private PathMap<TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -18585,6 +18855,40 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The minimum time a cycle of the event writer loop should take (in milliseconds).
+   */ 
+  private AtomicLong  pEventWriterInterval; 
+
+  /**
+   * Serializes access to the node event files.
+   */ 
+  private Object  pNodeEventFileLock; 
+
+  /**
+   * The events not yet written to disk. 
+   * 
+   * No locking is required.
+   */
+  private ConcurrentLinkedQueue<BaseNodeEvent>  pPendingEvents; 
+
+  /**
+   * The next available unique editing session identifier. 
+   * 
+   * Access to this field should be protected by a synchronized(pRunningEditors) block. 
+   */ 
+  private long  pNextEditorID;
+
+  /**
+   * The currently running Editors indexed by unique editing session ID. 
+   * 
+   * Access to this field should be protected by a synchronized block. 
+   */                           
+  private TreeMap<Long,EditedNodeEvent>  pRunningEditors; 
+    
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The table of working area view names indexed by author user name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
@@ -18639,14 +18943,12 @@ class MasterMgr
    * these tables should ever be modified.
    */
   private HashMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
-  //private PathMap<ReentrantReadWriteLock>  pCheckedInLocks;
 
   /**
    * The checked-in version related information of nodes indexed by fully resolved node 
    * name and revision number.
    */ 
   private HashMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
-  //private PathMap<TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
 
 
   /**
@@ -18659,18 +18961,12 @@ class MasterMgr
    * or removing existing working versions.
    */
   private HashMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
-  // private PathMap<DoubleMap<String,String,ReentrantReadWriteLock>>  pWorkingLocks;
 
   /**
    * The working version related information of nodes indexed by fully resolved node 
    * name and working version node ID.
    */ 
   private HashMap<String,HashMap<NodeID,WorkingBundle>>  pWorkingBundles;
-  /**
-   * The working version related information of nodes indexed by fully resolved node 
-   * path, working area author and view. 
-   */ 
-  // private PathMap<DoubleMap<String,String,WorkingBundle>>  pWorkingBundles;
  
 
   /**
@@ -18681,7 +18977,6 @@ class MasterMgr
    * The per-node write-lock should be aquired when adding or removing links for a node.
    */
   private HashMap<String,ReentrantReadWriteLock>  pDownstreamLocks;
-  //  private PathMap<ReentrantReadWriteLock>  pDownstreamLocks;
   
   /**
    * The table of downstream links indexed by fully resolved node name. <P> 
@@ -18689,7 +18984,6 @@ class MasterMgr
    * Access to this table should be protected by a synchronized block.
    */
   private HashMap<String,DownstreamLinks>  pDownstream;
-  //private PathMap<DownstreamLinks>  pDownstream;
   
   
   /*----------------------------------------------------------------------------------------*/
