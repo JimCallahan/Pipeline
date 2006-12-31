@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.30 2006/12/12 00:06:44 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.31 2006/12/31 21:35:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2782,21 +2782,21 @@ class JNodeFilesPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = null;
       SubProcessLight proc = null;
+      Long editID = null;
       {
 	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
 	  try {
 	    String name = pStatus.getName();
-	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	    client = master.getMasterMgrClient(pGroupID);
 	    
+	    NodeMod mod = pStatus.getDetails().getWorkingVersion();
 	    NodeCommon com = null;
-	    {
-	      NodeMod mod = pStatus.getDetails().getWorkingVersion();
-	      if(mod != null) 
-		com = mod;
-	      else 
-		com = client.getCheckedInVersion(name, pVersionID);	    
-	    }
+	    if(mod != null) 
+	      com = mod;
+	    else 
+	      com = client.getCheckedInVersion(name, pVersionID);	    
 	    
 	    /* create an editor plugin instance */ 
 	    BaseEditor editor = null;
@@ -2845,7 +2845,12 @@ class JNodeFilesPanel
 
 	    /* start the editor */ 
 	    editor.makeWorkingDirs(dir);
-	    proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);	   
+	    proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);
+
+	    if(mod != null) {
+	      NodeID nodeID = new NodeID(pAuthor, pView, name);
+	      editID = client.editingStarted(nodeID, editor);
+	    }
 	  }
 	  catch(Exception ex) {
 	    master.showErrorDialog(ex);
@@ -2863,8 +2868,11 @@ class JNodeFilesPanel
 	  proc.join();
 	  if(!proc.wasSuccessful()) 
 	    master.showSubprocessFailureDialog("Editor Failure:", proc);
+
+	  if((client != null) && (editID != null))
+	    client.editingFinished(editID);
 	}
-	catch(InterruptedException ex) {
+	catch(Exception ex) {
 	  master.showErrorDialog(ex);
 	}
       }

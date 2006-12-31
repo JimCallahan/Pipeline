@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.32 2006/12/14 19:02:49 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.33 2006/12/31 21:35:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2478,12 +2478,14 @@ class JQueueJobViewerPanel
     public void 
     run() 
     {
+      MasterMgrClient client = null;
       SubProcessLight proc = null;
+      Long editID = null;
       {
  	UIMaster master = UIMaster.getInstance();
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
  	  try {
- 	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	    client = master.getMasterMgrClient(pGroupID);
 
  	    NodeMod mod = client.getWorkingVersion(pNodeID);
  	    String author = pNodeID.getAuthor();
@@ -2541,6 +2543,8 @@ class JQueueJobViewerPanel
  	    /* start the editor */ 
 	    editor.makeWorkingDirs(dir);
  	    proc = editor.launch(fseq, env, dir);
+
+	    editID = client.editingStarted(pNodeID, editor);
  	  }
  	  catch(PipelineException ex) {
  	    master.showErrorDialog(ex);
@@ -2557,8 +2561,11 @@ class JQueueJobViewerPanel
  	    proc.join();
  	    if(!proc.wasSuccessful()) 
  	      master.showSubprocessFailureDialog("Editor Failure:", proc);
+
+	    if((client != null) && (editID != null))
+	      client.editingFinished(editID);
  	  }
- 	  catch(InterruptedException ex) {
+ 	  catch(Exception ex) {
  	    master.showErrorDialog(ex);
  	  }
  	}
