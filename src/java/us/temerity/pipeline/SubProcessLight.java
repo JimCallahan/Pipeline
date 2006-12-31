@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.12 2006/12/07 23:26:50 jim Exp $
+// $Id: SubProcessLight.java,v 1.13 2006/12/31 20:13:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -678,6 +678,7 @@ class SubProcessLight
       closeStdin.start();
 
       /* launch the process wait for it to exit */ 
+      pHasStarted.set(true);
       try {
 	pExitCode = new Integer(pProc.exec());
       }

@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.16 2006/12/15 23:49:41 jim Exp $
+// $Id: BaseSubProcess.java,v 1.17 2006/12/31 20:13:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -209,6 +209,7 @@ class BaseSubProcess
 
     /* create low-level process */ 
     pProc = initNativeProcess(procCmd, procEnv, dir);
+    pHasStarted = new AtomicBoolean(false);
     pIsFinished = new AtomicBoolean(false);
 
     /* save the execution details */ 
@@ -301,6 +302,20 @@ class BaseSubProcess
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether the underlying subprocess has been started.
+   */
+  public boolean
+  hasStarted() 
+  {
+    return pHasStarted.get();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -663,6 +678,11 @@ class BaseSubProcess
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the underlying subprocess has been started.
+   */
+  protected AtomicBoolean  pHasStarted; 
 
   /**
    * The low-level native process. 
