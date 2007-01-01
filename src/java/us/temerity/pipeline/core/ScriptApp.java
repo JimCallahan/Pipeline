@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.67 2006/12/31 20:44:54 jim Exp $
+// $Id: ScriptApp.java,v 1.68 2007/01/01 16:09:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.event.*;
 
 import java.io.*; 
 import java.net.*; 
@@ -353,6 +354,9 @@ class ScriptApp
        "      --evolve=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
        "        [--version=major.minor.micro]\n" +
+       "      --get-events\n" + 
+       "        [--node=node-name ...] [--author=user-name ...]\n" + 
+       "        [--from=[YYYY-MM-DD,]hh:mm:ss] [--until=[YYYY-MM-DD,]hh:mm:ss]\n" + 
        "\n" +  
        "Use \"plscript --html-help\" to browse the full documentation.\n");
   }
@@ -3348,7 +3352,6 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-
     NodeStatus root = null;
     TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
     {
@@ -3976,6 +3979,168 @@ class ScriptApp
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Print the selected node events. 
+   */ 
+  public void
+  printNodeEvents
+  (
+   TreeSet names, 
+   TreeSet users, 
+   Date start, 
+   Date finish, 
+   MasterMgrClient mclient
+  ) 
+    throws PipelineException
+  {
+    TreeMap<Date,BaseNodeEvent> events = null;
+    {
+      TreeSet<String> names2 = null;
+      if(!names.isEmpty()) 
+	names2 = new TreeSet<String>(names);
+      
+      TreeSet<String> users2 = null;
+      if(!users.isEmpty()) 
+	users2 = new TreeSet<String>(users);
+      
+      Date start2 = new Date(0L);
+      if(start != null) 
+	start2 = start;
+      
+      Date finish2 = new Date(Long.MAX_VALUE);
+      if(finish != null) 
+	finish2 = finish;
+
+      events = mclient.getNodeEvents(names2, users2, new DateInterval(start2, finish2));
+    }
+    
+    StringBuilder buf = new StringBuilder();
+    buf.append
+      (tbar(80) + "\n" +
+       "N O D E   E V E N T   H I S T O R Y"); 
+    
+    for(BaseNodeEvent event : events.values()) {
+      printBaseNodeEvent(buf, event);
+      switch(event.getNodeOp()) {
+      case Registered: 
+      case Released: 
+      case PropsModified: 
+      case LinksModified: 
+      case SeqsModified: 
+	{
+	  BaseWorkingNodeEvent e = (BaseWorkingNodeEvent) event;
+	  printBaseWorkingNodeEvent(buf, e);
+	}
+	break;
+	
+      case CheckedIn: 	
+	{
+	  CheckedInNodeEvent e = (CheckedInNodeEvent) event;
+	  printBaseRepoNodeEvent(buf, e);
+	  
+	  buf.append
+	    ("\n" + 
+	     "Level        : " + e.getLevel()); 
+	}
+	break;
+
+      case CheckedOut:  	
+	{
+	  CheckedOutNodeEvent e = (CheckedOutNodeEvent) event;
+	  printBaseRepoNodeEvent(buf, e);
+	  
+	  buf.append
+	    ("\n" + 
+	     "Method       : "); 
+
+	  if(e.isFrozen()) {
+	    if(e.isLocked()) 
+	      buf.append("Locked");
+	    else 
+	      buf.append("Frozen");
+	  }
+	  else {
+	    buf.append("Modifiable");
+	  }
+	}
+	break;
+
+      case Evolved: 
+	{  
+	  EvolvedNodeEvent e = (EvolvedNodeEvent) event;
+	  printBaseRepoNodeEvent(buf, e);
+	}
+	break;
+    
+      case Edited:
+	{
+	  EditedNodeEvent	 e = (EditedNodeEvent) event;
+	  printBaseWorkingNodeEvent(buf, e);
+	  
+	  buf.append
+	    ("\n" + 
+	     "Done Editing : " + Dates.format(e.getFinishedStamp()) + "\n" +
+	     "Hostname     : " + e.getHostname() + "\n" +
+	     "Impostor     : " + ((e.getImposter() != null) ? e.getImposter() : "-") + "\n" +
+	     "\n" + 
+	     "Editor       : " + e.getEditorName() + "\n" +
+	     "Version      : " + e.getEditorVersionID() + "\n" +
+	     "Vendor       : " + e.getEditorVendor());
+	}
+      }
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();  
+  }
+
+  private void
+  printBaseNodeEvent
+  (
+   StringBuilder buf, 
+   BaseNodeEvent event
+  ) 
+  {
+    buf.append
+      ("\n\n" + 
+       bar(80) + "\n" +
+       "Operation    : " + event.getNodeOp().toTitle() + "\n" + 
+       "Generated    : " + (Dates.format(event.getTimeStamp()) + " by (" + 
+			    event.getAuthor()) + ")\n" +
+       "Node Name    : " + event.getNodeName()); 
+  }
+   
+  private void
+  printBaseWorkingNodeEvent
+  (
+   StringBuilder buf,
+   BaseWorkingNodeEvent event
+  ) 
+  {
+    buf.append
+      ("\n" + 
+       "Working Area : " + event.getAuthor() + "|" + event.getView());
+  }
+  
+  private void
+  printBaseRepoNodeEvent
+  (
+   StringBuilder buf,
+   BaseRepoNodeEvent event
+  ) 
+  {
+    printBaseWorkingNodeEvent(buf, event);
+    buf.append
+      ("\n" + 
+       "Version      : " + event.getVersionID());
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
@@ -4210,6 +4375,12 @@ class ScriptApp
     case ScriptOptsParserConstants.JOB_ID:
       return "a job ID";
 
+    case ScriptOptsParserConstants.STAMP_TWO:
+      return "a two digit numeric timestamp component";
+
+    case ScriptOptsParserConstants.STAMP_FOUR:
+      return "a four digit numeric timestamp component";
+
     case ScriptOptsParserConstants.AE1:
     case ScriptOptsParserConstants.AE2:
     case ScriptOptsParserConstants.AE3:
@@ -4263,6 +4434,9 @@ class ScriptApp
     case ScriptOptsParserConstants.AE52:
     case ScriptOptsParserConstants.AE53:
     case ScriptOptsParserConstants.AE54:
+    case ScriptOptsParserConstants.AE55:
+    case ScriptOptsParserConstants.AE56:
+    case ScriptOptsParserConstants.AE57:
       return null;
 
     default: 

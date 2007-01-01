@@ -1,4 +1,4 @@
-// $Id: Dates.java,v 1.4 2006/01/15 08:22:09 jim Exp $
+// $Id: Dates.java,v 1.5 2007/01/01 16:09:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ public
 class Dates      
 {  
   /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
+  /*   C O N S T R U C T I O N                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -30,8 +30,56 @@ class Dates
     return (new Date(secs * 1000L));
   } 
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert a standardized string representation of a timestamp into a Date. <P> 
+   * 
+   * The string must be in the format 
+   * (<I>YYYY</I>-<I>MM</I>-<I>DD</I> <I>hh</I>:<I>mm</I>:<I>ss</I>) where: 
+   * <DIV style="margin-left: 40px;">
+   *   YYYY - The year.
+   *   MM - The month of the year.
+   *   DD - The day of the month.
+   *   hh - The hour of the day (24 hour clock).
+   *   mm - The minute of the hour.
+   *   ss - The second.
+   * </DIV>
+   * All values are prefixed with zero where less than the specified number of digits.
+   */ 
+  public static Date
+  parse
+  (
+   String date
+  ) 
+    throws ParseException
+  {
+    if((date == null) || date.equals("-"))
+      return null;
+    return sFormat.parse(date);
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Convert a timestamp to a standardized string representation.
+   * 
+   * The generated string will have the format 
+   * (<I>YYYY</I>-<I>MM</I>-<I>DD</I> <I>hh</I>:<I>mm</I>:<I>ss</I>) where: 
+   * <DIV style="margin-left: 40px;">
+   *   YYYY - The year.
+   *   MM - The month of the year.
+   *   DD - The day of the month.
+   *   hh - The hour of the day (24 hour clock).
+   *   mm - The minute of the hour.
+   *   ss - The second.
+   * </DIV>
+   * All values are prefixed with zero where less than the specified number of digits. 
    */ 
   public static String
   format

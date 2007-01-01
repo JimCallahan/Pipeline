@@ -1173,6 +1173,21 @@ Operations</span></span></a></li>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#node_--get-events"><span
+ style="font-weight: bold;">--get-events</span></a> [<span
+ style="font-weight: bold;">--node</span>=<span
+ style="font-style: italic;">node-name</span> ...] [<span
+ style="font-weight: bold;">--author</span>=<span
+ style="font-style: italic;">user-name</span> ...] [<span
+ style="font-weight: bold;">--from</span>=[<span
+ style="font-style: italic;">YYYY-MM-DD</span>,]<span
+ style="font-style: italic;">hh</span>:<span style="font-style: italic;">mm</span>:<span
+ style="font-style: italic;">ss</span>] [<span
+ style="font-weight: bold;">--until</span>=</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">YYYY-MM-DD</span>,]<span
+ style="font-style: italic;">hh</span>:<span style="font-style: italic;">mm</span>:<span
+ style="font-style: italic;">ss</span>]</span></li>
       </ul>
     </ul>
   </ul>
@@ -4759,6 +4774,36 @@ latest version will be used.&nbsp; <br>
   <ul>
   </ul>
 </ul>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="node_--get-events"></a>node
+--get-events</span> <br>
+&nbsp; [<span style="font-weight: bold;">--node</span>=<span
+ style="font-style: italic;">node-name</span> ...] [<span
+ style="font-weight: bold;">--author</span>=<span
+ style="font-style: italic;">user-name</span> ...] <br>
+&nbsp; [<span style="font-weight: bold;">--from</span>=[<span
+ style="font-style: italic;">YYYY-MM-DD</span>,]<span
+ style="font-style: italic;">hh</span>:<span style="font-style: italic;">mm</span>:<span
+ style="font-style: italic;">ss</span>] [<span
+ style="font-weight: bold;">--until</span>=</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">YYYY-MM-DD</span>,]<span
+ style="font-style: italic;">hh</span>:<span style="font-style: italic;">mm</span>:<span
+ style="font-style: italic;">ss</span>]<br>
+</span>
+<div style="margin-left: 40px;"><br>
+List the significant events associated with a set of nodes and/or users
+during a specific interval of time in chronological order.&nbsp; If no
+options are given, then all events associated with all nodes ever
+recorded will be listed.&nbsp; The options can be used to limit the
+events listed to a specific set of nodes (<span
+ style="font-weight: bold;">--node</span>), users (<span
+ style="font-weight: bold;">--author</span>) or time interval (<span
+ style="font-weight: bold;">--from</span>/<span
+ style="font-weight: bold;">--until</span>).&nbsp; Multiple nodes
+and/or users can be specified.&nbsp; If no date is specified with the
+time interval options, todays day is assumed.<br>
+</div>
+</div>
 <h3><a name="Node_Names_and_File_System_Paths"></a>Node Names and File
 System Paths</h3>
 <div style="margin-left: 40px;">The fully resolved names of Pipeline

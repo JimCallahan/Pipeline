@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.72 2006/12/31 20:44:54 jim Exp $
+// $Id: MasterMgrServer.java,v 1.73 2007/01/01 16:09:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1198,6 +1198,14 @@ class MasterMgrServer
 
 
 	    /*-- NODE EVENTS ---------------------------------------------------------------*/
+	    case GetEvents: 
+	      {
+		NodeGetEventsReq req = (NodeGetEventsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getNodeEvents(req));
+		objOut.flush(); 
+	      }
+	      break;    
+
 	    case EditingStarted: 
 	      {
 		NodeEditingStartedReq req = (NodeEditingStartedReq) objIn.readObject();

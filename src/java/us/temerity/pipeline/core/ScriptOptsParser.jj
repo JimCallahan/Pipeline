@@ -284,10 +284,10 @@ ScriptOptsParser
   private CheckOutMode     pCheckOutMode; 
   private CheckOutMethod   pCheckOutMethod; 
 
-  private TreeSet<String>   pEventNames;
-  private TreeSet<String>   pEventUsers;
-  private DateInterval      pEventInterval; 
-
+  private TreeSet          pEventNames;
+  private TreeSet          pEventUsers;
+  private Date             pEventStart; 
+  private Date             pEventFinish; 
 }
 
 
@@ -446,7 +446,10 @@ TOKEN :
 | <BRIEF:              "--brief">					
 | <UPSTREAM:           "--upstream">				
 | <LINK_GRAPH:         "--link-graph">                             
-| <GLUE:               "--glue"> 
+| <GLUE:               "--glue">
+| <NODE_OPT:           "--node">                : NODE_NAME_SEP
+| <FROM:               "--from">                : DATE_SEP 
+| <UNTIL:              "--until">               : DATE_SEP 
 
   /* argument end separator */ 
 | <AE2:               (["\0"])+>   
@@ -1275,6 +1278,25 @@ TOKEN :
 }
 
 
+/* date arguments */ 
+<DATE_SEP>   
+TOKEN :
+{
+  <EQ43:               "=">   : DATE_STATE
+| <MISSING_DATE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<DATE_STATE> 
+TOKEN :
+{
+  <STAMP_FOUR:    (["0"-"9"] ["0"-"9"] ["0"-"9"] ["0"-"9"])> 
+| <STAMP_TWO:     (["0"-"9"] ["0"-"9"])> 
+| <DASH4:         "-"> 
+| <COMMA18:       ","> 
+| <COLON11:       ":"> 
+| <AE57:          "\0">                     : OPTIONS
+| <ILLEGAL_DATE:  (~["-",",",":","\0"])+>   : IGNORE_STATE
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -1643,6 +1665,7 @@ TOKEN :
 | <NODE_CHECK_IN:          "--check-in">              : NODE_NAME_SEP
 | <NODE_CHECK_OUT:         "--check-out">             : NODE_NAME_SEP
 | <NODE_EVOLVE:            "--evolve">                : NODE_NAME_SEP
+| <NODE_GET_EVENTS:        "--get-events">            : OPTIONS
 | <AE39:                   ["\0"]>   
 | <UNKNOWN_OPTION16:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN16:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
@@ -5665,7 +5688,7 @@ NodeCmds()
 {}
 {
   <NODE> AE() 
-     (NodeStatus() | NodeCheckIn() | NodeCheckOut() | NodeEvolve()) 
+     (NodeStatus() | NodeCheckIn() | NodeCheckOut() | NodeEvolve() | NodeGetEvents())
   {}
 }
 
@@ -6038,9 +6061,130 @@ NodeEvolveOpts()
 
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   O P E R A T I O N   C O M M A N D S                                        */
-/*------------------------------------------------------------------------------------------*/
 
+void 
+NodeGetEvents() 
+  throws PipelineException : 
+{
+  pEventNames = new TreeSet();
+  pEventUsers = new TreeSet();
+}
+{
+  <NODE_GET_EVENTS> AE() (NodeGetEventsOpts())*
+  {
+    pApp.printNodeEvents
+      (pEventNames, pEventUsers, pEventStart, pEventFinish, pMasterMgrClient);
+  }
+}
+
+void
+NodeGetEventsOpts() 
+  throws PipelineException : 
+{}
+{
+  (Node() | Author() | From() | Until()) 
+  {}
+}
+
+void 
+Node() :
+{
+  String name = null;
+}
+{
+  <NODE_OPT> EQ() name=NodeName() AE()
+  {
+    if(pEventNames != null) 
+      pEventNames.add(name); 
+  }
+}
+
+void 
+From() 
+  throws PipelineException : 
+{ 
+  Date date = null;
+}
+{
+  <FROM> EQ() date=TimeStamp() AE()
+  {
+    pEventStart = date;
+  }
+}
+
+void 
+Until() 
+  throws PipelineException : 
+{ 
+  Date date = null;
+}
+{
+  <UNTIL> EQ() date=TimeStamp() AE()
+  {
+    pEventFinish = date;
+  }
+}
+
+Date
+TimeStamp() 
+  throws PipelineException : 
+{ 
+  Token year  = null;
+  Token month = null; 
+  Token day   = null; 
+  Token hour;
+  Token minute; 
+  Token second;
+}
+{
+  (year=<STAMP_FOUR> DASH() month=<STAMP_TWO> DASH() day=<STAMP_TWO> COMMA())? 
+   hour=<STAMP_TWO> COLON() minute=<STAMP_TWO> COLON() second=<STAMP_TWO> 
+  {
+    try {      
+      int h = Integer.parseInt(hour.image);
+      if((h < 0) || (h > 23)) 
+      throw new PipelineException
+        ("Illegal hour of the day (" + h + ") given!");
+
+      int n = Integer.parseInt(minute.image);
+      if((n < 0) || (n > 59)) 
+      throw new PipelineException
+        ("Illegal minute (" + n + ") given!");
+
+      int s = Integer.parseInt(second.image);
+      if((s < 0) || (s > 59)) 
+      throw new PipelineException
+        ("Illegal second (" + s + ") given!");
+
+      GregorianCalendar calendar = new GregorianCalendar();
+      if((year != null) && (month != null) && (day != null)) {
+	int m = Integer.parseInt(month.image);
+	if((m < 1) || (m > 12)) 
+	  throw new PipelineException
+	    ("Illegal month of the year (" + m + ") given!");
+	
+	int d = Integer.parseInt(day.image);
+	if((d < 1) || (d > 31)) 
+	  throw new PipelineException
+	    ("Illegal day of the month (" + d + ") given!");
+	
+	calendar.clear();
+	calendar.set(Integer.parseInt(year.image), m-1, d, h, n, s);
+      }
+      else {
+	calendar.setTime(new Date());
+	calendar.set(Calendar.HOUR,   h);
+	calendar.set(Calendar.MINUTE, n);
+	calendar.set(Calendar.SECOND, s);
+      }
+      
+      return calendar.getTime();
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException("Illegal Date Specification!"); 
+    }
+  }
+}
 
 
 
@@ -6465,6 +6609,9 @@ Author() :
   <AUTHOR> EQ() uname=UserName() AE()
   {
     pAuthor = uname;
+
+    if(pEventUsers != null) 
+      pEventUsers.add(uname);
   }
 }
 
@@ -7528,7 +7675,7 @@ AE() :
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
    t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50> | 
    t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54> | t=<AE55> | 
-   t=<AE56>)
+   t=<AE56> | t=<AE57>)
   { 
     return t; 
   }
@@ -7576,7 +7723,7 @@ DASH() :
   Token t;
 }
 {
-  (t=<DASH1> | t=<DASH2> | t=<DASH3>)
+  (t=<DASH1> | t=<DASH2> | t=<DASH3> | t=<DASH4>)
   { 
     return t; 
   }
@@ -7589,7 +7736,8 @@ COLON() :
 }
 {
   (t=<COLON1> | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
-   t=<COLON6> | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10>)
+   t=<COLON6> | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10> | 
+   t=<COLON11>)
   { 
     return t; 
   }
@@ -7604,7 +7752,7 @@ COMMA() :
   (t=<COMMA1>  | t=<COMMA2>  | t=<COMMA3>  | t=<COMMA4>  | t=<COMMA5>  | 
    t=<COMMA6>  | t=<COMMA7>  | t=<COMMA8>  | t=<COMMA9>  | t=<COMMA10> |
    t=<COMMA11> | t=<COMMA12> | t=<COMMA13> | t=<COMMA14> | t=<COMMA15> |
-   t=<COMMA16> | t=<COMMA17>)
+   t=<COMMA16> | t=<COMMA17> | t=<COMMA18>)
   { 
     return t; 
   }
@@ -7624,7 +7772,7 @@ EQ() :
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
    t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40> | 
-   t=<EQ41> | t=<EQ42>)
+   t=<EQ41> | t=<EQ42> | t=<EQ43>)
   { 
     return t; 
   }
