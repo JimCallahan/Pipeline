@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.11 2006/12/05 18:23:30 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.12 2007/01/02 07:55:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -90,6 +90,30 @@ class JTextureLoaderBar
 	
 	{
 	  String name = ("Identical-Stale-Frozen-" + mode);
+	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("Missing-Finished-Frozen-" + mode);
+	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("Missing-Stale-Frozen-" + mode);
+	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("MissingNewer-Finished-Frozen-" + mode);
+	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("MissingNewer-Stale-Frozen-" + mode);
 	  pTextures.add(name);
 	  pIcon21s.add(name);
 	}

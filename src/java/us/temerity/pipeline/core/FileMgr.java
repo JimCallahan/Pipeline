@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.61 2006/12/13 10:41:35 jim Exp $
+// $Id: FileMgr.java,v 1.62 2007/01/02 07:55:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -377,9 +377,21 @@ class FileMgr
 	    for(FileSeq fseq : req.getFileSequences()) {
 	      FileState fs[] = new FileState[fseq.numFrames()];
 	      
-	      int wk; 
-	      for(wk=0; wk<fs.length; wk++) 
-		fs[wk] = FileState.Identical;
+	      int wk = 0;
+	      for(File file : fseq.getFiles()) {
+		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
+		File work  = new File(pProdDir, wpath.getPath());
+
+		if(!work.isFile()) {
+		  /* this means that someone has manually removed the symlink! */ 
+		  fs[wk] = FileState.Missing; 
+		}
+		else {
+		  fs[wk] = FileState.Identical;
+		}
+
+		wk++;
+	      }
 
 	      states.put(fseq, fs);
 	    }
@@ -401,6 +413,10 @@ class FileMgr
 		if(!latest.isFile()) {
 		  fs[wk] = FileState.Obsolete;
 		}
+		else if(!work.isFile()) {
+		  /* this means that someone has manually removed the symlink! */ 
+		  fs[wk] = FileState.Missing;  
+		}
 		else {
 		  if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
 		    fs[wk] = FileState.Identical;
@@ -416,7 +432,7 @@ class FileMgr
 	  }
 	}
 	
-	/* if not frozen, do a more thorough set of tests... */ 
+	/* if not frozen, do a more exhaustive set of tests... */ 
 	else {
 	  switch(req.getVersionState()) {
 	  case Pending:

@@ -249,6 +249,32 @@ do
   mkicon $frame $mode $nstate $qstate 1
 
 
+  nstate=Missing
+
+  qstate=Finished
+  frame=61
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+  qstate=Stale
+  frame=56
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+
+  nstate=MissingNewer
+
+  qstate=Finished
+  frame=101
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+  qstate=Stale
+  frame=96
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+
   nstate=ModifiedLinks
 
   qstate=Finished

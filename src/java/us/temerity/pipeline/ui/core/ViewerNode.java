@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.8 2006/12/07 05:18:25 jim Exp $
+// $Id: ViewerNode.java,v 1.9 2007/01/02 07:55:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -223,9 +223,15 @@ class ViewerNode
 	pLockedDL = mgr.getNodeIconDL(gl, "Locked");
     }
     catch(IOException ex) {
+      pLabelDLs    = null;
+      pIconDL      = null;
+      pCollapsedDL = null;
+      pLockedDL    = null;
+
       LogMgr.getInstance().log
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());
+      LogMgr.getInstance().flush(); 
     }
   }
 
