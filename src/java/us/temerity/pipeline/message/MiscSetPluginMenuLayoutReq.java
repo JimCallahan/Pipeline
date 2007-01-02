@@ -1,4 +1,4 @@
-// $Id: MiscSetPluginMenuLayoutReq.java,v 1.6 2006/05/07 21:30:13 jim Exp $
+// $Id: MiscSetPluginMenuLayoutReq.java,v 1.7 2007/01/02 21:59:08 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,7 +45,7 @@ class MiscSetPluginMenuLayoutReq
 
     if(layout == null) 
       throw new IllegalArgumentException
-	("The heirarchical set of editor plugin menus.");
+	("The heirarchical set of editor plugin menus cannot be (null).");
     pLayout = layout;
   }
 

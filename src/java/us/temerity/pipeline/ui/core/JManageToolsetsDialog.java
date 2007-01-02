@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.23 2006/11/22 09:08:01 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.24 2007/01/02 21:59:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -666,7 +666,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the editor plugin menu associated with the given tookset.
+   * Get the editor plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -683,15 +683,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.Editor);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Editor);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.Editor);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.Editor);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -716,15 +717,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.Editor, layout);
+      pToolsetLayouts.put(tname, PluginType.Editor, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.Editor, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Editor, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setEditorMenuLayout(tname, layout);
+      client.setEditorMenuLayout(tname, layout2);
     }    
   }
 
@@ -733,7 +738,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the comparator plugin menu associated with the given tookset.
+   * Get the comparator plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -750,15 +755,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.Comparator);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Comparator);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.Comparator);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.Comparator);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -783,15 +789,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.Comparator, layout);
+      pToolsetLayouts.put(tname, PluginType.Comparator, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.Comparator, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Comparator, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setComparatorMenuLayout(tname, layout);
+      client.setComparatorMenuLayout(tname, layout2);
     }    
   }
 
@@ -800,7 +810,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the action plugin menu associated with the given tookset.
+   * Get the action plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -817,15 +827,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.Action);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Action);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.Action);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.Action);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -850,15 +861,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.Action, layout);
+      pToolsetLayouts.put(tname, PluginType.Action, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.Action, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Action, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setActionMenuLayout(tname, layout);
+      client.setActionMenuLayout(tname, layout2);
     }    
   }
 
@@ -867,7 +882,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the tool plugin menu associated with the given tookset.
+   * Get the tool plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -884,15 +899,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.Tool);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Tool);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.Tool);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.Tool);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -917,15 +933,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.Tool, layout);
+      pToolsetLayouts.put(tname, PluginType.Tool, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.Tool, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Tool, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setToolMenuLayout(tname, layout);
+      client.setToolMenuLayout(tname, layout2);
     }    
   }
 
@@ -934,7 +954,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the archiver plugin menu associated with the given tookset.
+   * Get the archiver plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -951,15 +971,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.Archiver);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.Archiver);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.Archiver);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.Archiver);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -984,15 +1005,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.Archiver, layout);
+      pToolsetLayouts.put(tname, PluginType.Archiver, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.Archiver, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.Archiver, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setArchiverMenuLayout(tname, layout);
+      client.setArchiverMenuLayout(tname, layout2);
     }    
   }
 
@@ -1001,7 +1026,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the master extension plugin menu associated with the given tookset.
+   * Get the master extension plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -1018,15 +1043,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.MasterExt);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.MasterExt);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.MasterExt);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.MasterExt);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -1051,15 +1077,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.MasterExt, layout);
+      pToolsetLayouts.put(tname, PluginType.MasterExt, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.MasterExt, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.MasterExt, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setMasterExtMenuLayout(tname, layout);
+      client.setMasterExtMenuLayout(tname, layout2);
     }    
   }
 
@@ -1068,7 +1098,7 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the queue extension plugin menu associated with the given tookset.
+   * Get the queue extension plugin menu associated with the given toolset.
    * 
    * @param tname
    *   The toolset name.
@@ -1085,15 +1115,16 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
        
-    if(!toolset.isFrozen()) {
-      return pToolsetLayouts.get(tname, PluginType.QueueExt);
-    }
-    else {
-      PluginMenuLayout layout = pFrozenToolsetLayouts.get(tname, PluginType.QueueExt);
-      if(layout == null) 
-	layout = new PluginMenuLayout();
-      return layout;
-    }
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.QueueExt);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.QueueExt);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
   }
 
   /**
@@ -1118,15 +1149,19 @@ class JManageToolsetsDialog
       throw new PipelineException
 	("No toolset named (" + tname + ") exists!");
 
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
     if(!toolset.isFrozen()) {
-      pToolsetLayouts.put(tname, PluginType.QueueExt, layout);
+      pToolsetLayouts.put(tname, PluginType.QueueExt, layout2);
     }
     else {
-      pFrozenToolsetLayouts.put(tname, PluginType.QueueExt, layout);
+      pFrozenToolsetLayouts.put(tname, PluginType.QueueExt, layout2);
 
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      client.setQueueExtMenuLayout(tname, layout);
+      client.setQueueExtMenuLayout(tname, layout2);
     }    
   }
 
