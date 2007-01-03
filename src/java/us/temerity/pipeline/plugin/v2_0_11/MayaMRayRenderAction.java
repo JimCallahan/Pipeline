@@ -1,4 +1,9 @@
-// $Id: MayaMRayRenderAction.java,v 1.2 2006/11/22 09:08:01 jim Exp $
+/*
+ * Created on Jul 28, 2006
+ * Created by jesse
+ * For Use in com.sony.scea.pipeline.plugins.v1_0_0
+ * 
+ */
 package us.temerity.pipeline.plugin.v2_0_11;
 
 import java.io.*;
@@ -11,9 +16,9 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Takes a source Maya scene, exports an mi file that contains everything in the scene, and 
- * renders it with the mental ray standalone engine. <P>
- * 
+ * Takes a source Maya scene, exports an mi file that contains everything in the scene, and renders 
+ * it with the mental ray standalone engine.
+ * <P>
  * The Maya scene is opened and the export length is set correctly.  The entire scene is then
  * exported out to an mi file.  The Action then invokes the mental ray standalone renderer
  * to generate the images. 
@@ -45,8 +50,8 @@ import us.temerity.pipeline.*;
  *   
  *   Include Path<BR>
  *   <DIV style="margin-left: 40px;">
- *      A colon seperated list of directories which overrides the path used to resolve 
- *      $include statements in the MI scene file.
+ *      A colon seperated list of directories which overrides the path used to resolve $include 
+ *      statements in the MI scene file.
  *   </DIV> <BR>
  *   
  *   Library Path<BR>
@@ -69,16 +74,14 @@ import us.temerity.pipeline.*;
 public class MayaMRayRenderAction
   extends BaseAction
 {
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
-  public 
-  MayaMRayRenderAction() 
-  {
+   /*----------------------------------------------------------------------------------------*/
+   /*   C O N S T R U C T O R                                                                */
+   /*----------------------------------------------------------------------------------------*/
+   public 
+   MayaMRayRenderAction() 
+   {
     super("MayaMRayRender", new VersionID("2.0.11"), "Temerity",
-	  "Exports MentalRay geometry and other scene data from a Maya scene.");
-    
-    underDevelopment();
+      "Exports MentalRay geometry and other scene data from a Maya scene.");
     
     {
       ActionParam param =
@@ -95,80 +98,80 @@ public class MayaMRayRenderAction
       addSingleParam(param);
     }
   
-    {
-      ActionParam param = 
+  {
+    ActionParam param = 
 	new LinkActionParam
 	(aPostExportMEL,
 	 "A MEL script to be sourced after the mi export.", 
 	 null);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param =
+    addSingleParam(param);
+  }
+  
+  {
+     ActionParam param =
 	new BooleanActionParam
 	(aKeepTempFiles, 
 	 "Should the Action preserve the temporary mi files it generates for rendering.", 
 	 false);
-      addSingleParam(param);
-    }
-    
-    
-    {
+     addSingleParam(param);
+ }
+
+  
+  {
       ActionParam param =
 	new StringActionParam
 	(aExtraOpts, 
 	 "Additional command-line arguments.", 
 	 null);
       addSingleParam(param);
-    }
-    
-    {
-      ArrayList<String> verbose = new ArrayList<String>();
-      verbose.add("No Messages");
-      verbose.add("Fatal Messages Only");
-      verbose.add("Error Messages");
-      verbose.add("Warning Messages");
-      verbose.add("Info Messages");
-      verbose.add("Progress Messages");
-      verbose.add("Details Messages");
-      
-      ActionParam param = 
+  }
+  
+  {
+    ArrayList<String> verbose = new ArrayList<String>();
+    verbose.add("No Messages");
+    verbose.add("Fatal Messages Only");
+    verbose.add("Error Messages");
+    verbose.add("Warning Messages");
+    verbose.add("Info Messages");
+    verbose.add("Progress Messages");
+    verbose.add("Details Messages");
+
+    ActionParam param = 
 	new EnumActionParam
 	(aRenderVerbosity,
 	 "The verbosity of render progress, warning and error messages.",
 	 "Warning Messages", verbose);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
+    addSingleParam(param);
+  }
+  
+  {
+    ActionParam param = 
 	new StringActionParam
 	(aIncludePath,
 	 "A colon seperated list of directories which overrides the path used to " +
 	 "resolve $include statements in the MI scene file.", 
 	 null);
-      addSingleParam(param);
-    }
+    addSingleParam(param);
+  }
 
-    {
-      ActionParam param = 
+  {
+    ActionParam param = 
 	new StringActionParam
 	(aLibraryPath,
 	 "A colon seperated list of directories that mental ray searches for shader " +
 	 "libraries containing shader code before the default library paths.",
 	 null);
-      addSingleParam(param);
-    }
+    addSingleParam(param);
+  }
   
-    {    
-      LayoutGroup layout = new LayoutGroup(true);
-      layout.addEntry(aMayaScene);
-      layout.addEntry(aPreExportMEL);
-      layout.addEntry(aPostExportMEL);
-      layout.addSeparator();
-      layout.addEntry(aKeepTempFiles);
-      {
+  {    
+     LayoutGroup layout = new LayoutGroup(true);
+     layout.addEntry(aMayaScene);
+     layout.addEntry(aPreExportMEL);
+     layout.addEntry(aPostExportMEL);
+     layout.addSeparator();
+     layout.addEntry(aKeepTempFiles);
+     {
 	LayoutGroup sub = new LayoutGroup(true);
 	sub.addEntry(aIncludePath);
 	sub.addEntry(aLibraryPath);
@@ -177,46 +180,46 @@ public class MayaMRayRenderAction
 	
 	layout.addSubGroup(sub);
      }
-      
+
      setSingleLayout(layout);
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C T I O N                                                                          */
-  /*----------------------------------------------------------------------------------------*/
+   }
   
-  /**
-   * Construct a {@link SubProcessHeavy SubProcessHeavy} instance which when executed will 
-   * fulfill the given action agenda. <P> 
-   * 
-   * @param agenda
-   *   The agenda to be accomplished by the action.
-   * 
-   * @param outFile 
-   *   The file to which all STDOUT output is redirected.
-   * 
-   * @param errFile 
-   *   The file to which all STDERR output is redirected.
-   * 
-   * @return 
-   *   The SubProcess which will fulfill the agenda.
-   * 
-   * @throws PipelineException 
-   *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
-   *   information in the action agenda or a general failure of the prep method code.
-   */
+}
+   /*----------------------------------------------------------------------------------------*/
+   /*   A C T I O N                                                                          */
+   /*----------------------------------------------------------------------------------------*/
+
+   /**
+    * Construct a {@link SubProcessHeavy SubProcessHeavy} instance which when executed will 
+    * fulfill the given action agenda. <P> 
+    * 
+    * @param agenda
+    *   The agenda to be accomplished by the action.
+    * 
+    * @param outFile 
+    *   The file to which all STDOUT output is redirected.
+    * 
+    * @param errFile 
+    *   The file to which all STDERR output is redirected.
+    * 
+    * @return 
+    *   The SubProcess which will fulfill the agenda.
+    * 
+    * @throws PipelineException 
+    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
+    *   information in the action agenda or a general failure of the prep method code.
+    */
   public SubProcessHeavy prep
   (
     ActionAgenda agenda, 
     File outFile, 
     File errFile
-  )
+    )
     throws PipelineException
   {
     NodeID nodeID = agenda.getNodeID();
     FileSeq target = null;
+    //Path renderDirectory = null;
     Path scene = null;
     Path preExport = null;
     Path postExport = null;
@@ -254,56 +257,56 @@ public class MayaMRayRenderAction
     }
 
     {
-      String sname = (String) getSingleParamValue(aMayaScene); 
-      if(sname != null) {
-	FileSeq fseq = agenda.getPrimarySource(sname);
-	if(fseq == null) 
+	String sname = (String) getSingleParamValue(aMayaScene); 
+	if(sname != null) {
+	  FileSeq fseq = agenda.getPrimarySource(sname);
+	  if(fseq == null) 
+	    throw new PipelineException
+	      ("Somehow the Maya Scene node (" + sname + ") was not one of the source " + 
+	       "nodes!");
+	  
+	  String suffix = fseq.getFilePattern().getSuffix();
+	  if(!fseq.isSingle() || 
+	     (suffix == null) || !(suffix.equals("ma") || suffix.equals("mb"))) 
+	    throw new PipelineException
+	      ("The MRayExportRender Action requires that the source node specified by the " +
+	       "Maya Scene parameter (" + sname + ") must have a single Maya scene file " + 
+	       "as its primary file sequence!");
+
+	  NodeID snodeID = new NodeID(nodeID, sname);
+	  scene = new Path(PackageInfo.sProdPath,
+			   snodeID.getWorkingParent() + "/" + fseq.getPath(0));
+	}
+	else {
 	  throw new PipelineException
-	    ("Somehow the Maya Scene node (" + sname + ") was not one of the source " + 
-	     "nodes!");
-	
-	String suffix = fseq.getFilePattern().getSuffix();
-	if(!fseq.isSingle() || 
-	   (suffix == null) || !(suffix.equals("ma") || suffix.equals("mb"))) 
-	  throw new PipelineException
-	    ("The MRayExportRender Action requires that the source node specified by the " +
-	     "Maya Scene parameter (" + sname + ") must have a single Maya scene file " + 
-	     "as its primary file sequence!");
-	
-	NodeID snodeID = new NodeID(nodeID, sname);
-	scene = new Path(PackageInfo.sProdPath,
-			 snodeID.getWorkingParent() + "/" + fseq.getPath(0));
-      }
-      else {
-	throw new PipelineException
-	  ("The MRayExportRender Action requires the Maya Scene parameter to be set!");
-      }
+	    ("The MRayExportRender Action requires the Maya Scene parameter to be set!");
+	}
     }
     
     {
-      String sname = (String) getSingleParamValue(aPreExportMEL); 
-      if(sname != null) {
-	FileSeq fseq = agenda.getPrimarySource(sname);
-	if(fseq == null) 
-	  throw new PipelineException
+	String sname = (String) getSingleParamValue(aPreExportMEL); 
+	if(sname != null) {
+	  FileSeq fseq = agenda.getPrimarySource(sname);
+	  if(fseq == null) 
+	    throw new PipelineException
 	      ("Somehow the Pre Export MEL node (" + sname + ") was not one of the " + 
 	       "source nodes!");
-	
-	String suffix = fseq.getFilePattern().getSuffix();
-	if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("mel"))) 
-	  throw new PipelineException
-	    ("The MRayExportRender Action requires that the source node specified by the " +
-	     "Pre Export MEL parameter (" + sname + ") must have a single MEL script " + 
-	     "as its primary file sequence!");
-	
+	  
+	  String suffix = fseq.getFilePattern().getSuffix();
+	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("mel"))) 
+	    throw new PipelineException
+	      ("The MRayExportRender Action requires that the source node specified by the " +
+	       "Pre Export MEL parameter (" + sname + ") must have a single MEL script " + 
+	       "as its primary file sequence!");
+
 	  NodeID snodeID = new NodeID(nodeID, sname);
 	  preExport = new Path(PackageInfo.sProdPath,
 			       snodeID.getWorkingParent() + "/" + fseq.getPath(0));
-      }
+	}
     }
     
     {
-      String sname = (String) getSingleParamValue(aPostExportMEL); 
+	String sname = (String) getSingleParamValue(aPostExportMEL); 
 	if(sname != null) {
 	  FileSeq fseq = agenda.getPrimarySource(sname);
 	  if(fseq == null) 
@@ -317,7 +320,7 @@ public class MayaMRayRenderAction
 	      ("The MRayExportRender Action requires that the source node specified by the " +
 	       "Post Export MEL parameter (" + sname + ") must have a single MEL script " + 
 	       "as its primary file sequence!");
-	  
+
 	  NodeID snodeID = new NodeID(nodeID, sname);
 	  postExport = new Path(PackageInfo.sProdPath,
 				snodeID.getWorkingParent() + "/" + fseq.getPath(0));
@@ -344,8 +347,7 @@ public class MayaMRayRenderAction
       out.println("		$num++;");      
       out.println("	}");
       out.println("	setAttr defaultRenderGlobals.imageFormat $miImgExtNum[$num];");
-      out.println("	setAttr defaultRenderGlobals.imfkey -type \"string\" " + 
-		                "$miImgFormat[$num];");
+      out.println("	setAttr defaultRenderGlobals.imfkey -type \"string\" $miImgFormat[$num];");
       out.println("}");
       
       FilePattern fpat = target.getFilePattern();
@@ -353,9 +355,10 @@ public class MayaMRayRenderAction
       out.println("setAttr defaultRenderGlobals.an true ;");
       out.println("setAttr defaultRenderGlobals.extensionPadding "+ fpat.getPadding() +" ;");
       out.println("setAttr defaultRenderGlobals.pff 1 ;");
+      out.println("setAttr defaultRenderGlobals.periodInExt 1;");
       out.println("setAttr mentalrayGlobals.passAlphaThrough 1;");
-      out.println("setAttr -type \"string\" " + "defaultRenderGlobals.ifp \"" + 
-		  fpat.getPrefix() + "\";");
+      out.println("setAttr -type \"string\" " + "defaultRenderGlobals.ifp \"" + fpat.getPrefix()
+	+ "\";");
 
       out.println("setAttr defaultRenderGlobals.startFrame " + range.getStart() + ";");
       out.println("setAttr defaultRenderGlobals.endFrame " + range.getEnd() + ";");
@@ -363,9 +366,9 @@ public class MayaMRayRenderAction
       
       Path tempPath = getTempPath(agenda);
       tempPath = new Path(tempPath, fpat.getPrefix() + ".mi");
-  
+
       out.println("Mayatomr -mi  -perframe 2 -padframe 4 -binary "
-		  + "-xp \"1111333333\" -file \"" + tempPath.toOsString() + "\";");
+	       + "-xp \"1111333333\" -file \"" + tempPath.toOsString() + "\";");
       
       if(postExport != null) 
 	out.println("source \"" + postExport + "\";");
@@ -479,7 +482,7 @@ public class MayaMRayRenderAction
 	}
       }
 
-      StringBuilder buf = new StringBuilder();
+      StringBuffer buf = new StringBuffer();
       for (String arg : args) 
 	buf.append(arg + " ");
 
@@ -532,25 +535,23 @@ public class MayaMRayRenderAction
     }
   }   
   
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
   private static final long serialVersionUID = 8756899056203195629L;
 
     
-  /** 
-   * Single action parameter names.
-   */ 
-  private static final String aPreExportMEL    = "PreExportMEL";
-  private static final String aPostExportMEL   = "PostExportMEL";
-  private static final String aExtraOpts       = "ExtraOptions";
-  private static final String aKeepTempFiles   = "KeepTempFiles";
-  private static final String aLibraryPath     = "LibraryPath";
-  private static final String aIncludePath     = "IncludePath";
-  private static final String aRenderVerbosity = "RenderVerbosity";
-  private static final String aMayaScene       = "MayaScene";
+    /** 
+     * Single action parameter names.
+     */ 
+    private static final String aPreExportMEL = "PreExportMEL";
+    private static final String aPostExportMEL = "PostExportMEL";
+    private static final String aExtraOpts = "ExtraOptions";
+    private static final String aKeepTempFiles = "KeepTempFiles";
+    private static final String aLibraryPath = "LibraryPath";
+    private static final String aIncludePath = "IncludePath";
+    private static final String aRenderVerbosity = "RenderVerbosity";
+    private static final String aMayaScene = "MayaScene";
     
-}
+
+    }
