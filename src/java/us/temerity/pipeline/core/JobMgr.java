@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.34 2006/12/20 15:10:43 jim Exp $
+// $Id: JobMgr.java,v 1.35 2007/01/03 18:06:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1060,6 +1060,10 @@ class JobMgr
 	  
 	  /* create the job execution process */ 
 	  pProc = pJob.getAction().prep(agenda, outFile, errFile);
+	  if(pProc == null) 
+	    throw new PipelineException
+	      ("The prep() method of the Action (" + pJob.getAction().getName() + ") " + 
+	       "returned (null) instead of a the expected SubProcessHeavy instance!");
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
