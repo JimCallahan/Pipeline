@@ -1,4 +1,4 @@
-// $Id: CheckedInNodeEvent.java,v 1.1 2007/01/01 16:09:51 jim Exp $
+// $Id: CheckedInNodeEvent.java,v 1.2 2007/01/04 08:44:17 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -42,7 +42,8 @@ class CheckedInNodeEvent
    *   The revision number of the checked-in version created.
    * 
    * @param level  
-   *   The revision number component level incremented.
+   *   The revision number component level incremented or
+   *   <CODE>null</CODE> for the initial revision.
    */
   public
   CheckedInNodeEvent
@@ -54,8 +55,6 @@ class CheckedInNodeEvent
   {
     super(NodeEventOp.CheckedIn, nodeID, vid);
 
-    if(level == null) 
-      throw new IllegalArgumentException("The level cannot be (null)!");
     pLevel = level; 
   }
 
@@ -66,7 +65,8 @@ class CheckedInNodeEvent
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Get the revision number component level incremented.
+   * Get the revision number component level incremented or
+   * <CODE>null</CODE> for the initial revision.
    */
   public VersionID.Level
   getLevel() 
@@ -89,7 +89,8 @@ class CheckedInNodeEvent
   {
     super.toGlue(encoder); 
 
-    encoder.encode("Level", pLevel); 
+    if(pLevel != null) 
+      encoder.encode("Level", pLevel); 
   }
 
   public void 
@@ -101,10 +102,7 @@ class CheckedInNodeEvent
   {
     super.fromGlue(decoder); 
 
-    VersionID.Level level = (VersionID.Level) decoder.decode("Level");
-    if(level == null) 
-      throw new GlueException("The \"Level\" was missing!");
-    pLevel = level; 
+    pLevel = (VersionID.Level) decoder.decode("Level");
   }
 
 
@@ -121,7 +119,8 @@ class CheckedInNodeEvent
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The revision number component level incremented.
+   * The revision number component level incremented or 
+   * <CODE>null</CODE> for the initial revision.
    */
   private VersionID.Level  pLevel; 
 

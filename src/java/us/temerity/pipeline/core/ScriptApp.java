@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.68 2007/01/01 16:09:51 jim Exp $
+// $Id: ScriptApp.java,v 1.69 2007/01/04 08:44:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4039,9 +4039,13 @@ class ScriptApp
 	  CheckedInNodeEvent e = (CheckedInNodeEvent) event;
 	  printBaseRepoNodeEvent(buf, e);
 	  
+	  String lstr = "(initial revision)";
+	  if(e.getLevel() != null) 
+	    lstr = e.getLevel().toString();
+
 	  buf.append
 	    ("\n" + 
-	     "Level        : " + e.getLevel()); 
+	     "Level        : " + lstr); 
 	}
 	break;
 
