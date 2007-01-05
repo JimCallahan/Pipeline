@@ -48,10 +48,14 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
 
-
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS
 @ROOT_INST_DIR@/MacOS/Pipeline.app
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/jogl/lib/MacOS/libjogl_awt.jnilib
+@ROOT_INST_DIR@/jogl/lib/MacOS/libjogl_cg.jnilib
+@ROOT_INST_DIR@/jogl/lib/MacOS/libjogl.jnilib
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

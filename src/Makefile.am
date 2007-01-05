@@ -4,7 +4,7 @@ if IS_MAC_OS
 else
 
 if IS_WINDOWS 
-  SUBDIRS = windows
+  SUBDIRS = java windows
 else 
   SUBDIRS = unix etc java utils native
 endif

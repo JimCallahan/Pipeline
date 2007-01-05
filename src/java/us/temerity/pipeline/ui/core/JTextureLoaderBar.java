@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.12 2007/01/02 07:55:06 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.13 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,9 +9,9 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
-import javax.swing.*;
 
-import net.java.games.jogl.*;
+import javax.swing.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E X T U R E   L O A D E R   B A R                                                    */
@@ -242,7 +242,7 @@ class JTextureLoaderBar
   public void 
   init
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {    
     if(UIMaster.getInstance().getDebugGL()) 
@@ -261,7 +261,7 @@ class JTextureLoaderBar
   public void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     GL gl = drawable.getGL();
@@ -341,7 +341,7 @@ class JTextureLoaderBar
   public void 
   reshape
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    int x, 
    int y, 
    int width, 
@@ -352,12 +352,12 @@ class JTextureLoaderBar
  
   /** 
    * Called by the drawable when the display mode or the display device associated with 
-   * the GLDrawable has changed.
+   * the GLAutoDrawable has changed.
    */ 
   public void 
   displayChanged
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    boolean modeChanged, 
    boolean deviceChanged
   )

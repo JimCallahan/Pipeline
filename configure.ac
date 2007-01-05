@@ -916,6 +916,13 @@ AC_SUBST(WIN_JAVA_RUNTIME)
 WIN_JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java"
 
 
+AC_SUBST(JOGL_JAR)
+JOGL_JAR=""
+
+AC_SUBST(JOGL_LIBRARY_PATH)
+JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+
+
 AC_SUBST(JAVA_RUNTIME_OPTS)
 JAVA_RUNTIME_OPTS=""
 
@@ -925,15 +932,21 @@ PIPELINE_JAR=""
 case "$NATIVE_OSTYPE" in 
   (Unix)  
     JAVA_RUNTIME="$JAVA_HOME/bin/java";
-    PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";;
+    PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
+    JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
+    JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
 
   (MacOS) 
     JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
-    PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";;
+    PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
+    JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
+    JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
   
   (Windows) 
-    JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java";
-    PIPELINE_JAR="${WIN_ROOT_INST_DIR}/lib/api.jar";;
+    JAVA_RUNTIME="$WIN_JAVA_HOME/bin/java";
+    PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
+    JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
+    JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
 esac
 
 AC_SUBST(EXTRA_DEBUG_SUBDIRS)
@@ -1428,6 +1441,11 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/v2_1_1/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
+
+  src/java/jogl/Makefile
+  src/java/jogl/MacOS/Makefile
+  src/java/jogl/Unix/Makefile
+  src/java/jogl/Windows/Makefile
 
   src/java/scripts/Makefile
   src/java/scripts/plfilemgr

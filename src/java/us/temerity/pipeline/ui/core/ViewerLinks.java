@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.5 2005/02/18 23:40:25 jim Exp $
+// $Id: ViewerLinks.java,v 1.6 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   L I N K S                                                                */

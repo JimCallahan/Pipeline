@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.33 2006/12/31 21:35:52 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.34 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,11 +11,11 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   V I E W E R   P A N E L                                            */
@@ -1234,7 +1234,7 @@ class JQueueJobViewerPanel
   public void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     super.display(drawable); 

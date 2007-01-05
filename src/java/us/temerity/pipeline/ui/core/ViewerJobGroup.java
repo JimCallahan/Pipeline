@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.4 2006/12/01 18:12:08 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.5 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,7 +8,7 @@ import us.temerity.pipeline.math.*;
 import java.io.*;
 import java.util.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   J O B   G R O U P                                                        */

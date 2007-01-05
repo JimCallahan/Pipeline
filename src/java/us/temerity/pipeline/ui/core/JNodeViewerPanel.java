@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.70 2006/12/31 20:44:53 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.71 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -17,8 +17,7 @@ import java.util.concurrent.atomic.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   V I E W E R   P A N E L                                                      */
@@ -1910,7 +1909,7 @@ class JNodeViewerPanel
   public void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     super.display(drawable); 

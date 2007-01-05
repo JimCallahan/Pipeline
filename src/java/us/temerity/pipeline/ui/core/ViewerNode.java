@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.9 2007/01/02 07:55:06 jim Exp $
+// $Id: ViewerNode.java,v 1.10 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,7 +8,7 @@ import us.temerity.pipeline.math.*;
 import java.io.*;
 import java.util.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   N O D E                                                                  */

@@ -1,6 +1,12 @@
 
-if FOUNDATION
-  SUBDIRS = scripts share us
+if IS_MAC_OS
+  SUBDIRS = jogl scripts
 else
-  SUBDIRS = scripts
+
+if IS_WINDOWS 
+  SUBDIRS = jogl
+else 
+  SUBDIRS = jogl scripts share us
+endif
+
 endif

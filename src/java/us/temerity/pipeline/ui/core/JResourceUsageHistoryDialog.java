@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.18 2006/12/01 18:12:08 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.19 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,10 +13,10 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.text.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R E S O U R C E   U S A G E   H I S T O R Y   D I A L O G                              */
@@ -531,7 +531,7 @@ class JResourceUsageHistoryDialog
   public void 
   init
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {    
     if(UIMaster.getInstance().getDebugGL()) 
@@ -556,7 +556,7 @@ class JResourceUsageHistoryDialog
   public synchronized void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     UserPrefs prefs = UserPrefs.getInstance();
@@ -2339,7 +2339,7 @@ class JResourceUsageHistoryDialog
   public void 
   reshape
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    int x, 
    int y, 
    int width, 
@@ -2356,12 +2356,12 @@ class JResourceUsageHistoryDialog
  
   /** 
    * Called by the drawable when the display mode or the display device associated with 
-   * the GLDrawable has changed.
+   * the GLAutoDrawable has changed.
    */ 
   public void 
   displayChanged
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    boolean modeChanged, 
    boolean deviceChanged
   )

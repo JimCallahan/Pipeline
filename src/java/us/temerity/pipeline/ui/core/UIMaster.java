@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.52 2006/12/31 20:44:54 jim Exp $
+// $Id: UIMaster.java,v 1.53 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -23,8 +23,7 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.plaf.synth.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   M A S T E R                                                                      */
@@ -2557,7 +2556,7 @@ class UIMaster
   public synchronized GLCanvas
   createGLCanvas() 
   {
-    return GLDrawableFactory.getFactory().createGLCanvas(pGLCapabilities, pGLCanvas);
+    return new GLCanvas(pGLCapabilities, null, pGLCanvas.getContext(), null);
   }
 
 
@@ -3059,7 +3058,7 @@ class UIMaster
 	  {
 	    pGLCapabilities = new GLCapabilities();  
 	    pGLCapabilities.setDoubleBuffered(true);
-    	    pGLCanvas = GLDrawableFactory.getFactory().createGLCanvas(pGLCapabilities);
+     	    pGLCanvas = new GLCanvas(pGLCapabilities);
             
 	    JTextureLoaderBar loader = 
  	      new JTextureLoaderBar(pGLCanvas, new MainFrameTask(pMaster));

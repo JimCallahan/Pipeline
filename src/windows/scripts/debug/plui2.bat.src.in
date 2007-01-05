@@ -1,1 +1,2 @@
-"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ -cp @PIPELINE_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp %*
+set PATH=@JOGL_LIBRARY_PATH@;%PATH%
+"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ -Dsun.java2d.noddraw=true -cp @PIPELINE_JAR@:@JOGL_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp %*

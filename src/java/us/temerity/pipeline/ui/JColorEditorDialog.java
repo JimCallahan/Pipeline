@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.11 2006/09/25 12:11:44 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.12 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -17,8 +17,8 @@ import java.net.*;
 import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.event.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C O L O R   E D I T O R   D I A L O G                                                  */
@@ -100,7 +100,7 @@ class JColorEditorDialog
       {
 	GLCapabilities glc = new GLCapabilities();  
 	glc.setDoubleBuffered(true);
-	pCanvas = GLDrawableFactory.getFactory().createGLCanvas(glc);
+	pCanvas = new GLCanvas(glc);
 	pCanvas.setSize(520, 250);
 	
 	pCanvas.addGLEventListener(this);
@@ -175,11 +175,11 @@ class JColorEditorDialog
   public void 
   init
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {    
-    drawable.setGL(new DebugGL(drawable.getGL()));
-    //drawable.setGL(new TraceGL(drawable.getGL(), System.err));
+    // drawable.setGL(new DebugGL(drawable.getGL()));
+    // drawable.setGL(new TraceGL(drawable.getGL(), System.err));
 
     GL gl = drawable.getGL();
 
@@ -197,7 +197,7 @@ class JColorEditorDialog
   public void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     GL gl = drawable.getGL();
@@ -444,7 +444,7 @@ class JColorEditorDialog
   public void 
   reshape
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    int x, 
    int y, 
    int width, 
@@ -452,7 +452,7 @@ class JColorEditorDialog
   )
   {
     GL  gl  = drawable.getGL();
-    GLU glu = drawable.getGLU();
+    GLU glu = new GLU();
 
     gl.glMatrixMode(GL.GL_PROJECTION);
     gl.glLoadIdentity();
@@ -461,12 +461,12 @@ class JColorEditorDialog
 
   /** 
    * Called by the drawable when the display mode or the display device associated with 
-   * the GLDrawable has changed.
+   * the GLAutoDrawable has changed.
    */ 
   public void 
   displayChanged
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    boolean modeChanged, 
    boolean deviceChanged
   )
@@ -758,7 +758,7 @@ class JColorEditorDialog
        "Loading Texture: " + name);
     try {
       int handle[] = new int[1];
-      gl.glGenTextures(1, handle); 
+      gl.glGenTextures(1, handle, 0); 
 
       gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.2 2006/12/05 22:17:33 jim Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.3 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,11 +11,11 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   S E R V E R   S T A T S   P A N E L                                */
@@ -592,7 +592,7 @@ class JQueueJobServerStatsPanel
   public void 
   init
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {    
     super.init(drawable);
@@ -611,7 +611,7 @@ class JQueueJobServerStatsPanel
   public void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     super.display(drawable); 

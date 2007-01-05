@@ -12,14 +12,17 @@
       <versionLine x="35" y="278" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
     </text>
   </splashScreen>
-  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.5" maxVersion="1.5" preferredVM="server" allowBetaVM="true" jdkOnly="false">
+  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ -Dsun.java2d.noddraw=true" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.5" maxVersion="1.5" preferredVM="server" allowBetaVM="true" jdkOnly="false">
     <searchSequence>
       <directory location="@WIN_JAVA_HOME@" />
     </searchSequence>
     <classPath>
-      <archive location="@WIN_ROOT_INST_DIR@/lib/api.jar" failOnError="true" />
+      <archive location="@PIPELINE_JAR@" failOnError="true" />
+      <archive location="@JOGL_JAR@" failOnError="true" />
     </classPath>
-    <nativeLibraryDirectories />
+    <nativeLibraryDirectories>
+      <directory name="@JOGL_LIBRARY_PATH@" />
+    </nativeLibraryDirectories>
   </java>
   <includedFiles />
 </exe4j>

@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.6 2006/12/13 04:08:49 jim Exp $
+// $Id: GeometryMgr.java,v 1.7 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,7 +9,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   G E O M E T R Y   M G R                                                                */

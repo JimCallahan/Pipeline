@@ -1,4 +1,4 @@
-// $Id: ReservedViewerPie.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: ReservedViewerPie.java,v 1.2 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,7 +8,7 @@ import us.temerity.pipeline.math.*;
 import java.io.*;
 import java.util.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R E S E R V E D   V I E W E R   P I E                                                  */

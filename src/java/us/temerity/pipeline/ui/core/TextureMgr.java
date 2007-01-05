@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: TextureMgr.java,v 1.4 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -14,8 +14,7 @@ import java.net.*;
 
 import javax.imageio.*;
 import javax.swing.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E X T U R E   M G R                                                                  */
@@ -146,7 +145,7 @@ class TextureMgr
 	     "Loading Font Texture: " + name + " \"" + code + "\"");
 
 	  int handle[] = new int[1];
-	  gl.glGenTextures(1, handle); 
+	  gl.glGenTextures(1, handle, 0); 
 	  texs[code] = handle[0];
 
 	  gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
@@ -294,7 +293,7 @@ class TextureMgr
        "Loading Texture: " + name);
     {
       int handle[] = new int[1];
-      gl.glGenTextures(1, handle); 
+      gl.glGenTextures(1, handle, 0); 
 
       gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
 

@@ -119,6 +119,19 @@ The core features of Pipeline include:
 
 %dir @ROOT_INST_DIR@/plconfig
 
+%defattr(-,root,root)
+@ROOT_INST_DIR@/jogl/docs
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/jogl/README.txt
+@ROOT_INST_DIR@/jogl/COPYRIGHT-JOGL.txt
+@ROOT_INST_DIR@/jogl/LICENSE-JOGL.txt
+@ROOT_INST_DIR@/jogl/lib/jogl.jar
+@ROOT_INST_DIR@/jogl/lib/Unix/libjogl_awt.so
+@ROOT_INST_DIR@/jogl/lib/Unix/libjogl_cg.so
+@ROOT_INST_DIR@/jogl/lib/Unix/libjogl_drihack.so
+@ROOT_INST_DIR@/jogl/lib/Unix/libjogl.so
+
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.

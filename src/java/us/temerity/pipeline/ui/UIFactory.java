@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.11 2006/12/10 22:46:59 jesse Exp $
+// $Id: UIFactory.java,v 1.12 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,8 +21,7 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.plaf.synth.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   F A C T O R Y                                                                    */

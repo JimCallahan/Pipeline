@@ -250,7 +250,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
            VAULT = vault
 
 
-      JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
+      JAVA_PATHS = -d ../../.. \
+                   -classpath "../../..:$(srcdir)/../../..:$(srcdir)/../../../jogl/jogl.jar"
 
 
            ENUMS = CheckOutMode \

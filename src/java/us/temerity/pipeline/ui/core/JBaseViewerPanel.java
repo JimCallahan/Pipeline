@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.13 2006/12/13 04:08:50 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.14 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -12,10 +12,11 @@ import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
-
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   V I E W E R   P A N E L                                                      */
@@ -196,7 +197,7 @@ class JBaseViewerPanel
   public void 
   init
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {    
     if(UIMaster.getInstance().getDebugGL()) 
@@ -221,11 +222,11 @@ class JBaseViewerPanel
   public void 
   display
   (
-   GLDrawable drawable
+   GLAutoDrawable drawable
   )
   {
     GL gl   = drawable.getGL();
-    GLU glu = drawable.getGLU();
+    GLU glu = new GLU();
 
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
@@ -289,7 +290,7 @@ class JBaseViewerPanel
   public void 
   reshape
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    int x, 
    int y, 
    int width, 
@@ -297,7 +298,7 @@ class JBaseViewerPanel
   )
   {
     GL  gl  = drawable.getGL();
-    GLU glu = drawable.getGLU();
+    GLU glu = new GLU(); 
 
     double w = (double) width;
     double h = (double) height;
@@ -316,12 +317,12 @@ class JBaseViewerPanel
  
   /** 
    * Called by the drawable when the display mode or the display device associated with 
-   * the GLDrawable has changed.
+   * the GLAutoDrawable has changed.
    */ 
   public void 
   displayChanged
   (
-   GLDrawable drawable, 
+   GLAutoDrawable drawable, 
    boolean modeChanged, 
    boolean deviceChanged
   )

@@ -1,4 +1,4 @@
-// $Id: ViewerGraphic.java,v 1.1 2006/12/07 05:18:25 jim Exp $
+// $Id: ViewerGraphic.java,v 1.2 2007/01/05 23:46:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,7 +8,7 @@ import us.temerity.pipeline.math.*;
 import java.io.*;
 import java.util.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   G R A P H I C                                                            */
