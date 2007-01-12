@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.10 2006/10/18 06:34:22 jim Exp $
+// $Id: JCloneDialog.java,v 1.11 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class JCloneDialog
 	
 	pPrefixField =
 	  UIFactory.createTitledPathField(tpanel, "Filename Prefix:", sTSize, 
-					  vpanel, "", sVSize);
+					  vpanel, new Path("/"), sVSize);
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	
@@ -270,7 +270,7 @@ class JCloneDialog
     pFileSeqDialog.updateHeader(author, view);
     pRootPath = new Path(PackageInfo.sWorkPath, author + "/" + view);
 
-    pPrefixField.setText(pNodeMod.getName() + "-clone");
+    pPrefixField.setPath(new Path(pNodeMod.getName() + "-clone"));
 
     FileSeq fseq = pNodeMod.getPrimarySequence();
     if(fseq.hasFrameNumbers()) {
@@ -449,7 +449,7 @@ class JCloneDialog
   {
     pFileSeqDialog.setRootDir(pRootPath.toFile());
 
-    String prefix = pPrefixField.getText();
+    Path prefix = pPrefixField.getPath();
     if(prefix != null) {
       Path path = new Path(pRootPath, prefix);
       File dir = path.toFile();
@@ -466,11 +466,11 @@ class JCloneDialog
 	FileSeq fseq = pFileSeqDialog.getSelectedFileSeq();
 	if(fseq != null) {
 	  Path path = new Path(dpath, fseq.getFilePattern().getPrefix());
-	  pPrefixField.setText(path.toString());
+	  pPrefixField.setPath(path); 
 	  updateFileSeq(fseq);
 	}
 	else {
-	  pPrefixField.setText(dpath.toString());
+	  pPrefixField.setPath(dpath); 
 	}
       }
     }

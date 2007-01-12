@@ -1,4 +1,4 @@
-// $Id: JRenameDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JRenameDialog.java,v 1.7 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -53,7 +53,7 @@ class JRenameDialog
 	
 	pPrefixField =
 	  UIFactory.createTitledPathField(tpanel, "Filename Prefix:", sTSize, 
-					  vpanel, "", sVSize);
+					  vpanel, new Path("/"), sVSize);
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 

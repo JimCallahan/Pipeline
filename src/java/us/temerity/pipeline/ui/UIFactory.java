@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.12 2007/01/05 23:46:10 jim Exp $
+// $Id: UIFactory.java,v 1.13 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -376,6 +376,7 @@ class UIFactory
    * @param align
    *   The horizontal alignment.
    */ 
+  @Deprecated
   public static JPathField
   createPathField
   (
@@ -396,6 +397,45 @@ class UIFactory
     field.setEditable(true);
     
     field.setText(text);
+    
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain identifier paths. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param path 
+   *   The initial path. 
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JPathField
+  createPathField
+  (
+   Path path, 
+   int width,
+   int align
+  )
+  {
+    JPathField field = new JPathField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setPath(path);
     
     return field;
   }
@@ -425,6 +465,7 @@ class UIFactory
    * @return 
    *   The created components: [JPathField, JButton, Box]
    */ 
+  @Deprecated
   public static JComponent[] 
   createBrowsablePathField
   (
@@ -452,6 +493,83 @@ class UIFactory
       field.setHorizontalAlignment(align);
       field.setEditable(true);
       field.setText(text);
+
+      box.add(field);
+    }
+    
+    box.add(Box.createRigidArea(new Dimension(4, 0)));
+    
+    {
+      JButton btn = new JButton();
+      comps[1] = btn;
+      btn.setName("BrowseButton");
+      
+      Dimension size = new Dimension(15, 19);
+      btn.setMinimumSize(size);
+      btn.setMaximumSize(size);
+      btn.setPreferredSize(size);
+
+      btn.addActionListener(listener);      
+      btn.setActionCommand(command);
+      
+      box.add(btn);
+    }
+    
+    return comps;
+  }
+
+  /**
+   * Create a new editable text field which can only contain identifier paths and 
+   * a directory browser button used to set the path. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param listener
+   *   The action listener for the browse button.
+   * 
+   * @param command
+   *   The action command associated with pressing the browse button.
+   * 
+   * @return 
+   *   The created components: [JPathField, JButton, Box]
+   */ 
+  public static JComponent[] 
+  createBrowsablePathField
+  (
+   Path path, 
+   int width,
+   int align, 
+   ActionListener listener, 
+   String command
+  )
+  {
+    JComponent comps[] = new JComponent[3];
+
+    Box box = new Box(BoxLayout.X_AXIS); 
+    comps[2] = box;
+
+    {
+      JPathField field = new JPathField();
+      comps[0] = field;
+      field.setName("EditableTextField");
+
+      Dimension size = new Dimension(Math.max(0, width-19), 19);
+      field.setMinimumSize(size);
+      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+
+      field.setHorizontalAlignment(align);
+      field.setEditable(true);
+      field.setPath(path); 
 
       box.add(field);
     }
@@ -1481,6 +1599,7 @@ class UIFactory
    * @param vwidth
    *   The minimum and preferred width of the path field.
    */ 
+  @Deprecated
   public static JPathField
   createTitledPathField
   (
@@ -1507,6 +1626,38 @@ class UIFactory
    * @param vpanel
    *   The values panel.
    * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   */ 
+  public static JPathField
+  createTitledPathField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Path path, 
+   int vwidth
+  )
+  {    
+    return createTitledPathField(tpanel, title, twidth, vpanel, path, vwidth, null);
+  }
+
+  /**
+   * Create a new path text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
    * @param text
    *   The initial text.
    * 
@@ -1516,6 +1667,7 @@ class UIFactory
    * @param tooltip
    *   The tooltip text.
    */ 
+  @Deprecated
   public static JPathField
   createTitledPathField
   (
@@ -1535,6 +1687,48 @@ class UIFactory
 
     return field;
   }
+
+  /**
+   * Create a new path text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JPathField
+  createTitledPathField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Path path, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JPathField field = createPathField(path, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1565,6 +1759,7 @@ class UIFactory
    * @return 
    *   The created components: [JPathField, JButton, Box]
    */ 
+  @Deprecated
   public static JComponent[] 
   createTitledBrowsablePathField
   (
@@ -1580,6 +1775,50 @@ class UIFactory
   {    
     return createTitledBrowsablePathField
       (tpanel, title, twidth, vpanel, text, vwidth, listener, command, null);
+  } 
+
+  /**
+   * Create a new path text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   * 
+   * @param listener
+   *   The action listener for the browse button.
+   * 
+   * @param command
+   *   The action command associated with pressing the browse button.
+   *
+   * @return 
+   *   The created components: [JPathField, JButton, Box]
+   */ 
+  public static JComponent[] 
+  createTitledBrowsablePathField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Path path, 
+   int vwidth,
+   ActionListener listener, 
+   String command
+  )
+  {    
+    return createTitledBrowsablePathField
+      (tpanel, title, twidth, vpanel, path, vwidth, listener, command, null);
   }
 
   /**
@@ -1612,6 +1851,7 @@ class UIFactory
    * @return 
    *   The created components: [JPathField, JButton, Box]
    */ 
+  @Deprecated
   public static JComponent[] 
   createTitledBrowsablePathField
   (
@@ -1630,6 +1870,59 @@ class UIFactory
 
     JComponent[] comps = 
       createBrowsablePathField(text, vwidth, JLabel.CENTER, listener, command);
+    vpanel.add(comps[2]);
+
+    return comps;
+  }
+
+  /**
+   * Create a new path text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   * 
+   * @param listener
+   *   The action listener for the browse button.
+   * 
+   * @param command
+   *   The action command associated with pressing the browse button.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * 
+   * @return 
+   *   The created components: [JPathField, JButton, Box]
+   */ 
+  public static JComponent[] 
+  createTitledBrowsablePathField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Path path, 
+   int vwidth, 
+   ActionListener listener, 
+   String command,
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JComponent[] comps = 
+      createBrowsablePathField(path, vwidth, JLabel.CENTER, listener, command);
     vpanel.add(comps[2]);
 
     return comps;

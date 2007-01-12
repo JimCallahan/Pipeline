@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.4 2006/11/22 09:08:01 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.5 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -374,10 +374,15 @@ class MayaTextureSyncTool
 	      JPanel vpanel = (JPanel) comps[1];
 
 	      {
+		File parent = working.getParentFile();
+		Path parentPath = null;
+		if(parent != null) 
+		  parentPath = new Path(parent);
+
 		JComponent rcomps[] = 
 		  UIFactory.createTitledBrowsablePathField
 		  (tpanel, "Working Directory:", sTSize-7, 
-		   vpanel, working.getParent(), sVSize, 
+		   vpanel, parentPath, sVSize, 
 		   this, "texture-browse:" + original, 
 		   "The fully resolved working area directory where the texture file " + 
 		   "should be located.");

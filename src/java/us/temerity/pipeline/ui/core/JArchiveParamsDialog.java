@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.7 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -383,7 +383,11 @@ class JArchiveParamsDialog
 	      pArchiverParamComponents.put(pname, field);
 	    }
 	    else if(aparam instanceof DirectoryArchiverParam) {
-	      String value = (String) aparam.getValue();
+	      String str = (String) aparam.getValue();
+	      Path value = null;
+	      if(str != null) 
+		value = new Path(str);	      
+
 	      JPathField field = 
 		UIFactory.createTitledPathField
 		(tpanel, aparam.getNameUI() + ":", sTSize, 

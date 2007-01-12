@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.16 2006/10/18 06:34:22 jim Exp $
+// $Id: JRegisterDialog.java,v 1.17 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class JRegisterDialog
 	
 	pPrefixField =
 	  UIFactory.createTitledPathField(tpanel, "Filename Prefix:", sTSize, 
-					 vpanel, "", sVSize);
+					  vpanel, new Path("/"), sVSize);
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
@@ -515,7 +515,7 @@ class JRegisterDialog
   {
     pFileSeqDialog.setRootDir(pRootPath.toFile());
 
-    String prefix = pPrefixField.getText();
+    Path prefix = pPrefixField.getPath();
     if(prefix != null) {
       Path path = new Path(pRootPath, prefix);
       File dir = path.toFile();
@@ -532,11 +532,11 @@ class JRegisterDialog
 	FileSeq fseq = pFileSeqDialog.getSelectedFileSeq();
 	if(fseq != null) {
 	  Path path = new Path(dpath, fseq.getFilePattern().getPrefix());
-	  pPrefixField.setText(path.toString());
+	  pPrefixField.setPath(path); 
 	  updateFileSeq(fseq);
 	}
 	else {
-	  pPrefixField.setText(dpath.toString());
+	  pPrefixField.setPath(dpath); 
 	  pFileModeField.setSelectedIndex(0);	  
 	  pFrameNumbersField.setValue(false);
 	  pFramePaddingField.setValue(null);

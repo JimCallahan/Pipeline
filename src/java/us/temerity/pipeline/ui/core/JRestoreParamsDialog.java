@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.6 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -305,7 +305,11 @@ class JRestoreParamsDialog
 	      pArchiverParamComponents.put(pname, field);
 	    }
 	    else if(aparam instanceof DirectoryArchiverParam) {
-	      String value = (String) aparam.getValue();
+	      String str = (String) aparam.getValue();
+	      Path value = null;
+	      if(str != null) 
+		value = new Path(str);	      
+
 	      JPathField field = 
 		UIFactory.createTitledPathField
 		(tpanel, aparam.getNameUI() + ":", sTSize, 

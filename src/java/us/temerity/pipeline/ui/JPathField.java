@@ -1,6 +1,8 @@
-// $Id: JPathField.java,v 1.3 2004/10/22 17:07:37 jim Exp $
+// $Id: JPathField.java,v 1.4 2007/01/12 00:05:15 jim Exp $
 
 package us.temerity.pipeline.ui;
+
+import us.temerity.pipeline.Path;
 
 import java.awt.*;
 import javax.swing.*;
@@ -67,6 +69,44 @@ class JPathField
 
     return true;
   }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current value as a Path or <CODE>null</CODE> if unset or not a valid path. 
+   */ 
+  public Path
+  getPath() 
+  {
+    if(!isPathValid()) 
+      return null;
+
+    String text = getText();
+    if(text == null) 
+      return null;
+
+    return new Path(text);
+  }
+
+  /**
+   * Set the current value as a Path or <CODE>null</CODE> to unset.
+   */ 
+  public void
+  setPath
+  (
+   Path path
+  ) 
+  {
+    if(path == null)
+      setText(null); 
+
+    setText(path.toString()); 
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
