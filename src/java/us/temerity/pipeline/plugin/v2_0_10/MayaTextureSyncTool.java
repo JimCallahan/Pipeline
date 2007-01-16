@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.5 2007/01/12 00:05:15 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.6 2007/01/16 00:21:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -137,7 +137,7 @@ class MayaTextureSyncTool
       pTargetSceneField = 
 	UIFactory.createTitledPathField
 	(tpanel, "Target Scene Node:", sTSize, 
-	 vpanel, null, sVSize, 
+	 vpanel, new Path("/"), sVSize, 
 	 "The node associated with the Maya scene being checked.");
       
       UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -145,7 +145,7 @@ class MayaTextureSyncTool
       pTargetLinkField = 
 	UIFactory.createTitledPathField
 	(tpanel, "Target Link Node:", sTSize, 
-	 vpanel, null, sVSize, 
+	 vpanel, new Path("/"), sVSize, 
 	 "The node on the downstream side of all linked texture nodes being checked.");
       
       UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -154,7 +154,7 @@ class MayaTextureSyncTool
 	JComponent rcomps[] = 
 	  UIFactory.createTitledBrowsablePathField
 	  (tpanel, "Texture Directory:", sTSize, 
-	   vpanel, null, sVSize, 
+	   vpanel, new Path("/"), sVSize, 
 	   this, "relocate-browse", 
 	   "The fully resolved working area destination directory to copy texture files " + 
 	   "which are currently outside the working area.");

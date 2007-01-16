@@ -1,4 +1,4 @@
-// $Id: RenumberTool.java,v 1.3 2006/09/29 03:03:21 jim Exp $
+// $Id: RenumberTool.java,v 1.4 2007/01/16 00:21:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_9;
 
@@ -106,7 +106,7 @@ RenumberTool
 	pTargetNodeField = 
 	  UIFactory.createTitledPathField
 	    (tpanel, "Target Node:", sTSize, 
-	     vpanel, null, sVSize,
+	     vpanel, new Path("/"), sVSize,
 	     "The root of the tree of nodes being renumbered.");
       }
       
