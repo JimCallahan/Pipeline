@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.7 2006/12/21 10:37:41 jim Exp $
+// $Id: PlRun.cc,v 1.8 2007/01/17 23:17:50 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -61,13 +61,13 @@ main
 
   /* make sure that only the "pipeline" user can run this program! */ 
   {
-    uid_t uid  = getuid();
+    uid_t uid = getuid();
     if(uid != PackageInfo::sPipelineUID) {
       sprintf(msg, "This program can only be run by the (%s) user!", 
 	      PackageInfo::sPipelineUser);
       FB::error(msg);	
     }
-      
+   
     uid_t gid  = getgid();
     if(gid != PackageInfo::sPipelineGID) {
       sprintf(msg, "This program can only be run by the (%s) group!", 
@@ -106,8 +106,45 @@ main
       }
     }
   }
-  
-  /* build a new environment: (to get around ld.so ignoring LD_LIBRARY_PATH) */ 
+
+  /* build a new argument list */ 
+  char** argv2 = new char*[argc-2];
+  {
+    argv2[0] = NULL;
+    {
+      int wk = 0;
+      size_t len = strlen(cmd);
+      char* p = cmd+(len-1);
+      while(wk < len) {
+	if(*p == '/') {
+	  argv2[0] = new char[wk + 1];
+	  strcpy(argv2[0], p+1);
+	  break;
+	}
+
+	wk++;
+	p--;
+      }
+
+      if(argv2[0] == NULL)
+	FB::error("the command argument was not absolute!");
+    }
+
+    int wk = 1;
+    char** p = argv+4;
+    while((*p) != NULL) {
+      size_t len = strlen(*p);
+      argv2[wk] = new char[len + 1];
+      strcpy(argv2[wk], *p);
+
+      wk++;
+      p++;
+    }
+
+    argv2[wk] = NULL;
+  }
+
+  /* build a new environment */ 
   char** envp2 = NULL;
   {
     int cnt = 0;
@@ -134,9 +171,14 @@ main
       char** p = envp;
       while((*p) != NULL) {
 	size_t len = strlen(*p);
+
+	/* to get around ld.so ignoring LD_LIBRARY_PATH) */
 	if((len > 24) && (strncmp(*p, "PIPELINE_LD_LIBRARY_PATH", 24) == 0)) {
-	  envp2[wk] = strdup((*p)+9);
+	  envp2[wk] = new char[len - 8];
+	  strcpy(envp2[wk], (*p)+9);  
 	}
+	
+	/* replace with substituted username and home directory */ 
 	else if(strcmp(*p, "USER=pipeline") == 0) {
 	  envp2[wk] = new char[strlen(username) + 6];
 	  strcpy(envp2[wk], "USER=");
@@ -147,21 +189,79 @@ main
 	  strcpy(envp2[wk], homedir);
 	  strcat(envp2[wk], username);
 	}
+
+	/* copy everything else... */ 
 	else {
-	  envp2[wk] = strdup(*p);
+	  envp2[wk] = new char[len + 1];
+	  strcpy(envp2[wk], *p);
 	}
 
 	wk++;
 	p++;
       }
 
-      envp2[cnt] = NULL;
+      envp2[wk] = NULL;
     }
   }
   assert(envp2);
 
+  /* debugging */ 
+//   FB::stageBegin("Original");
+//   {
+//     FB::stageBegin("Arguments");
+//     {
+//       char** p = argv;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
+
+//     FB::stageBegin("Environment");
+//     {
+//       char** p = envp;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
+//   }
+//   FB::stageEnd();
+
+//   FB::stageBegin("Modified"); 
+//   {
+//     FB::stageBegin("Command");
+//     {
+//       FB::stageMsg(cmd);
+//     }
+//     FB::stageEnd();
+  
+//     FB::stageBegin("Arguments");
+//     {
+//       char** p = argv2;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
+
+//     FB::stageBegin("Environment");
+//     {
+//       char** p = envp2;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
+//   }
+//   FB::stageEnd();
+    
   /* execute the command */ 
-  if(execve(cmd, argv+3, envp2) == -1) {
+  if(execve(cmd, argv2, envp2) == -1) {
     sprintf(msg, "unable to execute \"%s\": %s", cmd, strerror(errno));
     FB::error(msg);
   }
