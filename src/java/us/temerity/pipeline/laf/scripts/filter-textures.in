@@ -3,14 +3,19 @@
 src=$1
 dest=laf/textures
 
-tmpfile="filter-textures.scm"
+tmpfile1="filter-textures1.scm"
+tmpfile2="filter-textures2.scm"
 
-rm -f $tmpfile
-echo '(load "'$src/../../../scripts/build-mipmap.scm'")' > $tmpfile
-echo '(load "'$src/../../../scripts/scale-convert.scm'")' >> $tmpfile
+rm -f $tmpfile2
+echo '(load "'$src/../../../scripts/build-mipmap.scm'")' > $tmpfile1
+echo '(load "'$src/../../../scripts/scale-convert.scm'")' >> $tmpfile1
 
-anynewer=0
+rm -f $tmpfile2
+echo '(load "'$src/../../../scripts/build-mipmap.scm'")' > $tmpfile2
+echo '(load "'$src/../../../scripts/scale-convert.scm'")' >> $tmpfile2
 
+anynewer1=0
+anynewer2=0
 
 #---------------------------------------------------------------------------------------------
 #   H E L P E R   F U N C T I O N S 
@@ -52,8 +57,8 @@ function mkmipmaps {
 
   if [ $filter -eq 1 ]
   then 
-    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-    anynewer=1
+    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
+    anynewer1=1
   fi
 }
 
@@ -81,8 +86,8 @@ function mkicon {
   dimg=$dir/texture.21.png
   if [ $simg -nt $dimg ] 
   then
-    printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
-    anynewer=1
+    printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile2
+    anynewer2=1
   fi
 }
 
@@ -145,8 +150,8 @@ do
 
     if [ $filter -eq 1 ]
     then 
-      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-      anynewer=1
+      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
+      anynewer1=1
     fi
   done
 
@@ -163,8 +168,8 @@ do
     dimg=$dir/texture.21.png
     if [ $simg -nt $dimg ] 
     then
-      printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
-      anynewer=1
+      printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile1
+      anynewer1=1
     fi
   done
 
@@ -202,8 +207,8 @@ do
 
       if [ $filter -eq 1 ]
       then 
-	printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-	anynewer=1
+	printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
+	anynewer1=1
       fi
 
       frame=$(($frame + 1))
@@ -223,8 +228,8 @@ do
       dimg=$dir/texture.21.png
       if [ $simg -nt $dimg ] 
       then
-	printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
-	anynewer=1
+	printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile1
+	anynewer1=1
       fi
 
       frame=$(($frame + 1))	
@@ -395,8 +400,8 @@ do
 
   if [ $filter -eq 1 ]
   then 
-    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-    anynewer=1
+    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
+    anynewer1=1
   fi
 
   frame=$(($frame + 1))
@@ -433,8 +438,8 @@ do
 
   if [ $filter -eq 1 ]
   then 
-    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-    anynewer=1
+    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
+    anynewer1=1
   fi
 done
 
@@ -472,8 +477,8 @@ do
 
     if [ $filter -eq 1 ]
     then 
-      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-      anynewer=1
+      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile2
+      anynewer2=1
     fi
 
     frame=$(($frame + 1))
@@ -507,8 +512,8 @@ do
 
     if [ $filter -eq 1 ]
     then 
-      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-      anynewer=1
+      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile2
+      anynewer2=1
     fi
 
     frame=$(($frame + 1))
@@ -517,9 +522,9 @@ done
 
 
 
-#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------
 #   H I S T O R Y   I C O N S 
-#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------
 
 for name in Cpu Mem Disk Job
 do
@@ -546,8 +551,8 @@ do
 
   if [ $filter -eq 1 ]
   then 
-    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-    anynewer=1
+    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile2
+    anynewer2=1
   fi
 
   frame=$(($frame + 1))
@@ -555,16 +560,24 @@ done
 
 
 
-#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------
 #   R U N   G I M P                 
-#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------
 
-if [ $anynewer -eq 1 ]
+if [ $anynewer1 -eq 1 ]
 then 
-  echo '(gimp-quit 1)' >> $tmpfile
+  echo '(gimp-quit 1)' >> $tmpfile1
 
-  cat $tmpfile
-  time @GIMP@ -i -d -b '(load "'$tmpfile'")'
+  cat $tmpfile1
+  time @GIMP@ -i -d -b '(load "'$tmpfile1'")'
 fi
 
-rm -f $tmpfile
+if [ $anynewer2 -eq 1 ]
+then 
+  echo '(gimp-quit 1)' >> $tmpfile2
+
+  cat $tmpfile2
+  time @GIMP@ -i -d -b '(load "'$tmpfile2'")'
+fi
+
+rm -f $tmpfile1 $tmpfile2
