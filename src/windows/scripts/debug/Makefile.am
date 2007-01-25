@@ -13,10 +13,10 @@ instbin_SCRIPTS = \
 #   plui2.bat
 
 
-# instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin
 
-# instsbin_SCRIPTS = \
-#   pljobmgr.bat
+instsbin_SCRIPTS = \
+   pljobmgr.bat
 
 
 

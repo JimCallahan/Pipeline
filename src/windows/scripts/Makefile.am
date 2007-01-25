@@ -5,10 +5,10 @@ instbin_SCRIPTS = \
   plscript.bat
 
 
-# instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
 
-# instsbin_SCRIPTS = \
-#   pljobmgr.bat
+instsbin_SCRIPTS = \
+  pljobmgr.bat
 
 
 WIN_JAVA_RUNTIME = $(shell echo '@JAVA_RUNTIME@' | sed -e 's|/|\\\\\\\\|g')

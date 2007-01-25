@@ -40,7 +40,7 @@ can begin processing jobs using:
 @ROOT_INST_DIR@/Windows/bin/plscript.bat
 @ROOT_INST_DIR@/Windows/bin/plui.exe
 
-#@ROOT_INST_DIR@/Windows/sbin/pljobmgr.bat
+@ROOT_INST_DIR@/Windows/sbin/pljobmgr.bat
 
 @ROOT_INST_DIR@/Windows/debug/bin/plscript.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plui2.bat
@@ -49,9 +49,9 @@ can begin processing jobs using:
 #@ROOT_INST_DIR@/Windows/debug/bin/pltestheavy.bat
 #@ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
 
-#@ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
+@ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
 
-#@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
+@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows/libNative.dll
