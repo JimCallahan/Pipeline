@@ -5,11 +5,13 @@ instbin_DATA = \
   libNative.dll
 
 
+NATIVE_DIR = /home/jim/code/build/pipeline-windows/native
+
 .PHONY: libNative.dll
 libNative.dll: 
-	cp /home/jim/code/build/windows/libNative/debug/libNative.dll .
+	cp $(NATIVE_DIR)/libNative.dll .
 
 
-
-#rebuild:
-#	/home/jim/code/src/windows/libNative/rebuild.bat 
+rebuild:
+	devenv.com /rebuild debug "C:\cygwin\home\jim\code\src\pipeline-windows\native\libNative.sln" 
+ 

@@ -1,3 +1,11 @@
 #!/bin/bash
 
-rsync -av ./ lizard:/home/jim/code/src/windows/libNative
+if [ `hostname` != "dimetrodon" ]
+then 
+  echo "This should only be run on (dimetrodon)!"
+  exit 1; 
+fi 
+
+rsync -av --delete --delete-excluded \
+  --exclude="*Lizard.bash" \
+  ./ lizard:/home/jim/code/src/pipeline-windows/native
