@@ -1,7 +1,11 @@
 #!/bin/bash
 
-rsync -av --delete pljobmgr lizard:/home/jim/code/src/windows
-rsync -av --delete PipelineJobManager lizard:/home/jim/code/src/windows
-rsync -av --delete InstallPipelineJobManager lizard:/home/jim/code/src/windows
-rsync -av --delete UninstallPipelineJobManager lizard:/home/jim/code/src/windows
-rsync -av --delete TestService lizard:/home/jim/code/src/windows
+if [ `hostname` != "dimetrodon" ]
+then 
+  echo "This should only be run on (dimetrodon)!"
+  exit 1; 
+fi 
+
+rsync -av --delete --delete-excluded \
+  --exclude="*Lizard.bash" \
+  ./ lizard:/home/jim/code/src/pipeline-windows/services

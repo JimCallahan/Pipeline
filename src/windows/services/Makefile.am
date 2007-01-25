@@ -5,11 +5,13 @@ instbin_SCRIPTS = \
   PipelineJobManager.msi
 
 
+JOBMGR_DIR = /home/jim/code/build/pipeline-windows/services/PipelineJobManager
+
 .PHONY: PipelineJobManager.msi
 PipelineJobManager.msi:
-	cp /home/jim/code/build/windows/pljobmgr/debug/PipelineJobManager.msi .
+	cp $(JOBMGR_DIR)/PipelineJobManager.msi .
 
 
-
-#rebuild:
-#	/home/jim/code/src/windows/pljobmgr/rebuild.bat 
+rebuild:
+	devenv.com "C:\cygwin\home\jim\code\src\pipeline-windows\services\PipelineJobManager\Setup\Setup.vdproj" /rebuild debug /project Setup 
+ 

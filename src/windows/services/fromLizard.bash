@@ -1,10 +1,17 @@
 #!/bin/bash
 
-rsync -av --delete lizard:/home/jim/code/src/windows/pljobmgr .
-rsync -av --delete lizard:/home/jim/code/src/windows/PipelineJobManager .
-rsync -av --delete lizard:/home/jim/code/src/windows/InstallPipelineJobManager .
-rsync -av --delete lizard:/home/jim/code/src/windows/UninstallPipelineJobManager .
-rsync -av --delete lizard:/home/jim/code/src/windows/TestService .
+if [ `hostname` != "dimetrodon" ]
+then 
+  echo "This should only be run on (dimetrodon)!"
+  exit 1; 
+fi 
 
-find . -type f -exec chmod 644 {} \; 
-chmod 755 fromLizard.bash toLizard.bash
+rsync -av --delete \
+  --exclude="*Lizard.bash" \
+  --exclude="PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj.*.*.user" \
+  --exclude="PipelineJobManager/PipelineRun/PipelineRun.vcproj.*.*.user" \
+  --exclude="PipelineJobManager/*/Debug" \
+  --exclude="PipelineJobManager/*/Release" \
+  lizard:/home/jim/code/src/pipeline-windows/services/ .
+
+find PipelineJobManager -type f -exec chmod 644 {} \; 
