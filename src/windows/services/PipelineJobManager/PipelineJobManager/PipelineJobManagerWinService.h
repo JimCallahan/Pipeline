@@ -42,23 +42,21 @@ namespace PipelineJobManager {
 	  if((pThread == nullptr) ||
 	     ((pThread->ThreadState & 
 	       (System::Threading::ThreadState::Unstarted | 
-		System::Threading::ThreadState::Stopped)) != ((System::Threading::ThreadState) 0))) {
-       
-	    /* log file */ 
-	    FILE* log = fopen("C:/TEMP/PipelineJobManager-OnStart.log", "a+");
-	    if(log == NULL) 
-	      return;
-	    fprintf(log, "PipelineJobManager.OnStart()\n"); 
-	    fflush(log);
+		System::Threading::ThreadState::Stopped)) 
+	      != ((System::Threading::ThreadState) 0))) {
 
-	    pThread = gcnew Thread(gcnew ThreadStart(this, &PipelineJobManagerWinService::StartJVM));
-	    fprintf(log, "StartJVM Thread Created\n"); 
-	    fflush(log);
+	    System::Diagnostics::EventLog^ log = gcnew System::Diagnostics::EventLog;
+	    log->Source = "PipelineJobManagerWinService";
+	    log->WriteEntry("OnStart: Started.");
+
+	    pThread = gcnew Thread
+	      (gcnew ThreadStart(this, &PipelineJobManagerWinService::StartJVM));
+	    log->WriteEntry("OnStart: StartJVM Thread Created.");
 
 	    pThread->Start();
-	    fprintf(log, "StartJVM Thread Started\n"); 
-	    fflush(log);
-	    fclose(log);
+	    log->WriteEntry("OnStart: StartJVM Thread Started.");
+
+	    log->WriteEntry("OnStart: Finished.");
 	  }
 	}
     
@@ -67,82 +65,81 @@ namespace PipelineJobManager {
       /// </summary>
       virtual void OnStop() override
 	{
-	  /* log file */ 
-	  FILE* log = fopen("C:/TEMP/PipelineJobManager-OnStop.log", "a+");
-	  if(log == NULL) 
-	    return;
-	  fprintf(log, "PipelineJobManager.OnStop()\n"); 
-	  fflush(log);
+	  System::Diagnostics::EventLog^ log = gcnew System::Diagnostics::EventLog;
+	  log->Source = "PipelineJobManagerWinService";
+	  log->WriteEntry("OnStop: Started.");
 	  
-	  Thread^ thread = gcnew Thread(gcnew ThreadStart(this, &PipelineJobManagerWinService::StopJVM));
-	  fprintf(log, "StopJVM Thread Created\n"); 
-	  fflush(log);
+	  Thread^ thread = gcnew Thread
+	    (gcnew ThreadStart(this, &PipelineJobManagerWinService::StopJVM));
+	  log->WriteEntry("OnStop: StopJVM Thread Created.");
 
 	  thread->Start();
-	  fprintf(log, "StopJVM Thread Started\n"); 
-	  fflush(log);
+	  log->WriteEntry("OnStop: StopJVM Thread Started.");
 
 	  thread->Join();
-	  fprintf(log, "StopJVM Joined\n"); 
-	  fflush(log);
-	  fclose(log);
+	  log->WriteEntry("OnStop: StopJVM Joined."); 
+
+	  log->WriteEntry("OnStop: Finished.");
 	}
     
     private:
       /// <summary>
       /// Error check JNI functions.
       /// </summary>
-      bool testJNI(jint code, FILE* log, const char* msg)
+      bool testJNI(jint code, System::Diagnostics::EventLog^ log, String^ msg)
 	{
 	  switch(code) {
 	  case 0:
 	    return false;
 	
 	  case JNI_ERR:
-	    fprintf(log, "ERROR - Unknown error: %s\n", msg); 
+	    log->WriteEntry(String::Format("Unknown error: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
 	
 	  case JNI_EDETACHED:
-	    fprintf(log, "ERROR - Thread detached from the VM: %s\n", msg); 
+	    log->WriteEntry(String::Format("Thread detached from the VM: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
 	
 	  case JNI_EVERSION:
-	    fprintf(log, "ERROR - JNI version error: %s\n", msg); 
+	    log->WriteEntry(String::Format("JNI version error: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
 	
 	  case JNI_ENOMEM:
-	    fprintf(log, "ERROR - Not enough memory: %s\n", msg); 
+	    log->WriteEntry(String::Format("Not enough memory: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
 	
 	  case JNI_EEXIST:
-	    fprintf(log, "ERROR - VM already created: %s\n", msg); 
+	    log->WriteEntry(String::Format("VM already created: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
 	
 	  case JNI_EINVAL:
-	    fprintf(log, "ERROR - Invalid arguments: %s\n", msg); 
+	    log->WriteEntry(String::Format("Invalid arguments: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
-	
+	 
 	  default:
-	    fprintf(log, "ERROR - Bad error code: %s\n", msg); 
+	    log->WriteEntry(String::Format("Bad error code: {0}", msg), 
+			    EventLogEntryType::Error);
 	    break; 
 	  }
 
-	  fflush(log);
 	  return true;
 	}
 
       /// <summary>
-      /// Start the Java Virtual Machine, call the Java entry method and wait around
+      /// Start the Java Virtual Machine, call the onStart() method and wait around
       /// for the JVM to exit normally.
       /// </summary>
       void StartJVM() 
 	{
- 	  /* log file */ 
- 	  FILE* log = fopen("C:/TEMP/PipelineJobManager-StartJVM.log", "a+");
- 	  if(log == NULL) 
- 	    return;
- 	  fprintf(log, "Service Starting...\n"); 
- 	  fflush(log);
+	  System::Diagnostics::EventLog^ log = gcnew System::Diagnostics::EventLog;
+	  log->Source = "PipelineJobManagerWinService";
+	  log->WriteEntry("StartJVM: Started.");
       
  	  /* set the JVM initialization arguments */
  	  JavaVMInitArgs vm_args;
@@ -166,43 +163,39 @@ namespace PipelineJobManager {
  	  if(testJNI(JNI_CreateJavaVM(&jvm, (void**) &env, &vm_args), 
  		     log, "Unable to create a JVM to run the service!"))
  	    return; 
- 	  fprintf(log, "Created a JVM for the service.\n");
- 	  fflush(log);
+	  log->WriteEntry("StartJVM: Created JVM.");
       
  	  /* get the method handle for TestService.onStart */
  	  jclass cls = env->FindClass("TestService");
  	  jmethodID onStart = env->GetStaticMethodID(cls, "onStart", "()V");
  	  if(onStart == NULL) {
- 	    fprintf(log, "ERROR - Unable to get the TestService.onStart method handle.\n");
- 	    fflush(log);
+	    log->WriteEntry("Unable to get the TestService.onStart method handle.", 
+			    EventLogEntryType::Error);
  	    return;
  	  }
- 	  fprintf(log, "Got the TestService.onStart method handle.\n");
- 	  fflush(log);
+	  log->WriteEntry("StartJVM: Got the TestService.onStart() method handle.");
       
  	  /* run TestService.onStart */
  	  env->CallStaticVoidMethod(cls, onStart);
+	  log->WriteEntry("StartJVM: TestService.onStart() Finished.");
       
  	  /* clean up */
  	  jvm->DestroyJavaVM();
+	  log->WriteEntry("StartJVM: JVM Destroyed.");
 
- 	  fprintf(log, "Service Stopped.\n"); 
- 	  fflush(log);
- 	  fclose(log);
+	  log->WriteEntry("StartJVM: Finished.");
 	}
 
       /// <summary>
-      /// 
+      /// Attach to the existing Java Virtual Machine, call the onStop() method and 
+      /// wait around for the StartJVM thread to complete. 
       /// </summary>
       void StopJVM() 
 	{
 	  if((pThread != nullptr) && (pThread->IsAlive)) {
-	    /* log file */ 
-	    FILE* log = fopen("C:/TEMP/PipelineJobManager-StopJVM.log", "a+");
-	    if(log == NULL) 
-	      return;
-	    fprintf(log, "Signaling Service to Stop...\n"); 
-	    fflush(log);
+	    System::Diagnostics::EventLog^ log = gcnew System::Diagnostics::EventLog;
+	    log->Source = "PipelineJobManagerWinService";
+	    log->WriteEntry("StopJVM: Started.");
 
  	    /* lookup the previously created JVM */ 
  	    JavaVM *jvm;   
@@ -214,8 +207,8 @@ namespace PipelineJobManager {
  		return; 
 	      
  	      if((bufLen != 1) || (vmBuf[0] == NULL)) {
- 		fprintf(log, "ERROR - Missing JVM\n");
- 		fflush(log);
+		log->WriteEntry("Missing JVM", 
+				EventLogEntryType::Error);
  		return;
  	      }
  	      jvm = vmBuf[0];
@@ -226,78 +219,34 @@ namespace PipelineJobManager {
  	    if(testJNI(jvm->AttachCurrentThread((void**) &env, NULL), 
  		       log, "Unable to attach to the JVM running the service!"))
  	      return; 
- 	    fprintf(log, "Attached to the JVM running the service.\n");
- 	    fflush(log);
+	    log->WriteEntry( 
+	       "StopJVM: Attached to the JVM.");
 	    
  	    /* get the method handle for TestService.onStop */
  	    jclass cls = env->FindClass("TestService");
  	    jmethodID onStop = env->GetStaticMethodID(cls, "onStop", "()V");
  	    if(onStop == NULL) {
- 	      fprintf(log, "ERROR - Unable to get the TestService.onStop method handle.\n");
- 	      fflush(log);
+	      log->WriteEntry("Unable to get the TestService.onStop method handle.", 
+			      EventLogEntryType::Error);
  	      return;
  	    }
- 	    fprintf(log, "Got the TestService.onStop method handle.\n");
- 	    fflush(log);
+	    log->WriteEntry("StopJVM: Got the TestService.onStop() method handle.");
 	    
  	    /* run TestService.onStop */
  	    env->CallStaticVoidMethod(cls, onStop);
+	    log->WriteEntry("StopJVM: TestService.onStop() Finished.");
 	    
  	    /* attach to the JVM, return a JNI interface pointer in env */
  	    if(testJNI(jvm->DetachCurrentThread(), 
  		       log, "Unable to detach from the JVM running the service!"))
  	      return; 
- 	    fprintf(log, "Detached from the JVM running the service.\n");
- 	    fflush(log);
-	    fclose(log);
+	    log->WriteEntry("StopJVM: Detached from the JVM.");
 
 	    /* wait for the main Java thread to finish */ 
 	    pThread->Join();
-	  }
-	}
+	    log->WriteEntry("StopJVM: StartJVM Joined."); 
 
-      void StartJVM2() 
-      {
-	  /* log file */ 
-	  FILE* log = fopen("C:/TEMP/PipelineJobManager-StartJVM2.log", "a+");
-	  if(log == NULL) 
-	    return;
-	  fprintf(log, "Service Starting...\n"); 
-	  fflush(log);
-  
-	  try {
-	    while(true) { 
-	      Thread::Sleep(10000);
-	      fprintf(log, "Service Running...\n"); 
-	      fflush(log); 
-	    }
-	  }
-	  catch(ThreadAbortException^) {
-	    fprintf(log, "Service Interrupted.\n"); 
-	    fflush(log); 
-	  }
-
-	  fprintf(log, "Service Stopped.\n"); 
-	  fflush(log);
-	  fclose(log);
-      }
-
-      void StopJVM2()
-	{
-	  if((pThread != nullptr) && (pThread->IsAlive)) {
-	    /* log file */ 
-	    FILE* log = fopen("C:/TEMP/PipelineJobManager-StopJVM2.log", "a+");
-	    if(log == NULL) 
-	      return;
-	    fprintf(log, "Signaling Service to Stop...\n"); 
-	    fflush(log);
-
-	    pThread->Abort();
-	    pThread->Join(500);
-
-	    fprintf(log, "Stopped.\n");
-	    fflush(log);
-	    fclose(log);
+	    log->WriteEntry("StopJVM: Finished.");
 	  }
 	}
 
