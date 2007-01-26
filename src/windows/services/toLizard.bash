@@ -6,7 +6,7 @@ then
   exit 1; 
 fi 
 
-rsync -av --checksum --delete --delete-excluded \
+rsync $* -av --checksum --delete --delete-excluded \
   --cvs-exclude \
   --exclude="*Lizard.bash" \
   ./ lizard:/home/jim/code/src/pipeline-windows/services

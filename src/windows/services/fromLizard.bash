@@ -6,7 +6,7 @@ then
   exit 1; 
 fi 
 
-rsync -av --checksum --delete \
+rsync $* -av --checksum --delete \
   --cvs-exclude \
   --exclude="*Lizard.bash" \
   --exclude="PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj.*.*.user" \
