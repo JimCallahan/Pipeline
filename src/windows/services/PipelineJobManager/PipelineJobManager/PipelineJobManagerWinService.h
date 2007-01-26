@@ -82,7 +82,7 @@ namespace PipelineJobManager {
 	  fprintf(log, "StopJVM Thread Started\n"); 
 	  fflush(log);
 
-	  thread->Join(25000);
+	  thread->Join();
 	  fprintf(log, "StopJVM Joined\n"); 
 	  fflush(log);
 	  fclose(log);
@@ -147,12 +147,16 @@ namespace PipelineJobManager {
  	  /* set the JVM initialization arguments */
  	  JavaVMInitArgs vm_args;
  	  {
- 	    JavaVMOption options[1];
- 	    options[0].optionString = "-Djava.class.path=C:\\TEMP"; 
+ 	    JavaVMOption options[5];
+ 	    options[0].optionString = "-Xms8M"; 
+ 	    options[1].optionString = "-Xmx128M"; 
+ 	    options[2].optionString = "-Xdebug"; 
+ 	    options[3].optionString = "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=45006"; 
+ 	    options[4].optionString = "-Djava.class.path=C:\\TEMP"; 
       
  	    vm_args.version = JNI_VERSION_1_2;
  	    vm_args.options = options;
- 	    vm_args.nOptions = 1;
+ 	    vm_args.nOptions = 5;
  	    vm_args.ignoreUnrecognized = 1;
  	  }
       
@@ -246,6 +250,9 @@ namespace PipelineJobManager {
  	    fprintf(log, "Detached from the JVM running the service.\n");
  	    fflush(log);
 	    fclose(log);
+
+	    /* wait for the main Java thread to finish */ 
+	    pThread->Join();
 	  }
 	}
 

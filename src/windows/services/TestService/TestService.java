@@ -1,4 +1,4 @@
-// $Id: TestService.java,v 1.1 2007/01/25 14:38:02 jim Exp $
+// $Id: TestService.java,v 1.2 2007/01/26 05:19:56 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -132,7 +132,33 @@ class TestService
   public void 
   shutdown() 
   {
-    pShutdown.set(false);
+    try {
+      File file = new File("C:/TEMP/TestService-Shutdown.log");
+      if(file.exists()) 
+	file.delete();
+
+      FileWriter out = new FileWriter(file);
+      
+      {
+	Date now = new Date();
+	out.write("Shutting Down: " + now + "\n");
+	out.flush();
+      }
+      
+      pShutdown.set(true);
+
+      {
+	Date now = new Date();
+	out.write("SHUTDOWN: " + now + "\n");
+	out.flush();
+	out.close();
+      }
+    }
+    catch(Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);
+    }
+      
   }
 
 
