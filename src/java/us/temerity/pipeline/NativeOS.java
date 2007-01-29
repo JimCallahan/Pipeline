@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.5 2006/11/22 09:08:00 jim Exp $
+// $Id: NativeOS.java,v 1.6 2007/01/29 20:50:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.*;
  */
 public
 class NativeOS
+  extends Native
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
@@ -110,7 +111,8 @@ class NativeOS
       break;
 
     case Windows:
-      throw new IOException("The Windows operating system is not supported!");
+      loadLibrary();
+      memory = getTotalMemoryNative();
     }
 
     return memory;
@@ -126,12 +128,12 @@ class NativeOS
   getFreeMemory() 
     throws IOException
   {
-    long memory = 0;
+    long memory = 0L;
     switch(PackageInfo.sOsType) {
     case Unix:
       {
-    	long unused = 0;
-	long cached = 0;
+    	long unused = 0L;
+	long cached = 0L;
 	
 	FileReader reader = new FileReader("/proc/meminfo");
 	while(true) {
@@ -237,7 +239,8 @@ class NativeOS
       break;  
 
     case Windows:
-      throw new IOException("The Windows operating system is not supported!");
+      loadLibrary();
+      memory = getFreeMemoryNative();
     }
 
     return memory;
@@ -358,7 +361,8 @@ class NativeOS
       break;
 
     case Windows:
-      throw new IOException("The Windows operating system is not supported!");
+      loadLibrary();
+      procs = getNumProcessorsNative(); 
     }
     
     return procs;
@@ -366,13 +370,6 @@ class NativeOS
 
   /**
    * Get the system load factor (1-minute average). <P> 
-   * 
-   * On Windows, the load factor is computed by averaging the last (12) instantaneous samples
-   * of the length of the processor queue.  It is assumed that the JobMgr collector thread is
-   * calling this method at 5-second intervals, so that the average the last (12) samples 
-   * should constitute a 1-minute average. The average load factor is also rescaled to make
-   * values reported from Windows systems more consistent with the values reported for 
-   * Unix/MacOS systems with similar system activity.<P> 
    * 
    * @throws IOException 
    *   If unable to determine the load.
@@ -441,10 +438,59 @@ class NativeOS
       break;
 
     case Windows:
-      throw new IOException("The Windows operating system is not supported!");
+      loadLibrary();
+      load = getLoadAverageNative(); 
     }
 
     return load;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N A T I V E    H E L P E R S                                                         */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the total amount of system memory (in bytes).
+   * 
+   * @throws IOException 
+   *   If unable to determine the amount of total memory.
+   */ 
+  public static native long
+  getTotalMemoryNative() 
+    throws IOException;
+  
+  /**
+   * Get the amount of free system memory (in bytes). 
+   * 
+   * @throws IOException 
+   *   If unable to determine the amount of free memory.
+   */
+  public static native long
+  getFreeMemoryNative() 
+    throws IOException;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the number of processors (CPUs).
+   * 
+   * @throws IOException 
+   *   If unable to determine the number of processors. 
+   */
+  public static native int
+  getNumProcessorsNative() 
+    throws IOException;
+
+  /**
+   * Get the system load factor (1-minute average). <P> 
+   * 
+   * @throws IOException 
+   *   If unable to determine the load.
+   */
+  public static native float
+  getLoadAverageNative() 
+    throws IOException;
 }

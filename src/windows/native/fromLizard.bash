@@ -6,7 +6,8 @@ then
   exit 1; 
 fi 
 
-rsync -av --delete \
+rsync $* -av --checksum --delete \
+  --cvs-exclude \
   --exclude="*Lizard.bash" \
   --exclude="libNative.vcproj.*.*.user" \
   lizard:/home/jim/code/src/pipeline-windows/native/ .

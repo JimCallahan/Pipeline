@@ -1,4 +1,4 @@
-// $Id: NativeOS.cpp,v 1.1 2006/04/22 12:12:36 jim Exp $
+// $Id: NativeOS.cpp,v 1.2 2007/01/29 20:50:49 jim Exp $
 
 #include "stdafx.h"
  
@@ -225,6 +225,9 @@ JNICALL Java_us_temerity_pipeline_NativeOS_getNumProcessorsNative
 }
  
 
+/* a running average of system load */ 
+static jfloat NativeOS_avgLoad = -1.0f;
+
 /* Get the instantaneous processor active percentage. */
 extern "C" 
 JNIEXPORT jfloat
@@ -278,7 +281,7 @@ JNICALL Java_us_temerity_pipeline_NativeOS_getLoadAverageNative
     }
     
     /* format the performance data record */ 
-    pdhStatus = PdhGetFormattedCounterValue(hCounter, PDH_FMT_DOUBLE, 
+    pdhStatus = PdhGetFormattedCounterValue(hCounter, PDH_FMT_LONG,  
 					    (LPDWORD)NULL, counterBuf);
     if(pdhStatus != ERROR_SUCCESS) {
       env->ThrowNew(IOException, 
@@ -286,13 +289,20 @@ JNICALL Java_us_temerity_pipeline_NativeOS_getLoadAverageNative
       return -6.0L;
     }
     
-    /* get the length of the processor queue */ 
-    load = (jfloat) (counterBuf->doubleValue);
+    /* compute a pseudo-load from the length of the processor queue, 
+        a queue length of 10 is roughly equivalent to a UNIX load of 1.0 */ 
+    load = ((jfloat) (counterBuf->longValue)) * 0.1f;
 
     /* close the query */ 
     pdhStatus = PdhCloseQuery(hQuery);
   }
 
-  return load; 
+  /* update the running 1-minute average (samples are at 15-sec intervals) */ 
+  if(NativeOS_avgLoad < 0.0f) 
+    NativeOS_avgLoad = load;
+  else 
+    NativeOS_avgLoad = 0.75f*NativeOS_avgLoad + 0.25f*load;
+
+  return NativeOS_avgLoad; 
 }
  
