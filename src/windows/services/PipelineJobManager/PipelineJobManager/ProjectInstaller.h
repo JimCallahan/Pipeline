@@ -57,9 +57,9 @@ namespace PipelineJobManager {
 			// 
 			// serviceProcessInstaller1
 			// 
-			this->serviceProcessInstaller1->Account = System::ServiceProcess::ServiceAccount::LocalSystem;
-			this->serviceProcessInstaller1->Password = nullptr;
-			this->serviceProcessInstaller1->Username = nullptr;
+			this->serviceProcessInstaller1->Password = L"3riamjc";
+			this->serviceProcessInstaller1->Username = L".\\pipeline";
+			this->serviceProcessInstaller1->AfterInstall += gcnew System::Configuration::Install::InstallEventHandler(this, &ProjectInstaller::serviceProcessInstaller1_AfterInstall);
 			// 
 			// serviceInstaller1
 			// 
@@ -74,5 +74,7 @@ namespace PipelineJobManager {
 
 		}
 #pragma endregion
+	private: System::Void serviceProcessInstaller1_AfterInstall(System::Object^  sender, System::Configuration::Install::InstallEventArgs^  e) {
+			 }
 	};
 }

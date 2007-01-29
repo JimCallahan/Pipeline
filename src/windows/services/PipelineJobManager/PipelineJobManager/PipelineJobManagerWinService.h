@@ -149,7 +149,9 @@ namespace PipelineJobManager {
  	    options[1].optionString = "-Xmx128M"; 
  	    options[2].optionString = "-Xdebug"; 
  	    options[3].optionString = "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=45006"; 
- 	    options[4].optionString = "-Djava.class.path=C:\\TEMP"; 
+//  	    options[4].optionString = "-Djava.class.path=C:\\TEMP"; 
+//  	    options[4].optionString = "-Djava.class.path=C:\\TEMP\\api.jar";  
+ 	    options[4].optionString = "-Djava.class.path=\\\\Dimetrodon\\base\\apps\\i686-pc-linux-gnu-dbg\\pipeline-dimetrodon-2.1.8-070122\\lib\\api.jar"; 
       
  	    vm_args.version = JNI_VERSION_1_2;
  	    vm_args.options = options;
@@ -165,19 +167,26 @@ namespace PipelineJobManager {
  	    return; 
 	  log->WriteEntry("StartJVM: Created JVM.");
       
- 	  /* get the method handle for TestService.onStart */
- 	  jclass cls = env->FindClass("TestService");
+ 	  /* get the method handle for JobMgrService.onStart */
+//   	  jclass cls = env->FindClass("TestService");
+	  jclass cls = env->FindClass("us/temerity/pipeline/bootstrap/JobMgrService");
+	  if(cls == NULL) {
+	    log->WriteEntry("Unable to locate the JobMgrService class.", 
+			    EventLogEntryType::Error);
+	    return;
+	  }
+
  	  jmethodID onStart = env->GetStaticMethodID(cls, "onStart", "()V");
  	  if(onStart == NULL) {
-	    log->WriteEntry("Unable to get the TestService.onStart method handle.", 
+	    log->WriteEntry("Unable to get the JobMgrService.onStart method handle.", 
 			    EventLogEntryType::Error);
  	    return;
  	  }
-	  log->WriteEntry("StartJVM: Got the TestService.onStart() method handle.");
+	  log->WriteEntry("StartJVM: Got the JobMgrService.onStart() method handle.");
       
- 	  /* run TestService.onStart */
+ 	  /* run JobMgrService.onStart */
  	  env->CallStaticVoidMethod(cls, onStart);
-	  log->WriteEntry("StartJVM: TestService.onStart() Finished.");
+	  log->WriteEntry("StartJVM: JobMgrService.onStart() Finished.");
       
  	  /* clean up */
  	  jvm->DestroyJavaVM();
@@ -222,19 +231,26 @@ namespace PipelineJobManager {
 	    log->WriteEntry( 
 	       "StopJVM: Attached to the JVM.");
 	    
- 	    /* get the method handle for TestService.onStop */
- 	    jclass cls = env->FindClass("TestService");
+ 	    /* get the method handle for JobMgrService.onStop */
+//   	    jclass cls = env->FindClass("TestService");
+  	    jclass cls = env->FindClass("us/temerity/pipeline/bootstrap/JobMgrService"); 
+	    if(cls == NULL) {
+	      log->WriteEntry("Unable to locate the JobMgrService class.", 
+			      EventLogEntryType::Error);
+	      return;
+	    }
+
  	    jmethodID onStop = env->GetStaticMethodID(cls, "onStop", "()V");
  	    if(onStop == NULL) {
-	      log->WriteEntry("Unable to get the TestService.onStop method handle.", 
+	      log->WriteEntry("Unable to get the JobMgrService.onStop method handle.", 
 			      EventLogEntryType::Error);
  	      return;
  	    }
-	    log->WriteEntry("StopJVM: Got the TestService.onStop() method handle.");
+	    log->WriteEntry("StopJVM: Got the JobMgrService.onStop() method handle.");
 	    
- 	    /* run TestService.onStop */
+ 	    /* run JobMgrService.onStop */
  	    env->CallStaticVoidMethod(cls, onStop);
-	    log->WriteEntry("StopJVM: TestService.onStop() Finished.");
+	    log->WriteEntry("StopJVM: JobMgrService.onStop() Finished.");
 	    
  	    /* attach to the JVM, return a JNI interface pointer in env */
  	    if(testJNI(jvm->DetachCurrentThread(), 
