@@ -1,4 +1,4 @@
-// $Id: BootApp.java,v 1.3 2004/08/29 09:22:20 jim Exp $
+// $Id: BootApp.java,v 1.4 2007/01/29 20:49:42 jim Exp $
 
 package us.temerity.pipeline.bootstrap;  
 
@@ -7,7 +7,7 @@ package us.temerity.pipeline.bootstrap;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An abstract base class used to bootstrap all Pipeline applications.
+ * An abstract base class used to bootstrap all Pipeline applications. <P> 
  * 
  * Any application which requires access to internal Pipeline classes which are license 
  * protected must be launched by a subclass of this class.  See the {@link Main Main} class
