@@ -15,26 +15,20 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_0556B516B456227098379CD8682DCF4A"
-        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_23CE1FF6730D44B49DEF42EB67D5576B"
-        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_29B85609E2CA47D89209131494B3D1DD"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_505209D270E04DBAB1EA746A3C0F336A"
-        "OwnerKey" = "8:_23CE1FF6730D44B49DEF42EB67D5576B"
+        "MsmKey" = "8:_342DD1FDBB023E516BD22DE9A2C34277"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -51,8 +45,32 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_950445A27E6348EB9F2D1A2E22261339"
+        "OwnerKey" = "8:_B6BD145C9031449892FB88F64508E340"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B6BD145C9031449892FB88F64508E340"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B6BD145C9031449892FB88F64508E340"
+        "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -141,6 +159,20 @@
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_663007F60FC94F03895E30A2B38D988F"
+            {
+            "Name" = "8:Primary Output from PipelineEditRegistry (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:\"[JAVAHOME]\""
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_2C319F5E_BB51_4AD3_9272_202E639AB6F9"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_AA9A101D9DA74AA089F4F564DAD1576D"
             {
             "Name" = "8:Primary Output from PipelineJobManager (Active)"
@@ -150,7 +182,7 @@
             "InstallAction" = "3:1"
             "Arguments" = "8:-Install"
             "EntryPoint" = "8:"
-            "Sequence" = "3:1"
+            "Sequence" = "3:2"
             "Identifier" = "8:_8BC650F9_4832_4F95_8904_A6047BED7FFA"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -178,26 +210,6 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0556B516B456227098379CD8682DCF4A"
-            {
-            "SourcePath" = "8:jvm.dll"
-            "TargetName" = "8:jvm.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_55C8C794A91D40A5966A90D11474457C"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_29B85609E2CA47D89209131494B3D1DD"
             {
             "SourcePath" = "8:..\\license.rtf"
@@ -218,12 +230,32 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_342DD1FDBB023E516BD22DE9A2C34277"
+            {
+            "SourcePath" = "8:jvm.dll"
+            "TargetName" = "8:jvm.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_55C8C794A91D40A5966A90D11474457C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7488FF27C868451A99724EBA36263071"
             {
             "SourcePath" = "8:..\\TemerityInstallerBg.bmp"
             "TargetName" = "8:TemerityInstallerBg.bmp"
             "Tag" = "8:"
-            "Folder" = "8:_55C8C794A91D40A5966A90D11474457C"
+            "Folder" = "8:_B9D8CB1290BE47A9B5474A48B0FEB2B6"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -254,6 +286,28 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_3DDCE7DA41394F789A85B8B8DE540C8E"
+                    {
+                    "Name" = "8:bin"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_D51D4C36AF7C4F4E92A5B41AAB4D1D28"
+                        "Folders"
+                        {
+                        }
+                    }
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_B9D8CB1290BE47A9B5474A48B0FEB2B6"
+                    {
+                    "Name" = "8:etc"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_FAE759DDEC00411280CDA34B33D32479"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_B63134F036764997BB044E6E748377F1"
@@ -281,9 +335,24 @@
         }
         "LaunchCondition"
         {
+            "{836E08B8-0285-4809-BA42-01DB6754A45D}:_B514F22F764C4EF096407B1BBB317934"
+            {
+            "Name" = "8:Condition1"
+            "Condition" = "8:JAVAHOME"
+            "Message" = "8:The Java Runtime Environment (1.5.0 Update 9) is required by the Pipeline Job Manager."
+            "InstallUrl" = "8:http://java.sun.com/products/archive/j2se/5.0_09/index.html"
+            }
         }
         "Locator"
         {
+            "{CF66B7F7-B7DA-4B08-A67A-233430638C9C}:_0FAF98B5C5A34548B74742EFBC6285AF"
+            {
+            "Name" = "8:Search forJRE"
+            "Root" = "2:1"
+            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Runtime Environment\\1.5.0_09"
+            "Value" = "8:JavaHome"
+            "Property" = "8:JAVAHOME"
+            }
         }
         "MsiBootstrapper"
         {
@@ -294,7 +363,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Pipeline-2.1.8"
         "ProductCode" = "8:{CE6756F0-2156-4E34-90AA-86D4E28EA926}"
-        "PackageCode" = "8:{CD330AF9-F88E-4B22-A800-CB5D6DF41ABE}"
+        "PackageCode" = "8:{4589CF58-E841-4030-90D0-6444E06ED542}"
         "UpgradeCode" = "8:{8BF66B9E-2AF7-4F05-A89D-7393B47C1AEE}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
@@ -343,6 +412,84 @@
                             "Transitive" = "11:FALSE"
                                 "Keys"
                                 {
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                        }
+                    }
+                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_8CE7300B83D449D7AF83D2EC25521140"
+                    {
+                    "Name" = "8:SYSTEM"
+                    "Condition" = "8:"
+                    "AlwaysCreate" = "11:FALSE"
+                    "DeleteAtUninstall" = "11:FALSE"
+                    "Transitive" = "11:FALSE"
+                        "Keys"
+                        {
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_6D2B51CF3A944FDEA6E2C4BCB00B6750"
+                            {
+                            "Name" = "8:CurrentControlSet"
+                            "Condition" = "8:"
+                            "AlwaysCreate" = "11:FALSE"
+                            "DeleteAtUninstall" = "11:FALSE"
+                            "Transitive" = "11:FALSE"
+                                "Keys"
+                                {
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_5C39DF08272244449BFFE8992B5F3CD5"
+                                    {
+                                    "Name" = "8:Control"
+                                    "Condition" = "8:"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "DeleteAtUninstall" = "11:FALSE"
+                                    "Transitive" = "11:FALSE"
+                                        "Keys"
+                                        {
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_31971DBA9FF2411DB11F98EA42D2E916"
+                                            {
+                                            "Name" = "8:Session Manager"
+                                            "Condition" = "8:"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "DeleteAtUninstall" = "11:FALSE"
+                                            "Transitive" = "11:FALSE"
+                                                "Keys"
+                                                {
+                                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_F858083A518D42EEA5C96974E41D2908"
+                                                    {
+                                                    "Name" = "8:Environment"
+                                                    "Condition" = "8:"
+                                                    "AlwaysCreate" = "11:FALSE"
+                                                    "DeleteAtUninstall" = "11:FALSE"
+                                                    "Transitive" = "11:FALSE"
+                                                        "Keys"
+                                                        {
+                                                        }
+                                                        "Values"
+                                                        {
+                                                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_EC160BCA3EBE402085EB5247EF34221A"
+                                                            {
+                                                            "Name" = "8:MyDummyPath"
+                                                            "Condition" = "8:"
+                                                            "Transitive" = "11:FALSE"
+                                                            "ValueTypes" = "3:2"
+                                                            "Value" = "8:[JAVAHOME]\\bin\\server"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                "Values"
+                                                {
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
                                 }
                                 "Values"
                                 {
@@ -915,21 +1062,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_23CE1FF6730D44B49DEF42EB67D5576B"
-            {
-            "UseDynamicProperties" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
-                "Properties"
-                {
-                }
-            "LanguageId" = "3:0"
-            "Exclude" = "11:FALSE"
-            "Folder" = "8:"
-            "Feature" = "8:"
-            "IsolateTo" = "8:"
-            }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_505209D270E04DBAB1EA746A3C0F336A"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_950445A27E6348EB9F2D1A2E22261339"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -943,15 +1076,57 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_B6BD145C9031449892FB88F64508E340"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
         }
         "ProjectOutput"
         {
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_62FD107D51234EE88F4AE1C90DD60F1E"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\..\\build\\pipeline-windows\\services\\PipelineJobManager\\PipelineEditRegistry.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{32BC45E2-A6AE-48DC-B427-55CC6E78C3AE}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7FBE5C81888343B3B5FFE77670F71A5A"
             {
             "SourcePath" = "8:..\\..\\..\\..\\..\\build\\pipeline-windows\\services\\PipelineJobManager\\PipelineJobManager.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_55C8C794A91D40A5966A90D11474457C"
+            "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
