@@ -11,6 +11,7 @@ rsync $* -av --checksum --delete \
   --exclude="*Lizard.bash" \
   --exclude="PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj.*.*.user" \
   --exclude="PipelineJobManager/PipelineRun/PipelineRun.vcproj.*.*.user" \
+  --exclude="PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.vcproj.*.*.user" \
   --exclude="PipelineJobManager/*/Debug" \
   --exclude="PipelineJobManager/*/Release" \
   lizard:/home/jim/code/src/pipeline-windows/services/ .

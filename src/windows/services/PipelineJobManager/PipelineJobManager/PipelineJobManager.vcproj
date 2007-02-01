@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="PipelineJobManager"
-	ProjectGUID="{2F01CF5F-0F0B-4096-A0AC-2E281632ADA9}"
+	ProjectGUID="{1C831A00-816B-4E7F-BEFB-E4B3935A44F7}"
 	RootNamespace="PipelineJobManager"
 	Keyword="ManagedCProj"
 	>
@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="jvm.lib $(NOINHERIT)"
+				AdditionalDependencies="jvm.lib $(NoInherit)"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="F:\Program Files\Java\jdk1.5.0_09\lib"
 				GenerateDebugInformation="true"
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="jvm.lib $(NOINHERIT)"
+				AdditionalDependencies="jvm.lib $(NoInherit)"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="F:\Program Files\Java\jdk1.5.0_09\lib"
 				GenerateDebugInformation="true"

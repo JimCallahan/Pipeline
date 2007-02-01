@@ -10,6 +10,7 @@ using namespace System::Diagnostics;
 
 
 namespace PipelineJobManager {
+
   /// <summary>
   /// Summary for PipelineJobManagerWinService
   /// </summary>
@@ -25,15 +26,22 @@ namespace PipelineJobManager {
       PipelineJobManagerWinService()
 	{
 	  InitializeComponent();
+	  //
+	  //TODO: Add the constructor code here
+	  //
 	}
-
     protected:
+      /// <summary>
+      /// Clean up any resources being used.
+      /// </summary>
       ~PipelineJobManagerWinService()
 	{
-	  if(components) 
-	    delete components;
+	  if (components)
+	    {
+	      delete components;
+	    }
 	}
-    
+
       /// <summary>
       /// Set things in motion so your service can do its work.
       /// </summary>
@@ -59,7 +67,7 @@ namespace PipelineJobManager {
 	    log->WriteEntry("OnStart: Finished.");
 	  }
 	}
-    
+
       /// <summary>
       /// Stop this service.
       /// </summary>
@@ -81,7 +89,7 @@ namespace PipelineJobManager {
 
 	  log->WriteEntry("OnStop: Finished.");
 	}
-    
+
     private:
       /// <summary>
       /// Error check JNI functions.
@@ -143,22 +151,23 @@ namespace PipelineJobManager {
       
  	  /* set the JVM initialization arguments */
  	  JavaVMInitArgs vm_args;
- 	  {
+	  {
  	    JavaVMOption options[5];
  	    options[0].optionString = "-Xms8M"; 
  	    options[1].optionString = "-Xmx128M"; 
  	    options[2].optionString = "-Xdebug"; 
  	    options[3].optionString = "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=45006"; 
-//  	    options[4].optionString = "-Djava.class.path=C:\\TEMP"; 
-//  	    options[4].optionString = "-Djava.class.path=C:\\TEMP\\api.jar";  
- 	    options[4].optionString = "-Djava.class.path=\\\\Dimetrodon\\base\\apps\\i686-pc-linux-gnu-dbg\\pipeline-dimetrodon-2.1.8-070122\\lib\\api.jar"; 
+	    //options[4].optionString = "-Djava.class.path=C:\\TEMP"; 
+	    //  	    options[4].optionString = "-Djava.class.path=C:\\TEMP\\api.jar";  
+	    options[4].optionString = "-Djava.class.path=\\\\Dimetrodon\\base\\apps\\i686-pc-linux-gnu-dbg\\pipeline-dimetrodon-2.1.8-070122\\lib\\api.jar"; 
       
  	    vm_args.version = JNI_VERSION_1_2;
  	    vm_args.options = options;
  	    vm_args.nOptions = 5;
  	    vm_args.ignoreUnrecognized = 1;
- 	  }
-      
+	  }
+	  
+
  	  /* load and initialize a JVM, return a JNI interface pointer in env */
  	  JavaVM *jvm;     
  	  JNIEnv *env; 
@@ -168,7 +177,7 @@ namespace PipelineJobManager {
 	  log->WriteEntry("StartJVM: Created JVM.");
       
  	  /* get the method handle for JobMgrService.onStart */
-//   	  jclass cls = env->FindClass("TestService");
+	  //jclass cls = env->FindClass("PipelineJobManager");
 	  jclass cls = env->FindClass("us/temerity/pipeline/bootstrap/JobMgrService");
 	  if(cls == NULL) {
 	    log->WriteEntry("Unable to locate the JobMgrService class.", 
@@ -228,12 +237,11 @@ namespace PipelineJobManager {
  	    if(testJNI(jvm->AttachCurrentThread((void**) &env, NULL), 
  		       log, "Unable to attach to the JVM running the service!"))
  	      return; 
-	    log->WriteEntry( 
-	       "StopJVM: Attached to the JVM.");
+	    log->WriteEntry("StopJVM: Attached to the JVM.");
 	    
  	    /* get the method handle for JobMgrService.onStop */
-//   	    jclass cls = env->FindClass("TestService");
-  	    jclass cls = env->FindClass("us/temerity/pipeline/bootstrap/JobMgrService"); 
+	    //jclass cls = env->FindClass("PipelineJobManager");
+	    jclass cls = env->FindClass("us/temerity/pipeline/bootstrap/JobMgrService"); 
 	    if(cls == NULL) {
 	      log->WriteEntry("Unable to locate the JobMgrService class.", 
 			      EventLogEntryType::Error);
@@ -276,7 +284,7 @@ namespace PipelineJobManager {
       /// Required designer variable.
       /// </summary>
       System::ComponentModel::Container ^components;
-    
+
 #pragma region Windows Form Designer generated code
       /// <summary>
       /// Required method for Designer support - do not modify
@@ -284,11 +292,11 @@ namespace PipelineJobManager {
       /// </summary>
       void InitializeComponent(void)
 	{
-	  // 
-	  // PipelineJobManagerWinService
-	  // 
+	  this->components = gcnew System::ComponentModel::Container();
+	  this->CanStop = true;
+	  this->CanPauseAndContinue = true;
+	  this->AutoLog = true;
 	  this->ServiceName = L"PipelineJobManagerWinService";
-
 	}
 #pragma endregion
     };

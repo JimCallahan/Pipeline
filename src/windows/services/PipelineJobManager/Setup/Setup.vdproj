@@ -16,7 +16,13 @@
         "Entry"
         {
         "MsmKey" = "8:_0556B516B456227098379CD8682DCF4A"
-        "OwnerKey" = "8:_90F7AB22F2ED4CCC9B2FE473CFCF70AD"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_23CE1FF6730D44B49DEF42EB67D5576B"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -27,32 +33,26 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_505209D270E04DBAB1EA746A3C0F336A"
+        "OwnerKey" = "8:_23CE1FF6730D44B49DEF42EB67D5576B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7488FF27C868451A99724EBA36263071"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7D315C6237D44B74BA9D04D16A51A15F"
-        "OwnerKey" = "8:_DE58F44FBD8448E9B1B186C240C63AB5"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_90F7AB22F2ED4CCC9B2FE473CFCF70AD"
+        "MsmKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_DE58F44FBD8448E9B1B186C240C63AB5"
-        "OwnerKey" = "8:_90F7AB22F2ED4CCC9B2FE473CFCF70AD"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_90F7AB22F2ED4CCC9B2FE473CFCF70AD"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -114,6 +114,11 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.2.0"
+                    {
+                    "Name" = "8:.NET Framework 2.0"
+                    "ProductCode" = "8:Microsoft.Net.Framework.2.0"
+                    }
                 }
             }
         }
@@ -122,6 +127,34 @@
     {
         "CustomAction"
         {
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_3B8E17FE8C1049D1A4F8960FC2C1D215"
+            {
+            "Name" = "8:Primary Output from PipelineJobManager (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+            "FileType" = "3:2"
+            "InstallAction" = "3:4"
+            "Arguments" = "8:-Install /u"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_DC5341F6_307D_4BA8_BA19_7AB8492CD312"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_AA9A101D9DA74AA089F4F564DAD1576D"
+            {
+            "Name" = "8:Primary Output from PipelineJobManager (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:-Install"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_8BC650F9_4832_4F95_8904_A6047BED7FFA"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
         }
         "DefaultFeature"
         {
@@ -261,7 +294,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Pipeline-2.1.8"
         "ProductCode" = "8:{CE6756F0-2156-4E34-90AA-86D4E28EA926}"
-        "PackageCode" = "8:{578BDCB7-0A39-45E6-A5BE-F880FC63D616}"
+        "PackageCode" = "8:{CD330AF9-F88E-4B22-A800-CB5D6DF41ABE}"
         "UpgradeCode" = "8:{8BF66B9E-2AF7-4F05-A89D-7393B47C1AEE}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
@@ -882,11 +915,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_7D315C6237D44B74BA9D04D16A51A15F"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_23CE1FF6730D44B49DEF42EB67D5576B"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_8_0_microsoft_vc80_crt_x86.msm"
+            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
                 "Properties"
                 {
                 }
@@ -896,11 +929,11 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_DE58F44FBD8448E9B1B186C240C63AB5"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_505209D270E04DBAB1EA746A3C0F336A"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:Microsoft_VC80_CRT_x86.msm"
+            "SourcePath" = "8:policy_8_0_microsoft_vc80_debugcrt_x86.msm"
                 "Properties"
                 {
                 }
@@ -913,7 +946,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_90F7AB22F2ED4CCC9B2FE473CFCF70AD"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7FBE5C81888343B3B5FFE77670F71A5A"
             {
             "SourcePath" = "8:..\\..\\..\\..\\..\\build\\pipeline-windows\\services\\PipelineJobManager\\PipelineJobManager.exe"
             "TargetName" = "8:"
@@ -935,7 +968,7 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{2F01CF5F-0F0B-4096-A0AC-2E281632ADA9}"
+            "OutputProjectGuid" = "8:{1C831A00-816B-4E7F-BEFB-E4B3935A44F7}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

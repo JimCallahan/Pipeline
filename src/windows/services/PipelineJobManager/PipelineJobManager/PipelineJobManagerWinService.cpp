@@ -4,8 +4,6 @@
 #include <string.h>
 #include "PipelineJobManagerWinService.h"
 
-//#using <mscorlib.dll>
-
 using namespace PipelineJobManager;
 using namespace System::Text;
 using namespace System::Security::Policy;
