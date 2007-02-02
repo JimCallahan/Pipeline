@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.188 2007/01/01 16:09:51 jim Exp $
+// $Id: MasterMgr.java,v 1.189 2007/02/02 18:28:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6283,10 +6283,12 @@ class MasterMgr
 	  ("Unable to change the links of target node (" + targetID + ") " + 
 	   "while there are active jobs associated with the node!");
       
-      /* add the link */ 
-      if(mod.getSource(source) == null) 
+      /* prevent circular links */ 
+      if(mod.getSource(source) == null)
 	checkForCircularity(timer, source, targetID, 
 			    new HashSet<String>(), new Stack<String>()); 
+
+      /* add (or modify) the link */ 
       mod.setSource(slink);
       
       /* write the new working version to disk */ 
@@ -13484,12 +13486,16 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only working versions of nodes can be linked!\n" + 
 	   "No working version (" + id + ") exists for the upstream node.");
-      
       checked.add(name);
-      branch.push(name);
-      for(LinkMod link : bundle.getVersion().getSources()) 
-	checkForCircularity(timer, link.getName(), targetID, checked, branch);
-      branch.pop();      
+
+      /* only follow upstream links for non-locked nodes */ 
+      NodeMod mod = bundle.getVersion();
+      if(!mod.isLocked()) {
+	branch.push(name);
+	for(LinkMod link : mod.getSources()) 
+	  checkForCircularity(timer, link.getName(), targetID, checked, branch);
+	branch.pop();      
+      }
     }
     finally {
       lock.readLock().unlock();
