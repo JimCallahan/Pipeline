@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.37 2006/11/23 00:46:59 jim Exp $
+// $Id: BaseAction.java,v 1.38 2007/02/06 02:38:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1247,8 +1247,8 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a {@link SubProcessHeavy SubProcessHeavy} instance which when executed will 
-   * fulfill the given action agenda. <P> 
+   * Construct a {@link SubProcessHeavy} instance which when executed will fulfill the 
+   * given action agenda. <P> 
    * 
    * @param agenda
    *   The agenda to be accomplished by the action.
