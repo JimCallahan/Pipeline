@@ -5,9 +5,11 @@
 
 #pragma once
 
+#define _CRT_SECURE_NO_DEPRECATE
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+
 
 #include <assert.h>
 #include <string.h>
@@ -140,7 +142,8 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
-  (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring, jstring, jstring);
+  (JNIEnv *, jobject, 
+   jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
 
 
 /* Header for class us_temerity_pipeline_NativeProcessLight */
@@ -207,7 +210,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
-  (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring);
+  (JNIEnv *, jobject, jstring, jcharArray, jobjectArray, jobjectArray, jstring);
 
 
 

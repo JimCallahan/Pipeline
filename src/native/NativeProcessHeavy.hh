@@ -37,7 +37,8 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
-  (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring, jstring, jstring);
+  (JNIEnv *, jobject, 
+   jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
 
 #ifdef __cplusplus
 }

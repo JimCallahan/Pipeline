@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cpp,v 1.2 2006/05/07 19:56:58 jim Exp $
+// $Id: NativeProcessLight.cpp,v 1.3 2007/02/07 09:21:42 jim Exp $
 
 #include "stdafx.h"
 
@@ -50,6 +50,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_writeToStdIn
     return -1;
   }
   
+  env->ReleaseStringUTFChars(jinput, input);
   return ((jint) bytes);
 }
 
@@ -330,10 +331,12 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 (
  JNIEnv *env, 
  jobject obj, 
+ jstring user,             /* IN: the user to impersonate (or NULL) */                   
+ jcharArray password,      /* IN: the user's password (or NULL) */ 
  jobjectArray jcmdarray,   /* IN: command[0] and arguments[1+] */ 		  
  jobjectArray jenvp,	   /* IN: environmental variable name=value pairs */  
- jstring jdir	  	   /* IN: the working directory */                    
- )
+ jstring jdir  	  	   /* IN: the working directory */  
+)
 {
   /* exception initialization */ 
   char msg[2048];
@@ -421,6 +424,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
   const char* dir = NULL; 
   char* cmdline = NULL; 
   TCHAR envbuf[32768]; 
+  char dpassword[512];
   {
     {
       dir = env->GetStringUTFChars(jdir, 0);      
@@ -456,9 +460,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
       jsize i;
       size_t csize = 0; 
       for(i=0; i<len; i++) {
-	const char* arg = 
-	  env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jcmdarray, i), 0);
+	jstring s = (jstring) env->GetObjectArrayElement(jcmdarray, i);
+	const char* arg = env->GetStringUTFChars(s, NULL);
 	csize += strlen(arg) + ((i == 0) ? 2 : 1);
+	env->ReleaseStringUTFChars(s, arg);	
       }
 
       printf("Cmdline Size = %d\n", csize);
@@ -471,13 +476,15 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
       cmdline = new char[csize+1];
       cmdline[0] = '\0';
       for(i=0; i<len; i++) {
-	const char* arg = 
-	  env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jcmdarray, i), 0);
+	jstring s = (jstring) env->GetObjectArrayElement(jcmdarray, i);
+	const char* arg = env->GetStringUTFChars(s, NULL);
 
         strcat(cmdline, (i == 0) ? "\"" : " ");
 	strcat(cmdline, arg);
         if(i == 0)
           strcat(cmdline, "\"");
+
+	env->ReleaseStringUTFChars(s, arg);
       }
 
       printf("Cmdline = %s\n", cmdline);
@@ -492,8 +499,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
       int total = 0;
       jsize i;
       for(i=0; i<len; i++) {
-	const char* keyval = 
-	  env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jenvp, i), 0);
+	jstring s = (jstring) env->GetObjectArrayElement(jenvp, i);
+	const char* keyval = env->GetStringUTFChars(s, NULL);
 
 	printf("  %s\n", keyval);
 
@@ -501,6 +508,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 	  env->ThrowNew(IOException, "failed to copy environment");
 	  return -1;
       	}
+
+	env->ReleaseStringUTFChars(s, keyval);
 
       	int size = (lstrlen(envp) + 1) * sizeof(TCHAR);
 	total += size;
@@ -595,6 +604,13 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 
     printf("Done Wating!\n");
 
+    /* deallocated dynamic memory used to launch the process */ 
+    {
+      env->ReleaseStringUTFChars(jdir, dir);
+
+      delete[] cmdline;
+    }      
+
     /* let Java know that the process has exited */ 
     env->CallVoidMethod(obj, setIsRunning, false);
 	
@@ -677,9 +693,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
     /* cleanup process/thread handles */ 
     CloseHandle(procInfo.hProcess);
     CloseHandle(procInfo.hThread);
-
-    /* clean up temporary strings */ 
-    delete cmdline;
   }
 
   return ((jint) exitCode);

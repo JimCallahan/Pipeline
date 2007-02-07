@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cc,v 1.3 2006/12/05 17:40:52 jim Exp $
+// $Id: NativeProcessHeavy.cc,v 1.4 2007/02/07 09:21:43 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -124,6 +124,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_writeToStdIn
     env->ThrowNew(IOException, msg);
     return -1;
   }
+
+  env->ReleaseStringUTFChars(jinput, input);
   return bytes;
 }
 
@@ -210,6 +212,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 (
  JNIEnv *env, 
  jobject obj, 
+ jstring user,             /* IN: the user to impersonate (or NULL) */                   
+ jcharArray password,      /* IN: the user's password (or NULL) */     
  jobjectArray jcmdarray,   /* IN: command[0] and arguments[1+] */ 		  
  jobjectArray jenvp,	   /* IN: environmental variable name=value pairs */  
  jstring jdir,		   /* IN: the working directory */     
@@ -345,9 +349,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
       cmdarray = new char*[len+1];
       jsize i;
       for(i=0; i<len; i++) {
-	const char* arg = 
-	  env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jcmdarray, i), 0);
+	jstring s = (jstring) env->GetObjectArrayElement(jcmdarray, i);
+	const char* arg = env->GetStringUTFChars(s, 0);
 	cmdarray[i] = strdup(arg);
+	env->ReleaseStringUTFChars(s, arg);
       }
       cmdarray[i] = NULL;
     }
@@ -359,9 +364,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
       envp = new char*[len+1];       
       jsize i;
       for(i=0; i<len; i++) {
-	const char* keyval = 
-	  env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jenvp, i), 0);
+	jstring s = (jstring) env->GetObjectArrayElement(jenvp, i);
+	const char* keyval = env->GetStringUTFChars(s, NULL);
 	envp[i] = strdup(keyval);
+	env->ReleaseStringUTFChars(s, keyval);
       }
       envp[i] = NULL;
     }
@@ -481,8 +487,12 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 
     /* parent process */
     {   
-      /* deallocated memory used to store the environment and command-line arguments */ 
+      /* deallocated dynamic memory used to launch the process */ 
       {
+	env->ReleaseStringUTFChars(jdir, dir);
+	env->ReleaseStringUTFChars(joutfile, outFile);
+	env->ReleaseStringUTFChars(jerrfile, errFile);
+
 	jsize i;
 	for(i=0; i<envsize; i++) 
 	  free(envp[i]);

@@ -69,7 +69,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
-  (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring);
+  (JNIEnv *, jobject, jstring, jcharArray, jobjectArray, jobjectArray, jstring);
 
 #ifdef __cplusplus
 }
