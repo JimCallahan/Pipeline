@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.11 2005/11/03 22:02:14 jim Exp $
+// $Id: NativeProcess.java,v 1.12 2007/02/07 21:07:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,6 +28,29 @@ interface NativeProcess
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Provide the encrypted Windows password for the user which will own the OS level 
+   * process. <P> 
+   * 
+   * This is only required on Windows systems where the process will be run by a user
+   * other than the current user and must be called before the subprocess is started.
+   * 
+   * @param user
+   *   The username which will own the OS level subprocess.
+   * 
+   * @param password
+   *   The encrypted Windows password for the user.
+   */ 
+  public void 
+  authorizeOnWindows
+  (
+   String user, 
+   String password
+  );
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 

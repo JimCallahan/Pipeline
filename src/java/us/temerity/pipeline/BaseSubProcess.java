@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.17 2006/12/31 20:13:37 jim Exp $
+// $Id: BaseSubProcess.java,v 1.18 2007/02/07 21:07:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -71,10 +71,8 @@ class BaseSubProcess
    File dir    
   )
   {
-    if((user != null) && (!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))) 
-      throw new IllegalArgumentException
-	("Only the (pipeline) user is allowed to run processes as another user!");
-    pSubstituteUser = user;
+    if(!PackageInfo.sUser.equals(user)) 
+      pSubstituteUser = user;
 
     /* build environment */ 
     if(env == null) 
@@ -84,7 +82,7 @@ class BaseSubProcess
       /* if the process is to be run by the same user as that which owns the parent process
 	 and the X11 authority and display settings do not already exist in the child 
 	 process environment, then clone their values from the parent environenment */ 
-      if((user == null) || (PackageInfo.sUser.equals(user))) {
+      if(user == null) {
 	switch(PackageInfo.sOsType) {
 	case Unix:
 	  if(!env.containsKey("XAUTHORITY")) {
@@ -165,10 +163,6 @@ class BaseSubProcess
 	      cmd.add(user);
 	      cmd.add(lookupUserID(user).toString());
 	    }
-	    break;
-
-	  case Windows:
-	    throw new IllegalArgumentException("Not implemented yet...");
 	  }
 	}
 	
@@ -322,6 +316,28 @@ class BaseSubProcess
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Provide the encrypted Windows password for the user which will own the OS level 
+   * process. <P> 
+   * 
+   * This is only required on Windows systems where the process will be run by a user
+   * other than the current user and must be called before the subprocess is started.
+   * 
+   * @param password
+   *   The encrypted Windows password for the user.
+   */ 
+  public void 
+  authorizeOnWindows
+  (
+   String password
+  ) 
+  {
+    pProc.authorizeOnWindows(pSubstituteUser, password);
+  }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /** 
    * Gets the OS exit code of the process. <P> 
    * 
@@ -704,7 +720,7 @@ class BaseSubProcess
    * Name of the user to run the process under using <I>plrun(1)</I>. <P>
    * If <CODE>null</CODE>, the process is run as the current user directly. 
    */ 
-  private String  pSubstituteUser;   
+  protected String  pSubstituteUser;   
 
   /**
    * The full execution details. 

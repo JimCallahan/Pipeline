@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.13 2006/12/31 20:13:37 jim Exp $
+// $Id: SubProcessLight.java,v 1.14 2007/02/07 21:07:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,7 +38,7 @@ class SubProcessLight
       break;
 
     default:
-      sArgMax = -1L;
+      sArgMax = 32768L;
     }
   }
 
@@ -162,18 +162,31 @@ class SubProcessLight
 
     if(user == null) 
       throw new IllegalArgumentException("The user name cannot be (null)!");
+
     if(PackageInfo.sUser.equals(user)) {
       init(null, program, args, env, dir);
     }
     else {
-      HashMap<String,String> uenv = new HashMap<String,String>(env);
-      String val = uenv.get("LD_LIBRARY_PATH");
-      if(val != null) 
-	uenv.put("PIPELINE_LD_LIBRARY_PATH", val);
+      if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
+	throw new IllegalArgumentException
+	  ("Only the (" + PackageInfo.sPipelineUser + ") may run a process as " + 
+	   "another user!");
+
+      HashMap<String,String> uenv = new HashMap<String,String>(env); 
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case MacOS:
+	{
+	  String val = uenv.get("LD_LIBRARY_PATH");
+	  if(val != null) 
+	    uenv.put("PIPELINE_LD_LIBRARY_PATH", val);
+	}
+      }
       
       init(user, program, args, uenv, dir);
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

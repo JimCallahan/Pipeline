@@ -1,10 +1,13 @@
-// $Id: SubProcessHeavy.java,v 1.12 2006/12/31 20:13:37 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.13 2007/02/07 21:07:24 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.io.*;
+import java.nio.*;
+import java.math.*;
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   S U B P R O C E S S   H E A V Y                                                        */
@@ -115,7 +118,6 @@ class SubProcessHeavy
     init(null, program, args, env, dir);
   }
 
-
   /**
    * Create an OS level subprocess which will be executed as the given user. <P> 
    * 
@@ -173,10 +175,16 @@ class SubProcessHeavy
 
     if(user == null) 
       throw new IllegalArgumentException("The user name cannot be (null)!");
+
     if(PackageInfo.sUser.equals(user)) {
       init(null, program, args, env, dir);
     }
     else {
+      if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
+	throw new IllegalArgumentException
+	  ("Only the (" + PackageInfo.sPipelineUser + ") may run a process as " + 
+	   "another user!");
+
       HashMap<String,String> uenv = new HashMap<String,String>(env);
       String val = uenv.get("LD_LIBRARY_PATH");
       if(val != null) 
@@ -247,7 +255,7 @@ class SubProcessHeavy
   }
 
   
-   
+
   /*----------------------------------------------------------------------------------------*/
   /*   I / O                                                                                */
   /*----------------------------------------------------------------------------------------*/
