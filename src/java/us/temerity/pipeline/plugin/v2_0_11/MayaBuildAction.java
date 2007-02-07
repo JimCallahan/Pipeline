@@ -1,8 +1,7 @@
-// $Id: MayaBuildAction.java,v 1.2 2006/09/29 03:03:21 jim Exp $
+// $Id: MayaBuildAction.java,v 1.3 2007/02/07 21:20:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_11;
 
-import sun.misc.Perf.GetPerfAction;
 import us.temerity.pipeline.*; 
 
 import java.lang.*;
