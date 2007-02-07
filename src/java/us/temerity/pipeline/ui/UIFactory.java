@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.13 2007/01/12 00:05:15 jim Exp $
+// $Id: UIFactory.java,v 1.14 2007/02/07 21:17:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -357,6 +357,42 @@ class UIFactory
     field.setEditable(true);
     
     field.setText(text);
+    
+    return field;
+  }
+
+  /**
+   * Create a new password field. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JPasswordField
+  createPasswordField
+  (
+   int width,
+   int align
+  )
+  {
+    JPasswordField field = new JPasswordField();
+    field.setName("PasswordField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
     
     return field;
   }
@@ -1579,6 +1615,74 @@ class UIFactory
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new password field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   */ 
+  public static JPasswordField
+  createTitledPasswordField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel,
+   int vwidth
+  )
+  {
+    return createTitledPasswordField(tpanel, title, twidth, vpanel, vwidth, null);
+  }
+
+  /**
+   * Create a new password field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JPasswordField
+  createTitledPasswordField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel,
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JPasswordField field = createPasswordField(vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+    
+    
   /*----------------------------------------------------------------------------------------*/
 
   /**
