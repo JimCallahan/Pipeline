@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -800,6 +800,20 @@ class GenUserPrefsApp
 	new BooleanPref
 	("Whether to show node status detail hints by default.",
 	 "ShowDetailHints", "Show Node Detail Hints:", true), 
+
+	new BooleanPref
+	("Whether to show the Toolset property as part of the node detail hints by default.",
+	 "ShowToolsetHints", "Show Toolset Hints:", false), 
+
+	new BooleanPref
+	("Whether to show the Editor property as part of the node detail hints by default.",
+	 "ShowEditorHints", "Show Editor Hints:", false), 
+
+	new BooleanPref
+	("Whether to show the Action property as part of the node detail hints by default.",
+	 "ShowActionHints", "Show Action Hints:", true), 
+
+	new BasePref(),
 
 	new ChoicePref
 	("How to determine the size of the node detail hints.", 
@@ -2256,7 +2270,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2513,7 +2527,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3870,7 +3884,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

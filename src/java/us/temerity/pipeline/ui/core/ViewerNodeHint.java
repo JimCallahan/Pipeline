@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.2 2007/01/05 23:46:10 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.3 2007/02/07 23:44:13 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,7 +31,10 @@ class ViewerNodeHint
   public 
   ViewerNodeHint
   (
-   JNodeViewerPanel parent
+   JNodeViewerPanel parent, 
+   boolean showToolset, 
+   boolean showEditor, 
+   boolean showAction
   ) 
   {
     super();
@@ -41,7 +44,9 @@ class ViewerNodeHint
     pFileStates  = new TreeMap<FileState,Integer>();
     pQueueStates = new TreeMap<QueueState,Integer>();
 
-    pShowAction = true;
+    pShowToolset = showToolset; 
+    pShowAction  = showAction; 
+    pShowEditor  = showEditor; 
   }
 
 

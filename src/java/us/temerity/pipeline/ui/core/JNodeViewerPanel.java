@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.72 2007/02/07 21:19:53 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.73 2007/02/07 23:44:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -74,10 +74,17 @@ class JNodeViewerPanel
     {
       pRoots = new TreeMap<String,NodeStatus>();
 
-      pShowDetailHints = UserPrefs.getInstance().getShowDetailHints();
-      pShowDownstream  = UserPrefs.getInstance().getShowDownstream();
+      UserPrefs prefs = UserPrefs.getInstance();
 
-      pViewerNodeHint = new ViewerNodeHint(this);
+      pShowDetailHints = prefs.getShowDetailHints();
+      pShowDownstream  = prefs.getShowDownstream();
+
+      pViewerNodeHint = 
+	new ViewerNodeHint(this, 
+			   prefs.getShowToolsetHints(), 
+			   prefs.getShowEditorHints(), 
+			   prefs.getShowActionHints()); 			   
+
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
       pSelected = new TreeMap<NodePath,ViewerNode>();
@@ -4292,6 +4299,13 @@ class JNodeViewerPanel
 
     /* whether to show the downstram links */
     encoder.encode("ShowDetailHints", pShowDetailHints);
+
+    if(pViewerNodeHint != null) {
+      encoder.encode("ShowToolsetHints", pViewerNodeHint.showToolset());
+      encoder.encode("ShowActionHints", pViewerNodeHint.showAction());
+      encoder.encode("ShowEditorHints", pViewerNodeHint.showEditor());
+    }
+
     encoder.encode("ShowDownstream", pShowDownstream);
   }
 
@@ -4321,6 +4335,20 @@ class JNodeViewerPanel
       Boolean show = (Boolean) decoder.decode("ShowDetailHints");
       if(show != null) 
 	pShowDetailHints = show; 
+
+      if(pViewerNodeHint != null) {
+	Boolean tset = (Boolean) decoder.decode("ShowToolsetHints");
+	if(tset != null) 
+	  pViewerNodeHint.setShowToolset(tset);
+	
+	Boolean act = (Boolean) decoder.decode("ShowActionHints");
+	if(act != null) 
+	  pViewerNodeHint.setShowAction(act);
+
+	Boolean edit = (Boolean) decoder.decode("ShowEditorHints");
+	if(edit != null) 
+	  pViewerNodeHint.setShowEditor(edit);
+      }
     }
 
     /* whether to show the downstram links */    
