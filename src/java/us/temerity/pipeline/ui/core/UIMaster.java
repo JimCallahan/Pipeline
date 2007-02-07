@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.53 2007/01/05 23:46:10 jim Exp $
+// $Id: UIMaster.java,v 1.54 2007/02/07 21:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.core.JobMgrPlgControlClient;
 import us.temerity.pipeline.core.LockedGlueFile;
 import us.temerity.pipeline.core.GlueLockException;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
@@ -2039,6 +2040,26 @@ class UIMaster
   }
 
   /**
+   * Show the authorize dialog.
+   */ 
+  public void 
+  showAuthorizeDialog()
+  {
+    pAuthorizeDialog.setVisible(true);
+    if(pAuthorizeDialog.wasConfirmed()) {
+      char[] pw = pAuthorizeDialog.getPassword();
+      if(pw != null) {
+	try {
+	  getMasterMgrClient().authorizeOnWindows(pw);
+	}
+	catch(PipelineException ex) {
+	  showErrorDialog(ex);
+	}
+      }
+    }
+  }
+
+  /**
    * Show the job submission dialog.
    */ 
   public JQueueJobsDialog
@@ -2059,7 +2080,25 @@ class UIMaster
    SubProcessLight proc
   )
   {
-    ShowSubprocessFailureDialog task = new ShowSubprocessFailureDialog(header, proc);
+    showSubprocessFailureDialog
+      (header, proc.getExitCode(), proc.getCommand(), proc.getStdOut(), proc.getStdErr());
+  }
+
+  /**
+   * Show an dialog giving details of the failure of the given subprocess.
+   */ 
+  public void 
+  showSubprocessFailureDialog
+  (
+   String header, 
+   int exitCode, 
+   String command, 
+   String stdout, 
+   String stderr 
+  )
+  {
+    ShowSubprocessFailureDialog task = 
+      new ShowSubprocessFailureDialog(header, exitCode, command, stdout, stderr);
     SwingUtilities.invokeLater(task);
   }
 
@@ -3261,6 +3300,8 @@ class UIMaster
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
 
+	pAuthorizeDialog = new JAuthorizeDialog(pFrame); 
+
 	pManagePrivilegesDialog    = new JManagePrivilegesDialog();
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
@@ -3915,25 +3956,34 @@ class UIMaster
     ShowSubprocessFailureDialog
     (
      String header, 
-     SubProcessLight proc
+     int exitCode, 
+     String command, 
+     String stdout, 
+     String stderr 
     )
     {
       super("UIMaster:ShowSubprocessFailureDialog");
 
-      pHeader = header;
-      pProc = proc;
+      pHeader   = header;
+      pExitCode = exitCode; 
+      pCommand  = command; 
+      pStdOut   = stdout; 
+      pStdErr   = stderr;
     }
 
     public void 
     run() 
     {
-      pSubProcessFailureDialog.updateProc
-	(pHeader + " [code " + pProc.getExitCode() + "]", pProc);
+      pSubProcessFailureDialog.updateProc(pHeader + " [code " + pExitCode + "]", 
+					  pCommand, pStdOut, pStdErr);
       pSubProcessFailureDialog.setVisible(true);
     }
 
-    private String           pHeader;
-    private SubProcessLight  pProc;
+    private String pHeader;
+    private int    pExitCode; 
+    private String pCommand; 
+    private String pStdOut; 
+    private String pStdErr; 
   }
 
 
@@ -3985,13 +4035,15 @@ class UIMaster
      NodeCommon com,
      boolean useDefault,
      String author, 
-     String view
+     String view, 
+     boolean substitute
     ) 
     {
       super("UIMaster:EditTask", channel, author, view);
 
       pNodeCommon = com;
       pUseDefault = useDefault;
+      pSubstitute = substitute;
     }
 
     public 
@@ -4003,7 +4055,8 @@ class UIMaster
      VersionID evid, 
      String evendor, 
      String author, 
-     String view
+     String view,
+     boolean substitute
     ) 
     {
       super("UIMaster:EditTask", channel, author, view);
@@ -4012,9 +4065,11 @@ class UIMaster
       pEditorName    = ename;
       pEditorVersion = evid; 
       pEditorVendor  = evendor; 
+      pSubstitute    = substitute;
     }
 
 
+    @SuppressWarnings("deprecation")
     public void 
     run() 
     {
@@ -4096,11 +4151,30 @@ class UIMaster
 	      fseq = new FileSeq(path.toString(), pNodeCommon.getPrimarySequence());
 	      dir = path.toFile();
 	    }
-	    
-	    /* start the editor */ 
-	    editor.makeWorkingDirs(dir);
-	    proc = editor.launch(fseq, env, dir);
 
+	    /* start the editor */ 
+	    if(pSubstitute) {
+	      PrivilegeDetails details = client.getCachedPrivilegeDetails();
+	      if(details.isNodeManaged(pAuthorName)) {
+		EditAsTask task = new EditAsTask(editor, pAuthorName, fseq, env, dir);
+		task.start();
+	      }
+	      else {
+		throw new PipelineException
+		  ("You do not have the necessary privileges to execute an editor as the " + 
+		   "(" + pAuthorName + ") user!");
+	      }
+	    }
+	    else {
+	      editor.makeWorkingDirs(dir);
+	      proc = editor.prep(PackageInfo.sUser, fseq, env, dir);
+	      if(proc != null) 
+		proc.start();
+	      else 
+		proc = editor.launch(fseq, env, dir);
+	    }
+
+	    /* generate the editing started event */ 
 	    if(mod != null) {
 	      NodeID nodeID = new NodeID(pAuthorName, pViewName, pNodeCommon.getName());
 	      editID = client.editingStarted(nodeID, editor);
@@ -4141,6 +4215,62 @@ class UIMaster
     private String      pEditorName;
     private VersionID   pEditorVersion; 
     private String      pEditorVendor; 
+    private boolean     pSubstitute; 
+  }
+
+  /** 
+   * Launch editor as another user and monitor for errors. 
+   */ 
+  public
+  class EditAsTask
+    extends Thread
+  {
+    public 
+    EditAsTask
+    (
+     BaseEditor editor, 
+     String author, 
+     FileSeq fseq,      
+     Map<String,String> env,      
+     File dir        
+    )
+    {
+      super("UIMaster:EditAsTask"); 
+
+      pEditor     = editor; 
+      pAuthorName = author; 
+      pFileSeq    = fseq; 
+      pEnv        = env; 
+      pDir        = dir; 
+    } 
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      JobMgrPlgControlClient jclient = null; 
+      try {
+	jclient = new JobMgrPlgControlClient("localhost");
+	Object[] results = jclient.editAs(pEditor, pAuthorName, pFileSeq, pEnv, pDir); 
+	if(results != null) 
+	  master.showSubprocessFailureDialog
+	    ("Editor Failure:", (Integer) results[0], 
+	     (String) results[1], (String) results[2], (String) results[3]);
+      }
+      catch(Exception ex) {
+	master.showErrorDialog(ex);
+      }
+      finally {
+	if(jclient != null) 
+	  jclient.disconnect();
+      }
+    }
+
+    private BaseEditor          pEditor; 
+    private String              pAuthorName; 
+    private FileSeq             pFileSeq; 
+    private Map<String,String>  pEnv; 
+    private File                pDir;            
   }
 
   /** 
@@ -4866,6 +4996,11 @@ class UIMaster
    * The manage editors dialog.
    */ 
   private JDefaultEditorsDialog  pDefaultEditorsDialog;
+
+  /**
+   * The authorize dialog.
+   */ 
+  private JAuthorizeDialog  pAuthorizeDialog;
 
   /**
    * The manage privileges dialog.
