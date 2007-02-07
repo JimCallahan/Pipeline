@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.69 2007/01/04 08:44:17 jim Exp $
+// $Id: ScriptApp.java,v 1.70 2007/02/07 23:43:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2635,6 +2635,7 @@ class ScriptApp
   /**
    * Launch the editor program for the given node version.
    */ 
+  @SuppressWarnings("deprecation")
   private void 
   editCommon
   (
@@ -2816,7 +2817,12 @@ class ScriptApp
 	 "Editing: " + fs + " with " + 
 	 editor.getName() + " (v" + editor.getVersionID() + ")");
       
-      SubProcessLight proc = editor.launch(fs, env, dir);
+      SubProcessLight proc = editor.prep(PackageInfo.sUser, fs, env, dir);
+      if(proc != null) 
+	proc.start();
+      else 
+	proc = editor.launch(fs, env, dir);
+
       Long editID = client.editingStarted(nodeID, editor);
       procs.put(editID, proc);
     }
