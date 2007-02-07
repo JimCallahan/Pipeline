@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.90 2007/01/01 16:09:51 jim Exp $
+// $Id: MasterMgrClient.java,v 1.91 2007/02/07 21:12:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -11,8 +11,16 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.net.*;
+import java.math.*;
 import java.util.*;
 import java.util.regex.*;
+import java.security.*;
+import java.security.spec.*;
+import java.security.interfaces.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import javax.crypto.interfaces.*;
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R    M G R   C L I E N T                                                     */
@@ -2984,6 +2992,114 @@ class MasterMgrClient
   }
   
    
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A U T H O R I Z A T I O N                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Authorize the current user to execiute jobs on Windows. <P> 
+   * 
+   * The user's Windows password is required by Pipeline to run jobs on behalf of the user 
+   * on Job Servers running on a Windows based system.  By providing their Windows password
+   * user can authorize Pipeline to run processes using their user credentials.  <P> 
+   * 
+   * Note that the character array used to specify the password is immediately cleared by 
+   * this method after the password is stored internally by Pipeline in an encrypted form.  
+   * User passwords are never transmitted or stored in an unencrypted form by Pipeline.  
+   * This is the reason that the password parameter is not a String type, which would be 
+   * automatically cached by the Java Runtime.
+   * 
+   * @param password
+   *   The user's Windows password.
+   * 
+   * @throws PipelineException
+   *   If unable to se the password.
+   */ 
+  public synchronized void
+  authorizeOnWindows
+  (
+   char[] password
+  ) 
+    throws PipelineException  
+  {
+    try {
+      verifyConnection();
+
+      if((password == null) || (password.length == 0))
+	throw new IllegalArgumentException
+	  ("No password was supplied!");
+      
+      /* encrypt the password on this end */ 
+      String epassword;
+      try {
+	Cipher cipher = null;
+	{
+	  MessageDigest digest = MessageDigest.getInstance("SHA-512");
+	  
+	  int wk;
+	  for(wk=0; wk<PackageInfo.sHostNames.length; wk++) {
+	    String hname = PackageInfo.sHostNames[wk];
+	    byte[] bs = hname.getBytes();
+	    digest.update(bs, 0, bs.length);
+	  }
+	  for(wk=0; wk<PackageInfo.sHostIDs.length; wk++) {
+	    String hname = PackageInfo.sHostIDs[wk];
+	    byte[] bs = hname.getBytes();
+	    digest.update(bs, 0, bs.length);
+	  }
+	  
+	  byte[] cs = digest.digest();
+	  
+	  byte[] bkey = { cs[0], cs[5], cs[13], cs[2], cs[17], cs[19], cs[3], cs[23], 
+			  cs[8], cs[27], cs[33], cs[12], cs[29], cs[41], cs[31], cs[4] };
+	  
+	  byte[] biv = { cs[12], cs[45], cs[53], cs[28], cs[6], cs[51], cs[25], cs[61] };
+
+	  SecretKeySpec key = new SecretKeySpec(bkey, "RC2");
+	  RC2ParameterSpec rc2Spec = new RC2ParameterSpec(128, biv);
+	  
+	  cipher = Cipher.getInstance("RC2/CBC/PKCS5Padding");
+	  cipher.init(Cipher.ENCRYPT_MODE, key, rc2Spec, null);
+	}
+	
+	byte[] input = new byte[password.length*2];
+	{
+	  ByteBuffer buf = ByteBuffer.wrap(input);
+	  int wk;
+	  for(wk=0; wk<password.length; wk++) 
+	    buf.putChar(password[wk]);
+	  
+	  // DEBUG 
+	  //buf.rewind();
+	  //System.out.print("Password = " + buf.asCharBuffer().toString() + "\n");
+	  // DEBUG 
+	}
+	
+	byte[] encrypted = cipher.doFinal(input);
+	BigInteger bi = new BigInteger(encrypted);
+	epassword = bi.toString();
+
+	// DEBUG
+	//System.out.print("Encrypted = " + epassword + "\n\n");
+	// DEBUG
+      }
+      catch(Exception ex) {
+	throw new PipelineException("Unable to encrypt password!", ex); 
+      }
+      
+      MiscAuthorizeOnWindowsReq req = new MiscAuthorizeOnWindowsReq(epassword);
+     
+      Object obj = performTransaction(MasterRequest.MiscAuthorizeOnWindows, req); 
+      handleSimpleResponse(obj);
+    }
+    finally {
+      /* overwrite the input password array */ 
+      Arrays.fill(password, '?');
+    }
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   A R E A S                                                            */
