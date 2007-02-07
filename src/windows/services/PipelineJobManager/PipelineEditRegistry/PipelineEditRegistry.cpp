@@ -10,6 +10,10 @@ int main(array<System::String ^> ^args)
 	String^ path = "Path";
 	if(args->Length != 1) {
 		Console::WriteLine("usage: PipelineEditRegistry JAVAHOME\n");
+
+		Console::WriteLine("Press <ENTER> to continue...");
+		Console::ReadLine();
+
 		return 1;
 	}
 			
@@ -17,6 +21,7 @@ int main(array<System::String ^> ^args)
 
 	String^ jniPath       = String::Format("{0}\\bin", args[0]);
 	String^ jniServerPath = String::Format("{0}\\bin\\server", args[0]);
+	String^ jniClientPath = String::Format("{0}\\bin\\client", args[0]);
 
 	RegistryKey^ hklm = Registry::LocalMachine;
 	RegistryKey^ env = hklm->OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
@@ -26,7 +31,7 @@ int main(array<System::String ^> ^args)
 	String^ value = (String^) env->GetValue(path);
 	if(value == nullptr) {
 	  Console::WriteLine("Path (current) = <NONE>\n"); 
-	  nvalue = String::Format("{0};{1}", jniPath, jniServerPath);
+	  nvalue = String::Format("{0};{1};{2}", jniPath, jniServerPath, jniClientPath);
 	}
 	else {
 	    Console::WriteLine("Path (current) = {0}\n", value); 
@@ -34,14 +39,14 @@ int main(array<System::String ^> ^args)
   		array<String^>^ paths = value->Split(';');
 
 		// DEBUG
-		//Console::WriteLine("Path COMPONENTS:");
-		//for(int i=0; i<paths->Length; i++) {
-		//	Console::WriteLine("  {0}", paths[i]);
-		//}
-		//Console::WriteLine("");
+		Console::WriteLine("Path COMPONENTS:");
+		for(int i=0; i<paths->Length; i++) {
+			Console::WriteLine("  {0}", paths[i]);
+		}
+		Console::WriteLine("");
 		// DEBUG
 
-		int cnt = 2;
+		int cnt = 3;
 		for(int i=0; i<paths->Length; i++) {
 			if(!paths[i]->Equals(jniPath) && !paths[i]->Equals(jniServerPath))
 				cnt++;
@@ -49,6 +54,7 @@ int main(array<System::String ^> ^args)
 	 
 		bool hasJni = false;
 		bool hasServer = false;
+		bool hasClient = false;
 		array<String^>^ npaths = gcnew array<String^>(cnt);
 		{
 			int wk=0;
@@ -58,18 +64,26 @@ int main(array<System::String ^> ^args)
 
 				bool isServer = paths[i]->Equals(jniServerPath);
 				hasServer |= isServer;
+
+				bool isClient = paths[i]->Equals(jniClientPath);
+				hasClient |= isClient;
 				
-				if(!isJni && !isServer) {
+				if(!isJni && !isServer && !isClient) {
 					npaths[wk] = paths[i];
 					wk++;
 				}
 			}
 			npaths[wk++] = jniPath;
 			npaths[wk++] = jniServerPath;
+			npaths[wk++] = jniClientPath;
 		}
-	 
-		if(hasJni && hasServer) {
+
+		if(hasJni && hasServer && hasClient) {
 			Console::WriteLine("Path is OK!");
+
+			Console::WriteLine("Press <ENTER> to continue...");
+			Console::ReadLine();
+
 			return 0;
 		}
 
@@ -85,5 +99,5 @@ int main(array<System::String ^> ^args)
 	Console::WriteLine("Press <ENTER> to continue...");
 	Console::ReadLine();
 
-    return 1;
+    return 0;
 }
