@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.24 2006/12/15 23:49:41 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.25 2007/02/07 21:13:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -402,6 +402,16 @@ class PackageInfo
    * The date and time the license expires.
    */ 
   public static final String sLicenseEnd = "@LICENSE_END@";  
+
+  /**
+   * The hostnames of the Pipeline servers. <P> 
+   */
+  public static final String[] sHostNames = { @PIPELINE_HOST_NAMES@ };
+
+  /**
+   * The host IDs of the Pipeline servers. <P> 
+   */
+  public static final String[] sHostIDs = { @PIPELINE_HOST_IDS@ };
 
 
   /*----------------------------------------------------------------------------------------*/
