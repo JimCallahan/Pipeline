@@ -1180,6 +1180,30 @@
 
 
 
+  <!--  P A S S W O R D   F I E L D  -->
+
+  <style id="PasswordField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <state value="DISABLED"> 
+      <imagePainter path="ValuePanel.png"
+                    method="passwordFieldBackground"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="EditableValuePanel.png"
+                    method="passwordFieldBackground"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PasswordField" type="name" key="PasswordField"/>
+
+
+
   <!--  T E X T   A R E A  -->
 
   <style id="TextArea">
