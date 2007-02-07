@@ -4,6 +4,6 @@ if BUILD_LEGACY_PLUGINS
 endif
 
 PLUGIN_DIRS2 = v2_0_0 v2_0_1 v2_0_4 v2_0_9 v2_0_10 v2_0_11 v2_0_12 v2_0_13 v2_0_14 \
-               v2_0_15 v2_1_1
+               v2_0_15 v2_1_1 v2_1_8
 
 SUBDIRS = $(PLUGIN_DIRS1) $(PLUGIN_DIRS2)
