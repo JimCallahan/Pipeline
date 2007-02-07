@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.17 2007/02/07 20:52:28 jim Exp $
+// $Id: BaseEditor.java,v 1.18 2007/02/07 21:08:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -218,11 +218,7 @@ class BaseEditor
    *   #prep prep} method instead to allow the caller a chance to execute the process as 
    *   another user.  Namely, as the owner of the files being edited.  The owner of the files
    *   is passes as an additional argument to {@link #prep prep} called (author) which must
-   *   be passed on as a constructor argument of the generated SubProcessLight instance.  
-   *   The ability to execute as another user also requires that the 
-   *   {@link #SubProcessLight.allowSubstituteUser allowSubstituteUser} method can be called 
-   *   before the editor process begins execution.  Since the launch method executes the 
-   *   SubProcessLight instance immediately, there is no opportunity for this to occur.
+   *   be passed on as a constructor argument of the generated SubProcessLight instance.
    * 
    * @param fseq  
    *   The file sequence to edit.
