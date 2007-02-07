@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.27 2006/12/05 19:55:40 jim Exp $
+// $Id: JobMgrServer.java,v 1.28 2007/02/07 21:13:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -287,6 +287,16 @@ class JobMgrServer
 	    LogMgr.getInstance().flush();
 
 	    switch(kind) {
+	    /*-- EDITING -------------------------------------------------------------------*/
+	    case EditAs:           
+	      {
+		JobEditAsReq req = (JobEditAsReq) objIn.readObject();
+		objOut.writeObject(pJobMgr.editAs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
 	    /*-- HOST RESOURCES ------------------------------------------------------------*/
 	    case GetResources:
 	      {

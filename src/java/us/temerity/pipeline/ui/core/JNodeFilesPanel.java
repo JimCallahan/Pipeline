@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.31 2006/12/31 21:35:52 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.32 2007/02/07 21:19:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,6 +116,12 @@ class JNodeFilesPanel
 	menus[wk].add(item);
       }
       
+      item = new JMenuItem("Edit As Owner");
+      pEditAsOwnerItem = item;
+      item.setActionCommand("edit-as-owner");
+      item.addActionListener(this);
+      menus[0].add(item);
+
       {
 	pWorkingPopup.addSeparator();
 	
@@ -978,6 +984,8 @@ class JNodeFilesPanel
       
       pEditorMenuToolset = toolset;
     }
+
+    pEditAsOwnerItem.setEnabled(!PackageInfo.sUser.equals(pAuthor)); 
   }
 
   /**
@@ -1041,6 +1049,11 @@ class JNodeFilesPanel
 	 "Edit primary file sequences of the current primary selection using the default" + 
 	 "editor for the file type.");
     }
+
+    updateMenuToolTip
+      (pEditAsOwnerItem, prefs.getEditAsOwner(), 
+       "Edit primary file sequences of the current primary selection with the permissions " +
+       "of the owner of the node.");
 
     updateMenuToolTip
       (pQueueJobsItem, prefs.getQueueJobs(), 
@@ -1443,11 +1456,14 @@ class JNodeFilesPanel
 
     else if((prefs.getEdit() != null) &&
 	    prefs.getEdit().wasPressed(e))
-      doEditWith(null, false);
+      doEditWith(null, false, false);
     else if((prefs.getEditWithDefault() != null) &&
 	    prefs.getEditWithDefault().wasPressed(e))
-      doEditWith(null, true);
-    
+      doEditWith(null, true, false);
+    else if((prefs.getEditAsOwner() != null) &&
+	    prefs.getEditAsOwner().wasPressed(e))
+      doEditWith(null, false, true);
+
     else if((prefs.getQueueJobs() != null) &&
 	    prefs.getQueueJobs().wasPressed(e))
       doQueueJobs();
@@ -1517,11 +1533,13 @@ class JNodeFilesPanel
       doVersionPressed(comps[1], comps[2]);
     }
     else if(cmd.equals("edit"))
-      doEditWith(null, false);
+      doEditWith(null, false, false);
     else if(cmd.equals("edit-with-default"))
-      doEditWith(null, true);
+      doEditWith(null, true, false);
     else if(cmd.startsWith("edit-with:"))
-      doEditWith(cmd.substring(10), false); 
+      doEditWith(cmd.substring(10), false, false); 
+    else if(cmd.equals("edit-as-owner"))
+      doEditWith(null, false, true);  
     else if(cmd.startsWith("compare-with:"))
       doCompareWith(cmd.substring(13)); 
 
@@ -1674,12 +1692,16 @@ class JNodeFilesPanel
    * 
    * @param useDefault
    *   Whether to use the default editor for the file suffix instead of the given editor.
+   * 
+   * @param substitute
+   *   Whether to run the process as the user owning the node.
    */ 
   private void 
   doEditWith
   (
    String editor, 
-   boolean useDefault
+   boolean useDefault, 
+   boolean substitute
   ) 
   {
     if(pTargetFileSeq == null) 
@@ -1699,7 +1721,8 @@ class JNodeFilesPanel
 
     if(pTargetVersionID != null) {
       EditTask task = new EditTask(ename, evid, evendor, 
-				   pTargetFileSeq, pTargetVersionID, useDefault);
+				   pTargetFileSeq, pTargetVersionID, useDefault, 
+				   pAuthor, pView, false);
       task.start();
     }
     else if(!pSelected.isEmpty()) {
@@ -1734,7 +1757,8 @@ class JNodeFilesPanel
       for(Integer[] range : ranges) {
 	FileSeq fseq = new FileSeq(pTargetFileSeq, range[0], range[1]);
 	EditTask task = new EditTask(ename, evid, evendor, 
-				     fseq, null, useDefault);
+				     fseq, null, useDefault, 
+				     pAuthor, pView, substitute);
 	task.start();
       }
       
@@ -2765,7 +2789,10 @@ class JNodeFilesPanel
      String evendor, 
      FileSeq fseq, 
      VersionID vid, 
-     boolean useDefault
+     boolean useDefault, 
+     String author, 
+     String view, 
+     boolean substitute
     ) 
     {
       super("JNodeFilesPanel:EditTask");
@@ -2776,8 +2803,12 @@ class JNodeFilesPanel
       pFileSeq       = fseq; 
       pVersionID     = vid; 
       pUseDefault    = useDefault;
+      pAuthorName    = author;
+      pViewName      = view; 
+      pSubstitute    = substitute;
     }
 
+    @SuppressWarnings("deprecation")
     public void 
     run() 
     {
@@ -2828,8 +2859,9 @@ class JNodeFilesPanel
 		throw new PipelineException
 		  ("No toolset was specified for node (" + name + ")!");
 	      
-	      /* passes pAuthor so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(pAuthor, pView, tname, PackageInfo.sOsType);
+	      /* passes pAuthorName so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment
+		(pAuthorName, pViewName, tname, PackageInfo.sOsType);
 	    }
 
 	    /* working directory */ 
@@ -2839,16 +2871,37 @@ class JNodeFilesPanel
 	      dir = path.toFile();
 	    }
 	    else {
-	      Path path = new Path(PackageInfo.sWorkPath, pAuthor + "/" + pView + name);
+	      Path path = new Path(PackageInfo.sWorkPath, 
+				   pAuthorName + "/" + pViewName + name);
 	      dir = path.getParentPath().toFile();
 	    }
 
 	    /* start the editor */ 
-	    editor.makeWorkingDirs(dir);
-	    proc = editor.launch(new FileSeq(dir.getPath(), pFileSeq), env, dir);
+	    FileSeq fseq = new FileSeq(dir.getPath(), pFileSeq);
+	    if(pSubstitute) {
+	      PrivilegeDetails details = client.getCachedPrivilegeDetails();
+	      if(details.isNodeManaged(pAuthorName)) {
+		EditAsTask task = 
+		  new EditAsTask(editor, pAuthorName, fseq, env, dir);
+		task.start();
+	      }
+	      else {
+		throw new PipelineException
+		  ("You do not have the necessary privileges to execute an editor as the " + 
+		   "(" + pAuthorName + ") user!");
+	      }
+	    }
+	    else {
+	      editor.makeWorkingDirs(dir);
+	      proc = editor.prep(PackageInfo.sUser, fseq, env, dir);
+	      if(proc != null) 
+		proc.start();
+	      else 
+		proc = editor.launch(fseq, env, dir);
+	    }
 
 	    if(mod != null) {
-	      NodeID nodeID = new NodeID(pAuthor, pView, name);
+	      NodeID nodeID = new NodeID(pAuthorName, pViewName, name);
 	      editID = client.editingStarted(nodeID, editor);
 	    }
 	  }
@@ -2883,7 +2936,31 @@ class JNodeFilesPanel
     private String     pEditorVendor; 
     private FileSeq    pFileSeq; 
     private VersionID  pVersionID; 
-    private boolean    pUseDefault; 
+    private boolean    pUseDefault;  
+    private String     pAuthorName; 
+    private String     pViewName;  
+    private boolean    pSubstitute; 
+  }
+
+  /** 
+   * Launch editor as another user and monitor for errors. 
+   */ 
+  private 
+  class EditAsTask
+    extends UIMaster.EditAsTask
+  {
+    public 
+    EditAsTask
+    (
+     BaseEditor editor, 
+     String author, 
+     FileSeq fseq,      
+     Map<String,String> env,      
+     File dir        
+    ) 
+    {
+      UIMaster.getInstance().super(editor, author, fseq, env, dir);
+    }
   }
 
 
@@ -3426,6 +3503,7 @@ class JNodeFilesPanel
   private JMenuItem[]  pEditItems;
   private JMenuItem[]  pEditWithDefaultItems;
   private JMenu[]      pEditWithMenus; 
+  private JMenuItem    pEditAsOwnerItem; 
 
   /**
    * The compare with submenu.

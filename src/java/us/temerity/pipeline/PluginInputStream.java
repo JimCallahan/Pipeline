@@ -1,4 +1,4 @@
-// $Id: PluginInputStream.java,v 1.9 2006/10/11 22:45:40 jim Exp $
+// $Id: PluginInputStream.java,v 1.10 2007/02/07 21:13:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -94,7 +94,8 @@ class PluginInputStream
     "us.temerity.pipeline.message.MiscArchiveReq",
     "us.temerity.pipeline.message.FileArchiveReq",
     "us.temerity.pipeline.message.MiscRestoreReq", 
-    "us.temerity.pipeline.message.FileExtractReq" 
+    "us.temerity.pipeline.message.FileExtractReq",
+    "us.temerity.pipeline.message.JobEditAsReq"
   };
 
 }

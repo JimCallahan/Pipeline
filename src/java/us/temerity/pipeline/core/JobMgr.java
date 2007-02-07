@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.35 2007/01/03 18:06:14 jim Exp $
+// $Id: JobMgr.java,v 1.36 2007/02/07 21:13:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -59,6 +59,53 @@ class JobMgr
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E D I T O R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Launch an Editor plugin to edit the given files as the specified user.
+   * 
+   * @param req
+   *   The job start request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to start the editor.
+   */
+  public synchronized Object
+  editAs
+  ( 
+   JobEditAsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("JobMgr.getOsType()");
+
+    try {
+      BaseEditor editor = req.getEditor();
+      SubProcessLight proc = editor.prep(req.getAuthor(), req.getFileSeq(), 
+					 req.getEnvironment(), req.getWorkingDir());
+      if(proc == null) 
+	throw new PipelineException
+	  ("The Editor (" + editor.getName() + " v" + editor.getVersionID() + ") from the " + 
+	   "vendor (" + editor.getVendor() + ") does not implement the Editor.prep() " + 
+	   "method and therefore cannot be run as another user!");
+      
+      proc.start();
+      proc.join();
+      if(!proc.wasSuccessful()) 
+	return new JobEditAsFailedRsp(timer, proc);
+
+      return new SuccessRsp(timer);
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   H O S T   R E S O U R C E S                                                          */
@@ -1064,6 +1111,12 @@ class JobMgr
 	    throw new PipelineException
 	      ("The prep() method of the Action (" + pJob.getAction().getName() + ") " + 
 	       "returned (null) instead of a the expected SubProcessHeavy instance!");
+
+	  /* provide the encrypted Windows password for the owning user (if required) */ 
+	  switch(PackageInfo.sOsType) {
+	  case Windows:
+	    pProc.authorizeOnWindows(pJob.getPassword());
+	  }
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log

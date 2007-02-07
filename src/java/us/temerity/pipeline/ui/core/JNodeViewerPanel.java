@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.71 2007/01/05 23:46:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.72 2007/02/07 21:19:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -294,6 +294,14 @@ class JNodeViewerPanel
 	  item.setActionCommand("edit-with-default");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
+
+	  if(wk == 4) {
+	    item = new JMenuItem("Edit As Owner");
+	    pEditAsOwnerItem = item;
+	    item.setActionCommand("edit-as-owner");
+	    item.addActionListener(this);
+	    menus[wk].add(item);
+	  }
 	}
 
 	if((wk == 2) || (wk == 3)) {
@@ -1002,6 +1010,11 @@ class JNodeViewerPanel
 	 "editor for the file type.");
     }
 
+    updateMenuToolTip
+      (pEditAsOwnerItem, prefs.getEditAsOwner(), 
+       "Edit primary file sequences of the current primary selection with the permissions " +
+       "of the owner of the node.");
+
     for(wk=0; wk<3; wk++) {
       updateMenuToolTip
 	(pCheckOutItems[wk], prefs.getNodeViewerCheckOut(), 
@@ -1240,6 +1253,8 @@ class JNodeViewerPanel
       
       pEditorMenuToolset = toolset;
     }    
+
+    pEditAsOwnerItem.setEnabled(!PackageInfo.sUser.equals(pAuthor)); 
   }
 
   /**
@@ -2441,6 +2456,9 @@ class JNodeViewerPanel
       else if((prefs.getEditWithDefault() != null) &&
 	      prefs.getEditWithDefault().wasPressed(e))
 	doEditWithDefault();
+      else if((prefs.getEditAsOwner() != null) &&
+	      prefs.getEditAsOwner().wasPressed(e))
+	doEditAsOwner();
 
       else if((prefs.getNodeViewerLink() != null) &&
 	      prefs.getNodeViewerLink().wasPressed(e))
@@ -2712,7 +2730,9 @@ class JNodeViewerPanel
     else if(cmd.equals("edit-with-default"))
       doEditWithDefault();
     else if(cmd.startsWith("edit-with:")) 
-      doEditWith(cmd.substring(10));    
+      doEditWith(cmd.substring(10));  
+    else if(cmd.equals("edit-as-owner"))
+      doEditAsOwner();  
 
     else if(cmd.equals("link")) 
       doLink();    
@@ -2974,7 +2994,7 @@ class JNodeViewerPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, true);
+	  EditTask task = new EditTask(com, true, false);
 	  task.start();
 	}
       }
@@ -3009,6 +3029,33 @@ class JNodeViewerPanel
 
 	if(com != null) {
 	  EditTask task = new EditTask(com, ename, evid, evendor);
+	  task.start();
+	}
+      }
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Edit/View the primary selected node with the permissions of the owner of the node.
+   */ 
+  private void 
+  doEditAsOwner() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	boolean isWorking = true;
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) {
+	  com = details.getLatestVersion();
+	  isWorking = false;
+	}
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, false, isWorking);
 	  task.start();
 	}
       }
@@ -4303,7 +4350,7 @@ class JNodeViewerPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView, false);
       setName("JNodeViewerPanel:EditTask");
     }
 
@@ -4311,10 +4358,11 @@ class JNodeViewerPanel
     EditTask
     (
      NodeCommon com, 
-     boolean useDefault
+     boolean useDefault, 
+     boolean substitute
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView, substitute);
       setName("JNodeViewerPanel:EditTask");
     }
 
@@ -4327,7 +4375,8 @@ class JNodeViewerPanel
      String evendor
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, ename, evid, evendor, pAuthor, pView);
+      UIMaster.getInstance().super
+	(pGroupID, com, ename, evid, evendor, pAuthor, pView, false);
       setName("JNodeViewerPanel:EditTask");
     }
   }
@@ -5999,6 +6048,7 @@ class JNodeViewerPanel
   private JMenuItem[]  pRemoveRootItems;
   private JMenuItem[]  pEditItems;
   private JMenuItem[]  pEditWithDefaultItems;
+  private JMenuItem    pEditAsOwnerItem; 
   private JMenuItem[]  pCheckOutItems;
   private JMenuItem[]  pLockItems;
   private JMenuItem[]  pRestoreItems;

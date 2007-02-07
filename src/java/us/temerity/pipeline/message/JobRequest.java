@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.7 2006/07/03 06:38:42 jim Exp $
+// $Id: JobRequest.java,v 1.8 2007/02/07 21:15:14 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,7 +19,15 @@ package us.temerity.pipeline.message;
  */
 public
 enum JobRequest
-{ 
+{    
+  /** 
+   * Launch an Editor plugin to edit the given files as the specified user.
+   */ 
+  EditAs, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Get a point sample of the currently available system resources.
    */ 

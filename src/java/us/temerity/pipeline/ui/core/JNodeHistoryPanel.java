@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.17 2006/12/12 00:06:44 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.18 2007/02/07 21:19:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -95,6 +95,12 @@ class JNodeHistoryPanel
 	menus[wk].add(item);
       }
       
+      item = new JMenuItem("Edit As Owner");
+      pEditAsOwnerItem = item;
+      item.setActionCommand("edit-as-owner");
+      item.addActionListener(this);
+      menus[0].add(item);
+
       {
 	pWorkingPopup.addSeparator();
 	
@@ -745,6 +751,8 @@ class JNodeHistoryPanel
       
       pEditorMenuToolset = toolset;
     }
+
+    pEditAsOwnerItem.setEnabled(!PackageInfo.sUser.equals(pAuthor)); 
   }
   
 
@@ -778,6 +786,11 @@ class JNodeHistoryPanel
 	 "Edit primary file sequences of the current primary selection using the default" + 
 	 "editor for the file type.");
     }
+
+    updateMenuToolTip
+      (pEditAsOwnerItem, prefs.getEditAsOwner(), 
+       "Edit primary file sequences of the current primary selection with the permissions " +
+       "of the owner of the node.");
 
     updateMenuToolTip
       (pQueueJobsItem, prefs.getQueueJobs(), 
@@ -908,6 +921,9 @@ class JNodeHistoryPanel
     else if((prefs.getEditWithDefault() != null) &&
 	    prefs.getEditWithDefault().wasPressed(e))
       doEditWithDefault();
+    else if((prefs.getEditAsOwner() != null) &&
+	    prefs.getEditAsOwner().wasPressed(e))
+      doEditAsOwner();
     
     else if((prefs.getQueueJobs() != null) &&
 	    prefs.getQueueJobs().wasPressed(e))
@@ -973,6 +989,8 @@ class JNodeHistoryPanel
       doEditWithDefault();
     else if(cmd.startsWith("edit-with:"))
       doEditWith(cmd.substring(10)); 
+    else if(cmd.equals("edit-as-owner"))
+      doEditAsOwner();  
 
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
@@ -1031,7 +1049,7 @@ class JNodeHistoryPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, true);
+	  EditTask task = new EditTask(com, true, false);
 	  task.start();
 	}
       }
@@ -1063,6 +1081,30 @@ class JNodeHistoryPanel
 
 	if(com != null) {
 	  EditTask task = new EditTask(com, ename, evid, evendor);
+	  task.start();
+	}
+      }
+    }
+  }
+
+  /**
+   * Edit/View the current node with the permissions of the owner of the node.
+   */ 
+  private void 
+  doEditAsOwner() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	boolean isWorking = true;
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) {
+	  com = details.getLatestVersion();
+	  isWorking = false;
+	}
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, false, isWorking);
 	  task.start();
 	}
       }
@@ -1344,7 +1386,7 @@ class JNodeHistoryPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView, false);
       setName("JNodeHistoryPanel:EditTask");
     }
 
@@ -1352,10 +1394,11 @@ class JNodeHistoryPanel
     EditTask
     (
      NodeCommon com,
-     boolean useDefault
+     boolean useDefault, 
+     boolean substitute 
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView, substitute);
       setName("JNodeHistoryPanel:EditTask");
     }
 
@@ -1368,7 +1411,8 @@ class JNodeHistoryPanel
      String evendor
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, ename, evid, evendor, pAuthor, pView);
+      UIMaster.getInstance().super
+	(pGroupID, com, ename, evid, evendor, pAuthor, pView, false);
       setName("JNodeHistoryPanel:EditTask");
     }
   }
@@ -1616,6 +1660,7 @@ class JNodeHistoryPanel
   private JMenuItem[]  pEditItems;
   private JMenuItem[]  pEditWithDefaultItems;
   private JMenu[]      pEditWithMenus; 
+  private JMenuItem    pEditAsOwnerItem; 
 
 
   /*----------------------------------------------------------------------------------------*/

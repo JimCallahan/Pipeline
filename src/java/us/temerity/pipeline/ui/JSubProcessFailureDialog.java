@@ -1,4 +1,4 @@
-// $Id: JSubProcessFailureDialog.java,v 1.4 2006/09/25 12:11:45 jim Exp $
+// $Id: JSubProcessFailureDialog.java,v 1.5 2007/02/07 21:16:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -175,11 +175,37 @@ class JSubProcessFailureDialog
    SubProcessLight proc
   )
   {
-    pHeaderLabel.setText(header);
+    updateProc(header, proc.getCommand(), proc.getStdOut(), proc.getStdErr());
+  }
 
-    pCommandArea.setText(proc.getCommand());
-    pStdOutArea.setText(proc.getStdOut());
-    pStdErrArea.setText(proc.getStdErr());
+  /**
+   * Update the UI components for the given subprocess.
+   * 
+   * @param header
+   *   The header label text.
+   * 
+   * @param command
+   *   The failed command line arguments.
+   * 
+   * @para stdout
+   *   The STDOUT output of the process.
+   * 
+   * @para stderr
+   *   The STDERR output of the process.
+   */ 
+  public void 
+  updateProc
+  (
+   String header, 
+   String command, 
+   String stdout, 
+   String stderr
+  )
+  {
+    pHeaderLabel.setText(header);
+    pCommandArea.setText(command); 
+    pStdOutArea.setText(stdout); 
+    pStdErrArea.setText(stderr); 
   }
 
 

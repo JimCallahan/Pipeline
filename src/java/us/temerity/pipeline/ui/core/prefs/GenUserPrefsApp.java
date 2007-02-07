@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -597,6 +597,11 @@ class GenUserPrefsApp
 	 "EditWithDefault", "Edit With Default:", 
 	 true, false, false, 10),  /* SHIFT+Enter */ 
 
+	new HotKeyPref
+	("Edit primary file sequence of the current primary selection with the " + 
+	 "permissions of the owner of the node.", 	 
+	 "EditAsOwner", "Edit As Owner:"), 
+
 	new BasePref(),
 	
 	new HotKeyPref
@@ -953,6 +958,11 @@ class GenUserPrefsApp
 	 "editor for the file type.",
 	 "NodeDetailsEditWithDefault", "Edit With Default:", "EditWithDefault"), 
 
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node with the permissions of the " +
+	 "owner of the node.", 	 
+	 "NodeDetailsEditAsOwner", "Edit As Owner:", "EditAsOwner"), 
+
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -1005,6 +1015,11 @@ class GenUserPrefsApp
 	("Edit primary file sequence of the current node using the default" + 
 	 "editor for the file type.",
 	 "NodeFilesEditWithDefault", "Edit With Default:", "EditWithDefault"), 
+
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node with the permissions of the " +
+	 "owner of the node.", 	 
+	 "NodeFilesEditAsOwner", "Edit As Owner:", "EditAsOwner"), 
 
 	new BasePref(),
 
@@ -1059,6 +1074,11 @@ class GenUserPrefsApp
 	 "editor for the file type.",
 	 "NodeLinksEditWithDefault", "Edit With Default:", "EditWithDefault"), 
 
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node with the permissions of the " +
+	 "owner of the node.", 	 
+	 "NodeLinksEditAsOwner", "Edit As Owner:", "EditAsOwner"), 
+
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -1105,6 +1125,11 @@ class GenUserPrefsApp
 	("Edit primary file sequence of the current node using the default" + 
 	 "editor for the file type.",
 	 "NodeHistoryEditWithDefault", "Edit With Default:", "EditWithDefault"), 
+
+	new DuplicateHotKeyPref
+	("Edit primary file sequence of the current node with the permissions of the " +
+	 "owner of the node.", 	 
+	 "NodeHistoryEditAsOwner", "Edit As Owner:", "EditAsOwner"), 
 
 	new BasePref(),
 
@@ -1923,6 +1948,7 @@ class GenUserPrefsApp
       String update       = "Update";
       String edit         = "Edit";
       String editDefault  = "EditWithDefault";
+      String editAsOwner  = "EditAsOwner";
       String applyChanges = "ApplyChanges";
       String removeFiles  = "RemoveFiles";
       String showNode     = "ShowNode"; 
@@ -1968,6 +1994,7 @@ class GenUserPrefsApp
 	group.add(hideSelected); 
 	group.add(edit);
 	group.add(editDefault);
+	group.add(editAsOwner);
 	group.add("NodeViewerLink");
 	group.add("NodeViewerUnlink");
 	group.add("NodeViewerAddSecondary");
@@ -2003,6 +2030,7 @@ class GenUserPrefsApp
 	group.add(applyChanges);
 	group.add(edit);
 	group.add(editDefault);
+	group.add(editAsOwner);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -2015,6 +2043,7 @@ class GenUserPrefsApp
 	group.add(applyChanges);
 	group.add(edit);
 	group.add(editDefault);
+	group.add(editAsOwner);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -2027,6 +2056,7 @@ class GenUserPrefsApp
 	group.add(applyChanges);
 	group.add(edit);
 	group.add(editDefault);
+	group.add(editAsOwner);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -2038,6 +2068,7 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(edit);
 	group.add(editDefault);
+	group.add(editAsOwner);
 	group.addAll(jobs);
 	group.add(removeFiles);
       }
@@ -2225,7 +2256,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2482,7 +2513,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3839,7 +3870,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.42 2006/12/13 04:08:50 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.43 2007/02/07 21:19:53 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.34 2007/01/05 23:46:10 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.35 2007/02/07 21:19:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2475,6 +2475,7 @@ class JQueueJobViewerPanel
       pEditorVendor  = evendor;       
     }
 
+    @SuppressWarnings("deprecation")
     public void 
     run() 
     {
@@ -2542,7 +2543,11 @@ class JQueueJobViewerPanel
 	    
  	    /* start the editor */ 
 	    editor.makeWorkingDirs(dir);
- 	    proc = editor.launch(fseq, env, dir);
+	    proc = editor.prep(PackageInfo.sUser, fseq, env, dir);
+	    if(proc != null) 
+	      proc.start();
+	    else 
+	      proc = editor.launch(fseq, env, dir);
 
 	    editID = client.editingStarted(pNodeID, editor);
  	  }

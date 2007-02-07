@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.16 2006/12/12 00:06:44 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.17 2007/02/07 21:19:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,8 +116,15 @@ class JNodeLinksPanel
 	item.setActionCommand("edit-with-default");
 	item.addActionListener(this);
 	menus[wk].add(item);
+
       }
       
+      item = new JMenuItem("Edit As Owner");
+      pEditAsOwnerItem = item;
+      item.setActionCommand("edit-as-owner");
+      item.addActionListener(this);
+      menus[0].add(item);
+
       {
 	pWorkingPopup.addSeparator();
 	
@@ -919,6 +926,8 @@ class JNodeLinksPanel
       
       pEditorMenuToolset = toolset;
     }
+
+    pEditAsOwnerItem.setEnabled(!PackageInfo.sUser.equals(pAuthor)); 
   }
 
 
@@ -956,6 +965,11 @@ class JNodeLinksPanel
 	 "Edit primary file sequences of the current primary selection using the default" + 
 	 "editor for the file type.");
     }
+
+    updateMenuToolTip
+      (pEditAsOwnerItem, prefs.getEditAsOwner(), 
+       "Edit primary file sequences of the current primary selection with the permissions " +
+       "of the owner of the node.");
 
     updateMenuToolTip
       (pQueueJobsItem, prefs.getQueueJobs(), 
@@ -1091,6 +1105,9 @@ class JNodeLinksPanel
     else if((prefs.getEditWithDefault() != null) &&
 	    prefs.getEditWithDefault().wasPressed(e))
       doEditWithDefault();
+    else if((prefs.getEditAsOwner() != null) &&
+	    prefs.getEditAsOwner().wasPressed(e))
+      doEditAsOwner();
     
     else if((prefs.getQueueJobs() != null) &&
 	    prefs.getQueueJobs().wasPressed(e))
@@ -1159,6 +1176,8 @@ class JNodeLinksPanel
       doEditWithDefault();
     else if(cmd.startsWith("edit-with:"))
       doEditWith(cmd.substring(10)); 
+    else if(cmd.equals("edit-as-owner"))
+      doEditAsOwner();  
 
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
@@ -1605,7 +1624,7 @@ class JNodeLinksPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, true);
+	  EditTask task = new EditTask(com, true, false);
 	  task.start();
 	}
       }
@@ -1637,6 +1656,30 @@ class JNodeLinksPanel
 
 	if(com != null) {
 	  EditTask task = new EditTask(com, ename, evid, evendor);
+	  task.start();
+	}
+      }
+    }
+  }
+
+  /**
+   * Edit/View the current node with the permissions of the owner of the node.
+   */ 
+  private void 
+  doEditAsOwner() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	boolean isWorking = true;
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) {
+	  com = details.getLatestVersion();
+	  isWorking = false;
+	}
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, false, isWorking);
 	  task.start();
 	}
       }
@@ -2504,7 +2547,7 @@ class JNodeLinksPanel
      NodeCommon com
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, false, pAuthor, pView, false);
       setName("JNodeLinksPanel:EditTask");
     }
 
@@ -2512,10 +2555,11 @@ class JNodeLinksPanel
     EditTask
     (
      NodeCommon com, 
-     boolean useDefault
+     boolean useDefault, 
+     boolean substitute 
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView);
+      UIMaster.getInstance().super(pGroupID, com, useDefault, pAuthor, pView, substitute);
       setName("JNodeLinksPanel:EditTask");
     }
 
@@ -2528,7 +2572,8 @@ class JNodeLinksPanel
      String evendor
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, com, ename, evid, evendor, pAuthor, pView);
+      UIMaster.getInstance().super
+	(pGroupID, com, ename, evid, evendor, pAuthor, pView, false);
       setName("JNodeLinksPanel:EditTask");
     }
   }
@@ -2827,6 +2872,7 @@ class JNodeLinksPanel
   private JMenuItem[]  pEditItems;
   private JMenuItem[]  pEditWithDefaultItems;
   private JMenu[]      pEditWithMenus; 
+  private JMenuItem    pEditAsOwnerItem; 
 
 
   /*----------------------------------------------------------------------------------------*/

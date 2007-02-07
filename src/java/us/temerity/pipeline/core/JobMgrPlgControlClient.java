@@ -1,4 +1,4 @@
-// $Id: JobMgrPlgControlClient.java,v 1.1 2006/11/16 07:29:25 jim Exp $
+// $Id: JobMgrPlgControlClient.java,v 1.2 2007/02/07 21:13:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21,6 +21,7 @@ import java.util.*;
  * <A HREF="../../../../man/plmaster.html"><B>pljobmgr</B><A>(1) running on one of the 
  * hosts which are capable of executing jobs for the Pipeline queue.  <P> 
  */
+public
 class JobMgrPlgControlClient
   extends JobMgrControlClient
 {  
@@ -41,6 +42,66 @@ class JobMgrPlgControlClient
   ) 
   {
     super(hostname); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E D I T O R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Launch an Editor plugin to edit the given files as the specified user.
+   * 
+   * @param editor 
+   *  The editor plugin instance use to edit the files.
+   * 
+   * @para author
+   *   The name of the user owning the files.
+   * 
+   * @param fseq  
+   *   The file sequence to edit.
+   * 
+   * @param env  
+   *   The environment under which the editor is run.  
+   * 
+   * @param dir  
+   *   The working directory where the editor is run.
+   * 
+   * @return 
+   *   If the editor process failed [exit-code, command-line, stdout, stderr] or
+   *   <CODE>null</CODE> on success.
+   * 
+   * @throws PipelineException
+   *   If unable to even attempt to launch the editor.
+   */
+  public synchronized Object[]
+  editAs
+  ( 
+   BaseEditor editor, 
+   String author, 
+   FileSeq fseq,      
+   Map<String,String> env,      
+   File dir        
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    JobEditAsReq req = new JobEditAsReq(editor, author, fseq, env, dir); 
+
+    Object obj = performLongTransaction(JobRequest.EditAs, req, 15000, 60000);  
+    if(obj instanceof SuccessRsp) {
+      return null;
+    }
+    else if(obj instanceof JobEditAsFailedRsp) {
+      JobEditAsFailedRsp rsp = (JobEditAsFailedRsp) obj;
+      return rsp.getResults(); 
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
   }
 
 

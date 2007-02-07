@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.5 2006/12/31 21:35:52 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.6 2007/02/07 21:19:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -951,13 +951,14 @@ class JQueueJobSlotsPanel
       pEditorVendor  = evendor;       
     }
 
-     public void 
-     run() 
-     {
-       MasterMgrClient client = null;
-       SubProcessLight proc = null;
-       Long editID = null;
-       {
+    @SuppressWarnings("deprecation")
+    public void 
+    run() 
+    {
+      MasterMgrClient client = null;
+      SubProcessLight proc = null;
+      Long editID = null;
+      {
  	UIMaster master = UIMaster.getInstance();
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
  	  try {
@@ -1018,7 +1019,11 @@ class JQueueJobSlotsPanel
 	    
  	    /* start the editor */ 
 	    editor.makeWorkingDirs(dir);
- 	    proc = editor.launch(fseq, env, dir);
+	    proc = editor.prep(PackageInfo.sUser, fseq, env, dir);
+	    if(proc != null) 
+	      proc.start();
+	    else 
+	      proc = editor.launch(fseq, env, dir);
 
 	    editID = client.editingStarted(pNodeID, editor);
  	  }
@@ -1045,16 +1050,16 @@ class JQueueJobSlotsPanel
  	    master.showErrorDialog(ex);
  	  }
  	}
-       }
-     }
+      }
+    }
 
-     private NodeID     pNodeID;
-     private FileSeq    pFileSeq;
-     private boolean    pUseDefault; 
-     private String     pEditorName;
-     private VersionID  pEditorVersion; 
-     private String     pEditorVendor; 
-   }
+    private NodeID     pNodeID;
+    private FileSeq    pFileSeq;
+    private boolean    pUseDefault; 
+    private String     pEditorName;
+    private VersionID  pEditorVersion; 
+    private String     pEditorVendor; 
+  }
 
 
 
