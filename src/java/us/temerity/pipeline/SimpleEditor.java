@@ -1,57 +1,35 @@
-// $Id: BaseAppleScriptEditor.java,v 1.5 2007/02/07 20:52:28 jim Exp $
+// $Id: SimpleEditor.java,v 1.1 2007/02/07 20:52:28 jim Exp $
 
 package us.temerity.pipeline;
-
-import us.temerity.pipeline.glue.GlueDecoder; 
 
 import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   B A S E   A P P L E   S C R I P T   E D I T O R                                        */
+/*   S I M P L E   E D I T O R                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * A convenient super class for writing Pipeline Editor plugins which communicate with
- * Mac OS X applications using Apple Script. <P> 
+ * An Editor plugin which executes simple program with only file arguments. <P>
  * 
- * An Apple Script is generate on the fly which directs the application to open each 
- * of the files contained in the file sequence passed to the {@link #launch launch} method.
- * If the application is not already running it will be started. <P> 
+ * New kinds of editors can be written by subclassing this class.  Due to the way plugins
+ * are loaded and communicated between applications, any fields added to a subclass will
+ * be reinitialized when the action is stored to disk or when it is sent over the network. <P>
  * 
- * The generated script has the following format: <P> 
- * 
- * <DIV style="margin-left: 40px;"><CODE>
- * tell application "</CODE><I>program</I><CODE>"
- *   open file "</CODE><I>path-to-file</I><CODE>"
- *   ...
- * end tell
- * </CODE></DIV><P> 
- * 
- * See the <A href="http://developer.apple.com/documentation/AppleScript AppleScript">Apple 
- * Script Documentation</A> for details.
+ * While new plugin subclass versions are being modified and tested the 
+ * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * constructor to enable the plugin to be dynamically reloaded.  
  */
 public
-class BaseAppleScriptEditor
+class SimpleEditor
   extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
  
-  /**
-   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
-   * when encountered during the reading of GLUE format files and should not be called 
-   * from user code.
-   */
-  protected
-  BaseAppleScriptEditor() 
-  {
-    super();
-  }
-
   /** 
-   * Construct with the given name, version and description. 
+   * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
    *   The short name of the editor.
@@ -69,7 +47,7 @@ class BaseAppleScriptEditor
    *   A name of the editor executable.
    */ 
   protected
-  BaseAppleScriptEditor
+  SimpleEditor
   (
    String name, 
    VersionID vid,
@@ -80,7 +58,7 @@ class BaseAppleScriptEditor
   {
     super(name, vid, vendor, desc, program);
   }
-
+ 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -127,20 +105,17 @@ class BaseAppleScriptEditor
     throws PipelineException
   {
     try {
+      String dpath = dir.toString();
       ArrayList<String> args = new ArrayList<String>();
-      args.add("-e");
-      args.add("tell application \"" + getProgram() + "\"");
-      
       for(File file : fseq.getFiles()) {
-	String macpath = file.getPath().substring(1).replace("/",":");
-	args.add("-e");
-	args.add("open file \"" + macpath + "\"");
+	String fpath = file.getPath();
+	if(fpath.startsWith(dpath)) 
+	  args.add(fpath.substring(dpath.length()+1));
+	else 
+	  args.add(fpath); 
       }
       
-      args.add("-e");
-      args.add("end tell");
-      
-      return new SubProcessLight(author, getName(), "osascript", args, env, dir);
+      return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
     }
     catch(Exception ex) {
       throw new PipelineException
@@ -148,28 +123,15 @@ class BaseAppleScriptEditor
 	 ex.getMessage());
     }    
   }
-
+  
   /** 
    * Launch the editor program (obtained with {@link #getProgram getProgram}) under the given 
    * environmant with all of the files which comprise the given file sequence as 
    * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
    * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. <P>
    * 
-   * Subclasses should override this method if more specialized behavior or different 
-   * command line arguments are needed in order to launch the editor for the given file 
-   * sequence.
-   * 
-   * @deprecated
-   *   Unlike the {@link #prep prep} method, the convention is for this method to also execute
-   *   the generated SubProcessLight instance.  New subclasses should implement the {@link 
-   *   #prep prep} method instead to allow the caller a chance to execute the process as 
-   *   another user.  Namely, as the owner of the files being edited.  The owner of the files
-   *   is passes as an additional argument to {@link #prep prep} called (author) which must
-   *   be passed on as a constructor argument of the generated SubProcessLight instance.  
-   *   The ability to execute as another user also requires that the 
-   *   {@link #SubProcessLight.allowSubstituteUser allowSubstituteUser} method can be called 
-   *   before the editor process begins execution.  Since the launch method executes the 
-   *   SubProcessLight instance immediately, there is no opportunity for this to occur.
+   * This method has been overridden to always throw a PipelineException since the {@link
+   * #prep prep} method has been implemented.
    * 
    * @param fseq  
    *   The file sequence to edit.
@@ -185,8 +147,6 @@ class BaseAppleScriptEditor
    * 
    * @throws PipelineException
    *   If unable to launch the editor.
-   * 
-   * @see SubProcessLight
    */  
   @SuppressWarnings("deprecation")
   @Deprecated
@@ -199,32 +159,17 @@ class BaseAppleScriptEditor
   ) 
     throws PipelineException
   {
-    ArrayList<String> args = new ArrayList<String>();
-    args.add("-e");
-    args.add("tell application \"" + getProgram() + "\"");
-
-    for(File file : fseq.getFiles()) {
-      String macpath = file.getPath().substring(1).replace("/",":");
-      args.add("-e");
-      args.add("open file \"" + macpath + "\"");
-    }
-
-    args.add("-e");
-    args.add("end tell");
-
-    SubProcessLight proc = new SubProcessLight(getName(), "osascript", args, env, dir);
-    proc.start();
-
-    return proc;
+    throw new PipelineException
+      ("This method should never be called since the prep() method does not return (null)!");
   }
-
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6091948675278742105L;
+  private static final long serialVersionUID = -9117240808909938673L;
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.10 2006/02/28 19:47:45 jim Exp $
+// $Id: SingleEditor.java,v 1.11 2007/02/07 20:52:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -71,6 +71,60 @@ class SingleEditor
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Construct a {@link SubProcessLight} instance which when executed will launch an editor
+   * program to view the given file sequence as arguments. <P> 
+   * 
+   * The default implementation executes the editor program obtained with {@link #getProgram 
+   * getProgram} method under the given environment.  Subclasses should override this method 
+   * if more specialized behavior or different command line arguments are needed in order to 
+   * launch the editor for the given file sequence. <P> 
+   * 
+   * @para author
+   *   The name of the user owning the files. 
+   * 
+   * @param fseq  
+   *   The file sequence to edit.
+   * 
+   * @param env  
+   *   The environment under which the editor is run.  
+   * 
+   * @param dir  
+   *   The working directory where the editor is run.
+   *
+   * @return 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
+   * 
+   * @throws PipelineException
+   *   If unable to launch the editor.
+   * 
+   * @see SubProcessLight
+   */  
+  public SubProcessLight
+  prep
+  (
+   String author, 
+   FileSeq fseq,      
+   Map<String, String> env,      
+   File dir        
+  ) 
+    throws PipelineException
+  {
+    try {
+      FrameRange range = fseq.getFrameRange(); 
+      if((range != null) && (!range.isSingle()))
+	throw new PipelineException
+	  ("The " + getName() + " Editor can only edit a single file at a time!");
+      
+      return super.prep(author, fseq, env, dir);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to generate the SubProcess to launch this Editor!\n" +
+	 ex.getMessage());
+    }    
+  }
+
+  /** 
    * Launch the editor program (obtained with {@link #getName getName}) under the given 
    * environmant with all of the files which comprise the given file sequence as 
    * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
@@ -79,6 +133,18 @@ class SingleEditor
    * Subclasses should override this method if more specialized behavior or different 
    * command line arguments are needed in order to launch the editor for the given file 
    * sequence.
+   * 
+   * @deprecated
+   *   Unlike the {@link #prep prep} method, the convention is for this method to also execute
+   *   the generated SubProcessLight instance.  New subclasses should implement the {@link 
+   *   #prep prep} method instead to allow the caller a chance to execute the process as 
+   *   another user.  Namely, as the owner of the files being edited.  The owner of the files
+   *   is passes as an additional argument to {@link #prep prep} called (author) which must
+   *   be passed on as a constructor argument of the generated SubProcessLight instance.  
+   *   The ability to execute as another user also requires that the 
+   *   {@link #SubProcessLight.allowSubstituteUser allowSubstituteUser} method can be called 
+   *   before the editor process begins execution.  Since the launch method executes the 
+   *   SubProcessLight instance immediately, there is no opportunity for this to occur.
    * 
    * @param fseq  
    *   The file sequence to edit.
@@ -95,6 +161,8 @@ class SingleEditor
    * @throws PipelineException
    *   If unable to launch the editor.
    */  
+  @SuppressWarnings("deprecation")
+  @Deprecated
   public SubProcessLight
   launch
   (

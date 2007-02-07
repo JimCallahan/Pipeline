@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.16 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseEditor.java,v 1.17 2007/02/07 20:52:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -96,6 +96,25 @@ class BaseEditor
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the Editor subclass implements the {@link #prep prep} method. <P> 
+   * 
+   * The default implementation returns <CODE>false</CODE>.  Subclasses which implement the
+   * newer {@link #prep prep} method which replaces the deprecated {@link #launch launch} 
+   * method should override this method to return <CODE>true</CODE>.
+   */ 
+  public boolean
+  hasPrepMethod() 
+  {
+    return false;
+  }
+
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -133,6 +152,57 @@ class BaseEditor
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Construct a {@link SubProcessLight} instance which when executed will launch an editor
+   * program to view the given file sequence as arguments. <P> 
+   * 
+   * The default implementation returns <CODE>null</CODE> so that subclasses implemented 
+   * prior to the addition of this method can be be determined by checking the return 
+   * value.  Code which launches Editor plugins should first try to generate a 
+   * {@link SubProcessLight} instance using this method.  If this returns <CODE>null</CODE>
+   * then the {@link #launch launch} method should be then called to support older 
+   * implementations. <P> 
+   * 
+   * For default functionality similar to the {@link #launch launch} method subclasses should
+   * be derrived from the {@link SimpleEditor} class instead of {@link BaseEditor}.  This 
+   * class implements a {@link #prep prep} method which is identical to functionality of the
+   * {@link #launch launch} of this class except for not executing the process and adding 
+   * support for substituting user ownership.  See the explanation of why {@link #launch 
+   * launch} was deprecated for details.
+   * 
+   * @para author
+   *   The name of the user owning the files.
+   * 
+   * @param fseq    
+   *   The file sequence to edit.
+   * 
+   * @param env  
+   *   The environment under which the editor is run.  
+   * 
+   * @param dir  
+   *   The working directory where the editor is run.
+   *
+   * @return 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
+   * 
+   * @throws PipelineException
+   *   If unable to launch the editor.
+   * 
+   * @see SubProcessLight
+   */  
+  public SubProcessLight
+  prep
+  (
+   String author, 
+   FileSeq fseq,      
+   Map<String, String> env,      
+   File dir        
+  ) 
+    throws PipelineException
+  {
+    return null;
+  }
+  
+  /** 
    * Launch the editor program (obtained with {@link #getProgram getProgram}) under the given 
    * environmant with all of the files which comprise the given file sequence as 
    * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
@@ -141,6 +211,18 @@ class BaseEditor
    * Subclasses should override this method if more specialized behavior or different 
    * command line arguments are needed in order to launch the editor for the given file 
    * sequence.
+   * 
+   * @deprecated
+   *   Unlike the {@link #prep prep} method, the convention is for this method to also execute
+   *   the generated SubProcessLight instance.  New subclasses should implement the {@link 
+   *   #prep prep} method instead to allow the caller a chance to execute the process as 
+   *   another user.  Namely, as the owner of the files being edited.  The owner of the files
+   *   is passes as an additional argument to {@link #prep prep} called (author) which must
+   *   be passed on as a constructor argument of the generated SubProcessLight instance.  
+   *   The ability to execute as another user also requires that the 
+   *   {@link #SubProcessLight.allowSubstituteUser allowSubstituteUser} method can be called 
+   *   before the editor process begins execution.  Since the launch method executes the 
+   *   SubProcessLight instance immediately, there is no opportunity for this to occur.
    * 
    * @param fseq  
    *   The file sequence to edit.
@@ -159,6 +241,7 @@ class BaseEditor
    * 
    * @see SubProcessLight
    */  
+  @Deprecated
   public SubProcessLight
   launch
   (
@@ -182,7 +265,6 @@ class BaseEditor
     proc.start();
     return proc;
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
