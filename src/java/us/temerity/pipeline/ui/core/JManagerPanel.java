@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.33 2006/12/07 09:42:01 jim Exp $
+// $Id: JManagerPanel.java,v 1.34 2007/02/07 21:19:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -360,6 +360,12 @@ class JManagerPanel
       item = new JMenuItem("Default Editors...");
       pDefaultEditorsItem = item;
       item.setActionCommand("default-editors");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      item = new JMenuItem("Windows Authorize...");
+      pAuthorizeItem = item;
+      item.setActionCommand("authorize");
       item.addActionListener(this);
       pPopup.add(item);  
 
@@ -1118,7 +1124,11 @@ class JManagerPanel
        "Edit the user preferences.");
     updateMenuToolTip
       (pDefaultEditorsItem, prefs.getShowDefaultEditors(), 
-       "Manage the default editor for filename suffix.");
+       "Manage the default editor for filename suffix."); 
+    updateMenuToolTip
+      (pAuthorizeItem, prefs.getShowDefaultEditors(), 
+       "Provide your Windows password to authorize Pipeline to run jobs on your behalf " +
+       "on Windows based Job Servers.");
     updateMenuToolTip
       (pUpdatePluginsItem, prefs.getUpdatePlugins(), 
        "Make sure that the latest plugins and plugin menus are being used.");
@@ -2051,7 +2061,9 @@ class JManagerPanel
     else if(cmd.equals("preferences"))
       UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("default-editors"))
-      UIMaster.getInstance().showDefaultEditorsDialog();
+      UIMaster.getInstance().showDefaultEditorsDialog(); 
+    else if(cmd.equals("authorize"))
+      UIMaster.getInstance().showAuthorizeDialog();
     else if(cmd.equals("update-plugins"))
       UIMaster.getInstance().clearPluginCache();
 
@@ -3655,6 +3667,7 @@ class JManagerPanel
 
   private JMenuItem  pPreferencesItem;
   private JMenuItem  pDefaultEditorsItem;
+  private JMenuItem  pAuthorizeItem;
   private JMenuItem  pUpdatePluginsItem;
 
   private JMenuItem  pManagePrivilegesItem;

@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.53 2007/01/01 16:09:51 jim Exp $
+// $Id: MasterRequest.java,v 1.54 2007/02/07 21:14:38 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -416,6 +416,14 @@ enum MasterRequest
    */
   SetTotalLicenses, 
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Authorize the current user to execiute jobs on Windows. 
+   */
+  MiscAuthorizeOnWindows,  
+
 
   /*----------------------------------------------------------------------------------------*/
 

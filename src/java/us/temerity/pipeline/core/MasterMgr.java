@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.189 2007/02/02 18:28:17 jim Exp $
+// $Id: MasterMgr.java,v 1.190 2007/02/07 21:14:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -389,6 +389,8 @@ class MasterMgr
 
       pSuffixEditors = new DoubleMap<String,String,SuffixEditor>();
 
+      pWindowsPasswords = new TreeMap<String,String>();
+
       pEventWriterInterval = new AtomicLong(5000L);
       pNodeEventFileLock   = new Object();
       pPendingEvents       = new ConcurrentLinkedQueue<BaseNodeEvent>();
@@ -419,6 +421,7 @@ class MasterMgr
       initWorkingAreas();
       initDownstreamLinks();
       initNodeTree();
+      readWindowsPasswords();
       readNextIDs();
     }
     catch(Exception ex) {
@@ -5621,6 +5624,62 @@ class MasterMgr
     }
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A U T H O R I Z A T I O N                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Authorize the current user to execiute jobs on Windows. <P> 
+   * 
+   * The user's Windows password is required by Pipeline to run jobs on behalf of the user 
+   * on Job Servers running on a Windows based system.  By providing their Windows password
+   * user can authorize Pipeline to run processes using their user credentials.  <P> 
+   * 
+   * Note that the character array used to specify the password is immediately cleared by 
+   * this method after the password is stored internally by Pipeline in an encrypted form.  
+   * User passwords are never transmitted or stored in an unencrypted form by Pipeline.  
+   * This is the reason that the password parameter is not a String type, which would be 
+   * automatically cached by the Java Runtime.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set password.
+   */ 
+  public Object
+  authorizeOnWindows
+  (
+   MiscAuthorizeOnWindowsReq req
+  ) 
+  {
+    String author = req.getRequestor();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.authorizeOnWindows(): " + author);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pWindowsPasswords) {
+	timer.resume();	
+	
+	pWindowsPasswords.put(author, req.getPassword());
+	writeWindowsPasswords();
+      }
+    
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
 
  
   /*----------------------------------------------------------------------------------------*/
@@ -9954,8 +10013,18 @@ class MasterMgr
       /* get the current status of the nodes */ 
       NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
 
+      /* lookup the encrypted Windows password for the owning user (if any) */ 
+      String password = null;
+      {
+	timer.aquire();
+	synchronized(pWindowsPasswords) {
+	  timer.resume();
+	  password = pWindowsPasswords.get(req.getNodeID().getAuthor());
+	}
+      }
+
       /* submit the jobs */ 
-      return submitJobsCommon(status, req.getFileIndices(),
+      return submitJobsCommon(status, req.getFileIndices(), password, 
 			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
 			      req.getSelectionKeys(), req.getLicenseKeys(), 
 			      timer);
@@ -10034,8 +10103,18 @@ class MasterMgr
 	}
       }
 
+      /* lookup the encrypted Windows password for the owning user (if any) */ 
+      String password = null;
+      {
+	timer.aquire();
+	synchronized(pWindowsPasswords) {
+	  timer.resume();
+	  password = pWindowsPasswords.get(req.getNodeID().getAuthor());
+	}
+      }
+
       /* submit the jobs */ 
-      return submitJobsCommon(status, indices, 
+      return submitJobsCommon(status, indices, password, 
 			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
 			      req.getSelectionKeys(), req.getLicenseKeys(), 
 			      timer);
@@ -10057,6 +10136,10 @@ class MasterMgr
    * 
    * @param indices
    *   The file sequence indices of the files to regenerate.
+   * 
+   * @param password
+   *   The encrypted Windows password for the user which will own the OS level process or 
+   *   <CODE>null</CODE> if not required.
    * 
    * @param batchSize 
    *   For parallel jobs, this overrides the maximum number of frames assigned to each job
@@ -10085,6 +10168,7 @@ class MasterMgr
   (
    NodeStatus status, 
    TreeSet<Integer> indices,
+   String password,  
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
@@ -10102,8 +10186,8 @@ class MasterMgr
       TreeSet<Long> rootJobIDs = new TreeSet<Long>();
       TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
       
-      submitJobs(status, indices, 
-		 true, batchSize, priority, rampUp, selectionKeys, licenseKeys,
+      submitJobs(status, indices, password, 
+		 true, batchSize, priority, rampUp, selectionKeys, licenseKeys, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
 		 timer);
       
@@ -10201,6 +10285,10 @@ class MasterMgr
    * @param indices
    *   The file sequence indices of the files to regenerate.
    * 
+   * @param password
+   *   The encrypted Windows password for the user which will own the OS level process or 
+   *   <CODE>null</CODE> if not required.
+   * 
    * @param isRoot
    *   The this the root node of the job submission tree?
    * 
@@ -10248,7 +10336,8 @@ class MasterMgr
   submitJobs
   (
    NodeStatus status, 
-   TreeSet<Integer> indices,   
+   TreeSet<Integer> indices,  
+   String password,  
    boolean isRoot, 
    Integer batchSize, 
    Integer priority, 
@@ -10277,7 +10366,7 @@ class MasterMgr
 
     /* collect upstream jobs (nodes without an action or with a disabled action) */ 
     if(!work.isActionEnabled()) {
-      collectNoActionJobs(status, isRoot, 
+      collectNoActionJobs(status, password, isRoot, 
 			  extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 			  jobs, timer);
       return;
@@ -10534,7 +10623,7 @@ class MasterMgr
 	  TreeSet<Integer> lindices = sourceIndices.get(link.getName());
 	  if((lindices != null) && (!lindices.isEmpty())) {
 	    NodeStatus lstatus = status.getSource(link.getName());
-	    submitJobs(lstatus, lindices, 
+	    submitJobs(lstatus, lindices, password, 
 		       false, null, null, null, null, null, 
 		       extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 		       jobs, timer);
@@ -10677,7 +10766,7 @@ class MasterMgr
 	  }
 
 	  QueueJob job = 
-	    new QueueJob(agenda, action, jreqs, sourceIDs);
+	    new QueueJob(agenda, action, jreqs, sourceIDs, password);
 		       
 	  jobs.put(jobID, job);
 	}
@@ -10711,6 +10800,10 @@ class MasterMgr
    * @param status
    *   The current node status.
    * 
+   * @param password
+   *   The encrypted Windows password for the user which will own the OS level process or 
+   *   <CODE>null</CODE> if not required.
+   * 
    * @param isRoot
    *   The this the root node of the job submission tree?
    * 
@@ -10739,6 +10832,7 @@ class MasterMgr
   collectNoActionJobs
   (
    NodeStatus status, 
+   String password,  
    boolean isRoot, 
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
@@ -10773,7 +10867,7 @@ class MasterMgr
       NodeStatus lstatus = status.getSource(link.getName());
       NodeID lnodeID = lstatus.getNodeID();
 
-      submitJobs(lstatus, null, 
+      submitJobs(lstatus, null, password, 
 		 false, null, null, null, null, null, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 		 jobs, timer);
@@ -17454,6 +17548,110 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the encrypted password database. 
+   * 
+   * @throws PipelineException
+   *   If unable to write the password file.
+   */ 
+  private void 
+  writeWindowsPasswords() 
+    throws PipelineException
+  {
+    synchronized(pWindowsPasswords) {
+      File file = new File(pNodeDir, "etc/passwords"); 
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old password file (" + file + ")!");
+      }
+
+      if(pWindowsPasswords.isEmpty()) 
+	return; 
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Windows Passwords...");
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("WindowsPasswords", pWindowsPasswords);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the Windows passwords!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	  
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the Windows passwords file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the encrypted password database. 
+   * 
+   * @throws PipelineException
+   *   If unable to read the password file.
+   */ 
+  private void
+  readWindowsPasswords() 
+    throws PipelineException
+  {
+    synchronized(pWindowsPasswords) {
+      pWindowsPasswords.clear();
+
+      File file = new File(pNodeDir, "etc/passwords"); 
+      if(!file.isFile()) 
+	return;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Windows Passwords...");
+
+      TreeMap<String,String> passwords = null;
+      try {
+	GlueDecoder gd = new GlueDecoderImpl(file);
+	passwords = (TreeMap<String,String>) gd.getObject();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The Windows passwords file (" + file + ") appears to be corrupted:\n" + 
+	   "  " + ex.getMessage());
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the Windows passwords file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      if(passwords == null)
+	throw new IllegalStateException(); 
+
+      pWindowsPasswords.putAll(passwords); 
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write a node event to disk. 
    * 
    * @param event
@@ -19144,6 +19342,16 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private DoubleMap<String,String,SuffixEditor>  pSuffixEditors;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The cached table of encrypted Windows passwords indexed by user name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,String>  pWindowsPasswords; 
 
 
   /*----------------------------------------------------------------------------------------*/
