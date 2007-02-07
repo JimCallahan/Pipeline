@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.11 2006/05/07 21:30:07 jim Exp $
+// $Id: ExecPath.java,v 1.12 2007/02/07 21:09:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -93,7 +93,7 @@ class ExecPath
 
     for(File dir : pDirs) {
       File file = new File(dir, program);
-      if(file.exists()) 
+      if(file.isFile()) 
 	return file;
     }
     
