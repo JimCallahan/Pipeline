@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd `pwd`
+exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
+  @PLTESTNATIVE_GC_OPTS@ \
+  @PLTESTNATIVE_DEBUG_OPTS@ \
+  -cp @PIPELINE_JAR@ \
+  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.TestNativeProcessLightApp "$@"
+
