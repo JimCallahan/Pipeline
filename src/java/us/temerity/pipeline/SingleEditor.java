@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.12 2007/02/07 21:08:53 jim Exp $
+// $Id: SingleEditor.java,v 1.13 2007/02/08 01:49:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -79,7 +79,7 @@ class SingleEditor
    * if more specialized behavior or different command line arguments are needed in order to 
    * launch the editor for the given file sequence. <P> 
    * 
-   * @para author
+   * @param author
    *   The name of the user owning the files. 
    * 
    * @param fseq  

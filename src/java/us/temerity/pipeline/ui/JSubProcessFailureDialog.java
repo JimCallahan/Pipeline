@@ -1,4 +1,4 @@
-// $Id: JSubProcessFailureDialog.java,v 1.5 2007/02/07 21:16:49 jim Exp $
+// $Id: JSubProcessFailureDialog.java,v 1.6 2007/02/08 01:49:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -187,10 +187,10 @@ class JSubProcessFailureDialog
    * @param command
    *   The failed command line arguments.
    * 
-   * @para stdout
+   * @param stdout
    *   The STDOUT output of the process.
    * 
-   * @para stderr
+   * @param stderr
    *   The STDERR output of the process.
    */ 
   public void 

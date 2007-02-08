@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.18 2007/02/07 21:08:53 jim Exp $
+// $Id: BaseEditor.java,v 1.19 2007/02/08 01:49:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -169,7 +169,7 @@ class BaseEditor
    * support for substituting user ownership.  See the explanation of why {@link #launch 
    * launch} was deprecated for details.
    * 
-   * @para author
+   * @param author
    *   The name of the user owning the files.
    * 
    * @param fseq    

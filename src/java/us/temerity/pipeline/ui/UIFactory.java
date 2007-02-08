@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.14 2007/02/07 21:17:14 jim Exp $
+// $Id: UIFactory.java,v 1.15 2007/02/08 01:49:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -366,9 +366,6 @@ class UIFactory
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
-   * 
-   * @param text
-   *   The initial text.
    * 
    * @param width
    *   The minimum and preferred width.
