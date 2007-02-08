@@ -263,7 +263,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
         $(srcdir)/package-lists/jai-imageio \
       -linkoffline \
         http://java.sun.com/products/java-media/jai/forDevelopers/jai-apidocs \
-        $(srcdir)/package-lists/jai
+        $(srcdir)/package-lists/jai \
+      -linkoffline \
+        ../../../jogl/docs \
+        $(srcdir)/package-lists/jogl
 
 
      LOCAL_DIRS = /usr/java/jdk1.5.0/docs/api
@@ -273,7 +276,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
  LEGACY_PLUGINS = $(BUILD_LEGACY_PLUGINS_FALSE)v1_0_0 v1_1_0 v1_2_0 v1_3_0
  MODERN_PLUGINS = v2_0_0 v2_0_1 v2_0_4 v2_0_9 v2_0_10 v2_0_11 v2_0_12 v2_0_13 v2_0_14 \
-                  v2_0_15 v2_1_1
+                  v2_0_15 v2_1_1 v2_1_8
     ALL_PLUGINS = $(LEGACY_PLUGINS) $(MODERN_PLUGINS) 
 PLUGIN_PACKAGES = $(sort $(patsubst %,us.temerity.pipeline.plugin.%,$(ALL_PLUGINS)))
 
@@ -293,7 +296,7 @@ PLUGIN_PACKAGES = $(sort $(patsubst %,us.temerity.pipeline.plugin.%,$(ALL_PLUGIN
 
 
    JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
-                  -classpath $(top_builddir)/src/java \
+                  -classpath $(top_builddir)/src/java:$(srcdir)/../../src/java/jogl/jogl.jar \
                   -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
                   -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#ffffff;"><B>TEMERITY</B></SPAN></A></BIG><EM>' \
                   -stylesheetfile $(srcdir)/stylesheet.css
