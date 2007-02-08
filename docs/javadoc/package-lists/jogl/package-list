@@ -1,0 +1,6 @@
+com.sun.opengl.cg
+com.sun.opengl.util
+com.sun.opengl.util.texture
+com.sun.opengl.util.texture.spi
+javax.media.opengl
+javax.media.opengl.glu
