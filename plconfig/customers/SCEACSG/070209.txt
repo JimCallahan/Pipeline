@@ -6,16 +6,16 @@ HostIDs =
     pipemgr.989studios.com        41237373007749916936778604211246982498
     pipequeue.989studios.com      26777791911113638374080087370504279591
 JavaClassVersion = 49.0
-JavaHome = /usr/java/jrockit-R27.1.0-jre1.5.0_08
-JavaName = BEA JRockit(R)
-JavaVendor = BEA Systems, Inc.
-JavaVersion = 1.5.0_08
+JavaHome = /usr/java/jre1.5.0_09
+JavaName = Java HotSpot(TM) Server VM
+JavaVendor = Sun Microsystems Inc.
+JavaVersion = 1.5.0_09
 JobPort = 53140
 LegacyPlugins = false
-LicenseEnd = Sat Jun 02 20:05:19 EDT 2007
-LicenseEndStamp = 1180829119978
-LicenseStart = Wed Feb 07 20:05:00 EST 2007
-LicenseStartStamp = 1170896700952
+LicenseEnd = Sat Jun 02 15:20:51 EDT 2007
+LicenseEndStamp = 1180812051757
+LicenseStart = Fri Feb 09 15:20:36 EST 2007
+LicenseStartStamp = 1171052436455
 LicenseType = Limited
 MacClients = true
 MacHomeDirectory = /Users
