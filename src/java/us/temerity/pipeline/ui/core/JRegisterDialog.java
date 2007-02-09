@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.17 2007/01/12 00:05:15 jim Exp $
+// $Id: JRegisterDialog.java,v 1.18 2007/02/09 07:10:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -513,7 +513,19 @@ class JRegisterDialog
   public void 
   doBrowse() 
   {
-    pFileSeqDialog.setRootDir(pRootPath.toFile());
+    File rootDir = pRootPath.toFile();
+    if(!rootDir.exists()) {
+      UIMaster master = UIMaster.getInstance();
+      try {
+	master.getMasterMgrClient().createWorkingArea(pAuthor, pView);
+      }
+      catch(PipelineException ex) {	
+	master.showErrorDialog(ex);
+	return;
+      }
+    }
+
+    pFileSeqDialog.setRootDir(rootDir);
 
     Path prefix = pPrefixField.getPath();
     if(prefix != null) {
