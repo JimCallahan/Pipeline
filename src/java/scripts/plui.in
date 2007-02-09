@@ -1,9 +1,9 @@
 #!/bin/sh
 
 cd `pwd`
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:@JOGL_LIBRARY_PATH@"
 exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLUI_GC_OPTS@ \
+  -Djava.library.path=@JOGL_LIBRARY_PATH@ \
   -cp @PIPELINE_JAR@:@JOGL_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp "$@"
 
