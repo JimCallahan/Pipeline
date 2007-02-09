@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.190 2007/02/07 21:14:38 jim Exp $
+// $Id: MasterMgr.java,v 1.191 2007/02/09 01:24:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9104,7 +9104,8 @@ class MasterMgr
       }
 
       /* record event */ 
-      pPendingEvents.add(new CheckedOutNodeEvent(nodeID, vid, isFrozen, isLocked));
+      pPendingEvents.add(new CheckedOutNodeEvent(nodeID, vsn.getVersionID(), 
+						 isFrozen, isLocked));
 
       /* post-op tasks */  
       if(hasExtTasks) 
