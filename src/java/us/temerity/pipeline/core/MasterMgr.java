@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.191 2007/02/09 01:24:46 jim Exp $
+// $Id: MasterMgr.java,v 1.192 2007/02/09 04:04:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9963,13 +9963,15 @@ class MasterMgr
       TreeMap<String,TreeSet<String>> areas = new TreeMap<String,TreeSet<String>>();
 
       for(EditedNodeEvent event : pRunningEditors.values()) {
-	TreeSet<String> views = areas.get(event.getAuthor());
-	if(views == null) {
-	  views = new TreeSet<String>();
-	  areas.put(event.getAuthor(), views);
-	}
+	if(event.getNodeName().equals(req.getName())) {
+	  TreeSet<String> views = areas.get(event.getAuthor());
+	  if(views == null) {
+	    views = new TreeSet<String>();
+	    areas.put(event.getAuthor(), views);
+	  }
 
-	views.add(event.getView());
+	  views.add(event.getView());
+	}
       }
 
       return new NodeGetWorkingAreasRsp(timer, areas);
