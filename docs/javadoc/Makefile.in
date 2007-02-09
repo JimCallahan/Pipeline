@@ -282,6 +282,7 @@ PLUGIN_PACKAGES = $(sort $(patsubst %,us.temerity.pipeline.plugin.%,$(ALL_PLUGIN
 
 
   MAIN_PACKAGES = us.temerity.pipeline \
+                  us.temerity.pipeline.event \
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.glue.io \
                   us.temerity.pipeline.math \
