@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.5 2006/10/25 08:04:23 jim Exp $
+// $Id: NativeFileSys.cc,v 1.6 2007/02/10 01:51:49 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -91,8 +91,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
   if(chmod(file, mode) == -1) {
     sprintf(msg, "failed to change the permissions of file (%d): %s\n", 
 	    file, strerror(errno));
-    env->ThrowNew(IOException, msg);    
+    env->ReleaseStringUTFChars(jfile, file); 
+    env->ThrowNew(IOException, msg);  
+    return;  
   }
+
+  env->ReleaseStringUTFChars(jfile, file); 
 }
  
 /* Set the file creation mask. */
@@ -137,7 +141,8 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
   }
 
   const char* link = env->GetStringUTFChars(jlink, 0);
-  if((file == NULL) || (strlen(file) == 0)) {
+  if((link == NULL) || (strlen(link) == 0)) {
+    env->ReleaseStringUTFChars(jfile, file);    
     env->ThrowNew(IOException,"empty link argument");
     return;
   }
@@ -146,8 +151,14 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
   if(symlink(file, link) == -1) {
     sprintf(msg, "unable to create symlink (%s) pointing to (%s): %s\n", 
 	    link, file, strerror(errno));
+    env->ReleaseStringUTFChars(jfile, file); 
+    env->ReleaseStringUTFChars(jlink, link);
     env->ThrowNew(IOException, msg);  
+    return;  
   }
+
+  env->ReleaseStringUTFChars(jfile, file); 
+  env->ReleaseStringUTFChars(jlink, link); 
 }
 
 /* Determine the canonicalized absolute pathname of the given path. */  
@@ -180,9 +191,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   char resolved[MAXPATHLEN];
   if(realpath(path, resolved) == NULL) {
     sprintf(msg, "cannot resolve (%s): %s\n", path, strerror(errno));
+    env->ReleaseStringUTFChars(jpath, path); 
     env->ThrowNew(IOException, msg);  
+    return NULL; 
   }
 
+  env->ReleaseStringUTFChars(jpath, path); 
   return env->NewStringUTF(resolved);
 }
 
@@ -237,6 +251,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
 	  rtime = ((jlong) buf.st_mtime);
       }
 
+      env->ReleaseStringUTFChars(jpath, path);
       return (rtime * 1000L);
     }
 
@@ -244,10 +259,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
   case ENAMETOOLONG:
   case ELOOP:
     sprintf(msg, "cannot stat (%s): %s\n", path, strerror(errno));
+    env->ReleaseStringUTFChars(jpath, path);
     env->ThrowNew(IOException, msg);  
     return 0L;
 
   default:
+    env->ReleaseStringUTFChars(jpath, path);
     return 0L;
   }
 }
@@ -283,9 +300,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_freeDiskSpaceNative
   struct statfs fs;
   if(statfs(path, &fs) != 0) {
     sprintf(msg, "cannot determine free disk space for (%s): %s\n", path, strerror(errno));
+    env->ReleaseStringUTFChars(jpath, path);
     env->ThrowNew(IOException, msg);  
+    return -1;
   }
 
+  env->ReleaseStringUTFChars(jpath, path);
   return ((jlong) fs.f_bavail * 4096L);
 }
 
@@ -320,8 +340,11 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_totalDiskSpaceNative
   struct statfs fs;
   if(statfs(path, &fs) != 0) {
     sprintf(msg, "cannot determine total disk space for (%s): %s\n", path, strerror(errno));
-    env->ThrowNew(IOException, msg);  
+    env->ReleaseStringUTFChars(jpath, path);
+    env->ThrowNew(IOException, msg); 
+    return -1; 
   }
 
+  env->ReleaseStringUTFChars(jpath, path);
   return ((jlong) fs.f_blocks * 4096L);
 }
