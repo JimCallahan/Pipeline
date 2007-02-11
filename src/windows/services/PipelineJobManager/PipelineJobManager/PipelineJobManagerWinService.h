@@ -159,7 +159,7 @@ namespace PipelineJobManager {
  	    options[3].optionString = "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=45006"; 
 	    //options[4].optionString = "-Djava.class.path=C:\\TEMP"; 
 	    //  	    options[4].optionString = "-Djava.class.path=C:\\TEMP\\api.jar";  
-	    options[4].optionString = "-Djava.class.path=\\\\Dimetrodon\\base\\apps\\i686-pc-linux-gnu-dbg\\pipeline-dimetrodon-2.1.8-070122\\lib\\api.jar"; 
+	    options[4].optionString = "-Djava.class.path=\\\\Dimetrodon\\base\\apps\\i686-pc-linux-gnu-dbg\\pipeline-dimetrodon-2.2.1-070122\\lib\\api.jar"; 
       
  	    vm_args.version = JNI_VERSION_1_2;
  	    vm_args.options = options;
@@ -292,12 +292,12 @@ namespace PipelineJobManager {
       /// </summary>
       void InitializeComponent(void)
 	{
-	  this->components = gcnew System::ComponentModel::Container();
-	  this->CanStop = true;
-	  this->CanPauseAndContinue = true;
-	  this->AutoLog = true;
-	  this->ServiceName = L"PipelineJobManagerWinService";
-	}
+		// 
+		// PipelineJobManagerWinService
+		// 
+		this->ServiceName = L"PipelineJobManagerWinService";
+
+	  }
 #pragma endregion
     };
 }

@@ -7,97 +7,119 @@ using namespace Microsoft::Win32;
 
 int main(array<System::String ^> ^args)
 {
-	String^ path = "Path";
-	if(args->Length != 1) {
-		Console::WriteLine("usage: PipelineEditRegistry JAVAHOME\n");
+  String^ path = "Path";
+  if(args->Length < 1) {
+    Console::WriteLine("usage: PipelineEditRegistry path1 [path2 ...]\n");
 
-		Console::WriteLine("Press <ENTER> to continue...");
-		Console::ReadLine();
+    Console::WriteLine("Press <ENTER> to continue...");
+    Console::ReadLine();
 
-		return 1;
-	}
-			
-	Console::WriteLine("Checking the (Path) Environmental variable for the Java Runtime DLL...\n");
+    return 1;
+  }
 
-	String^ jniPath       = String::Format("{0}\\bin", args[0]);
-	String^ jniServerPath = String::Format("{0}\\bin\\server", args[0]);
-	String^ jniClientPath = String::Format("{0}\\bin\\client", args[0]);
+  Console::WriteLine("");
+  Console::WriteLine
+    ("Checking the ({0}) environmental variable for the required directories:", path);
+  for(int ak=0; ak<args->Length; ak++)
+    Console::WriteLine("  {0}", args[ak]);
+  Console::WriteLine("");
 
-	RegistryKey^ hklm = Registry::LocalMachine;
-	RegistryKey^ env = hklm->OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
-										RegistryKeyPermissionCheck::ReadWriteSubTree);
+  RegistryKey^ hklm = Registry::LocalMachine;
+  RegistryKey^ env = 
+    hklm->OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
+		     RegistryKeyPermissionCheck::ReadWriteSubTree);
 
-	String^ nvalue;
-	String^ value = (String^) env->GetValue(path);
-	if(value == nullptr) {
-	  Console::WriteLine("Path (current) = <NONE>\n"); 
-	  nvalue = String::Format("{0};{1};{2}", jniPath, jniServerPath, jniClientPath);
-	}
-	else {
-	    Console::WriteLine("Path (current) = {0}\n", value); 
+  String^ nvalue;
+  String^ value = (String^) env->GetValue(path);
+  if(value == nullptr) {
+    Console::WriteLine("Current ({0}) Components =\n  <NONE>\n", path); 
 
-  		array<String^>^ paths = value->Split(';');
+    Console::WriteLine("New ({0}) Components:", path);
+    for(int ak=0; ak<args->Length; ak++) 
+      Console::WriteLine("  {0}", args[ak]);
+    Console::WriteLine("");
 
-		// DEBUG
-		Console::WriteLine("Path COMPONENTS:");
-		for(int i=0; i<paths->Length; i++) {
-			Console::WriteLine("  {0}", paths[i]);
-		}
-		Console::WriteLine("");
-		// DEBUG
+    /* since its empty, just add the required directories */ 
+    nvalue = String::Join(";", args);
+  }
+  else {
+    /* the current list of directories */ 
+    array<String^>^ paths = value->Split(';');
 
-		int cnt = 3;
-		for(int i=0; i<paths->Length; i++) {
-			if(!paths[i]->Equals(jniPath) && !paths[i]->Equals(jniServerPath))
-				cnt++;
-		}
+    Console::WriteLine("Current ({0}) Components:", path);
+    for(int pk=0; pk<paths->Length; pk++) 
+      Console::WriteLine("  {0}", paths[pk]);
+    Console::WriteLine("");
+
+    /* count the number of existing directories not in the required list */ 
+    int cnt = args->Length;
+    for(int pk=0; pk<paths->Length; pk++) {
+      bool isAnyPath = false;
+      for(int ak=0; ak<args->Length; ak++) { 
+	if(paths[pk]->Equals(args[ak])) 
+	  isAnyPath = true;
+      }
+
+      if(!isAnyPath) 
+	cnt++;
+    }
 	 
-		bool hasJni = false;
-		bool hasServer = false;
-		bool hasClient = false;
-		array<String^>^ npaths = gcnew array<String^>(cnt);
-		{
-			int wk=0;
-			for(int i=0; i<paths->Length; i++) {
-				bool isJni = paths[i]->Equals(jniPath);
-				hasJni |= isJni;
+    /* build a new list of directories */ 
+    array<bool>^ hasPath = gcnew array<bool>(args->Length);
+    array<String^>^ npaths = gcnew array<String^>(cnt);
+    {
+      /* first add the directories not in the included list */ 
+      int wk=0;
+      for(int pk=0; pk<paths->Length; pk++) {
+	bool isAnyPath = false;
+	for(int ak=0; ak<args->Length; ak++) { 
+	  if(paths[pk]->Equals(args[ak])) {
+	    hasPath[ak] = true;
+	    isAnyPath = true;
+	  }
+	} 
 
-				bool isServer = paths[i]->Equals(jniServerPath);
-				hasServer |= isServer;
-
-				bool isClient = paths[i]->Equals(jniClientPath);
-				hasClient |= isClient;
-				
-				if(!isJni && !isServer && !isClient) {
-					npaths[wk] = paths[i];
-					wk++;
-				}
-			}
-			npaths[wk++] = jniPath;
-			npaths[wk++] = jniServerPath;
-			npaths[wk++] = jniClientPath;
-		}
-
-		if(hasJni && hasServer && hasClient) {
-			Console::WriteLine("Path is OK!");
-
-			Console::WriteLine("Press <ENTER> to continue...");
-			Console::ReadLine();
-
-			return 0;
-		}
-
-		nvalue = String::Join(";", npaths);
+	if(!isAnyPath) {
+	  npaths[wk] = paths[pk];
+	  wk++;
 	}
+      }
 
-	Console::WriteLine("Path (fixed) = {0}\n", nvalue); 
+      /* append the required directories */ 
+      for(int ak=0; ak<args->Length; ak++) {
+	npaths[wk++] = args[ak];
+      }
+    }
 
-	env->SetValue(path, nvalue, RegistryValueKind::ExpandString);
-    //Console::WriteLine("Path (after) = {0}", env->GetValue(path));
+    bool hasAllPaths = true;
+    for(int wk=0; wk<hasPath->Length; wk++)
+      hasAllPaths &= hasPath[wk];
 
-	Console::WriteLine("You must REBOOT your system before attempting to install Pipeline Job Manager again!\n");
-	Console::WriteLine("Press <ENTER> to continue...");
-	Console::ReadLine();
+    if(hasAllPaths) {
+      Console::WriteLine
+	("The ({0}) environmental variable already contains all required directories!", path);
 
-    return 0;
+      //Console::WriteLine("Press <ENTER> to continue...");
+      //Console::ReadLine();
+
+      return 0;
+    }
+
+    Console::WriteLine("New ({0}) Components:", path);
+    for(int pk=0; pk<npaths->Length; pk++) 
+      Console::WriteLine("  {0}", npaths[pk]);
+    Console::WriteLine("");
+
+    nvalue = String::Join(";", npaths);
+  }
+
+  env->SetValue(path, nvalue, RegistryValueKind::ExpandString);
+
+  Console::WriteLine("You must REBOOT your system before the changes take effect!"); 
+  Console::WriteLine("Reboot and then reinstall the Pipeline Job Manager...\n");
+
+  Console::WriteLine("Press <ENTER> to continue...");
+  Console::ReadLine();
+
+  return 1;
 }
