@@ -31,11 +31,11 @@ throwWindowsIOException
      0, NULL);
 
   lpDisplayBuf = (LPVOID) LocalAlloc(LMEM_ZEROINIT, 
-				     (lstrlen((LPCTSTR)lpMsgBuf) + 
-				      lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
+                                     (lstrlen((LPCTSTR)lpMsgBuf) + 
+                                      lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
   wsprintf((LPTSTR)lpDisplayBuf, 
-	   TEXT("%s failed with error %d: %s"), 
-	   lpszFunction, dw, lpMsgBuf); 
+           TEXT("%s failed with error %d:\n  %s"), 
+           lpszFunction, dw, lpMsgBuf); 
 
   env->ThrowNew(IOException, (LPTSTR)lpDisplayBuf);
 

@@ -27,7 +27,7 @@ int main(array<System::String ^> ^args)
   RegistryKey^ hklm = Registry::LocalMachine;
   RegistryKey^ env = 
     hklm->OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
-		     RegistryKeyPermissionCheck::ReadWriteSubTree);
+                     RegistryKeyPermissionCheck::ReadWriteSubTree);
 
   String^ nvalue;
   String^ value = (String^) env->GetValue(path);
@@ -56,14 +56,14 @@ int main(array<System::String ^> ^args)
     for(int pk=0; pk<paths->Length; pk++) {
       bool isAnyPath = false;
       for(int ak=0; ak<args->Length; ak++) { 
-	if(paths[pk]->Equals(args[ak])) 
-	  isAnyPath = true;
+        if(paths[pk]->Equals(args[ak])) 
+          isAnyPath = true;
       }
 
       if(!isAnyPath) 
-	cnt++;
+        cnt++;
     }
-	 
+         
     /* build a new list of directories */ 
     array<bool>^ hasPath = gcnew array<bool>(args->Length);
     array<String^>^ npaths = gcnew array<String^>(cnt);
@@ -71,23 +71,23 @@ int main(array<System::String ^> ^args)
       /* first add the directories not in the included list */ 
       int wk=0;
       for(int pk=0; pk<paths->Length; pk++) {
-	bool isAnyPath = false;
-	for(int ak=0; ak<args->Length; ak++) { 
-	  if(paths[pk]->Equals(args[ak])) {
-	    hasPath[ak] = true;
-	    isAnyPath = true;
-	  }
-	} 
+        bool isAnyPath = false;
+        for(int ak=0; ak<args->Length; ak++) { 
+          if(paths[pk]->Equals(args[ak])) {
+            hasPath[ak] = true;
+            isAnyPath = true;
+          }
+        } 
 
-	if(!isAnyPath) {
-	  npaths[wk] = paths[pk];
-	  wk++;
-	}
+        if(!isAnyPath) {
+          npaths[wk] = paths[pk];
+          wk++;
+        }
       }
 
       /* append the required directories */ 
       for(int ak=0; ak<args->Length; ak++) {
-	npaths[wk++] = args[ak];
+        npaths[wk++] = args[ak];
       }
     }
 
@@ -97,7 +97,7 @@ int main(array<System::String ^> ^args)
 
     if(hasAllPaths) {
       Console::WriteLine
-	("The ({0}) environmental variable already contains all required directories!", path);
+        ("The ({0}) environmental variable already contains all required directories!", path);
 
       //Console::WriteLine("Press <ENTER> to continue...");
       //Console::ReadLine();
@@ -115,8 +115,8 @@ int main(array<System::String ^> ^args)
 
   env->SetValue(path, nvalue, RegistryValueKind::ExpandString);
 
-  Console::WriteLine("You must REBOOT your system before the changes take effect!"); 
-  Console::WriteLine("Reboot and then reinstall the Pipeline Job Manager...\n");
+  Console::WriteLine
+    ("You must rerun the installer in order for these changes to take effect!");
 
   Console::WriteLine("Press <ENTER> to continue...");
   Console::ReadLine();

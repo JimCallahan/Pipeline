@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cpp,v 1.4 2007/02/11 10:30:33 jim Exp $
+// $Id: NativeFileSys.cpp,v 1.5 2007/02/11 17:44:11 jim Exp $
 
 #include "stdafx.h"
 
@@ -42,7 +42,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
   /* change the access permissions */ 
   if(_chmod(file, wmode) == -1) {
     sprintf(msg, "failed to change the permissions of file (%s): %s\n", 
-	        file, strerror(errno));
+                file, strerror(errno));
     env->ReleaseStringUTFChars(jfile, file); 
     env->ThrowNew(IOException, msg);  
     return;    
@@ -104,7 +104,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   char resolved[FILENAME_MAX];
   if(_fullpath(resolved, path, sizeof(resolved))) {
     sprintf(msg, "cannot resolve (%s): %s\n", 
-	      path, strerror(errno)); 
+              path, strerror(errno)); 
     env->ReleaseStringUTFChars(jpath, path); 
     env->ThrowNew(IOException, msg);  
     return NULL;
