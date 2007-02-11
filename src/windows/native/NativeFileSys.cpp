@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cpp,v 1.3 2007/01/29 20:50:49 jim Exp $
+// $Id: NativeFileSys.cpp,v 1.4 2007/02/11 10:30:33 jim Exp $
 
 #include "stdafx.h"
 
@@ -43,8 +43,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
   if(_chmod(file, wmode) == -1) {
     sprintf(msg, "failed to change the permissions of file (%s): %s\n", 
 	        file, strerror(errno));
-    env->ThrowNew(IOException, msg);    
+    env->ReleaseStringUTFChars(jfile, file); 
+    env->ThrowNew(IOException, msg);  
+    return;    
   }
+
+  env->ReleaseStringUTFChars(jfile, file); 
 }
  
 /* Create a symbolic link which points to the given file. */
@@ -92,6 +96,7 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   const char* path = env->GetStringUTFChars(jpath, 0);
   if((path == NULL) || (strlen(path) == 0)) {
     env->ThrowNew(IOException,"empty path argument");
+    env->ReleaseStringUTFChars(jpath, path); 
     return NULL;
   }
 
@@ -100,9 +105,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   if(_fullpath(resolved, path, sizeof(resolved))) {
     sprintf(msg, "cannot resolve (%s): %s\n", 
 	      path, strerror(errno)); 
+    env->ReleaseStringUTFChars(jpath, path); 
     env->ThrowNew(IOException, msg);  
+    return NULL;
   }
 
+  env->ReleaseStringUTFChars(jpath, path); 
   return env->NewStringUTF(resolved);
 }
 
@@ -161,9 +169,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_freeDiskSpaceNative
 
     if(!GetDiskFreeSpaceA(path, &sectPerClust, &bytesPerSect, &freeClust, &totalClust)) {
       sprintf(msg, "cannot determine free disk space for (%s)", path); 
-      env->ThrowNew(IOException, msg);  
+      env->ReleaseStringUTFChars(jpath, path);
+      env->ThrowNew(IOException, msg); 
+      return -1; 
     }
 
+    env->ReleaseStringUTFChars(jpath, path);
     return ((jlong) freeClust)  * ((jlong) sectPerClust) * ((jlong) bytesPerSect);
   }
 }
@@ -201,9 +212,12 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_totalDiskSpaceNative
 
     if(!GetDiskFreeSpaceA(path, &sectPerClust, &bytesPerSect, &freeClust, &totalClust)) {
       sprintf(msg, "cannot determine total disk space for (%s)", path); 
+      env->ReleaseStringUTFChars(jpath, path);
       env->ThrowNew(IOException, msg);  
+      return -1;
     }
 
+    env->ReleaseStringUTFChars(jpath, path);
     return ((jlong) totalClust)  * ((jlong) sectPerClust) * ((jlong) bytesPerSect);
   }  
 }

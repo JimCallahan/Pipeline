@@ -40,6 +40,9 @@
 extern "C" {
 #endif
 
+void throwWindowsIOException(JNIEnv *env, jclass IOException, LPTSTR lpszFunction);
+
+
 /* Header for class us_temerity_pipeline_NativeFileSys */
 
 /*
@@ -143,7 +146,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_signalNative
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
   (JNIEnv *, jobject, 
-   jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
+   jstring, jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
 
 
 /* Header for class us_temerity_pipeline_NativeProcessLight */
@@ -210,7 +213,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
-  (JNIEnv *, jobject, jstring, jcharArray, jobjectArray, jobjectArray, jstring);
+  (JNIEnv *, jobject, jstring, jstring, jcharArray, jobjectArray, jobjectArray, jstring);
 
 
 
