@@ -27,19 +27,25 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_394D5C2265464250BF1D330CC7EDA75F"
+        "MsmKey" = "8:_5B6E6164E184491D829B0AED4AA12A88"
         "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_394D5C2265464250BF1D330CC7EDA75F"
+        "MsmKey" = "8:_5B6E6164E184491D829B0AED4AA12A88"
         "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6B6D55A2D7664AD2B79EE3C594627CDF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -57,8 +63,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_8A84D16EED4047D3893DE3F0C37548C4"
-        "OwnerKey" = "8:_394D5C2265464250BF1D330CC7EDA75F"
+        "MsmKey" = "8:_BC6B2FB9008D4987838C65FDB16FE2A0"
+        "OwnerKey" = "8:_5B6E6164E184491D829B0AED4AA12A88"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -250,6 +256,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6B6D55A2D7664AD2B79EE3C594627CDF"
+            {
+            "SourcePath" = "8:..\\..\\..\\icons\\WindowsLogo.ico"
+            "TargetName" = "8:WindowsLogo.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_B9D8CB1290BE47A9B5474A48B0FEB2B6"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7488FF27C868451A99724EBA36263071"
             {
             "SourcePath" = "8:..\\TemerityInstallerBg.bmp"
@@ -363,12 +389,12 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Pipeline-2.2.1"
         "ProductCode" = "8:{DF3AB58F-711F-4FF6-A12A-B5D4914B83CF}"
-        "PackageCode" = "8:{B4A9E0A5-1E66-4A8F-90C2-05E687E5B7C5}"
+        "PackageCode" = "8:{64F6FC1F-99C3-40F2-A3F0-D07E0EC290B5}"
         "UpgradeCode" = "8:{8BF66B9E-2AF7-4F05-A89D-7393B47C1AEE}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "InstallAllUsers" = "11:FALSE"
+        "InstallAllUsers" = "11:TRUE"
         "ProductVersion" = "8:2.2.1"
         "Manufacturer" = "8:Temerity Software"
         "ARPHELPTELEPHONE" = "8:"
@@ -379,7 +405,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:The Pipeline job execution service."
         "ARPURLINFOABOUT" = "8:http://www.temerity.us"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_6B6D55A2D7664AD2B79EE3C594627CDF"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -537,7 +563,7 @@
             "Attributes" = "3:2"
                 "Dialogs"
                 {
-                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_7FC2AA2452284C49ABC2ACF5E4CED562"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_AA5B6E1B6BDA42C4AAF67BCDCBD78DF8"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Progress"
@@ -748,7 +774,7 @@
                 {
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_3676BB7B51A54F7FAB682B3131C4C7A1"
                     {
-                    "Sequence" = "3:100"
+                    "Sequence" = "3:110"
                     "DisplayName" = "8:Finished"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -873,7 +899,7 @@
                     }
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_5506037414194C4883D922636757BFB6"
                     {
-                    "Sequence" = "3:100"
+                    "Sequence" = "3:110"
                     "DisplayName" = "8:Welcome"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -958,7 +984,7 @@
                     }
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_C54CD69DB0AE4FD89A3F1D4FD60F841C"
                     {
-                    "Sequence" = "3:400"
+                    "Sequence" = "3:500"
                     "DisplayName" = "8:Confirm Installation"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -984,7 +1010,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_394D5C2265464250BF1D330CC7EDA75F"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_5B6E6164E184491D829B0AED4AA12A88"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -998,7 +1024,7 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_8A84D16EED4047D3893DE3F0C37548C4"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_BC6B2FB9008D4987838C65FDB16FE2A0"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
