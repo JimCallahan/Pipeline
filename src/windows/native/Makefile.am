@@ -1,17 +1,15 @@
-instbindir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@
+instdatadir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@
 
-instbin_DATA = \
+instdata_DATA = \
   libNative.dll
 
 
-NATIVE_DIR = /home/jim/code/build/pipeline-windows/native
-WIN_SRCDIR = "C:"$(shell echo '@srcdir@' | sed -e 's|/|\\\\\\\\|g')
+WIN_SRCDIR = $(shell echo '@srcdir@' | sed -e 's|/|\\|g')
 
-.PHONY: libNative.dll
-libNative.dll: 
-	cp $(NATIVE_DIR)/libNative.dll .
-#	devenv.com /rebuild debug "$(WIN_SRCDIR)"
+libNative.dll: FORCE
+	devenv.com "C:\cygwin$(WIN_SRCDIR)\libNative.vcproj" /build debug /project libNative
 
+FORCE:
 
-rebuild:
-	devenv.com /rebuild debug "C:\cygwin\home\jim\code\src\pipeline-windows\native\libNative.sln" 
+install-am: 
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{6E9C7E79-FBCF-4471-A72C-74AF479D946A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PipelineRun", "PipelineRun\PipelineRun.vcproj", "{514D1338-CD41-42DE-8006-1C5C53BCC263}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PipelineEditRegistry", "PipelineEditRegistry\PipelineEditRegistry.vcproj", "{32BC45E2-A6AE-48DC-B427-55CC6E78C3AE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PipelineJobManager", "PipelineJobManager\PipelineJobManager.vcproj", "{1C831A00-816B-4E7F-BEFB-E4B3935A44F7}"
@@ -17,10 +15,6 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6E9C7E79-FBCF-4471-A72C-74AF479D946A}.Debug|Win32.ActiveCfg = Debug
 		{6E9C7E79-FBCF-4471-A72C-74AF479D946A}.Release|Win32.ActiveCfg = Release
-		{514D1338-CD41-42DE-8006-1C5C53BCC263}.Debug|Win32.ActiveCfg = Debug|Win32
-		{514D1338-CD41-42DE-8006-1C5C53BCC263}.Debug|Win32.Build.0 = Debug|Win32
-		{514D1338-CD41-42DE-8006-1C5C53BCC263}.Release|Win32.ActiveCfg = Release|Win32
-		{514D1338-CD41-42DE-8006-1C5C53BCC263}.Release|Win32.Build.0 = Release|Win32
 		{32BC45E2-A6AE-48DC-B427-55CC6E78C3AE}.Debug|Win32.ActiveCfg = Debug|Win32
 		{32BC45E2-A6AE-48DC-B427-55CC6E78C3AE}.Debug|Win32.Build.0 = Debug|Win32
 		{32BC45E2-A6AE-48DC-B427-55CC6E78C3AE}.Release|Win32.ActiveCfg = Release|Win32

@@ -10,6 +10,6 @@ rsync $* -av --checksum --delete \
   --cvs-exclude \
   --exclude="*Lizard.bash" \
   --exclude="libNative.vcproj.*.*.user" \
-  lizard:/home/jim/code/src/pipeline-windows/native/ .
+  lizard:/home/jim/code/src/pipeline/src/windows/native/ .
 
 chmod 644 *.cpp *.h libNative.* ReadMe.txt

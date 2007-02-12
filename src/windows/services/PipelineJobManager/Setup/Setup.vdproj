@@ -15,19 +15,31 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_1361B5229D444F40B7215375D864FBD1"
+        "OwnerKey" = "8:_36A332D1D29D4EE09D5C519D9B9DB3AF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_29B85609E2CA47D89209131494B3D1DD"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_55C0ABED97EF4F1EAF1F9BD92F55C873"
+        "MsmKey" = "8:_342DD1FDBB023E516BD22DE9A2C34277"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_36A332D1D29D4EE09D5C519D9B9DB3AF"
         "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_55C0ABED97EF4F1EAF1F9BD92F55C873"
+        "MsmKey" = "8:_36A332D1D29D4EE09D5C519D9B9DB3AF"
         "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -51,20 +63,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E080BD777B9B44C7A55112DDCC112068"
-        "OwnerKey" = "8:_55C0ABED97EF4F1EAF1F9BD92F55C873"
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -75,7 +81,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:..\\..\\..\\..\\..\\build\\pipeline-windows\\services\\PipelineJobManager\\PipelineJobManager.msi"
+        "OutputFilename" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\i686-pc-linux-gnu-dbg\\src\\windows\\services\\PipelineJobManager.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -224,6 +230,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_342DD1FDBB023E516BD22DE9A2C34277"
+            {
+            "SourcePath" = "8:jvm.dll"
+            "TargetName" = "8:jvm.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7488FF27C868451A99724EBA36263071"
             {
             "SourcePath" = "8:..\\TemerityInstallerBg.bmp"
@@ -337,7 +363,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Pipeline-2.2.1"
         "ProductCode" = "8:{DF3AB58F-711F-4FF6-A12A-B5D4914B83CF}"
-        "PackageCode" = "8:{D515C0C3-F205-4CA8-A44B-0068CE4951E2}"
+        "PackageCode" = "8:{43804588-0D65-44AD-9F2C-1C8F9B6F3DC6}"
         "UpgradeCode" = "8:{8BF66B9E-2AF7-4F05-A89D-7393B47C1AEE}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
@@ -958,11 +984,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_55C0ABED97EF4F1EAF1F9BD92F55C873"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_1361B5229D444F40B7215375D864FBD1"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
+            "SourcePath" = "8:policy_8_0_microsoft_vc80_debugcrt_x86.msm"
                 "Properties"
                 {
                 }
@@ -972,11 +998,11 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_E080BD777B9B44C7A55112DDCC112068"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_36A332D1D29D4EE09D5C519D9B9DB3AF"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_8_0_microsoft_vc80_debugcrt_x86.msm"
+            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
                 "Properties"
                 {
                 }
@@ -991,7 +1017,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_62FD107D51234EE88F4AE1C90DD60F1E"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\build\\pipeline-windows\\services\\PipelineJobManager\\PipelineEditRegistry.exe"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\i686-pc-linux-gnu-dbg\\src\\windows\\services\\PipelineJobManager\\PipelineEditRegistry.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
@@ -1019,7 +1045,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7FBE5C81888343B3B5FFE77670F71A5A"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\build\\pipeline-windows\\services\\PipelineJobManager\\PipelineJobManager.exe"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\i686-pc-linux-gnu-dbg\\src\\windows\\services\\PipelineJobManager\\PipelineJobManager.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"

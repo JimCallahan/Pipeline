@@ -5,13 +5,13 @@ instbin_SCRIPTS = \
   PipelineJobManager.msi
 
 
-JOBMGR_DIR = /home/jim/code/build/pipeline-windows/services/PipelineJobManager
-
-.PHONY: PipelineJobManager.msi
-PipelineJobManager.msi:
-	cp $(JOBMGR_DIR)/PipelineJobManager.msi .
+WIN_SRCDIR = $(shell echo '@srcdir@/PipelineJobManager/Setup' | sed -e 's|/|\\|g')
 
 
-rebuild:
-	devenv.com "C:\cygwin\home\jim\code\src\pipeline-windows\services\PipelineJobManager\Setup\Setup.vdproj" /rebuild debug /project Setup 
- 
+PipelineJobManager.msi: FORCE
+	devenv.com "C:\cygwin$(WIN_SRCDIR)\Setup.vdproj" /build debug /project Setup
+
+FORCE:
+
+install-am: 
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am

@@ -14,6 +14,7 @@ rsync $* -av --checksum --delete \
   --exclude="PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.vcproj.*.*.user" \
   --exclude="PipelineJobManager/*/Debug" \
   --exclude="PipelineJobManager/*/Release" \
-  lizard:/home/jim/code/src/pipeline-windows/services/ .
+  lizard:/home/jim/code/src/pipeline/src/windows/services/ .
 
 find PipelineJobManager -type f -exec chmod 644 {} \; 
+

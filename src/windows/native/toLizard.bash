@@ -9,5 +9,5 @@ fi
 rsync $* -av --checksum --delete --delete-excluded \
   --cvs-exclude \
   --exclude="*Lizard.bash" \
-  ./ lizard:/home/jim/code/src/pipeline-windows/native
+  ./ lizard:/home/jim/code/src/pipeline/src//windows/native
 
