@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.16 2006/09/29 03:03:21 jim Exp $
+// $Id: JobReqs.java,v 1.17 2007/02/12 15:49:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -142,10 +142,10 @@ class JobReqs
    *    The maxmimum system load allowed on an eligable host.
    * 
    * @param minMemory 
-   *    The minimum amount of free memory (in MB) required on an eligable host.
+   *    The minimum amount of free memory (in bytes) required on an eligable host.
    * 
    * @param minDisk 
-   *    The minimum amount of free temporary local disk space (in MB) required on an 
+   *    The minimum amount of free temporary local disk space (in bytes) required on an 
    *    eligable host.
    * 
    * @param licenseKeys 
@@ -162,8 +162,8 @@ class JobReqs
    int priority, 
    int rampUp,
    float maxLoad,              
-   int minMemory,              
-   int minDisk,                
+   long minMemory,              
+   long minDisk,                
    Set<String> licenseKeys,
    Set<String> selectionKeys
   )
@@ -195,7 +195,7 @@ class JobReqs
   public static JobReqs
   defaultJobReqs() 
   {
-    return (new JobReqs(50, 0, 2.5f, 134217728, 67108864, 
+    return (new JobReqs(50, 0, 2.5f, 134217728L, 67108864L, 
 			new HashSet<String>(), new HashSet<String>()));
   }
 
