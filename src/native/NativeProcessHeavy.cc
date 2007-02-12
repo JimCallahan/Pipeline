@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cc,v 1.4 2007/02/07 09:21:43 jim Exp $
+// $Id: NativeProcessHeavy.cc,v 1.5 2007/02/12 19:19:05 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -121,6 +121,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_writeToStdIn
   size_t bytes = write(stdin_fd, input, strlen(input));
   if(bytes == -1) {
     sprintf(msg, "write to child STDIN failed: %s", strerror(errno));
+    env->ReleaseStringUTFChars(jinput, input);
     env->ThrowNew(IOException, msg);
     return -1;
   }
@@ -212,8 +213,9 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 (
  JNIEnv *env, 
  jobject obj, 
- jstring user,             /* IN: the user to impersonate (or NULL) */                   
- jcharArray password,      /* IN: the user's password (or NULL) */     
+ jstring juser,            /* IN: the user to impersonate (or NULL) */ 
+ jstring jdomain,          /* IN: the domain of the user to impersonate (or NULL) */
+ jcharArray jpassword,     /* IN: the user's password (or NULL) */     
  jobjectArray jcmdarray,   /* IN: command[0] and arguments[1+] */ 		  
  jobjectArray jenvp,	   /* IN: environmental variable name=value pairs */  
  jstring jdir,		   /* IN: the working directory */     
@@ -312,11 +314,13 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
       struct stat buf;
       if(stat(dir, &buf) == -1) {
 	sprintf(msg, "stat failed for \"%s\": %s", dir, strerror(errno));
+	env->ReleaseStringUTFChars(jdir, dir);
 	env->ThrowNew(IOException, msg);
 	return -1;
       }
       else if(!S_ISDIR(buf.st_mode)) {
 	sprintf(msg, "illegal working directory \"%s\"", dir);
+	env->ReleaseStringUTFChars(jdir, dir);
 	env->ThrowNew(IOException, msg);
 	return -1;
       }
@@ -325,6 +329,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       outFile = env->GetStringUTFChars(joutfile, 0);      
       if((outFile == NULL) || (strlen(outFile) == 0)) {
+	env->ReleaseStringUTFChars(jdir, dir);
 	env->ThrowNew(IOException,"empty STDOUT output file");
 	return -1;
       }    
@@ -333,6 +338,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       errFile = env->GetStringUTFChars(jerrfile, 0);      
       if((errFile == NULL) || (strlen(errFile) == 0)) {
+	env->ReleaseStringUTFChars(jdir, dir);
+	env->ReleaseStringUTFChars(joutfile, outFile);
 	env->ThrowNew(IOException,"empty STDERR output file");
 	return -1;
       }    
@@ -341,6 +348,9 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       jsize len = env->GetArrayLength(jcmdarray);
       if(len == 0) {
+	env->ReleaseStringUTFChars(jdir, dir);
+	env->ReleaseStringUTFChars(joutfile, outFile);
+	env->ReleaseStringUTFChars(jerrfile, errFile);
 	env->ThrowNew(IOException, "empty command arguments array");
 	return -1;
       }
@@ -376,6 +386,21 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
   /* create a pipe to communicate with the child process STDIN */ 
   int pipeIn[2];
   if(pipe(pipeIn) == -1) {
+    {
+      env->ReleaseStringUTFChars(jdir, dir);
+      env->ReleaseStringUTFChars(joutfile, outFile);
+      env->ReleaseStringUTFChars(jerrfile, errFile);
+      
+      jsize i;
+      for(i=0; i<envsize; i++) 
+	free(envp[i]);
+      delete[] envp;
+      
+      for(i=0; i<cmdsize; i++) 
+	free(cmdarray[i]);
+      delete[] cmdarray;
+    }
+
     sprintf(msg, "unable to create the STDIN pipe: %s", dir, strerror(errno));
     env->ThrowNew(IOException, msg);
     return -1;
@@ -387,6 +412,21 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     switch(pid) {
     case -1:  
       /* failure */ 
+      {
+	env->ReleaseStringUTFChars(jdir, dir);
+	env->ReleaseStringUTFChars(joutfile, outFile);
+	env->ReleaseStringUTFChars(jerrfile, errFile);
+	
+	jsize i;
+	for(i=0; i<envsize; i++) 
+	  free(envp[i]);
+	delete[] envp;
+	
+	for(i=0; i<cmdsize; i++) 
+	  free(cmdarray[i]);
+	delete[] cmdarray;
+      }
+
       sprintf(msg, "unable to fork thread for \"%s\": %s\n", cmdarray[0]);
       env->ThrowNew(IOException, msg);
       return -1;
@@ -436,8 +476,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	  if(open(outFile, O_CREAT|O_WRONLY|O_TRUNC, 00644) != 1) {
 	    sprintf(msg, "unable to redirect the STDOUT to the output file (%s)!", 
 		    outFile, strerror(errno));
-	    env->ThrowNew(IOException, msg);
-	    return -1;
+	    perror(msg);
+	    exit(EXIT_FAILURE);    
 	  }
 	  
 	  /* close the default STDERR */ 
@@ -453,8 +493,8 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 	  if(open(errFile, O_CREAT|O_WRONLY|O_TRUNC, 00644) != 2) {
 	    sprintf(msg, "unable to redirect the STDERR to the output file (%s)!", 
 		    errFile, strerror(errno));
-	    env->ThrowNew(IOException, msg);
-	    return -1;
+	    perror(msg);
+	    exit(EXIT_FAILURE);    
 	  }
 	}
   

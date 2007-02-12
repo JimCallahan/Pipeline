@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.java,v 1.6 2007/02/07 21:07:24 jim Exp $
+// $Id: NativeProcessHeavy.java,v 1.7 2007/02/12 19:19:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -144,6 +144,9 @@ class NativeProcessHeavy
    * @param user
    *   The username which will own the OS level subprocess.
    * 
+   * @param domain
+   *   The Windows domain of the user which will own the OS level subprocess.
+   * 
    * @param password
    *   The encrypted Windows password for the user.
    */ 
@@ -151,17 +154,23 @@ class NativeProcessHeavy
   authorizeOnWindows
   (
    String user, 
+   String domain, 
    String password
   ) 
   {
     if((user == null) || PackageInfo.sUser.equals(user)) 
       return; 
 
+    if(domain == null) 
+      throw new IllegalArgumentException
+	("The Windows domain cannot be (null) when impersonating another user!");
+
     if((password == null) || (password.length() == 0)) 
       throw new IllegalArgumentException
 	("No encrypted password was supplied!");
 
     pSubstituteUser     = user;
+    pSubstituteDomain   = domain; 
     pSubstitutePassword = password; 
   }
  
@@ -334,6 +343,7 @@ class NativeProcessHeavy
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   C O N T R O L                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -399,8 +409,9 @@ class NativeProcessHeavy
  	  }
 
  	  // DEBUG 
- 	  //System.out.print("Encrypted = " + pSubstitutePassword + "\n");
- 	  //System.out.print("Password = " + String.valueOf(dpassword) + "\n");
+ 	  System.out.print("(J) User = " + pSubstituteUser + "\n");
+ 	  System.out.print("(J) Encrypted = " + pSubstitutePassword + "\n");
+ 	  System.out.print("(J) Password = " + String.valueOf(dpassword) + "\n");
  	  // DEBUG 
  	}
  	catch(Exception ex) {
@@ -409,7 +420,8 @@ class NativeProcessHeavy
       }
     }
 
-    return execNativeHeavy(pSubstituteUser, dpassword, pCmd, pEnv, pWorkDir.toString(), 
+    return execNativeHeavy(pSubstituteUser, pSubstituteDomain, dpassword, 
+			   pCmd, pEnv, pWorkDir.toString(), 
 			   pStdOutFile.toString(), pStdErrFile.toString());
   }
 
@@ -539,6 +551,10 @@ class NativeProcessHeavy
    *   The user to impersonate or 
    *   <CODE>null</CODE> to run as current user.
    * 
+   * @param domain
+   *   The domain of the user to impersonate or 
+   *   <CODE>null</CODE> to run as current user.
+   * 
    * @param password
    *   The user's Windows password or 
    *   <CODE>null</CODE> to run as current user.
@@ -571,6 +587,7 @@ class NativeProcessHeavy
   execNativeHeavy
   (
    String user, 
+   String domain, 
    char[] password,
    String[] cmd, 
    String[] env, 
@@ -592,6 +609,12 @@ class NativeProcessHeavy
    * If <CODE>null</CODE>, the process is run as the current user directly. 
    */ 
   private String  pSubstituteUser;  
+
+  /**
+   * Name of the Windows domain to run the process under using CreateProcessAsUser().
+   * If <CODE>null</CODE>, the process is run as the current user directly. 
+   */ 
+  private String  pSubstituteDomain;  
 
   /**
    * The encrypted Windows password for the user which will own the OS level process or 

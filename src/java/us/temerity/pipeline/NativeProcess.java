@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.12 2007/02/07 21:07:23 jim Exp $
+// $Id: NativeProcess.java,v 1.13 2007/02/12 19:19:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,6 +40,9 @@ interface NativeProcess
    * @param user
    *   The username which will own the OS level subprocess.
    * 
+   * @param domain
+   *   The Windows domain of the user which will own the OS level subprocess.
+   * 
    * @param password
    *   The encrypted Windows password for the user.
    */ 
@@ -47,6 +50,7 @@ interface NativeProcess
   authorizeOnWindows
   (
    String user, 
+   String domain, 
    String password
   );
 

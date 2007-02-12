@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessHeavyApp.java,v 1.2 2006/12/05 18:21:56 jim Exp $
+// $Id: TestNativeProcessHeavyApp.java,v 1.3 2007/02/12 19:19:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -53,28 +53,36 @@ class TestNativeProcessHeavyApp
   {
     boolean success = false;
     try {
-      LogMgr.getInstance().setLevels(LogMgr.Level.Finest);
+      LogMgr.getInstance().setLevels(LogMgr.Level.Info);
+
+      if(argv.length < 4) 
+	throw new IllegalArgumentException
+	  ("usage: pltestheavy user domain encrypted-password program [args ...]");
+
+      String user   = argv[0];
+      String domain = argv[1];
+      String epwd   = argv[2];
+      String prog   = argv[3];
 
       ArrayList<String> args = new ArrayList<String>();
-      int wk;
-      for(wk=1; wk<argv.length; wk++) 
-	args.add(argv[wk]);
+      {
+	int wk;
+	for(wk=4; wk<argv.length; wk++) 
+	  args.add(argv[wk]);
+      }
 
       TreeMap<String,String> env = new TreeMap<String,String>(System.getenv());
-//       env.put("PATH", "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\system32\\WBEM" + 
-// 	      ";C:\\Progra~1\\Alias\\Maya7.0\\bin");
 
       File dir = PackageInfo.sTempPath.toFile(); 
       
       File outFile = File.createTempFile("pltestheavy-output.", ".tmp", dir); 
-      //FileCleaner.add(outFile);
-      
       File errFile = File.createTempFile("pltestheavy-errors.", ".tmp", dir);
-      //FileCleaner.add(errFile);
 
       SubProcessHeavy proc = 
-	new SubProcessHeavy("TestHeavy", argv[0], args, 
-			    env, dir, outFile, errFile);
+	new SubProcessHeavy(user, "TestHeavy", prog, args, env, dir, outFile, errFile);
+      
+      proc.authorizeOnWindows(domain, epwd);
+      
       proc.start();
       proc.join();
 
@@ -89,7 +97,15 @@ class TestNativeProcessHeavyApp
       LogMgr.getInstance().cleanup();
     }
 
-    System.exit(success ? 0 : 1);
+    while(true) {
+      try {
+	Thread.sleep(10000);
+      }
+      catch(Exception ex) {
+      }
+    }
+
+//     System.exit(success ? 0 : 1);
   }
 
   /*----------------------------------------------------------------------------------------*/

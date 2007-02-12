@@ -38,7 +38,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_signalNative
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
   (JNIEnv *, jobject, 
-   jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
+   jstring, jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
 
 #ifdef __cplusplus
 }
