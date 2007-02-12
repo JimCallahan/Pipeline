@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.10 2007/02/07 21:21:24 jim Exp $
+// $Id: QueueJob.java,v 1.11 2007/02/12 19:20:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -46,6 +46,10 @@ class QueueJob
    * @param sourceIDs
    *   The unique identifiers of the upstream jobs which must be executed before this job.
    * 
+   * @param domain
+   *   The Windows domain of the user which will own the OS level process or 
+   *   <CODE>null</CODE> if not required.
+   *
    * @param password
    *   The encrypted Windows password for the user which will own the OS level process or 
    *   <CODE>null</CODE> if not required.
@@ -57,6 +61,7 @@ class QueueJob
    BaseAction action, 
    JobReqs jreqs,
    TreeSet<Long> sourceIDs, 
+   String domain, 
    String password
   ) 
   {
@@ -76,6 +81,7 @@ class QueueJob
     if(sourceIDs != null) 
       pSourceJobIDs.addAll(sourceIDs);
 
+    pDomain   = domain; 
     pPassword = password; 
   }
 
@@ -142,6 +148,16 @@ class QueueJob
 
   
   /**
+   * Get the Windows domain of the user which will own the OS level process or 
+   * <CODE>null</CODE> if not required.
+   */ 
+  public String
+  getDomain() 
+  {
+    return pDomain;
+  }
+  
+  /**
    * Get the encrypted Windows password for the user which will own the OS level process or 
    * <CODE>null</CODE> if not required.
    */ 
@@ -179,6 +195,8 @@ class QueueJob
 
     out.writeObject(pJobReqs);
     out.writeObject(pSourceJobIDs);
+
+    out.writeObject(pDomain);
     out.writeObject(pPassword);
   }
 
@@ -218,6 +236,8 @@ class QueueJob
 
     pJobReqs = (JobReqs) in.readObject();
     pSourceJobIDs = (TreeSet<Long>) in.readObject();
+
+    pDomain   = (String) in.readObject();
     pPassword = (String) in.readObject();
   }
 
@@ -241,6 +261,8 @@ class QueueJob
     if(!pSourceJobIDs.isEmpty())
       encoder.encode("SourceJobIDs", pSourceJobIDs);
 
+    if(pDomain != null) 
+      encoder.encode("Domain", pDomain);
     if(pPassword != null) 
       encoder.encode("Password", pPassword);
   }
@@ -281,6 +303,7 @@ class QueueJob
     else 
       pSourceJobIDs = new TreeSet<Long>();
 
+    pDomain   = (String) decoder.decode("Domain");
     pPassword = (String) decoder.decode("Password");
   }
   
@@ -316,6 +339,12 @@ class QueueJob
    * The unique identifiers of the upstream jobs which must be executed before this job.
    */
   private TreeSet<Long>  pSourceJobIDs; 
+
+  /**
+   * The Windows domain of the user which will own the OS level process or 
+   * <CODE>null</CODE> if not required.
+   */  
+  private String pDomain; 
 
   /**
    * The encrypted Windows password for the user which will own the OS level process or 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.91 2007/02/07 21:12:24 jim Exp $
+// $Id: MasterMgrClient.java,v 1.92 2007/02/12 19:20:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3010,6 +3010,9 @@ class MasterMgrClient
    * This is the reason that the password parameter is not a String type, which would be 
    * automatically cached by the Java Runtime.
    * 
+   * @param domain
+   *   The Windows domain of the user. 
+   * 
    * @param password
    *   The user's Windows password.
    * 
@@ -3019,6 +3022,7 @@ class MasterMgrClient
   public synchronized void
   authorizeOnWindows
   (
+   String domain, 
    char[] password
   ) 
     throws PipelineException  
@@ -3088,7 +3092,7 @@ class MasterMgrClient
 	throw new PipelineException("Unable to encrypt password!", ex); 
       }
       
-      MiscAuthorizeOnWindowsReq req = new MiscAuthorizeOnWindowsReq(epassword);
+      MiscAuthorizeOnWindowsReq req = new MiscAuthorizeOnWindowsReq(domain, epassword);
      
       Object obj = performTransaction(MasterRequest.MiscAuthorizeOnWindows, req); 
       handleSimpleResponse(obj);

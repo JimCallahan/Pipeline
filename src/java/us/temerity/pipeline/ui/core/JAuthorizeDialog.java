@@ -1,4 +1,4 @@
-// $Id: JAuthorizeDialog.java,v 1.1 2007/02/07 21:19:36 jim Exp $
+// $Id: JAuthorizeDialog.java,v 1.2 2007/02/12 19:20:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -51,6 +51,15 @@ class JAuthorizeDialog
         JPanel vpanel = (JPanel) comps[1];
 	body = (Box) comps[2];
 	
+	pDomainField = 
+	  UIFactory.createTitledEditableTextField
+	  (tpanel, "Windows Domain:", sTSize, 
+	   vpanel, ".", sVSize, 
+	   "Provide the Windows Domain used to authorize Pipeline to run jobs on your " + 
+	   "behalf on Windows based Job Servers.");
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
 	pPasswordField = 
 	  UIFactory.createTitledPasswordField
 	  (tpanel, "Windows Password:", sTSize, 
@@ -58,7 +67,7 @@ class JAuthorizeDialog
 	   "Provide your Windows password to authorize Pipeline to run jobs on your behalf " +
 	   "on Windows based Job Servers.");
 
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	pConfirmField = 
 	  UIFactory.createTitledPasswordField
@@ -82,7 +91,16 @@ class JAuthorizeDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current password. <P> 
+   * Get the Windows domain.
+   */ 
+  public String
+  getDomain() 
+  {
+    return pDomainField.getText(); 
+  }
+
+  /**
+   * Get the last supplied Windows password. <P> 
    */ 
   public char[] 
   getPassword() 
@@ -188,6 +206,11 @@ class JAuthorizeDialog
    * Last successfully entered password.
    */
   private char[]  pPassword;
+
+  /**
+   * Windows domain field.
+   */
+  private JTextField  pDomainField; 
 
   /**
    * Windows password fields.

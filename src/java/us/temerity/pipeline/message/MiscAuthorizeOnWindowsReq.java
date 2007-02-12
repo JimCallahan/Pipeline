@@ -1,4 +1,4 @@
-// $Id: MiscAuthorizeOnWindowsReq.java,v 1.1 2007/02/07 21:14:38 jim Exp $
+// $Id: MiscAuthorizeOnWindowsReq.java,v 1.2 2007/02/12 19:20:49 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,16 +28,25 @@ class MiscAuthorizeOnWindowsReq
   /** 
    * Constructs a new request.
    * 
+   * @param domain
+   *   The Windows domain.
+   * 
    * @param password
    *   The encrypted Windows password.
    */
   public
   MiscAuthorizeOnWindowsReq
   (
+   String domain,
    String password
   )
   {
     super();
+
+    if(domain == null) 
+      throw new IllegalArgumentException
+	("The Windows domain cannot be (null)!");
+    pDomain = domain; 
 
     if(password == null) 
       throw new IllegalArgumentException
@@ -52,13 +61,20 @@ class MiscAuthorizeOnWindowsReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Gets the Windows domain.
+   */ 
+  public String
+  getDomain() 
+  {
+    return pDomain; 
+  }
+
+  /**
    * Gets the encrypted Windows password.
    */ 
   public String
   getPassword() 
   {
-    if(pPassword == null)
-      throw new IllegalStateException(); 
     return pPassword;
   }
 
@@ -75,6 +91,11 @@ class MiscAuthorizeOnWindowsReq
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The Windows domain. 
+   */
+  private String  pDomain; 
 
   /**
    * The encrypted Windows password.

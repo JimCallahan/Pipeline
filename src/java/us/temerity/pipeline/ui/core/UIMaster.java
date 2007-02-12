@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.54 2007/02/07 21:18:57 jim Exp $
+// $Id: UIMaster.java,v 1.55 2007/02/12 19:20:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2047,10 +2047,11 @@ class UIMaster
   {
     pAuthorizeDialog.setVisible(true);
     if(pAuthorizeDialog.wasConfirmed()) {
+      String domain = pAuthorizeDialog.getDomain();
       char[] pw = pAuthorizeDialog.getPassword();
-      if(pw != null) {
+      if((domain != null) && (pw != null)) {
 	try {
-	  getMasterMgrClient().authorizeOnWindows(pw);
+	  getMasterMgrClient().authorizeOnWindows(domain, pw); 
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
