@@ -1,78 +1,7 @@
-// $Id: NativeFileSys.cpp,v 1.5 2007/02/11 17:44:11 jim Exp $
+// $Id: NativeFileSys.cpp,v 1.6 2007/02/12 19:17:47 jim Exp $
 
 #include "stdafx.h"
-
  
-/* Change file access permissions. */
-extern "C" 
-JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
-(
- JNIEnv *env, 
- jclass cls, 
- jint mode,      /* IN: the access mode bitmask */ 
- jstring jfile   /* IN: the fully resolved path to the file to change */ 
-)
-{
-  // IS THERE A .COM WAY TO DO THIS WHICH HAS MORE FUNCTIONALITY?
-
-  /* exception initialization */ 
-  char msg[2048];
-  jclass IOException = env->FindClass("java/io/IOException");
-  if(IOException == 0) {
-    errno = EINVAL; 
-    perror("NativeFileSys.chmodNative(), unable to lookup \"java/lang/IOException\"");
-    return;
-  }
-
-  /* repackage the arguments */ 
-  const char* file = env->GetStringUTFChars(jfile, 0);
-  if((file == NULL) || (strlen(file) == 0)) {
-    env->ThrowNew(IOException,"empty file argument");
-    return;
-  }
-  
-  /* convert from Unix to Windows mode */ 
-  int wmode = 0;
-  if(mode & 0111) 
-    wmode &= _S_IREAD; 
-  if(mode & 0222) 
-    wmode &= _S_IWRITE;
-
-  /* change the access permissions */ 
-  if(_chmod(file, wmode) == -1) {
-    sprintf(msg, "failed to change the permissions of file (%s): %s\n", 
-                file, strerror(errno));
-    env->ReleaseStringUTFChars(jfile, file); 
-    env->ThrowNew(IOException, msg);  
-    return;    
-  }
-
-  env->ReleaseStringUTFChars(jfile, file); 
-}
- 
-/* Create a symbolic link which points to the given file. */
-extern "C" 
-JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
-(
- JNIEnv *env, 
- jclass cls, 
- jstring jfile, /* IN: the relative or absolute path to the file pointed to by the symlink */
- jstring jlink  /* IN: the fully resolved path of the symlink to create */
-)
-{
-  /* exception initialization */ 
-  jclass IOException = env->FindClass("java/io/IOException");
-  if(IOException == 0) {
-    errno = EINVAL;
-    perror("NativeFileSys.symlinkNative(), unable to lookup \"java/lang/IOException\"");
-    return;
-  }
-
-  env->ThrowNew(IOException, "Windows NativeFileSys.symlinkNative() not implementable!");  
-}
-
 /* Determine the canonicalized absolute pathname of the given path. */  
 extern "C" 
 JNIEXPORT jstring

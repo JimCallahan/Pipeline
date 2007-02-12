@@ -47,14 +47,6 @@ void throwWindowsIOException(JNIEnv *env, jclass IOException, LPTSTR lpszFunctio
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
- * Method:    chmodNative
- * Signature: (ILjava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
-  (JNIEnv *, jclass, jint, jstring);
-
-/*
- * Class:     us_temerity_pipeline_NativeFileSys
  * Method:    realpathNative
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */

@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.14 2006/12/14 19:01:31 jim Exp $
+// $Id: NativeFileSys.java,v 1.15 2007/02/12 19:17:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -26,10 +26,7 @@ class NativeFileSys
    * 
    * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.<P>
    * 
-   * Only limited support for this operation is provided by the Windows operating system which
-   * only supports a single Read and/or Write state.  Windows Read mode will be set if any 
-   * of the User, Group or Other Read bits are set in the <CODE>mode</CODE> argument.  
-   * Similarly, the Windows Write mode will be set if any of the Write mode bits are set.
+   * This method is not supported by the Windows operating system.
    *
    * @param mode 
    *   The access mode bitmask.
@@ -52,8 +49,17 @@ class NativeFileSys
       throw new IOException
 	("The file argument (" + file + ") must be an absolute path!");
 
-    loadLibrary();
-    chmodNative(mode, file.getPath());
+    switch(PackageInfo.sOsType) {
+    case Unix: 
+    case MacOS:
+      loadLibrary();
+      chmodNative(mode, file.getPath());
+      break;
+
+    case Windows:
+      throw new IOException
+	("Not supported on Windows systems!");
+    }
   }
 
   /**
