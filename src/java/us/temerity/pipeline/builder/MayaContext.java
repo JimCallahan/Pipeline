@@ -93,22 +93,22 @@ class MayaContext
     return pTimeUnit;
   }
 
-  public static Collection<String> 
+  public static List<String> 
   getAngularUnits()
   {
-    return Collections.unmodifiableCollection(sAngularUnits);
+    return Collections.unmodifiableList(sAngularUnits);
   }
 
-  public static Collection<String> 
+  public static List<String> 
   getTimeUnits()
   {
-    return Collections.unmodifiableCollection(sTimeUnits);
+    return Collections.unmodifiableList(sTimeUnits);
   }
 
-  public static Collection<String> 
+  public static List<String> 
   getLinearUnits()
   {
-    return Collections.unmodifiableCollection(sLinearUnits);
+    return Collections.unmodifiableList(sLinearUnits);
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -165,9 +165,9 @@ class MayaContext
 
   private static final long serialVersionUID = 8729924189985169207L;
 
-  private static TreeSet<String> sAngularUnits = new TreeSet<String>();
-  private static TreeSet<String> sLinearUnits = new TreeSet<String>();
-  private static TreeSet<String> sTimeUnits = new TreeSet<String>();
+  private static ArrayList<String> sAngularUnits = new ArrayList<String>();
+  private static ArrayList<String> sLinearUnits = new ArrayList<String>();
+  private static ArrayList<String> sTimeUnits = new ArrayList<String>();
   {
     sAngularUnits.add("degrees");
     sAngularUnits.add("radians");
