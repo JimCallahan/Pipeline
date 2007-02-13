@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.17 2007/02/13 04:57:26 jim Exp $
+// $Id: UIFactory.java,v 1.18 2007/02/13 05:17:03 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3954,19 +3954,16 @@ class UIFactory
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Creates a vertical spacer panel in the given container.<P>
+   * Creates a panel that can be used to fill out the bottom of a GUI panel.<P>
    * 
-   * The spacer will have the minimum and preferred width that is passed in.
+   * The filler will have the minimum and preferred width that is passed in.
    * 
-   * @param c
-   * 	The Container the spacer will be added to.
    * @param width
    * 	The Preferred width of the component.
    */
-  public static void
-  createVerticalSpacer
+  public static JPanel
+  createFiller
   (
-    Container c,
     int width
   )
   {
@@ -3977,34 +3974,23 @@ class UIFactory
     spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     spanel.setPreferredSize(new Dimension(width, 7));
 
-    c.add(spanel);
+    return spanel;
   }
   
   /**
-   * Creates a horizonal spacer panel in the given container.<P>
-   * 
-   * The spacer will have the minimum and preferred height that is passed in.
-   * 
-   * @param c
-   * 	The Container the spacer will be added to.
-   * @param height
-   * 	The Preferred width of the component.
+   * Creates a sidebar spacer that will create a horizontally 7 pixel indentation.<P>
    */
-  public static void
-  createHorizontalSpacer
-  (
-    Container c,
-    int height
-  )
+  public static JPanel
+  createSidebar()
   {
     JPanel spanel = new JPanel();
     spanel.setName("Spacer");
 
-    spanel.setMinimumSize(new Dimension(7, height));
-    spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-    spanel.setPreferredSize(new Dimension(7, height));
+    spanel.setMinimumSize(new Dimension(7, 0));
+    spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+    spanel.setPreferredSize(new Dimension(7, 0));
 
-    c.add(spanel);
+    return spanel;
   }
 
 
