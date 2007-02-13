@@ -1,4 +1,4 @@
-// $Id: JobMgrWinService.java,v 1.1 2007/01/29 20:51:42 jim Exp $
+// $Id: JobMgrWinService.java,v 1.2 2007/02/13 02:49:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -30,9 +30,7 @@ class JobMgrWinService
    */ 
   public
   JobMgrWinService()
-  {
-//     pShutdown = new AtomicBoolean(false);
-  }
+  {}
 
   
   /*----------------------------------------------------------------------------------------*/
