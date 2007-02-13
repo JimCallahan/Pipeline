@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.15 2007/02/08 01:49:32 jim Exp $
+// $Id: UIFactory.java,v 1.16 2007/02/13 03:25:19 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1108,9 +1108,10 @@ class UIFactory
     JUtilContextField field = new JUtilContextField(parent);
     field.setValue(value);
 
-    Dimension size = new Dimension(width, 19);
+    int maxSize = 19*3 + 2*3;
+    Dimension size = new Dimension(width, maxSize);
     field.setMinimumSize(size);
-    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
     field.setPreferredSize(size);
 
     return field;
@@ -1162,9 +1163,10 @@ class UIFactory
     JMayaContextField field = new JMayaContextField(parent);
     field.setValue(value);
 
-    Dimension size = new Dimension(width, 19);
+    int maxSize = 19*3 + 2*3;
+    Dimension size = new Dimension(width, maxSize);
     field.setMinimumSize(size);
-    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
     field.setPreferredSize(size);
 
     return field;
@@ -1189,6 +1191,59 @@ class UIFactory
     throws PipelineException 
   {
     return createMayaContextField(value, null, width);
+  }
+  
+  /**
+   * Create a MultiEnum field.
+   * 
+   * @param values
+   *   The full set of values in the enum.
+   * 
+   * @param initialValues
+   * 	The values that start out with a <code>true</code> value.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * @throws PipelineException 
+   */ 
+  public static JMultiEnumField
+  createMultiEnumField
+  (
+   Collection<String> values,
+   Collection<String> initialValues,
+   int width
+  ) 
+  throws PipelineException 
+  {
+    JMultiEnumField field = new JMultiEnumField(values, initialValues);
+    int maxSize = 19*values.size() + (values.size() -1)*3;
+    Dimension size = new Dimension(width, maxSize);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
+    field.setPreferredSize(size);
+    
+    return field;
+  }
+  
+  /**
+   * Create a MultiEnum field, with no initial values.
+   * 
+   * @param values
+   *   The full set of values in the enum.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * @throws PipelineException 
+   */ 
+  public static JMultiEnumField
+  createMultiEnumField
+  (
+   Collection<String> values,
+   int width
+  ) 
+  throws PipelineException 
+  {
+    return createMultiEnumField(values, null, width);
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -3385,10 +3440,13 @@ class UIFactory
   ) 
     throws PipelineException
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
-
     JUtilContextField field = createUtilContextField(value, parent, vwidth);
     vpanel.add(field);
+    tpanel.add(createFixedLabel(title + "->user:", twidth, JLabel.RIGHT, "The user being operated on"));
+    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+    tpanel.add(createFixedLabel(title + "->view:", twidth, JLabel.RIGHT, "The user's working area being operated on"));
+    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+    tpanel.add(createFixedLabel(title + "->toolset:", twidth, JLabel.RIGHT, "The toolset being used."));
 
     return field;
   }
@@ -3519,11 +3577,15 @@ class UIFactory
   ) 
     throws PipelineException
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
-
     JMayaContextField field = createMayaContextField(value, parent, vwidth);
     vpanel.add(field);
 
+    tpanel.add(createFixedLabel(title + "->angular:", twidth, JLabel.RIGHT, "The angular units"));
+    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+    tpanel.add(createFixedLabel(title + "->linear:", twidth, JLabel.RIGHT, "The linear units"));
+    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+    tpanel.add(createFixedLabel(title + "->time:", twidth, JLabel.RIGHT, "The time units"));
+    
     return field;
   }
   
@@ -3608,6 +3670,142 @@ class UIFactory
       						  value, null, vwidth, 
       						  null);
   }
+  
+  /**
+   * @param tpanel
+  *   The titles panel.
+  *  
+  * @param title
+  *   The title text.
+  * 
+  * @param twidth
+  *   The minimum and preferred width of the title.
+  * 
+  * @param vpanel
+  *   The values panel.
+  * 
+  * @param values
+  *   All the values of the param.
+  *   
+  * @param initialValues
+  * 	The values initially set to true.
+  *   
+  * @param vwidth
+  *   The minimum and preferred width of the identifier field.
+  * 
+  * @param tooltip
+  *   The tooltip text.
+  * @return
+  * @throws PipelineException
+  */
+ public static JMultiEnumField
+ createTitledMultiEnumField
+ (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Collection<String> values,
+   Collection<String> initialValues,
+   int vwidth,
+   String tooltip
+ ) 
+ throws PipelineException
+ {
+   JMultiEnumField field = createMultiEnumField(values, initialValues, vwidth);
+   vpanel.add(field);
+   
+   // Note this can't be null, since the constructor above would have caught that.
+   // so no checks are necessary here,  swell.
+   int size = values.size();
+   ArrayList<String> list = new ArrayList<String>(values);
+   Collections.sort(list);
+   for (int i = 0; i < size; i++)
+   {
+     tpanel.add(createFixedLabel(title + "->" + list.get(i) + ":", twidth, JLabel.RIGHT, 
+       "Multi-Enum Param (" +title +").  Field name (" + list.get(i) + ")" ));
+     if (i != (size -1))
+       tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+   }
+   return field;
+ }
+ 
+ /**
+  * @param tpanel
+ *   The titles panel.
+ *  
+ * @param title
+ *   The title text.
+ * 
+ * @param twidth
+ *   The minimum and preferred width of the title.
+ * 
+ * @param vpanel
+ *   The values panel.
+ * 
+ * @param values
+ *   All the values of the param.
+ *   
+ * @param vwidth
+ *   The minimum and preferred width of the identifier field.
+ * 
+ * @param tooltip
+ *   The tooltip text.
+ * @return
+ * @throws PipelineException
+ */
+public static JMultiEnumField
+createTitledMultiEnumField
+(
+  JPanel tpanel, 
+  String title,  
+  int twidth,
+  JPanel vpanel, 
+  Collection<String> values,
+  int vwidth,
+  String tooltip
+) 
+throws PipelineException
+{
+  return createTitledMultiEnumField(tpanel, title, twidth, vpanel, values, null, vwidth, tooltip);
+}
+
+/**
+ * @param tpanel
+*   The titles panel.
+*  
+* @param title
+*   The title text.
+* 
+* @param twidth
+*   The minimum and preferred width of the title.
+* 
+* @param vpanel
+*   The values panel.
+* 
+* @param values
+*   All the values of the param.
+*   
+* @param vwidth
+*   The minimum and preferred width of the identifier field.
+*   
+* @return
+* @throws PipelineException
+*/
+public static JMultiEnumField
+createTitledMultiEnumField
+(
+ JPanel tpanel, 
+ String title,  
+ int twidth,
+ JPanel vpanel, 
+ Collection<String> values,
+ int vwidth
+) 
+throws PipelineException
+{
+ return createTitledMultiEnumField(tpanel, title, twidth, vpanel, values, null, vwidth, null);
+}
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3744,6 +3942,62 @@ class UIFactory
     box.add(vbox);
 
     return lst;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Creates a vertical spacer panel in the given container.<P>
+   * 
+   * The spacer will have the minimum and preferred width that is passed in.
+   * 
+   * @param c
+   * 	The Container the spacer will be added to.
+   * @param width
+   * 	The Preferred width of the component.
+   */
+  public static void
+  createVerticalSpacer
+  (
+    Container c,
+    int width
+  )
+  {
+    JPanel spanel = new JPanel();
+    spanel.setName("Spacer");
+
+    spanel.setMinimumSize(new Dimension(width, 7));
+    spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    spanel.setPreferredSize(new Dimension(width, 7));
+
+    c.add(spanel);
+  }
+  
+  /**
+   * Creates a horizonal spacer panel in the given container.<P>
+   * 
+   * The spacer will have the minimum and preferred height that is passed in.
+   * 
+   * @param c
+   * 	The Container the spacer will be added to.
+   * @param height
+   * 	The Preferred width of the component.
+   */
+  public static void
+  createHorizontalSpacer
+  (
+    Container c,
+    int height
+  )
+  {
+    JPanel spanel = new JPanel();
+    spanel.setName("Spacer");
+
+    spanel.setMinimumSize(new Dimension(7, height));
+    spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    spanel.setPreferredSize(new Dimension(7, height));
+
+    c.add(spanel);
   }
 
 
