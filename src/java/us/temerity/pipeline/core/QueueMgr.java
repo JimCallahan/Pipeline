@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.83 2006/12/20 15:10:44 jim Exp $
+// $Id: QueueMgr.java,v 1.84 2007/02/13 16:04:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3927,7 +3927,7 @@ class QueueMgr
       timer.resume();
       
       pJobGroups.remove(groupID);
-      pJobCounters.initCounters(timer, group);
+      pJobCounters.removeCounters(timer, group);
     }
 
     /* post-delete group task */ 
