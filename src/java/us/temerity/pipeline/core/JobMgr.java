@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.37 2007/02/13 02:47:32 jim Exp $
+// $Id: JobMgr.java,v 1.38 2007/02/13 16:05:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -271,8 +271,12 @@ class JobMgr
       if(!scratch.mkdirs()) 
 	throw new IOException
 	  ("Unable to create the job directory (" + dir + ")!");
-	
-      NativeFileSys.chmod(0777, scratch);	      
+
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case MacOS:
+        NativeFileSys.chmod(0777, scratch);
+      }
     }
     catch(IOException ex) {
       return new FailureRsp(timer, ex.getMessage());
