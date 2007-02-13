@@ -56,9 +56,9 @@ namespace PipelineJobManager {
           this->serviceInstaller1 = (gcnew System::ServiceProcess::ServiceInstaller());
           // 
           // serviceProcessInstaller1
-          // 
-          this->serviceProcessInstaller1->Password = L"3riamjc";
-          this->serviceProcessInstaller1->Username = L".\\pipeline";
+          //
+          this->serviceProcessInstaller1->Password = nullptr;  //L"xxxx"; 
+          this->serviceProcessInstaller1->Username = nullptr;  //L".\\pipeline";
           // 
           // serviceInstaller1
           // 
