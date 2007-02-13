@@ -1,4 +1,4 @@
-// $Id: JobMgrService.java,v 1.1 2007/01/29 20:51:42 jim Exp $
+// $Id: JobMgrService.java,v 1.2 2007/02/13 02:49:31 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -47,7 +47,7 @@ class JobMgrService
     }
     catch(Exception ex) {
       try {
-	File file = new File("C:\\TEMP\\JobMgrService-OnStart.log"); 
+	File file = new File("C:\\WINDOWS\\Temp\\JobMgrService-OnStart.log"); 
 	if(file.isFile()) 
 	  file.delete();
 	
@@ -77,7 +77,7 @@ class JobMgrService
     }
     catch(Exception ex) {
       try {
-	File file = new File("C:\\TEMP\\JobMgrService-OnStop.log"); 
+	File file = new File("C:\\WINDOWS\\Temp\\JobMgrService-OnStop.log"); 
 	if(file.isFile()) 
 	  file.delete();
 	
