@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.16 2007/02/13 03:25:19 jesse Exp $
+// $Id: UIFactory.java,v 1.17 2007/02/13 04:57:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3424,7 +3424,6 @@ class UIFactory
    * 
    * @param tooltip
    *   The tooltip text.
-   * @throws PipelineException 
    */ 
   public static JUtilContextField
   createTitledUtilContextField
@@ -3442,11 +3441,14 @@ class UIFactory
   {
     JUtilContextField field = createUtilContextField(value, parent, vwidth);
     vpanel.add(field);
-    tpanel.add(createFixedLabel(title + "->user:", twidth, JLabel.RIGHT, "The user being operated on"));
+    tpanel.add(createFixedLabel(title + " User:", twidth, JLabel.RIGHT, 
+                                "The user being operated on"));
     tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + "->view:", twidth, JLabel.RIGHT, "The user's working area being operated on"));
+    tpanel.add(createFixedLabel(title + " View:", twidth, JLabel.RIGHT, 
+                                "The user's working area being operated on"));
     tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + "->toolset:", twidth, JLabel.RIGHT, "The toolset being used."));
+    tpanel.add(createFixedLabel(title + " Toolset:", twidth, JLabel.RIGHT, 
+                                "The toolset being used."));
 
     return field;
   }
@@ -3474,7 +3476,6 @@ class UIFactory
    * 
    * @param tooltip
    *   The tooltip text.
-   * @throws PipelineException 
    */ 
   public static JUtilContextField
   createTitledUtilContextField
@@ -3514,7 +3515,6 @@ class UIFactory
    *   
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
-   * @throws PipelineException 
    */ 
   public static JUtilContextField
   createTitledUtilContextField
@@ -3561,7 +3561,6 @@ class UIFactory
    * 
    * @param tooltip
    *   The tooltip text.
-   * @throws PipelineException 
    */ 
   public static JMayaContextField
   createTitledMayaContextField
@@ -3580,11 +3579,14 @@ class UIFactory
     JMayaContextField field = createMayaContextField(value, parent, vwidth);
     vpanel.add(field);
 
-    tpanel.add(createFixedLabel(title + "->angular:", twidth, JLabel.RIGHT, "The angular units"));
+    tpanel.add(createFixedLabel(title + " Angular:", twidth, JLabel.RIGHT, 
+                                "The angular units"));
     tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + "->linear:", twidth, JLabel.RIGHT, "The linear units"));
+    tpanel.add(createFixedLabel(title + " Linear:", twidth, JLabel.RIGHT, 
+                                "The linear units"));
     tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + "->time:", twidth, JLabel.RIGHT, "The time units"));
+    tpanel.add(createFixedLabel(title + " Time:", twidth, JLabel.RIGHT, 
+                                "The time units"));
     
     return field;
   }
@@ -3612,7 +3614,6 @@ class UIFactory
    * 
    * @param tooltip
    *   The tooltip text.
-   * @throws PipelineException 
    */ 
   public static JMayaContextField
   createTitledMayaContextField
@@ -3652,7 +3653,6 @@ class UIFactory
    *   
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
-   * @throws PipelineException 
    */ 
   public static JMayaContextField
   createTitledMayaContextField
@@ -3673,34 +3673,32 @@ class UIFactory
   
   /**
    * @param tpanel
-  *   The titles panel.
-  *  
-  * @param title
-  *   The title text.
-  * 
-  * @param twidth
-  *   The minimum and preferred width of the title.
-  * 
-  * @param vpanel
-  *   The values panel.
-  * 
-  * @param values
-  *   All the values of the param.
-  *   
-  * @param initialValues
-  * 	The values initially set to true.
-  *   
-  * @param vwidth
-  *   The minimum and preferred width of the identifier field.
-  * 
-  * @param tooltip
-  *   The tooltip text.
-  * @return
-  * @throws PipelineException
-  */
- public static JMultiEnumField
- createTitledMultiEnumField
- (
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   All the values of the param.
+   *   
+   * @param initialValues
+   * 	The values initially set to true.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */
+  public static JMultiEnumField
+  createTitledMultiEnumField
+  (
    JPanel tpanel, 
    String title,  
    int twidth,
@@ -3709,103 +3707,112 @@ class UIFactory
    Collection<String> initialValues,
    int vwidth,
    String tooltip
- ) 
- throws PipelineException
- {
-   JMultiEnumField field = createMultiEnumField(values, initialValues, vwidth);
-   vpanel.add(field);
-   
-   // Note this can't be null, since the constructor above would have caught that.
-   // so no checks are necessary here,  swell.
-   int size = values.size();
-   ArrayList<String> list = new ArrayList<String>(values);
-   Collections.sort(list);
-   for (int i = 0; i < size; i++)
-   {
-     tpanel.add(createFixedLabel(title + "->" + list.get(i) + ":", twidth, JLabel.RIGHT, 
-       "Multi-Enum Param (" +title +").  Field name (" + list.get(i) + ")" ));
-     if (i != (size -1))
-       tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-   }
-   return field;
- }
- 
- /**
-  * @param tpanel
- *   The titles panel.
- *  
- * @param title
- *   The title text.
- * 
- * @param twidth
- *   The minimum and preferred width of the title.
- * 
- * @param vpanel
- *   The values panel.
- * 
- * @param values
- *   All the values of the param.
- *   
- * @param vwidth
- *   The minimum and preferred width of the identifier field.
- * 
- * @param tooltip
- *   The tooltip text.
- * @return
- * @throws PipelineException
- */
-public static JMultiEnumField
-createTitledMultiEnumField
-(
-  JPanel tpanel, 
-  String title,  
-  int twidth,
-  JPanel vpanel, 
-  Collection<String> values,
-  int vwidth,
-  String tooltip
-) 
-throws PipelineException
-{
-  return createTitledMultiEnumField(tpanel, title, twidth, vpanel, values, null, vwidth, tooltip);
-}
+  ) 
+   throws PipelineException
+  {
+    JMultiEnumField field = createMultiEnumField(values, initialValues, vwidth);
+    vpanel.add(field);
+    
+    // Note this can't be null, since the constructor above would have caught that.
+    // so no checks are necessary here,  swell.
+    int size = values.size();
+    ArrayList<String> list = new ArrayList<String>(values);
+    Collections.sort(list);
+    for(int i=0; i<size; i++) {
+      JLabel label = 
+        createFixedLabel(title + "->" + list.get(i) + ":", twidth, JLabel.RIGHT, 
+                         "Multi-Enum Param (" + title + ").  " + 
+                         "Field name (" + list.get(i) + ")");
+      tpanel.add(label); 
+      if (i != (size -1))
+        tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+    }
 
-/**
- * @param tpanel
-*   The titles panel.
-*  
-* @param title
-*   The title text.
-* 
-* @param twidth
-*   The minimum and preferred width of the title.
-* 
-* @param vpanel
-*   The values panel.
-* 
-* @param values
-*   All the values of the param.
-*   
-* @param vwidth
-*   The minimum and preferred width of the identifier field.
-*   
-* @return
-* @throws PipelineException
-*/
-public static JMultiEnumField
-createTitledMultiEnumField
-(
- JPanel tpanel, 
- String title,  
- int twidth,
- JPanel vpanel, 
- Collection<String> values,
- int vwidth
-) 
-throws PipelineException
-{
- return createTitledMultiEnumField(tpanel, title, twidth, vpanel, values, null, vwidth, null);
-}
+    return field;
+  }
+ 
+  /**
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   All the values of the param.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * 
+   * @return
+   * @throws PipelineException
+   */
+  public static JMultiEnumField
+  createTitledMultiEnumField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Collection<String> values,
+   int vwidth,
+   String tooltip
+  ) 
+    throws PipelineException
+  {
+    return createTitledMultiEnumField(tpanel, title, twidth, 
+                                      vpanel, values, null, vwidth, 
+                                      tooltip);
+  }
+
+  /**
+   * @param tpanel
+   *   The titles panel.
+   *  
+   * @param title
+   *   The title text.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   All the values of the param.
+   *   
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   *   
+   * @return
+   * @throws PipelineException
+   */
+  public static JMultiEnumField
+  createTitledMultiEnumField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Collection<String> values,
+   int vwidth
+  ) 
+    throws PipelineException
+  {
+    return createTitledMultiEnumField(tpanel, title, twidth, 
+                                      vpanel, values, null, vwidth, 
+                                      null);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
