@@ -3,8 +3,7 @@ package us.temerity.pipeline.ui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.swing.*;
 
@@ -55,29 +54,31 @@ class JUtilContextField
     throws PipelineException 
   {
     super();
-    Box vBox = new Box(BoxLayout.Y_AXIS);
+    this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    this.setAlignmentY(0.5f);
     
     pAuthorViewMapping = BaseUtil.getWorkingAreas();
     
     pAuthorField = new JCollectionField(pAuthorViewMapping.keySet(), parent);
     
     String author = PackageInfo.sUser;
+    pAuthorField.setSelected(author);
     
-    pViewField = new JCollectionField(pAuthorViewMapping.get(author), parent);
+    TreeSet<String> views = pAuthorViewMapping.get(author);
+    
+    pViewField = new JCollectionField(views, parent);
+    pViewField.setSelected("default");
     
     pToolsetField = new JCollectionField(BaseUtil.getActiveToolsets(), parent);
     pToolsetField.setSelected(BaseUtil.getDefaultToolset());
     
     pAuthorField.addActionListener(this);
     
-    pAuthorField.setSelected(author);
-    
-    vBox.add(pAuthorField);
-    vBox.add(Box.createRigidArea(new Dimension(0, 3)));
-    vBox.add(pViewField);
-    vBox.add(Box.createRigidArea(new Dimension(0, 3)));
-    vBox.add(pToolsetField);
-    this.add(vBox);
+    this.add(pAuthorField);
+    this.add(Box.createRigidArea(new Dimension(0, 3)));
+    this.add(pViewField);
+    this.add(Box.createRigidArea(new Dimension(0, 3)));
+    this.add(pToolsetField);
   }
   
   
@@ -154,27 +155,30 @@ class JUtilContextField
   public void setMaximumSize(Dimension maximumSize)
   {
     super.setMaximumSize(maximumSize);
-    pAuthorField.setMaximumSize(maximumSize);
-    pViewField.setMaximumSize(maximumSize);
-    pToolsetField.setMaximumSize(maximumSize);
+    Dimension childD = new Dimension(maximumSize.width, 19);
+    pAuthorField.setMaximumSize(childD);
+    pViewField.setMaximumSize(childD);
+    pToolsetField.setMaximumSize(childD);
   }
 
   @Override
   public void setMinimumSize(Dimension minimumSize)
   {
     super.setMinimumSize(minimumSize);
-    pAuthorField.setMinimumSize(minimumSize);
-    pViewField.setMinimumSize(minimumSize);
-    pToolsetField.setMinimumSize(minimumSize);
+    Dimension childD = new Dimension(minimumSize.width, 19);
+    pAuthorField.setMinimumSize(childD);
+    pViewField.setMinimumSize(childD);
+    pToolsetField.setMinimumSize(childD);
   }
 
   @Override
   public void setPreferredSize(Dimension preferredSize)
   {
     super.setPreferredSize(preferredSize);
-    pAuthorField.setPreferredSize(preferredSize);
-    pViewField.setPreferredSize(preferredSize);
-    pToolsetField.setPreferredSize(preferredSize);
+    Dimension childD = new Dimension(preferredSize.width, 19);
+    pAuthorField.setPreferredSize(childD);
+    pViewField.setPreferredSize(childD);
+    pToolsetField.setPreferredSize(childD);
   }
 
   
@@ -192,12 +196,19 @@ class JUtilContextField
   {
     String author = pAuthorField.getSelected();
     String view = pViewField.getSelected();
-    TreeSet<String> views = pAuthorViewMapping.get(author); 
+    TreeSet<String> views = pAuthorViewMapping.get(author);
     pViewField.setValues(views);
-    if(views.contains(view))
-      pViewField.setSelected(view);
+    if (view != null)
+    {
+      if(views.contains(view))
+	pViewField.setSelected(view);
+      else if (views.contains("default"))
+        pViewField.setSelected("default");
+    }
     else if (views.contains("default"))
       pViewField.setSelected("default");
+    else
+      pViewField.setSelected(views.first());
   }
 
   

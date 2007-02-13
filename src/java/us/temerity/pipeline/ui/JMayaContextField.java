@@ -45,7 +45,8 @@ class JMayaContextField
     throws PipelineException 
   {
     super();
-    Box vBox = new Box(BoxLayout.Y_AXIS);
+    this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    this.setAlignmentY(0.5f);
     
     pAngularUnitField = new JCollectionField(MayaContext.getAngularUnits(), parent);
     
@@ -58,12 +59,11 @@ class JMayaContextField
     pLinearUnitField.setSelected(context.getLinearUnit());
     pTimeUnitField.setSelected(context.getTimeUnit());
     
-    vBox.add(pAngularUnitField);
-    vBox.add(Box.createRigidArea(new Dimension(0, 3)));
-    vBox.add(pLinearUnitField);
-    vBox.add(Box.createRigidArea(new Dimension(0, 3)));
-    vBox.add(pTimeUnitField);
-    this.add(vBox);
+    this.add(pAngularUnitField);
+    this.add(Box.createRigidArea(new Dimension(0, 3)));
+    this.add(pLinearUnitField);
+    this.add(Box.createRigidArea(new Dimension(0, 3)));
+    this.add(pTimeUnitField);
   }
   
   
@@ -87,7 +87,7 @@ class JMayaContextField
   }
   
   /**
-   * Get the UtilContext value.
+   * Get the MayaContext value.
    */ 
   public MayaContext
   getValue()
@@ -141,27 +141,30 @@ class JMayaContextField
   public void setMaximumSize(Dimension maximumSize)
   {
     super.setMaximumSize(maximumSize);
-    pAngularUnitField.setMaximumSize(maximumSize);
-    pLinearUnitField.setMaximumSize(maximumSize);
-    pTimeUnitField.setMaximumSize(maximumSize);
+    Dimension childD = new Dimension(maximumSize.width, 19);
+    pAngularUnitField.setMaximumSize(childD);
+    pLinearUnitField.setMaximumSize(childD);
+    pTimeUnitField.setMaximumSize(childD);
   }
 
   @Override
   public void setMinimumSize(Dimension minimumSize)
   {
     super.setMinimumSize(minimumSize);
-    pAngularUnitField.setMinimumSize(minimumSize);
-    pLinearUnitField.setMinimumSize(minimumSize);
-    pTimeUnitField.setMinimumSize(minimumSize);
+    Dimension childD = new Dimension(minimumSize.width, 19);
+    pAngularUnitField.setMinimumSize(childD);
+    pLinearUnitField.setMinimumSize(childD);
+    pTimeUnitField.setMinimumSize(childD);
   }
 
   @Override
   public void setPreferredSize(Dimension preferredSize)
   {
     super.setPreferredSize(preferredSize);
-    pAngularUnitField.setPreferredSize(preferredSize);
-    pLinearUnitField.setPreferredSize(preferredSize);
-    pTimeUnitField.setPreferredSize(preferredSize);
+    Dimension childD = new Dimension(preferredSize.width, 19);
+    pAngularUnitField.setPreferredSize(childD);
+    pLinearUnitField.setPreferredSize(childD);
+    pTimeUnitField.setPreferredSize(childD);
   }
 
   
@@ -170,9 +173,10 @@ class JMayaContextField
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-
   private static final long serialVersionUID = 163371774971001572L;
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
