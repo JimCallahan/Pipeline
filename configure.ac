@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.1.8)
+AM_INIT_AUTOMAKE(Pipeline, 2.2.1)
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1066,6 +1066,12 @@ AC_SUBST(PLJOBMGR_GC_OPTS)
 PLJOBMGR_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
 AC_MSG_RESULT([$PLJOBMGR_GC_OPTS])
 
+AC_SUBST(PLJOBMGR_XMS)
+PLJOBMGR_XMS="-Xms8M"
+
+AC_SUBST(PLJOBMGR_XMX)
+PLJOBMGR_XMX="-Xmx128M"
+
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_GC_OPTS)
 PLUI_GC_OPTS="${java_gc_opts} -Xms32M -Xmx512M"
@@ -1102,7 +1108,8 @@ then
   debug_base=$with_debug_base
 fi
 
-java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
+java_runjdwp="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
+java_debug_opts="-Xdebug ${java_runjdwp}"
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_DEBUG_OPTS)
@@ -1128,6 +1135,9 @@ AC_MSG_CHECKING([pljobmgr])
 AC_SUBST(PLJOBMGR_DEBUG_OPTS)
 PLJOBMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+6))
 AC_MSG_RESULT([$PLJOBMGR_DEBUG_OPTS])
+
+AC_SUBST(PLJOBMGR_XRUNJDWP)
+PLJOBMGR_XRUNJDWP=${java_runjdwp}$(($debug_base+6))
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_DEBUG_OPTS)
@@ -1472,6 +1482,8 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plui
   src/java/scripts/debug/pltestnative
+  src/java/scripts/debug/pltestlight
+  src/java/scripts/debug/pltestheavy
   src/java/scripts/debug/plvalidate
 
   src/java/scripts/profile/Makefile
@@ -1508,7 +1520,9 @@ AC_CONFIG_FILES([
 
   src/windows/Makefile
   src/windows/native/Makefile
+
   src/windows/services/Makefile
+  src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src
 
   src/windows/scripts/Makefile
   src/windows/scripts/plscript.bat.src
