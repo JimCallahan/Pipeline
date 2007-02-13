@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.38 2007/02/06 02:38:17 jim Exp $
+// $Id: BaseAction.java,v 1.39 2007/02/13 16:06:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1365,11 +1365,57 @@ class BaseAction
   }
 
   /** 
+   * Create a unique temporary file for the job with the given suffix.<P> 
+   * 
+   * If successful, the temporary file will be added to the set of files which will be 
+   * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
+   * 
+   * @param agenda 
+   *   The jobs action agenda.
+   * 
+   * @param suffix
+   *   The filename suffix of the temporary file.
+   * 
+   * @return 
+   *   The temporary file.
+   * 
+   * @throws IOException 
+   *   If unable to create the temporary file.
+   */ 
+  public File
+  createTemp
+  (
+   ActionAgenda agenda, 
+   String suffix
+  ) 
+    throws PipelineException 
+  {
+    File tmp = null;
+    try {
+      tmp = File.createTempFile(pName + "_" + agenda.getJobID(), "." + suffix, 
+				getTempDir(agenda));
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to create temporary file for Job (" + agenda.getJobID() + "):\n\n" + 
+	 ex.getMessage());
+    }
+
+    cleanupLater(tmp);
+
+    return tmp;
+  }
+
+  /** 
    * Create a unique temporary file for the job with the given suffix and access 
    * permissions. <P> 
    * 
    * If successful, the temporary file will be added to the set of files which will be 
-   * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
+   * removed upon termination of the Java runtime (see @{link #cleanupLater 
+   * cleanupLater}).<P> 
+   * 
+   * This method is not supported by the Windows operating system since it relies on the
+   * {@link NativeFileSys#chmod NativeFileSys.chmod} method.
    * 
    * @param agenda 
    *   The jobs action agenda.
