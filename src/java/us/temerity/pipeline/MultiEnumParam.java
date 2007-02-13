@@ -1,4 +1,4 @@
-// $Id: MultiEnumParam.java,v 1.3 2006/12/14 19:01:31 jim Exp $
+// $Id: MultiEnumParam.java,v 1.4 2007/02/13 03:22:31 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -76,10 +76,11 @@ public class MultiEnumParam
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the value of the parameter.
+   * Gets all values of the parameter that are selected (set to <code>YES</code> is this is
+   * being set in a GUI).
    */
   public ComparableTreeSet<String> 
-  getSetValue()
+  getSelectedValues()
   {
     return ((ComparableTreeSet<String>) getValue());
   }
@@ -109,7 +110,7 @@ public class MultiEnumParam
       throw new IllegalArgumentException
 	("The value (" + name + ") is not one of the supported values of the " + 
 	 "(" + pName + ") MultiEnum parameter.");
-    getSetValue().add(name);
+    getSelectedValues().add(name);
   }
 
   /**
@@ -125,7 +126,7 @@ public class MultiEnumParam
       throw new IllegalArgumentException
 	("The value (" + name + ") is not one of the supported values of the " + 
 	 "(" + pName + ") MultiEnum parameter.");
-    getSetValue().remove(name);
+    getSelectedValues().remove(name);
   }
 
   /**
@@ -145,7 +146,7 @@ public class MultiEnumParam
   getValuesMapping()
   {
     TreeMap<String, Boolean> toReturn = new TreeMap<String, Boolean>();
-    ComparableTreeSet<String> pValue = getSetValue();
+    ComparableTreeSet<String> pValue = getSelectedValues();
     for(String name : pValues) {
       if(pValue.contains(name))
 	toReturn.put(name, true);
@@ -182,7 +183,7 @@ public class MultiEnumParam
      * the exception will only apply there.
      */
     if(pValues != null) {
-      for(String each : getSetValue()) {
+      for(String each : getSelectedValues()) {
         if(!pValues.contains(each))
 	  throw new IllegalArgumentException
   	  ("The value (" + each + ") is not a valid option in the Map Paramter " + 
