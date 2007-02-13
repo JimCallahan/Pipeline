@@ -36,6 +36,9 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/debug/bin/plplugin
 @ROOT_INST_DIR@/MacOS/debug/bin/plscript
 @ROOT_INST_DIR@/MacOS/debug/bin/plui
+@ROOT_INST_DIR@/MacOS/debug/bin/pltestnative
+@ROOT_INST_DIR@/MacOS/debug/bin/pltestlight
+@ROOT_INST_DIR@/MacOS/debug/bin/pltestheavy
 
 @ROOT_INST_DIR@/MacOS/profile/bin/plplugin
 @ROOT_INST_DIR@/MacOS/profile/bin/plscript

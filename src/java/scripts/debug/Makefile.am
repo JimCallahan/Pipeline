@@ -4,7 +4,10 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/bin
 instbin_SCRIPTS = \
   plplugin \
   plscript \
-  plui 
+  plui \
+  pltestnative \
+  pltestheavy \
+  pltestlight
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin

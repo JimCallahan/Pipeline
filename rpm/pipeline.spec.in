@@ -42,6 +42,9 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/debug/bin/plplugin
 @ROOT_INST_DIR@/Unix/debug/bin/plscript
 @ROOT_INST_DIR@/Unix/debug/bin/plui
+@ROOT_INST_DIR@/Unix/debug/bin/pltestnative
+@ROOT_INST_DIR@/Unix/debug/bin/pltestlight
+@ROOT_INST_DIR@/Unix/debug/bin/pltestheavy
 
 @ROOT_INST_DIR@/Unix/profile/bin/plplugin
 @ROOT_INST_DIR@/Unix/profile/bin/plscript
