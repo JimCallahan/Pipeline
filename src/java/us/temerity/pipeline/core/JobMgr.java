@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.36 2007/02/07 21:13:54 jim Exp $
+// $Id: JobMgr.java,v 1.37 2007/02/13 02:47:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -81,7 +81,7 @@ class JobMgr
    JobEditAsReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer("JobMgr.getOsType()");
+    TaskTimer timer = new TaskTimer("JobMgr.editAs()");
 
     try {
       BaseEditor editor = req.getEditor();
@@ -466,15 +466,11 @@ class JobMgr
   ) 
   {
     TaskTimer timer = new TaskTimer("JobMgr.cleanupResources()");
-
-    TreeSet<Long> live = req.getJobIDs();
-    Map<String,String> env = System.getenv();
-
-    ArrayList<String> args = new ArrayList<String>();
-    args.add("-rf");
-
-    boolean removeFiles = false;
+    
+    ArrayList<String> deadDirs = new ArrayList<String>(); 
     {
+      TreeSet<Long> live = req.getJobIDs();
+
       File files[] = pJobDir.listFiles(); 
       int wk;
       for(wk=0; wk<files.length; wk++) {
@@ -496,8 +492,7 @@ class JobMgr
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 		   "Cleaning Job: " + jobID);
-		args.add(dir.getName());
-		removeFiles = true;
+		deadDirs.add(dir.getName());
 	      }
 	    }
 	  }
@@ -515,21 +510,59 @@ class JobMgr
       }
     }
 
-    if(removeFiles) {
+    if(!deadDirs.isEmpty()) {
       try {
-	SubProcessLight proc = 
-	  new SubProcessLight("Remove-JobFiles", "rm", args, env, pJobDir);
-	try {
-	  proc.start();
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    throw new PipelineException
-	    ("Unable to remove the output files:\n\n" + 
-	     "  " + proc.getStdErr());	
-	}
-	catch(InterruptedException ex) {
-	  throw new PipelineException
-	    ("Interrupted while removing the output files!");
+	Map<String,String> env = System.getenv();
+
+	switch(PackageInfo.sOsType) {
+	case Unix:
+	case MacOS:
+	  {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("-rf");
+
+	    for(String dname : deadDirs) 
+	      args.add(dname);
+	    
+	    SubProcessLight proc = 
+	      new SubProcessLight("Remove-JobFiles", "rm", args, env, pJobDir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the output files:\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the output files!");
+	    }
+	  }
+	  break;
+
+	case Windows:
+	  for(String dname : deadDirs) {
+	    ArrayList<String> args = new ArrayList<String>();	
+	    args.add("/c"); 
+	    args.add("\"rmdir " + dname + " /s /q\"");
+	    
+	    SubProcessLight proc = 
+	      new SubProcessLight("Remove-JobFiles", "cmd.exe", args, env, 
+				  PackageInfo.sTempPath.toFile()); 
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the output files in directory (" + dname + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the output files!");
+	    }
+	  }
 	}
       }
       catch(PipelineException ex) {
@@ -563,22 +596,34 @@ class JobMgr
 
     File dir = new File(pJobDir, String.valueOf(req.getJobID()));
     if(dir.isDirectory()) {
-      
-      Map<String,String> env = System.getenv();
-      
+      String program = null;
       ArrayList<String> args = new ArrayList<String>();
-      args.add("-rf");
-      args.add(dir.toString());
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case MacOS:
+	program = "rm";
+	args.add("-f");
+	args.add(dir.toString());
+	break;
+	
+      case Windows:
+	program = "cmd.exe"; 	
+	args.add("/c"); 
+	args.add("\"rmdir " + dir + " /s /q\"");
+      }
 
       try {
+	Map<String,String> env = System.getenv();
+
 	SubProcessLight proc = 
-	  new SubProcessLight("Remove-PreemptedJobFiles", "rm", args, env, pJobDir);
+	  new SubProcessLight("Remove-PreemptedJobFiles", program, args, env, 
+			      PackageInfo.sTempPath.toFile()); 
 	try {
 	  proc.start();
 	  proc.join();
 	  if(!proc.wasSuccessful()) 
 	    throw new PipelineException
-	      ("Unable to remove the output files:\n\n" + 
+	      ("Unable to remove the output files in directory (" + dir + "):\n\n" + 
 	       "  " + proc.getStdErr());	
 	}
 	catch(InterruptedException ex) {
@@ -1029,8 +1074,11 @@ class JobMgr
 	long jobID = pJob.getJobID();
 
 	ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
+	String author = agenda.getNodeID().getAuthor();
 	File wdir = agenda.getWorkingDir();
 	SortedMap<String,String> env = agenda.getEnvironment();
+	String domain = null; 
+	String password = null; 
 	
 	File dir = new File(pJobDir, String.valueOf(jobID));
 	File scratch = new File(dir, "scratch");
@@ -1041,18 +1089,51 @@ class JobMgr
 	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	     "Preparing Job: " + jobID);
 
+	  /* validate the Windows domain and encrypted password for the owning user */ 
+	  switch(PackageInfo.sOsType) {
+	  case Windows:
+	    domain = pJob.getDomain();
+	    if((domain == null) || (domain.length() == 0)) 
+	      throw new PipelineException
+		("Cannot run job (" + jobID + ") on a Windows server unless a Windows " + 
+		 "Domain has been previously provided for the user (" + author + ")!"); 
+
+	    password = pJob.getPassword(); 
+	    if((password == null) || (password.length() == 0)) 
+	      throw new PipelineException
+		("Cannot run job (" + jobID + ") on a Windows server unless a Windows " + 
+		 "Password has been previously provided for the user (" + author + ")!");
+	  }
+
 	  /* make sure the target directory exists */ 
 	  if(!wdir.isDirectory()) {
+	    String program = null; 
 	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("-p");
-	    args.add("-m");
-	    args.add("755");
+	    switch(PackageInfo.sOsType) {
+	    case Unix:
+	    case MacOS:
+	      program = "mkdir";
+	      args.add("-p");
+	      args.add("-m");
+	      args.add("755");
+	      break;
+
+	    case Windows:
+	      program = "mkdir.exe";
+	    }
+
 	    args.add(wdir.getPath());
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				  "MakeWorkingDir", "mkdir", 
-				  args, env, PackageInfo.sTempPath.toFile());
+				  "MakeWorkingDir", program, 
+				  args, env, PackageInfo.sTempPath.toFile()); 
+
+	    switch(PackageInfo.sOsType) {
+	    case Windows:
+	      proc.authorizeOnWindows(domain, password);
+	    }
+
 	    try {
 	      proc.start();
 	      proc.join();
@@ -1068,41 +1149,96 @@ class JobMgr
 	  }
 
 	  /* remove the target primary and secondary files */ 
-	  {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("-f");
-
-	    for(File file : agenda.getPrimaryTarget().getFiles()) {
-	      File path = new File(wdir, file.getPath());
-	      if(path.isFile()) 
-		args.add(file.getPath());
+	  switch(PackageInfo.sOsType) {
+	  case Unix:
+	  case MacOS:
+	    {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("-f");
+	    
+	      boolean anyFiles = false;
+	      for(File file : agenda.getPrimaryTarget().getFiles()) {
+		File path = new File(wdir, file.getPath());
+		if(path.isFile()) {
+		  args.add(file.getPath());
+		  anyFiles = true;
+		}
+	      }
+	      
+	      for(FileSeq fseq : agenda.getSecondaryTargets()) {
+		for(File file : fseq.getFiles()) {
+		  File path = new File(wdir, file.getPath());
+		  if(path.isFile()) {
+		    args.add(file.getPath());
+		    anyFiles = true;
+		  }
+		}
+	      }
+	      
+	      if(anyFiles) {
+		SubProcessLight proc = 
+		  new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				      "RemoveTargets", "rm", args, env, wdir);
+		try {
+		  proc.start();
+		  proc.join();
+		  if(!proc.wasSuccessful()) 
+		    throw new PipelineException
+		      ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
+		       "  " + proc.getStdErr());	
+		}
+		catch(InterruptedException ex) {
+		  throw new PipelineException
+		    ("Interrupted while removing the target files of job (" + jobID + ")!");
+		}
+	      }
 	    }
+	    break;
 
-	    for(FileSeq fseq : agenda.getSecondaryTargets()) {
-	      for(File file : fseq.getFiles()) {
+	  case Windows:
+	    {
+	      ArrayList<String> dead = new ArrayList<String>();
+	      for(File file : agenda.getPrimaryTarget().getFiles()) {
 		File path = new File(wdir, file.getPath());
 		if(path.isFile()) 
-		  args.add(file.getPath());
+		  dead.add(path.getPath());
 	      }
-	    }
+	      
+	      for(FileSeq fseq : agenda.getSecondaryTargets()) {
+		for(File file : fseq.getFiles()) {
+		  File path = new File(wdir, file.getPath());
+		  if(path.isFile()) 
+		    dead.add(path.getPath());
+		}
+	      }
+	      
+	      for(String path : dead) {
+		ArrayList<String> args = new ArrayList<String>();	
+		args.add("/c"); 
+		args.add("\"del " + path + " /f /q\"");
 
-	    if(args.size() > 1) {
-	      SubProcessLight proc = 
-		new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				    "RemoveTargets", "rm", args, env, wdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
+		SubProcessLight proc = 
+		  new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				      "RemoveTarget", "cmd.exe", args, env, 
+				      PackageInfo.sTempPath.toFile());
+
+		proc.authorizeOnWindows(domain, password);
+
+		try {
+		  proc.start();
+		  proc.join();
+		  if(!proc.wasSuccessful()) 
+		    throw new PipelineException
+		      ("Unable to remove the target file (" + path + ") of job " + 
+		       "(" + jobID + "):\n\n" + 
+		       "  " + proc.getStdErr());	
+		}
+		catch(InterruptedException ex) {
 		  throw new PipelineException
-		    ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
-		     "  " + proc.getStdErr());	
+		    ("Interrupted while removing the target files of job (" + jobID + ")!");
+		}
 	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while removing the target files of job (" + jobID + ")!");
-	      }
-	    }
+	    }	      
 	  }
 	  
 	  /* create the job execution process */ 
@@ -1112,10 +1248,9 @@ class JobMgr
 	      ("The prep() method of the Action (" + pJob.getAction().getName() + ") " + 
 	       "returned (null) instead of a the expected SubProcessHeavy instance!");
 
-	  /* provide the encrypted Windows password for the owning user (if required) */ 
 	  switch(PackageInfo.sOsType) {
 	  case Windows:
-	    pProc.authorizeOnWindows(pJob.getPassword());
+	    pProc.authorizeOnWindows(domain, password);
 	  }
 	}
 	catch(Exception ex) {
@@ -1215,44 +1350,97 @@ class JobMgr
 	   "Finished Job: " + jobID);
 
 	/* make any existing target primary and secondary files read-only */ 
-	{
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("uga-w");
+	switch(PackageInfo.sOsType) {
+	case Unix:
+	case MacOS:
+	  {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("uga-w");
 	  
-	  for(File file : agenda.getPrimaryTarget().getFiles()) {
-	    File path = new File(wdir, file.getPath());
-	    if(path.isFile()) 
-	      args.add(file.getPath());
-	  }
-	  
-	  for(FileSeq fseq : agenda.getSecondaryTargets()) {
-	    for(File file : fseq.getFiles()) {
+	    for(File file : agenda.getPrimaryTarget().getFiles()) {
 	      File path = new File(wdir, file.getPath());
 	      if(path.isFile()) 
 		args.add(file.getPath());
 	    }
-	  }
-	  
-	  if(args.size() > 1) {
-	    SubProcessLight proc = 
-	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				  "ReadOnlyTargets", "chmod", args, env, wdir);
-	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to make the target files of job (" + jobID + ") read-only:\n\n" + 
-		   "  " + proc.getStdErr());	
+	    
+	    for(FileSeq fseq : agenda.getSecondaryTargets()) {
+	      for(File file : fseq.getFiles()) {
+		File path = new File(wdir, file.getPath());
+		if(path.isFile()) 
+		  args.add(file.getPath());
+	      }
 	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while making the target files of job (" + jobID + ") " + 
-		 "read-only!");
+	    
+	    if(args.size() > 1) {
+	      SubProcessLight proc = 
+		new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				    "ReadOnlyTargets", "chmod", args, env, wdir);
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to make the target files of job (" + jobID + ") " + 
+		     "read-only:\n\n" + 
+		     "  " + proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while making the target files of job (" + jobID + ") " + 
+		   "read-only!");
+	      }
+	    }
+	  }
+	  break;
+	  
+	case Windows:
+	  {
+	    ArrayList<String> dead = new ArrayList<String>();
+	    
+	    for(File file : agenda.getPrimaryTarget().getFiles()) {
+	      File path = new File(wdir, file.getPath());
+	      if(path.isFile()) 
+		dead.add(path.getPath());
+	    }
+	    
+	    for(FileSeq fseq : agenda.getSecondaryTargets()) {
+	      for(File file : fseq.getFiles()) {
+		File path = new File(wdir, file.getPath());
+		if(path.isFile()) 
+		  dead.add(path.getPath());
+	      }
+	    }
+	    
+	    for(String path : dead) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("+r"); 
+	      args.add(path);
+	      
+	      SubProcessLight proc = 
+		new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				    "ReadOnlyTargets", "attrib.exe", args, env, 
+				    PackageInfo.sTempPath.toFile());
+
+	      proc.authorizeOnWindows(domain, password);
+
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to make the target files of job (" + jobID + ") " + 
+		     "read-only:\n\n" + 
+		     "  " + proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while making the target files of job (" + jobID + ") " + 
+		   "read-only!");
+	      }
 	    }
 	  }
 	}
-
+      
 	/* record the results */ 
 	{
 	  QueueJobResults results = 
