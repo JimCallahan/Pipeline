@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.38 2007/02/13 16:05:01 jim Exp $
+// $Id: JobMgr.java,v 1.39 2007/02/14 12:58:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -471,7 +471,7 @@ class JobMgr
   {
     TaskTimer timer = new TaskTimer("JobMgr.cleanupResources()");
     
-    ArrayList<String> deadDirs = new ArrayList<String>(); 
+    ArrayList<File> deadDirs = new ArrayList<File>(); 
     {
       TreeSet<Long> live = req.getJobIDs();
 
@@ -496,7 +496,7 @@ class JobMgr
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 		   "Cleaning Job: " + jobID);
-		deadDirs.add(dir.getName());
+		deadDirs.add(dir);
 	      }
 	    }
 	  }
@@ -525,8 +525,8 @@ class JobMgr
 	    ArrayList<String> args = new ArrayList<String>();
 	    args.add("-rf");
 
-	    for(String dname : deadDirs) 
-	      args.add(dname);
+	    for(File dir : deadDirs) 
+	      args.add(dir.getName()); 
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight("Remove-JobFiles", "rm", args, env, pJobDir);
@@ -546,10 +546,10 @@ class JobMgr
 	  break;
 
 	case Windows:
-	  for(String dname : deadDirs) {
+	  for(File dir : deadDirs) {
 	    ArrayList<String> args = new ArrayList<String>();	
 	    args.add("/c"); 
-	    args.add("\"rmdir " + dname + " /s /q\"");
+	    args.add("\"rmdir \"" + dir + "\" /s /q\"");
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight("Remove-JobFiles", "cmd.exe", args, env, 
@@ -559,7 +559,7 @@ class JobMgr
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		  ("Unable to remove the output files in directory (" + dname + "):\n\n" + 
+		  ("Unable to remove the output files in directory (" + dir + "):\n\n" + 
 		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
@@ -613,7 +613,7 @@ class JobMgr
       case Windows:
 	program = "cmd.exe"; 	
 	args.add("/c"); 
-	args.add("\"rmdir " + dir + " /s /q\"");
+	args.add("\"rmdir \"" + dir + "\" /s /q\"");
       }
 
       try {
@@ -1219,7 +1219,7 @@ class JobMgr
 	      for(String path : dead) {
 		ArrayList<String> args = new ArrayList<String>();	
 		args.add("/c"); 
-		args.add("\"del " + path + " /f /q\"");
+		args.add("\"del \"" + path + "\" /f /q\"");
 
 		SubProcessLight proc = 
 		  new SubProcessLight(agenda.getNodeID().getAuthor(), 
