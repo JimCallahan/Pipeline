@@ -1,4 +1,4 @@
-// $Id: BaseAppleScriptEditor.java,v 1.7 2007/02/08 01:49:32 jim Exp $
+// $Id: BaseAppleScriptEditor.java,v 1.8 2007/02/15 08:41:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -126,6 +126,9 @@ class BaseAppleScriptEditor
   ) 
     throws PipelineException
   {
+    if(PackageInfo.sOsType != OsType.MacOS) 
+      return null; 
+
     try {
       ArrayList<String> args = new ArrayList<String>();
       args.add("-e");

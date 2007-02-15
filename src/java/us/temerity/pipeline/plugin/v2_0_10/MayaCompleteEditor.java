@@ -1,4 +1,4 @@
-// $Id: MayaCompleteEditor.java,v 1.1 2006/08/12 16:56:17 jim Exp $
+// $Id: MayaCompleteEditor.java,v 1.2 2007/02/15 08:41:03 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_0_10;
 
@@ -36,6 +36,47 @@ class MayaCompleteEditor
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Construct a {@link SubProcessLight} instance which when executed will launch an editor
+   * program to view the given file sequence as arguments. <P> 
+   * 
+   * This implementation returns <CODE>null</CODE> to fix the bug
+   * <A href="http://temerity.us/community/forums/viewtopic.php?t=933"><B>Inherited Editor 
+   * Prep Method</B></A>.
+   * 
+   * @param author
+   *   The name of the user owning the files.
+   * 
+   * @param fseq    
+   *   The file sequence to edit.
+   * 
+   * @param env  
+   *   The environment under which the editor is run.  
+   * 
+   * @param dir  
+   *   The working directory where the editor is run.
+   *
+   * @return 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
+   * 
+   * @throws PipelineException
+   *   If unable to launch the editor.
+   * 
+   * @see SubProcessLight
+   */  
+  public SubProcessLight
+  prep
+  (
+   String author, 
+   FileSeq fseq,      
+   Map<String, String> env,      
+   File dir        
+  ) 
+    throws PipelineException
+  {
+    return null;
+  }
 
   /** 
    * Launch the editor program (obtained with {@link #getName getName}) under the given 
