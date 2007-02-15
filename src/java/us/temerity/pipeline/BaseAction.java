@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.39 2007/02/13 16:06:40 jim Exp $
+// $Id: BaseAction.java,v 1.40 2007/02/15 08:42:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1456,6 +1456,71 @@ class BaseAction
     cleanupLater(tmp);
 
     return tmp;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S U B P R O C E S S   C R E A T I O N   U T I L S                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance returned by 
+   * the {@link #prep prep} method of an Action which generates a temporary script to 
+   * execute some OS-specific commands. <P>
+   * 
+   * If running on Unix or MacOS, the supplied script must be a BaSH shell script while on
+   * Windows the script is an executable BAT file.  The Action is reposible for making sure
+   * that the contents of these scripts are portable.  This method simply takes care of the 
+   * common wrapper code needed to instantiate a {@link SubProcessHeavy} to run the script.
+   * 
+   * @param script
+   *   The temporary script file to execute.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action (from {@link #prep prep})
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected (from {@link #prep prep})
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected (from {@link #prep prep})
+   */ 
+  public SubProcessHeavy
+  createScriptSubProcess
+  (
+   File script, 
+   ActionAgenda agenda,
+   File outFile, 
+   File errFile    
+  ) 
+    throws PipelineException
+  {
+    NodeID nodeID = agenda.getNodeID();
+
+    try {
+      ArrayList<String> args = new ArrayList<String>();
+
+      if(PackageInfo.sOsType == OsType.Windows) {
+        return new SubProcessHeavy
+          (nodeID.getAuthor(), getName() + "-" + agenda.getJobID(), 
+           script.toString(), args, agenda.getEnvironment(), PackageInfo.sTempPath.toFile(), 
+           outFile, errFile);
+      }
+      else {
+        args.add(script.getPath());
+        
+        return new SubProcessHeavy
+          (nodeID.getAuthor(), getName() + "-" + agenda.getJobID(), 
+           "bash", args, agenda.getEnvironment(), agenda.getWorkingDir(), 
+           outFile, errFile);
+      }
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to generate the SubProcess to perform this Action!\n" +
+	 ex.getMessage());
+    }
   }
 
 
