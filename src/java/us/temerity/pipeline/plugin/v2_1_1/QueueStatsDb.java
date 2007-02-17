@@ -1,4 +1,4 @@
-// $Id: QueueStatsDb.java,v 1.2 2006/11/21 19:55:51 jim Exp $
+// $Id: QueueStatsDb.java,v 1.3 2007/02/17 11:46:59 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -43,7 +43,7 @@ QueueStatsDb
     }
     catch (Exception ex) {
       Path path = PackageInfo.getJavaRuntime(OsType.Unix);
-      Path ext = new Path(path.getParentPath(), "lib/ext");
+      Path ext = new Path(path.getParentPath().getParentPath(), "lib/ext");
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Severe, 
