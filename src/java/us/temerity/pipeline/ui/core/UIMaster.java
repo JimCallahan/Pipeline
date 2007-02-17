@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.55 2007/02/12 19:20:49 jim Exp $
+// $Id: UIMaster.java,v 1.56 2007/02/17 11:46:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -446,10 +446,7 @@ class UIMaster
    ActionListener listener
   ) 
   {
-    TreeMap<String,TreeSet<String>> views = lookupWorkingAreaContainingMenus(channel, name); 
-    ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
-
-    rebuildWorkingAreaMenuSingle(menu, listener, views, authors);    
+    rebuildWorkingAreaContainingMenu(channel, name, null, menu, listener);     
   }
 
   /**
@@ -460,6 +457,43 @@ class UIMaster
    * 
    * @param name
    *   The fully resolved name of the node. 
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void 
+  rebuildWorkingAreaContainingMenu
+  ( 
+   int channel, 
+   String name,
+   JPopupMenu topmenu,
+   JMenu menu,
+   ActionListener listener
+  ) 
+  {
+    TreeMap<String,TreeSet<String>> views = lookupWorkingAreaContainingMenus(channel, name); 
+    ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
+
+    rebuildWorkingAreaMenuSingle(topmenu, menu, listener, views, authors);    
+  }
+
+  /**
+   * Rebuild the Views Containing menu for the given node.
+   *
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param topmenus
+   *   The top-level popup menus containing the items.
    * 
    * @param menus
    *   The menus to be rebuilt.
@@ -472,6 +506,7 @@ class UIMaster
   ( 
    int channel, 
    String name,
+   JPopupMenu topmenus[],
    JMenu menus[],
    ActionListener listener
   ) 
@@ -481,7 +516,7 @@ class UIMaster
     
     int wk;
     for(wk=0; wk<menus.length; wk++) 
-      rebuildWorkingAreaMenuSingle(menus[wk], listener, views, authors);    
+      rebuildWorkingAreaMenuSingle(topmenus[wk], menus[wk], listener, views, authors);    
   }
 
   /**
@@ -508,10 +543,41 @@ class UIMaster
    ActionListener listener
   ) 
   {
+    rebuildWorkingAreaEditingMenu(channel, name, null, menu, listener);
+  }
+
+  /**
+   * Rebuild the Views Editing menu for the given node.
+   *
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param name
+   *   The fully resolved name of the node. 
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void 
+  rebuildWorkingAreaEditingMenu
+  ( 
+   int channel, 
+   String name,
+   JPopupMenu topmenu, 
+   JMenu menu,
+   ActionListener listener
+  ) 
+  {
     TreeMap<String,TreeSet<String>> views = lookupWorkingAreaEditingMenus(channel, name); 
     ArrayList<TreeSet<String>> authors = groupWorkingAreaSubmenus(views);
 
-    rebuildWorkingAreaMenuSingle(menu, listener, views, authors);    
+    rebuildWorkingAreaMenuSingle(topmenu, menu, listener, views, authors);    
   }
 
   /**
@@ -522,6 +588,9 @@ class UIMaster
    * 
    * @param name
    *   The fully resolved name of the node. 
+   * 
+   * @param topmenus
+   *   The top-level popup menus containing the items.
    * 
    * @param menus
    *   The menus to be rebuilt.
@@ -534,6 +603,7 @@ class UIMaster
   ( 
    int channel, 
    String name,
+   JPopupMenu topmenus[],
    JMenu menus[],
    ActionListener listener
   ) 
@@ -543,7 +613,7 @@ class UIMaster
     
     int wk;
     for(wk=0; wk<menus.length; wk++) 
-      rebuildWorkingAreaMenuSingle(menus[wk], listener, views, authors);    
+      rebuildWorkingAreaMenuSingle(topmenus[wk], menus[wk], listener, views, authors);    
   }
 
   /**
@@ -678,6 +748,9 @@ class UIMaster
   /**
    * Rebuild the Change Owner|View menu to for the working areas containing the given node.
    *
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
    * @param menu
    *   The menu to be rebuilt.
    * 
@@ -693,6 +766,7 @@ class UIMaster
   private synchronized void 
   rebuildWorkingAreaMenuSingle
   ( 
+   JPopupMenu topmenu,
    JMenu menu,
    ActionListener listener, 
    TreeMap<String,TreeSet<String>> views, 
@@ -713,12 +787,12 @@ class UIMaster
 	menu.add(gsub);
 	
 	for(String author : agroup) 
-	  rebuildWorkingAreaMenuHelper(gsub, author, listener, views);
+	  rebuildWorkingAreaMenuHelper(topmenu, gsub, author, listener, views);
       }
     }
     else {
       for(String author : views.keySet()) 
-	rebuildWorkingAreaMenuHelper(menu, author, listener, views);
+	rebuildWorkingAreaMenuHelper(topmenu, menu, author, listener, views);
     }
     
     menu.setEnabled(true);
@@ -726,6 +800,9 @@ class UIMaster
 
   /**
    * Helper method for adding working area submenus.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
    * 
    * @param pmenu
    *   The parent menu.
@@ -742,6 +819,7 @@ class UIMaster
   private void 
   rebuildWorkingAreaMenuHelper
   (
+   JPopupMenu topmenu,
    JMenu pmenu, 
    String author, 
    ActionListener listener,
@@ -752,7 +830,7 @@ class UIMaster
     pmenu.add(sub);
 	
     for(String view : views.get(author)) {
-      JMenuItem item = new JMenuItem(author + " | " + view);
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, author + " | " + view);
       item.setActionCommand("author-view:" + author + ":" + view);
       item.addActionListener(listener);
       sub.add(item);
@@ -855,6 +933,37 @@ class UIMaster
    ActionListener listener
   ) 
   {
+    rebuildEditorMenu(null, channel, tname, menu, listener);
+  }
+
+  /**
+   * Rebuild the contents of an editor plugin menu for the given toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildEditorMenu
+  (
+   JPopupMenu topmenu,
+   int channel, 
+   String tname, 
+   JMenu menu, 
+   ActionListener listener
+  ) 
+  {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
@@ -898,10 +1007,10 @@ class UIMaster
     menu.removeAll();
     if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
-	menu.add(rebuildPluginMenuHelper(pml, "edit-with", plugins, listener));
+	menu.add(rebuildPluginMenuHelper(topmenu, pml, "edit-with", plugins, listener));
     }
     else {
-      JMenuItem item = new JMenuItem("(None Specified)");
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
       item.setEnabled(false);
       menu.add(item);
     }
@@ -925,6 +1034,37 @@ class UIMaster
   public void
   rebuildComparatorMenu
   (
+   int channel, 
+   String tname, 
+   JMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    rebuildComparatorMenu(null, channel, tname, menu, listener);
+  }
+
+  /**
+   * Rebuild the contents of an comparator plugin menu for the given toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildComparatorMenu
+  (
+   JPopupMenu topmenu,
    int channel, 
    String tname, 
    JMenu menu, 
@@ -973,10 +1113,10 @@ class UIMaster
     menu.removeAll();
     if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
-	menu.add(rebuildPluginMenuHelper(pml, "compare-with", plugins, listener));
+	menu.add(rebuildPluginMenuHelper(topmenu, pml, "compare-with", plugins, listener));
     }
-    else {
-      JMenuItem item = new JMenuItem("(None Specified)");
+    else {  
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
       item.setEnabled(false);
       menu.add(item);
     }
@@ -1000,6 +1140,37 @@ class UIMaster
   public void
   rebuildToolMenu
   (
+   int channel, 
+   String tname, 
+   JPopupMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    rebuildToolMenu(null, channel, tname, menu, listener);
+  }
+
+  /**
+   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildToolMenu
+  (
+   JPopupMenu topmenu,
    int channel, 
    String tname, 
    JPopupMenu menu, 
@@ -1048,10 +1219,10 @@ class UIMaster
     menu.removeAll();
     if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
-	menu.add(rebuildPluginMenuHelper(pml, "run-tool", plugins, listener));
+	menu.add(rebuildPluginMenuHelper(topmenu, pml, "run-tool", plugins, listener));
     }
     else {
-      JMenuItem item = new JMenuItem("(None Specified)");
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
       item.setEnabled(false);
       menu.add(item);
     }
@@ -1072,6 +1243,33 @@ class UIMaster
   public void
   rebuildDefaultToolMenu
   (
+   int channel, 
+   JPopupMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    rebuildDefaultToolMenu(null, channel, menu, listener);
+  }
+
+  /**
+   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildDefaultToolMenu
+  (
+   JPopupMenu topmenu,
    int channel, 
    JPopupMenu menu, 
    ActionListener listener
@@ -1120,10 +1318,10 @@ class UIMaster
     menu.removeAll();
     if((layout != null) && !layout.isEmpty()) {
       for(PluginMenuLayout pml : layout) 
-	menu.add(rebuildPluginMenuHelper(pml, "run-tool", plugins, listener));
+	menu.add(rebuildPluginMenuHelper(topmenu, pml, "run-tool", plugins, listener));
     }
     else {
-      JMenuItem item = new JMenuItem("(None Specified)");
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
       item.setEnabled(false);
       menu.add(item);
     }
@@ -1131,6 +1329,9 @@ class UIMaster
 
   /**
    * Recursively build a plugin menu.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
    * 
    * @param layout
    *   The current plugin submenu layout.
@@ -1147,6 +1348,7 @@ class UIMaster
   private JMenuItem
   rebuildPluginMenuHelper
   (
+   JPopupMenu topmenu,
    PluginMenuLayout layout, 
    String prefix, 
    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins, 
@@ -1155,7 +1357,7 @@ class UIMaster
   {
     JMenuItem item = null;
     if(layout.isMenuItem()) {
-      item = new JMenuItem(layout.getTitle());
+      item = new JPopupMenuItem(topmenu, layout.getTitle());
       item.setActionCommand(prefix + ":" + layout.getName() + ":" + 
 			    layout.getVersionID() + ":" + layout.getVendor());
       item.addActionListener(listener);
@@ -1172,7 +1374,7 @@ class UIMaster
     else {
       JMenu sub = new JMenu(layout.getTitle()); 
       for(PluginMenuLayout pml : layout) 
-	sub.add(rebuildPluginMenuHelper(pml, prefix, plugins, listener));
+	sub.add(rebuildPluginMenuHelper(topmenu, pml, prefix, plugins, listener));
       item = sub;
     }
 

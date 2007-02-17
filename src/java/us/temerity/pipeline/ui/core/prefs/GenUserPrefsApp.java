@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -825,7 +825,17 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("The size of node detail hints.", 
-	 "DetailHintSize", "Detail Hint Size:", 0.5, 1.5, 1.0)
+	 "DetailHintSize", "Detail Hint Size:", 0.5, 1.5, 1.0), 
+
+	new BasePref(),
+
+	new BooleanPref
+	("Whether to show the most recent node operation dynamic menu items.",
+	 "ShowMostRecent", "Show Most Recent:", true), 
+
+	new BoundedIntegerPref
+	("The number of most recent node operation dynamic menu items to display.", 
+	 "NumMostRecent", "Most Recent Items:", 1, 10, 5), 
       };
 
       pPrefs.put("Panels|Node Viewer|Appearance", prefs);
@@ -2270,7 +2280,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2527,7 +2537,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3884,7 +3894,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.44 2007/02/07 23:44:13 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

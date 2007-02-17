@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.73 2007/02/07 23:44:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.74 2007/02/17 11:46:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -71,10 +71,9 @@ class JNodeViewerPanel
     super.initUI(128.0, true);
 
     /* initialize fields */ 
+    UserPrefs prefs = UserPrefs.getInstance();
     {
       pRoots = new TreeMap<String,NodeStatus>();
-
-      UserPrefs prefs = UserPrefs.getInstance();
 
       pShowDetailHints = prefs.getShowDetailHints();
       pShowDownstream  = prefs.getShowDownstream();
@@ -202,8 +201,7 @@ class JNodeViewerPanel
 
     /* node popup menus */ 
     {
-      JMenuItem item;
-      JMenu sub;
+      JPopupMenuItem item;
       
       pUndefinedNodePopup = new JPopupMenu();  
       pUndefinedNodePopup.addPopupMenuListener(this);
@@ -229,52 +227,63 @@ class JNodeViewerPanel
 	pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
 	pFrozenNodePopup, pNodePopup 
       };
+      pNodeMenus = menus;
 
-      pUpdateDetailsItems   = new JMenuItem[5];
-      pMakeRootItems        = new JMenuItem[5];
-      pAddRootItems         = new JMenuItem[5];
-      pReplaceRootItems     = new JMenuItem[5];
-      pRemoveRootItems      = new JMenuItem[5];
-      pEditItems            = new JMenuItem[4];
-      pEditWithDefaultItems = new JMenuItem[4];
-      pCheckOutItems        = new JMenuItem[3];
-      pLockItems            = new JMenuItem[3];
-      pRestoreItems         = new JMenuItem[3];
-      pReleaseItems         = new JMenuItem[2];
+      pFirstRecentIndex     = new int[5];
+      pRecentMenuItems      = new ArrayList<LinkedList<String>>(5);
+      pRecentActionCommands = new ArrayList<TreeMap<String,String>>(5);
+
+      pUpdateDetailsItems   = new JPopupMenuItem[5];
+      pMakeRootItems        = new JPopupMenuItem[5];
+      pAddRootItems         = new JPopupMenuItem[5];
+      pReplaceRootItems     = new JPopupMenuItem[5];
+      pRemoveRootItems      = new JPopupMenuItem[5];
+      pEditItems            = new JPopupMenuItem[4];
+      pEditWithDefaultItems = new JPopupMenuItem[4];
+      pCheckOutItems        = new JPopupMenuItem[3];
+      pLockItems            = new JPopupMenuItem[3];
+      pRestoreItems         = new JPopupMenuItem[3];
+      pReleaseItems         = new JPopupMenuItem[2];
 
       int wk;
       for(wk=0; wk<menus.length; wk++) {
-	item = new JMenuItem("Update Details");
+	item = new JPopupMenuItem(menus[wk], "Update Details");
 	pUpdateDetailsItems[wk] = item;
 	item.setActionCommand("details");
 	item.addActionListener(this);
 	menus[wk].add(item);  
 	
 	menus[wk].addSeparator();
+	menus[wk].addSeparator();
 
-	item = new JMenuItem("Set Root");
-	pMakeRootItems[wk] = item;
-	item.setActionCommand("make-root");
-	item.addActionListener(this);
-	menus[wk].add(item);  
-	
-	item = new JMenuItem("Add Root");
-	pAddRootItems[wk] = item;
-	item.setActionCommand("add-root");
-	item.addActionListener(this);
-	menus[wk].add(item);  
-	
-	item = new JMenuItem("Replace Root");
-	pReplaceRootItems[wk] = item;
-	item.setActionCommand("replace-root");
-	item.addActionListener(this);
-	menus[wk].add(item);  
-	
-	item = new JMenuItem("Hide Root");
-	pRemoveRootItems[wk] = item;
-	item.setActionCommand("remove-root");
-	item.addActionListener(this);
-	menus[wk].add(item);  
+        {
+          JMenu sub = new JMenu("Node Roots");
+          menus[wk].add(sub);  
+
+          item = new JPopupMenuItem(menus[wk], "Set Root");
+          pMakeRootItems[wk] = item;
+          item.setActionCommand("make-root");
+          item.addActionListener(this);
+          sub.add(item);  
+          
+          item = new JPopupMenuItem(menus[wk], "Add Root");
+          pAddRootItems[wk] = item;
+          item.setActionCommand("add-root");
+          item.addActionListener(this);
+          sub.add(item);  
+          
+          item = new JPopupMenuItem(menus[wk], "Replace Root");
+          pReplaceRootItems[wk] = item;
+          item.setActionCommand("replace-root");
+          item.addActionListener(this);
+          sub.add(item);  
+          
+          item = new JPopupMenuItem(menus[wk], "Hide Root");
+          pRemoveRootItems[wk] = item;
+          item.setActionCommand("remove-root");
+          item.addActionListener(this);
+          sub.add(item);  
+        }
 	
 	menus[wk].addSeparator();
 
@@ -285,209 +294,217 @@ class JNodeViewerPanel
 	menus[wk].add(pViewsEditingMenus[wk]);
 	
 	if(wk > 0) {
-	  menus[wk].addSeparator();
-	  
-	  item = new JMenuItem((wk < 4) ? "View" : "Edit");
+          menus[wk].addSeparator();
+
+          String prefix = (wk < 4) ? "View" : "Edit";
+
+          item = new JPopupMenuItem(menus[wk], prefix);
 	  pEditItems[wk-1] = item;
 	  item.setActionCommand("edit");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 	  
-	  pEditWithMenus[wk-1] = new JMenu((wk < 4) ? "View With" : "Edit With");
+	  pEditWithMenus[wk-1] = new JMenu(prefix + " With");
 	  menus[wk].add(pEditWithMenus[wk-1]);
 
-	  item = new JMenuItem((wk < 4) ? "View With Default" : "Edit With Default");
+	  item = new JPopupMenuItem(menus[wk], prefix + " With Default"); 
 	  pEditWithDefaultItems[wk-1] = item;
 	  item.setActionCommand("edit-with-default");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 
 	  if(wk == 4) {
-	    item = new JMenuItem("Edit As Owner");
+	    item = new JPopupMenuItem(menus[wk], "Edit As Owner");
 	    pEditAsOwnerItem = item;
 	    item.setActionCommand("edit-as-owner");
 	    item.addActionListener(this);
 	    menus[wk].add(item);
 	  }
-	}
 
-	if((wk == 2) || (wk == 3)) {
 	  menus[wk].addSeparator();
-	  
-	  item = new JMenuItem("Check-Out...");
-	  pCheckOutItems[wk-2] = item;
-	  item.setActionCommand("check-out");
-	  item.addActionListener(this);
-	  menus[wk].add(item);
-
-	  item = new JMenuItem("Lock...");
-	  pLockItems[wk-2] = item;
-	  item.setActionCommand("lock");
-	  item.addActionListener(this);
-	  menus[wk].add(item);
-
-	  item = new JMenuItem("Request Restore...");
-	  pRestoreItems[wk-2] = item;
-	  item.setActionCommand("restore");
-	  item.addActionListener(this);
-	  menus[wk].add(item);
 	}
 
-	if(wk == 3) {
-	  menus[wk].addSeparator();
+        if(wk == 4) {
+          JMenu sub = new JMenu("Modify");
+          menus[wk].add(sub);  
+          
+          item = new JPopupMenuItem(menus[wk], "Link...");
+          pLinkItem = item;
+          item.setActionCommand("link");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          item = new JPopupMenuItem(menus[wk], "Unlink");
+          pUnlinkItem = item;
+          item.setActionCommand("unlink");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          sub.addSeparator();
+          
+          item = new JPopupMenuItem(menus[wk], "Add Secondary...");
+          pAddSecondaryItem = item;
+          item.setActionCommand("add-secondary");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          JMenu sub2 = new JMenu("Remove Secondary");
+          pRemoveSecondaryMenu = sub2;
+          sub2.setEnabled(false);
+          sub.add(sub2);
+          
+          sub.addSeparator();
+
+          item = new JPopupMenuItem(menus[wk], "Clone...");
+          pCloneItem = item;
+          item.setActionCommand("clone");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          item = new JPopupMenuItem(menus[wk], "Export...");
+          pExportItem = item;
+          item.setActionCommand("export");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          item = new JPopupMenuItem(menus[wk], "Rename...");
+          pRenameItem = item;
+          item.setActionCommand("rename");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          item = new JPopupMenuItem(menus[wk], "Renumber...");
+          pRenumberItem = item;
+          item.setActionCommand("renumber");
+          item.addActionListener(this);
+          sub.add(item);
+        }
+       
+        if(wk == 4) {
+          JMenu sub = new JMenu("Regenerate");
+          menus[wk].add(sub);  
+
+          item = new JPopupMenuItem(menus[wk], "Queue Jobs");
+          pQueueJobsItem = item;
+          item.setActionCommand("queue-jobs");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          item = new JPopupMenuItem(menus[wk], "Queue Jobs Special...");
+          pQueueJobsSpecialItem = item;
+          item.setActionCommand("queue-jobs-special");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          sub.addSeparator();
+
+          item = new JPopupMenuItem(menus[wk], "Pause Jobs");
+          pPauseJobsItem = item;
+          item.setActionCommand("pause-jobs");
+          item.addActionListener(this);
+          sub.add(item);
+          
+          item = new JPopupMenuItem(menus[wk], "Resume Jobs");
+          pResumeJobsItem = item;
+          item.setActionCommand("resume-jobs");
+          item.addActionListener(this);
+          sub.add(item);
+
+          item = new JPopupMenuItem(menus[wk], "Preempt Jobs");
+          pPreemptJobsItem = item;
+          item.setActionCommand("preempt-jobs");
+          item.addActionListener(this);
+          sub.add(item);
+
+          item = new JPopupMenuItem(menus[wk], "Kill Jobs");
+          pKillJobsItem = item;
+          item.setActionCommand("kill-jobs");
+          item.addActionListener(this);
+          sub.add(item);
+
+          sub.addSeparator();
+
+          item = new JPopupMenuItem(menus[wk], "Remove Files");
+          pRemoveFilesItem = item;
+          item.setActionCommand("remove-files");
+          item.addActionListener(this);
+          sub.add(item);         
+        }
+
+   
+        if((wk == 2) || (wk == 3) || (wk == 4)) {   
+          JMenu sub = new JMenu("Version");
+          menus[wk].add(sub);  
+
+          if(wk == 4) {
+            item = new JPopupMenuItem(menus[wk], "Check-In...");
+            pCheckInItem = item;
+            item.setActionCommand("check-in");
+            item.addActionListener(this);
+            sub.add(item);
+          }
+
+          if((wk == 2) || (wk == 3) || (wk == 4)) {
+            item = new JPopupMenuItem(menus[wk], "Check-Out...");
+            pCheckOutItems[wk-2] = item;
+            item.setActionCommand("check-out");
+            item.addActionListener(this);
+            sub.add(item);
+            
+            item = new JPopupMenuItem(menus[wk], "Lock...");
+            pLockItems[wk-2] = item;
+            item.setActionCommand("lock");
+            item.addActionListener(this);
+            sub.add(item);         
+            
+            item = new JPopupMenuItem(menus[wk], "Request Restore...");
+            pRestoreItems[wk-2] = item;
+            item.setActionCommand("restore");
+            item.addActionListener(this);
+            sub.add(item);         
+          }
+          
+          if(wk == 4) {
+            sub.addSeparator();
+
+            item = new JPopupMenuItem(menus[wk], "Evolve Version...");
+            pEvolveItem = item;
+            item.setActionCommand("evolve");
+            item.addActionListener(this);
+            sub.add(item);
+          }
+
+          if((wk == 3) || (wk == 4)) {
+            sub.addSeparator();
 	  
-	  item = new JMenuItem("Release...");
-	  pReleaseItems[0] = item;
-	  item.setActionCommand("release");
-	  item.addActionListener(this);
-	  menus[wk].add(item);
+            item = new JPopupMenuItem(menus[wk], "Release...");
+            pReleaseItems[wk-3] = item;
+            item.setActionCommand("release");
+            item.addActionListener(this);
+            sub.add(item);
+          }
+
+          if(wk == 4) {
+            item = new JPopupMenuItem(menus[wk], "Delete...");
+            pDeleteItem = item;
+            item.setActionCommand("delete");
+            item.addActionListener(this);
+            sub.add(item);
+          }
 	}
-      }
-	
-      {
-	pNodePopup.addSeparator();
-	
-	item = new JMenuItem("Link...");
-	pLinkItem = item;
-	item.setActionCommand("link");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-	
-	item = new JMenuItem("Unlink");
-	pUnlinkItem = item;
-	item.setActionCommand("unlink");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-	
-	pNodePopup.addSeparator();
-	
-	item = new JMenuItem("Add Secondary...");
-	pAddSecondaryItem = item;
-	item.setActionCommand("add-secondary");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-	
-	sub = new JMenu("Remove Secondary");
-	pRemoveSecondaryMenu = sub;
-	sub.setEnabled(false);
-	pNodePopup.add(sub);
-	
-	pNodePopup.addSeparator();
-      
-	item = new JMenuItem("Queue Jobs");
-	pQueueJobsItem = item;
-	item.setActionCommand("queue-jobs");
-	item.addActionListener(this);
-	pNodePopup.add(item);
 
-	item = new JMenuItem("Queue Jobs Special...");
-	pQueueJobsSpecialItem = item;
-	item.setActionCommand("queue-jobs-special");
-	item.addActionListener(this);
-	pNodePopup.add(item);
+        pFirstRecentIndex[wk] = menus[wk].getComponentCount();
+        pRecentMenuItems.add(new LinkedList<String>());
+        pRecentActionCommands.add(new TreeMap<String,String>());
 
-	item = new JMenuItem("Pause Jobs");
-	pPauseJobsItem = item;
-	item.setActionCommand("pause-jobs");
-	item.addActionListener(this);
-	pNodePopup.add(item);
+        if(prefs.getShowMostRecent()) {
+          menus[wk].addSeparator();
+          menus[wk].addSeparator();
 
-	item = new JMenuItem("Resume Jobs");
-	pResumeJobsItem = item;
-	item.setActionCommand("resume-jobs");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Preempt Jobs");
-	pPreemptJobsItem = item;
-	item.setActionCommand("preempt-jobs");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Kill Jobs");
-	pKillJobsItem = item;
-	item.setActionCommand("kill-jobs");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-
-	pNodePopup.addSeparator();
-
-	item = new JMenuItem("Check-In...");
-	pCheckInItem = item;
-	item.setActionCommand("check-in");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-  
-	item = new JMenuItem("Check-Out...");
-	pCheckOutItems[2] = item;
-	item.setActionCommand("check-out");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Lock...");
-	pLockItems[2] = item;
-	item.setActionCommand("lock");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Evolve Version...");
-	pEvolveItem = item;
-	item.setActionCommand("evolve");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Request Restore...");
-	pRestoreItems[2] = item;
-	item.setActionCommand("restore");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	pNodePopup.addSeparator();
-
-	item = new JMenuItem("Clone...");
-	pCloneItem = item;
-	item.setActionCommand("clone");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Export...");
-	pExportItem = item;
-	item.setActionCommand("export");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Rename...");
-	pRenameItem = item;
-	item.setActionCommand("rename");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Renumber...");
-	pRenumberItem = item;
-	item.setActionCommand("renumber");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Remove Files");
-	pRemoveFilesItem = item;
-	item.setActionCommand("remove-files");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	pNodePopup.addSeparator();
-
-	item = new JMenuItem("Release...");
-	pReleaseItems[1] = item;
-	item.setActionCommand("release");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Delete...");
-	pDeleteItem = item;
-	item.setActionCommand("delete");
-	item.addActionListener(this);
-	pNodePopup.add(item);
+          item = new JPopupMenuItem(menus[wk], "(None Yet)");
+          item.setEnabled(false);
+          menus[wk].add(item);
+        }
       }
     }
 
@@ -923,6 +940,7 @@ class JNodeViewerPanel
 
     updateUniverse();
     updateMenuToolTips();
+    updateMostRecentNodeMenuItemPrefs();
   }
 
   /**
@@ -1184,7 +1202,7 @@ class JNodeViewerPanel
 
     /* rebuild remove secondary items */ 
     if(!isLocked()) {
-      JMenuItem item;
+      JPopupMenuItem item;
 
       pRemoveSecondaryMenu.removeAll();
       pRemoveSecondarySeqs.clear();
@@ -1193,7 +1211,7 @@ class JNodeViewerPanel
 	for(FileSeq fseq : mod.getSecondarySequences()) {
 	  String fname = fseq.toString();
 	  
-	  item = new JMenuItem(fname);
+	  item = new JPopupMenuItem(pNodePopup, fname);
 	  item.setActionCommand("remove-secondary:" + fname);
 	  item.addActionListener(this);
 	  pRemoveSecondaryMenu.add(item);
@@ -1217,8 +1235,10 @@ class JNodeViewerPanel
       name = pPrimary.getNodePath().getCurrentName();
     
     UIMaster master = UIMaster.getInstance();
-    master.rebuildWorkingAreaContainingMenus(pGroupID, name, pViewsContainingMenus, this);
-    master.rebuildWorkingAreaEditingMenus(pGroupID, name, pViewsEditingMenus, this);
+    master.rebuildWorkingAreaContainingMenus
+      (pGroupID, name, pNodeMenus, pViewsContainingMenus, this);
+    master.rebuildWorkingAreaEditingMenus
+      (pGroupID, name, pNodeMenus, pViewsEditingMenus, this);
   }
 
   /**
@@ -1256,7 +1276,8 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pNodeMenus[wk+1], 
+                                 pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }    
@@ -1286,7 +1307,7 @@ class JNodeViewerPanel
 
     if((toolset != null) && !toolset.equals(pToolMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildToolMenu(pGroupID, toolset, pToolPopup, this);
+      master.rebuildToolMenu(pToolPopup, pGroupID, toolset, pToolPopup, this);
       
       pToolMenuToolset = toolset;
     }    
@@ -1300,11 +1321,138 @@ class JNodeViewerPanel
   {
     if(pRefreshDefaultToolMenu) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildDefaultToolMenu(pGroupID, pDefaultToolPopup, this);
+      master.rebuildDefaultToolMenu(pDefaultToolPopup, pGroupID, pDefaultToolPopup, this);
       
       pRefreshDefaultToolMenu = false; 
     }    
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the most recently chosen node menu items.
+   */ 
+  private void 
+  updateRecentNodeMenuItems
+  (
+   ActionEvent e
+  ) 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    /* determine which item and parent menu is involved */ 
+    JPopupMenuItem item = null;
+    JPopupMenu menu = null;
+    LinkedList<String> recent = null; 
+    TreeMap<String,String> commands = null; 
+    int maxIdx = -1;
+    {
+      Object source = e.getSource();
+      if(source instanceof JPopupMenuItem) {
+        item = (JPopupMenuItem) source;
+
+        menu = item.getTopLevelMenu();
+        int idx = -1;
+        {
+          int wk;
+          for(wk=0; wk<pNodeMenus.length; wk++) {
+            if(pNodeMenus[wk] == menu) {
+              idx = wk;
+              break;
+            }
+          }
+        }
+            
+        recent   = pRecentMenuItems.get(idx);
+        commands = pRecentActionCommands.get(idx);
+        maxIdx   = pFirstRecentIndex[idx]; 
+      }
+
+      if(item == null) 
+        return;
+    }
+    
+    String title = item.getText(); 
+    String cmd   = item.getActionCommand();
+
+    /* if this item is already the most recent, do nothing */ 
+    if(!recent.isEmpty() && 
+       title.equals(recent.peek()) && cmd.equals(commands.get(title))) 
+      return;
+
+    /* update the recent data structures */ 
+    recent.remove(title);
+    recent.addFirst(title);
+    commands.put(title, cmd);
+
+    /* don't exceed the max number */ 
+    while(recent.size() > prefs.getNumMostRecent()) { 
+      String ltitle = recent.removeLast();
+      commands.remove(ltitle);
+    }
+
+    /* rebuild the menu items */ 
+    rebuildMostRecentNodeMenuItems(menu, recent, commands, maxIdx);
+  }
+
+  /**
+   * Reinitialize the most recent menu items after a user preference change.
+   */ 
+  private void 
+  updateMostRecentNodeMenuItemPrefs() 
+  {
+    int wk;
+    for(wk=0; wk<pNodeMenus.length; wk++) {
+      rebuildMostRecentNodeMenuItems(pNodeMenus[wk], pRecentMenuItems.get(wk), 
+                                     pRecentActionCommands.get(wk), pFirstRecentIndex[wk]); 
+    }
+  }
+
+  /**
+   * Rebuild the menu items from the set of most recent operations and action commands.
+   */ 
+  private void 
+  rebuildMostRecentNodeMenuItems
+  (
+   JPopupMenu menu,
+   LinkedList<String> recent,
+   TreeMap<String,String> commands, 
+   int maxIdx
+  ) 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    /* don't exceed the max number */ 
+    while(recent.size() > prefs.getNumMostRecent()) { 
+      String ltitle = recent.removeLast();
+      commands.remove(ltitle);
+    }
+
+    /* rebuild the menu items */ 
+    while(menu.getComponentCount() > maxIdx) 
+      menu.remove(maxIdx);
+
+    if(prefs.getShowMostRecent()) {
+      menu.addSeparator();
+      menu.addSeparator();
+
+      if(recent.isEmpty()) {
+        JPopupMenuItem item = new JPopupMenuItem(menu, "(None Yet)");
+        item.setEnabled(false);
+        menu.add(item);
+      }
+      else {
+        for(String mtitle : recent) {
+          JPopupMenuItem mitem = new JPopupMenuItem(menu, mtitle);
+          mitem.setActionCommand(commands.get(mtitle));
+          mitem.addActionListener(this);
+          menu.add(mitem);
+        }
+      }
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2713,6 +2861,8 @@ class JNodeViewerPanel
    ActionEvent e
   ) 
   {
+    updateRecentNodeMenuItems(e);
+
     /* node menu events */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("details"))
@@ -4364,7 +4514,7 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /** 
    * Edit/View the primary file sequence of the given node version.
    */ 
@@ -6065,40 +6215,49 @@ class JNodeViewerPanel
   private JPopupMenu  pCheckedInNodePopup; 
   private JPopupMenu  pFrozenNodePopup; 
   private JPopupMenu  pNodePopup; 
+
+  /** 
+   * The Node Menus:
+   * 
+   *   { pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
+   *     pFrozenNodePopup, pNodePopup }
+   */
+  private JPopupMenu[]  pNodeMenus; 
+
   
   /**
    * The node popup menu items.
    */ 
-  private JMenuItem[]  pUpdateDetailsItems;
-  private JMenuItem[]  pMakeRootItems;
-  private JMenuItem[]  pAddRootItems;
-  private JMenuItem[]  pReplaceRootItems;
-  private JMenuItem[]  pRemoveRootItems;
-  private JMenuItem[]  pEditItems;
-  private JMenuItem[]  pEditWithDefaultItems;
-  private JMenuItem    pEditAsOwnerItem; 
-  private JMenuItem[]  pCheckOutItems;
-  private JMenuItem[]  pLockItems;
-  private JMenuItem[]  pRestoreItems;
-  private JMenuItem[]  pReleaseItems;
+  private JPopupMenuItem[]  pUpdateDetailsItems;
+  private JPopupMenuItem[]  pMakeRootItems;
+  private JPopupMenuItem[]  pAddRootItems;
+  private JPopupMenuItem[]  pReplaceRootItems;
+  private JPopupMenuItem[]  pRemoveRootItems;
+  private JPopupMenuItem[]  pEditItems;
+  private JPopupMenuItem[]  pEditWithDefaultItems;
+  private JPopupMenuItem    pEditAsOwnerItem; 
+  private JPopupMenuItem[]  pCheckOutItems;
+  private JPopupMenuItem[]  pLockItems;
+  private JPopupMenuItem[]  pRestoreItems;
+  private JPopupMenuItem[]  pReleaseItems;
 
-  private JMenuItem  pLinkItem;
-  private JMenuItem  pUnlinkItem;
-  private JMenuItem  pAddSecondaryItem;
-  private JMenuItem  pQueueJobsItem;
-  private JMenuItem  pQueueJobsSpecialItem;
-  private JMenuItem  pPauseJobsItem;
-  private JMenuItem  pResumeJobsItem;
-  private JMenuItem  pPreemptJobsItem;
-  private JMenuItem  pKillJobsItem;
-  private JMenuItem  pCheckInItem;
-  private JMenuItem  pEvolveItem;
-  private JMenuItem  pCloneItem;
-  private JMenuItem  pRemoveFilesItem;
-  private JMenuItem  pExportItem;
-  private JMenuItem  pRenameItem;
-  private JMenuItem  pRenumberItem;
-  private JMenuItem  pDeleteItem;
+  private JPopupMenuItem  pLinkItem;
+  private JPopupMenuItem  pUnlinkItem;
+  private JPopupMenuItem  pAddSecondaryItem;
+  private JPopupMenuItem  pQueueJobsItem;
+  private JPopupMenuItem  pQueueJobsSpecialItem;
+  private JPopupMenuItem  pPauseJobsItem;
+  private JPopupMenuItem  pResumeJobsItem;
+  private JPopupMenuItem  pPreemptJobsItem;
+  private JPopupMenuItem  pKillJobsItem;
+  private JPopupMenuItem  pCheckInItem;
+  private JPopupMenuItem  pEvolveItem;
+  private JPopupMenuItem  pCloneItem;
+  private JPopupMenuItem  pRemoveFilesItem;
+  private JPopupMenuItem  pExportItem;
+  private JPopupMenuItem  pRenameItem;
+  private JPopupMenuItem  pRenumberItem;
+  private JPopupMenuItem  pDeleteItem;
 
   /**
    * The dynamic submenus.
@@ -6117,6 +6276,14 @@ class JNodeViewerPanel
    * secondary node submenu indexed by secondary sequence name.
    */ 
   private TreeMap<String,FileSeq>  pRemoveSecondarySeqs;
+ 
+  /**
+   * A list of the N most recently used item titles for each node menu and the 
+   * ActionCommand for each item indexed by item title.
+   */ 
+  private int[]                              pFirstRecentIndex;
+  private ArrayList<LinkedList<String>>      pRecentMenuItems; 
+  private ArrayList<TreeMap<String,String>>  pRecentActionCommands; 
   
 
   /*----------------------------------------------------------------------------------------*/
