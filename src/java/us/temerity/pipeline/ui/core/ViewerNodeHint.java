@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.3 2007/02/07 23:44:13 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.4 2007/02/18 02:44:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -266,20 +266,27 @@ class ViewerNodeHint
 	for(wk=0; wk<titles.length; wk++) {
 	  pTitleDLs[wk] = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, titles[wk],
-			  GeometryMgr.TextAlignment.Right, 0.05);
+			  GeometryMgr.TextAlignment.Right, 0.05);    
 	}
+
+        pTitleWidth = mgr.getTextWidth(PackageInfo.sGLFont, "Version:", 0.05) * sTextHeight;
       }
 
       /* version state labels */ 
       if(pVersionStateDLs == null) {
 	ArrayList<VersionState> states = VersionState.all();
 	pVersionStateDLs = new int[states.size()];
+	pVersionWidths   = new double[states.size()];
 
 	int wk;
 	for(wk=0; wk<pVersionStateDLs.length; wk++) {
+          String title = fixTitle(states.get(wk).toTitle()); 
+
 	  pVersionStateDLs[wk] = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, fixTitle(states.get(wk).toTitle()), 
 			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pVersionWidths[wk] = mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05);
 	}
       }
 
@@ -287,12 +294,17 @@ class ViewerNodeHint
       if(pPropertyStateDLs == null) {
 	ArrayList<PropertyState> states = PropertyState.all();
 	pPropertyStateDLs = new int[states.size()];
+	pPropertyWidths   = new double[states.size()];
 
 	int wk;
 	for(wk=0; wk<pPropertyStateDLs.length; wk++) {
+          String title = fixTitle(states.get(wk).toTitle()); 
+
 	  pPropertyStateDLs[wk] = 
-	    mgr.getTextDL(gl, PackageInfo.sGLFont, fixTitle(states.get(wk).toTitle()), 
+	    mgr.getTextDL(gl, PackageInfo.sGLFont, title, 
 			  GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pPropertyWidths[wk] = mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05);
 	}
       }
 
@@ -300,12 +312,17 @@ class ViewerNodeHint
       if(pLinkStateDLs == null) {
 	ArrayList<LinkState> states = LinkState.all();
 	pLinkStateDLs = new int[states.size()];
+	pLinkWidths   = new double[states.size()];
 
 	int wk;
-	for(wk=0; wk<pLinkStateDLs.length; wk++) {
+	for(wk=0; wk<pLinkStateDLs.length; wk++) { 
+          String title = fixTitle(states.get(wk).toTitle()); 
+
 	  pLinkStateDLs[wk] = 
-	    mgr.getTextDL(gl, PackageInfo.sGLFont, fixTitle(states.get(wk).toTitle()), 
-			  GeometryMgr.TextAlignment.Left, 0.05);
+            mgr.getTextDL(gl, PackageInfo.sGLFont, title, 
+                          GeometryMgr.TextAlignment.Left, 0.05);
+
+	  pLinkWidths[wk] = mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05);
 	}
       }
 
@@ -348,6 +365,7 @@ class ViewerNodeHint
       /* count labels */ 
       if(pCountDLs == null) {
 	pCountDLs = new TreeMap<Integer,Integer>();
+        pCountWidths = new TreeMap<Integer,Double>();
 	
 	TreeSet<Integer> counts = new TreeSet<Integer>();
 	counts.addAll(pFileStates.values());
@@ -357,6 +375,8 @@ class ViewerNodeHint
 	  int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, "(" + cnt + ")", 
 				 GeometryMgr.TextAlignment.Left, 0.05);
 	  pCountDLs.put(cnt, dl);
+
+          pCountWidths.put(cnt, mgr.getTextWidth(PackageInfo.sGLFont, "(" + cnt + ")", 0.05));
 	}
       }
       
@@ -373,7 +393,9 @@ class ViewerNodeHint
 	  pToolsetDL = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, pToolset, 
 			  GeometryMgr.TextAlignment.Left, 0.05);
-	}	
+        }
+
+        pToolsetWidth = mgr.getTextWidth(PackageInfo.sGLFont, pToolset, 0.05);
       }
       
       /* plugin titles */ 
@@ -403,7 +425,7 @@ class ViewerNodeHint
 	  mgr.getTextDL(gl, PackageInfo.sGLFont, "-", 
 			GeometryMgr.TextAlignment.Center, 0.05);
       }
-      
+
       /* editor */ 
       if(pShowEditor && (pEditor != null)) {
 	if(pEditorDLs == null) {
@@ -420,7 +442,17 @@ class ViewerNodeHint
 	  pEditorDLs[2] = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, pEditor.getVendor(), 
 			  GeometryMgr.TextAlignment.Left, 0.05);
-	}
+        }
+
+        pEditorWidth = mgr.getTextWidth(PackageInfo.sGLFont, pEditor.getName(), 0.05);
+
+        pEditorWidth = 
+          Math.max(pEditorWidth, 
+                   mgr.getTextWidth(PackageInfo.sGLFont, "v" + pEditor.getVersionID(), 0.05));
+
+        pEditorWidth = 
+          Math.max(pEditorWidth, 
+                   mgr.getTextWidth(PackageInfo.sGLFont, pEditor.getVendor(), 0.05));
       }
 
       /* action */ 
@@ -439,7 +471,17 @@ class ViewerNodeHint
 	  pActionDLs[2] = 
 	    mgr.getTextDL(gl, PackageInfo.sGLFont, pAction.getVendor(), 
 			  GeometryMgr.TextAlignment.Left, 0.05);
-	}
+        }
+
+        pActionWidth = mgr.getTextWidth(PackageInfo.sGLFont, pAction.getName(), 0.05);
+
+        pActionWidth = 
+          Math.max(pActionWidth, 
+                   mgr.getTextWidth(PackageInfo.sGLFont, "v" + pAction.getVersionID(), 0.05));
+
+        pActionWidth = 
+          Math.max(pActionWidth, 
+                   mgr.getTextWidth(PackageInfo.sGLFont, pAction.getVendor(), 0.05));
       }
     }
     catch(IOException ex) {
@@ -483,20 +525,90 @@ class ViewerNodeHint
 
     if((pDetails != null) && !pFileStates.isEmpty() && !pQueueStates.isEmpty()) {
 
+      /* compute the size of the hint box and title/value alignments */ 
+      double valueWidth = 0.0;
+      {
+        if(pVersionStateDLs != null) {
+          valueWidth = 
+            Math.max(valueWidth, 
+                     pVersionWidths[pDetails.getVersionState().ordinal()]);
+        }
+
+        if(pPropertyStateDLs != null) {
+          valueWidth = 
+            Math.max(valueWidth, 
+                     pPropertyWidths[pDetails.getPropertyState().ordinal()]);
+        }
+        
+        if(pLinkStateDLs != null) {
+          valueWidth = 
+            Math.max(valueWidth, 
+                     pLinkWidths[pDetails.getLinkState().ordinal()]);
+        }
+
+        if((pFileStateDLs != null) && (pCountDLs != null)) {
+          if(pFileStates.size() == 1) {
+            valueWidth = 
+              Math.max(valueWidth, 
+                       pFileWidths[pFileStates.firstKey().ordinal()]);
+          }
+          else {
+            for(FileState state : pFileStates.keySet()) {
+              Integer cnt = pFileStates.get(state);
+              valueWidth = 
+                Math.max(valueWidth, 
+                         pFileWidths[state.ordinal()] + 0.05 + pCountWidths.get(cnt));
+            }
+          }
+        }
+
+        if((pQueueStateDLs != null) && (pCountDLs != null)) {
+          if(pQueueStates.size() == 1) {
+            valueWidth = 
+              Math.max(valueWidth, 
+                       pQueueWidths[pQueueStates.firstKey().ordinal()]);
+          }
+          else {
+            for(QueueState state : pQueueStates.keySet()) {
+              Integer cnt = pQueueStates.get(state);
+              valueWidth = 
+                Math.max(valueWidth, 
+                         pQueueWidths[state.ordinal()] + 0.05 + pCountWidths.get(cnt));
+            }
+          }
+        }
+         
+	if((pShowToolset) && (pToolsetDL != null)) 
+          valueWidth =  Math.max(valueWidth, pToolsetWidth);                  
+
+	if((pShowEditor) && (pEditorDLs != null)) 
+          valueWidth =  Math.max(valueWidth, pEditorWidth);         
+        
+	if((pShowAction) && (pActionDLs != null)) 
+          valueWidth =  Math.max(valueWidth, pActionWidth);  
+
+        valueWidth *= sTextHeight;
+      }
+      double wholeWidth = pTitleWidth + 0.1 + valueWidth;
+      double minWidth = Math.max(sWidth, wholeWidth);
+      double toffset = pTitleWidth - wholeWidth*0.5;
+      double voffset = toffset + 0.1;
+      double noffset = voffset + valueWidth*0.35;
+
       gl.glPushMatrix();
       {
-	double scale;
 	{
+          double scale;
 	  String style = prefs.getDetailHintStyle();
 	  if(style.equals("Scales with Nodes")) 
-	    scale = sTextScale * prefs.getDetailHintSize();
+	    scale = sScaleFactor * prefs.getDetailHintSize();
 	  else 
 	    scale = 48.0 * pParent.getCanvasScale() * prefs.getDetailHintSize();
+
+          gl.glTranslated(pPos.x(), pPos.y()-0.6, 0.0);
+          gl.glScaled(scale, scale, scale); 
+          gl.glTranslated(0.0, -0.8*sTextHeight-sBorder, 0.0);
 	}
-	  
-	gl.glTranslated(pPos.x(), pPos.y()-0.6, 0.0);
-	gl.glScaled(scale, scale, scale); 
-	gl.glTranslated(0.0, -0.8*sTextHeight-sBorder, 0.0);
 
 	/* background and borders */ 
 	{
@@ -520,7 +632,7 @@ class ViewerNodeHint
 	    oborders += 2.0;
 	  }
 	  
-	  double x  = sWidth*0.5 + sBorder; 
+	  double x  = minWidth*0.5 + sBorder; 
 	  double y1 = 0.8*sTextHeight + sBorder;
 	  double y2 = y1 - (sTextHeight + sBorder*2.0); 
 	  double y3 = y1 - (sTextHeight*(1.0+srows+orows) + sBorder*(2.0+sborders+oborders)); 
@@ -577,15 +689,16 @@ class ViewerNodeHint
 
 	gl.glColor4d(1.0, 1.0, 1.0, 1.0); 
 	
+
 	/* versions */ 
 	{
-	  double x = sWidth*0.25 + sBorder*0.5; 
+	  double x = minWidth*0.25 + sBorder*0.5; 
 
 	  if(pBaseVersionDL != null) {
 	    gl.glPushMatrix();
 	    {
 	      gl.glTranslated(-x, 0.0, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pBaseVersionDL);
 	    }
 	    gl.glPopMatrix();
@@ -595,7 +708,7 @@ class ViewerNodeHint
 	    gl.glPushMatrix();
 	    {
 	      gl.glTranslated(x, 0.0, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pLatestVersionDL);
 	    }
 	    gl.glPopMatrix();
@@ -612,8 +725,8 @@ class ViewerNodeHint
 
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(-0.5, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(toffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pTitleDLs[wk]);
 	    }
 	    gl.glPopMatrix();
@@ -625,13 +738,13 @@ class ViewerNodeHint
 	{
 	  gl.glPushMatrix();
 	  {
-	    gl.glTranslated(-0.4, 0.0, 0.0);
+            gl.glTranslated(voffset, 0.0, 0.0);
 
 	    if(pVersionStateDLs != null) {
 	      gl.glPushMatrix();
 	      {
 		gl.glTranslated(0.0, y, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pVersionStateDLs[pDetails.getVersionState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
@@ -642,7 +755,7 @@ class ViewerNodeHint
 	      gl.glPushMatrix();
 	      {
 		gl.glTranslated(0.0, y, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pPropertyStateDLs[pDetails.getPropertyState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
@@ -653,7 +766,7 @@ class ViewerNodeHint
 	      gl.glPushMatrix();
 	      {
 		gl.glTranslated(0.0, y, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pLinkStateDLs[pDetails.getLinkState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
@@ -668,7 +781,7 @@ class ViewerNodeHint
 		gl.glPushMatrix();
 		{
 		  gl.glTranslated(0.0, y, 0.0);
-		  gl.glScaled(0.35, 0.35, 0.35);
+		  gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		  gl.glCallList(pFileStateDLs[state.ordinal()]);
 		}
 		gl.glPopMatrix();
@@ -676,9 +789,9 @@ class ViewerNodeHint
 		if(!single) {
 		  gl.glPushMatrix();
 		  {
-		    double x = 0.05 + pFileWidths[state.ordinal()]*0.35;
+		    double x = 0.05 + pFileWidths[state.ordinal()]*sTextHeight;
 		    gl.glTranslated(x, y, 0.0);
-		    gl.glScaled(0.35, 0.35, 0.35);
+		    gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		    gl.glCallList(pCountDLs.get(cnt));
 		  }
 		  gl.glPopMatrix();
@@ -695,7 +808,7 @@ class ViewerNodeHint
 		gl.glPushMatrix();
 		{
 		  gl.glTranslated(0.0, y, 0.0);
-		  gl.glScaled(0.35, 0.35, 0.35);
+		  gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		  gl.glCallList(pQueueStateDLs[state.ordinal()]);
 		}
 		gl.glPopMatrix();
@@ -703,9 +816,9 @@ class ViewerNodeHint
 		if(!single) {
 		  gl.glPushMatrix();
 		  {
-		    double x = 0.05 + pQueueWidths[state.ordinal()]*0.35;
+		    double x = 0.05 + pQueueWidths[state.ordinal()]*sTextHeight;
 		    gl.glTranslated(x, y, 0.0);
-		    gl.glScaled(0.35, 0.35, 0.35);
+		    gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		    gl.glCallList(pCountDLs.get(cnt));
 		  }
 		  gl.glPopMatrix();
@@ -723,8 +836,8 @@ class ViewerNodeHint
 	  if(pToolsetTitleDL != null) {
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(-0.5, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(toffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pToolsetTitleDL); 
 	    }
 	    gl.glPopMatrix();
@@ -733,8 +846,8 @@ class ViewerNodeHint
 	  if(pToolsetDL != null) {
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(-0.4, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+              gl.glTranslated(voffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pToolsetDL); 
 	    }
 	    gl.glPopMatrix();
@@ -742,8 +855,8 @@ class ViewerNodeHint
 	  else if(pNullDL != null) {
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(0.35, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(noffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pNullDL); 
 	    }
 	    gl.glPopMatrix();
@@ -758,8 +871,8 @@ class ViewerNodeHint
 	    double py = y;
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(-0.5, py, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(toffset, py, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pPluginTitleDLs[0]); 
 	    }
 	    gl.glPopMatrix();
@@ -768,8 +881,8 @@ class ViewerNodeHint
 	      py -= sTextHeight;
 	      gl.glPushMatrix();
 	      {
-		gl.glTranslated(-0.5, py, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+                gl.glTranslated(toffset, py, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pPluginTitleDLs[2]); 
 	      }
 	      gl.glPopMatrix();
@@ -777,8 +890,8 @@ class ViewerNodeHint
 	      py -= sTextHeight;
 	      gl.glPushMatrix();
 	      {
-		gl.glTranslated(-0.5, py, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+                gl.glTranslated(toffset, py, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pPluginTitleDLs[3]); 
 	      }
 	      gl.glPopMatrix();	      
@@ -790,8 +903,8 @@ class ViewerNodeHint
 	    for(wk=0; wk<pEditorDLs.length; wk++) {
 	      gl.glPushMatrix();
 	      {
-		gl.glTranslated(-0.4, y, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+                gl.glTranslated(voffset, y, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pEditorDLs[wk]); 
 	      }
 	      gl.glPopMatrix();
@@ -802,8 +915,8 @@ class ViewerNodeHint
 	  else if(pNullDL != null) {
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(0.35, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(noffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pNullDL); 
 	    }
 	    gl.glPopMatrix();
@@ -823,8 +936,8 @@ class ViewerNodeHint
 	    double py = y;
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(-0.5, py, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(toffset, py, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pPluginTitleDLs[1]); 
 	    }
 	    gl.glPopMatrix();
@@ -833,8 +946,8 @@ class ViewerNodeHint
 	      py -= sTextHeight;
 	      gl.glPushMatrix();
 	      {
-		gl.glTranslated(-0.5, py, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+                gl.glTranslated(toffset, py, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pPluginTitleDLs[2]); 
 	      }
 	      gl.glPopMatrix();
@@ -842,8 +955,8 @@ class ViewerNodeHint
 	      py -= sTextHeight;
 	      gl.glPushMatrix();
 	      {
-		gl.glTranslated(-0.5, py, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+                gl.glTranslated(toffset, py, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pPluginTitleDLs[3]); 
 	      }
 	      gl.glPopMatrix();	      
@@ -855,8 +968,8 @@ class ViewerNodeHint
 	    for(wk=0; wk<pActionDLs.length; wk++) {
 	      gl.glPushMatrix();
 	      {
-		gl.glTranslated(-0.4, y, 0.0);
-		gl.glScaled(0.35, 0.35, 0.35);
+                gl.glTranslated(voffset, y, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 		gl.glCallList(pActionDLs[wk]); 
 	      }
 	      gl.glPopMatrix();
@@ -867,8 +980,8 @@ class ViewerNodeHint
 	  else if(pNullDL != null) {
 	    gl.glPushMatrix();
 	    {
-	      gl.glTranslated(0.35, y, 0.0);
-	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glTranslated(noffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
 	      gl.glCallList(pNullDL); 
 	    }
 	    gl.glPopMatrix();
@@ -890,10 +1003,10 @@ class ViewerNodeHint
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private final double  sWidth      = 3.8;
-  private final double  sBorder     = 0.15;
-  private final double  sTextHeight = 0.35;
-  private final double  sTextScale  = 0.75;
+  private final double  sWidth       = 2.0; 
+  private final double  sBorder      = 0.15;
+  private final double  sTextHeight  = 0.35;
+  private final double  sScaleFactor = 0.75;
 
 
 
@@ -947,7 +1060,7 @@ class ViewerNodeHint
   private Integer  pBackgroundDL; 
   
   /**
-   * The OpenGL display list handle for version labels. 
+   * The OpenGL display list handle for revision number labels. 
    */ 
   private Integer  pBaseVersionDL; 
   private Integer  pLatestVersionDL; 
@@ -955,14 +1068,20 @@ class ViewerNodeHint
   /**
    * The OpenGL display list handle for state titles.
    */ 
-  private int[]  pTitleDLs; 
+  private int[]   pTitleDLs; 
+  private double  pTitleWidth; 
   
   /**
    * The OpenGL display list handle for the state values.
    */ 
-  private int[]  pVersionStateDLs;   
-  private int[]  pPropertyStateDLs;  
-  private int[]  pLinkStateDLs;      
+  private int[]     pVersionStateDLs;  	  
+  private double[]  pVersionWidths; 
+
+  private int[]     pPropertyStateDLs; 	  
+  private double[]  pPropertyWidths;
+ 
+  private int[]     pLinkStateDLs;   	  
+  private double[]  pLinkWidths;   
 
   private int[]     pFileStateDLs; 	  
   private double[]  pFileWidths;
@@ -971,14 +1090,21 @@ class ViewerNodeHint
   private double[]  pQueueWidths;
 
   private TreeMap<Integer,Integer>  pCountDLs; 
+  private TreeMap<Integer,Double>   pCountWidths; 
 
   /**
    * The OpenGL display list handles for the optional properties. 
    */ 
   private Integer  pToolsetTitleDL;
-  private Integer  pToolsetDL;
   private int[]    pPluginTitleDLs; 
   private Integer  pNullDL; 
+
+  private Integer  pToolsetDL;
+  private double   pToolsetWidth; 
+
   private int[]    pEditorDLs; 
+  private double   pEditorWidth;
+
   private int[]    pActionDLs; 
+  private double   pActionWidth;
 }
