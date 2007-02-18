@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.25 2007/02/07 21:13:02 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.26 2007/02/18 15:25:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -720,7 +720,17 @@ class PackageInfo
    */ 
   @Deprecated
   public static final File sTempDir;
+
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The default Windows Domain at this site. <P> 
+   *  
+   * Set by the WinDefaultDomain customer profile entry.
+   */ 
+  public static final String sDefaultWindowsDomain = "@WIN_DEFAULT_DOMAIN@"; 
+
 
   /*----------------------------------------------------------------------------------------*/
   

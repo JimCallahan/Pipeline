@@ -1,4 +1,4 @@
-// $Id: JAuthorizeDialog.java,v 1.2 2007/02/12 19:20:49 jim Exp $
+// $Id: JAuthorizeDialog.java,v 1.3 2007/02/18 15:25:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -54,7 +54,7 @@ class JAuthorizeDialog
 	pDomainField = 
 	  UIFactory.createTitledEditableTextField
 	  (tpanel, "Windows Domain:", sTSize, 
-	   vpanel, ".", sVSize, 
+	   vpanel, PackageInfo.sDefaultWindowsDomain, sVSize, 
 	   "Provide the Windows Domain used to authorize Pipeline to run jobs on your " + 
 	   "behalf on Windows based Job Servers.");
 
