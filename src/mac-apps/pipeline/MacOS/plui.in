@@ -5,6 +5,6 @@
   -Xdock:icon=@MAC_ROOT_INST_DIR@/MacOS/Pipeline.app/Contents/Resources/pipeline.icns \
   @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ \
   -Djava.library.path=@JOGL_LIBRARY_PATH@ \
-  -cp @PIPELINE_JAR@:@JOGL_JAR@ \
+  -cp @PIPELINE_JAR@:@JOGL_JAR@:@GLUEGEN_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp
 

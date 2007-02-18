@@ -15,26 +15,20 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_0CA239462A38F7BB122980B90DA67E90"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_0E78FCBCB50E473AA95ECDF16C797064"
+        "OwnerKey" = "8:_7B08DADD215F473CA515005799F734F3"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_29B85609E2CA47D89209131494B3D1DD"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_342DD1FDBB023E516BD22DE9A2C34277"
-        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_5B6E6164E184491D829B0AED4AA12A88"
-        "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_5B6E6164E184491D829B0AED4AA12A88"
-        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -57,14 +51,20 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_7B08DADD215F473CA515005799F734F3"
+        "OwnerKey" = "8:_62FD107D51234EE88F4AE1C90DD60F1E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_BC6B2FB9008D4987838C65FDB16FE2A0"
-        "OwnerKey" = "8:_5B6E6164E184491D829B0AED4AA12A88"
+        "MsmKey" = "8:_7B08DADD215F473CA515005799F734F3"
+        "OwnerKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7FBE5C81888343B3B5FFE77670F71A5A"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -216,6 +216,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0CA239462A38F7BB122980B90DA67E90"
+            {
+            "SourcePath" = "8:jvm.dll"
+            "TargetName" = "8:jvm.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_29B85609E2CA47D89209131494B3D1DD"
             {
             "SourcePath" = "8:..\\license.rtf"
@@ -234,26 +254,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_342DD1FDBB023E516BD22DE9A2C34277"
-            {
-            "SourcePath" = "8:jvm.dll"
-            "TargetName" = "8:jvm.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6B6D55A2D7664AD2B79EE3C594627CDF"
@@ -365,8 +365,8 @@
             {
             "Name" = "8:Condition1"
             "Condition" = "8:JAVAHOME"
-            "Message" = "8:JDK 5.0 (Update 9) is required by the Pipeline Job Manager."
-            "InstallUrl" = "8:http://java.sun.com/products/archive/j2se/5.0_09/index.html"
+            "Message" = "8:JDK 5.0 (Update 11) is required by the Pipeline Job Manager."
+            "InstallUrl" = "8:http://java.sun.com/javase/downloads/index_jdk5.jsp"
             }
         }
         "Locator"
@@ -375,7 +375,7 @@
             {
             "Name" = "8:Search forJDK"
             "Root" = "2:1"
-            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Development Kit\\1.5.0_09"
+            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Development Kit\\1.5.0_11"
             "Value" = "8:JavaHome"
             "Property" = "8:JAVAHOME"
             }
@@ -1010,11 +1010,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_5B6E6164E184491D829B0AED4AA12A88"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_0E78FCBCB50E473AA95ECDF16C797064"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
+            "SourcePath" = "8:policy_8_0_microsoft_vc80_debugcrt_x86.msm"
                 "Properties"
                 {
                 }
@@ -1024,11 +1024,11 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_BC6B2FB9008D4987838C65FDB16FE2A0"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_7B08DADD215F473CA515005799F734F3"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_8_0_microsoft_vc80_debugcrt_x86.msm"
+            "SourcePath" = "8:Microsoft_VC80_DebugCRT_x86.msm"
                 "Properties"
                 {
                 }

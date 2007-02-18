@@ -19,6 +19,7 @@
     <classPath>
       <archive location="@PIPELINE_JAR@" failOnError="true" />
       <archive location="@JOGL_JAR@" failOnError="true" />
+      <archive location="@GLUEGEN_JAR@" failOnError="true" />
     </classPath>
     <nativeLibraryDirectories>
       <directory name="@JOGL_LIBRARY_PATH@" />

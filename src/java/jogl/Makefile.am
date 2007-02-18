@@ -3,15 +3,18 @@ if IS_UNIX
 jogldir = @ROOT_INST_DIR@/jogl
 
 jogl_DATA = \
+  CHANGELOG.txt \
   COPYRIGHT-JOGL.txt \
   LICENSE-JOGL.txt \
-  README.txt
+  README.txt \
+  Userguide.html
 
 
 jogllibdir = @ROOT_INST_DIR@/jogl/lib
 
 jogllib_DATA = \
-  jogl.jar
+  jogl.jar \
+  gluegen-rt.jar
 endif 
 
 
