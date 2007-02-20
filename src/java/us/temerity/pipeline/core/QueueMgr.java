@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.84 2007/02/13 16:04:12 jim Exp $
+// $Id: QueueMgr.java,v 1.85 2007/02/20 19:57:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -60,7 +60,7 @@ class QueueMgr
     pShutdownJobMgrs = new AtomicBoolean(false);
 
     LogMgr.getInstance().logAndFlush
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Initializing [QueueMgr]..."); 
 
     init();
@@ -222,7 +222,7 @@ class QueueMgr
 
     timer.suspend();
     LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
@@ -250,7 +250,7 @@ class QueueMgr
 
     timer.suspend();
     LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
@@ -272,7 +272,7 @@ class QueueMgr
     
     timer.suspend();
     LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
@@ -360,7 +360,7 @@ class QueueMgr
 
       timer.suspend();
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
@@ -397,7 +397,7 @@ class QueueMgr
 
       timer.suspend();
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
@@ -414,7 +414,7 @@ class QueueMgr
       
       timer.suspend();
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Cleaned in " + Dates.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
@@ -439,7 +439,7 @@ class QueueMgr
 
       timer.suspend();
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "  Initialized in " + Dates.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
@@ -455,11 +455,27 @@ class QueueMgr
 	String hostname = running.get(jobID);
 
 	QueueJob job = null;
-	TreeSet<String> aquiredKeys = new TreeSet<String>();
 	synchronized(pJobs) {
 	  job = pJobs.get(jobID);
-	  aquiredKeys.addAll(job.getJobRequirements().getLicenseKeys());
 	}
+
+        /* attempt to aquire the licenses already being used by the job */ 
+	TreeSet<String> aquiredKeys = new TreeSet<String>();
+        synchronized(pLicenseKeys) {
+          for(String kname : job.getJobRequirements().getLicenseKeys()) {
+            LicenseKey key = pLicenseKeys.get(kname);
+            if(key != null) {
+              if(key.aquire(hostname)) 
+                aquiredKeys.add(kname);
+              else {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                   "Unable to aquire a (" + key.getName() + ") license key for the " + 
+                   "job (" + jobID + ") already running on (" + hostname + ")!");
+              }
+            }            
+          }
+        }
 
 	MonitorTask task = new MonitorTask(hostname, job, aquiredKeys);
 	task.start();
@@ -4349,7 +4365,7 @@ class QueueMgr
 		}
 		catch(PipelineException ex) {
 		  LogMgr.getInstance().log
-		  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		   ex.getMessage()); 
 		}
 		
@@ -4405,7 +4421,7 @@ class QueueMgr
 		  }
 		  catch(PipelineException ex) {
 		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		       ex.getMessage()); 
 		  }
 
@@ -4477,7 +4493,7 @@ class QueueMgr
 		  }
 		  catch(PipelineException ex) {
 		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		       ex.getMessage()); 
 		  }
 
@@ -4802,7 +4818,7 @@ class QueueMgr
 			    }
 			    catch(PipelineException ex) {
 			      LogMgr.getInstance().log
-				(LogMgr.Kind.Net, LogMgr.Level.Severe,
+				(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 				 ex.getMessage()); 
 			    }
 
@@ -4884,7 +4900,7 @@ class QueueMgr
 		}
 		catch(PipelineException ex) {
 		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		     ex.getMessage()); 
 		}
 		
@@ -5129,7 +5145,7 @@ class QueueMgr
 	}
 	catch (PipelineException ex) {
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     ex.getMessage()); 
 	}
 
