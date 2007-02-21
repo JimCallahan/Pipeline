@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.4 2006/12/05 18:23:30 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.5 2007/02/21 00:58:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -148,6 +148,7 @@ class JQueueJobServersPanel
 	{
 	  JLabel label = new JLabel("Queue Servers:");
 	  label.setName("DialogHeaderLabel");	
+          pHeaderLabel = label;
 	  
 	  panel.add(label);	  
 	}
@@ -361,7 +362,7 @@ class JQueueJobServersPanel
       }
     }
 
-    updateJobs(null, null, null, null, null, null);
+    updateJobs(false, null, null, null, null, null, null);
   }
 
 
@@ -507,6 +508,9 @@ class JQueueJobServersPanel
    * @param view
    *   Name of the current working area view.
    * 
+   * @param filtered
+   *   Whether the hosts displayed where filtered by the Queue Stats panel.
+   * 
    * @param hosts
    *   The job server hosts indexed by fully resolved hostname.
    * 
@@ -530,6 +534,7 @@ class JQueueJobServersPanel
   (
    String author, 
    String view, 
+   boolean filtered, 
    TreeMap<String,QueueHostInfo> hosts, 
    TreeMap<String,ResourceSampleCache> samples, 
    Set<String> workGroups, 
@@ -541,7 +546,8 @@ class JQueueJobServersPanel
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJobs(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules);
+    updateJobs(filtered, hosts, samples, 
+               workGroups, workUsers, selectionGroups, selectionSchedules);
   }
 
 
@@ -549,6 +555,9 @@ class JQueueJobServersPanel
 
   /**
    * Update the jobs groups, servers and slots asynchronously.
+   * 
+   * @param filtered
+   *   Whether the hosts displayed where filtered by the Queue Stats panel.
    * 
    * @param hosts
    *   The job server hosts indexex by fully resolved hostnames.
@@ -571,6 +580,7 @@ class JQueueJobServersPanel
   public synchronized void
   updateJobs
   (
+   boolean filtered, 
    TreeMap<String,QueueHostInfo> hosts, 
    TreeMap<String,ResourceSampleCache>  samples, 
    Set<String> workGroups, 
@@ -583,6 +593,9 @@ class JQueueJobServersPanel
 
     /* job server panel */ 
     if((hosts != null) && (selectionGroups != null) && (selectionSchedules != null)) {
+      pHeaderLabel.setText("Queue Servers:" + 
+                           (filtered ? ("  ( " + hosts.size() + " matched )") : ""));  
+
       pHostnamesTableModel.setHostnames(hosts.keySet());
 
       pHostsTableModel.setQueueHosts
@@ -1412,6 +1425,11 @@ class JQueueJobServersPanel
    * The header panel.
    */ 
   private JPanel pHostsHeaderPanel; 
+
+  /**
+   * The panel title.
+   */
+  private JLabel  pHeaderLabel;
 
   /** 
    * Column display buttons.

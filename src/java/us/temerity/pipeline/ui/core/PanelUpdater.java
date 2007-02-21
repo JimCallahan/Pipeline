@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.8 2006/12/07 05:28:56 jim Exp $
+// $Id: PanelUpdater.java,v 1.9 2007/02/21 00:58:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -272,8 +272,10 @@ class PanelUpdater
       }
     }
 
-    if((pQueueJobServerStatsPanel != null) && !pJobSlotsSelectionOnly) 
+    if((pQueueJobServerStatsPanel != null) && !pJobSlotsSelectionOnly) {
       pServerHistogramSpecs = pQueueJobServerStatsPanel.getHistogramSpecs(); 
+      pServersFiltered = !pServerHistogramSpecs.allIncluded();
+    }
 
     if(pQueueJobServersPanel != null) 
       pSampleIntervals = pQueueJobServersPanel.getSampleIntervals(); 
@@ -657,7 +659,7 @@ class PanelUpdater
 	    /* job servers */ 
 	    if(pQueueJobServersPanel != null) 
 	      pQueueJobServersPanel.applyPanelUpdates
-		(pAuthor, pView, pHosts, pSamples, 
+		(pAuthor, pView, pServersFiltered, pHosts, pSamples, 
 		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules);
 	    
 	    /* job slots */ 
@@ -850,6 +852,11 @@ class PanelUpdater
    * The previous job server histogram specifications.
    */ 
   private QueueHostHistogramSpecs  pServerHistogramSpecs;
+
+  /**
+   * Whether a subset of the servers is being returned due to histogram selections. 
+   */ 
+  private boolean  pServersFiltered; 
 
   /**
    * The current job server histograms.

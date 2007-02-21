@@ -1,4 +1,4 @@
-// $Id: QueueHostHistogramSpecs.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: QueueHostHistogramSpecs.java,v 1.2 2007/02/21 00:58:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -253,6 +253,32 @@ class QueueHostHistogramSpecs
       (statusSpec, osSpec, 
        loadSpec, memorySpec, diskSpec, numJobsSpec, slotsSpec, 
        reserveSpec, orderSpec, groupsSpec, schedsSpec);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether all or none of the catagories from all histograms are included in the 
+   * matching set. 
+   */ 
+  public boolean 
+  allIncluded() 
+  {
+    return (pStatus.allIncluded() && 
+            pOsType.allIncluded() && 
+            pLoad.allIncluded() && 
+            pMemory.allIncluded() && 
+            pDisk.allIncluded() && 
+            pNumJobs.allIncluded() && 
+            pSlots.allIncluded() && 
+            pOrder.allIncluded() && 
+            pReserve.allIncluded() && 
+            pGroups.allIncluded() && 
+            pScheds.allIncluded()); 
   }
 
 
@@ -595,7 +621,7 @@ class QueueHostHistogramSpecs
   private HistogramSpec  pOrder;
   private HistogramSpec  pReserve;
   private HistogramSpec  pGroups;
-  private HistogramSpec  pScheds;
+  private HistogramSpec  pScheds;  
 
 }
 
