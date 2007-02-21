@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.5 2006/11/21 20:00:04 jim Exp $
+// $Id: QueueHost.java,v 1.6 2007/02/21 02:25:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -506,13 +506,24 @@ class QueueHost
   public synchronized void 
   jobStarted()
   {
-    if((pNumJobs == null) || (pNumJobs < 0))
-      throw new IllegalStateException("Illegal job count (" + pNumJobs + ")!");
-    pNumJobs++;
+    /* if the job counts are known and valid, increment number of jobs */ 
+    if((pNumJobs != null) && (pNumJobs >= 0)) {
+      pNumJobs++;
+    }
+    /* if not, reset the job count so that it will be reaquired from the job server */ 
+    else {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "Job Count Reset [" + getName() + "]:  Jobs = " +
+         ((pNumJobs != null) ? pNumJobs : "<unknown>"));
+
+      pNumJobs = null;  
+    }
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Started [" + getName() + "]:  Jobs = " + pNumJobs);
+       "Job Started [" + getName() + "]:  Jobs = " + 
+       ((pNumJobs != null) ? pNumJobs : "<unknown>"));
     LogMgr.getInstance().flush();
   }
 
@@ -522,16 +533,25 @@ class QueueHost
   public synchronized void 
   jobFinished()
   {
-    if(pNumJobs != null) {
+    /* if the job counts are known and valid, decrement number of jobs */ 
+    if(pNumJobs != null) 
       pNumJobs--;
+    
+    /* if the job counts are uknown or invalid, 
+         reset the job count so that it will be reaquired from the job server */ 
+    if((pNumJobs == null) || (pNumJobs < 0)) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+         "Job Count Reset [" + getName() + "]:  Jobs = " +
+         ((pNumJobs != null) ? pNumJobs : "<unknown>"));
 
-      if(pNumJobs < 0)
-	throw new IllegalStateException("Illegal job count (" + pNumJobs + ")!");
+      pNumJobs = null;  
     }
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Finished [" + getName() + "]:  Jobs = " + pNumJobs);
+       "Job Finished [" + getName() + "]:  Jobs = " + 
+       ((pNumJobs != null) ? pNumJobs : "<unknown>"));
     LogMgr.getInstance().flush();
   }
 
@@ -604,6 +624,7 @@ class QueueHost
    * <DIV style="margin-left: 40px;">
    *   There are no system resource samples newer than the sample interval.<P>
    *   If the server is currently on hold due to job run-up. <P>
+   *   If the number of running jobs is unknown due to network communication problems.
    * </DIV>
    */
   public synchronized int 
@@ -628,8 +649,13 @@ class QueueHost
       return 0;
     }
     
-    if(pNumJobs == null) 
-      throw new IllegalStateException("Illegal job count!"); 
+    if(pNumJobs == null) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+         "Available Slots [" + getName() + "]:  Unknown Status!"); 
+
+      return 0; 
+    }
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
