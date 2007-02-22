@@ -46,19 +46,17 @@ can begin processing jobs using:
 @ROOT_INST_DIR@/Windows/debug/bin/plui2.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plui.exe
 
-@ROOT_INST_DIR@/Windows/debug/bin/pltestnative.bat
-@ROOT_INST_DIR@/Windows/debug/bin/pltestheavy.bat
-@ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
+#@ROOT_INST_DIR@/Windows/debug/bin/pltestheavy.bat
+#@ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
 
 @ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
 
-@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
+#@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows/libNative.dll
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/jogl/lib/Windows/gluegen-rt.dll
 @ROOT_INST_DIR@/jogl/lib/Windows/jogl_awt.dll
 @ROOT_INST_DIR@/jogl/lib/Windows/jogl_cg.dll
 @ROOT_INST_DIR@/jogl/lib/Windows/jogl.dll

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.2.1)
+AM_INIT_AUTOMAKE(Pipeline, 2.1.9)
  
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -383,21 +383,6 @@ AC_MSG_RESULT([$TEMPDIR])
 
 
 
-
-AC_MSG_CHECKING([Unix Client Java Home Directory])
-
-AC_SUBST(UNIX_JAVA_HOME)
-UNIX_JAVA_HOME=`crypto_lookup UnixJavaHome`
-
-if test "$UNIX_JAVA_HOME" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$UNIX_JAVA_HOME])
-
-
-
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline Master Server Hostname])
@@ -724,9 +709,6 @@ dnl ----------------------------------------------------------------------------
 AC_SUBST(WIN_ROOT_INST_DIR)
 WIN_ROOT_INST_DIR=""
 
-AC_SUBST(WIN_DEFAULT_DOMAIN)
-WIN_DEFAULT_DOMAIN=""
-
 AC_SUBST(WIN_PRODDIR)
 WIN_PRODDIR=""
 
@@ -740,7 +722,6 @@ AC_SUBST(WIN_JAVA_HOME)
 WIN_JAVA_HOME=""
 
 win_clients=`crypto_lookup WinClients`
-win_default_domain=`crypto_lookup WinDefaultDomain`
 win_root_inst_dir=`crypto_lookup WinRootInstallDirectory`
 win_prod_dir=`crypto_lookup WinProductionDirectory`
 win_home_dir=`crypto_lookup WinHomeDirectory`
@@ -749,17 +730,12 @@ win_java_home=`crypto_lookup WinJavaHome`
 has_windows=false
 
 if test "$win_clients" == "true" \
-     -a "$win_default_domain" != "null" \
      -a "$win_root_inst_dir" != "null" \
      -a "$win_prod_dir" != "null" \
      -a "$win_home_dir" != "null" \
      -a "$win_temp_dir" != "null" \
      -a "$win_java_home" != "null"
 then
-  AC_MSG_CHECKING([Windows Default Domain])
-  WIN_DEFAULT_DOMAIN="$win_default_domain"
-  AC_MSG_RESULT([$WIN_DEFAULT_DOMAIN])
-
   AC_MSG_CHECKING([Windows Root Installation Directory])
   WIN_ROOT_INST_DIR="$win_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP"
   AC_MSG_RESULT([$WIN_ROOT_INST_DIR])
@@ -933,9 +909,6 @@ AC_MSG_RESULT([ ])
 AC_SUBST(JAVA_RUNTIME)
 JAVA_RUNTIME="";
 
-AC_SUBST(CLIENT_JAVA_RUNTIME)
-CLIENT_JAVA_RUNTIME="";
-
 AC_SUBST(MAC_JAVA_RUNTIME)
 MAC_JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java"
 
@@ -945,9 +918,6 @@ WIN_JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java"
 
 AC_SUBST(JOGL_JAR)
 JOGL_JAR=""
-
-AC_SUBST(GLUEGEN_JAR)
-GLUEGEN_JAR=""
 
 AC_SUBST(JOGL_LIBRARY_PATH)
 JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
@@ -962,26 +932,20 @@ PIPELINE_JAR=""
 case "$NATIVE_OSTYPE" in 
   (Unix)  
     JAVA_RUNTIME="$JAVA_HOME/bin/java";
-    CLIENT_JAVA_RUNTIME="$UNIX_JAVA_HOME/bin/java";
     PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
-    GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
 
   (MacOS) 
     JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
-    CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
-    GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
   
   (Windows) 
     JAVA_RUNTIME="$WIN_JAVA_HOME/bin/java";
-    CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
     PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
-    GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
 esac
 
@@ -1075,7 +1039,6 @@ AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_GC_OPTS)
 max_heap_size=$(($PL_MASTER_HEAP_SIZE / (1024*1024) ))
 min_heap_size=$(($max_heap_size / 16))
-if test $min_heap_size -lt 8; then min_heap_size=8; fi
 PLMASTER_GC_OPTS="${java_gc_opts} -Xms${min_heap_size}M -Xmx${max_heap_size}M"
 AC_MSG_RESULT([$PLMASTER_GC_OPTS])
 
@@ -1083,20 +1046,18 @@ AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_GC_OPTS)
 max_heap_size=$(($PL_FILE_HEAP_SIZE / (1024*1024) ))
 min_heap_size=$(($max_heap_size / 16))
-if test $min_heap_size -lt 8; then min_heap_size=8; fi
 PLFILEMGR_GC_OPTS="${java_gc_opts} -Xms${min_heap_size}M -Xmx${max_heap_size}M"
 AC_MSG_RESULT([$PLFILEMGR_GC_OPTS])
 
 AC_MSG_CHECKING([plplugin])
 AC_SUBST(PLPLUGIN_GC_OPTS)
-PLPLUGIN_GC_OPTS="${java_gc_opts} -Xms8M -Xmx64M"
+PLPLUGIN_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
 AC_MSG_RESULT([$PLPLUGIN_GC_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
 AC_SUBST(PLQUEUEMGR_GC_OPTS)
 max_heap_size=$(($PL_QUEUE_HEAP_SIZE / (1024*1024) ))
 min_heap_size=$(($max_heap_size / 16))
-if test $min_heap_size -lt 8; then min_heap_size=8; fi
 PLQUEUEMGR_GC_OPTS="${java_gc_opts} -Xms${min_heap_size}M -Xmx${max_heap_size}M"
 AC_MSG_RESULT([$PLQUEUEMGR_GC_OPTS])
 
@@ -1105,12 +1066,6 @@ AC_SUBST(PLJOBMGR_GC_OPTS)
 PLJOBMGR_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
 AC_MSG_RESULT([$PLJOBMGR_GC_OPTS])
 
-AC_SUBST(PLJOBMGR_XMS)
-PLJOBMGR_XMS="-Xms8M"
-
-AC_SUBST(PLJOBMGR_XMX)
-PLJOBMGR_XMX="-Xmx128M"
-
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_GC_OPTS)
 PLUI_GC_OPTS="${java_gc_opts} -Xms32M -Xmx512M"
@@ -1118,12 +1073,12 @@ AC_MSG_RESULT([$PLUI_GC_OPTS])
 
 AC_MSG_CHECKING([plscript])
 AC_SUBST(PLSCRIPT_GC_OPTS)
-PLSCRIPT_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+PLSCRIPT_GC_OPTS="${java_gc_opts} -Xms16M -Xmx256M"
 AC_MSG_RESULT([$PLSCRIPT_GC_OPTS])
 
 AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_GC_OPTS)
-PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
+PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms16M -Xmx128M"
 AC_MSG_RESULT([$PLPLUGINMGR_GC_OPTS])
 
 AC_MSG_CHECKING([pltestnative])
@@ -1147,8 +1102,7 @@ then
   debug_base=$with_debug_base
 fi
 
-java_runjdwp="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
-java_debug_opts="-Xdebug ${java_runjdwp}"
+java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_DEBUG_OPTS)
@@ -1174,9 +1128,6 @@ AC_MSG_CHECKING([pljobmgr])
 AC_SUBST(PLJOBMGR_DEBUG_OPTS)
 PLJOBMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+6))
 AC_MSG_RESULT([$PLJOBMGR_DEBUG_OPTS])
-
-AC_SUBST(PLJOBMGR_XRUNJDWP)
-PLJOBMGR_XRUNJDWP=${java_runjdwp}$(($debug_base+6))
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_DEBUG_OPTS)
@@ -1521,8 +1472,6 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plui
   src/java/scripts/debug/pltestnative
-  src/java/scripts/debug/pltestlight
-  src/java/scripts/debug/pltestheavy
   src/java/scripts/debug/plvalidate
 
   src/java/scripts/profile/Makefile
@@ -1559,9 +1508,7 @@ AC_CONFIG_FILES([
 
   src/windows/Makefile
   src/windows/native/Makefile
-
   src/windows/services/Makefile
-  src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src
 
   src/windows/scripts/Makefile
   src/windows/scripts/plscript.bat.src
