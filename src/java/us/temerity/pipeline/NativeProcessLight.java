@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.java,v 1.7 2007/02/22 16:12:39 jim Exp $
+// $Id: NativeProcessLight.java,v 1.8 2007/02/22 16:32:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -138,6 +138,9 @@ class NativeProcessLight
    * @param user
    *   The username which will own the OS level subprocess.
    * 
+   * @param domain
+   *   The Windows domain of the user which will own the OS level subprocess.
+   * 
    * @param password
    *   The encrypted Windows password for the user.
    */ 
@@ -145,17 +148,23 @@ class NativeProcessLight
   authorizeOnWindows
   (
    String user, 
+   String domain, 
    String password
   ) 
   {
     if((user == null) || PackageInfo.sUser.equals(user)) 
       return; 
 
+    if(domain == null) 
+      throw new IllegalArgumentException
+	("The Windows domain cannot be (null) when impersonating another user!");
+
     if((password == null) || (password.length() == 0)) 
       throw new IllegalArgumentException
 	("No encrypted password was supplied!");
 
     pSubstituteUser     = user;
+    pSubstituteDomain   = domain; 
     pSubstitutePassword = password; 
   }
  
@@ -403,7 +412,8 @@ class NativeProcessLight
       }
     }
 
-    return execNativeLight(pSubstituteUser, dpassword, pCmd, pEnv, pWorkDir.toString());
+    return execNativeLight(pSubstituteUser, pSubstituteDomain, dpassword, 
+			   pCmd, pEnv, pWorkDir.toString());
   }
 
   /**
@@ -565,6 +575,10 @@ class NativeProcessLight
    *   The user to impersonate or 
    *   <CODE>null</CODE> to run as current user.
    * 
+   * @param domain
+   *   The domain of the user to impersonate or 
+   *   <CODE>null</CODE> to run as current user.
+   * 
    * @param password
    *   The user's Windows password or 
    *   <CODE>null</CODE> to run as current user.
@@ -591,6 +605,7 @@ class NativeProcessLight
   execNativeLight
   (
    String user, 
+   String domain, 
    char[] password,
    String[] cmd, 
    String[] env, 
@@ -609,6 +624,12 @@ class NativeProcessLight
    * If <CODE>null</CODE>, the process is run as the current user directly. 
    */ 
   private String  pSubstituteUser;  
+
+  /**
+   * Name of the Windows domain to run the process under using CreateProcessAsUser().
+   * If <CODE>null</CODE>, the process is run as the current user directly. 
+   */ 
+  private String  pSubstituteDomain;  
 
   /**
    * The encrypted Windows password for the user which will own the OS level process or 

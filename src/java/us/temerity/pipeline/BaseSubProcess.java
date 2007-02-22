@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.20 2007/02/22 16:12:39 jim Exp $
+// $Id: BaseSubProcess.java,v 1.21 2007/02/22 16:32:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -131,6 +131,14 @@ class BaseSubProcess
       }
       else {
 	String path = env.get("PATH");
+
+	if(path == null) {
+	  switch(PackageInfo.sOsType) {
+	  case Windows:
+	    path = env.get("Path");
+	  }
+	}
+
 	if(path == null) 
 	  throw new PipelineException
 	    ("The program (" + prog + ") was not absolute and no PATH was provided in " +
@@ -332,16 +340,20 @@ class BaseSubProcess
    * This is only required on Windows systems where the process will be run by a user
    * other than the current user and must be called before the subprocess is started.
    * 
+   * @param domain
+   *   The Windows domain of the user which will own the OS level subprocess.
+   * 
    * @param password
    *   The encrypted Windows password for the user.
    */ 
   public void 
   authorizeOnWindows
   (
+   String domain, 
    String password
   ) 
   {
-    pProc.authorizeOnWindows(pSubstituteUser, password);
+    pProc.authorizeOnWindows(pSubstituteUser, domain, password); 
   }
  
 
