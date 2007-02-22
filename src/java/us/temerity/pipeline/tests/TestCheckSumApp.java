@@ -1,4 +1,4 @@
-// $Id: TestCheckSumApp.java,v 1.8 2006/05/07 21:30:13 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.9 2007/02/22 16:14:02 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -22,6 +22,9 @@ class TestCheckSumApp
    String[] args  /* IN: command line arguments */
   )
   {
+    //LogMgr.getInstance().setLevel(LogMgr.Kind.Sub, LogMgr.Level.Finest);
+    FileCleaner.init();
+
     try {
       File dir = new File(System.getProperty("user.dir") + "/data/prod");
       {
@@ -57,7 +60,7 @@ class TestCheckSumApp
     throws PipelineException, IOException
   {
     /* generate some test paths */ 
-    TreeMap<Integer,ArrayList<File>> table = new TreeMap<Integer,ArrayList<File>>();
+    TreeMap<Long,ArrayList<File>> table = new TreeMap<Long,ArrayList<File>>();
     {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Sum, LogMgr.Level.Info,
@@ -65,17 +68,17 @@ class TestCheckSumApp
 	 "Generating Data Files: \n");
 
       int wk;
-      for(wk=4; wk<21; wk++) {
+      for(wk=0; wk<15; wk++) {
 	ArrayList<File> paths = new ArrayList<File>();
-	
-	int size = 2 << wk;
 
-	String names[] = { "testA", "testB", "testC", "testD", "testE", "testF" };
-	long seeds[] = { 123, 123, 456, 789, 789, 012 };
+        long blocks = 2 << wk;
+	long size = 1024 * blocks; 
+	
+	long seeds[] = { 123, 123, 456, 789, 789, 012, 245, 64, 75, 763, 547 };
 	int fk;
-	for(fk=0; fk<names.length; fk++) {
-	  File file = new File("/working/jim/default/" + names[fk] + "-" + size);
-	  genTestFile(file, seeds[fk], size);
+	for(fk=0; fk<seeds.length; fk++) {
+	  File file = new File("/working/jim/default/test" + fk + "-" + size);
+	  genTestFile(file, seeds[fk], blocks);
 	  paths.add(file);
 	}
 
@@ -91,56 +94,81 @@ class TestCheckSumApp
       LogMgr.getInstance().log
 	(LogMgr.Kind.Sum, LogMgr.Level.Info,
 	 "-----------------------------------\n" + 
-	 "Rebuilding CheckSums: \n\n");
+	 "Rebuilding CheckSums (openssl): \n\n");
 
-      for(Integer size : table.keySet()) {
+      for(Long size : table.keySet()) {
 	ArrayList<File> paths = table.get(size);
 
-	long total = 0;
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sum, LogMgr.Level.Info,
+	     "  File Size: " + size + ":\n");
+          
+          long total = 0;
+          for(File path : paths) 
+            total += refreshSSL(path);
+
+          double rate = ((((double) (size*paths.size())) / ((double) total)) * 
+                         (6000.0 / (1024.0*1024.0)));
+	  System.out.print("   TOTAL = " + total + " msec\n" + 
+			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
+	}
+      }
+    }
+    
+    {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "-----------------------------------\n" + 
+	 "Rebuilding CheckSums (java): \n\n");
+
+      for(Long size : table.keySet()) {
+	ArrayList<File> paths = table.get(size);
+
 	{
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Sum, LogMgr.Level.Info,
 	     "  File Size: " + size + ":\n");
 
-	  total += refresh(paths.get(0));
-	  total += refresh(paths.get(1));
-	  total += refresh(paths.get(2));
-	  total += refresh(paths.get(3));
-	  total += refresh(paths.get(4));
-	  total += refresh(paths.get(5));
+          long total = 0;
+          for(File path : paths) 
+            total += refreshSSL(path);
 
-	  double rate = (((double) size) / ((double) (total))) * (6000.0 / (1024.0*1024.0));
+          double rate = ((((double) (size*paths.size())) / ((double) total)) * 
+                         (6000.0 / (1024.0*1024.0)));
 	  System.out.print("   TOTAL = " + total + " msec\n" + 
 			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
 	}
       }
     }
 
-    {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sum, LogMgr.Level.Info,
-	 "-----------------------------------\n" + 
-	 "Comparing with CheckSums: \n\n");
 
-      Date start = new Date();
-      for(Integer size : table.keySet()) {
-	ArrayList<File> paths = table.get(size);
 
-	test(paths.get(0), paths.get(1), true);
-	test(paths.get(1), paths.get(2), false);
-	test(paths.get(2), paths.get(3), false);
-	test(paths.get(3), paths.get(4), true);
-	test(paths.get(4), paths.get(5), false);
-      }
+//     {
+//       LogMgr.getInstance().log
+// 	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+// 	 "-----------------------------------\n" + 
+// 	 "Comparing with CheckSums: \n\n");
 
-      long time = (new Date()).getTime() - start.getTime();
-      float rate = ((float) (table.keySet().size() * 5000)) / ((float) time);
+//       Date start = new Date();
+//       for(Long size : table.keySet()) {
+// 	ArrayList<File> paths = table.get(size);
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sum, LogMgr.Level.Info,
-	 "    Time = " + time + " msec\n" + 
-	 "    Rate = " + rate + " files/sec\n\n");
-    }
+// 	test(paths.get(0), paths.get(1), true);
+// 	test(paths.get(1), paths.get(2), false);
+// 	test(paths.get(2), paths.get(3), false);
+// 	test(paths.get(3), paths.get(4), true);
+// 	test(paths.get(4), paths.get(5), false);
+//       }
+
+//       long time = (new Date()).getTime() - start.getTime();
+//       float rate = ((float) (table.keySet().size() * 5000)) / ((float) time);
+
+//       LogMgr.getInstance().log
+// 	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+// 	 "    Time = " + time + " msec\n" + 
+// 	 "    Rate = " + rate + " files/sec\n\n");
+//     }
 
     System.exit(0);
   }
@@ -163,6 +191,54 @@ class TestCheckSumApp
    
     LogMgr.getInstance().log
       (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "    File = " + path + "\n" +
+       "    Time = " + time + " msec\n");
+
+    return time;
+  }
+
+
+  private long 
+  refreshSSL
+  (
+   File path
+  ) 
+    throws PipelineException
+  {
+    Date start = new Date();
+    
+    File in  = new File(pDir, path.toString());
+    File out = pCheckSum.checkSumFile(path);
+
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("dgst");
+    args.add("-md5");
+    args.add("-binary");
+    args.add("-out");
+    args.add(out.toString() + ".ssl");
+    args.add(in.toString());
+    
+    SubProcessLight proc = 
+      new SubProcessLight("CheckSum", "openssl", args, System.getenv(), pDir);
+    try {
+      proc.start();
+      proc.join();
+      if(!proc.wasSuccessful()) 
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+           proc.getStdErr());	
+    }
+    catch(InterruptedException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+           "Interrupted."); 
+    }
+
+    long time = (new Date()).getTime() - start.getTime();
+   
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "    File = " + path + "\n" +
        "    Time = " + time + " msec\n");
 
     return time;
@@ -196,7 +272,7 @@ class TestCheckSumApp
   (
    File path,    /* IN: path to file */ 
    long seed,    /* IN: random seed */ 
-   int size      /* IN: size of file */ 
+   long blocks   /* IN: number of 1024 byte blocks to write */ 
   ) 
     throws IOException
   {
@@ -212,10 +288,13 @@ class TestCheckSumApp
     FileOutputStream out = new FileOutputStream(file);
     
     Random rand = new Random(seed);
-    byte[] bytes = new byte[size];
-    rand.nextBytes(bytes);
+    byte[] bytes = new byte[1024];
 
-    out.write(bytes);
+    int wk; 
+    for(wk=0; wk<blocks; wk++) {
+      rand.nextBytes(bytes);
+      out.write(bytes);
+    }
     
     out.flush();
     out.close();

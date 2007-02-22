@@ -276,7 +276,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                    VersionID \
 
 
-           TESTS = QueueOps
+           TESTS = CheckSum
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS)) 
 
@@ -328,7 +328,7 @@ check-each: $(CLASSES) clean-data
                  $(JAVA) $(GC_OPTS) $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
                          $(JAVA_RUNTIME_FLAGS) $$c; \
             if env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
-                   $(JAVA) $(GC_OPTS) $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
+                   $(JAVA) $(GC_OPTS) -Xmx128M $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
                            $(JAVA_RUNTIME_FLAGS) $$c; \
             then \
               all=`expr $$all + 1`; \
