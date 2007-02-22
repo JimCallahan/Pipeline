@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.6 2007/01/29 20:50:49 jim Exp $
+// $Id: NativeOS.java,v 1.7 2007/02/22 16:12:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -73,14 +73,13 @@ class NativeOS
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("-n");
 	args.add("hw.physmem");
-	
-	SubProcessLight proc = 
-	  new SubProcessLight("TotalMemory", "/usr/sbin/sysctl", 
-			      args, new TreeMap<String,String>(), 
-			      PackageInfo.sTempPath.toFile());
-	proc.start();
-	
-	try {
+		
+	SubProcessLight proc = null;
+        try {
+          proc = new SubProcessLight("TotalMemory", "/usr/sbin/sysctl", 
+                                     args, new TreeMap<String,String>(), 
+                                     PackageInfo.sTempPath.toFile());
+          proc.start();
 	  proc.join();
 	}
 	catch(InterruptedException ex) {
@@ -88,6 +87,11 @@ class NativeOS
 	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
 	     ex.getMessage());
 	}
+        catch(PipelineException ex) {
+          throw new IOException
+            ("Unable to create the subprocess needed to get total system memory:\n" + 
+             "  " + ex.getMessage());
+        }
 	
 	if(!proc.wasSuccessful()) 
 	  throw new IOException
@@ -184,13 +188,12 @@ class NativeOS
       {
 	String output[] = null;
 	{
-	  SubProcessLight proc = 
-	    new SubProcessLight("VMStat", "/usr/bin/vm_stat", 
-				new ArrayList<String>(), new TreeMap<String,String>(), 
-				PackageInfo.sTempPath.toFile());
-	  proc.start();
-    
-	  try {
+          SubProcessLight proc = null;
+          try {
+            proc = new SubProcessLight("VMStat", "/usr/bin/vm_stat", 
+                                       new ArrayList<String>(), new TreeMap<String,String>(), 
+                                       PackageInfo.sTempPath.toFile());
+            proc.start();
 	    proc.join();
 	  }
 	  catch(InterruptedException ex) {
@@ -198,6 +201,11 @@ class NativeOS
 	      (LogMgr.Kind.Sub, LogMgr.Level.Severe,
 	       ex.getMessage());
 	  }
+          catch(PipelineException ex) {
+            throw new IOException
+              ("Unable to create the subprocess needed to get free system memory:\n" + 
+               "  " + ex.getMessage());
+          }
 	  
 	  if(!proc.wasSuccessful()) 
 	    throw new IOException
@@ -324,13 +332,12 @@ class NativeOS
 	args.add("-n");
 	args.add("hw.ncpu");
 	
-	SubProcessLight proc = 
-	  new SubProcessLight("TotalMemory", "/usr/sbin/sysctl", 
-			      args, new TreeMap<String,String>(), 
-			      PackageInfo.sTempPath.toFile());
-	proc.start();
-	
-	try {
+	SubProcessLight proc = null;
+        try {
+          proc = new SubProcessLight("NumProcs", "/usr/sbin/sysctl", 
+                                     args, new TreeMap<String,String>(), 
+                                     PackageInfo.sTempPath.toFile());
+          proc.start();
 	  proc.join();
 	}
 	catch(InterruptedException ex) {
@@ -338,6 +345,11 @@ class NativeOS
 	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
 	     ex.getMessage());
 	}
+        catch(PipelineException ex) {
+          throw new IOException
+            ("Unable to create the subprocess needed to determine the number of CPUs:\n" + 
+             "  " + ex.getMessage());
+        }
 	
 	if(!proc.wasSuccessful()) 
 	  throw new IOException
@@ -396,13 +408,12 @@ class NativeOS
 	args.add("-n");
 	args.add("vm.loadavg");
 	
-	SubProcessLight proc = 
-	  new SubProcessLight("LoadAverage", "/usr/sbin/sysctl", 
-			      args, new TreeMap<String,String>(), 
-			      PackageInfo.sTempPath.toFile());
-	proc.start();
-	
-	try {
+	SubProcessLight proc = null;
+        try {
+          proc = new SubProcessLight("LoadAverage", "/usr/sbin/sysctl", 
+                                     args, new TreeMap<String,String>(), 
+                                     PackageInfo.sTempPath.toFile());
+          proc.start();
 	  proc.join();
 	}
 	catch(InterruptedException ex) {
@@ -410,6 +421,11 @@ class NativeOS
 	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
 	     ex.getMessage());
 	}
+        catch(PipelineException ex) {
+          throw new IOException
+            ("Unable to create the subprocess needed to determine the load average:\n" + 
+             "  " + ex.getMessage());
+        }
 	
 	if(!proc.wasSuccessful()) 
 	  throw new IOException

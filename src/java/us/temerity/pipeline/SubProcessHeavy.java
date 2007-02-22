@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.13 2007/02/07 21:07:24 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.14 2007/02/22 16:12:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,6 +53,9 @@ class SubProcessHeavy
    * 
    * @param errFile 
    *   The file to which all STDERR output is redirected.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   public
   SubProcessHeavy
@@ -63,6 +66,7 @@ class SubProcessHeavy
    File outFile, 
    File errFile 
   )
+    throws PipelineException
   {
     super(name);
 
@@ -99,6 +103,9 @@ class SubProcessHeavy
    * 
    * @param errFile 
    *   The file to which all STDERR output is redirected.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   public 
   SubProcessHeavy
@@ -111,6 +118,7 @@ class SubProcessHeavy
    File outFile, 
    File errFile 
   )
+    throws PipelineException
   {
     super(name);
 
@@ -123,9 +131,8 @@ class SubProcessHeavy
    * 
    * The Pipeline utility program <I>plrun(1)</I> is used to run the subprocess as another 
    * user. Due to the fact that the <I>plrun(1)</I> utility can only be run by the 
-   * "pipeline" user, this constructor will throw an 
-   * {@link IllegalArgumentException IllegalArgumentException} if instantiated by any 
-   * other user. <P>
+   * "pipeline" user, this constructor will throw a {@link PipelineArgumentException} if 
+   * instantiated by any other user. <P>
    * 
    * The <CODE>program</CODE> can be an absolute filesystem path, a filesystem path relative 
    * to the working directory or a simple program name reachable through the environmental 
@@ -155,6 +162,9 @@ class SubProcessHeavy
    * 
    * @param errFile 
    *   The file to which all STDERR output is redirected.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   public 
   SubProcessHeavy
@@ -168,20 +178,21 @@ class SubProcessHeavy
    File outFile, 
    File errFile 
   )
+    throws PipelineException
   {
     super(name);
 
     initHeavy(outFile, errFile);
 
     if(user == null) 
-      throw new IllegalArgumentException("The user name cannot be (null)!");
+      throw new PipelineException("The user name cannot be (null)!");
 
     if(PackageInfo.sUser.equals(user)) {
       init(null, program, args, env, dir);
     }
     else {
       if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("Only the (" + PackageInfo.sPipelineUser + ") may run a process as " + 
 	   "another user!");
 
@@ -206,6 +217,9 @@ class SubProcessHeavy
    * 
    * @param errFile 
    *   The file to which all STDERR output is redirected.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   private void 
   initHeavy
@@ -213,14 +227,15 @@ class SubProcessHeavy
    File outFile, 
    File errFile 
   ) 
+    throws PipelineException
   {
     if(outFile == null) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The STDOUT output file cannot be (null)!");
     pStdOutFile = outFile;
 
     if(errFile == null) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The STDERR output file cannot be (null)!");
     pStdErrFile = errFile;
   }
@@ -242,6 +257,9 @@ class SubProcessHeavy
    * 
    * @return 
    *   The newly instantiated native process.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   protected NativeProcess
   initNativeProcess
@@ -250,6 +268,7 @@ class SubProcessHeavy
    String[] env,      
    File dir       
   )  
+    throws PipelineException
   {
     return (new NativeProcessHeavy(cmd, env, dir, pStdOutFile, pStdErrFile));
   }

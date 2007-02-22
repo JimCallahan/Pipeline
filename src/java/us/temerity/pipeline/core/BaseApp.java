@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.18 2006/11/22 09:08:00 jim Exp $
+// $Id: BaseApp.java,v 1.19 2007/02/22 16:12:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -61,7 +61,15 @@ class BaseApp
   public void
   htmlHelp()
   {
-    showURL("file:///" + PackageInfo.sInstPath + "/share/docs/man/" + pName + ".html");
+    try {
+      showURL("file:///" + PackageInfo.sInstPath + "/share/docs/man/" + pName + ".html");
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+         "Unable to launch a web browser:\n" + 
+         "  " +  ex.getMessage());
+    }
   }
 
   /**
@@ -115,12 +123,16 @@ class BaseApp
   
   /**
    * Open the given URL using the default web browser for the local environment.
+   * 
+   * @throws PipelineException
+   *   If unable to launch the browser.
    */ 
   public static void
   showURL
   (
    String url 
   ) 
+    throws PipelineException
   {
     Map<String,String> env = System.getenv();
     switch(PackageInfo.sOsType) {
@@ -151,11 +163,11 @@ class BaseApp
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("-e");
 	args.add("open location \"" + url + "\"");
-
-	SubProcessLight proc = 
-	  new SubProcessLight("OpenURL", "osascript", 
-			      args, env, PackageInfo.sTempPath.toFile());
-	proc.start();
+        
+        SubProcessLight proc = 
+          new SubProcessLight("OpenURL", "osascript", 
+                              args, env, PackageInfo.sTempPath.toFile());
+        proc.start();
       }
       break;
 
@@ -174,6 +186,9 @@ class BaseApp
    * 
    * @param env
    *   The shell environment.
+   * 
+   * @throws PipelineException
+   *   If unable to determine whether the browser is running.
    */    
   private static boolean
   isBrowserRunning
@@ -181,6 +196,7 @@ class BaseApp
    String browser, 
    Map<String,String> env
   )
+    throws PipelineException
   {
     ArrayList<String> args = new ArrayList<String>();
     args.add("-remote");
@@ -213,6 +229,9 @@ class BaseApp
    * 
    * @param url
    *   The URL to display.
+   * 
+   * @throws PipelineException
+   *   If unable to contact the browser.
    */ 
   private static void
   displayURL
@@ -221,6 +240,7 @@ class BaseApp
    Map<String,String> env,
    String url 
   )
+    throws PipelineException
   {
     ArrayList<String> args = new ArrayList<String>();
     args.add("-remote");
@@ -251,6 +271,9 @@ class BaseApp
    * 
    * @param url
    *   The URL to display.
+   * 
+   * @throws PipelineException
+   *   If unable to launch the browser.
    */ 
   private static void
   launchURL
@@ -259,6 +282,7 @@ class BaseApp
    Map<String,String> env,
    String url 
   )
+    throws PipelineException
   {
     ArrayList<String> args = new ArrayList<String>();
     args.add(url.toString());

@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.19 2007/02/12 19:19:05 jim Exp $
+// $Id: BaseSubProcess.java,v 1.20 2007/02/22 16:12:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -60,6 +60,9 @@ class BaseSubProcess
    * 
    * @param dir  
    *   The working directory of the OS level process.   
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   protected synchronized void 
   init
@@ -70,13 +73,14 @@ class BaseSubProcess
    Map<String, String> env,      
    File dir    
   )
+    throws PipelineException
   {
     if(!PackageInfo.sUser.equals(user)) 
       pSubstituteUser = user;
 
     /* build environment */ 
     if(env == null) 
-      throw new IllegalArgumentException("The environment cannot be (null)!");
+      throw new PipelineException("The environment cannot be (null)!");
     String[] procEnv = null;
     {
       /* if the process is to be run by the same user as that which owns the parent process
@@ -103,7 +107,7 @@ class BaseSubProcess
       int wk = 0;
       for(String name : env.keySet()) {
 	if(name == null) 
-	  throw new IllegalArgumentException("Found a (null) environmental variable!");
+	  throw new PipelineException("Found a (null) environmental variable!");
 	
 	String value = env.get(name);
 	if(value == null) 
@@ -116,27 +120,19 @@ class BaseSubProcess
     
     /* build command-line */ 
     if(prog == null)
-      throw new IllegalArgumentException("The program cannot (null)!");
+      throw new PipelineException("The program cannot (null)!");
     String[] procCmd = null;
     {
       File file = new File(prog);
       if(file.isAbsolute()) {
 	if(!file.exists()) 
-	  throw new IllegalArgumentException
+	  throw new PipelineException
 	    ("The program (" + prog + ") does not exist!");
       }
       else {
 	String path = env.get("PATH");
-
-	if(path == null) {
-	  switch(PackageInfo.sOsType) {
-	  case Windows:
-	    path = env.get("Path");
-	  }
-	}
-
 	if(path == null) 
-	  throw new IllegalArgumentException
+	  throw new PipelineException
 	    ("The program (" + prog + ") was not absolute and no PATH was provided in " +
 	     "the environment!");
 	  
@@ -151,7 +147,7 @@ class BaseSubProcess
 	  for(File edir : epath.getDirectories()) 
 	    buf.append("  " + edir + "\n");
 	  
-	  throw new IllegalArgumentException(buf.toString());
+	  throw new PipelineException(buf.toString());
 	}
 	
 	file = absolute;
@@ -179,12 +175,12 @@ class BaseSubProcess
 	int cnt = 0;
 	for(String arg : args) {
 	  if(arg == null) 
-	    throw new IllegalArgumentException
+	    throw new PipelineException
 	      ("The argument number (" + cnt + ") given for the program (" + prog + ") " + 
 	       "was (null)! Subprocess arguments cannot contain (null) values.\n");
 
 	  if(arg.length() == 0) 
-	    throw new IllegalArgumentException
+	    throw new PipelineException
 	      ("The argument number (" + cnt + ") given for the program (" + prog + ") " + 
 	       "was an empty string!  All subprocess arguments must contain at least one " + 
 	       "character.");
@@ -201,11 +197,11 @@ class BaseSubProcess
     /* working directory */ 
     {
       if(dir == null) 
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("The working directory cannot be (null)!");
       
       if(!dir.isDirectory()) 
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("The working directory (" + dir.getPath() + ") does not exist!");
     } 
 
@@ -235,6 +231,9 @@ class BaseSubProcess
    * 
    * @return 
    *   The newly instantiated native process.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   protected abstract NativeProcess
   initNativeProcess
@@ -242,7 +241,8 @@ class BaseSubProcess
    String[] cmd,       
    String[] env,      
    File dir       
-  );
+  )
+    throws PipelineException;
   
   /**
    * Use the UNIX utility "id" to lookup the UID for the given username.  A static table
@@ -256,6 +256,7 @@ class BaseSubProcess
   (
    String user
   )
+    throws PipelineException
   {
     synchronized(sUserIDs) {    
       /* see if this user's ID has already been determined */ 
@@ -278,7 +279,7 @@ class BaseSubProcess
 	proc.join();
       } 
       catch(InterruptedException ex) {
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("Unable to determine the UID for user (" + user + "):\n" +  
 	   ex.getMessage());
       }
@@ -293,12 +294,12 @@ class BaseSubProcess
 	  return uid;
 	}
 	catch(NumberFormatException ex) {
-	  throw new IllegalArgumentException
+	  throw new PipelineException
 	    ("Illegal UID (" + out + ") found for user (" + user + ")!");
 	}
       }
       else {
-	throw new IllegalArgumentException(
+	throw new PipelineException(
 	  "Unable to determine the UID for user (" + user + ")!");
       }
     }
@@ -331,20 +332,16 @@ class BaseSubProcess
    * This is only required on Windows systems where the process will be run by a user
    * other than the current user and must be called before the subprocess is started.
    * 
-   * @param domain
-   *   The Windows domain of the user which will own the OS level subprocess.
-   * 
    * @param password
    *   The encrypted Windows password for the user.
    */ 
   public void 
   authorizeOnWindows
   (
-   String domain, 
    String password
   ) 
   {
-    pProc.authorizeOnWindows(pSubstituteUser, domain, password); 
+    pProc.authorizeOnWindows(pSubstituteUser, password);
   }
  
 
@@ -452,9 +449,6 @@ class BaseSubProcess
    * 
    * @param signal  
    *   The signal to send.
-   * 
-   * @throws IOException 
-   *   If unable to sent the signal to the OS level process. 
    */ 
   public void
   signal
@@ -487,13 +481,15 @@ class BaseSubProcess
 	    args.add("-s");
 	    args.add(signal.toString());
 	    args.add(dpid.toString());
-	    
-	    SubProcessLight killProc = 
-	      new SubProcessLight(pSubstituteUser, "SignalSubProcess", 
-				  "kill", args, env, PackageInfo.sTempPath.toFile());
-	    killProc.start(); 
+
 	    try {
+              SubProcessLight killProc = 
+                new SubProcessLight(pSubstituteUser, "SignalSubProcess", 
+                                    "kill", args, env, PackageInfo.sTempPath.toFile());
+              killProc.start(); 
 	      killProc.join();
+
+              wasSignalled = true;
 	    } 
 	    catch(InterruptedException ex) {
 	      LogMgr.getInstance().log
@@ -502,7 +498,12 @@ class BaseSubProcess
 		 "to process [" + dpid + "] using plrun(1):\n" +
 		 "  " + ex.getMessage());
 	    }
-	    wasSignalled = true;
+            catch(PipelineException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Sub, LogMgr.Level.Warning,
+                 "Unable to send signal (" + signal + ") to process [" + dpid + "]: " +
+                 ex.getMessage());
+            }
 	  }
 	  break;
 

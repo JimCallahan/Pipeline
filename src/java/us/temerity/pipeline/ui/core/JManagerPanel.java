@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.34 2007/02/07 21:19:36 jim Exp $
+// $Id: JManagerPanel.java,v 1.35 2007/02/22 16:12:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1564,377 +1564,383 @@ class JManagerPanel
   ) 
   {
     UserPrefs prefs = UserPrefs.getInstance(); 
+    UIMaster master = UIMaster.getInstance(); 
 
-    /* windows */
-    if((prefs.getManagerNodeBrowserWindow() != null) &&
-       prefs.getManagerNodeBrowserWindow().wasPressed(e)) {
-      doNodeBrowserWindow();
-      return true;
-    }
-    else if((prefs.getManagerNodeViewerWindow() != null) &&
-	    prefs.getManagerNodeViewerWindow().wasPressed(e)) {
-      doNodeViewerWindow();
-      return true;
-    }
+    try {
+      /* windows */
+      if((prefs.getManagerNodeBrowserWindow() != null) &&
+         prefs.getManagerNodeBrowserWindow().wasPressed(e)) {
+        doNodeBrowserWindow();
+        return true;
+      }
+      else if((prefs.getManagerNodeViewerWindow() != null) &&
+              prefs.getManagerNodeViewerWindow().wasPressed(e)) {
+        doNodeViewerWindow();
+        return true;
+      }
 
-    else if((prefs.getManagerNodeDetailsWindow() != null) &&
-	    prefs.getManagerNodeDetailsWindow().wasPressed(e)) {
-      doNodeDetailsWindow();
-      return true;
-    }
-    else if((prefs.getManagerNodeFilesWindow() != null) &&
-	    prefs.getManagerNodeFilesWindow().wasPressed(e)) {
-      doNodeFilesWindow();
-      return true;
-    }
-    else if((prefs.getManagerNodeLinksWindow() != null) &&
-	    prefs.getManagerNodeLinksWindow().wasPressed(e)) {
-      doNodeLinksWindow();
-      return true;
-    }
-    else if((prefs.getManagerNodeHistoryWindow() != null) &&
-	    prefs.getManagerNodeHistoryWindow().wasPressed(e)) {
-      doNodeHistoryWindow();
-      return true;
-    }
+      else if((prefs.getManagerNodeDetailsWindow() != null) &&
+              prefs.getManagerNodeDetailsWindow().wasPressed(e)) {
+        doNodeDetailsWindow();
+        return true;
+      }
+      else if((prefs.getManagerNodeFilesWindow() != null) &&
+              prefs.getManagerNodeFilesWindow().wasPressed(e)) {
+        doNodeFilesWindow();
+        return true;
+      }
+      else if((prefs.getManagerNodeLinksWindow() != null) &&
+              prefs.getManagerNodeLinksWindow().wasPressed(e)) {
+        doNodeLinksWindow();
+        return true;
+      }
+      else if((prefs.getManagerNodeHistoryWindow() != null) &&
+              prefs.getManagerNodeHistoryWindow().wasPressed(e)) {
+        doNodeHistoryWindow();
+        return true;
+      }
 
-    else if((prefs.getManagerJobServerStatsWindow() != null) &&
-	    prefs.getManagerJobServerStatsWindow().wasPressed(e)) {
-      doJobServerStatsWindow();
-      return true;
-    }
-    else if((prefs.getManagerJobServersWindow() != null) &&
-	    prefs.getManagerJobServersWindow().wasPressed(e)) {
-      doJobServersWindow();
-      return true;
-    }
-    else if((prefs.getManagerJobSlotsWindow() != null) &&
-	    prefs.getManagerJobSlotsWindow().wasPressed(e)) {
-      doJobSlotsWindow();
-      return true;
-    }
+      else if((prefs.getManagerJobServerStatsWindow() != null) &&
+              prefs.getManagerJobServerStatsWindow().wasPressed(e)) {
+        doJobServerStatsWindow();
+        return true;
+      }
+      else if((prefs.getManagerJobServersWindow() != null) &&
+              prefs.getManagerJobServersWindow().wasPressed(e)) {
+        doJobServersWindow();
+        return true;
+      }
+      else if((prefs.getManagerJobSlotsWindow() != null) &&
+              prefs.getManagerJobSlotsWindow().wasPressed(e)) {
+        doJobSlotsWindow();
+        return true;
+      }
 
-    else if((prefs.getManagerJobBrowserWindow() != null) &&
-	    prefs.getManagerJobBrowserWindow().wasPressed(e)) {
-      doJobBrowserWindow();
-      return true;
-    }
-    else if((prefs.getManagerJobViewerWindow() != null) &&
-	    prefs.getManagerJobViewerWindow().wasPressed(e)) {
-      doJobViewerWindow();
-      return true;
-    }
-    else if((prefs.getManagerJobDetailsWindow() != null) &&
-	    prefs.getManagerJobDetailsWindow().wasPressed(e)) {
-      doJobDetailsWindow();
-      return true;
-    }
+      else if((prefs.getManagerJobBrowserWindow() != null) &&
+              prefs.getManagerJobBrowserWindow().wasPressed(e)) {
+        doJobBrowserWindow();
+        return true;
+      }
+      else if((prefs.getManagerJobViewerWindow() != null) &&
+              prefs.getManagerJobViewerWindow().wasPressed(e)) {
+        doJobViewerWindow();
+        return true;
+      }
+      else if((prefs.getManagerJobDetailsWindow() != null) &&
+              prefs.getManagerJobDetailsWindow().wasPressed(e)) {
+        doJobDetailsWindow();
+        return true;
+      }
 
-    else if((prefs.getManagerEmptyWindow() != null) &&
-	    prefs.getManagerEmptyWindow().wasPressed(e)) {
-      doEmptyWindow();
-      return true;
-    }
+      else if((prefs.getManagerEmptyWindow() != null) &&
+              prefs.getManagerEmptyWindow().wasPressed(e)) {
+        doEmptyWindow();
+        return true;
+      }
 
-    else if((prefs.getManagerRenameWindow() != null) &&
-	    prefs.getManagerRenameWindow().wasPressed(e)) {
-      doRenameWindow();
-      return true;
-    }
+      else if((prefs.getManagerRenameWindow() != null) &&
+              prefs.getManagerRenameWindow().wasPressed(e)) {
+        doRenameWindow();
+        return true;
+      }
 
-    /* panels */ 
-    else if((prefs.getManagerNodeBrowserPanel() != null) &&
-	    prefs.getManagerNodeBrowserPanel().wasPressed(e)) {
-      doNodeBrowserPanel();
-      return true;
-    }
-    else if((prefs.getManagerNodeViewerPanel() != null) &&
-	    prefs.getManagerNodeViewerPanel().wasPressed(e)) {
-      doNodeViewerPanel();
-      return true;
-    }
+      /* panels */ 
+      else if((prefs.getManagerNodeBrowserPanel() != null) &&
+              prefs.getManagerNodeBrowserPanel().wasPressed(e)) {
+        doNodeBrowserPanel();
+        return true;
+      }
+      else if((prefs.getManagerNodeViewerPanel() != null) &&
+              prefs.getManagerNodeViewerPanel().wasPressed(e)) {
+        doNodeViewerPanel();
+        return true;
+      }
 
-    else if((prefs.getManagerNodeDetailsPanel() != null) &&
-	    prefs.getManagerNodeDetailsPanel().wasPressed(e)) {
-      doNodeDetailsPanel();
-      return true;
-    }
-    else if((prefs.getManagerNodeFilesPanel() != null) &&
-	    prefs.getManagerNodeFilesPanel().wasPressed(e)) {
-      doNodeFilesPanel();
-      return true;
-    }
-    else if((prefs.getManagerNodeLinksPanel() != null) &&
-	    prefs.getManagerNodeLinksPanel().wasPressed(e)) {
-      doNodeLinksPanel();
-      return true;
-    }
-    else if((prefs.getManagerNodeHistoryPanel() != null) &&
-	    prefs.getManagerNodeHistoryPanel().wasPressed(e)) {
-      doNodeHistoryPanel();
-      return true;
-    }
+      else if((prefs.getManagerNodeDetailsPanel() != null) &&
+              prefs.getManagerNodeDetailsPanel().wasPressed(e)) {
+        doNodeDetailsPanel();
+        return true;
+      }
+      else if((prefs.getManagerNodeFilesPanel() != null) &&
+              prefs.getManagerNodeFilesPanel().wasPressed(e)) {
+        doNodeFilesPanel();
+        return true;
+      }
+      else if((prefs.getManagerNodeLinksPanel() != null) &&
+              prefs.getManagerNodeLinksPanel().wasPressed(e)) {
+        doNodeLinksPanel();
+        return true;
+      }
+      else if((prefs.getManagerNodeHistoryPanel() != null) &&
+              prefs.getManagerNodeHistoryPanel().wasPressed(e)) {
+        doNodeHistoryPanel();
+        return true;
+      }
 
-    else if((prefs.getManagerJobServerStatsPanel() != null) &&
-	    prefs.getManagerJobServerStatsPanel().wasPressed(e)) {
-      doJobServerStatsPanel();
-      return true;
-    }
-    else if((prefs.getManagerJobServersPanel() != null) &&
-	    prefs.getManagerJobServersPanel().wasPressed(e)) {
-      doJobServersPanel();
-      return true;
-    }
-    else if((prefs.getManagerJobSlotsPanel() != null) &&
-	    prefs.getManagerJobSlotsPanel().wasPressed(e)) {
-      doJobSlotsPanel();
-      return true;
-    }
+      else if((prefs.getManagerJobServerStatsPanel() != null) &&
+              prefs.getManagerJobServerStatsPanel().wasPressed(e)) {
+        doJobServerStatsPanel();
+        return true;
+      }
+      else if((prefs.getManagerJobServersPanel() != null) &&
+              prefs.getManagerJobServersPanel().wasPressed(e)) {
+        doJobServersPanel();
+        return true;
+      }
+      else if((prefs.getManagerJobSlotsPanel() != null) &&
+              prefs.getManagerJobSlotsPanel().wasPressed(e)) {
+        doJobSlotsPanel();
+        return true;
+      }
 
-    else if((prefs.getManagerJobBrowserPanel() != null) &&
-	    prefs.getManagerJobBrowserPanel().wasPressed(e)) {
-      doJobBrowserPanel();
-      return true;
-    }
-    else if((prefs.getManagerJobViewerPanel() != null) &&
-	    prefs.getManagerJobViewerPanel().wasPressed(e)) {
-      doJobViewerPanel();
-      return true;
-    }
-    else if((prefs.getManagerJobDetailsPanel() != null) &&
-	    prefs.getManagerJobDetailsPanel().wasPressed(e)) {
-      doJobDetailsPanel();
-      return true;
-    }
+      else if((prefs.getManagerJobBrowserPanel() != null) &&
+              prefs.getManagerJobBrowserPanel().wasPressed(e)) {
+        doJobBrowserPanel();
+        return true;
+      }
+      else if((prefs.getManagerJobViewerPanel() != null) &&
+              prefs.getManagerJobViewerPanel().wasPressed(e)) {
+        doJobViewerPanel();
+        return true;
+      }
+      else if((prefs.getManagerJobDetailsPanel() != null) &&
+              prefs.getManagerJobDetailsPanel().wasPressed(e)) {
+        doJobDetailsPanel();
+        return true;
+      }
 
-    else if((prefs.getManagerEmptyPanel() != null) &&
-	    prefs.getManagerEmptyPanel().wasPressed(e)) {
-      doEmptyPanel();
-      return true;
-    }
+      else if((prefs.getManagerEmptyPanel() != null) &&
+              prefs.getManagerEmptyPanel().wasPressed(e)) {
+        doEmptyPanel();
+        return true;
+      }
 
-    /* layout */ 
-    else if((prefs.getManagerAddTab() != null) &&
-	    prefs.getManagerAddTab().wasPressed(e)) {
-      doAddTab();
-      return true;
-    }
-    else if((prefs.getManagerAddTopTab() != null) &&
-	    prefs.getManagerAddTopTab().wasPressed(e)) {
-      doAddTopTab();
-      return true;
-    }
-    else if((prefs.getManagerAddLeft() != null) &&
-	    prefs.getManagerAddLeft().wasPressed(e)) {
-      doAddLeft();
-      return true;
-    }
-    else if((prefs.getManagerAddRight() != null) &&
-	    prefs.getManagerAddRight().wasPressed(e)) {
-      doAddRight();
-      return true;
-    }
-    else if((prefs.getManagerAddAbove() != null) &&
-	    prefs.getManagerAddAbove().wasPressed(e)) {
-      doAddAbove();
-      return true;
-    }
-    else if((prefs.getManagerAddBelow() != null) &&
-	    prefs.getManagerAddBelow().wasPressed(e)) {
-      doAddBelow();
-      return true;
-    }
-    else if((prefs.getManagerClosePanel() != null) &&
-	    prefs.getManagerClosePanel().wasPressed(e)) {
-      doClosePanel();
-      return true;
-    }
+      /* layout */ 
+      else if((prefs.getManagerAddTab() != null) &&
+              prefs.getManagerAddTab().wasPressed(e)) {
+        doAddTab();
+        return true;
+      }
+      else if((prefs.getManagerAddTopTab() != null) &&
+              prefs.getManagerAddTopTab().wasPressed(e)) {
+        doAddTopTab();
+        return true;
+      }
+      else if((prefs.getManagerAddLeft() != null) &&
+              prefs.getManagerAddLeft().wasPressed(e)) {
+        doAddLeft();
+        return true;
+      }
+      else if((prefs.getManagerAddRight() != null) &&
+              prefs.getManagerAddRight().wasPressed(e)) {
+        doAddRight();
+        return true;
+      }
+      else if((prefs.getManagerAddAbove() != null) &&
+              prefs.getManagerAddAbove().wasPressed(e)) {
+        doAddAbove();
+        return true;
+      }
+      else if((prefs.getManagerAddBelow() != null) &&
+              prefs.getManagerAddBelow().wasPressed(e)) {
+        doAddBelow();
+        return true;
+      }
+      else if((prefs.getManagerClosePanel() != null) &&
+              prefs.getManagerClosePanel().wasPressed(e)) {
+        doClosePanel();
+        return true;
+      }
 
-    /* owner|view */
-    else if((prefs.getManagerChangeOwnerView() != null) &&
-	    prefs.getManagerChangeOwnerView().wasPressed(e)) {
-      doChangeOwnerView();
-      return true;
-    }
+      /* owner|view */
+      else if((prefs.getManagerChangeOwnerView() != null) &&
+              prefs.getManagerChangeOwnerView().wasPressed(e)) {
+        doChangeOwnerView();
+        return true;
+      }
 
-    /* panel group */ 
-    else if((prefs.getManagerGroup0() != null) &&
-	    prefs.getManagerGroup0().wasPressed(e)) {
-      doGroup(0);
-      return true;
-    }
-    else if((prefs.getManagerGroup1() != null) &&
-	    prefs.getManagerGroup1().wasPressed(e)) {
-      doGroup(1);
-      return true;
-    }
-    else if((prefs.getManagerGroup2() != null) &&
-	    prefs.getManagerGroup2().wasPressed(e)) {
-      doGroup(2);
-      return true;
-    }
-    else if((prefs.getManagerGroup3() != null) &&
-	    prefs.getManagerGroup3().wasPressed(e)) {
-      doGroup(3);
-      return true;
-    }
-    else if((prefs.getManagerGroup4() != null) &&
-	    prefs.getManagerGroup4().wasPressed(e)) {
-      doGroup(4);
-      return true;
-    }
-    else if((prefs.getManagerGroup5() != null) &&
-	    prefs.getManagerGroup5().wasPressed(e)) {
-      doGroup(5);
-      return true;
-    }
-    else if((prefs.getManagerGroup6() != null) &&
-	    prefs.getManagerGroup6().wasPressed(e)) {
-      doGroup(6);
-      return true;
-    }
-    else if((prefs.getManagerGroup7() != null) &&
-	    prefs.getManagerGroup7().wasPressed(e)) {
-      doGroup(7);
-      return true;
-    }
-    else if((prefs.getManagerGroup8() != null) &&
-	    prefs.getManagerGroup8().wasPressed(e)) {
-      doGroup(8);
-      return true;
-    }
-    else if((prefs.getManagerGroup9() != null) &&
-	    prefs.getManagerGroup9().wasPressed(e)) {
-      doGroup(9);
-      return true;
-    }
+      /* panel group */ 
+      else if((prefs.getManagerGroup0() != null) &&
+              prefs.getManagerGroup0().wasPressed(e)) {
+        doGroup(0);
+        return true;
+      }
+      else if((prefs.getManagerGroup1() != null) &&
+              prefs.getManagerGroup1().wasPressed(e)) {
+        doGroup(1);
+        return true;
+      }
+      else if((prefs.getManagerGroup2() != null) &&
+              prefs.getManagerGroup2().wasPressed(e)) {
+        doGroup(2);
+        return true;
+      }
+      else if((prefs.getManagerGroup3() != null) &&
+              prefs.getManagerGroup3().wasPressed(e)) {
+        doGroup(3);
+        return true;
+      }
+      else if((prefs.getManagerGroup4() != null) &&
+              prefs.getManagerGroup4().wasPressed(e)) {
+        doGroup(4);
+        return true;
+      }
+      else if((prefs.getManagerGroup5() != null) &&
+              prefs.getManagerGroup5().wasPressed(e)) {
+        doGroup(5);
+        return true;
+      }
+      else if((prefs.getManagerGroup6() != null) &&
+              prefs.getManagerGroup6().wasPressed(e)) {
+        doGroup(6);
+        return true;
+      }
+      else if((prefs.getManagerGroup7() != null) &&
+              prefs.getManagerGroup7().wasPressed(e)) {
+        doGroup(7);
+        return true;
+      }
+      else if((prefs.getManagerGroup8() != null) &&
+              prefs.getManagerGroup8().wasPressed(e)) {
+        doGroup(8);
+        return true;
+      }
+      else if((prefs.getManagerGroup9() != null) &&
+              prefs.getManagerGroup9().wasPressed(e)) {
+        doGroup(9);
+        return true;
+      }
 
-    /* UIMaster */ 
-    else if((prefs.getSaveLayout() != null) &&
-	    prefs.getSaveLayout().wasPressed(e)) {
-      UIMaster.getInstance().doSaveLayout();
-      return true;
-    }
-    else if((prefs.getSaveLayoutAs() != null) &&
-	    prefs.getSaveLayoutAs().wasPressed(e)) {
-      UIMaster.getInstance().showSaveLayoutDialog();
-      return true;
-    }
-    else if((prefs.getShowManageLayouts() != null) &&
-	    prefs.getShowManageLayouts().wasPressed(e)) {
-      UIMaster.getInstance().showManageLayoutsDialog();
-      return true;
-    }
-    else if((prefs.getSetDefaultLayout() != null) &&
-	    prefs.getSetDefaultLayout().wasPressed(e)) {
-      UIMaster.getInstance().doDefaultLayout();
-      return true;
-    }
+      /* UIMaster */ 
+      else if((prefs.getSaveLayout() != null) &&
+              prefs.getSaveLayout().wasPressed(e)) {
+        master.doSaveLayout();
+        return true;
+      }
+      else if((prefs.getSaveLayoutAs() != null) &&
+              prefs.getSaveLayoutAs().wasPressed(e)) {
+        master.showSaveLayoutDialog();
+        return true;
+      }
+      else if((prefs.getShowManageLayouts() != null) &&
+              prefs.getShowManageLayouts().wasPressed(e)) {
+        master.showManageLayoutsDialog();
+        return true;
+      }
+      else if((prefs.getSetDefaultLayout() != null) &&
+              prefs.getSetDefaultLayout().wasPressed(e)) {
+        master.doDefaultLayout();
+        return true;
+      }
 
-    else if((prefs.getShowUserPrefs() != null) &&
-	    prefs.getShowUserPrefs().wasPressed(e)) {
-      UIMaster.getInstance().showUserPrefsDialog();
-      return true;
-    }
-    else if((prefs.getShowDefaultEditors() != null) &&
-	    prefs.getShowDefaultEditors().wasPressed(e)) {
-      UIMaster.getInstance().showDefaultEditorsDialog();
-      return true;
-    }
-    else if((prefs.getUpdatePlugins() != null) &&
-	    prefs.getUpdatePlugins().wasPressed(e)) {
-      UIMaster.getInstance().clearPluginCache();
-      return true;
-    }
+      else if((prefs.getShowUserPrefs() != null) &&
+              prefs.getShowUserPrefs().wasPressed(e)) {
+        master.showUserPrefsDialog();
+        return true;
+      }
+      else if((prefs.getShowDefaultEditors() != null) &&
+              prefs.getShowDefaultEditors().wasPressed(e)) {
+        master.showDefaultEditorsDialog();
+        return true;
+      }
+      else if((prefs.getUpdatePlugins() != null) &&
+              prefs.getUpdatePlugins().wasPressed(e)) {
+        master.clearPluginCache();
+        return true;
+      }
 
-    else if((prefs.getShowManagePrivileges() != null) &&
-	    prefs.getShowManagePrivileges().wasPressed(e)) {
-      UIMaster.getInstance().showManagePrivilegesDialog();
-      return true;
-    }
-    else if((prefs.getShowManageToolsets() != null) &&
-	    prefs.getShowManageToolsets().wasPressed(e)) {
-      UIMaster.getInstance().showManageToolsetsDialog();
-      return true;
-    }
+      else if((prefs.getShowManagePrivileges() != null) &&
+              prefs.getShowManagePrivileges().wasPressed(e)) {
+        master.showManagePrivilegesDialog();
+        return true;
+      }
+      else if((prefs.getShowManageToolsets() != null) &&
+              prefs.getShowManageToolsets().wasPressed(e)) {
+        master.showManageToolsetsDialog();
+        return true;
+      }
 
-    else if((prefs.getShowManageLicenseKeys() != null) &&
-	    prefs.getShowManageLicenseKeys().wasPressed(e)) {
-      UIMaster.getInstance().showManageLicenseKeysDialog();
-      return true;
-    }
-    else if((prefs.getShowManageSelectionKeys() != null) &&
-	    prefs.getShowManageSelectionKeys().wasPressed(e)) {
-      UIMaster.getInstance().showManageSelectionKeysDialog();
-      return true;
-    }
+      else if((prefs.getShowManageLicenseKeys() != null) &&
+              prefs.getShowManageLicenseKeys().wasPressed(e)) {
+        master.showManageLicenseKeysDialog();
+        return true;
+      }
+      else if((prefs.getShowManageSelectionKeys() != null) &&
+              prefs.getShowManageSelectionKeys().wasPressed(e)) {
+        master.showManageSelectionKeysDialog();
+        return true;
+      }
 
-    else if((prefs.getShowManageServerExtensions() != null) &&
-	    prefs.getShowManageServerExtensions().wasPressed(e)) {
-      UIMaster.getInstance().showManageServerExtensionsDialog();
-      return true;
-    }
+      else if((prefs.getShowManageServerExtensions() != null) &&
+              prefs.getShowManageServerExtensions().wasPressed(e)) {
+        master.showManageServerExtensionsDialog();
+        return true;
+      }
 
-    else if((prefs.getQuit() != null) &&
-	    prefs.getQuit().wasPressed(e)) {
-      UIMaster.getInstance().doQuit();    
-      return true;
-    }
+      else if((prefs.getQuit() != null) &&
+              prefs.getQuit().wasPressed(e)) {
+        master.doQuit();    
+        return true;
+      }
 
-    /* help */ 
-    else if((prefs.getShowAbout() != null) &&
-	    prefs.getShowAbout().wasPressed(e)) {
-      UIMaster.getInstance().showAboutDialog();
-      return true;
-    }
-    else if((prefs.getShowQuickReference() != null) &&
-	    prefs.getShowQuickReference().wasPressed(e)) {
-      BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php"); 
-      return true;
-    }
-    else if((prefs.getShowUserManual() != null) &&
-	    prefs.getShowUserManual().wasPressed(e)) {
-      BaseApp.showURL("http://temerity.us/products/pipeline/docs/PipelineManual.pdf");
-      return true;
-    }
+      /* help */ 
+      else if((prefs.getShowAbout() != null) &&
+              prefs.getShowAbout().wasPressed(e)) {
+        master.showAboutDialog();
+        return true;
+      }
+      else if((prefs.getShowQuickReference() != null) &&
+              prefs.getShowQuickReference().wasPressed(e)) {
+        BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php"); 
+        return true;
+      }
+      else if((prefs.getShowUserManual() != null) &&
+              prefs.getShowUserManual().wasPressed(e)) {
+        BaseApp.showURL("http://temerity.us/products/pipeline/docs/PipelineManual.pdf");
+        return true;
+      }
 
-    else if((prefs.getShowHomePage() != null) &&
-	    prefs.getShowHomePage().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us/products/pipeline");
-      return true; 
-    }
-    else if((prefs.getShowSupportForums() != null) &&
-	    prefs.getShowSupportForums().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us/community/forums");
-      return true;
-    }
-    else if((prefs.getShowBugDatabase() != null) &&
-	    prefs.getShowBugDatabase().wasPressed(e)) {
-      BaseApp.showURL("http://www.temerity.us/community/forums/viewforum.php?f=12");  
-      return true;
-    }
-    else if((prefs.getShowLicenseAgreement() != null) &&
-	    prefs.getShowLicenseAgreement().wasPressed(e)) {
-      BaseApp.showURL("http//www.temerity.us/company/license.php");
-      return true;
-    }
+      else if((prefs.getShowHomePage() != null) &&
+              prefs.getShowHomePage().wasPressed(e)) {
+        BaseApp.showURL("http://www.temerity.us/products/pipeline");
+        return true; 
+      }
+      else if((prefs.getShowSupportForums() != null) &&
+              prefs.getShowSupportForums().wasPressed(e)) {
+        BaseApp.showURL("http://www.temerity.us/community/forums");
+        return true;
+      }
+      else if((prefs.getShowBugDatabase() != null) &&
+              prefs.getShowBugDatabase().wasPressed(e)) {
+        BaseApp.showURL("http://www.temerity.us/community/forums/viewforum.php?f=12");  
+        return true;
+      }
+      else if((prefs.getShowLicenseAgreement() != null) &&
+              prefs.getShowLicenseAgreement().wasPressed(e)) {
+        BaseApp.showURL("http//www.temerity.us/company/license.php");
+        return true;
+      }
     
-    else if((prefs.getShowConfig() != null) &&
-	    prefs.getShowConfig().wasPressed(e)) {
-      UIMaster.getInstance().showConfigDialog();
-      return true;
-    }
+      else if((prefs.getShowConfig() != null) &&
+              prefs.getShowConfig().wasPressed(e)) {
+        master.showConfigDialog();
+        return true;
+      }
 
-    /* misc */ 
-    else if((prefs.getNextTab() != null) &&
-	    prefs.getNextTab().wasPressed(e)) {
-      doNextTab();
-      return true;
+      /* misc */ 
+      else if((prefs.getNextTab() != null) &&
+              prefs.getNextTab().wasPressed(e)) {
+        doNextTab();
+        return true;
+      }
+      else if((prefs.getPrevTab() != null) &&
+              prefs.getPrevTab().wasPressed(e)) {
+        doPrevTab();
+        return true;
+      }
     }
-    else if((prefs.getPrevTab() != null) &&
-	    prefs.getPrevTab().wasPressed(e)) {
-      doPrevTab();
-      return true;
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
     }
 
     return false;
@@ -1952,173 +1958,180 @@ class JManagerPanel
    ActionEvent e
   ) 
   {
-    /* windows */ 
-    String cmd = e.getActionCommand();
-    if(cmd.equals("node-browser-window"))
-      doNodeBrowserWindow();
-    else if(cmd.equals("node-viewer-window"))
-      doNodeViewerWindow();
+    UIMaster master = UIMaster.getInstance(); 
 
-    else if(cmd.equals("node-details-window"))
-      doNodeDetailsWindow();
-    else if(cmd.equals("node-files-window"))
-      doNodeFilesWindow();
-    else if(cmd.equals("node-links-window"))
-      doNodeLinksWindow();
-    else if(cmd.equals("node-history-window"))
-      doNodeHistoryWindow();
+    try {
+      /* windows */ 
+      String cmd = e.getActionCommand();
+      if(cmd.equals("node-browser-window"))
+        doNodeBrowserWindow();
+      else if(cmd.equals("node-viewer-window"))
+        doNodeViewerWindow();
 
-    else if(cmd.equals("job-server-stats-window"))
-      doJobServerStatsWindow();
-    else if(cmd.equals("job-servers-window"))
-      doJobServersWindow();
-    else if(cmd.equals("job-slots-window"))
-      doJobSlotsWindow();
+      else if(cmd.equals("node-details-window"))
+        doNodeDetailsWindow();
+      else if(cmd.equals("node-files-window"))
+        doNodeFilesWindow();
+      else if(cmd.equals("node-links-window"))
+        doNodeLinksWindow();
+      else if(cmd.equals("node-history-window"))
+        doNodeHistoryWindow();
 
-    else if(cmd.equals("job-browser-window"))
-      doJobBrowserWindow();
-    else if(cmd.equals("job-viewer-window"))
-      doJobViewerWindow();
-    else if(cmd.equals("job-details-window"))
-      doJobDetailsWindow();
+      else if(cmd.equals("job-server-stats-window"))
+        doJobServerStatsWindow();
+      else if(cmd.equals("job-servers-window"))
+        doJobServersWindow();
+      else if(cmd.equals("job-slots-window"))
+        doJobSlotsWindow();
 
-    else if(cmd.equals("none-window"))
-      doEmptyWindow();
+      else if(cmd.equals("job-browser-window"))
+        doJobBrowserWindow();
+      else if(cmd.equals("job-viewer-window"))
+        doJobViewerWindow();
+      else if(cmd.equals("job-details-window"))
+        doJobDetailsWindow();
 
-    else if(cmd.equals("rename-window"))
-      doRenameWindow();
+      else if(cmd.equals("none-window"))
+        doEmptyWindow();
 
-    /* panels */ 
-    else if(cmd.equals("node-browser"))
-      doNodeBrowserPanel();
-    else if(cmd.equals("node-viewer"))
-      doNodeViewerPanel();
+      else if(cmd.equals("rename-window"))
+        doRenameWindow();
 
-    else if(cmd.equals("node-details"))
-      doNodeDetailsPanel();
-    else if(cmd.equals("node-files"))
-      doNodeFilesPanel();
-    else if(cmd.equals("node-links"))
-      doNodeLinksPanel();
-    else if(cmd.equals("node-history"))
-      doNodeHistoryPanel();
+      /* panels */ 
+      else if(cmd.equals("node-browser"))
+        doNodeBrowserPanel();
+      else if(cmd.equals("node-viewer"))
+        doNodeViewerPanel();
 
-    else if(cmd.equals("job-server-stats"))
-      doJobServerStatsPanel();
-    else if(cmd.equals("job-servers"))
-      doJobServersPanel();
-    else if(cmd.equals("job-slots"))
-      doJobSlotsPanel();
+      else if(cmd.equals("node-details"))
+        doNodeDetailsPanel();
+      else if(cmd.equals("node-files"))
+        doNodeFilesPanel();
+      else if(cmd.equals("node-links"))
+        doNodeLinksPanel();
+      else if(cmd.equals("node-history"))
+        doNodeHistoryPanel();
 
-    else if(cmd.equals("job-browser"))
-      doJobBrowserPanel();
-    else if(cmd.equals("job-viewer"))
-      doJobViewerPanel();
-    else if(cmd.equals("job-details"))
-      doJobDetailsPanel();
+      else if(cmd.equals("job-server-stats"))
+        doJobServerStatsPanel();
+      else if(cmd.equals("job-servers"))
+        doJobServersPanel();
+      else if(cmd.equals("job-slots"))
+        doJobSlotsPanel();
 
-    else if(cmd.equals("none"))
-      doEmptyPanel();
+      else if(cmd.equals("job-browser"))
+        doJobBrowserPanel();
+      else if(cmd.equals("job-viewer"))
+        doJobViewerPanel();
+      else if(cmd.equals("job-details"))
+        doJobDetailsPanel();
+
+      else if(cmd.equals("none"))
+        doEmptyPanel();
     
-    /* layout */ 
-    else if(cmd.equals("add-left"))
-      doAddLeft();
-    else if(cmd.equals("add-right"))
-      doAddRight();
-    else if(cmd.equals("add-above"))
-      doAddAbove();
-    else if(cmd.equals("add-below"))
-      doAddBelow();
-    else if(cmd.equals("add-tab"))
-      doAddTab();
-    else if(cmd.equals("add-top-tab"))
-      doAddTopTab();
-    else if(cmd.equals("close-panel"))
-      doClosePanel();
+      /* layout */ 
+      else if(cmd.equals("add-left"))
+        doAddLeft();
+      else if(cmd.equals("add-right"))
+        doAddRight();
+      else if(cmd.equals("add-above"))
+        doAddAbove();
+      else if(cmd.equals("add-below"))
+        doAddBelow();
+      else if(cmd.equals("add-tab"))
+        doAddTab();
+      else if(cmd.equals("add-top-tab"))
+        doAddTopTab();
+      else if(cmd.equals("close-panel"))
+        doClosePanel();
 
-    /* owner|view */
-    else if(cmd.equals("change-owner-view"))
-      doChangeOwnerView();
+      /* owner|view */
+      else if(cmd.equals("change-owner-view"))
+        doChangeOwnerView();
     
-    /* panel group */ 
-    else if(cmd.startsWith("group:")) 
-      doGroup(Integer.valueOf(cmd.substring(6)));
+      /* panel group */ 
+      else if(cmd.startsWith("group:")) 
+        doGroup(Integer.valueOf(cmd.substring(6)));
     
-    /* UIMaster */ 
-    else if(cmd.equals("save-layout"))
-      UIMaster.getInstance().doSaveLayout();
-    else if(cmd.equals("save-layout-as"))
-      UIMaster.getInstance().showSaveLayoutDialog();
-    else if(cmd.startsWith("restore-layout:")) 
-      UIMaster.getInstance().doRestoreSavedLayout(new Path(cmd.substring(15)), true);
-    else if(cmd.startsWith("restore-layout-no-select:")) 
-      UIMaster.getInstance().doRestoreSavedLayout(new Path(cmd.substring(25)), false);
-    else if(cmd.equals("manage-layouts"))
-      UIMaster.getInstance().showManageLayoutsDialog();
-    else if(cmd.equals("reset-layout"))
-      UIMaster.getInstance().doResetLayout();
+      /* UIMaster */ 
+      else if(cmd.equals("save-layout"))
+        master.doSaveLayout();
+      else if(cmd.equals("save-layout-as"))
+        master.showSaveLayoutDialog();
+      else if(cmd.startsWith("restore-layout:")) 
+        master.doRestoreSavedLayout(new Path(cmd.substring(15)), true);
+      else if(cmd.startsWith("restore-layout-no-select:")) 
+        master.doRestoreSavedLayout(new Path(cmd.substring(25)), false);
+      else if(cmd.equals("manage-layouts"))
+        master.showManageLayoutsDialog();
+      else if(cmd.equals("reset-layout"))
+        master.doResetLayout();
 
-    else if(cmd.equals("preferences"))
-      UIMaster.getInstance().showUserPrefsDialog();
-    else if(cmd.equals("default-editors"))
-      UIMaster.getInstance().showDefaultEditorsDialog(); 
-    else if(cmd.equals("authorize"))
-      UIMaster.getInstance().showAuthorizeDialog();
-    else if(cmd.equals("update-plugins"))
-      UIMaster.getInstance().clearPluginCache();
+      else if(cmd.equals("preferences"))
+        master.showUserPrefsDialog();
+      else if(cmd.equals("default-editors"))
+        master.showDefaultEditorsDialog(); 
+      else if(cmd.equals("authorize"))
+        master.showAuthorizeDialog();
+      else if(cmd.equals("update-plugins"))
+        master.clearPluginCache();
 
-    else if(cmd.equals("manage-privileges"))
-      UIMaster.getInstance().showManagePrivilegesDialog();
-    else if(cmd.equals("manage-toolsets"))
-      UIMaster.getInstance().showManageToolsetsDialog();
+      else if(cmd.equals("manage-privileges"))
+        master.showManagePrivilegesDialog();
+      else if(cmd.equals("manage-toolsets"))
+        master.showManageToolsetsDialog();
 
-    else if(cmd.equals("manage-license-keys"))
-      UIMaster.getInstance().showManageLicenseKeysDialog();
-    else if(cmd.equals("manage-selection-keys"))
-      UIMaster.getInstance().showManageSelectionKeysDialog();
+      else if(cmd.equals("manage-license-keys"))
+        master.showManageLicenseKeysDialog();
+      else if(cmd.equals("manage-selection-keys"))
+        master.showManageSelectionKeysDialog();
 
-    else if(cmd.equals("server-extensions"))
-      UIMaster.getInstance().showManageServerExtensionsDialog(); 
-    else if(cmd.equals("backup-database"))
-      UIMaster.getInstance().showBackupDialog();
+      else if(cmd.equals("server-extensions"))
+        master.showManageServerExtensionsDialog(); 
+      else if(cmd.equals("backup-database"))
+        master.showBackupDialog();
 
-    else if(cmd.equals("archive"))
-      UIMaster.getInstance().showArchiveDialog();
-    else if(cmd.equals("offline"))
-      UIMaster.getInstance().showOfflineDialog();
-    else if(cmd.equals("restore"))
-      UIMaster.getInstance().showRestoreDialog();
-    else if(cmd.equals("archive-volumes"))
-      UIMaster.getInstance().showArchiveVolumesDialog();
-    else if(cmd.equals("shutdown"))  
-      doShutdownServer();
+      else if(cmd.equals("archive"))
+        master.showArchiveDialog();
+      else if(cmd.equals("offline"))
+        master.showOfflineDialog();
+      else if(cmd.equals("restore"))
+        master.showRestoreDialog();
+      else if(cmd.equals("archive-volumes"))
+        master.showArchiveVolumesDialog();
+      else if(cmd.equals("shutdown"))  
+        doShutdownServer();
 
-    else if(cmd.equals("about"))
-      UIMaster.getInstance().showAboutDialog();
-    else if(cmd.equals("quick-reference"))
-      BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php");
-    else if(cmd.equals("user-manual"))
-      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
-		      "/share/docs/manuals/user-manual.html");
+      else if(cmd.equals("about"))
+        master.showAboutDialog();
+      else if(cmd.equals("quick-reference"))
+        BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php");
+      else if(cmd.equals("user-manual"))
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
+                        "/share/docs/manuals/user-manual.html");
 
-    else if(cmd.equals("home-page"))
-      BaseApp.showURL("http://www.temerity.us");
-    else if(cmd.equals("support-forums"))
-      BaseApp.showURL("http://www.temerity.us/community/forums");
-    else if(cmd.equals("bug-database"))
-      BaseApp.showURL("http://www.temerity.us/community/forums/viewforum.php?f=12");  
+      else if(cmd.equals("home-page"))
+        BaseApp.showURL("http://www.temerity.us");
+      else if(cmd.equals("support-forums"))
+        BaseApp.showURL("http://www.temerity.us/community/forums");
+      else if(cmd.equals("bug-database"))
+        BaseApp.showURL("http://www.temerity.us/community/forums/viewforum.php?f=12");  
 
-    else if(cmd.equals("site-configuration"))
-      UIMaster.getInstance().showConfigDialog(); 
-    else if(cmd.equals("license-agreement"))
-      BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
-		      "/share/docs/legal/license.html");
+      else if(cmd.equals("site-configuration"))
+        master.showConfigDialog(); 
+      else if(cmd.equals("license-agreement"))
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
+                        "/share/docs/legal/license.html");
 
-    else if(cmd.equals("show-logs"))
-      UIMaster.getInstance().showLogsDialog(); 
+      else if(cmd.equals("show-logs"))
+        master.showLogsDialog(); 
 
-    else if(cmd.equals("quit"))
-      UIMaster.getInstance().doQuit();    
+      else if(cmd.equals("quit"))
+        master.doQuit();    
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+    }
   }
 
 

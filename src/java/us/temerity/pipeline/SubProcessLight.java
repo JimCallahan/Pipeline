@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.14 2007/02/07 21:07:24 jim Exp $
+// $Id: SubProcessLight.java,v 1.15 2007/02/22 16:12:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -63,6 +63,9 @@ class SubProcessLight
    * 
    * @param args  
    *   The command line arguments of the program to execute.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   public 
   SubProcessLight
@@ -71,6 +74,7 @@ class SubProcessLight
    File program,      
    ArrayList<String> args
   )
+    throws PipelineException
   {
     super(name);
     init(null, program.getPath(), args, 
@@ -99,6 +103,9 @@ class SubProcessLight
    * 
    * @param dir  
    *   The working directory of the OS level process.   
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   public 
   SubProcessLight
@@ -109,6 +116,7 @@ class SubProcessLight
    Map<String,String> env,      
    File dir
   )
+    throws PipelineException
   {
     super(name);
     init(null, program, args, env, dir);
@@ -120,9 +128,8 @@ class SubProcessLight
    * 
    * The Pipeline utility program <I>plrun(1)</I> is used to run the subprocess as another 
    * user. Due to the fact that the <I>plrun(1)</I> utility can only be run by the 
-   * "pipeline" user, this constructor will throw an 
-   * {@link IllegalArgumentException IllegalArgumentException} if instantiated by any 
-   * other user. <P>
+   * "pipeline" user, this constructor will throw a {@link PipelineArgumentException} if 
+   * instantiated by any other user. <P>
    * 
    * The <CODE>program</CODE> can be an absolute filesystem path, a filesystem path relative 
    * to the working directory or a simple program name reachable through the environmental 
@@ -145,7 +152,10 @@ class SubProcessLight
    *   The environment under which the OS level process is run.  
    * 
    * @param dir  
-   *   The working directory of the OS level process.   
+   *   The working directory of the OS level process.  
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process. 
    */ 
   public 
   SubProcessLight
@@ -157,18 +167,19 @@ class SubProcessLight
    Map<String,String> env,      
    File dir
   )
+    throws PipelineException
   {
     super(name);
 
     if(user == null) 
-      throw new IllegalArgumentException("The user name cannot be (null)!");
+      throw new PipelineException("The user name cannot be (null)!");
 
     if(PackageInfo.sUser.equals(user)) {
       init(null, program, args, env, dir);
     }
     else {
       if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
-	throw new IllegalArgumentException
+	throw new PipelineException
 	  ("Only the (" + PackageInfo.sPipelineUser + ") may run a process as " + 
 	   "another user!");
 
@@ -227,7 +238,10 @@ class SubProcessLight
    *   The environment under which the OS level processes are run.  
    * 
    * @param dir  
-   *   The working directory of the OS level processes.   
+   *   The working directory of the OS level processes.  
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process. 
    */
   public static LinkedList<SubProcessLight>
   createMultiSubProcess
@@ -240,9 +254,10 @@ class SubProcessLight
    Map<String,String> env,      
    File dir
   ) 
+    throws PipelineException
   {
     if(PackageInfo.sOsType.equals(OsType.Windows)) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("This method does now support the Windows operating system!"); 
 
     LinkedList<SubProcessLight> procs = new LinkedList<SubProcessLight>();
@@ -289,6 +304,9 @@ class SubProcessLight
    * 
    * @param dir  
    *   The working directory of the OS level processes.   
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */
   public static LinkedList<SubProcessLight>
   createMultiSubProcess
@@ -300,6 +318,7 @@ class SubProcessLight
    Map<String,String> env,      
    File dir
   ) 
+    throws PipelineException
   {
     return createMultiSubProcess(name, program, 
 				 preOpts, args, new ArrayList<String>(), 
@@ -345,7 +364,10 @@ class SubProcessLight
    *   The environment under which the OS level processes are run.  
    * 
    * @param dir  
-   *   The working directory of the OS level processes.   
+   *   The working directory of the OS level processes.  
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process. 
    */
   public static LinkedList<SubProcessLight>
   createMultiSubProcess
@@ -359,9 +381,10 @@ class SubProcessLight
    Map<String,String> env,      
    File dir
   ) 
+    throws PipelineException
   {
     if(PackageInfo.sOsType.equals(OsType.Windows)) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("This method does now support the Windows operating system!"); 
 
     LinkedList<SubProcessLight> procs = new LinkedList<SubProcessLight>();
@@ -410,7 +433,10 @@ class SubProcessLight
    *   The environment under which the OS level processes are run.  
    * 
    * @param dir  
-   *   The working directory of the OS level processes.   
+   *   The working directory of the OS level processes.  
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process. 
    */
   public static LinkedList<SubProcessLight>
   createMultiSubProcess
@@ -423,6 +449,7 @@ class SubProcessLight
    Map<String,String> env,      
    File dir
   ) 
+    throws PipelineException
   {
     return createMultiSubProcess(user, name, program, 
 				 preOpts, args, new ArrayList<String>(), 
@@ -510,6 +537,9 @@ class SubProcessLight
    * 
    * @return 
    *   The newly instantiated native process.
+   * 
+   * @throws PipelineException
+   *   If unable to initialize the OS level process.
    */ 
   protected NativeProcess
   initNativeProcess
@@ -518,6 +548,7 @@ class SubProcessLight
    String[] env,      
    File dir       
   )  
+    throws PipelineException
   {
     pOutput = new StringBuffer();
     pErrors = new StringBuffer();
