@@ -1,8 +1,9 @@
-// $Id: MultiEnumParam.java,v 1.4 2007/02/13 03:22:31 jesse Exp $
+// $Id: MultiEnumParam.java,v 1.5 2007/02/23 21:10:13 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.ui.JMultiEnumField;
 
 import java.util.*;
 
@@ -35,8 +36,80 @@ public class MultiEnumParam
   }
 
   /**
-   * Construct a parameter with the given name, description and default value.
+   * Construct a parameter with the given name, description, default value, and layout.
+   * <p>
+   * This class does not provide any sort of error checking on the layout that is passed
+   * in.  The layout does not effect the functionality of this class in anyway.  The 
+   * layout is only checked for validity if it is used to instantiate a new
+   * {@link JMultiEnumField}.  If this never occurs, this class will operate the same
+   * regardless of whether the layout is valid or not.
+   * <p>
+   * @param name
+   *    The short name of the parameter.
    * 
+   * @param desc
+   *    A short description used in tooltips.
+   * 
+   * @param value
+   *    The default value for this parameter. This is the chosen 
+   *    subset of all possible values from <code>values</code>.
+   * 
+   * @param values
+   *    The list of all possible values.
+   *    
+   * @param layout
+   * 	A layout for all the parameters.  If this is <code>null</code>, then all
+   *    the values will be arranged in alphabetical order.  Otherwise, this structure
+   *    needs to contain a string value for each value the parameter could have in the 
+   *    order that they are supposed to be displayed.  It can also contain <code>null</code> 
+   *    values. Each <code>null</code> value will be displayed as a vertical space between
+   *    values.
+   *    
+   * @param tooltips
+   *  	A map of descriptions of what each value is, mapped by value name. 
+   */
+  public 
+  MultiEnumParam
+  (
+   String name, 
+   String desc, 
+   ComparableTreeSet<String> value,
+   Set<String> values,
+   ArrayList<String> layout,
+   TreeMap<String, String> tooltips
+  ) 
+  {
+    super(name, desc, value);
+
+    if((values == null) || values.isEmpty())
+      throw new IllegalArgumentException
+        ("The values parameter must contain at least one value.");
+    pValues = values;
+    
+    // This gets called twice, once in super() and once here.
+    // Because the call in super happens before pValues is set, 
+    // it is not a true validation check.
+    validate(value);
+    
+    if (layout != null)
+      pLayout = new ArrayList<String>(layout);
+    else
+      pLayout = null;
+    if (tooltips == null)
+      pTooltips = null;
+    else
+      pTooltips = new TreeMap<String, String>(tooltips);
+  }
+
+  /**
+   * Construct a parameter with the given name, description, and default value.
+   * <p>
+   * This class does not provide any sort of error checking on the layout that is passed
+   * in.  The layout does not effect the functionality of this class in anyway.  The 
+   * layout is only checked for validity if it is used to instantiate a new
+   * {@link JMultiEnumField}.  If this never occurs, this class will operate the same
+   * regardless of whether the layout is valid or not.
+   * <p>
    * @param name
    *    The short name of the parameter.
    * 
@@ -56,20 +129,11 @@ public class MultiEnumParam
    String name, 
    String desc, 
    ComparableTreeSet<String> value,
-   TreeSet<String> values
+   Set<String> values
   ) 
   {
-    super(name, desc, value);
-
-    if((values == null) || values.isEmpty())
-      throw new IllegalArgumentException
-	("The values parameter must contain at least one value.");
-    pValues = values;
-
-    validate(value);
+    this(name, desc, value, values, null, null);
   }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -88,6 +152,7 @@ public class MultiEnumParam
   /**
    * Sets the value of the parameter.
    */ 
+  @SuppressWarnings("unchecked")
   @Override
   public void setValue(Comparable value)
   {
@@ -108,8 +173,8 @@ public class MultiEnumParam
   {
     if(!pValues.contains(name))
       throw new IllegalArgumentException
-	("The value (" + name + ") is not one of the supported values of the " + 
-	 "(" + pName + ") MultiEnum parameter.");
+        ("The value (" + name + ") is not one of the supported values of the " + 
+         "(" + pName + ") MultiEnum parameter.");
     getSelectedValues().add(name);
   }
 
@@ -124,18 +189,18 @@ public class MultiEnumParam
   {
     if(!pValues.contains(name))
       throw new IllegalArgumentException
-	("The value (" + name + ") is not one of the supported values of the " + 
-	 "(" + pName + ") MultiEnum parameter.");
+        ("The value (" + name + ") is not one of the supported values of the " + 
+         "(" + pName + ") MultiEnum parameter.");
     getSelectedValues().remove(name);
   }
 
   /**
    * Get all possible enumerated values.
    */ 
-  public Collection<String> 
+  public Set<String> 
   getValues()
   {
-    return Collections.unmodifiableCollection(pValues);
+    return Collections.unmodifiableSet(pValues);
   }
 
   /**
@@ -156,6 +221,24 @@ public class MultiEnumParam
     return toReturn;
   }
   
+  /**
+   * Gets the layout associated with this multi-enum param.
+   */
+  public ArrayList<String> 
+  getLayout()
+  {
+    return pLayout;
+  }
+  
+  /**
+   * Gets the tooltips associated with this multi-enum param.
+   */
+  public TreeMap<String, String> 
+  getTooltips()
+  {
+    return pTooltips;
+  } 
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -166,6 +249,7 @@ public class MultiEnumParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (
@@ -186,14 +270,13 @@ public class MultiEnumParam
       for(String each : getSelectedValues()) {
         if(!pValues.contains(each))
 	  throw new IllegalArgumentException
-  	  ("The value (" + each + ") is not a valid option in the Map Paramter " + 
-  	   "(" + pName + ")");
+  	    ("The value (" + each + ") is not a valid option in the Map Paramter " + 
+  	     "(" + pName + ")");
       }
     }
   }
-
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -209,6 +292,7 @@ public class MultiEnumParam
   /**
    * The complete set of all possible enumerated values.
    */
-  private TreeSet<String> pValues;
-
+  private Set<String> pValues;
+  private ArrayList<String> pLayout;
+  private TreeMap<String, String> pTooltips;
 }
