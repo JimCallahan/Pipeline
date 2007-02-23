@@ -292,7 +292,6 @@ public class BuildMattePassTool extends BaseTool{
 					PackageInfo.sTempPath.toFile());
 			err = new PrintWriter(errFile);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
