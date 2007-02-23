@@ -134,6 +134,7 @@ class PassLayoutGroup
     super(name, desc);
 
     pEntries = new TreeMap<Integer, AdvancedLayoutGroup>(group.pEntries);
+    pPassNames = new TreeMap<Integer, String>(group.pPassNames);
   }
   
   
@@ -205,7 +206,7 @@ class PassLayoutGroup
    * @return
    * 	The layout group
    */
-  public AdvancedLayoutGroup getLayout
+  public AdvancedLayoutGroup getPassLayout
   (
     Integer pass
   )
@@ -259,6 +260,11 @@ class PassLayoutGroup
     return pEntries.size();
   }
 
+  /**
+   * Returns the number of columns in a pass.
+   * @param pass
+   * 	The number of the pass.
+   */
   public int getNumberOfColumns
   (
     int pass
@@ -266,6 +272,7 @@ class PassLayoutGroup
   {
     return pEntries.get(pass).getNumberOfColumns();
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -353,6 +360,4 @@ class PassLayoutGroup
    * The name of each pass
    */
   private TreeMap<Integer, String> pPassNames;
-
-
 }
