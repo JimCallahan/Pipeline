@@ -119,6 +119,27 @@ class AdvancedLayoutGroup
     pSubGroups   = new TreeMap<Integer, LinkedList<LayoutGroup>>(group.pSubGroups);
     pColumnNames = new TreeMap<Integer, String>(group.pColumnNames); 
   }
+  
+  /**
+   * Construct a new layout group which is a copy of the given group.
+
+   * @param group
+   *   The layout group to copy.
+   */ 
+  public 
+  AdvancedLayoutGroup
+  (
+   AdvancedLayoutGroup group
+  ) 
+  {
+    super(group.getName(), group.getDescription());
+
+    pIsOpen      = new TreeMap<Integer, Boolean>(group.pIsOpen);
+    pEntries     = new TreeMap<Integer, LinkedList<String>>(group.pEntries);
+    pSubGroups   = new TreeMap<Integer, LinkedList<LayoutGroup>>(group.pSubGroups);
+    pColumnNames = new TreeMap<Integer, String>(group.pColumnNames); 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -341,6 +362,88 @@ class AdvancedLayoutGroup
   {
     validateColumn(col);
     pEntries.get(col).add(name);
+  }
+  
+  /**
+   * Removes an entry from the layout.
+   * <p>
+   * This also performs some basic cleanup.  If the entry is sandwiched
+   * between two <code>null</code> values, one of the two <code>null</code>
+   * values will be removed, so that an extra gap is not created due to the 
+   * removal of this entry.
+   * @param name
+   * 	The name of the entry to be removed.
+   */
+  public void
+  removeEntry
+  (
+    String name
+  )
+  {
+    if(name == null)
+      throw new IllegalArgumentException("Cannot remove a null value from a layout.");
+    for(LinkedList<String> list : pEntries.values()) {
+      if(cleanList(name, list))
+	return;
+    }
+    for(LinkedList<LayoutGroup> groups : pSubGroups.values()) {
+      for(LayoutGroup group : groups) {
+	if(cleanGroup(name, group))
+	  return;
+      }
+    }
+  }
+  
+  private boolean
+  cleanGroup
+  (
+    String name,
+    LayoutGroup group
+  )
+  {
+    if(cleanList(name, group.getEntries()))
+      return true;
+    for(LayoutGroup sub : group.getSubGroups())
+      if(cleanGroup(name, sub))
+	return true;
+    return false;
+  }
+  
+  private boolean 
+  cleanList
+  (
+    String name,
+    List<String> list
+  )
+  {
+    int i = 0;
+    int max = list.size() - 1;
+    for(String entry : list) {
+      if(name.equals(entry)) {
+	if(i != 0 && i != max) {
+	  String prev = list.get(i - 1);
+	  String next = list.get(i + 1);
+	  if(prev == null && next == null)
+	    list.remove(i + 1);
+	  list.remove(i);
+	}
+	else if(i == 0) {
+	 String next = list.get(i + 1);
+	 if(next == null)
+	   list.remove(i + 1);
+	 list.remove(i);
+	}
+	else if(i == max) {
+	  String prev = list.get(i - 1);
+	  list.remove(i);
+	  if(prev == null)
+	    list.remove(i - 1);
+	}
+	return true;
+      }
+      i++;
+    }
+    return false;
   }
   
   /**
