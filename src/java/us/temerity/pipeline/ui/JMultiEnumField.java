@@ -17,6 +17,9 @@ import us.temerity.pipeline.PipelineException;
 
 /**
  * A field which represents a {@link MultiEnumParam}.
+ * <P>
+ * This field displays itself as a list of boolean parameters, organized with an optional
+ * layout or alphabetically if no layout is specified.
  */
 public class JMultiEnumField
   extends JPanel
@@ -28,13 +31,27 @@ public class JMultiEnumField
 
   /**
    * Constructs a new field.
-   * @throws PipelineException 
+   * 
+   * @param initialValues
+   * 	A set of values that will initially be set to true.
+   * 
+   * @param values
+   * 	A set of all the values in the parameter. 
+   * 
+   * @param layout
+   * 	A layout for all the parameters.  If this is <code>null</code>, then all
+   *    the values will be arranged in alphabetical order.  Otherwise, this structure
+   *    needs to contain a string value for each value the parameter could have in the 
+   *    order that they are supposed to be displayed.  It can also contain <code>null</code> 
+   *    values. Each <code>null</code> value will be displayed as a vertical space between
+   *    values.
    */
   public 
   JMultiEnumField
   (
-    Collection<String> values,
-    Collection<String> initialValues
+    Set<String> initialValues,
+    Set<String> values,
+    ArrayList<String> layout
   ) 
   throws PipelineException
   {
@@ -43,28 +60,38 @@ public class JMultiEnumField
     this.setAlignmentY(0.5f);
     
     if (values == null)
-      throw new PipelineException
-      	("Cannot create a JMultiEnumField with a (null) values parameter");
+      throw new IllegalArgumentException
+        ("Cannot create a JMultiEnumField with a (null) values parameter");
     
     if (initialValues == null)
       initialValues = new TreeSet<String>();
+
+    if(layout == null) {
+      pLayout = new ArrayList<String>(values);
+      Collections.sort(pLayout);
+    }
+    else
+      pLayout = new ArrayList<String>(layout);
+    
+    validateLayout(values, pLayout);
     
     pBooleanFields = new TreeMap<String, JBooleanField>();
    
-    ArrayList<String> list = new ArrayList<String>(values);
-    Collections.sort(list);
-    int num = values.size();
+    int num = pLayout.size();
     for(int i = 0; i < num; i++) {
-      String value = list.get(i);
-      JBooleanField field = new JBooleanField();
-      if(initialValues.contains(value))
-	field.setValue(true);
-      else
-	field.setValue(false);
-      pBooleanFields.put(value, field);
-      this.add(field);
+      String value = pLayout.get(i);
+      if (value != null) {
+	JBooleanField field = new JBooleanField();
+	if(initialValues.contains(value))
+	  field.setValue(true);
+	else
+	  field.setValue(false);
+	pBooleanFields.put(value, field);
+	this.add(field);
       if(i != (num - 1))
 	this.add(Box.createRigidArea(new Dimension(0, 3)));
+      } else
+	this.add(Box.createRigidArea(new Dimension(0, 12)));
     }
   }
   
@@ -80,7 +107,7 @@ public class JMultiEnumField
   public void 
   setSelectedValues
   (
-    Collection<String> values
+    Set<String> values
   ) 
   {
     for(String fieldName : pBooleanFields.keySet()) {
@@ -158,6 +185,15 @@ public class JMultiEnumField
     return pBooleanFields;
   }
   
+  /**
+   * Returns the layout used for this field.
+   */
+  public ArrayList<String>
+  getFieldLayout()
+  {
+    return pLayout;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -191,6 +227,44 @@ public class JMultiEnumField
       field.setPreferredSize(childD);
   }
   
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * A method to confirm that the inputted layout contains adequate entries for all
+   * possible params and no extraneous ones.
+   */
+  protected void 
+  validateLayout
+  (
+    Set<String> values,
+    ArrayList<String> layout
+  )
+    throws IllegalArgumentException 
+  {
+    TreeSet<String> remaining = new TreeSet<String>(values);
+    for (String position : layout)
+    {
+      if (position == null)
+	continue;
+      if (!values.contains(position))
+	throw new IllegalArgumentException
+	  ("Invalid Layout Entry ("+ position +") in a JMultiEnumParamField" );
+      if (!remaining.contains(position))
+	throw new IllegalArgumentException
+	  ("Invalid Layout Entry ("+ position +") in a JMultiEnumParamField.  " +
+	   "This entry appears to have existed twice in the layout."); 
+      remaining.remove(position);
+    }
+    if (remaining.size() != 0)
+      throw new IllegalArgumentException
+        ("Missing Layout Entries in a JMultiEnumParamField.  " +
+         "There are not entries for all the param's values.");
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -209,4 +283,10 @@ public class JMultiEnumField
    * The TreeMap that contains the boolean fields for this 
    */
   private TreeMap<String, JBooleanField> pBooleanFields;
+  
+  /**
+   * The layout for the fields.
+   */
+  private ArrayList<String> pLayout;
+
 }

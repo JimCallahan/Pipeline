@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.18 2007/02/13 05:17:03 jesse Exp $
+// $Id: UIFactory.java,v 1.19 2007/02/23 20:38:11 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1094,7 +1094,6 @@ class UIFactory
    * 
    * @param width
    *   The minimum and preferred width of the field.
-   * @throws PipelineException 
    */ 
   public static JUtilContextField
   createUtilContextField
@@ -1125,7 +1124,6 @@ class UIFactory
    * 
    * @param width
    *   The minimum and preferred width of the field.
-   * @throws PipelineException 
    */ 
   public static JUtilContextField
   createUtilContextField
@@ -1149,7 +1147,6 @@ class UIFactory
    * 
    * @param width
    *   The minimum and preferred width of the field.
-   * @throws PipelineException 
    */ 
   public static JMayaContextField
   createMayaContextField
@@ -1180,7 +1177,6 @@ class UIFactory
    * 
    * @param width
    *   The minimum and preferred width of the field.
-   * @throws PipelineException 
    */ 
   public static JMayaContextField
   createMayaContextField
@@ -1202,21 +1198,30 @@ class UIFactory
    * @param initialValues
    * 	The values that start out with a <code>true</code> value.
    * 
+   * @param layout
+   * 	The layout of the values. Pass in <code>null</code> to have
+   * 	the values displayed in alphabetical order.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
-   * @throws PipelineException 
    */ 
   public static JMultiEnumField
   createMultiEnumField
   (
-   Collection<String> values,
-   Collection<String> initialValues,
+   Set<String> initialValues,
+   Set<String> values,
+   ArrayList<String> layout,
    int width
   ) 
   throws PipelineException 
   {
-    JMultiEnumField field = new JMultiEnumField(values, initialValues);
-    int maxSize = 19*values.size() + (values.size() -1)*3;
+    JMultiEnumField field = new JMultiEnumField(initialValues, values, layout);
+    int nulls = 0;
+    for (String value :  field.getFieldLayout()) {
+      if (value == null)
+	nulls++;
+    }
+    int maxSize = (12 * nulls) + (19 * values.size()) + ((values.size() - 1) * 3);
     Dimension size = new Dimension(width, maxSize);
     field.setMinimumSize(size);
     field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
@@ -1230,20 +1235,24 @@ class UIFactory
    * 
    * @param values
    *   The full set of values in the enum.
+   *   
+   * @param layout
+   * 	The layout of the values. Pass in <code>null</code> to have
+   * 	the values displayed in alphabetical order.
    * 
    * @param width
    *   The minimum and preferred width of the field.
-   * @throws PipelineException 
    */ 
   public static JMultiEnumField
   createMultiEnumField
   (
-   Collection<String> values,
+   Set<String> values,
+   ArrayList<String> layout,
    int width
   ) 
   throws PipelineException 
   {
-    return createMultiEnumField(values, null, width);
+    return createMultiEnumField(null, values, layout, width);
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -3634,7 +3643,7 @@ class UIFactory
   }
   
   /**
-   * Create a new MayaContext field with a title and add them to the given panels.
+   * Create a new MayaContext field with a title and add it to the given panels.
    * 
    * @param tpanel
    *   The titles panel.
@@ -3672,6 +3681,8 @@ class UIFactory
   }
   
   /**
+   * Create a new MultiEnum field with a title and add it to the given panels.
+   * 
    * @param tpanel
    *   The titles panel.
    *  
@@ -3692,9 +3703,14 @@ class UIFactory
    *   
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
+   *   
+   * @param layout
+   * 	The layout of the values. Pass in <code>null</code> to have
+   * 	the values displayed in alphabetical order.
    * 
-   * @param tooltip
-   *   The tooltip text.
+   * @param tooltips
+   *   A list of tooltips, mapped by value name.  If this is null, then
+   *   no tooltips will be used.
    */
   public static JMultiEnumField
   createTitledMultiEnumField
@@ -3703,35 +3719,41 @@ class UIFactory
    String title,  
    int twidth,
    JPanel vpanel, 
-   Collection<String> values,
-   Collection<String> initialValues,
+   Set<String> initialValues,
+   Set<String> values,
    int vwidth,
-   String tooltip
+   ArrayList<String> layout, 
+   TreeMap<String, String> tooltips
   ) 
    throws PipelineException
   {
-    JMultiEnumField field = createMultiEnumField(values, initialValues, vwidth);
+    JMultiEnumField field = createMultiEnumField(initialValues, values, layout, vwidth);
     vpanel.add(field);
     
-    // Note this can't be null, since the constructor above would have caught that.
-    // so no checks are necessary here,  swell.
-    int size = values.size();
-    ArrayList<String> list = new ArrayList<String>(values);
-    Collections.sort(list);
-    for(int i=0; i<size; i++) {
-      JLabel label = 
-        createFixedLabel(title + "->" + list.get(i) + ":", twidth, JLabel.RIGHT, 
-                         "Multi-Enum Param (" + title + ").  " + 
-                         "Field name (" + list.get(i) + ")");
-      tpanel.add(label); 
+    if (tooltips == null)
+      tooltips = new TreeMap<String, String>();
+
+    layout = field.getFieldLayout();
+    int size = layout.size();
+    for(int i = 0; i < size; i++) {
+      String entry = layout.get(i);
+      if(entry != null) {
+	JLabel label = 
+	  createFixedLabel(title + " " + entry + ":", twidth, JLabel.RIGHT, tooltips.get(entry));
+	tpanel.add(label);
       if (i != (size -1))
         tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+      } else 
+      {
+	tpanel.add(Box.createRigidArea(new Dimension(0, 12)));
+      }
     }
-
     return field;
   }
  
   /**
+   * Create a new MultiEnum field with a title and add it to the given panels.
+   * 
    * @param tpanel
    *   The titles panel.
    *  
@@ -3750,11 +3772,13 @@ class UIFactory
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
    * 
-   * @param tooltip
-   *   The tooltip text.
+   * @param layout
+   * 	The layout of the values. Pass in <code>null</code> to have
+   * 	the values displayed in alphabetical order.
    * 
-   * @return
-   * @throws PipelineException
+   * @param tooltips
+   *   A list of tooltips, mapped by value name.  If this is null, then
+   *   no tooltips will be used.
    */
   public static JMultiEnumField
   createTitledMultiEnumField
@@ -3763,18 +3787,21 @@ class UIFactory
    String title,  
    int twidth,
    JPanel vpanel, 
-   Collection<String> values,
+   Set<String> values,
    int vwidth,
-   String tooltip
+   ArrayList<String> layout, 
+   TreeMap<String, String> tooltips
   ) 
     throws PipelineException
   {
     return createTitledMultiEnumField(tpanel, title, twidth, 
-                                      vpanel, values, null, vwidth, 
-                                      tooltip);
+                                      vpanel, null, values , vwidth, 
+                                      layout, tooltips);
   }
 
   /**
+   * Create a new MultiEnum field with a title and add it to the given panels.
+   * 
    * @param tpanel
    *   The titles panel.
    *  
@@ -3793,8 +3820,9 @@ class UIFactory
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
    *   
-   * @return
-   * @throws PipelineException
+   * @param layout
+   * 	The layout of the values. Pass in <code>null</code> to have
+   * 	the values displayed in alphabetical order.
    */
   public static JMultiEnumField
   createTitledMultiEnumField
@@ -3803,14 +3831,15 @@ class UIFactory
    String title,  
    int twidth,
    JPanel vpanel, 
-   Collection<String> values,
-   int vwidth
+   Set<String> values,
+   int vwidth,
+   ArrayList<String> layout
   ) 
     throws PipelineException
   {
     return createTitledMultiEnumField(tpanel, title, twidth, 
-                                      vpanel, values, null, vwidth, 
-                                      null);
+                                      vpanel, null, values, vwidth, 
+                                      layout, null);
   }
 
 
