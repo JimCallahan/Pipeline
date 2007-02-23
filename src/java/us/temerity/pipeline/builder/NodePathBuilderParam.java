@@ -1,12 +1,9 @@
-// $Id: NodePathBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
+// $Id: NodePathBuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.GlueDecoder;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   P A T H   B U I L D E R   P A R A M                                          */
@@ -68,6 +65,7 @@ class NodePathBuilderParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   public void
   validate
   (

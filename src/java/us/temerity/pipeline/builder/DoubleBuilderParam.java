@@ -1,12 +1,9 @@
-// $Id: DoubleBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
+// $Id: DoubleBuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.DoubleParam;
 import us.temerity.pipeline.glue.GlueDecoder; 
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   D O U B L E   B U I D L E R   P A R A M                                                */

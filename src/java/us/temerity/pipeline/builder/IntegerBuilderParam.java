@@ -1,12 +1,9 @@
-// $Id: IntegerBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
+// $Id: IntegerBuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.IntegerParam;
 import us.temerity.pipeline.glue.GlueDecoder; 
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   I N T E G E R   B U I L D E R   P A R A M                                              */

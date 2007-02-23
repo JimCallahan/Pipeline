@@ -1,11 +1,8 @@
-// $Id: BuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
+// $Id: BuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   P A R A M                                                              */
@@ -53,12 +50,14 @@ interface BuilderParam
   /**
    * Gets the value of the parameter. 
    */ 
+  @SuppressWarnings("unchecked")
   public Comparable
   getValue();
   
   /**
    * Sets the value of the parameter. 
    */
+  @SuppressWarnings("unchecked")
   public void 
   setValue
   (

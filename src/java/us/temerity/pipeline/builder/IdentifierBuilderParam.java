@@ -1,4 +1,4 @@
-// $Id: IdentifierBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
+// $Id: IdentifierBuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -64,6 +64,7 @@ class IdentifierBuilderParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (
