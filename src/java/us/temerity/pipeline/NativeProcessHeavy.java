@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.java,v 1.9 2007/02/22 16:32:57 jim Exp $
+// $Id: NativeProcessHeavy.java,v 1.10 2007/03/07 08:26:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -413,9 +413,9 @@ class NativeProcessHeavy
  	  }
 
  	  // DEBUG 
- 	  System.out.print("(J) User = " + pSubstituteUser + "\n");
- 	  System.out.print("(J) Encrypted = " + pSubstitutePassword + "\n");
- 	  System.out.print("(J) Password = " + String.valueOf(dpassword) + "\n");
+//  	  System.out.print("(J) User = " + pSubstituteUser + "\n");
+//  	  System.out.print("(J) Encrypted = " + pSubstitutePassword + "\n");
+//  	  System.out.print("(J) Password = " + String.valueOf(dpassword) + "\n");
  	  // DEBUG 
  	}
  	catch(Exception ex) {
