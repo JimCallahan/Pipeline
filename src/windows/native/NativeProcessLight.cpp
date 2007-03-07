@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cpp,v 1.5 2007/02/11 17:44:11 jim Exp $
+// $Id: NativeProcessLight.cpp,v 1.6 2007/03/07 08:25:59 jim Exp $
 
 #include "stdafx.h"
 
@@ -303,6 +303,37 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
     return;
   }
 
+  /* give this process the ability to kill any process owned by anyone! */ 
+  {
+    /* get the token for the current process */ 
+    HANDLE token;
+    if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY, &token)) {
+      env->ThrowNew(IOException, "unable to get token for current process!");
+      return;
+    }
+
+    /* lookup the debug programs privilege */ 
+    LUID luid;
+    if(!LookupPrivilegeValue(NULL, "SeDebugPrivilege", &luid)) {
+      env->ThrowNew(IOException, "debug privilege lookup failed!");
+      return;
+    }
+    
+    /* enable the privilege */ 
+    TOKEN_PRIVILEGES tp;
+    tp.PrivilegeCount = 1;
+    tp.Privileges[0].Luid = luid;
+    tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+    if(!AdjustTokenPrivileges(token, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), 
+                              (PTOKEN_PRIVILEGES) NULL, (PDWORD) NULL)) {
+      env->ThrowNew(IOException, "adjust token privileges failed!");
+      return;
+    } 
+
+    CloseHandle(token);
+  }
+
   /* get the process handle */ 
   HANDLE proc = OpenProcess(PROCESS_TERMINATE, 0, (DWORD) pid);
   if(proc == NULL) {
@@ -465,9 +496,9 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
       env->ReleaseCharArrayElements(jpassword, pwd, JNI_ABORT);
 
       // DEBUG
-      printf("User = %s\n", user);     
-      printf("Domain = %s\n", domain); 
-      printf("Password = %s\n", password); 
+//       printf("User = %s\n", user);     
+//       printf("Domain = %s\n", domain); 
+//       printf("Password = %s\n", password); 
       // DEBUG
 
       substUser = LogonUser(TEXT(user), TEXT(domain), TEXT(password), 

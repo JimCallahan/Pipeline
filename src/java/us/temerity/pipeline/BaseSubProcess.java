@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.21 2007/02/22 16:32:56 jim Exp $
+// $Id: BaseSubProcess.java,v 1.22 2007/03/07 08:25:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -520,7 +520,16 @@ class BaseSubProcess
 	  break;
 
 	case Windows:
-	  throw new IllegalArgumentException("Not implemented yet...");
+          try {
+            pProc.signal(signal, dpid);
+            wasSignalled = true;
+          }
+          catch(IOException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Sub, LogMgr.Level.Warning,
+               "Unable to send signal (" + signal + ") to process [" + dpid + "]: " +
+               ex.getMessage());
+          }
 	}
       }
       else {
