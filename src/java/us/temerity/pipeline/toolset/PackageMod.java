@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.11 2006/05/26 18:01:48 jim Exp $
+// $Id: PackageMod.java,v 1.12 2007/03/08 23:18:41 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -250,19 +250,20 @@ class PackageMod
     String output[] = null;
     {
       String envbin = null;
-      switch(PackageInfo.sOsType) {
-      case MacOS:
-	envbin = "/usr/bin/env";
-	break;
-
-      case Unix:
-	envbin = "/bin/env";
+      {
+        File efile = new File("/usr/bin/env");
+        if(!efile.isFile()) 
+          efile = new File("/bin/env");
+        if(!efile.isFile())
+           throw new PipelineException
+             ("Could not determine the location of the (env) program!"); 
+        envbin = efile.getPath();
       }
-
+      
       ArrayList<String> args = new ArrayList<String>();
       args.add("--noprofile");
       args.add("-c");
-      args.add("if source " + sfile + " 2>&1 > /dev/null; " +
+      args.add("if source " + sfile + " > /dev/null 2>&1; " +
 	       "then " + envbin + "; else exit 1; fi");
       
       TreeMap<String,String> env = new TreeMap<String,String>();
