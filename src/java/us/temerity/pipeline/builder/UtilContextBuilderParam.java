@@ -1,33 +1,35 @@
-// $Id: NodePathBuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
+// $Id: UtilContextBuilderParam.java,v 1.1 2007/03/10 22:44:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
-import us.temerity.pipeline.*;
+import java.util.TreeSet;
+
+import us.temerity.pipeline.BaseParam;
 import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   P A T H   B U I L D E R   P A R A M                                          */
+/*   U T I L   C O N T E X T   B U I L D E R   P A R A M                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Builder parameter with an fully resolved node name value.
+ * A builder parameter with an {@link UtilContext} value. <P> 
  */
 public 
-class NodePathBuilderParam
-  extends PathParam
-  implements PrimitiveBuilderParam
+class UtilContextBuilderParam
+  extends BaseParam
+  implements ComplexBuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
+ /**
    * This constructor is required by the {@link GlueDecoder} to instantiate the class 
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
    */    
-  public 
-  NodePathBuilderParam() 
+  public
+  UtilContextBuilderParam() 
   {
     super();
   }
@@ -43,18 +45,33 @@ class NodePathBuilderParam
    * 
    * @param value 
    *   The default value for this parameter.
+   
    */ 
   public
-  NodePathBuilderParam
+  UtilContextBuilderParam
   (
    String name,  
    String desc, 
-   Path value
+   UtilContext value 
   ) 
   {
     super(name, desc, value);
+    if (value == null)
+      throw new IllegalArgumentException("The value cannot be (null)!");
   }
-  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the value of the parameter. 
+   */ 
+  public UtilContext
+  getUtilContextValue() 
+  {
+    return ((UtilContext) getValue());
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -66,34 +83,16 @@ class NodePathBuilderParam
    * <P>
    */
   @SuppressWarnings("unchecked")
-  public void
+  protected void 
   validate
   (
-    Comparable value
+    Comparable value	  
   )
-    throws IllegalArgumentException
+    throws IllegalArgumentException 
   {
-    IllegalArgumentException ex = 
-      new IllegalArgumentException("Path (" + value + ") is not a valid node name");
-    
-    if(value== null || !(value instanceof Path))
-      throw ex;
-    
-    Path p = (Path) value;
-
-    String text = p.toString();
-    
-    String comps[] = text.split("/", -1);
-    if(comps.length > 0) {
-      if(comps[0].length() > 0) 
-	throw ex;
-      
-      int wk;
-      for(wk=1; wk<(comps.length-1); wk++) {
-	if(comps[wk].length() == 0) 
-	  throw ex;
-      }
-    }
+    if ( ( value != null ) && !( value instanceof UtilContext ) )
+      throw new IllegalArgumentException("The parameter (" + pName
+          + ") only accepts (UtilContext) values!");
   }
 
   
@@ -102,27 +101,44 @@ class NodePathBuilderParam
   /*   U T I L I T I E S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Sets the value of this parameter from a string.
-   */
+  public TreeSet<String> 
+  listOfKeys()
+  {
+    TreeSet<String> toReturn = new TreeSet<String>();
+    toReturn.add(pName + "-Author");
+    toReturn.add(pName + "-View");
+    toReturn.add(pName + "-Toolset");
+    return toReturn;
+  }
+
   public void 
   valueFromString
   (
+    String key, 
     String value
   )
   {
     if (value == null)
       return;
-    setValue(new Path(value));
+    UtilContext context = getUtilContextValue();
+    if (key.equals(pName + "-Author"))
+      setValue(new UtilContext(value, context.getView(), context.getToolset()));
+    else if (key.equals(pName + "-View"))
+      setValue(new UtilContext(context.getAuthor(), value, context.getToolset()));
+    else if (key.equals(pName + "-Toolset"))
+      setValue(new UtilContext(context.getAuthor(), context.getView(), value));
+    else
+      assert(false);
+      return;
   }
 
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6004574702514003655L;
+
+  private static final long serialVersionUID = -1468438453624432149L;
 
 }
 

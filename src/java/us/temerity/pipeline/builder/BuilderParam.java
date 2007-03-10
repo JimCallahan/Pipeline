@@ -1,4 +1,4 @@
-// $Id: BuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
+// $Id: BuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -11,7 +11,7 @@ import us.temerity.pipeline.glue.*;
 /**
  * A parameter of tool Builder classes. 
  */
-public 
+public abstract
 interface BuilderParam
   extends Glueable
 {  

@@ -1,21 +1,25 @@
-// $Id: NodePathBuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
+// $Id: MayaContextBuilderParam.java,v 1.1 2007/03/10 22:44:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
+import java.util.TreeSet;
+
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.GlueDecoder;
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   P A T H   B U I L D E R   P A R A M                                          */
+/*   M A Y A   C O N T E X T   B U I L D E R   P A R A M                                    */
 /*------------------------------------------------------------------------------------------*/
+
 
 /**
- * An Builder parameter with an fully resolved node name value.
+ * An plugin parameter with an MayaContext value. <P> 
  */
 public 
-class NodePathBuilderParam
-  extends PathParam
-  implements PrimitiveBuilderParam
+class MayaContextBuilderParam
+  extends BaseParam
+  implements ComplexBuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -26,8 +30,8 @@ class NodePathBuilderParam
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
    */    
-  public 
-  NodePathBuilderParam() 
+  public
+  MayaContextBuilderParam() 
   {
     super();
   }
@@ -43,18 +47,34 @@ class NodePathBuilderParam
    * 
    * @param value 
    *   The default value for this parameter.
+   
    */ 
   public
-  NodePathBuilderParam
+  MayaContextBuilderParam
   (
    String name,  
    String desc, 
-   Path value
+   MayaContext value 
   ) 
   {
     super(name, desc, value);
   }
-  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the value of the parameter. 
+   */ 
+  public MayaContext
+  getMayaContextValue() 
+  {
+    return ((MayaContext) getValue());
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -66,34 +86,16 @@ class NodePathBuilderParam
    * <P>
    */
   @SuppressWarnings("unchecked")
-  public void
+  protected void 
   validate
   (
-    Comparable value
+    Comparable value	  
   )
-    throws IllegalArgumentException
+    throws IllegalArgumentException 
   {
-    IllegalArgumentException ex = 
-      new IllegalArgumentException("Path (" + value + ") is not a valid node name");
-    
-    if(value== null || !(value instanceof Path))
-      throw ex;
-    
-    Path p = (Path) value;
-
-    String text = p.toString();
-    
-    String comps[] = text.split("/", -1);
-    if(comps.length > 0) {
-      if(comps[0].length() > 0) 
-	throw ex;
-      
-      int wk;
-      for(wk=1; wk<(comps.length-1); wk++) {
-	if(comps[wk].length() == 0) 
-	  throw ex;
-      }
-    }
+    if((value != null) && !(value instanceof MayaContext))
+      throw new IllegalArgumentException("The parameter (" + pName
+	+ ") only accepts (MayaContext) values!");
   }
 
   
@@ -102,28 +104,50 @@ class NodePathBuilderParam
   /*   U T I L I T I E S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Sets the value of this parameter from a string.
-   */
+  public TreeSet<String> 
+  listOfKeys()
+  {
+    TreeSet<String> toReturn = new TreeSet<String>();
+    toReturn.add(pName + "-Angular");
+    toReturn.add(pName + "-Linear");
+    toReturn.add(pName + "-Time");
+    return toReturn;
+  }
+
   public void 
   valueFromString
   (
+    String key, 
     String value
   )
   {
     if (value == null)
       return;
-    setValue(new Path(value));
+    MayaContext context = getMayaContextValue();
+    try {
+    if (key.equals(pName + "-Angular"))
+      setValue(new MayaContext(value, context.getLinearUnit(), context.getTimeUnit()));
+    else if (key.equals(pName + "-Linear"))
+      setValue(new MayaContext(context.getAngularUnit(), value, context.getTimeUnit()));
+    else if (key.equals(pName + "-Time"))
+      setValue(new MayaContext(context.getAngularUnit(), context.getLinearUnit(), value));
+    else
+      assert(false);
+    } catch (PipelineException ex) {
+      LogMgr.getInstance().logAndFlush(Kind.Arg, Level.Warning, 
+	"Attempted to set an invalid MayaContext value with a command line parameter.  " +
+	"Value is being ignored.\n" + ex.getMessage());
+      return;
+    }
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6004574702514003655L;
-
+  private static final long serialVersionUID = 3809821423807521696L;
 }
 
 

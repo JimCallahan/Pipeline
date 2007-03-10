@@ -42,11 +42,11 @@ class MayaContext
   throws PipelineException
   {
     if(!sAngularUnits.contains(angularUnit))
-      throw new PipelineException("Invalid value passed in for Angular Units.");
+      throw new PipelineException("Invalid value (" + angularUnit + ") passed in for Angular Units.");
     if(!sLinearUnits.contains(linearUnit))
-      throw new PipelineException("Invalid value passed in for Linear Units.");
+      throw new PipelineException("Invalid value (" + linearUnit + ") passed in for Linear Units.");
     if(!sTimeUnits.contains(timeUnit))
-      throw new PipelineException("Invalid value passed in for Time Units.");
+      throw new PipelineException("Invalid value (" + timeUnit + ") passed in for Time Units.");
     pAngularUnit = angularUnit;
     pLinearUnit = linearUnit;
     pTimeUnit = timeUnit;

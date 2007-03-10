@@ -1,4 +1,4 @@
-// $Id: StringBuilderParam.java,v 1.2 2006/12/10 23:02:25 jesse Exp $
+// $Id: StringBuilderParam.java,v 1.3 2007/03/10 22:44:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -14,7 +14,7 @@ import us.temerity.pipeline.StringParam;
 public 
 class StringBuilderParam
   extends StringParam
-  implements BuilderParam
+  implements PrimitiveBuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -52,6 +52,26 @@ class StringBuilderParam
   ) 
   {
     super(name, desc, value);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U T I L I T I E S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Sets the value of this parameter from a string.
+   */
+  public void 
+  valueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      return;
+    setValue(value);
   }
 
 

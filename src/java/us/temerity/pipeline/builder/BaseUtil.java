@@ -39,7 +39,7 @@ class BaseUtil
   {
     pName = name;
     pDesc = desc;
-    BaseUtil.initialize();
+    initialize();
     pContext = context;
   }
 
@@ -66,7 +66,7 @@ class BaseUtil
   {
     pName = name;
     pDesc = desc;
-    BaseUtil.initialize();
+    initialize();
   }
 
   /**
@@ -76,10 +76,14 @@ class BaseUtil
    * 
    * @throws PipelineException
    */
-  public static void 
+  private void 
   initialize() 
     throws PipelineException
   {
+    /*
+     * TODO look at moving this method somewhere else.  Some sort of global class should
+     * probably be calling this.
+     */
     try {
       PluginMgrClient.init();
     }

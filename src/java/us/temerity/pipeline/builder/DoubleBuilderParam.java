@@ -1,4 +1,4 @@
-// $Id: DoubleBuilderParam.java,v 1.3 2007/02/23 21:08:39 jesse Exp $
+// $Id: DoubleBuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -15,7 +15,7 @@ import us.temerity.pipeline.glue.GlueDecoder;
 public 
 class DoubleBuilderParam
   extends DoubleParam
-  implements BuilderParam
+  implements PrimitiveBuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -55,8 +55,28 @@ class DoubleBuilderParam
     super(name, desc, value);
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U T I L I T I E S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Sets the value of this parameter from a string.
+   */
+  public void 
+  valueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      return;
+    setValue(Double.parseDouble(value));
+  }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
