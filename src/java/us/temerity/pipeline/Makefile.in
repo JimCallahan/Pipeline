@@ -283,7 +283,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) \
                    $(shell ls $(srcdir)/builder/names/*.java) \
 		   $(shell ls $(srcdir)/builder/stages/*.java) \
-                   $(shell ls $(srcdir)/builder/interfaces/*.java) 
+                   $(shell ls $(srcdir)/builder/interfaces/*.java) \
+                   $(shell ls $(srcdir)/builder/ui/*.java)
 
     GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java $(srcdir)/glue/io/*.java) 
 
@@ -324,7 +325,8 @@ BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) \
                    ScriptOptsParser \
                    TestNativeOptsParser \
                    ValidateOptsParser \
-                   GlueParser
+                   GlueParser \
+                   BuilderOptsParser
 
 
     GLUE_PARSERS = GlueParser
@@ -376,11 +378,12 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/ui/core/*.class \
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class \
-                    us/temerity/pipeline/builder/*.class) 
-#                     us/temerity/pipeline/builder/stages/*.class \
-#                     us/temerity/pipeline/builder/builders/*.class \
-#                     us/temerity/pipeline/builder/names/*.class \
-#                     us/temerity/pipeline/builder/interfaces/*.class)
+                    us/temerity/pipeline/builder/*.class \
+                    us/temerity/pipeline/builder/stages/*.class \
+                    us/temerity/pipeline/builder/builders/*.class \
+                    us/temerity/pipeline/builder/names/*.class \
+                    us/temerity/pipeline/builder/ui/*.class \
+                    us/temerity/pipeline/builder/interfaces/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -401,11 +404,12 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class \
-                    us/temerity/pipeline/builder/*.class) 
-#                     us/temerity/pipeline/builder/stages/*.class \
-#                     us/temerity/pipeline/builder/builders/*.class \
-#                     us/temerity/pipeline/builder/names/*.class \
-#                     us/temerity/pipeline/builder/interfaces/*.class )
+                    us/temerity/pipeline/builder/*.class \
+                    us/temerity/pipeline/builder/stages/*.class \
+                    us/temerity/pipeline/builder/builders/*.class \
+                    us/temerity/pipeline/builder/names/*.class \
+                    us/temerity/pipeline/builder/ui/*.class \
+                    us/temerity/pipeline/builder/interfaces/*.class )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -552,7 +556,7 @@ clean-class:
 	rm -f utils/*.class utils/v2_0_14/*.class
 	rm -f builder/*.class builder/builders/*.class
 	rm -f builder/interfaces/*.class builder/names/*.class
-	rm -f builder/stages/*.class
+	rm -f builder/stages/*.class builder/ui/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:
