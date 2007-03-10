@@ -1,0 +1,545 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(BuilderOptsParser)
+
+package us.temerity.pipeline.core;
+
+import java.util.*;
+import java.util.logging.*;
+import java.text.*;
+import java.io.*;
+import java.net.*;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   B U I L D E R   O P T S   P A R S E R                                                  */
+/*                                                                                          */
+/*    The parser for builder tools.                                                         */
+/*------------------------------------------------------------------------------------------*/
+
+public class 
+BuilderOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the builder instance. 
+   */ 
+  public void 
+  setBuilder
+  (
+   BaseBuilder builder  
+  ) 
+  {
+    if(builder == null) 
+      throw new IllegalArgumentException("The builder cannot be (null)!");
+    pBuilder = builder;
+    currentBuilderName = pBuilder.getName();
+  }
+  
+  public void
+  setApp
+  (
+    BuilderApp app
+  )
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The app cannot be (null)!");
+    pApp = app;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The builder instance. 
+   */
+  private BaseBuilder pBuilder;
+    
+  /**
+   * The app instance
+   */
+  private BuilderApp pApp;
+    
+  private String currentBuilderName;
+}
+  
+PARSER_END(BuilderOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:             "--help">         		    
+| <HTML_HELP:      	 "--html-help">    		    
+| <VERSION:        	 "--version">      		    
+| <RELEASE_DATE:   	 "--release-date"> 		    
+| <COPYRIGHT:      	 "--copyright">
+
+  /* global options */
+| <GUI:		"--gui">
+| <BUILDER:	"--builder"> : BUILDER_SEP
+| <LOG:     "--log">     : LOG_SEP
+| <PARAM:   "--">        : PARAM_NAME_STATE
+
+
+  /* seperators */ 
+| <AE1: (["\0"])+> 
+
+  /* errors */ 
+| <UNKNOWN_OPTION:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>      : IGNORE_STATE
+}
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* builder */ 
+<BUILDER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : BUILDER_NAME_STATE
+| <MISSING_BUILDER_SEP: ~["="]>  : IGNORE_STATE
+}
+
+<BUILDER_NAME_STATE> 
+TOKEN :
+{
+  <BUILDER_NAME:           (["a"-"z","A"-"Z","0"-"9","-","_"])+> : DEFAULT
+| <MISSING_BUILDER_NAME:    ["\0"]>        				         : IGNORE_STATE
+| <ILLEGAL_BUILDER_NAME:  (~["\0"])+>    						 : IGNORE_STATE
+}
+
+/* parameter */
+<PARAM_NAME_STATE>
+TOKEN:
+{
+  <PARAM_NAME:          (["a"-"z","A"-"Z","0"-"9","-","_"])+> : PARAM_SEP
+| <MISSING_PARAM_NAME:   ["\0"]>        				      : IGNORE_STATE
+| <ILLEGAL_PARAM_NAME: (~["\0"])+>    						  : IGNORE_STATE
+}
+
+<PARAM_SEP> 
+TOKEN :
+{
+  <EQ2:                 "=">   : PARAM_VALUE_STATE
+| <MISSING_PARAM_SEP: ~["="]>  : IGNORE_STATE
+}
+
+<PARAM_VALUE_STATE>
+TOKEN:
+{
+  <PARAM_VALUE:          (["a"-"z","A"-"Z","0"-"9","-","_"])+> : DEFAULT
+| <MISSING_PARAM_VALUE:   ["\0"]>        				       : IGNORE_STATE
+| <ILLEGAL_PARAM_VALUE: (~["\0"])+>    						   : IGNORE_STATE
+}
+
+/* --log arguments */ 
+<LOG_SEP> 
+TOKEN :
+{
+  <EQ3:               "=">   : LOG_TYPE
+| <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LOG_TYPE> 
+TOKEN :
+{
+  <LOG_ALL:          "all">       
+| <LOG_ARG: 	     "arg">        
+| <LOG_OPS: 	     "ops">     
+| <LOG_NET: 	     "net">    
+| <LOG_PLG: 	     "plg">    
+| <LOG_SUB: 	     "sub">     
+| <LOG_TEX: 	     "tex">      
+| <COLON:  	         ":">        : LOG_LEVEL  
+| <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
+}
+
+<LOG_LEVEL> 
+TOKEN : 
+{
+  <SEVERE:  	      "severe">  
+| <WARNING: 	      "warning"> 
+| <INFO:    	      "info">    
+| <FINE:    	      "fine">    
+| <FINER :  	      "finer">   
+| <FINEST:    	      "finest">  
+| <COMMA:  	          ",">             : LOG_TYPE
+| <AE2:               (["\0"])+>       : DEFAULT
+| <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine()
+  throws PipelineException :
+{}
+{
+  (InformationOpts() | Commands()) <EOF>
+  {}
+}
+
+
+void 
+Commands() 
+  throws PipelineException :
+{}   
+{
+  (GlobalOpts() AE())*
+  {}
+}
+    
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright())
+  {
+    System.exit(0);
+  }
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> AE()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> AE()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> AE()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> AE()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> AE() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts()
+  throws PipelineException :
+{}
+{
+  (Log() | Gui() | Builder() | Param())
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void
+Gui() 
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <GUI> 
+  { 
+    pBuilder.setUsingGUI(true);
+  }
+}
+
+void
+Builder()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <BUILDER> EQ() t=<BUILDER_NAME>
+  {
+    currentBuilderName = t.image;
+  }
+}
+
+void
+Param()
+  throws PipelineException :
+{
+  Token t1;
+  Token t2;
+}
+{
+	<PARAM> t1=<PARAM_NAME> EQ() t2=<PARAM_VALUE>
+	{
+	  BaseBuilder.setCommandLineParam(currentBuilderName, t1.image, t2.image);
+	}
+}
+
+/*------------------------------------------------------------------------------------------*/
+
+void Log() : 
+{}
+{
+  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  {}
+}
+
+void LoggerArg() : 
+{}
+{
+  (LoggerAll() | LoggerPair()) 
+  {}
+}
+
+
+void LoggerAll() : 
+{
+  LogMgr.Level v;
+}
+{
+  (<LOG_ALL> <COLON> v=LogLevel())
+  {
+    LogMgr.getInstance().setLevels(v);
+  }
+}
+
+void LoggerPair() : 
+{
+  LogMgr.Kind k;
+  LogMgr.Level v;
+}
+{
+  (k=LogKind() <COLON> v=LogLevel())
+  {
+    LogMgr.getInstance().setLevel(k, v);
+  }
+}
+
+LogMgr.Kind LogKind() : 
+{
+  LogMgr.Kind g;
+}
+{
+  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=PlgKind() | g=TexKind())
+  {
+    return g;
+  }
+}
+
+LogMgr.Kind ArgKind() : 
+{}
+{
+  <LOG_ARG>
+  {
+    return LogMgr.Kind.Arg;
+  }
+}
+
+LogMgr.Kind OpsKind() : 
+{}
+{
+  <LOG_OPS>
+  {
+    return LogMgr.Kind.Ops;
+  }
+}
+
+LogMgr.Kind NetKind() : 
+{}
+{
+  <LOG_NET>
+  {
+    return LogMgr.Kind.Net;
+  }
+}
+
+LogMgr.Kind SubKind() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return LogMgr.Kind.Sub;
+  }
+}
+
+LogMgr.Kind PlgKind() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return LogMgr.Kind.Plg;
+  }
+}
+
+LogMgr.Kind TexKind() : 
+{}
+{
+  <LOG_TEX>
+  {
+    return LogMgr.Kind.Tex;
+  }
+}
+
+
+
+LogMgr.Level LogLevel() : 
+{
+  LogMgr.Level v;
+}
+{
+  (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+  {
+    return v;
+  }
+}
+
+LogMgr.Level SevereLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <SEVERE> 
+  {
+    return LogMgr.Level.Severe;
+  }
+}
+
+LogMgr.Level WarningLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <WARNING> 
+  {
+    return LogMgr.Level.Warning;
+  }
+}
+
+LogMgr.Level InfoLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <INFO> 
+  {
+    return LogMgr.Level.Info;
+  }
+}
+
+LogMgr.Level FineLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINE> 
+  {
+    return LogMgr.Level.Fine;
+  }
+}
+
+LogMgr.Level FinerLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINER> 
+  {
+    return LogMgr.Level.Finer;
+  }
+}
+
+LogMgr.Level FinestLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINEST> 
+  {
+    return LogMgr.Level.Finest;
+  }
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1> | t=<AE2>)
+  { 
+    return t; 
+  }
+}
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2> | t=<EQ3>)
+  { 
+    return t; 
+  }
+}
