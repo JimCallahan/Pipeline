@@ -86,6 +86,7 @@ The core features of Pipeline include:
 %dir @PRODDIR@/repository
 %dir @PRODDIR@/checksum
 %dir @PRODDIR@/restore
+%dir @PRODDIR@/target
 
 %defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/plugins
