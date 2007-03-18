@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.62 2007/01/02 07:55:04 jim Exp $
+// $Id: FileMgr.java,v 1.63 2007/03/18 02:27:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1168,9 +1168,9 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	    LinkedList<SubProcessLight> procs = 
-	      SubProcessLight.createMultiSubProcess
-	        ("CheckOut-RemoveCheckSums", "rm", preOpts, args, env, cwdir);
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+            ("CheckOut-RemoveCheckSums", "rm", preOpts, args, env, cwdir);
 
 	  try {
 	    for(SubProcessLight proc : procs) {
