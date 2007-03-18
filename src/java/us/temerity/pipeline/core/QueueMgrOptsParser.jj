@@ -188,7 +188,8 @@ TOKEN :
 | <LOG_DSP: 	     "dsp">        
 | <LOG_JOB: 	     "job">        
 | <LOG_COL: 	     "col">        
-| <LOG_SCH: 	     "sch">        
+| <LOG_SCH: 	     "sch">   
+| <LOG_SUB: 	     "sub">         
 | <LOG_EXT: 	     "ext">        
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
@@ -435,8 +436,8 @@ LogMgr.Kind LogKind() :
 }
 {
   (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=GluKind() | 
-   g=DspKind() | g=JobKind() | g=ColKind() | g=SchKind() | g=ExtKind() | 
-   g=MemKind())
+   g=DspKind() | g=JobKind() | g=ColKind() | g=SchKind() | g=SubKind() | 
+   g=ExtKind() | g=MemKind())
   {
     return g;
   }
@@ -529,6 +530,15 @@ LogMgr.Kind SchKind() :
   <LOG_SCH>
   {
     return LogMgr.Kind.Sch;
+  }
+}
+
+LogMgr.Kind SubKind() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return LogMgr.Kind.Sub;
   }
 }
 
