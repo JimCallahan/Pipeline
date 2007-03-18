@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.26 2007/02/18 15:25:44 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.27 2007/03/18 02:31:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -58,12 +58,13 @@ class PackageInfo
       sHomeDir = new File("@HOMEDIR@");
       sTempDir = new File("@TEMPDIR@");
 
-      sInstPath = new Path("@ROOT_INST_DIR@");
-      sProdPath = new Path("@PRODDIR@");
-      sRepoPath = new Path("@PRODDIR@/repository");
-      sWorkPath = new Path("@PRODDIR@/working");
-      sHomePath = new Path("@HOMEDIR@");
-      sTempPath = new Path("@TEMPDIR@");
+      sInstPath   = new Path("@ROOT_INST_DIR@");
+      sProdPath   = new Path("@PRODDIR@");
+      sRepoPath   = new Path("@PRODDIR@/repository");
+      sWorkPath   = new Path("@PRODDIR@/working");
+      sTargetPath = new Path("@PRODDIR@/target");
+      sHomePath   = new Path("@HOMEDIR@");
+      sTempPath   = new Path("@TEMPDIR@");
       break;
 
     case MacOS:
@@ -74,12 +75,13 @@ class PackageInfo
       sHomeDir = new File("@MAC_HOMEDIR@");
       sTempDir = new File("@MAC_TEMPDIR@");
 
-      sInstPath = new Path("@MAC_ROOT_INST_DIR@");
-      sProdPath = new Path("@MAC_PRODDIR@");
-      sRepoPath = new Path("@MAC_PRODDIR@/repository");
-      sWorkPath = new Path("@MAC_PRODDIR@/working");
-      sHomePath = new Path("@MAC_HOMEDIR@");
-      sTempPath = new Path("@MAC_TEMPDIR@");
+      sInstPath   = new Path("@MAC_ROOT_INST_DIR@");
+      sProdPath   = new Path("@MAC_PRODDIR@");
+      sRepoPath   = new Path("@MAC_PRODDIR@/repository");
+      sWorkPath   = new Path("@MAC_PRODDIR@/working");
+      sTargetPath = new Path("@MAC_PRODDIR@/target");
+      sHomePath   = new Path("@MAC_HOMEDIR@");
+      sTempPath   = new Path("@MAC_TEMPDIR@");
       break;
 
     case Windows:
@@ -90,12 +92,13 @@ class PackageInfo
       sHomeDir = null;
       sTempDir = null;
 
-      sInstPath = new Path("@WIN_ROOT_INST_DIR@");
-      sProdPath = new Path("@WIN_PRODDIR@");
-      sRepoPath = new Path("@WIN_PRODDIR@/repository");
-      sWorkPath = new Path("@WIN_PRODDIR@/working");
-      sHomePath = new Path("@WIN_HOMEDIR@");
-      sTempPath = new Path("@WIN_TEMPDIR@");
+      sInstPath   = new Path("@WIN_ROOT_INST_DIR@");
+      sProdPath   = new Path("@WIN_PRODDIR@");
+      sRepoPath   = new Path("@WIN_PRODDIR@/repository");
+      sWorkPath   = new Path("@WIN_PRODDIR@/working");
+      sTargetPath = new Path("@WIN_PRODDIR@/target");
+      sHomePath   = new Path("@WIN_HOMEDIR@");
+      sTempPath   = new Path("@WIN_TEMPDIR@");
       break;
 
     default:
@@ -106,12 +109,13 @@ class PackageInfo
       sHomeDir = null;
       sTempDir = null;
 
-      sInstPath = null;
-      sProdPath = null;
-      sRepoPath = null;
-      sWorkPath = null;
-      sHomePath = null;
-      sTempPath = null;
+      sInstPath   = null;
+      sProdPath   = null;
+      sRepoPath   = null;
+      sWorkPath   = null;
+      sTargetPath = null;
+      sHomePath   = null;
+      sTempPath   = null;
     } 
   } 
 
@@ -302,6 +306,23 @@ class PackageInfo
   ) 
   {
     return sOsWorkDirs[os.ordinal()];
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Gets the abstract pathname of the root directory where the target files of jobs running
+   * on Windows job servers are temporarily written as accessed from the given operating 
+   * system.
+   */
+  public static Path
+  getTargetPath
+  (
+   OsType os
+  ) 
+  {
+    return sOsTargetPaths[os.ordinal()];
   }
 
 
@@ -578,6 +599,16 @@ class PackageInfo
   @Deprecated
   public static final File sWorkDir;
   
+
+  /** 
+   * The abstract pathname of the root directory of where the target files of jobs 
+   * running on Windows job servers are temporarily written as accessed for the 
+   * current operating system. <P>
+   *
+   * Set by appending "/target" to value of the ProductionDirectory customer 
+   * profile entry.
+   */
+  public static final Path sTargetPath;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -880,6 +911,17 @@ class PackageInfo
     new File("@PRODDIR@/working"), 
     null,
     new File("@MAC_PRODDIR@/working")
+  };
+
+
+  /** 
+   * The root directory of windows job target files indexed by operating system 
+   * type [OsType.ordinal()].
+   */
+  private static final Path sOsTargetPaths[] = {
+    new Path("@PRODDIR@/target"), 
+    new Path("@WIN_PRODDIR@/target"),
+    new Path("@MAC_PRODDIR@/target")
   };
 
 
