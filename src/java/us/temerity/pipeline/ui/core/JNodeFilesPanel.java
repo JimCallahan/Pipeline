@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.32 2007/02/07 21:19:53 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.33 2007/03/18 02:14:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -985,7 +985,9 @@ class JNodeFilesPanel
       pEditorMenuToolset = toolset;
     }
 
-    pEditAsOwnerItem.setEnabled(!PackageInfo.sUser.equals(pAuthor)); 
+    pEditAsOwnerItem.setEnabled(pPrivilegeDetails.isNodeManaged(pAuthor) && 
+                                !PackageInfo.sUser.equals(pAuthor) && 
+                                (PackageInfo.sOsType != OsType.Windows));
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.56 2007/02/17 11:46:01 jim Exp $
+// $Id: UIMaster.java,v 1.57 2007/03/18 02:14:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2242,27 +2242,6 @@ class UIMaster
   }
 
   /**
-   * Show the authorize dialog.
-   */ 
-  public void 
-  showAuthorizeDialog()
-  {
-    pAuthorizeDialog.setVisible(true);
-    if(pAuthorizeDialog.wasConfirmed()) {
-      String domain = pAuthorizeDialog.getDomain();
-      char[] pw = pAuthorizeDialog.getPassword();
-      if((domain != null) && (pw != null)) {
-	try {
-	  getMasterMgrClient().authorizeOnWindows(domain, pw); 
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-      }
-    }
-  }
-
-  /**
    * Show the job submission dialog.
    */ 
   public JQueueJobsDialog
@@ -3502,8 +3481,6 @@ class UIMaster
 	pConfigDialog    = new JConfigDialog();
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
-
-	pAuthorizeDialog = new JAuthorizeDialog(pFrame); 
 
 	pManagePrivilegesDialog    = new JManagePrivilegesDialog();
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
@@ -5199,11 +5176,6 @@ class UIMaster
    * The manage editors dialog.
    */ 
   private JDefaultEditorsDialog  pDefaultEditorsDialog;
-
-  /**
-   * The authorize dialog.
-   */ 
-  private JAuthorizeDialog  pAuthorizeDialog;
 
   /**
    * The manage privileges dialog.

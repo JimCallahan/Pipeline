@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.74 2007/02/17 11:46:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.75 2007/03/18 02:14:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1282,7 +1282,9 @@ class JNodeViewerPanel
       pEditorMenuToolset = toolset;
     }    
 
-    pEditAsOwnerItem.setEnabled(!PackageInfo.sUser.equals(pAuthor)); 
+    pEditAsOwnerItem.setEnabled(pPrivilegeDetails.isNodeManaged(pAuthor) && 
+                                !PackageInfo.sUser.equals(pAuthor) && 
+                                (PackageInfo.sOsType != OsType.Windows));
   }
 
   /**
@@ -1363,6 +1365,9 @@ class JNodeViewerPanel
             }
           }
         }
+
+        if(idx == -1)
+          return;
             
         recent   = pRecentMenuItems.get(idx);
         commands = pRecentActionCommands.get(idx);

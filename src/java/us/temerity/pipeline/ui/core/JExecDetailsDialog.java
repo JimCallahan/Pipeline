@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.5 2007/03/18 02:14:26 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -220,7 +220,7 @@ class JExecDetailsDialog
     
     String dir = "-";
     if((agenda != null) && (info.getOsType() != null))
-      dir = agenda.getWorkingDir(info.getOsType()).toString();
+      dir = agenda.getTargetPath(info.getOsType()).toString();
     
     String hostname = "";
     if(info.getHostname() != null)
