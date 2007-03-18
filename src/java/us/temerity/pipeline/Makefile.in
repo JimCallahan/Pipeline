@@ -507,6 +507,7 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/checksum
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/restore
+	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/target
 	$(mkinstalldirs) $(DESTDIR)$(NODEDIR)
 
 
