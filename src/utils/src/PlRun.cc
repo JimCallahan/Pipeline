@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.8 2007/01/17 23:17:50 jim Exp $
+// $Id: PlRun.cc,v 1.9 2007/03/18 02:15:56 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -67,8 +67,11 @@ main
 	      PackageInfo::sPipelineUser);
       FB::error(msg);	
     }
-   
-    uid_t gid  = getgid();
+  }
+
+  /* make sure that only the "pipeline" group can run this program! */ 
+  {
+    gid_t gid = getgid();
     if(gid != PackageInfo::sPipelineGID) {
       sprintf(msg, "This program can only be run by the (%s) group!", 
 	      PackageInfo::sPipelineGroup);
