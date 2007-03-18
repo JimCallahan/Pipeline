@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.40 2007/02/15 08:42:22 jim Exp $
+// $Id: BaseAction.java,v 1.41 2007/03/18 02:33:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -176,6 +176,41 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Get all of the single valued parameters. <P> 
+   * 
+   * The returned ArrayList may be empty if the action does not have any single 
+   * valued parameters.
+   * 
+   * @return 
+   *   The set of single valued parameters for this action.  
+   */ 
+  public Collection<ActionParam>
+  getSingleParams()
+  {
+    return Collections.unmodifiableCollection(pSingleParams.values());
+  }  
+
+  /** 
+   * Get the single valued parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists.
+   */ 
+  public ActionParam
+  getSingleParam
+  (
+   String name   
+  ) 
+  {
+    if(name == null)
+      throw new IllegalArgumentException("The parameter name cannot be (null)!");
+    return pSingleParams.get(name);
+  }
+
+  /** 
    * Get the value of the single valued parameter with the given name.
    * 
    * @param name  
@@ -200,42 +235,7 @@ class BaseAction
 	("Unable to determine the value of the (" + name + ") parameter!");
     return param.getValue();
   }
-
-  /** 
-   * Get the single valued parameter with the given name.
-   * 
-   * @param name  
-   *   The name of the parameter. 
-   *
-   * @return 
-   *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists.
-   */ 
-  public ActionParam
-  getSingleParam
-  (
-   String name   
-  ) 
-  {
-    if(name == null)
-      throw new IllegalArgumentException("The parameter name cannot be (null)!");
-    return pSingleParams.get(name);
-  }
-
-  /** 
-   * Get all of the single valued parameters. <P> 
-   * 
-   * The returned ArrayList may be empty if the action does not have any single 
-   * valued parameters.
-   * 
-   * @return 
-   *   The set of single valued parameters for this action.  
-   */ 
-  public Collection<ActionParam>
-  getSingleParams()
-  {
-    return Collections.unmodifiableCollection(pSingleParams.values());
-  }  
-
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1286,19 +1286,88 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the given file to the set of files which will be removed upon termination of the
-   * Java runtime.
+   * Get the abstract working area file system path to the first file in the given 
+   * node file sequence. 
    * 
-   * @param file 
-   *   The temporary file to cleanup.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param name
+   *   The unique node name.
+   * 
+   * @param fseq
+   *   The file sequence associated with the node. 
    */
-  protected void 
-  cleanupLater
+  public static Path
+  getWorkingNodeFilePath
   (
-   File file
+   ActionAgenda agenda, 
+   String name, 
+   FileSeq fseq
   ) 
   {
-    FileCleaner.add(file);
+    return getWorkingNodeFilePath(agenda, name, fseq.getPath(0)); 
+  }
+
+  /**
+   * Get the abstract working area file system path to the given node file.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param name
+   *   The unique node name.
+   * 
+   * @param file
+   *   The name of the file relative to the directory containing the node.
+   */
+  public static Path
+  getWorkingNodeFilePath
+  (
+   ActionAgenda agenda, 
+   String name, 
+   Path file
+  ) 
+  {
+    return getWorkingNodeFilePath(new NodeID(agenda.getNodeID(), name), file); 
+  }
+
+  /**
+   * Get the abstract working area file system path to the given node file.
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @param file
+   *   The name of the file relative to the directory containing the node.
+   */
+  public static Path
+  getWorkingNodeFilePath
+  (
+   NodeID nodeID,
+   Path file
+  ) 
+  {
+    return getWorkingNodeFilePath(nodeID, file.toString());
+  }
+
+  /**
+   * Get the abstract working area file system path to the given node file.
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @param file
+   *   The name of the file relative to the directory containing the node.
+   */
+  public static Path
+  getWorkingNodeFilePath
+  (
+   NodeID nodeID,
+   String file
+  ) 
+  {
+    return new Path(PackageInfo.sProdPath, nodeID.getWorkingParent() + "/" + file);     
   }
 
 
@@ -1333,13 +1402,32 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Add the given file to the set of files which will be removed upon termination of the
+   * Java runtime.
+   * 
+   * @param file 
+   *   The temporary file to cleanup.
+   */
+  protected void 
+  cleanupLater
+  (
+   File file
+  ) 
+  {
+    FileCleaner.add(file);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the abstract pathname of the root directory used to store temporary files 
    * created by the job. <P> 
    * 
-   * @param agenda 
-   *   The jobs action agenda.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
    */
-  public Path
+  public static Path
   getTempPath
   (
    ActionAgenda agenda
@@ -1352,10 +1440,10 @@ class BaseAction
   /**
    * Get the root directory used to store temporary files created by the job. <P> 
    * 
-   * @param agenda 
-   *   The jobs action agenda.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
    */
-  public File
+  public static File
   getTempDir
   (
    ActionAgenda agenda
@@ -1370,8 +1458,8 @@ class BaseAction
    * If successful, the temporary file will be added to the set of files which will be 
    * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
    * 
-   * @param agenda 
-   *   The jobs action agenda.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
    * 
    * @param suffix
    *   The filename suffix of the temporary file.
@@ -1417,8 +1505,8 @@ class BaseAction
    * This method is not supported by the Windows operating system since it relies on the
    * {@link NativeFileSys#chmod NativeFileSys.chmod} method.
    * 
-   * @param agenda 
-   *   The jobs action agenda.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
    * 
    * @param mode 
    *   The access mode bitmask.
@@ -1458,63 +1546,932 @@ class BaseAction
     return tmp;
   }
 
+  /**
+   * Create a unique temporary script file appropriate for the current operating 
+   * system type.<P> 
+   * 
+   * On Unix/MacOS this will be an bash(1) script, while on Windows the script will
+   * be a BAT file suitable for evaluation by "Cmd".  The returned script file is suitable
+   * for use as with the {@link #createScriptSubProcess createScriptSubProcess} method.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   */ 
+  public File
+  createTempScript
+  (
+   ActionAgenda agenda
+  ) 
+    throws PipelineException 
+  {
+    if(PackageInfo.sOsType == OsType.Windows)
+      return createTemp(agenda, "bat");
+    else 
+      return createTemp(agenda, 0644, "bash");
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S U B P R O C E S S   C R E A T I O N   U T I L S                                    */
+  /*   P A R A M E T E R   C R E A T I O N                                                  */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Adds an additional command-line options parameter to the action.<P> 
+   * 
+   * The following single valued parameters is added: <BR>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   Extra Options <BR>
+   *   <DIV style="margin-left: 40px;">
+   *     Additional command-line arguments. <BR> 
+   *   </DIV> <BR>
+   * </DIV> <P> 
+   * 
+   * This method should be called in the subclass constructor before specifying parameter
+   * layouts.
+   */
+  protected void 
+  addExtraOptionsParam() 
+  {
+    ActionParam param = 
+      new StringActionParam
+      (aExtraOptions,
+       "Additional command-line arguments.", 
+       null);
+    addSingleParam(param);
+  }
+
+  /**
+   * Add the parameter created by the {@link #addExtraOptionsParam addExtraOptionsParam} 
+   * method to the given parameter layout group.
+   */ 
+  protected void 
+  addExtraOptionsParamToLayout
+  (
+   LayoutGroup layout
+  ) 
+  {
+    layout.addEntry(aExtraOptions);
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A R A M E T E R   L O O K U P                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * A convienence method for creating the {@link SubProcessHeavy} instance returned by 
-   * the {@link #prep prep} method of an Action which generates a temporary script to 
-   * execute some OS-specific commands. <P>
+   * Get the selected index of the single valued Enum parameter with the given name.<P> 
    * 
-   * If running on Unix or MacOS, the supplied script must be a BaSH shell script while on
-   * Windows the script is an executable BAT file.  The Action is reposible for making sure
-   * that the contents of these scripts are portable.  This method simply takes care of the 
-   * common wrapper code needed to instantiate a {@link SubProcessHeavy} to run the script.
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
    * 
-   * @param script
-   *   The temporary script file to execute.
-   * 
-   * @param agenda
-   *   The agenda to be accomplished by the action (from {@link #prep prep})
-   * 
-   * @param outFile 
-   *   The file to which all STDOUT output is redirected (from {@link #prep prep})
-   * 
-   * @param errFile 
-   *   The file to which all STDERR output is redirected (from {@link #prep prep})
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
    */ 
-  public SubProcessHeavy
-  createScriptSubProcess
+  public int
+  getSingleEnumParamIndex
   (
-   File script, 
-   ActionAgenda agenda,
-   File outFile, 
-   File errFile    
+   String name   
   ) 
     throws PipelineException
   {
-    NodeID nodeID = agenda.getNodeID();
+    EnumActionParam param = (EnumActionParam) getSingleParam(name);
+    if(param == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not illegal!"); 
+      
+    return param.getIndex();
+  }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Boolean parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   */ 
+  public boolean
+  getSingleBooleanParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getSingleParamValue(name);  
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    return value;
+  }  
+
+  /** 
+   * Get the value of the single valued Boolean parameter with the given name.<P> 
+   * 
+   * If <CODE>null</CODE> value is treated as <CODE>false</CODE>.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   */ 
+  public boolean
+  getSingleOptionalBooleanParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getSingleParamValue(name); 
+    return ((value != null) && value);
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Long parameter with the given name.<P> 
+   * 
+   * This method can be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public long
+  getSingleLongParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleLongParamValue(name, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Long parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value) <P> 
+   * 
+   * This method can be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public long
+  getSingleLongParamValue
+  (
+   String name, 
+   Long minValue 
+  ) 
+    throws PipelineException
+  {
+    return getSingleLongParamValue(name, minValue, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Long parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value <= maxValue)<P> 
+   * 
+   * This method can be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param maxValue
+   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public long
+  getSingleLongParamValue
+  (
+   String name, 
+   Long minValue, 
+   Long maxValue
+  ) 
+    throws PipelineException
+  {
+    Long value = (Long) getSingleParamValue(name); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((minValue != null) && (value < minValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was less-than the " + 
+         "minimum allowed value (" + minValue + ")!");
+    
+    if((maxValue != null) && (value > maxValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was greater-than the " + 
+         "maximum allowed value (" + maxValue + ")!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Integer parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public int
+  getSingleIntegerParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleIntegerParamValue(name, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Integer parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value) 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public int
+  getSingleIntegerParamValue
+  (
+   String name, 
+   Integer minValue 
+  ) 
+    throws PipelineException
+  {
+    return getSingleIntegerParamValue(name, minValue, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Integer parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value <= maxValue)
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param maxValue
+   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public int
+  getSingleIntegerParamValue
+  (
+   String name, 
+   Integer minValue, 
+   Integer maxValue
+  ) 
+    throws PipelineException
+  {
+    Integer value = (Integer) getSingleParamValue(name); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((minValue != null) && (value < minValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was less-than the " + 
+         "minimum allowed value (" + minValue + ")!");
+    
+    if((maxValue != null) && (value > maxValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was greater-than the " + 
+         "maximum allowed value (" + maxValue + ")!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Double parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public double
+  getSingleDoubleParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleDoubleParamValue(name, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Double parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (lower < value)
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param lower
+   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public double
+  getSingleDoubleParamValue
+  (
+   String name, 
+   Double lower
+  ) 
+    throws PipelineException
+  {
+    return getSingleDoubleParamValue(name, lower, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Double parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (lower < value < upper)
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param lower
+   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param upper
+   *   The upper bounds (exclusive) of legal values or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public double
+  getSingleDoubleParamValue
+  (
+   String name, 
+   Double lower, 
+   Double upper
+  ) 
+    throws PipelineException
+  {
+    Double value = (Double) getSingleParamValue(name); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+    
+    if((lower != null) && (value <= lower)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was not greater-than the " + 
+         "the lower bounds (" + lower + ") for legal values!");
+    
+    if((upper != null) && (value >= upper)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was not less-than the " + 
+         "the upper bounds (" + upper + ") for legal values!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued String parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value or 
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   */ 
+  public String
+  getSingleStringParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  { 
+    String value = (String) getSingleParamValue(name); 
+    if((value != null) && (value.length() > 0))
+      return value;
+
+    return null;    
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A T H   G E N E R A T I O N                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract path to the single primary file associated with a target node. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param desc
+   *   A brief description of the type of file expected (used to generate error messages).
+   * 
+   * @return 
+   *   The path to the target file. 
+   */ 
+  public Path
+  getSinglePrimaryTargetPath
+  (
+   ActionAgenda agenda, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    return getSinglePrimaryTargetPath(agenda, new ArrayList<String>(), desc);
+  }
+
+  /**
+   * Get the abstract path to the single primary file associated with a target node. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffix
+   *   The allowable filename suffix.
+   * 
+   * @param desc
+   *   A brief description of the type of file expected (used to generate error messages).
+   * 
+   * @return 
+   *   The path to the target file. 
+   */ 
+  public Path
+  getSinglePrimaryTargetPath
+  (
+   ActionAgenda agenda, 
+   String suffix, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<String> suffixes = new ArrayList<String>();
+    suffixes.add(suffix);
+    
+    return getSinglePrimaryTargetPath(agenda, suffixes, desc);
+  }
+
+  /**
+   * Get the abstract path to the single primary file associated with a target node. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffixes
+   *   The allowable filename suffixes.
+   * 
+   * @param desc
+   *   A brief description of the type of file expected (used to generate error messages).
+   * 
+   * @return 
+   *   The path to the target file. 
+   */ 
+  public Path
+  getSinglePrimaryTargetPath
+  (
+   ActionAgenda agenda, 
+   Collection<String> suffixes, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    FileSeq fseq = agenda.getPrimaryTarget();
+    String suffix = fseq.getFilePattern().getSuffix();
+    if(!fseq.isSingle() || 
+       (!suffixes.isEmpty() && ((suffix == null) || !suffixes.contains(suffix)))) {
+      throw new PipelineException
+        ("The " + getName() + " Action requires that the primary target file sequence " + 
+         "must be a single " + desc + "!");
+    }
+
+    return new Path(agenda.getTargetPath(), fseq.getPath(0));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract path to the single primary file associated with a source node 
+   * specified by the given parameter.
+   * 
+   * @param pname
+   *   The name of the single valued parameter which names the source node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param desc
+   *   A brief description of the type of file expected (used to generate error messages).
+   * 
+   * @return 
+   *   The path to the primary file of the source node or 
+   *   <CODE>null</CODE> if none was specified.
+   */ 
+  public Path
+  getSinglePrimarySourcePath
+  (
+   String pname, 
+   ActionAgenda agenda, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    return getSinglePrimarySourcePath(pname, agenda, new ArrayList<String>(), desc);
+  }
+
+  /**
+   * Get the abstract path to the single primary file associated with a source node 
+   * specified by the given parameter.
+   * 
+   * @param pname
+   *   The name of the single valued parameter which names the source node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffix
+   *   The allowable filename suffix.
+   * 
+   * @param desc
+   *   A brief description of the type of file expected (used to generate error messages).
+   * 
+   * @return 
+   *   The path to the primary file of the source node or 
+   *   <CODE>null</CODE> if none was specified.
+   */ 
+  public Path
+  getSinglePrimarySourcePath
+  (
+   String pname, 
+   ActionAgenda agenda, 
+   String suffix, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<String> suffixes = new ArrayList<String>();
+    suffixes.add(suffix);
+
+    return getSinglePrimarySourcePath(pname, agenda, suffixes, desc);
+  }
+
+  /**
+   * Get the abstract path to the single primary file associated with a source node 
+   * specified by the given parameter.
+   * 
+   * @param pname
+   *   The name of the single valued parameter which names the source node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffixes
+   *   The allowable filename suffixes.
+   * 
+   * @param desc
+   *   A brief description of the type of file expected (used to generate error messages).
+   * 
+   * @return 
+   *   The path to the primary file of the source node or 
+   *   <CODE>null</CODE> if none was specified.
+   */ 
+  public Path
+  getSinglePrimarySourcePath
+  (
+   String pname, 
+   ActionAgenda agenda, 
+   Collection<String> suffixes, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    Path path = null; 
+
+    ActionParam param = getSingleParam(pname);
+    String title = param.getNameUI();
+
+    String mname = (String) param.getValue();
+    if(mname != null) {
+      FileSeq fseq = agenda.getPrimarySource(mname);
+      if(fseq == null) 
+	throw new PipelineException
+	  ("Somehow the " + title + " node (" + mname + ") was not one of the " + 
+	   "source nodes!");
+      
+      String suffix = fseq.getFilePattern().getSuffix();
+      if(!fseq.isSingle() || 
+         (!suffixes.isEmpty() && ((suffix == null) || !suffixes.contains(suffix)))) {
+	throw new PipelineException
+	  ("The " + getName() + " Action requires that the source node specified by the " + 
+	   title + " parameter (" + mname + ") must have a single " + desc + " as " + 
+           "its primary file sequence!");
+      }
+      
+      path = getWorkingNodeFilePath(agenda, mname, fseq); 
+    }
+
+    return path;	      
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get any additional command-line arguments specified using the action parameter created 
+   * by the {@link #addExtraOptionsParam addExtraOptionsParam} method.
+   */ 
+  public ArrayList<String>
+  getExtraOptionsArgs() 
+    throws PipelineException
+  {
+    ArrayList<String> args = new ArrayList<String>();
+
+    String extra = (String) getSingleParamValue(aExtraOptions);
+    if(extra != null) {
+      String parts[] = extra.split("\\p{Space}");
+      int wk;
+      for(wk=0; wk<parts.length; wk++) {
+        if(parts[wk].length() > 0) 
+          args.add(parts[wk]);
+      }
+    }
+
+    return args;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S U B P R O C E S S   C R E A T I O N                                                */
+  /*----------------------------------------------------------------------------------------*/
+   
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method in a mostly OS-independent manner.<P> 
+   * 
+   * The caller is reponsible for handling any differences in program name and arguments 
+   * between the different operating system types, but this method will handle specifying
+   * the process owner, title, environment and working directory. <P> 
+   * 
+   * When run on a Unix or MacOS system, the working directory is the working area directory 
+   * containing the target node.  On Windows, the working directory is always the local 
+   * temporary directory since many Windows programs fail if the working directory in on a 
+   * network share.  The caller is responsible for making any target file paths relative
+   * to the working directory on Unix/MacOS and absolute on Windows.  The correct path for 
+   * target files can be obtained using the {@link ActionAgenda#getTargetPath 
+   * ActionAgenda.getTargetPath} method.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param program  
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public SubProcessHeavy
+  createSubProcess
+  (
+   ActionAgenda agenda,
+   String program, 
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
+    return createSubProcess(agenda, program, null, null, outFile, errFile);
+  }
+
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method in a mostly OS-independent manner.<P> 
+   * 
+   * The caller is reponsible for handling any differences in program name and arguments 
+   * between the different operating system types, but this method will handle specifying
+   * the process owner, title, environment and working directory. <P> 
+   * 
+   * When run on a Unix or MacOS system, the working directory is the working area directory 
+   * containing the target node.  On Windows, the working directory is always the local 
+   * temporary directory since many Windows programs fail if the working directory in on a 
+   * network share.  The caller is responsible for making any target file paths relative
+   * to the working directory on Unix/MacOS and absolute on Windows.  The correct path for 
+   * target files can be obtained using the {@link ActionAgenda#getTargetPath 
+   * ActionAgenda.getTargetPath} method.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param program  
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param args  
+   *   The command line arguments of the program to execute or 
+   *   <CODE>null</CODE> for an empty argument list.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public SubProcessHeavy
+  createSubProcess
+  (
+   ActionAgenda agenda,
+   String program, 
+   ArrayList<String> args,
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
+    return createSubProcess(agenda, program, args, null, outFile, errFile);
+  }
+
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method in a mostly OS-independent manner.<P> 
+   * 
+   * The caller is reponsible for handling any differences in program name and arguments 
+   * between the different operating system types, but this method will handle specifying
+   * the process owner, title, environment and working directory.  The default Toolset 
+   * generated environment can be overridden if specified using a non-null <CODE>env</CODE> 
+   * parameter.<P> 
+   * 
+   * When run on a Unix or MacOS system, the working directory is the working area directory 
+   * containing the target node.  On Windows, the working directory is always the local 
+   * temporary directory since many Windows programs fail if the working directory in on a 
+   * network share.  The caller is responsible for making any target file paths relative
+   * to the working directory on Unix/MacOS and absolute on Windows.  The correct path for 
+   * target files can be obtained using the {@link ActionAgenda#getTargetPath 
+   * ActionAgenda.getTargetPath} method.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param program  
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param args  
+   *   The command line arguments of the program to execute or 
+   *   <CODE>null</CODE> for an empty argument list.
+   * 
+   * @param env  
+   *   The environment under which the OS level process is run or 
+   *   <CODE>null</CODE> to use the environment defined by the ActionAgenda.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public SubProcessHeavy
+  createSubProcess
+  (
+   ActionAgenda agenda,
+   String program, 
+   ArrayList<String> args,
+   Map<String,String> env,  
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
     try {
-      ArrayList<String> args = new ArrayList<String>();
+      SubProcessHeavy proc = null;
+      String owner = agenda.getSubProcessOwner();
+      String title = getName() + "-" + agenda.getJobID(); 
 
-      if(PackageInfo.sOsType == OsType.Windows) {
-        return new SubProcessHeavy
-          (nodeID.getAuthor(), getName() + "-" + agenda.getJobID(), 
-           script.toString(), args, agenda.getEnvironment(), PackageInfo.sTempPath.toFile(), 
-           outFile, errFile);
-      }
-      else {
-        args.add(script.getPath());
-        
-        return new SubProcessHeavy
-          (nodeID.getAuthor(), getName() + "-" + agenda.getJobID(), 
-           "bash", args, agenda.getEnvironment(), agenda.getWorkingDir(), 
-           outFile, errFile);
-      }
+      ArrayList<String> nargs = args;
+      if(nargs == null) 
+        nargs = new ArrayList<String>();
+
+      Map<String,String> nenv = env;
+      if(nenv == null) 
+        nenv = agenda.getEnvironment();
+
+      switch(PackageInfo.sOsType) {
+      case Unix:
+      case MacOS:
+        proc = new SubProcessHeavy(owner, title, program, nargs, 
+                                   nenv, agenda.getTargetPath().toFile(), 
+                                   outFile, errFile);
+        break;
+
+      case Windows:
+        proc = new SubProcessHeavy(owner, title, program, nargs, 
+                                   nenv, PackageInfo.sTempPath.toFile(), 
+                                   outFile, errFile);
+      } 
+      
+      return proc;
     }
     catch(Exception ex) {
       throw new PipelineException
@@ -1522,7 +2479,302 @@ class BaseAction
 	 ex.getMessage());
     }
   }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method when generating a temporary script to execute some 
+   * OS-specific commands. <P>
+   * 
+   * If running on Unix or MacOS, the supplied script must be a bash(1) shell script while on
+   * Windows the script must be an executable BAT/CMD file. The Action is reposible for 
+   * making sure that the contents of these scripts are portable.  This method simply takes 
+   * care of the common wrapper code needed to instantiate a {@link SubProcessHeavy} to run 
+   * the script.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param script
+   *   The temporary script file to execute.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */ 
+  public SubProcessHeavy
+  createScriptSubProcess
+  (
+   ActionAgenda agenda,
+   File script, 
+   File outFile, 
+   File errFile    
+  ) 
+    throws PipelineException
+  {
+    String program = null;
+    ArrayList<String> args = new ArrayList<String>();
+
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      program = "bash";
+      args.add(script.getPath());
+      break;
+
+    case Windows:
+      program = script.getPath(); 
+    }
+
+    return createSubProcess(agenda, program, args, outFile, errFile);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method when simply copying a single temporary file created in 
+   * the <CODE>prep</CODE> method to the target location.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param temp
+   *   The temporary file to copy.
+   * 
+   * @param target
+   *   The abtract path to the location of the target file.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */ 
+  public SubProcessHeavy
+  createTempCopySubProcess
+  (
+   ActionAgenda agenda,
+   File temp, 
+   Path target, 
+   File outFile, 
+   File errFile    
+  ) 
+    throws PipelineException
+  {
+    String program = null;
+    ArrayList<String> args = new ArrayList<String>();
+
+    if(PackageInfo.sOsType == OsType.Windows) {
+      program = "cmd.exe";
+      
+      args.add("/c");
+      args.add("\"copy /y " + temp.getPath() + " " + target.toOsString() + "\"");
+    }
+    else {
+      program = "cp";
+      
+      args.add(temp.getPath());
+      args.add(target.toOsString());
+    } 
+    
+    return createSubProcess(agenda, program, args, outFile, errFile);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P Y T H O N                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate the name of the Python interpreter to use based on the Toolset environment and 
+   * current operating system type.<P> 
+   * 
+   * If the environmental variable PYTHON_BINARY is defined, its value will be used as the 
+   * name of the python executable instead of the "python".  On Windows, this program name
+   * should include the ".exe" extension.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   */ 
+  public static String
+  getPythonProgram
+  (
+   ActionAgenda agenda   
+  ) 
+    throws PipelineException
+  {
+    return getPythonProgram(agenda.getEnvironment()); 
+  }
+
+  /**
+   * Generate the name of the Python interpreter to use based on the Toolset environment and 
+   * current operating system type.<P> 
+   * 
+   * If the environmental variable PYTHON_BINARY is defined, its value will be used as the 
+   * name of the python executable instead of the "python".  On Windows, this program name
+   * should include the ".exe" extension.
+   * 
+   * @param env  
+   *   The environment used to lookup PYTHON_BINARY.
+   */
+  public static String
+  getPythonProgram
+  (
+    Map<String,String> env
+  ) 
+    throws PipelineException
+  {
+    String python = env.get("PYTHON_BINARY");
+    if((python != null) && (python.length() > 0)) 
+      return python; 
+    
+    if(PackageInfo.sOsType == OsType.Windows) 
+      return "python.exe";
+
+    return "python";
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a "launch" Python function declaration.<P> 
+   * 
+   * This launch function uses Python's os.spawn function to start an OS subprocess and 
+   * wait for it complete.  If the subprocess returns an non-zero exit code, the launch
+   * function calls sys.exit with an appropriate error message.<P> 
+   * 
+   * This method is provided as a convienence for writing dynamically generated Python 
+   * scripts in a subclasses {@link #prep prep} method which run multiple subprocesses. 
+   * By using "launch", you get standardized progress messages and error handling for 
+   * free. <P> 
+   * 
+   * The usage is: <P> 
+   * <CODE>
+   *   launch(<I>program</I>, <I>args</I>)
+   * </CODE><P> 
+   * 
+   * Where <I>program</I> is the executable name and <I>args</I> is the list of command
+   * line arguments.  The program will be found using PATH from the Toolset environment
+   * used to launch the Python interpretor.
+   */ 
+  public static String 
+  getPythonLaunchHeader() 
+  {
+    return sPythonLaunchHeader;
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method which executes a temporary Python script.
+   * 
+   * This method will handle specifying the Python binary in an Toolset controlled and OS 
+   * specific manner (see {@link #getPythonProgram getPythonProgram}).  This method also
+   * properly specifies the process owner, title, environment and working directory for the 
+   * Python process. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param script
+   *   The temporary Python script file to execute.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public SubProcessHeavy
+  createPythonSubProcess
+  (
+   ActionAgenda agenda,
+   File script, 
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
+    return createPythonSubProcess(agenda, script, null, null, outFile, errFile);
+  }
+  
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method which executes a temporary Python script.
+   * 
+   * This method will handle specifying the Python binary in an Toolset controlled and OS 
+   * specific manner (see {@link #getPythonProgram getPythonProgram}).  This method also
+   * properly specifies the process owner, title, environment and working directory for the 
+   * Python process.  Additional command-line arguments for Python can be specified using a
+   * non-null <CODE>args</CODE> parameter. The default Toolset generated environment can be 
+   * overridden if specified using a non-null <CODE>env</CODE> parameter.<P> 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param script
+   *   The temporary Python script file to execute.
+   * 
+   * @param args  
+   *   Additional Python command line arguments to specify before the script or 
+   *   <CODE>null</CODE> for no additional arguments.
+   * 
+   * @param env  
+   *   The environment under which the OS level process is run or 
+   *   <CODE>null</CODE> to use the environment defined by the ActionAgenda.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public SubProcessHeavy
+  createPythonSubProcess
+  (
+   ActionAgenda agenda,
+   File script, 
+   ArrayList<String> args,
+   Map<String,String> env,  
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
+    try {
+      String owner = agenda.getSubProcessOwner();
+      String title = getName() + "-" + agenda.getJobID(); 
+
+      ArrayList<String> nargs = new ArrayList<String>();
+      if(args != null) 
+        nargs.addAll(args); 
+      nargs.add(script.getPath());
+
+      Map<String,String> nenv = env;
+      if(nenv == null) 
+        nenv = agenda.getEnvironment();
+
+      return new SubProcessHeavy(owner, title, getPythonProgram(nenv), nargs, 
+                                 nenv, agenda.getTargetPath().toFile(), 
+                                 outFile, errFile);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to generate the SubProcess to perform this Action!\n" +
+	 ex.getMessage());
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1713,7 +2965,19 @@ class BaseAction
 
   private static final long serialVersionUID = -8953612926185824947L;
   
+  private static final String aExtraOptions = "ExtraOptions"; 
 
+  private static final String sPythonLaunchHeader = 
+    ("import os;\n" +
+     "import sys;\n\n" +
+     "def launch(program, args):\n" +
+     "    a = [program] + args\n" +
+     "    print('RUNNING: ' + ' '.join(a))\n" +
+     "    sys.stdout.flush()\n" + 
+     "    result = os.spawnvp(os.P_WAIT, program, a)\n" +
+     "    if result != 0:\n" +
+     "        sys.exit('  FAILED: Exit Code = ' + str(result));\n\n");
+  
 
 
   /*----------------------------------------------------------------------------------------*/
