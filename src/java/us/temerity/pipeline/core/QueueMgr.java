@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.85 2007/02/20 19:57:57 jim Exp $
+// $Id: QueueMgr.java,v 1.86 2007/03/18 02:29:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -459,6 +459,13 @@ class QueueMgr
 	  job = pJobs.get(jobID);
 	}
 
+        OsType os = null;
+	synchronized(pJobInfo) {
+          QueueJobInfo info = pJobInfo.get(jobID);
+          if(info != null) 
+            os = info.getOsType();
+	}
+
         /* attempt to aquire the licenses already being used by the job */ 
 	TreeSet<String> aquiredKeys = new TreeSet<String>();
         synchronized(pLicenseKeys) {
@@ -477,7 +484,7 @@ class QueueMgr
           }
         }
 
-	MonitorTask task = new MonitorTask(hostname, job, aquiredKeys);
+	MonitorTask task = new MonitorTask(hostname, os, job, aquiredKeys);
 	task.start();
       }
     }
@@ -769,6 +776,11 @@ class QueueMgr
 	    mgr.setLevel(LogMgr.Kind.Ext, level);
 	}
 	
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sub);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Sub, level);
+	}
       }
       
       return new SuccessRsp(timer);
@@ -5159,7 +5171,8 @@ class QueueMgr
     /* start a task to contact the job server to the job 
          and collect the results of the execution */ 
     {
-      MonitorTask task = new MonitorTask(host.getName(), job, aquiredKeys, envs);
+      MonitorTask task = 
+        new MonitorTask(host.getName(), host.getOsType(), job, aquiredKeys, envs);
       task.start();
     }
 
@@ -7097,11 +7110,12 @@ class QueueMgr
     MonitorTask
     (
      String hostname, 
+     OsType os, 
      QueueJob job, 
      TreeSet<String> aquiredKeys
     ) 
     {
-      this(hostname, job, aquiredKeys, null);
+      this(hostname, os, job, aquiredKeys, null);
     }
 
     /* start a job on the given server and wait for it to finish */ 
@@ -7109,6 +7123,7 @@ class QueueMgr
     MonitorTask
     (
      String hostname, 
+     OsType os, 
      QueueJob job, 
      TreeSet<String> aquiredKeys, 
      DoubleMap<OsType,String,String> envs
@@ -7116,10 +7131,11 @@ class QueueMgr
     {
       super("QueueMgr:MonitorTask");
 
-      pHostname = hostname; 
-      pJob = job; 
+      pHostname    = hostname; 
+      pHostOsType  = os; 
+      pJob         = job; 
       pAquiredKeys = aquiredKeys; 
-      pEnvironments = envs; 
+      pCookedEnvs  = envs; 
     }
 
     public void 
@@ -7133,13 +7149,17 @@ class QueueMgr
 	   no environment means the job has been started previously */  
       QueueJobInfo startedInfo = null;
       boolean balked = false;
-      if(pEnvironments != null) {
+      if(pCookedEnvs != null) {
 	timer.suspend();
 	TaskTimer tm = new TaskTimer("Monitor - Job " + jobID + " [Start]"); 
 
 	JobMgrPlgControlClient client = new JobMgrPlgControlClient(pHostname); 
 	try {
-	  client.jobStart(pJob, pEnvironments); 
+          /* perform pre-start file system tasks */ 
+          preStartFileOps();
+
+          /* start the job */ 
+	  client.jobStart(pJob, pCookedEnvs); 
  
 	  tm.aquire(); 
 	  synchronized(pJobInfo) {
@@ -7221,7 +7241,12 @@ class QueueMgr
 	while(!done) {
 	  JobMgrControlClient client = new JobMgrControlClient(pHostname);
 	  try {
+            /* wait for the job to finish */ 
 	    results = client.jobWait(jobID);
+
+            /* perform post-completion file system tasks */ 
+            postFinishFileOps();
+
 	    done = true;
 	  }
 	  catch(PipelineException ex) {
@@ -7367,11 +7392,338 @@ class QueueMgr
 	 timer); 
     }
 
+    /**
+     * Perform pre-start file system tasks.
+     */ 
+    private void 
+    preStartFileOps()
+      throws PipelineException
+    {
+      long jobID = pJob.getJobID();
+      
+      ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
+      String author = agenda.getNodeID().getAuthor();
+      Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
+      Path tpath = new Path(PackageInfo.sTargetPath, Long.toString(jobID));
+      SortedMap<String,String> env = agenda.getEnvironment();
+
+      /* create the windows job target directory */ 
+      switch(pHostOsType) {
+      case Windows:
+        if(!tpath.toFile().isDirectory()) {
+          ArrayList<String> args = new ArrayList<String>();
+          args.add("--parents");
+          args.add("--mode=755");
+          args.add(tpath.toOsString()); 
+
+          SubProcessLight proc = 
+            new SubProcessLight("MakeWinTargetDir", "mkdir", 
+                                args, env, PackageInfo.sTempPath.toFile()); 
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to create the Windows job target directory (" + tpath + "):\n\n  " + 
+                 proc.getStdErr());
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while creating Windows job target directory (" + tpath + ")!");
+          }
+        }
+      }
+
+      /* make sure the target directory exists */ 
+      if(!wpath.toFile().isDirectory()) {
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("--parents");
+        args.add("--mode=755");
+        args.add(wpath.toOsString());
+        
+        SubProcessLight proc = 
+          new SubProcessLight(agenda.getNodeID().getAuthor(), 
+                              "MakeWorkingDir", "mkdir", 
+                              args, env, PackageInfo.sTempPath.toFile()); 
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to create the target working area directory (" + wpath + "):\n\n  " + 
+               proc.getStdErr());
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while creating target working area directory (" + wpath + ")!");
+        }
+      }
+      
+      /* remove the target primary and secondary files */ 
+      {
+        ArrayList<String> preOpts = new ArrayList<String>();
+        preOpts.add("--force");
+        
+        ArrayList<String> args = new ArrayList<String>();
+        for(Path target : agenda.getPrimaryTarget().getPaths()) 
+          args.add(target.toOsString());
+        
+        for(FileSeq fseq : agenda.getSecondaryTargets()) {
+          for(Path target : fseq.getPaths())
+            args.add(target.toOsString()); 
+        }
+        
+        if(!args.isEmpty()) {
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+            (agenda.getNodeID().getAuthor(), 
+             "RemoveTargets", "rm", preOpts, args, env, wpath.toFile());
+
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
+                   "  " + proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while removing the target files of job (" + jobID + ")!");
+          }
+        }
+      }
+
+      /* create symlinks for all job target files in the working directory which point
+         to the (currently non-existant) files in the the windows job target directory */ 
+      switch(pHostOsType) {
+      case Windows:
+        {
+          ArrayList<String> targets = new ArrayList<String>();
+          {
+            for(Path target : agenda.getPrimaryTarget().getPaths()) {
+              Path path = new Path(tpath, target); 
+              targets.add(path.toOsString()); 
+            }
+            
+            for(FileSeq fseq : agenda.getSecondaryTargets()) {
+              for(Path target : fseq.getPaths()) {
+                Path path = new Path(tpath, target); 
+                targets.add(path.toOsString()); 
+              }
+            }
+          }
+
+          for(String target : targets) {
+            ArrayList<String> args = new ArrayList<String>();
+            args.add("-s");
+            args.add(target);
+            args.add(".");
+
+            SubProcessLight proc = 
+              new SubProcessLight(agenda.getNodeID().getAuthor(), 
+                                  "WinTarget-Symlink", "ln", args, env, wpath.toFile());
+            try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to create a symbolic link to the Windows target file " + 
+                   "(" + target + ") for the job (" + jobID + "):\n\n" + 
+		   proc.getStdErr());
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException
+                ("Interrupted while creating a symbolic link to the Windows target file " + 
+                 "(" + target + ") for the job (" + jobID + ")!"); 
+            }
+          }
+        }
+      }
+    }
+    
+    /**
+     * Perform post-completion file system tasks.
+     */ 
+    private void 
+    postFinishFileOps()
+      throws PipelineException
+    {
+      long jobID = pJob.getJobID();
+
+      ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
+      String author = agenda.getNodeID().getAuthor();
+      Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
+      Path tpath = new Path(PackageInfo.sTargetPath, Long.toString(jobID));
+      SortedMap<String,String> env = agenda.getEnvironment();
+
+      /* replace the sylinks from the working directory to the windows job target directory */
+      switch(pHostOsType) {
+      case Windows:
+        /* remove the symlinks */ 
+        {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--force");
+          
+          ArrayList<String> args = new ArrayList<String>();
+          for(Path target : agenda.getPrimaryTarget().getPaths())
+            args.add(target.toOsString()); 
+          
+          for(FileSeq fseq : agenda.getSecondaryTargets()) {
+            for(Path target : fseq.getPaths()) 
+              args.add(target.toOsString()); 
+          }
+          
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+            (agenda.getNodeID().getAuthor(), 
+             "WinTarget-RemoveLinks", "rm", preOpts, args, env, wpath.toFile());
+
+	  try {
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the symbolic links to the Windows target files " + 
+                   "for the job (" + jobID + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while removing the symbolic links to the Windows target files " + 
+               "for the job (" + jobID + ")!");
+	  }
+        }
+
+        /* copy the target files from the Windows temporary directory */ 
+        {
+	  ArrayList<String> preOpts = new ArrayList<String>();
+	  preOpts.add("--remove-destination");
+	  preOpts.add("--target-directory=" + wpath.toOsString());
+
+	  ArrayList<String> args = new ArrayList<String>();
+          for(Path target : agenda.getPrimaryTarget().getPaths()) {
+            Path path = new Path(tpath, target); 
+            if(path.toFile().isFile())
+              args.add(path.toOsString()); 
+          }
+          
+          for(FileSeq fseq : agenda.getSecondaryTargets()) {
+            for(Path target : fseq.getPaths()) {
+              Path path = new Path(tpath, target); 
+              if(path.toFile().isFile())
+                args.add(path.toOsString()); 
+            }
+          }          
+
+          if(!args.isEmpty()) {
+            LinkedList<SubProcessLight> procs = 
+              SubProcessLight.createMultiSubProcess
+              (agenda.getNodeID().getAuthor(), 
+               "WinTarget-CopyTargets", "cp", preOpts, args, env, tpath.toFile());
+
+            try {
+              for(SubProcessLight proc : procs) {
+                proc.start();
+                proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to copy the Windows target files to the working area " + 
+                     "directory for job (" + jobID + "):\n\n" + 
+                     proc.getStdErr());	
+              }
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException
+                ("Interrupted while copying the Windows target files to the working area " + 
+                 "directory for job (" + jobID + ")!"); 
+            }
+          }
+        }
+      }
+
+      /* make any existing target primary and secondary files read-only */ 
+      {
+        ArrayList<String> preOpts = new ArrayList<String>();
+        preOpts.add("uga-w");
+          
+        ArrayList<String> args = new ArrayList<String>();
+        for(Path target : agenda.getPrimaryTarget().getPaths()) {
+          Path path = new Path(wpath, target); 
+          if(path.toFile().isFile()) 
+            args.add(target.toOsString()); 
+        }
+        
+        for(FileSeq fseq : agenda.getSecondaryTargets()) {
+          for(Path target : fseq.getPaths()) {
+            Path path = new Path(wpath, target); 
+            if(path.toFile().isFile()) 
+              args.add(target.toOsString()); 
+          }
+        }
+        
+        if(!args.isEmpty()) {
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+            (agenda.getNodeID().getAuthor(), 
+             "ReadOnlyTargets", "chmod", preOpts, args, env, wpath.toFile());
+          
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to make the target files of job (" + jobID + ") " + 
+                   "read-only:\n\n" + 
+                   "  " + proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while making the target files of job (" + jobID + ") " + 
+               "read-only!");
+          }
+        }
+      }
+      
+      /* remove the windows job target directory (and its contents) */ 
+      switch(pHostOsType) {
+      case Windows:
+        {
+          ArrayList<String> args = new ArrayList<String>();
+          args.add("--force");
+          args.add("--recursive");
+          args.add(tpath.toOsString());
+          
+          SubProcessLight proc = 
+            new SubProcessLight("RemoveWinTargetDir", "rm", 
+                                args, env, PackageInfo.sTempPath.toFile()); 
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to remove the Windows job target directory (" + tpath + "):\n\n  " + 
+                 proc.getStdErr());
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while removing Windows job target directory (" + tpath + ")!");
+          }
+        }
+      }
+    }
 
     private String                           pHostname; 
+    private OsType                           pHostOsType; 
     private QueueJob                         pJob; 
     private TreeSet<String>                  pAquiredKeys; 
-    private DoubleMap<OsType,String,String>  pEnvironments; 
+    private DoubleMap<OsType,String,String>  pCookedEnvs; 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.39 2007/02/14 12:58:46 jim Exp $
+// $Id: JobMgr.java,v 1.40 2007/03/18 02:29:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -550,7 +550,7 @@ class JobMgr
 	    ArrayList<String> args = new ArrayList<String>();	
 	    args.add("/c"); 
 	    args.add("\"rmdir \"" + dir + "\" /s /q\"");
-	    
+         
 	    SubProcessLight proc = 
 	      new SubProcessLight("Remove-JobFiles", "cmd.exe", args, env, 
 				  PackageInfo.sTempPath.toFile()); 
@@ -1078,11 +1078,7 @@ class JobMgr
 	long jobID = pJob.getJobID();
 
 	ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
-	String author = agenda.getNodeID().getAuthor();
-	File wdir = agenda.getWorkingDir();
 	SortedMap<String,String> env = agenda.getEnvironment();
-	String domain = null; 
-	String password = null; 
 	
 	File dir = new File(pJobDir, String.valueOf(jobID));
 	File scratch = new File(dir, "scratch");
@@ -1092,158 +1088,6 @@ class JobMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	     "Preparing Job: " + jobID);
-
-	  /* validate the Windows domain and encrypted password for the owning user */ 
-	  switch(PackageInfo.sOsType) {
-	  case Windows:
-	    domain = pJob.getDomain();
-	    if((domain == null) || (domain.length() == 0)) 
-	      throw new PipelineException
-		("Cannot run job (" + jobID + ") on a Windows server unless a Windows " + 
-		 "Domain has been previously provided for the user (" + author + ")!"); 
-
-	    password = pJob.getPassword(); 
-	    if((password == null) || (password.length() == 0)) 
-	      throw new PipelineException
-		("Cannot run job (" + jobID + ") on a Windows server unless a Windows " + 
-		 "Password has been previously provided for the user (" + author + ")!");
-	  }
-
-	  /* make sure the target directory exists */ 
-	  if(!wdir.isDirectory()) {
-	    String program = null; 
-	    ArrayList<String> args = new ArrayList<String>();
-	    switch(PackageInfo.sOsType) {
-	    case Unix:
-	    case MacOS:
-	      program = "mkdir";
-	      args.add("-p");
-	      args.add("-m");
-	      args.add("755");
-	      break;
-
-	    case Windows:
-	      program = "mkdir.exe";
-	    }
-
-	    args.add(wdir.getPath());
-	    
-	    SubProcessLight proc = 
-	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				  "MakeWorkingDir", program, 
-				  args, env, PackageInfo.sTempPath.toFile()); 
-
-	    switch(PackageInfo.sOsType) {
-	    case Windows:
-	      proc.authorizeOnWindows(domain, password);
-	    }
-
-	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to create the target working area directory (" + wdir + "):\n\n" + 
-		   "  " + proc.getStdErr());
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while creating target working area directory (" + wdir + ")!");
-	    }
-	  }
-
-	  /* remove the target primary and secondary files */ 
-	  switch(PackageInfo.sOsType) {
-	  case Unix:
-	  case MacOS:
-	    {
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("-f");
-	    
-	      boolean anyFiles = false;
-	      for(File file : agenda.getPrimaryTarget().getFiles()) {
-		File path = new File(wdir, file.getPath());
-		if(path.isFile()) {
-		  args.add(file.getPath());
-		  anyFiles = true;
-		}
-	      }
-	      
-	      for(FileSeq fseq : agenda.getSecondaryTargets()) {
-		for(File file : fseq.getFiles()) {
-		  File path = new File(wdir, file.getPath());
-		  if(path.isFile()) {
-		    args.add(file.getPath());
-		    anyFiles = true;
-		  }
-		}
-	      }
-	      
-	      if(anyFiles) {
-		SubProcessLight proc = 
-		  new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				      "RemoveTargets", "rm", args, env, wdir);
-		try {
-		  proc.start();
-		  proc.join();
-		  if(!proc.wasSuccessful()) 
-		    throw new PipelineException
-		      ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
-		       "  " + proc.getStdErr());	
-		}
-		catch(InterruptedException ex) {
-		  throw new PipelineException
-		    ("Interrupted while removing the target files of job (" + jobID + ")!");
-		}
-	      }
-	    }
-	    break;
-
-	  case Windows:
-	    {
-	      ArrayList<String> dead = new ArrayList<String>();
-	      for(File file : agenda.getPrimaryTarget().getFiles()) {
-		File path = new File(wdir, file.getPath());
-		if(path.isFile()) 
-		  dead.add(path.getPath());
-	      }
-	      
-	      for(FileSeq fseq : agenda.getSecondaryTargets()) {
-		for(File file : fseq.getFiles()) {
-		  File path = new File(wdir, file.getPath());
-		  if(path.isFile()) 
-		    dead.add(path.getPath());
-		}
-	      }
-	      
-	      for(String path : dead) {
-		ArrayList<String> args = new ArrayList<String>();	
-		args.add("/c"); 
-		args.add("\"del \"" + path + "\" /f /q\"");
-
-		SubProcessLight proc = 
-		  new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				      "RemoveTarget", "cmd.exe", args, env, 
-				      PackageInfo.sTempPath.toFile());
-
-		proc.authorizeOnWindows(domain, password);
-
-		try {
-		  proc.start();
-		  proc.join();
-		  if(!proc.wasSuccessful()) 
-		    throw new PipelineException
-		      ("Unable to remove the target file (" + path + ") of job " + 
-		       "(" + jobID + "):\n\n" + 
-		       "  " + proc.getStdErr());	
-		}
-		catch(InterruptedException ex) {
-		  throw new PipelineException
-		    ("Interrupted while removing the target files of job (" + jobID + ")!");
-		}
-	      }
-	    }	      
-	  }
 	  
 	  /* create the job execution process */ 
 	  pProc = pJob.getAction().prep(agenda, outFile, errFile);
@@ -1251,11 +1095,6 @@ class JobMgr
 	    throw new PipelineException
 	      ("The prep() method of the Action (" + pJob.getAction().getName() + ") " + 
 	       "returned (null) instead of a the expected SubProcessHeavy instance!");
-
-	  switch(PackageInfo.sOsType) {
-	  case Windows:
-	    pProc.authorizeOnWindows(domain, password);
-	  }
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -1352,98 +1191,6 @@ class JobMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	   "Finished Job: " + jobID);
-
-	/* make any existing target primary and secondary files read-only */ 
-	switch(PackageInfo.sOsType) {
-	case Unix:
-	case MacOS:
-	  {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("uga-w");
-	  
-	    for(File file : agenda.getPrimaryTarget().getFiles()) {
-	      File path = new File(wdir, file.getPath());
-	      if(path.isFile()) 
-		args.add(file.getPath());
-	    }
-	    
-	    for(FileSeq fseq : agenda.getSecondaryTargets()) {
-	      for(File file : fseq.getFiles()) {
-		File path = new File(wdir, file.getPath());
-		if(path.isFile()) 
-		  args.add(file.getPath());
-	      }
-	    }
-	    
-	    if(args.size() > 1) {
-	      SubProcessLight proc = 
-		new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				    "ReadOnlyTargets", "chmod", args, env, wdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to make the target files of job (" + jobID + ") " + 
-		     "read-only:\n\n" + 
-		     "  " + proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while making the target files of job (" + jobID + ") " + 
-		   "read-only!");
-	      }
-	    }
-	  }
-	  break;
-	  
-	case Windows:
-	  {
-	    ArrayList<String> dead = new ArrayList<String>();
-	    
-	    for(File file : agenda.getPrimaryTarget().getFiles()) {
-	      File path = new File(wdir, file.getPath());
-	      if(path.isFile()) 
-		dead.add(path.getPath());
-	    }
-	    
-	    for(FileSeq fseq : agenda.getSecondaryTargets()) {
-	      for(File file : fseq.getFiles()) {
-		File path = new File(wdir, file.getPath());
-		if(path.isFile()) 
-		  dead.add(path.getPath());
-	      }
-	    }
-	    
-	    for(String path : dead) {
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("+r"); 
-	      args.add(path);
-	      
-	      SubProcessLight proc = 
-		new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				    "ReadOnlyTargets", "attrib.exe", args, env, 
-				    PackageInfo.sTempPath.toFile());
-
-	      proc.authorizeOnWindows(domain, password);
-
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to make the target files of job (" + jobID + ") " + 
-		     "read-only:\n\n" + 
-		     "  " + proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while making the target files of job (" + jobID + ") " + 
-		   "read-only!");
-	      }
-	    }
-	  }
-	}
       
 	/* record the results */ 
 	{
