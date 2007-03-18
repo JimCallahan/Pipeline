@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.12 2006/09/29 03:03:21 jim Exp $
+// $Id: NodeID.java,v 1.13 2007/03/18 02:42:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -116,7 +116,7 @@ class NodeID
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Get the name of user which owens the working version.
+   * Get the name of user which owns the working version.
    */ 
   public String
   getAuthor() 
