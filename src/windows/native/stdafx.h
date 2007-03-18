@@ -32,6 +32,7 @@
 #include <pdhmsg.h>
 #include <psapi.h>
 
+
 # pragma comment(lib, "wbemuuid.lib")
 
 #include <jni.h>
@@ -137,8 +138,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
-  (JNIEnv *, jobject, 
-   jstring, jstring, jcharArray, jobjectArray, jobjectArray, jstring, jstring, jstring);
+  (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring, jstring, jstring);
 
 
 /* Header for class us_temerity_pipeline_NativeProcessLight */
@@ -205,7 +205,7 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
  * Signature: ([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
-  (JNIEnv *, jobject, jstring, jstring, jcharArray, jobjectArray, jobjectArray, jstring);
+  (JNIEnv *, jobject, jobjectArray, jobjectArray, jstring);
 
 
 

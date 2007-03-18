@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.22 2007/03/07 08:25:59 jim Exp $
+// $Id: BaseSubProcess.java,v 1.23 2007/03/18 02:17:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -75,41 +75,46 @@ class BaseSubProcess
   )
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(user)) 
+    if(!PackageInfo.sUser.equals(user)) {
+      if((user != null) && (PackageInfo.sOsType == OsType.Windows))
+        throw new PipelineException("Not supported on Windows!");
+
       pSubstituteUser = user;
+    }
 
     /* build environment */ 
     if(env == null) 
       throw new PipelineException("The environment cannot be (null)!");
+    TreeMap<String, String> nenv = new TreeMap<String,String>(env);
     String[] procEnv = null;
     {
       /* if the process is to be run by the same user as that which owns the parent process
 	 and the X11 authority and display settings do not already exist in the child 
-	 process environment, then clone their values from the parent environenment */ 
+	 process environment, then clone their values from the parent environment */ 
       if(user == null) {
 	switch(PackageInfo.sOsType) {
 	case Unix:
-	  if(!env.containsKey("XAUTHORITY")) {
+	  if(!nenv.containsKey("XAUTHORITY")) {
 	    String xauth = System.getenv("XAUTHORITY");
 	    if((xauth != null) && (xauth.length() > 0))
-	      env.put("XAUTHORITY", xauth);
+	      nenv.put("XAUTHORITY", xauth);
 	  }
 	  
-	  if(!env.containsKey("DISPLAY")) {
+	  if(!nenv.containsKey("DISPLAY")) {
 	    String display = System.getenv("DISPLAY");
 	    if((display != null) && (display.length() > 0))
-	      env.put("DISPLAY", display);
+	      nenv.put("DISPLAY", display);
 	  }
 	}
       }
 
-      procEnv = new String[env.size()];
+      procEnv = new String[nenv.size()];
       int wk = 0;
-      for(String name : env.keySet()) {
+      for(String name : nenv.keySet()) {
 	if(name == null) 
 	  throw new PipelineException("Found a (null) environmental variable!");
 	
-	String value = env.get(name);
+	String value = nenv.get(name);
 	if(value == null) 
 	  value = "";
 	
@@ -130,12 +135,12 @@ class BaseSubProcess
 	    ("The program (" + prog + ") does not exist!");
       }
       else {
-	String path = env.get("PATH");
+	String path = nenv.get("PATH");
 
 	if(path == null) {
 	  switch(PackageInfo.sOsType) {
 	  case Windows:
-	    path = env.get("Path");
+	    path = nenv.get("Path");
 	  }
 	}
 
@@ -219,7 +224,7 @@ class BaseSubProcess
     pIsFinished = new AtomicBoolean(false);
 
     /* save the execution details */ 
-    pExecDetails = new SubProcessExecDetails(pProc.getCommand(), env);
+    pExecDetails = new SubProcessExecDetails(pProc.getCommand(), nenv);
   }
 
   /**
@@ -333,32 +338,6 @@ class BaseSubProcess
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
-  /** 
-   * Provide the encrypted Windows password for the user which will own the OS level 
-   * process. <P> 
-   * 
-   * This is only required on Windows systems where the process will be run by a user
-   * other than the current user and must be called before the subprocess is started.
-   * 
-   * @param domain
-   *   The Windows domain of the user which will own the OS level subprocess.
-   * 
-   * @param password
-   *   The encrypted Windows password for the user.
-   */ 
-  public void 
-  authorizeOnWindows
-  (
-   String domain, 
-   String password
-  ) 
-  {
-    pProc.authorizeOnWindows(pSubstituteUser, domain, password); 
-  }
- 
-
-  /*----------------------------------------------------------------------------------------*/
- 
   /** 
    * Gets the OS exit code of the process. <P> 
    * 

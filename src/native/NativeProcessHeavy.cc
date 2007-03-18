@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cc,v 1.5 2007/02/12 19:19:05 jim Exp $
+// $Id: NativeProcessHeavy.cc,v 1.6 2007/03/18 02:17:16 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -213,9 +213,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 (
  JNIEnv *env, 
  jobject obj, 
- jstring juser,            /* IN: the user to impersonate (or NULL) */ 
- jstring jdomain,          /* IN: the domain of the user to impersonate (or NULL) */
- jcharArray jpassword,     /* IN: the user's password (or NULL) */     
  jobjectArray jcmdarray,   /* IN: command[0] and arguments[1+] */ 		  
  jobjectArray jenvp,	   /* IN: environmental variable name=value pairs */  
  jstring jdir,		   /* IN: the working directory */     

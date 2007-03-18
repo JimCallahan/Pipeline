@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.14 2007/02/22 16:12:39 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.15 2007/03/18 02:17:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -132,12 +132,13 @@ class SubProcessHeavy
    * The Pipeline utility program <I>plrun(1)</I> is used to run the subprocess as another 
    * user. Due to the fact that the <I>plrun(1)</I> utility can only be run by the 
    * "pipeline" user, this constructor will throw a {@link PipelineArgumentException} if 
-   * instantiated by any other user. <P>
+   * instantiated by any other user. Running a subprocess as another user is not supported 
+   * on Windows.<P>
    * 
    * The <CODE>program</CODE> can be an absolute filesystem path, a filesystem path relative 
    * to the working directory or a simple program name reachable through the environmental 
    * variable PATH. The environment <CODE>env</CODE> consists of a table of environmental 
-   * variable name/value pairs.  Typically, this environment is corresponds to a Toolset.
+   * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. 
    * 
    * @param user  
    *   The username which will own the OS level subprocess.

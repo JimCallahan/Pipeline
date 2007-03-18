@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.java,v 1.10 2007/03/07 08:26:29 jim Exp $
+// $Id: NativeProcessHeavy.java,v 1.11 2007/03/18 02:17:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -138,49 +138,6 @@ class NativeProcessHeavy
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Provide the encrypted Windows password for the user which will own the OS level 
-   * process. <P> 
-   * 
-   * This is only required on Windows systems where the process will be run by a user
-   * other than the current user and must be called before the subprocess is started.
-   * 
-   * @param user
-   *   The username which will own the OS level subprocess.
-   * 
-   * @param domain
-   *   The Windows domain of the user which will own the OS level subprocess.
-   * 
-   * @param password
-   *   The encrypted Windows password for the user.
-   */ 
-  public void 
-  authorizeOnWindows
-  (
-   String user, 
-   String domain, 
-   String password
-  ) 
-  {
-    if((user == null) || PackageInfo.sUser.equals(user)) 
-      return; 
-
-    if(domain == null) 
-      throw new IllegalArgumentException
-	("The Windows domain cannot be (null) when impersonating another user!");
-
-    if((password == null) || (password.length() == 0)) 
-      throw new IllegalArgumentException
-	("No encrypted password was supplied!");
-
-    pSubstituteUser     = user;
-    pSubstituteDomain   = domain; 
-    pSubstitutePassword = password; 
-  }
- 
-
-  /*----------------------------------------------------------------------------------------*/
- 
   /** 
    * Gets command line arguments of the OS level process.  
    * 
@@ -365,67 +322,7 @@ class NativeProcessHeavy
   exec() 
     throws IOException
   {
-    /* decrypt the Windows password */ 
-    char[] dpassword = null;
-    switch(PackageInfo.sOsType) {
-    case Windows:
-      if(pSubstitutePassword != null) {
- 	try {
- 	  Cipher cipher = null;
- 	  {
- 	    MessageDigest digest = MessageDigest.getInstance("SHA-512");
-	    
- 	    int wk;
- 	    for(wk=0; wk<PackageInfo.sHostNames.length; wk++) {
- 	      String hname = PackageInfo.sHostNames[wk];
- 	      byte[] bs = hname.getBytes();
- 	      digest.update(bs, 0, bs.length);
- 	    }
- 	    for(wk=0; wk<PackageInfo.sHostIDs.length; wk++) {
- 	      String hname = PackageInfo.sHostIDs[wk];
- 	      byte[] bs = hname.getBytes();
- 	      digest.update(bs, 0, bs.length);
- 	    }
-	    
- 	    byte[] cs = digest.digest();
-	    
- 	    byte[] bkey = { cs[0], cs[5], cs[13], cs[2], cs[17], cs[19], cs[3], cs[23], 
- 			    cs[8], cs[27], cs[33], cs[12], cs[29], cs[41], cs[31], cs[4] };
-	    
- 	    byte[] biv = { cs[12], cs[45], cs[53], cs[28], cs[6], cs[51], cs[25], cs[61] };
-	    
- 	    SecretKeySpec key = new SecretKeySpec(bkey, "RC2");
- 	    RC2ParameterSpec rc2Spec = new RC2ParameterSpec(128, biv);
-	    
- 	    cipher = Cipher.getInstance("RC2/CBC/PKCS5Padding");
- 	    cipher.init(Cipher.DECRYPT_MODE, key, rc2Spec, null);
- 	  }
-	  
- 	  BigInteger bi = new BigInteger(pSubstitutePassword);
- 	  byte[] input = bi.toByteArray();
- 	  byte[] decrypted = cipher.doFinal(input); 
-	
- 	  {
- 	    ByteBuffer buf = ByteBuffer.wrap(decrypted);
- 	    CharBuffer cbuf = buf.asCharBuffer();
- 	    dpassword = new char[cbuf.capacity()];
- 	    cbuf.get(dpassword); 
- 	  }
-
- 	  // DEBUG 
-//  	  System.out.print("(J) User = " + pSubstituteUser + "\n");
-//  	  System.out.print("(J) Encrypted = " + pSubstitutePassword + "\n");
-//  	  System.out.print("(J) Password = " + String.valueOf(dpassword) + "\n");
- 	  // DEBUG 
- 	}
- 	catch(Exception ex) {
- 	  throw new IllegalStateException("Unable to encrypt password!", ex); 
- 	}
-      }
-    }
-
-    return execNativeHeavy(pSubstituteUser, pSubstituteDomain, dpassword, 
-			   pCmd, pEnv, pWorkDir.toString(), 
+    return execNativeHeavy(pCmd, pEnv, pWorkDir.toString(), 
 			   pStdOutFile.toString(), pStdErrFile.toString());
   }
 
@@ -551,18 +448,6 @@ class NativeProcessHeavy
   /** 
    * Fork and execute a OS level process and wait for it to exit.
    * 
-   * @param user 
-   *   The user to impersonate or 
-   *   <CODE>null</CODE> to run as current user.
-   * 
-   * @param domain
-   *   The domain of the user to impersonate or 
-   *   <CODE>null</CODE> to run as current user.
-   * 
-   * @param password
-   *   The user's Windows password or 
-   *   <CODE>null</CODE> to run as current user.
-   * 
    * @param cmd 
    *   The command line arguments used to launch the OS level process.  The first element
    *   of the array <CODE>cmd[0]</CODE> is the name of the program to run.
@@ -590,9 +475,6 @@ class NativeProcessHeavy
   private native int
   execNativeHeavy
   (
-   String user, 
-   String domain, 
-   char[] password,
    String[] cmd, 
    String[] env, 
    String dir, 
@@ -608,27 +490,6 @@ class NativeProcessHeavy
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Name of the user to run the process under using plrun(1) or CreateProcessAsUser().
-   * If <CODE>null</CODE>, the process is run as the current user directly. 
-   */ 
-  private String  pSubstituteUser;  
-
-  /**
-   * Name of the Windows domain to run the process under using CreateProcessAsUser().
-   * If <CODE>null</CODE>, the process is run as the current user directly. 
-   */ 
-  private String  pSubstituteDomain;  
-
-  /**
-   * The encrypted Windows password for the user which will own the OS level process or 
-   * <CODE>null</CODE> if not required.
-   */ 
-  private String  pSubstitutePassword;
-
-
-  /*----------------------------------------------------------------------------------------*/
-   
   /**   
    * The command line arguments used to launch the OS level process.  The first element
    * of the array <CODE>cmd[0]</CODE> is the name of the program to run.

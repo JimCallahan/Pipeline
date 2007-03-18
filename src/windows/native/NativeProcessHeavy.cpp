@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.cpp,v 1.6 2007/03/07 08:25:59 jim Exp $
+// $Id: NativeProcessHeavy.cpp,v 1.7 2007/03/18 02:17:16 jim Exp $
 
 #include "stdafx.h"
 
@@ -185,9 +185,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 (
  JNIEnv *env, 
  jobject obj, 
- jstring juser,            /* IN: the user to impersonate (or NULL) */ 
- jstring jdomain,          /* IN: the domain of the user to impersonate (or NULL) */
- jcharArray jpassword,     /* IN: the user's password (or NULL) */ 
  jobjectArray jcmdarray,   /* IN: command[0] and arguments[1+] */                 
  jobjectArray jenvp,       /* IN: environmental variable name=value pairs */  
  jstring jdir,             /* IN: the working directory */     
@@ -266,69 +263,15 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
   }
   
   /* repackage the arguments */ 
-  HANDLE tok;
-  bool substUser = false;
   const char* dir = NULL; 
   const char* outFile = NULL;
   const char* errFile = NULL;
   char* cmdline = NULL; 
   TCHAR envbuf[32768]; 
   {
-    /* substitute user? */ 
-    if((juser != NULL) && (jdomain != NULL) && (jpassword != NULL)) {
-      const char* user   = env->GetStringUTFChars(juser, NULL);      
-      const char* domain = env->GetStringUTFChars(jdomain, NULL);     
- 
-      char* password = NULL; 
-      jsize pwLen = env->GetArrayLength(jpassword);
-      if(pwLen == 0) {
-        if(user != NULL) 
-          env->ReleaseStringUTFChars(juser, user);
-        if(domain != NULL) 
-          env->ReleaseStringUTFChars(jdomain, domain);
-
-        env->ThrowNew(IOException, "empty password array"); 
-        return -1;
-      }
-
-      jchar* pwd = env->GetCharArrayElements(jpassword, NULL);
-      {
-        password = new char[pwLen+1];
-        jsize i;
-        for(i=0; i<pwLen; i++)
-          password[i] = pwd[i];
-        password[i] = '\0';
-      }
-      env->ReleaseCharArrayElements(jpassword, pwd, JNI_ABORT);
-
-      // DEBUG
-//       printf("User = %s\n", user);     
-//       printf("Domain = %s\n", domain); 
-//       printf("Password = %s\n", password); 
-      // DEBUG
-
-      substUser = LogonUser(TEXT(user), TEXT(domain), TEXT(password), 
-                            LOGON32_LOGON_BATCH, LOGON32_PROVIDER_DEFAULT, &tok) != 0; 
-      SecureZeroMemory(password, pwLen+1); 
-      
-      if(user != NULL) 
-        env->ReleaseStringUTFChars(juser, user);
-      if(domain != NULL) 
-        env->ReleaseStringUTFChars(jdomain, domain);
-      if(password != NULL) 
-        delete[] password; 
-
-      if(!substUser) {
-        throwWindowsIOException(env, IOException, "LogonUser"); 
-        return -1;
-      } 
-    }
-
     {
       dir = env->GetStringUTFChars(jdir, 0);      
       if((dir == NULL) || (strlen(dir) == 0)) {
-        if(substUser) 
-          CloseHandle(tok);
         env->ThrowNew(IOException,"empty working directory");
         return -1;
       } 
@@ -337,16 +280,12 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
 
       struct stat buf;
       if(stat(dir, &buf) == -1) {
-        if(substUser) 
-          CloseHandle(tok);
         sprintf(msg, "stat failed for \"%s\": %s", dir, strerror(errno));
         env->ReleaseStringUTFChars(jdir, dir);
         env->ThrowNew(IOException, msg);
         return -1;
       }
       else if(!(buf.st_mode & _S_IFDIR)) {
-        if(substUser) 
-          CloseHandle(tok);
         sprintf(msg, "illegal working directory \"%s\"", dir);
         env->ReleaseStringUTFChars(jdir, dir);
         env->ThrowNew(IOException, msg);
@@ -359,8 +298,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       outFile = env->GetStringUTFChars(joutfile, 0);      
       if((outFile == NULL) || (strlen(outFile) == 0)) {
-        if(substUser) 
-          CloseHandle(tok);
         env->ReleaseStringUTFChars(jdir, dir);
 
         env->ThrowNew(IOException,"empty STDOUT output file");
@@ -373,8 +310,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       errFile = env->GetStringUTFChars(jerrfile, 0);      
       if((errFile == NULL) || (strlen(errFile) == 0)) {
-        if(substUser) 
-          CloseHandle(tok);
         env->ReleaseStringUTFChars(jdir, dir);
         env->ReleaseStringUTFChars(joutfile, outFile);
 
@@ -388,8 +323,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     {
       jsize len = env->GetArrayLength(jcmdarray);
       if(len == 0) {
-        if(substUser) 
-          CloseHandle(tok);
         env->ReleaseStringUTFChars(jdir, dir);
         env->ReleaseStringUTFChars(joutfile, outFile);
         env->ReleaseStringUTFChars(jerrfile, errFile);
@@ -410,8 +343,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
       printf("Cmdline Size = %d\n", csize);     // DEBUG
 
       if(csize >= 32767) {
-        if(substUser) 
-          CloseHandle(tok);
         env->ReleaseStringUTFChars(jdir, dir);
         env->ReleaseStringUTFChars(joutfile, outFile);
         env->ReleaseStringUTFChars(jerrfile, errFile);
@@ -452,8 +383,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
         printf("  %s\n", keyval);
 
         if(lstrcpy(envp, TEXT(keyval)) == NULL) {
-          if(substUser) 
-            CloseHandle(tok);
           env->ReleaseStringUTFChars(jdir, dir);
           env->ReleaseStringUTFChars(joutfile, outFile);
           env->ReleaseStringUTFChars(jerrfile, errFile);
@@ -469,8 +398,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
         total += size;
 
         if(total > 32768) {
-          if(substUser) 
-            CloseHandle(tok);
           env->ReleaseStringUTFChars(jdir, dir);
           env->ReleaseStringUTFChars(joutfile, outFile);
           env->ReleaseStringUTFChars(jerrfile, errFile);
@@ -499,8 +426,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
  
     /* create a pipe to the child's STDIN */
     if(!CreatePipe(&child_stdin, &parent_stdin, &saAttr, 0)) {
-      if(substUser) 
-        CloseHandle(tok);
       env->ReleaseStringUTFChars(jdir, dir);
       env->ReleaseStringUTFChars(joutfile, outFile);
       env->ReleaseStringUTFChars(jerrfile, errFile);
@@ -514,8 +439,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     child_stdout = CreateFile(TEXT(outFile), GENERIC_WRITE, FILE_SHARE_READ, &saAttr, 
                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if(child_stdout == INVALID_HANDLE_VALUE) {
-      if(substUser) 
-        CloseHandle(tok);
       env->ReleaseStringUTFChars(jdir, dir);
       env->ReleaseStringUTFChars(joutfile, outFile);
       env->ReleaseStringUTFChars(jerrfile, errFile);
@@ -532,8 +455,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     child_stderr = CreateFile(TEXT(errFile), GENERIC_WRITE, FILE_SHARE_READ, &saAttr, 
                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if(child_stderr == INVALID_HANDLE_VALUE) {
-      if(substUser) 
-        CloseHandle(tok);
       env->ReleaseStringUTFChars(jdir, dir);
       env->ReleaseStringUTFChars(jerrfile, errFile);
       delete[] cmdline;
@@ -565,36 +486,19 @@ JNICALL Java_us_temerity_pipeline_NativeProcessHeavy_execNativeHeavy
     startInfo.hStdInput  = child_stdin;
     startInfo.dwFlags |= STARTF_USESTDHANDLES;
  
-    if(substUser) {
-      if(CreateProcessAsUser(tok, NULL, TEXT(cmdline), NULL, NULL, TRUE, 0, 
-                             (LPVOID) envbuf, TEXT(dir), &startInfo, &procInfo) == 0)  {
-        env->ReleaseStringUTFChars(jdir, dir);
-        delete[] cmdline;
-
-        CloseHandle(child_stdin);
-        CloseHandle(child_stdout);
-        CloseHandle(child_stderr);
-
-        throwWindowsIOException(env, IOException, "CreateProcessAsUser"); 
-        return -1;
-      }
-
-      CloseHandle(tok);
+    if(CreateProcess(NULL, TEXT(cmdline), NULL, NULL, TRUE, 0, 
+                     (LPVOID) envbuf, TEXT(dir), &startInfo, &procInfo) == 0)  {
+      env->ReleaseStringUTFChars(jdir, dir);
+      delete[] cmdline;       
+      
+      CloseHandle(child_stdin);
+      CloseHandle(child_stdout);
+      CloseHandle(child_stderr);
+      
+      throwWindowsIOException(env, IOException, "CreateProcess"); 
+      return -1;
     }
-    else {      
-      if(CreateProcess(NULL, TEXT(cmdline), NULL, NULL, TRUE, 0, 
-                       (LPVOID) envbuf, TEXT(dir), &startInfo, &procInfo) == 0)  {
-        env->ReleaseStringUTFChars(jdir, dir);
-        delete[] cmdline;       
-        
-        CloseHandle(child_stdin);
-        CloseHandle(child_stdout);
-        CloseHandle(child_stderr);
 
-        throwWindowsIOException(env, IOException, "CreateProcessAsUser"); 
-        return -1;
-      }
-    }
     env->ReleaseStringUTFChars(jdir, dir);
     delete[] cmdline;
                     
