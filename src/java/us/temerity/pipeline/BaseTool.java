@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.12 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseTool.java,v 1.13 2007/03/18 02:41:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,6 +61,7 @@ class BaseTool
   BaseTool() 
   {
     super();
+    pPhases = new ArrayList<ToolPhase>();
   }
 
   /** 
@@ -88,6 +89,7 @@ class BaseTool
   ) 
   {
     super(name, vid, vendor, desc);
+    pPhases = new ArrayList<ToolPhase>();
   }
 
 
@@ -99,7 +101,7 @@ class BaseTool
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.Tool;
@@ -128,7 +130,7 @@ class BaseTool
    * @param roots
    *   The fully resolved names of the root nodes of the currently displayed node trees.
    */
-  public void 
+  public final void 
   initExecution
   (
    String primary, 
@@ -139,10 +141,31 @@ class BaseTool
     pPrimary  = primary;
     pSelected = selected;    
     pRoots    = roots;
+    pPhaseIdx = 0;
   }
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add an execution phase to the tool.<P> 
+   * 
+   * Tool plugin subclasses should call this method in their constructor to register 
+   * instances of {@link ToolPhase} created by the tool which represent each phase of 
+   * tool execution.<P> 
+   * 
+   * The default implementation of the {@link #collectPhaseInput collectPhaseInput} and 
+   * {@link #executePhase executePhase} methods will iterate through these ToolPhase 
+   * instances automatically.
+   */ 
+  protected final synchronized void 
+  addPhase
+  (
+   ToolPhase phase
+  ) 
+  {
+    pPhases.add(phase);
+  }
 
   /** 
    * Create and show graphical user interface components to collect information from the 
@@ -157,7 +180,16 @@ class BaseTool
    * {@link #executePhase executePhase} method will be run in a seperate thread to perform 
    * action based on the input collected in this method.  The returned <CODE>String</CODE> 
    * will be used as the progress message shown in the operation status field at the bottom
-   * of the main Pipeline window. 
+   * of the main Pipeline window. <P> 
+   * 
+   * The default implementation of this method simply iterates through the ToolPhase 
+   * instances previously registered using {@link #addPhase addPhase} calling the {@link
+   * ToolPhase#collectInput ToolPhase.collectInput} method of each phase.<P> 
+   * 
+   * Note that older tool plugins created before the existance of {@link ToolPhase} override
+   * this method and manually handle interating through tool execution phases.  This is no 
+   * longer necessary or recommended.  New tools should create ToolPhase internal classes 
+   * and register them with {@link #addPhase addPhase} instead of overriding this method. 
    * 
    * @return 
    *   The phase progress message or <CODE>null</CODE> to abort early.
@@ -169,7 +201,9 @@ class BaseTool
   collectPhaseInput() 
     throws PipelineException 
   {
-    return "...";
+    if(pPhaseIdx < pPhases.size()) 
+      return pPhases.get(pPhaseIdx).collectInput();
+    return null;
   }
 
   /**
@@ -182,7 +216,16 @@ class BaseTool
    * 
    * If this method returns <CODE>true</CODE>, another phase of execution will be initiated
    * and user input will again be collected by the <CODE>collectPhaseInput</CODE> method.
-   * Otherwise, execution of the tool will end successfully.
+   * Otherwise, execution of the tool will end successfully.<P> 
+   * 
+   * The default implementation of this method simply iterates through the ToolPhase 
+   * instances previously registered using {@link #addPhase addPhase} calling the {@link
+   * ToolPhase#execute ToolPhase.execute} method of each phase.<P> 
+   * 
+   * Note that older tool plugins created before the existance of {@link ToolPhase} override
+   * this method and manually handle interating through tool execution phases.  This is no 
+   * longer necessary or recommended.  New tools should create ToolPhase internal classes 
+   * and register them with {@link #addPhase addPhase} instead of overriding this method. 
    * 
    * @param mclient
    *   The network connection to the plmaster(1) daemon.
@@ -204,7 +247,12 @@ class BaseTool
   ) 
     throws PipelineException
   {
-    return false;
+    boolean cont = false;
+    if(pPhaseIdx < pPhases.size()) 
+      cont = pPhases.get(pPhaseIdx).execute(mclient, qclient); 
+    
+    pPhaseIdx++;
+    return cont;
   }
   
 
@@ -237,7 +285,95 @@ class BaseTool
   }
 
 
+   
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Base class for one phase of operation of the Tool plugin. <P> 
+   * 
+   * Tool plugins should create subclasses of ToolPhase for each of their phases of input
+   * and register instances of these classes in their constructor using {@link #addPhase
+   * addPhase}.  The default implementation of the {@link #collectPhaseInput 
+   * collectPhaseInput} and {@link #executePhase executePhase} methods will iterate through
+   * these ToolPhase instances automatically.
+   */ 
+  public 
+  class ToolPhase
+  {
+    public
+    ToolPhase() 
+    {}
+
+    /** 
+     * Create and show graphical user interface components to collect information from the 
+     * user to use as input for the {@link #execute execute} method in this phase.<P> 
+     * 
+     * This method is executed by the Swing event thread.  Modal dialogs can be created and 
+     * shown to collect user input.  The collected input should be validated and stored in 
+     * fields of the ToolPhase subclass by this method before returning. <P> 
+     * 
+     * If this method returns <CODE>null</CODE>, the execution of the tool will be 
+     * immediately aborted without any notification to the user.  Otherwise, the 
+     * {@link #execute execute} method will be run in a seperate thread to perform 
+     * actions based on the input collected in this method.  The returned <CODE>String</CODE> 
+     * will be used as the progress message shown in the operation status field at the bottom
+     * of the main Pipeline window. 
+     * 
+     * @return 
+     *   The phase progress message or <CODE>null</CODE> to abort early.
+     * 
+     * @throws PipelineException 
+     *   If unable to validate the given user input.
+     */  
+    public String
+    collectInput() 
+      throws PipelineException 
+    {
+      return "...";
+    }
+
+    /**
+     * Perform operations for this phase of the tool based on user input gathered by the 
+     * {@link #collectInput collectInput} method. <P> 
+     * 
+     * This method is executed in a seperate thread from the Swing event thread.  No user
+     * interface components should be created or queried by this method.  All information 
+     * used to control the behaviour of this method should be stored in fields of this 
+     * ToolPhase previously set by the {@link #collectInput collectInput} method. <P> 
+     * 
+     * If this method returns <CODE>true</CODE>, execution will proceed to the next 
+     * ToolPhase for this tool plugin and begin collection more information from the user
+     * by calling the {@link #collectInput collectInput} method of this next phase.<P> 
+     * 
+     * If this method returns <CODE>false</CODE>, execution of the entire tool will end 
+     * successfully.
+     * 
+     * @param mclient
+     *   The network connection to the plmaster(1) daemon.
+     * 
+     * @param qclient
+     *   The network connection to the plqueuemgr(1) daemon.
+     * 
+     * @return 
+     *   Whether to continue and collect user input for the next phase of the tool.
+     * 
+     * @throws PipelineException 
+     *   If unable to sucessfully execute this phase of the tool.
+     */ 
+    public boolean
+    execute
+    (
+     MasterMgrClient mclient,
+     QueueMgrClient qclient
+    ) 
+      throws PipelineException
+    {
+      return false;
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -271,6 +407,19 @@ class BaseTool
    * for details.
    */ 
   protected TreeSet<String>  pRoots; 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The registered tool phases.
+   */ 
+  private ArrayList<ToolPhase>  pPhases;
+
+  /**
+   * The current phase index;
+   */
+  private int pPhaseIdx;
 
 }
 
