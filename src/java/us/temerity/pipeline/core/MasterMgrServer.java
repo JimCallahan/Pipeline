@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.74 2007/02/07 21:14:38 jim Exp $
+// $Id: MasterMgrServer.java,v 1.75 2007/03/18 02:30:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -916,17 +916,6 @@ class MasterMgrServer
 	      }
 	      break;
 
-
-	    /*-- AUTHORIZATION -------------------------------------------------------------*/
-	    case MiscAuthorizeOnWindows:
-	      {
-		MiscAuthorizeOnWindowsReq req = 
-		  (MiscAuthorizeOnWindowsReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.authorizeOnWindows(req));
-		objOut.flush(); 
-	      }
-	      break;
-	      
 
 	    /*-- WORKING AREAS -------------------------------------------------------------*/
 	    case GetWorkingAreas:

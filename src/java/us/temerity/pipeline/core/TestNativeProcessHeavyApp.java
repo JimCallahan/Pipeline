@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessHeavyApp.java,v 1.3 2007/02/12 19:19:05 jim Exp $
+// $Id: TestNativeProcessHeavyApp.java,v 1.4 2007/03/18 02:30:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,12 +57,10 @@ class TestNativeProcessHeavyApp
 
       if(argv.length < 4) 
 	throw new IllegalArgumentException
-	  ("usage: pltestheavy user domain encrypted-password program [args ...]");
+	  ("usage: pltestheavy user program [args ...]");
 
-      String user   = argv[0];
-      String domain = argv[1];
-      String epwd   = argv[2];
-      String prog   = argv[3];
+      String user = argv[0];
+      String prog = argv[1];
 
       ArrayList<String> args = new ArrayList<String>();
       {
@@ -80,8 +78,6 @@ class TestNativeProcessHeavyApp
 
       SubProcessHeavy proc = 
 	new SubProcessHeavy(user, "TestHeavy", prog, args, env, dir, outFile, errFile);
-      
-      proc.authorizeOnWindows(domain, epwd);
       
       proc.start();
       proc.join();
