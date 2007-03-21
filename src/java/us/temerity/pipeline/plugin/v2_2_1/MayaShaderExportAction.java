@@ -1,4 +1,4 @@
-// $Id: MayaShaderExportAction.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: MayaShaderExportAction.java,v 1.2 2007/03/21 22:30:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -80,9 +80,7 @@ class MayaShaderExportAction
     }
 
     addSupport(OsType.MacOS);
-    addSupport(OsType.Windows);   
-
-    underDevelopment();
+    addSupport(OsType.Windows);  
   }
 
 
