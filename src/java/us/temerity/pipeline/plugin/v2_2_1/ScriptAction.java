@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: ScriptAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -161,8 +161,6 @@ class ScriptAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 
