@@ -1,4 +1,4 @@
-// $Id: MayaNoRefEditor.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: MayaNoRefEditor.java,v 1.2 2007/03/23 00:49:16 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -34,8 +34,6 @@ class MayaNoRefEditor
 	
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 
