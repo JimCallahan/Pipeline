@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: CatFilesAction.java,v 1.3 2007/03/23 00:43:33 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -160,32 +160,33 @@ class CatFilesAction
           FileWriter out = new FileWriter(script);
         
           out.write
-            ("import os\n" + 
-             "\n" +
-             "def catfiles(f):\n" +                    
-             "    fd = os.open(f, os.O_RDONLY)\n" +    
-             "    while 1:\n" +                     
-             "        buf = os.read(fd, 1024)\n" + 
-             "        if(buf == \"\"):\n" +           
-             "            break;\n" +                
-             "        os.write(out, buf)\n" +        
-             "    os.close(fd)\n\n");
+            ("def catfiles(fname, out):\n" + 
+             "    f = open(fname, 'rb', 1024)\n" + 
+             "    try:\n" + 
+             "        while 1:\n" + 
+             "            buf = f.read(1024)\n" + 
+             "            if(buf == ''):\n" + 
+             "                break\n" + 
+             "            out.write(buf)\n" + 
+             "    finally:\n" + 
+             "        f.close()\n\n"); 
 
           int wk=0;
           for(Path target : agenda.getPrimaryTarget().getPaths()) {
             Path tpath = new Path(agenda.getTargetPath(), target); 
 
-            out.write("out = os.open(\"" + tpath + "\", " + 
-                      "os.O_CREAT | os.O_WRONLY)\n"); 
+            out.write("out = open('" + tpath + "', 'wb', 1024)\n" + 
+                      "try:\n");
             
             for(ArrayList<Path> paths : sourcePaths.values()) {
               if(paths.size() == 1)
-                out.write("catfiles(\"" + paths.get(0) + "\")\n");
+                out.write("    catfiles('" + paths.get(0) + "', out)\n");
               else 
-                out.write("catfiles(\"" + paths.get(wk) + "\")\n");
+                out.write("    catfiles('" + paths.get(wk) + ", out)\n");
             }
 
-            out.write("os.close(out)\n\n");
+            out.write("finally:\n" + 
+                      "    out.close()\n\n"); 
             
             wk++;
           }
