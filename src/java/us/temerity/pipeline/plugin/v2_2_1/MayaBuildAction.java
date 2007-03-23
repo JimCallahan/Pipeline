@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.2 2007/03/21 22:30:18 jim Exp $
+// $Id: MayaBuildAction.java,v 1.3 2007/03/23 00:44:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -26,7 +26,6 @@ import us.temerity.pipeline.*;
  * This action defines the following single valued parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
- * 
  *   Linear Unit <BR>
  *   <DIV style="margin-left: 40px;">
  *     The linear unit that the generated scene will use. 

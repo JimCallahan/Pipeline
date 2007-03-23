@@ -1,4 +1,4 @@
-// $Id: MayaShaderExportAction.java,v 1.2 2007/03/21 22:30:38 jim Exp $
+// $Id: MayaShaderExportAction.java,v 1.3 2007/03/23 00:46:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -15,7 +15,32 @@ import us.temerity.pipeline.*;
  * Exports all shaders with a given prefix.<P>
  * 
  * This will select all the materials, textures, and render utilities with a given prefix.
- * It will not select or export shading groups.
+ * It will not select or export shading groups. <P> 
+ * 
+ * This action defines the following single valued parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Maya Scene <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Maya scene containing the shaders to be exported.
+ *   </DIV> <BR>
+ * 
+ *   Selection Prefix <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The prefix that will be used to select the shaders to export. 
+ *     If it is a namespace, you need to include the ":" after the name.
+ *   </DIV> <BR>
+ * 
+ *   Pre Export MEL <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The MEL script to evaluate before exporting the shaders.
+ *   </DIV> <BR>
+ * 
+ *   Post Export MEL <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The MEL script to evaluate after exporting the shaders.
+ *   </DIV> 
+ * </DIV>   
  */ 
 public
 class MayaShaderExportAction
@@ -35,7 +60,7 @@ class MayaShaderExportAction
       ActionParam param = 
 	new LinkActionParam
 	(aMayaScene, 
-	 "The source Maya scene node.", 
+	 "The Maya scene containing the shaders to be exported.", 
 	 null); 
       addSingleParam(param);
     }
@@ -45,8 +70,8 @@ class MayaShaderExportAction
 	new StringActionParam
 	(aSelectionPrefix, 
 	 "The prefix that will be used to select the shaders to export. " + 
-	 "If it is a namespace, you need to include the \":\"",
-	 "name"); 
+	 "If it is a namespace, you need to include the \":\" after the name.",
+	 null); 
       addSingleParam(param);
     }
     
