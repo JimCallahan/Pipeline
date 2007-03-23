@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.33 2006/10/11 22:45:40 jim Exp $
+// $Id: FileMgrServer.java,v 1.34 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -214,7 +214,11 @@ class FileMgrServer
 	    first = false;
 	  }
 	  else {
-	    FileRequest kind = (FileRequest) obj;
+            /* check time difference between client and server */ 
+            checkTimeSync((Long) obj, pSocket); 
+
+            /* dispatch request by kind */ 
+	    FileRequest kind = (FileRequest) objIn.readObject();
 
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,

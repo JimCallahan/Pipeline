@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.9 2006/12/05 19:55:40 jim Exp $
+// $Id: PluginMgrServer.java,v 1.10 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -220,7 +220,11 @@ class PluginMgrServer
 	    first = false;
 	  }
 	  else {
-	    PluginRequest kind = (PluginRequest) obj;
+            /* check time difference between client and server */ 
+            checkTimeSync((Long) obj, pSocket); 
+
+            /* dispatch request by kind */ 
+	    PluginRequest kind = (PluginRequest) objIn.readObject();
 	      
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,

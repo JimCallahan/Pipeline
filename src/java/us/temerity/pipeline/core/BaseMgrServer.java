@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.2 2006/11/22 09:08:00 jim Exp $
+// $Id: BaseMgrServer.java,v 1.3 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -44,6 +44,36 @@ class BaseMgrServer
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Check time difference between client and server 
+   */ 
+  protected void 
+  checkTimeSync
+  (
+   Long stamp, 
+   Socket socket
+  ) 
+  {
+    long deltaT = stamp - System.currentTimeMillis();
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Tim, LogMgr.Level.Finer)) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Tim, LogMgr.Level.Finer,
+         "Time Delta [" + socket.getInetAddress() + "]: " + deltaT);
+    }
+
+    if(Math.abs(deltaT) > PackageInfo.sMaxClockDelta) 
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Tim, LogMgr.Level.Warning,
+         "The clock on client [" + socket.getInetAddress() + "] is out-of-sync with the " + 
+         "clock on this server by (" + deltaT + ") milliseconds!\n" + 
+         "This is likely a symptom a broken or misconfigured NTP service and should be " + 
+         "fixed immediately!");
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 

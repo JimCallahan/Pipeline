@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.43 2006/12/20 15:11:10 jim Exp $
+// $Id: QueueMgrServer.java,v 1.44 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -280,7 +280,11 @@ class QueueMgrServer
 	    first = false;
 	  }
 	  else {
-	    QueueRequest kind = (QueueRequest) obj;
+            /* check time difference between client and server */  
+            checkTimeSync((Long) obj, pSocket); 
+
+            /* dispatch request by kind */ 
+	    QueueRequest kind = (QueueRequest) objIn.readObject();
 	  
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,

@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.27 2007/03/18 02:31:11 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.28 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -709,6 +709,15 @@ class PackageInfo
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The maximum difference (in milliseconds) between the client and server clocks which 
+   * is acceptable.
+   */
+  public static final long  sMaxClockDelta = 1000L;  /* 1 second */ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * The abstract pathname of the directory which contains the home directories for users 
    * for this site for the current operating system. <P>
@@ -751,16 +760,6 @@ class PackageInfo
    */ 
   @Deprecated
   public static final File sTempDir;
-
-  
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The default Windows Domain at this site. <P> 
-   *  
-   * Set by the WinDefaultDomain customer profile entry.
-   */ 
-  public static final String sDefaultWindowsDomain = "@WIN_DEFAULT_DOMAIN@"; 
 
 
   /*----------------------------------------------------------------------------------------*/

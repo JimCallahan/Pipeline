@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.75 2007/03/18 02:30:13 jim Exp $
+// $Id: MasterMgrServer.java,v 1.76 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -302,7 +302,11 @@ class MasterMgrServer
 	    first = false;
 	  }
 	  else {
-	    MasterRequest kind = (MasterRequest) obj;
+            /* check time difference between client and server */ 
+            checkTimeSync((Long) obj, pSocket); 
+
+            /* dispatch request by kind */ 
+	    MasterRequest kind = (MasterRequest) objIn.readObject();
 	  
 	    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
 	      LogMgr.getInstance().log

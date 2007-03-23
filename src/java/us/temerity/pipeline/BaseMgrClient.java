@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.24 2006/11/21 19:57:11 jim Exp $
+// $Id: BaseMgrClient.java,v 1.25 2007/03/23 23:14:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -236,6 +236,7 @@ class BaseMgrClient
       if(pSocket.isConnected()) {
 	OutputStream out = pSocket.getOutputStream();
 	ObjectOutput objOut = new ObjectOutputStream(out);
+        objOut.writeObject(new Long(System.currentTimeMillis()));
 	objOut.writeObject(pDisconnect);
 	objOut.flush(); 
 
@@ -269,6 +270,7 @@ class BaseMgrClient
     try {
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(new Long(System.currentTimeMillis()));
       objOut.writeObject(pShutdown);
       objOut.flush(); 
 
@@ -307,6 +309,7 @@ class BaseMgrClient
     try {
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(new Long(System.currentTimeMillis()));
       objOut.writeObject(kind);
       if(req != null) 
 	objOut.writeObject(req);
@@ -424,6 +427,7 @@ class BaseMgrClient
 
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(new Long(System.currentTimeMillis()));
       objOut.writeObject(kind);
       if(req != null) 
 	objOut.writeObject(req);
@@ -509,6 +513,7 @@ class BaseMgrClient
 
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(new Long(System.currentTimeMillis()));
       objOut.writeObject(kind);
       if(req != null) 
 	objOut.writeObject(req);
