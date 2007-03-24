@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.57 2007/03/18 02:14:26 jim Exp $
+// $Id: UIMaster.java,v 1.58 2007/03/24 02:58:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4258,6 +4258,7 @@ class UIMaster
       Long editID = null;
       {
 	UIMaster master = UIMaster.getInstance();
+        boolean ignoreExitCode = false;
 	if(master.beginPanelOp(pChannel, "Launching Node Editor...")) {
 	  try {
 	    client = master.getMasterMgrClient(pChannel);
@@ -4290,6 +4291,8 @@ class UIMaster
 	      if(editor == null) 
 		throw new PipelineException
 		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
+
+              ignoreExitCode = editor.ignoreExitCode();
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -4377,7 +4380,7 @@ class UIMaster
 	if(proc != null) {
 	  try {
 	    proc.join();
-	    if(!proc.wasSuccessful()) 
+	    if(!proc.wasSuccessful() && !ignoreExitCode) 
 	      master.showSubprocessFailureDialog("Editor Failure:", proc);
 
 	    if((client != null) && (editID != null))

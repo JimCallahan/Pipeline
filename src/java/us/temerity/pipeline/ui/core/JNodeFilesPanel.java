@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.33 2007/03/18 02:14:26 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.34 2007/03/24 02:58:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3001,6 +3001,7 @@ class JNodeFilesPanel
       SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
+        boolean ignoreExitCode = false;
 	if(master.beginPanelOp(pGroupID, "Launching Node Comparator...")) {
 	  try {
 	    String name = pStatus.getName();
@@ -3019,6 +3020,7 @@ class JNodeFilesPanel
 	    PluginMgrClient pclient = PluginMgrClient.getInstance();
 	    BaseComparator comparator = 
 	      pclient.newComparator(pComparatorName, pComparatorVersion, pComparatorVendor);
+            ignoreExitCode = comparator.ignoreExitCode();
 
 	    /* the checked-in file */  
 	    File fileB = null;
@@ -3065,7 +3067,7 @@ class JNodeFilesPanel
 	if(proc != null) {
 	  try {
 	    proc.join();
-	    if(!proc.wasSuccessful()) 
+	    if(!proc.wasSuccessful() && !ignoreExitCode) 
 	      master.showSubprocessFailureDialog("Comparator Failure:", proc);
 	  }
 	  catch(InterruptedException ex) {

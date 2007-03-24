@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.19 2007/02/08 01:49:32 jim Exp $
+// $Id: BaseEditor.java,v 1.20 2007/03/24 02:58:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -113,6 +113,19 @@ class BaseEditor
     return false;
   }
 
+  /**
+   * Whether Pipeline programs which launch Editor plugins should ignore the exit code 
+   * returned by the Subprocess created in the {@link #prep prep} method. <P> 
+   * 
+   * By default, this method always returns <CODE>false</CODE>.  Subclasses which run 
+   * 3rd party applications which always return non-zero (failure) error codes may consider
+   * overriding this method to return <CODE>true</CODE> to suppress bogus error messages.
+   */ 
+  public boolean
+  ignoreExitCode() 
+  {
+    return false;
+  }
 
 
 
@@ -139,7 +152,7 @@ class BaseEditor
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.Editor;
@@ -263,6 +276,7 @@ class BaseEditor
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   M I S C   F I L E   U T I L S                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -270,7 +284,7 @@ class BaseEditor
   /**
    * Insures that the given working directory containing the files to be edited exists.
    */
-  public void 
+  public final void 
   makeWorkingDirs
   (
    File dir
@@ -311,7 +325,7 @@ class BaseEditor
    * @param obj 
    *   The reference object with which to compare.
    */
-  public boolean
+  public final boolean
   equals
   (
    Object obj   
@@ -334,7 +348,7 @@ class BaseEditor
   /**
    * Return a deep copy of this object.
    */
-  public Object 
+  public final Object 
   clone()
   {
     BaseEditor clone = (BaseEditor) super.clone();

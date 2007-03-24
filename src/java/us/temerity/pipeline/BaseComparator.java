@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.9 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseComparator.java,v 1.10 2007/03/24 02:58:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -79,6 +79,26 @@ class BaseComparator
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether Pipeline programs which launch Comparator plugins should ignore the exit code 
+   * returned by the Subprocess created in the {@link #prep prep} method. <P> 
+   * 
+   * By default, this method always returns <CODE>false</CODE>.  Subclasses which run 
+   * 3rd party applications which always return non-zero (failure) error codes may consider
+   * overriding this method to return <CODE>true</CODE> to suppress bogus error messages.
+   */ 
+  public boolean
+  ignoreExitCode() 
+  {
+    return false;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -101,7 +121,7 @@ class BaseComparator
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.Comparator;
@@ -175,7 +195,7 @@ class BaseComparator
    * @param obj 
    *   The reference object with which to compare.
    */
-  public boolean
+  public final boolean
   equals
   (
    Object obj   
