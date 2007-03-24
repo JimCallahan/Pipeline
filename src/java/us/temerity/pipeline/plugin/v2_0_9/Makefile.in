@@ -272,7 +272,7 @@ $(TARGET): java-all
                 $(patsubst %,us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/%,$(JAVA_CLASSES)))
 
 java-all: $(JAVA_SOURCES)
-	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
+	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	touch $@
 	rm -f $(top_builddir)/docs/javadoc/docs-all
 
