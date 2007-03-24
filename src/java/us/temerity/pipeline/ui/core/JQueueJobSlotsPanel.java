@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.6 2007/02/07 21:19:53 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.7 2007/03/24 15:56:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -960,6 +960,7 @@ class JQueueJobSlotsPanel
       Long editID = null;
       {
  	UIMaster master = UIMaster.getInstance();
+        boolean ignoreExitCode = false;
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
  	  try {
 	    client = master.getMasterMgrClient(pGroupID);
@@ -988,6 +989,8 @@ class JQueueJobSlotsPanel
 	      if(editor == null) 
 		throw new PipelineException
 		  ("No editor was specified for node (" + mod.getName() + ")!");
+
+              ignoreExitCode = editor.ignoreExitCode();
  	    }
 
  	    /* lookup the toolset environment */ 
@@ -1040,7 +1043,7 @@ class JQueueJobSlotsPanel
  	if(proc != null) {
  	  try {
  	    proc.join();
- 	    if(!proc.wasSuccessful()) 
+	    if(!proc.wasSuccessful() && !ignoreExitCode) 
  	      master.showSubprocessFailureDialog("Editor Failure:", proc);
 
 	    if((client != null) && (editID != null))

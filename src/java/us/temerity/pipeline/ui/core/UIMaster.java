@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.58 2007/03/24 02:58:12 jim Exp $
+// $Id: UIMaster.java,v 1.59 2007/03/24 15:56:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4435,7 +4435,7 @@ class UIMaster
       try {
 	jclient = new JobMgrPlgControlClient("localhost");
 	Object[] results = jclient.editAs(pEditor, pAuthorName, pFileSeq, pEnv, pDir); 
-	if(results != null) 
+	if((results != null) && !pEditor.ignoreExitCode())
 	  master.showSubprocessFailureDialog
 	    ("Editor Failure:", (Integer) results[0], 
 	     (String) results[1], (String) results[2], (String) results[3]);

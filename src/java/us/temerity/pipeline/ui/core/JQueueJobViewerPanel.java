@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.35 2007/02/07 21:19:53 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.36 2007/03/24 15:56:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2484,6 +2484,7 @@ class JQueueJobViewerPanel
       Long editID = null;
       {
  	UIMaster master = UIMaster.getInstance();
+        boolean ignoreExitCode = false;
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
  	  try {
 	    client = master.getMasterMgrClient(pGroupID);
@@ -2512,6 +2513,8 @@ class JQueueJobViewerPanel
 	      if(editor == null) 
 		throw new PipelineException
 		  ("No editor was specified for node (" + mod.getName() + ")!");
+
+              ignoreExitCode = editor.ignoreExitCode();
  	    }
 
  	    /* lookup the toolset environment */ 
@@ -2564,7 +2567,7 @@ class JQueueJobViewerPanel
  	if(proc != null) {
  	  try {
  	    proc.join();
- 	    if(!proc.wasSuccessful()) 
+	    if(!proc.wasSuccessful() && !ignoreExitCode) 
  	      master.showSubprocessFailureDialog("Editor Failure:", proc);
 
 	    if((client != null) && (editID != null))

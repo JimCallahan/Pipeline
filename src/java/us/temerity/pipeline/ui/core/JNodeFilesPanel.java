@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.34 2007/03/24 02:58:12 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.35 2007/03/24 15:56:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2818,6 +2818,7 @@ class JNodeFilesPanel
       MasterMgrClient client = null;
       SubProcessLight proc = null;
       Long editID = null;
+      boolean ignoreExitCode = false;
       {
 	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
 	  try {
@@ -2851,6 +2852,8 @@ class JNodeFilesPanel
 	      if(editor == null) 
 		throw new PipelineException
 		  ("No editor was specified for node (" + com.getName() + ")!");
+              
+              ignoreExitCode = editor.ignoreExitCode();
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -2921,7 +2924,7 @@ class JNodeFilesPanel
       if(proc != null) {
 	try {
 	  proc.join();
-	  if(!proc.wasSuccessful()) 
+          if(!proc.wasSuccessful() && !ignoreExitCode) 
 	    master.showSubprocessFailureDialog("Editor Failure:", proc);
 
 	  if((client != null) && (editID != null))
