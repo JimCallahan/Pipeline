@@ -1,4 +1,4 @@
-// $Id: ExtractSeqAction.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: ExtractSeqAction.java,v 1.2 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -238,7 +238,7 @@ class ExtractSeqAction
 
   private static final long serialVersionUID = 1949411134491303808L;
 
-  private static final String aSelect = "Select"; 
+  public static final String aSelect = "Select"; 
 
 }
 

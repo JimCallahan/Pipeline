@@ -1,4 +1,4 @@
-// $Id: MayaMRayRenderAction.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.2 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -60,21 +60,23 @@ import us.temerity.pipeline.*;
  *   Include Path<BR>
  *   <DIV style="margin-left: 40px;"> 
  *     A semicolon seperated list of directories which overrides the path used to resolve 
- *     "$include" statements in the MI scene file.  References to Toolset environmental 
- *     variables ('${varname}') will be evaluated.
+ *     "$include" statements in the MI scene file.  Toolset environmental variable 
+ *     substitutions are enabled (see {@link ActionAgenda#evaluate evaluate}).
  *   </DIV> <BR>
  * 
  *   Library Path <BR>
  *   <DIV style="margin-left: 40px;">
  *     A semicolon seperated list of directories that mental ray searches for shader 
- *     libraries containing shader code before the default library paths. References to 
- *     Toolset environmental variables ('${varname}') will be evaluated.
+ *     libraries containing shader code before the default library paths.  Toolset 
+ *     environmental variable substitutions are enabled (see {@link ActionAgenda#evaluate 
+ *     evaluate}).
  *   </DIV> <BR>
  * 
  *   Texture Path <BR>
  *   <DIV style="margin-left: 40px;">
- *     A semicolon seperated list of directories that mental ray searches for texture files.
- *     References to Toolset environmental variables ('${varname}') will be evaluated.
+ *     A semicolon seperated list of directories that mental ray searches for texture files.  
+ *     Toolset environmental variable substitutions are enabled (see {@link 
+ *     ActionAgenda#evaluate evaluate}).
  *   </DIV> <BR>
  * 
  *   Extra Opts<BR>
@@ -155,8 +157,8 @@ public class MayaMRayRenderAction
 	new StringActionParam
 	(aIncludePath,
 	 "A semicolon seperated list of directories which overrides the path used to " +
-	 "resolve $include statements in the MI scene file.  References to Toolset " + 
-         "environmental variables ('${varname}') will be evaluated.",
+	 "resolve $include statements in the MI scene file.  Toolset environmental " + 
+         "variable substitutions are enabled.", 
          null); 
       addSingleParam(param);
     }
@@ -166,8 +168,8 @@ public class MayaMRayRenderAction
 	new StringActionParam
 	(aLibraryPath,
 	 "A semicolon seperated list of directories that mental ray searches for shader " +
-	 "libraries containing shader code before the default library paths.  References " + 
-         "to Toolset environmental variables ('${varname}') will be evaluated.", 
+	 "libraries containing shader code before the default library paths.  Toolset " + 
+         "environmental variable substitutions are enabled.", 
          null); 
       addSingleParam(param);
     }
@@ -177,8 +179,7 @@ public class MayaMRayRenderAction
 	new StringActionParam
 	(aTexturePath,
 	 "A semicolon seperated list of directories that mental ray searches for texture " +
-	 "files.  References to Toolset environmental variables ('${varname}') will be " +
-         "evaluated.", 
+	 "files.  Toolset environmental variable substitutions are enabled.", 
 	 null);
       addSingleParam(param);
     }
@@ -192,29 +193,22 @@ public class MayaMRayRenderAction
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aIncludePath, "${MI_ROOT}/include");
-        values.put(aLibraryPath, "${MI_ROOT}/lib"); 
+        values.put(aIncludePath, "${MI_ROOT+}/include");
+        values.put(aLibraryPath, "${MI_ROOT+}/lib"); 
 	
         addPresetValues(aBaseLibraries, "Mental Ray", values);
       }
       
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aIncludePath, "${MAYA_LOCATION}/mentalray/include");
-        values.put(aLibraryPath, "${MAYA_LOCATION}/mentalray/lib"); 
+        values.put(aIncludePath, "${MAYA_LOCATION+}/mentalray/include");
+        values.put(aLibraryPath, "${MAYA_LOCATION+}/mentalray/lib"); 
 	
         addPresetValues(aBaseLibraries, "Maya", values);
       }
     }
 
-    {
-      ActionParam param =
-	new StringActionParam
-	(aExtraOptions, 
-	 "Additional command-line arguments.", 
-	 null);
-      addSingleParam(param);
-    }
+    addExtraOptionsParam(); 
   
     {    
       LayoutGroup layout = new LayoutGroup(true);
@@ -230,10 +224,13 @@ public class MayaMRayRenderAction
       layout.addEntry(aLibraryPath);
       layout.addEntry(aTexturePath);
       layout.addSeparator();
-      layout.addEntry(aExtraOptions);
+      addExtraOptionsParamToLayout(layout); 
 
       setSingleLayout(layout);
     }
+
+    addSupport(OsType.MacOS);
+    addSupport(OsType.Windows);
 
     underDevelopment();
   }
@@ -357,9 +354,9 @@ public class MayaMRayRenderAction
       Path miPath = new Path(getTempPath(agenda), fpat.getPrefix() + ".mi");
       out.write
         ("// EXPORT MI FILES\n" + 
-         "print \"Exporting MI Files: " + miPath.toOsString() + "\\n\";\n" + 
+         "print \"Exporting MI Files: " + miPath + "\\n\";\n" + 
          "Mayatomr -mi -perframe 2 -padframe 4 -binary -xp \"1111333333\"\n" + 
-         "         -file \"" + miPath.toOsString() + "\";\n\n");
+         "         -file \"" + miPath + "\";\n\n");
       
       if(postExportMEL != null)
 	out.write("// POST-EXPORT SCRIPT\n" + 
@@ -376,10 +373,10 @@ public class MayaMRayRenderAction
     }
 
     /* create a temporary MI file which loads the common shaders */ 
-    File miCommon = createTemp(agenda, "mi3");
+    Path miCommon = new Path(createTemp(agenda, "mi3"));
     try {
-      FileWriter out = new FileWriter(miCommon);
-
+      FileWriter out = new FileWriter(miCommon.toFile());
+      
       out.write
         ("link \"base.so\"\n" +
          "$include \"base.mi\"\n" +
@@ -391,7 +388,7 @@ public class MayaMRayRenderAction
          "$include \"subsurface.mi\"\n" +
          "link \"paint.so\"\n" +
          "$include \"paint.mi\"\n");
-
+      
       out.close();
     } 
     catch(IOException ex) {
@@ -406,12 +403,15 @@ public class MayaMRayRenderAction
     File script = createTemp(agenda, "py"); 
     try {
       FileWriter out = new FileWriter(script);
+      
+      /* import modules */ 
+      out.write("import os\n");
 
       /* include the "launch" method definition */ 
       out.write(getPythonLaunchHeader()); 
 
       /* export the MI files from Maya */ 
-      out.write(createMayaPythonLauncher(sourceScene, exportMEL, agenda) + "\n");
+      out.write(createMayaPythonLauncher(sourceScene, exportMEL) + "\n");
 
       /* construct to common MentalRay command-line arguments */  
       String common = null;
@@ -425,15 +425,15 @@ public class MayaMRayRenderAction
            "['-verbose', '" + getSingleEnumParamIndex(aRenderVerbosity) + "'");
         
         String inc = getSingleStringParamValue(aIncludePath);
-        if(inc != null) 
+        if(inc != null)
           buf.append(", '-I', '" + agenda.evaluate(inc) + "'");
-        
+
         String lib = getSingleStringParamValue(aLibraryPath);
-        if(lib != null) 
+        if(lib != null)
           buf.append(", '-L', '" + agenda.evaluate(lib) + "'");
         
         String tex = getSingleStringParamValue(aTexturePath);
-        if(tex != null) 
+        if(tex != null)
           buf.append(", '-T', '" + agenda.evaluate(tex) + "'");
 
         for(String extra : getExtraOptionsArgs()) 
@@ -442,20 +442,20 @@ public class MayaMRayRenderAction
         common = buf.toString();
       }
 
-      /* render the MI files */ 
+      /* render the MI files and cleanup */ 
       {
         FilePattern fpat = target.getFilePattern();
         FilePattern mpat = new FilePattern(fpat.getPrefix(), fpat.getPadding(), "mi");
         FrameRange range = target.getFrameRange();
 
         FileSeq fseq = new FileSeq(getTempPath(agenda).toString(), new FileSeq(mpat, range));
-        for(Path path : fseq.getPaths())
-          out.write(common + ", '" + miCommon + "', '" + path.toOsString() + "'])\n");
+        for(Path path : fseq.getPaths()) 
+          out.write(common + ", '" + miCommon + "', '" + path + "'])\n");
         out.write("\n");
 
         if(getSingleBooleanParamValue(aKeepTempFiles)) {
           for(Path path : fseq.getPaths()) 
-            out.write("os.remove('" + path.toOsString() + "')\n");
+            out.write("os.remove('" + path + "')\n");
         }
       }
 
@@ -483,15 +483,14 @@ public class MayaMRayRenderAction
 
   private static final long serialVersionUID = 7375186586564455944L;
 
-  private static final String aPreExportMEL    = "PreExportMEL";
-  private static final String aPostExportMEL   = "PostExportMEL";
-  private static final String aExtraOptions    = "ExtraOptions";
-  private static final String aKeepTempFiles   = "KeepTempFiles";
-  private static final String aLibraryPath     = "LibraryPath";
-  private static final String aIncludePath     = "IncludePath";
-  private static final String aTexturePath     = "TexturePath";
-  private static final String aBaseLibraries   = "BaseLibraries";
-  private static final String aRenderVerbosity = "RenderVerbosity"; 
-  private static final String aMayaScene       = "MayaScene";
+  public static final String aMayaScene       = "MayaScene";
+  public static final String aPreExportMEL    = "PreExportMEL";
+  public static final String aPostExportMEL   = "PostExportMEL";
+  public static final String aKeepTempFiles   = "KeepTempFiles";
+  public static final String aRenderVerbosity = "RenderVerbosity";
+  public static final String aBaseLibraries   = "BaseLibraries"; 
+  public static final String aLibraryPath     = "LibraryPath";
+  public static final String aIncludePath     = "IncludePath";
+  public static final String aTexturePath     = "TexturePath";
 
 }

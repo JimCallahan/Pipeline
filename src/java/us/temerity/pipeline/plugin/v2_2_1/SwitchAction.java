@@ -1,4 +1,4 @@
-// $Id: SwitchAction.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: SwitchAction.java,v 1.2 2007/03/24 03:02:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -222,7 +222,7 @@ class SwitchAction
 
   private static final long serialVersionUID = 10121604292032299L;
 
-  private static final String aSource = "Source"; 
+  public static final String aSource = "Source"; 
 
 }
 

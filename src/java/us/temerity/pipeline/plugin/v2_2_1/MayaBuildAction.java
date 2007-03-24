@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.3 2007/03/23 00:44:30 jim Exp $
+// $Id: MayaBuildAction.java,v 1.4 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -442,13 +442,13 @@ class MayaBuildAction
 
   private static final long serialVersionUID = -8720905018603466792L;
  
-  private static final String aInitialMEL = "InitialMEL";
-  private static final String aModelMEL   = "ModelMEL";
-  private static final String aFinalMEL   = "FinalMEL";
-  private static final String aBuildType  = "BuildType";
-  private static final String aNameSpace  = "NameSpace";
-  private static final String aPrefixName = "PrefixName";
-  private static final String aStartFrame = "StartFrame";
-  private static final String aEndFrame   = "EndFrame";
+  public static final String aInitialMEL = "InitialMEL";
+  public static final String aModelMEL   = "ModelMEL";
+  public static final String aFinalMEL   = "FinalMEL";
+  public static final String aBuildType  = "BuildType";
+  public static final String aNameSpace  = "NameSpace";
+  public static final String aPrefixName = "PrefixName";
+  public static final String aStartFrame = "StartFrame";
+  public static final String aEndFrame   = "EndFrame";
   
 }

@@ -1,4 +1,4 @@
-// $Id: MayaReplaceRefAction.java,v 1.1 2007/03/23 00:42:39 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.2 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -389,9 +389,9 @@ MayaReplaceRefAction
 
   private static final long serialVersionUID = 2606598485957765617L;
 
-  private static final String aMayaScene      = "MayaScene"; 
-  private static final String aPreReplaceMEL  = "PreReplaceMEL"; 
-  private static final String aPostReplaceMEL = "PostReplaceMEL"; 
-  private static final String aNameSpace      = "NameSpace"; 
+  public static final String aMayaScene      = "MayaScene"; 
+  public static final String aPreReplaceMEL  = "PreReplaceMEL"; 
+  public static final String aPostReplaceMEL = "PostReplaceMEL"; 
+  public static final String aNameSpace      = "NameSpace"; 
 
 }

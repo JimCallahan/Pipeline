@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.3 2007/03/23 00:43:33 jim Exp $
+// $Id: CatFilesAction.java,v 1.4 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -288,7 +288,7 @@ class CatFilesAction
 
   private static final long serialVersionUID = -6590375836524785098L; 
 
-  private static final String aOrder = "Order"; 
+  public static final String aOrder = "Order"; 
 
 }
 

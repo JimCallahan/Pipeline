@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: ScriptAction.java,v 1.3 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -297,8 +297,8 @@ class ScriptAction
 
   private static final long serialVersionUID = -3684239903264889986L;
 
-  private static final String aScript    = "Script"; 
-  private static final String aFullPaths = "FullPaths"; 
+  public static final String aScript    = "Script"; 
+  public static final String aFullPaths = "FullPaths"; 
 
 }
 

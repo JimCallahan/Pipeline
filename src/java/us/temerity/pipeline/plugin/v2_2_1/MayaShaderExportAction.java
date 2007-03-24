@@ -1,4 +1,4 @@
-// $Id: MayaShaderExportAction.java,v 1.3 2007/03/23 00:46:24 jim Exp $
+// $Id: MayaShaderExportAction.java,v 1.4 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -222,9 +222,9 @@ class MayaShaderExportAction
 
   private static final long serialVersionUID = 5801808055551457595L;
 
-  private static final String aMayaScene       = "MayaScene";
-  private static final String aPostExportMEL   = "PostExportMEL";
-  private static final String aPreExportMEL    = "PreExportMEL";
-  private static final String aSelectionPrefix = "SelectionPrefix";
+  public static final String aMayaScene       = "MayaScene";
+  public static final String aPostExportMEL   = "PostExportMEL";
+  public static final String aPreExportMEL    = "PreExportMEL";
+  public static final String aSelectionPrefix = "SelectionPrefix";
 
 }

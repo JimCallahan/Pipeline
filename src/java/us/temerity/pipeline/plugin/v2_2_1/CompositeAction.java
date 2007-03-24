@@ -1,4 +1,4 @@
-// $Id: CompositeAction.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: CompositeAction.java,v 1.2 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -326,9 +326,9 @@ class CompositeAction
 
   private static final long serialVersionUID = -6720634720520909511L;
 
-  private static final String aBackground = "Background"; 
-  private static final String aOrder      = "Order"; 
-  private static final String aOperation  = "Operation"; 
+  public static final String aBackground = "Background"; 
+  public static final String aOrder      = "Order"; 
+  public static final String aOperation  = "Operation"; 
 
 }
 

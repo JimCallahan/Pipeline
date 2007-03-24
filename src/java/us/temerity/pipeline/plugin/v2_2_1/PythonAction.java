@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: PythonAction.java,v 1.3 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -376,9 +376,9 @@ class PythonAction
 
   private static final long serialVersionUID = 7647346918966305273L;
 
-  private static final String aOptimization = "Optimization";
-  private static final String aScript       = "Script"; 
-  private static final String aModuleInfo   = "ModuleInfo"; 
+  public static final String aOptimization = "Optimization";
+  public static final String aScript       = "Script"; 
+  public static final String aModuleInfo   = "ModuleInfo"; 
   
 }
 

@@ -1,4 +1,4 @@
-// $Id: SpliceAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: SpliceAction.java,v 1.3 2007/03/24 03:02:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -325,9 +325,9 @@ class SpliceAction
 
   private static final long serialVersionUID = -2046337700994432637L;
 
-  private static final String aOrder  = "Order";
-  private static final String aStart  = "Start"; 
-  private static final String aLength = "Length"; 
+  public static final String aOrder  = "Order";
+  public static final String aStart  = "Start"; 
+  public static final String aLength = "Length"; 
  
 }
 
