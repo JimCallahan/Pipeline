@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.36 2007/03/24 15:56:04 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.37 2007/03/24 18:29:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -719,13 +719,14 @@ class JQueueJobViewerPanel
 	ArrayList<ViewerJob> created = new ArrayList<ViewerJob>();
 	{
 	  Point2d anchor = Point2d.add(ganchor, new Vector2d(1.0, 0.0));
+          TreeSet<Long> seen = new TreeSet<Long>(); 
 	  for(Long jobID : group.getRootIDs()) {
 	    JobStatus status = pJobStatus.get(jobID);
 	    if(status != null) {
 	      JobPath path = new JobPath(jobID);
 	      ViewerJob vjob = layoutJobs(true, status, path, anchor, 
 					  group.getExternalIDs(), created, 
-					  wasCollapsed, new TreeSet<Long>());
+					  wasCollapsed, seen); 
 	      
 	      anchor.y(anchor.y() - vjob.getBounds().getRange().y());
 	      gheight += vjob.getHeight();
