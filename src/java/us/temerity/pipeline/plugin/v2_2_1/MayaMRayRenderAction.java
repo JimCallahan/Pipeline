@@ -1,4 +1,4 @@
-// $Id: MayaMRayRenderAction.java,v 1.3 2007/03/24 18:31:49 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.4 2007/03/25 03:09:57 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -23,8 +23,8 @@ import us.temerity.pipeline.*;
  * must be the primary file sequence of one of the source nodes and are assigned to the 
  * appropriate stage using the PreExportMEL and PostExportMEL single valued parameters. <P> 
  * 
- * By default, the "python" program is used by this action when running on Windows to perform
- * the file concatenation.  An alternative program can be specified by setting PYTHON_BINARY 
+ * By default, the "python" program is used by this action when running on Windows to run
+ * Maya and Mental Ray.  An alternative program can be specified by setting PYTHON_BINARY 
  * in the Toolset environment to the name of the Python interpertor this Action should use.  
  * When naming an alternative Python interpretor under Windows, make sure to include the 
  * ".exe" extension in the program name.<P> 
@@ -159,7 +159,7 @@ public class MayaMRayRenderAction
 	 "A semicolon seperated list of directories which overrides the path used to " +
 	 "resolve $include statements in the MI scene file.  Toolset environmental " + 
          "variable substitutions are enabled.", 
-         null); 
+         "${MI_ROOT+}/include"); 
       addSingleParam(param);
     }
 
@@ -170,7 +170,7 @@ public class MayaMRayRenderAction
 	 "A semicolon seperated list of directories that mental ray searches for shader " +
 	 "libraries containing shader code before the default library paths.  Toolset " + 
          "environmental variable substitutions are enabled.", 
-         null); 
+         "${MI_ROOT+}/lib"); 
       addSingleParam(param);
     }
 
