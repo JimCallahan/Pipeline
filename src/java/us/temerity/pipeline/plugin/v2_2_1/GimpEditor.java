@@ -1,4 +1,4 @@
-// $Id: GimpEditor.java,v 1.1 2007/03/25 04:00:50 jim Exp $
+// $Id: GimpEditor.java,v 1.2 2007/03/25 05:19:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -12,7 +12,13 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The GNU Image Manipuation Program. 
+ * The GNU Image Manipuation Program. <P> 
+ * 
+ * If the environmental variable GIMP_BINARY is defined, its value will be used as the 
+ * name of the GIMP executable instead of the default "gimp" (Unix) or "gimp-2.2.exe" 
+ * (Windows).  On Windows, the GIMP program name should include the ".exe" extension.  
+ * Mac OS X systems use Apple Script to launch GIMP and therefore ignore the name of the 
+ * program binary.
  */
 public
 class GimpEditor
@@ -31,25 +37,6 @@ class GimpEditor
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Gets the name of the editor executable.
-   */
-  public String
-  getProgram() 
-  {
-    if(PackageInfo.sOsType == OsType.Unix)  
-      return "gimp";
-    else if(PackageInfo.sOsType == OsType.Windows) 
-      return "gimp.exe"; 
-    return super.getProgram();
   }
 
 
@@ -99,7 +86,7 @@ class GimpEditor
     for(File file : fseq.getFiles()) 
       args.add(file.getPath());
     
-    return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    return new SubProcessLight(author, getName(), getGimpProgram(env), args, env, dir);
   }
 
   /** 
@@ -141,6 +128,33 @@ class GimpEditor
     throw new PipelineException
       ("This launch() method should never be called since the prep() method returns " + 
        "a non-null SubProcessLight instance!");
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate the name of the GIMP program based on the Toolset environment and 
+   * current operating system type.<P> 
+   */
+  private String
+  getGimpProgram
+  (
+    Map<String,String> env
+  ) 
+    throws PipelineException
+  {
+    String gimp = env.get("GIMP_BINARY");
+    if((gimp != null) && (gimp.length() > 0)) 
+      return gimp; 
+    
+    if(PackageInfo.sOsType == OsType.Windows) 
+      return "gimp-2.2.exe";
+
+    return "gimp";
   }
 
 
