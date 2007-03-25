@@ -1,4 +1,4 @@
-// $Id: MRayTextureAction.java,v 1.1 2007/03/24 18:30:27 jim Exp $
+// $Id: MRayTextureAction.java,v 1.2 2007/03/25 03:11:59 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -13,7 +13,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Generates optimized Mental Ray memory mappable pyramid textures from source images. <P> 
+ * Generates optimized Mental Ray memory mappable textures from source images. <P> 
  * 
  * Converts the images which make up the primary file sequence of one of the source
  * nodes into the texture maps which make up the primary file sequence of this node. <P> 
@@ -25,6 +25,12 @@ import java.io.*;
  * 
  * See the Mental Ray documentation for for details about <B>imf_copy</B>(1) and memory
  * mapped texture files. <P> 
+ * 
+ * By default, the "python" program is used by this action when running on Windows to run
+ * the "imf_copy" commands.  An alternative program can be specified by setting PYTHON_BINARY 
+ * in the Toolset environment to the name of the Python interpertor this Action should use.  
+ * When naming an alternative Python interpretor under Windows, make sure to include the 
+ * ".exe" extension in the program name.<P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -62,7 +68,7 @@ import java.io.*;
  *     How to organize output texel data.
  *     <UL>
  *       <LI> Scanlines
- *       <LI> Tiles (faster)
+ *       <LI> Tiles
  *     </UL>
  *   </DIV> <BR>
  *   <BR>
@@ -96,8 +102,7 @@ class MRayTextureAction
   MRayTextureAction() 
   {
     super("MRayTexture", new VersionID("2.2.1"), "Temerity", 
-	  "Generates optimized Mental Ray memory mappable pyramid textures from " + 
-	  "source images.");
+	  "Generates optimized Mental Ray memory mappable textures from source images.");
     
     {
       ActionParam param = 
@@ -151,7 +156,7 @@ class MRayTextureAction
 	  new EnumActionParam
 	  (aTexelLayout, 
 	   "How to organize output texel data.",
-	   "Tiles", choices);
+	   "Scanlines", choices);
 	addSingleParam(param);
       }
     }   
@@ -230,9 +235,9 @@ class MRayTextureAction
     NodeID nodeID = agenda.getNodeID();
 
     /* file sequence checks */ 
-    Path fromPath = null;
-    FileSeq fromSeq = null;
-    FileSeq toSeq = null;
+    Path sourcePath = null;
+    FileSeq sourceSeq = null;
+    FileSeq targetSeq = null;
     {
       {    
 	String sname = getSingleStringParamValue(aImageSource); 
@@ -243,12 +248,13 @@ class MRayTextureAction
 	FileSeq fseq = agenda.getPrimarySource(sname);
 	if(fseq == null) 
 	  throw new PipelineException
-	    ("Somehow the Image Source (" + sname + ") was not one of the source nodes!");
+	    ("Somehow the " + aImageSource + " (" + sname + ") was not one of the " + 
+             "source nodes!");
 	
-	fromSeq = fseq;
+	sourceSeq = fseq;
 	
 	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-	fromPath = new Path(PackageInfo.sProdPath, snodeID.getWorkingParent());
+	sourcePath = new Path(PackageInfo.sProdPath, snodeID.getWorkingParent());
       }
       
       {
@@ -259,13 +265,13 @@ class MRayTextureAction
 	    ("The target primary file sequence (" + fseq + ") must contain Mental Ray" + 
 	     "memory mappable pyramid textures (.map)!");
 	
-	toSeq = fseq;
+	targetSeq = fseq;
       }
 
-      if(fromSeq.numFrames() != toSeq.numFrames()) 
+      if(sourceSeq.numFrames() != targetSeq.numFrames()) 
 	throw new PipelineException 
-	  ("The source primary file sequence (" + fromSeq + ") does not have the same" + 
-	   "number of frames as the target primary file sequence (" + toSeq + ")!");
+	  ("The source primary file sequence (" + sourceSeq + ") does not have the same" + 
+	   "number of frames as the target primary file sequence (" + targetSeq + ")!");
     }
 
     /* build common command-line arguments */ 
@@ -345,11 +351,11 @@ class MRayTextureAction
       program = "imf_copy.exe";
     
     /* run directly for single frame cases */ 
-    if(toSeq.numFrames() == 1) {
-      Path fpath = new Path(fromPath, fromSeq.getPath(0));
-      args.add(fpath.toOsString());
+    if(targetSeq.numFrames() == 1) {
+      Path spath = new Path(sourcePath, sourceSeq.getPath(0));
+      args.add(spath.toOsString());
 
-      Path tpath = new Path(agenda.getTargetPath(), toSeq.getPath(0));
+      Path tpath = new Path(agenda.getTargetPath(), targetSeq.getPath(0));
       args.add(tpath.toOsString());
       
       return createSubProcess(agenda, program, args, outFile, errFile);
@@ -384,13 +390,13 @@ class MRayTextureAction
 
         /* convert the frames */ 
         {
-          ArrayList<Path> fromPaths = fromSeq.getPaths();
-          ArrayList<Path> toPaths   = toSeq.getPaths();
+          ArrayList<Path> sourcePaths = sourceSeq.getPaths();
+          ArrayList<Path> targetPaths = targetSeq.getPaths();
           int wk;
-          for(wk=0; wk<fromPaths.size(); wk++) {
-            Path fpath = new Path(fromPath, fromPaths.get(wk));
-            Path tpath = new Path(agenda.getTargetPath(), toPaths.get(wk));
-            out.write(common + ", '" + fpath + "', '" + tpath + "'])\n");
+          for(wk=0; wk<sourcePaths.size(); wk++) {
+            Path spath = new Path(sourcePath, sourcePaths.get(wk));
+            Path tpath = new Path(agenda.getTargetPath(), targetPaths.get(wk));
+            out.write(common + ", '" + spath + "', '" + tpath + "'])\n");
           }
         }
         
