@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.4 2007/03/24 03:02:13 jim Exp $
+// $Id: CatFilesAction.java,v 1.5 2007/03/25 19:35:54 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -123,7 +123,7 @@ class CatFilesAction
   { 
     NodeID nodeID = agenda.getNodeID();
 
-    /* sanity checks */ 
+    /* get the ordered source file paths */ 
     MappedArrayList<Integer,Path> sourcePaths = new MappedArrayList<Integer,Path>();
     {
       int numFrames = agenda.getPrimaryTarget().numFrames();
