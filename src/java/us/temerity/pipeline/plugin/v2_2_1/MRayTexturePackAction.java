@@ -1,4 +1,4 @@
-// $Id: MRayTexturePackAction.java,v 1.1 2007/03/24 23:59:49 jim Exp $
+// $Id: MRayTexturePackAction.java,v 1.2 2007/03/25 03:12:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -73,7 +73,7 @@ import java.io.*;
  *     How to organize output texel data.
  *     <UL>
  *       <LI> Scanlines
- *       <LI> Tiles (faster)
+ *       <LI> Tiles 
  *     </UL>
  *   </DIV> <BR>
  *   <BR>
@@ -148,7 +148,7 @@ class MRayTexturePackAction
 	  new EnumActionParam
 	  (aTexelLayout, 
 	   "How to organize output texel data.",
-	   "Tiles", choices);
+	   "Scanlines", choices);
 	addSingleParam(param);
       }
     }   
