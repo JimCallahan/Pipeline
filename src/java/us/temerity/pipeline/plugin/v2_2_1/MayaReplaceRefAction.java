@@ -1,4 +1,4 @@
-// $Id: MayaReplaceRefAction.java,v 1.2 2007/03/24 03:02:13 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.3 2007/03/25 03:12:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -177,7 +177,7 @@ MayaReplaceRefAction
     
     /* the source Maya scene */ 
     Path sourceScene = 
-      getSinglePrimarySourcePath(aMayaScene, agenda, "ma", "Maya scene file");
+      getPrimarySourcePath(aMayaScene, agenda, "ma", "Maya scene file");
 
     /* the target Maya scene */
     Path targetScene = getMayaSceneTargetPath(agenda);

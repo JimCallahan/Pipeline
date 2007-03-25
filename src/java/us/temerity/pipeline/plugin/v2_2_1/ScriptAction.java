@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.3 2007/03/24 03:02:13 jim Exp $
+// $Id: ScriptAction.java,v 1.4 2007/03/25 03:12:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -198,7 +198,7 @@ class ScriptAction
     throws PipelineException
   {
     /* get the name of the executable script file */ 
-    Path script = getSinglePrimarySourcePath(aScript, agenda, "executable script");
+    Path script = getPrimarySourcePath(aScript, agenda, "executable script");
 
     /* whether to supply full paths */ 
     boolean fullPaths = getSingleBooleanParamValue(aFullPaths); 

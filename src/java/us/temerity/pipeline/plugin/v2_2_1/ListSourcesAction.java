@@ -1,4 +1,4 @@
-// $Id: ListSourcesAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: ListSourcesAction.java,v 1.3 2007/03/25 03:12:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -74,7 +74,7 @@ ListSourcesAction
     throws PipelineException
   {
     /* target text file */ 
-    Path target = getSinglePrimaryTargetPath(agenda, "text file");
+    Path target = getPrimaryTargetPath(agenda, "text file");
 
     /* create a temporary file which will be copied to the target */ 
     File temp = createTemp(agenda, "txt");

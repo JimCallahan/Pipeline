@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.3 2007/03/24 03:02:13 jim Exp $
+// $Id: PythonAction.java,v 1.4 2007/03/25 03:12:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -206,7 +206,7 @@ class PythonAction
 
     /* get the executable script path */ 
     Path scriptPath = 
-      getSinglePrimarySourcePath(aScript, agenda, "py", "Python source (.py) file");
+      getPrimarySourcePath(aScript, agenda, "py", "Python source (.py) file");
 
     /* create a temporary python prep script */ 
     Path scratch = getTempPath(agenda);

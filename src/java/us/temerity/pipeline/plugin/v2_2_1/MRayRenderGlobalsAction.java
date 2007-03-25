@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.3 2007/03/24 03:02:13 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.4 2007/03/25 03:13:11 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -2050,7 +2050,7 @@ class MRayRenderGlobalsAction
     throws PipelineException
   { 
     /* target MEL script */ 
-    Path target = getSinglePrimaryTargetPath(agenda, "mel", "MEL script");
+    Path target = getPrimaryTargetPath(agenda, "mel", "MEL script");
 
     /* create a temporary file which will be copied to the target */ 
     File temp = createTemp(agenda, "mel");
