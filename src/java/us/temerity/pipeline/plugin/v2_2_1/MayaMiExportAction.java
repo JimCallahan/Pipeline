@@ -1,4 +1,4 @@
-// $Id: MayaMiExportAction.java,v 1.1 2007/03/25 19:35:37 jim Exp $
+// $Id: MayaMiExportAction.java,v 1.2 2007/03/26 23:34:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -586,8 +586,6 @@ class MayaMiExportAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows); 
-    
-    underDevelopment();
   }
 
   
