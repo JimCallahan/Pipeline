@@ -1,4 +1,4 @@
-// $Id: MRayTextureAction.java,v 1.2 2007/03/25 03:11:59 jim Exp $
+// $Id: MRayTextureAction.java,v 1.3 2007/03/26 23:33:10 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -232,8 +232,6 @@ class MRayTextureAction
   )
     throws PipelineException
   {
-    NodeID nodeID = agenda.getNodeID();
-
     /* file sequence checks */ 
     Path sourcePath = null;
     FileSeq sourceSeq = null;
