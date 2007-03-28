@@ -1,11 +1,10 @@
-// $Id: EnumParam.java,v 1.7 2006/12/10 22:52:54 jesse Exp $
+// $Id: EnumParam.java,v 1.8 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder; 
-
 import java.util.*;
-import java.io.*;
+
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E N U M   P A R A M                                                                    */
@@ -16,7 +15,7 @@ import java.io.*;
  */
 public 
 class EnumParam
-  extends BaseParam
+  extends SimpleParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -116,6 +115,24 @@ class EnumParam
     return Collections.unmodifiableCollection(pValues);
   }  
   
+  /**
+   * Sets the value of the parameter from a String.
+   * <p>
+   * This method is used for setting parameter values from command line arguments.
+   * 
+   * @throws IllegalArgumentException if a null value is passed in.
+   */
+  public void
+  setValueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    setValue(value);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -126,6 +143,7 @@ class EnumParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (

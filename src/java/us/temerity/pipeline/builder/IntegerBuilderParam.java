@@ -1,4 +1,4 @@
-// $Id: IntegerBuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
+// $Id: IntegerBuilderParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -15,7 +15,7 @@ import us.temerity.pipeline.glue.GlueDecoder;
 public 
 class IntegerBuilderParam
   extends IntegerParam
-  implements PrimitiveBuilderParam
+  implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

@@ -1,25 +1,23 @@
-// $Id: MayaContextBuilderParam.java,v 1.1 2007/03/10 22:44:33 jesse Exp $
+// $Id: MayaContextBuilderParam.java,v 1.2 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
-import java.util.TreeSet;
+import java.util.ArrayList;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.Kind;
-import us.temerity.pipeline.LogMgr.Level;
+import us.temerity.pipeline.SimpleParamAccess;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   C O N T E X T   B U I L D E R   P A R A M                                    */
 /*------------------------------------------------------------------------------------------*/
-
 
 /**
  * An plugin parameter with an MayaContext value. <P> 
  */
 public 
 class MayaContextBuilderParam
-  extends BaseParam
-  implements ComplexBuilderParam
+  extends ComplexBuilderParam
+  implements SimpleParamAccess
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -47,7 +45,6 @@ class MayaContextBuilderParam
    * 
    * @param value 
    *   The default value for this parameter.
-   
    */ 
   public
   MayaContextBuilderParam
@@ -57,7 +54,45 @@ class MayaContextBuilderParam
    MayaContext value 
   ) 
   {
-    super(name, desc, value);
+    super(name, desc);
+    
+    if (value == null)
+      value = new MayaContext();
+    
+    {
+      pLinearParam = new EnumBuilderParam
+	(aLinearUnits, 
+	 "The Linear Units value for Maya scenes.", 
+	 value.getLinearUnit(),
+	 new ArrayList<String>(MayaContext.getLinearUnits()));
+      addParam(pLinearParam);
+    }
+    
+    {
+      pAngularParam = new EnumBuilderParam
+	(aAngularUnits, 
+	 "The Angular Units value for Maya scenes.", 
+	 value.getAngularUnit(),
+	 new ArrayList<String>(MayaContext.getAngularUnits()));
+      addParam(pAngularParam);
+    }
+    
+    {
+      pTimeParam = new EnumBuilderParam
+	(aTimeUnits, 
+	 "The Time Units value for Maya scenes.", 
+	 value.getTimeUnit(),
+	 new ArrayList<String>(MayaContext.getTimeUnits()));
+      addParam(pTimeParam);
+    }
+    
+    {
+      ArrayList<String> layout = new ArrayList<String>();
+      layout.add(aAngularUnits);
+      layout.add(aLinearUnits);
+      layout.add(aTimeUnits);
+      setLayout(layout);
+    }
   }
 
 
@@ -72,82 +107,92 @@ class MayaContextBuilderParam
   public MayaContext
   getMayaContextValue() 
   {
-    return ((MayaContext) getValue());
+    String linear = pLinearParam.getStringValue();
+    String angular = pAngularParam.getStringValue();
+    String time = pTimeParam.getStringValue();
+    
+    MayaContext value = new MayaContext(angular, linear, time);
+    return value;
   }
 
   
   
   /*----------------------------------------------------------------------------------------*/
-  /*   V A L I D A T O R                                                                    */
+  /*   S I M P L E   P A R A M E T E R   A C C E S S                                        */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
-   * A method to confirm that the input to the param is correct.
-   * <P>
+   * Implemented to allow this Complex Parameter to be used a Simple Parameter.  Returns
+   * a {@link MayaContext};
    */
   @SuppressWarnings("unchecked")
-  protected void 
-  validate
-  (
-    Comparable value	  
-  )
-    throws IllegalArgumentException 
+  public Comparable
+  getValue()
   {
-    if((value != null) && !(value instanceof MayaContext))
+    return getMayaContextValue();
+  }
+  
+  /**
+   * Sets the value of the parameter from a MayaContext.
+   */
+  @SuppressWarnings("unchecked")
+  public void
+  setValue
+  (
+    Comparable value
+  )
+  {
+    if ( ( value != null ) && !( value instanceof MayaContext ) )
       throw new IllegalArgumentException("The parameter (" + pName
-	+ ") only accepts (MayaContext) values!");
+          + ") only accepts (MayaContext) values!");
+    MayaContext context = (MayaContext) value;
+    
+    setValue(aAngularUnits, context.getAngularUnit());
+    setValue(aLinearUnits, context.getLinearUnit());
+    setValue(aTimeUnits, context.getTimeUnit());
   }
-
   
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   U T I L I T I E S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  public TreeSet<String> 
-  listOfKeys()
-  {
-    TreeSet<String> toReturn = new TreeSet<String>();
-    toReturn.add(pName + "-Angular");
-    toReturn.add(pName + "-Linear");
-    toReturn.add(pName + "-Time");
-    return toReturn;
-  }
-
+  /**
+   * Sets the value from a single String.  Used for command line argument parsing.
+   */
   public void 
-  valueFromString
+  setValueFromString
   (
-    String key, 
-    String value
+    String key 
   )
   {
-    if (value == null)
-      return;
-    MayaContext context = getMayaContextValue();
-    try {
-    if (key.equals(pName + "-Angular"))
-      setValue(new MayaContext(value, context.getLinearUnit(), context.getTimeUnit()));
-    else if (key.equals(pName + "-Linear"))
-      setValue(new MayaContext(context.getAngularUnit(), value, context.getTimeUnit()));
-    else if (key.equals(pName + "-Time"))
-      setValue(new MayaContext(context.getAngularUnit(), context.getLinearUnit(), value));
-    else
-      assert(false);
-    } catch (PipelineException ex) {
-      LogMgr.getInstance().logAndFlush(Kind.Arg, Level.Warning, 
-	"Attempted to set an invalid MayaContext value with a command line parameter.  " +
-	"Value is being ignored.\n" + ex.getMessage());
-      return;
+    String buffer[] = key.split(",");
+    if (buffer.length != 3) {
+      throw new IllegalArgumentException
+        ("The string that was passed in is not valid.  To set the MayaContext value, " +
+         "it needs three comma-separated string values in the form angular,linear,time");
     }
+    setValue(aAngularUnits, buffer[0]);
+    setValue(aLinearUnits, buffer[1]);
+    setValue(aTimeUnits, buffer[2]);
   }
-
-
-
+  
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 3809821423807521696L;
+  
+  public static final String aLinearUnits = "LinearUnits";
+  public static final String aAngularUnits = "AngularUnits";
+  public static final String aTimeUnits = "TimeUnits";
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+  
+  private EnumBuilderParam pLinearParam;
+  private EnumBuilderParam pAngularParam;
+  private EnumBuilderParam pTimeParam;
 }
 
 

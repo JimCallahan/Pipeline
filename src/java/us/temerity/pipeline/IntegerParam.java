@@ -1,11 +1,8 @@
-// $Id: IntegerParam.java,v 1.4 2006/12/10 22:52:54 jesse Exp $
+// $Id: IntegerParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder; 
-
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   I N T E G E R   P A R A M                                                              */
@@ -16,7 +13,7 @@ import java.io.*;
  */
 public 
 class IntegerParam
-  extends BaseParam
+  extends SimpleParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -71,6 +68,26 @@ class IntegerParam
     return ((Integer) getValue());
   }
 
+  /**
+   * Sets the value of the parameter from a String.
+   * <p>
+   * This method is used for setting parameter values from command line arguments.
+   * 
+   * @throws IllegalArgumentException if a null value is passed in.
+   * @throws NumberFormatException if the String is not a valid Integer value.
+   */
+  public void
+  setValueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    Integer intValue = Integer.valueOf(value);
+    setValue(intValue);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -81,6 +98,7 @@ class IntegerParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (

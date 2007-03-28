@@ -1,25 +1,44 @@
+/**
+ * 
+ */
 package us.temerity.pipeline.builder;
 
-import java.util.TreeSet;
+import us.temerity.pipeline.ComplexParam;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C O M P L E X   B U I L D E R   P A R A M                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *
+ * Implementation of Complex Parameter for Builders.
  */
-public interface ComplexBuilderParam
-  extends BuilderParam
+public abstract 
+class ComplexBuilderParam
+  extends ComplexParam<BuilderParam>
+  implements BuilderParam
 {
-  public TreeSet<String>
-  listOfKeys
-  ();
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
   
-  public void
-  valueFromString
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class 
+   * when encountered during the reading of GLUE format files and should not be called 
+   * from user code.
+   */   
+  public ComplexBuilderParam()
+  {
+    super();
+  }
+  
+  protected ComplexBuilderParam
   (
-    String key,
-    String value
-  );
+    String name,  
+    String desc
+  )
+  {
+    super(name, desc);
+  }
+
 }

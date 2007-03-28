@@ -9,11 +9,12 @@ package us.temerity.pipeline.builder;
 import java.util.ArrayList;
 
 import us.temerity.pipeline.OptionalEnumParam;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 public 
 class OptionalEnumBuilderParam 
   extends OptionalEnumParam
-  implements PrimitiveBuilderParam
+  implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

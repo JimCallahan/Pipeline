@@ -1,11 +1,8 @@
-// $Id: BooleanParam.java,v 1.4 2006/12/10 22:52:54 jesse Exp $
+// $Id: BooleanParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder; 
-
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B O O L E A N   P A R A M                                                              */
@@ -16,7 +13,7 @@ import java.io.*;
  */
 public 
 class BooleanParam
-  extends BaseParam
+  extends SimpleParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -71,6 +68,33 @@ class BooleanParam
     return ((Boolean) getValue());
   }
   
+  /**
+   * Sets the value of the parameter from a String.
+   * <p>
+   * This method is used for setting parameter values from command line arguments.
+   * 
+   * @throws IllegalArgumentException if the String value cannot be converted to a boolean
+   * or if a null value is passed in.
+   */
+  public void
+  setValueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    Boolean booleanValue = null;
+    if ("false".equalsIgnoreCase(value))
+      booleanValue = Boolean.FALSE;
+    else if ("true".equalsIgnoreCase(value))
+      booleanValue = Boolean.TRUE;
+    else
+      throw new IllegalArgumentException
+        ("String (" +  value + ") is not a valid boolean value");
+    setValue(booleanValue);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -81,6 +105,7 @@ class BooleanParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (

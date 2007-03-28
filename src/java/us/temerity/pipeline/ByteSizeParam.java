@@ -1,11 +1,8 @@
-// $Id: ByteSizeParam.java,v 1.4 2006/12/10 22:52:54 jesse Exp $
+// $Id: ByteSizeParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder; 
-
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B Y T E   S I Z E   P A R A M                                                          */
@@ -16,7 +13,7 @@ import java.io.*;
  */
 public 
 class ByteSizeParam
-  extends BaseParam
+  extends SimpleParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -71,6 +68,26 @@ class ByteSizeParam
     return ((Long) getValue());
   }
   
+  /**
+   * Sets the value of the parameter from a String.
+   * <p>
+   * This method is used for setting parameter values from command line arguments.
+   * 
+   * @throws IllegalArgumentException if a null value is passed in.
+   * @throws NumberFormatException if the String is not a valid Byte value.
+   */
+  public void
+  setValueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    Long longValue = ByteSize.stringToLong(value);
+    setValue(longValue);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -81,6 +98,7 @@ class ByteSizeParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (
@@ -94,6 +112,7 @@ class ByteSizeParam
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/

@@ -1,8 +1,9 @@
-// $Id: StringBuilderParam.java,v 1.3 2007/03/10 22:44:33 jesse Exp $
+// $Id: StringBuilderParam.java,v 1.4 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.StringParam;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S T R I N G   B U I D E R   P A R A M                                                  */
@@ -14,7 +15,7 @@ import us.temerity.pipeline.StringParam;
 public 
 class StringBuilderParam
   extends StringParam
-  implements PrimitiveBuilderParam
+  implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

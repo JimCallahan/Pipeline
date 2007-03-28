@@ -1,8 +1,9 @@
-// $Id: IdentifierBuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
+// $Id: IdentifierBuilderParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.StringParam;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   I D E N T I F I E R   B U I D E R   P A R A M                                          */
@@ -14,7 +15,7 @@ import us.temerity.pipeline.StringParam;
 public 
 class IdentifierBuilderParam
   extends StringParam
-  implements PrimitiveBuilderParam
+  implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

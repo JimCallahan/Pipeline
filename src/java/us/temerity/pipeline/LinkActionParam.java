@@ -1,4 +1,4 @@
-// $Id: LinkActionParam.java,v 1.6 2006/12/10 22:52:54 jesse Exp $
+// $Id: LinkActionParam.java,v 1.7 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ import java.io.*;
  */
 public 
 class LinkActionParam
-  extends BaseParam
+  extends SimpleParam
   implements ActionParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -71,6 +71,24 @@ class LinkActionParam
     return ((String) getValue());
   }
 
+  /**
+   * Sets the value of the parameter from a String.
+   * <p>
+   * This method is used for setting parameter values from command line arguments.
+   * 
+   * @throws IllegalArgumentException if a null value is passed in.
+   */
+  public void
+  setValueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    setValue(value);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -81,6 +99,7 @@ class LinkActionParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (

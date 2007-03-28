@@ -1,11 +1,8 @@
-// $Id: BaseParam.java,v 1.6 2006/12/10 22:52:54 jesse Exp $
+// $Id: BaseParam.java,v 1.7 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   P A R A M                                                                    */
@@ -32,9 +29,13 @@ class BaseParam
   {
     super();
   }
-
+  
   /** 
-   * Construct a parameter with the given name, description and default value.
+   * Construct a parameter with the given name and description.
+   * <p>
+   * This constructor should only be used by classes that are not implementing 
+   * the validate method, and therefore are not using the setValue functionality
+   * of BaseParam.
    * 
    * @param name 
    *   The short name of the editor.  
@@ -42,15 +43,12 @@ class BaseParam
    * @param desc 
    *   A short description used in tooltips.
    * 
-   * @param value 
-   *   The default value for this parameter.
    */ 
   protected 
   BaseParam
   (
    String name,  
-   String desc, 
-   Comparable value
+   String desc
   ) 
   {
     super(name, desc);
@@ -59,9 +57,8 @@ class BaseParam
       throw new IllegalArgumentException
 	("The parameter name (" + name + ") may contain only alphanumeric characters " + 
 	 "without whitespace!");
-
-    setValue(value);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -77,7 +74,7 @@ class BaseParam
    * 
    * @see #getName
    */ 
-  public String
+  public final String
   getNameUI()
   {
     StringBuilder buf = new StringBuilder();
@@ -98,88 +95,6 @@ class BaseParam
   }
 
 
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  public Comparable
-  getValue() 
-  {
-    return pValue;
-  }
-  
-  /**
-   * Sets the value of the parameter. 
-   */
-  public void 
-  setValue
-  (
-   Comparable value  
-  )
-  {
-    validate(value);
-    pValue = value;
-  }
-   
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   V A L I D A T O R                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * A method to confirm that the input to the param is correct.
-   * <P>
-   * Override this method in each individual param class. 
-   */
-  protected void 
-  validate
-  (
-    Comparable value	  
-  )
-    throws IllegalArgumentException 
-  {}
-
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   O B J E C T   O V E R R I D E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Indicates whether some other object is "equal to" this one.
-   * 
-   * @param obj 
-   *   The reference object with which to compare.
-   */
-  public boolean
-  equals
-  (
-   Object obj
-  )
-  {
-    if((obj != null) && (obj instanceof BaseParam)) {
-      BaseParam param = (BaseParam) obj;
-    
-      return (super.equals(obj) && 
-	      (((pValue == null) && (param.pValue == null)) ||  
-	       ((pValue != null) && pValue.equals(param.pValue))));
-    }
-
-    return false;
-  }
-
-  /**
-   * Returns a string representation of the object. 
-   */
-  public String
-  toString() 
-  {
-    if(pValue != null) 
-      return pValue.toString();
-    return null;
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -193,8 +108,6 @@ class BaseParam
     throws GlueException
   {
     super.toGlue(encoder);
-
-    encoder.encode("Value", pValue);
   }
   
   public void 
@@ -207,8 +120,6 @@ class BaseParam
     super.fromGlue(decoder);
 
     pName = stripInvalid(pName);
-
-    pValue = (Comparable) decoder.decode("Value"); 
   }
 
 
@@ -288,18 +199,6 @@ class BaseParam
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -841968510233915472L;
-
-
-   
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The value of the parameter.                
-   */     
-  private Comparable  pValue;
-
 }
 
 

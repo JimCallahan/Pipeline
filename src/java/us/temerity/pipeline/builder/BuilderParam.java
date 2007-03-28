@@ -1,4 +1,4 @@
-// $Id: BuilderParam.java,v 1.4 2007/03/10 22:44:33 jesse Exp $
+// $Id: BuilderParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -43,26 +43,6 @@ interface BuilderParam
    */ 
   public String
   getDescription();
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  @SuppressWarnings("unchecked")
-  public Comparable
-  getValue();
-  
-  /**
-   * Sets the value of the parameter. 
-   */
-  @SuppressWarnings("unchecked")
-  public void 
-  setValue
-  (
-   Comparable value  
-  );
 
 
 

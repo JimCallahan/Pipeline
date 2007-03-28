@@ -1,11 +1,8 @@
-// $Id: PathParam.java,v 1.2 2006/12/10 22:52:54 jesse Exp $
+// $Id: PathParam.java,v 1.3 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.GlueDecoder;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A T H   P A R A M                                                                    */
@@ -16,7 +13,7 @@ import java.io.*;
  */
 public 
 class PathParam
-  extends BaseParam
+  extends SimpleParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -79,6 +76,27 @@ class PathParam
   {
     return (getPathValue().toString());
   }
+
+  /**
+   * Sets the value of the parameter from a String.
+   * <p>
+   * This method is used for setting parameter values from command line arguments.
+   * 
+   * @throws IllegalArgumentException if a null value is passed in or the String value is
+   * not a valid Path
+   */
+  public void
+  setValueFromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    Path pathValue = new Path(value);
+    setValue(pathValue);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -89,6 +107,7 @@ class PathParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @SuppressWarnings("unchecked")
   protected void 
   validate
   (

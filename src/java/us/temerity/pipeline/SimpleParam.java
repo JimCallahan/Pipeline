@@ -1,139 +1,92 @@
-// $Id: OptionalEnumParam.java,v 1.4 2007/03/28 20:43:45 jesse Exp $
-
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
-import java.util.*;
-
 /*------------------------------------------------------------------------------------------*/
-/*   O P T I O N A L   E N U M   P A R A M                                                  */
+/*   S I M P L E   P A R A M                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A plugin parameter with an optional Enum value, allowing selection from the enum or the
- * inputing of a new value.
- * <P>
+ * The abstract base class for all parameters that consist of a value that can set with a
+ * single variable.
  */
-public 
-class OptionalEnumParam 
-  extends SimpleParam
+public abstract 
+class SimpleParam
+  extends BaseParam
+  implements SimpleParamAccess
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-
+    
   /**
    * This constructor is required by the {@link GlueDecoder} to instantiate the class 
    * when encountered during the reading of GLUE format files and should not be called 
    * from user code.
-   */    
-  public
-  OptionalEnumParam() 
+   */
+  protected
+  SimpleParam() 
   {
     super();
-
-    pValues = new ArrayList<String>();
   }
   
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
    * @param name 
-   *   The short name of the parameter.  
+   *   The short name of the editor.  
    * 
    * @param desc 
    *   A short description used in tooltips.
    * 
    * @param value 
    *   The default value for this parameter.
-   * 
-   * @param values
-   *   The complete set of enumerated values.
    */ 
-  public
-  OptionalEnumParam
+  @SuppressWarnings("unchecked")
+  protected 
+  SimpleParam
   (
    String name,  
    String desc, 
-   String value, 
-   ArrayList<String> values
+   Comparable value
   ) 
   {
-    super(name, desc, value);
+    super(name, desc);
 
-    if (values == null || values.isEmpty())
-      throw new IllegalArgumentException
-	("The values parameter must contain at least one value.");
-
-    pValues = values;
-  }
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  public String
-  getStringValue() 
-  {
-    return ((String) getValue());
-  }
-  
-  /**
-   * Get the enumeration value based on the ordinal index.
-   */ 
-  public String
-  getValueOfIndex
-  (
-   int idx
-  ) 
-  {
-    return pValues.get(idx);
-  }
-
-  /**
-   * Get the index of the current value 
-   */ 
-  public int 
-  getIndex() 
-  {
-    return pValues.indexOf(getStringValue());
-  }
-
-
-  /**
-   * The complete set of enumerated values.
-   */ 
-  public Collection<String>
-  getValues() 
-  {
-    return Collections.unmodifiableCollection(pValues);
-  }  
-
-  /**
-   * Sets the value of the parameter from a String.
-   * <p>
-   * This method is used for setting parameter values from command line arguments.
-   * 
-   * @throws IllegalArgumentException if a null value is passed in.
-   */
-  public void
-  setValueFromString
-  (
-    String value
-  )
-  {
-    if (value == null)
-      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
     setValue(value);
   }
   
-
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Gets the value of the parameter. 
+   */ 
+  @SuppressWarnings("unchecked")
+  public final Comparable
+  getValue() 
+  {
+    return pValue;
+  }
+  
+  /**
+   * Sets the value of the parameter. 
+   */
+  @SuppressWarnings("unchecked")
+  public final void 
+  setValue
+  (
+   Comparable value  
+  )
+  {
+    validate(value);
+    pValue = value;
+  }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   V A L I D A T O R                                                                    */
@@ -142,39 +95,99 @@ class OptionalEnumParam
   /**
    * A method to confirm that the input to the param is correct.
    * <P>
+   * Override this method in each individual param class. 
    */
   @SuppressWarnings("unchecked")
   protected void 
   validate
   (
+    @SuppressWarnings("unused")
     Comparable value	  
   )
     throws IllegalArgumentException 
+  {}
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj
+  )
   {
-    if(value == null)
-      throw new IllegalArgumentException
-	("The parameter (" + pName + ") cannot accept (null) values!");
-      
-    if(!(value instanceof String)) 
-      throw new IllegalArgumentException
-	("The parameter (" + pName + ") only accepts (String) values!");
+    if((obj != null) && (obj instanceof SimpleParam)) {
+      SimpleParam param = (SimpleParam) obj;
+    
+      return (super.equals(obj) && 
+	      (((pValue == null) && (param.pValue == null)) ||  
+	       ((pValue != null) && pValue.equals(param.pValue))));
+    }
+
+    return false;
   }
 
-
-
+  /**
+   * Returns a string representation of the object. 
+   */
+  public String
+  toString() 
+  {
+    if(pValue != null) 
+      return pValue.toString();
+    return null;
+  }
+  
+  
+  
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
+  
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
 
-  private static final long serialVersionUID = -519132760794275781L;
+    encoder.encode("Value", pValue);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
 
+    pValue = (Comparable) decoder.decode("Value"); 
+  }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The complete set of enumerated values.
-   */
-  private ArrayList<String>  pValues;
+   * The value of the parameter.                
+   */     
+  @SuppressWarnings("unchecked")
+  private Comparable  pValue;
+  
 }

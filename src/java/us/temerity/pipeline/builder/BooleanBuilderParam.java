@@ -1,8 +1,9 @@
-// $Id: BooleanBuilderParam.java,v 1.3 2007/03/10 22:44:33 jesse Exp $
+// $Id: BooleanBuilderParam.java,v 1.4 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.BooleanParam;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B O O L E A N   B U I L D E R   P A R A M                                              */
@@ -14,7 +15,7 @@ import us.temerity.pipeline.BooleanParam;
 public 
 class BooleanBuilderParam
   extends BooleanParam
-  implements PrimitiveBuilderParam
+  implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -55,31 +56,6 @@ class BooleanBuilderParam
   }
 
 
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   U T I L I T I E S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Sets the value of this parameter from a string.
-   */
-  public void 
-  valueFromString
-  (
-    String value
-  )
-  {
-    if (value == null)
-      return;
-    Boolean booleanValue = null;
-    if ("false".equalsIgnoreCase(value))
-      booleanValue = Boolean.FALSE;
-    else if ("true".equalsIgnoreCase(value))
-      booleanValue = Boolean.TRUE;
-    setValue(booleanValue);
-  }
-  
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

@@ -1,10 +1,11 @@
-// $Id: EnumBuilderParam.java,v 1.3 2007/03/10 22:44:33 jesse Exp $
+// $Id: EnumBuilderParam.java,v 1.4 2007/03/28 20:43:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import java.util.ArrayList;
 
 import us.temerity.pipeline.EnumParam;
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E N U M   B U I L D E R   P A R A M                                                    */
@@ -16,7 +17,7 @@ import us.temerity.pipeline.EnumParam;
 public 
 class EnumBuilderParam
   extends EnumParam
-  implements PrimitiveBuilderParam
+  implements BuilderParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
