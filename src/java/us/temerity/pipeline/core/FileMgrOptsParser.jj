@@ -184,6 +184,7 @@ TOKEN :
 | <LOG_NET: 	     "net">     
 | <LOG_SUB: 	     "sub">     
 | <LOG_SUM: 	     "sum">     
+| <LOG_TIM: 	     "tim">     
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -422,7 +423,7 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=SumKind())
+  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=SumKind() | g=TimKind())
   {
     return g;
   }
@@ -470,6 +471,15 @@ LogMgr.Kind SumKind() :
   <LOG_SUM>
   {
     return LogMgr.Kind.Sum;
+  }
+}
+
+LogMgr.Kind TimKind() : 
+{}
+{
+  <LOG_TIM>
+  {
+    return LogMgr.Kind.Tim;
   }
 }
 
