@@ -2,10 +2,15 @@ package us.temerity.pipeline;
 
 import java.util.*;
 
+/*------------------------------------------------------------------------------------------*/
+/*   M A P P E D   L I N K E D   L I S T                                                    */
+/*------------------------------------------------------------------------------------------*/
+
 /**
  *  A {@link TreeMap} that contains {@link LinkedList}s.
  */
-public class MappedLinkedList<K, V>
+public 
+class MappedLinkedList<K, V>
   extends TreeMap<K, LinkedList<V>>
 {
   /*----------------------------------------------------------------------------------------*/
@@ -15,7 +20,8 @@ public class MappedLinkedList<K, V>
   /**
    * Constructs an empty map. 
    */
-  public MappedLinkedList()
+  public 
+  MappedLinkedList()
   {
     super();
   }
@@ -23,7 +29,8 @@ public class MappedLinkedList<K, V>
   /**
    * Deep copy contructor.
    */
-  public MappedLinkedList
+  public 
+  MappedLinkedList
   (
     MappedLinkedList<K, V> mlist
   )
@@ -50,7 +57,8 @@ public class MappedLinkedList<K, V>
    *   <li> 4 Duck
    * </ul>
    */
-  public MappedLinkedList
+  public 
+  MappedLinkedList
   (
     Map<V, K> map
   )
@@ -75,7 +83,8 @@ public class MappedLinkedList<K, V>
    * @param value
    *   The value to insert.
    */ 
-  public void put
+  public void 
+  put
   (
     K key, 
     V value
@@ -107,6 +116,27 @@ public class MappedLinkedList<K, V>
     for(K a : mlist.keySet()) 
       for (V each : mlist.get(a))
 	put(a, each);
+  }
+  
+  /**
+   * Associates a <code>null</code> value with the specified key.
+   *
+   * @param key
+   *   The first key.
+   *
+   * @return
+   *   Any value that might have existed in the now <code>null</code> mapping.
+   */
+  public LinkedList<V> 
+  put
+  (
+    K key
+  )
+  {
+    if(key == null)
+      throw new IllegalArgumentException("The key cannot be (null)!");
+   
+    return super.put(key, null);
   }
   
   

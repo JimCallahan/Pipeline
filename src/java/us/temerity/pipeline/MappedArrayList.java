@@ -1,4 +1,4 @@
-// $Id: MappedArrayList.java,v 1.1 2007/03/18 02:24:20 jim Exp $
+// $Id: MappedArrayList.java,v 1.2 2007/03/28 20:56:11 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -11,7 +11,8 @@ import java.util.*;
 /**
  *  A {@link TreeMap} that contains {@link ArrayList}s.
  */
-public class MappedArrayList<K, V>
+public 
+class MappedArrayList<K, V>
   extends TreeMap<K, ArrayList<V>>
 {
   /*----------------------------------------------------------------------------------------*/
@@ -21,7 +22,8 @@ public class MappedArrayList<K, V>
   /**
    * Constructs an empty map. 
    */
-  public MappedArrayList()
+  public 
+  MappedArrayList()
   {
     super();
   }
@@ -29,7 +31,8 @@ public class MappedArrayList<K, V>
   /**
    * Deep copy contructor.
    */
-  public MappedArrayList
+  public 
+  MappedArrayList
   (
     MappedArrayList<K, V> mlist
   )
@@ -56,7 +59,8 @@ public class MappedArrayList<K, V>
    *   <li> 4 Duck
    * </ul>
    */
-  public MappedArrayList
+  public 
+  MappedArrayList
   (
     Map<V, K> map
   )
@@ -81,7 +85,8 @@ public class MappedArrayList<K, V>
    * @param value
    *   The value to insert.
    */ 
-  public void put
+  public void 
+  put
   (
     K key, 
     V value
@@ -113,6 +118,27 @@ public class MappedArrayList<K, V>
     for(K a : mlist.keySet()) 
       for (V each : mlist.get(a))
 	put(a, each);
+  }
+  
+  /**
+   * Associates a <code>null</code> value with the specified key.
+   *
+   * @param key
+   *   The first key.
+   *
+   * @return
+   *   Any value that might have existed in the now <code>null</code> mapping.
+   */
+  public ArrayList<V> 
+  put
+  (
+    K key
+  )
+  {
+    if(key == null)
+      throw new IllegalArgumentException("The key cannot be (null)!");
+   
+    return super.put(key, null);
   }
   
   
