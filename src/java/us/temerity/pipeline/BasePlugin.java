@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.10 2006/11/22 09:08:00 jim Exp $
+// $Id: BasePlugin.java,v 1.11 2007/03/28 19:07:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -88,7 +88,7 @@ class BasePlugin
   /**
    * Get the revision number of the plugin. 
    */ 
-  public VersionID
+  public final VersionID
   getVersionID()
   {
     return pVersionID;
@@ -97,7 +97,7 @@ class BasePlugin
   /**
    * Get the name of the plugin vendor. 
    */ 
-  public String
+  public final String
   getVendor()
   {
     return pVendor; 
@@ -112,7 +112,7 @@ class BasePlugin
    * @param os
    *   The operating system type.
    */ 
-  public boolean
+  public final boolean
   supports
   (
    OsType os
@@ -184,7 +184,7 @@ class BasePlugin
    * daemon and distributed to all running Pipeline programs. Subclasses should call this
    * method in their constructor during the creation and testing phase of developement.
    */ 
-  protected void 
+  protected final void 
   underDevelopment()
   {
     pIsUnderDevelopment = true;
@@ -197,7 +197,7 @@ class BasePlugin
    * Plugins with this flag set can be dynamically reloaded by the <B>plpluginmgr</B>(1) 
    * daemon and distributed to all running Pipeline programs.
    */ 
-  public boolean
+  public final boolean
   isUnderDevelopment() 
   {
     return pIsUnderDevelopment;

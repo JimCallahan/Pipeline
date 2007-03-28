@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.2 2006/10/23 11:30:20 jim Exp $
+// $Id: BaseMasterExt.java,v 1.3 2007/03/28 19:06:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -91,7 +91,7 @@ class BaseMasterExt
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.MasterExt; 
@@ -1867,7 +1867,7 @@ class BaseMasterExt
    * @param obj 
    *   The reference object with which to compare.
    */
-  public boolean
+  public final boolean
   equals
   (
    Object obj
@@ -1892,7 +1892,7 @@ class BaseMasterExt
   /**
    * Return a deep copy of this object.
    */
-  public Object 
+  public final Object 
   clone()
   {
     return (BaseMasterExt) super.clone();

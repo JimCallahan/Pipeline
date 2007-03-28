@@ -1,4 +1,4 @@
-// $Id: BaseQueueExt.java,v 1.3 2006/11/21 19:55:51 jim Exp $
+// $Id: BaseQueueExt.java,v 1.4 2007/03/28 19:08:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -91,7 +91,7 @@ class BaseQueueExt
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.QueueExt;
@@ -591,7 +591,7 @@ class BaseQueueExt
    * @param obj 
    *   The reference object with which to compare.
    */
-  public boolean
+  public final boolean
   equals
   (
    Object obj
@@ -616,7 +616,7 @@ class BaseQueueExt
   /**
    * Return a deep copy of this object.
    */
-  public Object 
+  public final Object 
   clone()
   {
     return (BaseQueueExt) super.clone();
