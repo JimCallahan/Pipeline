@@ -1,3 +1,891 @@
+2007-03-28  author  <author@dimetrodon>
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-3.1.0-1.i686.rpm: latest
+
+	* config/bootstrap-SCEACSG.sh, config/bootstrap-crimson.sh, config/bootstrap-mattdaw.sh, config/bootstrap-rhinofx.sh, config/bootstrap-risingsun.sh, config/bootstrap-risingsunAdl.sh, config/bootstrap-rsp.sh, config/bootstrap-salamander.sh, config/bootstrap-scea.sh, config/bootstrap-scottb08.sh, config/bootstrap-stfc.sh, config/bootstrap.sh, configure.ac:
+	renamed MacClients/WinClients to MacSupport/WinSupport
+
+	* src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h.in:
+	now build pipeline user domain and password into Windows installer
+
+	* src/java/us/temerity/pipeline/ui/JFileListCellRenderer.java, src/java/us/temerity/pipeline/ui/JFileSeqListCellRenderer.java, src/java/us/temerity/pipeline/ui/core/ArchiveCandidateTableModel.java, src/java/us/temerity/pipeline/ui/core/ArchiveVolumeSimpleTableModel.java, src/java/us/temerity/pipeline/ui/core/ArchiveVolumeTableModel.java, src/java/us/temerity/pipeline/ui/core/JArchiveVolumesDialog.java, src/java/us/temerity/pipeline/ui/core/JNodeHistoryPanel.java, src/java/us/temerity/pipeline/ui/core/JPackageDetailsDialog.java, src/java/us/temerity/pipeline/ui/core/JQueueJobDetailsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServersPanel.java, src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java, src/java/us/temerity/pipeline/ui/core/OfflineCandidateTableModel.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java, src/java/us/temerity/pipeline/ui/core/QueueJobGroupsTableModel.java, src/java/us/temerity/pipeline/ui/core/QueueSlotsTableModel.java, src/java/us/temerity/pipeline/ui/core/RestoreRequestTableModel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/java/us/temerity/pipeline/toolset/PackageVersion.java, src/java/us/temerity/pipeline/toolset/Toolset.java, src/java/us/temerity/pipeline/plugin/v1_1_0/TarFileArchiver.java, src/java/us/temerity/pipeline/plugin/v1_1_0/TarTapeArchiver.java:
+	implemented 960 - Convert all Date Timstamps to Long
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/CatFilesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTextureUnpackAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMiExportAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/PythonAction.java:
+	comments
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMiShaderAction.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayRenderAction.java:
+	all except MI parsing
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_1/LogQueueActivityExt.java, src/java/us/temerity/pipeline/plugin/v2_1_1/QueueStatsDb.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CdRomArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CpioFileArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CpioTapeArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/TarFileArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/TarTapeArchiver.java, src/java/us/temerity/pipeline/plugin/v2_0_0/CdRomArchiver.java, src/java/us/temerity/pipeline/plugin/v2_0_0/CpioFileArchiver.java, src/java/us/temerity/pipeline/plugin/v2_0_0/CpioTapeArchiver.java, src/java/us/temerity/pipeline/plugin/v2_0_0/TarFileArchiver.java, src/java/us/temerity/pipeline/plugin/v2_0_0/TarTapeArchiver.java, src/java/us/temerity/pipeline/event/BaseNodeEvent.java, src/java/us/temerity/pipeline/event/BaseWorkingNodeEvent.java, src/java/us/temerity/pipeline/event/EditedNodeEvent.java, src/java/us/temerity/pipeline/message/FileExtractCleanupReq.java, src/java/us/temerity/pipeline/message/FileExtractReq.java, src/java/us/temerity/pipeline/message/FileRestoreReq.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/MiscGetArchivedOnRsp.java, src/java/us/temerity/pipeline/message/MiscGetRestoredOnRsp.java, src/java/us/temerity/pipeline/message/MiscGetRestoredOutputReq.java, src/java/us/temerity/pipeline/message/NodeEditingStartedReq.java, src/java/us/temerity/pipeline/message/NodeGetEventsReq.java, src/java/us/temerity/pipeline/message/NodeGetEventsRsp.java, src/java/us/temerity/pipeline/message/QueueGetHostResourceSamplesReq.java, src/java/us/temerity/pipeline/message/QueueGetJobStatesReq.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrDirectClient.java, src/java/us/temerity/pipeline/core/FileMgrNetClient.java, src/java/us/temerity/pipeline/core/JobMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/PluginMgrServer.java, src/java/us/temerity/pipeline/core/QueueHost.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrControlClient.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	implemented 960 - Convert all Date Timstamps to Long
+
+	* src/java/us/temerity/pipeline/core/JobMgrWinService.java:
+	removed commented code
+
+	* src/java/us/temerity/pipeline/core/JobMgrServer.java:
+	now a subclass of BaseMgrServer
+
+	* src/java/us/temerity/pipeline/core/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/core/JobMgrOptsParser.jj, src/java/us/temerity/pipeline/core/MasterOptsParser.jj, src/java/us/temerity/pipeline/core/PluginMgrOptsParser.jj, src/java/us/temerity/pipeline/core/QueueMgrOptsParser.jj:
+	added TIM logger
+
+	* src/java/us/temerity/pipeline/ArchiveInfo.java, src/java/us/temerity/pipeline/ArchiveVolume.java, src/java/us/temerity/pipeline/BaseArchiver.java, src/java/us/temerity/pipeline/DailySelectionRule.java, src/java/us/temerity/pipeline/DateInterval.java, src/java/us/temerity/pipeline/Dates.java, src/java/us/temerity/pipeline/ExternalInfo.java, src/java/us/temerity/pipeline/LogMessage.java, src/java/us/temerity/pipeline/LogMgr.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/OfflineInfo.java, src/java/us/temerity/pipeline/QueueHostInfo.java, src/java/us/temerity/pipeline/QueueJobGroup.java, src/java/us/temerity/pipeline/QueueJobInfo.java, src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/ResourceSample.java, src/java/us/temerity/pipeline/ResourceSampleCache.java, src/java/us/temerity/pipeline/RestoreRequest.java, src/java/us/temerity/pipeline/SelectionRule.java, src/java/us/temerity/pipeline/SelectionSchedule.java, src/java/us/temerity/pipeline/SimpleLogMessage.java, src/java/us/temerity/pipeline/SpecificSelectionRule.java, src/java/us/temerity/pipeline/TimeInterval.java, src/java/us/temerity/pipeline/TimeStamps.java:
+	implemented 960 - Convert all Date Timstamps to Long
+
+	* src/java/us/temerity/pipeline/MayaAction.java:
+	added more Python and environment helpers
+
+	* src/java/us/temerity/pipeline/Makefile.in: formatting
+
+	* src/java/us/temerity/pipeline/LogMgr.java: added TIM logger
+
+	* src/java/us/temerity/pipeline/BaseQueueExt.java, src/java/us/temerity/pipeline/BasePlugin.java, src/java/us/temerity/pipeline/BaseMasterExt.java:
+	added final where appropriate
+
+	* src/java/us/temerity/pipeline/ActionAgenda.java:
+	added \${VARNAME+} notation
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	renamed getSinglePrimary... methods, added final where appropriate
+
+	* src/java/us/temerity/pipeline/core/parser/SimpleCharStream.java, src/java/us/temerity/pipeline/glue/io/parser/JavaCharStream.java:
+	added deprecated
+
+	* src/java/scripts/debug/plfilemgr.in, src/java/scripts/debug/pljobmgr.in, src/java/scripts/debug/plmaster.in, src/java/scripts/debug/plpluginmgr.in, src/java/scripts/debug/plqueuemgr.in, src/java/scripts/plfilemgr.in, src/java/scripts/pljobmgr.in, src/java/scripts/plmaster.in, src/java/scripts/plpluginmgr.in, src/java/scripts/plqueuemgr.in, src/java/scripts/profile/plfilemgr.in, src/java/scripts/profile/pljobmgr.in, src/java/scripts/profile/plmaster.in, src/java/scripts/profile/plpluginmgr.in, src/java/scripts/profile/plqueuemgr.in:
+	reverted back to pre-substitute group approach
+
+2007-03-27  author  <author@dimetrodon>
+
+	* plconfig/customers/risingsun/070327, plconfig/customers/risingsun/070327.txt, plconfig/customers/risingsunAdl/070327, plconfig/customers/risingsunAdl/070327.txt:
+	initial revision
+
+2007-03-26  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMiExportAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayCamOverrideAction.java:
+	finished
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTextureAction.java:
+	removed unused variables
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/QuickTimeEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ShakeCompAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ShakeQtAction.java:
+	finished
+
+2007-03-25  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayInstGroupAction.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/CatFilesAction.java:
+	comments
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMiExportAction.java:
+	works so far... still underDevelopment.
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMelAction.java:
+	finished
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/GimpEditor.java:
+	added GIMP_BINARY Toolset variable
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/GimpEditor.java: finished
+
+2007-03-24  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ListSourcesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaReplaceRefAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/PythonAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ScriptAction.java:
+	renamed path helper methods
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTexturePackAction.java:
+	make Scanlines the default
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTextureAction.java:
+	standardized with MRayTexturePack/Unpack
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMRayRenderAction.java:
+	default include/lib parameter values
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/DebugTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTexturePackAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTextureUnpackAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMRayRenderAction.java:
+	finished
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayTextureAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ImfDispEditor.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java:
+	fixed 967 - Automatic Expand Broken in Job Viewer
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented - 963 Ignore Bad Editor/Comparator Exit Codes
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	fixed 965 - Post Tool Update Conflict
+
+2007-03-23  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/TextDiffComparator.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/SwitchAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/CatFilesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/CompositeAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ExtractSeqAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaBuildAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaReplaceRefAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/PythonAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/SpliceAction.java:
+	made parameter String constants public
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_14/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_0_15/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_0_9/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_1_1/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_0_10/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_0_11/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_0_12/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_0_13/Makefile.in:
+	supressed deprecated warnings
+
+	* src/java/us/temerity/pipeline/BaseComparator.java, src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented - 963 Ignore Bad Editor/Comparator Exit Codes
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/core/BaseMgrServer.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/PluginMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java:
+	implemented 961 - Inconsistent Clock Warnings
+
+2007-03-22  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaNoRefEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ShakeEditor.java:
+	finshed
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaBuildAction.java:
+	comments
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/CatFilesAction.java:
+	reimplemented using Python file objects
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaAddRefTool.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaRemoveRefTool.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaReplaceRefAction.java, src/java/jogl/Unix/libgluegen-rt.so:
+	initial revision
+
+2007-03-21  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaBuildAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaCompleteEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaProjectEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/CatFilesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ListSourcesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/PythonAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/SpliceAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/TouchAction.java:
+	all 3 OS's
+
+	* plconfig/customers/dimetrodon/070321, plconfig/customers/dimetrodon/070321.txt:
+	fixed password
+
+	* plconfig/customers/dimetrodon/070321, plconfig/customers/dimetrodon/070321.txt:
+	initial revision
+
+2007-03-18  author  <author@dimetrodon>
+
+	* configure.ac:
+	fixed MacOS operating system check to include new Darwin release
+
+	* config/bootstrap.sh: 070303 site profile
+
+2007-03-17  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_2_1/CatFilesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/CompositeAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/DisableActionTool.java, src/java/us/temerity/pipeline/plugin/v2_2_1/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ExtractSeqAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ListSourcesAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaBuildAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaCompleteEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaMRayRenderAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaNoRefEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaProjectEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/MayaShaderExportAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/PythonAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/RenumberTool.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/ShakeEditor.java, src/java/us/temerity/pipeline/plugin/v2_2_1/SpliceAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/SwitchAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/TouchAction.java, src/java/us/temerity/pipeline/plugin/v2_2_1/package.html:
+	initial revision
+
+	* src/java/us/temerity/pipeline/Makefile.in: added Windows target dir
+
+	* src/java/us/temerity/pipeline/MRayAction.java, src/java/us/temerity/pipeline/MayaAction.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/QueueJob.java:
+	removed Windows domain/password impersonation code
+
+	* src/java/us/temerity/pipeline/NodeID.java: commentes
+
+	* src/java/us/temerity/pipeline/BaseTool.java:
+	implemented 959 - ToolPhase Classes
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	added action convienence methods, both for Windows and for parameter lookup
+
+	* src/java/us/temerity/pipeline/ActionAgenda.java:
+	added getTargetPath() and evalue() methods
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.src.in:
+	added TargetPath
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/TestNativeProcessHeavyApp.java:
+	removed Windows domain/password impersonation code
+
+	* src/java/us/temerity/pipeline/core/QueueMgrOptsParser.jj:
+	added SUB logger
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java, src/java/us/temerity/pipeline/core/QueueMgr.java:
+	moved pre-job working directory creation and post-job chmod to QueueMgr from JobMgr to support Windows JobMgr's
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java: comments
+
+	* src/java/us/temerity/pipeline/message/MasterRequest.java:
+	removed Windows domain/password impersonation code
+
+	* src/java/us/temerity/pipeline/message/MiscAuthorizeOnWindowsReq.java:
+	obsolete
+
+	* src/java/us/temerity/pipeline/MappedList.java:
+	renamed to MappedLinkedList
+
+	* src/java/us/temerity/pipeline/MappedArrayList.java, src/java/us/temerity/pipeline/MappedLinkedList.java:
+	initial revision
+
+	* src/java/scripts/debug/plfilemgr.in, src/java/scripts/debug/pljobmgr.in, src/java/scripts/debug/plmaster.in, src/java/scripts/debug/plpluginmgr.in, src/java/scripts/debug/plqueuemgr.in, src/java/scripts/plfilemgr.in, src/java/scripts/pljobmgr.in, src/java/scripts/plmaster.in, src/java/scripts/plpluginmgr.in, src/java/scripts/plqueuemgr.in, src/java/scripts/profile/plfilemgr.in, src/java/scripts/profile/pljobmgr.in, src/java/scripts/profile/plmaster.in, src/java/scripts/profile/plpluginmgr.in, src/java/scripts/profile/plqueuemgr.in:
+	now substitutes to the pipeline group in case it isn't the primary group of the pipeline user
+
+	* rpm/pipeline.spec.in: added Windows target dir
+
+	* configure.ac, src/java/us/temerity/pipeline/plugin/Makefile.am:
+	renamed plugin directory v2_1_8 to v2_2_1
+
+	* plconfig/CryptoApp.class, plconfig/customers/dimetrodon/070303, plconfig/customers/dimetrodon/070303.txt, plconfig/plconfig-3.1.0-1.i686.rpm:
+	plconfig-3.1.0
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/NativeProcessHeavy.java, src/java/us/temerity/pipeline/NativeProcessLight.java, src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java, src/native/NativeProcessHeavy.cc, src/native/NativeProcessHeavy.hh, src/native/NativeProcessLight.cc, src/native/NativeProcessLight.hh, src/windows/native/NativeProcessHeavy.cpp, src/windows/native/NativeProcessLight.cpp, src/windows/native/libNative.ncb, src/windows/native/libNative.suo, src/windows/native/stdafx.h:
+	removed Windows domain/password impersonation code
+
+	* src/utils/src/PlRun.cc: comments
+
+	* src/java/us/temerity/pipeline/ui/core/JAuthorizeDialog.java, src/java/us/temerity/pipeline/ui/core/JExecDetailsDialog.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeHistoryPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeLinksPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	removed Windows authorization stuff
+
+2007-03-16  author  <author@dimetrodon>
+
+	* config/bootstrap-risingsunAdl-mac.sh, config/bootstrap-risingsunAdl.sh, plconfig/customers/risingsunAdl/070316, plconfig/customers/risingsunAdl/070316.txt:
+	initial revision
+
+2007-03-13  author  <author@dimetrodon>
+
+	* config/bootstrap-risingsun-mac.sh, config/bootstrap-risingsun.sh, plconfig/customers/risingsun/070313, plconfig/customers/risingsun/070313.txt:
+	initial revision
+
+2007-03-10  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	new make file will builder stuff
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java, src/java/us/temerity/pipeline/core/BuilderOptsParser.jj:
+	Core builder stuff.  Still not production ready
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/BaseNames.java, src/java/us/temerity/pipeline/builder/BaseUtil.java, src/java/us/temerity/pipeline/builder/BooleanBuilderParam.java, src/java/us/temerity/pipeline/builder/BuilderParam.java, src/java/us/temerity/pipeline/builder/ComplexBuilderParam.java, src/java/us/temerity/pipeline/builder/DoubleBuilderParam.java, src/java/us/temerity/pipeline/builder/EnumBuilderParam.java, src/java/us/temerity/pipeline/builder/HasBuilderParams.java, src/java/us/temerity/pipeline/builder/IdentifierBuilderParam.java, src/java/us/temerity/pipeline/builder/IntegerBuilderParam.java, src/java/us/temerity/pipeline/builder/MayaContext.java, src/java/us/temerity/pipeline/builder/MayaContextBuilderParam.java, src/java/us/temerity/pipeline/builder/MultiEnumBuilderParam.java, src/java/us/temerity/pipeline/builder/NodePathBuilderParam.java, src/java/us/temerity/pipeline/builder/OptionalEnumBuilderParam.java, src/java/us/temerity/pipeline/builder/PathBuilderParam.java, src/java/us/temerity/pipeline/builder/PrimitiveBuilderParam.java, src/java/us/temerity/pipeline/builder/StringBuilderParam.java, src/java/us/temerity/pipeline/builder/SubBuilderMapping.java, src/java/us/temerity/pipeline/builder/UtilContextBuilderParam.java, src/java/us/temerity/pipeline/builder/builders/AssetBuilder.java, src/java/us/temerity/pipeline/builder/interfaces/AnswersBuilderQueries.java, src/java/us/temerity/pipeline/builder/interfaces/DefaultBuilderAnswers.java, src/java/us/temerity/pipeline/builder/names/BuildsAssetNames.java, src/java/us/temerity/pipeline/builder/names/DefaultAssetNames.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderFinalStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderMaterialStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderModelStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderRigStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderShaderExportStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderShaderIncludeStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderShaderStage.java, src/java/us/temerity/pipeline/builder/stages/AssetBuilderTextureStage.java, src/java/us/temerity/pipeline/builder/stages/BaseStage.java, src/java/us/temerity/pipeline/builder/stages/MayaBuildStage.java, src/java/us/temerity/pipeline/builder/stages/MayaFileStage.java, src/java/us/temerity/pipeline/builder/stages/NoFrameNumStage.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamDialog.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamPanel.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamTreePanel.java:
+	first builder check-in.  None of this is production ready code
+
+	* src/java/us/temerity/pipeline/ListMap.java, src/java/us/temerity/pipeline/MappedList.java, src/java/us/temerity/pipeline/MappedSet.java:
+	Implements 950 - New Data Structure
+
+	* plconfig/customers/crimson/070226, plconfig/customers/crimson/070226.txt, plconfig/customers/crimson/070227, plconfig/customers/crimson/070227.txt:
+	New profiles
+
+2007-03-08  author  <author@dimetrodon>
+
+	* src/windows/launchers/plui.exe4j.in: fixed GLUEGEN_JAR path
+
+	* src/java/us/temerity/pipeline/toolset/PackageMod.java:
+	fixed 949 - Can't find env on SUSE 10.1
+
+2007-03-07  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/NativeProcessHeavy.java:
+	commented debugging prints
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/windows/native/NativeProcessHeavy.cpp, src/windows/native/NativeProcessLight.cpp:
+	added ability to kill processes owned by another user on Windows
+
+2007-03-05  author  <author@dimetrodon>
+
+	* plconfig/CryptoApp.class, plconfig/customers/dimetrodon/070303, plconfig/customers/dimetrodon/070303.txt, plconfig/plconfig-3.1.0-1.i686.rpm:
+	latest compile of plconfig-3.1.0
+
+2007-03-03  author  <author@dimetrodon>
+
+	* plconfig/customers/dimetrodon/070303, plconfig/customers/dimetrodon/070303.txt:
+	initial revision
+
+2007-02-23  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/PassLayoutGroup.java:
+	minor changes to naming of methods.
+
+	* src/java/us/temerity/pipeline/AdvancedLayoutGroup.java:
+	implemented 946 - Added a RemoveEntry to AdvancedLayoutGroup
+
+	* src/java/us/temerity/pipeline/MultiEnumParam.java:
+	Better commenting and tooltip functionality
+
+	* src/java/us/temerity/pipeline/builder/BuilderParam.java, src/java/us/temerity/pipeline/builder/DoubleBuilderParam.java, src/java/us/temerity/pipeline/builder/IdentifierBuilderParam.java, src/java/us/temerity/pipeline/builder/IntegerBuilderParam.java, src/java/us/temerity/pipeline/builder/NodePathBuilderParam.java:
+	removed unnecessary includes
+
+	* src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildMattePassTool.java:
+	removed a TODO statement
+
+	* src/java/us/temerity/pipeline/ui/JMultiEnumField.java, src/java/us/temerity/pipeline/ui/UIFactory.java:
+	Tweaks to how the UI is layed out for MultiEnumParams.
+
+	* plconfig/customers/rhinofx/070223, plconfig/customers/rhinofx/070223.txt:
+	initial revision
+
+2007-02-23  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/PassLayoutGroup.java:
+	minor changes to naming of methods.
+
+	* src/java/us/temerity/pipeline/AdvancedLayoutGroup.java:
+	implemented 946 - Added a RemoveEntry to AdvancedLayoutGroup
+
+	* src/java/us/temerity/pipeline/MultiEnumParam.java:
+	Better commenting and tooltip functionality
+
+	* src/java/us/temerity/pipeline/builder/BuilderParam.java, src/java/us/temerity/pipeline/builder/DoubleBuilderParam.java, src/java/us/temerity/pipeline/builder/IdentifierBuilderParam.java, src/java/us/temerity/pipeline/builder/IntegerBuilderParam.java, src/java/us/temerity/pipeline/builder/NodePathBuilderParam.java:
+	removed unnecessary includes
+
+	* src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildMattePassTool.java:
+	removed a TODO statement
+
+	* src/java/us/temerity/pipeline/ui/JMultiEnumField.java, src/java/us/temerity/pipeline/ui/UIFactory.java:
+	Tweaks to how the UI is layed out for MultiEnumParams.
+
+	* plconfig/customers/rhinofx/070223, plconfig/customers/rhinofx/070223.txt:
+	initial revision
+
+2007-02-22  author  <author@dimetrodon>
+
+	* plconfig/customers/SCEACSG/070222, plconfig/customers/SCEACSG/070222.txt:
+	initial revision
+
+	* config/bootstrap-SCEACSG.sh: v2.1.9
+
+	* configure.ac, docs/Makefile.am, rpm/plwin.spec.in, src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/NativeProcessHeavy.java, src/java/us/temerity/pipeline/NativeProcessLight.java, src/windows/Makefile.am:
+	post v2.1.9 retrofit - back to 2.2.1 branch...
+
+	* configure.ac, rpm/plwin.spec.in, src/windows/Makefile.am:
+	v2.1.9 retrofit
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java:
+	test of using a openssl(1) as a subprocess to compute checksums
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/NativeOS.java, src/java/us/temerity/pipeline/NativeProcessHeavy.java, src/java/us/temerity/pipeline/NativeProcessLight.java, src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java, src/java/us/temerity/pipeline/core/BaseApp.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/JTestEnvironmentDialog.java:
+	fixed 942 - SubProcess for User without UID Fails Badly
+
+2007-02-20  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/QueueHost.java:
+	fixed 937 - Job Counts Wrong After Connection Timeout
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.2.1
+
+	* src/java/us/temerity/pipeline/laf/source/Splash.xcf, src/java/us/temerity/pipeline/laf/Splash.png:
+	v2.1.9
+
+	* src/java/us/temerity/pipeline/QueueHostHistogramSpecs.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServersPanel.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java:
+	implemented 939 - Queue Server Matches
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	fixed 938 - License Counts Already in Use at Startup
+
+2007-02-18  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/MayaNoRefEditor.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/MayaCompleteEditor.java, src/java/us/temerity/pipeline/plugin/v2_1_8/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_1_8/MayaProjectEditor.java:
+	added prep() method, deprecated launch()
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/EmacsEditor.java:
+	added launch() method which always throws a PipelineException
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/CompositeAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/RenumberTool.java:
+	implemented 925 - Port Job Manager to Windows
+
+	* config/bootstrap.sh: site profile 071217
+
+	* configure.ac:
+	implemented 936 - Default Windows Domain, 924 - Alternative Server Java Runtime
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/ui/core/JAuthorizeDialog.java:
+	implemented 936 - Default Windows Domain
+
+	* src/java/scripts/debug/plplugin.in, src/java/scripts/debug/plscript.in, src/java/scripts/debug/pltestheavy.in, src/java/scripts/debug/pltestlight.in, src/java/scripts/debug/pltestnative.in, src/java/scripts/debug/plui.in, src/java/scripts/plplugin.in, src/java/scripts/plscript.in, src/java/scripts/plui.in, src/java/scripts/profile/plplugin.in, src/java/scripts/profile/plscript.in, src/java/scripts/profile/plui.in:
+	implemented 935 - Upgrade Java Version, 924 - Alternative Server Java Runtime
+
+	* rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/java/jogl/CHANGELOG.txt, src/java/jogl/MacOS/Makefile.am, src/java/jogl/MacOS/libgluegen-rt.jnilib, src/java/jogl/MacOS/libjogl.jnilib, src/java/jogl/MacOS/libjogl_awt.jnilib, src/java/jogl/MacOS/libjogl_cg.jnilib, src/java/jogl/Makefile.am, src/java/jogl/README.txt, src/java/jogl/Unix/Makefile.am, src/java/jogl/Unix/libjogl.so, src/java/jogl/Unix/libjogl_drihack.so, src/java/jogl/Userguide.html, src/java/jogl/Windows/Makefile.am, src/java/jogl/Windows/gluegen-rt.dll, src/java/jogl/Windows/jogl.dll, src/java/jogl/Windows/jogl_awt.dll, src/java/jogl/Windows/jogl_cg.dll, src/java/jogl/gluegen-rt.jar, src/java/jogl/jogl-docs.tar, src/java/jogl/jogl.jar, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/Setup/Setup.vdproj, src/mac-apps/pipeline/MacOS/plui.in, src/windows/launchers/debug/plui.exe4j.in, src/windows/launchers/plui.exe4j.in, src/windows/native/libNative.ncb, src/windows/native/libNative.suo, src/windows/native/libNative.vcproj, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am, src/windows/scripts/debug/plui2.bat.src.in, src/windows/services/PipelineJobManager/PipelineJobManager.ncb:
+	implemented 935 - Upgrade Java Version
+
+2007-02-17  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/ViewerNodeHint.java:
+	fixed 922 - Long Action Names Don't scale in Tooltip
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-3.1.0-1.i686.rpm:
+	plconfig-3.1.0
+
+	* plconfig/customers/dimetrodon/070217, plconfig/customers/dimetrodon/070217.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_1/QueueStatsDb.java:
+	fixed warning message about JDBC driver
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JPopupMenuItem.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 914 - Node Submenus
+
+2007-02-15  author  <author@dimetrodon>
+
+	* plconfig/customers/rhinofx/070215, plconfig/customers/rhinofx/070215.txt, plconfig/customers/dimetrodon/070215, plconfig/customers/dimetrodon/070215.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	added createScriptSubProcess() helper method
+
+	* src/java/us/temerity/pipeline/BaseAppleScriptEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/GimpEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_0/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GimpEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaCompleteEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaProjectEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_9/EmacsEditor.java:
+	fixed 933 - Inherited Editor Prep Method
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/CatFilesAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/ExtractSeqAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/SpliceAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/SwitchAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/TouchAction.java:
+	implemented 925 - Port Job Manager to Windows
+
+2007-02-15  author  <author@dimetrodon>
+
+	* plconfig/customers/dimetrodon/070215, plconfig/customers/dimetrodon/070215.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	added createScriptSubProcess() helper method
+
+	* src/java/us/temerity/pipeline/BaseAppleScriptEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/GimpEditor.java, src/java/us/temerity/pipeline/plugin/v1_1_0/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_0/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_0/GimpEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaCompleteEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaProjectEditor.java, src/java/us/temerity/pipeline/plugin/v2_0_9/EmacsEditor.java:
+	fixed 933 - Inherited Editor Prep Method
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/CatFilesAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/ExtractSeqAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/SpliceAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/SwitchAction.java, src/java/us/temerity/pipeline/plugin/v2_1_8/TouchAction.java:
+	implemented 925 - Port Job Manager to Windows
+
+2007-02-14  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_1_8/ListSourcesAction.java:
+	fixed 797 - Space in List Sources name
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java:
+	fixed Windows native file cleanup to have full UNC paths for the files/directories to be removed
+
+2007-02-13  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	added version of createTemp() without chmod()
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java:
+	disabled NativeFileSys.chmod() for scratch directory on Windows
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	fixed 930 - Job Counter Cleanup
+
+	* src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/BuildShaveRenderTreeTool.java, src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/BuildShaveSimTreeTool.java, src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/LinkClothTool.java, src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/LockdownSequence.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildAssetTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildAssetTurntableTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildHeadTurntableTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildMattePassTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildRenderScenesTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildRenderTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildShakePreCompTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildShakeTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildSyflexTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/CameraExportAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/CompositorCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ConnectRefAnimAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/DeleteManyTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/DeliveryPackageTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/DylanatorTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ExportAnimForRefAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/FBXImportAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/FixRenderNodesTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/FixRenderScriptsTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/GeoNameCompareTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/LightingCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MRayTextureResizeAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MakeFBXMayaTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MakeMatteRenderTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MaterialsCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MayaMVPassAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MayaOccPassAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MayaSelectRefEditor.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MayaSelectiveHideAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MayaTestBuildAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MayaZPassAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ModelReplaceAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ModelReplaceSyflexAction.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ModelSyncTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MultipleRenumberTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MyGimpEditor.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/PrepLairShotTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/PropagateLightRigTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/RegisterResizeMapTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/RenderAssetStillsTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/RiggerCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SCEAUltraEditEditor.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SelectiveTextureResizeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SetMapNameTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ShaderCopyTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SubstituteModelTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SyflexUnlinkTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/UnlinkAllTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/UpdateCameraTool.java, src/java/com/sony/scea/pipeline/plugins/v1_1_0/ModelReplaceAction.java, src/java/com/sony/scea/pipeline/plugins/v1_1_0/ModelReplaceCacheAction.java, src/java/com/sony/scea/pipeline/plugins/v1_1_0/ModelReplaceSyflexAction.java, src/java/com/sony/scea/pipeline/plugins/v1_1_0/RiggerCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_2_0/ModelReplaceAction.java, src/java/com/sony/scea/pipeline/tools/AddModelsGUI.java, src/java/com/sony/scea/pipeline/tools/BuildAssetGUI.java, src/java/com/sony/scea/pipeline/tools/BuildShotGUI.java, src/java/com/sony/scea/pipeline/tools/Globals.java, src/java/com/sony/scea/pipeline/tools/GlobalsArgs.java, src/java/com/sony/scea/pipeline/tools/ListUpdatedNodes.java, src/java/com/sony/scea/pipeline/tools/Plugins.java, src/java/com/sony/scea/pipeline/tools/SonyAsset.java, src/java/com/sony/scea/pipeline/tools/SonyConstants.java, src/java/com/sony/scea/pipeline/tools/SonyShot.java, src/java/com/sony/scea/pipeline/tools/UpdateAssetGUI.java, src/java/com/sony/scea/pipeline/tools/Wrapper.java, src/java/com/sony/scea/pipeline/tools/lair/BuildLairAnimation.java, src/java/com/sony/scea/pipeline/tools/lair/BuildLairAssets.java, src/java/com/sony/scea/pipeline/tools/lair/BuildLairRenderPasses.java, src/java/com/sony/scea/pipeline/tools/lair/BuildLairTurnTables.java, src/java/com/sony/scea/pipeline/tools/lair/LairAsset.java, src/java/com/sony/scea/pipeline/tools/lair/LairConstants.java, src/java/com/sony/scea/pipeline/tools/lair/LairShot.java, src/java/com/sony/scea/pipeline/tools/lair/LairTurntable.java, src/java/com/sony/scea/pipeline/tools/lair/MakeLairModels.java, src/java/com/sony/scea/pipeline/tools/lair/MakeLairTurnTables.java, src/java/com/sony/scea/pipeline/tools/lair/PrepLairRender.java, src/java/com/sony/scea/pipeline/tools/lair/PrepLairTurntable.java, src/java/com/sony/scea/pipeline/tools/lair/quick/AddModelTextureNodes.java, src/java/com/sony/scea/pipeline/tools/lair/quick/BuildDerivedModels.java, src/java/com/sony/scea/pipeline/tools/lair/quick/FixModels.java, src/java/com/sony/scea/pipeline/tools/lair/quick/FixModels2.java, src/java/com/sony/scea/pipeline/tools/lair/quick/FixNamespaces.java, src/java/com/sony/scea/pipeline/tools/lair/quick/ListUserShots.java, src/java/com/sony/scea/pipeline/tools/lair/quick/Looping.java, src/java/com/sony/scea/pipeline/tools/lair/quick/RerigAll.java, src/java/com/sony/scea/pipeline/tools/lair/quick/TestStuff.java:
+	all of sony's fantastical code
+
+	* src/java/us/temerity/pipeline/ui/UIFactory.java:
+	fixed 292 - Replace UIFactory spacer methods with ones that make sense
+
+2007-02-12  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/UIFactory.java: beautification...
+
+	* plconfig/customers/crimson/070124, plconfig/customers/crimson/070124.txt:
+	lates profile
+
+	* src/java/us/temerity/pipeline/ui/JMultiEnumField.java, src/java/us/temerity/pipeline/ui/JMayaContextField.java, src/java/us/temerity/pipeline/ui/JUtilContextField.java:
+	fixed 927 - Multi-field params display incorrectly/are missing
+
+	* src/java/us/temerity/pipeline/ui/JCollectionField.java:
+	fixed 904 - JComponentField accepts -1 Value
+
+	* src/java/us/temerity/pipeline/ui/UIFactory.java:
+	fixed 927 and implemented 926 - Multi-field params display incorrectly/are missing & Utility Method for creating Spacers
+
+	* src/java/us/temerity/pipeline/MultiEnumParam.java:
+	fixed 928 - Rename Multienumparam methods to be clearer
+
+	* src/java/us/temerity/pipeline/builder/MayaContext.java:
+	minor tweaks for better performance and access.  No real bug fixes
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.2.1
+
+	* src/java/us/temerity/pipeline/core/JobMgrWinService.java: comments
+
+	* src/java/us/temerity/pipeline/bootstrap/JobMgrService.java:
+	changed error log to C:/WINDOWS/Temp from C:/TEMP
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java:
+	added Windows specific SubProcessLight mods
+
+	* src/windows/services/Makefile.am, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src.in, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h:
+	windows autoconf support
+
+	* src/java/scripts/debug/Makefile.am: added test scripts
+
+	* src/java/scripts/debug/pltestheavy.in: initial revision
+
+	* rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in:
+	added test scripts
+
+	* configure.ac: added windows configuration stuff...
+
+	* src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/Setup/Setup.vdproj:
+	added Add/Remove programs icon
+
+	* src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/Setup/Setup.vdproj:
+	fixed something wrong with jvm.dll
+
+	* src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager.sln, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/Setup/Setup.vdproj, src/windows/native/Makefile.am, src/windows/native/fromLizard.bash, src/windows/native/libNative.ncb, src/windows/native/libNative.suo, src/windows/native/libNative.vcproj, src/windows/native/toLizard.bash, src/windows/services/Makefile.am, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/fromLizard.bash, src/windows/services/toLizard.bash:
+	now auto-builds windows native code correctly using SSH
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/QueueJob.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/MiscAuthorizeOnWindowsReq.java, src/java/us/temerity/pipeline/ui/core/JAuthorizeDialog.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	added domain to Windows authentication
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/NativeProcessHeavy.java, src/java/us/temerity/pipeline/NativeProcessLight.java, src/java/us/temerity/pipeline/core/TestNativeProcessHeavyApp.java, src/native/NativeProcessHeavy.cc, src/native/NativeProcessHeavy.hh, src/native/NativeProcessLight.cc, src/native/NativeProcessLight.hh:
+	support for launching Windows subprocesses as another user
+
+	* src/java/us/temerity/pipeline/NativeFileSys.java, src/windows/native/NativeFileSys.cpp, src/windows/native/stdafx.h:
+	removed chmod() and symlink() support
+
+	* src/java/us/temerity/pipeline/JobReqs.java:
+	fixed 905 - JobReqs Constructor Precision
+
+2007-02-11  author  <author@dimetrodon>
+
+	* src/windows/native/NativeFileSys.cpp, src/windows/native/NativeOS.cpp, src/windows/native/NativeProcessHeavy.cpp, src/windows/native/NativeProcessLight.cpp, src/windows/native/stdafx.cpp, src/windows/native/stdafx.h, src/windows/scripts/debug/Makefile.am, src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h:
+	fully functional, debugging printfs still included...
+
+	* src/windows/native/Makefile.am, src/windows/native/NativeFileSys.cpp, src/windows/native/NativeProcessHeavy.cpp, src/windows/native/NativeProcessLight.cpp, src/windows/native/stdafx.cpp, src/windows/native/stdafx.h:
+	fixed memory leaks, basic Logon/CreateProcessAsUser works
+
+2007-02-10  author  <author@dimetrodon>
+
+	* src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.cpp, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.resX, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.resx, src/windows/services/PipelineJobManager/Setup/Setup.vdproj:
+	installer workds, pljobmgr collects stats, no jobs running yet
+
+2007-02-09  author  <author@dimetrodon>
+
+	* src/native/NativeFileSys.cc: fixed memory leak of UTF-Strings
+
+	* plconfig/customers/SCEACSG/070209, plconfig/customers/SCEACSG/070209.txt:
+	fixed JVM
+
+	* src/java/scripts/debug/plui.in, src/java/scripts/plui.in, src/java/scripts/profile/plui.in, src/mac-apps/pipeline/MacOS/plui.in:
+	replaced LD_LIBRARY_PATH with -Djava.library.path
+
+	* plconfig/customers/SCEACSG/070209, plconfig/customers/SCEACSG/070209.txt:
+	initial revision
+
+	* docs/javadoc/Makefile.in: added event package
+
+	* src/java/us/temerity/pipeline/ui/core/JRegisterDialog.java:
+	fixed 920 - Exception Thrown when hitting Browse in Register Dialog
+
+2007-02-08  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 919 - Check-Out Event Exception
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 919 - Check-In Event Exception
+
+2007-02-07  author  <author@dimetrodon>
+
+	* docs/javadoc/Makefile.in:
+	now uses JOGL javadocs shipped with Pipeline
+
+	* docs/javadoc/package-lists/jogl/package-list: initial revision
+
+	* src/java/us/temerity/pipeline/BaseAppleScriptEditor.java, src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/SimpleEditor.java, src/java/us/temerity/pipeline/SingleEditor.java, src/java/us/temerity/pipeline/plugin/v2_1_8/EmacsEditor.java, src/java/us/temerity/pipeline/ui/JSubProcessFailureDialog.java, src/java/us/temerity/pipeline/ui/UIFactory.java:
+	fixed javadoc errors
+
+	* plconfig/customers/SCEACSG/070207, plconfig/customers/SCEACSG/070207.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_9/ShaveApplyCacheAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/ShaveCacheAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/ShaveCacheCopyAction.java:
+	implemented 898 - Add Shave and a Haircut Support
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_10/SyflexCacheAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/SyflexApplyCacheAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/SyflexCacheAction.java, src/java/us/temerity/pipeline/plugin/v2_0_9/SyflexCacheCopyAction.java:
+	implemented 897 - Add Syflex Support
+
+	* src/java/misc/JavaCryptoExample.java: initial revision
+
+	* configure.ac: added v2_1_8 plugin subdir
+
+	* src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.cpp, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/Setup/Setup.vdproj, src/windows/services/PipelineJobManager/PipelineJobManager.ncb:
+	added "client" JVM subdir to PATH
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeHint.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 910 - No Prefernces for Node Tooltip Show/Hide
+
+	* src/java/us/temerity/pipeline/core/ScriptApp.java:
+	implemented 909 - Run Editors as Working Area Owner
+
+	* src/java/us/temerity/pipeline/QueueJob.java:
+	support for encrypted Windows password database
+
+	* src/java/us/temerity/pipeline/plugin/Makefile.am: added v2.1.8 subdir
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_11/MayaBuildAction.java:
+	removed uneeded import
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeHistoryPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeLinksPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 909 - Run Editors as Working Area Owner
+
+	* src/java/us/temerity/pipeline/ui/core/JAuthorizeDialog.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java:
+	support for encrypted Windows password database
+
+	* src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 909 - Run Editors as Working Area Owner, support for encrypted Windows password database
+
+	* src/java/us/temerity/pipeline/ui/UIFactory.java:
+	added createPasswordField
+
+	* src/java/us/temerity/pipeline/ui/JSubProcessFailureDialog.java:
+	implemented 909 - Run Editors as Working Area Owner
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	added JPasswordField look-and-feel
+
+	* src/java/us/temerity/pipeline/core/TestNativeProcessLightApp.java:
+	added looping and memory stats
+
+	* src/java/us/temerity/pipeline/message/JobEditAsFailedRsp.java, src/java/us/temerity/pipeline/message/JobEditAsReq.java, src/java/us/temerity/pipeline/message/JobRequest.java:
+	implemented 909 - Run Editors as Working Area Owner
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscAuthorizeOnWindowsReq.java:
+	support for encrypted Windows password database
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java, src/java/us/temerity/pipeline/core/JobMgrPlgControlClient.java, src/java/us/temerity/pipeline/core/JobMgrServer.java, src/java/us/temerity/pipeline/PluginInputStream.java:
+	implemented 909 - Run Editors as Working Area Owner
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.src.in:
+	added sHostNames and sHostIDs static fields
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java:
+	added authorizeOnWindows() method
+
+	* src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in:
+	removed uneeded import
+
+	* src/java/us/temerity/pipeline/ExecPath.java:
+	fixed 907 - Editor tries to launch Directory
+
+	* src/java/us/temerity/pipeline/BaseAppleScriptEditor.java, src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/SingleEditor.java:
+	comments
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/NativeProcessHeavy.java, src/java/us/temerity/pipeline/NativeProcessLight.java, src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java:
+	support for Windows authentication and substitute user - not done yet
+
+	* src/java/us/temerity/pipeline/BaseAppleScriptEditor.java, src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/SimpleEditor.java, src/java/us/temerity/pipeline/SingleEditor.java, src/java/us/temerity/pipeline/plugin/v2_1_8/EmacsEditor.java, src/java/us/temerity/pipeline/plugin/v2_1_8/Makefile.in, src/java/us/temerity/pipeline/plugin/v2_1_8/package.html:
+	implemented 909 - Run Editors as Working Area Owner
+
+	* src/java/scripts/debug/pltestlight.in: initial revision
+
+	* src/native/NativeProcessHeavy.cc, src/native/NativeProcessHeavy.hh, src/native/NativeProcessLight.cc, src/native/NativeProcessLight.hh, src/windows/native/NativeProcessHeavy.cpp, src/windows/native/NativeProcessLight.cpp, src/windows/native/libNative.ncb, src/windows/native/libNative.suo, src/windows/native/stdafx.h:
+	fixed 915 - JNI Memory Leak
+
+2007-02-05  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/BaseAction.java: comments
+
+2007-02-02  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 908 - Unnecessary Circular Link Checking with Locked Nodes
+
+2007-02-01  author  <author@dimetrodon>
+
+	* src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/Setup/Setup.vdproj:
+	removed dummy registry entry
+
+	* src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.cpp, src/windows/services/PipelineJobManager/PipelineEditRegistry/stdafx.h, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/Setup/Setup.vdproj:
+	added Path fixing custom action which finds the JRE using a Condition
+
+	* src/windows/services/PipelineJobManager/InstallService.bat, src/windows/services/PipelineJobManager/PipelineEditRegistry/AssemblyInfo.cpp, src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.cpp, src/windows/services/PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.vcproj, src/windows/services/PipelineJobManager/PipelineEditRegistry/ReadMe.txt, src/windows/services/PipelineJobManager/PipelineEditRegistry/app.ico, src/windows/services/PipelineJobManager/PipelineEditRegistry/app.rc, src/windows/services/PipelineJobManager/PipelineEditRegistry/resource.h, src/windows/services/PipelineJobManager/PipelineEditRegistry/stdafx.cpp, src/windows/services/PipelineJobManager/PipelineEditRegistry/stdafx.h, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.sln, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.resX, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.resx, src/windows/services/PipelineJobManager/PipelineJobManager/ProcMonitor.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/ProcMonitor.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.resx, src/windows/services/PipelineJobManager/Setup/Setup.vdproj, src/windows/services/PipelineJobManager/UninstallService.bat, src/windows/services/PipelineJobManager/license.rtf, src/windows/services/fromLizard.bash:
+	installer works
+
+2007-01-29  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/bootstrap/JobMgrService.java, src/java/us/temerity/pipeline/bootstrap/WinService.java, src/java/us/temerity/pipeline/core/JobMgrWinService.java, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h, src/windows/services/PipelineJobManager/Setup/Setup.vdproj, src/windows/services/PipelineJobManager/TemerityInstallerBg.bmp, src/windows/services/PipelineJobManager/license.rtf:
+	now uses boostraping core Java classes
+
+	* src/windows/native/libNative.suo, src/windows/native/toLizard.bash, src/java/us/temerity/pipeline/NativeOS.java, src/windows/native/NativeFileSys.cpp, src/windows/native/NativeOS.cpp, src/windows/native/fromLizard.bash, src/windows/native/libNative.ncb:
+	reenabled Windows resource sample collection code
+
+	* src/java/us/temerity/pipeline/bootstrap/BootApp.java: comments
+
+2007-01-26  author  <author@dimetrodon>
+
+	* src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h:
+	converted all fprintf() logging to EventLog::WriteEvent()
+
+	* src/windows/services/fromLizard.bash, src/windows/services/toLizard.bash:
+	added optional rsync argument pass-through (i.e. --dry-run)
+
+	* src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/TestService/TestService.java:
+	now properly waits for the JVM to shutdown
+
+2007-01-25  author  <author@dimetrodon>
+
+	* src/windows/services/fromLizard.bash, src/windows/services/toLizard.bash:
+	added CVS exclude rules and checksum based transfer rules
+
+	* plconfig/customers/dimetrodon/070122, plconfig/customers/dimetrodon/070122.txt:
+	initial revision
+
+	* config/bootstrap.sh: latest
+
+	* rpm/plwin.spec.in, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am:
+	renabled pljobmgr.bat scripts
+
+	* src/windows/scripts/debug/plui2.bat.src.in:
+	windows CLASSPATH is delimted with a semi-colon, not a colon
+
+	* src/java/us/temerity/pipeline/laf/scripts/filter-textures.in:
+	fixed bug overflow of script-fu script length which caused GIMP to hang, now used two script files and two passes
+
+	* src/windows/Makefile.am: enabled services subdir
+
+	* src/windows/native/Makefile.am, src/windows/native/fromLizard.bash, src/windows/native/libNative.ncb, src/windows/native/libNative.sln, src/windows/native/libNative.suo, src/windows/native/libNative.vcproj, src/windows/native/rebuild.bat, src/windows/native/toLizard.bash:
+	upgraded to VisualStudio 2005
+
+	* src/windows/services/Makefile.am, src/windows/services/PipelineJobManager/PipelineJobManager.ncb, src/windows/services/PipelineJobManager/PipelineJobManager.sln, src/windows/services/PipelineJobManager/PipelineJobManager.suo, src/windows/services/PipelineJobManager/PipelineJobManager/AssemblyInfo.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.resx, src/windows/services/PipelineJobManager/PipelineJobManager/ProcMonitor.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/ProcMonitor.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h, src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.resx, src/windows/services/PipelineJobManager/PipelineJobManager/ReadMe.txt, src/windows/services/PipelineJobManager/PipelineJobManager/app.ico, src/windows/services/PipelineJobManager/PipelineJobManager/app.rc, src/windows/services/PipelineJobManager/PipelineJobManager/resource.h, src/windows/services/PipelineJobManager/PipelineJobManager/stdafx.cpp, src/windows/services/PipelineJobManager/PipelineJobManager/stdafx.h, src/windows/services/PipelineJobManager/PipelineRun/AssemblyInfo.cpp, src/windows/services/PipelineJobManager/PipelineRun/PipelineRun.cpp, src/windows/services/PipelineJobManager/PipelineRun/PipelineRun.cpp~, src/windows/services/PipelineJobManager/PipelineRun/PipelineRun.vcproj, src/windows/services/PipelineJobManager/PipelineRun/ReadMe.txt, src/windows/services/PipelineJobManager/PipelineRun/app.ico, src/windows/services/PipelineJobManager/PipelineRun/app.rc, src/windows/services/PipelineJobManager/PipelineRun/resource.h, src/windows/services/PipelineJobManager/PipelineRun/stdafx.cpp, src/windows/services/PipelineJobManager/PipelineRun/stdafx.h, src/windows/services/PipelineJobManager/Setup/Setup.vdproj, src/windows/services/TestService/TestService.java, src/windows/services/fromLizard.bash, src/windows/services/toLizard.bash:
+	initial checkpoint - TestService Java stub runs as a Windows Service
+
+2007-01-17  author  <author@dimetrodon>
+
+	* src/utils/src/PlRun.cc: fixed 901 - G5 OS X Server Plrun Failure
+
+2007-01-15  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_9/RenumberTool.java:
+	fixed 805 - Wrong Argument in UIFactory.createTitledPathField
+
+2007-01-11  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_10/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_11/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/v2_0_9/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/ui/JPathField.java, src/java/us/temerity/pipeline/ui/UIFactory.java, src/java/us/temerity/pipeline/ui/core/JArchiveParamsDialog.java, src/java/us/temerity/pipeline/ui/core/JCloneDialog.java, src/java/us/temerity/pipeline/ui/core/JRegisterDialog.java, src/java/us/temerity/pipeline/ui/core/JRenameDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreParamsDialog.java:
+	fixed 805 - Wrong Argument in UIFactory.createTitledPathField
+
+2007-01-05  author  <author@dimetrodon>
+
+	* src/java/jogl/MacOS/libjogl_awt.jnilib, src/java/jogl/MacOS/libjogl_cg.jnilib, src/java/jogl/Unix/.cvsignore, src/java/jogl/Unix/Makefile.am, src/java/jogl/Unix/libjogl.so, src/java/jogl/Unix/libjogl_awt.so, src/java/jogl/Unix/libjogl_cg.so, src/java/jogl/Unix/libjogl_drihack.so, src/java/jogl/Windows/.cvsignore, src/java/jogl/Windows/Makefile.am, src/java/jogl/Windows/jogl.dll, src/java/jogl/Windows/jogl_awt.dll, src/java/jogl/Windows/jogl_cg.dll, src/java/scripts/debug/plui.in, src/java/scripts/plui.in, src/java/scripts/profile/plui.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/ui/JColorEditorDialog.java, src/java/us/temerity/pipeline/ui/UIFactory.java, src/java/us/temerity/pipeline/ui/core/GeometryMgr.java, src/java/us/temerity/pipeline/ui/core/JBaseViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobServerStatsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java, src/java/us/temerity/pipeline/ui/core/JTextureLoaderBar.java, src/java/us/temerity/pipeline/ui/core/ReservedViewerPie.java, src/java/us/temerity/pipeline/ui/core/TextureMgr.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/java/us/temerity/pipeline/ui/core/ViewerGraphic.java, src/java/us/temerity/pipeline/ui/core/ViewerIcon.java, src/java/us/temerity/pipeline/ui/core/ViewerJob.java, src/java/us/temerity/pipeline/ui/core/ViewerJobGroup.java, src/java/us/temerity/pipeline/ui/core/ViewerLinks.java, src/java/us/temerity/pipeline/ui/core/ViewerNode.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeHint.java, src/java/us/temerity/pipeline/ui/core/ViewerPie.java, src/mac-apps/pipeline/MacOS/plui.in, src/windows/launchers/debug/plui.exe4j.in, src/windows/launchers/plui.exe4j.in, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am, src/windows/scripts/debug/plui2.bat.src.in, configure.ac, rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/Makefile.am, src/java/Makefile.am, src/java/jogl/.cvsignore, src/java/jogl/COPYRIGHT-JOGL.txt, src/java/jogl/LICENSE-JOGL.txt, src/java/jogl/MacOS/.cvsignore, src/java/jogl/MacOS/Makefile.am, src/java/jogl/MacOS/libjogl.jnilib, src/java/jogl/Makefile.am, src/java/jogl/README.txt, src/java/jogl/jogl-docs.tar, src/java/jogl/jogl.jar:
+	implemented 782 - Migrate to JSR-231 1.0.0
+
+	* config/bootstrap.sh: 07105 site profile
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-3.0.3-1.i686.rpm:
+	plconfig v3.0.3
+
+	* plconfig/customers/dimetrodon/070105, plconfig/customers/dimetrodon/070105.txt:
+	initial revision
+
+2007-01-04  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/event/CheckedInNodeEvent.java:
+	fixed 899 - Event code breaks on new node check-in
+
+2007-01-03  author  <author@dimetrodon>
+
+	* plconfig/customers/crimson/061230, plconfig/customers/crimson/061230.txt:
+	latest profile for jesse's laptop
+
+	* src/java/us/temerity/pipeline/plugin/v2_0_11/MayaMRayRenderAction.java:
+	No longer under-development and made it cleaner
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java:
+	fixed 896 - Check BaseAction.prep() Return Value
+
+2007-01-02  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/message/MiscSetPluginMenuLayoutReq.java, src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java:
+	fixed 841 - Toolset Plugin Menus Exception
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0044.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0045.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0046.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0047.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0048.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0049.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0050.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0051.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0052.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0053.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0054.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0055.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0056.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0057.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0058.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0059.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0060.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0061.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0062.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0063.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0064.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0065.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0066.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0067.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0068.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0069.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0070.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0071.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0072.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0073.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0074.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0075.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0076.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0077.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0078.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0079.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0080.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0081.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0082.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0083.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0084.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0085.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0086.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0087.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0088.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0089.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0090.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0091.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0092.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0093.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0094.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0095.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0096.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0097.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0098.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0099.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0100.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0101.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0102.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0103.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0104.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0105.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0106.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0107.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0108.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0109.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0110.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0111.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0112.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0113.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/NormalFrozen.0114.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0044.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0045.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0046.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0047.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0048.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0049.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0050.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0051.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0052.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0053.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0054.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0055.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0056.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0057.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0058.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0059.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0060.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0061.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0062.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0063.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0064.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0065.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0066.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0067.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0068.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0069.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0070.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0071.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0072.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0073.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0074.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0075.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0076.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0077.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0078.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0079.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0080.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0081.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0082.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0083.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0084.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0085.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0086.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0087.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0088.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0089.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0090.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0091.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0092.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0093.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0094.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0095.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0096.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0097.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0098.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0099.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0100.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0101.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0102.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0103.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0104.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0105.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0106.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0107.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0108.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0109.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0110.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0111.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0112.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0113.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/PrimaryFrozen.0114.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0000.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0001.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0002.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0003.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0004.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0005.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0006.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0007.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0008.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0009.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0010.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0011.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0012.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0013.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0014.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0015.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0016.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0017.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0018.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0019.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0020.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0021.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0022.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0023.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0024.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0025.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0026.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0027.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0028.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0029.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0030.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0031.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0032.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0033.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0034.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0035.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0036.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0037.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0038.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0039.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0040.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0041.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0042.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0043.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0044.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0045.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0046.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0047.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0048.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0049.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0050.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0051.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0052.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0053.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0054.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0055.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0056.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0057.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0058.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0059.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0060.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0061.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0062.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0063.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0064.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0065.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0066.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0067.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0068.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0069.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0070.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0071.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0072.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0073.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0074.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0075.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0076.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0077.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0078.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0079.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0080.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0081.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0082.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0083.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0084.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0085.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0086.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0087.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0088.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0089.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0090.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0091.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0092.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0093.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0094.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0095.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0096.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0097.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0098.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0099.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0100.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0101.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0102.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0103.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0104.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0105.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0106.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0107.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0108.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0109.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0110.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0111.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0112.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0113.sgi, src/java/us/temerity/pipeline/laf/maya/synth/images/SelectedFrozen.0114.sgi, src/java/us/temerity/pipeline/laf/maya/synth/scenes/NormalFrozen.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/PrimaryFrozen.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/SelectedFrozen.ma, src/java/us/temerity/pipeline/laf/scripts/filter-textures.in, src/java/us/temerity/pipeline/ui/core/JTextureLoaderBar.java, src/java/us/temerity/pipeline/ui/core/ViewerNode.java:
+	fixed 891 - Deleting Frozen File causes Status to Break
+
+2007-01-01  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf, configure.ac:
+	v2.1.8
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/Dates.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/event/BaseRepoNodeEvent.java, src/java/us/temerity/pipeline/event/CheckedInNodeEvent.java, src/java/us/temerity/pipeline/event/CheckedOutNodeEvent.java, src/java/us/temerity/pipeline/event/EvolvedNodeEvent.java, src/java/us/temerity/pipeline/event/LinksModifiedNodeEvent.java, src/java/us/temerity/pipeline/event/NodeEventOp.java, src/java/us/temerity/pipeline/event/PropsModifiedNodeEvent.java, src/java/us/temerity/pipeline/event/RegisteredNodeEvent.java, src/java/us/temerity/pipeline/event/ReleasedNodeEvent.java, src/java/us/temerity/pipeline/event/SeqsModifiedNodeEvent.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeGetEventsReq.java, src/java/us/temerity/pipeline/message/NodeGetEventsRsp.java:
+	implementd 893 - Node Events
+
+2006-12-31  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/event/BaseNodeEvent.java, src/java/us/temerity/pipeline/event/BaseWorkingNodeEvent.java, src/java/us/temerity/pipeline/event/EditedNodeEvent.java, src/java/us/temerity/pipeline/event/package.html, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeEditingFinishedReq.java, src/java/us/temerity/pipeline/message/NodeEditingStartedReq.java, src/java/us/temerity/pipeline/message/NodeEditingStartedRsp.java, src/java/us/temerity/pipeline/message/NodeGetWorkingAreasEditingReq.java, src/java/us/temerity/pipeline/ui/core/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented - 845 Show Who is Editing a Node
+
+	* src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/SubProcessHeavy.java, src/java/us/temerity/pipeline/SubProcessLight.java:
+	fixed 894 - Script Editing Exception
+
+2006-12-21  author  <author@dimetrodon>
+
+	* configure.ac, src/utils/src/PackageInfo.cc.src.in, src/utils/src/PackageInfo.hh, src/utils/src/PlRun.cc:
+	fixed 883 - Child Process Errors on Mac OS X
+
+2006-12-20  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/JCollectionField.java:
+	now checks for empty value lists
+
+	* src/java/us/temerity/pipeline/core/QueueMgrServer.java:
+	changed Net messages to Ops
+
+	* src/java/us/temerity/pipeline/core/AdminPrivileges.java, src/java/us/temerity/pipeline/core/GlueDecoderImpl.java, src/java/us/temerity/pipeline/core/GlueParser.jj, src/java/us/temerity/pipeline/core/JobMgr.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/NodeTree.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/glue/io/GlueDecoderImpl.java, src/java/us/temerity/pipeline/glue/io/GlueParser.jj, src/java/us/temerity/pipeline/glue/io/parser/JavaCharStream.java, src/java/us/temerity/pipeline/utils/BaseUtilityApp.java, src/java/us/temerity/pipeline/utils/v2_0_14/MiRenderPrep.java:
+	fixed 882 - Unicode Message Parse Error
+
+2006-12-18  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/JCollectionField.java:
+	fixed 878 - Assertion THrown
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 879 - Staleness Hidden by Identical Upstream
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 876 - Plmaster Null Pointer during Status
+
+	* src/java/us/temerity/pipeline/message/NodeGetWorkingAreasContainingReq.java:
+	comments
+
+2006-12-15  author  <author@dimetrodon>
+
+	* rpm/plmac.spec.in, src/java/us/temerity/pipeline/BaseSubProcess.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/native/Makefile.am, src/utils/src/Makefile.am:
+	implemented 873 - Universal Binary version for Intel Macs
+
+2006-12-14  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobsDialog.java:
+	fixed 872 - Scroll Speed in Queue Special
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 871 - Modified Links no longer works the same
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java:
+	fixed 870 - Queue Special broken in Job Viewer
+
+	* src/java/us/temerity/pipeline/HistogramSpec.java, src/java/us/temerity/pipeline/MasterControls.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/MultiEnumParam.java, src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/OptionalEnumParam.java, src/java/us/temerity/pipeline/QueueControls.java:
+	comments
+
+	* configure.ac, src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.1.7
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	fixed null pointer bug in dispatcher
+
+2006-12-13  author  <author@dimetrodon>
+
+	* ChangeLog: v2.1.6
+
+	* docs/Makefile.am: removed manuals subdirectory
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	commented builder packages not ready for release
+
+	* src/java/us/temerity/pipeline/JobGroupFavorMethod.java, src/java/us/temerity/pipeline/SelectionGroup.java, src/java/us/temerity/pipeline/core/QueueJobCounters.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/laf/FavButton.png, src/java/us/temerity/pipeline/laf/FavButtonPressed.png, src/java/us/temerity/pipeline/laf/FavButtonSelected.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JTablePanel.java, src/java/us/temerity/pipeline/ui/core/JManageSelectionKeysDialog.java, src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java, src/java/us/temerity/pipeline/ui/core/SelectionGroupsTableModel.java:
+	implemented 848 - Most/Least Completed Dispatch Criteria
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	implemented 867 - Log All File System Exceptions
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	implemented 866 - Verify Check-In File Sizes
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	implemented 865 - Change Status Message from a Tool
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	removed commented obsolete code
+
 2006-12-13  author  <author@dimetrodon>
 
 	* docs/Makefile.am: removed manuals subdirectory
