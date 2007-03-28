@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.63 2007/03/18 02:27:05 jim Exp $
+// $Id: FileMgr.java,v 1.64 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -368,7 +368,7 @@ class FileMgr
 
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
-	TreeMap<FileSeq, Date[]> timestamps = null; 
+	TreeMap<FileSeq, Long[]> timestamps = null; 
 
 	/* if frozen, the possibilities are more limited... */ 
 	if(req.isFrozen()) {
@@ -579,11 +579,11 @@ class FileMgr
 	  }
 
 	  /* lookup the last modification timestamps */ 
-	  timestamps = new TreeMap<FileSeq, Date[]>();
+	  timestamps = new TreeMap<FileSeq, Long[]>();
 	  {
-	    Date critical = req.getCriticalStamp();
+            long critical = req.getCriticalStamp();
 	    for(FileSeq fseq : states.keySet()) {
-	      Date stamps[] = new Date[fseq.numFrames()];
+	      Long stamps[] = new Long[fseq.numFrames()];
 
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
@@ -592,7 +592,7 @@ class FileMgr
 
 		long when = NativeFileSys.lastCriticalChange(work, critical); 
 		if(when > 0) 
-		  stamps[wk] = new Date(when);
+		  stamps[wk] = when; 
 
 		wk++;
 	      }
@@ -3010,13 +3010,12 @@ class FileMgr
   ) 
   {
     String archiveName = req.getArchiveName();	
-    Date stamp = req.getTimeStamp(); 
+    long stamp = req.getTimeStamp(); 
     BaseArchiver archiver = req.getArchiver();
     Map<String,String> env = req.getEnvironment();    
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
     
-    File restoreDir = new File(pProdDir, 
-			       "restore/" + archiveName + "-" + stamp.getTime());
+    File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp);
 
     TaskTimer timer = new TaskTimer("FileMgr.extract: " + archiveName);
     try {
@@ -3045,8 +3044,7 @@ class FileMgr
       }
 
       /* create temporary directories and files */ 
-      File tmpdir = new File(pTempDir, 
-			     "plfilemgr/restore/" + archiveName + "-" + stamp.getTime());
+      File tmpdir = new File(pTempDir, "plfilemgr/restore/" + archiveName + "-" + stamp);
       File scratch = new File(tmpdir, "scratch");
       File outFile = new File(tmpdir, "stdout");
       File errFile = new File(tmpdir, "stderr"); 
@@ -3200,14 +3198,13 @@ class FileMgr
   ) 
   {
     String archiveName = req.getArchiveName();	
-    Date stamp = req.getTimeStamp(); 
+    long stamp = req.getTimeStamp(); 
     String name = req.getName();
     VersionID vid = req.getVersionID();
     TreeMap<File,TreeSet<VersionID>> symlinks = req.getSymlinks();
     TreeMap<File,VersionID> targets = req.getTargets();
     
-    File restoreDir = new File(pProdDir, 
-			       "restore/" + archiveName + "-" + stamp.getTime());
+    File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp);
     Map<String,String> env = System.getenv();
 
     TaskTimer timer = new TaskTimer("FileMgr.restore: " + archiveName);
@@ -3408,9 +3405,8 @@ class FileMgr
   ) 
   {
     String archiveName = req.getArchiveName();	
-    Date stamp = req.getTimeStamp();     
-    File dir = new File(pProdDir, 
-			"restore/" + archiveName + "-" + stamp.getTime());
+    long stamp = req.getTimeStamp();     
+    File dir = new File(pProdDir, "restore/" + archiveName + "-" + stamp);
 
     TaskTimer timer = new TaskTimer("FileMgr.removeExtractDir: " + archiveName);
 

@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.6 2007/02/21 02:25:29 jim Exp $
+// $Id: QueueHost.java,v 1.7 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -85,9 +85,9 @@ class QueueHost
   init() 
   {
     pStatus       = Status.Shutdown;
-    pLastModified = new Date();
+    pLastModified = System.currentTimeMillis(); 
 
-    pHoldTimeStamps = new TreeMap<Long,Date>();
+    pHoldTimeStamps = new TreeMap<Long,Long>();
   }
 
 
@@ -139,7 +139,7 @@ class QueueHost
   ) 
   {
     pStatus       = status;
-    pLastModified = new Date();
+    pLastModified = System.currentTimeMillis();
 
     switch(pStatus) {
     case Shutdown:
@@ -153,19 +153,21 @@ class QueueHost
   }
 
   /**
-   * Get the timestamp of when the status was last modified.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * status was last modified.
    */ 
-  public synchronized Date
+  public synchronized long
   getLastModified()
   {
     return pLastModified;
   }
 
   /**
-   * Get the timestamp of when the status was last changed to Hung or <CODE>null</CODE> if 
-   * the state has never been Hung since the server was started.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * status was last changed to Hung or <CODE>null</CODE> if the state has never been Hung 
+   * since the server was started.
    */ 
-  public synchronized Date
+  public synchronized Long
   getLastHung()
   {
     return pLastHung; 
@@ -396,14 +398,15 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the timestamp of when all ramp-up intervals will have expired.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all 
+   * ramp-up intervals will have expired.
    */ 
-  public synchronized Date
+  public synchronized long
   getHold() 
   {
-    Date latest = new Date(0L);
-    for(Date stamp : pHoldTimeStamps.values()) {
-      if(stamp.compareTo(latest) > 0)
+    long latest = 0L; 
+    for(Long stamp : pHoldTimeStamps.values()) {
+      if(stamp > latest)
 	latest = stamp;
     }
     return latest;
@@ -434,10 +437,8 @@ class QueueHost
    int interval
   ) 
   {
-    if(interval > 0) {
-      Date stamp = new Date(Dates.now().getTime() + interval*1000L);
-      pHoldTimeStamps.put(jobID, stamp);
-    }
+    if(interval > 0) 
+      pHoldTimeStamps.put(jobID, TimeStamps.now() + interval*1000L); 
   }
 
   /**
@@ -639,9 +640,9 @@ class QueueHost
       return 0;
     }
 
-    Date now = Dates.now();
-    if(((now.getTime() - sample.getTimeStamp().getTime()) > PackageInfo.sCollectorInterval) ||
-       (getHold().compareTo(now) > 0)) {
+    long now = TimeStamps.now();
+    if(((now - sample.getTimeStamp()) > PackageInfo.sCollectorInterval) || 
+       (getHold() > now)) {
       LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
        "Available Slots [" + getName() + "]:  On Hold.  Jobs = " + pNumJobs);      
@@ -880,15 +881,17 @@ class QueueHost
   private Status  pStatus;
 
   /**
-   * The timestamp of when the status was last modified.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the status 
+   * was last modified.
    */ 
-  private Date  pLastModified; 
+  private long  pLastModified; 
 
   /**
-   * The timestamp of when the status was last changed to Hung or <CODE>null</CODE> if 
-   * the state has never been Hung since the server was started.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the status 
+   * was last changed to Hung or <CODE>null</CODE> if the state has never been Hung since 
+   * the server was started.
    */ 
-  private Date  pLastHung; 
+  private Long  pLastHung; 
 
   /**
    * The name of the reserving user or <CODE>null</CODE> if the host is not reserved.
@@ -935,7 +938,7 @@ class QueueHost
    * The timestamps of when the ramp-up intervals for jobs assigned to this host will 
    * have completed indexed by job ID.
    */ 
-  private TreeMap<Long,Date>  pHoldTimeStamps;
+  private TreeMap<Long,Long>  pHoldTimeStamps;
 
   /**
    * The lastest resource usage sample or <CODE>null</CODE> if no samples exist.

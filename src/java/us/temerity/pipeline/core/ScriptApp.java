@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.70 2007/02/07 23:43:28 jim Exp $
+// $Id: ScriptApp.java,v 1.71 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -943,7 +943,7 @@ class ScriptApp
   ) 
     throws PipelineException 
   {
-    TreeMap<String,Date> archives = client.getArchivedOn();
+    TreeMap<String,Long> archives = client.getArchivedOn();
 
     StringBuilder buf = new StringBuilder();
     for(String name : archives.keySet()) 
@@ -973,7 +973,7 @@ class ScriptApp
     buf.append
       (tbar(80) + "\n" +
        "Archive Volume    : " + archiveName + "\n" + 
-       "Created           : " + Dates.format(vol.getTimeStamp()));
+       "Created           : " + TimeStamps.format(vol.getTimeStamp()));
 
     if(sections.contains("arch")) {
       BaseArchiver archiver = vol.getArchiver();
@@ -1175,7 +1175,7 @@ class ScriptApp
       buf.append
 	(tbar(80) + "\n" +
 	 "Toolset     : " + tset.getName() + "\n" + 
-	 "Created     : " + (Dates.format(tset.getTimeStamp()) + " by (" + 
+	 "Created     : " + (TimeStamps.format(tset.getTimeStamp()) + " by (" + 
 			     tset.getAuthor()) + ")\n" +
 	 "Description : " + wordWrap(tset.getDescription(), 14, 80) + "\n" + 
 	 bar(80) + "\n");
@@ -1190,7 +1190,7 @@ class ScriptApp
 	  PackageVersion pkg = client.getToolsetPackage(pname, vid);
 	  buf.append
 	    ("\n" + 
-	     "Created     : " + (Dates.format(pkg.getTimeStamp()) + " by (" + 
+	     "Created     : " + (TimeStamps.format(pkg.getTimeStamp()) + " by (" + 
 				 pkg.getAuthor()) + ")\n" +
 	     "Description : " + wordWrap(pkg.getDescription(), 14, 80));
 	}
@@ -3300,7 +3300,7 @@ class ScriptApp
 	("\n\n" + 
 	 bar(80) + "\n" +
 	 "Revision Number  : " + vid + "\n" + 
-	 "Created          : " + (Dates.format(msg.getTimeStamp()) + " by (" + 
+	 "Created          : " + (TimeStamps.format(msg.getTimeStamp()) + " by (" + 
 				   msg.getAuthor()) + ")\n" +
 	 "Check-In Message : " + wordWrap(msg.getMessage(), 20, 80));
     }
@@ -3994,13 +3994,13 @@ class ScriptApp
   (
    TreeSet names, 
    TreeSet users, 
-   Date start, 
-   Date finish, 
+   Long start, 
+   Long finish, 
    MasterMgrClient mclient
   ) 
     throws PipelineException
   {
-    TreeMap<Date,BaseNodeEvent> events = null;
+    TreeMap<Long,BaseNodeEvent> events = null;
     {
       TreeSet<String> names2 = null;
       if(!names.isEmpty()) 
@@ -4010,15 +4010,15 @@ class ScriptApp
       if(!users.isEmpty()) 
 	users2 = new TreeSet<String>(users);
       
-      Date start2 = new Date(0L);
+      Long start2 = 0L;
       if(start != null) 
 	start2 = start;
       
-      Date finish2 = new Date(Long.MAX_VALUE);
+      Long finish2 = Long.MAX_VALUE;
       if(finish != null) 
 	finish2 = finish;
 
-      events = mclient.getNodeEvents(names2, users2, new DateInterval(start2, finish2));
+      events = mclient.getNodeEvents(names2, users2, new TimeInterval(start2, finish2));
     }
     
     StringBuilder buf = new StringBuilder();
@@ -4090,7 +4090,7 @@ class ScriptApp
 	  
 	  buf.append
 	    ("\n" + 
-	     "Done Editing : " + Dates.format(e.getFinishedStamp()) + "\n" +
+	     "Done Editing : " + TimeStamps.format(e.getFinishedStamp()) + "\n" +
 	     "Hostname     : " + e.getHostname() + "\n" +
 	     "Impostor     : " + ((e.getImposter() != null) ? e.getImposter() : "-") + "\n" +
 	     "\n" + 
@@ -4118,7 +4118,7 @@ class ScriptApp
       ("\n\n" + 
        bar(80) + "\n" +
        "Operation    : " + event.getNodeOp().toTitle() + "\n" + 
-       "Generated    : " + (Dates.format(event.getTimeStamp()) + " by (" + 
+       "Generated    : " + (TimeStamps.format(event.getTimeStamp()) + " by (" + 
 			    event.getAuthor()) + ")\n" +
        "Node Name    : " + event.getNodeName()); 
   }

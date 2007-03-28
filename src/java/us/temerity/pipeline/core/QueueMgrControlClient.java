@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.17 2006/10/11 22:45:40 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.18 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -134,7 +134,7 @@ class QueueMgrControlClient
   getJobStates
   (
    NodeID nodeID, 
-   Date stamp, 
+   long stamp, 
    FileSeq fseq, 
    ArrayList<Long> jobIDs, 
    ArrayList<JobState> states 

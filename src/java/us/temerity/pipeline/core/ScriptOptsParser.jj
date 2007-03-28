@@ -286,8 +286,8 @@ ScriptOptsParser
 
   private TreeSet          pEventNames;
   private TreeSet          pEventUsers;
-  private Date             pEventStart; 
-  private Date             pEventFinish; 
+  private Long             pEventStart; 
+  private Long             pEventFinish; 
 }
 
 
@@ -6103,12 +6103,12 @@ void
 From() 
   throws PipelineException : 
 { 
-  Date date = null;
+  long stamp; 
 }
 {
-  <FROM> EQ() date=TimeStamp() AE()
+  <FROM> EQ() stamp=TimeStamp() AE()
   {
-    pEventStart = date;
+    pEventStart = stamp;
   }
 }
 
@@ -6116,16 +6116,16 @@ void
 Until() 
   throws PipelineException : 
 { 
-  Date date = null;
+  long stamp; 
 }
 {
-  <UNTIL> EQ() date=TimeStamp() AE()
+  <UNTIL> EQ() stamp=TimeStamp() AE()
   {
-    pEventFinish = date;
+    pEventFinish = stamp; 
   }
 }
 
-Date
+long
 TimeStamp() 
   throws PipelineException : 
 { 
@@ -6172,13 +6172,13 @@ TimeStamp()
 	calendar.set(Integer.parseInt(year.image), m-1, d, h, n, s);
       }
       else {
-	calendar.setTime(new Date());
+	calendar.setTimeInMillis(System.currentTimeMillis());
 	calendar.set(Calendar.HOUR,   h);
 	calendar.set(Calendar.MINUTE, n);
 	calendar.set(Calendar.SECOND, s);
       }
       
-      return calendar.getTime();
+      return calendar.getTimeInMillis();
     }
     catch(NumberFormatException ex) {
       throw new PipelineException("Illegal Date Specification!"); 

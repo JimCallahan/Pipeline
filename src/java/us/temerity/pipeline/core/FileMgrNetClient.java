@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.6 2006/11/16 07:29:25 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.7 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -165,9 +165,9 @@ class FileMgrNetClient
    VersionState vstate, 
    boolean isFrozen, 
    VersionID latest, 
-   Date critical, 
+   long critical, 
    TreeMap<FileSeq, FileState[]> states, 
-   TreeMap<FileSeq, Date[]> timestamps
+   TreeMap<FileSeq, Long[]> timestamps
   ) 
     throws PipelineException 
   {
@@ -663,7 +663,8 @@ class FileMgrNetClient
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp(milliseconds since midnight, January 1, 1970 UTC)  of the start of 
+   *   the restore operation.
    * 
    * @param fseqs
    *   The file sequences to archive indexed by fully resolved node name and checked-in 
@@ -685,7 +686,7 @@ class FileMgrNetClient
   extract
   (
    String archiveName, 
-   Date stamp, 
+   long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
    Map<String,String> env, 
@@ -721,7 +722,8 @@ class FileMgrNetClient
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp(milliseconds since midnight, January 1, 1970 UTC)  of the start of 
+   *   the restore operation.
    * 
    * @param name
    *   The fully resolved node name. 
@@ -741,7 +743,7 @@ class FileMgrNetClient
   restore
   (
    String archiveName, 
-   Date stamp,  
+   long stamp,  
    String name, 
    VersionID vid, 
    TreeMap<File,TreeSet<VersionID>> symlinks, 
@@ -764,13 +766,14 @@ class FileMgrNetClient
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   *   the restore operation.
    */
   public synchronized void 
   extractCleanup
   (
    String archiveName, 
-   Date stamp
+   long stamp
   ) 
     throws PipelineException 
   {

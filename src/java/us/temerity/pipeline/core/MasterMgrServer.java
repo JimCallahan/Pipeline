@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.76 2007/03/23 23:14:53 jim Exp $
+// $Id: MasterMgrServer.java,v 1.77 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -129,7 +129,7 @@ class MasterMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.\n" + 
-	 "  Started in " + Dates.formatInterval(pTimer.getTotalDuration()));
+	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
@@ -229,7 +229,7 @@ class MasterMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.\n" + 
-	 "  Uptime " + Dates.formatInterval(pTimer.getTotalDuration()));
+	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
     }
   }

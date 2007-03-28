@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.86 2007/03/18 02:29:16 jim Exp $
+// $Id: QueueMgr.java,v 1.87 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -223,7 +223,7 @@ class QueueMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
 
@@ -251,7 +251,7 @@ class QueueMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
 
@@ -273,7 +273,7 @@ class QueueMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
 
@@ -361,7 +361,7 @@ class QueueMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
 
@@ -398,7 +398,7 @@ class QueueMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
 
@@ -415,7 +415,7 @@ class QueueMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Cleaned in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Cleaned in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
 
@@ -440,7 +440,7 @@ class QueueMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "  Initialized in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Initialized in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();    
     }
 
@@ -2467,13 +2467,13 @@ class QueueMgr
       timer.suspend();
       TaskTimer tm = new TaskTimer("Dispatcher [Host Status Changes]");
       boolean diskModified = false;  
-      Date now = new Date();
+      long now = System.currentTimeMillis();
       {
 	/* attempt to re-Enable previously Hung servers */ 
 	for(QueueHost host : pHosts.values()) {
 	  switch(host.getStatus()) {
 	  case Hung:
-	    if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) {
+	    if((host.getLastModified() + sUnhangInterval) < now) {
 	      setHostStatus(host, QueueHost.Status.Enabled);	      
 	      if(modifiedHosts != null) 
 		modifiedHosts.add(host.getName());
@@ -2524,6 +2524,9 @@ class QueueMgr
 		    client.shutdown();
 		  }
 		  catch(PipelineException ex) {
+                    LogMgr.getInstance().log
+                      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+                       ex.getMessage());
 		  }	    
 		}
 		
@@ -2561,9 +2564,9 @@ class QueueMgr
 	      switch(host.getStatus()) {
 	      case Enabled:
 		{
-		  Date lastHung = host.getLastHung();
+		  Long lastHung = host.getLastHung();
 		  if((lastHung == null) || 
-		     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+		     ((lastHung + sDisableInterval) < now)) 
 		    setHostStatus(host, QueueHost.Status.Hung);
 		  else 
 		    setHostStatus(host, QueueHost.Status.Disabled);
@@ -2690,13 +2693,11 @@ class QueueMgr
 		{
 		  ResourceSampleCache cache = pSamples.get(hname);
 		  if(cache != null) {
-		    Date lastStamp = cache.getLastTimeStamp();
+		    Long lastStamp = cache.getLastTimeStamp();
 		    ResourceSample sample = host.getLatestSample();
-		    if(lastStamp != null) {
-		      if((sample == null) || 
-			 (sample.getTimeStamp().compareTo(lastStamp) < 0))
-			host.setLatestSample(cache.getLatestSample());
-		    }
+		    if((lastStamp != null) &&
+                       ((sample == null) || (sample.getTimeStamp() < lastStamp)))
+                      host.setLatestSample(cache.getLatestSample());
 		  }
 		}
 	      }
@@ -2858,15 +2859,15 @@ class QueueMgr
     synchronized(pSamples) {
       timer.resume();
       
-      TreeMap<String,DateInterval> intervals = req.getIntervals(); 
+      TreeMap<String,TimeInterval> intervals = req.getIntervals(); 
       for(String hname : intervals.keySet()) {
-	DateInterval interval = intervals.get(hname);
+	TimeInterval interval = intervals.get(hname);
 	if(interval != null) {
 	  ResourceSampleCache cache = pSamples.get(hname);
 
 	  /* see if any of the samples are in the runtime cache */ 
 	  int liveSamples = 0;
-	  Date first = null;
+	  Long first = null;
 	  if(cache != null) {
 	    liveSamples = cache.getNumSamplesDuring(interval);
 	    first = cache.getFirstTimeStamp();
@@ -2875,7 +2876,7 @@ class QueueMgr
 	  /* load earlier sampls from disk? */ 
 	  ResourceSampleCache tcache = null;
 	  if(!req.runtimeOnly() && 
-	     ((first == null) || (interval.getStartStamp().compareTo(first) < 0)))
+	     ((first == null) || (interval.getStartStamp() < first)))
 	    tcache = readSamples(timer, hname, interval, liveSamples);
 
 	  /* combine runtime and newly read disk samples */ 
@@ -3054,7 +3055,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
 
     NodeID nodeID = req.getNodeID();
-    Date stamp = req.getTimeStamp();
+    long stamp = req.getTimeStamp();
 
     TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
     timer.aquire();
@@ -3083,7 +3084,7 @@ class QueueMgr
 	  if(jobID != null) 
 	    info = pJobInfo.get(jobID);	   
 	  
-	  if((info != null) && (info.getSubmittedStamp().compareTo(stamp) > 0))
+	  if((info != null) && (info.getSubmittedStamp() > stamp))
 	    jstate = info.getState();
 	  else 
 	    jobID = null;
@@ -4124,7 +4125,7 @@ class QueueMgr
 	      for(String hname : samples.keySet()) {
 		ResourceSample sample = samples.get(hname);
 		if(sample != null) 
-		  oldest = Math.min(oldest, sample.getTimeStamp().getTime());
+		  oldest = Math.min(oldest, sample.getTimeStamp());
 	      }
 	      pLastSampleWritten.set(oldest); 
 	    }
@@ -4186,8 +4187,8 @@ class QueueMgr
 
     /* when enough samples have been collected, write them disk... */ 
     if(pLastSampleWritten.get() > 0L) { 
-      Date now = new Date();
-      long sinceLastWrite = (now.getTime() - pLastSampleWritten.get());
+      long now = System.currentTimeMillis();
+      long sinceLastWrite = now - pLastSampleWritten.get();
 
       if(sinceLastWrite > (PackageInfo.sCollectorInterval * sCollectedSamples)) {
 	timer.suspend();
@@ -4201,7 +4202,7 @@ class QueueMgr
 	     ex.getMessage());
 	}
 	finally {
-	  pLastSampleWritten.set(now.getTime()); 
+	  pLastSampleWritten.set(now); 
 	}
 	LogMgr.getInstance().logSubStage
 	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
@@ -4619,12 +4620,12 @@ class QueueMgr
 		    ("Dispatcher [Rank Jobs - " + hostname + ":" + slots + "]");
 
 		  /* job ID indexed by selection score, percent, priority and timestamp */ 
-		TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>>> byScore =
-		  new TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>>>();
+		TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>> byScore =
+		  new TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>>();
 
 		  for(Long jobID : pReady) {
 		    /* selection score */ 
-		    TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>> byPercent = null;
+		    TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>> byPercent = null;
 		    {
 		      Integer score = null;
 		      tm.aquire();
@@ -4674,14 +4675,14 @@ class QueueMgr
 			byPercent = byScore.get(score);
 			if(byPercent == null) {
 			  byPercent = 
-			    new TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>>();
+			    new TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>();
 			  byScore.put(score, byPercent);
 			}
 		      }
 		    }
 		    
 		    /* percent engaged/pending */ 
-		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = null;
+		    TreeMap<Integer,TreeMap<Long,Long>> byPriority = null;
 		    if(byPercent != null) {
 		      double percent = 0.0;
 		      {
@@ -4707,13 +4708,13 @@ class QueueMgr
 
 		      byPriority = byPercent.get(percent);
 		      if(byPriority == null) {
-			byPriority = new TreeMap<Integer,TreeMap<Date,Long>>();
+			byPriority = new TreeMap<Integer,TreeMap<Long,Long>>();
 			byPercent.put(percent, byPriority);
 		      }
 		    }
 
 		    /* job priority */ 
-		    TreeMap<Date,Long> byAge = null;
+		    TreeMap<Long,Long> byAge = null;
 		    if(byPriority != null) {
 		      Integer priority = null;
 		      tm.aquire();
@@ -4727,7 +4728,7 @@ class QueueMgr
 		      if(priority != null) {
 			byAge = byPriority.get(priority);
 			if(byAge == null) {
-			  byAge = new TreeMap<Date,Long>();
+			  byAge = new TreeMap<Long,Long>();
 			  byPriority.put(priority, byAge);
 			}
 		      }
@@ -4735,7 +4736,7 @@ class QueueMgr
 
 		    /* submission date */
 		    if(byAge != null) {
-		      Date stamp = null;
+		      Long stamp = null;
 		      tm.aquire();
 		      synchronized(pJobInfo) {
 			tm.resume();
@@ -4756,7 +4757,7 @@ class QueueMgr
 
 		    for(Integer score : scores) {
 
-		      TreeMap<Double,TreeMap<Integer,TreeMap<Date,Long>>> byPercent = 
+		      TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>> byPercent = 
 			byScore.get(score);
 		      LinkedList<Double> percents =  
 			new LinkedList<Double>(byPercent.keySet());
@@ -4764,7 +4765,7 @@ class QueueMgr
 		      
 		      for(Double percent : percents) {
 			
-			TreeMap<Integer,TreeMap<Date,Long>> byPriority = 
+			TreeMap<Integer,TreeMap<Long,Long>> byPriority = 
 			  byPercent.get(percent); 
 			LinkedList<Integer> priorities = 
 			  new LinkedList<Integer>(byPriority.keySet());
@@ -4952,7 +4953,7 @@ class QueueMgr
 	  /* the job is not yet completed */ 
 	  if((group != null) && (group.getCompletedStamp() == null)) {
 	    boolean done = true; 
-	    Date latest = null;
+	    Long latest = null;
 	    for(Long jobID : group.getAllJobIDs()) {
 	      QueueJobInfo info = null;
 	      tm.aquire();
@@ -4972,11 +4973,10 @@ class QueueMgr
 
 		default: 
 		  {
-		    Date stamp = info.getCompletedStamp(); 
-		    if(latest == null) 
-		      latest = stamp; 
-		    else if(latest.compareTo(stamp) < 0)
-		      latest = stamp;
+		    Long stamp = info.getCompletedStamp(); 
+                    if((stamp != null) && 
+                       ((latest == null) || (stamp > latest)))
+                      latest = stamp;
 		  }
 		}
 	      }
@@ -5352,7 +5352,7 @@ class QueueMgr
       synchronized(pSelectionSchedules) {
 	tm.resume();
 	
-	Date now = new Date();
+        long now = System.currentTimeMillis();
 	for(SelectionSchedule sched : pSelectionSchedules.values()) 
 	  scheduledGroups.put(sched.getName(), sched.activeGroup(now));
       }
@@ -6210,7 +6210,7 @@ class QueueMgr
 		("Unable to create the samples directory (" + dir + ")!");
 	}
          
-	Date last = new Date(pLastSampleWritten.get());
+	long last = pLastSampleWritten.get();
 
 	for(String hname : pSamples.keySet()) {    
 	  ResourceSampleCache cache = pSamples.get(hname);
@@ -6218,7 +6218,7 @@ class QueueMgr
 	  if(cache.hasSamples()) {
 	    ResourceSampleCache gcache = cache;
 	    if(samples != null) {
-	      gcache = cache.cloneDuring(new DateInterval(last, cache.getLastTimeStamp()));
+	      gcache = cache.cloneDuring(new TimeInterval(last, cache.getLastTimeStamp()));
 	      samples.put(hname, gcache);
 	    }
 
@@ -6230,9 +6230,10 @@ class QueueMgr
 		    ("Unable to create the samples host directory (" + hdir + ")!");
 	    }
 	  
-	    String fname = (cache.getFirstTimeStamp().getTime() + ":" + 
-			    cache.getLastTimeStamp().getTime() + ":" + 
-			    cache.getNumSamples());
+	    String fname = 
+              (cache.getFirstTimeStamp() + ":" + 
+               cache.getLastTimeStamp() + ":" + 
+               cache.getNumSamples());
 
 	    File file = new File(hdir, fname);
 	    if(file.exists()) 
@@ -6302,7 +6303,7 @@ class QueueMgr
   (
    TaskTimer timer, 
    String hostname, 
-   DateInterval interval, 
+   TimeInterval interval, 
    int extraSamples
   ) 
   {
@@ -6314,8 +6315,8 @@ class QueueMgr
       if(!dir.isDirectory()) 
 	return null;
 	
-      long first = interval.getStartStamp().getTime(); 
-      long last  = interval.getEndStamp().getTime(); 
+      long first = interval.getStartStamp(); 
+      long last  = interval.getEndStamp();
 
       int numSamples = extraSamples; 
       TreeSet<File> sfiles = new TreeSet<File>();
@@ -7180,10 +7181,9 @@ class QueueMgr
 
 	      QueueHost host = pHosts.get(pHostname);
 	      if(host != null) {
-		Date now = new Date();
-		Date lastHung = host.getLastHung();
-		if((lastHung == null) || 
-		   ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+                long now = System.currentTimeMillis();
+		Long lastHung = host.getLastHung();
+		if((lastHung == null) || ((lastHung + sDisableInterval) < now)) 
 		  setHostStatus(host, QueueHost.Status.Hung);
 		else 
 		  setHostStatus(host, QueueHost.Status.Disabled);

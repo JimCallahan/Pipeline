@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.194 2007/03/18 02:30:13 jim Exp $
+// $Id: MasterMgr.java,v 1.195 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -354,8 +354,8 @@ class MasterMgr
 
       pArchiveFileLock    = new Object();
       pArchivedIn         = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
-      pArchivedOn         = new TreeMap<String,Date>();
-      pRestoredOn         = new TreeMap<String,TreeSet<Date>>();
+      pArchivedOn         = new TreeMap<String,Long>();
+      pRestoredOn         = new TreeMap<String,TreeSet<Long>>();
       pOnlineOfflineLocks = new HashMap<String,ReentrantReadWriteLock>();
       pOfflined           = new TreeMap<String,TreeSet<VersionID>>();
       pRestoreReqs        = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
@@ -455,7 +455,7 @@ class MasterMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();
   }
 
@@ -601,7 +601,7 @@ class MasterMgr
 	timer.suspend();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
 	LogMgr.getInstance().flush();
       }
  
@@ -622,10 +622,10 @@ class MasterMgr
 	    for(String aname : pArchivedOn.keySet()) {
 	      if(fname.startsWith(aname)) {
 		try {
-		  Date stamp = new Date(Long.parseLong(fname.substring(aname.length()+1)));
-		  TreeSet<Date> stamps = pRestoredOn.get(aname);
+		  Long stamp = Long.parseLong(fname.substring(aname.length()+1));
+		  TreeSet<Long> stamps = pRestoredOn.get(aname);
 		  if(stamps == null) {
-		    stamps = new TreeSet<Date>();
+		    stamps = new TreeSet<Long>();
 		    pRestoredOn.put(aname, stamps);
 		  }
 		  stamps.add(stamp);
@@ -641,7 +641,7 @@ class MasterMgr
 	timer.suspend();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
 	LogMgr.getInstance().flush();
       }
 
@@ -669,7 +669,7 @@ class MasterMgr
 	  timer.suspend();
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Net, LogMgr.Level.Info,
-	     "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	     "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
 	  LogMgr.getInstance().flush();
 	}
       }
@@ -691,7 +691,7 @@ class MasterMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();
     }
 
@@ -882,7 +882,7 @@ class MasterMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();
   }
 
@@ -914,7 +914,7 @@ class MasterMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
   
@@ -967,7 +967,7 @@ class MasterMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();    
   }
 
@@ -1031,7 +1031,7 @@ class MasterMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();
     }
     else {
@@ -1046,7 +1046,7 @@ class MasterMgr
       timer.suspend();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Loaded in " + Dates.formatInterval(timer.getTotalDuration()));
+	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
       LogMgr.getInstance().flush();
     }
 
@@ -1261,7 +1261,7 @@ class MasterMgr
     timer.suspend();
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Rebuilt in " + Dates.formatInterval(timer.getTotalDuration()));
+       "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
     LogMgr.getInstance().flush();
   }
 
@@ -6170,12 +6170,12 @@ class MasterMgr
 	  ("The node properties of frozen node (" + nodeID + ") cannot be modified!");
 
       /* set the node properties */ 
-      Date critical = mod.getLastCriticalModification();
+      long critical = mod.getLastCriticalModification();
       boolean wasActionEnabled = mod.isActionEnabled();
       if(mod.setProperties(nmod)) {
 
 	/* make sure there are no active jobs, if this is a critical modification */ 
-	if((critical.compareTo(mod.getLastCriticalModification()) < 0) &&
+	if((mod.getLastCriticalModification() > critical) &&
 	   hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
 	  throw new PipelineException
 	    ("Unable to modify critical properties of node (" + nodeID + ") " + 
@@ -8929,7 +8929,7 @@ class MasterMgr
       }
 
       /* get the current timestamp */ 
-      Date timestamp = Dates.now(); 
+      long timestamp = TimeStamps.now(); 
 
       {
 	FileMgrClient fclient = getFileMgrClient();
@@ -9218,7 +9218,7 @@ class MasterMgr
 	  }
 
 	  /* get the current timestamp */ 
-	  Date timestamp = Dates.now(); 
+	  long timestamp = TimeStamps.now(); 
 
 	  {
 	    FileMgrClient fclient = getFileMgrClient();
@@ -9805,7 +9805,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     try {
-      TreeMap<Date,BaseNodeEvent> events = 
+      TreeMap<Long,BaseNodeEvent> events = 
 	readNodeEvents(timer, req.getNames(), req.getUsers(), req.getInterval());
       return new NodeGetEventsRsp(timer, events);
     }
@@ -9872,7 +9872,7 @@ class MasterMgr
       
       EditedNodeEvent event = pRunningEditors.remove(editID);
       if(event != null) {
-	event.setFinishedStamp(new Date()); 
+	event.setFinishedStamp(System.currentTimeMillis()); 
 	pPendingEvents.add(event);
       }
     }
@@ -10840,7 +10840,7 @@ class MasterMgr
   hasActiveJobs
   ( 
    NodeID nodeID, 
-   Date stamp, 
+   long stamp, 
    FileSeq fseq
   )
     throws PipelineException 
@@ -10891,7 +10891,7 @@ class MasterMgr
   killActiveJobs
   ( 
    NodeID nodeID, 
-   Date stamp, 
+   long stamp, 
    FileSeq fseq
   )
     throws PipelineException 
@@ -11222,7 +11222,7 @@ class MasterMgr
 	for(String name : matches.keySet()) {
 	  
 	  /* get the revision numbers and creation timestamps of the included versions */ 
-	  TreeMap<VersionID,Date> stamps = new TreeMap<VersionID,Date>();
+	  TreeMap<VersionID,Long> stamps = new TreeMap<VersionID,Long>();
 	  {
 	    timer.aquire();
 	    ReentrantReadWriteLock lock = getCheckedInLock(name);
@@ -11282,7 +11282,7 @@ class MasterMgr
 		
 		/* get the timestamp of the latest archive containing the 
 		   checked-in version */ 
-		Date archived = null;
+		Long archived = null;
 		if(lastArchive != null) {
 		  timer.aquire();
 		  synchronized(pArchivedOn) {
@@ -11291,7 +11291,7 @@ class MasterMgr
 		  }
 		}
 		
-		Date checkedIn = stamps.get(vid);
+		Long checkedIn = stamps.get(vid);
 		ArchiveInfo info = 
 		  new ArchiveInfo(name, vid, checkedIn, archived, numArchives);
 		archiveInfo.add(info);
@@ -11534,8 +11534,8 @@ class MasterMgr
 	  getToolsetEnvironment(null, null, tname, OsType.Unix, timer);
 	
 	/* the archive name and time stamp */ 
-	Date stamp = new Date();
-	String archiveName = (req.getPrefix() + "-" + stamp.getTime());
+	long stamp = System.currentTimeMillis();
+	String archiveName = (req.getPrefix() + "-" + stamp);
 	synchronized(pArchivedOn) {
 	  if(pArchivedOn.containsKey(archiveName)) 
 	    throw new PipelineException 
@@ -11763,7 +11763,7 @@ class MasterMgr
 	    if((minArchives == null) || (numArchives >= minArchives)) {
 	      
 	      /* get the timestamp of the latest archive containing the checked-in version */ 
-	      Date archived = null;
+	      Long archived = null;
 	      if(lastArchive != null) {
 		timer.aquire();
 		synchronized(pArchivedOn) {
@@ -11775,7 +11775,7 @@ class MasterMgr
 	      /* get the number of working versions based on the checked-in version and 
 		 the timestamp of when the latest working version was checked-out */ 
 	      int numWorking = 0;
-	      Date checkedOut = null;
+              Long checkedOut = null;
 	      String lastAuthor = null;
 	      String lastView = null;
 	      boolean canOffline = true;
@@ -11795,8 +11795,7 @@ class MasterMgr
 		      WorkingBundle bundle = getWorkingBundle(nodeID);
 		      NodeMod mod = bundle.getVersion();
 		      if(vid.equals(mod.getWorkingID())) {
-			if((checkedOut == null) || 
-			   (checkedOut.compareTo(mod.getTimeStamp()) < 0)) {
+			if((checkedOut == null) || (checkedOut < mod.getTimeStamp())) {
 			  checkedOut = mod.getTimeStamp();
 			  lastAuthor = author;
 			  lastView   = view; 
@@ -12488,7 +12487,7 @@ class MasterMgr
       synchronized(pRestoreReqs) {
 	timer.resume();
 
-	Date now = new Date();
+	long now = System.currentTimeMillis();
 
 	for(String name : vsns.keySet()) {
 	  TreeMap<VersionID,RestoreRequest> restores = pRestoreReqs.get(name);
@@ -12625,7 +12624,7 @@ class MasterMgr
 	    switch(rr.getState()) {
 	    case Restored:
 	    case Denied:
-	      if((rr.getResolvedStamp().getTime()+pRestoreCleanupInterval.get()) < now) {
+	      if((rr.getResolvedStamp() + pRestoreCleanupInterval.get()) < now) {
 		TreeSet<VersionID> vids = dead.get(name);
 		if(vids == null) {
 		  vids = new TreeSet<VersionID>();
@@ -12797,7 +12796,7 @@ class MasterMgr
    MiscRestoreReq req
   ) 
   {
-    Date stamp = new Date();
+    long stamp = System.currentTimeMillis();
     String archiveName = req.getName();
     TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
     BaseArchiver archiver = req.getArchiver();
@@ -12925,9 +12924,9 @@ class MasterMgr
 	    }
 	  }
 	  
-	  Date now = new Date();
-	  File file = new File(pNodeDir, "archives/output/restore/" + 
-			       archiveName + "-" + now.getTime());
+          long now = System.currentTimeMillis();
+	  File file = new File(pNodeDir, 
+                               "archives/output/restore/" + archiveName + "-" + now);
 	  try {
 	    FileWriter out = new FileWriter(file);
 	    
@@ -12945,9 +12944,9 @@ class MasterMgr
 	  }
 	 
 	  synchronized(pRestoredOn) {
-	    TreeSet<Date> stamps = pRestoredOn.get(archiveName);
+	    TreeSet<Long> stamps = pRestoredOn.get(archiveName);
 	    if(stamps == null) {
-	      stamps = new TreeSet<Date>();
+	      stamps = new TreeSet<Long>();
 	      pRestoredOn.put(archiveName, stamps);
 	    }
 	    stamps.add(now);
@@ -13247,13 +13246,12 @@ class MasterMgr
   ) 
   {
     String aname = req.getName();
-    Date stamp = req.getTimeStamp();
+    long stamp = req.getTimeStamp();
 
     TaskTimer timer = 
-      new TaskTimer("MasterMgr.getRestoredOutput(): " + aname + "-" + stamp.getTime());
+      new TaskTimer("MasterMgr.getRestoredOutput(): " + aname + "-" + stamp);
     try {
-      File file = new File(pNodeDir, 
-			   "archives/output/restore/" + aname + "-" + stamp.getTime());
+      File file = new File(pNodeDir, "archives/output/restore/" + aname + "-" + stamp);
       String output = null;
       if(file.length() > 0) {
 	FileReader in = new FileReader(file);
@@ -13785,7 +13783,7 @@ class MasterMgr
       boolean workIsFrozen = ((work != null) && work.isFrozen());
     
       /* if not locked, process the upstream nodes */ 
-      Date missingStamp = new Date();
+      long missingStamp = System.currentTimeMillis();
       switch(versionState) {
       case CheckedIn:
 	if(!isTargetLinkLocked) {
@@ -13890,8 +13888,8 @@ class MasterMgr
       /* get per-file FileStates and timestamps */ 
       TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
       boolean[] anyMissing = null;
-      Date[] newestStamps = null;
-      Date[] oldestStamps = null;
+      Long[] newestStamps = null;
+      Long[] oldestStamps = null;
       switch(versionState) {
       case CheckedIn:
 	/* if checked-in, all files must be CheckedIn, no files can be Missing and all 
@@ -13909,17 +13907,17 @@ class MasterMgr
 	    anyMissing = new boolean[fs.length];
 	  
 	  if(newestStamps == null) 
-	    newestStamps = new Date[fs.length];	  
+	    newestStamps = new Long[fs.length];	  
 
 	  if(oldestStamps == null) 
-	    oldestStamps = new Date[fs.length];
+	    oldestStamps = new Long[fs.length];
 	}
 	break;
 
       default:
 	{
 	  /* get the per-file states and timestamps */
-	  TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
+	  TreeMap<FileSeq, Long[]> stamps = new TreeMap<FileSeq, Long[]>();
 	  
 	  /* query the file manager */
 	  {	     
@@ -13929,7 +13927,7 @@ class MasterMgr
 	      if(latest != null) 
 		vid = latest.getVersionID();
 
-	      Date critical = null;
+	      Long critical = null;
 	      if(work != null)
 		critical = work.getLastCTimeUpdate(); 
 
@@ -13939,7 +13937,7 @@ class MasterMgr
 	      /* if frozen, all the files are just links so use the working time stamp */ 
 	      if(workIsFrozen) {
 		for(FileSeq fseq : work.getSequences()) {
-		  Date ts[] = new Date[fseq.numFrames()];
+		  Long ts[] = new Long[fseq.numFrames()];
 
 		  int wk;
 		  for(wk=0; wk<ts.length; wk++) 
@@ -13956,24 +13954,24 @@ class MasterMgr
 
 	  /* get the newest/oldest of the timestamp for each file sequence index */ 
 	  for(FileSeq fseq : stamps.keySet()) {
-	    Date[] ts = stamps.get(fseq);
+	    Long[] ts = stamps.get(fseq);
 	    
 	    if(newestStamps == null) 
-	      newestStamps = new Date[ts.length];
+	      newestStamps = new Long[ts.length];
 	    
 	    if(oldestStamps == null) 
-	      oldestStamps = new Date[ts.length];
+	      oldestStamps = new Long[ts.length];
 	    
 	    int wk;
 	    for(wk=0; wk<ts.length; wk++) {
 	      /* the newest among the primary/secondary files for the index */ 
 	      if((newestStamps[wk] == null) || 
-		 ((ts[wk] != null) && (ts[wk].compareTo(newestStamps[wk]) > 0)))
+		 ((ts[wk] != null) && (ts[wk] > newestStamps[wk])))
 		newestStamps[wk] = ts[wk];
 	      
 	      /* the oldest among the primary/secondary files for the index */ 
 	      if((oldestStamps[wk] == null) || 
-		 ((ts[wk] != null) && (ts[wk].compareTo(oldestStamps[wk]) < 0)))
+		 ((ts[wk] != null) && (ts[wk] < oldestStamps[wk])))
 		oldestStamps[wk] = ts[wk];
 	    }
 	  }
@@ -14256,7 +14254,7 @@ class MasterMgr
 		  /* check for missing files or if the working version has been modified 
 		     since the oldest of the primary/secondary files were created */ 
 		  if(anyMissing[wk] ||
-		     (oldestStamps[wk].compareTo(work.getLastCriticalModification()) < 0)) {
+                     (oldestStamps[wk] < work.getLastCriticalModification())) {
 		    queueStates[wk] = QueueState.Stale;
 		  }
 		
@@ -14274,7 +14272,7 @@ class MasterMgr
 			default:
 			  {
 			    QueueState lqs[]   = ldetails.getQueueState();
-			    Date lstamps[]     = ldetails.getFileTimeStamps();
+                            long lstamps[]     = ldetails.getFileTimeStamps();
 			    boolean lignored[] = ldetails.ignoreTimeStamps();
 
 			    boolean nonIgnored = nonIgnoredSources.contains(link.getName());
@@ -14301,8 +14299,8 @@ class MasterMgr
 				if(((idx >= 0) && (idx < lqs.length)) &&
 				   ((lqs[idx] != QueueState.Finished) || 
 				    lanyMissing[idx] || 
-				    ((!lignored[idx] || nonIgnored) && (lstamps[idx] != null) &&
-				     (oldestStamps[wk].compareTo(lstamps[idx]) < 0))))
+				    ((!lignored[idx] || nonIgnored) &&
+				     (oldestStamps[wk] < lstamps[idx]))))
 				  queueStates[wk] = QueueState.Stale;
 			      }
 			      break;
@@ -14313,8 +14311,8 @@ class MasterMgr
 				for(fk=0; fk<lqs.length; fk++) {
 				  if((lqs[fk] != QueueState.Finished) || 
 				     lanyMissing[fk] || 
-				     ((!lignored[fk] || nonIgnored) && (lstamps[fk] != null) &&
-				      (oldestStamps[wk].compareTo(lstamps[fk]) < 0))) {
+				     ((!lignored[fk] || nonIgnored) &&
+                                      (oldestStamps[wk] < lstamps[fk]))) {
 				    queueStates[wk] = QueueState.Stale;
 				    break;
 				  }
@@ -14429,7 +14427,7 @@ class MasterMgr
 		  case Finished:
 		    {
 		      QueueState lqs[]   = ldetails.getQueueState();
-		      Date lstamps[]     = ldetails.getFileTimeStamps();
+		      long lstamps[]     = ldetails.getFileTimeStamps();
 		      boolean lignored[] = ldetails.ignoreTimeStamps();
 
 		      boolean nonIgnored = nonIgnoredSources.contains(link.getName());
@@ -14456,7 +14454,7 @@ class MasterMgr
 			  if((idx >= 0) && (idx < lqs.length)) {
 			    if(anyMissing[wk] || lanyMissing[idx] || 
 			       ((!lignored[idx] || nonIgnored) && 
-				(oldestStamps[wk].compareTo(lstamps[idx]) < 0)))
+                                (oldestStamps[wk] < lstamps[idx])))
 			      staleLink = true;
 			  }
 			}
@@ -14468,7 +14466,7 @@ class MasterMgr
 			  for(fk=0; fk<lqs.length; fk++) {
 			    if(anyMissing[wk] || lanyMissing[fk] || 
 			       ((!lignored[fk] || nonIgnored) && 
-				(oldestStamps[wk].compareTo(lstamps[fk]) < 0)))
+				(oldestStamps[wk] < lstamps[fk])))
 			      staleLink = true;
 			  }
 			}
@@ -14523,7 +14521,7 @@ class MasterMgr
        *     staleness of those nodes further upstream.  Upstream per-file time stamps which 
        *     are (null) should be ignored.
        */
-      Date[] fileStamps = new Date[oldestStamps.length];
+      long[] fileStamps = new long[oldestStamps.length];
       boolean[] ignoreStamps = new boolean[oldestStamps.length];
       switch(versionState) {
       case CheckedIn:
@@ -14545,8 +14543,8 @@ class MasterMgr
 	    else 
 	      fileStamps[wk] = newestStamps[wk];
 
-	    Date critical = work.getLastCriticalModification();
-	    if(critical.compareTo(fileStamps[wk]) > 0) 
+	    long critical = work.getLastCriticalModification();
+	    if(critical > fileStamps[wk])
 	      fileStamps[wk] = critical;
 
 	    switch(overallNodeState) {
@@ -14563,7 +14561,7 @@ class MasterMgr
 		NodeDetails ldetails = lstatus.getDetails();
 		
 		QueueState lqs[]   = ldetails.getQueueState();
-		Date lstamps[]     = ldetails.getFileTimeStamps();
+		long lstamps[]     = ldetails.getFileTimeStamps();
 		boolean lignored[] = ldetails.ignoreTimeStamps();
 		
 		boolean nonIgnored = nonIgnoredSources.contains(link.getName());
@@ -14577,7 +14575,7 @@ class MasterMgr
 		    if((idx >= 0) && (idx < lqs.length)) {
 		      if(!lignored[idx] || nonIgnored) {
 			ignoreStamps[wk] = false;
-			if(lstamps[idx].compareTo(fileStamps[wk]) > 0)
+			if(lstamps[idx] > fileStamps[wk])
 			  fileStamps[wk] = lstamps[idx];
 		      }
 		    }
@@ -14590,7 +14588,7 @@ class MasterMgr
 		    for(fk=0; fk<lqs.length; fk++) {
 		      if(!lignored[fk] || nonIgnored) {
 			ignoreStamps[wk] = false;
-			if(lstamps[fk].compareTo(fileStamps[wk]) > 0) 
+			if(lstamps[fk] > fileStamps[wk])
 			  fileStamps[wk] = lstamps[fk];
 		      }
 		    }
@@ -16002,7 +16000,7 @@ class MasterMgr
 	try {
 	  TreeMap<String,Long> archivedOn = new TreeMap<String,Long>();
 	  for(String aname : pArchivedOn.keySet()) 
-	    archivedOn.put(aname, pArchivedOn.get(aname).getTime());
+	    archivedOn.put(aname, pArchivedOn.get(aname));
 
 	  GlueEncoder ge = new GlueEncoderImpl("ArchivedOn", archivedOn);
 	  glue = ge.getText();
@@ -16052,12 +16050,10 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Archived On Cache...");
 
+      pArchivedOn.clear();
       try {
 	GlueDecoder gd = new GlueDecoderImpl(file);
-	
-	TreeMap<String,Long> archivedOn = (TreeMap<String,Long>) gd.getObject();
-	for(String aname : archivedOn.keySet()) 
-	  pArchivedOn.put(aname, new Date(archivedOn.get(aname)));	
+        pArchivedOn.putAll((TreeMap<String,Long>) gd.getObject());
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -16101,15 +16097,7 @@ class MasterMgr
       try {
 	String glue = null;
 	try {
-	  TreeMap<String,TreeSet<Long>> restoredOn = new TreeMap<String,TreeSet<Long>>();
-	  for(String aname : pRestoredOn.keySet()) {
-	    TreeSet<Long> stamps = new TreeSet<Long>();
-	    restoredOn.put(aname, stamps);
-	    for(Date stamp : pRestoredOn.get(aname)) 
-	      stamps.add(stamp.getTime());
-	  }
-	      
-	  GlueEncoder ge = new GlueEncoderImpl("RestoredOn", restoredOn);
+	  GlueEncoder ge = new GlueEncoderImpl("RestoredOn", pRestoredOn);
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
@@ -16157,18 +16145,10 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Restored On Cache...");
 
+      pRestoredOn.clear();
       try {
 	GlueDecoder gd = new GlueDecoderImpl(file);
-
-	TreeMap<String,TreeSet<Long>> restoredOn = 
-	  (TreeMap<String,TreeSet<Long>>) gd.getObject();
-
-	for(String aname : restoredOn.keySet()) {
-	  TreeSet<Date> stamps = new TreeSet<Date>();
-	  pRestoredOn.put(aname, stamps);
-	  for(Long stamp : restoredOn.get(aname)) 
-	    stamps.add(new Date(stamp));
-	}
+        pRestoredOn.putAll((TreeMap<String,TreeSet<Long>>) gd.getObject());
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
@@ -17489,7 +17469,7 @@ class MasterMgr
 	    ("Unable to create the directory (" + ndir + ")!");
     }
     
-    String stamp = String.valueOf(event.getTimeStamp().getTime()); 
+    String stamp = String.valueOf(event.getTimeStamp()); 
 
     File nfile = new File(ndir, stamp);
     if(nfile.isFile()) 
@@ -17570,34 +17550,33 @@ class MasterMgr
    * @throws PipelineException
    *   If unable to read the node event files.
    */ 
-  private TreeMap<Date,BaseNodeEvent> 
+  private TreeMap<Long,BaseNodeEvent> 
   readNodeEvents
   (
    TaskTimer timer, 
    TreeSet<String> names, 
    TreeSet<String> users, 
-   DateInterval interval
+   TimeInterval interval
   ) 
     throws PipelineException
   {
-
-    Date start  = new Date(0L);
-    Date finish = new Date(Long.MAX_VALUE);
+    long start  = 0L;
+    long finish = Long.MAX_VALUE;
     if(interval != null) {
       start  = interval.getStartStamp();
       finish = interval.getEndStamp();
     }
 
-    TreeMap<Date,BaseNodeEvent> events = new TreeMap<Date,BaseNodeEvent>();
+    TreeMap<Long,BaseNodeEvent> events = new TreeMap<Long,BaseNodeEvent>();
 
     timer.aquire();
     synchronized(pNodeEventFileLock) {
       timer.resume();
 
       /* get the node files within the interval for the given nodes */ 
-      TreeMap<Date,File> nameFiles = null; 
+      TreeMap<Long,File> nameFiles = null; 
       if(names != null) {
-	nameFiles = new TreeMap<Date,File>();
+	nameFiles = new TreeMap<Long,File>();
 	for(String name : names) {
 	  File dir = new File(pNodeDir, "events/nodes" + name);
 	  scanNodeEventDir(dir, start, finish, nameFiles);
@@ -17605,19 +17584,19 @@ class MasterMgr
       }
 
       /* get the user files within the interval for the given users */ 
-      TreeMap<Date,File> userFiles = null; 
+      TreeMap<Long,File> userFiles = null; 
       if(users != null) {
-	userFiles = new TreeMap<Date,File>();
+	userFiles = new TreeMap<Long,File>();
 	for(String user : users) 
 	  scanUserNodeEventDirs(user, start, finish, userFiles);
       }
 
       /* determine the event files to read */ 
-      TreeMap<Date,File> eventFiles = null;
+      TreeMap<Long,File> eventFiles = null;
       if(nameFiles == null) {
 	/* all events within the interval */ 
 	if(userFiles == null) {
-	  eventFiles = new TreeMap<Date,File>();
+	  eventFiles = new TreeMap<Long,File>();
 
 	  File dir = new File(pNodeDir, "events/authors");
 	  File subdirs[] = dir.listFiles();
@@ -17642,8 +17621,8 @@ class MasterMgr
 
 	/* all events included in both the given nodes and users within the interval */ 
 	else {
-	  eventFiles = new TreeMap<Date,File>();
-	  for(Date stamp : userFiles.keySet()) {
+	  eventFiles = new TreeMap<Long,File>();
+	  for(Long stamp : userFiles.keySet()) {
 	    if(nameFiles.containsKey(stamp))
 	      eventFiles.put(stamp, nameFiles.get(stamp));
 	  }
@@ -17685,9 +17664,9 @@ class MasterMgr
   scanUserNodeEventDirs
   (
    String user,
-   Date start, 
-   Date finish, 
-   TreeMap<Date,File> found
+   long start, 
+   long finish, 
+   TreeMap<Long,File> found
   )  
   {
     GregorianCalendar calendar = new GregorianCalendar();
@@ -17699,8 +17678,8 @@ class MasterMgr
       File sdir = subdirs[wk];
       
       if(sdir.isDirectory()) {
-	Date dstart  = null;
-	Date dfinish = null;
+	Long dstart  = null;
+	Long dfinish = null;
 	try {
 	  String sname = sdir.getName();
 	  int year  = Integer.parseInt(sname.substring(0, 4));
@@ -17709,10 +17688,10 @@ class MasterMgr
 	  
 	  calendar.clear();
 	  calendar.set(year, month-1, day);
-	  dstart = calendar.getTime(); 
+	  dstart = calendar.getTimeInMillis(); 
 	  
 	  calendar.add(Calendar.DAY_OF_MONTH, 1); 
-	  dfinish = calendar.getTime(); 
+	  dfinish = calendar.getTimeInMillis(); 
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -17723,9 +17702,7 @@ class MasterMgr
 	}
 	
 	if((dstart != null) && (dfinish != null) && 
-	   (start.compareTo(dfinish) <= 0) && 
-	   (finish.compareTo(dstart) >= 0)) {
-	  
+	   (start <= dfinish) && (finish >= dstart)) {
 	  scanNodeEventDir(sdir, start, finish, found);
 	}
       }
@@ -17740,9 +17717,9 @@ class MasterMgr
   scanNodeEventDir
   (
    File dir, 
-   Date start, 
-   Date finish, 
-   TreeMap<Date,File> found
+   long start, 
+   long finish, 
+   TreeMap<Long,File> found
   )
   {
     File files[] = dir.listFiles();
@@ -17750,9 +17727,9 @@ class MasterMgr
     for(wk=0; wk<files.length; wk++) {
       File file = files[wk];
       if(file.isFile()) {
-	Date stamp = null;
+	Long stamp = null;
 	try {
-	  stamp = new Date(Long.parseLong(file.getName()));		
+	  stamp = Long.parseLong(file.getName());		
 	}
 	catch(NumberFormatException ex) {
 	  LogMgr.getInstance().log
@@ -17762,11 +17739,8 @@ class MasterMgr
 	  LogMgr.getInstance().flush();
 	}
 	
-	if((stamp != null) && 
-	   (stamp.compareTo(start) >= 0) && 
-	   (stamp.compareTo(finish) <= 0)) {
+	if((stamp != null) && (stamp >= start) && (stamp <= finish)) 
 	  found.put(stamp, file);
-	}
       }
     }
   }
@@ -18632,7 +18606,6 @@ class MasterMgr
 	  {
 	    for(FileSeq fseq : details.getFileStateSequences()) {
 	      FileState fs[] = new FileState[fseq.numFrames()];
-	      Date stamps[] = new Date[fseq.numFrames()];
 
 	      if(jobIDs == null) 
 		jobIDs = new Long[fs.length];
@@ -18998,7 +18971,7 @@ class MasterMgr
 
    * Access to this field should be protected by a synchronized block.
    */
-  private TreeMap<String,Date>  pArchivedOn;
+  private TreeMap<String,Long>  pArchivedOn;
 
   /**
    * The timestamps of when versions from each archive volume was was created indexed by 
@@ -19008,7 +18981,7 @@ class MasterMgr
 
    * Access to this field should be protected by a synchronized block.
    */
-  private TreeMap<String,TreeSet<Date>>  pRestoredOn;
+  private TreeMap<String,TreeSet<Long>>  pRestoredOn;
 
   /**
    * The per-node online/offline locks indexed by fully resolved node name. <P> 

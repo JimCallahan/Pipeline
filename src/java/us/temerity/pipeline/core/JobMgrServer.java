@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.29 2007/03/28 19:37:53 jim Exp $
+// $Id: JobMgrServer.java,v 1.30 2007/03/28 19:51:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -76,7 +76,7 @@ class JobMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.\n" + 
-	 "  Started in " + Dates.formatInterval(pTimer.getTotalDuration()));
+	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
@@ -170,7 +170,7 @@ class JobMgrServer
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Shutdown.\n" + 
-	 "  Uptime " + Dates.formatInterval(pTimer.getTotalDuration()));
+	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();  
     }  
   }
