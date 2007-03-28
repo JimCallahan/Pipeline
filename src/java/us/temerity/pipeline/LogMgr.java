@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.8 2006/12/07 09:42:01 jim Exp $
+// $Id: LogMgr.java,v 1.9 2007/03/28 19:09:39 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -686,8 +686,13 @@ class LogMgr
     /**
      * Activity of server extension threads.
      */ 
-    Ext;
+    Ext,
 
+
+    /**
+     * Client/Server time synchronization. 
+     */ 
+    Tim;
 
     /**
      * Get the list of all possible states.
@@ -782,7 +787,8 @@ class LogMgr
     "DSP", 
     "COL",
     "SCH", 
-    "EXT"
+    "EXT", 
+    "TIM"
   };
 
 
