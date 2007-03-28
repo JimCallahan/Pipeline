@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.5 2007/03/25 19:35:54 jim Exp $
+// $Id: CatFilesAction.java,v 1.6 2007/03/28 20:05:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -18,12 +18,6 @@ import java.io.*;
  * All of the dependencies of the target node which set the Order per-source sequence 
  * parameter will be processed to produce the files associated with the target node. <P> 
  * 
- * By default, the "python" program is used by this action when running on Windows to perform
- * the file concatenation.  An alternative program can be specified by setting PYTHON_BINARY 
- * in the Toolset environment to the name of the Python interpertor this Action should use.  
- * When naming an alternative Python interpretor under Windows, make sure to include the 
- * ".exe" extension in the program name.<P> 
- * 
  * This action defines the following per-source parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
@@ -33,6 +27,12 @@ import java.io.*;
  *     If this parameter is not set for a source node file sequence, it will be ignored.
  *   </DIV> 
  * </DIV> <P> 
+ * 
+ * By default, the "python" program is used by this action when running on Windows to perform
+ * the file concatenation.  An alternative program can be specified by setting PYTHON_BINARY 
+ * in the Toolset environment to the name of the Python interpertor this Action should use.  
+ * When naming an alternative Python interpretor under Windows, make sure to include the 
+ * ".exe" extension in the program name.
  */
 public
 class CatFilesAction

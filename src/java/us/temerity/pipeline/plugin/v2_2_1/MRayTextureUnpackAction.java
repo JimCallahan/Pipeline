@@ -1,4 +1,4 @@
-// $Id: MRayTextureUnpackAction.java,v 1.1 2007/03/24 23:59:49 jim Exp $
+// $Id: MRayTextureUnpackAction.java,v 1.2 2007/03/28 20:05:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -48,13 +48,7 @@ import java.io.*;
  * is through the use of hardware specific Selection Keys. <P>
  * 
  * See the Mental Ray documentation for for details about <B>imf_copy</B>(1) and memory
- * mapped texture files. <P> 
- * 
- * By default, the "python" program is used by this action when running on Windows to run
- * the "imf_copy" commands.  An alternative program can be specified by setting PYTHON_BINARY 
- * in the Toolset environment to the name of the Python interpertor this Action should use.  
- * When naming an alternative Python interpretor under Windows, make sure to include the 
- * ".exe" extension in the program name.<P> 
+ * mapped texture files. <P>
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -69,7 +63,13 @@ import java.io.*;
  *   <DIV style="margin-left: 40px;">
  *     Additional command-line arguments. <BR> 
  *   </DIV> <BR>
- * </DIV>
+ * </DIV> <P> 
+ * 
+ * By default, the "python" program is used by this action when running on Windows to run
+ * the "imf_copy" commands.  An alternative program can be specified by setting PYTHON_BINARY 
+ * in the Toolset environment to the name of the Python interpertor this Action should use.  
+ * When naming an alternative Python interpretor under Windows, make sure to include the 
+ * ".exe" extension in the program name.
  */
 public
 class MRayTextureUnpackAction

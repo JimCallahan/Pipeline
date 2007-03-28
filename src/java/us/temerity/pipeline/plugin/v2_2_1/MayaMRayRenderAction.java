@@ -1,4 +1,4 @@
-// $Id: MayaMRayRenderAction.java,v 1.4 2007/03/25 03:09:57 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.5 2007/03/28 20:05:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -22,12 +22,6 @@ import us.temerity.pipeline.*;
  * Both before and after the export, optional MEL scripts may be evaluated.  The MEL scripts
  * must be the primary file sequence of one of the source nodes and are assigned to the 
  * appropriate stage using the PreExportMEL and PostExportMEL single valued parameters. <P> 
- * 
- * By default, the "python" program is used by this action when running on Windows to run
- * Maya and Mental Ray.  An alternative program can be specified by setting PYTHON_BINARY 
- * in the Toolset environment to the name of the Python interpertor this Action should use.  
- * When naming an alternative Python interpretor under Windows, make sure to include the 
- * ".exe" extension in the program name.<P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -84,6 +78,16 @@ import us.temerity.pipeline.*;
  *      Additional command-line arguments.
  *   </DIV> <BR>
  * </DIV> <P> 
+ * 
+ * If the environmental variable MRAY_BINARY is defined, its value will be used as the 
+ * name of the renderer executable instead of the "ray" (Unix/MacOS) or "ray345.exe" 
+ * (Windows).  On Windows, the renderer name should include the ".exe" extension. <P> 
+ * 
+ * By default, the "python" program is used by this action when running on Windows to run
+ * Maya and Mental Ray.  An alternative program can be specified by setting PYTHON_BINARY 
+ * in the Toolset environment to the name of the Python interpertor this Action should use.  
+ * When naming an alternative Python interpretor under Windows, make sure to include the 
+ * ".exe" extension in the program name.
  */ 
 public class MayaMRayRenderAction
   extends MayaAction
@@ -290,12 +294,13 @@ public class MayaMRayRenderAction
       
       if(!exts.contains(suffix))
         throw new PipelineException
-          ("The MRayExportRender Action does not support target images with a suffix " + 
+          ("The " + getName() + " Action does not support target images with a suffix " + 
            "of (" + suffix + ").");
 
       if(!target.hasFrameNumbers())
         throw new PipelineException
-          ("The MRayExportRender Action requires that the output images have frame numbers.");
+          ("The " + getName() + " Action requires that the output images have frame " + 
+           "numbers.");
     }
 
     /* the source Maya scene */ 

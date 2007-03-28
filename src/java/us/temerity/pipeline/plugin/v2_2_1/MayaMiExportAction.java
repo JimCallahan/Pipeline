@@ -1,4 +1,4 @@
-// $Id: MayaMiExportAction.java,v 1.2 2007/03/26 23:34:15 jim Exp $
+// $Id: MayaMiExportAction.java,v 1.3 2007/03/28 20:05:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -22,13 +22,13 @@ import us.temerity.pipeline.*;
  * <DIV style="margin-left: 40px;">
  *   Maya Scene <BR>
  *   <DIV style="margin-left: 40px;">
- *     The source node which contains the Maya scene file. <BR> 
+ *     The source node which contains the Maya scene file. 
  *   </DIV> <BR>
  * 
  *   Output Format <BR>
  *   <DIV style="margin-left: 40px;">
- *     The format of the output MI file. <BR>
- *   </DIV> 
+ *     The format of the output MI file. 
+ *   </DIV> <BR>
  * 
  *   <I> Render Global Options</I> <BR>
  *   <DIV style="margin-left: 40px;"> 
@@ -646,7 +646,7 @@ class MayaMiExportAction
       targetSeq = fseq;
     }
 
-    /* create a temporary MEL script to expot the MI files */ 
+    /* create a temporary MEL script to export the MI files */ 
     File script = createTemp(agenda, "mel");
     try {
       FileWriter out = new FileWriter(script); 
@@ -867,11 +867,13 @@ class MayaMiExportAction
     layout.addEntry(aOutputFormat);
 
     {
-      LayoutGroup group = new LayoutGroup
+      LayoutGroup group = 
+        new LayoutGroup
 	("Render Global Settings",
 	 "Parameters in the render globals which control how objects are " + 
 	 "translated to the mi format.",
 	 true);
+
       group.addEntry(aExportExactHierarchy);
       group.addEntry(aExportFullDagPath);
       group.addEntry(aExportTexturesFirst);
@@ -885,10 +887,12 @@ class MayaMiExportAction
     }
 
     {
-      LayoutGroup group = new LayoutGroup
+      LayoutGroup group = 
+        new LayoutGroup
 	("Fragment Export",
 	 "Parameters for specifying which subset of the Maya scene to export.",
 	 false);
+
       group.addEntry(sExportSet);
       group.addSeparator();
       group.addEntry(aExportChildren);
@@ -899,10 +903,12 @@ class MayaMiExportAction
     }
 
     {
-      LayoutGroup group = new LayoutGroup
+      LayoutGroup group = 
+        new LayoutGroup
 	("Exported Entities",
 	 "Fine grained control over the types of Mental Ray entities exported.",
 	 false);
+
       group.addEntry("EntityPresets");
       group.addSeparator();
       group.addEntry(aLinks);
@@ -936,10 +942,12 @@ class MayaMiExportAction
     }
 
     {
-      LayoutGroup group = new LayoutGroup
+      LayoutGroup group = 
+        new LayoutGroup
 	("MEL Scripts",
 	 "MEL scripts run at various stages of the exporting process.", 
 	 true);
+
       group.addEntry(aPreExportMEL);
       group.addEntry(aPostExportMEL);
 

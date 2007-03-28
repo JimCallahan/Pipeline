@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.4 2007/03/25 03:12:51 jim Exp $
+// $Id: PythonAction.java,v 1.5 2007/03/28 20:05:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -21,11 +21,6 @@ import java.io.*;
  * more convienient and provides controls over how the Python interpreter is invoked.  It is
  * also possible to write Python scripts using the "os" module which are truely platform
  * independent.<P> 
- * 
- * By default, the "python" program is used as the interpretor.  An alternative program can 
- * be specified by setting PYTHON_BINARY in the Toolset environment to the name of the Python
- * interpertor this Action should use.  On Windows, the name of the Python interpretor should 
- * include the ".exe" extension.<P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -93,7 +88,12 @@ import java.io.*;
  * <PRE>
  * OutFile = 'C:/WINDOWS/Temp/pljobmgr/<I>jobid-number</I>/stdout'
  * ErrFile = 'C:/WINDOWS/Temp/pljobmgr/<I>jobid-number</I>/stderr'
- * </PRE>
+ * </PRE> <P> 
+ * 
+ * By default, the "python" program is used as the interpretor.  An alternative program can 
+ * be specified by setting PYTHON_BINARY in the Toolset environment to the name of the Python
+ * interpertor this Action should use.  On Windows, the name of the Python interpretor should 
+ * include the ".exe" extension.
  */
 public
 class PythonAction 
