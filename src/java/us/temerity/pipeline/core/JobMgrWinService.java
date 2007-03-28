@@ -1,4 +1,4 @@
-// $Id: JobMgrWinService.java,v 1.2 2007/02/13 02:49:49 jim Exp $
+// $Id: JobMgrWinService.java,v 1.3 2007/03/28 19:38:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -107,106 +107,6 @@ class JobMgrWinService
 	 ex.getMessage());
     }
   }
-
-
-//   /**
-//    * Performs the processing that occurs when the service receives a Start command. <P> 
-//    * 
-//    * Subclasses should implement this method as the top-level entry function and main loop 
-//    * for the service which does not return as long as the service is still running. 
-//    */ 
-//   public void 
-//   onStart()
-//   {
-//     try {
-//       File file = new File("C:/TEMP/JobMgrWinService-OnStart.log");
-//       if(file.exists()) 
-// 	file.delete();
-
-//       FileWriter out = new FileWriter(file);
-      
-//       {
-// 	Date now = new Date();
-// 	out.write("STARTED: " + now + "\n");
-// 	out.flush();
-
-// 	System.out.print("STARTED: " + now + "\n");
-// 	System.err.print("STARTED: " + now + "\n");
-//       }
-      
-//       while(!pShutdown.get()) {
-// 	Date now = new Date();
-// 	out.write("  Running: " + now + "\n");
-// 	out.flush();
-
-// 	System.out.print("  Running: " + now + "\n");
-
-// 	Thread.sleep(5000);
-//       }
-      
-//       {
-// 	Date now = new Date();
-// 	out.write("STOPPED: " + now + "\n");
-// 	out.flush();
-
-// 	System.out.print("STOPPED: " + now + "\n");
-// 	System.err.print("STOPPED: " + now + "\n");
-//       }
-
-//       out.close();
-//     }
-//     catch(Exception ex) {
-//       ex.printStackTrace();
-//       System.exit(1);
-//     }
-//   }
-  
-//   /**
-//    * Performs the processing that occurs when the service receives a Stop command. <P> 
-//    * 
-//    * Subclasses should implement this method to asynchronously signal the shutdown of the 
-//    * service.  This method need not wait on the shutdown to complete.  Typically, this 
-//    * method simply sets a flag to signal the shutdown which the {@link onStart} method
-//    * periodically checks.
-//    */ 
-//   public void 
-//   onStop()
-//   {
-//     try {
-//       File file = new File("C:/TEMP/JobMgrWinService-OnStop.log");
-//       if(file.exists()) 
-// 	file.delete();
-
-//       FileWriter out = new FileWriter(file);
-      
-//       {
-// 	Date now = new Date();
-// 	out.write("Shutting Down: " + now + "\n");
-// 	out.flush();
-//       }
-      
-//       pShutdown.set(true);
-
-//       {
-// 	Date now = new Date();
-// 	out.write("SHUTDOWN: " + now + "\n");
-// 	out.flush();
-// 	out.close();
-//       }
-//     }
-//     catch(Exception ex) {
-//       ex.printStackTrace();
-//       System.exit(1);
-//     }
-//   }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  private AtomicBoolean  pShutdown; 
 }
 
 
