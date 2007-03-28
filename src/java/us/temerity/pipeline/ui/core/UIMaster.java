@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.59 2007/03/24 15:56:04 jim Exp $
+// $Id: UIMaster.java,v 1.60 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2679,7 +2679,8 @@ class UIMaster
 	TaskTimer timer = pOpsTimers[channel]; 
 	if(timer != null) {
 	  timer.suspend();
-	  timedMsg = (msg + "   (" + Dates.formatInterval(timer.getActiveDuration()) + ")");
+	  timedMsg = 
+            (msg + "   (" + TimeStamps.formatInterval(timer.getActiveDuration()) + ")");
 	}
 
 	pOpsRunning[channel].set(false);

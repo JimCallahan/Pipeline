@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.15 2006/12/10 00:21:26 jim Exp $
+// $Id: FileStateRsp.java,v 1.16 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -48,8 +48,8 @@ class FileStateRsp
   (
    TaskTimer timer, 
    NodeID id, 
-   TreeMap<FileSeq, FileState[]> states,
-   TreeMap<FileSeq, Date[]> timestamps
+   TreeMap<FileSeq,FileState[]> states,
+   TreeMap<FileSeq,Long[]> timestamps
   )
   { 
     super(timer);
@@ -106,7 +106,7 @@ class FileStateRsp
    * 
    * Individual timestamps may be <CODE>null</CODE> if no corresponding working file exists.
    */
-  public TreeMap<FileSeq, Date[]>
+  public TreeMap<FileSeq,Long[]>
   getTimeStamps() 
   {
     return pTimeStamps;
@@ -134,7 +134,7 @@ class FileStateRsp
    * The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    * the working version indexed by file sequence.
    */
-  private TreeMap<FileSeq, FileState[]>  pStates; 
+  private TreeMap<FileSeq,FileState[]>  pStates; 
 
   /** 
    * The last modification timestamp of each the primary and secondary file associated 
@@ -142,7 +142,7 @@ class FileStateRsp
    * 
    * Individual timestamps may be <CODE>null</CODE> if no corresponding working file exists.
    */
-  private TreeMap<FileSeq, Date[]>  pTimeStamps; 
+  private TreeMap<FileSeq,Long[]>  pTimeStamps; 
 
 }
   

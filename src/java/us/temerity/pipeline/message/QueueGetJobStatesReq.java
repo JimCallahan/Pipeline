@@ -1,4 +1,4 @@
-// $Id: QueueGetJobStatesReq.java,v 1.2 2004/10/21 07:08:15 jim Exp $
+// $Id: QueueGetJobStatesReq.java,v 1.3 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -40,7 +40,7 @@ class QueueGetJobStatesReq
   QueueGetJobStatesReq
   (
    NodeID id, 
-   Date stamp, 
+   long stamp, 
    FileSeq fseq
   )
   { 
@@ -48,8 +48,6 @@ class QueueGetJobStatesReq
       throw new IllegalArgumentException("The node ID cannot be (null)!");
     pNodeID = id;
 
-    if(stamp == null) 
-      throw new IllegalArgumentException("The creation timestamp cannot be (null)!");
     pTimeStamp = stamp;
 
     if(id == null) 
@@ -75,7 +73,7 @@ class QueueGetJobStatesReq
   /**
    * Get when the working version was created.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pTimeStamp;
@@ -112,7 +110,7 @@ class QueueGetJobStatesReq
   /** 
    * The timestamp of when the version was created.
    */
-  private Date  pTimeStamp;
+  private long  pTimeStamp;
 
   /**
    * The primary file sequence.

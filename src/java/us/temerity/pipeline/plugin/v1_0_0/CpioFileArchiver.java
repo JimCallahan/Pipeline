@@ -1,4 +1,4 @@
-// $Id: CpioFileArchiver.java,v 1.5 2005/10/06 17:06:33 jim Exp $
+// $Id: CpioFileArchiver.java,v 1.6 2007/03/28 20:00:41 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -212,7 +212,7 @@ class CpioFileArchiver
   restore
   (
    String name, 
-   Date stamp, 
+   long stamp, 
    Collection<File> files, 
    Map<String,String> env, 
    File dir,

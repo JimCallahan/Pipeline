@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.9 2006/10/25 18:35:33 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.10 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -322,7 +322,7 @@ class JPackageDetailsDialog
 			     " (v" + vsn.getVersionID() + ")");
 
 	pAuthorField.setText(vsn.getAuthor());
-	pTimeStampField.setText(vsn.getTimeStamp().toString());
+	pTimeStampField.setText(TimeStamps.format(vsn.getTimeStamp())); 
 	pDescriptionArea.setText(vsn.getDescription());
 	
 	pHistoryPanel.setVisible(true);

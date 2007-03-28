@@ -1,4 +1,4 @@
-// $Id: ArchiveVolumeTableModel.java,v 1.1 2005/03/21 07:04:36 jim Exp $
+// $Id: ArchiveVolumeTableModel.java,v 1.2 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -356,7 +356,7 @@ class ArchiveVolumeTableModel
 	pRestores[wk] = 0;
     }
 
-    TreeMap<Date,Integer> ordered = new TreeMap<Date,Integer>();
+    TreeMap<Long,Integer> ordered = new TreeMap<Long,Integer>();
     {
       int wk = 0;
       for(ArchiveVolume volume : pVolumes) {
@@ -468,7 +468,7 @@ class ArchiveVolumeTableModel
       return volume.getName();
       
     case 1:
-      return Dates.format(volume.getTimeStamp());
+      return TimeStamps.format(volume.getTimeStamp());
 
     case 2: 
       return pContains[irow];

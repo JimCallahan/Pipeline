@@ -1,4 +1,4 @@
-// $Id: LogQueueActivityExt.java,v 1.3 2006/11/22 09:08:01 jim Exp $
+// $Id: LogQueueActivityExt.java,v 1.4 2007/03/28 20:01:28 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -423,10 +423,10 @@ LogQueueActivityExt
        "    Owner : " + nodeID.getAuthor() + "|" + nodeID.getView() + "\n" +
        "     Node : " + nodeID.getName() + "\n" + 
        "   Target : " + group.getRootSequence() + "\n" +
-       "  Started : " + Dates.format(group.getSubmittedStamp()) + "\n" + 
-       " Finished : " + Dates.format(group.getCompletedStamp()) + "\n" + 
-       " Duration : " + Dates.formatInterval(group.getCompletedStamp().getTime() - 
-					     group.getSubmittedStamp().getTime()));
+       "  Started : " + TimeStamps.format(group.getSubmittedStamp()) + "\n" + 
+       " Finished : " + TimeStamps.format(group.getCompletedStamp()) + "\n" + 
+       " Duration : " + TimeStamps.formatInterval(group.getCompletedStamp() - 
+                                                  group.getSubmittedStamp()));
     
     LogMgr.getInstance().log
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
@@ -749,8 +749,8 @@ LogQueueActivityExt
 	}
 
 	buf.append
-	  ("      Started : " + Dates.format(cache.getFirstTimeStamp()) + "\n" + 
-	   "        Ended : " + Dates.format(cache.getLastTimeStamp()) + "\n" + 
+	  ("      Started : " + TimeStamps.format(cache.getFirstTimeStamp()) + "\n" + 
+	   "        Ended : " + TimeStamps.format(cache.getLastTimeStamp()) + "\n" + 
 	   "  Num Samples : " + numSamples);
 	
 	if(numSamples > 0) {
@@ -893,7 +893,7 @@ LogQueueActivityExt
     NodeID nodeID = job.getNodeID();
     String msg = 
       ("Job " + job.getJobID() + " - STARTED on [" + info.getHostname() + "] at " + 
-       Dates.format(info.getStartedStamp()) + "\n" + 
+       TimeStamps.format(info.getStartedStamp()) + "\n" + 
        "   Owner : " + nodeID.getAuthor() + "|" + nodeID.getView() + "\n" +
        "    Node : " + nodeID.getName() + "\n" + 
        "  Target : " + job.getActionAgenda().getPrimaryTarget());
@@ -948,12 +948,12 @@ LogQueueActivityExt
 	  buf.append("FAILED [" + code + "]");
       }
 
-      Date started = info.getStartedStamp();
-      Date completed = info.getCompletedStamp();
+      Long started = info.getStartedStamp();
+      Long completed = info.getCompletedStamp();
       if((started != null) && (completed != null)) {
 	buf.append
-	  (" at " + Dates.format(completed) + 
-	   " [" + Dates.formatInterval(completed.getTime() - started.getTime()) + "]");
+	  (" at " + TimeStamps.format(completed) + 
+	   " [" + TimeStamps.formatInterval(completed - started) + "]");
       }
     }
     
@@ -998,14 +998,14 @@ LogQueueActivityExt
   ) 
   {
     NodeID nodeID = job.getNodeID();
-    Date now = new Date();
+    long now = System.currentTimeMillis(); 
     String msg = 
       ("Job " + job.getJobID() + " - Preempted on [" + info.getHostname() + "] at " +
-       Dates.format(now) + "\n" + 
+       TimeStamps.format(now) + "\n" + 
        "   Owner : " + nodeID.getAuthor() + "|" + nodeID.getView() + "\n" +
        "    Node : " + nodeID.getName() + "\n" + 
        "  Target : " + job.getActionAgenda().getPrimaryTarget() + "\n" + 
-       " Runtime : " + Dates.formatInterval(now.getTime()-info.getStartedStamp().getTime()));
+       " Runtime : " + TimeStamps.formatInterval(now - info.getStartedStamp()));
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 

@@ -1,4 +1,4 @@
-// $Id: MiscGetArchivedOnRsp.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: MiscGetArchivedOnRsp.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,7 +38,7 @@ class MiscGetArchivedOnRsp
   MiscGetArchivedOnRsp
   (
    TaskTimer timer, 
-   TreeMap<String,Date> index
+   TreeMap<String,Long> index
   )
   { 
     super(timer);
@@ -63,7 +63,7 @@ class MiscGetArchivedOnRsp
   /**
    * Gets the timestamps of when each archive was created indexed by unique archive name.
    */
-  public TreeMap<String,Date>
+  public TreeMap<String,Long>
   getIndex()
   {
     return pIndex;
@@ -86,7 +86,7 @@ class MiscGetArchivedOnRsp
   /**
    * The timestamps of when each archive was created indexed by unique archive name.
    */ 
-  private TreeMap<String,Date>  pIndex;
+  private TreeMap<String,Long>  pIndex;
 
 }
   

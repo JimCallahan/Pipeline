@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.9 2007/02/21 00:58:38 jim Exp $
+// $Id: PanelUpdater.java,v 1.10 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -433,9 +433,9 @@ class PanelUpdater
 
 		/* add full intervals for missing hosts */ 
 		{
-		  Date now = new Date();
-		  Date oldest = new Date(now.getTime() - sCacheInterval);
-		  DateInterval full = new DateInterval(oldest, now);
+		  long now = System.currentTimeMillis();
+                  long oldest = now - sCacheInterval;
+		  TimeInterval full = new TimeInterval(oldest, now);
 
 		  for(String hname : pHosts.keySet()) {
 		    if(!pSampleIntervals.containsKey(hname)) 
@@ -872,7 +872,7 @@ class PanelUpdater
    * The time intervals which need to updated with resource samples 
    * indexed by fully resolved hostname.
    */
-  private TreeMap<String,DateInterval>  pSampleIntervals; 
+  private TreeMap<String,TimeInterval>  pSampleIntervals; 
 
   /**
    * The latest resource samples indexed by fully resolved hostname.

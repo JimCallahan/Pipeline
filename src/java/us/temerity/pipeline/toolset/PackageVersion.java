@@ -1,4 +1,4 @@
-// $Id: PackageVersion.java,v 1.5 2005/06/12 17:58:37 jim Exp $
+// $Id: PackageVersion.java,v 1.6 2007/03/28 20:06:16 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -125,9 +125,10 @@ class PackageVersion
 
 
   /**
-   * Get when the version was created.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * version was created.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pMessage.getTimeStamp();

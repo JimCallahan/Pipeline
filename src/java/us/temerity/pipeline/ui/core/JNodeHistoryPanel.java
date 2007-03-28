@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.19 2007/03/18 02:14:26 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.20 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -546,7 +546,7 @@ class JNodeHistoryPanel
 		hbox2.add(Box.createHorizontalGlue());
 		
 		{
-		  JLabel label = new JLabel(Dates.format(msg.getTimeStamp()));
+		  JLabel label = new JLabel(TimeStamps.format(msg.getTimeStamp()));
 		  label.setForeground(color);
 		  label.setToolTipText(UIFactory.formatToolTip
                     ("When the version was checked-in."));

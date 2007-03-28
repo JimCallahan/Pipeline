@@ -1,4 +1,4 @@
-// $Id: ArchiveVolumeSimpleTableModel.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: ArchiveVolumeSimpleTableModel.java,v 1.2 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -245,7 +245,7 @@ class ArchiveVolumeSimpleTableModel
       return volume.getName();
       
     case 1:
-      return Dates.format(volume.getTimeStamp());
+      return TimeStamps.format(volume.getTimeStamp());
 
     default:
       assert(false);

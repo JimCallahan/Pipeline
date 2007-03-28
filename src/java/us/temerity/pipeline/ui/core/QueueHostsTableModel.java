@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.15 2006/12/14 02:39:05 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.16 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -497,11 +497,9 @@ class QueueHostsTableModel
 	  
 	  ocache.addAllSamples(ncache);
 	  
-	  Date latest = ocache.getLastTimeStamp(); 
-	  if(latest != null) {
-	    Date oldest = new Date(latest.getTime() - sCacheInterval);
-	    ocache.pruneSamplesBefore(oldest); 
-	  }
+	  Long latest = ocache.getLastTimeStamp(); 
+	  if(latest != null) 
+	    ocache.pruneSamplesBefore(latest - sCacheInterval);
 	}
       }
     }
@@ -694,20 +692,20 @@ class QueueHostsTableModel
   /**
    * Get the intervals of time not currently included in the resource samples cache.
    */ 
-  public TreeMap<String,DateInterval>
+  public TreeMap<String,TimeInterval>
   getSampleIntervals() 
   {
-    Date now = new Date();
-    Date oldest = new Date(now.getTime() - sCacheInterval);
+    long now    = System.currentTimeMillis();
+    long oldest = now - sCacheInterval;
     
-    TreeMap<String,DateInterval> intervals = new TreeMap<String,DateInterval>();
+    TreeMap<String,TimeInterval> intervals = new TreeMap<String,TimeInterval>();
 
     for(String hname : pSamples.keySet()) {   
       ResourceSampleCache cache = pSamples.get(hname); 
       if((cache != null) && (cache.getLastTimeStamp() != null)) {
-	Date latest = cache.getLastTimeStamp();
-	if(latest.compareTo(oldest) > 0) 
-	  intervals.put(hname, new DateInterval(latest, now)); 
+	long latest = cache.getLastTimeStamp();
+	if(latest > oldest) 
+	  intervals.put(hname, new TimeInterval(latest, now)); 
       }
     }
       
@@ -855,7 +853,7 @@ class QueueHostsTableModel
 	  if(schedules != null) {
 	    SelectionSchedule sched = schedules.get(sname);
 	    if(sched != null) {
-	      newGroup = sched.activeGroup(new Date());
+	      newGroup = sched.activeGroup(System.currentTimeMillis());
 	      modifyGroup = true;
 	    }
 	  }

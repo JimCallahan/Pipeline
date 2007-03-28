@@ -1,4 +1,4 @@
-// $Id: OfflineCandidateTableModel.java,v 1.3 2005/03/14 16:08:21 jim Exp $
+// $Id: OfflineCandidateTableModel.java,v 1.4 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -130,7 +130,7 @@ class OfflineCandidateTableModel
 	if(info.getArchivedStamp() != null)
 	  value = info.getArchivedStamp();
 	else 
-	  value = new Date(0L);
+	  value = new Long(0L);
 	break;
 	
       case 3:
@@ -141,7 +141,7 @@ class OfflineCandidateTableModel
 	if(info.getCheckedOutStamp() != null)
 	  value = info.getCheckedOutStamp();
 	else 
-	  value = new Date(0L);
+	  value = new Long(0L);
 	break;
 
       case 5:
@@ -311,13 +311,13 @@ class OfflineCandidateTableModel
       return info.getVersionID();
 
     case 2:
-      return Dates.format(info.getArchivedStamp());
+      return TimeStamps.format(info.getArchivedStamp());
 
     case 3:
       return String.valueOf(info.numArchives());
 
     case 4:
-      return Dates.format(info.getCheckedOutStamp());
+      return TimeStamps.format(info.getCheckedOutStamp());
       
     case 5:
       if((info.getAuthor() != null) && (info.getView() != null)) 

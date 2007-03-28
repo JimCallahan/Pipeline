@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.5 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,7 +38,7 @@ class JArchiveVolumesDialog
     /* initialize fields */ 
     {
       pArchiveVolumes = new TreeMap<String,ArchiveVolume>();
-      pRestoredOn     = new TreeMap<String,TreeSet<Date>>();
+      pRestoredOn     = new TreeMap<String,TreeSet<Long>>();
 
       pUpdateLock = new Object();
     }
@@ -423,7 +423,7 @@ class JArchiveVolumesDialog
 	{
 	  UIFactory.createTitledTextField 
 	    (tpanel, "Created On:", sTSize, 
-	     vpanel, Dates.format(volume.getTimeStamp()), sVSize, 
+	     vpanel, TimeStamps.format(volume.getTimeStamp()), sVSize, 
 	     "The timestamp of when the archive volume was created.");
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -457,17 +457,17 @@ class JArchiveVolumesDialog
 	}
 	
 	synchronized(pRestoredOn) {
-	  TreeSet<Date> stamps = pRestoredOn.get(aname);
+	  TreeSet<Long> stamps = pRestoredOn.get(aname);
 	  if((stamps != null) && !stamps.isEmpty()) {
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
 	    
-	    for(Date stamp : stamps) {
+	    for(Long stamp : stamps) {
 	      UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	      {
 		UIFactory.createTitledTextField 
 		  (tpanel, "Restored On:", sTSize, 
-		   vpanel, Dates.format(stamp), sVSize, 
+		   vpanel, TimeStamps.format(stamp), sVSize, 
 		   "The timestamp of when the archive volume was restored.");
 		
 		UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -494,8 +494,7 @@ class JArchiveVolumesDialog
 		  btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
 		  
 		  btn.addActionListener(this);
-		  btn.setActionCommand("show-restore-output:" + 
-				       aname + ":" + stamp.getTime());
+		  btn.setActionCommand("show-restore-output:" + aname + ":" + stamp);
 		  
 		  vpanel.add(btn);
 		}
@@ -635,7 +634,7 @@ class JArchiveVolumesDialog
       String parts[] = cmd.substring(20).split(":");
       if(parts.length == 2) {
 	try {
-	  doShowRestoreOutput(parts[0], new Date(Long.parseLong(parts[1])));
+	  doShowRestoreOutput(parts[0], Long.parseLong(parts[1]));
 	}
 	catch(NumberFormatException ex) {
 	}
@@ -713,7 +712,7 @@ class JArchiveVolumesDialog
   doShowRestoreOutput
   (
    String aname, 
-   Date stamp
+   long stamp
   )
   {
     GetRestoredOutputTask task = new GetRestoredOutputTask(aname, stamp);
@@ -787,7 +786,7 @@ class JArchiveVolumesDialog
 	if(master.beginPanelOp()) {
 	  try {
 	    synchronized(pArchiveVolumes) {
-	      TreeMap<String,Date> archives = client.getArchivedOn();
+	      TreeMap<String,Long> archives = client.getArchivedOn();
 	      for(String aname : archives.keySet()) {
 		ArchiveVolume vol = pArchiveVolumes.get(aname);
 		if(vol == null) {
@@ -1074,7 +1073,7 @@ class JArchiveVolumesDialog
     GetRestoredOutputTask
     (
      String aname, 
-     Date stamp
+     long stamp
     ) 
     {
       super("JArchiveVolumeDialog:GetRestoredOutputTask");
@@ -1104,13 +1103,13 @@ class JArchiveVolumesDialog
 
       ShowOutputTask task = 
 	new ShowOutputTask("Archive Volume:  " + pName, 
-			   "Output from Archive Restoration:  " + Dates.format(pStamp), 
+			   "Output from Archive Restoration:  " + TimeStamps.format(pStamp), 
 			   output);
       SwingUtilities.invokeLater(task);
     }
 
     private String  pName; 
-    private Date    pStamp; 
+    private long    pStamp; 
   }
 
   /** 
@@ -1177,7 +1176,7 @@ class JArchiveVolumesDialog
   /**
    * The timestamps of when each archive volume was restored indexed by archive volume name.
    */
-  private TreeMap<String,TreeSet<Date>>  pRestoredOn; 
+  private TreeMap<String,TreeSet<Long>>  pRestoredOn; 
 
   /**
    * A lock used to synchronize communication with the plmaster(1).

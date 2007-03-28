@@ -1,4 +1,4 @@
-// $Id: JFileSeqListCellRenderer.java,v 1.2 2004/07/14 21:05:53 jim Exp $
+// $Id: JFileSeqListCellRenderer.java,v 1.3 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,8 +83,7 @@ class JFileSeqListCellRenderer
     
       pSizeLabel.setText(null);
 
-      Date date = new Date(file.lastModified());
-      pDateLabel.setText(Dates.format(date));
+      pDateLabel.setText(TimeStamps.format(file.lastModified()));
     }
     else if(value instanceof FileSeq) {
       FileSeq fseq = (FileSeq) value;
@@ -92,8 +91,8 @@ class JFileSeqListCellRenderer
       pNameLabel.setText(fseq.toString());
       pNameLabel.setIcon(isSelected ? sSelectedIcon : sNormalIcon);
 
-      long size = 0;
-      long lastMod = 0;
+      long size    = 0L;
+      long lastMod = 0L;
       for(File file : fseq.getFiles()) {
 	File path = new File(pDir, file.getName());
 	if(path.exists() && path.isFile()) {
@@ -102,22 +101,19 @@ class JFileSeqListCellRenderer
 	}
       }
 
-      if(size > 1073741824) 
+      if(size > 1073741824L) 
 	pSizeLabel.setText(pFormat.format(((double) size) / 1073741824.0) + "G");
-      else if(size > 1048576) 
+      else if(size > 1048576L) 
 	pSizeLabel.setText(pFormat.format(((double) size) / 1048576) + "M");
-      else if(size > 1024) 
+      else if(size > 1024L) 
 	pSizeLabel.setText(pFormat.format(((double) size) / 1024) + "K");
       else
 	pSizeLabel.setText(String.valueOf(size));
       
-      if(lastMod > 0) {
-	Date date = new Date(lastMod);
-	pDateLabel.setText(Dates.format(date));
-      }
-      else {
+      if(lastMod > 0L) 
+        pDateLabel.setText(TimeStamps.format(lastMod));
+      else 
 	pDateLabel.setText(null);
-      }
     }
 
     Color fg = (isSelected ? Color.yellow : Color.white);

@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.6 2006/12/05 22:02:50 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.7 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,7 +143,7 @@ class QueueJobGroupsTableModel
 	if(group.getCompletedStamp() != null)
 	  value = group.getCompletedStamp();
 	else 
-	  value = new Date(0L);
+	  value = new Long(0L);
 	break;
 
       case 5:
@@ -313,11 +313,11 @@ class QueueJobGroupsTableModel
       return group.getRootPattern();
       
     case 3:
-      return Dates.format(group.getSubmittedStamp());
+      return TimeStamps.format(group.getSubmittedStamp());
 
     case 4:
       if(group.getCompletedStamp() != null)
-	return Dates.format(group.getCompletedStamp());
+	return TimeStamps.format(group.getCompletedStamp());
       else 
 	return "-";
 

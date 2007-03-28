@@ -1,4 +1,4 @@
-// $Id: QueueGetHostResourceSamplesReq.java,v 1.2 2006/11/21 19:55:51 jim Exp $
+// $Id: QueueGetHostResourceSamplesReq.java,v 1.3 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,7 +36,7 @@ class QueueGetHostResourceSamplesReq
   public
   QueueGetHostResourceSamplesReq
   (
-   TreeMap<String,DateInterval> intervals,
+   TreeMap<String,TimeInterval> intervals,
    boolean runtimeOnly
   )
   { 
@@ -57,7 +57,7 @@ class QueueGetHostResourceSamplesReq
   /**
    * Gets the sample intervals to retrieve indexed by fully resolved hostnames.
    */
-  public TreeMap<String,DateInterval>
+  public TreeMap<String,TimeInterval>
   getIntervals() 
   {
     return pIntervals; 
@@ -89,7 +89,7 @@ class QueueGetHostResourceSamplesReq
   /**
    * The sample intervals to retrieve indexed by fully resolved hostnames.
    */ 
-  private TreeMap<String,DateInterval>  pIntervals; 
+  private TreeMap<String,TimeInterval>  pIntervals; 
 
   /**
    * Whether to only read samples from the runtime cache ignoring any saved samples

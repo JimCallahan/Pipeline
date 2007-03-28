@@ -1,4 +1,4 @@
-// $Id: FileExtractCleanupReq.java,v 1.1 2005/03/23 00:35:23 jim Exp $
+// $Id: FileExtractCleanupReq.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,7 +38,7 @@ class FileExtractCleanupReq
   FileExtractCleanupReq
   (
    String archiveName, 
-   Date stamp
+   long stamp
   )
   {
     if(archiveName == null) 
@@ -46,9 +46,6 @@ class FileExtractCleanupReq
 	("The volume name cannot be (null)!");
     pArchiveName = archiveName; 
 
-    if(stamp == null) 
-      throw new IllegalArgumentException
-	("The timestamp cannot be (null)!");
     pTimeStamp = stamp;
   }
 
@@ -70,7 +67,7 @@ class FileExtractCleanupReq
   /**
    * Get the timestamp of the start of the restore operation.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pTimeStamp; 
@@ -97,7 +94,7 @@ class FileExtractCleanupReq
   /**
    * The timestamp of the start of the restore operation.
    */ 
-  private Date  pTimeStamp; 
+  private long  pTimeStamp; 
 
 }
   

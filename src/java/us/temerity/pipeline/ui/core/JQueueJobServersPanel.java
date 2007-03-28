@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.5 2007/02/21 00:58:38 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.6 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -475,12 +475,12 @@ class JQueueJobServersPanel
   /**
    * Get the intervals of time not currently included in the resource samples cache. 
    */ 
-  public TreeMap<String,DateInterval>
+  public TreeMap<String,TimeInterval>
   getSampleIntervals() 
   {
     if(pHostsTablePanel != null)
       return pHostsTableModel.getSampleIntervals(); 
-    return new TreeMap<String,DateInterval>();
+    return new TreeMap<String,TimeInterval>();
   }
 
     

@@ -1,4 +1,4 @@
-// $Id: NodeEditingStartedReq.java,v 1.1 2006/12/31 20:44:53 jim Exp $
+// $Id: NodeEditingStartedReq.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -71,7 +71,7 @@ class NodeEditingStartedReq
     if(!pNodeID.getAuthor().equals(getRequestor()))
       imposter = getRequestor();
     
-    return new EditedNodeEvent(new Date(), null, pNodeID, 
+    return new EditedNodeEvent(System.currentTimeMillis(), null, pNodeID, 
 			       pEditorName, pEditorVersionID, pEditorVendor, 
 			       hostname, imposter); 
   }

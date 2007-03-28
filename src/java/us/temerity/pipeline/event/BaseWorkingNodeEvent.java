@@ -1,4 +1,4 @@
-// $Id: BaseWorkingNodeEvent.java,v 1.1 2006/12/31 20:44:53 jim Exp $
+// $Id: BaseWorkingNodeEvent.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -37,7 +37,8 @@ class BaseWorkingNodeEvent
    * Internal constructor used to create new events. 
    * 
    * @param stamp
-   *   The timestamp of the event occurred. 
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the event 
+   *   occurred. 
    * 
    * @param nodeOp
    *   The type of node operation recorded by the event. 
@@ -48,7 +49,7 @@ class BaseWorkingNodeEvent
   protected
   BaseWorkingNodeEvent
   ( 
-   Date stamp, 
+   long stamp, 
    NodeEventOp nodeOp, 
    NodeID nodeID 
   ) 
@@ -74,7 +75,7 @@ class BaseWorkingNodeEvent
    NodeID nodeID 
   ) 
   {
-    this(new Date(), nodeOp, nodeID); 
+    this(System.currentTimeMillis(), nodeOp, nodeID); 
   }
 
 

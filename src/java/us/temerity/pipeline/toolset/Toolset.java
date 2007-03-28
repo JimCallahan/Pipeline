@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.8 2006/11/22 09:08:01 jim Exp $
+// $Id: Toolset.java,v 1.9 2007/03/28 20:06:16 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -361,9 +361,10 @@ class Toolset
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get when the toolset was created.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * toolset was created.
    */ 
-  public Date
+  public Long
   getTimeStamp() 
   {
     if(pMessage != null) 

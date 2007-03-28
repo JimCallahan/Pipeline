@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.9 2006/10/18 06:34:22 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.10 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -831,15 +831,15 @@ class JQueueJobDetailsPanel
 	pJobStateField.setText(text);
       }
 
-      Date submitted = null;
+      Long submitted = null;
       if(pJobInfo != null) 
 	submitted = pJobInfo.getSubmittedStamp();
 
-      Date started = null;
+      Long started = null;
       if(pJobInfo != null) 
 	started = pJobInfo.getStartedStamp();
 
-      Date completed = null;
+      Long completed = null;
       if(pJobInfo != null) 
 	completed = pJobInfo.getCompletedStamp();
 
@@ -847,11 +847,11 @@ class JQueueJobDetailsPanel
 	String text = "-";
 	if(submitted != null) {
 	  if(started != null)
-	    text = Dates.formatInterval(started.getTime() - submitted.getTime());
+	    text = TimeStamps.formatInterval(started - submitted);
 	  else if(completed != null)
-	    text = Dates.formatInterval(completed.getTime() - submitted.getTime());
+	    text = TimeStamps.formatInterval(completed - submitted);
 	  else 
-	    text = Dates.formatInterval(Dates.now().getTime() - submitted.getTime());
+	    text = TimeStamps.formatInterval(TimeStamps.now() - submitted);
 	}
 	
 	pWaitingField.setText(text);
@@ -861,9 +861,9 @@ class JQueueJobDetailsPanel
 	String text = "-";
 	if(started != null) {
 	  if(completed != null)
-	    text = Dates.formatInterval(completed.getTime() - started.getTime());
+	    text = TimeStamps.formatInterval(completed - started);
 	  else 
-	    text = Dates.formatInterval(Dates.now().getTime() - started.getTime());
+	    text = TimeStamps.formatInterval(TimeStamps.now() - started);
 	}
 	
 	pRunningField.setText(text);
@@ -872,7 +872,7 @@ class JQueueJobDetailsPanel
       {
 	String text = "-";
 	if(submitted != null) 
-	  text = Dates.format(submitted);
+	  text = TimeStamps.format(submitted);
 
 	pSubmittedField.setText(text);
       }
@@ -880,7 +880,7 @@ class JQueueJobDetailsPanel
       {
 	String text = "-";
 	if(started != null) 
-	  text = Dates.format(started);
+	  text = TimeStamps.format(started);
 
 	pStartedField.setText(text);
       }
@@ -888,7 +888,7 @@ class JQueueJobDetailsPanel
       {
 	String text = "-";
 	if(completed != null) 
-	  text = Dates.format(completed);
+	  text = TimeStamps.format(completed);
 
 	pCompletedField.setText(text);
       }

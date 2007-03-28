@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.8 2006/10/18 06:34:22 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.9 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -124,7 +124,7 @@ class QueueSlotsTableModel
   public void 
   sort()
   {
-    Date now = new Date();
+    long now = System.currentTimeMillis();
 
     ArrayList<Comparable> values = new ArrayList<Comparable>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
@@ -166,12 +166,12 @@ class QueueSlotsTableModel
 	if(info != null) 
 	  value = info.getStartedStamp();
 	else 
-	  value = new Date(0L);
+	  value = new Long(0L);
 	break;
 
       case 5:
 	if(info != null) 
-	  value = new Long(now.getTime() - info.getStartedStamp().getTime());
+	  value = new Long(now - info.getStartedStamp());
 	else 
 	  value = new Long(Long.MAX_VALUE);
 	break;
@@ -270,8 +270,8 @@ class QueueSlotsTableModel
     pJobInfo   = new QueueJobInfo[cnt];
     pJobStatus = new JobStatus[cnt];
     pOnHold    = new Long[cnt];
-
-    Date now = Dates.now();
+    
+    long now = TimeStamps.now();
 
     int wk = 0;
     for(String hostname : hosts.keySet()) {
@@ -294,9 +294,9 @@ class QueueSlotsTableModel
 
 	  Long onHold = null;
 	  {
-	    Date stamp = host.getHold();
-	    if(stamp.compareTo(now) > 0) 
-	      onHold = stamp.getTime() - now.getTime();
+	    long stamp = host.getHold();
+	    if(stamp > now)
+	      onHold = stamp - now;
 	  }
 	  
 	  int sk;
@@ -375,7 +375,7 @@ class QueueSlotsTableModel
    int col
   )
   {
-    Date now = new Date();
+    long now = System.currentTimeMillis();
     int irow = pRowToIndex[row];
 
     String hostname = pHostnames[irow];
@@ -401,19 +401,19 @@ class QueueSlotsTableModel
       
     case 3:
       if(onHold != null) 
-	return Dates.formatInterval(onHold);
+	return TimeStamps.formatInterval(onHold);
       else 
 	return null;
 
     case 4:
       if(info != null) 
-	return Dates.format(info.getStartedStamp());  
+	return TimeStamps.format(info.getStartedStamp());  
       else 
 	return null;
 
     case 5:
       if(info != null) 
- 	return Dates.formatInterval(now.getTime() - info.getStartedStamp().getTime());
+ 	return TimeStamps.formatInterval(now - info.getStartedStamp());
       else 
 	return null;
       

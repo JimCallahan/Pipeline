@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.19 2007/01/05 23:46:10 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.20 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -679,17 +679,16 @@ class JResourceUsageHistoryDialog
       if(!pSamples.isEmpty()) {
 	pMinTime = null;
 	for(ResourceSampleCache cache : pSamples.values()) {
-	  Date stamp = cache.getFirstTimeStamp();
-	  if((pMinTime == null) || (stamp.compareTo(pMinTime) < 0))
-	    pMinTime = stamp;
+	  if((pMinTime == null) || (cache.getFirstTimeStamp() < pMinTime))
+	    pMinTime = cache.getFirstTimeStamp();
 	}
 	  
 	for(String hname : pSamples.keySet()) {
 	  QueueHostInfo qinfo = pHosts.get(hname);
 	  ResourceSampleCache cache = pSamples.get(hname);
 	  if((cache != null) && cache.hasSamples()) {
-	    long first = cache.getFirstTimeStamp().getTime();
-	    long last  = cache.getLastTimeStamp().getTime();
+	    long first = cache.getFirstTimeStamp();
+	    long last  = cache.getLastTimeStamp(); 
 	      
 	    /* duration of sample (in minutes) */ 
 	    double deltaX = ((double) (PackageInfo.sCollectorInterval)) / 60000.0;
@@ -697,7 +696,7 @@ class JResourceUsageHistoryDialog
 	    /* offset/range of all samples (in minutes) */ 
 	    Vector2d span = null;
 	    {
-	      double offset = (double) ((first - pMinTime.getTime()) / 60000);
+	      double offset = (double) ((first - pMinTime) / 60000);
 	      double range  = (double) ((last - first) / 60000.0);
 	      span = new Vector2d(offset, range+deltaX);
 	      pGraphSpans.put(hname, span);
@@ -730,7 +729,7 @@ class JResourceUsageHistoryDialog
 		    double lastX = 0.0;
 		    int wk;
 		    for(wk=0; wk<numSamples; wk++) {
-		      long time = cache.getTime(wk);
+		      long time = cache.getTimeStamp(wk);
 		      double load = ((double) cache.getLoad(wk)) / maxLoad;
 		      if(load > 0.0) {
 			double limitLoad = Math.min(load, 1.0);
@@ -819,7 +818,7 @@ class JResourceUsageHistoryDialog
 		      double lastX = 0.0;
 		      int wk;
 		      for(wk=0; wk<cache.getNumSamples(); wk++) {
-			long time = cache.getTime(wk);
+			long time = cache.getTimeStamp(wk);
 			double mem = ((double) cache.getMemory(wk)) / total;
 			if(mem > 0.0) {
 			  double dx = lastX + deltaX;
@@ -898,7 +897,7 @@ class JResourceUsageHistoryDialog
 		      double lastX = 0.0;
 		      int wk;
 		      for(wk=0; wk<cache.getNumSamples(); wk++) {
-			long time = cache.getTime(wk);
+			long time = cache.getTimeStamp(wk);
 			double disk = ((double) cache.getDisk(wk)) / total;
 			if(disk > 0.0) {
 			  double dx = lastX + deltaX;
@@ -971,7 +970,7 @@ class JResourceUsageHistoryDialog
 		    double lastX = 0.0;
 		    int wk;
 		    for(wk=0; wk<cache.getNumSamples(); wk++) {
-		      long time = cache.getTime(wk);
+		      long time = cache.getTimeStamp(wk);
 		      double jobs = ((double) cache.getNumJobs(wk)) / totalJobs;
 		      if(jobs > 0.0) {
 			double limitJobs = Math.min(jobs, 1.0);
@@ -1032,8 +1031,8 @@ class JResourceUsageHistoryDialog
   
     /* compute the bounding box and time range of all graph geometry */ 
     {
-      Date startStamp = null;
-      Date endStamp   = null;
+      Long startStamp = null;
+      Long endStamp   = null;
       pBBox = null;
       double dy = 0.0;
       for(String hname : pSamples.keySet()) {
@@ -1054,15 +1053,15 @@ class JResourceUsageHistoryDialog
 	   pDiskButton.isSelected() || pJobButton.isSelected()) {
 	  
 	  ResourceSampleCache cache = pSamples.get(hname);
-	  Date first = cache.getFirstTimeStamp();
-	  Date last  = cache.getLastTimeStamp();
+	  Long first = cache.getFirstTimeStamp();
+	  Long last  = cache.getLastTimeStamp();
 
 	  if((startStamp == null) || 
-	     ((first != null) && first.compareTo(startStamp) < 0))
+	     ((first != null) && (first < startStamp)))
 	    startStamp = first;
 
 	  if((endStamp == null) || 
-	     ((last != null) && last.compareTo(endStamp) > 0))
+	     ((last != null) && (last > endStamp)))
 	    endStamp = last;
 	}
 	  
@@ -1072,23 +1071,23 @@ class JResourceUsageHistoryDialog
       pStartDay = null;
       if(startStamp != null) {
 	Calendar cal = Calendar.getInstance();
-	cal.setTime(startStamp);
+	cal.setTimeInMillis(startStamp);
 	cal.set(Calendar.MILLISECOND, 0);
 	cal.set(Calendar.SECOND, 0);
 	cal.set(Calendar.MINUTE, 0);
 	cal.set(Calendar.HOUR_OF_DAY, 0);
-	pStartDay = cal.getTime();
+	pStartDay = cal.getTimeInMillis();
       }
 
       pEndDay = null;
       if(endStamp != null) {
 	Calendar cal = Calendar.getInstance();
-	cal.setTime(endStamp);
+	cal.setTimeInMillis(endStamp);
 	cal.set(Calendar.MILLISECOND, 0);
 	cal.set(Calendar.SECOND, 0);
 	cal.set(Calendar.MINUTE, 0);
 	cal.set(Calendar.HOUR_OF_DAY, 0);
-	pEndDay = cal.getTime();
+	pEndDay = cal.getTimeInMillis();
       }
     }
 
@@ -1265,8 +1264,8 @@ class JResourceUsageHistoryDialog
       if(pBBox != null) {
 	if(pRefreshTimeScale) {
 	  /* offset and range of tick mark geometry */ 
-	  double offset = ((double) (pStartDay.getTime() - pMinTime.getTime())) / 60000.0;
-	  double range  = ((double) (pEndDay.getTime() - pStartDay.getTime())) / 60000.0;
+	  double offset = ((double) (pStartDay - pMinTime)) / 60000.0;
+	  double range  = ((double) (pEndDay - pStartDay)) / 60000.0;
 	
 	  /* scale of tick marks */ 
 	  boolean sized = false;
@@ -1310,20 +1309,20 @@ class JResourceUsageHistoryDialog
 	  ArrayList<Integer> timeLabelDLs = new ArrayList<Integer>();
 	  double timeLabelInc = 0.0;
 	  try {
-	    Date endDate = null;
+	    Long endStamp = null;
 	    {
 	      Calendar cal = Calendar.getInstance();
-	      cal.setTime(pEndDay);
+	      cal.setTimeInMillis(pEndDay);
 	      cal.add(Calendar.DAY_OF_YEAR, 1);
-	      endDate = cal.getTime();
+	      endStamp = cal.getTimeInMillis();
 	    }
 	  
 	    /* date labels */ 
 	    {
 	      Calendar cal = Calendar.getInstance();
-	      cal.setTime(pStartDay);
+	      cal.setTimeInMillis(pStartDay);
 	    
-	      while(cal.getTime().compareTo(endDate) < 0) {
+	      while(cal.getTimeInMillis() < endStamp) {
 		String text = sDateFormat.format(cal.getTime());
 		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, text, 
 				       GeometryMgr.TextAlignment.Left, 0.05);
@@ -1359,9 +1358,9 @@ class JResourceUsageHistoryDialog
 	      timeLabelInc = (double) minc;
 
 	      Calendar cal = Calendar.getInstance();
-	      cal.setTime(pStartDay);
+	      cal.setTimeInMillis(pStartDay);
 	    
-	      while(cal.getTime().compareTo(endDate) < 0) {
+	      while(cal.getTimeInMillis() < endStamp) {
 		String text = sTimeFormat.format(cal.getTime());
 		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, text, 
 				       GeometryMgr.TextAlignment.Left, 0.05);
@@ -2915,9 +2914,9 @@ class JResourceUsageHistoryDialog
     {
       UIMaster master = UIMaster.getInstance();
 
-      Date now = new Date();
-      Date oldest = new Date(now.getTime() - PackageInfo.sSampleCleanupInterval); 
-      DateInterval fullInterval = new DateInterval(oldest, now);
+      long now    = System.currentTimeMillis();
+      long oldest = now - PackageInfo.sSampleCleanupInterval; 
+      TimeInterval fullInterval = new TimeInterval(oldest, now);
       
       int sz = (int) (PackageInfo.sSampleCleanupInterval / PackageInfo.sCollectorInterval);
 
@@ -2926,12 +2925,12 @@ class JResourceUsageHistoryDialog
 	  QueueMgrClient qclient = master.getQueueMgrClient(pGroupID);
 
 	  /* determine which samples are needed */ 
-	  TreeMap<String,DateInterval> intervals = new TreeMap<String,DateInterval>();
+	  TreeMap<String,TimeInterval> intervals = new TreeMap<String,TimeInterval>();
 	  synchronized(pParent) {
 	    for(String hname : pHostnames) {
 	      ResourceSampleCache cache = pSamples.get(hname);
 	      if(cache != null) {
-		intervals.put(hname, new DateInterval(cache.getLastTimeStamp(), now));
+		intervals.put(hname, new TimeInterval(cache.getLastTimeStamp(), now));
 	      }
 	      else {
 		pSamples.put(hname, new ResourceSampleCache(sz)); 
@@ -3265,13 +3264,13 @@ class JResourceUsageHistoryDialog
   /**
    * The timestamp of the earliest sample. 
    */ 
-  private Date  pMinTime;
+  private Long  pMinTime;
 
   /**
    * The timestamp of the first/last days contining visible graph geometry.
    */ 
-  private Date  pStartDay;
-  private Date  pEndDay; 
+  private Long  pStartDay;
+  private Long  pEndDay; 
   
   /**
    * The pre-transform bounding box of all visible graph geometry.

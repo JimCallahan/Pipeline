@@ -1,4 +1,4 @@
-// $Id: MiscGetRestoredOutputReq.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: MiscGetRestoredOutputReq.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,7 +37,7 @@ class MiscGetRestoredOutputReq
   MiscGetRestoredOutputReq
   (
    String name, 
-   Date stamp
+   long stamp
   )
   {
     if(name == null) 
@@ -45,9 +45,6 @@ class MiscGetRestoredOutputReq
 	("The archive name cannot be (null)!");
     pName = name;
 
-    if(stamp == null) 
-      throw new IllegalArgumentException
-	("The restoration timestamp cannot be (null)!");
     pTimeStamp = stamp;
   }
 
@@ -69,7 +66,7 @@ class MiscGetRestoredOutputReq
   /**
    * Gets the timestamp of when the archive volume was restored.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pTimeStamp; 
@@ -97,7 +94,7 @@ class MiscGetRestoredOutputReq
   /**
    * The timestamp of when the archive volume was restored.
    */
-  private Date  pTimeStamp; 
+  private long  pTimeStamp; 
 
 }
   

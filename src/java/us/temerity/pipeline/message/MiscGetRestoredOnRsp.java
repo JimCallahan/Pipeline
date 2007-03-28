@@ -1,4 +1,4 @@
-// $Id: MiscGetRestoredOnRsp.java,v 1.1 2005/04/03 01:54:23 jim Exp $
+// $Id: MiscGetRestoredOnRsp.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,7 +38,7 @@ class MiscGetRestoredOnRsp
   MiscGetRestoredOnRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeSet<Date>> index
+   TreeMap<String,TreeSet<Long>> index
   )
   { 
     super(timer);
@@ -63,7 +63,7 @@ class MiscGetRestoredOnRsp
   /**
    * Gets the timestamps of when each archive was restored indexed by unique archive name.
    */
-  public TreeMap<String,TreeSet<Date>>
+  public TreeMap<String,TreeSet<Long>>
   getIndex()
   {
     return pIndex;
@@ -86,7 +86,7 @@ class MiscGetRestoredOnRsp
   /**
    * The timestamps of when each archive was restored indexed by unique archive name.
    */ 
-  private TreeMap<String,TreeSet<Date>>  pIndex;
+  private TreeMap<String,TreeSet<Long>>  pIndex;
 
 }
   

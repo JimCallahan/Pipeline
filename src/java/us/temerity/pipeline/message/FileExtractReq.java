@@ -1,4 +1,4 @@
-// $Id: FileExtractReq.java,v 1.3 2006/08/16 19:00:43 jim Exp $
+// $Id: FileExtractReq.java,v 1.4 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,7 +51,7 @@ class FileExtractReq
   FileExtractReq
   (
    String archiveName, 
-   Date stamp, 
+   long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
    Map<String,String> env, 
@@ -63,9 +63,6 @@ class FileExtractReq
 	("The volume name cannot be (null)!");
     pArchiveName = archiveName; 
 
-    if(stamp == null) 
-      throw new IllegalArgumentException
-	("The timestamp cannot be (null)!");
     pTimeStamp = stamp;
 
     if(fseqs == null) 
@@ -104,7 +101,7 @@ class FileExtractReq
   /**
    * Get the timestamp of the start of the restore operation.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pTimeStamp; 
@@ -189,7 +186,7 @@ class FileExtractReq
     throws IOException, ClassNotFoundException
   {
     pArchiveName = (String) in.readObject();
-    pTimeStamp = (Date) in.readObject();
+    pTimeStamp = (Long) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
     
     BaseArchiver arch = (BaseArchiver) in.readObject();
@@ -227,7 +224,7 @@ class FileExtractReq
   /**
    * The timestamp of the start of the restore operation.
    */ 
-  private Date  pTimeStamp; 
+  private long  pTimeStamp; 
 
   /**
    * The file sequences to extract indexed by fully resolved node name and checked-in 

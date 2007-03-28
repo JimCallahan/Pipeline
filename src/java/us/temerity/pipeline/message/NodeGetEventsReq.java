@@ -1,4 +1,4 @@
-// $Id: NodeGetEventsReq.java,v 1.1 2007/01/01 16:09:51 jim Exp $
+// $Id: NodeGetEventsReq.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -44,7 +44,7 @@ class NodeGetEventsReq
   (
    TreeSet<String> names, 
    TreeSet<String> users, 
-   DateInterval interval   
+   TimeInterval interval   
   )
   { 
     super();
@@ -84,7 +84,7 @@ class NodeGetEventsReq
    * Limit the events to those which occured within the given time interval or 
    * <CODE>null</CODE> for all times.
    */ 
-  public DateInterval
+  public TimeInterval
   getInterval() 
   {
     return pInterval; 
@@ -120,7 +120,7 @@ class NodeGetEventsReq
    * Limit the events to those which occured within the given time interval or 
    * <CODE>null</CODE> for all times.
    */ 
-  private DateInterval  pInterval; 
+  private TimeInterval  pInterval; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: BaseNodeEvent.java,v 1.1 2006/12/31 20:44:53 jim Exp $
+// $Id: BaseNodeEvent.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -37,7 +37,8 @@ class BaseNodeEvent
    * Internal constructor used to create new events. 
    * 
    * @param stamp
-   *   The timestamp of the event occurred. 
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the event 
+   *   occurred. 
    * 
    * @param nodeOp
    *   The type of node operation recorded by the event. 
@@ -51,14 +52,12 @@ class BaseNodeEvent
   protected
   BaseNodeEvent
   ( 
-   Date stamp, 
+   long stamp, 
    NodeEventOp nodeOp, 
    String name, 
    String author
   ) 
   {
-    if(stamp == null) 
-      throw new IllegalArgumentException("The timestamp cannot be (null)!");
     pTimeStamp = stamp; 
 
     if(nodeOp == null) 
@@ -94,7 +93,7 @@ class BaseNodeEvent
    String author
   ) 
   {
-    this(new Date(), nodeOp, name, author); 
+    this(System.currentTimeMillis(), nodeOp, name, author); 
   }
 
 
@@ -104,9 +103,10 @@ class BaseNodeEvent
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Get the timestamp of when the event occured.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the event 
+   * occured.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pTimeStamp; 
@@ -153,7 +153,7 @@ class BaseNodeEvent
   ) 
     throws GlueException
   {
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
+    encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("NodeOp", pNodeOp); 
     encoder.encode("Name", pName);
     encoder.encode("Author", pAuthor);
@@ -171,7 +171,7 @@ class BaseNodeEvent
       throw new GlueException("The \"TimeStamp\" was missing!");
     if(stamp <= 0L) 
       throw new GlueException("The \"TimeStamp\" was illegal!");
-    pTimeStamp = new Date(stamp);
+    pTimeStamp = stamp;
     
     NodeEventOp nodeOp = (NodeEventOp) decoder.decode("NodeOp");
     if(nodeOp == null) 
@@ -204,9 +204,10 @@ class BaseNodeEvent
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The timestamp of when the event occured.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the event 
+   * occured.
    */
-  protected Date  pTimeStamp; 
+  protected long  pTimeStamp; 
 
   /** 
    * The type of node operation recorded by the event. 

@@ -1,4 +1,4 @@
-// $Id: EditedNodeEvent.java,v 1.1 2006/12/31 20:44:53 jim Exp $
+// $Id: EditedNodeEvent.java,v 1.2 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -40,10 +40,12 @@ class EditedNodeEvent
    * Create the event.
    * 
    * @param started
-   *   The timestamp of when editing was begun. 
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when editing 
+   *   was begun. 
    * 
    * @param finished
-   *   The timestamp of when editing was completed or <CODE>null</CODE> if still editing.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when editing 
+   *   was completed or <CODE>null</CODE> if still editing.
    * 
    * @param nodeID 
    *   The unique working version identifier. 
@@ -67,8 +69,8 @@ class EditedNodeEvent
   public
   EditedNodeEvent
   ( 
-   Date started, 
-   Date finished, 
+   long started, 
+   Long finished, 
    NodeID nodeID, 
    String ename,  
    VersionID evid,
@@ -122,24 +124,23 @@ class EditedNodeEvent
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Set the timestamp of when editing was completed.
+   * Set the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when editing 
+   * was completed.
    */ 
   public void 
   setFinishedStamp
   (
-   Date finished
+   long finished
   ) 
   {
-    if(finished == null) 
-      throw new IllegalArgumentException("The finished timestamp cannot be (null)");
     pFinishedStamp = finished;
   }
 
   /** 
-   * Get the timestamp of when editing was completed or 
-   * <CODE>null</CODE> if editing isn't finished yet.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when editing 
+   * was completed or <CODE>null</CODE> if editing isn't finished yet.
    */ 
-  public Date
+  public Long
   getFinishedStamp() 
   {
     return pFinishedStamp; 
@@ -149,11 +150,11 @@ class EditedNodeEvent
    * Get the interval of time during which the node was edited or 
    * <CODE>null</CODE> if editing isn't finished yet.
    */ 
-  public DateInterval
+  public TimeInterval
   getInterval() 
   {
     if(pFinishedStamp != null) 
-      return new DateInterval(pTimeStamp, pFinishedStamp);
+      return new TimeInterval(pTimeStamp, pFinishedStamp);
     return null;
   }
 
@@ -224,7 +225,7 @@ class EditedNodeEvent
   {
     super.toGlue(encoder);
 
-    encoder.encode("FinishedStamp", pFinishedStamp.getTime());
+    encoder.encode("FinishedStamp", pFinishedStamp);
     encoder.encode("EditorName", pEditorName); 
     encoder.encode("EditorVersionID", pEditorVersionID); 
     encoder.encode("EditorVendor", pEditorVendor); 
@@ -248,7 +249,7 @@ class EditedNodeEvent
       throw new GlueException("The \"FinishedStamp\" was missing!");
     if(stamp <= 0L) 
       throw new GlueException("The \"FinishedStamp\" was illegal!");
-    pFinishedStamp = new Date(stamp);
+    pFinishedStamp = stamp;
     
     String ename = (String) decoder.decode("EditorName");
     if(ename == null) 
@@ -288,9 +289,10 @@ class EditedNodeEvent
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The timestamp of when editing was completed. 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when editing 
+   * was completed. 
    */
-  private Date  pFinishedStamp; 
+  private Long  pFinishedStamp; 
 
 
   /**

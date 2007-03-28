@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.6 2006/06/28 02:11:51 jim Exp $
+// $Id: TarFileArchiver.java,v 1.7 2007/03/28 20:00:41 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -224,7 +224,7 @@ class TarFileArchiver
   restore
   (
    String name, 
-   Date stamp, 
+   long stamp, 
    Collection<File> files, 
    Map<String,String> env, 
    File dir,

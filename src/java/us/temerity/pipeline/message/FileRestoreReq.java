@@ -1,4 +1,4 @@
-// $Id: FileRestoreReq.java,v 1.2 2005/03/23 00:35:23 jim Exp $
+// $Id: FileRestoreReq.java,v 1.3 2007/03/28 19:56:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,7 +51,7 @@ class FileRestoreReq
   FileRestoreReq
   (
    String archiveName, 
-   Date stamp, 
+   long stamp, 
    String name, 
    VersionID vid, 
    TreeMap<File,TreeSet<VersionID>> symlinks, 
@@ -63,9 +63,6 @@ class FileRestoreReq
 	("The volume name cannot be (null)!");
     pArchiveName = archiveName; 
 
-    if(stamp == null) 
-      throw new IllegalArgumentException
-	("The timestamp cannot be (null)!");
     pTimeStamp = stamp;
 
     if(name == null) 
@@ -107,7 +104,7 @@ class FileRestoreReq
   /**
    * Get the timestamp of the start of the restore operation.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pTimeStamp; 
@@ -172,7 +169,7 @@ class FileRestoreReq
   /**
    * The timestamp of the start of the restore operation.
    */ 
-  private Date  pTimeStamp; 
+  private long  pTimeStamp; 
 
   /**
    * The fully resolved node name. 

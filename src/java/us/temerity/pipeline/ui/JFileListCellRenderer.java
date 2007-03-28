@@ -1,4 +1,4 @@
-// $Id: JFileListCellRenderer.java,v 1.5 2005/06/14 13:38:33 jim Exp $
+// $Id: JFileListCellRenderer.java,v 1.6 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -122,8 +122,7 @@ class JFileListCellRenderer
       pSizeLabel.setText(null);
     }
     
-    Date date = new Date(file.lastModified());
-    pDateLabel.setText(Dates.format(date));
+    pDateLabel.setText(TimeStamps.format(file.lastModified()));
 
     if(isDir) 
       pNameLabel.setIcon(isSelected ? sDirSelectedIcon : sDirNormalIcon);

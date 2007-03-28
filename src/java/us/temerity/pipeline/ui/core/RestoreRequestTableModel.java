@@ -1,4 +1,4 @@
-// $Id: RestoreRequestTableModel.java,v 1.2 2005/03/23 00:35:23 jim Exp $
+// $Id: RestoreRequestTableModel.java,v 1.3 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -133,7 +133,7 @@ class RestoreRequestTableModel
 	if(rr.getResolvedStamp() != null)
 	  value = rr.getResolvedStamp();
 	else 
-	  value = new Date(0L);       
+	  value = new Long(0L);
 	break;
 	
       case 5:
@@ -317,10 +317,10 @@ class RestoreRequestTableModel
       return rr.getState().toTitle();
 
     case 3:
-      return Dates.format(rr.getSubmittedStamp());
+      return TimeStamps.format(rr.getSubmittedStamp());
 	
     case 4:
-      return Dates.format(rr.getResolvedStamp());
+      return TimeStamps.format(rr.getResolvedStamp());
       
     case 5:
       return rr.getArchiveName();

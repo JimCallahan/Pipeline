@@ -1,4 +1,4 @@
-// $Id: ArchiveCandidateTableModel.java,v 1.5 2005/03/11 06:33:44 jim Exp $
+// $Id: ArchiveCandidateTableModel.java,v 1.6 2007/03/28 20:07:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -121,7 +121,7 @@ class ArchiveCandidateTableModel
 	if(info.getArchivedStamp() != null)
 	  value = info.getArchivedStamp();
 	else 
-	  value = new Date(0L);
+	  value = new Long(0L);
 	break;
 	
       case 3:
@@ -280,13 +280,13 @@ class ArchiveCandidateTableModel
       return info.getVersionID();
 
     case 2:
-      return Dates.format(info.getArchivedStamp());
+      return TimeStamps.format(info.getArchivedStamp());
 
     case 3:
       return String.valueOf(info.numArchives());
 
     case 4:
-      return Dates.format(info.getCheckedInStamp());
+      return TimeStamps.format(info.getCheckedInStamp());
       
     default:
       assert(false);

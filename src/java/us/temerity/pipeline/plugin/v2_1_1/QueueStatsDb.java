@@ -1,4 +1,4 @@
-// $Id: QueueStatsDb.java,v 1.3 2007/02/17 11:46:59 jim Exp $
+// $Id: QueueStatsDb.java,v 1.4 2007/03/28 20:01:28 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_1_1;
 
@@ -254,8 +254,8 @@ QueueStatsDb
       BaseAction act = job.getAction();
       Integer actionID = actions.get(act.getVendor(), act.getName(), act.getVersionID());
 
-      Timestamp submitted = new Timestamp(info.getSubmittedStamp().getTime());
-      Timestamp completed = new Timestamp(info.getCompletedStamp().getTime());
+      Timestamp submitted = new Timestamp(info.getSubmittedStamp());
+      Timestamp completed = new Timestamp(info.getCompletedStamp());
 
       try {
 	switch(info.getState()) {
@@ -274,7 +274,7 @@ QueueStatsDb
 	case Failed:
 	  {
 	    QueueJobResults results = info.getResults();
-	    Timestamp started = new Timestamp(info.getStartedStamp().getTime());
+	    Timestamp started = new Timestamp(info.getStartedStamp());
 	    
 	    pInsertCompletedJobSt.setLong(1, jobID);
 	    pInsertCompletedJobSt.setLong(2, nodeID);
@@ -346,7 +346,7 @@ QueueStatsDb
       int wk;
       for(wk=0; wk<size; wk++) {
 	pInsertSampleSt.setInt(1, hostID);
-	pInsertSampleSt.setTimestamp(2, new Timestamp(cache.getTimeStamp(wk).getTime()));
+	pInsertSampleSt.setTimestamp(2, new Timestamp(cache.getTimeStamp(wk)));
 	pInsertSampleSt.setInt(3, cache.getNumJobs(wk));
 	pInsertSampleSt.setFloat(4, cache.getLoad(wk));
 	pInsertSampleSt.setLong(5, cache.getMemory(wk));
