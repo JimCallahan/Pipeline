@@ -1,12 +1,13 @@
 package us.temerity.pipeline.builder.builders;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.TreeSet;
 
+import us.temerity.pipeline.LogMgr;
+import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.interfaces.DefaultBuilderAnswers;
-
-import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.interfaces.AnswersBuilderQueries;
+import us.temerity.pipeline.builder.interfaces.DefaultBuilderAnswers;
 import us.temerity.pipeline.builder.names.BuildsAssetNames;
 import us.temerity.pipeline.builder.names.DefaultAssetNames;
 import us.temerity.pipeline.builder.stages.*;
@@ -118,7 +119,7 @@ class AssetBuilder
   )
     throws PipelineException
   {
-    names.addMappedParam(DefaultAssetNames.aProjectName, aProjectName);
+    addMappedParam(names.getName(), DefaultAssetNames.aProjectName, aProjectName);
   }
   
   
@@ -218,20 +219,24 @@ class AssetBuilder
   InformationLoop
     extends FirstLoop
   {
-    public InformationLoop()
+    public 
+    InformationLoop()
     {
       super("Information Pass", "Information pass for the AssetBuilder");
     }
 
     @Override
-    public void validatePhase() throws PipelineException
+    public void 
+    validatePhase()
+      throws PipelineException
     {
       sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
-      pBuildLowRez = (Boolean) getParamValue(aBuildLowRez);
-      pBuildTextureNode = (Boolean) getParamValue(aBuildTextureNode);
-      pBuildAdvancedShadingNetwork = (Boolean) getParamValue(aBuildAdvancedShadingNetwork);
-      pCheckInWhenDone = (Boolean) getParamValue(aCheckinWhenDone);
+      pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
+      pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
+      pBuildAdvancedShadingNetwork = 
+	getBooleanParamValue(new ParamMapping(aBuildAdvancedShadingNetwork));
+      pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
 
       pFinalizeMEL = pAssetNames.getFinalizeScriptName();
 
@@ -255,13 +260,16 @@ class AssetBuilder
   BuildLoop
     extends SecondLoop
   {
-    public BuildLoop()
+    public 
+    BuildLoop()
     {
       super("Build Pass", "The AssetBuilder Pass which actually constructs the node networks.");
     }
 
     @Override
-    public void buildPhase() throws PipelineException
+    public void 
+    buildPhase() 
+      throws PipelineException
     {
       sLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the build phase in the Build Pass");
       buildAssetTree
@@ -352,13 +360,15 @@ class AssetBuilder
   FinalizeLoop
     extends SecondLoop
   {
-    public FinalizeLoop()
+    public 
+    FinalizeLoop()
     {
       super("Finalize Pass", "The AssetBuilder pass that disconnects placeholder MEL scripts.");
     }
     
     @Override
-    public TreeSet<String> preBuildPhase() throws PipelineException
+    public TreeSet<String> 
+    preBuildPhase()
     {
       sLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>();
@@ -368,7 +378,9 @@ class AssetBuilder
     }
 
     @Override
-    public void buildPhase() throws PipelineException
+    public void 
+    buildPhase() 
+      throws PipelineException
     {
       sLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)

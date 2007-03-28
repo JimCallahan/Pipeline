@@ -75,7 +75,7 @@ class BaseBuilder
   (
     String instanceName, 
     HasBuilderParams subBuilder, 
-    TreeMap<String, String> paramMapping,
+    TreeMap<ParamMapping, ParamMapping> paramMapping,
     int offset
   ) 
     throws PipelineException
@@ -87,8 +87,7 @@ class BaseBuilder
        " as one that already exists.");
     
     
-    
-    subBuilder.addMappedParams(paramMapping);
+    addMappedParams(instanceName, paramMapping);
 
     {
       String prefix = getNamedPrefix();
@@ -124,7 +123,7 @@ class BaseBuilder
     throws PipelineException
   {
     String instanceName = subBuilder.getName();
-    addSubBuilder(instanceName, subBuilder, new TreeMap<String, String>(), 1);
+    addSubBuilder(instanceName, subBuilder, new TreeMap<ParamMapping, ParamMapping>(), 1);
   }
   
   public final void 
@@ -136,7 +135,7 @@ class BaseBuilder
     throws PipelineException
   {
     String instanceName = subBuilder.getName();
-    addSubBuilder(instanceName, subBuilder, new TreeMap<String, String>(), offset);
+    addSubBuilder(instanceName, subBuilder, new TreeMap<ParamMapping, ParamMapping>(), offset);
   }
 
   // TODO. lose these methods?
@@ -152,48 +151,187 @@ class BaseBuilder
     String instanceName
   )
   {
-    return pSubBuilders.get(instanceName); 
+    if (pSubBuilders.containsKey(instanceName))
+      return pSubBuilders.get(instanceName);
+    else if (pPreppedBuilders.containsKey(instanceName))
+      return pPreppedBuilders.get(instanceName);
+    else if (pSubNames.containsKey(instanceName))
+      return pSubNames.get(instanceName);
+    else if (pGeneratedNames.containsKey(instanceName))
+      return pGeneratedNames.get(instanceName);
+    else
+      throw new IllegalArgumentException
+        ("This builder does not contain a Sub-Builder with the name (" + instanceName + ").");
+  }
+  
+  public HasBuilderParams 
+  getNewSubBuilder
+  (
+    String instanceName
+  )
+  {
+    if (pSubBuilders.containsKey(instanceName))
+      return pSubBuilders.get(instanceName);
+    else if (pSubNames.containsKey(instanceName))
+      return pSubNames.get(instanceName);
+    else
+      throw new IllegalArgumentException
+        ("This builder does not contain a Sub-Builder with the name (" + instanceName + ").");
   }
 
+  /**
+   * Creates a mapping between a parameter in the named Sub-Builder and a parameter
+   * in the parent Builder. 
+   * <p>
+   * Error checking will cover the existance of both parameters and their implementation
+   * of {@link SimpleParamAccess}.  It does not cover that the values in the parameters are
+   * of similar types, so it is completely possible that the mapping may fail during
+   * execution.  It is up to the authors of Builders to ensure that they are only mapping
+   * parameters with identical values.
+   *
+   * @param subBuilderName
+   * 	The subBuilder the mapping is being created in.
+   * @param subParamName
+   * 	The name of the Sub-Builder parameter that is being driven.
+   * @param masterParamName
+   * 	The name of the parent Builder parameter that is driving the Sub-Builder parameter.
+   * @throws PipelineException
+   * 	When either Parameter is not a Simple Parameter or doesn't exist.
+   */
+  public void
+  addMappedParam
+  (
+    String subBuilderName, 
+    String subParamName,
+    String masterParamName
+  )
+    throws PipelineException
+  {
+    HasBuilderParams subBuilder = getSubBuilder(subBuilderName);
+    
+    if (!subBuilder.hasSimpleParam(subParamName))
+      throw new PipelineException
+      ("Illegal attempt mapping a Builder parameter to a SubBuilder.\n" +
+       "The Parameter (" + subParamName + ") is not a Simple Parameter in the Sub Builder " +
+       "identified with (" + subBuilder.getName() +  "), " +
+       "making the attempted mapping invalid.\n" +
+       "The full attempted mapping was of (" + masterParamName + ") " +
+       "in the master to ("+ subParamName + ") in the sub Builder." );
+      
+    if (!hasSimpleParam(masterParamName))
+      throw new PipelineException
+      ("Illegal attempt mapping a Builder parameter to a SubBuilder.\n" +
+       "The Parameter (" + masterParamName + ") is not a Simple Parameter in this Builder " +
+       "named (" + getName() +  "), making the attempted mapping invalid.\n" +
+       "The full attempted mapping was of (" + masterParamName + ") " +
+       "in the master to ("+ subParamName + ") in the sub Builder." );
+
+    subBuilder.addParamMapping(new ParamMapping(subParamName), 
+                               new ParamMapping(masterParamName));
+  }
+  
+  /**
+   * Creates a mapping between a parameter in the named Sub-Builder and a parameter
+   * in the parent Builder. 
+   * <p>
+   * Error checking will cover the existance of both parameters and their implementation
+   * of {@link SimpleParamAccess}.  It does not cover that the values in the parameters are
+   * of similar types, so it is completely possible that the mapping may fail during
+   * execution.  It is up to the authors of Builders to ensure that they are only mapping
+   * parameters with identical values.
+   *
+   * @param subBuilderName
+   * 	The subBuilder the mapping is being created in.
+   * @param subParamName
+   * 	The name of the Sub-Builder parameter that is being driven.
+   * @param masterParamName
+   * 	The name of the parent Builder parameter that is driving the Sub-Builder parameter.
+   * @throws PipelineException
+   * 	When either Parameter is not a Simple Parameter or doesn't exist.
+   */
+  public void
+  addMappedParam
+  (
+    String subBuilderName, 
+    String subParamName,
+    List<String> subKeys,
+    String masterParamName,
+    List<String> masterKeys
+  )
+    throws PipelineException
+  {
+    HasBuilderParams subBuilder = getSubBuilder(subBuilderName);
+    
+    if (!subBuilder.hasSimpleParam(subParamName, subKeys)) 
+      throw new PipelineException
+        ("Illegal attempt mapping a Builder parameter to a SubBuilder.\n" +
+	 "The Parameter (" + subParamName + ") does not contain " +
+	 "a Simple Parameter defined by the keys " + subKeys + " " +   
+	 "in the Sub Builder identified with (" + subBuilder.getName() +  "), " +
+	 "making the attempted mapping invalid.\n" +
+	 "The full attempted mapping was of (" + masterParamName + ") " + masterKeys + " " +
+	 "in the master to ("+ subParamName + ") " + subKeys + " in the sub Builder." );
+
+    if (!hasSimpleParam(masterParamName, masterKeys))
+      throw new PipelineException
+        ("Illegal attempt mapping a Builder parameter to a SubBuilder.\n" +
+	 "The Parameter (" + masterParamName + ") does not contain " +
+	 "a Simple Parameter defined by the keys " + masterKeys + " " +   
+	 "in this Builder identified with (" + getName() +  "), " +
+	 "making the attempted mapping invalid.\n" +
+	 "The full attempted mapping was of (" + masterParamName + ") " + masterKeys + " " +
+	 "in the master to ("+ subParamName + ") " + subKeys + " in the sub Builder." );
+    
+    ParamMapping subMapping = new ParamMapping(subParamName, subKeys);
+    ParamMapping masterMapping = new ParamMapping(masterParamName, masterKeys);
+    
+    subBuilder.addParamMapping(subMapping, masterMapping);
+  }
+  
+  public void
+  addMappedParams
+  (
+    String subBuilderName, 
+    SortedMap<ParamMapping, ParamMapping> mapping
+  ) 
+    throws PipelineException
+  {
+    for (ParamMapping sub : mapping.keySet()) {
+      ParamMapping master = mapping.get(sub);
+      addMappedParam(subBuilderName, sub.getParamName(), sub.getKeys(), 
+	             master.getParamName(), master.getKeys());
+    }
+  }
+  
   private void
   initializeSubBuilder(String name)
     throws PipelineException
   {
-    HasBuilderParams subBuilder = null;
-    if (pSubBuilders.containsKey(name))
-      subBuilder = pSubBuilders.get(name);
-    else if (pSubNames.containsKey(name))
-      subBuilder = pSubNames.get(name);
+    HasBuilderParams subBuilder = getNewSubBuilder(name);
     if (subBuilder == null)
       throw new PipelineException
-      ("Somehow a SubBuilder/Name with the name (" + name + ") was submited for initialization " +
-      	"by the Builder named (" + getName() + ").  This SubBuilder does not exists.  " +
-      	"This exception most likely represents a fundamental problem with the Builder backend " +
-      	"and should be reported to Temerity.");
-    SortedMap<String, String> paramMapping = subBuilder.getMappedParams();
+        ("Somehow a SubBuilder/Name with the name (" + name + ") was submited for " +
+         "initialization by the Builder named (" + getName() + ").\n" +
+         "This SubBuilder does not exists.\n" +
+      	 "This exception most likely represents a fundamental problem with the Builder " +
+      	 "backend and should be reported to Temerity.");
+    SortedMap<ParamMapping, ParamMapping> paramMapping = subBuilder.getMappedParams();
     sLog.log(Kind.Ops, Level.Finer, "Initializing the subBuilder (" + name + ").");
-    for (String subParamName : paramMapping.keySet()) {
-	String masterParamName = paramMapping.get(subParamName);
-	BuilderParam subParam = subBuilder.getParam(subParamName);
-	BuilderParam masterParam = this.getParam(masterParamName);
-	if (masterParam == null)
-	  throw new PipelineException
-	  ("There was an invalid mapping of a Builder parameter to a SubBuilder.  " +
-	    "The Parameter (" + masterParamName + ") does not exist, making the attempted " +
-	    "mapping to the subBuilder identified with (" + subBuilder.getName() +
-	    ") invalid.  The full attempted mapping was of (" + masterParamName + 
-	    ") in the master to ("+ subParamName + ") in the sub Builder." );
-	if (subParam == null)
-	  throw new PipelineException
-	  ("There was an invalid mapping of a Builder parameter to a SubBuilder.  " +
-	    "The Parameter (" + subParamName + ") does not exist in the subBuilder identified " +
-	    "with (" + subBuilder.getName() +  "), making the attempted mapping invalid. " +
-	    "The full attempted mapping was of (" + masterParamName + 
-	    ") in the master to ("+ subParamName + ") in the sub Builder." );
-	subBuilder.setParamValue(subParamName, masterParam.getValue());
-	sLog.log(Kind.Ops, Level.Finest, "Mapped param (" + subParamName + ") in subBuilder "
-	  + "(" + name + ") to value from param (" + masterParamName + ")"
-	  + " in builder (" + getName() + ")");
+    for (ParamMapping subParamMapping : paramMapping.keySet()) {
+      ParamMapping masterParamMapping = paramMapping.get(subParamMapping);
+      
+      BuilderParam subParam = subBuilder.getParam(subParamMapping);
+      BuilderParam masterParam = this.getParam(masterParamMapping);
+      
+      assert (subParam != null) : "The subParam value should never be null.";
+      assert (masterParam != null) : "The masterParam value should never be null.";
+      
+      subBuilder.setParamValue(subParamMapping, 
+	((SimpleParamAccess) masterParam).getValue());
+      sLog.log(Kind.Ops, Level.Finest, 
+	"Mapped param (" + subParamMapping + ") in subBuilder " + 
+	"(" + name + ") to value from param (" + masterParamMapping + ") " + 
+	"in builder (" + getName() + ")");
     }
   }
   
@@ -240,7 +378,6 @@ class BaseBuilder
    */
   public void 
   validateBuiltInParams() 
-    throws PipelineException
   {
     setGlobalContext((UtilContext) getParamValue(aUtilContext) );
     if (getParam(aReleaseOnError) != null)
@@ -285,9 +422,9 @@ class BaseBuilder
   executeSecondLoop()
     throws PipelineException
   {
-    MappedList<Integer, String> subBuilders = new MappedList<Integer, String>(pSubBuilderOffset);
+    MappedLinkedList<Integer, String> subBuilders = new MappedLinkedList<Integer, String>(pSubBuilderOffset);
     if(subBuilders == null)
-      subBuilders = new MappedList<Integer, String>();
+      subBuilders = new MappedLinkedList<Integer, String>();
     LinkedList<String> runFirst = subBuilders.get(0);
     if(runFirst != null) {
       for(String sub : runFirst) {
@@ -368,7 +505,6 @@ class BaseBuilder
 
   private final LinkedList<QueueJobGroup> 
   queueJobs() 
-    throws PipelineException
   {
     return queueNodes(sNodesToQueue);
   }
@@ -587,21 +723,34 @@ class BaseBuilder
   setCommandLineParam
   (
     String builder, 
-    String key, 
+    LinkedList<String> keys, 
     String value
   )
   {
     sLog.log(Kind.Arg, Level.Finer, 
       "Reading command line arg for Builder (" + builder + ").\n" +
-      "Key is (" + key + ").\n" +
+      "Keys are (" + keys + ").\n" +
       "Value is (" + value + ").\n");
-    sCommandLineParams.put(builder, key, value);
+    LinkedList<String> list;
+    if (keys == null)
+      list = new LinkedList<String>();
+    else
+      list = new LinkedList<String>(keys);
+    list.addFirst(builder);
+    sCommandLineParams.putValue(list, value);
   }
   
-  public static DoubleMap<String, String, String>
+  /**
+   * Returns a {@link MultiMap} of all the command line parameters.
+   * <p>
+   * The first level in the MultiMap is made up of the names of all the builders, the second
+   * level is all the parameter names, and every level after that (if they exist) are keys
+   * into Complex Parameters.  Values are stored in the leaf nodes.
+   */
+  public static MultiMap<String, String>
   getCommandLineParams()
   {
-    return new DoubleMap<String, String, String>(sCommandLineParams);
+    return sCommandLineParams;
   }
   
   
@@ -615,11 +764,6 @@ class BaseBuilder
    */
   private static TreeSet<String> sNodesToQueue = new TreeSet<String>();
 
-  /**
-   * A list of {@link QueueJobGroup}s representing the nodes that have been queued.
-   */
-  private static LinkedList<QueueJobGroup> sQueueJobs = new LinkedList<QueueJobGroup>();
-  
   /**
    * A static connection to the queue manager used for checking job statuses
    */
@@ -639,8 +783,8 @@ class BaseBuilder
   /**
    * 
    */
-  private static DoubleMap<String, String, String> sCommandLineParams = 
-    new DoubleMap<String, String, String>();
+  private static MultiMap<String, String> sCommandLineParams = 
+    new MultiMap<String, String>();
   
 
   
@@ -715,6 +859,7 @@ class BaseBuilder
       super(name, desc);
     }
     
+    @SuppressWarnings("unused")
     public void 
     validatePhase() 
       throws PipelineException
@@ -722,6 +867,7 @@ class BaseBuilder
       sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, "Stub validate phase in the " + pName + ".");      
     }
     
+    @SuppressWarnings("unused")
     public void 
     gatherPhase() 
       throws PipelineException
@@ -729,6 +875,7 @@ class BaseBuilder
       sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, "Stub gather phase in the " + pName + ".");
     }
     
+    @SuppressWarnings("unused")
     public void
     initPhase()
       throws PipelineException
@@ -769,6 +916,7 @@ class BaseBuilder
       super(name, desc);
     }
     
+    @SuppressWarnings("unused")
     public TreeSet<String>
     preBuildPhase()
       throws PipelineException
@@ -777,6 +925,7 @@ class BaseBuilder
       return new TreeSet<String>();
     }
     
+    @SuppressWarnings("unused")
     public void
     buildPhase()
       throws PipelineException

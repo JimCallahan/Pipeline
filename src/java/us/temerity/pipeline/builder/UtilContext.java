@@ -109,7 +109,6 @@ public class UtilContext
   (
     GlueDecoder decoder
   ) 
-  throws GlueException
   {
     pAuthor = (String) decoder.decode("Author");
     pView = (String) decoder.decode("View");

@@ -11,6 +11,7 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
+import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
 
 public abstract 
 class HasBuilderParams
@@ -38,7 +39,7 @@ class HasBuilderParams
     
     pParams = new TreeMap<String, BuilderParam>();
     pAllowsChildren = allowsChildren;
-    pParamMapping = new TreeMap<String, String>();
+    pParamMapping = new TreeMap<ParamMapping, ParamMapping>();
   }
   
   
@@ -48,7 +49,7 @@ class HasBuilderParams
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the Class have any global parameters?
+   * Does the Class have any parameters?
    */
   public boolean 
   hasParams()
@@ -84,8 +85,8 @@ class HasBuilderParams
    * @param name
    *        The name of the parameter.
    * @return The parameter value.
-   * @throws PipelineException
-   *         If no parameter with the given name exists.
+   * @throws IllegalArgumentException if no parameter with the given name exists or if the
+   * named parameter does not implement {@link SimpleParamAccess}.
    */
   @SuppressWarnings("unchecked")
   public Comparable 
@@ -93,15 +94,83 @@ class HasBuilderParams
   (
     String name
   ) 
-    throws PipelineException
   {
     BuilderParam param = getParam(name);
     if ( param == null )
-      throw new PipelineException
+      throw new IllegalArgumentException
         ("Unable to determine the value of the (" + name + ") parameter!");
-    return param.getValue();
+    if (! (param instanceof SimpleParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "SimpleParamAccess.");
+    return ((SimpleParamAccess) param).getValue();
+  }
+  
+  /**
+   * Get the value of the Simple Parameter located inside the named Complex Parameter and
+   * identified by the list of keys.
+   * 
+   * @throws IllegalArgumentException if no parameter with the given name exists or if the
+   * named parameter does not implement {@link SimpleParamAccess}.
+   */
+  @SuppressWarnings("unchecked")
+  public Comparable
+  getParamValue
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    
+    if (keys == null || keys.isEmpty())
+      return getParamValue(name);
+    
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    return ((ComplexParamAccess<BuilderParam>) param).getValue(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public Comparable
+  getParamValue
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return getParamValue(mapping.getParamName(), mapping.getKeys());
+    return getParamValue(mapping.getParamName());
   }
 
+  @SuppressWarnings("unchecked")
+  public BuilderParam 
+  getParam
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    
+    if (keys == null || keys.isEmpty())
+      return param;
+    
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    return ((ComplexParamAccess<BuilderParam>) param).getParam(keys); 
+  }
+  
   /**
    * Get the parameter with the given name.
    * 
@@ -119,6 +188,18 @@ class HasBuilderParams
     if ( name == null )
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
     return pParams.get(name);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public BuilderParam
+  getParam
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return getParam(mapping.getParamName(), mapping.getKeys());
+    return getParam(mapping.getParamName());
   }
 
   public Collection<BuilderParam> 
@@ -166,38 +247,144 @@ class HasBuilderParams
     if ( param == null )
       throw new IllegalArgumentException
         ("No parameter named (" + param.getName() + ") exists for this extension!");
+    if (! (param instanceof SimpleParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "SimpleParamAccess.");
 
-    param.setValue(value);
+    ((SimpleParamAccess) param).setValue(value);
   }
 
-  /**
-   * Copy the values of all of the parameters from the given Class.
-   * <P>
-   * Note that there is no requirement that the given extension be the same plugin type or
-   * version. Any incompatible parameters will simply be ignored by the copy operation.
-   * 
-   * @param extension
-   *        The extension to use as the source of parameter values.
-   */
-  public void setParamValues
+  @SuppressWarnings("unchecked")
+  public void
+  setParamValue
   (
-    BaseBuilder builder
+    String name,
+    List<String> keys,
+    Comparable value  
   )
   {
-    for(String name : pParams.keySet()) {
-      BuilderParam aparam = builder.getParam(name);
-      if(aparam != null) {
-	BuilderParam param = pParams.get(name);
-	try {
-	  param.setValue(aparam.getValue());
-	}
-	catch(IllegalArgumentException ex) {
-	  LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Warning, ex.getMessage());
-	}
-      }
-    }
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    ((ComplexParamAccess<BuilderParam>) param).setValue(keys, value);
   }
+  
+  @SuppressWarnings("unchecked")
+  public void
+  setParamValue
+  (
+    ParamMapping mapping,
+    Comparable value
+  )
+  {
+    if (mapping.hasKeys())
+      setParamValue(mapping.getParamName(), mapping.getKeys(), value);
+    else
+      setParamValue(mapping.getParamName(), value);
+  }
+  
+  public boolean
+  hasParam
+  (
+    String name
+  )
+  {
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      return false;
+    return true;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasParam
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      return false;
+    
+    if (keys == null || keys.isEmpty())
+      return hasParam(name);
+    
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    
+    return ((ComplexParamAccess<BuilderParam>) param).hasParam(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasParam
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return hasParam(mapping.getParamName(), mapping.getKeys());
+    return hasParam(mapping.getParamName());
+  }
+  
+  public boolean
+  hasSimpleParam
+  (
+    String name
+  )
+  {
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      return false;
+    if (param instanceof SimpleParamAccess)
+      return true;
+    return false;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasSimpleParam
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    BuilderParam param = getParam(name);
+    
+    if ( param == null )
+      return false;
+    
+    if (keys == null || keys.isEmpty())
+      return hasSimpleParam(name);
 
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    
+    return ((ComplexParamAccess<BuilderParam>) param).hasSimpleParam(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasSimpleParam
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return hasSimpleParam(mapping.getParamName(), mapping.getKeys());
+    return hasSimpleParam(mapping.getParamName());
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -327,18 +514,18 @@ class HasBuilderParams
     return getLayout().getPassLayout(pass);
   }
 
-  public AdvancedLayoutGroup
-  getEditedPassLayout
-  (
-    int pass
-  )
-  {
-    AdvancedLayoutGroup toReturn = new AdvancedLayoutGroup(getLayout().getPassLayout(pass));
-    TreeSet<String> mapped = getMappedParamNames(pass);
-    for(String param : mapped) 
-      toReturn.removeEntry(param);
-    return toReturn;
-  }
+//  public AdvancedLayoutGroup
+//  getEditedPassLayout
+//  (
+//    int pass
+//  )
+//  {
+//    AdvancedLayoutGroup toReturn = new AdvancedLayoutGroup(getLayout().getPassLayout(pass));
+//    TreeSet<String> mapped = getMappedParamNames(pass);
+//    for(String param : mapped) 
+//      toReturn.removeEntry(param);
+//    return toReturn;
+//  }
   
   
   
@@ -362,118 +549,23 @@ class HasBuilderParams
     return pAllowsChildren;
   }
   
-  /**
-   * Creates a mapping between a parameter in this Sub-Builder and a parameter
-   * in the parent Builder. 
-   * <p>
-   * It is important to note that there is not a huge amount of error checking going
-   * on here.  There is no checking to make sure that the parent parameter actually
-   * exists in the parent Builder.  There is no checking that the two parameters 
-   * are actually the same type of parameter.  It does check that the parameter you are
-   * trying to map exists in the Sub-Builder.  
-   * <p>
-   * More extensive error checking is done at the point where the mapping is actually 
-   * carried out, so you're going to throw an Exception eventually, just not necessarily here.
-   * 
-   * @param subParamName
-   * 	The name of the Sub-Builder parameter that is being driven.
-   * @param masterParamName
-   * 	The name of the parent Builder parameter that is driving the Sub-Builder parameter.
-   * @throws PipelineException
-   * 	Only in cases where the Sub-Builder parameter does not exist.
-   */
   public void
-  addMappedParam
+  addParamMapping
   (
-    String subParamName,
-    String masterParamName
+    ParamMapping subParam,
+    ParamMapping masterParam
   )
-    throws PipelineException
   {
-    if (getParamNames().contains(subParamName))
-      pParamMapping.put(subParamName, masterParamName);
-    else
-      throw new PipelineException
-        ("Illegal attempt mapping a Builder parameter to a SubBuilder.  " +
-	 "The Parameter (" + subParamName + ") does not exist in the subBuilder identified " +
-	 "with (" + getName() +  "), making the attempted mapping invalid. " +
-	 "The full attempted mapping was of (" + masterParamName + ") " +
-	 "in the master to ("+ subParamName + ") in the sub Builder." );
+    pParamMapping.put(subParam, masterParam);
   }
 
-  /**
-   * Creates mappings between parameters in this Sub-Builder and parameters
-   * in the parent Builder. 
-   * <p>
-   * It is important to note that there is not a huge amount of error checking going
-   * on here.  There is no checking to make sure that the parent parameter actually
-   * exists in the parent Builder.  There is no checking that the two parameters 
-   * are actually the same type of parameter.  It does check that the parameter you are
-   * trying to map exists in the Sub-Builder.   
-   * <p>
-   * More extensive error checking is done at the point where the mapping is actually 
-   * carried out, so you're going to throw an Exception eventually, just not necessarily here.
-   * 
-   * @param paramMapping
-   * 	A mapping with a keyset of Sub-Builder parameter names, each with a corresponding
-   * 	value which is a parent Builder parameter name.
-   * @throws PipelineException
-   * 	Only in cases where a Sub-Builder parameter does not exist.
-   */
-
-  public void
-  addMappedParams
-  (
-    TreeMap<String, String> paramMapping
-  ) 
-    throws PipelineException
-  {
-    for(String subParamName : paramMapping.keySet()) {
-      String masterParamName = paramMapping.get(subParamName);
-      addMappedParam(subParamName, masterParamName);
-    }
-  }
-  
   /**
    * Gets all the mapped parameters and the parameters that drive them.
    */
-  public SortedMap<String, String> 
+  public SortedMap<ParamMapping, ParamMapping> 
   getMappedParams()
   {
     return Collections.unmodifiableSortedMap(pParamMapping);
-  }
-  
-  /**
-   * Gets all the ummapped parameters, indexed by parameter name.
-   */
-  public TreeMap<String, BuilderParam> 
-  getUnmappedParams()
-  {
-    TreeMap<String, BuilderParam> toReturn = new TreeMap<String, BuilderParam>(pParams);
-    for (String mapped : pParamMapping.keySet())
-      toReturn.remove(mapped);
-    return toReturn;
-  }
-  
-  /**
-   * 
-   * @param pass
-   * @return
-   */
-  public TreeSet<String>
-  getMappedParamNames
-  (
-    int pass
-  )
-  {
-    TreeSet<String> paramNames = getPassParamNames(pass);
-    TreeSet<String> toReturn = new TreeSet<String>();
-    Set<String> mappedParams = getMappedParams().keySet();
-    for(String mapped : mappedParams) {
-      if (paramNames.contains(mapped))
-	toReturn.add(mapped);
-    }
-    return toReturn;
   }
   
   public String 
@@ -497,49 +589,476 @@ class HasBuilderParams
     String prefixName = getNamedPrefix();
     if(prefixName == null)
       prefixName = getName();
-    TreeMap<String, String> commandLineParams = BaseBuilder.getCommandLineParams().get(prefixName);
+    
+    MappedArrayList<String, MultiMapNamedEntry<String, String>> commandLineValues = 
+      BaseBuilder.getCommandLineParams().namedEntries();
+    
+    ArrayList<MultiMapNamedEntry<String, String>> commandLineParams = 
+      commandLineValues.get(prefixName);
     
     if(commandLineParams != null) {
 
-      TreeMap<String, BuilderParam> unmappedParams = getUnmappedParams();
-
-      TreeMap<String, String> searchMap = new TreeMap<String, String>();
-      {
-	for(String unmapped : unmappedParams.keySet()) {
-	  BuilderParam param = unmappedParams.get(unmapped);
-	  if(param instanceof PrimitiveBuilderParam)
-	    searchMap.put(unmapped, unmapped);
-	  else if(param instanceof ComplexBuilderParam) {
-	    for(String key : (((ComplexBuilderParam) param).listOfKeys()))
-	      searchMap.put(key, unmapped);
+      Set<ParamMapping> mappedParams = pParamMapping.keySet();
+      
+      for (MultiMapNamedEntry<String, String> entry : commandLineParams) {
+	List<String> keys = entry.getKeys();
+	String paramName = entry.getName();
+	ParamMapping mapping = new ParamMapping(paramName, keys);
+	if (!mappedParams.contains(mapping)) {
+	  String value = entry.getValue();
+	  if (hasSimpleParam(mapping)) {
+	    SimpleParamAccess param = (SimpleParamAccess) getParam(mapping);
+	    param.setValueFromString(value);
+	    LogMgr.getInstance().log(Kind.Arg, Level.Finer, 
+	      "Setting command line parameter (" + mapping + ") from builder " +
+	      "(" + prefixName + ") with the value (" + value + ").");
 	  }
+	  else
+	    LogMgr.getInstance().log(Kind.Arg, Level.Warning, 
+	      "Cannot set command line parameter (" + mapping + ") from builder " +
+	      "(" + prefixName + ") with the value (" + value + ").\n" +
+	      "Parameter is not a Simple Parameter");
 	}
       }
-
-      Set<String> searchSet = searchMap.keySet();
-      for(String paramKey : commandLineParams.keySet()) {
-	if(searchSet.contains(paramKey)) {
-	  String value = commandLineParams.get(paramKey);
-	  String paramName = searchMap.get(paramKey);
-	  BuilderParam param = unmappedParams.get(paramName);
-	  if(param instanceof PrimitiveBuilderParam)
-	    ((PrimitiveBuilderParam) param).valueFromString(value);
-	  else if(param instanceof ComplexBuilderParam)
-	    ((ComplexBuilderParam) param).valueFromString(paramKey, value);
-	  else
-  	    LogMgr.getInstance().log(Kind.Arg, Level.Warning, 
-	      "The command line parameter (" + paramKey + ") from builder (" + prefixName + ") " +
-	      "has an unknown parameter Interface.  It will be ignored.");
-	}
-	else
-	  LogMgr.getInstance().log(Kind.Arg, Level.Warning, 
-	    "The command line parameter (" + paramKey + ") from builder (" + prefixName + ") " +
-	    "cannot be found in the list of unmapped parameters.  It will be ignored.");
-      } // for(String paramKey : commandLineParams.keySet())
-    } // if(commandLineParams != null) {
+    }
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A R A M E T E R   L O O K U P                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Get the selected index of the single valued Enum parameter with the given name.<P> 
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The index value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   * @throws ClassCastException
+   *   If the parameter is not an EnumParameter.
+   */ 
+  public int
+  getEnumParamIndex
+  (
+   ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    EnumBuilderParam param = (EnumBuilderParam) getParam(mapping);
+    if(param == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") does not exist!"); 
+      
+    return param.getIndex();
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Boolean parameter with the given name.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   */ 
+  public boolean
+  getBooleanParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getParamValue(mapping);  
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+
+    return value;
+  }  
+
+  /** 
+   * Get the value of the single valued Boolean parameter with the given name.<P> 
+   * 
+   * If <CODE>null</CODE> value is treated as <CODE>false</CODE>.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   */ 
+  public boolean
+  getOptionalBooleanParamValue
+  (
+    ParamMapping mapping
+  ) 
+  {
+    Boolean value = (Boolean) getParamValue(mapping); 
+    return ((value != null) && value);
+  } 
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Long parameter with the given name.<P> 
+   * 
+   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public long
+  getLongParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    return getLongParamValue(mapping, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Long parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value) <P> 
+   * 
+   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public long
+  getLongParamValue
+  (
+    ParamMapping mapping,
+    Long minValue 
+  ) 
+    throws PipelineException
+  {
+    return getLongParamValue(mapping, minValue, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Long parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value <= maxValue)<P> 
+   * 
+   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param maxValue
+   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public long
+  getLongParamValue
+  (
+    ParamMapping mapping,
+    Long minValue, 
+    Long maxValue
+  ) 
+    throws PipelineException
+  {
+    Long value = (Long) getParamValue(mapping); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+
+    if((minValue != null) && (value < minValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was less-than the " + 
+         "minimum allowed value (" + minValue + ")!");
+    
+    if((maxValue != null) && (value > maxValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was greater-than the " + 
+         "maximum allowed value (" + maxValue + ")!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Integer parameter with the given name.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public int
+  getIntegerParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    return getIntegerParamValue(mapping, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Integer parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value) 
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public int
+  getIntegerParamValue
+  (
+    ParamMapping mapping,
+    Integer minValue 
+  ) 
+    throws PipelineException
+  {
+    return getIntegerParamValue(mapping, minValue, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Integer parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value <= maxValue)
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param maxValue
+   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public int
+  getIntegerParamValue
+  (
+    ParamMapping mapping,
+    Integer minValue, 
+    Integer maxValue
+  ) 
+    throws PipelineException
+  {
+    Integer value = (Integer) getParamValue(mapping); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+
+    if((minValue != null) && (value < minValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was less-than the " + 
+         "minimum allowed value (" + minValue + ")!");
+    
+    if((maxValue != null) && (value > maxValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was greater-than the " + 
+         "maximum allowed value (" + maxValue + ")!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Double parameter with the given name.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public double
+  getDoubleParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    return getDoubleParamValue(mapping, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Double parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (lower < value)
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param lower
+   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public double
+  getDoubleParamValue
+  (
+    ParamMapping mapping,
+    Double lower
+  ) 
+    throws PipelineException
+  {
+    return getDoubleParamValue(mapping, lower, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Double parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (lower < value < upper)
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param lower
+   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param upper
+   *   The upper bounds (exclusive) of legal values or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public double
+  getDoubleParamValue
+  (
+    ParamMapping mapping,
+    Double lower, 
+    Double upper
+  ) 
+    throws PipelineException
+  {
+    Double value = (Double) getParamValue(mapping); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+    
+    if((lower != null) && (value <= lower)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was not greater-than the " + 
+         "the lower bounds (" + lower + ") for legal values!");
+    
+    if((upper != null) && (value >= upper)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was not less-than the " + 
+         "the upper bounds (" + upper + ") for legal values!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+
+  /** 
+   * Get the value of the single valued String parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The parameter value or <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   */ 
+  public String
+  getStringParamValue
+  (
+   String name   
+  ) 
+  { 
+    String value = (String) getParamValue(name); 
+    if((value != null) && (value.length() > 0))
+      return value;
+
+    return null;    
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -556,7 +1075,7 @@ class HasBuilderParams
   /**
    *  Contains a mapping of the Sub-Builder Parameter name to the parent Parameter name.
    */
-  private TreeMap<String, String> pParamMapping;
+  private TreeMap<ParamMapping, ParamMapping> pParamMapping;
   
   /**
    * Is the class that inherets from this class allowed to have children?
@@ -576,4 +1095,122 @@ class HasBuilderParams
    * 
    */
   private String pNamedPrefix = null;
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   C L A S S E S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static
+  class ParamMapping
+    implements Comparable<ParamMapping>
+  {
+    public
+    ParamMapping
+    (
+      String paramName
+    )
+    {
+      this(paramName, null);
+    }
+    
+    public
+    ParamMapping
+    (
+      String paramName,
+      List<String> keys
+    )
+    {
+      if (paramName == null)
+	throw new IllegalArgumentException("Cannot have a null parameter name");
+      pParamName = paramName;
+      if (keys == null)
+	pKeys = null;
+      else if (keys.isEmpty())
+	pKeys = null;
+      else
+	pKeys = new LinkedList<String>(keys);
+    }
+    
+    public String
+    getParamName()
+    {
+      return pParamName;
+    }
+    
+    public boolean
+    hasKeys()
+    {
+      if (pKeys == null)
+	return false;
+      return true;
+    }
+    
+    public List<String>
+    getKeys()
+    {
+      if (pKeys == null)
+	return null;
+      return Collections.unmodifiableList(pKeys);
+    }
+
+    public int 
+    compareTo
+    (
+      ParamMapping that
+    )
+    {
+      int compare = this.pParamName.compareTo(that.pParamName);
+      if (compare != 0)
+	return compare;
+      if (this.pKeys == null) {
+	if (that.pKeys == null)
+	  return 0;
+	return -1;
+      }
+      if (that.pKeys == null)
+	return 1;
+      int thisSize = this.pKeys.size();
+      int thatSize = that.pKeys.size();
+      if (thisSize > thatSize)
+	return 1;
+      else if (thatSize < thisSize)
+	return -1;
+      for (int i = 0; i < thisSize; i++) {
+	String thisKey = this.pKeys.get(i);
+	String thatKey = that.pKeys.get(i);
+	compare = thisKey.compareTo(thatKey);
+	if (compare != 0)
+	  return compare;
+      }
+      return 0;
+    }
+    
+    @Override
+    public boolean 
+    equals
+    (
+      Object obj
+    )
+    {
+      if (!(obj instanceof ParamMapping ) )
+	return false;
+      ParamMapping mapping = (ParamMapping) obj;
+      int compare = this.compareTo(mapping);
+      if (compare == 0)
+	return true;
+      return false;
+    }
+
+    @Override
+    public String
+    toString()
+    {
+      return "Param Name: " + pParamName + "\tKeys: " + pKeys;
+    }
+    
+    private String pParamName;
+    private LinkedList<String> pKeys;
+  }
 }

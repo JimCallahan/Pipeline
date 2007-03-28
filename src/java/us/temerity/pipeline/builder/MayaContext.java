@@ -6,7 +6,6 @@ package us.temerity.pipeline.builder;
 import java.io.Serializable;
 import java.util.*;
 
-import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -30,7 +29,6 @@ class MayaContext
    * 	The linear unit value
    * @param timeUnit
    * 	The time unit value
-   * @throws PipelineException
    */
   public 
   MayaContext
@@ -39,14 +37,16 @@ class MayaContext
     String linearUnit, 
     String timeUnit
   )
-  throws PipelineException
   {
     if(!sAngularUnits.contains(angularUnit))
-      throw new PipelineException("Invalid value (" + angularUnit + ") passed in for Angular Units.");
+      throw new IllegalArgumentException
+        ("Invalid value (" + angularUnit + ") passed in for Angular Units.");
     if(!sLinearUnits.contains(linearUnit))
-      throw new PipelineException("Invalid value (" + linearUnit + ") passed in for Linear Units.");
+      throw new IllegalArgumentException
+        ("Invalid value (" + linearUnit + ") passed in for Linear Units.");
     if(!sTimeUnits.contains(timeUnit))
-      throw new PipelineException("Invalid value (" + timeUnit + ") passed in for Time Units.");
+      throw new IllegalArgumentException
+        ("Invalid value (" + timeUnit + ") passed in for Time Units.");
     pAngularUnit = angularUnit;
     pLinearUnit = linearUnit;
     pTimeUnit = timeUnit;
@@ -57,7 +57,6 @@ class MayaContext
    */
   public 
   MayaContext() 
-    throws PipelineException
   {
     this("degrees","centimeter", "Film (24 fps)" );
   }
@@ -140,7 +139,6 @@ class MayaContext
   (
     GlueDecoder decoder
   ) 
-  throws GlueException
   {
     pTimeUnit = (String) decoder.decode("TimeUnit");
     pAngularUnit = (String) decoder.decode("AngularUnit");
@@ -159,6 +157,8 @@ class MayaContext
     encoder.encode("LinearUnit", pLinearUnit);
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/

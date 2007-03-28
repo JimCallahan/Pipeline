@@ -127,15 +127,17 @@ TOKEN :
 <PARAM_NAME_STATE>
 TOKEN:
 {
-  <PARAM_NAME:          (["a"-"z","A"-"Z","0"-"9","-","_"])+> : PARAM_SEP
+  <PARAM_NAME:          (["a"-"z","A"-"Z","0"-"9","_"])+>     : KEY_STATE
 | <MISSING_PARAM_NAME:   ["\0"]>        				      : IGNORE_STATE
 | <ILLEGAL_PARAM_NAME: (~["\0"])+>    						  : IGNORE_STATE
 }
 
-<PARAM_SEP> 
+<KEY_STATE> 
 TOKEN :
 {
-  <EQ2:                 "=">   : PARAM_VALUE_STATE
+  <KEY_NAME:          (["a"-"z","A"-"Z","0"-"9","_"])+>
+| <KEY_SEP:             "-">
+| <EQ2:                 "=">   : PARAM_VALUE_STATE
 | <MISSING_PARAM_SEP: ~["="]>  : IGNORE_STATE
 }
 
@@ -320,12 +322,29 @@ Param()
 {
   Token t1;
   Token t2;
+  LinkedList<String> keys = new LinkedList<String>();
 }
 {
-	<PARAM> t1=<PARAM_NAME> EQ() t2=<PARAM_VALUE>
-	{
-	  BaseBuilder.setCommandLineParam(currentBuilderName, t1.image, t2.image);
-	}
+  <PARAM> t1=<PARAM_NAME> (Key(keys))* EQ() t2=<PARAM_VALUE>
+  {
+    keys.addFirst(t1.image);
+    BaseBuilder.setCommandLineParam(currentBuilderName, keys, t2.image);
+  }
+}
+
+void
+Key
+(
+  LinkedList<String> keys
+) :
+{
+  Token t1;
+}
+{
+  <KEY_SEP> t1=<KEY_NAME>
+  {
+    keys.add(t1.image);
+  }
 }
 
 /*------------------------------------------------------------------------------------------*/

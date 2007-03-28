@@ -120,7 +120,6 @@ class BaseUtil
   /**
    * Returns a default {@link UtilContext}
    * 
-   * @return
    * @throws PipelineException
    */
   public static UtilContext 
@@ -501,8 +500,6 @@ class BaseUtil
    * it will also set the "Prefix Name" SourceParam on the action. In these cases, this
    * method changes the action that is passed in.
    * 
-   * @param w
-   *        Wrapper class.
    * @param target
    *        The node that will be the target of the link.
    * @param source
@@ -551,6 +548,7 @@ class BaseUtil
    * @param preset
    *        The {@link SortedMap} that holds the preset names and values.
    */
+  @SuppressWarnings("unchecked")
   public void 
   setPresets
   (
@@ -577,7 +575,7 @@ class BaseUtil
    * @param method
    *        The {@link CheckOutMethod} to use.
    * @throws PipelineException
-   * @see #getLatest(String, CheckOutMode, CheckOutMethod)
+   * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod)
    */
   public void 
   checkOutNewer
@@ -631,7 +629,7 @@ class BaseUtil
    * @param method
    *        The {@link CheckOutMethod} to use.
    * @throws PipelineException
-   * @see #getNewer(String, CheckOutMode, CheckOutMethod)
+   * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod)
    */
   public void 
   checkOutLatest
@@ -651,10 +649,6 @@ class BaseUtil
    * 
    * @param name
    *        The name of the node node to checkout.
-   * @param mode
-   *        The {@link CheckOutMode} to use.
-   * @param method
-   *        The {@link CheckOutMethod} to use.
    * @throws PipelineException
    */
   public void 
@@ -732,7 +726,6 @@ class BaseUtil
    * 
    * @param status
    *        The status of the root node of the tree to be searched.
-   * @return
    */
   public boolean 
   getTreeState
@@ -768,7 +761,6 @@ class BaseUtil
    *        Contains the name and the vendor the the plugin *
    * @param toolset
    *        The toolset from which the version of the Action will be extracted.
-   * @return
    * @throws PipelineException
    */
   public static BaseAction 
@@ -799,7 +791,6 @@ class BaseUtil
    *        Contains the name and the vendor the the plugin
    * @param toolset
    *        The toolset from which the version of the Editor will be extracted.
-   * @return
    * @throws PipelineException
    */
   public static BaseEditor 
@@ -984,6 +975,20 @@ class BaseUtil
     return pContext.getToolset();
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   U T I L I T Y   M E T H O D S                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static LinkedList<String>
+  listFromString
+  (
+    String key
+  )
+  {
+    LinkedList<String> list = new LinkedList<String>();
+    list.add(key);
+    return list;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
