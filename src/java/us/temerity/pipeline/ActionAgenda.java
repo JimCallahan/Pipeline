@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.11 2007/03/18 02:32:12 jim Exp $
+// $Id: ActionAgenda.java,v 1.12 2007/03/28 19:04:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -345,10 +345,28 @@ class ActionAgenda
    * Replaces all references to environmental variables in the given source string with 
    * their values from agenda's Toolset environment.<P> 
    * 
-   * For each environmental variable ('XYZ'), any references ('${XYZ}') to that variable in 
-   * the source will be replaced with the value of the variable.  Since Toolsets should not 
-   * contain values containing references to other variables, the order in which the 
-   * substitutions are performed is not important.
+   * For each environmental variable, any references to that variable in the source will 
+   * be replaced with the value of the variable.  There are two forms of reference to a
+   * variable: <BR> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   <CODE>${<I>VARIABLE_NAME</I>}</CODE><BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The reference is replaced with the value of the environmental variable 
+   *     (VARIABLE_NAME) with no changes.
+   *   </DIV> <BR>
+   * 
+   *   <CODE>${<I>VARIABLE_NAME</I>+}</CODE><BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The reference is replaced with the value of the environmental variable 
+   *     (VARIABLE_NAME) which has first been converted to an abstract file system pathname
+   *     using the {@link Path} class.  This has the effect of converting all back slashes
+   *     "\" with forward slashes "/" in the environmental variable value.
+   *   </DIV> 
+   * </DIV><P>
+   * 
+   * Since Toolsets variable values should not contain references to other variables, the 
+   * order in which the substitutions can be performed is arbitrary.
    * 
    * @param source
    *    The string to evaluate.
@@ -371,10 +389,28 @@ class ActionAgenda
    * Replaces all references to environmental variables in the given source string with 
    * their values from agenda's Toolset environment.<P> 
    * 
-   * For each environmental variable ('XYZ'), any references ('${XYZ}') to that variable in 
-   * the source will be replaced with the value of the variable.  Since Toolsets should not 
-   * contain values containing references to other variables, the order in which the 
-   * substitutions are performed is not important.
+   * For each environmental variable, any references to that variable in the source will 
+   * be replaced with the value of the variable.  There are two forms of reference to a
+   * variable: <BR> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   <CODE>${<I>VARIABLE_NAME</I>}</CODE><BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The reference is replaced with the value of the environmental variable 
+   *     (VARIABLE_NAME) with no changes.
+   *   </DIV> <BR>
+   * 
+   *   <CODE>${<I>VARIABLE_NAME</I>+}</CODE><BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The reference is replaced with the value of the environmental variable 
+   *     (VARIABLE_NAME) which has first been converted to an abstract file system pathname
+   *     using the {@link Path} class.  This has the effect of converting all back slashes
+   *     "\" with forward slashes "/" in the environmental variable value.
+   *   </DIV> 
+   * </DIV><P>
+   * 
+   * Since Toolsets variable values should not contain references to other variables, the 
+   * order in which the substitutions can be performed is arbitrary.
    * 
    * @param source
    *    The string to evaluate.
@@ -407,10 +443,28 @@ class ActionAgenda
    * Replaces all references to environmental variables in the given source string with 
    * their values from the given Toolset environment.<P> 
    * 
-   * For each environmental variable ('XYZ'), any references ('${XYZ}') to that variable in 
-   * the source will be replaced with the value of the variable.  Since Toolsets should not 
-   * contain values containing references to other variables, the order in which the 
-   * substitutions are performed is not important.
+   * For each environmental variable, any references to that variable in the source will 
+   * be replaced with the value of the variable.  There are two forms of reference to a
+   * variable: <BR> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   <CODE>${<I>VARIABLE_NAME</I>}</CODE><BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The reference is replaced with the value of the environmental variable 
+   *     (VARIABLE_NAME) with no changes.
+   *   </DIV> <BR>
+   * 
+   *   <CODE>${<I>VARIABLE_NAME</I>+}</CODE><BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The reference is replaced with the value of the environmental variable 
+   *     (VARIABLE_NAME) which has first been converted to an abstract file system pathname
+   *     using the {@link Path} class.  This has the effect of converting all back slashes
+   *     "\" with forward slashes "/" in the environmental variable value.
+   *   </DIV> 
+   * </DIV><P>
+   * 
+   * Since Toolsets variable values should not contain references to other variables, the 
+   * order in which the substitutions can be performed is arbitrary.
    * 
    * @param source
    *    The string to evaluate.
@@ -432,9 +486,14 @@ class ActionAgenda
     String result = source;
     for(String key : env.keySet()) {
       String value = env.get(key);
-      if(value != null) 
+      if(value != null) {
         result = result.replaceAll(Pattern.quote("${" + key + "}"), 
                                    Matcher.quoteReplacement(value));
+
+        String pvalue = value.replaceAll("\\\\", "/");
+        result = result.replaceAll(Pattern.quote("${" + key + "+}"), 
+                                   Matcher.quoteReplacement(pvalue));
+      }
     }
 
     return result;
