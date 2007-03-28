@@ -683,14 +683,14 @@ MAC_HOMEDIR=""
 AC_SUBST(MAC_TEMPDIR)
 MAC_TEMPDIR=""
 
-mac_clients=`crypto_lookup MacClients`
+mac_support=`crypto_lookup MacSupport`
 mac_root_inst_dir=`crypto_lookup MacRootInstallDirectory`
 mac_prod_dir=`crypto_lookup MacProductionDirectory`
 mac_home_dir=`crypto_lookup MacHomeDirectory`
 mac_temp_dir=`crypto_lookup MacTemporaryDirectory`
 has_mac=false
 
-if test "$mac_clients" == "true" \
+if test "$mac_support" == "true" \
      -a "$mac_root_inst_dir" != "null" \
      -a "$mac_prod_dir" != "null" \
      -a "$mac_home_dir" != "null" \
@@ -703,7 +703,7 @@ then
   AC_MSG_CHECKING([MacOS Root Production Directory])
   MAC_PRODDIR=$mac_prod_dir
   AC_MSG_RESULT([$MAC_PRODDIR])
-  
+
   AC_MSG_CHECKING([MacOS User Home Directory])
   MAC_HOMEDIR=$mac_home_dir
   AC_MSG_RESULT([$MAC_HOMEDIR])
@@ -724,9 +724,6 @@ dnl ----------------------------------------------------------------------------
 AC_SUBST(WIN_ROOT_INST_DIR)
 WIN_ROOT_INST_DIR=""
 
-AC_SUBST(WIN_DEFAULT_DOMAIN)
-WIN_DEFAULT_DOMAIN=""
-
 AC_SUBST(WIN_PRODDIR)
 WIN_PRODDIR=""
 
@@ -739,8 +736,7 @@ WIN_TEMPDIR=""
 AC_SUBST(WIN_JAVA_HOME)
 WIN_JAVA_HOME=""
 
-win_clients=`crypto_lookup WinClients`
-win_default_domain=`crypto_lookup WinDefaultDomain`
+win_support=`crypto_lookup WinSupport`
 win_root_inst_dir=`crypto_lookup WinRootInstallDirectory`
 win_prod_dir=`crypto_lookup WinProductionDirectory`
 win_home_dir=`crypto_lookup WinHomeDirectory`
@@ -748,18 +744,13 @@ win_temp_dir=`crypto_lookup WinTemporaryDirectory`
 win_java_home=`crypto_lookup WinJavaHome`
 has_windows=false
 
-if test "$win_clients" == "true" \
-     -a "$win_default_domain" != "null" \
+if test "$win_support" == "true" \
      -a "$win_root_inst_dir" != "null" \
      -a "$win_prod_dir" != "null" \
      -a "$win_home_dir" != "null" \
      -a "$win_temp_dir" != "null" \
      -a "$win_java_home" != "null"
 then
-  AC_MSG_CHECKING([Windows Default Domain])
-  WIN_DEFAULT_DOMAIN="$win_default_domain"
-  AC_MSG_RESULT([$WIN_DEFAULT_DOMAIN])
-
   AC_MSG_CHECKING([Windows Root Installation Directory])
   WIN_ROOT_INST_DIR="$win_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP"
   AC_MSG_RESULT([$WIN_ROOT_INST_DIR])
@@ -767,7 +758,7 @@ then
   AC_MSG_CHECKING([Windows Root Production Directory])
   WIN_PRODDIR="$win_prod_dir"
   AC_MSG_RESULT([$WIN_PRODDIR])
-  
+
   AC_MSG_CHECKING([Windows User Home Directory])
   WIN_HOMEDIR="$win_home_dir"
   AC_MSG_RESULT([$WIN_HOMEDIR])
@@ -785,6 +776,22 @@ fi
 
 AM_CONDITIONAL(HAS_WINDOWS, test x$has_windows = xtrue)
 
+
+AC_SUBST(WIN_PIPELINE_USERNAME)
+WIN_PIPELINE_USERNAME="nullptr"
+
+AC_SUBST(WIN_PIPELINE_PASSWORD)
+WIN_PIPELINE_PASSWORD="nullptr"
+
+win_domain=`crypto_lookup WinDomain`
+win_password=`crypto_lookup WinPassword`
+if test "$win_support" == "true" \
+     -a "$win_domain" != "null" \
+     -a "$win_password" != "null"
+then
+  WIN_PIPELINE_USERNAME="L\""$win_domain"\\\\"$PIPELINE_USER"\""
+  WIN_PIPELINE_PASSWORD="L\""$win_password"\""
+fi
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -975,7 +982,7 @@ case "$NATIVE_OSTYPE" in
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
-  
+
   (Windows) 
     JAVA_RUNTIME="$WIN_JAVA_HOME/bin/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
@@ -1562,6 +1569,7 @@ AC_CONFIG_FILES([
 
   src/windows/services/Makefile
   src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h.src
+  src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
 
   src/windows/scripts/Makefile
   src/windows/scripts/plscript.bat.src
