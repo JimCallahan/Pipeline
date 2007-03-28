@@ -1,9 +1,8 @@
 #!/bin/sh
 
 cd `pwd`
-exec sg @PIPELINE_GROUP@ -c \
- "@JAVA_RUNTIME@ @JAVA_RUNTIME_OPTS@ \
+exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLFILEMGR_GC_OPTS@ \
   @PLFILEMGR_PROFILE_OPTS@ \
   -cp @PIPELINE_JAR@ \
-  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.FileMgrApp $@"
+  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.FileMgrApp "$@"
