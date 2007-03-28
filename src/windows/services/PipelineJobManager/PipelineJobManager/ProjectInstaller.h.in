@@ -57,8 +57,8 @@ namespace PipelineJobManager {
           // 
           // serviceProcessInstaller1
           //
-          this->serviceProcessInstaller1->Password = nullptr;  //L"xxxx"; 
-          this->serviceProcessInstaller1->Username = nullptr;  //L".\\pipeline";
+          this->serviceProcessInstaller1->Password = @WIN_PIPELINE_PASSWORD@;
+          this->serviceProcessInstaller1->Username = @WIN_PIPELINE_USERNAME@; 
           // 
           // serviceInstaller1
           // 
