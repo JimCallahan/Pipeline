@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.41 2007/03/18 02:33:18 jim Exp $
+// $Id: BaseAction.java,v 1.42 2007/03/28 19:02:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -119,7 +119,7 @@ class BaseAction
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.Action;
@@ -134,7 +134,7 @@ class BaseAction
   /**
    * Does the action have any single valued parameters?
    */ 
-  public boolean 
+  public final boolean 
   hasSingleParams()
   {
     return (!pSingleParams.isEmpty());
@@ -152,7 +152,7 @@ class BaseAction
    * @param param  
    *   The parameter to add.
    */
-  protected void 
+  protected final void 
   addSingleParam
   (
     ActionParam param 
@@ -184,7 +184,7 @@ class BaseAction
    * @return 
    *   The set of single valued parameters for this action.  
    */ 
-  public Collection<ActionParam>
+  public final Collection<ActionParam>
   getSingleParams()
   {
     return Collections.unmodifiableCollection(pSingleParams.values());
@@ -199,7 +199,7 @@ class BaseAction
    * @return 
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists.
    */ 
-  public ActionParam
+  public final ActionParam
   getSingleParam
   (
    String name   
@@ -222,7 +222,7 @@ class BaseAction
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists.
    */ 
-  public Comparable
+  public final Comparable
   getSingleParamValue
   (
    String name   
@@ -248,7 +248,7 @@ class BaseAction
    * @param value  
    *   The new value of the parameter. 
    */ 
-  public void 
+  public final void 
   setSingleParamValue
   (
    String name, 
@@ -275,7 +275,7 @@ class BaseAction
    * @param action  
    *   The action to use as the source of single valued parameter values.
    */
-  public void 
+  public final void 
   setSingleParamValues
   (
    BaseAction action   
@@ -322,7 +322,7 @@ class BaseAction
    * @param source  
    *   The fully resolved dependency node name.
    */ 
-  public boolean 
+  public final boolean 
   hasSourceParams
   (
    String source      
@@ -341,7 +341,7 @@ class BaseAction
    * @param fpat
    *   The file pattern of the secondary sequence of the upstream node.
    */ 
-  public boolean 
+  public final boolean 
   hasSecondarySourceParams
   (
    String source, 
@@ -358,7 +358,7 @@ class BaseAction
    * @param source  
    *   The fully resolved node name of the upstream node.
    */ 
-  public void
+  public final void
   initSourceParams
   (
    String source      
@@ -383,7 +383,7 @@ class BaseAction
    * @param fpat
    *   The file pattern of the secondary sequence of the upstream node.
    */ 
-  public void
+  public final void
   initSecondarySourceParams
   (
    String source, 
@@ -428,7 +428,7 @@ class BaseAction
   /** 
    * Get node names of the upstream nodes with primary file sequence per-source parameters.
    */ 
-  public Set<String>
+  public final Set<String>
   getSourceNames()
   {
     return Collections.unmodifiableSet(pSourceParams.keySet());
@@ -437,7 +437,7 @@ class BaseAction
   /** 
    * Get node names of the upstream nodes with secondary file sequence per-source parameters.
    */ 
-  public Set<String>
+  public final Set<String>
   getSecondarySourceNames()
   {
     return Collections.unmodifiableSet(pSecondaryParams.keySet());
@@ -450,7 +450,7 @@ class BaseAction
    * @param source  
    *   The fully resolved node name of the upstream node.
    */ 
-  public Set<FilePattern>
+  public final Set<FilePattern>
   getSecondarySequences
   (
    String source
@@ -480,7 +480,7 @@ class BaseAction
    * @throws PipelineException 
    *   If no parameter with the given name exists for the given upstream node.
    */ 
-  public Comparable
+  public final Comparable
   getSourceParamValue
   (
    String source,
@@ -510,7 +510,7 @@ class BaseAction
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists
    *   for the given source.
    */ 
-  public ActionParam
+  public final ActionParam
   getSourceParam
   (
    String source,
@@ -540,7 +540,7 @@ class BaseAction
    * @return 
    *   The set of parameters for the given upstream node.  
    */ 
-  public Collection<ActionParam>
+  public final Collection<ActionParam>
   getSourceParams
   (
    String source  
@@ -578,7 +578,7 @@ class BaseAction
    *   If no parameter with the given name exists for the given secondary file sequence of 
    *   the upstream node.
    */ 
-  public Comparable
+  public final Comparable
   getSecondarySourceParamValue
   (
    String source,
@@ -612,7 +612,7 @@ class BaseAction
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists
    *   for given secondary file sequence of the upstream node.
    */ 
-  public ActionParam
+  public final ActionParam
   getSecondarySourceParam
   (
    String source,
@@ -650,7 +650,7 @@ class BaseAction
    * @return 
    *   The set of parameters for the given upstream node.  
    */ 
-  public Collection<ActionParam>
+  public final Collection<ActionParam>
   getSecondarySourceParams
   (
    String source,
@@ -690,7 +690,7 @@ class BaseAction
    * @param value  
    *   The new value of the parameter. 
    */ 
-  public void 
+  public final void 
   setSourceParamValue
   (
    String source,
@@ -734,7 +734,7 @@ class BaseAction
    * @param value  
    *   The new value of the parameter. 
    */ 
-  public void 
+  public final void 
   setSecondarySourceParamValue
   (
    String source,
@@ -787,7 +787,7 @@ class BaseAction
    * @param action  
    *   The action from which to copy per-source parameters.
    */
-  public void 
+  public final void 
   setSourceParamValues
   (
    BaseAction action   
@@ -855,7 +855,7 @@ class BaseAction
    * @param source 
    *   The fully resolved node name of the upstream node.
    */ 
-  public void 
+  public final void 
   removeSourceParams
   (
    String source        
@@ -877,7 +877,7 @@ class BaseAction
    * @param fpat
    *   The file pattern of the secondary sequence of the upstream node.
    */ 
-  public void 
+  public final void 
   removeSecondarySourceParams
   (
    String source,
@@ -906,7 +906,7 @@ class BaseAction
    * @param source 
    *   The fully resolved node name of the upstream node.
    */ 
-  public void 
+  public final void 
   removeSecondarySourceParams
   (
    String source
@@ -924,7 +924,7 @@ class BaseAction
    * Parameters associated with both primary and secondary file sequences of all upstream
    * nodes will be removed.
    */ 
-  public void 
+  public final void 
   removeAllSourceParams()
   {
     pSourceParams.clear();
@@ -949,7 +949,7 @@ class BaseAction
    * @param choices
    *   The names of the possible preset choices.
    */ 
-  protected void 
+  protected final void 
   addPreset
   (
    String name, 
@@ -985,7 +985,7 @@ class BaseAction
    * @param values
    *   The value assiged to each singled valued parameter indexed by parameter name.
    */ 
-  protected void 
+  protected final void 
   addPresetValues
   (
    String name, 
@@ -1026,7 +1026,7 @@ class BaseAction
    * @return 
    *   The names of the choices or <CODE>null</CODE> if no preset exists.
    */ 
-  public List<String> 
+  public final List<String> 
   getPresetChoices
   (
    String name
@@ -1051,7 +1051,7 @@ class BaseAction
    *   The parameter values indexed by parameter name or <CODE>null</CODE> if no 
    *   preset choice exists.
    */ 
-  public SortedMap<String,Comparable> 
+  public final SortedMap<String,Comparable> 
   getPresetValues
   (
    String name, 
@@ -1091,7 +1091,7 @@ class BaseAction
    * @param group
    *   The layout group.
    */
-  protected void
+  protected final void
   setSingleLayout
   (
    LayoutGroup group
@@ -1130,7 +1130,7 @@ class BaseAction
    * Recursively search the parameter groups to collect the parameter names and verify
    * that no parameter is specified more than once.
    */ 
-  private void 
+  private final void 
   collectLayoutNames
   (
    LayoutGroup group, 
@@ -1158,7 +1158,7 @@ class BaseAction
    * If no single valued parameter group has been previously specified, a group will 
    * be created which contains all single valued parameters in alphabetical order.
    */ 
-  public LayoutGroup
+  public final LayoutGroup
   getSingleLayout()
   {
     if(pSingleLayout == null) {
@@ -1191,7 +1191,7 @@ class BaseAction
    * @param pnames
    *   The ordered per-source parameter names. 
    */
-  protected void
+  protected final void
   setSourceLayout
   (
    List<String> pnames
@@ -1227,7 +1227,7 @@ class BaseAction
    * If no per-source parameter group has been previously specified, a group will 
    * be created which contains all per-source parameters in alphabetical order.
    */ 
-  public List<String>
+  public final List<String>
   getSourceLayout()
   {
     if(pSourceLayout == null) {
@@ -1286,6 +1286,36 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the abstract working area file system paths in the given node file sequence. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param name
+   *   The unique node name.
+   * 
+   * @param fseq
+   *   The file sequence associated with the node. 
+   */
+  public static final ArrayList<Path> 
+  getWorkingNodeFilePaths
+  (
+   ActionAgenda agenda, 
+   String name, 
+   FileSeq fseq
+  ) 
+  {
+    NodeID nodeID = new NodeID(agenda.getNodeID(), name);
+    Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent());
+
+    ArrayList<Path> paths = new ArrayList<Path>();
+    for(Path fpath : fseq.getPaths()) 
+      paths.add(new Path(wpath, fpath));
+        
+    return paths;
+  }
+
+  /**
    * Get the abstract working area file system path to the first file in the given 
    * node file sequence. 
    * 
@@ -1298,7 +1328,7 @@ class BaseAction
    * @param fseq
    *   The file sequence associated with the node. 
    */
-  public static Path
+  public static final Path
   getWorkingNodeFilePath
   (
    ActionAgenda agenda, 
@@ -1321,7 +1351,7 @@ class BaseAction
    * @param file
    *   The name of the file relative to the directory containing the node.
    */
-  public static Path
+  public static final Path
   getWorkingNodeFilePath
   (
    ActionAgenda agenda, 
@@ -1341,7 +1371,7 @@ class BaseAction
    * @param file
    *   The name of the file relative to the directory containing the node.
    */
-  public static Path
+  public static final Path
   getWorkingNodeFilePath
   (
    NodeID nodeID,
@@ -1360,7 +1390,7 @@ class BaseAction
    * @param file
    *   The name of the file relative to the directory containing the node.
    */
-  public static Path
+  public static final Path
   getWorkingNodeFilePath
   (
    NodeID nodeID,
@@ -1387,7 +1417,7 @@ class BaseAction
    * @throws IOException 
    *   If unable to change the mode of the given file.
    */
-  public static void 
+  public static final void 
   chmod
   (
    int mode, 
@@ -1408,7 +1438,7 @@ class BaseAction
    * @param file 
    *   The temporary file to cleanup.
    */
-  protected void 
+  protected final void 
   cleanupLater
   (
    File file
@@ -1427,7 +1457,7 @@ class BaseAction
    * @param agenda
    *   The agenda to be accomplished by the action.
    */
-  public static Path
+  public static final Path
   getTempPath
   (
    ActionAgenda agenda
@@ -1443,7 +1473,7 @@ class BaseAction
    * @param agenda
    *   The agenda to be accomplished by the action.
    */
-  public static File
+  public static final File
   getTempDir
   (
    ActionAgenda agenda
@@ -1470,7 +1500,7 @@ class BaseAction
    * @throws IOException 
    *   If unable to create the temporary file.
    */ 
-  public File
+  public final File
   createTemp
   (
    ActionAgenda agenda, 
@@ -1520,7 +1550,7 @@ class BaseAction
    * @throws IOException 
    *   If unable to create the temporary file.
    */ 
-  public File
+  public final File
   createTemp
   (
    ActionAgenda agenda, 
@@ -1557,7 +1587,7 @@ class BaseAction
    * @param agenda
    *   The agenda to be accomplished by the action.
    */ 
-  public File
+  public final File
   createTempScript
   (
    ActionAgenda agenda
@@ -1591,7 +1621,7 @@ class BaseAction
    * This method should be called in the subclass constructor before specifying parameter
    * layouts.
    */
-  protected void 
+  protected final void 
   addExtraOptionsParam() 
   {
     ActionParam param = 
@@ -1606,7 +1636,7 @@ class BaseAction
    * Add the parameter created by the {@link #addExtraOptionsParam addExtraOptionsParam} 
    * method to the given parameter layout group.
    */ 
-  protected void 
+  protected final void 
   addExtraOptionsParamToLayout
   (
    LayoutGroup layout
@@ -1633,7 +1663,7 @@ class BaseAction
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists.
    */ 
-  public int
+  public final int
   getSingleEnumParamIndex
   (
    String name   
@@ -1663,7 +1693,7 @@ class BaseAction
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists.
    */ 
-  public boolean
+  public final boolean
   getSingleBooleanParamValue
   (
    String name   
@@ -1692,7 +1722,7 @@ class BaseAction
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists.
    */ 
-  public boolean
+  public final boolean
   getSingleOptionalBooleanParamValue
   (
    String name   
@@ -1721,7 +1751,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists or 
    *   the value is <CODE>null</CODE>.
    */ 
-  public long
+  public final long
   getSingleLongParamValue
   (
    String name   
@@ -1752,7 +1782,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists,
    *   the value is <CODE>null</CODE> or is out-of-bounds.
    */ 
-  public long
+  public final long
   getSingleLongParamValue
   (
    String name, 
@@ -1787,7 +1817,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists,
    *   the value is <CODE>null</CODE> or is out-of-bounds.
    */ 
-  public long
+  public final long
   getSingleLongParamValue
   (
    String name, 
@@ -1830,7 +1860,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists or 
    *   the value is <CODE>null</CODE>.
    */ 
-  public int
+  public final int
   getSingleIntegerParamValue
   (
    String name   
@@ -1859,7 +1889,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists,
    *   the value is <CODE>null</CODE> or is out-of-bounds.
    */ 
-  public int
+  public final int
   getSingleIntegerParamValue
   (
    String name, 
@@ -1892,7 +1922,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists,
    *   the value is <CODE>null</CODE> or is out-of-bounds.
    */ 
-  public int
+  public final int
   getSingleIntegerParamValue
   (
    String name, 
@@ -1935,7 +1965,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists or 
    *   the value is <CODE>null</CODE>.
    */ 
-  public double
+  public final double
   getSingleDoubleParamValue
   (
    String name   
@@ -1964,7 +1994,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists, 
    *   the value is <CODE>null</CODE> or is out-of-bounds.
    */ 
-  public double
+  public final double
   getSingleDoubleParamValue
   (
    String name, 
@@ -1997,7 +2027,7 @@ class BaseAction
    *   If no single valued parameter with the given name exists, 
    *   the value is <CODE>null</CODE> or is out-of-bounds.
    */ 
-  public double
+  public final double
   getSingleDoubleParamValue
   (
    String name, 
@@ -2040,7 +2070,7 @@ class BaseAction
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists.
    */ 
-  public String
+  public final String
   getSingleStringParamValue
   (
    String name   
@@ -2061,6 +2091,100 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the abstract paths to the primary files associated with a target node. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param desc
+   *   A brief description of the type of files expected (used to generate error messages).
+   * 
+   * @return 
+   *   The paths to the target files. 
+   */ 
+  public final ArrayList<Path>
+  getPrimaryTargetPaths
+  (
+   ActionAgenda agenda, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    return getPrimaryTargetPaths(agenda, new ArrayList<String>(), desc);
+  }
+
+  /**
+   * Get the abstract paths to the primary files associated with a target node. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffix
+   *   The allowable filename suffix.
+   * 
+   * @param desc
+   *   A brief description of the type of files expected (used to generate error messages).
+   * 
+   * @return 
+   *   The paths to the target files. 
+   */ 
+  public final ArrayList<Path>
+  getPrimaryTargetPaths
+  (
+   ActionAgenda agenda, 
+   String suffix, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<String> suffixes = new ArrayList<String>();
+    suffixes.add(suffix);
+    
+    return getPrimaryTargetPaths(agenda, suffixes, desc);
+  }
+
+  /**
+   *  Get the abstract paths to the primary files associated with a target node. 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffixes
+   *   The allowable filename suffixes.
+   * 
+   * @param desc
+   *   A brief description of the type of files expected (used to generate error messages).
+   * 
+   * @return 
+   *   The paths to the target files. 
+   */ 
+  public final ArrayList<Path>
+  getPrimaryTargetPaths
+  (
+   ActionAgenda agenda, 
+   Collection<String> suffixes, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    FileSeq fseq = agenda.getPrimaryTarget();
+    String suffix = fseq.getFilePattern().getSuffix();
+    if(!suffixes.isEmpty() && ((suffix == null) || !suffixes.contains(suffix))) {
+      throw new PipelineException
+        ("The " + getName() + " Action requires that the primary target file sequence " + 
+         "must be " + desc + "!");
+    }
+
+    ArrayList<Path> tpaths = new ArrayList<Path>();
+    for(Path path : fseq.getPaths()) 
+      tpaths.add(new Path(agenda.getTargetPath(), path)); 
+    return tpaths;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the abstract path to the single primary file associated with a target node. 
    * 
    * @param agenda
@@ -2072,15 +2196,15 @@ class BaseAction
    * @return 
    *   The path to the target file. 
    */ 
-  public Path
-  getSinglePrimaryTargetPath
+  public final Path
+  getPrimaryTargetPath
   (
    ActionAgenda agenda, 
    String desc
   ) 
     throws PipelineException 
   {
-    return getSinglePrimaryTargetPath(agenda, new ArrayList<String>(), desc);
+    return getPrimaryTargetPath(agenda, new ArrayList<String>(), desc);
   }
 
   /**
@@ -2098,8 +2222,8 @@ class BaseAction
    * @return 
    *   The path to the target file. 
    */ 
-  public Path
-  getSinglePrimaryTargetPath
+  public final Path
+  getPrimaryTargetPath
   (
    ActionAgenda agenda, 
    String suffix, 
@@ -2110,7 +2234,7 @@ class BaseAction
     ArrayList<String> suffixes = new ArrayList<String>();
     suffixes.add(suffix);
     
-    return getSinglePrimaryTargetPath(agenda, suffixes, desc);
+    return getPrimaryTargetPath(agenda, suffixes, desc);
   }
 
   /**
@@ -2128,8 +2252,8 @@ class BaseAction
    * @return 
    *   The path to the target file. 
    */ 
-  public Path
-  getSinglePrimaryTargetPath
+  public final Path
+  getPrimaryTargetPath
   (
    ActionAgenda agenda, 
    Collection<String> suffixes, 
@@ -2153,6 +2277,131 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the abstract paths to the primary files associated with a source node 
+   * specified by the given parameter.
+   * 
+   * @param pname
+   *   The name of the single valued parameter which names the source node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param desc
+   *   A brief description of the type of files expected (used to generate error messages).
+   * 
+   * @return 
+   *   The paths to the primary files of the source node or 
+   *   <CODE>null</CODE> if none was specified.
+   */ 
+  public final ArrayList<Path>
+  getPrimarySourcePaths
+  (
+   String pname, 
+   ActionAgenda agenda, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    return getPrimarySourcePaths(pname, agenda, new ArrayList<String>(), desc);
+  }
+
+  /**
+   * Get the abstract paths to the primary files associated with a source node 
+   * specified by the given parameter.
+   * 
+   * @param pname
+   *   The name of the single valued parameter which names the source node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffix
+   *   The allowable filename suffix.
+   * 
+   * @param desc
+   *   A brief description of the type of files expected (used to generate error messages).
+   * 
+   * @return 
+   *   The paths to the primary files of the source node or 
+   *   <CODE>null</CODE> if none was specified.
+   */ 
+  public final ArrayList<Path>
+  getPrimarySourcePaths
+  (
+   String pname, 
+   ActionAgenda agenda, 
+   String suffix, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<String> suffixes = new ArrayList<String>();
+    suffixes.add(suffix);
+
+    return getPrimarySourcePaths(pname, agenda, suffixes, desc);
+  }
+
+  /**
+   * Get the abstract paths to the primary files associated with a source node 
+   * specified by the given parameter.
+   * 
+   * @param pname
+   *   The name of the single valued parameter which names the source node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @param suffixes
+   *   The allowable filename suffixes.
+   * 
+   * @param desc
+   *   A brief description of the type of files expected (used to generate error messages).
+   * 
+   * @return 
+   *   The paths to the primary files of the source node or 
+   *   <CODE>null</CODE> if none was specified.
+   */ 
+  public final ArrayList<Path>
+  getPrimarySourcePaths
+  (
+   String pname, 
+   ActionAgenda agenda, 
+   Collection<String> suffixes, 
+   String desc
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<Path> paths = null; 
+
+    ActionParam param = getSingleParam(pname);
+    String title = param.getNameUI();
+
+    String mname = (String) param.getValue();
+    if(mname != null) {
+      FileSeq fseq = agenda.getPrimarySource(mname);
+      if(fseq == null) 
+	throw new PipelineException
+	  ("Somehow the " + title + " node (" + mname + ") was not one of the " + 
+	   "source nodes!");
+      
+      String suffix = fseq.getFilePattern().getSuffix();
+      if(!suffixes.isEmpty() && ((suffix == null) || !suffixes.contains(suffix))) {
+	throw new PipelineException
+	  ("The " + getName() + " Action requires that the source node specified by the " + 
+	   title + " parameter (" + mname + ") must have " + desc + " as its primary file " + 
+           "sequence!");
+      }
+      
+      paths = getWorkingNodeFilePaths(agenda, mname, fseq); 
+    }
+
+    return paths;	      
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Get the abstract path to the single primary file associated with a source node 
    * specified by the given parameter.
    * 
@@ -2169,8 +2418,8 @@ class BaseAction
    *   The path to the primary file of the source node or 
    *   <CODE>null</CODE> if none was specified.
    */ 
-  public Path
-  getSinglePrimarySourcePath
+  public final Path
+  getPrimarySourcePath
   (
    String pname, 
    ActionAgenda agenda, 
@@ -2178,7 +2427,7 @@ class BaseAction
   ) 
     throws PipelineException 
   {
-    return getSinglePrimarySourcePath(pname, agenda, new ArrayList<String>(), desc);
+    return getPrimarySourcePath(pname, agenda, new ArrayList<String>(), desc);
   }
 
   /**
@@ -2201,8 +2450,8 @@ class BaseAction
    *   The path to the primary file of the source node or 
    *   <CODE>null</CODE> if none was specified.
    */ 
-  public Path
-  getSinglePrimarySourcePath
+  public final Path
+  getPrimarySourcePath
   (
    String pname, 
    ActionAgenda agenda, 
@@ -2214,7 +2463,7 @@ class BaseAction
     ArrayList<String> suffixes = new ArrayList<String>();
     suffixes.add(suffix);
 
-    return getSinglePrimarySourcePath(pname, agenda, suffixes, desc);
+    return getPrimarySourcePath(pname, agenda, suffixes, desc);
   }
 
   /**
@@ -2237,8 +2486,8 @@ class BaseAction
    *   The path to the primary file of the source node or 
    *   <CODE>null</CODE> if none was specified.
    */ 
-  public Path
-  getSinglePrimarySourcePath
+  public final Path
+  getPrimarySourcePath
   (
    String pname, 
    ActionAgenda agenda, 
@@ -2276,32 +2525,6 @@ class BaseAction
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get any additional command-line arguments specified using the action parameter created 
-   * by the {@link #addExtraOptionsParam addExtraOptionsParam} method.
-   */ 
-  public ArrayList<String>
-  getExtraOptionsArgs() 
-    throws PipelineException
-  {
-    ArrayList<String> args = new ArrayList<String>();
-
-    String extra = (String) getSingleParamValue(aExtraOptions);
-    if(extra != null) {
-      String parts[] = extra.split("\\p{Space}");
-      int wk;
-      for(wk=0; wk<parts.length; wk++) {
-        if(parts[wk].length() > 0) 
-          args.add(parts[wk]);
-      }
-    }
-
-    return args;
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S U B P R O C E S S   C R E A T I O N                                                */
@@ -2335,7 +2558,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createSubProcess
   (
    ActionAgenda agenda,
@@ -2380,7 +2603,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createSubProcess
   (
    ActionAgenda agenda,
@@ -2432,7 +2655,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createSubProcess
   (
    ActionAgenda agenda,
@@ -2506,7 +2729,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */ 
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createScriptSubProcess
   (
    ActionAgenda agenda,
@@ -2556,7 +2779,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */ 
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createTempCopySubProcess
   (
    ActionAgenda agenda,
@@ -2587,6 +2810,32 @@ class BaseAction
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get any additional command-line arguments specified using the action parameter created 
+   * by the {@link #addExtraOptionsParam addExtraOptionsParam} method.
+   */ 
+  public final ArrayList<String>
+  getExtraOptionsArgs() 
+    throws PipelineException
+  {
+    ArrayList<String> args = new ArrayList<String>();
+
+    String extra = (String) getSingleParamValue(aExtraOptions);
+    if(extra != null) {
+      String parts[] = extra.split("\\p{Space}");
+      int wk;
+      for(wk=0; wk<parts.length; wk++) {
+        if(parts[wk].length() > 0) 
+          args.add(parts[wk]);
+      }
+    }
+
+    return args;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P Y T H O N                                                                          */
@@ -2603,7 +2852,7 @@ class BaseAction
    * @param agenda
    *   The agenda to be accomplished by the Action.
    */ 
-  public static String
+  public static final String
   getPythonProgram
   (
    ActionAgenda agenda   
@@ -2624,7 +2873,7 @@ class BaseAction
    * @param env  
    *   The environment used to lookup PYTHON_BINARY.
    */
-  public static String
+  public static final String
   getPythonProgram
   (
     Map<String,String> env
@@ -2665,7 +2914,7 @@ class BaseAction
    * line arguments.  The program will be found using PATH from the Toolset environment
    * used to launch the Python interpretor.
    */ 
-  public static String 
+  public static final String 
   getPythonLaunchHeader() 
   {
     return sPythonLaunchHeader;
@@ -2695,7 +2944,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createPythonSubProcess
   (
    ActionAgenda agenda,
@@ -2739,7 +2988,7 @@ class BaseAction
    * @param errFile 
    *   The file to which all STDERR output is redirected.
    */
-  public SubProcessHeavy
+  public final SubProcessHeavy
   createPythonSubProcess
   (
    ActionAgenda agenda,
@@ -2787,7 +3036,7 @@ class BaseAction
    * @param obj 
    *   The reference object with which to compare.
    */
-  public boolean
+  public final boolean
   equals
   (
    Object obj
@@ -2807,7 +3056,7 @@ class BaseAction
    * Indicates whether the single valued parameters of the given action equal to this actions 
    * single valued parameters.
    */ 
-  public boolean
+  public final boolean
   equalSingleParams
   (
    BaseAction action
@@ -2820,7 +3069,7 @@ class BaseAction
    * Indicates whether the per-source parameters of the given action equal to this actions 
    * per-source parameters for primary and secondary file sequences.
    */ 
-  public boolean
+  public final boolean
   equalSourceParams
   (
    BaseAction action
@@ -2840,7 +3089,7 @@ class BaseAction
   /**
    * Return a deep copy of this object.
    */
-  public Object 
+  public final Object 
   clone()
   {
     BaseAction clone = (BaseAction) super.clone();
@@ -2892,7 +3141,7 @@ class BaseAction
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public void 
+  public final void 
   toGlue
   ( 
    GlueEncoder encoder  
@@ -2911,7 +3160,7 @@ class BaseAction
       encoder.encode("SecondarySourceParams", pSecondaryParams);
   }
   
-  public void 
+  public final void 
   fromGlue
   (
    GlueDecoder decoder  
@@ -2965,16 +3214,16 @@ class BaseAction
 
   private static final long serialVersionUID = -8953612926185824947L;
   
-  private static final String aExtraOptions = "ExtraOptions"; 
+  public static final String aExtraOptions = "ExtraOptions"; 
 
   private static final String sPythonLaunchHeader = 
-    ("import os;\n" +
+    ("import subprocess;\n" +
      "import sys;\n\n" +
      "def launch(program, args):\n" +
      "    a = [program] + args\n" +
      "    print('RUNNING: ' + ' '.join(a))\n" +
      "    sys.stdout.flush()\n" + 
-     "    result = os.spawnvp(os.P_WAIT, program, a)\n" +
+     "    result = subprocess.call(a)\n" +
      "    if result != 0:\n" +
      "        sys.exit('  FAILED: Exit Code = ' + str(result));\n\n");
   
