@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.28 2007/02/07 21:13:54 jim Exp $
+// $Id: JobMgrServer.java,v 1.29 2007/03/28 19:37:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.*;
  * class.
  */
 class JobMgrServer
-  extends Thread
+  extends BaseMgrServer
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,9 +44,7 @@ class JobMgrServer
     pTimer = new TaskTimer();
 
     pJobMgr = new JobMgr();
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
+    pTasks  = new HashSet<HandlerTask>();
   }
   
  
@@ -180,40 +178,6 @@ class JobMgrServer
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  private String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -279,7 +243,11 @@ class JobMgrServer
 	    first = false;
 	  }
 	  else {
-	    JobRequest kind = (JobRequest) obj;
+            /* check time difference between client and server */ 
+            checkTimeSync((Long) obj, pSocket); 
+
+            /* dispatch request by kind */ 
+	    JobRequest kind = (JobRequest) objIn.readObject();
 	  
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
@@ -578,11 +546,6 @@ class JobMgrServer
    * The shared job manager. 
    */
   private JobMgr  pJobMgr;
-
-  /**
-   * Has the server been ordered to shutdown?
-   */
-  private AtomicBoolean  pShutdown;
 
   /**
    * The set of currently running tasks.
