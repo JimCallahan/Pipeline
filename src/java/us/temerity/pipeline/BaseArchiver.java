@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.13 2006/11/23 00:46:59 jim Exp $
+// $Id: BaseArchiver.java,v 1.14 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,7 +99,7 @@ class BaseArchiver
   /**
    * Get which general type of plugin this is. 
    */ 
-  public PluginType
+  public final PluginType
   getPluginType()
   {
     return PluginType.Archiver;
@@ -117,7 +117,7 @@ class BaseArchiver
    * @param os
    *   The operating system type.
    */ 
-  protected void 
+  protected final void 
   addSupport
   (
    OsType os
@@ -143,7 +143,7 @@ class BaseArchiver
    * @param os
    *   The operating system type.
    */ 
-  protected void 
+  protected final void 
   removeSupport
   (
    OsType os
@@ -165,7 +165,7 @@ class BaseArchiver
    * This method is disabled because Archiver plugins can only support the default 
    * Unix operating system.
    */ 
-  protected void
+  protected final void
   setSupports
   (
    SortedSet<OsType> oss
@@ -226,7 +226,7 @@ class BaseArchiver
   /**
    * Does the action have any parameters?
    */ 
-  public boolean 
+  public final boolean 
   hasParams()
   {
     return (!pParams.isEmpty());
@@ -241,7 +241,7 @@ class BaseArchiver
    * @param param  
    *   The parameter to add.
    */
-  protected void 
+  protected final void 
   addParam
   (
    ArchiverParam param 
@@ -266,7 +266,7 @@ class BaseArchiver
    * @throws PipelineException 
    *   If no parameter with the given name exists.
    */ 
-  public Comparable
+  public final Comparable
   getParamValue
   (
    String name   
@@ -289,7 +289,7 @@ class BaseArchiver
    * @return 
    *   The parameter or <CODE>null</CODE> if no parameter with the given name exists.
    */ 
-  public ArchiverParam
+  public final ArchiverParam
   getParam
   (
    String name   
@@ -308,7 +308,7 @@ class BaseArchiver
    * @return 
    *   The set of parameters for this archiver.  
    */ 
-  public Collection<ArchiverParam>
+  public final Collection<ArchiverParam>
   getParams()
   {
     return Collections.unmodifiableCollection(pParams.values());
@@ -323,7 +323,7 @@ class BaseArchiver
    * @param value  
    *   The new value of the parameter. 
    */ 
-  public void 
+  public final void 
   setParamValue
   (
    String name, 
@@ -350,7 +350,7 @@ class BaseArchiver
    * @param archiver  
    *   The archiver to use as the source of parameter values.
    */
-  public void 
+  public final void 
   setParamValues
   (
    BaseArchiver archiver   
@@ -394,7 +394,7 @@ class BaseArchiver
    * @param layout
    *   The names of the parameters.
    */
-  protected void
+  protected final void
   setLayout
   (
    Collection<String> layout
@@ -439,7 +439,7 @@ class BaseArchiver
    * @return 
    *   The names of each parameter in the order of layout.
    */ 
-  public Collection<String> 
+  public final Collection<String> 
   getLayout() 
   {
     if(pLayout == null) 
@@ -532,7 +532,8 @@ class BaseArchiver
    *   The name of the archive volume to restore.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   *   the restore operation.
    * 
    * @param files
    *   The names of the files to restore relative to the base repository directory.
@@ -559,7 +560,7 @@ class BaseArchiver
   restore
   (
    String name, 
-   Date stamp, 
+   long stamp, 
    Collection<File> files, 
    Map<String,String> env, 
    File dir,
@@ -585,7 +586,7 @@ class BaseArchiver
    * @param file 
    *   The temporary file to cleanup.
    */
-  protected void 
+  protected final void 
   cleanupLater
   (
    File file
@@ -611,7 +612,7 @@ class BaseArchiver
    * @throws IOException 
    *   If unable to change the mode of the given file.
    */
-  public static void 
+  public static final void 
   chmod
   (
    int mode, 
@@ -632,7 +633,7 @@ class BaseArchiver
    * @param name 
    *   The name of the archive volume.
    */
-  public Path
+  public final Path
   getArchiveTempPath
   (
    String name
@@ -649,7 +650,7 @@ class BaseArchiver
    * @param name 
    *   The name of the archive volume.
    */
-  public File
+  public final File
   getArchiveTempDir
   (
    String name
@@ -667,17 +668,18 @@ class BaseArchiver
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   *   the restore operation.
    */
-  public Path
+  public final Path
   getRestoreTempPath
   (
    String name, 
-   Date stamp
+   long stamp
   )
   {
     return new Path(PackageInfo.sTempPath, 
-		    "plfilemgr/restore/" + name + "-" + stamp.getTime() + "/scratch");
+                    "plfilemgr/restore/" + name + "-" + stamp + "/scratch");
   }
 
   /**
@@ -688,13 +690,14 @@ class BaseArchiver
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   *   the restore operation.
    */
-  public File
+  public final File
   getRestoreTempDir
   (
    String name, 
-   Date stamp
+   long stamp
   )
   {
     return getRestoreTempPath(name, stamp).toFile();
@@ -723,7 +726,7 @@ class BaseArchiver
    * @throws IOException 
    *   If unable to create the temporary file.
    */ 
-  public File
+  public final File
   createArchiveTemp
   (
    String name, 
@@ -760,7 +763,8 @@ class BaseArchiver
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of the start of the restore operation.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   *   the restore operation.
    * 
    * @param mode 
    *   The access mode bitmask.
@@ -774,11 +778,11 @@ class BaseArchiver
    * @throws IOException 
    *   If unable to create the temporary file.
    */ 
-  public File
+  public final File
   createRestoreTemp
   (
    String name, 
-   Date stamp,  
+   long stamp,  
    int mode, 
    String suffix
   ) 
@@ -786,8 +790,7 @@ class BaseArchiver
   {
     File tmp = null;
     try {
-      tmp = File.createTempFile(pName + "-", "." + suffix, 
-				getRestoreTempDir(name, stamp));
+      tmp = File.createTempFile(pName + "-", "." + suffix, getRestoreTempDir(name, stamp));
       chmod(mode, tmp);
     }
     catch(Exception ex) {
@@ -813,7 +816,7 @@ class BaseArchiver
    * @param obj 
    *   The reference object with which to compare.
    */
-  public boolean
+  public final boolean
   equals
   (
    Object obj
@@ -833,7 +836,7 @@ class BaseArchiver
    * Indicates whether the parameters of the given archiver equal to this archiver's 
    * parameters.
    */ 
-  public boolean
+  public final boolean
   equalParams
   (
    BaseArchiver archiver
@@ -851,7 +854,7 @@ class BaseArchiver
   /**
    * Return a deep copy of this object.
    */
-  public Object 
+  public final Object 
   clone()
   {
     BaseArchiver clone = (BaseArchiver) super.clone();
@@ -871,7 +874,7 @@ class BaseArchiver
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public void 
+  public final void 
   toGlue
   ( 
    GlueEncoder encoder  
@@ -884,7 +887,7 @@ class BaseArchiver
       encoder.encode("Params", pParams);
   }
   
-  public void 
+  public final void 
   fromGlue
   (
    GlueDecoder decoder  

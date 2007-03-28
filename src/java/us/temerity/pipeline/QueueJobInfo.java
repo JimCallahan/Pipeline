@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.16 2006/10/20 11:09:21 jim Exp $
+// $Id: QueueJobInfo.java,v 1.17 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -49,7 +49,7 @@ class QueueJobInfo
     pJobID = jobID;
 
     pState = JobState.Queued;
-    pSubmittedStamp = new Date();
+    pSubmittedStamp = System.currentTimeMillis();
   }
 
   /**
@@ -106,31 +106,33 @@ class QueueJobInfo
   /**
    * Get the timestamp of when the job was submitted to the queue.
    */ 
-  public synchronized Date 
+  public synchronized long 
   getSubmittedStamp() 
   {
     return pSubmittedStamp;
   }
      
   /**
-   * Get the timestamp of when the job was started to a host for execution.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job 
+   * was started to a host for execution.
    * 
    * @return 
    *   The timestamp or <CODE>null</CODE> if the job was never started.
    */ 
-  public synchronized Date 
+  public synchronized Long
   getStartedStamp() 
   {
     return pStartedStamp;
   }
      
   /**
-   * Get the timestamp of when the job completed. 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job 
+   * completed. 
    * 
    * @return 
    *   The timestamp or <CODE>null</CODE> if the job has not completed yet.
    */ 
-  public synchronized Date 
+  public synchronized Long
   getCompletedStamp() 
   {
     return pCompletedStamp;
@@ -225,7 +227,7 @@ class QueueJobInfo
 	("The operating system cannot be (null)!");
     pOsType = os; 
 
-    pStartedStamp = new Date();
+    pStartedStamp = System.currentTimeMillis();
     pState = JobState.Running;
   }
   
@@ -249,7 +251,7 @@ class QueueJobInfo
   public synchronized void 
   aborted() 
   {
-    pCompletedStamp = new Date();
+    pCompletedStamp = System.currentTimeMillis();
     pState = JobState.Aborted;
   }
 
@@ -267,7 +269,7 @@ class QueueJobInfo
   {
     pResults = results; 
     
-    pCompletedStamp = new Date();
+    pCompletedStamp = System.currentTimeMillis();
     
     if(pState == JobState.Preempted)
       throw new IllegalStateException(); 
@@ -296,13 +298,13 @@ class QueueJobInfo
     encoder.encode("State", pState);
 
     {
-      encoder.encode("SubmittedStamp", pSubmittedStamp.getTime());
+      encoder.encode("SubmittedStamp", pSubmittedStamp);
       
       if(pStartedStamp != null) 
-	encoder.encode("StartedStamp", pStartedStamp.getTime());
+	encoder.encode("StartedStamp", pStartedStamp);
 
       if(pCompletedStamp != null) 
-	encoder.encode("CompletedStamp", pCompletedStamp.getTime());
+	encoder.encode("CompletedStamp", pCompletedStamp);
     }
 
     if(pHostname != null)
@@ -336,19 +338,19 @@ class QueueJobInfo
       Long stamp = (Long) decoder.decode("SubmittedStamp"); 
       if(stamp == null) 
 	throw new GlueException("The \"SubmittedStamp\" was missing!");
-      pSubmittedStamp = new Date(stamp);
+      pSubmittedStamp = stamp; 
     }
 
     {
       Long stamp = (Long) decoder.decode("StartedStamp"); 
       if(stamp != null) 
-	pStartedStamp = new Date(stamp);
+	pStartedStamp = stamp; 
     }
 
     {
       Long stamp = (Long) decoder.decode("CompletedStamp"); 
       if(stamp != null) 
-	pCompletedStamp = new Date(stamp);
+	pCompletedStamp = stamp; 
     }
 
     {
@@ -398,22 +400,25 @@ class QueueJobInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of when the job was submitted to the queue.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job was 
+   * submitted to the queue.
    */ 
-  private Date  pSubmittedStamp;
+  private long  pSubmittedStamp;
 
   /**
-   * The timestamp of when the job was started to a host for execution.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job was 
+   * started to a host for execution or <CODE>null</CODE> if not started yet.
    */ 
-  private Date  pStartedStamp;
+  private Long  pStartedStamp;
 
   /**
-   * The timestamp of when the job completed. <P> 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job 
+   * completed or <CODE>null</CODE> if not completed yet.
    * 
    * Completion may be due to the job being aborted or killed in addition to normal exit
    * of the action process.
    */ 
-  private Date  pCompletedStamp;
+  private Long  pCompletedStamp;
 
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.12 2006/02/27 17:56:01 jim Exp $
+// $Id: QueueJobGroup.java,v 1.13 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,7 +99,7 @@ class QueueJobGroup
     if(jobIDs != null) 
       pJobIDs.addAll(jobIDs);
 
-    pSubmittedStamp = Dates.now();
+    pSubmittedStamp = TimeStamps.now();
   }
 
   
@@ -138,21 +138,23 @@ class QueueJobGroup
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the timestamp of when the job group was submitted to the queue.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job 
+   * group was submitted to the queue.
    */ 
-  public Date 
+  public long
   getSubmittedStamp() 
   {
     return pSubmittedStamp;
   }
 
   /**
-   * Get the timestamp of when all jobs of the group have completed. 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all jobs 
+   * of the group have completed. 
    * 
    * @return 
    *   The timestamp or <CODE>null</CODE> if not all jobs have completed.
    */ 
-  public Date 
+  public Long
   getCompletedStamp() 
   {
     return pCompletedStamp;
@@ -228,12 +230,12 @@ class QueueJobGroup
   
   /** 
    * Records that all jobs of the group have completed and the last to complete was at the 
-   * given timestamp.
+   * given timestamp (milliseconds since midnight, January 1, 1970 UTC).
    */ 
   public void 
   completed
   (
-   Date stamp
+   long stamp
   ) 
   {
     pCompletedStamp = stamp;
@@ -256,9 +258,9 @@ class QueueJobGroup
     encoder.encode("NodeID", pNodeID);
     encoder.encode("Toolset", pToolset);
 
-    encoder.encode("SubmittedStamp", pSubmittedStamp.getTime());
+    encoder.encode("SubmittedStamp", pSubmittedStamp);
     if(pCompletedStamp != null)
-      encoder.encode("CompletedStamp", pCompletedStamp.getTime());
+      encoder.encode("CompletedStamp", pCompletedStamp);
 
     encoder.encode("RootSeq", pRootSeq);
     encoder.encode("RootIDs", pRootIDs);
@@ -295,13 +297,13 @@ class QueueJobGroup
       Long stamp = (Long) decoder.decode("SubmittedStamp");
       if(stamp == null) 
 	throw new GlueException("The \"SubmittedStamp\" was missing!");
-      pSubmittedStamp = new Date(stamp);
+      pSubmittedStamp = stamp;
     }
 
     {
       Long stamp = (Long) decoder.decode("CompletedStamp");
       if(stamp != null) 
-	pCompletedStamp = new Date(stamp);
+	pCompletedStamp = stamp;
     }
 
     FileSeq fseq = (FileSeq) decoder.decode("RootSeq");
@@ -367,14 +369,16 @@ class QueueJobGroup
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of when the job group was submitted to the queue.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the job 
+   * group was submitted to the queue.
    */ 
-  private Date  pSubmittedStamp;
+  private long  pSubmittedStamp;
 
   /**
-   * The timestamp of when all jobs of the group have completed. 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all jobs 
+   * of the group have completed. 
    */ 
-  private Date  pCompletedStamp;
+  private Long  pCompletedStamp;
 
 
   /*----------------------------------------------------------------------------------------*/

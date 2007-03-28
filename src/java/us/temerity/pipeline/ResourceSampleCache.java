@@ -1,4 +1,4 @@
-// $Id: ResourceSampleCache.java,v 1.1 2006/11/21 19:55:51 jim Exp $
+// $Id: ResourceSampleCache.java,v 1.2 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,15 +76,15 @@ class ResourceSampleCache
   public ResourceSampleCache
   cloneDuring
   (
-   DateInterval interval
+   TimeInterval interval
   ) 
   {
     int nsize = getNumSamplesDuring(interval); 
     if(nsize == 0) 
       return null;
 
-    long oldest = interval.getStartStamp().getTime();
-    long newest = interval.getEndStamp().getTime();
+    long oldest = interval.getStartStamp();
+    long newest = interval.getEndStamp();
 
     ResourceSampleCache cache = new ResourceSampleCache(nsize);  
     
@@ -153,11 +153,11 @@ class ResourceSampleCache
   public int
   getNumSamplesDuring
   (
-   DateInterval interval
+   TimeInterval interval
   ) 
   {
-    long oldest = interval.getStartStamp().getTime();
-    long newest = interval.getEndStamp().getTime();
+    long oldest = interval.getStartStamp();
+    long newest = interval.getEndStamp();
 
     int cnt = 0;
     {
@@ -178,12 +178,18 @@ class ResourceSampleCache
   /**
    * Get the number of samples in the cache which where collected during the given 
    * interval of time.
+   * 
+   * @param oldest
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the oldest sample.
+   * 
+   * @param newest
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the newest sample.
    */ 
   public int
   getNumSamplesDuring
   (
-   Date oldest, 
-   Date newest
+   long oldest, 
+   long newest
   ) 
   {
     return getNumSamplesDuring(oldest, newest); 
@@ -240,7 +246,7 @@ class ResourceSampleCache
    ResourceSample sample
   ) 
   {
-    addSample(sample.getTimeStamp().getTime(), sample.getNumJobs(), sample.getLoad(), 
+    addSample(sample.getTimeStamp(), sample.getNumJobs(), sample.getLoad(), 
 	      sample.getMemory(), sample.getDisk()); 
   }
 
@@ -273,11 +279,11 @@ class ResourceSampleCache
   addAllSamplesDuring
   (
    ResourceSampleCache cache, 
-   DateInterval interval 
+   TimeInterval interval 
   ) 
   {
-    long oldest = interval.getStartStamp().getTime();
-    long newest = interval.getEndStamp().getTime();
+    long oldest = interval.getStartStamp();
+    long newest = interval.getEndStamp();
 
     int size = cache.getNumSamples();
     int wk;    
@@ -292,24 +298,26 @@ class ResourceSampleCache
   
   /**
    * Remove any samples recorded before the given timestamp.
+   * 
+   * @param stamp
+   *   The number of milliseconds since midnight, January 1, 1970 UTC.
    */ 
   public void
   pruneSamplesBefore
   (
-   Date stamp
+   long stamp
   ) 
   {
     if((pWriteIdx == null) || (pReadIdx == null)) 
       return; 
 
-    long oldest = stamp.getTime();
     int size = getNumSamples();
     int wk;
     int idx = pReadIdx; 
     for(wk=0; wk<size; wk++) {
       idx = getSampleIndex(wk); 
 
-      if(pStamp[idx] > oldest) {
+      if(pStamp[idx] > stamp) {
 	pReadIdx = idx;
 	return;
       }
@@ -360,8 +368,7 @@ class ResourceSampleCache
   ) 
   {
     int i = getSampleIndex(idx); 
-    return new ResourceSample(new Date(pStamp[i]), 
-			      pNumJobs[i], pLoad[i], pMemory[i], pDisk[i]);
+    return new ResourceSample(pStamp[i], pNumJobs[i], pLoad[i], pMemory[i], pDisk[i]);
   }
 
   /**
@@ -374,21 +381,21 @@ class ResourceSampleCache
       return null;
     
     int i = pWriteIdx;
-    return new ResourceSample(new Date(pStamp[i]), 
-			      pNumJobs[i], pLoad[i], pMemory[i], pDisk[i]);
+    return new ResourceSample(pStamp[i], pNumJobs[i], pLoad[i], pMemory[i], pDisk[i]);
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the timestamp of when the given sample was collected (in milliseconds since epoch).
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the given
+   * sample was collected. 
    * 
    * @param idx
    *   The sample index.
    */ 
   public long
-  getTime
+  getTimeStamp
   (
    int idx
   ) 
@@ -397,56 +404,41 @@ class ResourceSampleCache
   }
 
   /**
-   * Get the timestamp of when the given sample was collected. 
-   * 
-   * @param idx
-   *   The sample index.
-   */ 
-  public Date
-  getTimeStamp
-  (
-   int idx
-  ) 
-  {
-    return new Date(pStamp[getSampleIndex(idx)]);
-  }
-
-  /**
-   * Get the timestamp of the first sample 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the first sample 
    * or <CODE>null</CODE> if no samples are currently cached.
    */ 
-  public Date
+  public Long
   getFirstTimeStamp() 
   {
     if(pReadIdx == null) 
       return null;
-    return new Date(pStamp[pReadIdx]);
+    return pStamp[pReadIdx];
   }
 
   /**
-   * Get the timestamp of last sample 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of last sample 
    * or <CODE>null</CODE> if no samples are currently cached.
    */ 
-  public Date
+  public Long
   getLastTimeStamp() 
   {
     if(pWriteIdx == null) 
       return null;
-    return new Date(pStamp[pWriteIdx]);
+    return pStamp[pWriteIdx];
   }
 
   /**
    * The interval of time between the oldest and newest sample 
    * or <CODE>null</CODE> if no samples are currently cached.
    */ 
-  public DateInterval
+  public TimeInterval
   getSampleInterval() 
   {
-    Date first = getFirstTimeStamp(); 
-    Date last  = getLastTimeStamp(); 
+    Long first = getFirstTimeStamp(); 
+    Long last  = getLastTimeStamp(); 
     if((first == null) || (last == null))
       return null;
-    return new DateInterval(first, last); 
+    return new TimeInterval(first, last); 
   }
 
 

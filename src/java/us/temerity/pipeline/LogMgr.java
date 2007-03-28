@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.9 2007/03/28 19:09:39 jim Exp $
+// $Id: LogMgr.java,v 1.10 2007/03/28 19:31:03 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -272,7 +272,7 @@ class LogMgr
     if(isLoggable(kind, level)) {
       String stamp = null;
       if(level != Level.Info) 
-	stamp = Dates.format(new Date());
+	stamp = TimeStamps.format(System.currentTimeMillis());
 
       String text = null;
       switch(level) {

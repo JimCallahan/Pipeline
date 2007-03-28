@@ -1,4 +1,4 @@
-// $Id: ArchiveVolume.java,v 1.5 2006/02/27 17:58:25 jim Exp $
+// $Id: ArchiveVolume.java,v 1.6 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,7 +38,7 @@ class ArchiveVolume
    *   The unique name of the archive.
    * 
    * @param stamp
-   *   The creation timestamp. 
+   *   The creation timestamp (milliseconds since midnight, January 1, 1970 UTC). 
    * 
    * @param fseqs 
    *   The file sequences of the checked-in versions contained in the archive indexed by
@@ -58,7 +58,7 @@ class ArchiveVolume
   ArchiveVolume
   (
    String name, 
-   Date stamp, 
+   long stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs,
    TreeMap<String,TreeMap<VersionID,Long>> sizes,
    BaseArchiver archiver, 
@@ -114,9 +114,10 @@ class ArchiveVolume
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Get the timestamp of when the archive was created.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * archive was created.
    */
-  public Date
+  public long
   getTimeStamp()
   {
     return pTimeStamp;
@@ -336,7 +337,7 @@ class ArchiveVolume
   )
     throws IOException, ClassNotFoundException
   {
-    pTimeStamp = (Date) in.readObject();
+    pTimeStamp = (Long) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
     pSizes = (TreeMap<String,TreeMap<VersionID,Long>>) in.readObject();
 
@@ -370,7 +371,7 @@ class ArchiveVolume
   {
     super.toGlue(encoder);
 
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
+    encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("FileSeqs", pFileSeqs);
     encoder.encode("Sizes", pSizes);
     encoder.encode("Archiver", new BaseArchiver(pArchiver));
@@ -390,7 +391,7 @@ class ArchiveVolume
       Long stamp = (Long) decoder.decode("TimeStamp");
       if(stamp == null) 
  	throw new GlueException("The \"TimeStamp\" was missing!");
-      pTimeStamp = new Date(stamp);
+      pTimeStamp = stamp;
     }
 
     {
@@ -460,9 +461,10 @@ class ArchiveVolume
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The timestamp of when the archive was created.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the archive 
+   * was created.
    */
-  private Date  pTimeStamp;
+  private long  pTimeStamp;
 
   /** 
    * The file sequences of the checked-in versions contained in the archive indexed by

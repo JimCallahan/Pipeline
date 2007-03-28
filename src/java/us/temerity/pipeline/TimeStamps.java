@@ -1,4 +1,4 @@
-// $Id: Dates.java,v 1.5 2007/01/01 16:09:51 jim Exp $
+// $Id: TimeStamps.java,v 1.1 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6,28 +6,27 @@ import java.util.*;
 import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   D A T E S                                                                              */
+/*   T I M E   S T A M P S                                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**                                                                                   
- * A collection of static utility methods related to dates and timestamps.
+ * A collection of static utility methods related to representing timestamps.
  */
 public 
-class Dates      
+class TimeStamps
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T I O N                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current timestamp rounded to the nearest second.
+   * Get the current timestamp (milliseconds since midnight, January 1, 1970 UTC) rounded to 
+   * the nearest second.
    */ 
-  public static Date
+  public static long
   now()
   {
-    Date stamp = new Date();
-    long secs = stamp.getTime() / 1000L;
-    return (new Date(secs * 1000L));
+    return ((System.currentTimeMillis() / 1000L) * 1000L);
   } 
 
 
@@ -37,7 +36,8 @@ class Dates
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Convert a standardized string representation of a timestamp into a Date. <P> 
+   * Convert a standardized string representation into a timestamp (milliseconds since 
+   * midnight, January 1, 1970 UTC).<P>
    * 
    * The string must be in the format 
    * (<I>YYYY</I>-<I>MM</I>-<I>DD</I> <I>hh</I>:<I>mm</I>:<I>ss</I>) where: 
@@ -51,7 +51,7 @@ class Dates
    * </DIV>
    * All values are prefixed with zero where less than the specified number of digits.
    */ 
-  public static Date
+  public static Long
   parse
   (
    String date
@@ -60,14 +60,15 @@ class Dates
   {
     if((date == null) || date.equals("-"))
       return null;
-    return sFormat.parse(date);
+    return sFormat.parse(date).getTime();
   }
 
   
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Convert a timestamp to a standardized string representation.
+   * Convert a timestamp (milliseconds since midnight, January 1, 1970 UTC) into a 
+   * standardized string representation.
    * 
    * The generated string will have the format 
    * (<I>YYYY</I>-<I>MM</I>-<I>DD</I> <I>hh</I>:<I>mm</I>:<I>ss</I>) where: 
@@ -84,12 +85,12 @@ class Dates
   public static String
   format
   (
-   Date date
+   Long stamp 
   ) 
   {
-    if(date == null) 
+    if(stamp == null) 
       return "-";
-    return sFormat.format(date);
+    return sFormat.format(new Date(stamp)); 
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.3 2006/11/21 19:55:51 jim Exp $
+// $Id: QueueHostInfo.java,v 1.4 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,7 +31,7 @@ class QueueHostInfo
   QueueHostInfo()
   {
     pStatus = QueueHostStatus.Shutdown; 
-    pHoldTimeStamp = new Date(0L); 
+    pHoldTimeStamp = 0L; 
   }
 
   /**
@@ -69,7 +69,8 @@ class QueueHostInfo
    *   or <CODE>null</CODE> if unknown.
    * 
    * @param hold 
-   *   The timestamp of when all ramp-up intervals will have expired.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all ramp-up 
+   *   intervals will have expired or <CODE>null</CODE> for no holds.
    * 
    * @param sample
    *   The latest sample or <CODE>null</CODE> if there are no samples.
@@ -94,7 +95,7 @@ class QueueHostInfo
    Integer numProcs, 
    Long totalMem, 
    Long totalDisk, 
-   Date hold, 
+   Long hold, 
    ResourceSample sample, 
    String group,
    String schedule
@@ -116,7 +117,7 @@ class QueueHostInfo
     pTotalDisk = totalDisk;
 
     if(hold == null) 
-      pHoldTimeStamp = new Date(0L);
+      pHoldTimeStamp = 0L;
     else 
       pHoldTimeStamp = hold; 
 
@@ -376,9 +377,10 @@ class QueueHostInfo
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the timestamp of when all ramp-up intervals will have expired.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all 
+   * ramp-up intervals will have expired.
    */ 
-  public synchronized Date
+  public synchronized long
   getHold() 
   {
     return pHoldTimeStamp;
@@ -590,9 +592,10 @@ class QueueHostInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of when all ramp-up intervals will have expired.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when all ramp-up 
+   * intervals will have expired.
    */ 
-  private Date pHoldTimeStamp;
+  private long pHoldTimeStamp;
 
   /**
    * The lastest resource usage sample or <CODE>null</CODE> if no samples exist.

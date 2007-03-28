@@ -1,4 +1,4 @@
-// $Id: ArchiveInfo.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: ArchiveInfo.java,v 1.2 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,11 +30,12 @@ class ArchiveInfo
    *   The checked-in revision number.
    * 
    * @param checkedIn 
-   *   The timestamp of when the checked-in version was created.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the
+   *   checked-in version was created.
    * 
    * @param archived
-   *   The timestamp of when the checked-in version was last archived or 
-   *  <CODE>null</CODE> if never archived.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   *   checked-in version was last archived or <CODE>null</CODE> if never archived.
    * 
    * @param numArchives
    *   The number of archive volumes which contain the checked-in version.
@@ -44,15 +45,13 @@ class ArchiveInfo
   (
    String name, 
    VersionID vid, 
-   Date checkedIn, 
-   Date archived, 
+   long checkedIn, 
+   Long archived, 
    int numArchives
   ) 
   {
     super(name, vid, archived, numArchives);
 
-    if(checkedIn == null)
-      throw new IllegalArgumentException("The checked-in timestamp cannot be (null)!");
     pCheckedInStamp = checkedIn;
   }
 
@@ -65,7 +64,7 @@ class ArchiveInfo
   /**
    * Gets the timestamp of when the checked-in version was created.
    */ 
-  public Date  
+  public long
   getCheckedInStamp() 
   {
     return pCheckedInStamp;
@@ -86,8 +85,9 @@ class ArchiveInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of when the checked-in version was created.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * checked-in version was created.
    */
-  private Date  pCheckedInStamp;
+  private long  pCheckedInStamp;
 
 }

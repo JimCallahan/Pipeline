@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.37 2006/12/05 18:23:30 jim Exp $
+// $Id: QueueMgrClient.java,v 1.38 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1024,7 +1024,7 @@ class QueueMgrClient
   public synchronized TreeMap<String,ResourceSampleCache> 
   getHostResourceSamples
   (
-   TreeMap<String,DateInterval> intervals,
+   TreeMap<String,TimeInterval> intervals,
    boolean runtimeOnly
   ) 
     throws PipelineException  

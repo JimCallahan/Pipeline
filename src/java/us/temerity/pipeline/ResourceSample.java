@@ -1,4 +1,4 @@
-// $Id: ResourceSample.java,v 1.8 2006/11/21 19:55:51 jim Exp $
+// $Id: ResourceSample.java,v 1.9 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,14 +55,15 @@ class ResourceSample
    long disk
   )  
   {
-    this(new Date(), jobs, load, memory, disk); 
+    this(System.currentTimeMillis(), jobs, load, memory, disk); 
   }
 
   /**
    * Construct a new sample.
    * 
    * @param stamp
-   *   The time stamp of when the sample was recorded.
+   *   The time stamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   *   sample was recorded.
    * 
    * @param jobs
    *   The number of currently running jobs.
@@ -79,7 +80,7 @@ class ResourceSample
   public 
   ResourceSample
   (
-   Date stamp, 
+   long stamp, 
    int jobs, 
    float load, 
    long memory, 
@@ -101,9 +102,10 @@ class ResourceSample
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the time stamp of when the sample was recorded.
+   * Get the time stamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * sample was recorded.
    */ 
-  public Date 
+  public long 
   getTimeStamp() 
   {
     return pTimeStamp;
@@ -172,7 +174,7 @@ class ResourceSample
   ) 
     throws GlueException
   {
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
+    encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("NumJobs", pNumJobs); 
     encoder.encode("Load", pLoad); 
     encoder.encode("Memory", pMemory); 
@@ -189,7 +191,7 @@ class ResourceSample
     Long stamp = (Long) decoder.decode("TimeStamp");
     if(stamp == null) 
       throw new GlueException("The \"TimeStamp\" was missing!");
-    pTimeStamp = new Date(stamp);
+    pTimeStamp = stamp;
 
     Integer jobs = (Integer) decoder.decode("NumJobs");
     if(jobs == null) 
@@ -227,9 +229,10 @@ class ResourceSample
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The timestamp of when the samples was measured.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the samples 
+   * was measured.
    */ 
-  private Date  pTimeStamp;
+  private long  pTimeStamp;
   
   /**
    * The number of currently running jobs.

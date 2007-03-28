@@ -1,4 +1,4 @@
-// $Id: SelectionSchedule.java,v 1.3 2006/02/27 17:59:16 jim Exp $
+// $Id: SelectionSchedule.java,v 1.4 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -193,7 +193,8 @@ class SelectionSchedule
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the selection group active for the given point in time.
+   * Get the name of the selection group active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
    * 
    * @return
    *   The name of the selection group or <CODE>null</CODE> if none is active.
@@ -201,11 +202,11 @@ class SelectionSchedule
   public String
   activeGroup
   (
-   Date date
+   long stamp 
   )
   {
     for(SelectionRule rule : pRules) {
-      if(rule.isActive(date)) 
+      if(rule.isActive(stamp)) 
 	return rule.getGroup();
     }
 

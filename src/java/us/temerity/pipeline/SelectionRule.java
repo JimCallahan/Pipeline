@@ -1,4 +1,4 @@
-// $Id: SelectionRule.java,v 1.1 2006/01/05 16:54:43 jim Exp $
+// $Id: SelectionRule.java,v 1.2 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,12 +82,13 @@ class SelectionRule
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether the rule is active during the given point in time.
+   * Whether the rule is active during the given point in time (milliseconds since 
+   * midnight, January 1, 1970 UTC).
    */ 
   public boolean
   isActive
   (
-   Date date
+   long stamp
   )
   {
     return true;

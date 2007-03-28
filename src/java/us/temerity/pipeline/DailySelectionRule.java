@@ -1,4 +1,4 @@
-// $Id: DailySelectionRule.java,v 1.1 2006/01/05 16:54:43 jim Exp $
+// $Id: DailySelectionRule.java,v 1.2 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -295,17 +295,18 @@ class DailySelectionRule
   }
 
   /**
-   * Whether the rule is active during the given point in time.
+   * Whether the rule is active during the given point in time (milliseconds since 
+   * midnight, January 1, 1970 UTC).
    */ 
   public boolean
   isActive
   (
-   Date date
+   long stamp
   )
   {
     Calendar cal = new GregorianCalendar();
 
-    cal.setTime(date);
+    cal.setTimeInMillis(stamp);
     
     int dow = cal.get(Calendar.DAY_OF_WEEK);
     if(!pActiveDays.contains(dow))
@@ -316,15 +317,15 @@ class DailySelectionRule
     int day   = cal.get(Calendar.DAY_OF_MONTH);
 
     cal.set(year, month, day, pStartHour, pStartMinute); 
-    Date startDate = cal.getTime();
+    long startStamp = cal.getTimeInMillis();
 
     cal.set(year, month, day, pEndHour, pEndMinute); 
     if((pEndHour < pStartHour) ||
        ((pEndHour == pStartHour) && (pEndMinute < pStartMinute))) 
       cal.add(Calendar.DAY_OF_MONTH, 1);
-    Date endDate = cal.getTime();
+    long endStamp = cal.getTimeInMillis();
     
-    return ((date.compareTo(startDate) >= 0) && (date.compareTo(endDate) < 0));
+    return ((stamp >= startStamp) && (stamp < endStamp)); 
   }
 
 

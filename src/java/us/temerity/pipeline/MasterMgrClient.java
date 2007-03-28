@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.93 2007/03/18 02:30:42 jim Exp $
+// $Id: MasterMgrClient.java,v 1.94 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4952,17 +4952,18 @@ class MasterMgrClient
    *   <CODE>null</CODE> for all times.
    * 
    * @return 
-   *   The events indexed by the timestamp at which the events occurred.
+   *   The events indexed by the timestamp (milliseconds since midnight, January 1, 1970 UTC)
+   *   at which the events occurred.
    * 
    * @throws PipelineException
    *   If unable to retrieve the events.
    */ 
-  public synchronized TreeMap<Date,BaseNodeEvent>
+  public synchronized TreeMap<Long,BaseNodeEvent>
   getNodeEvents
   (
    TreeSet<String> names, 
    TreeSet<String> users, 
-   DateInterval interval
+   TimeInterval interval
   ) 
     throws PipelineException
   {
@@ -5979,12 +5980,13 @@ class MasterMgrClient
    * Get the names and creation timestamps of all existing archives. <P> 
    *
    * @return 
-   *   The timestamps of when each archive was created indexed by unique archive volume name.
+   *   The timestamps (milliseconds since midnight, January 1, 1970 UTC) of when each 
+   *   archive was created indexed by unique archive volume name.
    * 
    * @throws PipelineException
    *   If unable to determine when the archive volumes where created.
    */ 
-  public synchronized TreeMap<String,Date> 
+  public synchronized TreeMap<String,Long> 
   getArchivedOn() 
     throws PipelineException
   {
@@ -6005,12 +6007,13 @@ class MasterMgrClient
    * Get the names and restoration timestamps of all existing archives. <P> 
    *
    * @return 
-   *   The timestamps of when each archive was restored indexed by unique archive volume name.
+   *   The timestamps (milliseconds since midnight, January 1, 1970 UTC) of when each 
+   *   archive was restored indexed by unique archive volume name.
    * 
    * @throws PipelineException
    *   If unable to determine when the archive volumes where restored.
    */ 
-  public synchronized TreeMap<String,TreeSet<Date>>
+  public synchronized TreeMap<String,TreeSet<Long>>
   getRestoredOn() 
     throws PipelineException
   {
@@ -6070,7 +6073,8 @@ class MasterMgrClient
    *   The name of the archive volume.
    * 
    * @param stamp
-   *   The timestamp of when the archive volume was restored.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   *   archive volume was restored.
    * 
    * @return 
    *   The STDOUT output.
@@ -6082,7 +6086,7 @@ class MasterMgrClient
   getRestoredOutput
   (
    String aname, 
-   Date stamp
+   long stamp
   ) 
     throws PipelineException
   {

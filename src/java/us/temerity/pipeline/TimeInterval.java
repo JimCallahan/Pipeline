@@ -1,4 +1,4 @@
-// $Id: DateInterval.java,v 1.1 2006/11/21 19:42:31 jim Exp $
+// $Id: TimeInterval.java,v 1.1 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,14 +8,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   D A T E   I N T E R V A L                                                              */
+/*   T I M E   I N T E R V A L                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * A specific interval of time, with millisecond precision.
  */
 public
-class DateInterval
+class TimeInterval
   implements Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -28,32 +28,28 @@ class DateInterval
    * from user code.
    */
   public
-  DateInterval() 
+  TimeInterval() 
   {}
 
   /** 
    * Construct a new time interval.
    * 
    * @param startStamp
-   *   The timestamp of the start of the interval. 
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   *   the interval. 
    * 
    * @param endStamp
-   *   The timestamp of the end of the interval. 
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the end of 
+   *   the interval. 
    */ 
   public
-  DateInterval
+  TimeInterval
   (
-   Date startStamp, 
-   Date endStamp
+   long startStamp, 
+   long endStamp
   ) 
   {
-    if(startStamp == null) 
-      throw new IllegalArgumentException("The start timestamp cannot be (null)!");
-
-    if(endStamp == null) 
-      throw new IllegalArgumentException("The end timestamp cannot be (null)!");
-
-    if(startStamp.compareTo(endStamp) <= 0) {
+    if(startStamp <= endStamp) {
       pStartStamp = startStamp; 
       pEndStamp   = endStamp; 
     }
@@ -70,18 +66,20 @@ class DateInterval
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Gets the timestamp of the start of the interval. 
+   * Gets the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of 
+   * the interval. 
    */ 
-  public Date 
+  public long 
   getStartStamp() 
   {
     return pStartStamp; 
   }
   
   /**
-   * Gets the timestamp of the end of the interval. 
+   * Gets the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the end of 
+   * the interval. 
    */ 
-  public Date 
+  public long 
   getEndStamp() 
   {
     return pEndStamp; 
@@ -93,7 +91,7 @@ class DateInterval
   public long
   getDuration() 
   {
-    return (pEndStamp.getTime() - pStartStamp.getTime());
+    return (pEndStamp - pStartStamp);
   }
   
 
@@ -109,8 +107,8 @@ class DateInterval
   ) 
     throws GlueException
   {
-    encoder.encode("StartStamp", pStartStamp.getTime());
-    encoder.encode("EndStamp", pEndStamp.getTime());
+    encoder.encode("StartStamp", pStartStamp);
+    encoder.encode("EndStamp", pEndStamp);
   }
   
   public void 
@@ -124,14 +122,14 @@ class DateInterval
       Long stamp = (Long) decoder.decode("StartStamp"); 
       if(stamp == null) 
 	throw new GlueException("The \"StartStamp\" was missing!");
-      pStartStamp = new Date(stamp);
+      pStartStamp = stamp;
     }
 
     {
       Long stamp = (Long) decoder.decode("EndStamp"); 
       if(stamp == null) 
 	throw new GlueException("The \"EndStamp\" was missing!");
-      pEndStamp = new Date(stamp);
+      pEndStamp = stamp;
     }
   }
 
@@ -141,7 +139,7 @@ class DateInterval
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1147332633792836963L;
+  private static final long serialVersionUID = 5377066219736012095L;
 
 
 
@@ -150,14 +148,16 @@ class DateInterval
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of the start of the interval. 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the start of the 
+   * interval. 
    */ 
-  private Date  pStartStamp; 
+  private long pStartStamp; 
   
   /**
-   * The timestamp of the end of the interval. 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the end of the 
+   * interval. 
    */ 
-  private Date  pEndStamp; 
+  private long  pEndStamp; 
   
 }
 

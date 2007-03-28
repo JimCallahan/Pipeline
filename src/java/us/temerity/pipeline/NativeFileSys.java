@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.15 2007/02/12 19:17:47 jim Exp $
+// $Id: NativeFileSys.java,v 1.16 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -268,13 +268,13 @@ class NativeFileSys
   lastCriticalChange
   (
    File path, 
-   Date critical 
+   long critical 
   ) 
   {
     loadLibrary();
 
     try { 
-      return lastStamps(path.getPath(), critical.getTime());
+      return lastStamps(path.getPath(), critical);
     }
     catch(IOException ex) {
       LogMgr.getInstance().log

@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.9 2006/02/27 17:56:01 jim Exp $
+// $Id: LogMessage.java,v 1.10 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -152,7 +152,7 @@ class LogMessage
     if((obj != null) && (obj instanceof LogMessage)) {
       LogMessage log = (LogMessage) obj;
 
-      if(getTimeStamp().equals(log.getTimeStamp()) && 
+      if((getTimeStamp() == log.getTimeStamp()) && 
 	 getAuthor().equals(log.getAuthor()) &&
 	 getMessage().equals(log.getMessage()) &&
 	 (((pRootName == null) && (log.pRootName == null)) ||

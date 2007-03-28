@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.16 2006/09/29 03:03:21 jim Exp $
+// $Id: NodeDetails.java,v 1.17 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -116,7 +116,7 @@ class NodeDetails
    PropertyState propertyState, 
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
-   Date[] fileTimeStamps, 
+   long[] fileTimeStamps, 
    boolean[] ignoreTimeStamps, 
    Long[] jobIDs, 
    QueueState[] queueStates
@@ -126,7 +126,7 @@ class NodeDetails
       throw new IllegalArgumentException("The node name cannot be (null)!");
     pName = name;
 
-    pTimeStamp = Dates.now();
+    pTimeStamp = TimeStamps.now();
 
     if((work != null) && !work.getName().equals(pName))
       throw new IllegalArgumentException
@@ -183,14 +183,13 @@ class NodeDetails
   }
 
   /**
-   * Get when the node state was determined.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * node state was determined.
    */ 
-  public Date
+  public long 
   getTimeStamp() 
   {
-    if(pTimeStamp == null)
-      throw new IllegalStateException(); 
-    return (Date) pTimeStamp.clone();
+    return pTimeStamp; 
   }
 
 
@@ -330,7 +329,7 @@ class NodeDetails
    * Get the newest timestamp which needs to be considered when computing wheter each file 
    * index is {@link QueueState#Stale Stale}. 
    */ 
-  public Date[] 
+  public long[] 
   getFileTimeStamps() 
   {
     return pFileTimeStamps;
@@ -394,7 +393,7 @@ class NodeDetails
     throws GlueException
   {
     encoder.encode("Name", pName); 
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
+    encoder.encode("TimeStamp", pTimeStamp);
     
     if(pWorkingVersion != null) 
       encoder.encode("WorkingVersion", pWorkingVersion);
@@ -414,15 +413,7 @@ class NodeDetails
     encoder.encode("PropertyState", pPropertyState);
     encoder.encode("LinkState", pLinkState);
     encoder.encode("FileStates", pFileStates);
-    
-    {
-      Long ts[] = new Long[pFileTimeStamps.length];
-      int wk;
-      for(wk=0; wk<pFileTimeStamps.length; wk++) 
-	ts[wk] = pFileTimeStamps[wk].getTime();
-      encoder.encode("FileTimeStamps", ts);
-    }
-
+    encoder.encode("FileTimeStamps", pFileTimeStamps);
     encoder.encode("IgnoreTimeStamps", pIgnoreTimeStamps);
     encoder.encode("JobIDs", pJobIDs);
     encoder.encode("QueueStates", pQueueStates);
@@ -461,7 +452,7 @@ class NodeDetails
   /**
    * When the message node state was determined.
    */ 
-  private Date  pTimeStamp; 
+  private long  pTimeStamp; 
 
 
   /**
@@ -527,7 +518,7 @@ class NodeDetails
    * The newest timestamp which needs to be considered when computing wheter each file 
    * index is {@link QueueState#Stale Stale}. <P> 
    */
-  private Date[] pFileTimeStamps;
+  private long[] pFileTimeStamps;
 
   /**
    * Whether the timestamps returned by {@link #getFileTimeStamps getFileTimeStamps} should 

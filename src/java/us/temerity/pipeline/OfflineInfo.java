@@ -1,4 +1,4 @@
-// $Id: OfflineInfo.java,v 1.2 2005/03/14 16:08:21 jim Exp $
+// $Id: OfflineInfo.java,v 1.3 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,8 +30,8 @@ class OfflineInfo
    *   The checked-in revision number.
    * 
    * @param checkedOut
-   *   The timestamp of the latest check-out of the version or 
-   *  <CODE>null</CODE> if no working versions exist.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the latest 
+   *   check-out of the version or <CODE>null</CODE> if no working versions exist.
    * 
    * @param author
    *   The name of the owner of the working latest checked-out working version 
@@ -45,8 +45,8 @@ class OfflineInfo
    *   The number of existing working versions based on the checked-in version.
    * 
    * @param archived
-   *   The timestamp of when the checked-in version was last archived or 
-   *  <CODE>null</CODE> if never archived.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   *   checked-in version was last archived or <CODE>null</CODE> if never archived.
    * 
    * @param numArchives
    *   The number of archive volumes which contain the checked-in version.
@@ -59,11 +59,11 @@ class OfflineInfo
   (
    String name, 
    VersionID vid, 
-   Date checkedOut, 
+   Long checkedOut, 
    String author, 
    String view, 
    int numWorking, 
-   Date archived,  
+   Long archived,  
    int numArchives, 
    boolean canOffline 
   ) 
@@ -87,7 +87,7 @@ class OfflineInfo
    * Gets the timestamp of the latest check-out of the version or 
    * <CODE>null</CODE> if no working versions exist.
    */ 
-  public Date  
+  public Long  
   getCheckedOutStamp() 
   {
     return pCheckedOutStamp;
@@ -146,10 +146,10 @@ class OfflineInfo
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of the latest check-out of the version or 
-   * <CODE>null</CODE> if never archived.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the latest 
+   * check-out of the version or <CODE>null</CODE> if never archived.
    */
-  private Date  pCheckedOutStamp;
+  private Long  pCheckedOutStamp;
 
   /** 
    * The name of the owner of the working latest checked-out working version 

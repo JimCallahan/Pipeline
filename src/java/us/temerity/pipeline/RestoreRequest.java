@@ -1,4 +1,4 @@
-// $Id: RestoreRequest.java,v 1.3 2006/02/27 17:54:52 jim Exp $
+// $Id: RestoreRequest.java,v 1.4 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -35,18 +35,16 @@ class RestoreRequest
    * Construct a new request.
    * 
    * @param stamp
-   *   The timestamp of when the request was submitted.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   *   request was submitted.
    */ 
   public 
   RestoreRequest
   (
-   Date stamp
+   long stamp
   ) 
   {
-    if(stamp == null) 
-      throw new IllegalArgumentException("The submission timestamp cannot be (null)!");
-    pSubmittedStamp = stamp;
-    
+    pSubmittedStamp = stamp;    
     pState = RestoreState.Pending;
   }
 
@@ -66,21 +64,23 @@ class RestoreRequest
   }
 
   /**
-   * Gets the timestamp of when the request was made.
+   * Gets the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * request was made.
    */ 
-  public Date  
+  public long
   getSubmittedStamp() 
   {
     return pSubmittedStamp;
   }
  
   /**
-   * Get the timestamp of when the request was resolved. 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * request was resolved. 
    * 
    * @return 
    *   The timestamp or <CODE>null</CODE> if the request has not been resolved.
    */ 
-  public Date 
+  public Long 
   getResolvedStamp() 
   {
     return pResolvedStamp; 
@@ -115,7 +115,7 @@ class RestoreRequest
   {
     pState = RestoreState.Restored;
     pArchiveName = archive;
-    pResolvedStamp = new Date();    
+    pResolvedStamp = System.currentTimeMillis();
   }
 
   /**
@@ -125,7 +125,7 @@ class RestoreRequest
   denied() 
   {
     pState = RestoreState.Denied;
-    pResolvedStamp = new Date();    
+    pResolvedStamp = System.currentTimeMillis();
   }
 
 
@@ -142,10 +142,10 @@ class RestoreRequest
     throws GlueException
   {
     encoder.encode("State", pState);
-    encoder.encode("SubmittedStamp", pSubmittedStamp.getTime());
+    encoder.encode("SubmittedStamp", pSubmittedStamp);
 
     if(pResolvedStamp != null) 
-      encoder.encode("ResolvedStamp", pResolvedStamp.getTime());
+      encoder.encode("ResolvedStamp", pResolvedStamp);
 
     if(pArchiveName != null) 
       encoder.encode("ArchiveName", pArchiveName);
@@ -167,13 +167,13 @@ class RestoreRequest
       Long stamp = (Long) decoder.decode("SubmittedStamp");
       if(stamp == null) 
 	throw new GlueException("The \"SubmittedStamp\" was missing!");
-      pSubmittedStamp = new Date(stamp);
+      pSubmittedStamp = stamp;
     }
 
     {
       Long stamp = (Long) decoder.decode("ResolvedStamp");
       if(stamp != null) 
-	pResolvedStamp = new Date(stamp);
+	pResolvedStamp = stamp;
     }
     
     pArchiveName = (String) decoder.decode("ArchiveName");
@@ -199,14 +199,16 @@ class RestoreRequest
   private RestoreState  pState; 
 
   /**
-   * The timestamp of when the request was made.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the request 
+   * was made.
    */
-  private Date  pSubmittedStamp;
+  private long  pSubmittedStamp;
 
   /**
-   * The timestamp of when the request was resolved.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the request 
+   * was resolved or <CODE>null</CODE> if not yet resolved.
    */
-  private Date  pResolvedStamp;
+  private Long  pResolvedStamp;
 
   /**
    * The name of the archive volume from which the checked-in version was restored or 

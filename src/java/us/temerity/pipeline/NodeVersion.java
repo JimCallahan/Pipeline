@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.23 2006/02/27 17:56:01 jim Exp $
+// $Id: NodeVersion.java,v 1.24 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -185,7 +185,7 @@ class NodeVersion
   /**
    * Get when the version was checked-in.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
     return pMessage.getTimeStamp();

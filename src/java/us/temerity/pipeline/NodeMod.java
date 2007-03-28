@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.51 2006/10/25 08:04:23 jim Exp $
+// $Id: NodeMod.java,v 1.52 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -108,7 +108,7 @@ class NodeMod
     
     pSources = new TreeMap<String,LinkMod>();
 
-    pTimeStamp = Dates.now();
+    pTimeStamp = TimeStamps.now();
     updateLastCriticalMod();
   }
 
@@ -152,7 +152,7 @@ class NodeMod
     
     pSources = new TreeMap<String,LinkMod>();
 
-    pTimeStamp = Dates.now();
+    pTimeStamp = TimeStamps.now();
     updateLastCriticalMod();
   }
 
@@ -163,7 +163,8 @@ class NodeMod
    *   The checked-in version of the node.
    * 
    * @param timestamp
-   *   The intial last modification timestamp.
+   *   The intial last modification timestamp (milliseconds since midnight, January 1, 
+   *   1970 UTC).
    * 
    * @param isFrozen
    *   Whether the working version is frozen initially.
@@ -175,7 +176,7 @@ class NodeMod
   NodeMod
   (
    NodeVersion vsn, 
-   Date timestamp, 
+   long timestamp, 
    boolean isFrozen, 
    boolean isLocked
   ) 
@@ -198,7 +199,7 @@ class NodeMod
       pSources.put(link.getName(), new LinkMod(link));
     }
 
-    pTimeStamp       = Dates.now();
+    pTimeStamp       = TimeStamps.now();
     pLastMod         = timestamp;
     pLastCriticalMod = timestamp;
   }
@@ -307,23 +308,23 @@ class NodeMod
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get when the working version was created.
+   * Get timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the working 
+   * version was created.
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
-    return (Date) pTimeStamp.clone();
+    return pTimeStamp;
   }
 
 
   /** 
-   * Get the timestamp of the last modification of this working version.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of this working version.
    */
-  public Date
+  public long
   getLastModification() 
   {
-    if(pLastMod == null)
-      throw new IllegalStateException(); 
     return pLastMod;
   }
 
@@ -333,19 +334,18 @@ class NodeMod
   private void 
   updateLastMod()
   {
-    pLastMod = Dates.now();
+    pLastMod = TimeStamps.now();
   }
 
 
   /** 
-   * Get the timestamp of the last modification of this working version which invalidates
-   * the up-to-date status of the files associated with the node.
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of this working version which invalidates the up-to-date status of the 
+   * files associated with the node.
    */
-  public Date
+  public long
   getLastCriticalModification() 
   {
-    if(pLastCriticalMod == null)
-      throw new IllegalStateException(); 
     return pLastCriticalMod;
   }
 
@@ -355,16 +355,16 @@ class NodeMod
   private void 
   updateLastCriticalMod()
   {
-    pLastMod         = Dates.now();
+    pLastMod         = TimeStamps.now();
     pLastCriticalMod = pLastMod;
   }
 
 
   /** 
-   * Get the timestamp of the last update of the change time (ctime) for any file 
-   * associated with the node. 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last update 
+   * of the change time (ctime) for any file associated with the node. 
    */
-  public Date
+  public long
   getLastCTimeUpdate() 
   {
     if(pLastCTimeUpdate != null) 
@@ -378,7 +378,7 @@ class NodeMod
   public void 
   updateLastCTimeUpdate() 
   {
-    pLastCTimeUpdate = Dates.now();
+    pLastCTimeUpdate = TimeStamps.now();
   }
 
   
@@ -1397,12 +1397,12 @@ class NodeMod
     if(pWorkingID != null) 
       encoder.encode("WorkingID", pWorkingID);
 
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
-    encoder.encode("LastModification", pLastMod.getTime());
-    encoder.encode("LastCriticalModification", pLastCriticalMod.getTime());
+    encoder.encode("TimeStamp", pTimeStamp);
+    encoder.encode("LastModification", pLastMod);
+    encoder.encode("LastCriticalModification", pLastCriticalMod);
 
     if(pLastCTimeUpdate != null) 
-      encoder.encode("LastCTimeUpdate", pLastCTimeUpdate.getTime());
+      encoder.encode("LastCTimeUpdate", pLastCTimeUpdate);
     
     if(!pSources.isEmpty())
       encoder.encode("Sources", pSources);
@@ -1436,27 +1436,27 @@ class NodeMod
       Long stamp = (Long) decoder.decode("TimeStamp");
       if(stamp == null) 
  	throw new GlueException("The \"TimeStamp\" was missing!");
-      pTimeStamp = new Date(stamp);
+      pTimeStamp = stamp;
     }
 
     {
       Long stamp = (Long) decoder.decode("LastModification");
       if(stamp == null) 
 	throw new GlueException("The \"LastModification\" was missing!");
-      pLastMod = new Date(stamp);
+      pLastMod = stamp;
     }
 
     {
       Long stamp = (Long) decoder.decode("LastCriticalModification");
       if(stamp == null) 
 	throw new GlueException("The \"LastCriticalModification\" was missing!");
-      pLastCriticalMod = new Date(stamp);
+      pLastCriticalMod = stamp;
     }
 
     {
       Long stamp = (Long) decoder.decode("LastCTimeUpdate");
       if(stamp != null) 
-	pLastCTimeUpdate = new Date(stamp);
+	pLastCTimeUpdate = stamp;
     }
     
     TreeMap<String,LinkMod> sources = 
@@ -1500,26 +1500,29 @@ class NodeMod
 
   
   /** 
-   * The timestamp of when the version was created.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the version 
+   * was created.
    */
-  private Date  pTimeStamp;
+  private long  pTimeStamp;
 
   /** 
-   * The timestamp of the last modification of any field of this instance.  
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of any field of this instance.  
    */
-  private Date  pLastMod;
+  private long  pLastMod;
 
   /** 
-   * The timestamp of the last modification of this working version which invalidates
-   * the up-to-date status of the files associated with the node.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of this working version which invalidates the up-to-date status of the 
+   * files associated with the node.
    */
-  private Date  pLastCriticalMod;
+  private long  pLastCriticalMod;
 
   /** 
-   * The timestamp of the last update of the change time (ctime) for any file 
-   * associated with the node.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last update 
+   * of the change time (ctime) for any file associated with the node.
    */
-  private Date  pLastCTimeUpdate; 
+  private Long  pLastCTimeUpdate; 
 
 
   /**

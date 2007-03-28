@@ -1,4 +1,4 @@
-// $Id: ExternalInfo.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: ExternalInfo.java,v 1.2 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,8 +31,8 @@ class ExternalInfo
    *   The checked-in revision number.
    * 
    * @param archived
-   *   The timestamp of when the checked-in version was last archived or 
-   *  <CODE>null</CODE> if never archived.
+   *   The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   *   checked-in version was last archived or <CODE>null</CODE> if never archived.
    * 
    * @param numArchives
    *   The number of archive volumes which contain the checked-in version.
@@ -42,7 +42,7 @@ class ExternalInfo
   (
    String name, 
    VersionID vid, 
-   Date archived, 
+   Long archived, 
    int numArchives
   ) 
   {
@@ -72,10 +72,10 @@ class ExternalInfo
   }
 
   /**
-   * Gets the timestamp of when the checked-in version was last archived or 
-   * <CODE>null</CODE> if never archived.
+   * Gets the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * checked-in version was last archived or <CODE>null</CODE> if never archived.
    */ 
-  public Date  
+  public Long
   getArchivedStamp() 
   {
     return pArchivedStamp;
@@ -110,10 +110,10 @@ class ExternalInfo
   private VersionID  pVersionID;       
 
   /**
-   * The timestamp of when the checked-in version was last archived or 
-   * <CODE>null</CODE> if never archived.
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the 
+   * checked-in version was last archived or <CODE>null</CODE> if never archived.
    */
-  private Date  pArchivedStamp;
+  private Long  pArchivedStamp;
 
   /**
    * The number of archive volumes which contain the checked-in version.

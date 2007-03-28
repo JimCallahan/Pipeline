@@ -1,4 +1,4 @@
-// $Id: SimpleLogMessage.java,v 1.3 2006/09/29 03:03:21 jim Exp $
+// $Id: SimpleLogMessage.java,v 1.4 2007/03/28 19:31:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,7 +47,7 @@ class SimpleLogMessage
    String msg  
   ) 
   {
-    pTimeStamp = Dates.now();
+    pTimeStamp = TimeStamps.now();
 
     if(author == null) 
       throw new IllegalArgumentException("The author cannot be (null)!");
@@ -68,7 +68,7 @@ class SimpleLogMessage
    String msg  
   ) 
   {
-    pTimeStamp = Dates.now();
+    pTimeStamp = TimeStamps.now();
     pAuthor    = PackageInfo.sUser;
     pMessage   = msg;
   }
@@ -94,14 +94,13 @@ class SimpleLogMessage
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get when the message was written. 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of when 
+   * message was written. 
    */ 
-  public Date
+  public long
   getTimeStamp() 
   {
-    if(pTimeStamp == null)
-      throw new IllegalStateException(); 
-    return (Date) pTimeStamp.clone();
+    return pTimeStamp;
   }
 
   /**
@@ -144,7 +143,7 @@ class SimpleLogMessage
     if((obj != null) && (obj instanceof SimpleLogMessage)) {
       SimpleLogMessage log = (SimpleLogMessage) obj;
 
-      if(pTimeStamp.equals(log.pTimeStamp) && 
+      if((pTimeStamp == log.pTimeStamp) && 
 	 pAuthor.equals(log.pAuthor) &&
 	 pMessage.equals(log.pMessage));
 	return true;
@@ -185,7 +184,7 @@ class SimpleLogMessage
   ) 
     throws GlueException
   {
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
+    encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("Author",    pAuthor);
     encoder.encode("Message",   pMessage);
   }
@@ -200,7 +199,7 @@ class SimpleLogMessage
     Long stamp = (Long) decoder.decode("TimeStamp");
     if(stamp == null) 
       throw new GlueException("The \"TimeStamp\" was missing!");
-    pTimeStamp = new Date(stamp);
+    pTimeStamp = stamp;
 
     String author = (String) decoder.decode("Author");
     if(author == null) 
@@ -228,9 +227,10 @@ class SimpleLogMessage
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * When the message was written. 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when message was 
+   * written. 
    */ 
-  private Date  pTimeStamp; 
+  private long pTimeStamp; 
   
   /**
    * The name of the user who wrote the message. 
