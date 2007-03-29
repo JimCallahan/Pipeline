@@ -1,4 +1,4 @@
-// $Id: MayaMRayRenderAction.java,v 1.5 2007/03/28 20:05:13 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.6 2007/03/29 19:36:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -456,7 +456,7 @@ public class MayaMRayRenderAction
           out.write(common + ", '" + miCommon + "', '" + path + "'])\n");
         out.write("\n");
 
-        if(getSingleBooleanParamValue(aKeepTempFiles)) {
+        if(!getSingleBooleanParamValue(aKeepTempFiles)) {
           for(Path path : fseq.getPaths()) 
             out.write("os.remove('" + path + "')\n");
         }
