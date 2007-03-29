@@ -1,4 +1,4 @@
-// $Id: GimpEditor.java,v 1.2 2007/03/25 05:19:21 jim Exp $
+// $Id: GimpEditor.java,v 1.3 2007/03/29 18:56:31 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -90,14 +90,8 @@ class GimpEditor
   }
 
   /** 
-   * Launch the editor program (obtained with {@link #getName getName}) under the given 
-   * environmant with all of the files which comprise the given file sequence as 
-   * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
-   * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. <P>
-   * 
-   * Subclasses should override this method if more specialized behavior or different 
-   * command line arguments are needed in order to launch the editor for the given file 
-   * sequence.
+   * This implementation always throws a PipelineException, to insure that the {@link #prep
+   * prep} method is used for this Editor instead of this deprecated method.
    * 
    * @param fseq  
    *   The file sequence to edit.

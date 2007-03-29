@@ -1,4 +1,4 @@
-// $Id: MRayInstGroupAction.java,v 1.1 2007/03/26 01:29:03 jim Exp $
+// $Id: MRayInstGroupAction.java,v 1.2 2007/03/29 18:56:31 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -12,7 +12,7 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Builds MentalRay "instgroups" from attached MI files. <P>
+ * Builds MentalRay "instgroups" statements for instances in source MI files. <P>
  * 
  * This action scans each source MI files for "instance" statements and then generates 
  * a target MI file which includes the source MI file and contains an "instgroups" statement 
@@ -30,7 +30,7 @@ MRayInstGroupAction
   MRayInstGroupAction()
   {
     super("MRayInstGroup", new VersionID("2.2.1"), "Temerity",
-	  "Builds an inst group from attached mi files");
+	  "Builds MentalRay \"instgroups\" statements for instances in source MI files."); 
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows); 
