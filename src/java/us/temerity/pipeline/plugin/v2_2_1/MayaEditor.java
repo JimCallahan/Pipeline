@@ -1,4 +1,4 @@
-// $Id: MayaEditor.java,v 1.2 2007/03/21 22:30:18 jim Exp $
+// $Id: MayaEditor.java,v 1.3 2007/03/29 19:35:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -16,7 +16,8 @@ import java.io.*;
  */
 public 
 class MayaEditor 
-  extends SingleEditor {
+  extends BaseEditor 
+{
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

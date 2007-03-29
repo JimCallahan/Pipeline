@@ -1,4 +1,4 @@
-// $Id: MayaNoRefEditor.java,v 1.2 2007/03/23 00:49:16 jim Exp $
+// $Id: MayaNoRefEditor.java,v 1.3 2007/03/29 19:35:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -18,8 +18,8 @@ import java.io.*;
  */
 public 
 class MayaNoRefEditor 
-  extends SingleEditor {
-
+  extends BaseEditor 
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
