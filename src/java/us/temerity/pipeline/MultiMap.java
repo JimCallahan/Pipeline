@@ -119,7 +119,7 @@ class MultiMap<K, V>
 	   "the leafOnly flag turned on.");
       old = current;
     }
-    if (!current.isLeaf() && leafOnly)
+    if (!current.isEmpty() && leafOnly) 
       throw new IllegalArgumentException
         ("Attempting to add an entry to a non-leaf node with the leafOnly flag turned on.");
     return current.setLeafValue(value);

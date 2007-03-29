@@ -39,7 +39,7 @@ interface SimpleParamAccess
    * This method is used for setting parameter values from command line arguments.
    */
   public void
-  setValueFromString
+  fromString
   (
     String value
   );

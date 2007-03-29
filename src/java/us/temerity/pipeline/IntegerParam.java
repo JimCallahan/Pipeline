@@ -1,4 +1,4 @@
-// $Id: IntegerParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
+// $Id: IntegerParam.java,v 1.6 2007/03/29 19:27:48 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -77,7 +77,7 @@ class IntegerParam
    * @throws NumberFormatException if the String is not a valid Integer value.
    */
   public void
-  setValueFromString
+  fromString
   (
     String value
   )

@@ -1,4 +1,4 @@
-// $Id: EnumParam.java,v 1.8 2007/03/28 20:43:45 jesse Exp $
+// $Id: EnumParam.java,v 1.9 2007/03/29 19:27:48 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -123,7 +123,7 @@ class EnumParam
    * @throws IllegalArgumentException if a null value is passed in.
    */
   public void
-  setValueFromString
+  fromString
   (
     String value
   )

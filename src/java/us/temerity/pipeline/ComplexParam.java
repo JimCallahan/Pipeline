@@ -208,10 +208,10 @@ class ComplexParam<E>
       if(param instanceof SimpleParamAccess) {
 	SimpleParamAccess simple = (SimpleParamAccess) param;
 	simple.setValue(value);
-      } 
-      else
-	throw new IllegalArgumentException
-    	  ("Attempt to call setValue() on a parameter that is not a simple parameter.");
+	return;
+      }
+      throw new IllegalArgumentException
+        ("Attempt to call setValue() on a parameter that is not a simple parameter.");
     }
 
     ComplexParamAccess<E> param = getComplexParam(key);

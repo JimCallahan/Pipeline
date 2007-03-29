@@ -1,4 +1,4 @@
-// $Id: BooleanParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
+// $Id: BooleanParam.java,v 1.6 2007/03/29 19:27:47 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -77,7 +77,7 @@ class BooleanParam
    * or if a null value is passed in.
    */
   public void
-  setValueFromString
+  fromString
   (
     String value
   )

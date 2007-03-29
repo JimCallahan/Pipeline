@@ -1,4 +1,4 @@
-// $Id: ListParam.java,v 1.1 2007/03/28 20:43:45 jesse Exp $
+// $Id: ListParam.java,v 1.2 2007/03/29 19:27:48 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -165,7 +165,7 @@ class ListParam<E>
    * Sets the value from a single String.  Used for command line argument parsing.
    */
   public void 
-  setValueFromString
+  fromString
   (
     String value
   )

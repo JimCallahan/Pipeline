@@ -1,4 +1,4 @@
-// $Id: BaseParam.java,v 1.7 2007/03/28 20:43:45 jesse Exp $
+// $Id: BaseParam.java,v 1.8 2007/03/29 19:27:47 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -99,16 +99,6 @@ class BaseParam
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  public void 
-  toGlue
-  ( 
-   GlueEncoder encoder  
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-  }
   
   public void 
   fromGlue

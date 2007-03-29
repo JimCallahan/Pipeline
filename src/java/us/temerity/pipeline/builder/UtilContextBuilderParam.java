@@ -1,4 +1,4 @@
-// $Id: UtilContextBuilderParam.java,v 1.2 2007/03/28 20:43:45 jesse Exp $
+// $Id: UtilContextBuilderParam.java,v 1.3 2007/03/29 19:27:48 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -214,7 +214,7 @@ class UtilContextBuilderParam
    * Sets the value from a single String.  Used for command line argument parsing.
    */
   public void 
-  setValueFromString
+  fromString
   (
     String key 
   )

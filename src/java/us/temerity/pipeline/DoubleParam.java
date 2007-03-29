@@ -1,4 +1,4 @@
-// $Id: DoubleParam.java,v 1.5 2007/03/28 20:43:45 jesse Exp $
+// $Id: DoubleParam.java,v 1.6 2007/03/29 19:27:48 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -77,7 +77,7 @@ class DoubleParam
    * @throws NumberFormatException if the String is not a valid Double value.
    */
   public void
-  setValueFromString
+  fromString
   (
     String value
   )
