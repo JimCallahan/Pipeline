@@ -1,4 +1,4 @@
-// $Id: SimpleEditor.java,v 1.2 2007/02/08 01:49:32 jim Exp $
+// $Id: SimpleEditor.java,v 1.3 2007/03/29 19:32:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -125,13 +125,8 @@ class SimpleEditor
   }
   
   /** 
-   * Launch the editor program (obtained with {@link #getProgram getProgram}) under the given 
-   * environmant with all of the files which comprise the given file sequence as 
-   * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
-   * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. <P>
-   * 
-   * This method has been overridden to always throw a PipelineException since the {@link
-   * #prep prep} method has been implemented.
+   * This implementation always throws a PipelineException, to insure that the {@link #prep
+   * prep} method is used for this Editor instead of this deprecated method.
    * 
    * @param fseq  
    *   The file sequence to edit.
