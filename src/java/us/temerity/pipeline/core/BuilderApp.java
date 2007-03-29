@@ -87,14 +87,15 @@ public class BuilderApp
       if(hasClassName) {
 	ClassLoader loader = ClassLoader.getSystemClassLoader();
 	Class cls = loader.loadClass(args[0]);
-	BaseBuilder builder = (BaseBuilder) cls.newInstance();
-	parser.setBuilder(builder);
 	parser.CommandLine();
+	BaseBuilder builder = (BaseBuilder) cls.newInstance();
+	builder.setUsingGUI(pUsingGUI);
 	builder.run();
       }else 
 	parser.CommandLine();
     }
     catch(ParseException ex) {
+      ex.printStackTrace();
       handleParseException(ex);
     }
     catch (PipelineException ex) {
@@ -110,9 +111,20 @@ public class BuilderApp
     }
   }
   
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+  
+  public void
+  setUsingGUI
+  (
+    boolean usingGUI
+  )
+  {
+    pUsingGUI = usingGUI;
+  }
   
   /**
    * Generate an explanitory message for the non-literal token.
@@ -152,4 +164,15 @@ public class BuilderApp
       return null;
     }      
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Is this Builder in GUI mode.
+   */
+  private boolean pUsingGUI;
 }

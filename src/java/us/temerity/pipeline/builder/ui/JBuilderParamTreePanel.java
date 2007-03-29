@@ -168,7 +168,8 @@ public class JBuilderParamTreePanel
     String panelName = builder.getName();
     
     int pass = builder.getCurrentPass();
-    AdvancedLayoutGroup layout = builder.getEditedPassLayout(pass);
+    //TODO only display unmapped params.
+    AdvancedLayoutGroup layout = builder.getPassLayout(pass);
     SortedMap<String, BuilderParam> params = builder.getParamMap();
     
     createTreeNodes(treeName);
@@ -191,14 +192,15 @@ public class JBuilderParamTreePanel
    String newPanelName = panelName + " - " + hbp.getName();
    
    int pass = hbp.getCurrentPass();
-   AdvancedLayoutGroup layout = hbp.getEditedPassLayout(pass);
+   //TODO fix this layout stuff.
+   AdvancedLayoutGroup layout = hbp.getPassLayout(pass);
    SortedMap<String, BuilderParam> params = hbp.getParamMap();
    
    createTreeNodes(newTreeName);
    JBuilderParamPanel panel = new JBuilderParamPanel(hbp.getName(), params, layout);
    pCardPanel.add(panel, newPanelName);
    if(hbp.allowsChildren()) {
-      BaseBuilder builder = (BaseBuilder) hbp;
+      BaseBuilder builder = hbp;
       for(BaseBuilder hbp2 : builder.getSubBuilders().values()) {
 	uiHelper(hbp2, treeName, panelName);
       }

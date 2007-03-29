@@ -43,7 +43,7 @@ public class AssetBuilderTextureStage extends NoFrameNumStage
     throws PipelineException
   {
     super("AssetBuilderTexture", "Stage to build the texture node", context, nodeName, null, new PluginContext("Emacs"), new PluginContext(
-    "List Sources"));
+    "ListSources"));
     pParentName = parentName;
   }
 

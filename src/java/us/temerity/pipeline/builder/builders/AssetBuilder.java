@@ -47,10 +47,7 @@ class AssetBuilder
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
         ("The naming class that was passed in does not implement the BuildsAssetNames interface");
-    configNamer(assetNames);
     addSubBuilder(assetNames);
-    pAssetNames = (BuildsAssetNames) assetNames;
-
     {
       BuilderParam param = 
 	new MayaContextBuilderParam
@@ -101,6 +98,8 @@ class AssetBuilder
 	 projects); 
       addParam(param);
     }
+    configNamer(assetNames);
+    pAssetNames = (BuildsAssetNames) assetNames;
     addFirstLoopPass(new InformationLoop());
     addSecondLoopPass(new BuildLoop());
     addSecondLoopPass(new FinalizeLoop());
@@ -140,27 +139,6 @@ class AssetBuilder
     return pCheckInWhenDone;
   }
 
-  public static void main(String[] args)
-  {
-    try {
-      AssetBuilder builder = new AssetBuilder();
-      builder.setParamValue(aProjectName, "clientB");
-      builder.setParamValue(aBuildLowRez, true);
-      builder.setParamValue(aBuildTextureNode, true);
-      builder.setParamValue(aCheckinWhenDone, false);
-      MayaContext mayaContext = new MayaContext("degrees", "centimeter", "NTSC (30 fps)");
-      builder.setParamValue(aMayaContext, mayaContext);
-      DefaultAssetNames names = (DefaultAssetNames) builder.getSubBuilder("BuildsAssetNames");
-      names.setParamValue(DefaultAssetNames.aAssetName, "jesse");
-      names.setParamValue(DefaultAssetNames.aAssetType, "character");
-//    builder.runCommandLine();
-    }
-    catch(PipelineException ex) {
-      ex.printStackTrace();
-    }
-  }
-
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */

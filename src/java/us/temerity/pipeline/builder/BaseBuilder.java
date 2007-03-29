@@ -123,6 +123,9 @@ class BaseBuilder
     throws PipelineException
   {
     String instanceName = subBuilder.getName();
+    sLog.log(Kind.Ops, Level.Finer, 
+             "Adding a Sub-Builder named (" + instanceName + ") to " +
+             "the Builder named (" + getName() + ")");
     addSubBuilder(instanceName, subBuilder, new TreeMap<ParamMapping, ParamMapping>(), 1);
   }
   
@@ -731,13 +734,17 @@ class BaseBuilder
       "Reading command line arg for Builder (" + builder + ").\n" +
       "Keys are (" + keys + ").\n" +
       "Value is (" + value + ").\n");
+    if (builder == null)
+      throw new IllegalArgumentException
+        ("Illegal attempt in setting a Parameter value before specifying the Builder " +
+         "that the Parameter resides in.");
     LinkedList<String> list;
     if (keys == null)
       list = new LinkedList<String>();
     else
       list = new LinkedList<String>(keys);
     list.addFirst(builder);
-    sCommandLineParams.putValue(list, value);
+    sCommandLineParams.putValue(list, value, true);
   }
   
   /**
@@ -752,7 +759,7 @@ class BaseBuilder
   {
     return sCommandLineParams;
   }
-  
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -891,6 +898,7 @@ class BaseBuilder
       for(String name : listOfNames) {
 	BaseNames names = pSubNames.get(name);
 	names.assignCommandLineParams();
+	initializeSubBuilder(name);
 	names.generateNames();
 	pSubNames.remove(name);
 	pGeneratedNames.put(name, names);

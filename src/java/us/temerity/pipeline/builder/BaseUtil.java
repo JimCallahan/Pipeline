@@ -776,8 +776,14 @@ class BaseUtil
     
     DoubleMap<String, String, TreeSet<VersionID>> plugs = sClient
       .getToolsetActionPlugins(toolset);
-    VersionID ver = plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName())
-      .last();
+    
+    TreeSet<VersionID> pluginSet = 
+      plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
+    if (pluginSet == null)
+      throw new PipelineException
+        ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
+         "in toolset (" + toolset + ")");
+    VersionID ver = pluginSet.last();
 
     return sPlug.newAction(pluginUtil.getPluginName(), ver, pluginUtil.getPluginVendor());
   }

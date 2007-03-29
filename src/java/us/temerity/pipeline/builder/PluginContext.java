@@ -50,6 +50,12 @@ class PluginContext
     {
         return pPluginVendor;
     }
+    
+    @Override
+    public String toString()
+    {
+      return("[Plugin Name: " + pPluginName + ", Vendor: " + pPluginVendor + "]");
+    }
 
     private String pPluginName;
     private String pPluginVendor;

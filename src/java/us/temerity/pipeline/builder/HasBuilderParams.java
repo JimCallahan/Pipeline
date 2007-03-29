@@ -13,7 +13,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
 
-public abstract 
+public  
 class HasBuilderParams
   extends BaseUtil
 {
@@ -590,34 +590,45 @@ class HasBuilderParams
     if(prefixName == null)
       prefixName = getName();
     
+    MultiMap<String, String> specificEntrys = 
+      BaseBuilder.getCommandLineParams().get(prefixName);
+    
+    if (specificEntrys == null) {
+      LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
+	"No command line parameters for Builder with prefixName (" + prefixName + ")");
+      return;
+    }
+    
+    /* This creates a Mapped ArrayList with Parameter name as the key set and
+     * the list of keys contained in the MultiMapNamedEntry as the key set.
+     */
     MappedArrayList<String, MultiMapNamedEntry<String, String>> commandLineValues = 
-      BaseBuilder.getCommandLineParams().namedEntries();
+      specificEntrys.namedEntries();
     
-    ArrayList<MultiMapNamedEntry<String, String>> commandLineParams = 
-      commandLineValues.get(prefixName);
     
-    if(commandLineParams != null) {
+    if(commandLineValues != null) {
 
       Set<ParamMapping> mappedParams = pParamMapping.keySet();
       
-      for (MultiMapNamedEntry<String, String> entry : commandLineParams) {
-	List<String> keys = entry.getKeys();
-	String paramName = entry.getName();
-	ParamMapping mapping = new ParamMapping(paramName, keys);
-	if (!mappedParams.contains(mapping)) {
-	  String value = entry.getValue();
-	  if (hasSimpleParam(mapping)) {
-	    SimpleParamAccess param = (SimpleParamAccess) getParam(mapping);
-	    param.setValueFromString(value);
-	    LogMgr.getInstance().log(Kind.Arg, Level.Finer, 
-	      "Setting command line parameter (" + mapping + ") from builder " +
-	      "(" + prefixName + ") with the value (" + value + ").");
+      for (String paramName : commandLineValues.keySet()) {
+	for (MultiMapNamedEntry<String, String> entry : commandLineValues.get(paramName)) {
+	  List<String> keys = entry.getKeys();
+	  ParamMapping mapping = new ParamMapping(paramName, keys);
+	  if (!mappedParams.contains(mapping)) {
+	    String value = entry.getValue();
+	    if (hasSimpleParam(mapping)) {
+	      SimpleParamAccess param = (SimpleParamAccess) getParam(mapping);
+	      param.fromString(value);
+	      LogMgr.getInstance().log(Kind.Arg, Level.Finer, 
+		"Setting command line parameter (" + mapping + ") from builder " +
+		"(" + prefixName + ") with the value (" + value + ").");
+	    }
+	    else
+	      LogMgr.getInstance().log(Kind.Arg, Level.Warning, 
+		"Cannot set command line parameter (" + mapping + ") from builder " +
+		"(" + prefixName + ") with the value (" + value + ").\n" +
+	        "Parameter is not a Simple Parameter");
 	  }
-	  else
-	    LogMgr.getInstance().log(Kind.Arg, Level.Warning, 
-	      "Cannot set command line parameter (" + mapping + ") from builder " +
-	      "(" + prefixName + ") with the value (" + value + ").\n" +
-	      "Parameter is not a Simple Parameter");
 	}
       }
     }
@@ -1045,10 +1056,10 @@ class HasBuilderParams
   public String
   getStringParamValue
   (
-   String name   
+    ParamMapping mapping   
   ) 
   { 
-    String value = (String) getParamValue(name); 
+    String value = (String) getParamValue(mapping); 
     if((value != null) && (value.length() > 0))
       return value;
 

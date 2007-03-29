@@ -206,8 +206,9 @@ public class JBuilderParamPanel
     throws PipelineException
   {
     if (bparam != null) {
+      SimpleParamAccess sparam = (SimpleParamAccess) bparam;
       if(bparam instanceof BooleanBuilderParam) {
-	Boolean value = (Boolean) bparam.getValue();
+	Boolean value = (Boolean) sparam.getValue();
 	JBooleanField field = 
 	  UIFactory.createTitledBooleanField 
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -217,7 +218,7 @@ public class JBuilderParamPanel
 	return field;
       }
       else if(bparam instanceof DoubleBuilderParam) {
-	Double value = (Double) bparam.getValue();
+	Double value = (Double) sparam.getValue();
 	JDoubleField field = 
 	  UIFactory.createTitledDoubleField 
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -240,7 +241,7 @@ public class JBuilderParamPanel
 	return field;
       }
       else if(bparam instanceof IntegerBuilderParam) {
-	Integer value = (Integer) bparam.getValue();
+	Integer value = (Integer) sparam.getValue();
 	JIntegerField field = 
 	  UIFactory.createTitledIntegerField 
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -250,7 +251,7 @@ public class JBuilderParamPanel
 	return field;
       }
       else if(bparam instanceof StringBuilderParam) {
-	String value = (String) bparam.getValue();
+	String value = (String) sparam.getValue();
 	JTextField field = 
 	  UIFactory.createTitledEditableTextField 
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -260,7 +261,7 @@ public class JBuilderParamPanel
 	return field;     
       }
       else if(bparam instanceof PathBuilderParam) {
-	Path value = (Path) bparam.getValue();
+	Path value = (Path) sparam.getValue();
 	JPathField field = 
 	  UIFactory.createTitledPathField
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -270,7 +271,7 @@ public class JBuilderParamPanel
 	return field; 
       }
       else if(bparam instanceof NodePathBuilderParam) {
-	String value = (String) bparam.getValue();
+	String value = (String) sparam.getValue();
 	JNodeIdentifierField field = 
 	  UIFactory.createTitledNodeIdentifierField
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -280,7 +281,7 @@ public class JBuilderParamPanel
 	return field;     
       }
       else if(bparam instanceof IdentifierBuilderParam) {
-	String value = (String) bparam.getValue();
+	String value = (String) sparam.getValue();
 	JIdentifierField field = 
 	  UIFactory.createTitledIdentifierField
 	  (tpanel, bparam.getNameUI() + ":", tsize, 
@@ -303,7 +304,7 @@ public class JBuilderParamPanel
 	return field;
       }
       else if(bparam instanceof MayaContextBuilderParam) {
-	MayaContext value = (MayaContext) bparam.getValue();
+	MayaContext value = (MayaContext) sparam.getValue();
 	JMayaContextField field = 
 	  UIFactory.createTitledMayaContextField
 	  (tpanel, bparam.getNameUI(), tsize, 
@@ -313,7 +314,7 @@ public class JBuilderParamPanel
 	return field;	      
       }
       else if(bparam instanceof UtilContextBuilderParam) {
-	UtilContext value = (UtilContext) bparam.getValue();
+	UtilContext value = (UtilContext) sparam.getValue();
 	JUtilContextField field = 
 	  UIFactory.createTitledUtilContextField
 	  (tpanel, bparam.getNameUI(), tsize, 
@@ -322,12 +323,12 @@ public class JBuilderParamPanel
 
 	return field;	      
       }
-      else if(bparam instanceof MultiEnumBuilderParam) {
-	MultiEnumBuilderParam mparam = (MultiEnumBuilderParam) bparam;
+      else if(bparam instanceof ListBuilderParam) {
+	ListBuilderParam mparam = (ListBuilderParam) bparam;
 	Set<String> values = mparam.getValues();
 	Set<String> selectedValues = mparam.getSelectedValues();
 	ArrayList<String> layout = mparam.getLayout();
-	TreeMap<String, String> tooltips = mparam.getTooltips();
+	TreeMap<String, String> tooltips = new TreeMap<String, String>();
 	JMultiEnumField field = 
 	  UIFactory.createTitledMultiEnumField
 	  (tpanel, bparam.getNameUI(), tsize,

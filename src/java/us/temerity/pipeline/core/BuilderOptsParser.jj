@@ -27,21 +27,6 @@ BuilderOptsParser
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Set the builder instance. 
-   */ 
-  public void 
-  setBuilder
-  (
-   BaseBuilder builder  
-  ) 
-  {
-    if(builder == null) 
-      throw new IllegalArgumentException("The builder cannot be (null)!");
-    pBuilder = builder;
-    currentBuilderName = pBuilder.getName();
-  }
-  
   public void
   setApp
   (
@@ -60,16 +45,11 @@ BuilderOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The builder instance. 
-   */
-  private BaseBuilder pBuilder;
-    
-  /**
    * The app instance
    */
   private BuilderApp pApp;
     
-  private String currentBuilderName;
+  private String currentBuilderName = null;
 }
   
 PARSER_END(BuilderOptsParser)
@@ -95,7 +75,7 @@ TOKEN :
 | <AE1: (["\0"])+> 
 
   /* errors */ 
-| <UNKNOWN_OPTION:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN_OPTION:    "-" (~["-"])*> : IGNORE_STATE
 | <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>      : IGNORE_STATE
 }
 
@@ -127,26 +107,29 @@ TOKEN :
 <PARAM_NAME_STATE>
 TOKEN:
 {
-  <PARAM_NAME:          (["a"-"z","A"-"Z","0"-"9","_"])+>     : KEY_STATE
+  <PARAM_NAME:          (["a"-"z","A"-"Z","0"-"9","_"])+>
+| <KEY_SEP1:              "-">                                : KEY_STATE
+| <EQ2:                   "=">                                : PARAM_VALUE_STATE
 | <MISSING_PARAM_NAME:   ["\0"]>        				      : IGNORE_STATE
-| <ILLEGAL_PARAM_NAME: (~["\0"])+>    						  : IGNORE_STATE
+| <ILLEGAL_PARAM_NAME:  (~["-","=","\0"])+>          		  : IGNORE_STATE
 }
 
 <KEY_STATE> 
 TOKEN :
 {
-  <KEY_NAME:          (["a"-"z","A"-"Z","0"-"9","_"])+>
-| <KEY_SEP:             "-">
-| <EQ2:                 "=">   : PARAM_VALUE_STATE
-| <MISSING_PARAM_SEP: ~["="]>  : IGNORE_STATE
+  <KEY_NAME:           (["a"-"z","A"-"Z","0"-"9","_"])+>
+| <KEY_SEP2:             "-">
+| <EQ4:                  "=">   	                   : PARAM_VALUE_STATE
+| <MISSING_KEY_SEP:    ~["="]>                         : IGNORE_STATE
+| <ILLEGAL_KEY_STATE: (~["-","=","\0"])+>	           : IGNORE_STATE
 }
 
 <PARAM_VALUE_STATE>
 TOKEN:
 {
-  <PARAM_VALUE:          (["a"-"z","A"-"Z","0"-"9","-","_"])+> : DEFAULT
-| <MISSING_PARAM_VALUE:   ["\0"]>        				       : IGNORE_STATE
-| <ILLEGAL_PARAM_VALUE: (~["\0"])+>    						   : IGNORE_STATE
+  <PARAM_VALUE:          (["a"-"z","A"-"Z","0"-"9","-","_",".",",","/"," ","(",")",":",";"])+> : DEFAULT
+| <MISSING_PARAM_VALUE:   ["\0"]>        				                       : IGNORE_STATE
+| <ILLEGAL_PARAM_VALUE: (~["\0"])+>    						                   : IGNORE_STATE
 }
 
 /* --log arguments */ 
@@ -299,7 +282,7 @@ Gui()
 {
   <GUI> 
   { 
-    pBuilder.setUsingGUI(true);
+    pApp.setUsingGUI(true);
   }
 }
 
@@ -341,7 +324,7 @@ Key
   Token t1;
 }
 {
-  <KEY_SEP> t1=<KEY_NAME>
+  KEYSEP() t1=<KEY_NAME>
   {
     keys.add(t1.image);
   }
@@ -552,12 +535,24 @@ AE() :
 }
 
 Token
+KEYSEP() :
+{
+	Token t;
+}
+{
+  (t=<KEY_SEP1> | t=<KEY_SEP2>)
+  { 
+    return t; 
+  }
+}
+
+Token
 EQ() :
 {
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t= <EQ4>)
   { 
     return t; 
   }
