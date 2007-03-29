@@ -1,4 +1,4 @@
-// $Id: MRayRenderAction.java,v 1.3 2007/03/29 19:36:39 jim Exp $
+// $Id: MRayRenderAction.java,v 1.4 2007/03/29 19:39:28 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -321,8 +321,6 @@ public class MRayRenderAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.1 2007/03/28 20:05:06 jim Exp $
+// $Id: MayaMiShaderAction.java,v 1.2 2007/03/29 19:38:05 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -359,9 +359,7 @@ MayaMiShaderAction
     }
     
     addSupport(OsType.MacOS);
-    addSupport(OsType.Windows);     
-
-    underDevelopment();
+    addSupport(OsType.Windows);  
   }
 
 

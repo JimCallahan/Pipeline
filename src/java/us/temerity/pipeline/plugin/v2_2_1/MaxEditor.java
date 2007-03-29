@@ -1,4 +1,4 @@
-// $Id: MaxEditor.java,v 1.2 2007/03/29 19:29:49 jim Exp $
+// $Id: MaxEditor.java,v 1.3 2007/03/29 19:37:36 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -31,8 +31,6 @@ class MaxEditor
 
     removeSupport(OsType.Unix);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
   
