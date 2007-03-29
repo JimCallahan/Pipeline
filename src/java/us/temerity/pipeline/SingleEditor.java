@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.13 2007/02/08 01:49:32 jim Exp $
+// $Id: SingleEditor.java,v 1.14 2007/03/29 19:31:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,7 +13,12 @@ import java.io.*;
 
 /**
  * Superclass of Pipline node editor plugins that can only edit single files.
+ * 
+ * @deprecated
+ *   This class does not implement the new {@link BaseEditor#prep prep} method and exists 
+ *   solely to support existing Editor plugins already derrived from this class. 
  */
+@Deprecated
 public
 class SingleEditor
   extends BaseEditor
@@ -71,60 +76,6 @@ class SingleEditor
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a {@link SubProcessLight} instance which when executed will launch an editor
-   * program to view the given file sequence as arguments. <P> 
-   * 
-   * The default implementation executes the editor program obtained with {@link #getProgram 
-   * getProgram} method under the given environment.  Subclasses should override this method 
-   * if more specialized behavior or different command line arguments are needed in order to 
-   * launch the editor for the given file sequence. <P> 
-   * 
-   * @param author
-   *   The name of the user owning the files. 
-   * 
-   * @param fseq  
-   *   The file sequence to edit.
-   * 
-   * @param env  
-   *   The environment under which the editor is run.  
-   * 
-   * @param dir  
-   *   The working directory where the editor is run.
-   *
-   * @return 
-   *   The controlling <CODE>SubProcessLight</CODE> instance. 
-   * 
-   * @throws PipelineException
-   *   If unable to launch the editor.
-   * 
-   * @see SubProcessLight
-   */  
-  public SubProcessLight
-  prep
-  (
-   String author, 
-   FileSeq fseq,      
-   Map<String, String> env,      
-   File dir        
-  ) 
-    throws PipelineException
-  {
-    try {
-      FrameRange range = fseq.getFrameRange(); 
-      if((range != null) && (!range.isSingle()))
-	throw new PipelineException
-	  ("The " + getName() + " Editor can only edit a single file at a time!");
-      
-      return super.prep(author, fseq, env, dir);
-    }
-    catch(Exception ex) {
-      throw new PipelineException
-	("Unable to generate the SubProcess to launch this Editor!\n" +
-	 ex.getMessage());
-    }    
-  }
-
-  /** 
    * Launch the editor program (obtained with {@link #getName getName}) under the given 
    * environmant with all of the files which comprise the given file sequence as 
    * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
@@ -168,10 +119,9 @@ class SingleEditor
   )   
     throws PipelineException
   {
-    FrameRange range = fseq.getFrameRange(); 
-    if((range != null) && (!range.isSingle()))
+    if(!fseq.isSingle())
       throw new PipelineException
-	("The " + getName() + " Editor can only edit a single file at a time!");
+        ("The " + getName() + " Editor can only edit a single file at a time!");
 
     return super.launch(fseq, env, dir);
   }
