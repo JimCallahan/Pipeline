@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.7 2007/03/24 15:56:04 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.8 2007/03/29 19:45:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -988,7 +988,14 @@ class JQueueJobSlotsPanel
 		
 	      if(editor == null) 
 		throw new PipelineException
-		  ("No editor was specified for node (" + mod.getName() + ")!");
+		  ("No Editor plugin was specified for node (" + mod.getName() + ")!");
+
+              if(!editor.supports(PackageInfo.sOsType)) 
+                throw new PipelineException
+                  ("The Editor plugin (" + editor.getName() + " v" + 
+                   editor.getVersionID() + ") from the vendor (" + editor.getVendor() + ") " +
+                   "does not support the " + PackageInfo.sOsType.toTitle() + " operating " + 
+                   "system!");
 
               ignoreExitCode = editor.ignoreExitCode();
  	    }

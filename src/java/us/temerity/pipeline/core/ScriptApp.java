@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.71 2007/03/28 19:51:04 jim Exp $
+// $Id: ScriptApp.java,v 1.72 2007/03/29 19:45:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2750,7 +2750,13 @@ class ScriptApp
 
       if(editor == null) 
 	throw new PipelineException
-	  ("No editor was specified for node (" + com.getName() + ")!");
+	  ("No Editor plugin was specified for node (" + com.getName() + ")!");
+
+      if(!editor.supports(PackageInfo.sOsType)) 
+        throw new PipelineException
+          ("The Editor plugin (" + editor.getName() + " v" + 
+           editor.getVersionID() + ") from the vendor (" + editor.getVendor() + ") " + 
+           "does not support the " + PackageInfo.sOsType.toTitle() + " operating system!");
     }
     
     /* lookup the toolset environment */ 

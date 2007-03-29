@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.60 2007/03/28 20:07:15 jim Exp $
+// $Id: UIMaster.java,v 1.61 2007/03/29 19:45:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4291,7 +4291,15 @@ class UIMaster
 		
 	      if(editor == null) 
 		throw new PipelineException
-		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
+		  ("No Editor plugin was specified for node " + 
+                   "(" + pNodeCommon.getName() + ")!");
+              
+              if(!editor.supports(PackageInfo.sOsType)) 
+                throw new PipelineException
+                  ("The Editor plugin (" + editor.getName() + " v" + 
+                   editor.getVersionID() + ") from the vendor (" + editor.getVendor() + ") " +
+                   "does not support the " + PackageInfo.sOsType.toTitle() + " operating " + 
+                   "system!");
 
               ignoreExitCode = editor.ignoreExitCode();
 	    }

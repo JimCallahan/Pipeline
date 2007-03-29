@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.37 2007/03/24 18:29:06 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.38 2007/03/29 19:45:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2513,7 +2513,14 @@ class JQueueJobViewerPanel
 		
 	      if(editor == null) 
 		throw new PipelineException
-		  ("No editor was specified for node (" + mod.getName() + ")!");
+		  ("No Editor plugin was specified for node (" + mod.getName() + ")!");
+
+              if(!editor.supports(PackageInfo.sOsType)) 
+                throw new PipelineException
+                  ("The Editor plugin (" + editor.getName() + " v" + 
+                   editor.getVersionID() + ") from the vendor (" + editor.getVendor() + ") " +
+                   "does not support the " + PackageInfo.sOsType.toTitle() + " operating " + 
+                   "system!");
 
               ignoreExitCode = editor.ignoreExitCode();
  	    }

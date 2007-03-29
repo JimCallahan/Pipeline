@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.35 2007/03/24 15:56:04 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.36 2007/03/29 19:45:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2851,8 +2851,15 @@ class JNodeFilesPanel
 	    
 	      if(editor == null) 
 		throw new PipelineException
-		  ("No editor was specified for node (" + com.getName() + ")!");
+		  ("No Editor plugin was specified for node (" + com.getName() + ")!");
               
+              if(!editor.supports(PackageInfo.sOsType)) 
+                throw new PipelineException
+                  ("The Editor plugin (" + editor.getName() + " v" + 
+                   editor.getVersionID() + ") from the vendor (" + editor.getVendor() + ") " +
+                   "does not support the " + PackageInfo.sOsType.toTitle() + " operating " + 
+                   "system!");
+
               ignoreExitCode = editor.ignoreExitCode();
 	    }
 

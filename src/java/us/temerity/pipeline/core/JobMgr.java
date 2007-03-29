@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.40 2007/03/18 02:29:16 jim Exp $
+// $Id: JobMgr.java,v 1.41 2007/03/29 19:45:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -92,6 +92,13 @@ class JobMgr
 	  ("The Editor (" + editor.getName() + " v" + editor.getVersionID() + ") from the " + 
 	   "vendor (" + editor.getVendor() + ") does not implement the Editor.prep() " + 
 	   "method and therefore cannot be run as another user!");
+      
+      if(!editor.supports(PackageInfo.sOsType)) 
+        throw new PipelineException
+          ("The Editor plugin (" + editor.getName() + " v" + 
+           editor.getVersionID() + ") from the vendor (" + editor.getVendor() + ") " + 
+           "does not support the " + PackageInfo.sOsType.toTitle() + " operating " + 
+           "system!");
       
       proc.start();
       proc.join();
