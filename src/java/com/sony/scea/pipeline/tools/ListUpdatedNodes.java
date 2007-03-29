@@ -55,7 +55,7 @@ public class ListUpdatedNodes
 	 DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
 	 for (ArchiveInfo info : infos)
 	 {
-	    Date stamp = info.getCheckedInStamp();
+	    Date stamp = new Date(info.getCheckedInStamp());
 	    boolean write = true;
 	    if ( start != null )
 	       if ( stamp.before(start) )
