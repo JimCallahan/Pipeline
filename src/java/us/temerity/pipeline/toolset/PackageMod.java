@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.12 2007/03/08 23:18:41 jim Exp $
+// $Id: PackageMod.java,v 1.13 2007/03/30 23:19:39 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -304,6 +304,7 @@ class PackageMod
 	   !name.equals("SHLVL") && 
 	   !name.equals("USER") && 
 	   !name.equals("WORKING") && 
+	   !name.equals("PIPELINE_OSTYPE") && 
 	   !name.equals("_")) {
 
 	  String value = null;

@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.9 2007/03/28 20:06:16 jim Exp $
+// $Id: Toolset.java,v 1.10 2007/03/30 23:19:39 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -532,6 +532,8 @@ class Toolset
 	env.put("APPDATA", appdata.toOsString(os));
       }
     }
+
+    env.put("PIPELINE_OSTYPE", os.toString());
 
     return env;
   }

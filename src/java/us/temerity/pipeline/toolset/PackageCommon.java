@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.8 2006/09/29 03:03:21 jim Exp $
+// $Id: PackageCommon.java,v 1.9 2007/03/30 23:19:39 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -198,6 +198,8 @@ class PackageCommon
 	env.put("APPDATA", appdata.toOsString());
       }
     }
+
+    env.put("PIPELINE_OSTYPE", PackageInfo.sOsType.toString());
 
     return env;
   }
