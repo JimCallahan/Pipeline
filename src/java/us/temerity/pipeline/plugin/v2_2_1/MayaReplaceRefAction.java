@@ -1,4 +1,4 @@
-// $Id: MayaReplaceRefAction.java,v 1.3 2007/03/25 03:12:51 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.4 2007/03/31 23:12:27 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -176,8 +176,9 @@ MayaReplaceRefAction
     Path postReplaceMEL = getMelScriptSourcePath(aPostReplaceMEL, agenda);
     
     /* the source Maya scene */ 
-    Path sourceScene = 
-      getPrimarySourcePath(aMayaScene, agenda, "ma", "Maya scene file");
+    Path sourceScene = getPrimarySourcePath(aMayaScene, agenda, "ma", "Maya scene file");
+    if(sourceScene == null) 
+      throw new PipelineException("The MayaScene node was not specified!");
 
     /* the target Maya scene */
     Path targetScene = getMayaSceneTargetPath(agenda);

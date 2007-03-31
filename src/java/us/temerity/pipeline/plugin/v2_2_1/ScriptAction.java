@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.4 2007/03/25 03:12:51 jim Exp $
+// $Id: ScriptAction.java,v 1.5 2007/03/31 23:13:11 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -198,7 +198,9 @@ class ScriptAction
     throws PipelineException
   {
     /* get the name of the executable script file */ 
-    Path script = getPrimarySourcePath(aScript, agenda, "executable script");
+    Path scriptPath = getPrimarySourcePath(aScript, agenda, "executable script");
+    if(scriptPath == null) 
+      throw new PipelineException("The Script node was not specified!");
 
     /* whether to supply full paths */ 
     boolean fullPaths = getSingleBooleanParamValue(aFullPaths); 
@@ -257,7 +259,7 @@ class ScriptAction
     }
 
     /* create the process to run the action */ 
-    return createSubProcess(agenda, script.toString(), null, senv, outFile, errFile);
+    return createSubProcess(agenda, scriptPath.toString(), null, senv, outFile, errFile);
   }
 
 

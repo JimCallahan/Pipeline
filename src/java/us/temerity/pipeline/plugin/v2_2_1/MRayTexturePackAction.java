@@ -1,4 +1,4 @@
-// $Id: MRayTexturePackAction.java,v 1.2 2007/03/25 03:12:23 jim Exp $
+// $Id: MRayTexturePackAction.java,v 1.3 2007/03/31 23:12:27 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -226,6 +226,8 @@ class MRayTexturePackAction
     /* source pre-filtered level image paths */ 
     ArrayList<Path> sourcePaths =
       getPrimarySourcePaths(aImageSource, agenda, "pre-filtered image levels"); 
+    if(sourcePaths == null) 
+      throw new PipelineException("The ImageSource node was not specified!");
     if(sourcePaths.size() > 20) 
       throw new PipelineException
         ("The " + aImageSource + " file sequence contained more than the maximum (20) " + 

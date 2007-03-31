@@ -1,4 +1,4 @@
-// $Id: ShakeCompAction.java,v 1.1 2007/03/26 23:23:55 jim Exp $
+// $Id: ShakeCompAction.java,v 1.2 2007/03/31 23:13:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -103,6 +103,8 @@ class ShakeCompAction
   { 
     /* the Shake script to evaluate */ 
     Path sourceScript = getPrimarySourcePath(aShakeScript, agenda, "shk", "Shake script");
+    if(sourceScript == null) 
+      throw new PipelineException("The ShakeScript node was not specified!");
 
     /* the target frame range */ 
     FrameRange range = agenda.getPrimaryTarget().getFrameRange();

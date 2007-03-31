@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.5 2007/03/28 20:05:13 jim Exp $
+// $Id: PythonAction.java,v 1.6 2007/03/31 23:12:48 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -205,8 +205,9 @@ class PythonAction
         ("The Script parameter was not set!");
 
     /* get the executable script path */ 
-    Path scriptPath = 
-      getPrimarySourcePath(aScript, agenda, "py", "Python source (.py) file");
+    Path scriptPath = getPrimarySourcePath(aScript, agenda, "py", "Python source (.py) file");
+    if(scriptPath == null) 
+      throw new PipelineException("The Script node was not specified!");
 
     /* create a temporary python prep script */ 
     Path scratch = getTempPath(agenda);

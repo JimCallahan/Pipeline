@@ -1,4 +1,4 @@
-// $Id: MRayTextureUnpackAction.java,v 1.2 2007/03/28 20:05:13 jim Exp $
+// $Id: MRayTextureUnpackAction.java,v 1.3 2007/03/31 23:12:27 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -146,9 +146,10 @@ class MRayTextureUnpackAction
     throws PipelineException
   {
     /* source texture path */ 
-    Path sourcePath = 
-      getPrimarySourcePath(aTextureSource, agenda, "map", 
-                           "Mental Ray memory mappable pyramid texture");
+    Path sourcePath = getPrimarySourcePath(aTextureSource, agenda, "map", 
+                                           "Mental Ray memory mappable pyramid texture");
+    if(sourcePath == null) 
+      throw new PipelineException("The TextureSource node was not specified!");
 
     /* target pre-filtered level image paths */ 
     ArrayList<Path> targetPaths = getPrimaryTargetPaths(agenda, "pre-filtered image levels"); 
