@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.7 2006/09/25 12:11:45 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.8 2007/04/01 21:26:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -90,6 +90,28 @@ class JFileSeqSelectDialog
   getSelectedFileSeq() 
   {
     return pFileSeq;
+  }
+
+  /**
+   * Get all file sequences in the current directory. <P> 
+   * 
+   * @return 
+   *   The file sequences. 
+   */ 
+  public ArrayList<FileSeq> 
+  getAllFileSeqs() 
+  {
+    ArrayList<FileSeq> fseqs = new ArrayList<FileSeq>();
+
+    DefaultListModel model = (DefaultListModel) pFileList.getModel();
+    Object elems[] = model.toArray(); 
+    int wk;
+    for(wk=0; wk<elems.length; wk++) {
+      if(elems[wk] instanceof FileSeq) 
+        fseqs.add((FileSeq) elems[wk]);
+    }
+
+    return fseqs;
   }
 
 
