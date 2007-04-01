@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.14 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseDialog.java,v 1.15 2007/04/01 22:05:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -129,6 +130,7 @@ class JBaseDialog
       root.add(body);
 
     JButton[] extraBtns = null;
+    pExtraButtons = new TreeMap<String,JButton>();
     {
       JPanel panel = new JPanel();
       
@@ -188,6 +190,7 @@ class JBaseDialog
 	  if(extra[wk] != null) {
 	    JButton btn = new JButton(extra[wk][0]);
 	    extraBtns[wk] = btn;
+            pExtraButtons.put(extra[wk][0], btn);
 	    btn.setName("RaisedButton");
 	    
 	    Dimension size = btn.getPreferredSize();
@@ -251,7 +254,7 @@ class JBaseDialog
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
+  /*   P R E D I C A T E S                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -261,6 +264,45 @@ class JBaseDialog
   wasConfirmed()
   {
     return pConfirmed;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the confirm foooter button or <CODE>null</CODE> if none exists.
+   */ 
+  public JButton
+  getConfirmButton() 
+  {
+    return pConfirmButton; 
+  }
+
+  /**
+   * Get the apply foooter button or <CODE>null</CODE> if none exists.
+   */ 
+  public JButton
+  getApplyButton() 
+  {
+    return pApplyButton; 
+  }
+
+  /**
+   * Get the extra btton with the given title.
+   * 
+   * @param title
+   *   The title of the extra button given in the constructor.
+   */ 
+  public JButton
+  getExtraButton
+  (
+   String title
+  ) 
+  {
+    return pExtraButtons.get(title);
   }
 
 
@@ -374,4 +416,10 @@ class JBaseDialog
   protected JButton  pConfirmButton;
   protected JButton  pApplyButton;
   protected JButton  pCancelButton;
+
+  /**
+   * The extra footer buttons indexed by title.
+   */ 
+  private TreeMap<String,JButton>  pExtraButtons;
+
 }
