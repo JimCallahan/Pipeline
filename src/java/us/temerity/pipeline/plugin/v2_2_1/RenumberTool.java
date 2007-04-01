@@ -1,4 +1,4 @@
-// $Id: RenumberTool.java,v 1.1 2007/03/18 02:43:56 jim Exp $
+// $Id: RenumberTool.java,v 1.2 2007/04/01 21:19:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -272,7 +272,7 @@ RenumberTool
      * @throws PipelineException
      *    If unable to sucessfully execute this phase of the tool.
      */
-    public boolean
+    public NextPhase
     execute
     (
      MasterMgrClient mclient,
@@ -319,7 +319,7 @@ RenumberTool
       pPotentialNames.clear();
       findNodesToRenumber(status);
 
-      return true;
+      return NextPhase.Continue;
     }
     
     /**
@@ -493,12 +493,12 @@ RenumberTool
      *   The network connection to the plqueuemgr(1) daemon.
      * 
      * @return 
-     *   Whether to continue and collect user input for the next phase of the tool.
+     *   What to do next: Continue, Repeat or Finish?
      * 
      * @throws PipelineException
      *   If unable to sucessfully execute this phase of the tool.
      */
-    public boolean
+    public NextPhase
     execute
     (
      MasterMgrClient mclient,
@@ -508,7 +508,8 @@ RenumberTool
     {
       for(String name : pRenumberNames)
         mclient.renumber(pAuthor, pView, name, pTargetFrameRange, pRemoveFiles);
-      return false;
+
+      return NextPhase.Finish;
     }
 
 

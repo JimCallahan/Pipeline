@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.13 2007/03/18 02:41:52 jim Exp $
+// $Id: BaseTool.java,v 1.14 2007/04/01 21:19:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -247,12 +247,20 @@ class BaseTool
   ) 
     throws PipelineException
   {
-    boolean cont = false;
-    if(pPhaseIdx < pPhases.size()) 
-      cont = pPhases.get(pPhaseIdx).execute(mclient, qclient); 
-    
-    pPhaseIdx++;
-    return cont;
+    if(pPhaseIdx >= pPhases.size()) 
+      return false; 
+
+    switch(pPhases.get(pPhaseIdx).execute(mclient, qclient)) {
+    case Continue:
+      pPhaseIdx++;
+      return true;
+
+    case Repeat:
+      return true;
+
+    default:
+      return false;
+    }
   }
   
 
@@ -290,6 +298,29 @@ class BaseTool
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The action to take after the completion of the execute portion of the current execute
+   * phase of operation of the Tool plugin. 
+   */
+  public
+  enum NextPhase
+  {  
+    /**
+     * Continue on to the next phase of operation.
+     */ 
+    Continue, 
+
+    /**
+     * Repeat the current phase of operation.
+     */ 
+    Repeat, 
+    
+    /**
+     * The Tool has completed all phases.
+     */ 
+    Finish;
+  }
+
   /**
    * Base class for one phase of operation of the Tool plugin. <P> 
    * 
@@ -347,8 +378,8 @@ class BaseTool
      * ToolPhase for this tool plugin and begin collection more information from the user
      * by calling the {@link #collectInput collectInput} method of this next phase.<P> 
      * 
-     * If this method returns <CODE>false</CODE>, execution of the entire tool will end 
-     * successfully.
+     * If this method returns <CODE>NextPhase.Finish</CODE>, execution of the entire tool 
+     * will end successfully.
      * 
      * @param mclient
      *   The network connection to the plmaster(1) daemon.
@@ -357,12 +388,12 @@ class BaseTool
      *   The network connection to the plqueuemgr(1) daemon.
      * 
      * @return 
-     *   Whether to continue and collect user input for the next phase of the tool.
+     *   What to do next: Continue, Repeat or Finish?
      * 
      * @throws PipelineException 
      *   If unable to sucessfully execute this phase of the tool.
      */ 
-    public boolean
+    public NextPhase
     execute
     (
      MasterMgrClient mclient,
@@ -370,7 +401,7 @@ class BaseTool
     ) 
       throws PipelineException
     {
-      return false;
+      return NextPhase.Finish;
     }
   }
 
