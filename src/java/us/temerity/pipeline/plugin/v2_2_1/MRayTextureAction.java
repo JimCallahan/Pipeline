@@ -1,4 +1,4 @@
-// $Id: MRayTextureAction.java,v 1.4 2007/03/28 20:05:13 jim Exp $
+// $Id: MRayTextureAction.java,v 1.5 2007/04/01 21:18:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -155,7 +155,7 @@ class MRayTextureAction
 	ActionParam param = 
 	  new EnumActionParam
 	  (aTexelLayout, 
-	   "How to organize output texel data.",
+	   "How to organize output texel data in the generated texture MAP file.",
 	   "Scanlines", choices);
 	addSingleParam(param);
       }
@@ -170,7 +170,7 @@ class MRayTextureAction
 	ActionParam param = 
 	  new EnumActionParam
 	  (aByteOrder, 
-	   "The byte ordering of texel data in the output texture MAP file.", 
+	   "The byte ordering of texel data in the generated texture MAP file.", 
 	   "Little-Endian", choices);
 	addSingleParam(param);
       }
