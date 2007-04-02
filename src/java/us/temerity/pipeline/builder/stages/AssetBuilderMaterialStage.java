@@ -1,16 +1,9 @@
-
-/*
- * Created on Sep 18, 2006 Created by jesse For Use in us.temerity.pipeline.stages
- */
 package us.temerity.pipeline.builder.stages;
-
-//~--- non-JDK imports --------------------------------------------------------
 
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.MayaContext;
 import us.temerity.pipeline.builder.UtilContext;
 
-//~--- classes ----------------------------------------------------------------
 
 /**
  * A leaf stage used in the AssetBuilder that builds the material node.
@@ -21,7 +14,8 @@ import us.temerity.pipeline.builder.UtilContext;
  *
  * @author jesse
  */
-public class AssetBuilderMaterialStage
+public 
+class AssetBuilderMaterialStage
   extends MayaBuildStage
 {
 
@@ -39,7 +33,8 @@ public class AssetBuilderMaterialStage
    *            The name of the rig node to link to the material node.
    * @throws PipelineException
    */
-  public AssetBuilderMaterialStage
+  public 
+  AssetBuilderMaterialStage
   (
     UtilContext context,
     MayaContext mayaContext,
@@ -50,6 +45,6 @@ public class AssetBuilderMaterialStage
   {
     super("AssetBuilderMaterial", "Stage to build the material scene", context,
           mayaContext, nodeName, true);
-    setupLink(rigName, "mod", MayaBuildStage.getImport());
+    setupLink(rigName, "rig", MayaBuildStage.getReference(), true);
   }
 }

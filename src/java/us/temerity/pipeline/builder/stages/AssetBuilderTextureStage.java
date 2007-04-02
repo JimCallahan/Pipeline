@@ -18,7 +18,9 @@ import us.temerity.pipeline.builder.stages.NoFrameNumStage;
  * 
  * @author Jesse Clemens
  */
-public class AssetBuilderTextureStage extends NoFrameNumStage
+public 
+class AssetBuilderTextureStage 
+  extends NoFrameNumStage
 {
   /**
    * This constructor will initialize the stage and then runs build to generate the
@@ -42,8 +44,13 @@ public class AssetBuilderTextureStage extends NoFrameNumStage
   )
     throws PipelineException
   {
-    super("AssetBuilderTexture", "Stage to build the texture node", context, nodeName, null, new PluginContext("Emacs"), new PluginContext(
-    "ListSources"));
+    super("AssetBuilderTexture", 
+          "Stage to build the texture node", 
+          context, 
+          nodeName, 
+          null, 
+          new PluginContext("Emacs"), 
+          new PluginContext("ListSources"));
     pParentName = parentName;
   }
 

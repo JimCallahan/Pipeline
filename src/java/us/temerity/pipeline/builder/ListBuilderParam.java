@@ -2,7 +2,7 @@ package us.temerity.pipeline.builder;
 
 import java.util.*;
 
-import us.temerity.pipeline.ListParam;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BooleanBuilderParam;
 import us.temerity.pipeline.builder.BuilderParam;
 import us.temerity.pipeline.glue.GlueDecoder;
@@ -90,6 +90,60 @@ public class ListBuilderParam
   )
   {
     return new BooleanBuilderParam(name, desc, value);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   H E L P E R S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static ListBuilderParam
+  createSelectionKeyParam
+  (
+    String name,
+    String desc,
+    Set<String> value
+  )
+    throws PipelineException
+  {
+    ArrayList<SelectionKey> keys = BaseUtil.getSelectionKeys();
+    
+    TreeSet<String> values = new TreeSet<String>();
+    TreeMap<String, String> tooltips = new TreeMap<String, String>();
+    
+    if (value == null)
+      value = new TreeSet<String>();
+    
+    for (SelectionKey key : keys) {
+       values.add(key.getName());
+       tooltips.put(key.getName(), key.getDescription());
+    }
+    return new ListBuilderParam(name, desc, value, values, null, tooltips);
+  }
+  
+  public static ListBuilderParam
+  createLicenseKeyParam
+  (
+    String name,
+    String desc,
+    Set<String> value
+  )
+    throws PipelineException
+  {
+    ArrayList<LicenseKey> keys = BaseUtil.getLicenseKeys();
+    
+    TreeSet<String> values = new TreeSet<String>();
+    TreeMap<String, String> tooltips = new TreeMap<String, String>();
+    
+    if (value == null)
+      value = new TreeSet<String>();
+    
+    for (LicenseKey key : keys) {
+       values.add(key.getName());
+       tooltips.put(key.getName(), key.getDescription());
+    }
+    return new ListBuilderParam(name, desc, value, values, null, tooltips);
   }
   
   

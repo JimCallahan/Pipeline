@@ -56,17 +56,14 @@ class MayaFileStage
   )
     throws PipelineException
   {
-      super
-      (
-	name, 
-	desc, 
-	context, 
-	nodeName, 
-	isAscii ? "ma" : "mb", 
-	editor == null ? new PluginContext("Maya") : editor, 
-	action
-      );
-      pMayaContext = mayaContext;
+    super(name, 
+          desc, 
+          context, 
+          nodeName, 
+          isAscii ? "ma" : "mb", 
+          editor == null ? pDefaultMayaEditor : editor, 
+          action);
+    pMayaContext = mayaContext;
   }
 
   /**
@@ -81,12 +78,12 @@ class MayaFileStage
   setUnits() 
     throws PipelineException
   {
-      if(pMayaContext.getLinearUnit() != null)
-          addSingleParam("LinearUnits", pMayaContext.getLinearUnit());
-      if(pMayaContext.getAngularUnit() != null)
-          addSingleParam("AngularUnits", pMayaContext.getAngularUnit());
-      if(pMayaContext.getTimeUnit() != null)
-          addSingleParam("TimeUnits", pMayaContext.getTimeUnit());
+    if(pMayaContext.getLinearUnit() != null)
+      addSingleParam("LinearUnits", pMayaContext.getLinearUnit());
+    if(pMayaContext.getAngularUnit() != null)
+      addSingleParam("AngularUnits", pMayaContext.getAngularUnit());
+    if(pMayaContext.getTimeUnit() != null)
+      addSingleParam("TimeUnits", pMayaContext.getTimeUnit());
   }
 
   /**
@@ -108,11 +105,11 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-      if(melScript != null) {
-          addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-              null));
-          addSingleParam("InitialMEL", melScript);
-      }
+    if(melScript != null) {
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
+	null));
+      addSingleParam("InitialMEL", melScript);
+    }
   }
 
   /**
@@ -134,11 +131,11 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-      if(melScript != null) {
-          addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-              null));
-          addSingleParam("ModelMEL", melScript);
-      }
+    if(melScript != null) {
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
+	null));
+      addSingleParam("ModelMEL", melScript);
+    }
   }
 
   /**
@@ -160,11 +157,11 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-      if(melScript != null) {
-          addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-              null));
-          addSingleParam("AnimMEL", melScript);
-      }
+    if(melScript != null) {
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
+	null));
+      addSingleParam("AnimMEL", melScript);
+    }
   }
 
   /**
@@ -186,11 +183,23 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-      if(melScript != null) {
-          addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-              null));
-          addSingleParam("FinalMEL", melScript);
-      }
+    if(melScript != null) {
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
+	null));
+      addSingleParam("FinalMEL", melScript);
+    }
+  }
+  
+  
+  public static void
+  setDefaultMayaEditor
+  (
+    PluginContext editor
+  )
+  {
+    if (editor == null)
+      throw new IllegalArgumentException("Cannot set the Default Maya Edtior to null.");
+    pDefaultMayaEditor = editor; 
   }
 
   /**
@@ -198,4 +207,5 @@ class MayaFileStage
    */
   protected MayaContext pMayaContext;
   
+  private static PluginContext pDefaultMayaEditor = new PluginContext("Maya");
 }

@@ -1,4 +1,4 @@
-// $Id: MayaContextBuilderParam.java,v 1.3 2007/03/29 19:27:48 jesse Exp $
+// $Id: MayaContextBuilderParam.java,v 1.4 2007/04/02 21:44:51 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -150,26 +150,6 @@ class MayaContextBuilderParam
     setValue(aAngularUnits, context.getAngularUnit());
     setValue(aLinearUnits, context.getLinearUnit());
     setValue(aTimeUnits, context.getTimeUnit());
-  }
-  
-  /**
-   * Sets the value from a single String.  Used for command line argument parsing.
-   */
-  public void 
-  fromString
-  (
-    String key 
-  )
-  {
-    String buffer[] = key.split(",");
-    if (buffer.length != 3) {
-      throw new IllegalArgumentException
-        ("The string that was passed in is not valid.  To set the MayaContext value, " +
-         "it needs three comma-separated string values in the form angular,linear,time");
-    }
-    setValue(aAngularUnits, buffer[0]);
-    setValue(aLinearUnits, buffer[1]);
-    setValue(aTimeUnits, buffer[2]);
   }
   
   

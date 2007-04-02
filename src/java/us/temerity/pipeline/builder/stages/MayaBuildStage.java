@@ -117,7 +117,8 @@ class MayaBuildStage
   (
     String sourceName, 
     String namespace, 
-    MayaBuildType type
+    MayaBuildType type,
+    boolean useNamespace
   )
     throws PipelineException
   {
@@ -141,10 +142,14 @@ class MayaBuildStage
     addLink(link);
     addSourceParam(sourceName, "PrefixName", namespace);
     addSourceParam(sourceName, "BuildType", sourceParamValue);
+    if (useNamespace)
+      addSourceParam(sourceName, "NameSpace", true);
+    else
+      addSourceParam(sourceName, "NameSpace", false);
   }
 
   /**
-   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType)}
+   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType, boolean)}
    * method.
    * 
    * @return The REFERENCE value of {@link MayaBuildType}.
@@ -156,7 +161,7 @@ class MayaBuildStage
   }
 
   /**
-   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType)}
+   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType, boolean)}
    * method.
    * 
    * @return The IMPORT value of {@link MayaBuildType}.

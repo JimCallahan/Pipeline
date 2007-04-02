@@ -6,26 +6,33 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseUtil;
 import us.temerity.pipeline.builder.UtilContext;
 
+/*------------------------------------------------------------------------------------------*/
+/*   B A S E   S T A G E                                                                    */
+/*------------------------------------------------------------------------------------------*/
+
 /**
  * The class that provides the basis for all the stage builders in Pipeline
  * <P>
  * This class contains all the information and helper methods that will be used by stage
  * builders.
- * @param name
- *        The name of the stage.
- * @param desc
- *        A description of what the stage should do.
- * 
- * @author Jesse Clemens
  */
-public 
+public abstract 
 class BaseStage
   extends BaseUtil
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Constructor that passes in all the information BaseState needs to initialize.
    * 
+   * @param name
+   *        The name of the stage.
+   * @param desc
+   *        A description of what the stage should do.
    * @param context
+   *        The context the stage operates in.
    */
   protected 
   BaseStage
@@ -38,6 +45,12 @@ class BaseStage
   {
     super(name, desc, context);
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  S T A T I C   A C C E S S                                                             */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Clears all added nodes that are currently being kept track of.
@@ -125,6 +138,72 @@ class BaseStage
     if(exception)
       throw new PipelineException(buf.toString());
   }
+  
+  public static void
+  setDefaultSelectionKeys
+  (
+    Set<String> keys
+  )
+  {
+    if (keys == null)
+      sDefaultSelectionKeys = new TreeSet<String>();
+    else
+      sDefaultSelectionKeys = new TreeSet<String>(keys);
+  }
+  
+  public static void
+  setDefaultLicenseKeys
+  (
+    Set<String> keys
+  )
+  {
+    if (keys == null)
+      sDefaultLicenseKeys = new TreeSet<String>();
+    else
+      sDefaultLicenseKeys = new TreeSet<String>(keys);
+  }
+  
+  public static TreeSet<String> 
+  getDefaultSelectionKeys()
+  {
+    return sDefaultSelectionKeys;
+  }
+  
+  public static TreeSet<String> 
+  getDefaultLicenseKeys()
+  {
+    return sDefaultLicenseKeys;
+  }
+  
+  public static void 
+  useDefaultSelectionKeys
+  (
+    boolean value
+  )
+  {
+    sUseDefaultSelectionKeys = value;
+  }
+  
+  public static boolean 
+  useDefaultSelectionKeys()
+  {
+   return sUseDefaultSelectionKeys; 
+  }
+
+  public static void 
+  useDefaultLicenseKeys
+  (
+    boolean value
+  )
+  {
+    sUseDefaultLicenseKeys = value;
+  }
+  
+  public static boolean 
+  useDefaultLicenseKeys()
+  {
+   return sUseDefaultLicenseKeys; 
+  }
 
   /**
    * Adds a node name to the list of nodes created duing the session.
@@ -140,7 +219,7 @@ class BaseStage
    * @throws PipelineException
    * @see #initializeAddedNodes()
    */
-  protected boolean 
+  protected final boolean 
   addNode
   (
     String name
@@ -157,6 +236,10 @@ class BaseStage
     sAddedNodesViewMap.put(name, getView());
     return true;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L   H E L P E R S                                                       */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Method that every stage needs to override to perform its function.
@@ -164,12 +247,9 @@ class BaseStage
    * @return A boolean representing whether the build process completed successfully.
    * @throws PipelineException
    */
-  public boolean 
+  public abstract boolean 
   build() 
-    throws PipelineException
-  {
-    return true;
-  }
+    throws PipelineException;
 
   /**
    * Takes all the {@link FileSeq} stored in the pSecondarySequences variable and adds
@@ -178,7 +258,7 @@ class BaseStage
    * @return <code>true</code> if the method completed correctly.
    * @throws PipelineException
    */
-  protected boolean 
+  protected final boolean 
   addSecondarySequences() 
     throws PipelineException
   {
@@ -195,7 +275,7 @@ class BaseStage
    * @return <code>true</code> if the method completed correctly.
    * @throws PipelineException
    */
-  protected boolean 
+  protected final boolean 
   createLinks() 
     throws PipelineException
   {
@@ -213,14 +293,40 @@ class BaseStage
    * @return <code>true</code> if the method completed correctly.
    * @throws PipelineException
    */
-  protected boolean 
+  protected final boolean 
   setAction() 
     throws PipelineException
   {
     pRegisteredNodeMod.setAction(pAction);
     return true;
   }
+  
+  protected final void
+  setKeys() 
+    throws PipelineException
+  {
+    JobReqs reqs = pRegisteredNodeMod.getJobRequirements();
+    if (pSelectionKeys != null) {
+      reqs.addSelectionKeys(pSelectionKeys);
+    }
+    if (sUseDefaultSelectionKeys) {
+      reqs.addSelectionKeys(sDefaultSelectionKeys);
+    }
+    if (pLicenseKeys != null) {
+      reqs.addLicenseKeys(pSelectionKeys);
+    }
+    if (sUseDefaultLicenseKeys) {
+      reqs.addLicenseKeys(sDefaultLicenseKeys);
+    }
+    pRegisteredNodeMod.setJobRequirements(reqs);
+  }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  A C C E S S                                                                           */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Getter for the name of the created node.
    * 
@@ -245,13 +351,18 @@ class BaseStage
     return pRegisteredNodeMod;
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  N O D E    C O N S T U C T I O N                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Sets the pEditor variable.
    * <p>
    * This is the {@link BaseEditor} which the {@link #build()} method should assign to the
    * created node.
    * 
-   * @param ed
    */
   public void 
   setEditor
@@ -268,7 +379,6 @@ class BaseStage
    * This is the {@link BaseAction} which the {@link #build()} method should assign to the
    * created node.
    * 
-   * @param ed
    */
   public void 
   setAction
@@ -343,12 +453,13 @@ class BaseStage
    *            The value the named source parameter should have.
    * @throws PipelineException
    */
+  @SuppressWarnings("unchecked")
   public void 
   addSourceParam
   (
     String source, 
     String name, 
-    String value
+    Comparable value
   )
   throws PipelineException
   {
@@ -379,13 +490,14 @@ class BaseStage
    *            The value the named secondary source parameter should have.
    * @throws PipelineException
    */
+  @SuppressWarnings("unchecked")
   public void 
   addSecondarySourceParam
   (
     String source, 
     FilePattern fpat, 
     String name,
-    String value
+    Comparable value
   ) 
     throws PipelineException
   {
@@ -420,6 +532,49 @@ class BaseStage
     pSecondarySequences.add(seq);
   }
 
+  public void addSelectionKeys
+  (
+    TreeSet<String> selectionKeys
+  )
+  {
+    if (pSelectionKeys == null)
+      pSelectionKeys = new TreeSet<String>();
+    pSelectionKeys.addAll(selectionKeys);
+  }
+  
+  public void 
+  setSelectionKeys
+  (
+    TreeSet<String> selectionKeys
+  )
+  {
+    pSelectionKeys = selectionKeys;
+  }
+
+  public void addLicenseKeys
+  (
+    TreeSet<String> licenseKeys
+  )
+  {
+    if (pLicenseKeys == null)
+      pLicenseKeys = new TreeSet<String>();
+    pLicenseKeys.addAll(licenseKeys);
+  }
+
+  public void setLicenseKeys
+  (
+    TreeSet<String> licenseKeys
+  )
+  {
+    pLicenseKeys = licenseKeys;
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * The name of the node that is to be registered by the stage.
    */
@@ -458,7 +613,23 @@ class BaseStage
    * execution.
    */
   protected NodeMod pRegisteredNodeMod = null;
+  
+  /**
+   * The list of Selection Keys to assign to the built node.
+   */
+  protected TreeSet<String> pSelectionKeys;
+  
+  /**
+   * The list of Selection Keys to assign to the built node.
+   */
+  protected TreeSet<String> pLicenseKeys;
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * A list containing all the nodes that have been added by stages. All stages are
    * responsible for ensuring that all created nodes end up in this data structure.
@@ -475,4 +646,12 @@ class BaseStage
    */
   private static TreeMap<String, String> sAddedNodesViewMap;
   
+  private static TreeSet<String> sDefaultSelectionKeys = new TreeSet<String>();
+  
+  private static TreeSet<String> sDefaultLicenseKeys = new TreeSet<String>();
+  
+  private static boolean sUseDefaultSelectionKeys;
+  
+  private static boolean sUseDefaultLicenseKeys;
+
 }

@@ -73,6 +73,18 @@ BuildsAssetNames
    */
   public String 
   getModelNodeName();
+  
+  /**
+   * @return the headModelNodeName
+   */
+  public String 
+  getHeadModelNodeName();
+  
+  /**
+   * @return the headModelNodeName
+   */
+  public String 
+  getBlendShapeModelNodeName();
 
   /**
    * @return the project
@@ -85,7 +97,19 @@ BuildsAssetNames
    */
   public String 
   getRigNodeName();
-
+  
+  /**
+   * @return the rigInfoNodeName
+   */
+  public String 
+  getRigInfoNodeName();
+  
+  /**
+   * @return the skeletonNodeName
+   */
+  public String 
+  getSkeletonNodeName();
+  
   /**
    * @return the shaderExportNodeName
    */
@@ -139,4 +163,10 @@ BuildsAssetNames
    */
   public String
   getPlaceholderScriptName();
+  
+  /**
+   * @return the auto-rigging mel script
+   */
+  public String 
+  getAutoRigScriptName();
 }

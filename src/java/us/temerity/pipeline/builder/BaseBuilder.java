@@ -5,6 +5,7 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
+import us.temerity.pipeline.builder.stages.BaseStage;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   B U I L D E R                                                                */
@@ -55,12 +56,9 @@ class BaseBuilder
         addParam(param);
       }
     } 
-    else
-    {
+    else {
       pReleaseOnError = false;
-      //TODO add a log message here about not having a global context.
     }
-    pUsingGUI = false;
     pCurrentPass = 1;
   }
 
@@ -141,13 +139,12 @@ class BaseBuilder
     addSubBuilder(instanceName, subBuilder, new TreeMap<ParamMapping, ParamMapping>(), offset);
   }
 
-  // TODO. lose these methods?
-  public TreeMap<String, BaseBuilder> 
+  public TreeMap<String, BaseBuilder>
   getSubBuilders()
   {
     return pSubBuilders;
   }
-
+  
   public HasBuilderParams 
   getSubBuilder
   (
@@ -348,7 +345,7 @@ class BaseBuilder
   run()
     throws PipelineException
   {
-    if (pUsingGUI == true)
+    if (sUsingGUI == true)
       ;
     else
       runCommandLine();
@@ -358,10 +355,24 @@ class BaseBuilder
   runCommandLine()
     throws PipelineException
   {
-    executeFirstLoop();
-    executeSecondLoop();
-    waitForJobs(queueJobs());
-    boolean finish = didTheNodesFinishCorrectly(sNodesToQueue);
+    boolean finish = false;
+    try {
+      executeFirstLoop();
+      executeSecondLoop();
+      waitForJobs(queueJobs());
+      finish = didTheNodesFinishCorrectly(sNodesToQueue);
+    }
+    catch (Exception ex) {
+      String logMessage = "An Exception was thrown during the course of execution.\n";
+      if (pReleaseOnError) {
+	logMessage += "All the nodes that were registered will now be released.\n";
+	BaseStage.cleanUpAddedNodes();
+      }
+      logMessage += ex.getMessage();
+      ex.printStackTrace();
+      sLog.log(Kind.Ops, Level.Severe, logMessage);
+      return;
+    }
     if (finish)
       executeCheckIn();
     else
@@ -518,13 +529,14 @@ class BaseBuilder
      TreeSet<String> nodes
   )
   {
+    sLog.log(Kind.Ops, Level.Fine, "Queuing the following nodes " + nodes );
     LinkedList<QueueJobGroup> toReturn = new LinkedList<QueueJobGroup>();
     for(String nodeName : nodes) {
       try {
 	toReturn.add(sClient.submitJobs(getAuthor(), getView(), nodeName, null));
       }
       catch(PipelineException ex) {
-	sLog.log(Kind.Ops, Level.Finer, 
+	sLog.log(Kind.Ops, Level.Warning, 
 	  "No job was generated for node ("+nodeName+")\n" + ex.getMessage()); 
       }
     }
@@ -545,12 +557,19 @@ class BaseBuilder
       stuff.add(job.getGroupID());
       TreeMap<Long, JobStatus> statuses = sQueue.getJobStatus(stuff);
       for(JobStatus status : statuses.values()) {
+	String nodeName = status.getNodeID().getName();
+	sLog.log(Kind.Ops, Level.Finest, 
+	  "Checking the status of Job (" + status.getJobID() + ") " +
+	  "for node (" + nodeName + ").");
+	
 	JobState state = status.getState();
 	if(state.equals(JobState.Failed) || state.equals(JobState.Aborted)) {
+	  sLog.log(Kind.Ops, Level.Finest, "\tThe Job did not completely successfully"); 
 	  error = true;
 	  break;
 	}
 	if(!state.equals(JobState.Finished)) {
+	  sLog.log(Kind.Ops, Level.Finest, "\tThe Job is still running."); 
 	  done = false;
 	  break;
 	}
@@ -571,10 +590,12 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
+    sLog.log(Kind.Ops, Level.Fine, "Waiting for the jobs to finish");
     do {
       JobsState state = areJobsFinished(jobs);
       if(state.equals(JobsState.InProgress)) {
         try {
+          sLog.log(Kind.Ops, Level.Finer, "Sleeping for 5 seconds before checking jobs again.");
           Thread.sleep(5000);
         }
 	catch(InterruptedException e) {
@@ -719,7 +740,7 @@ class BaseBuilder
     boolean usingGUI
   )
   {
-    pUsingGUI = usingGUI;
+    sUsingGUI = usingGUI;
   }
   
   public static void
@@ -730,10 +751,10 @@ class BaseBuilder
     String value
   )
   {
-    sLog.log(Kind.Arg, Level.Finer, 
+    sLog.log(Kind.Arg, Level.Finest, 
       "Reading command line arg for Builder (" + builder + ").\n" +
       "Keys are (" + keys + ").\n" +
-      "Value is (" + value + ").\n");
+      "Value is (" + value + ").");
     if (builder == null)
       throw new IllegalArgumentException
         ("Illegal attempt in setting a Parameter value before specifying the Builder " +
@@ -772,11 +793,6 @@ class BaseBuilder
   private static TreeSet<String> sNodesToQueue = new TreeSet<String>();
 
   /**
-   * A static connection to the queue manager used for checking job statuses
-   */
-  protected static QueueMgrClient sQueue = new QueueMgrClient();
-
-  /**
    * Instance of the log manager for builder logging purposes.
    */
   protected static LogMgr sLog = LogMgr.getInstance();
@@ -792,6 +808,12 @@ class BaseBuilder
    */
   private static MultiMap<String, String> sCommandLineParams = 
     new MultiMap<String, String>();
+  
+  /**
+   * Is this Builder in GUI mode.
+   */
+  private static boolean sUsingGUI = false;
+
   
 
   
@@ -827,11 +849,6 @@ class BaseBuilder
   
   private TreeMap<String, Integer> pSubBuilderOffset;
   
-  /**
-   * Is this Builder in GUI mode.
-   */
-  private boolean pUsingGUI;
-
   private ArrayList<FirstLoop> pFirstLoopPasses;
   private ArrayList<SecondLoop> pSecondLoopPasses;
 

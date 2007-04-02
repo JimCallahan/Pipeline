@@ -386,6 +386,55 @@ class HasBuilderParams
     return hasSimpleParam(mapping.getParamName());
   }
   
+  public boolean
+  canSetSimpleParamFromString
+  (
+    String name
+  )
+  {
+    BuilderParam param = getParam(name);
+    if ( param == null )
+      return false;
+    if (param instanceof SimpleParamFromString)
+      return true;
+    return false;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  canSetSimpleParamFromString
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    BuilderParam param = getParam(name);
+    
+    if ( param == null )
+      return false;
+    
+    if (keys == null || keys.isEmpty())
+      return hasSimpleParam(name);
+
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    
+    return ((ComplexParamAccess<BuilderParam>) param).canSetSimpleParamFromString(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  canSetSimpleParamFromString
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return canSetSimpleParamFromString(mapping.getParamName(), mapping.getKeys());
+    return canSetSimpleParamFromString(mapping.getParamName());
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   P A R A M E T E R    L A Y O U T                                                     */
@@ -585,6 +634,7 @@ class HasBuilderParams
   
   protected final void
   assignCommandLineParams()
+    throws PipelineException
   {
     String prefixName = getNamedPrefix();
     if(prefixName == null)
@@ -616,9 +666,16 @@ class HasBuilderParams
 	  ParamMapping mapping = new ParamMapping(paramName, keys);
 	  if (!mappedParams.contains(mapping)) {
 	    String value = entry.getValue();
-	    if (hasSimpleParam(mapping)) {
-	      SimpleParamAccess param = (SimpleParamAccess) getParam(mapping);
-	      param.fromString(value);
+	    if (canSetSimpleParamFromString(mapping)) {
+	      SimpleParamFromString param = (SimpleParamFromString) getParam(mapping);
+	      try {
+		param.fromString(value);
+	      } 
+	      catch (IllegalArgumentException ex) {
+		throw new PipelineException
+		  ("There was an error setting the value of a Parameter from a " +
+		   "command line argument.\n" + ex.getMessage());
+	      }
 	      LogMgr.getInstance().log(Kind.Arg, Level.Finer, 
 		"Setting command line parameter (" + mapping + ") from builder " +
 		"(" + prefixName + ") with the value (" + value + ").");
@@ -1046,7 +1103,7 @@ class HasBuilderParams
   /** 
    * Get the value of the single valued String parameter with the given name.
    * 
-   * @param name  
+   * @param mapping  
    *   The name of the parameter. 
    *
    * @return 

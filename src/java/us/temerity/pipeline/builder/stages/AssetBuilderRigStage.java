@@ -12,7 +12,7 @@ import us.temerity.pipeline.builder.UtilContext;
  * <p>
  * This node is the rig stage of the asset process. It has one source, the model node. It
  * uses the MayaBuild Action to import the model node. This Action will need to be disabled
- * before the node is used for shading work. Once it is disabled, the model file will have
+ * before the node is used for rigging work. Once it is disabled, the model file will have
  * to be imported by hand into this scene, every time it is changed.
  * 
  * @author jesse
@@ -22,8 +22,7 @@ class AssetBuilderRigStage
   extends MayaBuildStage
 {
   /**
-   * This constructor will initialize the stage and then run build to generate the
-   * rig node.
+   * This constructor will initialize the stage.
    * 
    * @param context
    *            The {@link UtilContext} that this stage acts in.
@@ -46,6 +45,6 @@ class AssetBuilderRigStage
     throws PipelineException
   {
     super("AssetBuilderRig", "Stage to build the rig scene", context, mayaContext, nodeName, true);
-    setupLink(modelName, "mod", MayaBuildStage.getImport());
+    setupLink(modelName, "mod", MayaBuildStage.getImport(), false);
   }
 }

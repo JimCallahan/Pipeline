@@ -3,8 +3,7 @@
  */
 package us.temerity.pipeline.builder.stages;
 
-import us.temerity.pipeline.NodeMod;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
 
@@ -13,7 +12,7 @@ import us.temerity.pipeline.builder.UtilContext;
  * 
  * @author Jesse Clemens
  */
-public 
+public abstract
 class NoFrameNumStage 
   extends BaseStage
 {
@@ -94,6 +93,7 @@ class NoFrameNumStage
         createLinks();
       if(pAction != null)
         setAction();
+      setKeys();
       sClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
       pRegisteredNodeMod = sClient.getWorkingVersion(getAuthor(), getView(),
           pRegisteredNodeName);

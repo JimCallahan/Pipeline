@@ -52,7 +52,7 @@ class AssetBuilderFinalStage
   {
     super("AssetBuilderFinal", "Stage to build the final character", context, 
           mayaContext, nodeName, true);
-    setupLink(materialName, "mat", MayaBuildStage.getImport());
+    setupLink(materialName, "mat", MayaBuildStage.getImport(), false);
     setModelMel(finalizeMel);
   }
 }

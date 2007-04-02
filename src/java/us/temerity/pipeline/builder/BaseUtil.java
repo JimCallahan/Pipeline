@@ -856,6 +856,20 @@ class BaseUtil
     return sClient.getDefaultToolsetName();
   }
   
+  public static ArrayList<SelectionKey>
+  getSelectionKeys()
+    throws PipelineException
+  {
+    return sQueue.getSelectionKeys();
+  }
+  
+  public static ArrayList<LicenseKey>
+  getLicenseKeys()
+    throws PipelineException
+  {
+    return sQueue.getLicenseKeys();
+  }
+  
   /**
    * @return the name
    */
@@ -1006,6 +1020,12 @@ class BaseUtil
    * Pipeline operations in this stage.
    */
   protected static final MasterMgrClient sClient = new MasterMgrClient();
+  
+  /**
+   * The static instance of the Queue Manager that is being used to perform all the
+   * Pipeline operations in this stage.
+   */
+  protected static final QueueMgrClient sQueue = new QueueMgrClient();
 
   /**
    * Static instance of the Plugin Manager which is used to perform all plugin related stage

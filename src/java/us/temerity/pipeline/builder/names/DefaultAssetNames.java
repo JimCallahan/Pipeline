@@ -42,17 +42,20 @@ public class DefaultAssetNames
 
   public void 
   generateNames() 
-    throws PipelineException
   {
-    pProject = (String) getParamValue(aProjectName);
-    pAssetName = (String) getParamValue(aAssetName);
-    pAssetType = (String) getParamValue(aAssetType);
+    pProject = getStringParamValue(new ParamMapping(aProjectName));
+    pAssetName =  getStringParamValue(new ParamMapping(aAssetName));
+    pAssetType =  getStringParamValue(new ParamMapping(aAssetType));
 
     String assetStart = "/projects/" + pProject + "/assets/" + pAssetType + "/" + pAssetName;
     String melStart = "/projects/" + pProject + "/assets/tools/mel/";
 
     pModelNodeName = assetStart + "/model/" + pAssetName + "_mod";
+    pHeadModelNodeName = assetStart + "/model/" + pAssetName + "_mod_head";
+    pBlendShapeModelNodeName = assetStart + "/model/" + pAssetName + "_mod_blends";
     pRigNodeName = assetStart + "/rig/" + pAssetName + "_rig";
+    pRigInfoNodeName = assetStart + "/rig/" + pAssetName + "_info";
+    pSkeletonNodeName = assetStart + "/rig/" + pAssetName + "_skel";
     pMaterialNodeName = assetStart + "/material/" + pAssetName + "_mat";
     pMaterialExportNodeName = assetStart + "/material/" + pAssetName + "_matExp";
     pFinalNodeName = assetStart + "/" + pAssetName;
@@ -72,6 +75,7 @@ public class DefaultAssetNames
     pFinalizeMELNodeName = melStart + "finalize-" + pAssetType;
     pLowRezFinalizeMELNodeName = melStart + "finalize-" + pAssetType + "_lr";
     pMRInitMELNodeName = melStart + "mr-init";
+    pAutoRigMELNodeName = melStart + "auto-rig";
     pPlaceholderMELNodeName = null;
   }
 
@@ -164,6 +168,24 @@ public class DefaultAssetNames
   {
     return pModelNodeName;
   }
+  
+  /**
+   * @return the headModelNodeName
+   */
+  public String 
+  getHeadModelNodeName()
+  {
+    return pHeadModelNodeName;
+  }
+  
+  /**
+   * @return the headModelNodeName
+   */
+  public String 
+  getBlendShapeModelNodeName()
+  {
+    return pBlendShapeModelNodeName; 
+  }
 
   /**
    * @return the pProject
@@ -181,6 +203,24 @@ public class DefaultAssetNames
   getRigNodeName()
   {
     return pRigNodeName;
+  }
+  
+  /**
+   * @return the rigInfoNodeName
+   */
+  public String 
+  getRigInfoNodeName()
+  {
+    return pRigInfoNodeName;
+  }
+  
+  /**
+   * @return the skeletonNodeName
+   */
+  public String 
+  getSkeletonNodeName()
+  {
+    return pSkeletonNodeName;
   }
 
   /**
@@ -251,6 +291,14 @@ public class DefaultAssetNames
   {
     return pMRInitMELNodeName;
   }
+  
+  /**
+   * @return the auto rig script name
+   */
+  public String getAutoRigScriptName()
+  {
+    return pAutoRigMELNodeName;
+  }
 
   /**
    * @return the placeholder script name
@@ -268,8 +316,16 @@ public class DefaultAssetNames
 
   // Hi Rez Models
   private String pModelNodeName;
+  
+  private String pHeadModelNodeName;
+  
+  private String pBlendShapeModelNodeName;
 
   private String pRigNodeName;
+  
+  private String pRigInfoNodeName;
+  
+  private String pSkeletonNodeName;
 
   private String pMaterialNodeName;
 
@@ -302,6 +358,7 @@ public class DefaultAssetNames
   private String pLowRezFinalizeMELNodeName;
   private String pMRInitMELNodeName;
   private String pPlaceholderMELNodeName;
+  private String pAutoRigMELNodeName;
 
   public final static String aProjectName = "ProjectName";
 

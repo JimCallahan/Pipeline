@@ -1,4 +1,4 @@
-// $Id: UtilContextBuilderParam.java,v 1.3 2007/03/29 19:27:48 jesse Exp $
+// $Id: UtilContextBuilderParam.java,v 1.4 2007/04/02 21:44:51 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -210,27 +210,7 @@ class UtilContextBuilderParam
     setValue(aToolset, context.getToolset());
   }
   
-  /**
-   * Sets the value from a single String.  Used for command line argument parsing.
-   */
-  public void 
-  fromString
-  (
-    String key 
-  )
-  {
-    String buffer[] = key.split(",");
-    if (buffer.length != 3) {
-      throw new IllegalArgumentException
-        ("The string that was passed in is not valid.  To set the UtilContext value, " +
-         "it needs three comma-separated string values in the form author,view,toolset");
-    }
-    setValue(aAuthor, buffer[0]);
-    setValue(aView, buffer[1]);
-    setValue(aToolset, buffer[2]);
-  }
 
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*   U P D A T E                                                                          */

@@ -57,6 +57,15 @@ class DefaultBuilderAnswers
     }
     return toReturn;
   }
+  
+  public void
+  setContext
+  (
+    UtilContext context
+  )
+  {
+    pContext = context;
+  }
 
   private static final String sGlobalMelPath = "/global/assets/tools/mel";
   private static final String sProjectMelEndPath = "assets/tools/mel";

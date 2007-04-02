@@ -98,6 +98,14 @@ class AssetBuilder
 	 projects); 
       addParam(param);
     }
+    {
+      BuilderParam param = 
+	ListBuilderParam.createSelectionKeyParam
+	(aSelectionKeys, 
+	 "Which Selection Keys Should be assigned to the constructred nodes", 
+	 null);
+      addParam(param);
+    }
     configNamer(assetNames);
     pAssetNames = (BuildsAssetNames) assetNames;
     addFirstLoopPass(new InformationLoop());
@@ -140,6 +148,7 @@ class AssetBuilder
   }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
@@ -169,7 +178,6 @@ class AssetBuilder
 
   protected boolean pCheckInWhenDone;
 
-
   // private variables for tracking things.
 
   protected ArrayList<AssetBuilderModelStage> pModelStages = new ArrayList<AssetBuilderModelStage>();
@@ -186,7 +194,7 @@ class AssetBuilder
   public final static String aBuildAdvancedShadingNetwork = "BuildAdvancedShadingNetwork";
   public final static String aCheckinWhenDone = "CheckinWhenDone";
   public final static String aProjectName = "ProjectName";
-  
+  public final static String aSelectionKeys = "SelectionKeys";
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -203,6 +211,7 @@ class AssetBuilder
       super("Information Pass", "Information pass for the AssetBuilder");
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void 
     validatePhase()
@@ -210,6 +219,7 @@ class AssetBuilder
     {
       sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
+      pBuilderInfo.setContext(pContext);
       pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
       pBuildAdvancedShadingNetwork = 
@@ -223,6 +233,11 @@ class AssetBuilder
       pPlaceHolderMEL = pAssetNames.getPlaceholderScriptName();
 
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
+      
+      TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
+      BaseStage.setDefaultSelectionKeys(keys);
+      BaseStage.useDefaultSelectionKeys(true);
+      
       sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
     private static final long serialVersionUID = -1539635589668134156L;
@@ -295,7 +310,8 @@ class AssetBuilder
         addToDisableList(matName);
       }
       if(!nodeExists(finalName)) {
-        new AssetBuilderFinalStage(pContext, pMayaContext, finalName, matName, pFinalizeMEL).build();
+        new AssetBuilderFinalStage
+          (pContext, pMayaContext, finalName, matName, pFinalizeMEL).build();
         addToQueueList(finalName);
       }
     }
@@ -323,6 +339,7 @@ class AssetBuilder
       if(!nodeExists(pAssetNames.getShaderNodeName())) {
         new AssetBuilderShaderStage(pContext, pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
+        addToDisableList(pAssetNames.getShaderNodeName());
       }
       if(!nodeExists(pAssetNames.getShaderExportNodeName())) {
         new AssetBuilderShaderExportStage(pContext, pMayaContext, pAssetNames
@@ -349,10 +366,7 @@ class AssetBuilder
     preBuildPhase()
     {
       sLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the prebuild phase in the Finalize Pass");
-      TreeSet<String> toReturn = new TreeSet<String>();
-      for (AssetBuilderModelStage stage : pModelStages)
-	toReturn.add(stage.getNodeName());
-      return toReturn;
+      return getDisableList();
     }
 
     @Override
@@ -362,7 +376,7 @@ class AssetBuilder
     {
       sLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
-	stage.finishModel();
+	stage.finalizeStage();
       disableActions();
     }
     private static final long serialVersionUID = 3776473936564046625L;

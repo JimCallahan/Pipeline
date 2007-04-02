@@ -62,7 +62,8 @@ class AssetBuilderModelStage
    * 
    * @throws PipelineException
    */
-  public void finishModel() 
+  public void 
+  finalizeStage() 
     throws PipelineException
   {
     NodeMod mod = sClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);

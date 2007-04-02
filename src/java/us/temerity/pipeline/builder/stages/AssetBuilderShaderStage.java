@@ -56,7 +56,7 @@ class AssetBuilderShaderStage
     throws PipelineException
   {
     super("AssetBuilderShader", "Stage to build the shader scene", context, mayaContext, nodeName, true);
-    setupLink(finalName, "final", MayaBuildStage.getReference());
+    setupLink(finalName, "final", MayaBuildStage.getReference(), true);
     addLink(new LinkMod(shaderIncludeName, LinkPolicy.Reference, LinkRelationship.All,
       null));
     setModelMel(mrInitMel);
