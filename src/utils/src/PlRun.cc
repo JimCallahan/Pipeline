@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.10 2007/04/02 10:46:12 jim Exp $
+// $Id: PlRun.cc,v 1.11 2007/04/02 22:46:31 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -217,59 +217,59 @@ main
   assert(envp2);
 
   /* debugging */ 
-  FB::stageBegin("Original");
-  {
-    FB::stageBegin("Arguments");
-    {
-      char** p = argv;
-      while((*p) != NULL) {
-	FB::stageMsg(*p);
-	p++;
-      }
-    }
-    FB::stageEnd();
+//   FB::stageBegin("Original");
+//   {
+//     FB::stageBegin("Arguments");
+//     {
+//       char** p = argv;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
 
-    FB::stageBegin("Environment");
-    {
-      char** p = envp;
-      while((*p) != NULL) {
-	FB::stageMsg(*p);
-	p++;
-      }
-    }
-    FB::stageEnd();
-  }
-  FB::stageEnd();
+//     FB::stageBegin("Environment");
+//     {
+//       char** p = envp;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
+//   }
+//   FB::stageEnd();
 
-  FB::stageBegin("Modified"); 
-  {
-    FB::stageBegin("Command");
-    {
-      FB::stageMsg(cmd);
-    }
-    FB::stageEnd();
+//   FB::stageBegin("Modified"); 
+//   {
+//     FB::stageBegin("Command");
+//     {
+//       FB::stageMsg(cmd);
+//     }
+//     FB::stageEnd();
 
-    FB::stageBegin("Arguments");
-    {
-      char** p = argv2;
-      while((*p) != NULL) {
-	FB::stageMsg(*p);
-	p++;
-      }
-    }
-    FB::stageEnd();
+//     FB::stageBegin("Arguments");
+//     {
+//       char** p = argv2;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
 
-    FB::stageBegin("Environment");
-    {
-      char** p = envp2;
-      while((*p) != NULL) {
-	FB::stageMsg(*p);
-	p++;
-      }
-    }
-    FB::stageEnd();
-  }
-  FB::stageEnd();
+//     FB::stageBegin("Environment");
+//     {
+//       char** p = envp2;
+//       while((*p) != NULL) {
+// 	FB::stageMsg(*p);
+// 	p++;
+//       }
+//     }
+//     FB::stageEnd();
+//   }
+//   FB::stageEnd();
     
   /* execute the command */ 
   if(execve(cmd, argv2, envp2) == -1) {
