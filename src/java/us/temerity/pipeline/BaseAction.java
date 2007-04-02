@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.42 2007/03/28 19:02:35 jim Exp $
+// $Id: BaseAction.java,v 1.43 2007/04/02 21:34:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2172,7 +2172,7 @@ class BaseAction
     if(!suffixes.isEmpty() && ((suffix == null) || !suffixes.contains(suffix))) {
       throw new PipelineException
         ("The " + getName() + " Action requires that the primary target file sequence " + 
-         "must be " + desc + "!");
+         "(" + fseq + ") must be " + desc + "!");
     }
 
     ArrayList<Path> tpaths = new ArrayList<Path>();
@@ -2267,7 +2267,7 @@ class BaseAction
        (!suffixes.isEmpty() && ((suffix == null) || !suffixes.contains(suffix)))) {
       throw new PipelineException
         ("The " + getName() + " Action requires that the primary target file sequence " + 
-         "must be a single " + desc + "!");
+         "(" + fseq + ") must be a single " + desc + "!");
     }
 
     return new Path(agenda.getTargetPath(), fseq.getPath(0));
@@ -2667,8 +2667,66 @@ class BaseAction
   )  
     throws PipelineException
   {
+    Path dir = null; 
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      dir = agenda.getTargetPath();
+      break;
+
+    case Windows:
+      dir = PackageInfo.sTempPath;
+    }
+
+    return createSubProcess(agenda, program, args, env, dir.toFile(), outFile, errFile);
+  }
+  
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method in a mostly OS-independent manner.<P> 
+   * 
+   * The caller is reponsible for handling any differences in program name and arguments 
+   * between the different operating system types, but this method will handle specifying
+   * the process owner, title, environment.  The default Toolset generated environment can 
+   * be overridden if specified using a non-null <CODE>env</CODE> parameter.<P> 
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param program  
+   *   The name of program to execute as an OS level subprocess.  
+   * 
+   * @param args  
+   *   The command line arguments of the program to execute or 
+   *   <CODE>null</CODE> for an empty argument list.
+   * 
+   * @param env  
+   *   The environment under which the OS level process is run or 
+   *   <CODE>null</CODE> to use the environment defined by the ActionAgenda.
+   * 
+   * @param dir 
+   *   The working directory where the subprocess is run.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public final SubProcessHeavy
+  createSubProcess
+  (
+   ActionAgenda agenda,
+   String program, 
+   ArrayList<String> args,
+   Map<String,String> env,  
+   File dir, 
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
     try {
-      SubProcessHeavy proc = null;
       String owner = agenda.getSubProcessOwner();
       String title = getName() + "-" + agenda.getJobID(); 
 
@@ -2680,21 +2738,7 @@ class BaseAction
       if(nenv == null) 
         nenv = agenda.getEnvironment();
 
-      switch(PackageInfo.sOsType) {
-      case Unix:
-      case MacOS:
-        proc = new SubProcessHeavy(owner, title, program, nargs, 
-                                   nenv, agenda.getTargetPath().toFile(), 
-                                   outFile, errFile);
-        break;
-
-      case Windows:
-        proc = new SubProcessHeavy(owner, title, program, nargs, 
-                                   nenv, PackageInfo.sTempPath.toFile(), 
-                                   outFile, errFile);
-      } 
-      
-      return proc;
+      return new SubProcessHeavy(owner, title, program, nargs, nenv, dir, outFile, errFile);
     }
     catch(Exception ex) {
       throw new PipelineException
@@ -2703,7 +2747,7 @@ class BaseAction
     }
   }
   
-  
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -3022,6 +3066,143 @@ class BaseAction
 	("Unable to generate the SubProcess to perform this Action!\n" +
 	 ex.getMessage());
     }
+  }
+    
+  /** 
+   * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
+   * by the {@link #prep prep} method which uses Python to execute a series of related 
+   * subprocesses. <P> 
+   * 
+   * This method is useful when the Action will be running subprocesses of the form:<P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   program [args] source-file1 target-file1
+   *   program [args] source-file2 target-file2
+   *   ...
+   *   program [args] source-fileN target-fileN
+   * </DIV> <P>
+   * 
+   * Where the program and optional arguments are identical and the source and target 
+   * file sequences have a one-to-one relationship.  If only one source/target file exists
+   * in the agenda for the job, the program will be run directly.  Otherwise, a temporary
+   * Python script will be created which runs the program for each source/target file pair
+   * with the supplied arguments. <P> 
+   * 
+   * The caller is reponsible for handling any differences in program name between operating
+   * systems, but this method will handle specifying the process owner, title, environment.  
+   * The default Toolset generated environment can be overridden if specified using a 
+   * non-null <CODE>env</CODE> parameter.  This method will also handle specifying the Python 
+   * binary in an Toolset controlled and OS specific manner (see {@link #getPythonProgram 
+   * getPythonProgram}).  
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @param program  
+   *   The name of program to execute for each source/target file pair. 
+   * 
+   * @param args  
+   *   The common command line arguments used by each invocation of the given program.
+   * 
+   * @param sourcePath
+   *   The abstract filesystem path to the directory containing the source file sequence.
+   * 
+   * @param sourceSeq
+   *   The source file sequence.
+   * 
+   * @param targetSeq
+   *   The target file sequence.
+   * 
+   * @param env  
+   *   The environment under which the OS level process is run or 
+   *   <CODE>null</CODE> to use the environment defined by the ActionAgenda.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   */
+  public final SubProcessHeavy
+  createPythonSubProcess
+  (
+   ActionAgenda agenda,
+   String program, 
+   ArrayList<String> args,
+   Path sourcePath, 
+   FileSeq sourceSeq, 
+   FileSeq targetSeq, 
+   Map<String,String> env,  
+   File outFile, 
+   File errFile    
+  )  
+    throws PipelineException
+  {
+    /* run directly for single frame cases */ 
+    if(targetSeq.numFrames() == 1) {
+      Path spath = new Path(sourcePath, sourceSeq.getPath(0));
+      args.add(spath.toOsString());
+
+      Path tpath = new Path(agenda.getTargetPath(), targetSeq.getPath(0));
+      args.add(tpath.toOsString());
+      
+      return createSubProcess(agenda, program, args, outFile, errFile);
+    }
+
+    /* for multiple frames, build a Python script */ 
+    else { 
+      File script = createTemp(agenda, "py"); 
+      try {
+	FileWriter out = new FileWriter(script);
+
+        /* include the "launch" method definition */ 
+        out.write(getPythonLaunchHeader()); 
+        
+        /* construct to common command-line arguments */  
+        String common = null;
+        {
+          StringBuilder buf = new StringBuilder();
+
+          buf.append("launch('" + program + "', [");
+          
+          boolean first = true;
+          for(String arg : args) {
+            if(!first) 
+              buf.append(", ");
+            first = false;
+            buf.append("'" + arg + "'");
+          }
+       
+          common = buf.toString();
+        }
+
+        /* convert the frames */ 
+        {
+          ArrayList<Path> sourcePaths = sourceSeq.getPaths();
+          ArrayList<Path> targetPaths = targetSeq.getPaths();
+          int wk;
+          for(wk=0; wk<sourcePaths.size(); wk++) {
+            Path spath = new Path(sourcePath, sourcePaths.get(wk));
+            Path tpath = new Path(agenda.getTargetPath(), targetPaths.get(wk));
+            out.write(common + ", '" + spath + "', '" + tpath + "'])\n");
+          }
+        }
+        
+        out.write("\n" + 
+                  "print 'ALL DONE.'\n");
+        
+        out.close();
+      } 
+      catch (IOException ex) {
+        throw new PipelineException
+          ("Unable to write the temporary Python script file (" + script + ") for Job " + 
+           "(" + agenda.getJobID() + ")!\n" +
+           ex.getMessage());
+      }
+
+      /* create the process to run the action */ 
+      return createPythonSubProcess(agenda, script, null, env, outFile, errFile); 
+    }   
   }
   
 
