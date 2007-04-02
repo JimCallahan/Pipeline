@@ -1,4 +1,4 @@
-// $Id: MRayTextureAction.java,v 1.5 2007/04/01 21:18:24 jim Exp $
+// $Id: MRayTextureAction.java,v 1.6 2007/04/02 21:20:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -199,6 +199,7 @@ class MRayTextureAction
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -278,6 +279,7 @@ class MRayTextureAction
       switch(getSingleEnumParamIndex(aFormat)) {
       case 0:
         args.add("-p");
+        break;
 
       case 1:
         break;
@@ -348,71 +350,9 @@ class MRayTextureAction
     if(PackageInfo.sOsType == OsType.Windows) 
       program = "imf_copy.exe";
     
-    /* run directly for single frame cases */ 
-    if(targetSeq.numFrames() == 1) {
-      Path spath = new Path(sourcePath, sourceSeq.getPath(0));
-      args.add(spath.toOsString());
-
-      Path tpath = new Path(agenda.getTargetPath(), targetSeq.getPath(0));
-      args.add(tpath.toOsString());
-      
-      return createSubProcess(agenda, program, args, outFile, errFile);
-    }
-
-    /* for multiple frames, build a Python script */ 
-    else { 
-      File script = createTemp(agenda, "py"); 
-      try {
-	FileWriter out = new FileWriter(script);
-
-        /* include the "launch" method definition */ 
-        out.write(getPythonLaunchHeader()); 
-        
-        /* construct to common command-line arguments */  
-        String common = null;
-        {
-          StringBuilder buf = new StringBuilder();
-
-          buf.append("launch('" + program + "', [");
-          
-          boolean first = true;
-          for(String arg : args) {
-            if(!first) 
-              buf.append(", ");
-            first = false;
-            buf.append("'" + arg + "'");
-          }
-       
-          common = buf.toString();
-        }
-
-        /* convert the frames */ 
-        {
-          ArrayList<Path> sourcePaths = sourceSeq.getPaths();
-          ArrayList<Path> targetPaths = targetSeq.getPaths();
-          int wk;
-          for(wk=0; wk<sourcePaths.size(); wk++) {
-            Path spath = new Path(sourcePath, sourcePaths.get(wk));
-            Path tpath = new Path(agenda.getTargetPath(), targetPaths.get(wk));
-            out.write(common + ", '" + spath + "', '" + tpath + "'])\n");
-          }
-        }
-        
-        out.write("\n" + 
-                  "print 'ALL DONE.'\n");
-        
-        out.close();
-      } 
-      catch (IOException ex) {
-        throw new PipelineException
-          ("Unable to write the temporary Python script file (" + script + ") for Job " + 
-           "(" + agenda.getJobID() + ")!\n" +
-           ex.getMessage());
-      }
-
-      /* create the process to run the action */ 
-      return createPythonSubProcess(agenda, script, outFile, errFile); 
-    }   
+    /* create the process to run the action */ 
+    return createPythonSubProcess(agenda, program, args, sourcePath, sourceSeq, targetSeq, 
+                                  null, outFile, errFile); 
   }
 
 
