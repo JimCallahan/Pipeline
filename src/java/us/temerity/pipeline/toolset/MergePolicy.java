@@ -1,4 +1,4 @@
-// $Id: MergePolicy.java,v 1.1 2004/05/29 06:37:41 jim Exp $
+// $Id: MergePolicy.java,v 1.2 2007/04/02 21:36:51 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -71,11 +71,8 @@ enum MergePolicy
   ) 
   {
     MergePolicy policy = Exclusive;
-    if(name.equals("PATH") || 
-	 name.equals("LD_LIBRARY_PATH") || 
-	 name.equals("MANPATH") || 
-	 name.equals("INFOPATH")) 
-	policy = AppendPath;
+    if(name.endsWith("PATH")) 
+      policy = AppendPath;
 
     return policy;
   }
