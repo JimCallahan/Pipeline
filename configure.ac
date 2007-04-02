@@ -38,7 +38,7 @@ case $build in
 
   (i686-pc-cygwin) 
     NATIVE_OSTYPE=Windows;
-    AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Windows XP system.]);;
+    AC_DEFINE([OS_IS_WINDOWS], [], [The OS is a Windows XP system.]);;
 
   (*)
     AC_MSG_ERROR(unsupported native OS type: $build_os);;
