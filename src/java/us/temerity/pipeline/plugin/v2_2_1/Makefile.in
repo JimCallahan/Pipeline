@@ -255,7 +255,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
     JAVA_SOURCES = $(shell find $(srcdir) -type f -name "*.java")
     JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
-     PLUGIN_JARS = RenumberTool.jar
+     PLUGIN_JARS = RenumberTool.jar \
+                   MRayAddTexturesTool.jar 
 
       PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
      EXAMPLE_DIR = $(ROOT_INST_DIR)/examples/us/temerity/pipeline/plugin/$(PLUGIN_VERSION)
@@ -293,6 +294,16 @@ RenumberTool.jar: java-all
            us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'RenumberTool$$PhaseOne.class' \
            us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'RenumberTool$$PhaseTwo.class')
 	rm -f RenumberTool*.class 
+
+MRayAddTexturesTool.jar: java-all 
+	(cd ../../../../..; \
+         $(JAR) cvf us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/$@ \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/MRayAddTexturesTool.class \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'MRayAddTexturesTool$$PhaseOne.class' \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'MRayAddTexturesTool$$PhaseTwo.class' \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'MRayAddTexturesTool$$PhaseThree.class' \
+           us/temerity/pipeline/plugin/$(PLUGIN_VERSION)/'MRayAddTexturesTool$$PhaseFour.class')
+	rm -f MRayAddTexturesTool*.class 
 
 
 #--------------------------------------------------------------------------------------------#
