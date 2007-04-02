@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.15 2007/03/18 02:17:16 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.16 2007/04/02 10:46:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -197,10 +197,32 @@ class SubProcessHeavy
 	  ("Only the (" + PackageInfo.sPipelineUser + ") may run a process as " + 
 	   "another user!");
 
-      HashMap<String,String> uenv = new HashMap<String,String>(env);
-      String val = uenv.get("LD_LIBRARY_PATH");
-      if(val != null) 
-	uenv.put("PIPELINE_LD_LIBRARY_PATH", val);
+      /* To get around the dynamic linker stripping LD_LIBRARY_PATH (Linux) or
+         DYLD_LIBRARY_PATH (Mac OS X) from the environment due to plrun(1) being 
+         a setuid program.  We copy the dynamic library search path to the 
+         PIPELINE_LD_LIBRARY_PATH temporary variable so that plrun(1) can restore 
+         it before exec'ing the target program. */
+      HashMap<String,String> uenv = new HashMap<String,String>(env); 
+      {
+        switch(PackageInfo.sOsType) {
+        case Unix:
+        case MacOS:
+          {
+            String path = uenv.get("LD_LIBRARY_PATH");
+            if(path != null) 
+              uenv.put("PIPELINE_LD_LIBRARY_PATH", path); 
+          }
+        }
+        
+        switch(PackageInfo.sOsType) {
+        case MacOS:
+          {
+            String path = uenv.get("DYLD_LIBRARY_PATH");
+            if(path != null) 
+              uenv.put("PIPELINE_DYLD_LIBRARY_PATH", path); 
+          }
+        }
+      }
       
       init(user, program, args, uenv, dir);
     }

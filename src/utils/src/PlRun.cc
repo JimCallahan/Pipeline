@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.9 2007/03/18 02:15:56 jim Exp $
+// $Id: PlRun.cc,v 1.10 2007/04/02 10:46:12 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -175,10 +175,18 @@ main
       while((*p) != NULL) {
 	size_t len = strlen(*p);
 
-	/* to get around ld.so ignoring LD_LIBRARY_PATH) */
+	/* To get around the dynamic linker stripping LD_LIBRARY_PATH (Linux) or
+           DYLD_LIBRARY_PATH (Mac OS X) from the environment due to plrun(1) being 
+           a setuid program.  Pipeline copies the dynamic library search path to the 
+           PIPELINE_LD_LIBRARY_PATH temporary variable so that this code can restore 
+           it before exec'ing the target program. */
 	if((len > 24) && (strncmp(*p, "PIPELINE_LD_LIBRARY_PATH", 24) == 0)) {
 	  envp2[wk] = new char[len - 8];
 	  strcpy(envp2[wk], (*p)+9);  
+        }
+        else if((len > 26) && (strncmp(*p, "PIPELINE_DYLD_LIBRARY_PATH", 26) == 0)) {
+          envp2[wk] = new char[len - 8];
+	  strcpy(envp2[wk], (*p)+9);            
 	}
 	
 	/* replace with substituted username and home directory */ 
@@ -209,59 +217,59 @@ main
   assert(envp2);
 
   /* debugging */ 
-//   FB::stageBegin("Original");
-//   {
-//     FB::stageBegin("Arguments");
-//     {
-//       char** p = argv;
-//       while((*p) != NULL) {
-// 	FB::stageMsg(*p);
-// 	p++;
-//       }
-//     }
-//     FB::stageEnd();
+  FB::stageBegin("Original");
+  {
+    FB::stageBegin("Arguments");
+    {
+      char** p = argv;
+      while((*p) != NULL) {
+	FB::stageMsg(*p);
+	p++;
+      }
+    }
+    FB::stageEnd();
 
-//     FB::stageBegin("Environment");
-//     {
-//       char** p = envp;
-//       while((*p) != NULL) {
-// 	FB::stageMsg(*p);
-// 	p++;
-//       }
-//     }
-//     FB::stageEnd();
-//   }
-//   FB::stageEnd();
+    FB::stageBegin("Environment");
+    {
+      char** p = envp;
+      while((*p) != NULL) {
+	FB::stageMsg(*p);
+	p++;
+      }
+    }
+    FB::stageEnd();
+  }
+  FB::stageEnd();
 
-//   FB::stageBegin("Modified"); 
-//   {
-//     FB::stageBegin("Command");
-//     {
-//       FB::stageMsg(cmd);
-//     }
-//     FB::stageEnd();
-  
-//     FB::stageBegin("Arguments");
-//     {
-//       char** p = argv2;
-//       while((*p) != NULL) {
-// 	FB::stageMsg(*p);
-// 	p++;
-//       }
-//     }
-//     FB::stageEnd();
+  FB::stageBegin("Modified"); 
+  {
+    FB::stageBegin("Command");
+    {
+      FB::stageMsg(cmd);
+    }
+    FB::stageEnd();
 
-//     FB::stageBegin("Environment");
-//     {
-//       char** p = envp2;
-//       while((*p) != NULL) {
-// 	FB::stageMsg(*p);
-// 	p++;
-//       }
-//     }
-//     FB::stageEnd();
-//   }
-//   FB::stageEnd();
+    FB::stageBegin("Arguments");
+    {
+      char** p = argv2;
+      while((*p) != NULL) {
+	FB::stageMsg(*p);
+	p++;
+      }
+    }
+    FB::stageEnd();
+
+    FB::stageBegin("Environment");
+    {
+      char** p = envp2;
+      while((*p) != NULL) {
+	FB::stageMsg(*p);
+	p++;
+      }
+    }
+    FB::stageEnd();
+  }
+  FB::stageEnd();
     
   /* execute the command */ 
   if(execve(cmd, argv2, envp2) == -1) {
