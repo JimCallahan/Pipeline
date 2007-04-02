@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.14 2006/09/25 11:42:00 jim Exp $
+// $Id: OverallNodeState.java,v 1.15 2007/04/02 21:38:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -71,7 +71,8 @@ enum OverallNodeState
    * Alternatively, one or more of the upstream nodes has an <CODE>OverallNodeState</CODE> 
    * state of <CODE>Modified Locks</CODE>. <P> 
    * 
-   * This state has lower precendence than <CODE>Modified</CODE> or <CODE>ModifiedLinks</CODE>.
+   * This state has lower precendence than <CODE>Modified</CODE> or 
+   * <CODE>ModifiedLinks</CODE>.
    */
   ModifiedLocks, 
 
