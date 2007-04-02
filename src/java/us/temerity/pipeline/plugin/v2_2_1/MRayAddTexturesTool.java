@@ -1,4 +1,4 @@
-// $Id: MRayAddTexturesTool.java,v 1.1 2007/04/01 21:17:54 jim Exp $
+// $Id: MRayAddTexturesTool.java,v 1.2 2007/04/02 21:19:36 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -49,6 +49,7 @@ MRayAddTexturesTool
     addPhase(new PhaseOne());
     addPhase(new PhaseTwo());
     addPhase(new PhaseThree());
+    addPhase(new PhaseFour());
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
@@ -640,9 +641,11 @@ MRayAddTexturesTool
           }
           catch(PipelineException ex) {
             buf.append
-              ("Unable to register the image source node (" + iname + "), skipping " + 
-               "texture node generation and node linking for this image:\n" + 
-               "  " + ex.getMessage() + "\n\n");
+              ("---\n" +
+               "Source Image Node: " + iname + "\n\n" +
+               "Unable to register the image source node.  Skipping texture node " + 
+               "generation and node linking for this image.\n\n" + 
+               ex.getMessage() + "\n\n");
             continue;              
           }
           
@@ -651,8 +654,10 @@ MRayAddTexturesTool
           }
           catch(PipelineException ex) {
             buf.append
-              ("Unable to retrieve the newly registered image source node (" + iname + "), " +
-               "skipping texture node generation and node linking for this image!\n\n"); 
+              ("---\n" +
+               "Source Image Node: " + iname + "\n\n" +
+               "Unable to retrieve the newly registered image source node.  Skipping " + 
+               "texture node generation and node linking for this image!\n\n"); 
             continue;
           }
         }
@@ -673,16 +678,20 @@ MRayAddTexturesTool
 
           if(tmod != null) {
             buf.append
-              ("Skipped registration of texture node (" + tname + ") since it already " + 
-               "exists in the current working area!\n\n");
+              ("---\n" +
+               "Texture Node: " + tname + "\n\n" +
+               "Skipped registration of texture node since it already exists in the " + 
+               "current working area!\n\n");
           }
           else {
             try {
               mclient.getAllCheckedInVersions(tname);
               buf.append
-                ("Unable to register the texture node (" + tname + ") because at least " + 
-                 "one checked-in version of the node exists, but is not checked-out in " + 
-                 "the current working area!\n\n"); 
+                ("---\n" +
+                 "Texture Node: " + tname + "\n\n" +
+                 "Unable to register the texture node because at least one checked-in " + 
+                 "version of the node exists, but the node is not checked-out in the " + 
+                 "current working area!\n\n"); 
               continue;              
             }
             catch(PipelineException ex) {
@@ -706,10 +715,12 @@ MRayAddTexturesTool
               mclient.modifyProperties(pAuthor, pView, mod);
             }
             catch(PipelineException ex) {
-              buf.append
-                ("Unable to register the texture node (" + tname + "), skipping linking " + 
-                 "this node to the source image and Texture Grouping nodes:\n" + 
-                 "  " + ex.getMessage() + "\n\n");
+            buf.append
+              ("---\n" +
+               "Texture Node: " + tname + "\n\n" +
+               "Unable to register the texture node.  Skipping linking this node to the " + 
+               "source image and Texture Grouping nodes.\n\n" + 
+               ex.getMessage() + "\n\n");
               continue;              
             }
             
@@ -718,9 +729,10 @@ MRayAddTexturesTool
             }
             catch(PipelineException ex) {
               buf.append
-                ("Unable to retrieve the newly registered texture node (" + tname + "), " +
-                 "skipping linking this node to the source image and Texture Grouping " + 
-                 "nodes!\n\n"); 
+                ("---\n" +
+                 "Texture Node: " + tname + "\n\n" +
+                 "Unable to retrieve the newly registered texture node.  Skipping linking " + 
+                 "this node to the source image and Texture Grouping nodes.\n\n");
               continue;
             }
           }
@@ -734,8 +746,11 @@ MRayAddTexturesTool
         }
         catch(PipelineException ex) {
           buf.append
-            ("Unable to link image source node (" + iname + ") to the texture node " + 
-             "(" + tname + ")!\n\n");          
+            ("---\n" +
+             "Source Image Node: " + iname + "\n" +
+             "Texture Node: " + tname + "\n\n" +
+             "Unable to link image source node to the texture node.\n\n" + 
+             ex.getMessage() + "\n\n");
         }
          
         try {
@@ -745,21 +760,64 @@ MRayAddTexturesTool
         }
         catch(PipelineException ex) {
           buf.append
-            ("Unable to link texture node (" + tname + ") to the Texture Grouping " + 
-             "node!\n\n"); 
+            ("---\n" +
+             "Texture Node: " + tname + "\n\n" +
+             "Texture Grouping Node: " + pTextureGroup + "\n\n" +
+             "Unable to link texture node to the texture grouping node.\n\n" + 
+             ex.getMessage() + "\n\n");
         }
       }
 
       String msg = buf.toString();
       if(msg.length() > 0) 
-        throw new PipelineException
-          ("Some problems where encountered while performing node operations:\n\n" + msg);
+        pWarnings = msg;
 
       return NextPhase.Finish; 
     }
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P H A S E   F O U R                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  private 
+  class PhaseFour
+    extends BaseTool.ToolPhase
+  {
+    public 
+    PhaseFour() 
+    {
+      super();
+    }
+    
+    /**
+     * Display any warning messages.
+     * 
+     * @return 
+     *   The phase progress message or <CODE>null</CODE> to abort early.
+     * 
+     * @throws PipelineException
+     *   If unable to validate the given user input.
+     */
+    public String
+    collectInput() 
+      throws PipelineException 
+    {
+      if(pWarnings != null) {
+        JErrorDialog diag = new JErrorDialog(JToolDialog.getRootFrame());
+        diag.setMessage
+          ("Warning: ",  
+           "Some problems where encountered while performing node operations:\n\n" + 
+           pWarnings);
+        diag.setVisible(true);
+      }
+      
+      return ": Done.";
+    }
+  }
 
+    
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -872,4 +930,9 @@ MRayAddTexturesTool
    */ 
   private TreeMap<String,FileSeq>  pImageSeqs;
 
+  /**
+   * Node registration and linking warning messages.
+   */ 
+  private String  pWarnings;
+    
 }
