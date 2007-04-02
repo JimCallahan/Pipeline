@@ -1,4 +1,4 @@
-// $Id: ByteSizeParam.java,v 1.6 2007/03/29 19:27:47 jesse Exp $
+// $Id: ByteSizeParam.java,v 1.7 2007/04/02 21:45:49 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -73,8 +73,8 @@ class ByteSizeParam
    * <p>
    * This method is used for setting parameter values from command line arguments.
    * 
-   * @throws IllegalArgumentException if a null value is passed in.
-   * @throws NumberFormatException if the String is not a valid Byte value.
+   * @throws IllegalArgumentException if a null value is passed in or if the value cannot
+   * be parsed as a Byte.
    */
   public void
   fromString
@@ -84,7 +84,15 @@ class ByteSizeParam
   {
     if (value == null)
       throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
-    Long longValue = ByteSize.stringToLong(value);
+    Long longValue = null;
+    try {
+      longValue = ByteSize.stringToLong(value);
+    }
+    catch(NumberFormatException ex) {
+      throw new IllegalArgumentException
+        ("The value (" + value + ") passed into the fromString method cannot be parsed " +
+         "as a Byte.\n" + ex.getMessage());
+    }
     setValue(longValue);
   }
   

@@ -10,10 +10,10 @@ import us.temerity.pipeline.glue.*;
  * The abstract base class for all parameters that consist of a value that can set with a
  * single variable.
  */
-public abstract 
+public abstract
 class SimpleParam
   extends BaseParam
-  implements SimpleParamAccess
+  implements SimpleParamAccess, SimpleParamFromString
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -177,6 +177,14 @@ class SimpleParam
 
     pValue = (Comparable) decoder.decode("Value"); 
   }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  private static final long serialVersionUID = -2829887645406059248L;
 
   
   

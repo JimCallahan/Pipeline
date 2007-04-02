@@ -1,4 +1,4 @@
-// $Id: ListParam.java,v 1.2 2007/03/29 19:27:48 jesse Exp $
+// $Id: ListParam.java,v 1.3 2007/04/02 21:45:49 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -82,7 +82,10 @@ class ListParam<E>
     
     for (String each : values) {
       Boolean check = value.contains(each);
-      String tooltip = tooltips.get(each);
+      String tooltip = null;
+      if (tooltips != null) {
+        tooltip = tooltips.get(each);
+      }
       E param = createBooleanParam(each, tooltip, check);
       addParam(param);
     }
@@ -158,22 +161,6 @@ class ListParam<E>
       else
 	setValue(each, false);
     }
-  }
-  
-  
-  /**
-   * Sets the value from a single String.  Used for command line argument parsing.
-   */
-  public void 
-  fromString
-  (
-    String value
-  )
-  {
-    String buffer[] = value.split(",");
-    ComparableTreeSet<String> list = new ComparableTreeSet<String>(Arrays.asList(buffer));
-
-    setValue(list);
   }
   
   

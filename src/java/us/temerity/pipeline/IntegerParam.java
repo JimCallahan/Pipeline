@@ -1,4 +1,4 @@
-// $Id: IntegerParam.java,v 1.6 2007/03/29 19:27:48 jesse Exp $
+// $Id: IntegerParam.java,v 1.7 2007/04/02 21:45:49 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -74,7 +74,6 @@ class IntegerParam
    * This method is used for setting parameter values from command line arguments.
    * 
    * @throws IllegalArgumentException if a null value is passed in.
-   * @throws NumberFormatException if the String is not a valid Integer value.
    */
   public void
   fromString
@@ -84,7 +83,15 @@ class IntegerParam
   {
     if (value == null)
       throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
-    Integer intValue = Integer.valueOf(value);
+    Integer intValue = null;
+    try {
+      intValue = Integer.valueOf(value);
+    }
+    catch(NumberFormatException ex) {
+      throw new IllegalArgumentException
+        ("The value (" + value + ") passed into the fromString method cannot be parsed " +
+         "as a Integer.\n" + ex.getMessage());
+    }
     setValue(intValue);
   }
   

@@ -83,10 +83,30 @@ interface ComplexParamAccess<E>
   );
 
   /**
-   * Is there a nested Simple Parameter identified by  this list of keys? 
+   * Is there a nested Simple Parameter identified by this list of keys? 
    */
   public boolean 
   hasSimpleParam
+  (
+    List<String> keys
+  );
+  
+  /**
+   * Is there a Simple Parameter which implements {@link SimpleParamFromString} 
+   * identified with this key? 
+   */
+  public boolean 
+  canSetSimpleParamFromString
+  (
+    String key
+  );
+
+  /**
+   * Is there a nested Simple Parameter which implements {@link SimpleParamFromString} 
+   * identified by this list of keys? 
+   */
+  public boolean 
+  canSetSimpleParamFromString
   (
     List<String> keys
   );

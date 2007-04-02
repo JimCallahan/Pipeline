@@ -1,4 +1,4 @@
-// $Id: BooleanParam.java,v 1.6 2007/03/29 19:27:47 jesse Exp $
+// $Id: BooleanParam.java,v 1.7 2007/04/02 21:45:49 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -91,7 +91,8 @@ class BooleanParam
       booleanValue = Boolean.TRUE;
     else
       throw new IllegalArgumentException
-        ("String (" +  value + ") is not a valid boolean value");
+        ("The value (" + value + ") passed into the fromString method cannot be parsed " +
+         "as a boolean.");
     setValue(booleanValue);
   }
   

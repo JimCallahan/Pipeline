@@ -270,8 +270,7 @@ class ComplexParam<E>
       throw new IllegalArgumentException("Cannot have a null key in a Complex Parameter");
     if (!pParams.containsKey(key))
 	return false;
-    if (newKeys.size() == 0)
-    {
+    if (newKeys.size() == 0) {
       if (pParams.get(key) instanceof SimpleParamAccess)
 	return true;
       return false;
@@ -280,6 +279,47 @@ class ComplexParam<E>
     ComplexParamAccess<E> param = getComplexParam(key);
     return param.hasParam(newKeys);
   }
+  
+  /**
+   * Is there a Simple Parameter which implements {@link SimpleParamFromString} 
+   * identified with this key? 
+   */
+  public boolean 
+  canSetSimpleParamFromString
+  (
+    String key
+  )
+  {
+    return hasSimpleParam(BaseUtil.listFromString(key));
+  }
+
+  /**
+   * Is there a nested Simple Parameter which implements {@link SimpleParamFromString} 
+   * identified by this list of keys? 
+   */
+  public boolean 
+  canSetSimpleParamFromString
+  (
+    List<String> keys
+  )
+  {
+    verifyKeys(keys);
+    LinkedList<String> newKeys = new LinkedList<String>(keys);
+    String key = newKeys.poll();
+    if (key == null)
+      throw new IllegalArgumentException("Cannot have a null key in a Complex Parameter");
+    if (!pParams.containsKey(key))
+	return false;
+    if (newKeys.size() == 0) {
+      if (pParams.get(key) instanceof SimpleParamFromString)
+	return true;
+      return false;
+    }
+
+    ComplexParamAccess<E> param = getComplexParam(key);
+    return param.hasParam(newKeys);
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/

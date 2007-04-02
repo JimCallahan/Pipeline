@@ -32,15 +32,4 @@ interface SimpleParamAccess
   (
    Comparable value  
   );
-  
-  /**
-   * Sets the value of the parameter from a String.
-   * <p>
-   * This method is used for setting parameter values from command line arguments.
-   */
-  public void
-  fromString
-  (
-    String value
-  );
 }
