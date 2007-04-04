@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.19 2007/02/22 16:12:39 jim Exp $
+// $Id: BaseApp.java,v 1.20 2007/04/04 07:34:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -572,7 +572,7 @@ class BaseApp
   }
 
   /**
-   * Pad the given string with the given string so that it is at least N characters long.
+   * Pad the given string so that it is at least N characters long.
    */ 
   public String
   pad
