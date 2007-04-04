@@ -1,8 +1,9 @@
-// $Id: SwitchAction.java,v 1.2 2007/03/24 03:02:38 jim Exp $
+// $Id: SwitchAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.*; 
 
 import java.lang.*;
 import java.util.*;
@@ -31,7 +32,7 @@ import java.text.*;
  */
 public
 class SwitchAction
-  extends BaseAction
+  extends CommonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

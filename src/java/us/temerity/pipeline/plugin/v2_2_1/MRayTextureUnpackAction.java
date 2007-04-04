@@ -1,8 +1,9 @@
-// $Id: MRayTextureUnpackAction.java,v 1.3 2007/03/31 23:12:27 jim Exp $
+// $Id: MRayTextureUnpackAction.java,v 1.4 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.*; 
 
 import java.lang.*;
 import java.util.*;
@@ -73,7 +74,7 @@ import java.io.*;
  */
 public
 class MRayTextureUnpackAction
-  extends BaseAction
+  extends PythonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

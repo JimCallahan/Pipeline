@@ -1,8 +1,9 @@
-// $Id: MRayMakeShaderAction.java,v 1.1 2007/03/31 23:11:11 jim Exp $
+// $Id: MRayMakeShaderAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
-import us.temerity.pipeline.*; 
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
 
 import java.lang.*;
 import java.util.*;
@@ -41,7 +42,7 @@ import java.io.*;
  */
 public 
 class MRayMakeShaderAction
-  extends BaseAction
+  extends CommonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

@@ -1,8 +1,9 @@
-// $Id: PythonAction.java,v 1.6 2007/03/31 23:12:48 jim Exp $
+// $Id: PythonAction.java,v 1.7 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
 
 import java.util.*;
 import java.io.*;
@@ -97,7 +98,7 @@ import java.io.*;
  */
 public
 class PythonAction 
-  extends BaseAction
+  extends PythonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

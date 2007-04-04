@@ -1,11 +1,12 @@
-// $Id: MayaBuildAction.java,v 1.4 2007/03/24 03:02:13 jim Exp $
+// $Id: MayaBuildAction.java,v 1.5 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
+
 import java.io.*;
 import java.util.*;
-
-import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   B U I L D   A C T I O N                                                      */
@@ -94,7 +95,7 @@ import us.temerity.pipeline.*;
  */
 public
 class MayaBuildAction
-  extends MayaAction
+  extends MayaActionUtils
 {  
 
 /*----------------------------------------------------------------------------------------*/

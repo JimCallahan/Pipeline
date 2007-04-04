@@ -1,8 +1,9 @@
-// $Id: TouchAction.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: TouchAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.*; 
 
 import java.lang.*;
 import java.util.*;
@@ -18,7 +19,7 @@ import java.io.*;
  */
 public
 class TouchAction
-  extends BaseAction
+  extends CommonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

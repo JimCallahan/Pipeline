@@ -1,15 +1,15 @@
-// $Id: MRayAction.java,v 1.1 2007/03/18 02:42:51 jim Exp $
+// $Id: MRayActionUtils.java,v 1.1 2007/04/04 07:33:30 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.plugin;
 
-import  us.temerity.pipeline.glue.*;
+import  us.temerity.pipeline.*;
 
 import java.util.*;
 import java.io.*;
 
 
 /*------------------------------------------------------------------------------------------*/
-/*   M R A Y   A C T I O N                                                                  */
+/*   M R A Y   A C T I O N   U T I L S                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -19,8 +19,8 @@ import java.io.*;
  * which manipulate MI files and run the Mental Ray renderer. 
  */
 public 
-class MRayAction
-  extends BaseAction
+class MRayActionUtils
+  extends PythonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -42,7 +42,7 @@ class MRayAction
    *   A short description of the action.
    */ 
   protected
-  MRayAction
+  MRayActionUtils
   (
    String name,  
    VersionID vid,
@@ -56,9 +56,9 @@ class MRayAction
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S U B P R O C E S S   C R E A T I O N                                                */
+  /*   P R O G R A M   L O O K U P                                                          */
   /*----------------------------------------------------------------------------------------*/
- 
+
   /**
    * Generate the name of the Mental Ray renderer based on the Toolset environment and 
    * current operating system type.<P> 
@@ -94,7 +94,7 @@ class MRayAction
   public static String
   getMRayProgram
   (
-    Map<String,String> env
+   Map<String,String> env
   ) 
     throws PipelineException
   {
@@ -114,7 +114,7 @@ class MRayAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -2910116508443591505L;
+  private static final long serialVersionUID = 3026645578638542024L;
   
 }
 

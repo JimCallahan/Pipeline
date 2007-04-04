@@ -1,11 +1,12 @@
-// $Id: MRayCamOverrideAction.java,v 1.1 2007/03/26 23:33:18 jim Exp $
+// $Id: MRayCamOverrideAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
+
 import java.io.*;
 import java.util.*;
-
-import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M R A Y   C A M   O V E R R I D E   A C T I O N                                        */
@@ -81,7 +82,7 @@ import us.temerity.pipeline.*;
  */
 public class 
 MRayCamOverrideAction 
-  extends BaseAction
+  extends CommonActionUtils
 {
   public 
   MRayCamOverrideAction()

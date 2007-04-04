@@ -1,11 +1,13 @@
-// $Id: MRayInstGroupAction.java,v 1.2 2007/03/29 18:56:31 jim Exp $
+// $Id: MRayInstGroupAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
 
 import java.io.*;
 import java.util.*;
 
-import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M R A Y   I N S T   G R O U P   A C T I O N                                            */
@@ -20,7 +22,7 @@ import us.temerity.pipeline.*;
  */
 public class 
 MRayInstGroupAction 
-  extends BaseAction
+  extends PythonActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

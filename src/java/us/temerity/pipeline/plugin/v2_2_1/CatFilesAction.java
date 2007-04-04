@@ -1,8 +1,9 @@
-// $Id: CatFilesAction.java,v 1.6 2007/03/28 20:05:13 jim Exp $
+// $Id: CatFilesAction.java,v 1.7 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.*; 
 
 import java.lang.*;
 import java.util.*;
@@ -36,7 +37,7 @@ import java.io.*;
  */
 public
 class CatFilesAction
-  extends BaseAction
+  extends PythonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

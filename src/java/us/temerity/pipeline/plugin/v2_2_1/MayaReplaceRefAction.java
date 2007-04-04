@@ -1,11 +1,12 @@
-// $Id: MayaReplaceRefAction.java,v 1.4 2007/03/31 23:12:27 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.5 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
+
 import java.io.*;
 import java.util.*;
-
-import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   R E P L A C E   R E F   A C T I O N                                          */
@@ -48,7 +49,7 @@ import us.temerity.pipeline.*;
  */
 public class 
 MayaReplaceRefAction  
-  extends MayaAction 
+  extends MayaActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

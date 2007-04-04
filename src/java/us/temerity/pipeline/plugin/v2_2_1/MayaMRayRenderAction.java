@@ -1,23 +1,24 @@
-// $Id: MayaMRayRenderAction.java,v 1.6 2007/03/29 19:36:26 jim Exp $
+// $Id: MayaMRayRenderAction.java,v 1.7 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
+
 import java.io.*;
 import java.util.*;
-
-import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   M R A Y   R E N D E R   A C T I O N                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Takes a source Maya scene, exports an MI file that contains everything in the scene and 
- * then renders it with the mental ray standalone engine. <P>
+ * Takes a source Maya scene, exports a monolithic MI file for each frame that contains 
+ * everything in the scene and then renders it with the Mental Ray standalone engine. <P>
  * 
  * The Maya scene is opened and the export length is set correctly.  The entire scene is then
- * exported out to an MI file.  The Action then invokes the mental ray standalone renderer
- * to generate the images. <P>  
+ * exported out to per-frame MI files.  The Action then invokes the Mental Ray standalone 
+ * renderer to generate the target images. <P>  
  *
  * Both before and after the export, optional MEL scripts may be evaluated.  The MEL scripts
  * must be the primary file sequence of one of the source nodes and are assigned to the 
@@ -60,7 +61,7 @@ import us.temerity.pipeline.*;
  * 
  *   Library Path <BR>
  *   <DIV style="margin-left: 40px;">
- *     A semicolon seperated list of directories that mental ray searches for shader 
+ *     A semicolon seperated list of directories that Mental Ray searches for shader 
  *     libraries containing shader code before the default library paths.  Toolset 
  *     environmental variable substitutions are enabled (see {@link ActionAgenda#evaluate 
  *     evaluate}).
@@ -68,14 +69,14 @@ import us.temerity.pipeline.*;
  * 
  *   Texture Path <BR>
  *   <DIV style="margin-left: 40px;">
- *     A semicolon seperated list of directories that mental ray searches for texture files.  
+ *     A semicolon seperated list of directories that Mental Ray searches for texture files.  
  *     Toolset environmental variable substitutions are enabled (see {@link 
  *     ActionAgenda#evaluate evaluate}).
  *   </DIV> <BR>
  * 
  *   Extra Opts<BR>
  *   <DIV style="margin-left: 40px;">
- *      Additional command-line arguments.
+ *      Additional command-line arguments for the Mental Ray renderer.
  *   </DIV> <BR>
  * </DIV> <P> 
  * 
@@ -90,7 +91,7 @@ import us.temerity.pipeline.*;
  * ".exe" extension in the program name.
  */ 
 public class MayaMRayRenderAction
-  extends MayaAction
+  extends MayaActionUtils
 {
   /*---------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                               */
@@ -100,8 +101,10 @@ public class MayaMRayRenderAction
   MayaMRayRenderAction() 
   {
     super("MayaMRayRender", new VersionID("2.2.1"), "Temerity",
-          "Exports MentalRay geometry and other scene data from a Maya scene.");
-    
+          "Takes a source Maya scene, exports a monolithic MI file for each frame that " + 
+          "contains everything in the scene and then renders it with the Mental Ray " + 
+          "standalone engine.");
+
     {
       ActionParam param =
 	new LinkActionParam
@@ -171,7 +174,7 @@ public class MayaMRayRenderAction
       ActionParam param = 
 	new StringActionParam
 	(aLibraryPath,
-	 "A semicolon seperated list of directories that mental ray searches for shader " +
+	 "A semicolon seperated list of directories that Mental Ray searches for shader " +
 	 "libraries containing shader code before the default library paths.  Toolset " + 
          "environmental variable substitutions are enabled.", 
          "${MI_ROOT+}/lib"); 
@@ -182,7 +185,7 @@ public class MayaMRayRenderAction
       ActionParam param = 
 	new StringActionParam
 	(aTexturePath,
-	 "A semicolon seperated list of directories that mental ray searches for texture " +
+	 "A semicolon seperated list of directories that Mental Ray searches for texture " +
 	 "files.  Toolset environmental variable substitutions are enabled.", 
 	 null);
       addSingleParam(param);
@@ -287,6 +290,7 @@ public class MayaMRayRenderAction
       exts.add("sgi");
       exts.add("tga");
       exts.add("tif");
+      exts.add("tiff");
       exts.add("iff");
       exts.add("eps");
       exts.add("exr");
@@ -416,12 +420,25 @@ public class MayaMRayRenderAction
       /* export the MI files from Maya */ 
       out.write(createMayaPythonLauncher(sourceScene, exportMEL) + "\n");
 
+      /* RIB file paths */ 
+      FileSeq miSeq = null;
+      {
+        FilePattern fpat = target.getFilePattern();
+        FilePattern mpat = new FilePattern(fpat.getPrefix(), fpat.getPadding(), "mi");
+        FrameRange range = target.getFrameRange();
+
+        miSeq = new FileSeq(getTempPath(agenda).toString(), new FileSeq(mpat, range));
+      }
+      
+      /* verify that the MI files where actually generated */ 
+      out.write(getPythonFileVerify(miSeq, "MI"));
+
       /* construct to common MentalRay command-line arguments */  
       String common = null;
       {
         StringBuilder buf = new StringBuilder();
 
-        String ray = MRayAction.getMRayProgram(agenda);
+        String ray = MRayActionUtils.getMRayProgram(agenda);
 
         buf.append
           ("launch('" + ray + "', " + 
@@ -447,17 +464,12 @@ public class MayaMRayRenderAction
 
       /* render the MI files and cleanup */ 
       {
-        FilePattern fpat = target.getFilePattern();
-        FilePattern mpat = new FilePattern(fpat.getPrefix(), fpat.getPadding(), "mi");
-        FrameRange range = target.getFrameRange();
-
-        FileSeq fseq = new FileSeq(getTempPath(agenda).toString(), new FileSeq(mpat, range));
-        for(Path path : fseq.getPaths()) 
+        for(Path path : miSeq.getPaths()) 
           out.write(common + ", '" + miCommon + "', '" + path + "'])\n");
         out.write("\n");
 
         if(!getSingleBooleanParamValue(aKeepTempFiles)) {
-          for(Path path : fseq.getPaths()) 
+          for(Path path : miSeq.getPaths()) 
             out.write("os.remove('" + path + "')\n");
         }
       }

@@ -1,25 +1,25 @@
-// $Id: MayaAction.java,v 1.2 2007/03/28 19:14:24 jim Exp $
+// $Id: MayaActionUtils.java,v 1.1 2007/04/04 07:33:30 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.plugin;
 
-import  us.temerity.pipeline.glue.*;
+import  us.temerity.pipeline.*;
 
 import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A Y A   A C T I O N                                                                  */
+/*   M A Y A   A C T I O N   U T I L S                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Superclass of node Action plugins which interact with Maya scenes.<P> 
+ * Superclass of Action plugins which interact with Maya scenes.<P> 
  * 
  * This class provides convenience methods which make it easier to write Action plugins 
  * which create dynamic MEL scripts and Maya scenes. 
  */
 public 
-class MayaAction
-  extends BaseAction
+class MayaActionUtils
+  extends PythonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -41,7 +41,7 @@ class MayaAction
    *   A short description of the action.
    */ 
   protected
-  MayaAction
+  MayaActionUtils
   (
    String name,  
    VersionID vid,
@@ -55,9 +55,9 @@ class MayaAction
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   P A R A M E T E R   C R E A T I O N                                                  */
+  /*   C O M M O N   P A R A M E T E R S                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+ 
   /**
    * Adds Maya units parameters to the action.<P> 
    * 
@@ -188,35 +188,62 @@ class MayaAction
     layout.addEntry(aTimeUnits);
   }
   
+  /** 
+   * Generate a MEL snippet which specifies the Linear, Angular and Time units for the 
+   * Maya scene based on the parameters created by the {@link #addUnitsParams addUnitsParams} 
+   * method.
+   */ 
+  protected String
+  genUnitsMEL() 
+    throws PipelineException
+  {
+    StringBuilder buf = new StringBuilder();
+    buf.append("// UNITS\n");
+    
+    {
+      String unit = (String) getSingleParamValue(aLinearUnits);
+      if(unit == null)
+        throw new PipelineException 
+          ("The " + getName() + " Action requires a valid linear units value!");
+
+      buf.append("changeLinearUnit(\"" + unit + "\");\n");
+    }
+    
+    switch(((EnumActionParam) getSingleParam(aAngularUnits)).getIndex()) {
+    case 0:
+      buf.append("currentUnit -a degree;\n");
+      break;
+      
+    case 1:
+      buf.append("currentUnit -a radian;\n");
+      break;
+      
+    default:
+      throw new PipelineException 
+        ("This " + getName() + " Action requires a valid angular units value!");
+    }
+    
+    {
+      int timeIndex = ((EnumActionParam) getSingleParam(aTimeUnits)).getIndex() ;
+      if((timeIndex < 0) || (timeIndex >= sMelTimeUnits.length))
+        throw new PipelineException 
+          ("The " + getName() + " Action requires a valid time units value!");
+
+      buf.append
+        ("currentUnit -t " + sMelTimeUnits[timeIndex] + " -updateAnimation true;\n" + 
+         "optionVar -fv playbackMin `playbackOptions -q -min`\n" +
+         "          -fv playbackMax `playbackOptions -q -max`;\n\n");
+    }
+
+    return buf.toString();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   P A R A M E T E R   L O O K U P                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the abstract path to the single primary Maya scene associated with the target node.
-   * 
-   * @param agenda
-   *   The agenda to be accomplished by the action.
-   * 
-   * @return 
-   *   The path to the target Maya scene script. 
-   */ 
-  public Path 
-  getMayaSceneTargetPath
-  (
-   ActionAgenda agenda
-  ) 
-    throws PipelineException 
-  {
-    ArrayList<String> suffixes = new ArrayList<String>();
-    suffixes.add("ma");
-    suffixes.add("mb");
-
-    return getPrimaryTargetPath(agenda, suffixes, "Maya scene file");
-  }
-
+ 
   /**
    * Get the MEL string representation of the file type of the primary Maya scene associated 
    * with the target node. <P>
@@ -249,6 +276,35 @@ class MayaAction
     else 
       throw new PipelineException
         ("Unknown Maya filename suffix (" + suffix + ") found!");
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A T H   G E N E R A T I O N                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract path to the single primary Maya scene associated with the target node.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the action.
+   * 
+   * @return 
+   *   The path to the target Maya scene script. 
+   */ 
+  public Path 
+  getMayaSceneTargetPath
+  (
+   ActionAgenda agenda
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<String> suffixes = new ArrayList<String>();
+    suffixes.add("ma");
+    suffixes.add("mb");
+
+    return getPrimaryTargetPath(agenda, suffixes, "Maya scene file");
   }
 
 
@@ -306,63 +362,156 @@ class MayaAction
     return getPrimarySourcePath(pname, agenda, suffixes, "Maya scene file");
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
-  /*   M E L   G E N E R A T I O N                                                          */
+  /*   P Y T H O N   C O D E   G E N E R A T I O N                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Generate a MEL snippet which specifies the Linear, Angular and Time units for the 
-   * Maya scene based on the parameters created by the {@link #addUnitsParams addUnitsParams} 
-   * method.
+   * A convienence method for creating the Python code equivalent of 
+   * {@link #createMayaSubProcess createMayaSubProcess} suitable for inclusion in an 
+   * temporary Python script.<P> 
+   * 
+   * The returned OS level process will run Maya in batch mode to optionally load a input
+   * Maya scene and then perform some operations specified by a dynamically creatd MEL 
+   * script. <P> 
+   * 
+   * The Python code generated by this method requires the "launch" method defined by {@link 
+   * BaseAction#getPythonLaunchHeaderget BaseAction.PythonLaunchHeader}.  You must first 
+   * include the code generate by <CODE>getPythonLaunchHeaderget</CODE> before the code 
+   * generated by this method.<P> 
+   * 
+   * @param scene
+   *   The abstract path to the Maya scene to load or <CODE>null</CODE> to ignore.
+   * 
+   * @param script
+   *   The temporary MEL script file to execute.
    */ 
-  protected String
-  genUnitsMEL() 
+  public static String
+  createMayaPythonLauncher
+  (
+   Path scene, 
+   File script
+  ) 
+    throws PipelineException
+  {
+    return createMayaPythonLauncher(scene, new Path(script));
+  }
+
+  /** 
+   * A convienence method for creating the Python code equivalent of 
+   * {@link #createMayaSubProcess createMayaSubProcess} suitable for inclusion in an 
+   * temporary Python script.<P> 
+   * 
+   * The returned OS level process will run Maya in batch mode to optionally load a input
+   * Maya scene and then perform some operations specified by a dynamically creatd MEL 
+   * script. <P> 
+   * 
+   * The Python code generated by this method requires the "launch" method defined by {@link 
+   * BaseAction#getPythonLaunchHeaderget BaseAction.PythonLaunchHeader}.  You must first 
+   * include the code generate by <CODE>getPythonLaunchHeaderget</CODE> before the code 
+   * generated by this method.<P> 
+   * 
+   * @param scene
+   *   The abstract path to the Maya scene to load or <CODE>null</CODE> to ignore.
+   * 
+   * @param script
+   *   The temporary MEL script file to execute.
+   */ 
+  public static String
+  createMayaPythonLauncher
+  (
+   Path scene, 
+   Path script
+  ) 
     throws PipelineException
   {
     StringBuilder buf = new StringBuilder();
-    buf.append("// UNITS\n");
     
-    {
-      String unit = (String) getSingleParamValue(aLinearUnits);
-      if(unit == null)
-        throw new PipelineException 
-          ("The " + getName() + " Action requires a valid linear units value!");
+    String maya = "maya";
+    if(PackageInfo.sOsType == OsType.Windows) 
+      maya = "mayabatch.exe"; 
 
-      buf.append("changeLinearUnit(\"" + unit + "\");\n");
-    }
-    
-    switch(((EnumActionParam) getSingleParam(aAngularUnits)).getIndex()) {
-    case 0:
-      buf.append("currentUnit -a degree;\n");
-      break;
-      
-    case 1:
-      buf.append("currentUnit -a radian;\n");
-      break;
-      
-    default:
-      throw new PipelineException 
-        ("This " + getName() + " Action requires a valid angular units value!");
-    }
-    
-    {
-      int timeIndex = ((EnumActionParam) getSingleParam(aTimeUnits)).getIndex() ;
-      if((timeIndex < 0) || (timeIndex >= sMelTimeUnits.length))
-        throw new PipelineException 
-          ("The " + getName() + " Action requires a valid time units value!");
+    buf.append
+      ("launch('" + maya + "', ['-batch', '-script', '" + script + "'");
 
-      buf.append
-        ("currentUnit -t " + sMelTimeUnits[timeIndex] + " -updateAnimation true;\n" + 
-         "optionVar -fv playbackMin `playbackOptions -q -min`\n" +
-         "          -fv playbackMax `playbackOptions -q -max`;\n\n");
-    }
+    if(scene != null) 
+      buf.append(", '-file', '" + scene + "'");
 
-    return buf.toString();
+    buf.append("])\n");
+
+    return buf.toString(); 
   }
 
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   T O O L S E T   E N V I R O N M E N T  M O D I F I C A T I O N                       */
+  /*----------------------------------------------------------------------------------------*/
+   
+  /**
+   * Get the Toolset environment modified to include a custom mental ray shader path.<P> 
+   * 
+   * If the variable PIPELINE_MI_SHADER_PATH is set in the Toolset environment, then the 
+   * variable MI_CUSTOM_SHADER_PATH will be added to the environment who's value is the 
+   * constructed by appending the value of PIPELINE_MI_SHADER_PATH to the working area 
+   * directory containing the target node's files.
+   * 
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   * 
+   * @return 
+   *   The modified Toolset environment.
+   */ 
+  public static Map<String,String>
+  getMiCustomShaderEnv
+  (
+   ActionAgenda agenda
+  ) 
+    throws PipelineException
+  {  
+    return getMiCustomShaderEnv(agenda.getNodeID(), agenda.getEnvironment());
+  }
+
+  /**
+   * Get the Toolset environment modified to include a custom mental ray shader path.<P> 
+   * 
+   * If the variable PIPELINE_MI_SHADER_PATH is set in the Toolset environment, then the 
+   * variable MI_CUSTOM_SHADER_PATH will be added to the environment who's value is the 
+   * constructed by appending the value of PIPELINE_MI_SHADER_PATH to the working area 
+   * directory containing the target node's files.
+   * 
+   * @param nodeID
+   *   The unique working version identifier of the target node.
+   * 
+   * @param env
+   *   The original Toolset environment. 
+   * 
+   * @return 
+   *   The modified Toolset environment.
+   */ 
+  public static Map<String,String>
+  getMiCustomShaderEnv
+  (
+   NodeID nodeID, 
+   Map<String,String> env
+  ) 
+    throws PipelineException
+  {  
+    Map<String,String> nenv = env;
+
+    String midefs = env.get("PIPELINE_MI_SHADER_PATH");
+    if(midefs != null) {
+      nenv = new TreeMap<String, String>(env);
+      Path dpath = getWorkingNodeFilePath(nodeID, midefs);
+      nenv.put("MI_CUSTOM_SHADER_PATH", dpath.toString());
+    }
+   
+    return nenv;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S U B P R O C E S S   C R E A T I O N                                                */
@@ -476,157 +625,11 @@ class MayaAction
     return buf.toString(); 
   }
 
-  /** 
-   * A convienence method for creating the Python code equivalent of 
-   * {@link #createMayaSubProcess createMayaSubProcess} suitable for inclusion in an 
-   * temporary Python script.<P> 
-   * 
-   * The returned OS level process will run Maya in batch mode to optionally load a input
-   * Maya scene and then perform some operations specified by a dynamically creatd MEL 
-   * script. <P> 
-   * 
-   * The Python code generated by this method requires the "launch" method defined by {@link 
-   * BaseAction#getPythonLaunchHeaderget BaseAction.PythonLaunchHeader}.  You must first 
-   * include the code generate by <CODE>getPythonLaunchHeaderget</CODE> before the code 
-   * generated by this method.<P> 
-   * 
-   * @param scene
-   *   The abstract path to the Maya scene to load or <CODE>null</CODE> to ignore.
-   * 
-   * @param script
-   *   The temporary MEL script file to execute.
-   */ 
-  public static String
-  createMayaPythonLauncher
-  (
-   Path scene, 
-   File script
-  ) 
-    throws PipelineException
-  {
-    return createMayaPythonLauncher(scene, new Path(script));
-  }
-
-  /** 
-   * A convienence method for creating the Python code equivalent of 
-   * {@link #createMayaSubProcess createMayaSubProcess} suitable for inclusion in an 
-   * temporary Python script.<P> 
-   * 
-   * The returned OS level process will run Maya in batch mode to optionally load a input
-   * Maya scene and then perform some operations specified by a dynamically creatd MEL 
-   * script. <P> 
-   * 
-   * The Python code generated by this method requires the "launch" method defined by {@link 
-   * BaseAction#getPythonLaunchHeaderget BaseAction.PythonLaunchHeader}.  You must first 
-   * include the code generate by <CODE>getPythonLaunchHeaderget</CODE> before the code 
-   * generated by this method.<P> 
-   * 
-   * @param scene
-   *   The abstract path to the Maya scene to load or <CODE>null</CODE> to ignore.
-   * 
-   * @param script
-   *   The temporary MEL script file to execute.
-   */ 
-  public static String
-  createMayaPythonLauncher
-  (
-   Path scene, 
-   Path script
-  ) 
-    throws PipelineException
-  {
-    StringBuilder buf = new StringBuilder();
-    
-    String maya = "maya";
-    if(PackageInfo.sOsType == OsType.Windows) 
-      maya = "mayabatch.exe"; 
-
-    buf.append
-      ("launch('" + maya + "', ['-batch', '-script', '" + script + "'");
-
-    if(scene != null) 
-      buf.append(", '-file', '" + scene + "'");
-
-    buf.append("])\n");
-
-    return buf.toString(); 
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-   
-  /**
-   * Get the Toolset environment modified to include a custom mental ray shader path.<P> 
-   * 
-   * If the variable PIPELINE_MI_SHADER_PATH is set in the Toolset environment, then the 
-   * variable MI_CUSTOM_SHADER_PATH will be added to the environment who's value is the 
-   * constructed by appending the value of PIPELINE_MI_SHADER_PATH to the working area 
-   * directory containing the target node's files.
-   * 
-   * @param agenda
-   *   The agenda to be accomplished by the Action.
-   * 
-   * @return 
-   *   The modified Toolset environment.
-   */ 
-  public static Map<String,String>
-  getMiCustomShaderEnv
-  (
-   ActionAgenda agenda
-  ) 
-    throws PipelineException
-  {  
-    return getMiCustomShaderEnv(agenda.getNodeID(), agenda.getEnvironment());
-  }
-
-  /**
-   * Get the Toolset environment modified to include a custom mental ray shader path.<P> 
-   * 
-   * If the variable PIPELINE_MI_SHADER_PATH is set in the Toolset environment, then the 
-   * variable MI_CUSTOM_SHADER_PATH will be added to the environment who's value is the 
-   * constructed by appending the value of PIPELINE_MI_SHADER_PATH to the working area 
-   * directory containing the target node's files.
-   * 
-   * @param nodeID
-   *   The unique working version identifier of the target node.
-   * 
-   * @param env
-   *   The original Toolset environment. 
-   * 
-   * @return 
-   *   The modified Toolset environment.
-   */ 
-  public static Map<String,String>
-  getMiCustomShaderEnv
-  (
-   NodeID nodeID, 
-   Map<String,String> env
-  ) 
-    throws PipelineException
-  {  
-    Map<String,String> nenv = env;
-
-    String midefs = env.get("PIPELINE_MI_SHADER_PATH");
-    if(midefs != null) {
-      nenv = new TreeMap<String, String>(env);
-      Path dpath = getWorkingNodeFilePath(nodeID, midefs);
-      nenv.put("MI_CUSTOM_SHADER_PATH", dpath.toString());
-    }
-   
-    return nenv;
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  private static final long serialVersionUID = -7573968276185917583L;
-  
-  public static final String aLinearUnits  = "LinearUnits";
-  public static final String aAngularUnits = "AngularUnits";
-  public static final String aTimeUnits    = "TimeUnits";
 
   private static final String sMelTimeUnits[] = {
     "game", 
@@ -672,6 +675,15 @@ class MayaAction
     "3000fps", 
     "6000fps"
   };
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -4571431896392188644L;
+  
+  public static final String aLinearUnits  = "LinearUnits";
+  public static final String aAngularUnits = "AngularUnits";
+  public static final String aTimeUnits    = "TimeUnits";
 
 }
 

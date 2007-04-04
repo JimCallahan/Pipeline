@@ -1,12 +1,13 @@
-// $Id: MRayRenderAction.java,v 1.5 2007/03/31 23:11:32 jim Exp $
+// $Id: MRayRenderAction.java,v 1.6 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-
-import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M R A Y   R E N D E R   A C T I O N                                                    */
@@ -128,7 +129,7 @@ import us.temerity.pipeline.*;
  * ".exe" extension in the program name.
  */ 
 public class MRayRenderAction
-  extends MayaAction
+  extends MRayActionUtils
 {
   /*---------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                               */
@@ -690,7 +691,7 @@ public class MRayRenderAction
       {
         StringBuilder buf = new StringBuilder();
 
-        String ray = MRayAction.getMRayProgram(agenda);
+        String ray = getMRayProgram(agenda);
 
         buf.append
           ("launch('" + ray + "', " + 

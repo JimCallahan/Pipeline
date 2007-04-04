@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.2 2007/03/29 19:38:05 jim Exp $
+// $Id: MayaMiShaderAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*; 
 import us.temerity.pipeline.glue.GlueException;
 import us.temerity.pipeline.glue.io.GlueEncoderImpl;
 
@@ -122,7 +123,7 @@ import us.temerity.pipeline.glue.io.GlueEncoderImpl;
  */
 public class 
 MayaMiShaderAction 
-  extends MayaAction
+  extends MayaActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

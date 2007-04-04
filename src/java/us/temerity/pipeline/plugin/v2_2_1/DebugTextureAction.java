@@ -1,8 +1,9 @@
-// $Id: DebugTextureAction.java,v 1.1 2007/03/24 23:59:49 jim Exp $
+// $Id: DebugTextureAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.*; 
 import us.temerity.pipeline.math.*; 
 
 import java.lang.*;
@@ -43,7 +44,7 @@ import java.io.*;
  */
 public
 class DebugTextureAction
-  extends BaseAction
+  extends PythonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

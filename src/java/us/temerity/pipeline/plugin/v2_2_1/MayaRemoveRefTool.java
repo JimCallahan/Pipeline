@@ -1,6 +1,7 @@
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*;
 import us.temerity.pipeline.ui.*;
 
 import java.util.*;
@@ -240,7 +241,7 @@ class MayaRemoveRefTool
         mclient.getToolsetEnvironment(PackageInfo.sUser, pView, targetMod.getToolset(),
                                       PackageInfo.sOsType);
       
-      Map<String,String> nenv = MayaAction.getMiCustomShaderEnv(targetID, env); 
+      Map<String,String> nenv = MayaActionUtils.getMiCustomShaderEnv(targetID, env); 
 
       SubProcessLight proc =
         new SubProcessLight(getName() + "Tool-FixMaya", program, args, nenv, wpath.toFile());
