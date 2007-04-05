@@ -1,9 +1,10 @@
-// $Id: MRayCamOverrideAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
+// $Id: MRayCamOverrideAction.java,v 1.3 2007/04/05 08:37:35 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.plugin.*; 
+import us.temerity.pipeline.math.Range; 
 
 import java.io.*;
 import java.util.*;
@@ -479,29 +480,32 @@ MRayCamOverrideAction
       FileWriter out = new FileWriter(temp);
 
       if(getSingleBooleanParamValue(aOverrideResolution)) {
-	int width    = getSingleIntegerParamValue(aImageWidth, 1); 
-	int height   = getSingleIntegerParamValue(aImageHeight, 1); 
+        Range range = new Range(1, null); 
+	int width    = getSingleIntegerParamValue(aImageWidth, range); 
+	int height   = getSingleIntegerParamValue(aImageHeight, range); 
 	out.write("resolution " + width + " " + height + "\n");
       }
 
+      Range frange = new Range(0.0, null, false);
+
       if(getSingleBooleanParamValue(aOverrideAspect)) {
-        double aspect = getSingleDoubleParamValue(aAspectRatio, 0.0);
+        double aspect = getSingleDoubleParamValue(aAspectRatio, frange);
 	out.write("aspect " + aspect + "\n");
       }
 
       if(getSingleBooleanParamValue(aOverrideAperture)) {
-	double aperture = getSingleDoubleParamValue(aAperture, 0.0);
+	double aperture = getSingleDoubleParamValue(aAperture, frange);
 	out.write("aperture " + aperture + "\n");
       }
 
       if(getSingleBooleanParamValue(aOverrideClipping)) {
-	double near = getSingleDoubleParamValue(aNearClipping, 0.0);
-	double far  = getSingleDoubleParamValue(aFarClipping, 0.0);
+	double near = getSingleDoubleParamValue(aNearClipping, frange);
+	double far  = getSingleDoubleParamValue(aFarClipping, frange);
 	out.write("clip " + near + " " + far + "\n");
       }
 
       if(getSingleBooleanParamValue(aOverrideFocal)) {
-	double focal = getSingleDoubleParamValue(aFocalLength, 0.0);
+	double focal = getSingleDoubleParamValue(aFocalLength, frange);
 	out.write("focal " + focal + "\n");
       }
 

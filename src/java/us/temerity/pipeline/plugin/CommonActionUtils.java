@@ -1,8 +1,9 @@
-// $Id: CommonActionUtils.java,v 1.1 2007/04/04 07:33:30 jim Exp $
+// $Id: CommonActionUtils.java,v 1.2 2007/04/05 08:38:02 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
-import  us.temerity.pipeline.*;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.Range;
 
 import java.util.*;
 import java.io.*;
@@ -383,57 +384,20 @@ class CommonActionUtils
   ) 
     throws PipelineException
   {
-    return getSingleLongParamValue(name, null, null);
-  }
-
-  /** 
-   * Get the lower bounds checked value of the single valued non-null Long parameter with 
-   * the given name. <P> 
-   * 
-   * Legal values must satisfy: (minValue <= value) <P> 
-   * 
-   * This method can be used to retrieve ByteSizeActionParam values.
-   * 
-   * @param name  
-   *   The name of the parameter. 
-   *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @return 
-   *   The action parameter value.
-   * 
-   * @throws PipelineException 
-   *   If no single valued parameter with the given name exists,
-   *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
-  public final long
-  getSingleLongParamValue
-  (
-   String name, 
-   Long minValue 
-  ) 
-    throws PipelineException
-  {
-    return getSingleLongParamValue(name, minValue, null);
+    return getSingleLongParamValue(name, null);
   }
 
   /** 
    * Get the bounds checked value of the single valued non-null Long parameter with 
    * the given name. <P> 
    * 
-   * Legal values must satisfy: (minValue <= value <= maxValue)<P> 
-   * 
-   * This method can be used to retrieve ByteSizeActionParam values.
+   * This method can also be used to retrieve ByteSizeActionParam values.
    * 
    * @param name  
    *   The name of the parameter. 
    *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @param maxValue
-   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * @param range
+   *   The valid range values for the parameter. 
    * 
    * @return 
    *   The action parameter value.
@@ -446,8 +410,7 @@ class CommonActionUtils
   getSingleLongParamValue
   (
    String name, 
-   Long minValue, 
-   Long maxValue
+   Range<Long> range
   ) 
     throws PipelineException
   {
@@ -456,15 +419,10 @@ class CommonActionUtils
       throw new PipelineException
         ("The required parameter (" + name + ") was not set!"); 
 
-    if((minValue != null) && (value < minValue)) 
+    if((range != null) && !range.isInside(value))
       throw new PipelineException
-        ("The value (" + value + ") of parameter (" + name + ") was less-than the " + 
-         "minimum allowed value (" + minValue + ")!");
-    
-    if((maxValue != null) && (value > maxValue)) 
-      throw new PipelineException
-        ("The value (" + value + ") of parameter (" + name + ") was greater-than the " + 
-         "maximum allowed value (" + maxValue + ")!");
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
 
     return value;
   }
@@ -492,53 +450,18 @@ class CommonActionUtils
   ) 
     throws PipelineException
   {
-    return getSingleIntegerParamValue(name, null, null);
-  }
-
-  /** 
-   * Get the lower bounds checked value of the single valued non-null Integer parameter with 
-   * the given name. <P> 
-   * 
-   * Legal values must satisfy: (minValue <= value) 
-   * 
-   * @param name  
-   *   The name of the parameter. 
-   *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @return 
-   *   The action parameter value.
-   * 
-   * @throws PipelineException 
-   *   If no single valued parameter with the given name exists,
-   *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
-  public final int
-  getSingleIntegerParamValue
-  (
-   String name, 
-   Integer minValue 
-  ) 
-    throws PipelineException
-  {
-    return getSingleIntegerParamValue(name, minValue, null);
+    return getSingleIntegerParamValue(name, null);
   }
 
   /** 
    * Get the bounds checked value of the single valued non-null Integer parameter with 
    * the given name. <P> 
    * 
-   * Legal values must satisfy: (minValue <= value <= maxValue)
-   * 
    * @param name  
    *   The name of the parameter. 
    *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @param maxValue
-   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * @param range
+   *   The valid range values for the parameter. 
    * 
    * @return 
    *   The action parameter value.
@@ -551,8 +474,7 @@ class CommonActionUtils
   getSingleIntegerParamValue
   (
    String name, 
-   Integer minValue, 
-   Integer maxValue
+   Range<Integer> range
   ) 
     throws PipelineException
   {
@@ -561,15 +483,10 @@ class CommonActionUtils
       throw new PipelineException
         ("The required parameter (" + name + ") was not set!"); 
 
-    if((minValue != null) && (value < minValue)) 
+    if((range != null) && !range.isInside(value))
       throw new PipelineException
-        ("The value (" + value + ") of parameter (" + name + ") was less-than the " + 
-         "minimum allowed value (" + minValue + ")!");
-    
-    if((maxValue != null) && (value > maxValue)) 
-      throw new PipelineException
-        ("The value (" + value + ") of parameter (" + name + ") was greater-than the " + 
-         "maximum allowed value (" + maxValue + ")!");
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
 
     return value;
   }
@@ -597,53 +514,18 @@ class CommonActionUtils
   ) 
     throws PipelineException
   {
-    return getSingleDoubleParamValue(name, null, null);
-  }
-
-  /** 
-   * Get the lower bounds checked value of the single valued non-null Double parameter with 
-   * the given name. <P> 
-   * 
-   * Legal values must satisfy: (lower < value)
-   * 
-   * @param name  
-   *   The name of the parameter. 
-   *
-   * @param lower
-   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @return 
-   *   The action parameter value.
-   * 
-   * @throws PipelineException 
-   *   If no single valued parameter with the given name exists, 
-   *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
-  public final double
-  getSingleDoubleParamValue
-  (
-   String name, 
-   Double lower
-  ) 
-    throws PipelineException
-  {
-    return getSingleDoubleParamValue(name, lower, null);
+    return getSingleDoubleParamValue(name, null);
   }
 
   /** 
    * Get the bounds checked value of the single valued non-null Double parameter with 
    * the given name. <P> 
    * 
-   * Legal values must satisfy: (lower < value < upper)
-   * 
    * @param name  
    *   The name of the parameter. 
    *
-   * @param lower
-   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @param upper
-   *   The upper bounds (exclusive) of legal values or <CODE>null</CODE> for no upper bounds.
+   * @param range
+   *   The valid range values for the parameter. 
    * 
    * @return 
    *   The action parameter value.
@@ -656,8 +538,7 @@ class CommonActionUtils
   getSingleDoubleParamValue
   (
    String name, 
-   Double lower, 
-   Double upper
+   Range<Double> range
   ) 
     throws PipelineException
   {
@@ -665,16 +546,11 @@ class CommonActionUtils
     if(value == null) 
       throw new PipelineException
         ("The required parameter (" + name + ") was not set!"); 
-    
-    if((lower != null) && (value <= lower)) 
+
+    if((range != null) && !range.isInside(value))
       throw new PipelineException
-        ("The value (" + value + ") of parameter (" + name + ") was not greater-than the " + 
-         "the lower bounds (" + lower + ") for legal values!");
-    
-    if((upper != null) && (value >= upper)) 
-      throw new PipelineException
-        ("The value (" + value + ") of parameter (" + name + ") was not less-than the " + 
-         "the upper bounds (" + upper + ") for legal values!");
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
 
     return value;
   }

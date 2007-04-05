@@ -1,4 +1,4 @@
-// $Id: DebugTextureAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
+// $Id: DebugTextureAction.java,v 1.3 2007/04/05 08:37:35 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -117,7 +117,7 @@ class DebugTextureAction
            "the maximum (20) number of pre-filtered image levels!");
     
     /* image resolution */ 
-    int size = getSingleIntegerParamValue(aImageSize, 1); 
+    int size = getSingleIntegerParamValue(aImageSize, new Range(1, null));
 
     /* create a temporary Python script */ 
     File script = createTemp(agenda, "py"); 

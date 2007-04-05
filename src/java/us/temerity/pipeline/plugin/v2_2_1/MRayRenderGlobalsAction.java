@@ -1,9 +1,10 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.5 2007/04/04 07:33:30 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.6 2007/04/05 08:37:35 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.plugin.*; 
+import us.temerity.pipeline.math.Range; 
 
 import java.lang.*;
 import java.util.*;
@@ -2067,9 +2068,10 @@ class MRayRenderGlobalsAction
 
       /* image resolution */ 
       {
-	int width    = getSingleIntegerParamValue(aImageWidth, 1); 
-	int height   = getSingleIntegerParamValue(aImageHeight, 1); 
-        double ratio = getSingleDoubleParamValue(aPixelAspectRatio, 0.0);
+	int width    = getSingleIntegerParamValue(aImageWidth,  new Range(1, null)); 
+	int height   = getSingleIntegerParamValue(aImageHeight, new Range(1, null)); 
+        double ratio = getSingleDoubleParamValue(aPixelAspectRatio, 
+                                                 new Range(0.0, null, false));
 
 	double deviceRatio = (((double) width) / ((double) height)) * ratio;
 
@@ -2095,10 +2097,11 @@ class MRayRenderGlobalsAction
       
       /* multi-pixel filtering */ 
       {
+        Range range = new Range(0.0, 10.0, false, true); 
 	int filter     = getSingleEnumParamIndex(aPixelFilterType);
-	double filterX = getSingleDoubleParamValue(aPixelFilterWidthX, 0.001, 10.0);
-	double filterY = getSingleDoubleParamValue(aPixelFilterWidthY, 0.001, 10.0);
-	
+	double filterX = getSingleDoubleParamValue(aPixelFilterWidthX, range); 
+	double filterY = getSingleDoubleParamValue(aPixelFilterWidthY, range); 
+
 	out.write
 	  ("// MULTI-PIXEL FILTERING\n" + 
 	   "setAttr \"miDefaultOptions.filter\" " + filter + ";\n" + 
@@ -2108,10 +2111,11 @@ class MRayRenderGlobalsAction
 
       /* contrast threshold */ 
       {
-	double red      = getSingleDoubleParamValue(aRedThreshold, 0.0);
-	double green    = getSingleDoubleParamValue(aGreenThreshold, 0.0);
-	double blue     = getSingleDoubleParamValue(aBlueThreshold, 0.0);
-	double coverage = getSingleDoubleParamValue(aCoverageThreshold, 0.0);
+        Range range = new Range(0.0, null, false); 
+        double red      = getSingleDoubleParamValue(aRedThreshold, range); 
+	double green    = getSingleDoubleParamValue(aGreenThreshold, range); 
+	double blue     = getSingleDoubleParamValue(aBlueThreshold, range); 
+	double coverage = getSingleDoubleParamValue(aCoverageThreshold, range); 
 	
 	out.write
 	  ("// CONTRAST THRESHOLD\n" +
