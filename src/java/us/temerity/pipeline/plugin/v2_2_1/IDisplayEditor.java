@@ -1,4 +1,4 @@
-// $Id: IDisplayEditor.java,v 1.1 2007/04/05 10:02:58 jim Exp $
+// $Id: IDisplayEditor.java,v 1.2 2007/04/05 10:03:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -32,8 +32,6 @@ class IDisplayEditor
     
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-
-    underDevelopment();
   }
 
 
