@@ -23,8 +23,7 @@ class BaseBuilder
   BaseBuilder
   (
     String name,
-    String desc,
-    boolean builtInParams
+    String desc
   ) 
     throws PipelineException 
   {
@@ -33,8 +32,8 @@ class BaseBuilder
     pSubNames = new TreeMap<String, BaseNames>();
     pPreppedBuilders = new TreeMap<String, BaseBuilder>();
     pGeneratedNames = new TreeMap<String, BaseNames>();
-    pFirstLoopPasses = new ArrayList<FirstLoop>();
-    pSecondLoopPasses = new ArrayList<SecondLoop>();
+    pFirstLoopPasses = new ArrayList<SetupPass>();
+    pSecondLoopPasses = new ArrayList<ConstructPass>();
     pSubBuilderOffset = new TreeMap<String, Integer>();
     {
       UtilContext context = BaseUtil.getDefaultUtilContext();
@@ -46,18 +45,22 @@ class BaseBuilder
       setGlobalContext(context);
       addParam(param);
     }
-    if(builtInParams) {
-      {
-	BuilderParam param = 
-  	new BooleanBuilderParam
-  	(aReleaseOnError,
-  	 "Release all the created nodes if an exception is thrown.", 
-  	 false);
-        addParam(param);
-      }
-    } 
-    else {
-      pReleaseOnError = false;
+    {
+      BuilderParam param = 
+	new EnumBuilderParam
+	(aActionOnExistance,
+	 "What action should the Builder take when a node already exists.",
+	 ActionOnExistance.Continue.toString(),
+	 ActionOnExistance.getStringList());
+      addParam(param);
+    }
+    {
+      BuilderParam param = 
+	new BooleanBuilderParam
+	(aReleaseOnError,
+	 "Release all the created nodes if an exception is thrown.", 
+	 false);
+      addParam(param);
     }
     pCurrentPass = 1;
   }
@@ -386,31 +389,36 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Quick method that assigns the two built-in params to the right places, so
-   * that the other pieces of {@link BaseBuilder} that depends on them can use
-   * them. 
+   * Method that assigns the built-in params to the right places, so that the other pieces of
+   * {@link BaseBuilder} that depends on them can use them.
+   * <p>
+   * It is highly advised that all Builders call this as the first action in the validate
+   * method in their first {@link SetupPass}.  Otherwise there may be unpredictable behavior.
+   * @throws PipelineException 
    */
   public void 
   validateBuiltInParams() 
+    throws PipelineException 
   {
-    setGlobalContext((UtilContext) getParamValue(aUtilContext) );
-    if (getParam(aReleaseOnError) != null)
-      pReleaseOnError = (Boolean) getParamValue(aReleaseOnError);
+    setGlobalContext((UtilContext) getParamValue(aUtilContext));
+    pReleaseOnError = getBooleanParamValue(new ParamMapping(aReleaseOnError));
+    pActionOnExistance = 
+      ActionOnExistance.valueOf(getStringParamValue(new ParamMapping(aActionOnExistance)));
   }
   
   public final void
-  addFirstLoopPass
+  addSetupPass
   (
-    FirstLoop pass
+    SetupPass pass
   )
   {
     pFirstLoopPasses.add(pass);
   }
   
   public final void
-  addSecondLoopPass
+  addConstuctPass
   (
-    SecondLoop pass
+    ConstructPass pass
   )
   {
     pSecondLoopPasses.add(pass);
@@ -421,8 +429,8 @@ class BaseBuilder
     throws PipelineException
   {
     assignCommandLineParams();
-    for (FirstLoop pass : pFirstLoopPasses) {
-      pass.runPass();
+    for (SetupPass pass : pFirstLoopPasses) {
+      pass.run();
       for (String subBuilderName : pSubBuilders.keySet()) {
 	initializeSubBuilder(subBuilderName);
 	BaseBuilder subBuilder = pSubBuilders.get(subBuilderName);
@@ -436,7 +444,8 @@ class BaseBuilder
   executeSecondLoop()
     throws PipelineException
   {
-    MappedLinkedList<Integer, String> subBuilders = new MappedLinkedList<Integer, String>(pSubBuilderOffset);
+    MappedLinkedList<Integer, String> subBuilders =
+      new MappedLinkedList<Integer, String>(pSubBuilderOffset);
     if(subBuilders == null)
       subBuilders = new MappedLinkedList<Integer, String>();
     LinkedList<String> runFirst = subBuilders.get(0);
@@ -449,8 +458,8 @@ class BaseBuilder
       subBuilders.remove(0);
     }
     int i = 1;
-    for(SecondLoop pass : pSecondLoopPasses) {
-      pass.runPass();
+    for(ConstructPass pass : pSecondLoopPasses) {
+      pass.run();
       LinkedList<String> run = subBuilders.get(i);
       if(run != null) {
 	for(String sub : run) {
@@ -507,6 +516,55 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   B U I L D E R   U T I L I T I E S                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  protected final boolean
+  checkExistance
+  (
+    String nodeName
+  ) 
+    throws PipelineException
+  {
+    boolean exists = nodeExists(nodeName);
+    if (!exists) 
+      return false;
+    if (pActionOnExistance.equals(ActionOnExistance.Abort))
+      throw new PipelineException
+        ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
+         "the setting of the ActionOnExistance parameter for the builder " +
+         "( " + getName() +  " )");
+    NodeLocation location = getNodeLocation(nodeName);
+    switch(location) {
+    case OTHER:
+      throw new PipelineException
+        ("The node (" + nodeName + ") exists, but in a different working area and was never " +
+         "checked in.  The Builder is aborting due to this problem.");
+    case LOCALONLY:
+      return true;
+    case LOCAL:
+      switch(pActionOnExistance) {
+      case CheckOut:
+	 sClient.checkOut(getAuthor(), getView(), nodeName, null, 
+	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	return true;
+      case Continue:
+	return true;
+      }
+    case REP:
+      switch(pActionOnExistance) {
+      case CheckOut:
+	 sClient.checkOut(getAuthor(), getView(), nodeName, null, 
+           CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	 return true;
+      case Continue:
+	throw new PipelineException
+          ("The node (" + nodeName + ") exists, but is not checked out in the current " +
+           "working area.  Since ActionOnExistance was set to Continue, " +
+           "the Builder is unable to procede.");
+      }
+    }
+    return false;
+  }
+  
   
   protected final void 
   disableActions() 
@@ -734,13 +792,28 @@ class BaseBuilder
   /*   P A R S E R   M E T H O D S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  public void
+  public static void
   setUsingGUI
   (
     boolean usingGUI
   )
   {
     sUsingGUI = usingGUI;
+  }
+  
+  public static void
+  setAbortOnBadParam
+  (
+    boolean abortOnBadParam
+  )
+  {
+    sAbortOnBadParam = abortOnBadParam;
+  }
+  
+  public static boolean
+  getAbortOnBadParam()
+  {
+    return sAbortOnBadParam;
   }
   
   public static void
@@ -802,6 +875,9 @@ class BaseBuilder
    */
   public final static String aUtilContext = "UtilContext";
   public final static String aReleaseOnError = "ReleaseOnError";
+  public final static String aActionOnExistance = "ActionOnExistance";
+  
+
   
   /**
    * 
@@ -813,6 +889,8 @@ class BaseBuilder
    * Is this Builder in GUI mode.
    */
   private static boolean sUsingGUI = false;
+  
+  private static boolean sAbortOnBadParam = false;
 
   
 
@@ -824,7 +902,7 @@ class BaseBuilder
   /**
    * Should the builder release all the registered nodes if it fails.
    */
-  protected boolean pReleaseOnError;
+  private boolean pReleaseOnError;
   
   /**
    * A list of node names whose actions need to be disabled. 
@@ -849,10 +927,13 @@ class BaseBuilder
   
   private TreeMap<String, Integer> pSubBuilderOffset;
   
-  private ArrayList<FirstLoop> pFirstLoopPasses;
-  private ArrayList<SecondLoop> pSecondLoopPasses;
+  private ArrayList<SetupPass> pFirstLoopPasses;
+  private ArrayList<ConstructPass> pSecondLoopPasses;
 
   private int pCurrentPass;
+  
+  private ActionOnExistance pActionOnExistance;
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -864,6 +945,20 @@ class BaseBuilder
     Complete, Problem, InProgress
   }
   
+  public static enum ActionOnExistance
+  {
+    CheckOut, Continue, Abort;
+    
+    public static ArrayList<String>
+    getStringList()
+    {
+      ArrayList<String> toReturn = new ArrayList<String>();
+      for (ActionOnExistance each : ActionOnExistance.values())
+	toReturn.add(each.toString());
+      return toReturn;
+    }
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -871,10 +966,10 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
 
   public class 
-  FirstLoop
+  SetupPass
     extends Described
   {
-    public FirstLoop
+    public SetupPass
     (
       String name,
       String desc
@@ -908,7 +1003,7 @@ class BaseBuilder
     }
 
     public final void
-    runPass()
+    run()
       throws PipelineException
     {
       TreeSet<String> listOfNames = new TreeSet<String>(pSubNames.keySet());
@@ -929,10 +1024,11 @@ class BaseBuilder
   }
   
   public class
-  SecondLoop
+  ConstructPass
     extends Described
   {
-    public SecondLoop
+    public 
+    ConstructPass
     (
       String name,
       String desc
@@ -955,14 +1051,15 @@ class BaseBuilder
     buildPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, "Stub build phase in the " + pName + ".");
+      sLog.log(Kind.Ops, Level.Finest, "Stub build phase in the " + pName + ".");
     }
     
     public final void
-    runPass()
+    run()
       throws PipelineException
     {
       TreeSet<String> neededNodes = preBuildPhase();
+      sLog.log(Kind.Ops, Level.Finer, "Queuing the following nodes " + neededNodes + ".");
       if (neededNodes.size() > 0) {
 	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
 	waitForJobs(jobs);

@@ -35,11 +35,9 @@ class BaseUtil
     String desc,
     UtilContext context
   ) 
-    throws PipelineException
   {
     pName = name;
     pDesc = desc;
-    initialize();
     pContext = context;
   }
 
@@ -62,37 +60,11 @@ class BaseUtil
     String name,
     String desc
   ) 
-    throws PipelineException
   {
     pName = name;
     pDesc = desc;
-    initialize();
   }
 
-  /**
-   * Setups the static environment so that utilities can run correctly.
-   * <p>
-   * Needs to be called once before a util begins execution.
-   * 
-   * @throws PipelineException
-   */
-  private void 
-  initialize() 
-    throws PipelineException
-  {
-    /*
-     * TODO look at moving this method somewhere else.  Some sort of global class should
-     * probably be calling this.
-     */
-    try {
-      PluginMgrClient.init();
-    }
-    catch(PipelineException ex) {
-      if (!ex.getMessage().equals("PluginMgrClient has already been initialized!"))
-	throw ex;
-    }
-  }
-  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -397,6 +369,65 @@ class BaseUtil
     if ( state == null || state.equals(State.Branch) )
       return false;
     return true;
+  }
+  
+  /**
+   * Returns a enum which indicates where a node lives.
+   * <p>
+   * If a version of the node exists in the current working area, then
+   * {@link NodeLocation#LOCAL} is returned. If the node has been checked in, but is not
+   * checked out into the current working area, then {@link NodeLocation#REP} is returned. If
+   * the name represents a directory, <code>null</code> is returned. Otherwise,
+   * {@link NodeLocation#OTHER} is returned, indicating that the node exists in some other
+   * working area, but was never checked in.
+   * <p>
+   * Note that this method assumes that the node actually exists. If existance is not assured,
+   * then the {@link #nodeExists(String)} method should be called first.
+   * 
+   * @param name
+   *        The node name.
+   * @return The location of the node.
+   */
+  public NodeLocation 
+  getNodeLocation
+  (
+    String name
+  )
+    throws PipelineException
+  {
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(name, false);
+    NodeTreeComp treeComps = sClient.updatePaths(getAuthor(), getView(), comps);
+    Path p = new Path(name);
+    ArrayList<String> parts = p.getComponents();
+    for (String comp : parts)
+    {
+      treeComps = treeComps.get(comp);
+    }
+    NodeTreeComp.State state = treeComps.getState();
+    NodeLocation toReturn = null;
+    switch (state)
+    {
+      case Branch:
+	toReturn = null;
+	break;
+      case WorkingCurrentCheckedInNone:
+	toReturn = NodeLocation.LOCALONLY;
+	break;
+      case WorkingCurrentCheckedInSome:
+	toReturn = NodeLocation.LOCAL;
+	break;
+      case WorkingNoneCheckedInSome:
+      case WorkingOtherCheckedInSome:
+	toReturn = NodeLocation.REP;
+	break;
+      case WorkingOtherCheckedInNone:
+	toReturn = NodeLocation.OTHER;
+	break;
+      default:
+	assert ( false );
+    }
+    return toReturn;
   }
 
   /**
@@ -1053,4 +1084,39 @@ class BaseUtil
    * The description of the utility.
    */
   private String pDesc;
+  
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   E N U M S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Has one of three values representing where a node lives.
+   * <p>
+   * LOCAL means the node exists in the current working area.
+   * REP means the node exists in the repository, but not the current working area.
+   * OTHER means the node only exists in the another working area.
+   *
+   */
+  public static enum NodeLocation
+  {
+    /**
+     * The node exists in the current working area.
+     */
+    LOCAL,
+    /**
+     * The node exists in the current working area, but does not exist in the respoistory. 
+     */
+    LOCALONLY,
+    /**
+     * The node exists in the repository, but not the current working area.
+     */
+    REP,
+    /**
+     * The node only exists in the another working area.
+     */
+    OTHER;
+  }
 }

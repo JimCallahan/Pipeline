@@ -13,7 +13,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
 
-public  
+public abstract
 class HasBuilderParams
   extends BaseUtil
 {
@@ -436,6 +436,8 @@ class HasBuilderParams
     return canSetSimpleParamFromString(mapping.getParamName());
   }
   
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   P A R A M E T E R    L A Y O U T                                                     */
   /*----------------------------------------------------------------------------------------*/
@@ -598,7 +600,7 @@ class HasBuilderParams
     return pAllowsChildren;
   }
   
-  public void
+  public final void
   addParamMapping
   (
     ParamMapping subParam,
@@ -611,7 +613,7 @@ class HasBuilderParams
   /**
    * Gets all the mapped parameters and the parameters that drive them.
    */
-  public SortedMap<ParamMapping, ParamMapping> 
+  public final SortedMap<ParamMapping, ParamMapping> 
   getMappedParams()
   {
     return Collections.unmodifiableSortedMap(pParamMapping);
@@ -632,10 +634,18 @@ class HasBuilderParams
     pNamedPrefix = namedPrefix;
   }
   
+  public abstract int
+  getCurrentPass();
+  
   protected final void
   assignCommandLineParams()
     throws PipelineException
   {
+    boolean abort = BaseBuilder.getAbortOnBadParam();
+    
+    int currentPass = getCurrentPass();
+    TreeSet<String> passParams = getPassParamNames(currentPass);
+    
     String prefixName = getNamedPrefix();
     if(prefixName == null)
       prefixName = getName();
@@ -661,6 +671,8 @@ class HasBuilderParams
       Set<ParamMapping> mappedParams = pParamMapping.keySet();
       
       for (String paramName : commandLineValues.keySet()) {
+	if (!passParams.contains(paramName))
+	  continue;
 	for (MultiMapNamedEntry<String, String> entry : commandLineValues.get(paramName)) {
 	  List<String> keys = entry.getKeys();
 	  ParamMapping mapping = new ParamMapping(paramName, keys);
@@ -672,25 +684,31 @@ class HasBuilderParams
 		param.fromString(value);
 	      } 
 	      catch (IllegalArgumentException ex) {
-		throw new PipelineException
-		  ("There was an error setting the value of a Parameter from a " +
-		   "command line argument.\n" + ex.getMessage());
+		String message = "There was an error setting the value of a Parameter " +
+		  "from a command line argument.\n" + ex.getMessage(); 
+		if (abort)
+    		  throw new PipelineException(message);
+		LogMgr.getInstance().log(Kind.Arg, Level.Warning, message);
 	      }
 	      LogMgr.getInstance().log(Kind.Arg, Level.Finer, 
 		"Setting command line parameter (" + mapping + ") from builder " +
 		"(" + prefixName + ") with the value (" + value + ").");
 	    }
-	    else
-	      LogMgr.getInstance().log(Kind.Arg, Level.Warning, 
-		"Cannot set command line parameter (" + mapping + ") from builder " +
-		"(" + prefixName + ") with the value (" + value + ").\n" +
-	        "Parameter is not a Simple Parameter");
+	    else {
+	      String message = "Cannot set command line parameter (" + mapping + ") " +
+	      	"from builder (" + prefixName + ") with the value (" + value + ").\n" +
+	        "Parameter is not a Simple Parameter"; 
+	      if (abort)
+		throw new PipelineException(message);
+	      LogMgr.getInstance().log(Kind.Arg, Level.Warning, message);
+	    }
 	  }
 	}
       }
     }
   }
 
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   P A R A M E T E R   L O O K U P                                                      */
@@ -1122,7 +1140,7 @@ class HasBuilderParams
 
     return null;    
   }
-
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1164,7 +1182,7 @@ class HasBuilderParams
    */
   private String pNamedPrefix = null;
   
-  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   C L A S S E S                                                          */

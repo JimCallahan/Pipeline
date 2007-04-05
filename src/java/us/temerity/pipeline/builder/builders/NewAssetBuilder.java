@@ -3,7 +3,8 @@ package us.temerity.pipeline.builder.builders;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr;
+import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.interfaces.AnswersBuilderQueries;
 import us.temerity.pipeline.builder.interfaces.DefaultBuilderAnswers;
@@ -40,8 +41,7 @@ class NewAssetBuilder
     throws PipelineException
   {
     super("NewAssetBuilder", 
-      	  "The Revised Temerity Asset Builder that works with the basic Temerity Names class.", 
-      	  true);
+      	  "The Revised Temerity Asset Builder that works with the basic Temerity Names class.");
     pBuilderInfo = builderInfo;
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
@@ -127,9 +127,9 @@ class NewAssetBuilder
     }
     configNamer(assetNames);
     pAssetNames = (BuildsAssetNames) assetNames;
-    addFirstLoopPass(new InformationLoop());
-    addSecondLoopPass(new BuildLoop());
-    addSecondLoopPass(new FinalizeLoop());
+    addSetupPass(new InformationLoop());
+    addConstuctPass(new BuildLoop());
+    addConstuctPass(new FinalizeLoop());
   }
   
   
@@ -184,7 +184,7 @@ class NewAssetBuilder
   // Mel Scripts
   protected String pFinalizeMEL;
   
-  protected String pFinalizeMelLR;
+  protected String pLRFinalizeMEL;
 
   protected String pPlaceHolderMEL;
 
@@ -239,13 +239,13 @@ class NewAssetBuilder
   
   protected class 
   InformationLoop
-    extends FirstLoop
+    extends SetupPass
   {
     public 
     InformationLoop()
     {
       super("Information Pass", 
-	    "Information pass for the AssetBuilder");
+	    "Information pass for the NewAssetBuilder");
     }
 
     @SuppressWarnings("unchecked")
@@ -268,7 +268,7 @@ class NewAssetBuilder
 
       pFinalizeMEL = pAssetNames.getFinalizeScriptName();
       
-      pFinalizeMelLR = pAssetNames.getLowRezFinalizeScriptName();
+      pLRFinalizeMEL = pAssetNames.getLowRezFinalizeScriptName();
 
       pMRInitMEL = pAssetNames.getMRInitScriptName();
 
@@ -293,13 +293,13 @@ class NewAssetBuilder
   
   protected class
   BuildLoop
-    extends SecondLoop
+    extends ConstructPass
   {
     public 
     BuildLoop()
     {
       super("Build Pass", 
-	    "The AssetBuilder Pass which actually constructs the node networks.");
+	    "The NewAssetBuilder Pass which actually constructs the node networks.");
     }
 
     @Override
@@ -311,7 +311,7 @@ class NewAssetBuilder
 	"Starting the build phase in the Build Pass");
       
       String modelName = pAssetNames.getModelNodeName(); 
-      if(!nodeExists(modelName)) {
+      if(!checkExistance(modelName)) {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
 	  (pContext, 
@@ -328,7 +328,7 @@ class NewAssetBuilder
 	headName = pAssetNames.getHeadModelNodeName();
 	blendName = pAssetNames.getBlendShapeModelNodeName();
 
-	if (!nodeExists(headName)) {
+	if (!checkExistance(headName)) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
 	    (pContext, 
@@ -338,7 +338,7 @@ class NewAssetBuilder
 	  pEmptyMayaScenes.add(stage);
 	}
 
-	if (!nodeExists(blendName)) {
+	if (!checkExistance(blendName)) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
 	    (pContext, 
@@ -357,7 +357,7 @@ class NewAssetBuilder
 	rigInfo = pAssetNames.getRigInfoNodeName();
 	autoRigMEL = pAssetNames.getAutoRigScriptName();
 
-	if (skeleton != null && !nodeExists(skeleton)) {
+	if (skeleton != null && !checkExistance(skeleton)) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
 	    (pContext, 
@@ -367,7 +367,7 @@ class NewAssetBuilder
 	  pEmptyMayaScenes.add(stage);
 	}
 
-	if (rigInfo != null && !nodeExists(rigInfo)) {
+	if (rigInfo != null && !checkExistance(rigInfo)) {
 	  EmptyFileStage stage = 
 	    new EmptyFileStage
 	    (pContext,
@@ -378,7 +378,7 @@ class NewAssetBuilder
       }
 
       String rigName = pAssetNames.getRigNodeName();
-      if (!nodeExists(rigName)) {
+      if (!checkExistance(rigName)) {
 	NewAssetBuilderRigStage stage = 
 	  new NewAssetBuilderRigStage
 	  (pContext, pMayaContext,
@@ -389,7 +389,7 @@ class NewAssetBuilder
       }
 
       String matName = pAssetNames.getMaterialNodeName();
-      if (!nodeExists(matName)) {
+      if (!checkExistance(matName)) {
 	NewAssetBuilderMaterialStage stage =
 	  new NewAssetBuilderMaterialStage
 	  (pContext, pMayaContext,
@@ -400,7 +400,7 @@ class NewAssetBuilder
       }
 
       String matExportName = pAssetNames.getMaterialExportNodeName();
-      if (!nodeExists(matExportName)) {
+      if (!checkExistance(matExportName)) {
 	NewAssetBuilderMaterialExportStage stage = 
 	  new NewAssetBuilderMaterialExportStage
 	  (pContext, 
@@ -410,7 +410,7 @@ class NewAssetBuilder
       }
 
       String finalName = pAssetNames.getFinalNodeName();
-      if (!nodeExists(finalName)) {
+      if (!checkExistance(finalName)) {
 	NewAssetBuilderFinalStage stage = 
 	  new NewAssetBuilderFinalStage
 	  (pContext, pMayaContext,
@@ -419,18 +419,20 @@ class NewAssetBuilder
 	   pFinalizeMEL);
 	stage.build();
 	addToQueueList(finalName);
+	addToCheckInList(finalName);
       }
 
       String lrFinalName = pAssetNames.getLowRezFinalNodeName();
-      if (pBuildLowRez && !nodeExists(lrFinalName)) {
+      if (pBuildLowRez && !checkExistance(lrFinalName)) {
 	NewAssetBuilderFinalStage stage =
 	  new NewAssetBuilderFinalStage
 	  (pContext, pMayaContext,
 	   lrFinalName,
 	   rigName, null, null,
-	   pFinalizeMelLR);
+	   pLRFinalizeMEL);
 	stage.build();
 	addToQueueList(lrFinalName);
+	addToCheckInList(lrFinalName);
       }
 	if(pBuildAdvancedShadingNetwork)
 	  buildShadingNetwork();
@@ -445,7 +447,7 @@ class NewAssetBuilder
       String textureNodeName = pAssetNames.getTextureNodeName();
       String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
         .getMaterialNodeName();
-      if(!nodeExists(textureNodeName)) {
+      if(!checkExistance(textureNodeName)) {
         new AssetBuilderTextureStage(pContext, textureNodeName, parentName).build();
       }
     }
@@ -454,20 +456,22 @@ class NewAssetBuilder
     buildShadingNetwork() 
       throws PipelineException
     {
-      if(!nodeExists(pAssetNames.getShaderIncludeNodeName())) {
+      if(!checkExistance(pAssetNames.getShaderIncludeNodeName())) {
         new AssetBuilderShaderIncludeStage(pContext, pAssetNames.getShaderIncludeNodeName(),
           pAssetNames.getShaderIncludeGroupSecSeq()).build();
       }
-      if(!nodeExists(pAssetNames.getShaderNodeName())) {
+      if(!checkExistance(pAssetNames.getShaderNodeName())) {
         new AssetBuilderShaderStage(pContext, pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
         addToDisableList(pAssetNames.getShaderNodeName());
       }
-      if(!nodeExists(pAssetNames.getShaderExportNodeName())) {
+      if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
         new AssetBuilderShaderExportStage(pContext, pMayaContext, pAssetNames
           .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), pAssetNames.getAssetName()).build();
         addToQueueList(pAssetNames.getShaderExportNodeName());
         removeFromQueueList(pAssetNames.getFinalNodeName());
+        addToCheckInList(pAssetNames.getShaderExportNodeName());
+        removeFromCheckInList(pAssetNames.getFinalNodeName());
       }
     }
     private static final long serialVersionUID = -2455380248604721406L;
@@ -475,13 +479,13 @@ class NewAssetBuilder
    
   protected class
   FinalizeLoop
-    extends SecondLoop
+    extends ConstructPass
   {
     public 
     FinalizeLoop()
     {
       super("Finalize Pass", 
-	    "The AssetBuilder pass that disconnects placeholder MEL scripts.");
+	    "The NewAssetBuilder pass that disconnects placeholder MEL scripts.");
     }
     
     @Override
@@ -490,7 +494,14 @@ class NewAssetBuilder
     {
       sLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
 	"Starting the prebuild phase in the Finalize Pass");
-      return getDisableList();
+      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      if (pBuildSeparateHead)
+	toReturn.add(pAssetNames.getBlendShapeModelNodeName());
+      if (pAutoRigSetup) {
+	toReturn.add(pAssetNames.getRigInfoNodeName());
+	toReturn.add(pAssetNames.getSkeletonNodeName());
+      }
+      return toReturn;
     }
 
     @Override

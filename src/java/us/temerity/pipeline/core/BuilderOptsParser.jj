@@ -66,6 +66,7 @@ TOKEN :
 
   /* global options */
 | <GUI:		"--gui">
+| <ABORT:   "--abort">
 | <BUILDER:	"--builder"> : BUILDER_SEP
 | <LOG:     "--log">     : LOG_SEP
 | <PARAM:   "--">        : PARAM_NAME_STATE
@@ -266,7 +267,7 @@ GlobalOpts()
   throws PipelineException :
 {}
 {
-  (Log() | Gui() | Builder() | Param())
+  (Log() | Gui() | Abort() | Builder() | Param())
   {}
 }
 
@@ -276,13 +277,22 @@ GlobalOpts()
 void
 Gui() 
   throws PipelineException :
-{
-  Token t;
-}
+{}
 {
   <GUI> 
   { 
-    pApp.setUsingGUI(true);
+    BaseBuilder.setUsingGUI(true);
+  }
+}
+
+void
+Abort() 
+  throws PipelineException :
+{}
+{
+  <ABORT> 
+  { 
+    BaseBuilder.setAbortOnBadParam(true);
   }
 }
 

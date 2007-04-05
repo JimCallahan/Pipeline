@@ -41,8 +41,7 @@ class AssetBuilder
     throws PipelineException
   {
     super("AssetBuilder", 
-      	  "The basic Temerity Asset Builder that works with the basic Temerity Names class.", 
-      	  true);
+      	  "The basic Temerity Asset Builder that works with the basic Temerity Names class.");
     pBuilderInfo = builderInfo;
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
@@ -108,9 +107,9 @@ class AssetBuilder
     }
     configNamer(assetNames);
     pAssetNames = (BuildsAssetNames) assetNames;
-    addFirstLoopPass(new InformationLoop());
-    addSecondLoopPass(new BuildLoop());
-    addSecondLoopPass(new FinalizeLoop());
+    addSetupPass(new InformationLoop());
+    addConstuctPass(new BuildLoop());
+    addConstuctPass(new FinalizeLoop());
   }
   
   
@@ -203,7 +202,7 @@ class AssetBuilder
   
   protected class 
   InformationLoop
-    extends FirstLoop
+    extends SetupPass
   {
     public 
     InformationLoop()
@@ -251,7 +250,7 @@ class AssetBuilder
   
   protected class
   BuildLoop
-    extends SecondLoop
+    extends ConstructPass
   {
     public 
     BuildLoop()
@@ -292,7 +291,7 @@ class AssetBuilder
     ) 
       throws PipelineException
     {
-      if(!nodeExists(modName)) {
+      if(!checkExistance(modName)) {
         AssetBuilderModelStage stage = 
           new AssetBuilderModelStage
           (pContext, 
@@ -302,14 +301,14 @@ class AssetBuilder
         stage.build();
         pModelStages.add(stage);
       }
-      if(!nodeExists(rigName)) {
+      if(!checkExistance(rigName)) {
         new AssetBuilderRigStage(pContext, pMayaContext, rigName, modName).build();
       }
-      if(!nodeExists(matName)) {
+      if(!checkExistance(matName)) {
         new AssetBuilderMaterialStage(pContext, pMayaContext, matName, rigName).build();
         addToDisableList(matName);
       }
-      if(!nodeExists(finalName)) {
+      if(!checkExistance(finalName)) {
         new AssetBuilderFinalStage
           (pContext, pMayaContext, finalName, matName, pFinalizeMEL).build();
         addToQueueList(finalName);
@@ -323,7 +322,7 @@ class AssetBuilder
       String textureNodeName = pAssetNames.getTextureNodeName();
       String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
         .getMaterialNodeName();
-      if(!nodeExists(textureNodeName)) {
+      if(!checkExistance(textureNodeName)) {
         new AssetBuilderTextureStage(pContext, textureNodeName, parentName).build();
       }
     }
@@ -332,16 +331,16 @@ class AssetBuilder
     buildShadingNetwork() 
       throws PipelineException
     {
-      if(!nodeExists(pAssetNames.getShaderIncludeNodeName())) {
+      if(!checkExistance(pAssetNames.getShaderIncludeNodeName())) {
         new AssetBuilderShaderIncludeStage(pContext, pAssetNames.getShaderIncludeNodeName(),
           pAssetNames.getShaderIncludeGroupSecSeq()).build();
       }
-      if(!nodeExists(pAssetNames.getShaderNodeName())) {
+      if(!checkExistance(pAssetNames.getShaderNodeName())) {
         new AssetBuilderShaderStage(pContext, pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
         addToDisableList(pAssetNames.getShaderNodeName());
       }
-      if(!nodeExists(pAssetNames.getShaderExportNodeName())) {
+      if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
         new AssetBuilderShaderExportStage(pContext, pMayaContext, pAssetNames
           .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), pAssetNames.getAssetName()).build();
         addToQueueList(pAssetNames.getShaderExportNodeName());
@@ -353,7 +352,7 @@ class AssetBuilder
    
   protected class
   FinalizeLoop
-    extends SecondLoop
+    extends ConstructPass
   {
     public 
     FinalizeLoop()

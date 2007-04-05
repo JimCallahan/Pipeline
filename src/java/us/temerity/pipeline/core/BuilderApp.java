@@ -1,10 +1,10 @@
 package us.temerity.pipeline.core;
 
-import java.io.IOException;
 import java.io.StringReader;
 
-import us.temerity.pipeline.LogMgr;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.BaseBuilder;
 import us.temerity.pipeline.builder.stages.BaseStage;
 
@@ -54,7 +54,11 @@ public class BuilderApp
   }
 
   @SuppressWarnings("unchecked")
-  public void run(String[] args)
+  public void 
+  run
+  (
+    String[] args
+  ) 
   {
     if(args.length == 0) {
       System.out.print("Builder name was missing!\n");
@@ -77,8 +81,19 @@ public class BuilderApp
       }
       packageArguments(appArgs);
     }
-    BaseStage.initializeAddedNodes();
     
+    try {
+      PluginMgrClient.init();
+    }
+    catch (PipelineException ex)
+    {
+      LogMgr.getInstance().log(Kind.Ops, Level.Severe, 
+	"Unable to Initialize the plugin Manager.  Builder Aborting.\n" + ex.getMessage());
+      return;
+    }
+    
+    BaseStage.initializeAddedNodes();
+
     
     try {
       BuilderOptsParser parser = 
@@ -89,7 +104,6 @@ public class BuilderApp
 	Class cls = loader.loadClass(args[0]);
 	parser.CommandLine();
 	BaseBuilder builder = (BaseBuilder) cls.newInstance();
-	builder.setUsingGUI(pUsingGUI);
 	builder.run();
       }else 
 	parser.CommandLine();
@@ -116,15 +130,6 @@ public class BuilderApp
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
-  
-  public void
-  setUsingGUI
-  (
-    boolean usingGUI
-  )
-  {
-    pUsingGUI = usingGUI;
-  }
   
   /**
    * Generate an explanitory message for the non-literal token.
@@ -170,9 +175,4 @@ public class BuilderApp
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Is this Builder in GUI mode.
-   */
-  private boolean pUsingGUI;
 }
