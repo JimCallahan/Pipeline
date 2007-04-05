@@ -1,4 +1,4 @@
-// $Id: MRayAddTexturesTool.java,v 1.2 2007/04/02 21:19:36 jim Exp $
+// $Id: MRayAddTexturesTool.java,v 1.3 2007/04/05 10:15:57 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -53,8 +53,6 @@ MRayAddTexturesTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 

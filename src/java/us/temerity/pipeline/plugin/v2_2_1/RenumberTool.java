@@ -1,4 +1,4 @@
-// $Id: RenumberTool.java,v 1.2 2007/04/01 21:19:42 jim Exp $
+// $Id: RenumberTool.java,v 1.3 2007/04/05 10:16:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -46,9 +46,8 @@ RenumberTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

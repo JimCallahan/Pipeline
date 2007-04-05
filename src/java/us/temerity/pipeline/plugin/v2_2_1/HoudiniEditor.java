@@ -1,4 +1,4 @@
-// $Id: HoudiniEditor.java,v 1.1 2007/03/29 19:39:57 jim Exp $
+// $Id: HoudiniEditor.java,v 1.2 2007/04/05 10:14:49 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -30,8 +30,6 @@ class HoudiniEditor
 	  "houdini");
 
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 
