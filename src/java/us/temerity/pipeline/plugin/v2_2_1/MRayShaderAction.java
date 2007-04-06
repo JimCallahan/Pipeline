@@ -1,4 +1,4 @@
-// $Id: MRayShaderAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
+// $Id: MRayShaderAction.java,v 1.3 2007/04/06 21:16:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -69,7 +69,13 @@ import java.io.*;
  *   <DIV style="margin-left: 40px;">
  *     Additional command-line arguments. <BR> 
  *   </DIV>
- * </DIV>
+ * </DIV> <P> 
+ * 
+ * By default, the "python" program is used by this action to run the compilation commands.  
+ * An alternative program can be specified by setting PYTHON_BINARY in the Toolset 
+ * environment to the name of the Python interpertor this Action should use.  When naming an 
+ * alternative Python interpretor under Windows, make sure to include the ".exe" extension 
+ * in the program name.
  */
 public
 class MRayShaderAction

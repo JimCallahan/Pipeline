@@ -1,4 +1,4 @@
-// $Id: MRayInstGroupAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
+// $Id: MRayInstGroupAction.java,v 1.4 2007/04/06 21:16:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -18,7 +18,13 @@ import java.util.*;
  * 
  * This action scans each source MI files for "instance" statements and then generates 
  * a target MI file which includes the source MI file and contains an "instgroups" statement 
- * for all found instances.  
+ * for all found instances.  <P> 
+ * 
+ * By default, the "python" program is used by this action to parse the MI files.
+ * An alternative program can be specified by setting PYTHON_BINARY in the Toolset 
+ * environment to the name of the Python interpertor this Action should use.  When naming an 
+ * alternative Python interpretor under Windows, make sure to include the ".exe" extension 
+ * in the program name.
  */
 public class 
 MRayInstGroupAction 

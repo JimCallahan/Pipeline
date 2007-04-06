@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.6 2007/04/05 08:37:35 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.7 2007/04/06 21:16:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -685,18 +685,18 @@ class MRayRenderGlobalsAction
       }
 
       {
-	ArrayList<String> filter = new ArrayList<String>();
-	filter.add("Box Filter");
-	filter.add("Triangle Filter");
-	filter.add("Gaussian Filter");
-	filter.add("Mitchell Filter");
-	filter.add("Lanczos Filter");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("Box Filter");
+	choices.add("Triangle Filter");
+	choices.add("Gaussian Filter");
+	choices.add("Mitchell Filter");
+	choices.add("Lanczos Filter");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aPixelFilterType,
 	   "The type of filter used to integrate pixels.", 
-	   "Triangle Filter", filter);
+	   "Triangle Filter", choices);
 	addSingleParam(param);
       }
 
@@ -824,31 +824,31 @@ class MRayRenderGlobalsAction
       }
       
       {
-	ArrayList<String> scanline = new ArrayList<String>();
-	scanline.add("Off");
-	scanline.add("On");
-	scanline.add("OpenGL");
-	scanline.add("Rapid");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("Off");
+	choices.add("On");
+	choices.add("OpenGL");
+	choices.add("Rapid");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aScanline,
 	   "Controls the use of scanline rendering.", 
-	   "On", scanline);
+	   "On", choices);
 	addSingleParam(param);
       }
 
       {
-	ArrayList<String> faces = new ArrayList<String>();
-	faces.add("Front");
-	faces.add("Back");
-	faces.add("Both");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("Front");
+	choices.add("Back");
+	choices.add("Both");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aFaces,
 	   "Controls which side(s) of triangles are rendered.", 
-	   "Both", faces);
+	   "Both", choices);
 	addSingleParam(param);
       }
     }
@@ -856,16 +856,16 @@ class MRayRenderGlobalsAction
     /* motion blur */ 
     {
       {
-	ArrayList<String> blur = new ArrayList<String>();
-	blur.add("Off");
-	blur.add("Linear");
-	blur.add("Exact");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("Off");
+	choices.add("Linear");
+	choices.add("Exact");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aMotionBlur,
 	   "Controls the motion blur technique.", 
-	   "Off", blur);
+	   "Off", choices);
 	addSingleParam(param);
       }
 
@@ -972,15 +972,15 @@ class MRayRenderGlobalsAction
       }
       
       {
-	ArrayList<String> filter = new ArrayList<String>();
-	filter.add("Box Filter");
-	filter.add("Cone Filter");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("Box Filter");
+	choices.add("Cone Filter");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aCausticFilterType,
 	   "The type of filter used by caustics.", 
-	   "Box Filter", filter);
+	   "Box Filter", choices);
 	addSingleParam(param);
       }
 
@@ -1246,31 +1246,31 @@ class MRayRenderGlobalsAction
     /* framebuffer attributes */ 
     {
       {
-	ArrayList<String> dtype = new ArrayList<String>();
-	dtype.add("RGB (Byte) 3x8");
-	dtype.add("RGB (Short) 3x16");
-	dtype.add("RGB (Half) 3x16");
-	dtype.add("RGB (Float) 3x32");
-	dtype.add("RGBA (Byte) 4x8");
-	dtype.add("RGBE (Byte) 4x8");
-	dtype.add("RGBA (Short) 4x16");
-	dtype.add("RGBA (Half) 4x16");
-	dtype.add("RGBA (Float) 4x32");
-	dtype.add("Alpha (Byte) 1x8");
-	dtype.add("Alpha (Short) 1x16");
-	dtype.add("Alpha (Float) 1x32");
-	dtype.add("Depth (Float) 1x32");
-	dtype.add("Coverage (Float) 1x32");
-	dtype.add("Normal (Float) 3x32");
-	dtype.add("Motion (Float) 3x32");
-	dtype.add("Label (Integer) 1x32");
-	dtype.add("Bit");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("RGB (Byte) 3x8");
+	choices.add("RGB (Short) 3x16");
+	choices.add("RGB (Half) 3x16");
+	choices.add("RGB (Float) 3x32");
+	choices.add("RGBA (Byte) 4x8");
+	choices.add("RGBE (Byte) 4x8");
+	choices.add("RGBA (Short) 4x16");
+	choices.add("RGBA (Half) 4x16");
+	choices.add("RGBA (Float) 4x32");
+	choices.add("Alpha (Byte) 1x8");
+	choices.add("Alpha (Short) 1x16");
+	choices.add("Alpha (Float) 1x32");
+	choices.add("Depth (Float) 1x32");
+	choices.add("Coverage (Float) 1x32");
+	choices.add("Normal (Float) 3x32");
+	choices.add("Motion (Float) 3x32");
+	choices.add("Label (Integer) 1x32");
+	choices.add("Bit");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aDataType,
 	   "The output data format.", 
-	   "RGBA (Byte) 4x8", dtype);
+	   "RGBA (Byte) 4x8", choices);
 	addSingleParam(param);
       }
 
@@ -1284,16 +1284,16 @@ class MRayRenderGlobalsAction
       }
       
       {
-	ArrayList<String> clip = new ArrayList<String>();
-	clip.add("RGB");
-	clip.add("Alpha");
-	clip.add("Raw");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("RGB");
+	choices.add("Alpha");
+	choices.add("Raw");
       
 	ActionParam param = 
 	  new EnumActionParam
 	  (aColorClip,
 	   "Pre-quantization color clipping method.", 
-	   "Raw", clip);
+	   "Raw", choices);
 	addSingleParam(param);
       }
 
@@ -1337,16 +1337,16 @@ class MRayRenderGlobalsAction
     /* memory and performance */ 
     {
       {
-	ArrayList<String> method = new ArrayList<String>();
-	method.add("BSP");
-	method.add("Grid");
-	method.add("Large BSP");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("BSP");
+	choices.add("Grid");
+	choices.add("Large BSP");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aAccelerationMethod,
 	   "The algorithm used to acceleration ray testing.", 
-	   "BSP", method);
+	   "BSP", choices);
 	addSingleParam(param);
       }
 
@@ -1418,20 +1418,20 @@ class MRayRenderGlobalsAction
     /* translation */ 
     {
       {
-	ArrayList<String> verbose = new ArrayList<String>();
-	verbose.add("No Messages");
-	verbose.add("Fatal Messages Only");
-	verbose.add("Error Messages");
-	verbose.add("Warning Messages");
-	verbose.add("Info Messages");
-	verbose.add("Progress Messages");
-	verbose.add("Details Messages");
+	ArrayList<String> choices = new ArrayList<String>();
+	choices.add("No Messages");
+	choices.add("Fatal Messages Only");
+	choices.add("Error Messages");
+	choices.add("Warning Messages");
+	choices.add("Info Messages");
+	choices.add("Progress Messages");
+	choices.add("Details Messages");
 
 	ActionParam param = 
 	  new EnumActionParam
 	  (aExportVerbosity,
 	   "The verbosity of export messages.", 
-	   "Warning Messages", verbose);
+	   "Warning Messages", choices);
 	addSingleParam(param);
       }
 
@@ -2062,7 +2062,7 @@ class MRayRenderGlobalsAction
       {
         Path npath = new Path(agenda.getNodeID().getName());
         Path wpath = new Path(npath.getParentPath(), agenda.getPrimaryTarget().getPath(0)); 
-        out.write("print(\"Applying Render Globals:" + 
+        out.write("print(\"Applying Render Globals: " + 
                   "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
       }
 

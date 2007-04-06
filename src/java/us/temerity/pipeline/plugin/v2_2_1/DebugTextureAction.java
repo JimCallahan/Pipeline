@@ -1,4 +1,4 @@
-// $Id: DebugTextureAction.java,v 1.3 2007/04/05 08:37:35 jim Exp $
+// $Id: DebugTextureAction.java,v 1.4 2007/04/06 21:16:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -40,7 +40,13 @@ import java.io.*;
  *     The image resolution of the largest mip-map level in the sequence. 
  *   </DIV> <BR>
  *   <BR>
- * </DIV>
+ * </DIV> <P> 
+ * 
+ * By default, the "python" program is used by this action to run the "shake" commands.  
+ * An alternative program can be specified by setting PYTHON_BINARY in the Toolset 
+ * environment to the name of the Python interpertor this Action should use.  When naming an 
+ * alternative Python interpretor under Windows, make sure to include the ".exe" extension 
+ * in the program name.
  */
 public
 class DebugTextureAction

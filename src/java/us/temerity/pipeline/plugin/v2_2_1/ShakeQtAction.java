@@ -1,4 +1,4 @@
-// $Id: ShakeQtAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
+// $Id: ShakeQtAction.java,v 1.3 2007/04/06 21:16:30 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -29,6 +29,12 @@ import java.io.*;
  *     The number of image frames per second.
  *   </DIV>
  * </DIV> <P> 
+ * 
+ * By default, the "python" program is used by this action to run the "shake" command and
+ * move the generated QuickTime movie to the target location.  An alternative program can be 
+ * specified by setting PYTHON_BINARY in the Toolset environment to the name of the Python 
+ * interpertor this Action should use.  When naming an alternative Python interpretor under 
+ * Windows, make sure to include the ".exe" extension in the program name.
  */
 public
 class ShakeQtAction
