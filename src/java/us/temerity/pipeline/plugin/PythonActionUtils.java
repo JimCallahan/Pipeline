@@ -1,4 +1,4 @@
-// $Id: PythonActionUtils.java,v 1.1 2007/04/04 07:33:30 jim Exp $
+// $Id: PythonActionUtils.java,v 1.2 2007/04/08 21:01:23 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -551,6 +551,9 @@ class PythonActionUtils
             first = false;
             buf.append("'" + arg + "'");
           }
+
+          if(!args.isEmpty()) 
+            buf.append(", ");
        
           common = buf.toString();
         }
@@ -563,7 +566,7 @@ class PythonActionUtils
           for(wk=0; wk<sourcePaths.size(); wk++) {
             Path spath = new Path(sourcePath, sourcePaths.get(wk));
             Path tpath = new Path(agenda.getTargetPath(), targetPaths.get(wk));
-            out.write(common + ", '" + spath + "', '" + tpath + "'])\n");
+            out.write(common + "'" + spath + "', '" + tpath + "'])\n");
           }
         }
         
