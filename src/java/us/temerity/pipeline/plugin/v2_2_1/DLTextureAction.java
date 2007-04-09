@@ -1,4 +1,4 @@
-// $Id: DLTextureAction.java,v 1.2 2007/04/06 21:16:22 jim Exp $
+// $Id: DLTextureAction.java,v 1.3 2007/04/09 17:54:06 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -80,6 +80,15 @@ import java.io.*;
  *   </DIV> <BR>
  * 
  *   
+ *   Format <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The format of generated texture map files.
+ *     <UL>
+ *       <LI> Texture  
+ *       <LI> EnvMap   (latitude/longitude environment map)
+ *     </UL>
+ *   </DIV> <BR>
+ * 
  *   S Mode <BR>
  *   T Mode <BR>
  *   <DIV style="margin-left: 40px;">
@@ -214,6 +223,19 @@ class DLTextureAction
 
     {
       ArrayList<String> choices = new ArrayList<String>();
+      choices.add("Texture");
+      choices.add("EnvMap");
+
+      ActionParam param = 
+        new EnumActionParam
+        (aFormat, 
+         "The format of generated texture map files.", 
+         "Texture", choices);
+      addSingleParam(param);
+    }
+
+    {
+      ArrayList<String> choices = new ArrayList<String>();
       choices.add("Black");
       choices.add("Clamp");
       choices.add("Periodic");
@@ -315,6 +337,8 @@ class DLTextureAction
       {
 	LayoutGroup output = new LayoutGroup
 	  ("Output", "Texture output and interpretation controls.", true);
+        output.addEntry(aFormat);
+	output.addSeparator();
 	output.addEntry(aMode);
 	output.addEntry(aSMode);
 	output.addEntry(aTMode);
@@ -409,6 +433,11 @@ class DLTextureAction
     /* build common command-line arguments */ 
     ArrayList<String> args = new ArrayList<String>();
     {
+      switch(getSingleEnumParamIndex(aFormat)) {
+      case 1:
+        args.add("-envlatl");
+      }
+
       args.add("-quality");
       switch(getSingleEnumParamIndex(aQuality)) {
       case 0:
@@ -636,6 +665,7 @@ class DLTextureAction
   public static final String aSFilterWidth = "SFilterWidth";
   public static final String aTFilterWidth = "TFilterWidth";
   public static final String aBlurFactor   = "BlurFactor";
+  public static final String aFormat       = "Format"; 
   public static final String aSMode        = "SMode";
   public static final String aTMode        = "TMode";
   public static final String aMode         = "Mode";
