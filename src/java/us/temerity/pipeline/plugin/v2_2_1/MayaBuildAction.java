@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.5 2007/04/04 07:33:30 jim Exp $
+// $Id: MayaBuildAction.java,v 1.6 2007/04/09 17:54:43 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -288,12 +288,14 @@ class MayaBuildAction
     /* model filenames */ 
     TreeMap<String,Path> modelPaths = new TreeMap<String,Path>();
     for(String sname : agenda.getSourceNames()) {
-      FileSeq fseq = agenda.getPrimarySource(sname);
-      String suffix = fseq.getFilePattern().getSuffix();
-      if(fseq.isSingle() && (suffix != null)) {
-        if(suffix.equals("ma") || suffix.equals("mb")) {
-          Path npath = new Path(sname);
-          modelPaths.put(sname, new Path(npath.getParentPath(), fseq.getPath(0)));
+      if(hasSourceParams(sname)) {
+        FileSeq fseq = agenda.getPrimarySource(sname);
+        String suffix = fseq.getFilePattern().getSuffix();
+        if(fseq.isSingle() && (suffix != null)) {
+          if(suffix.equals("ma") || suffix.equals("mb")) {
+            Path npath = new Path(sname);
+            modelPaths.put(sname, new Path(npath.getParentPath(), fseq.getPath(0)));
+          }
         }
       }
     }
