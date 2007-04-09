@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.7 2007/04/04 07:33:30 jim Exp $
+// $Id: CatFilesAction.java,v 1.8 2007/04/09 17:53:41 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -122,11 +122,10 @@ class CatFilesAction
   )
     throws PipelineException
   { 
-    NodeID nodeID = agenda.getNodeID();
-
     /* get the ordered source file paths */ 
     MappedArrayList<Integer,Path> sourcePaths = new MappedArrayList<Integer,Path>();
     {
+      NodeID nodeID = agenda.getNodeID();
       int numFrames = agenda.getPrimaryTarget().numFrames();
       for(String sname : agenda.getSourceNames()) {
 	if(hasSourceParams(sname)) {
@@ -270,7 +269,6 @@ class CatFilesAction
   )
     throws PipelineException 
   {
-    String suffix = fseq.getFilePattern().getSuffix();
     if((fseq.numFrames() != 1) && (fseq.numFrames() != numFrames))
       throw new PipelineException
 	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
