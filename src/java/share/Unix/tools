@@ -13,54 +13,54 @@ ToolMenuLayout <PluginMenuLayout> #1 {
           Vendor <String> #12 { "Temerity" }
         }
         <PluginMenuLayout> #13 {
-          Title <String> #14 { "MayaAddReference" }
-          Name <String> #15 { "MayaAddReference" }
+          Title <String> #14 { "MayaAddRef" }
+          Name <String> #15 { "MayaAddRef" }
           VersionID <VersionID> #16 {
-            RevisionNumber <String> #17 { "2.0.10" }
+            RevisionNumber <String> #17 { "2.2.1" }
           }
           Vendor <String> #18 { "Temerity" }
         }
         <PluginMenuLayout> #19 {
-          Title <String> #20 { "MayaRemoveReference" }
-          Name <String> #21 { "MayaRemoveReference" }
+          Title <String> #20 { "MayaRemoveRef" }
+          Name <String> #21 { "MayaRemoveRef" }
           VersionID <VersionID> #22 {
-            RevisionNumber <String> #23 { "2.0.9" }
+            RevisionNumber <String> #23 { "2.2.1" }
           }
-          Vendor <String> #24 { "Temerity" }
+          Vendor <REF> #18
         }
       }
     }
-    <PluginMenuLayout> #25 {
-      Title <String> #26 { "MentalRay" }
-      Children <LinkedList> #27 {
-        <PluginMenuLayout> #28 {
-          Title <String> #29 { "RegisterMap" }
-          Name <String> #30 { "RegisterMap" }
-          VersionID <VersionID> #31 {
-            RevisionNumber <String> #32 { "2.0.9" }
+    <PluginMenuLayout> #24 {
+      Title <String> #25 { "MentalRay" }
+      Children <LinkedList> #26 {
+        <PluginMenuLayout> #27 {
+          Title <String> #28 { "MRayAddTextures" }
+          Name <String> #29 { "MRayAddTextures" }
+          VersionID <VersionID> #30 {
+            RevisionNumber <String> #31 { "2.2.1" }
           }
-          Vendor <String> #33 { "Temerity" }
+          Vendor <String> #32 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #34 {
-      Title <String> #35 { "Utils" }
-      Children <LinkedList> #36 {
-        <PluginMenuLayout> #37 {
-          Title <String> #38 { "Renumber" }
-          Name <String> #39 { "Renumber" }
-          VersionID <VersionID> #40 {
-            RevisionNumber <String> #41 { "2.0.9" }
+    <PluginMenuLayout> #33 {
+      Title <String> #34 { "Utils" }
+      Children <LinkedList> #35 {
+        <PluginMenuLayout> #36 {
+          Title <String> #37 { "Renumber" }
+          Name <String> #38 { "Renumber" }
+          VersionID <VersionID> #39 {
+            RevisionNumber <String> #40 { "2.2.1" }
           }
-          Vendor <String> #42 { "Temerity" }
+          Vendor <String> #41 { "Temerity" }
         }
-        <PluginMenuLayout> #43 {
-          Title <String> #44 { "DisableAction" }
-          Name <String> #45 { "DisableAction" }
-          VersionID <VersionID> #46 {
-            RevisionNumber <String> #47 { "2.0.9" }
+        <PluginMenuLayout> #42 {
+          Title <String> #43 { "DisableAction" }
+          Name <String> #44 { "DisableAction" }
+          VersionID <VersionID> #45 {
+            RevisionNumber <String> #46 { "2.2.1" }
           }
-          Vendor <REF> #33
+          Vendor <String> #47 { "Temerity" }
         }
       }
     }

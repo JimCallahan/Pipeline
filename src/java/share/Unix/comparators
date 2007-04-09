@@ -5,7 +5,7 @@ ComparatorMenuLayout <PluginMenuLayout> #1 {
       Title <String> #5 { "ShakeDiff" }
       Name <String> #6 { "ShakeDiff" }
       VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "2.0.9" }
+        RevisionNumber <String> #8 { "2.2.1" }
       }
       Vendor <String> #9 { "Temerity" }
     }
@@ -18,10 +18,10 @@ ComparatorMenuLayout <PluginMenuLayout> #1 {
       Vendor <String> #15 { "Temerity" }
     }
     <PluginMenuLayout> #16 {
-      Title <String> #17 { "XDiff" }
-      Name <String> #18 { "XDiff" }
+      Title <String> #17 { "TextDiff" }
+      Name <String> #18 { "TextDiff" }
       VersionID <VersionID> #19 {
-        RevisionNumber <String> #20 { "2.0.9" }
+        RevisionNumber <String> #20 { "2.2.1" }
       }
       Vendor <String> #21 { "Temerity" }
     }
