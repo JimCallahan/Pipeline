@@ -1,4 +1,4 @@
-// $Id: MayaDLShaderExportAction.java,v 1.1 2007/04/09 05:29:18 jim Exp $
+// $Id: MayaDLShaderExportAction.java,v 1.2 2007/04/09 17:56:06 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -91,6 +91,8 @@ class MayaDLShaderExportAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);  
+
+    underDevelopment(); 
   }
 
 
@@ -151,8 +153,8 @@ class MayaDLShaderExportAction
 
       out.write
         ("// DISCONNECT AND SELECT THE SHADERS\n" + 
-         "print \"Disconnecting Shaders:\\n\";\n" + 
          "{\n" +
+         "  print \"Disconnecting GeoShaders:\\n\";\n" + 
          "  string $sets[] = `ls -type delightShapeSet`;\n" + 
          "  for($s in $sets) {\n" + 
          "    string $shapes[] = " + 
@@ -165,9 +167,25 @@ class MayaDLShaderExportAction
          "      }\n" + 
          "    }\n" + 
          "  }\n" + 
-         "  print(\"\\n\");\n\n" + 
+         "  print(\"\\n\");\n" + 
+         "\n" + 
+         "  print \"Disconnecting GeoAttribs:\\n\";\n" + 
+         "  string $attrs[] = `ls -type delightGeoAttribs`;\n" + 
+         "  for($a in $attrs) {\n" + 
+         "    string $shapes[] = " + 
+                "`listConnections -d off -s on -shapes on ($a + \".dsm\")`;\n" +
+         "    if(size($shapes) > 0) {\n" +
+         "      for($p in $shapes) {\n" + 
+         "        $cmd = (\"disconnectAttr \" + $p + \".iog \" + $a + \".dsm -na;\");\n" + 
+         "        print (\"  \" + $cmd + \"\\n\");\n" + 
+         "        eval($cmd);\n" + 
+         "      }\n" + 
+         "    }\n" + 
+         "  }\n" + 
+         "  print(\"\\n\");\n" + 
+         "\n" +
          "  string $collects[] = `ls -type delightShaderCollection`;\n" + 
-         "  select -r -ne $sets $collects;\n" + 
+         "  select -r -ne $sets $attrs $collects;\n" + 
          "}\n\n");
 
       out.write
