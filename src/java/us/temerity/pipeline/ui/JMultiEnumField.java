@@ -8,7 +8,6 @@ import java.util.*;
 
 import javax.swing.*;
 
-import us.temerity.pipeline.MultiEnumParam;
 import us.temerity.pipeline.PipelineException;
 
 /*------------------------------------------------------------------------------------------*/
