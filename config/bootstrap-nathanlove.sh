@@ -1,5 +1,6 @@
 #!/bin/sh
 
+customer=nathanlove
 sitep=070405
 
 echo "---------------------------------------------------------------------------------------"
@@ -9,8 +10,8 @@ echo "--------------------------------------------------------------------------
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
-plsrcdir=$HOME/code-nathanlove/src/pipeline
-plprofile=$plsrcdir/plconfig/customers/nathanlove/$sitep
+plsrcdir=$HOME/code-$customer/src/pipeline
+plprofile=$plsrcdir/plconfig/customers/$customer/$sitep
 
 pushd $plsrcdir
   sh autogen.sh
@@ -27,11 +28,10 @@ pushd i686-pc-linux-gnu-dbg
     --with-debug-base=43000 \
     --with-prof-base=43100 \
     --with-crypto-app=$plsrcdir/plconfig \
-    --with-customer=nathanlove \
+    --with-customer=$customer \
     --with-customer-profile=$plprofile \
     --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd
-
 
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
@@ -44,9 +44,11 @@ then
   echo "-------------------------------------------------------------------------------------"
 
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
-    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-nathanlove/src/pipeline
+    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-$customer/src/pipeline
 
-  ssh $MAC_HOSTNAME "source .bash_profile; cd code-nathanlove/build/pipeline; ./bootstrap.sh $sitep"
+  ssh $MAC_HOSTNAME "source .bash_profile; \
+                     cd code-$customer/build/pipeline; \
+                     ../../src/pipeline/config/bootstrap-nathanlove-win.sh $customer $sitep"
 fi
 
 
@@ -60,7 +62,9 @@ then
   echo "-------------------------------------------------------------------------------------"
 
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
-    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code-nathanlove/src/pipeline
+    $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code/src/pipeline
 
-  ssh $WIN_HOSTNAME "source .bash_profile; cd code-nathanlove/build/pipeline; ./bootstrap.sh $sitep"
+  ssh $WIN_HOSTNAME "source .bash_profile; \
+                     cd code/build/pipeline; \
+                     ../../src/pipeline/config/bootstrap-nathanlove-win.sh $customer $sitep"
 fi
