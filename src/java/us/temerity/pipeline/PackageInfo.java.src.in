@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.28 2007/03/23 23:14:53 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.29 2007/04/12 17:49:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -43,6 +43,7 @@ class PackageInfo
       os = OsType.MacOS;
     else if(opsys.equals("Windows XP") || 
 	    opsys.equals("Windows 2000") ||
+	    opsys.equals("Windows 2003") ||
 	    opsys.equals("Windows NT")) 
       os = OsType.Windows; 
     else 
