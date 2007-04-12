@@ -1,4 +1,4 @@
-// $Id: WebBrowserEditor.java,v 1.1 2007/04/12 15:20:08 jim Exp $
+// $Id: WebBrowserEditor.java,v 1.2 2007/04/12 16:52:23 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -96,26 +96,33 @@ class WebBrowserEditor
       args.add("open location \"" + url + "\"");
     }
     else {
+      String mozilla = "mozilla";
+      String firefox = "firefox";
+      if(PackageInfo.sOsType == OsType.Windows) {
+        mozilla = "mozilla.exe";
+        firefox = "firefox.exe";        
+      }
+
       ExecPath epath = new ExecPath(env.get("PATH"));
-      File mozilla = epath.which("mozilla");
-      File firefox = epath.which("firefox");
-      
-      if((mozilla != null) && isBrowserRunning("mozilla", env)) {
-        program = "mozilla"; 
+
+      boolean hasMozilla = (epath.which(mozilla) != null);
+      boolean hasFirefox = (epath.which(firefox) != null);
+      if(hasMozilla && isBrowserRunning(mozilla, env)) {
+        program = mozilla;
         args.add("-remote");
         args.add("openURL(" + url + ", new-tab)");
       }
-      else if((firefox != null) && isBrowserRunning("firefox", env)) {
-        program = "firefox"; 
+      else if(hasFirefox && isBrowserRunning(firefox, env)) {
+        program = firefox;
         args.add("-remote");
         args.add("openURL(" + url + ", new-tab)");
       }
-      else if(mozilla != null) {
-        program = "mozilla"; 
+      else if(hasMozilla) {
+        program = mozilla; 
         args.add(url);
       }
-      else if(firefox != null) {
-        program = "firefox"; 
+      else if(hasFirefox) {
+        program = firefox; 
         args.add(url);
       }
       else {
