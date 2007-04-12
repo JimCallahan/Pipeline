@@ -1,4 +1,4 @@
-// $Id: IDisplayEditor.java,v 1.2 2007/04/05 10:03:58 jim Exp $
+// $Id: IDisplayEditor.java,v 1.3 2007/04/12 12:31:10 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -17,7 +17,7 @@ import us.temerity.pipeline.*;
  */
 public
 class IDisplayEditor
-  extends BaseEditor
+  extends SimpleEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
