@@ -9,6 +9,8 @@ fi
 rsync $* -av --checksum --delete \
   --cvs-exclude \
   --exclude="*Lizard.bash" \
+  --exclude="PipelineJobManager/PipelineJobManager.ncb" \
+  --exclude="PipelineJobManager/PipelineJobManager.suo" \
   --exclude="PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj.*.*.user" \
   --exclude="PipelineJobManager/PipelineRun/PipelineRun.vcproj.*.*.user" \
   --exclude="PipelineJobManager/PipelineEditRegistry/PipelineEditRegistry.vcproj.*.*.user" \
