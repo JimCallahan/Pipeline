@@ -124,7 +124,7 @@ RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	@echo "  UPDATING: tadpole"
 	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plmac
-	rsync -av --exclude-from=$(top_srcdir)/config/excluded \
+	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
           $(top_srcdir)/ tadpole:$(MAC_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
 	@echo "  BUILDING: tadpole"
@@ -149,7 +149,7 @@ RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	@echo "  UPDATING: lizard"
 	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plwin
-	rsync -av --exclude-from=$(top_srcdir)/config/excluded \
+	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
           $(top_srcdir)/ lizard:$(WIN_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
 	@echo "  BUILDING: lizard"

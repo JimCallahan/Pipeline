@@ -1,6 +1,9 @@
 #!/bin/sh
 
-sitep=070321
+customer=$1
+sitep=$2
+debug_base=$3
+prof_base=$4
 
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
@@ -9,8 +12,8 @@ echo "--------------------------------------------------------------------------
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
-plsrcdir=$HOME/code/src/pipeline
-plprofile=$plsrcdir/plconfig/customers/dimetrodon/$sitep
+plsrcdir=$HOME/code-$customer/src/pipeline
+plprofile=$plsrcdir/plconfig/customers/$customer/$sitep
 
 pushd $plsrcdir
   sh autogen.sh
@@ -24,14 +27,13 @@ pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
     --enable-foundation \
     --disable-opt \
-    --with-debug-base=45000 \
-    --with-prof-base=45100 \
+    --with-debug-base=$debug_base \
+    --with-prof-base=$prof_base \
     --with-crypto-app=$plsrcdir/plconfig \
-    --with-customer=dimetrodon \
+    --with-customer=$customer \
     --with-customer-profile=$plprofile \
     --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
 popd
-
 
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
@@ -43,10 +45,13 @@ then
   echo "  UPDATING: $MAC_HOSTNAME"
   echo "-------------------------------------------------------------------------------------"
 
-  rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
-    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code/src/pipeline
+  rsync -av --exclude-from=$plsrcdir/config/excluded --delete-excluded \
+    $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-$customer/src/pipeline
 
-  ssh $MAC_HOSTNAME "source .bash_profile; cd code/build/pipeline; ./bootstrap.sh $sitep"
+  ssh $MAC_HOSTNAME "source .bash_profile; \
+                     cd code-$customer/build/pipeline; \
+                     ../../src/pipeline/config/bootstrap-mac.sh \
+                       $customer $sitep $debug_base $prof_base"
 fi
 
 
@@ -59,8 +64,11 @@ then
   echo "  UPDATING: $WIN_HOSTNAME"
   echo "-------------------------------------------------------------------------------------"
 
-  rsync -av --exclude-from=$plsrcdir/config/excluded --delete \
+  rsync -av --exclude-from=$plsrcdir/config/excluded --delete-excluded \
     $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code/src/pipeline
 
-  ssh $WIN_HOSTNAME "source .bash_profile; cd code/build/pipeline; ./bootstrap.sh $sitep"
+  ssh $WIN_HOSTNAME "source .bash_profile; \
+                     cd code/build/pipeline; \
+                     ../../src/pipeline/config/bootstrap-win.sh \
+                       $customer $sitep $debug_base $prof_base"
 fi

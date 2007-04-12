@@ -1,5 +1,10 @@
 #!/bin/sh
 
+customer=$1
+sitep=$2
+debug_base=$3
+prof_base=$4
+
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
 echo "---------------------------------------------------------------------------------------"
@@ -7,22 +12,22 @@ echo "--------------------------------------------------------------------------
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
-plsrcdir=$HOME/code/src/pipeline
+plsrcdir=$HOME/code-$customer/src/pipeline
 
 pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/dimetrodon/$1
+plprofile=$plsrcdir/plconfig/customers/$customer/$sitep
 
 pushd i686-pc-linux-gnu-dbg
   PATH=$HOME/local/bin:$PATH \
   $plsrcdir/configure \
     --disable-foundation \
     --disable-opt \
-    --with-debug-base=45000 \
-    --with-prof-base=45100 \
+    --with-debug-base=$debug_base \
+    --with-prof-base=$prof_base \
     --with-crypto-app=$plsrcdir/plconfig \
-    --with-customer=dimetrodon \
+    --with-customer=$customer \
     --with-customer-profile=$plprofile
 popd
