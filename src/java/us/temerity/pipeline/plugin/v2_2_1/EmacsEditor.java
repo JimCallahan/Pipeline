@@ -1,4 +1,4 @@
-// $Id: EmacsEditor.java,v 1.2 2007/03/21 22:14:04 jim Exp $
+// $Id: EmacsEditor.java,v 1.3 2007/04/12 15:20:35 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -128,42 +128,6 @@ class EmacsEditor
       return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
     }
   }
-
-  /** 
-   * This implementation always throws a PipelineException, to insure that the {@link #prep
-   * prep} method is used for this Editor instead of this deprecated method.
-   * 
-   * @param fseq  
-   *   The file sequence to edit.
-   * 
-   * @param env  
-   *   The environment under which the editor is run.  
-   * 
-   * @param dir  
-   *   The working directory where the editor is run.
-   *
-   * @return 
-   *   The controlling <CODE>SubProcess</CODE> instance. 
-   * 
-   * @throws PipelineException
-   *   If unable to launch the editor.
-   */  
-  @SuppressWarnings("deprecation")
-  @Deprecated
-  public SubProcessLight
-  launch
-  (
-   FileSeq fseq,      
-   Map<String, String> env,      
-   File dir        
-  )   
-    throws PipelineException
-  {
-    throw new PipelineException
-      ("This launch() method should never be called since the prep() method returns " + 
-       "a non-null SubProcessLight instance!");
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
