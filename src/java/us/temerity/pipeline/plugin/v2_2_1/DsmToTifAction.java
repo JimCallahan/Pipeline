@@ -1,4 +1,4 @@
-// $Id: DsmToTifAction.java,v 1.1 2007/04/09 17:55:47 jim Exp $
+// $Id: DsmToTifAction.java,v 1.2 2007/04/12 15:23:28 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -212,9 +212,8 @@ class DsmToTifAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: DLEnvCubeAction.java,v 1.1 2007/04/09 17:55:47 jim Exp $
+// $Id: DLEnvCubeAction.java,v 1.2 2007/04/12 15:21:55 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -31,6 +31,11 @@ import java.io.*;
  *   Image Source <BR>
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains the images files to convert. <BR> 
+ *   </DIV> <BR>
+ * 
+ *   Compression <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The compression method to use for the output texture maps.<BR>
  *   </DIV> <BR>
  * 
  * 
@@ -79,34 +84,6 @@ import java.io.*;
  *   Blur Factor <BR>
  *   <DIV style="margin-left: 40px;">
  *     Scale factor applied to the filter function.
- *   </DIV> <BR>
- * 
- *   
- *   S Mode <BR>
- *   T Mode <BR>
- *   <DIV style="margin-left: 40px;">
- *     The method used to lookup texels outside the [0,1] S/T coordinate range: 
- *     <UL>
- *       <LI>Black - Use black for all values outside [0,1] range.
- *       <LI>Clamp - Use border texel color for values outside [0,1] range.
- *       <LI>Periodic - Tiles texture outside [0,1] range.
- *     </UL>
- *   </DIV> <BR>
- * 
- *   Flip <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether and how to flip the output texture maps:
- *     <UL>
- *       <LI> None - No flipping is performed.
- *       <LI> S-Only - Flip image in the S direction.
- *       <LI> T-Only - Flip image in the T direction.
- *       <LI> Both - Flip in both the S and T directions. 
- *     </UL>
- *   </DIV> <BR>
- * 
- *   Compression <BR>
- *   <DIV style="margin-left: 40px;">
- *     The compression method to use for the output texture maps.<BR>
  *   </DIV> <BR>
  * </DIV><P> 
  * 
@@ -217,72 +194,6 @@ class DLEnvCubeAction
 
     {
       ArrayList<String> choices = new ArrayList<String>();
-      choices.add("Black");
-      choices.add("Clamp");
-      choices.add("Periodic");
-
-      {
-	ActionParam param = 
-	  new EnumActionParam
-	  (aSMode, 
-	   "The method used to lookup texels outside the [0,1] S-coordinate range.",
-	   "Black", choices);
-	addSingleParam(param);
-      }
-
-      {
-	ActionParam param = 
-	  new EnumActionParam
-	  (aTMode, 
-	   "The method used to lookup texels outside the [0,1] T-coordinate range.",
-	   "Black", choices);
-	addSingleParam(param);
-      }
-	
-      addPreset(aMode, choices);
-      
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put(aSMode, "Black");
-	values.put(aTMode, "Black");
-	
-	addPresetValues(aMode, "Black", values);
-      }
-
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put(aSMode, "Clamp");
-	values.put(aTMode, "Clamp");
-	
-	addPresetValues(aMode, "Clamp", values);
-      }
-
-      {
-	TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-	values.put(aSMode, "Periodic");
-	values.put(aTMode, "Periodic");
-	
-	addPresetValues(aMode, "Periodic", values);
-      }
-    }   
-    
-    {
-      ArrayList<String> choices = new ArrayList<String>();
-      choices.add("None");
-      choices.add("S-Only");
-      choices.add("T-Only");
-      choices.add("Both"); 
-
-      ActionParam param = 
-	new EnumActionParam
-	(aFlip, 
-	 "Whether and how to flip the output texture maps.",
-	 "None", choices);
-      addSingleParam(param);
-    }   
-
-    {
-      ArrayList<String> choices = new ArrayList<String>();
       choices.add("LZW");
       choices.add("Deflate");
       choices.add("PackBits");
@@ -299,6 +210,8 @@ class DLEnvCubeAction
     {  
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry(aImageSource);
+      layout.addSeparator();      
+      layout.addEntry(aCompression);
 
       {
 	LayoutGroup filter = new LayoutGroup
@@ -315,26 +228,11 @@ class DLEnvCubeAction
 	layout.addSubGroup(filter);
       }
 
-      {
-	LayoutGroup output = new LayoutGroup
-	  ("Output", "Texture output and interpretation controls.", true);
-	output.addEntry(aMode);
-	output.addEntry(aSMode);
-	output.addEntry(aTMode);
-	output.addSeparator();
-	output.addEntry(aFlip);
-	output.addEntry(aCompression);
-	
-	layout.addSubGroup(output);	
-      }
-
       setSingleLayout(layout);   
     }
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 
@@ -535,69 +433,6 @@ class DLEnvCubeAction
         args.add(blur.toString());
       }
 
-      {
-        args.add("-smode");
-        switch(getSingleEnumParamIndex(aSMode)) {
-        case 0:
-          args.add("black");
-          break;
-          
-        case 1:
-          args.add("clamp");
-          break;
-          
-        case 2:
-          args.add("periodic");
-          break;
-          
-        default:
-          throw new PipelineException
-            ("Illegal S Mode value!");
-        }
-      }
-    
-      {
-        args.add("-tmode");
-        switch(getSingleEnumParamIndex(aTMode)) {
-        case 0:
-          args.add("black");
-          break;
-          
-        case 1:
-          args.add("clamp");
-          break;
-          
-        case 2:
-          args.add("periodic");
-          break;
-          
-        default:
-          throw new PipelineException
-            ("Illegal T Mode value!");
-        }
-      }
-    
-      switch(getSingleEnumParamIndex(aFlip)) {
-      case 0:
-	break;
-        
-      case 1:
-	args.add("-flips");
-	break;
-        
-      case 2:
-	args.add("-flipt");
-	break;
-	
-      case 3:
-	args.add("-flipst");
-	break;
-	
-      default:
-	throw new PipelineException
-	  ("Illegal Flip value!");
-      }
-
       switch(getSingleEnumParamIndex(aCompression)) {
       case 0:
 	args.add("-lzw");
@@ -622,7 +457,7 @@ class DLEnvCubeAction
       
       for(Path path : sourceSeq.getPaths()) {
         Path spath = new Path(sourcePath, path);
-	args.add(path.toOsString()); 
+	args.add(spath.toOsString()); 
       }
 
       args.add(targetPath.toOsString());
@@ -652,10 +487,6 @@ class DLEnvCubeAction
   public static final String aSFilterWidth = "SFilterWidth";
   public static final String aTFilterWidth = "TFilterWidth";
   public static final String aBlurFactor   = "BlurFactor";
-  public static final String aSMode        = "SMode";
-  public static final String aTMode        = "TMode";
-  public static final String aMode         = "Mode";
-  public static final String aFlip         = "Flip";
   public static final String aCompression  = "Compression";
 
 }

@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.1 2007/04/09 17:55:47 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.2 2007/04/12 15:21:55 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -128,8 +128,6 @@ class DLCatRIBAction
 
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-
-    underDevelopment(); 
   }
 
 
@@ -279,8 +277,7 @@ class DLCatRIBAction
 
       /* process the RIB files */ 
       int wk=0;
-      for(Path target : targetPaths) {
-        Path tpath = new Path(agenda.getTargetPath(), target); 
+      for(Path tpath : targetPaths) {
 
         out.write("launch('" + program + "', " + 
                   "['-noinit', '-catrib', '-o', '" + pathToStr(tpath) + "'"); 
