@@ -1,4 +1,4 @@
-// $Id: MRayShaderAction.java,v 1.3 2007/04/06 21:16:26 jim Exp $
+// $Id: MRayShaderAction.java,v 1.4 2007/04/12 12:31:53 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -54,9 +54,9 @@ import java.io.*;
  * 
  *   Include Paths <BR>
  *   <DIV style="margin-left: 40px;">
- *     Colon seperated list of additional directories to search for included files. Toolset 
- *     environmental variable substitutions are enabled (see {@link ActionAgenda#evaluate 
- *     evaluate}).
+ *     A semicolon seperated list of additional directories to search for included files. 
+ *     Toolset environmental variable substitutions are enabled (see {@link 
+ *     ActionAgenda#evaluate evaluate}).
  *   </DIV> <BR>
  * 
  *   Defined Symbols <BR>

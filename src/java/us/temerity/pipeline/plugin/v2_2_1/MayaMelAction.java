@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.2 2007/04/04 07:33:30 jim Exp $
+// $Id: MayaMelAction.java,v 1.3 2007/04/12 12:31:27 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -55,10 +55,9 @@ import java.io.*;
  * <DIV style="margin-left: 40px;">
  *   Order <BR>
  *   <DIV style="margin-left: 40px;">
- *     Each source node which sets this parameter should have a MEL script as its primary
- *     file sequence which will be evaluated after the Maya scene file is loaded.  This 
- *     parameter determines the order of evaluation of the MEL scripts. If this parameter 
- *     is not set for a source node, it will be ignored.
+ *     Each source node sequence which sets this parameter should contain a MEL script. 
+ *     This parameter determines the order in which the MEL scripts evaluated.  If this 
+ *     parameter is not set for a source node file sequence, it will be ignored.
  *   </DIV> 
  * </DIV> <P> 
  */
@@ -137,7 +136,9 @@ class MayaMelAction
       ActionParam param = 
 	new IntegerActionParam
 	(aOrder, 
-	 "The order in which the MEL scripts are evaluated.", 
+	 "Each source node sequence which sets this parameter should contain a MEL script. " +
+         "This parameter determines the order in which the MEL scripts evaluated.  If " +
+         "this parameter is not set for a source node file sequence, it will be ignored.", 
 	 100);
       params.put(param.getName(), param);
     }
