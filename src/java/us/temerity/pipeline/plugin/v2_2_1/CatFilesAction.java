@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.8 2007/04/09 17:53:41 jim Exp $
+// $Id: CatFilesAction.java,v 1.9 2007/04/12 15:37:52 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -51,6 +51,8 @@ class CatFilesAction
 
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
+
+    underDevelopment(); 
   }
 
   
@@ -125,20 +127,19 @@ class CatFilesAction
     /* get the ordered source file paths */ 
     MappedArrayList<Integer,Path> sourcePaths = new MappedArrayList<Integer,Path>();
     {
-      NodeID nodeID = agenda.getNodeID();
       int numFrames = agenda.getPrimaryTarget().numFrames();
       for(String sname : agenda.getSourceNames()) {
 	if(hasSourceParams(sname)) {
 	  FileSeq fseq = agenda.getPrimarySource(sname);
 	  Integer order = (Integer) getSourceParamValue(sname, aOrder);
-	  addSourcePaths(nodeID, numFrames, sname, fseq, order, sourcePaths);
+	  addSourcePaths(agenda, numFrames, sname, fseq, order, sourcePaths);
 	}
 
 	for(FileSeq fseq : agenda.getSecondarySources(sname)) {
 	  FilePattern fpat = fseq.getFilePattern();
 	  if(hasSecondarySourceParams(sname, fpat)) {
 	    Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, aOrder);
-	    addSourcePaths(nodeID, numFrames, sname, fseq, order, sourcePaths);
+	    addSourcePaths(agenda, numFrames, sname, fseq, order, sourcePaths);
 	  }
 	}
       }
@@ -260,7 +261,7 @@ class CatFilesAction
   private void 
   addSourcePaths
   (
-   NodeID nodeID, 
+   ActionAgenda agenda, 
    int numFrames, 
    String sname, 
    FileSeq fseq, 
@@ -269,15 +270,22 @@ class CatFilesAction
   )
     throws PipelineException 
   {
+    if(order == null) 
+      return;
+
+    if(sourcePaths.containsKey(order)) 
+      throw new PipelineException
+        ("The Order per-source parameter for file sequence (" + fseq + ") of source node " + 
+         "(" + sname + ") was not unique!");
+    
     if((fseq.numFrames() != 1) && (fseq.numFrames() != numFrames))
       throw new PipelineException
 	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
 	 "must have the contain the same number of files as the target sequence or " + 
 	 "exactly one file.");
     
-    NodeID snodeID = new NodeID(nodeID, sname);
-    for(Path path : fseq.getPaths()) 
-      sourcePaths.put(order, getWorkingNodeFilePath(snodeID, path));
+    for(Path path : getWorkingNodeFilePaths(agenda, sname, fseq))
+      sourcePaths.put(order, path);
   }
 
 
