@@ -45,64 +45,64 @@ EditorMenuLayout <PluginMenuLayout> #1 {
           Vendor <String> #36 { "Temerity" }
         }
         <PluginMenuLayout> #37 {
-          Title <String> #38 { "Gimp" }
-          Name <String> #39 { "Gimp" }
+          Title <String> #38 { "XImage" }
+          Name <String> #39 { "XImage" }
           VersionID <VersionID> #40 {
             RevisionNumber <String> #41 { "2.2.1" }
           }
           Vendor <String> #42 { "Temerity" }
         }
         <PluginMenuLayout> #43 {
-          Title <String> #44 { "QuickTime" }
-          Name <String> #45 { "QuickTime" }
+          Title <String> #44 { "Gimp" }
+          Name <String> #45 { "Gimp" }
           VersionID <VersionID> #46 {
             RevisionNumber <String> #47 { "2.2.1" }
           }
           Vendor <String> #48 { "Temerity" }
         }
         <PluginMenuLayout> #49 {
-          Title <String> #50 { "FrameCycler" }
-          Name <String> #51 { "FrameCycler" }
+          Title <String> #50 { "QuickTime" }
+          Name <String> #51 { "QuickTime" }
           VersionID <VersionID> #52 {
-            RevisionNumber <String> #53 { "2.0.9" }
+            RevisionNumber <String> #53 { "2.2.1" }
           }
           Vendor <String> #54 { "Temerity" }
         }
         <PluginMenuLayout> #55 {
-          Title <String> #56 { "Sho" }
-          Name <String> #57 { "Sho" }
+          Title <String> #56 { "FrameCycler" }
+          Name <String> #57 { "FrameCycler" }
           VersionID <VersionID> #58 {
             RevisionNumber <String> #59 { "2.0.9" }
           }
           Vendor <String> #60 { "Temerity" }
         }
         <PluginMenuLayout> #61 {
-          Title <String> #62 { "DSView" }
-          Name <String> #63 { "DSView" }
+          Title <String> #62 { "Sho" }
+          Name <String> #63 { "Sho" }
           VersionID <VersionID> #64 {
             RevisionNumber <String> #65 { "2.0.9" }
           }
-          Vendor <REF> #60
+          Vendor <String> #66 { "Temerity" }
         }
-        <PluginMenuLayout> #66 {
-          Title <String> #67 { "AirShow" }
-          Name <String> #68 { "AirShow" }
-          VersionID <VersionID> #69 {
-            RevisionNumber <String> #70 { "2.0.9" }
+        <PluginMenuLayout> #67 {
+          Title <String> #68 { "DSView" }
+          Name <String> #69 { "DSView" }
+          VersionID <VersionID> #70 {
+            RevisionNumber <String> #71 { "2.0.9" }
           }
-          Vendor <REF> #60
+          Vendor <REF> #66
         }
-        <PluginMenuLayout> #71 {
-          Title <String> #72 { "IV" }
-          Name <String> #73 { "IV" }
-          VersionID <VersionID> #74 {
-            RevisionNumber <String> #75 { "2.0.9" }
+        <PluginMenuLayout> #72 {
+          Title <String> #73 { "AirShow" }
+          Name <String> #74 { "AirShow" }
+          VersionID <VersionID> #75 {
+            RevisionNumber <String> #76 { "2.0.9" }
           }
-          Vendor <String> #76 { "Temerity" }
+          Vendor <REF> #66
         }
         <PluginMenuLayout> #77 {
-          Title <String> #78 { "XImage" }
-          Name <String> #79 { "XImage" }
+          Title <String> #78 { "IV" }
+          Name <String> #79 { "IV" }
           VersionID <VersionID> #80 {
             RevisionNumber <String> #81 { "2.0.9" }
           }
@@ -188,7 +188,7 @@ EditorMenuLayout <PluginMenuLayout> #1 {
           VersionID <VersionID> #137 {
             RevisionNumber <String> #138 { "2.0.9" }
           }
-          Vendor <REF> #60
+          Vendor <REF> #66
         }
         <PluginMenuLayout> #139 {
           Title <String> #140 { "BrickViewer" }
@@ -196,7 +196,7 @@ EditorMenuLayout <PluginMenuLayout> #1 {
           VersionID <VersionID> #142 {
             RevisionNumber <String> #143 { "2.0.9" }
           }
-          Vendor <REF> #60
+          Vendor <REF> #66
         }
         <PluginMenuLayout> #144 {
           Title <String> #145 { "OpenInventor" }
@@ -204,7 +204,7 @@ EditorMenuLayout <PluginMenuLayout> #1 {
           VersionID <VersionID> #147 {
             RevisionNumber <String> #148 { "2.0.9" }
           }
-          Vendor <REF> #76
+          Vendor <REF> #82
         }
       }
     }
@@ -374,6 +374,14 @@ EditorMenuLayout <PluginMenuLayout> #1 {
             RevisionNumber <String> #263 { "2.2.1" }
           }
           Vendor <String> #264 { "Temerity" }
+        }
+        <PluginMenuLayout> #265 {
+          Title <String> #266 { "WebBrowser" }
+          Name <String> #267 { "WebBrowser" }
+          VersionID <VersionID> #268 {
+            RevisionNumber <String> #269 { "2.2.1" }
+          }
+          Vendor <String> #270 { "Temerity" }
         }
       }
     }

@@ -335,41 +335,41 @@ ActionMenuLayout <PluginMenuLayout> #1 {
           Title <String> #230 { "DLShadow" }
           Name <String> #231 { "DLShadow" }
           VersionID <VersionID> #232 {
-            RevisionNumber <String> #233 { "2.0.0" }
+            RevisionNumber <String> #233 { "2.2.1" }
           }
-          Vendor <REF> #65
+          Vendor <String> #234 { "Temerity" }
         }
-        <PluginMenuLayout> #234 {
-          Title <String> #235 { "DLShader" }
-          Name <String> #236 { "DLShader" }
-          VersionID <VersionID> #237 {
-            RevisionNumber <String> #238 { "2.0.0" }
+        <PluginMenuLayout> #235 {
+          Title <String> #236 { "DLShader" }
+          Name <String> #237 { "DLShader" }
+          VersionID <VersionID> #238 {
+            RevisionNumber <String> #239 { "2.2.1" }
           }
-          Vendor <REF> #65
+          Vendor <REF> #234
         }
-        <PluginMenuLayout> #239 {
-          Title <String> #240 { "MayaDLShaderExport" }
-          Name <String> #241 { "MayaDLShaderExport" }
-          VersionID <VersionID> #242 {
-            RevisionNumber <String> #243 { "2.2.1" }
+        <PluginMenuLayout> #240 {
+          Title <String> #241 { "MayaDLShaderExport" }
+          Name <String> #242 { "MayaDLShaderExport" }
+          VersionID <VersionID> #243 {
+            RevisionNumber <String> #244 { "2.2.1" }
           }
-          Vendor <String> #244 { "Temerity" }
+          Vendor <String> #245 { "Temerity" }
         }
-        <PluginMenuLayout> #245 {
-          Title <String> #246 { "DLCatRib" }
-          Name <String> #247 { "DLCatRIB" }
-          VersionID <VersionID> #248 {
-            RevisionNumber <String> #249 { "2.2.1" }
+        <PluginMenuLayout> #246 {
+          Title <String> #247 { "DLCatRib" }
+          Name <String> #248 { "DLCatRIB" }
+          VersionID <VersionID> #249 {
+            RevisionNumber <String> #250 { "2.2.1" }
           }
-          Vendor <String> #250 { "Temerity" }
+          Vendor <String> #251 { "Temerity" }
         }
-        <PluginMenuLayout> #251 {
-          Title <String> #252 { "DLRender" }
-          Name <String> #253 { "DLRender" }
-          VersionID <VersionID> #254 {
-            RevisionNumber <String> #255 { "2.0.4" }
+        <PluginMenuLayout> #252 {
+          Title <String> #253 { "DLRender" }
+          Name <String> #254 { "DLRender" }
+          VersionID <VersionID> #255 {
+            RevisionNumber <String> #256 { "2.2.1" }
           }
-          Vendor <String> #256 { "Temerity" }
+          Vendor <REF> #234
         }
         <PluginMenuLayout> #257 {
           Title <String> #258 { "MayaDLRender" }
@@ -383,17 +383,17 @@ ActionMenuLayout <PluginMenuLayout> #1 {
           Title <String> #263 { "DsmToTif" }
           Name <String> #264 { "DsmToTif" }
           VersionID <VersionID> #265 {
-            RevisionNumber <String> #266 { "2.0.0" }
+            RevisionNumber <String> #266 { "2.2.1" }
           }
-          Vendor <REF> #65
+          Vendor <REF> #234
         }
         <PluginMenuLayout> #267 {
           Title <String> #268 { "HdrToTif" }
           Name <String> #269 { "HdrToTif" }
           VersionID <VersionID> #270 {
-            RevisionNumber <String> #271 { "2.0.0" }
+            RevisionNumber <String> #271 { "2.2.1" }
           }
-          Vendor <REF> #65
+          Vendor <REF> #234
         }
       }
     }
