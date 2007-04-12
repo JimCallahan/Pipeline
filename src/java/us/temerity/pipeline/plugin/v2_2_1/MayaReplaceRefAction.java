@@ -1,4 +1,4 @@
-// $Id: MayaReplaceRefAction.java,v 1.5 2007/04/04 07:33:30 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.6 2007/04/12 12:30:28 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -206,12 +206,12 @@ MayaReplaceRefAction
       }
     }
 
-    /* create a temporary pre-replace MEL script used to export MI files */ 
+    /* create a temporary pre-replace MEL script */ 
     Path preMEL = null;
     Path preTarget = null;
     if(preReplaceMEL != null) {
       preMEL = new Path(createTemp(agenda, "mel"));
-      preTarget = new Path(createTemp(agenda, "ma"));
+      preTarget = new Path(getTempPath(agenda), "PreTarget.ma");
       try {      
         FileWriter out = new FileWriter(preMEL.toFile());
         
@@ -219,7 +219,6 @@ MayaReplaceRefAction
           ("// PRE-EXPORT SCRIPT\n" + 
            "print \"Pre-Replace Script: " + preReplaceMEL + "\\n\";\n" +
            "source \"" + preReplaceMEL + "\";\n" +
-           "file -new;\n" + 
            "file -rename \"" + preTarget + "\";\n" + 
            "file -type \"mayaAscii\";\n" + 
            "file -save;\n");
@@ -234,7 +233,7 @@ MayaReplaceRefAction
       }
     }
        
-    /* create a temporary post-replace MEL script used to export MI files */ 
+    /* create a temporary post-replace MEL script */ 
     Path postMEL = null;
     if(postReplaceMEL != null) {
       postMEL = new Path(createTemp(agenda, "mel"));
@@ -245,9 +244,8 @@ MayaReplaceRefAction
           ("// POST-EXPORT SCRIPT\n" + 
            "print \"Post-Replace Script: " + postReplaceMEL + "\\n\";\n" +
            "source \"" + postReplaceMEL + "\";\n" +
-           "file -new;\n" + 
-           "file -rename \"" + sceneType + "\";\n" + 
-           "file -type \"mayaAscii\";\n" + 
+           "file -rename \"" + targetScene + "\";\n" + 
+           "file -type \"" + sceneType + "\";\n" + 
            "file -save;\n");
 
         out.close();
@@ -279,7 +277,7 @@ MayaReplaceRefAction
       Path replaceTarget = targetScene;
       if(!replacePaths.isEmpty())  {
         if(postMEL != null) 
-          replaceTarget = new Path(createTemp(agenda, "ma"));
+          replaceTarget = new Path(getTempPath(agenda), "PostTarget.ma");
 
         out.write
           ("\n" + 
@@ -323,7 +321,7 @@ MayaReplaceRefAction
            "      target.write(line)\n" + 
            "finally:\n" + 
            "  target.close()\n" + 
-           "  source.close()\n"); 
+           "  source.close()\n\n"); 
       }
         
       /* run post-replace MEL script */ 
