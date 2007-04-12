@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.20 2007/04/04 07:34:03 jim Exp $
+// $Id: BaseApp.java,v 1.21 2007/04/12 16:52:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -174,7 +174,7 @@ class BaseApp
     case Windows:
       LogMgr.getInstance().log
 	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	 "Sorry, web browsing is not yet supported on Winows systems!");
+	 "Sorry, web browsing is not yet supported on Windows systems!");
     }
   }
 
