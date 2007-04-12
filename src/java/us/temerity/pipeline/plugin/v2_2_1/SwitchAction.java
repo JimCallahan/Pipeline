@@ -1,4 +1,4 @@
-// $Id: SwitchAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
+// $Id: SwitchAction.java,v 1.4 2007/04/12 15:40:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -55,8 +55,6 @@ class SwitchAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
   

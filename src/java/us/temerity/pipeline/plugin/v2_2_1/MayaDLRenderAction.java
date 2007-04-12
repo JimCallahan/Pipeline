@@ -1,4 +1,4 @@
-// $Id: MayaDLRenderAction.java,v 1.1 2007/04/09 17:55:47 jim Exp $
+// $Id: MayaDLRenderAction.java,v 1.2 2007/04/12 15:39:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -217,8 +217,6 @@ public class MayaDLRenderAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 
