@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.88 2007/04/13 12:59:56 jim Exp $
+// $Id: QueueMgr.java,v 1.89 2007/04/13 21:16:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7066,13 +7066,22 @@ class QueueMgr
 	  Throwable cause = ex.getCause();
 	  if(cause instanceof SocketTimeoutException) {
 	    pHung.add(hname);
+
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	       ex.getMessage());
+	       "Job Manager (" + hname + " appears to be Hung:\n" + 
+               "  " + ex.getMessage());
 	    LogMgr.getInstance().flush();
 	  }
 	  else {
 	    pDead.add(hname);
+
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	       "Failed to collect resource sample from Job Manager (" + hname + "):\n" + 
+               "  " + ex.getMessage() + "\n" + 
+               "Job Manager marked for Termination!");
+	    LogMgr.getInstance().flush();            
 	  }
 	}	    
 	LogMgr.getInstance().logSubStage
