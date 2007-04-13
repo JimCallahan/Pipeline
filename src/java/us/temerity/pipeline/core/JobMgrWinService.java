@@ -1,4 +1,4 @@
-// $Id: JobMgrWinService.java,v 1.3 2007/03/28 19:38:53 jim Exp $
+// $Id: JobMgrWinService.java,v 1.4 2007/04/13 10:37:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -46,12 +46,44 @@ class JobMgrWinService
   public void 
   onStart()
   {
-    String args[] = {
-      "--standard-log-file",
-      "--log=all:finest", 
-      "--fail-fast"
-    };
+    /* read the JobMgr command-line options from file */ 
+    String args[] = null;
+    {
+      Path path = new Path(PackageInfo.sInstPath, "etc/winopts/pljobmgr");
 
+      StringBuilder buf = new StringBuilder();
+      try {
+        FileReader in = new FileReader(path.toFile());
+        
+        char[] cs = new char[1024];
+        while(true) {
+          int cnt = in.read(cs);
+          if(cnt == -1) 
+            break;
+	      
+          buf.append(cs, 0, cnt);
+        }
+
+        in.close();
+      }
+      catch(IOException ex) {
+      }
+        
+      ArrayList<String> options = new ArrayList<String>();
+      {
+        String parts[] = buf.toString().split("\\p{Space}");
+        int wk;
+        for(wk=0; wk<parts.length; wk++) {
+          if((parts[wk] != null) && (parts[wk].length() > 0)) 
+            options.add(parts[wk]);
+        }
+      }
+
+      args = new String[options.size()];
+      options.toArray(args);
+    }
+
+    /* start the job manager */ 
     JobMgrApp app = new JobMgrApp();
     app.run(args);
   }

@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.21 2007/04/12 16:52:09 jim Exp $
+// $Id: BaseApp.java,v 1.22 2007/04/13 10:37:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -316,9 +316,11 @@ class BaseApp
   {  
     StringBuilder buf = new StringBuilder();
     
-    int wk;
-    for(wk=0; wk<args.length; wk++) 
-      buf.append(args[wk] + "\0");
+    if(args != null) {
+      int wk;
+      for(wk=0; wk<args.length; wk++) 
+        buf.append(args[wk] + "\0");
+    }
     
     pPackedArgs = buf.toString();
   }

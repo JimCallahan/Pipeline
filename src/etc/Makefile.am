@@ -1,6 +1,6 @@
 
 if FOUNDATION
-  SUBDIRS = init.d
+  SUBDIRS = init.d winopts
 else
   SUBDIRS = 
 endif

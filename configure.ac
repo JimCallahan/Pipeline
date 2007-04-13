@@ -9,8 +9,8 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.2.1b1)
- 
+AM_INIT_AUTOMAKE(Pipeline, 2.2.1)
+                           
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
@@ -1549,6 +1549,7 @@ AC_CONFIG_FILES([
   src/etc/Makefile
   src/etc/init.d/Makefile
   src/etc/init.d/pljobmgr
+  src/etc/winopts/Makefile
 
   src/utils/Makefile
   src/utils/src/Makefile
