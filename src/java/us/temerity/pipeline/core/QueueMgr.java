@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.87 2007/03/28 19:51:04 jim Exp $
+// $Id: QueueMgr.java,v 1.88 2007/04/13 12:59:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2973,7 +2973,7 @@ class QueueMgr
 	ranges.add(new HistogramRange(reserve));
       
       HistogramSpec oldSpec = specs.getReservationSpec();
-      HistogramSpec newSpec =	new HistogramSpec("Reserved", ranges);
+      HistogramSpec newSpec = new HistogramSpec("Reserved", ranges);
       for(HistogramRange range : oldSpec.getIncluded())
 	newSpec.setIncluded(range, true);
       
@@ -2984,9 +2984,12 @@ class QueueMgr
       TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
       for(Integer order : usedOrders) 
 	ranges.add(new HistogramRange(order));
+
+      if(ranges.isEmpty()) 
+        ranges.add(new HistogramRange(0));
       
       HistogramSpec oldSpec = specs.getOrderSpec();
-      HistogramSpec newSpec =	new HistogramSpec("Order", ranges);
+      HistogramSpec newSpec = new HistogramSpec("Order", ranges);
       for(HistogramRange range : oldSpec.getIncluded())
 	newSpec.setIncluded(range, true);
       
@@ -3002,7 +3005,7 @@ class QueueMgr
       }
       
       HistogramSpec oldSpec = specs.getGroupsSpec();
-      HistogramSpec newSpec =	new HistogramSpec("Groups", ranges);
+      HistogramSpec newSpec = new HistogramSpec("Groups", ranges);
       for(HistogramRange range : oldSpec.getIncluded())
 	newSpec.setIncluded(range, true);
       
@@ -3018,7 +3021,7 @@ class QueueMgr
       }
       
       HistogramSpec oldSpec = specs.getSchedulesSpec();
-      HistogramSpec newSpec =	new HistogramSpec("Schedules", ranges); 
+      HistogramSpec newSpec = new HistogramSpec("Schedules", ranges); 
       for(HistogramRange range : oldSpec.getIncluded())
 	  newSpec.setIncluded(range, true);
       
