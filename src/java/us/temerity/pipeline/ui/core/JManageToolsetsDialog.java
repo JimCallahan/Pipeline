@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.24 2007/01/02 21:59:08 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.25 2007/04/13 10:56:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1924,7 +1924,7 @@ class JManageToolsetsDialog
     pDisableToolsetButton.setEnabled(false);
     if(tname != null) {
       pActiveToolsetsList.setSelectedValue(tname, true);
-      pDisableToolsetButton.setEnabled(pPrivilegeDetails.isMasterAdmin());
+      pDisableToolsetButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
   }
 
@@ -1992,7 +1992,7 @@ class JManageToolsetsDialog
 
 	    Toolset toolset = lookupToolset(odata.getName(), odata.getOsType());
 	    pEnableToolsetButton.setEnabled
-	      (pPrivilegeDetails.isMasterAdmin() && (odata.getOsType() == OsType.Unix) && 
+	      (pPrivilegeDetails.isDeveloper() && (odata.getOsType() == OsType.Unix) && 
 	       (toolset != null) && toolset.isFrozen());
 
 	    return;
@@ -2666,7 +2666,7 @@ class JManageToolsetsDialog
 
       String tname = (String) pActiveToolsetsList.getModel().getElementAt(idx);
       if((tname != null) && !tname.equals(pDefaultToolset))
-	pDefaultToolsetItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	pDefaultToolsetItem.setEnabled(pPrivilegeDetails.isDeveloper());
 
       pActiveToolsetsList.setSelectedIndex(idx);
     }
@@ -2687,7 +2687,7 @@ class JManageToolsetsDialog
     pToolsetDetailsItem.setEnabled(false);
     pTestToolsetItem.setEnabled(false);
     pExportToolsetItem.setEnabled(false);
-    pNewToolsetItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+    pNewToolsetItem.setEnabled(pPrivilegeDetails.isDeveloper());
     pAddMacOSToolsetItem.setEnabled(false);
     pAddWindowsToolsetItem.setEnabled(false);
     pCloneToolsetItem.setEnabled(false);
@@ -2707,8 +2707,8 @@ class JManageToolsetsDialog
 	pTestToolsetItem.setEnabled(data.getOsType().equals(PackageInfo.sOsType));
 
 	if(!toolset.isFrozen()) {
-	  pFreezeToolsetItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
-	  pDeleteToolsetItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	  pFreezeToolsetItem.setEnabled(pPrivilegeDetails.isDeveloper());
+	  pDeleteToolsetItem.setEnabled(pPrivilegeDetails.isDeveloper());
 	}
 
 	if(data.getOsType() == OsType.Unix)
@@ -2719,11 +2719,11 @@ class JManageToolsetsDialog
 	TreeMap<OsType,Toolset> toolsets = pToolsets.get(data.getName());
 	if(toolsets != null) {
 	  pAddMacOSToolsetItem.setEnabled
-	    (pPrivilegeDetails.isMasterAdmin() && !toolsets.containsKey(OsType.MacOS));
+	    (pPrivilegeDetails.isDeveloper() && !toolsets.containsKey(OsType.MacOS));
 	  pAddWindowsToolsetItem.setEnabled
-	    (pPrivilegeDetails.isMasterAdmin() && !toolsets.containsKey(OsType.Windows));
+	    (pPrivilegeDetails.isDeveloper() && !toolsets.containsKey(OsType.Windows));
 	  pCloneToolsetItem.setEnabled
-	    ((data.getOsType() == null) && pPrivilegeDetails.isMasterAdmin());
+	    ((data.getOsType() == null) && pPrivilegeDetails.isDeveloper());
 	}
       }
     }
@@ -2760,10 +2760,10 @@ class JManageToolsetsDialog
 	pIncTestPackageItem.setEnabled(data.getOsType().equals(PackageInfo.sOsType));
 
 	if(!toolset.isFrozen()) {
-	  pPackageEarlierItem.setEnabled(pPrivilegeDetails.isMasterAdmin() && (idx > 0));
+	  pPackageEarlierItem.setEnabled(pPrivilegeDetails.isDeveloper() && (idx > 0));
 	  
 	  DefaultListModel model = (DefaultListModel) pIncludedPackagesList.getModel();
-	  pPackageLaterItem.setEnabled(pPrivilegeDetails.isMasterAdmin() && 
+	  pPackageLaterItem.setEnabled(pPrivilegeDetails.isDeveloper() && 
 				       (idx < (model.getSize()-1)));
 	}
       }
@@ -2787,7 +2787,7 @@ class JManageToolsetsDialog
 
     pPackageDetailsItem.setEnabled(false);
     pTestPackageItem.setEnabled(false);
-    pNewPackageItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+    pNewPackageItem.setEnabled(pPrivilegeDetails.isDeveloper());
     pAddMacOSPackageItem.setEnabled(false);
     pAddWindowsPackageItem.setEnabled(false);
     pNewPackageVersionItem.setEnabled(false);
@@ -2807,11 +2807,11 @@ class JManageToolsetsDialog
 	pTestPackageItem.setEnabled(data.getOsType().equals(PackageInfo.sOsType));
 
 	if(data.getVersionID() == null) {
-	  pFreezePackageItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
-	  pDeletePackageItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	  pFreezePackageItem.setEnabled(pPrivilegeDetails.isDeveloper());
+	  pDeletePackageItem.setEnabled(pPrivilegeDetails.isDeveloper());
 	}
 	else {
-	  pClonePackageVersionItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	  pClonePackageVersionItem.setEnabled(pPrivilegeDetails.isDeveloper());
 	}
 	
 	if(data.getOsType() == OsType.Unix)
@@ -2820,11 +2820,11 @@ class JManageToolsetsDialog
       
       if((data != null) && (data.getName() != null)) {
 	pAddMacOSPackageItem.setEnabled
-	  (pPrivilegeDetails.isMasterAdmin() && !hasPackages(data.getName(), OsType.MacOS));
+	  (pPrivilegeDetails.isDeveloper() && !hasPackages(data.getName(), OsType.MacOS));
 	pAddWindowsPackageItem.setEnabled
-	  (pPrivilegeDetails.isMasterAdmin() && !hasPackages(data.getName(), OsType.Windows));
+	  (pPrivilegeDetails.isDeveloper() && !hasPackages(data.getName(), OsType.Windows));
 	pNewPackageVersionItem.setEnabled
-	  (pPrivilegeDetails.isMasterAdmin() && (data.getOsType() != null));
+	  (pPrivilegeDetails.isDeveloper() && (data.getOsType() != null));
       }
     }
   }
@@ -2838,7 +2838,7 @@ class JManageToolsetsDialog
   {
     pIncludePackageButton.setEnabled(false);
 
-    if(pPrivilegeDetails.isMasterAdmin()) {
+    if(pPrivilegeDetails.isDeveloper()) {
       ToolsetTreeData tdata = getSelectedToolsetData();
       PackageTreeData pdata = getSelectedPackageData();
       if((tdata != null) && (pdata != null)) {
@@ -2864,7 +2864,7 @@ class JManageToolsetsDialog
 
     if((toolset != null) && (data != null)) {
       if(data.isPackage() && !toolset.isFrozen()) 
-	pExcludePackageButton.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	pExcludePackageButton.setEnabled(pPrivilegeDetails.isDeveloper());
     }
   }
 
@@ -2951,7 +2951,7 @@ class JManageToolsetsDialog
 	  pEnableToolsetButton.setEnabled(false);
 	pToolsetsTree.addTreeSelectionListener(this);
 
-	pDisableToolsetButton.setEnabled(pPrivilegeDetails.isMasterAdmin());
+	pDisableToolsetButton.setEnabled(pPrivilegeDetails.isDeveloper());
       }
 
       rebuildIncludedPackagesList();
@@ -3000,7 +3000,7 @@ class JManageToolsetsDialog
 	Toolset toolset = lookupToolset(data.getName(), os);
 	if(toolset != null) 
 	  pEnableToolsetButton.setEnabled
-	    (pPrivilegeDetails.isMasterAdmin() && toolset.isFrozen() && (os == OsType.Unix));
+	    (pPrivilegeDetails.isDeveloper() && toolset.isFrozen() && (os == OsType.Unix));
       }
 
       rebuildIncludedPackagesList();
@@ -3260,7 +3260,7 @@ class JManageToolsetsDialog
    MouseEvent e
   )
   {
-    if(!pPrivilegeDetails.isMasterAdmin()) 
+    if(!pPrivilegeDetails.isDeveloper()) 
       return;
 
     int mods = e.getModifiersEx();
@@ -3562,7 +3562,7 @@ class JManageToolsetsDialog
 	  if(tname != null) {
 	    for(OsType os : stoolsets.keySet()) {
 	      Toolset stoolset = lookupToolset(stname, os); 
-	      if((stoolset != null) && pPrivilegeDetails.isMasterAdmin()) {
+	      if((stoolset != null) && pPrivilegeDetails.isDeveloper()) {
 		ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
 		int wk;
 		for(wk=0; wk<stoolset.getNumPackages(); wk++) {
@@ -3602,7 +3602,7 @@ class JManageToolsetsDialog
       OsType os = data.getOsType();
 
       Toolset toolset = lookupToolset(tname, data.getOsType());
-      if((toolset != null) && !toolset.isFrozen() && pPrivilegeDetails.isMasterAdmin()) {
+      if((toolset != null) && !toolset.isFrozen() && pPrivilegeDetails.isDeveloper()) {
 	UIMaster master = UIMaster.getInstance();
 	
 	if(!toolset.hasPackages()) {
@@ -3699,7 +3699,7 @@ class JManageToolsetsDialog
       OsType os = data.getOsType();
 
       Toolset toolset = lookupToolset(tname, os);
-      if((toolset != null) && !toolset.isFrozen() && pPrivilegeDetails.isMasterAdmin()) {
+      if((toolset != null) && !toolset.isFrozen() && pPrivilegeDetails.isDeveloper()) {
 
 	TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
 	if(toolsets != null) {

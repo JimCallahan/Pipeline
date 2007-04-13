@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.196 2007/04/12 21:55:43 jim Exp $
+// $Id: MasterMgr.java,v 1.197 2007/04/13 10:56:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2001,7 +2001,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
+      if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may set the default toolset!");
 
@@ -2097,7 +2097,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
+      if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may change the active status " + 
 	   "of a toolset!");
@@ -2619,7 +2619,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
+      if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may create new toolsets!");
 
@@ -2932,7 +2932,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      if(!pAdminPrivileges.isMasterAdmin(req)) 
+      if(!pAdminPrivileges.isDeveloper(req)) 
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may create new toolset packages!");
 
