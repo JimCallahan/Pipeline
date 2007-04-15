@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.73 2007/04/15 10:30:44 jim Exp $
+// $Id: ScriptApp.java,v 1.74 2007/04/15 13:37:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -343,7 +343,7 @@ class ScriptApp
        "    node\n" +
        "      --status=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
-       "        [--brief] [--upstream] [--link-graph]\n" +
+       "        [--brief] [--upstream] [--light] [--link-graph]\n" +
        "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
        "      --check-in=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
@@ -3356,6 +3356,7 @@ class ScriptApp
    NodeID nodeID, 
    boolean briefFormat, 
    boolean printUpstream,
+   boolean lightweight, 
    boolean printLinkGraph, 
    boolean printGlue, 
    TreeSet sections, 
@@ -3367,7 +3368,7 @@ class ScriptApp
     NodeStatus root = null;
     TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
     {
-      root = mclient.status(nodeID);
+      root = mclient.status(nodeID, lightweight);
       if(printUpstream) 
 	unpackStatus(root, table); 
       else 

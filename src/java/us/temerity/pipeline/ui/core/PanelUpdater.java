@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.11 2007/04/15 10:30:47 jim Exp $
+// $Id: PanelUpdater.java,v 1.12 2007/04/15 13:37:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,7 +86,7 @@ class PanelUpdater
    JNodeViewerPanel panel
   ) 
   {
-    this(panel, false, true, new TreeSet<String>());
+    this(panel, false, true, null);
   }
 
   /**
@@ -293,6 +293,13 @@ class PanelUpdater
     }
 
     if(pNodeViewerPanel != null) {
+      UserPrefs prefs = UserPrefs.getInstance();
+      if(prefs.getHeavyweightUpdates()) 
+        pLightweightNodeStatus = false;
+
+      if(pNodeViewerBranchRoots == null) 
+        pNodeViewerBranchRoots = new TreeSet<String>();
+
       pDetailedNodeName = pNodeViewerPanel.getDetailedNodeName();
 
       if(!(panel instanceof JNodeViewerPanel) && 
@@ -369,6 +376,7 @@ class PanelUpdater
 
               master.updatePanelOp(pGroupID, "Updating Node Status...");
               LinkedList<NodeStatus> results = mclient.status(pAuthor, pView, all); 
+              pNodeStatusModified = true;
 
               for(NodeStatus status : results) {
                 String name = status.getName();

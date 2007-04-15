@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -796,6 +796,16 @@ class GenUserPrefsApp
       looks.add("Square");
 
       BasePref prefs[] = {
+	new BooleanPref
+	("Whether to always perform heavyweight node status updates.  Heavyweight status " + 
+         "includes per-file revision control and queue state information and is much more " + 
+         "expensive to compute than a lightweight node status.  Setting this option " + 
+         "forces the use of heavyweight status at all times and therefore all " + 
+         "optimizations provided by the conditional use of lightweight status!", 
+	 "HeavyweightUpdates", "Heavyweight Updates:", false), 
+
+	new BasePref(),
+
 	new BooleanPref
 	("Whether to initially show downstream links by default.",
 	 "ShowDownstream", "Show Downstream:", false), 
@@ -2286,7 +2296,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2543,7 +2553,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3900,7 +3910,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

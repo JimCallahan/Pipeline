@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.77 2007/04/15 10:30:47 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.78 2007/04/15 13:37:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -927,8 +927,10 @@ class JNodeViewerPanel
   public void 
   updateUserPrefs() 
   {
-    pShowDetailHints = UserPrefs.getInstance().getShowDetailHints();
-    pShowDownstream  = UserPrefs.getInstance().getShowDownstream();
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    pShowDetailHints = prefs.getShowDetailHints();
+    pShowDownstream  = prefs.getShowDownstream();
 
     updateUniverse();
     updateMenuToolTips();
@@ -1164,6 +1166,42 @@ class JNodeViewerPanel
   }
 
   /**
+   * Update the locked node menu.
+   */ 
+  public void 
+  updateLockedNodeMenu() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    pUpdateBranchItems[0].setEnabled(!prefs.getHeavyweightUpdates());
+
+    updateEditorMenus();
+  }
+
+  /**
+   * Update the checked-in node menu.
+   */ 
+  public void 
+  updateCheckedInNodeMenu() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    pUpdateBranchItems[1].setEnabled(!prefs.getHeavyweightUpdates());
+
+    updateEditorMenus();
+  }
+
+  /**
+   * Update the frozen node menu.
+   */ 
+  public void 
+  updateFrozenNodeMenu() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    pUpdateBranchItems[2].setEnabled(!prefs.getHeavyweightUpdates());
+
+    updateEditorMenus();
+  }
+
+  /**
    * Update the node menu.
    */ 
   public void 
@@ -1180,6 +1218,9 @@ class JNodeViewerPanel
 
     boolean hasCheckedIn = (details.getLatestVersion() != null);
     boolean multiple     = (getSelectedNames().size() >= 2);
+    
+    UserPrefs prefs = UserPrefs.getInstance();
+    pUpdateBranchItems[3].setEnabled(!prefs.getHeavyweightUpdates());
 
     pLinkItem.setEnabled(multiple && nodePrivileged);
     pUnlinkItem.setEnabled(multiple && nodePrivileged);
@@ -2319,15 +2360,15 @@ class JNodeViewerPanel
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
 		if(isLocked()) {
-		  updateEditorMenus();
+                  updateLockedNodeMenu();
 		  pPanelLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion() == null) {
-		  updateEditorMenus();
+                  updateCheckedInNodeMenu();
 		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion().isFrozen()) {
-		  updateEditorMenus();
+                  updateFrozenNodeMenu();
 		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else {
@@ -3026,7 +3067,7 @@ class JNodeViewerPanel
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    PanelUpdater pu = new PanelUpdater(this, false, false, new TreeSet<String>());
+    PanelUpdater pu = new PanelUpdater(this, false, false, null);
     pu.start();
   }
   
@@ -3067,7 +3108,7 @@ class JNodeViewerPanel
     if(pPrimary != null) {
       pLastDetailsName = pPrimary.getNodeStatus().getName();
 
-      PanelUpdater pu = new PanelUpdater(this, true, true, new TreeSet<String>());
+      PanelUpdater pu = new PanelUpdater(this, true, true, null);
       pu.start();
     }
 

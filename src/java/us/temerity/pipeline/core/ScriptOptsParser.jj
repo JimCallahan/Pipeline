@@ -278,6 +278,7 @@ ScriptOptsParser
    */  
   private boolean          pBrief;
   private boolean          pUpstream;
+  private boolean          pLight;
   private boolean          pLinkGraph; 
   private boolean          pGlue; 
   private VersionID.Level  pLevel; 
@@ -445,6 +446,7 @@ TOKEN :
 | <ALL_FROZEN:         "--all-frozen">				
 | <BRIEF:              "--brief">					
 | <UPSTREAM:           "--upstream">				
+| <LIGHT:              "--light">				
 | <LINK_GRAPH:         "--link-graph">                             
 | <GLUE:               "--glue">
 | <NODE_OPT:           "--node">                : NODE_NAME_SEP
@@ -5705,6 +5707,7 @@ NodeStatus()
   pView      = "default";
   pBrief     = false;
   pUpstream  = false;
+  pLight     = false;
   pLinkGraph = false;
   pGlue      = false;
   pSections  = new TreeSet();
@@ -5717,7 +5720,7 @@ NodeStatus()
         ("The --brief and --show options are mutually exclusive!");
 
     pApp.printNodeStatus(new NodeID(pAuthor, pView, name), 
-			 pBrief, pUpstream, pLinkGraph, pGlue, pSections, 
+			 pBrief, pUpstream, pLight, pLinkGraph, pGlue, pSections, 
 			 pMasterMgrClient, pQueueMgrClient);
   }
 }
@@ -5726,7 +5729,7 @@ void
 NodeStatusOpts() :
 {}
 {
-  (Author() | View() | Brief() | Upstream() | LinkGraph() | 
+  (Author() | View() | Brief() | Upstream() | Light() | LinkGraph() | 
    NodeStatusShow() | NodeStatusHide() | Glue()) 
   {}
 }
@@ -5748,6 +5751,16 @@ Upstream() :
   <UPSTREAM> AE() 
   {
     pUpstream = true;
+  }
+}
+ 
+void 
+Light() : 
+{}
+{
+  <LIGHT> AE() 
+  {
+    pLight = true;
   }
 }
 
