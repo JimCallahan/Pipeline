@@ -1,4 +1,4 @@
-// $Id: NodeStatusReq.java,v 1.5 2005/01/03 00:05:31 jim Exp $
+// $Id: NodeStatusReq.java,v 1.6 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,19 +28,25 @@ class NodeStatusReq
   /** 
    * Constructs a new request.
    * 
-   * @param id 
+   * @param nodeID 
    *   The unique working version identifier.
+   * 
+   * @param lightweight
+   *   Get only lightweight node status detail information for the upstream nodes.
    */
   public
   NodeStatusReq
   (
-   NodeID id
+   NodeID nodeID, 
+   boolean lightweight
   )
   { 
-    if(id == null) 
+    if(nodeID == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");
-    pNodeID = id;
+    pNodeID = nodeID;
+
+    pLightweight = lightweight;
   }
 
 
@@ -56,6 +62,15 @@ class NodeStatusReq
   getNodeID() 
   {
     return pNodeID;
+  }
+  
+  /**
+   * Whether to get only lightweight node status detail information for the upstream nodes.
+   */
+  public boolean
+  getLightweight() 
+  {
+    return pLightweight;
   }
 
   
@@ -76,6 +91,11 @@ class NodeStatusReq
    * The unique working version identifier.
    */ 
   private NodeID  pNodeID;
+  
+  /**
+   * Whether to get only lightweight node status detail information for the upstream nodes.
+   */ 
+  private boolean pLightweight; 
   
 }
   

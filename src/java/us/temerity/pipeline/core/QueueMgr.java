@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.89 2007/04/13 21:16:41 jim Exp $
+// $Id: QueueMgr.java,v 1.90 2007/04/15 10:30:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3511,11 +3511,13 @@ class QueueMgr
     }     
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Preempt the jobs with the given IDs. <P> 
    * 
    * @param req 
-   *   The preempt jobs request.
+   *   The request.
    *    
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -3563,7 +3565,7 @@ class QueueMgr
    * Kill the jobs with the given IDs. <P> 
    * 
    * @param req 
-   *   The kill jobs request.
+   *   The request.
    *    
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -3695,6 +3697,319 @@ class QueueMgr
       if(unprivileged)
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may resume jobs owned by another user!");
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Preempt all jobs associated with the given working version.
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable preempt the jobs. 
+   */ 
+  public Object
+  preemptNodeJobs
+  (
+   QueueNodeJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.preemptNodeJobs()");
+
+    try {
+      NodeID nodeID = req.getNodeID();
+
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may preempt jobs owned by another user!");
+
+      /* lookup the jobs which create the node's primary files */ 
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      {
+        timer.aquire();
+        synchronized(pNodeJobIDs) {
+          timer.resume();
+          
+          TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+          if(table != null)
+            jobIDs.addAll(table.values());
+        }
+      }
+
+      /* see which ones are currently running or just about to run */ 
+      TreeSet<Long> running = new TreeSet<Long>();
+      {
+        timer.aquire();  
+        synchronized(pJobInfo) {
+          timer.resume();
+          
+          for(Long jobID : jobIDs) {
+            QueueJobInfo info = pJobInfo.get(jobID);	   
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Paused:
+              case Running:
+                running.add(jobID);
+              }
+            }
+          }
+        }
+      }
+
+      /* mark them for preemption */ 
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : running) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) 
+            pPreemptList.add(jobID);
+	}
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
+  }
+
+  /**
+   * Kill all jobs associated with the given working version.
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable kill the jobs. 
+   */ 
+  public Object
+  killNodeJobs
+  (
+   QueueNodeJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.killNodeJobs()");
+
+    try {
+      NodeID nodeID = req.getNodeID();
+
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
+        throw new PipelineException
+         ("Only a user with Queue Admin privileges may kill jobs owned by another user!");
+         
+      /* lookup the jobs which create the node's primary files */ 
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      {
+        timer.aquire();
+        synchronized(pNodeJobIDs) {
+          timer.resume();
+          
+          TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+          if(table != null)
+            jobIDs.addAll(table.values());
+        }
+      }
+
+      /* see which ones are still unfinished */ 
+      TreeSet<Long> unfinished = new TreeSet<Long>();
+      {
+        timer.aquire();  
+        synchronized(pJobInfo) {
+          timer.resume();
+          
+          for(Long jobID : jobIDs) {
+            QueueJobInfo info = pJobInfo.get(jobID);	   
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+              case Paused:
+              case Running:
+                unfinished.add(jobID);
+              }
+            }
+          }
+        }
+      }
+
+      /* mark them for death */ 
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : unfinished) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) 
+            pHitList.add(jobID);
+	}
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
+  }
+
+  /**
+   * Pause all jobs associated with the given working version.<P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable pause the jobs. 
+   */ 
+  public Object
+  pauseNodeJobs
+  (
+   QueueNodeJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.pauseNodeJobs()");
+
+    try {
+      NodeID nodeID = req.getNodeID();
+
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may pause jobs owned by another user!");
+
+      /* lookup the jobs which create the node's primary files */ 
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      {
+        timer.aquire();
+        synchronized(pNodeJobIDs) {
+          timer.resume();
+          
+          TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+          if(table != null)
+            jobIDs.addAll(table.values());
+        }
+      }
+
+      /* see which ones are still waiting to run */ 
+      TreeSet<Long> waiting = new TreeSet<Long>();
+      {
+        timer.aquire();  
+        synchronized(pJobInfo) {
+          timer.resume();
+          
+          for(Long jobID : jobIDs) {
+            QueueJobInfo info = pJobInfo.get(jobID);	   
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+                waiting.add(jobID);
+              }
+            }
+          }
+        }
+      }
+
+      /* mark them to be paused */ 
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : waiting) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) 
+            pPaused.add(jobID);
+	}
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
+  }
+  
+  /**
+   * Resume execution of all paused jobs associated with the given working version.<P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable resume the jobs. 
+   */ 
+  public Object
+  resumeNodeJobs
+  (
+   QueueNodeJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.resumeNodeJobs()");
+
+    try {
+      NodeID nodeID = req.getNodeID();
+
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID.getAuthor()))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may resume jobs owned by another user!");
+      
+      /* lookup the jobs which create the node's primary files */ 
+      TreeSet<Long> jobIDs = new TreeSet<Long>();
+      {
+        timer.aquire();
+        synchronized(pNodeJobIDs) {
+          timer.resume();
+          
+          TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+          if(table != null)
+            jobIDs.addAll(table.values());
+        }
+      }
+
+      /* see which ones are currently paused */ 
+      TreeSet<Long> paused = new TreeSet<Long>();
+      {
+        timer.aquire();  
+        synchronized(pJobInfo) {
+          timer.resume();
+          
+          for(Long jobID : jobIDs) {
+            QueueJobInfo info = pJobInfo.get(jobID);	   
+            if(info != null) {
+              switch(info.getState()) {
+              case Paused:
+                paused.add(jobID);
+              }
+            }
+          }
+        }
+      }
+
+      /* mark them for resumption */ 
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	for(Long jobID : paused) {
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) 
+            pPaused.remove(jobID);
+	}
+      }
 
       return new SuccessRsp(timer);
     }

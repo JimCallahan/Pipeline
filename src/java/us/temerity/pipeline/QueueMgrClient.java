@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.38 2007/03/28 19:31:03 jim Exp $
+// $Id: QueueMgrClient.java,v 1.39 2007/04/15 10:30:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1240,7 +1240,7 @@ class QueueMgrClient
    * automatically requeued and will be rerun at the next available opportunity. <P> 
    * 
    * If the owner of the jobs are different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1266,7 +1266,7 @@ class QueueMgrClient
    * Kill the jobs with the given IDs. <P> 
    * 
    * If the owner of the jobs are different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1292,7 +1292,7 @@ class QueueMgrClient
    * Pause the jobs with the given IDs. <P> 
    * 
    * If the owner of the jobs are different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1318,7 +1318,7 @@ class QueueMgrClient
    * Resume execution of the paused jobs with the given IDs. <P> 
    * 
    * If the owner of the jobs are different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @param jobIDs
    *   The unique job identifiers.
@@ -1341,6 +1341,118 @@ class QueueMgrClient
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Kill and requeue all jobs associated with the given working version.<P> 
+   * 
+   * If successful, the jobs will be killed but instead of failing, the jobs will be
+   * automatically requeued and will be rerun at the next available opportunity. <P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException 
+   *   If unable to preempt the jobs.
+   */  
+  public synchronized void
+  preemptJobs
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueNodeJobsReq req = new QueueNodeJobsReq(nodeID);
+    Object obj = performTransaction(QueueRequest.PreemptNodeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Kill all jobs associated with the given working version.<P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */  
+  public synchronized void
+  killJobs
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueNodeJobsReq req = new QueueNodeJobsReq(nodeID);
+    Object obj = performTransaction(QueueRequest.KillNodeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Pause all jobs associated with the given working version.<P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException 
+   *   If unable to pause the jobs.
+   */  
+  public synchronized void
+  pauseJobs
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueNodeJobsReq req = new QueueNodeJobsReq(nodeID);
+    Object obj = performTransaction(QueueRequest.PauseNodeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Resume execution of all paused jobs associated with the given working version.<P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException 
+   *   If unable to resume the jobs.
+   */  
+  public synchronized void
+  resumeJobs
+  ( 
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueNodeJobsReq req = new QueueNodeJobsReq(nodeID);
+    Object obj = performTransaction(QueueRequest.ResumeNodeJobs, req); 
+    handleSimpleResponse(obj);
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Kill and requeue the jobs with the given IDs. <P> 
    * 
@@ -1350,7 +1462,7 @@ class QueueMgrClient
    * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @deprecated 
    *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
@@ -1384,7 +1496,7 @@ class QueueMgrClient
    * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @deprecated 
    *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
@@ -1418,7 +1530,7 @@ class QueueMgrClient
    * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @deprecated 
    *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by
@@ -1452,7 +1564,7 @@ class QueueMgrClient
    * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
-   * will fail unless the current user has privileged access status.
+   * will fail unless the current user has QueueAdmin privileges. 
    * 
    * @deprecated 
    *   The <CODE>author</CODE> argument is no longer neccessary and is now ignored by

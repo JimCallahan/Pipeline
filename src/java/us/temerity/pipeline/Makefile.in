@@ -344,9 +344,11 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
 
       JAVA_UI_SOURCES = $(filter-out $(ENUM_SOURCES),$(UI_SOURCES))
 
-    JAVA_CORE_SOURCES = $(filter-out $(ENUM_SOURCES),$(CORE_SOURCES) $(UI_CORE_SOURCES)) \
+    JAVA_CORE_SOURCES = $(filter-out $(ENUM_SOURCES),$(CORE_SOURCES)) \
                         $(patsubst %,core/%.java,$(CORE_PARSERS)) \
-                        $(EXTS_SOURCES) \
+                        $(EXTS_SOURCES)
+
+ JAVA_UI_CORE_SOURCES = $(filter-out $(ENUM_SOURCES),$(UI_CORE_SOURCES)) \
                         ui/core/UserPrefs.java ui/core/JUserPrefsDialog.java
 
            BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
@@ -445,11 +447,13 @@ ui/core/prefs/GenUserPrefsApp.class: ui/core/prefs/GenUserPrefsApp.java
 	@mkdir -p ui/core/prefs
 	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/core/prefs -classpath $(srcdir)/ui/core/prefs $<
 
-java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOURCES) 
+java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOURCES) \
+          $(JAVA_UI_CORE_SOURCES) 
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_MSG_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_UI_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_CORE_SOURCES)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_UI_CORE_SOURCES)
 	touch $@
 	ls core/*.class ui/core/*.class core/exts/*.class > vault-sources
 	rm -f $(top_builddir)/docs/javadoc/docs-all

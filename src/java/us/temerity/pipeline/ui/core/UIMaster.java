@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.61 2007/03/29 19:45:51 jim Exp $
+// $Id: UIMaster.java,v 1.62 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4558,33 +4558,48 @@ class UIMaster
   }
 
   /** 
-   * Pause the given jobs.
+   * Abstract base class for all tasks which modify the state of jobs.
    */ 
-  public
-  class PauseJobsTask
+  public abstract
+  class BaseModifyJobsTask
     extends BaseNodeTask
   {
     public 
-    PauseJobsTask
+    BaseModifyJobsTask
     (
+     String title, 
+     String msg, 
      int channel, 
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:PauseJobsTask", channel, author, view);
-
-      pJobIDs = jobIDs; 
+      super(title, channel, author, view);
+      
+      pMsg     = msg;
+      pNodeIDs = nodeIDs; 
+      pJobIDs  = jobIDs; 
     }
 
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel, "Pausing Jobs...")) {
+      if(master.beginPanelOp(pChannel)) {
 	try {
-	  master.getQueueMgrClient(pChannel).pauseJobs(pJobIDs);
+	  if((pNodeIDs != null) && !pNodeIDs.isEmpty()) {
+            for(NodeID nodeID : pNodeIDs) {
+              master.updatePanelOp(pChannel, pMsg + " Jobs for Node: " + nodeID.getName());
+              performNodeOp(master.getQueueMgrClient(pChannel), nodeID); 
+            }
+          }
+
+	  if((pJobIDs != null) && !pJobIDs.isEmpty()) {
+            master.updatePanelOp(pChannel, pMsg + " Jobs...");
+            performJobOps(master.getQueueMgrClient(pChannel), pJobIDs); 
+          }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4598,7 +4613,70 @@ class UIMaster
       }
     }
 
-    private TreeSet<Long>  pJobIDs; 
+    protected abstract void 
+    performNodeOp
+    (
+     QueueMgrClient qclient, 
+     NodeID nodeID
+    )
+      throws PipelineException;
+
+    protected abstract void 
+    performJobOps
+    (
+     QueueMgrClient qclient, 
+     TreeSet<Long> jobIDs
+    )
+      throws PipelineException;
+
+    private String          pMsg; 
+    private TreeSet<NodeID> pNodeIDs;
+    private TreeSet<Long>   pJobIDs; 
+  }
+
+  /** 
+   * Pause the given jobs.
+   */ 
+  public
+  class PauseJobsTask
+    extends BaseModifyJobsTask
+  {
+    public 
+    PauseJobsTask
+    (
+     String panelTitle, 
+     int channel, 
+     TreeSet<NodeID> nodeIDs, 
+     TreeSet<Long> jobIDs,
+     String author, 
+     String view
+    ) 
+    {
+      super(panelTitle + ":PauseJobsTask", "Pausing", 
+            channel, nodeIDs, jobIDs, author, view);
+    }
+
+    protected void 
+    performNodeOp
+    (
+     QueueMgrClient qclient, 
+     NodeID nodeID
+    )
+      throws PipelineException
+    {
+      qclient.pauseJobs(nodeID); 
+    }
+
+    protected void 
+    performJobOps
+    (
+     QueueMgrClient qclient, 
+     TreeSet<Long> jobIDs
+    )
+      throws PipelineException
+    {
+      qclient.pauseJobs(jobIDs);
+    }
   }
 
   /** 
@@ -4606,43 +4684,44 @@ class UIMaster
    */ 
   public
   class ResumeJobsTask
-    extends BaseNodeTask
+    extends BaseModifyJobsTask
   {
     public 
     ResumeJobsTask
     (
+     String panelTitle, 
      int channel, 
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:ResumeJobsTask", channel, author, view);
-
-      pJobIDs = jobIDs; 
+      super(panelTitle + ":ResumeJobsTask", "Resuming Paused", 
+            channel, nodeIDs, jobIDs, author, view);
     }
 
-    public void 
-    run() 
+    protected void 
+    performNodeOp
+    (
+     QueueMgrClient qclient, 
+     NodeID nodeID
+    )
+      throws PipelineException
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel, "Resuming Paused Jobs...")) {
-	try {
-	  master.getQueueMgrClient(pChannel).resumeJobs(pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp(pChannel, "Done.");
-	}
-
-	postOp();
-      }
+      qclient.resumeJobs(nodeID); 
     }
 
-    private TreeSet<Long>  pJobIDs; 
+    protected void 
+    performJobOps
+    (
+     QueueMgrClient qclient, 
+     TreeSet<Long> jobIDs
+    )
+      throws PipelineException
+    {
+      qclient.resumeJobs(jobIDs);
+    }
   }
 
   /** 
@@ -4650,87 +4729,89 @@ class UIMaster
    */ 
   public
   class PreemptJobsTask
-    extends BaseNodeTask
+    extends BaseModifyJobsTask
   {
     public 
     PreemptJobsTask
     (
+     String panelTitle, 
      int channel, 
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:PreemptJobsTask", channel, author, view);
-
-      pJobIDs = jobIDs; 
+      super(panelTitle + ":PreemptJobsTask", "Preempting", 
+            channel, nodeIDs, jobIDs, author, view);
     }
 
-    public void 
-    run() 
+    protected void 
+    performNodeOp
+    (
+     QueueMgrClient qclient, 
+     NodeID nodeID
+    )
+      throws PipelineException
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel, "Preempting Jobs...")) {
-	try {
-	  master.getQueueMgrClient(pChannel).preemptJobs(pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp(pChannel, "Done.");
-	}
-
-	postOp();
-      }
+      qclient.preemptJobs(nodeID); 
     }
 
-    private TreeSet<Long>  pJobIDs; 
+    protected void 
+    performJobOps
+    (
+     QueueMgrClient qclient, 
+     TreeSet<Long> jobIDs
+    )
+      throws PipelineException
+    {
+      qclient.preemptJobs(jobIDs);
+    }
   }
-
+ 
   /** 
    * Kill the given jobs.
    */ 
   public
   class KillJobsTask
-    extends BaseNodeTask
+    extends BaseModifyJobsTask
   {
     public 
     KillJobsTask
     (
+     String panelTitle, 
      int channel, 
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs,
      String author, 
      String view
     ) 
     {
-      super("UIMaster:KillJobsTask", channel, author, view);
-
-      pJobIDs = jobIDs; 
+      super(panelTitle + ":KillJobsTask", "Killing", 
+            channel, nodeIDs, jobIDs, author, view);
     }
 
-    public void 
-    run() 
+    protected void 
+    performNodeOp
+    (
+     QueueMgrClient qclient, 
+     NodeID nodeID
+    )
+      throws PipelineException
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel, "Killing Jobs...")) {
-	try {
-	  master.getQueueMgrClient(pChannel).killJobs(pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp(pChannel, "Done.");
-	}
-
-	postOp();
-      }
+      qclient.killJobs(nodeID); 
     }
 
-    private TreeSet<Long>  pJobIDs; 
+    protected void 
+    performJobOps
+    (
+     QueueMgrClient qclient, 
+     TreeSet<Long> jobIDs
+    )
+      throws PipelineException
+    {
+      qclient.killJobs(jobIDs);
+    }
   }
 
 

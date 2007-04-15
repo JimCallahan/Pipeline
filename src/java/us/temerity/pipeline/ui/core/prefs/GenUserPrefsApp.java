@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -565,6 +565,11 @@ class GenUserPrefsApp
 	("Update connected node details panels.",
 	 "Details", "Details:",
 	 false, false, false, 68),  /* D */	
+
+	new HotKeyPref
+	("Update the status of all nodes upstream of the primary selection.", 
+	 "UpdateBranch", "Update Branch:",
+	 false, false, false, 32),  /* Space */ 
 
 	new BasePref(),
 
@@ -2012,6 +2017,7 @@ class GenUserPrefsApp
 
 	group.addAll(manager);
 	group.add(details);
+	group.add("UpdateBranch");
 	group.add("NodeViewerMakeRoot");
 	group.add("NodeViewerAddRoot");
 	group.add("NodeViewerReplaceRoot");
@@ -2280,7 +2286,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2537,7 +2543,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3894,7 +3900,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.45 2007/02/17 11:46:01 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.46 2007/04/15 10:30:47 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

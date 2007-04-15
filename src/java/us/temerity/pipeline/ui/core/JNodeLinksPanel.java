@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.18 2007/03/18 02:14:26 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.19 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -489,33 +489,45 @@ class JNodeLinksPanel
       {
 	String name = "Blank-Normal";
 	if(pStatus != null) {
-	  if(details != null) {
-	    if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
-	      VersionID wvid = details.getWorkingVersion().getWorkingID();
-	      VersionID lvid = details.getLatestVersion().getVersionID();
-	      switch(wvid.compareLevel(lvid)) {
-	      case Major:
-		name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
-		break;
-		
-	      case Minor:
-		name = ("NeedsCheckOut-" + details.getOverallQueueState());
-		break;
-		
-	      case Micro:
-		name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
-	      }
-	    }
-	    else {
-	      name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
-	    }
-	    
-	    if((mod != null) && mod.isFrozen()) 
-	      name = (name + "-Frozen-Normal");
-	    else 
-	      name = (name + "-Normal");
-	  }
-	  
+          if(details != null) {
+            if(details.isLightweight()) {
+              switch(details.getVersionState()) {
+              case CheckedIn:
+                name = "CheckedIn-Undefined-Normal"; 
+                break;
+                
+              default:
+                name = "Lightweight-Normal";
+              }
+            }
+            else {
+              if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+                VersionID wvid = details.getWorkingVersion().getWorkingID();
+                VersionID lvid = details.getLatestVersion().getVersionID();
+                switch(wvid.compareLevel(lvid)) {
+                case Major:
+                  name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
+                  break;
+                  
+                case Minor:
+                  name = ("NeedsCheckOut-" + details.getOverallQueueState());
+                  break;
+                  
+                case Micro:
+                  name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
+                }
+              }
+              else {
+                name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
+              }
+              
+              if((mod != null) && mod.isFrozen()) 
+                name = (name + "-Frozen-Normal");
+              else 
+                name = (name + "-Normal");
+            }
+          }
+            
 	  pHeaderLabel.setText(pStatus.toString());
 	  pNodeNameField.setText(pStatus.getName());
 	}
@@ -876,18 +888,23 @@ class JNodeLinksPanel
    * Update the node menu.
    */ 
   public void 
-  updateNodeMenu() 
+  updateNodeMenu()
   {
-    boolean privileged = 
+    boolean queuePrivileged = 
       (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
 
-    pQueueJobsItem.setEnabled(privileged);
-    pQueueJobsSpecialItem.setEnabled(privileged);
-    pPauseJobsItem.setEnabled(privileged);
-    pResumeJobsItem.setEnabled(privileged);
-    pPreemptJobsItem.setEnabled(privileged);
-    pKillJobsItem.setEnabled(privileged);
-    pRemoveFilesItem.setEnabled(privileged);  
+    boolean nodePrivileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
+
+    pQueueJobsItem.setEnabled(queuePrivileged);
+    pQueueJobsSpecialItem.setEnabled(queuePrivileged);
+
+    pPauseJobsItem.setEnabled(queuePrivileged);
+    pResumeJobsItem.setEnabled(queuePrivileged);
+    pPreemptJobsItem.setEnabled(queuePrivileged);
+    pKillJobsItem.setEnabled(queuePrivileged);
+
+    pRemoveFilesItem.setEnabled(nodePrivileged);  
 
     updateEditorMenus();
   }
@@ -1762,27 +1779,34 @@ class JNodeLinksPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<Long> paused = new TreeSet<Long>();
+    TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> pausedJobs    = new TreeSet<Long>();
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
-
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	    assert(jobIDs[wk] != null);
-	    paused.add(jobIDs[wk]);
-	  }
-	}
+        if(details.isLightweight()) {
+          pausedNodes.add(pStatus.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
+          
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Queued:
+              assert(jobIDs[wk] != null);
+              pausedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
 
-    if(!paused.isEmpty()) {
-      PauseJobsTask task = new PauseJobsTask(paused);
+    if(!pausedNodes.isEmpty() || !pausedJobs.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(pausedNodes, pausedJobs);
       task.start();
     }
   }
@@ -1796,27 +1820,34 @@ class JNodeLinksPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<Long> resumed = new TreeSet<Long>();
+    TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> resumedJobs    = new TreeSet<Long>();
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
-
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Paused:
-	    assert(jobIDs[wk] != null);
-	    resumed.add(jobIDs[wk]);
-	  }
-	}
+        if(details.isLightweight()) {
+          resumedNodes.add(pStatus.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
+          
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Paused:
+              assert(jobIDs[wk] != null);
+              resumedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
 
-    if(!resumed.isEmpty()) {
-      ResumeJobsTask task = new ResumeJobsTask(resumed);
+    if(!resumedNodes.isEmpty() || !resumedJobs.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(resumedNodes, resumedJobs);
       task.start();
     }
   }
@@ -1830,29 +1861,36 @@ class JNodeLinksPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<Long> dead = new TreeSet<Long>();
+    TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
-
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	  case Paused:
-	  case Running:
-	    assert(jobIDs[wk] != null);
-	    dead.add(jobIDs[wk]);
-	  }
-	}
+        if(details.isLightweight()) {
+          preemptedNodes.add(pStatus.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
+          
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Queued:
+            case Paused:
+            case Running:
+              assert(jobIDs[wk] != null);
+              preemptedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
-
-    if(!dead.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(dead);
+      
+    if(!preemptedNodes.isEmpty() || !preemptedJobs.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(preemptedNodes, preemptedJobs);
       task.start();
     }
   }
@@ -1866,29 +1904,36 @@ class JNodeLinksPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<Long> dead = new TreeSet<Long>();
+    TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> killedJobs    = new TreeSet<Long>();
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
-
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	  case Paused:
-	  case Running:
-	    assert(jobIDs[wk] != null);
-	    dead.add(jobIDs[wk]);
-	  }
-	}
+        if(details.isLightweight()) {
+          killedNodes.add(pStatus.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
+          
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Queued:
+            case Paused:
+            case Running:
+              assert(jobIDs[wk] != null);
+              killedJobs.add(jobIDs[wk]);              
+            }
+          }
+        }
       }
     }
 
-    if(!dead.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(dead);
+    if(!killedNodes.isEmpty() || !killedJobs.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(killedNodes, killedJobs);
       task.start();
     }
   }
@@ -1913,6 +1958,7 @@ class JNodeLinksPanel
       }
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2634,22 +2680,19 @@ class JNodeLinksPanel
     public 
     PauseJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeLinksPanel:PauseJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeLinksPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
     postOp() 
     {
-      updatePanels();
+      updatePanels(); 
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -2662,22 +2705,19 @@ class JNodeLinksPanel
     public 
     ResumeJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeLinksPanel:ResumeJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeLinksPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
     postOp() 
     {
-      updatePanels();
+      updatePanels(); 
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -2690,22 +2730,19 @@ class JNodeLinksPanel
     public 
     PreemptJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeLinksPanel:PreemptJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeLinksPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
     postOp() 
     {
-      updatePanels();
+      updatePanels(); 
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -2718,24 +2755,20 @@ class JNodeLinksPanel
     public 
     KillJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeLinksPanel:KillJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeLinksPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
     postOp() 
     {
-      updatePanels();
+      updatePanels(); 
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
-
   
   /*----------------------------------------------------------------------------------------*/
 

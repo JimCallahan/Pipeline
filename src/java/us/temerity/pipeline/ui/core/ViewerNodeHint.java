@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.4 2007/02/18 02:44:36 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.5 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -177,25 +177,27 @@ class ViewerNodeHint
     pBaseVersionDL   = null;
     pLatestVersionDL = null;
 
-    for(FileSeq fseq : pDetails.getFileStateSequences()) {
-      FileState fs[] = pDetails.getFileState(fseq);
-      int wk;
-      for(wk=0; wk<fs.length; wk++) {
-	Integer fcnt = pFileStates.get(fs[wk]);
-	if(fcnt == null)
-	  fcnt = new Integer(0);
-	pFileStates.put(fs[wk], fcnt+1);
+    if(!pDetails.isLightweight()) {
+      for(FileSeq fseq : pDetails.getFileStateSequences()) {
+        FileState fs[] = pDetails.getFileState(fseq);
+        int wk;
+        for(wk=0; wk<fs.length; wk++) {
+          Integer fcnt = pFileStates.get(fs[wk]);
+          if(fcnt == null)
+            fcnt = new Integer(0);
+          pFileStates.put(fs[wk], fcnt+1);
+        }
       }
-    }
 
-    {
-      QueueState qs[] = pDetails.getQueueState();
-      int wk;
-      for(wk=0; wk<qs.length; wk++) {
-	Integer qcnt = pQueueStates.get(qs[wk]);
-	if(qcnt == null)
-	  qcnt = new Integer(0);
-	pQueueStates.put(qs[wk], qcnt+1);
+      {
+        QueueState qs[] = pDetails.getQueueState();
+        int wk;
+        for(wk=0; wk<qs.length; wk++) {
+          Integer qcnt = pQueueStates.get(qs[wk]);
+          if(qcnt == null)
+            qcnt = new Integer(0);
+          pQueueStates.put(qs[wk], qcnt+1);
+        }
       }
     }
 
@@ -523,7 +525,7 @@ class ViewerNodeHint
     UserPrefs prefs = UserPrefs.getInstance();
     GeometryMgr mgr = GeometryMgr.getInstance();
 
-    if((pDetails != null) && !pFileStates.isEmpty() && !pQueueStates.isEmpty()) {
+    if(pDetails != null) {
 
       /* compute the size of the hint box and title/value alignments */ 
       double valueWidth = 0.0;
@@ -546,34 +548,38 @@ class ViewerNodeHint
                      pLinkWidths[pDetails.getLinkState().ordinal()]);
         }
 
-        if((pFileStateDLs != null) && (pCountDLs != null)) {
-          if(pFileStates.size() == 1) {
-            valueWidth = 
-              Math.max(valueWidth, 
-                       pFileWidths[pFileStates.firstKey().ordinal()]);
-          }
-          else {
-            for(FileState state : pFileStates.keySet()) {
-              Integer cnt = pFileStates.get(state);
+        if(!pFileStates.isEmpty()) {
+          if((pFileStateDLs != null) && (pCountDLs != null)) {
+            if(pFileStates.size() == 1) {
               valueWidth = 
                 Math.max(valueWidth, 
-                         pFileWidths[state.ordinal()] + 0.05 + pCountWidths.get(cnt));
+                         pFileWidths[pFileStates.firstKey().ordinal()]);
+            }
+            else {
+              for(FileState state : pFileStates.keySet()) {
+                Integer cnt = pFileStates.get(state);
+                valueWidth = 
+                  Math.max(valueWidth, 
+                           pFileWidths[state.ordinal()] + 0.05 + pCountWidths.get(cnt));
+              }
             }
           }
         }
 
-        if((pQueueStateDLs != null) && (pCountDLs != null)) {
-          if(pQueueStates.size() == 1) {
-            valueWidth = 
-              Math.max(valueWidth, 
-                       pQueueWidths[pQueueStates.firstKey().ordinal()]);
-          }
-          else {
-            for(QueueState state : pQueueStates.keySet()) {
-              Integer cnt = pQueueStates.get(state);
+        if(!pQueueStates.isEmpty()) {
+          if((pQueueStateDLs != null) && (pCountDLs != null)) {
+            if(pQueueStates.size() == 1) {
               valueWidth = 
                 Math.max(valueWidth, 
-                         pQueueWidths[state.ordinal()] + 0.05 + pCountWidths.get(cnt));
+                         pQueueWidths[pQueueStates.firstKey().ordinal()]);
+            }
+            else {
+              for(QueueState state : pQueueStates.keySet()) {
+                Integer cnt = pQueueStates.get(state);
+                valueWidth = 
+                  Math.max(valueWidth, 
+                           pQueueWidths[state.ordinal()] + 0.05 + pCountWidths.get(cnt));
+              }
             }
           }
         }
@@ -719,9 +725,10 @@ class ViewerNodeHint
 	if(pTitleDLs != null) {
 	  double y = -sTextHeight - sBorder*2.0; 
 	  int wk;
-	  for(wk=0; wk<pTitleDLs.length; wk++, y-=sTextHeight) {
-	    if(wk == 4) 
-	      y -= (pFileStates.size() - 1) * sTextHeight;
+          int size = pFileStates.isEmpty() ? 3 : 5;
+	  for(wk=0; wk<size; wk++, y-=sTextHeight) {
+            if(wk == 4) 
+              y -= (pFileStates.size() - 1) * sTextHeight;
 
 	    gl.glPushMatrix();
 	    {
@@ -772,64 +779,68 @@ class ViewerNodeHint
 	      gl.glPopMatrix();
 	    }
 
-	    if((pFileStateDLs != null) && (pCountDLs != null)) {
-	      boolean single = (pFileStates.size() == 1);
-	      for(FileState state : pFileStates.keySet()) {
-		Integer cnt = pFileStates.get(state);
+            if(!pFileStates.isEmpty()) {
+              if((pFileStateDLs != null) && (pCountDLs != null)) {
+                boolean single = (pFileStates.size() == 1);
+                for(FileState state : pFileStates.keySet()) {
+                  Integer cnt = pFileStates.get(state);
+                  
+                  y -= sTextHeight; 
+                  gl.glPushMatrix();
+                  {
+                    gl.glTranslated(0.0, y, 0.0);
+                    gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+                    gl.glCallList(pFileStateDLs[state.ordinal()]);
+                  }
+                  gl.glPopMatrix();
+                  
+                  if(!single) {
+                    gl.glPushMatrix();
+                    {
+                      double x = 0.05 + pFileWidths[state.ordinal()]*sTextHeight;
+                      gl.glTranslated(x, y, 0.0);
+                      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+                      gl.glCallList(pCountDLs.get(cnt));
+                    }
+                    gl.glPopMatrix();
+                  }
+                }
+              }
+            }
 
-		y -= sTextHeight; 
-		gl.glPushMatrix();
-		{
-		  gl.glTranslated(0.0, y, 0.0);
-		  gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		  gl.glCallList(pFileStateDLs[state.ordinal()]);
-		}
-		gl.glPopMatrix();
-
-		if(!single) {
-		  gl.glPushMatrix();
-		  {
-		    double x = 0.05 + pFileWidths[state.ordinal()]*sTextHeight;
-		    gl.glTranslated(x, y, 0.0);
-		    gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		    gl.glCallList(pCountDLs.get(cnt));
-		  }
-		  gl.glPopMatrix();
-		}
-	      }
-	    }
-
-	    if((pQueueStateDLs != null) && (pCountDLs != null)) {
-	      boolean single = (pQueueStates.size() == 1);
-	      for(QueueState state : pQueueStates.keySet()) {
-		Integer cnt = pQueueStates.get(state);
-
-		y -= sTextHeight; 
-		gl.glPushMatrix();
-		{
-		  gl.glTranslated(0.0, y, 0.0);
-		  gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		  gl.glCallList(pQueueStateDLs[state.ordinal()]);
-		}
-		gl.glPopMatrix();
-
-		if(!single) {
-		  gl.glPushMatrix();
-		  {
-		    double x = 0.05 + pQueueWidths[state.ordinal()]*sTextHeight;
-		    gl.glTranslated(x, y, 0.0);
-		    gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		    gl.glCallList(pCountDLs.get(cnt));
-		  }
-		  gl.glPopMatrix();
-		}
-	      }
-	    }
-
-	    y -= sTextHeight + sBorder*2.0;
-	  }
-	  gl.glPopMatrix();
-	}
+            if(!pQueueStates.isEmpty()) {
+              if((pQueueStateDLs != null) && (pCountDLs != null)) {
+                boolean single = (pQueueStates.size() == 1);
+                for(QueueState state : pQueueStates.keySet()) {
+                  Integer cnt = pQueueStates.get(state);
+                  
+                  y -= sTextHeight; 
+                  gl.glPushMatrix();
+                  {
+                    gl.glTranslated(0.0, y, 0.0);
+                    gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+                    gl.glCallList(pQueueStateDLs[state.ordinal()]);
+                  }
+                  gl.glPopMatrix();
+                  
+                  if(!single) {
+                    gl.glPushMatrix();
+                    {
+                      double x = 0.05 + pQueueWidths[state.ordinal()]*sTextHeight;
+                      gl.glTranslated(x, y, 0.0);
+                      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+                      gl.glCallList(pCountDLs.get(cnt));
+                    }
+                    gl.glPopMatrix();
+                  }
+                }
+              }
+            }
+              
+            y -= sTextHeight + sBorder*2.0;
+          }
+          gl.glPopMatrix();
+        }
 
 	/* toolset */ 
 	if(pShowToolset) {

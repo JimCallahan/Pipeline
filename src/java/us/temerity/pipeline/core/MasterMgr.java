@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.197 2007/04/13 10:56:35 jim Exp $
+// $Id: MasterMgr.java,v 1.198 2007/04/15 10:30:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7556,8 +7556,13 @@ class MasterMgr
       timer.resume();
 
       NodeID nodeID = req.getNodeID();
-      NodeStatus root = 
-	performNodeOperation(new NodeOp(), nodeID, timer);
+      
+      NodeOp nodeOp = null;
+      if(!req.getLightweight()) 
+        nodeOp = new NodeOp();
+
+      NodeStatus root = performNodeOperation(nodeOp, nodeID, timer);
+
       return new NodeStatusRsp(timer, nodeID, root);
     }
     catch(PipelineException ex) {
@@ -7568,7 +7573,86 @@ class MasterMgr
     }
   }
   
+  /** 
+   * Get the status of multiple overlapping trees of nodes. <P> 
+   * 
+   * For each of the root nodes given, either a lightweight or heavyweight node status can 
+   * be performed on the node and its upstream dependencies.  For nodes which are upstream of
+   * multiple root nodes, heavyweight status is performed in preference to lightweight status.
+   * The ability to specify different status modes at each root node means that the returned 
+   * NodeStatus datastructures can contain mixtures of lightweight and heavyweight node 
+   * details. See the {@link NodeDetails} class for more information about the information
+   * available for each mode.<P> 
+   * 
+   * This method returns a {@link NodeStatus} instance for each of the given root nodes.  
+   * A <CODE>NodeStatus</CODE> can be used access the status of all nodes (both upstream 
+   * and downstream) linked to the given node.  The status information for the upstream 
+   * nodes will also include detailed state and version information accessable by calling 
+   * the {@link NodeStatus#getDetails NodeStatus.getDetails} method.<P> 
+   * 
+   * Note that when computing node status where the given root nodes share a large percentage
+   * of thier upstream nodes, this method will be much more efficient than calling the single
+   * node {@link #status status} method for each root node seperately. 
+   * 
+   * @param req 
+   *   The node status request.
+   *
+   * @return
+   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the status of the node.
+   */ 
+  public Object
+  multiStatus
+  ( 
+   NodeMultiStatusReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      String author = req.getAuthor();
+      String view   = req.getView();
+
+      TreeMap<String,Boolean> roots = req.getRoots();
+
+      HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
+      LinkedList<NodeStatus> results = new LinkedList<NodeStatus>();
+
+      /* do heavyweight status roots first */ 
+      for(String name : roots.keySet()) {
+        Boolean lightweight = roots.get(name);
+        if((lightweight != null) && !lightweight) {
+          NodeID nodeID = new NodeID(author, view, name);
+          NodeStatus status = performNodeOperation(new NodeOp(), nodeID, cache, timer);
+          results.add(status);
+        }
+      }
+
+      /* then add lightweight status roots */ 
+      for(String name : roots.keySet()) {
+        Boolean lightweight = roots.get(name);
+        if((lightweight != null) && lightweight) {
+          NodeID nodeID = new NodeID(author, view, name);
+          NodeStatus status = performNodeOperation(null, nodeID, cache, timer);
+          results.add(status);          
+        }
+      }
+
+      return new NodeMultiStatusRsp(timer, results);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   R E V I S I O N   C O N T R O L                                                      */
@@ -13567,11 +13651,14 @@ class MasterMgr
    * given working version. <P> 
    * 
    * The <CODE>nodeOp</CODE> argument is performed on all upstream nodes and detailed
-   * post-operation status information is generated for these nodes.  Only undetailed 
-   * status information is computed for the downstream nodes.
+   * post-operation status information is generated for these nodes.  If the 
+   * <CODE>nodeOp</CODE> is <CODE>null</CODE>, then no operation will be performed and only
+   * lightweight node status details will be generated for the upstream nodes. <P> 
+   * 
+   * In all cases, only undetailed status information is computed for the downstream nodes.
    * 
    * @param nodeOp
-   *   The node operation.
+   *   The node operation or <CODE>null</CODE> if only lightweight node details are required.
    * 
    * @param nodeID
    *   The unique working version identifier.
@@ -13594,16 +13681,58 @@ class MasterMgr
   ) 
     throws PipelineException
   {
+    return performNodeOperation(nodeOp, nodeID, new HashMap<String,NodeStatus>(), timer);
+  }
+
+  /**
+   * Recursively perfrorm a node status based operation on the tree of nodes rooted at the 
+   * given working version. <P> 
+   * 
+   * The <CODE>nodeOp</CODE> argument is performed on all upstream nodes and detailed
+   * post-operation status information is generated for these nodes.  If the 
+   * <CODE>nodeOp</CODE> is <CODE>null</CODE>, then no operation will be performed and only
+   * lightweight node status details will be generated for the upstream nodes. <P> 
+   * 
+   * In all cases, only undetailed status information is computed for the downstream nodes.
+   * 
+   * @param nodeOp
+   *   The node operation or <CODE>null</CODE> if only lightweight node details are required.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   * 
+   * @param table
+   *   The previously computed states indexed by node name.
+   * 
+   * @return 
+   *   The root of the node status tree corresponding to the given working version.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the node operation.
+   */ 
+  private NodeStatus 
+  performNodeOperation
+  (
+   NodeOp nodeOp, 
+   NodeID nodeID,
+   HashMap<String,NodeStatus> cache,
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
     NodeStatus root = null;
     {
-      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(nodeOp, nodeID, false, new LinkedList<String>(), table, timer);
+      performUpstreamNodeOp(nodeOp, nodeID, false, new LinkedList<String>(), cache, timer);
 
-      root = table.get(nodeID.getName());
+      root = cache.get(nodeID.getName());
       if(root == null)
 	throw new IllegalStateException(); 
 
-      validateStaleLinks(root);
+      if(nodeOp != null) 
+        validateStaleLinks(root);
     }
 
     {
@@ -13629,7 +13758,7 @@ class MasterMgr
    * be ignored.
    * 
    * @param nodeOp
-   *   The node operation.
+   *   The node operation or <CODE>null</CODE> if only lightweight node details are required.
    * 
    * @param nodeID
    *   The unique working version identifier.
@@ -13677,7 +13806,7 @@ class MasterMgr
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
     workingLock.writeLock().lock();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    if(nodeOp.writesCheckedIn())
+    if((nodeOp != null) && nodeOp.writesCheckedIn())
       checkedInLock.writeLock().lock();
     else 
       checkedInLock.readLock().lock();
@@ -13866,7 +13995,9 @@ class MasterMgr
 		 !link.equals(blink) || 
 		 !blink.getVersionID().equals(svid)) {
 		workEqBase = false;
-		nonIgnoredSources.add(lname);
+
+                if(nodeOp != null)
+                  nonIgnoredSources.add(lname);
 	      }
 	     
 	      if((llink == null) || 
@@ -13874,15 +14005,18 @@ class MasterMgr
 		 !llink.getVersionID().equals(svid)) {
 		workEqLatest = false;
 	      }
-	     
- 	      if(sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks) 
- 		nonIgnoredSources.remove(lname);
+
+              /* we only need to do this if its heavyweight... */ 
+              if(nodeOp != null) {
+                if(sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks) 
+                  nonIgnoredSources.remove(lname);
 	      
-	      if(((blink != null) && 
-		  (sdetails.getWorkingVersion().isLocked() != blink.isLocked())) ||
-		 (sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks))
-		modifiedLocks = true;
-	    }
+                if(((blink != null) && 
+                    (sdetails.getWorkingVersion().isLocked() != blink.isLocked())) ||
+                   (sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks))
+                  modifiedLocks = true;
+              }
+            }
 	  }
 
 	  if(workEqLatest) {
@@ -13904,738 +14038,750 @@ class MasterMgr
 	}
       }
 
-      /* get per-file FileStates and timestamps */ 
-      TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
-      boolean[] anyMissing = null;
-      Long[] newestStamps = null;
-      Long[] oldestStamps = null;
-      switch(versionState) {
-      case CheckedIn:
-	/* if checked-in, all files must be CheckedIn, no files can be Missing and all 
-	   timestamps must be (null) */ 
-	for(FileSeq fseq : latest.getSequences()) {
-	  FileState fs[] = new FileState[fseq.numFrames()];
 
-	  int wk;
-	  for(wk=0; wk<fs.length; wk++) 
-	    fs[wk] = FileState.CheckedIn;
-
-	  fileStates.put(fseq, fs);
-
-	  if(anyMissing == null) 
-	    anyMissing = new boolean[fs.length];
-	  
-	  if(newestStamps == null) 
-	    newestStamps = new Long[fs.length];	  
-
-	  if(oldestStamps == null) 
-	    oldestStamps = new Long[fs.length];
-	}
-	break;
-
-      default:
-	{
-	  /* get the per-file states and timestamps */
-	  TreeMap<FileSeq, Long[]> stamps = new TreeMap<FileSeq, Long[]>();
-	  
-	  /* query the file manager */
-	  {	     
-	    FileMgrClient fclient = getFileMgrClient();
-	    try {
-	      VersionID vid = null;
-	      if(latest != null) 
-		vid = latest.getVersionID();
-
-	      Long critical = null;
-	      if(work != null)
-		critical = work.getLastCTimeUpdate(); 
-
-	      fclient.states(nodeID, work, versionState, workIsFrozen, vid, critical, 
-			     fileStates, stamps);
-
-	      /* if frozen, all the files are just links so use the working time stamp */ 
-	      if(workIsFrozen) {
-		for(FileSeq fseq : work.getSequences()) {
-		  Long ts[] = new Long[fseq.numFrames()];
-
-		  int wk;
-		  for(wk=0; wk<ts.length; wk++) 
-		    ts[wk] = work.getTimeStamp();
-
-		  stamps.put(fseq, ts);
-		}
-	      }
-	    }
-	    finally {
-	      freeFileMgrClient(fclient);
-	    }
-	  }
-
-	  /* get the newest/oldest of the timestamp for each file sequence index */ 
-	  for(FileSeq fseq : stamps.keySet()) {
-	    Long[] ts = stamps.get(fseq);
-	    
-	    if(newestStamps == null) 
-	      newestStamps = new Long[ts.length];
-	    
-	    if(oldestStamps == null) 
-	      oldestStamps = new Long[ts.length];
-	    
-	    int wk;
-	    for(wk=0; wk<ts.length; wk++) {
-	      /* the newest among the primary/secondary files for the index */ 
-	      if((newestStamps[wk] == null) || 
-		 ((ts[wk] != null) && (ts[wk] > newestStamps[wk])))
-		newestStamps[wk] = ts[wk];
-	      
-	      /* the oldest among the primary/secondary files for the index */ 
-	      if((oldestStamps[wk] == null) || 
-		 ((ts[wk] != null) && (ts[wk] < oldestStamps[wk])))
-		oldestStamps[wk] = ts[wk];
-	    }
-	  }
-
-	  /* precompute whether any files are missing */ 
-	  for(FileSeq fseq : fileStates.keySet()) {
-	    FileState fs[] = fileStates.get(fseq);
-	    
-	    if(anyMissing == null) 
-	      anyMissing = new boolean[fs.length];
-	    
-	    int wk;
-	    for(wk=0; wk<anyMissing.length; wk++) {
-	      if(fs[wk] == FileState.Missing) 
-		anyMissing[wk] = true;
-	    }
-	  }
-	}
+      /* if only lightweight node status details are required this time... */ 
+      if(nodeOp == null) {
+        NodeDetails details = new NodeDetails(name, work, base, latest, versionIDs, 
+                                              versionState, propertyState, linkState); 
+        status.setDetails(details);
       }
 
-      /* compute overall node state */ 
-      OverallNodeState overallNodeState = null;
-      switch(versionState) {
-      case Pending:
-	{
-	  overallNodeState = OverallNodeState.Pending;
+      /* otherwise, we need to go on and compute the heavyweight per-file and queue 
+           related node status information... */ 
+      else {
+        /* get per-file FileStates and timestamps */ 
+        TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
+        boolean[] anyMissing = null;
+        Long[] newestStamps = null;
+        Long[] oldestStamps = null;
+        switch(versionState) {
+        case CheckedIn:
+          /* if checked-in, all files must be CheckedIn, no files can be Missing and all 
+             timestamps must be (null) */ 
+          for(FileSeq fseq : latest.getSequences()) {
+            FileState fs[] = new FileState[fseq.numFrames()];
 
-	  /* check for missing files */ 
-	  for(FileState fs[] : fileStates.values()) {
-	    int wk;
-	    for(wk=0; wk<fs.length; wk++) {
-	      if(fs[wk] == FileState.Missing) {
-		overallNodeState = OverallNodeState.Missing;
-		break;
-	      }
-	    }
-	  }
-	}	      
-	break;
+            int wk;
+            for(wk=0; wk<fs.length; wk++) 
+              fs[wk] = FileState.CheckedIn;
 
-      case CheckedIn:
-	overallNodeState = OverallNodeState.CheckedIn;
-	break;
+            fileStates.put(fseq, fs);
 
-      default:
-	{
-	  /* check file states */ 
-	  boolean anyNeedsCheckOutFs = false;
-	  boolean anyModifiedFs      = false;
-	  boolean anyConflictedFs    = false;
-	  boolean anyMissingFs       = false;
-	  for(FileState fs[] : fileStates.values()) {
-	    int wk;
- 	    for(wk=0; wk<fs.length; wk++) {
-	      switch(fs[wk]) {
-	      case NeedsCheckOut:
-	      case Obsolete:
-		anyNeedsCheckOutFs = true;
-		break;
-		
-	      case Modified:
-	      case Added:
-		anyModifiedFs = true;
-		break; 
-		
-	      case Conflicted:
-		anyConflictedFs = true;	
-		break;
-		
-	      case Missing: 
-		anyMissingFs = true;
-	      }
-	    }
-	  }
+            if(anyMissing == null) 
+              anyMissing = new boolean[fs.length];
 
-	  /* combine states */ 
-	  boolean anyNeedsCheckOut = 
-	    ((versionState == VersionState.NeedsCheckOut) || 
-	     (propertyState == PropertyState.NeedsCheckOut) || 
-	     (linkState == LinkState.NeedsCheckOut) || 
-	     anyNeedsCheckOutFs);
-	  
-	  boolean anyModified = 
-	    ((propertyState == PropertyState.Modified) || 
-	     (linkState == LinkState.Modified) || 
-	     anyModifiedFs);
-	  
-	  boolean anyConflicted = 
-	    ((propertyState == PropertyState.Conflicted) || 
-	     (linkState == LinkState.Conflicted) || 
-	     anyConflictedFs);
-	  
-	  if(anyMissingFs) 	    
-	    overallNodeState = 
-	      (anyNeedsCheckOut ? OverallNodeState.MissingNewer : OverallNodeState.Missing);
-	  else if(anyConflicted || (anyNeedsCheckOut && (anyModified || modifiedLocks)))
-	    overallNodeState = OverallNodeState.Conflicted;
-	  else if(anyModified) {
-	    if((propertyState == PropertyState.Identical) &&
-	       (linkState == LinkState.Modified) &&
-	       !anyModifiedFs)
-	      overallNodeState = OverallNodeState.ModifiedLinks;
-	    else 
-	      overallNodeState = OverallNodeState.Modified;
-	  }
-	  else if(anyNeedsCheckOut) {
-	    if(!workIsLocked) {
-	      for(LinkMod link : work.getSources()) {
-		NodeDetails ldetails = table.get(link.getName()).getDetails();
-		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-		
-		switch(ldetails.getOverallNodeState()) {
-		case ModifiedLocks:
-		case ModifiedLinks:
-		case Modified:		  
-		case Conflicted:	
-		case Missing:
-		case MissingNewer:
-		  overallNodeState = OverallNodeState.Conflicted;
-		}
-	      }
-	    }
+            if(newestStamps == null) 
+              newestStamps = new Long[fs.length];	  
 
-	    if(overallNodeState == null)
-	      overallNodeState = OverallNodeState.NeedsCheckOut;
-	  }
-	  else {
-	    if((versionState != VersionState.Identical) ||
-	       (propertyState != PropertyState.Identical) ||
-	       (linkState != LinkState.Identical) ||
-	       anyNeedsCheckOutFs || anyModifiedFs || anyConflictedFs)
-	      throw new IllegalStateException(); 
+            if(oldestStamps == null) 
+              oldestStamps = new Long[fs.length];
+          }
+          break;
 
-	    /* the work and latest version have the same set of links 
-		 because (linkState == Identical) */
-	    if(!workIsLocked) {
-	      for(LinkVersion link : latest.getSources()) {
-		NodeDetails ldetails = table.get(link.getName()).getDetails();
-		VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-		
-		switch(ldetails.getOverallNodeState()) {
-		case Modified:
-		case ModifiedLinks:
-		case Conflicted:	
-		case Missing:
-		case MissingNewer:
-		  overallNodeState = OverallNodeState.ModifiedLinks;
-		  break;
-		  
-		case Identical:
-		case NeedsCheckOut:
-		  if(!link.getVersionID().equals(lvid)) {
-		    overallNodeState = OverallNodeState.ModifiedLinks;
-		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-		       "This test should never be reached since LinkState should have " + 
-		       "been Modified if this is true and the (anyModified) test " + 
-		       "above should have been selected instead of this section!");
-		  }
-		}
-	      }
-	    }
+        default:
+          {
+            /* get the per-file states and timestamps */
+            TreeMap<FileSeq, Long[]> stamps = new TreeMap<FileSeq, Long[]>();
 
-	    if(overallNodeState == null) {
-	      if(modifiedLocks) 
-		overallNodeState = OverallNodeState.ModifiedLocks;
-	      else
-		overallNodeState = OverallNodeState.Identical;
-	    }
-	  }
-	}
+            /* query the file manager */
+            {	     
+              FileMgrClient fclient = getFileMgrClient();
+              try {
+                VersionID vid = null;
+                if(latest != null) 
+                  vid = latest.getVersionID();
+
+                Long critical = null;
+                if(work != null)
+                  critical = work.getLastCTimeUpdate(); 
+
+                fclient.states(nodeID, work, versionState, workIsFrozen, vid, critical, 
+                               fileStates, stamps);
+
+                /* if frozen, all the files are just links so use the working time stamp */ 
+                if(workIsFrozen) {
+                  for(FileSeq fseq : work.getSequences()) {
+                    Long ts[] = new Long[fseq.numFrames()];
+
+                    int wk;
+                    for(wk=0; wk<ts.length; wk++) 
+                      ts[wk] = work.getTimeStamp();
+
+                    stamps.put(fseq, ts);
+                  }
+                }
+              }
+              finally {
+                freeFileMgrClient(fclient);
+              }
+            }
+
+            /* get the newest/oldest of the timestamp for each file sequence index */ 
+            for(FileSeq fseq : stamps.keySet()) {
+              Long[] ts = stamps.get(fseq);
+
+              if(newestStamps == null) 
+                newestStamps = new Long[ts.length];
+
+              if(oldestStamps == null) 
+                oldestStamps = new Long[ts.length];
+
+              int wk;
+              for(wk=0; wk<ts.length; wk++) {
+                /* the newest among the primary/secondary files for the index */ 
+                if((newestStamps[wk] == null) || 
+                   ((ts[wk] != null) && (ts[wk] > newestStamps[wk])))
+                  newestStamps[wk] = ts[wk];
+
+                /* the oldest among the primary/secondary files for the index */ 
+                if((oldestStamps[wk] == null) || 
+                   ((ts[wk] != null) && (ts[wk] < oldestStamps[wk])))
+                  oldestStamps[wk] = ts[wk];
+              }
+            }
+
+            /* precompute whether any files are missing */ 
+            for(FileSeq fseq : fileStates.keySet()) {
+              FileState fs[] = fileStates.get(fseq);
+
+              if(anyMissing == null) 
+                anyMissing = new boolean[fs.length];
+
+              int wk;
+              for(wk=0; wk<anyMissing.length; wk++) {
+                if(fs[wk] == FileState.Missing) 
+                  anyMissing[wk] = true;
+              }
+            }
+          }
+        }
+
+        /* compute overall node state */ 
+        OverallNodeState overallNodeState = null;
+        switch(versionState) {
+        case Pending:
+          {
+            overallNodeState = OverallNodeState.Pending;
+
+            /* check for missing files */ 
+            for(FileState fs[] : fileStates.values()) {
+              int wk;
+              for(wk=0; wk<fs.length; wk++) {
+                if(fs[wk] == FileState.Missing) {
+                  overallNodeState = OverallNodeState.Missing;
+                  break;
+                }
+              }
+            }
+          }	      
+          break;
+
+        case CheckedIn:
+          overallNodeState = OverallNodeState.CheckedIn;
+          break;
+
+        default:
+          {
+            /* check file states */ 
+            boolean anyNeedsCheckOutFs = false;
+            boolean anyModifiedFs      = false;
+            boolean anyConflictedFs    = false;
+            boolean anyMissingFs       = false;
+            for(FileState fs[] : fileStates.values()) {
+              int wk;
+              for(wk=0; wk<fs.length; wk++) {
+                switch(fs[wk]) {
+                case NeedsCheckOut:
+                case Obsolete:
+                  anyNeedsCheckOutFs = true;
+                  break;
+
+                case Modified:
+                case Added:
+                  anyModifiedFs = true;
+                  break; 
+
+                case Conflicted:
+                  anyConflictedFs = true;	
+                  break;
+
+                case Missing: 
+                  anyMissingFs = true;
+                }
+              }
+            }
+
+            /* combine states */ 
+            boolean anyNeedsCheckOut = 
+              ((versionState == VersionState.NeedsCheckOut) || 
+               (propertyState == PropertyState.NeedsCheckOut) || 
+               (linkState == LinkState.NeedsCheckOut) || 
+               anyNeedsCheckOutFs);
+
+            boolean anyModified = 
+              ((propertyState == PropertyState.Modified) || 
+               (linkState == LinkState.Modified) || 
+               anyModifiedFs);
+
+            boolean anyConflicted = 
+              ((propertyState == PropertyState.Conflicted) || 
+               (linkState == LinkState.Conflicted) || 
+               anyConflictedFs);
+
+            if(anyMissingFs) 	    
+              overallNodeState = 
+                (anyNeedsCheckOut ? OverallNodeState.MissingNewer : OverallNodeState.Missing);
+            else if(anyConflicted || (anyNeedsCheckOut && (anyModified || modifiedLocks)))
+              overallNodeState = OverallNodeState.Conflicted;
+            else if(anyModified) {
+              if((propertyState == PropertyState.Identical) &&
+                 (linkState == LinkState.Modified) &&
+                 !anyModifiedFs)
+                overallNodeState = OverallNodeState.ModifiedLinks;
+              else 
+                overallNodeState = OverallNodeState.Modified;
+            }
+            else if(anyNeedsCheckOut) {
+              if(!workIsLocked) {
+                for(LinkMod link : work.getSources()) {
+                  NodeDetails ldetails = table.get(link.getName()).getDetails();
+                  VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+
+                  switch(ldetails.getOverallNodeState()) {
+                  case ModifiedLocks:
+                  case ModifiedLinks:
+                  case Modified:		  
+                  case Conflicted:	
+                  case Missing:
+                  case MissingNewer:
+                    overallNodeState = OverallNodeState.Conflicted;
+                  }
+                }
+              }
+
+              if(overallNodeState == null)
+                overallNodeState = OverallNodeState.NeedsCheckOut;
+            }
+            else {
+              if((versionState != VersionState.Identical) ||
+                 (propertyState != PropertyState.Identical) ||
+                 (linkState != LinkState.Identical) ||
+                 anyNeedsCheckOutFs || anyModifiedFs || anyConflictedFs)
+                throw new IllegalStateException(); 
+
+              /* the work and latest version have the same set of links 
+                   because (linkState == Identical) */
+              if(!workIsLocked) {
+                for(LinkVersion link : latest.getSources()) {
+                  NodeDetails ldetails = table.get(link.getName()).getDetails();
+                  VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+
+                  switch(ldetails.getOverallNodeState()) {
+                  case Modified:
+                  case ModifiedLinks:
+                  case Conflicted:	
+                  case Missing:
+                  case MissingNewer:
+                    overallNodeState = OverallNodeState.ModifiedLinks;
+                    break;
+
+                  case Identical:
+                  case NeedsCheckOut:
+                    if(!link.getVersionID().equals(lvid)) {
+                      overallNodeState = OverallNodeState.ModifiedLinks;
+                      LogMgr.getInstance().log
+                        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+                         "This test should never be reached since LinkState should have " + 
+                         "been Modified if this is true and the (anyModified) test " + 
+                         "above should have been selected instead of this section!");
+                    }
+                  }
+                }
+              }
+
+              if(overallNodeState == null) {
+                if(modifiedLocks) 
+                  overallNodeState = OverallNodeState.ModifiedLocks;
+                else
+                  overallNodeState = OverallNodeState.Identical;
+              }
+            }
+          }
+        }
+
+        /* if the node is modified, don't ignore any timestamps from upstream files */ 
+        switch(overallNodeState) {
+        case Modified:
+        case ModifiedLinks:
+        case Conflicted:
+          for(LinkMod link : work.getSources()) {
+            String lname = link.getName(); 
+            nonIgnoredSources.add(lname);
+          }
+        }
+
+        /* determine per-file QueueStates */  
+        Long jobIDs[] = null;
+        QueueState queueStates[] = null;
+        switch(versionState) {
+        case CheckedIn:
+          {
+            int numFrames = latest.getPrimarySequence().numFrames();
+            jobIDs      = new Long[numFrames];
+            queueStates = new QueueState[numFrames];
+
+            int wk;
+            for(wk=0; wk<queueStates.length; wk++) 
+              queueStates[wk] = QueueState.Undefined;
+          }
+          break;
+
+        default:
+          if(workIsLocked || workIsFrozen) {
+            int numFrames = work.getPrimarySequence().numFrames();
+            jobIDs      = new Long[numFrames];
+            queueStates = new QueueState[numFrames];
+
+            int wk;
+            for(wk=0; wk<queueStates.length; wk++) 
+              queueStates[wk] = QueueState.Finished;
+          }
+          else {
+            int numFrames = work.getPrimarySequence().numFrames();
+            jobIDs      = new Long[numFrames];
+            queueStates = new QueueState[numFrames];
+
+            JobState js[] = new JobState[numFrames];
+            {
+              ArrayList<Long> jIDs          = new ArrayList<Long>();
+              ArrayList<JobState> jobStates = new ArrayList<JobState>();
+
+              pQueueMgrClient.getJobStates(nodeID, work.getTimeStamp(), 
+                                           work.getPrimarySequence(), jIDs, jobStates);
+
+              if(jobIDs.length != jIDs.size())
+                throw new IllegalStateException(); 
+              jobIDs = (Long[]) jIDs.toArray(jobIDs);
+
+              if(js.length != jobStates.size())
+                throw new IllegalStateException(); 
+              js = (JobState[]) jobStates.toArray(js);
+            }
+
+            int wk;
+            for(wk=0; wk<queueStates.length; wk++) {
+              /* there is no regeneration action or it is disabled, 
+                   therefore QueueState is always Finished */ 
+              if(!work.isActionEnabled()) {
+                queueStates[wk] = QueueState.Finished;
+              }
+
+              /* there IS an enabled regeneration action */ 
+              else {
+                /* check for active jobs */ 
+                if(js[wk] != null) {
+                  switch(js[wk]) {
+                  case Queued:
+                  case Preempted:
+                    queueStates[wk] = QueueState.Queued;
+                    break;
+
+                  case Paused:
+                    queueStates[wk] = QueueState.Paused;
+                    break;
+
+                  case Aborted:
+                    queueStates[wk] = QueueState.Aborted;
+                    break;
+
+                  case Running:
+                    queueStates[wk] = QueueState.Running;
+                    break;
+
+                  case Failed:
+                    queueStates[wk] = QueueState.Failed;
+                    break;
+
+                  case Finished:
+                    break;
+                  }
+                }
+
+                if(queueStates[wk] == null) {
+                  switch(overallNodeState) {
+                  case Identical: 
+                  case ModifiedLocks: 
+                    queueStates[wk] = QueueState.Finished;
+                    break;
+
+                  default:
+                    /* check for missing files or if the working version has been modified 
+                       since the oldest of the primary/secondary files were created */ 
+                    if(anyMissing[wk] ||
+                       (oldestStamps[wk] < work.getLastCriticalModification())) {
+                      queueStates[wk] = QueueState.Stale;
+                    }
+
+                    /* check upstream per-file dependencies */ 
+                    else {
+                      for(LinkMod link : work.getSources()) {
+                        if(link.getPolicy() == LinkPolicy.Dependency) {
+                          NodeStatus lstatus = status.getSource(link.getName());
+                          NodeDetails ldetails = lstatus.getDetails();
+
+                          switch(ldetails.getOverallNodeState()) {
+                          case ModifiedLocks: 
+                            break;
+
+                          default:
+                            {
+                              QueueState lqs[]   = ldetails.getQueueState();
+                              long lstamps[]     = ldetails.getFileTimeStamps();
+                              boolean lignored[] = ldetails.ignoreTimeStamps();
+
+                              boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+
+                              boolean lanyMissing[] = null;
+                              for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+                                FileState lfs[] = ldetails.getFileState(lfseq);
+
+                                if(lanyMissing == null) 
+                                  lanyMissing = new boolean[lfs.length];
+
+                                int mk;
+                                for(mk=0; mk<lanyMissing.length; mk++) {
+                                  if(lfs[mk] == FileState.Missing) 
+                                    lanyMissing[mk] = true;
+                                }
+                              }
+
+                              switch(link.getRelationship()) {
+                              case OneToOne:
+                                {
+                                  Integer offset = link.getFrameOffset();
+                                  int idx = wk+offset;
+                                  if(((idx >= 0) && (idx < lqs.length)) &&
+                                     ((lqs[idx] != QueueState.Finished) || 
+                                      lanyMissing[idx] || 
+                                      ((!lignored[idx] || nonIgnored) &&
+                                       (oldestStamps[wk] < lstamps[idx]))))
+                                    queueStates[wk] = QueueState.Stale;
+                                }
+                                break;
+
+                              case All:
+                                {
+                                  int fk;
+                                  for(fk=0; fk<lqs.length; fk++) {
+                                    if((lqs[fk] != QueueState.Finished) || 
+                                       lanyMissing[fk] || 
+                                       ((!lignored[fk] || nonIgnored) &&
+                                        (oldestStamps[wk] < lstamps[fk]))) {
+                                      queueStates[wk] = QueueState.Stale;
+                                      break;
+                                    }
+                                  }
+                                }
+                              }		    
+                            }
+                          }
+                        }
+
+                        if(queueStates[wk] != null) 
+                          break;
+                      }
+
+                      if(queueStates[wk] == null) 
+                        queueStates[wk] = QueueState.Finished;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        /* compute overall queue state */ 
+        OverallQueueState overallQueueState = OverallQueueState.Undefined; 
+        if(versionState != VersionState.CheckedIn) {
+          boolean anyStale = false;
+          boolean anyPaused = false;
+          boolean anyQueued = false;
+          boolean anyRunning = false; 
+          boolean anyAborted = false;
+          boolean anyFailed = false;
+
+          int wk;
+          for(wk=0; wk<queueStates.length; wk++) {
+            switch(queueStates[wk]) {
+            case Stale:
+              anyStale = true;
+              break;
+
+            case Queued:
+              anyQueued = true;
+              break;
+
+            case Paused:
+              anyPaused = true;
+              break;
+
+            case Running:
+              anyRunning = true;
+              break;
+
+            case Aborted:
+              anyAborted = true;
+              break;
+
+            case Failed:
+              anyFailed = true;
+            }
+          }
+
+          if(anyFailed) 
+            overallQueueState = OverallQueueState.Failed;
+          else if(anyAborted) 
+            overallQueueState = OverallQueueState.Aborted;
+          else if(anyRunning) 
+            overallQueueState = OverallQueueState.Running;
+          else if(anyPaused) 
+            overallQueueState = OverallQueueState.Paused;
+          else if(anyQueued) 
+            overallQueueState = OverallQueueState.Queued;
+          else if(anyStale) 
+            overallQueueState = OverallQueueState.Stale;
+          else 
+            overallQueueState = OverallQueueState.Finished;
+        }
+
+        /**
+         * Before updating the timestamps of the files associated with this node, determine 
+         * if staleness will be propogated from each upstream link. <P> 
+         * 
+         * Staleness is propgated if the timestamp of any upstream file upon which any of this
+         * node's files depend (through a Reference/Dependency link) is newer than the 
+         * dependent files.  Timestamps for these upstream nodes will be ignore if the ignore 
+         * timestamp flag is set for the upstream file and the upstream node is not a member 
+         * of the nonIgnoredSources set. <P> 
+         *        
+         * These upstream timestamp have been previously modified to propogate staleness
+         * of those nodes further upstream.
+         */ 
+        switch(versionState) {
+        case CheckedIn:
+          break;
+
+        default:
+          if(!workIsLocked) {
+            int wk;
+            for(wk=0; wk<queueStates.length; wk++) {
+              for(LinkMod link : work.getSources()) {
+                boolean staleLink = false;
+
+                switch(overallQueueState) {
+                case Running:
+                  break;
+
+                default:	
+                  if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
+                    NodeStatus lstatus = status.getSource(link.getName());
+                    NodeDetails ldetails = lstatus.getDetails();
+                    switch(ldetails.getOverallQueueState()) {
+                    case Finished:
+                      {
+                        QueueState lqs[]   = ldetails.getQueueState();
+                        long lstamps[]     = ldetails.getFileTimeStamps();
+                        boolean lignored[] = ldetails.ignoreTimeStamps();
+
+                        boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+
+                        boolean lanyMissing[] = null;
+                        for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+                          FileState lfs[] = ldetails.getFileState(lfseq);
+
+                          if(lanyMissing == null) 
+                            lanyMissing = new boolean[lfs.length];
+
+                          int mk;
+                          for(mk=0; mk<lanyMissing.length; mk++) {
+                            if(lfs[mk] == FileState.Missing) 
+                              lanyMissing[mk] = true;
+                          }
+                        }
+
+                        switch(link.getRelationship()) {
+                        case OneToOne:
+                          {
+                            Integer offset = link.getFrameOffset();
+                            int idx = wk+offset;
+                            if((idx >= 0) && (idx < lqs.length)) {
+                              if(anyMissing[wk] || lanyMissing[idx] || 
+                                 ((!lignored[idx] || nonIgnored) && 
+                                  (oldestStamps[wk] < lstamps[idx])))
+                                staleLink = true;
+                            }
+                          }
+                          break;
+
+                        case All:
+                          {
+                            int fk;
+                            for(fk=0; fk<lqs.length; fk++) {
+                              if(anyMissing[wk] || lanyMissing[fk] || 
+                                 ((!lignored[fk] || nonIgnored) && 
+                                  (oldestStamps[wk] < lstamps[fk])))
+                                staleLink = true;
+                            }
+                          }
+                        }
+                      }
+                      break;
+
+                    default:
+                      staleLink = true;
+                    }
+                  }
+                }
+
+                if(staleLink) 
+                  status.addStaleLink(link.getName());
+              }
+            }
+          }
+        }
+
+        /**
+         * Also mark the changed links as propogating staleness, even though no timestamps 
+         * will be propogated, so that it is clear which of the existing links have been 
+         * modified from the base version.
+         */ 
+        switch(linkState) {
+        case Pending:
+        case CheckedIn:
+          break;
+
+        default:
+          for(LinkMod link : work.getSources()) {
+            LinkVersion blink = base.getSource(link.getName());
+            if((blink == null) || !link.equals(blink)) 
+              status.addStaleLink(link.getName());
+          }
+        }
+
+        /**
+         * Propagate staleness by setting the per-file time stamps of each file to be 
+         * the newest of:
+         * 
+         * + The newest actual file time stamp.
+         * 
+         * + If the FileState is Missing, the time stamp of when the FileState was computed.
+         * 
+         * + The last critical modification timestamp of the current node.
+         * 
+         * + The time stamp of any upstream file upon which the file depends through a 
+         *   Reference link or a Dependency link if the current node does not have a disabled
+         *   action.  These upstream time stamp have been previously modified to propogate 
+         *   staleness of those nodes further upstream.  Upstream per-file time stamps which 
+         *   are (null) should be ignored.
+         */
+        long[] fileStamps = new long[oldestStamps.length];
+        boolean[] ignoreStamps = new boolean[oldestStamps.length];
+        switch(versionState) {
+        case CheckedIn:
+          break;
+
+        default:
+          if(workIsLocked) {
+            int wk;
+            for(wk=0; wk<queueStates.length; wk++) {
+              fileStamps[wk] = newestStamps[wk];
+              ignoreStamps[wk] = true;
+            }
+          }
+          else {
+            int wk;
+            for(wk=0; wk<queueStates.length; wk++) {
+              if(anyMissing[wk] || (newestStamps[wk] == null)) 
+                fileStamps[wk] = missingStamp;
+              else 
+                fileStamps[wk] = newestStamps[wk];
+
+              long critical = work.getLastCriticalModification();
+              if(critical > fileStamps[wk])
+                fileStamps[wk] = critical;
+
+              switch(overallNodeState) {
+              case Identical:
+              case NeedsCheckOut:
+              case ModifiedLocks:
+                ignoreStamps[wk] = true;
+                break;
+              }
+
+              for(LinkMod link : work.getSources()) { 
+                if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
+                  NodeStatus lstatus = status.getSource(link.getName());
+                  NodeDetails ldetails = lstatus.getDetails();
+
+                  QueueState lqs[]   = ldetails.getQueueState();
+                  long lstamps[]     = ldetails.getFileTimeStamps();
+                  boolean lignored[] = ldetails.ignoreTimeStamps();
+
+                  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+
+                  switch(link.getRelationship()) {
+                  case OneToOne:
+                    {
+                      Integer offset = link.getFrameOffset();
+                      int idx = wk+offset;
+
+                      if((idx >= 0) && (idx < lqs.length)) {
+                        if(!lignored[idx] || nonIgnored) {
+                          ignoreStamps[wk] = false;
+                          if(lstamps[idx] > fileStamps[wk])
+                            fileStamps[wk] = lstamps[idx];
+                        }
+                      }
+                    }
+                    break;
+
+                  case All:
+                    {
+                      int fk;
+                      for(fk=0; fk<lqs.length; fk++) {
+                        if(!lignored[fk] || nonIgnored) {
+                          ignoreStamps[wk] = false;
+                          if(lstamps[fk] > fileStamps[wk])
+                            fileStamps[wk] = lstamps[fk];
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        /* create the node details */
+        NodeDetails details = 
+          new NodeDetails(name, 
+                          work, base, latest, versionIDs, 
+                          overallNodeState, overallQueueState, 
+                          versionState, propertyState, linkState, 
+                          fileStates, fileStamps, ignoreStamps, 
+                          jobIDs, queueStates);
+
+        /* add the details to the node's status */ 
+        status.setDetails(details);
+
+        /* peform the node operation -- may alter the status and/or status details */ 
+        nodeOp.perform(status, timer);
       }
-
-      /* if the node is modified, don't ignore any timestamps from upstream files */ 
-      switch(overallNodeState) {
-      case Modified:
-      case ModifiedLinks:
-      case Conflicted:
-	for(LinkMod link : work.getSources()) {
-	  String lname = link.getName(); 
-	  nonIgnoredSources.add(lname);
-	}
-      }
-
-      /* determine per-file QueueStates */  
-      Long jobIDs[] = null;
-      QueueState queueStates[] = null;
-      switch(versionState) {
-      case CheckedIn:
-	{
-	  int numFrames = latest.getPrimarySequence().numFrames();
-	  jobIDs      = new Long[numFrames];
-	  queueStates = new QueueState[numFrames];
-
-	  int wk;
-	  for(wk=0; wk<queueStates.length; wk++) 
-	    queueStates[wk] = QueueState.Undefined;
-	}
-	break;
-
-      default:
-	if(workIsLocked || workIsFrozen) {
-	  int numFrames = work.getPrimarySequence().numFrames();
-	  jobIDs      = new Long[numFrames];
-	  queueStates = new QueueState[numFrames];
-
-	  int wk;
-	  for(wk=0; wk<queueStates.length; wk++) 
-	    queueStates[wk] = QueueState.Finished;
-	}
-	else {
-	  int numFrames = work.getPrimarySequence().numFrames();
-	  jobIDs      = new Long[numFrames];
-	  queueStates = new QueueState[numFrames];
-
-	  JobState js[] = new JobState[numFrames];
-	  {
-	    ArrayList<Long> jIDs          = new ArrayList<Long>();
-	    ArrayList<JobState> jobStates = new ArrayList<JobState>();
-
-	    pQueueMgrClient.getJobStates(nodeID, work.getTimeStamp(), 
-					 work.getPrimarySequence(), jIDs, jobStates);
-
-	    if(jobIDs.length != jIDs.size())
-	      throw new IllegalStateException(); 
-	    jobIDs = (Long[]) jIDs.toArray(jobIDs);
-
-	    if(js.length != jobStates.size())
-	      throw new IllegalStateException(); 
-	    js = (JobState[]) jobStates.toArray(js);
-	  }
-	  
-	  int wk;
-	  for(wk=0; wk<queueStates.length; wk++) {
-	    /* there is no regeneration action or it is disabled, 
-	         therefore QueueState is always Finished */ 
-	    if(!work.isActionEnabled()) {
-	      queueStates[wk] = QueueState.Finished;
-	    }
-
-	    /* there IS an enabled regeneration action */ 
-	    else {
-	      /* check for active jobs */ 
-	      if(js[wk] != null) {
-		switch(js[wk]) {
-		case Queued:
-		case Preempted:
-		  queueStates[wk] = QueueState.Queued;
-		  break;
-
-		case Paused:
-		  queueStates[wk] = QueueState.Paused;
-		  break;
-
-		case Aborted:
-		  queueStates[wk] = QueueState.Aborted;
-		  break;
-
-		case Running:
-		  queueStates[wk] = QueueState.Running;
-		  break;
-
-		case Failed:
-		  queueStates[wk] = QueueState.Failed;
-		  break;
-
-		case Finished:
-		  break;
-		}
-	      }
-	      
-	      if(queueStates[wk] == null) {
-		switch(overallNodeState) {
-		case Identical: 
-		case ModifiedLocks: 
-		  queueStates[wk] = QueueState.Finished;
-		  break;
-		  
-		default:
-		  /* check for missing files or if the working version has been modified 
-		     since the oldest of the primary/secondary files were created */ 
-		  if(anyMissing[wk] ||
-                     (oldestStamps[wk] < work.getLastCriticalModification())) {
-		    queueStates[wk] = QueueState.Stale;
-		  }
-		
-		  /* check upstream per-file dependencies */ 
-		  else {
-		    for(LinkMod link : work.getSources()) {
-		      if(link.getPolicy() == LinkPolicy.Dependency) {
-			NodeStatus lstatus = status.getSource(link.getName());
-			NodeDetails ldetails = lstatus.getDetails();
-			
-			switch(ldetails.getOverallNodeState()) {
-			case ModifiedLocks: 
-			  break;
-			  
-			default:
-			  {
-			    QueueState lqs[]   = ldetails.getQueueState();
-                            long lstamps[]     = ldetails.getFileTimeStamps();
-			    boolean lignored[] = ldetails.ignoreTimeStamps();
-
-			    boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-
-			    boolean lanyMissing[] = null;
-			    for(FileSeq lfseq : ldetails.getFileStateSequences()) {
-			      FileState lfs[] = ldetails.getFileState(lfseq);
-			      
-			      if(lanyMissing == null) 
-				lanyMissing = new boolean[lfs.length];
-			      
-			      int mk;
-			      for(mk=0; mk<lanyMissing.length; mk++) {
-				if(lfs[mk] == FileState.Missing) 
-				  lanyMissing[mk] = true;
-			      }
-			    }
-			    
-			    switch(link.getRelationship()) {
-			    case OneToOne:
-			      {
-				Integer offset = link.getFrameOffset();
-				int idx = wk+offset;
-				if(((idx >= 0) && (idx < lqs.length)) &&
-				   ((lqs[idx] != QueueState.Finished) || 
-				    lanyMissing[idx] || 
-				    ((!lignored[idx] || nonIgnored) &&
-				     (oldestStamps[wk] < lstamps[idx]))))
-				  queueStates[wk] = QueueState.Stale;
-			      }
-			      break;
-			      
-			    case All:
-			      {
-				int fk;
-				for(fk=0; fk<lqs.length; fk++) {
-				  if((lqs[fk] != QueueState.Finished) || 
-				     lanyMissing[fk] || 
-				     ((!lignored[fk] || nonIgnored) &&
-                                      (oldestStamps[wk] < lstamps[fk]))) {
-				    queueStates[wk] = QueueState.Stale;
-				    break;
-				  }
-				}
-			      }
-			    }		    
-			  }
-			}
-		      }
-		      
-		      if(queueStates[wk] != null) 
-			break;
-		    }
-		  
-		    if(queueStates[wk] == null) 
-		      queueStates[wk] = QueueState.Finished;
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-
-      /* compute overall queue state */ 
-      OverallQueueState overallQueueState = OverallQueueState.Undefined; 
-      if(versionState != VersionState.CheckedIn) {
-	boolean anyStale = false;
-	boolean anyPaused = false;
-	boolean anyQueued = false;
-	boolean anyRunning = false; 
-	boolean anyAborted = false;
-	boolean anyFailed = false;
-	
-	int wk;
-	for(wk=0; wk<queueStates.length; wk++) {
-	  switch(queueStates[wk]) {
-	  case Stale:
-	    anyStale = true;
-	    break;
-	    
-	  case Queued:
-	    anyQueued = true;
-	    break;
-
-	  case Paused:
-	    anyPaused = true;
-	    break;
-	    
-	  case Running:
-	    anyRunning = true;
-	    break;
-
-	  case Aborted:
-	    anyAborted = true;
-	    break;
-	    
-	  case Failed:
-	    anyFailed = true;
-	  }
-	}
-	
-	if(anyFailed) 
-	  overallQueueState = OverallQueueState.Failed;
-	else if(anyAborted) 
-	  overallQueueState = OverallQueueState.Aborted;
-	else if(anyRunning) 
-	  overallQueueState = OverallQueueState.Running;
-	else if(anyPaused) 
-	  overallQueueState = OverallQueueState.Paused;
-	else if(anyQueued) 
-	  overallQueueState = OverallQueueState.Queued;
-	else if(anyStale) 
-	  overallQueueState = OverallQueueState.Stale;
-	else 
-	  overallQueueState = OverallQueueState.Finished;
-      }
-
-      /**
-       * Before updating the timestamps of the files associated with this node, determine 
-       * if staleness will be propogated from each upstream link. <P> 
-       * 
-       * Staleness is propgated if the timestamp of any upstream file upon which any of this
-       * node's files depend (through a Reference/Dependency link) is newer than the dependent
-       * files.  Timestamps for these upstream nodes will be ignore if the ignore timestamp
-       * flag is set for the upstream file and the upstream node is not a member of the 
-       * nonIgnoredSources set. <P> 
-       *        
-       * These upstream timestamp have been previously modified to propogate staleness
-       * of those nodes further upstream.
-       */ 
-      switch(versionState) {
-      case CheckedIn:
-	break;
-
-      default:
-	if(!workIsLocked) {
-	  int wk;
-	  for(wk=0; wk<queueStates.length; wk++) {
-	    for(LinkMod link : work.getSources()) {
-	      boolean staleLink = false;
-
-	      switch(overallQueueState) {
-	      case Running:
-		break;
-
-	      default:	
-		if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
-		  NodeStatus lstatus = status.getSource(link.getName());
-		  NodeDetails ldetails = lstatus.getDetails();
-		  switch(ldetails.getOverallQueueState()) {
-		  case Finished:
-		    {
-		      QueueState lqs[]   = ldetails.getQueueState();
-		      long lstamps[]     = ldetails.getFileTimeStamps();
-		      boolean lignored[] = ldetails.ignoreTimeStamps();
-
-		      boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-
-		      boolean lanyMissing[] = null;
-		      for(FileSeq lfseq : ldetails.getFileStateSequences()) {
-			FileState lfs[] = ldetails.getFileState(lfseq);
-			    
-			if(lanyMissing == null) 
-			  lanyMissing = new boolean[lfs.length];
-			    
-			int mk;
-			for(mk=0; mk<lanyMissing.length; mk++) {
-			  if(lfs[mk] == FileState.Missing) 
-			    lanyMissing[mk] = true;
-			}
-		      }
-			  
-		      switch(link.getRelationship()) {
-		      case OneToOne:
-			{
-			  Integer offset = link.getFrameOffset();
-			  int idx = wk+offset;
-			  if((idx >= 0) && (idx < lqs.length)) {
-			    if(anyMissing[wk] || lanyMissing[idx] || 
-			       ((!lignored[idx] || nonIgnored) && 
-                                (oldestStamps[wk] < lstamps[idx])))
-			      staleLink = true;
-			  }
-			}
-			break;
-			    
-		      case All:
-			{
-			  int fk;
-			  for(fk=0; fk<lqs.length; fk++) {
-			    if(anyMissing[wk] || lanyMissing[fk] || 
-			       ((!lignored[fk] || nonIgnored) && 
-				(oldestStamps[wk] < lstamps[fk])))
-			      staleLink = true;
-			  }
-			}
-		      }
-		    }
-		    break;
-			
-		  default:
-		    staleLink = true;
-		  }
-		}
-	      }
-
-	      if(staleLink) 
-		status.addStaleLink(link.getName());
-	    }
-	  }
-	}
-      }
-
-      /**
-       * Also mark the changed links as propogating staleness, even though no timestamps 
-       * will be propogated, so that it is clear which of the existing links have been 
-       * modified from the base version.
-       */ 
-      switch(linkState) {
-      case Pending:
-      case CheckedIn:
-	break;
-
-      default:
-	for(LinkMod link : work.getSources()) {
-	  LinkVersion blink = base.getSource(link.getName());
-	  if((blink == null) || !link.equals(blink)) 
-	    status.addStaleLink(link.getName());
-	}
-      }
-
-      /**
-       * Propagate staleness by setting the per-file time stamps of each file to be 
-       * the newest of:
-       * 
-       *   + The newest actual file time stamp.
-       * 
-       *   + If the FileState is Missing, the time stamp of when the FileState was computed.
-       * 
-       *   + The last critical modification timestamp of the current node.
-       * 
-       *   + The time stamp of any upstream file upon which the file depends through a 
-       *     Reference link or a Dependency link if the current node does not have a disabled
-       *     action.  These upstream time stamp have been previously modified to propogate 
-       *     staleness of those nodes further upstream.  Upstream per-file time stamps which 
-       *     are (null) should be ignored.
-       */
-      long[] fileStamps = new long[oldestStamps.length];
-      boolean[] ignoreStamps = new boolean[oldestStamps.length];
-      switch(versionState) {
-      case CheckedIn:
-	break;
-
-      default:
-	if(workIsLocked) {
-	  int wk;
-	  for(wk=0; wk<queueStates.length; wk++) {
-	    fileStamps[wk] = newestStamps[wk];
-	    ignoreStamps[wk] = true;
-	  }
-	}
-	else {
-	  int wk;
-	  for(wk=0; wk<queueStates.length; wk++) {
-	    if(anyMissing[wk] || (newestStamps[wk] == null)) 
-	      fileStamps[wk] = missingStamp;
-	    else 
-	      fileStamps[wk] = newestStamps[wk];
-
-	    long critical = work.getLastCriticalModification();
-	    if(critical > fileStamps[wk])
-	      fileStamps[wk] = critical;
-
-	    switch(overallNodeState) {
-	    case Identical:
-	    case NeedsCheckOut:
-	    case ModifiedLocks:
-	      ignoreStamps[wk] = true;
-	      break;
-	    }
-
-	    for(LinkMod link : work.getSources()) { 
-	      if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
-		NodeStatus lstatus = status.getSource(link.getName());
-		NodeDetails ldetails = lstatus.getDetails();
-		
-		QueueState lqs[]   = ldetails.getQueueState();
-		long lstamps[]     = ldetails.getFileTimeStamps();
-		boolean lignored[] = ldetails.ignoreTimeStamps();
-		
-		boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-		
-		switch(link.getRelationship()) {
-		case OneToOne:
-		  {
-		    Integer offset = link.getFrameOffset();
-		    int idx = wk+offset;
-		    
-		    if((idx >= 0) && (idx < lqs.length)) {
-		      if(!lignored[idx] || nonIgnored) {
-			ignoreStamps[wk] = false;
-			if(lstamps[idx] > fileStamps[wk])
-			  fileStamps[wk] = lstamps[idx];
-		      }
-		    }
-		  }
-		  break;
-		  
-		case All:
-		  {
-		    int fk;
-		    for(fk=0; fk<lqs.length; fk++) {
-		      if(!lignored[fk] || nonIgnored) {
-			ignoreStamps[wk] = false;
-			if(lstamps[fk] > fileStamps[wk])
-			  fileStamps[wk] = lstamps[fk];
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-	
-      /* create the node details */
-      NodeDetails details = 
-	new NodeDetails(name, 
-			work, base, latest, versionIDs, 
-			overallNodeState, overallQueueState, 
-			versionState, propertyState, linkState, 
-			fileStates, fileStamps, ignoreStamps, 
-			jobIDs, queueStates);
-
-      /* add the details to the node's status */ 
-      status.setDetails(details);
-
-      /* peform the node operation -- may alter the status and/or status details */ 
-      nodeOp.perform(status, timer);
     }
     finally {
-      if(nodeOp.writesCheckedIn())
+      if((nodeOp != null) && nodeOp.writesCheckedIn())
 	checkedInLock.writeLock().unlock();
       else 
 	checkedInLock.readLock().unlock();

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.94 2007/03/28 19:31:03 jim Exp $
+// $Id: MasterMgrClient.java,v 1.95 2007/04/15 10:30:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4077,7 +4077,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the status of the tree of nodes rooted at a node. <P> 
+   * Get the heavyweight status of the tree of nodes rooted at a node. <P> 
    * 
    * In addition to providing node status information for the given node, the returned 
    * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
@@ -4106,11 +4106,11 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return status(new NodeID(author, view, name));
+    return status(new NodeID(author, view, name), false);
   } 
 
   /** 
-   * Get the status of the tree of nodes rooted at a node. <P> 
+   * Get the heavyweight status of the tree of nodes rooted at a node. <P> 
    * 
    * In addition to providing node status information for the given node, the returned 
    * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
@@ -4131,9 +4131,75 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return status(nodeID, false);
+  } 
+
+  /** 
+   * Get the status of the tree of nodes rooted at a node. <P> 
+   * 
+   * In addition to providing node status information for the given node, the returned 
+   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
+   * upstream and downstream) linked to the given node.  The status information for the 
+   * upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param lightweight
+   *   Get only lightweight node status detail information for the upstream nodes.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of the node.
+   */ 
+  public synchronized NodeStatus
+  status
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   boolean lightweight
+  ) 
+    throws PipelineException
+  {
+    return status(new NodeID(author, view, name), lightweight);
+  } 
+
+  /** 
+   * Get the status of the tree of nodes rooted at a node. <P> 
+   * 
+   * In addition to providing node status information for the given node, the returned 
+   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
+   * upstream and downstream) linked to the given node.  The status information for the 
+   * upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param lightweight
+   *   Get only lightweight node status detail information for the upstream nodes.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of the node.
+   */ 
+  public synchronized NodeStatus
+  status
+  ( 
+   NodeID nodeID, 
+   boolean lightweight
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
  
-    NodeStatusReq req = new NodeStatusReq(nodeID);
+    NodeStatusReq req = new NodeStatusReq(nodeID, lightweight);
 
     Object obj = performTransaction(MasterRequest.Status, req);
     if(obj instanceof NodeStatusRsp) {
@@ -4146,6 +4212,68 @@ class MasterMgrClient
     }
   } 
 
+  /** 
+   * Get the status of multiple overlapping trees of nodes. <P> 
+   * 
+   * For each of the root nodes given, either a lightweight or heavyweight node status can 
+   * be performed on the node and its upstream dependencies.  For nodes which are upstream of
+   * multiple root nodes, heavyweight status is performed in preference to lightweight status.
+   * The ability to specify different status modes at each root node means that the returned 
+   * NodeStatus datastructures can contain mixtures of lightweight and heavyweight node 
+   * details. See the {@link NodeDetails} class for more information about the information
+   * available for each mode.<P> 
+   * 
+   * This method returns a {@link NodeStatus} instance for each of the given root nodes.  
+   * A <CODE>NodeStatus</CODE> can be used access the status of all nodes (both upstream 
+   * and downstream) linked to the given node.  The status information for the upstream 
+   * nodes will also include detailed state and version information accessable by calling 
+   * the {@link NodeStatus#getDetails NodeStatus.getDetails} method.<P> 
+   * 
+   * Note that when computing node status where the given root nodes share a large percentage
+   * of thier upstream nodes, this method will be much more efficient than calling the single
+   * node {@link #status status} method for each root node seperately. 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param roots
+   *   Whether to get only lightweight (true) or heavyweight (false) node status detail 
+   *   information indexed by the fully resolved named of the root nodes.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of the node.
+   */ 
+  public synchronized LinkedList<NodeStatus> 
+  status
+  ( 
+   String author, 
+   String view, 
+   TreeMap<String,Boolean> roots
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+ 
+    NodeMultiStatusReq req = new NodeMultiStatusReq(author, view, roots); 
+
+    Object obj = performTransaction(MasterRequest.MultiStatus, req);
+    if(obj instanceof NodeMultiStatusRsp) {
+      NodeMultiStatusRsp rsp = (NodeMultiStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+       return null;
+    }
+  } 
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   R E V I S I O N   C O N T R O L                                                      */

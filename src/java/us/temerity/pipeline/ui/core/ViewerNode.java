@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.10 2007/01/05 23:46:10 jim Exp $
+// $Id: ViewerNode.java,v 1.11 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -186,30 +186,42 @@ class ViewerNode
 	String name = "Blank";
 	NodeDetails details = pStatus.getDetails();
 	if(details != null) {
-	  if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
-	    VersionID wvid = details.getWorkingVersion().getWorkingID();
-	    VersionID lvid = details.getLatestVersion().getVersionID();
-	    switch(wvid.compareLevel(lvid)) {
-	    case Major:
-	      name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
-	      break;
-	      
-	    case Minor:
-	      name = ("NeedsCheckOut-" + details.getOverallQueueState());
-	      break;
-	      
-	    case Micro:
-	      name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
-	    }
-	  }
-	  else {
-	    name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
-	  }
-	  
-	  NodeMod mod = details.getWorkingVersion();
-	  if((mod != null) && mod.isFrozen()) 
-	    name = (name + "-Frozen");
-	}
+          if(details.isLightweight()) {
+            switch(details.getVersionState()) {
+            case CheckedIn:
+              name = "CheckedIn-Undefined"; 
+              break;
+
+            default:
+              name = "Lightweight";
+            }
+          }
+          else {
+            if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+              VersionID wvid = details.getWorkingVersion().getWorkingID();
+              VersionID lvid = details.getLatestVersion().getVersionID();
+              switch(wvid.compareLevel(lvid)) {
+              case Major:
+                name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
+                break;
+                
+              case Minor:
+                name = ("NeedsCheckOut-" + details.getOverallQueueState());
+                break;
+                
+              case Micro:
+                name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
+              }
+            }
+            else {
+              name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
+            }
+            
+            NodeMod mod = details.getWorkingVersion();
+            if((mod != null) && mod.isFrozen()) 
+              name = (name + "-Frozen");
+          }
+        }
 
 	pIconDL = new int[3];
 	for(SelectionMode mode : SelectionMode.all()) 

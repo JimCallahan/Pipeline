@@ -1,15 +1,15 @@
 //Maya ASCII 7.0 scene
 //Name: Primary.ma
-//Last modified: Wed, Oct 12, 2005 04:29:48 PM
+//Last modified: Sun, Apr 15, 2007 06:08:13 AM
 file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 file -r -rpr "Normal" -dr 1 -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 requires maya "7.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya Unlimited 7.0";
-fileInfo "version" "7.0";
-fileInfo "cutIdentifier" "200507192213-654274";
-fileInfo "osv" "Linux 2.6.12-1.1398_FC4smp #1 SMP Fri Jul 15 01:30:13 EDT 2005 i686";
+fileInfo "version" "7.0.1";
+fileInfo "cutIdentifier" "200511181718-660870";
+fileInfo "osv" "Linux 2.6.16.27-0.9-smp #1 SMP Tue Feb 13 09:35:18 UTC 2007 i686";
 createNode transform -s -n "persp";
 	setAttr -l on ".v" no;
 	setAttr ".t" -type "double3" 0 1.8003966942148764 0 ;
@@ -206,7 +206,7 @@ createNode reference -n "_UNKNOWN_REF_NODE_";
 		"_UNKNOWN_REF_NODE_"
 		"_UNKNOWN_REF_NODE_" 0;
 select -ne :time1;
-	setAttr ".o" 114;
+	setAttr ".o" 57;
 select -ne :renderPartition;
 	setAttr -s 7 ".st";
 select -ne :renderGlobalsList1;
@@ -224,11 +224,10 @@ select -ne :initialShadingGroup;
 select -ne :initialParticleSE;
 	setAttr ".ro" yes;
 select -ne :defaultRenderGlobals;
-	setAttr ".mcfr" 48;
-	setAttr ".imfkey" -type "string" "mayaAsciifile";
+	setAttr ".outf" 5;
 	setAttr ".an" yes;
 	setAttr ".fs" 0;
-	setAttr ".ef" 114;
+	setAttr ".ef" 115;
 	setAttr ".ep" 4;
 	setAttr ".pff" yes;
 select -ne :defaultRenderQuality;
@@ -251,7 +250,6 @@ select -ne :hardwareRenderGlobals;
 	setAttr ".enpt" no;
 	setAttr ".hgcd" no;
 	setAttr ".hgci" no;
-	setAttr ".hwfr" 48;
 	setAttr -k on ".ani" yes;
 select -ne :defaultHardwareRenderGlobals;
 	setAttr ".fn" -type "string" "im";

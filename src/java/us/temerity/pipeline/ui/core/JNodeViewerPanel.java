@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.76 2007/03/24 15:54:23 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.77 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -234,6 +234,7 @@ class JNodeViewerPanel
       pRecentActionCommands = new ArrayList<TreeMap<String,String>>(5);
 
       pUpdateDetailsItems   = new JPopupMenuItem[5];
+      pUpdateBranchItems    = new JPopupMenuItem[4];
       pMakeRootItems        = new JPopupMenuItem[5];
       pAddRootItems         = new JPopupMenuItem[5];
       pReplaceRootItems     = new JPopupMenuItem[5];
@@ -253,6 +254,14 @@ class JNodeViewerPanel
 	item.addActionListener(this);
 	menus[wk].add(item);  
 	
+        if(wk > 0) {
+          item = new JPopupMenuItem(menus[wk], "Update Branch");
+          pUpdateBranchItems[wk-1] = item;
+          item.setActionCommand("update-branch");
+          item.addActionListener(this);
+          menus[wk].add(item);          
+        }
+
 	menus[wk].addSeparator();
 	menus[wk].addSeparator();
 
@@ -648,15 +657,16 @@ class JNodeViewerPanel
   
 
   /**
-   * Update the state of all currently displayed roots.
+   * Perform a lightweight update of the state of all currently displayed roots.
    */
   private synchronized void 
-  updateRoots()
+  updateRoots() 
   {
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    updatePanels();
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
   }
 
   /**
@@ -699,7 +709,8 @@ class JNodeViewerPanel
     for(String name : names) 
       pRoots.put(name, null);
     
-    updatePanels();
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
   }
 
   /**
@@ -780,7 +791,8 @@ class JNodeViewerPanel
   {
     pRoots.remove(name);
     
-    updatePanels();
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
   }
 
   /**
@@ -800,7 +812,8 @@ class JNodeViewerPanel
     for(String name : names) 
       pRoots.remove(name);
     
-    updatePanels(); 
+    PanelUpdater pu = new PanelUpdater(this);
+    pu.start();
   }
 
   /**
@@ -867,33 +880,12 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Perform the inial update after restoring a layout. 
+   * Perform the initial update after restoring a layout. 
    */ 
   public void 
   restoreSelections() 
   {
-    updatePanels(false);
-  }
-
-  /**
-   * Update all panels which share the current update channel.
-   */ 
-  private void 
-  updatePanels() 
-  {
-    updatePanels(false);
-  }
-
-  /**
-   * Update all panels which share the current update channel.
-   */ 
-  private void 
-  updatePanels
-  (
-   boolean detailsOnly
-  ) 
-  {
-    PanelUpdater pu = new PanelUpdater(this, detailsOnly);
+    PanelUpdater pu = new PanelUpdater(this);
     pu.start();
   }
 
@@ -1025,6 +1017,10 @@ class JNodeViewerPanel
     }
 
     for(wk=0; wk<4; wk++) {
+      updateMenuToolTip
+	(pUpdateBranchItems[wk], prefs.getUpdateBranch(), 
+	 "Update the status of all nodes upstream of the primary selection.");
+
       updateMenuToolTip
 	(pEditItems[wk], prefs.getEdit(), 
 	 "Edit primary file sequences of the current primary selection.");
@@ -1173,35 +1169,26 @@ class JNodeViewerPanel
   public void 
   updateNodeMenu() 
   {
-    NodeDetails details = null;
-    if(pPrimary != null) 
-      details = pPrimary.getNodeStatus().getDetails();
-
+    NodeDetails details = pPrimary.getNodeStatus().getDetails();
     NodeMod mod = details.getWorkingVersion();
+
+    boolean queuePrivileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
+
+    boolean nodePrivileged = 
+      (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
 
     boolean hasCheckedIn = (details.getLatestVersion() != null);
     boolean multiple     = (getSelectedNames().size() >= 2);
 
-    pLinkItem.setEnabled(multiple);
-    pUnlinkItem.setEnabled(multiple);
+    pLinkItem.setEnabled(multiple && nodePrivileged);
+    pUnlinkItem.setEnabled(multiple && nodePrivileged);
 
-    pExportItem.setEnabled(multiple);
-    pRenameItem.setEnabled(!hasCheckedIn);
-    pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers());
-    
-    pCheckOutItems[2].setEnabled(hasCheckedIn);
-    pLockItems[2].setEnabled(hasCheckedIn);
-    pEvolveItem.setEnabled(hasCheckedIn);
-    pRestoreItems[2].setEnabled(hasCheckedIn);
-    
-    pDeleteItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
-
-    pRemoveSecondaryMenu.setEnabled(false);
-
-    updateEditorMenus();
+    pAddSecondaryItem.setEnabled(nodePrivileged);
 
     /* rebuild remove secondary items */ 
-    if(!isLocked()) {
+    pRemoveSecondaryMenu.setEnabled(false);
+    if(!isLocked() && nodePrivileged) {
       JPopupMenuItem item;
 
       pRemoveSecondaryMenu.removeAll();
@@ -1222,10 +1209,36 @@ class JNodeViewerPanel
       
       pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
     }
+
+    pQueueJobsItem.setEnabled(queuePrivileged);
+    pQueueJobsSpecialItem.setEnabled(queuePrivileged);
+
+    pPauseJobsItem.setEnabled(queuePrivileged);
+    pResumeJobsItem.setEnabled(queuePrivileged);
+    pPreemptJobsItem.setEnabled(queuePrivileged);
+    pKillJobsItem.setEnabled(queuePrivileged);
+    pRemoveFilesItem.setEnabled(nodePrivileged); 
+
+    pCheckInItem.setEnabled(nodePrivileged);
+    pCheckOutItems[2].setEnabled(hasCheckedIn && nodePrivileged);
+    pLockItems[2].setEnabled(hasCheckedIn && nodePrivileged);
+    pReleaseItems[1].setEnabled(pPrivilegeDetails.isMasterAdmin());
+    pDeleteItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
+
+    pEvolveItem.setEnabled(hasCheckedIn && nodePrivileged);
+    pCloneItem.setEnabled(nodePrivileged);
+
+    pExportItem.setEnabled(multiple && nodePrivileged);
+    pRenameItem.setEnabled(!hasCheckedIn && nodePrivileged);
+    pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers() && nodePrivileged);
+
+    pRestoreItems[2].setEnabled(hasCheckedIn && nodePrivileged);
+
+    updateEditorMenus();
   }
 
   /**
-   * Update the 
+   * Update the dynamic menus based on working area usage of nodes.
    */ 
   private synchronized void 
   updateWorkingAreaMenus()
@@ -2596,6 +2609,10 @@ class JNodeViewerPanel
       if((prefs.getDetails() != null) &&
 	 prefs.getDetails().wasPressed(e))
 	doDetails();
+
+      else if((prefs.getUpdateBranch() != null) &&
+	 prefs.getUpdateBranch().wasPressed(e))
+	doUpdateBranch();
       
       else if((prefs.getNodeViewerMakeRoot() != null) &&
 	      prefs.getNodeViewerMakeRoot().wasPressed(e))
@@ -2871,7 +2888,9 @@ class JNodeViewerPanel
     /* node menu events */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("details"))
-      doDetails();
+      doDetails();  
+    else if(cmd.equals("update-branch"))
+      doUpdateBranch();
 
     else if(cmd.equals("make-root"))
       doMakeRoot();
@@ -3003,7 +3022,37 @@ class JNodeViewerPanel
   doUpdate()
   { 
     clearSelection();
-    updateRoots();
+
+    for(String name : pRoots.keySet()) 
+      pRoots.put(name, null);
+    
+    PanelUpdater pu = new PanelUpdater(this, false, false, new TreeSet<String>());
+    pu.start();
+  }
+  
+  /**
+   * Update the status of all upstread of the primary selected node. 
+   */ 
+  private synchronized void
+  doUpdateBranch()
+  { 
+    TreeSet<String> branches = new TreeSet<String>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeDetails details = vnode.getNodeStatus().getDetails();
+      if(details != null) 
+        branches.add(details.getName());
+    }
+
+    if(branches.isEmpty())
+      return;
+    
+    clearSelection();
+
+    for(String name : pRoots.keySet()) 
+      pRoots.put(name, null);
+    
+    PanelUpdater pu = new PanelUpdater(this, false, true, branches);
+    pu.start();    
   }
   
 
@@ -3017,7 +3066,9 @@ class JNodeViewerPanel
   {
     if(pPrimary != null) {
       pLastDetailsName = pPrimary.getNodeStatus().getName();
-      updatePanels(true);
+
+      PanelUpdater pu = new PanelUpdater(this, true, true, new TreeSet<String>());
+      pu.start();
     }
 
     clearSelection();
@@ -3804,28 +3855,35 @@ class JNodeViewerPanel
   private synchronized void 
   doPauseJobs() 
   {
-    TreeSet<Long> paused = new TreeSet<Long>();
+    TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> pausedJobs    = new TreeSet<Long>();
+
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
+        if(details.isLightweight()) {
+          pausedNodes.add(status.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
 
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	    assert(jobIDs[wk] != null);
-	    paused.add(jobIDs[wk]);
-	  }
-	}
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Queued:
+              assert(jobIDs[wk] != null);
+              pausedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
 
-    if(!paused.isEmpty()) {
-      PauseJobsTask task = new PauseJobsTask(paused);
+    if(!pausedNodes.isEmpty() || !pausedJobs.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(pausedNodes, pausedJobs);
       task.start();
     }
 
@@ -3839,28 +3897,35 @@ class JNodeViewerPanel
   private synchronized void 
   doResumeJobs() 
   {
-    TreeSet<Long> resumed = new TreeSet<Long>();
+    TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> resumedJobs    = new TreeSet<Long>();
+
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
+        if(details.isLightweight()) {
+          resumedNodes.add(status.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
 
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Paused:
-	    assert(jobIDs[wk] != null);
-	    resumed.add(jobIDs[wk]);
-	  }
-	}
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Paused:
+              assert(jobIDs[wk] != null);
+              resumedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
 
-    if(!resumed.isEmpty()) {
-      ResumeJobsTask task = new ResumeJobsTask(resumed);
+    if(!resumedNodes.isEmpty() || !resumedJobs.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(resumedNodes, resumedJobs);
       task.start();
     }
 
@@ -3874,72 +3939,86 @@ class JNodeViewerPanel
   private synchronized void 
   doPreemptJobs() 
   {
-    TreeSet<Long> dead = new TreeSet<Long>();
+    TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
+
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
+        if(details.isLightweight()) {
+          preemptedNodes.add(status.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
 
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	  case Paused:
-	  case Running:
-	    assert(jobIDs[wk] != null);
-	    dead.add(jobIDs[wk]);
-	  }
-	}
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Queued:
+            case Paused:
+            case Running:
+              assert(jobIDs[wk] != null);
+              preemptedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
 
-    if(!dead.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(dead);
+    if(!preemptedNodes.isEmpty() || !preemptedJobs.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(preemptedNodes, preemptedJobs);
       task.start();
     }
 
     clearSelection();
     refresh(); 
   }
-
+    
   /**
    * Kill all jobs associated with the selected nodes.
    */ 
   private synchronized void 
   doKillJobs() 
   {
-    TreeSet<Long> dead = new TreeSet<Long>();
+    TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
+    TreeSet<Long> killedJobs    = new TreeSet<Long>();
+
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
+        if(details.isLightweight()) {
+          killedNodes.add(status.getNodeID());
+        }
+        else {
+          Long[] jobIDs   = details.getJobIDs();
+          QueueState[] qs = details.getQueueState();
+          assert(jobIDs.length == qs.length);
 
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	  case Paused:
-	  case Running:
-	    assert(jobIDs[wk] != null);
-	    dead.add(jobIDs[wk]);
-	  }
-	}
+          int wk;
+          for(wk=0; wk<jobIDs.length; wk++) {
+            switch(qs[wk]) {
+            case Queued:
+            case Paused:
+            case Running:
+              assert(jobIDs[wk] != null);
+              killedJobs.add(jobIDs[wk]);
+            }
+          }
+        }
       }
     }
 
-    if(!dead.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(dead);
+    if(!killedNodes.isEmpty() || !killedJobs.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(killedNodes, killedJobs);
       task.start();
     }
 
     clearSelection();
-    refresh(); 
+    refresh();
   }
 
 
@@ -5100,7 +5179,7 @@ class JNodeViewerPanel
 	new JConfirmKillObsoleteJobsDialog(getTopFrame(), pName, pJobIDs);
       diag.setVisible(true);
       if(diag.wasConfirmed()) {
-	KillJobsTask task = new KillJobsTask(pJobIDs);
+	KillJobsTask task = new KillJobsTask(null, pJobIDs);
 	task.start();
       }
     }
@@ -5404,13 +5483,12 @@ class JNodeViewerPanel
     public 
     PauseJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeViewerPanel:PauseJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeViewerPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
@@ -5418,8 +5496,6 @@ class JNodeViewerPanel
     {
       updateRoots();
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -5432,13 +5508,12 @@ class JNodeViewerPanel
     public 
     ResumeJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeViewerPanel:ResumeJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeViewerPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
@@ -5446,8 +5521,6 @@ class JNodeViewerPanel
     {
       updateRoots();
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -5460,13 +5533,12 @@ class JNodeViewerPanel
     public 
     PreemptJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeViewerPanel:PreemptJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeViewerPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
@@ -5474,8 +5546,6 @@ class JNodeViewerPanel
     {
       updateRoots();
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -5488,13 +5558,12 @@ class JNodeViewerPanel
     public 
     KillJobsTask
     (
+     TreeSet<NodeID> nodeIDs, 
      TreeSet<Long> jobIDs
     ) 
     {
-      UIMaster.getInstance().super(pGroupID, jobIDs, pAuthor, pView);
-      setName("JNodeViewerPanel:KillJobsTask");
-
-      pJobIDs = jobIDs; 
+      UIMaster.getInstance().super("JNodeViewerPanel", 
+                                   pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
     protected void
@@ -5502,8 +5571,6 @@ class JNodeViewerPanel
     {
       updateRoots();
     }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   
@@ -5650,7 +5717,7 @@ class JNodeViewerPanel
 	for(String name : pJobIDs.keySet()) 
 	  dead.addAll(pJobIDs.get(name));
 
-	KillJobsTask task = new KillJobsTask(dead);
+	KillJobsTask task = new KillJobsTask(null, dead);
 	task.start();
       }
     }
@@ -6237,6 +6304,7 @@ class JNodeViewerPanel
    * The node popup menu items.
    */ 
   private JPopupMenuItem[]  pUpdateDetailsItems;
+  private JPopupMenuItem[]  pUpdateBranchItems;
   private JPopupMenuItem[]  pMakeRootItems;
   private JPopupMenuItem[]  pAddRootItems;
   private JPopupMenuItem[]  pReplaceRootItems;

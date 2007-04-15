@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.72 2007/03/29 19:45:50 jim Exp $
+// $Id: ScriptApp.java,v 1.73 2007/04/15 10:30:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3384,8 +3384,13 @@ class ScriptApp
 	  buf.append("\n");
 	first = false;
 
-	buf.append(details.getOverallNodeState().toSymbol() + " " + 
-		   details.getOverallQueueState().toSymbol() + " " + status.getName()); 
+        if(details.isLightweight()) 
+          buf.append("- - ");
+        else 
+          buf.append(details.getOverallNodeState().toSymbol() + " " + 
+                     details.getOverallQueueState().toSymbol() + " ");
+
+        buf.append(status.getName()); 
       }
       else {
 	NodeMod mod = details.getWorkingVersion();
@@ -3434,12 +3439,14 @@ class ScriptApp
 	       (vseqs.contains(fseq) ? fseq.toString() : "-"));
 	  }
 	}
-	
-	buf.append
-	  ("\n\n" + 
-	   pad("-- Overall State ", '-', 80) + "\n" +
-	   "Node State        : " + details.getOverallNodeState().toTitle() + "\n" + 
-	   "Queue State       : " + details.getOverallQueueState().toTitle()); 
+
+	if(!details.isLightweight()) {
+          buf.append
+            ("\n\n" + 
+             pad("-- Overall State ", '-', 80) + "\n" +
+             "Node State        : " + details.getOverallNodeState().toTitle() + "\n" + 
+             "Queue State       : " + details.getOverallQueueState().toTitle()); 
+        }
 	
 	if(sections.contains("vsn")) {
 	  String mstr = null;
@@ -3830,7 +3837,7 @@ class ScriptApp
 	  }
 	}
 
-	if(sections.contains("file")) {
+	if(sections.contains("file") && !details.isLightweight()) {
 	  buf.append
 	    ("\n\n" +
 	     pad("-- File Sequences ", '-', 80));

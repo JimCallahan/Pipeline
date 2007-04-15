@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.36 2007/03/18 02:14:26 jim Exp $
+// $Id: JManagerPanel.java,v 1.37 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3068,7 +3068,7 @@ class JManagerPanel
       PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
       JNodeViewerPanel viewer = panels.getPanel(groupID);
       if(viewer != null) {
-	PanelUpdater pu = new PanelUpdater(viewer, false);
+	PanelUpdater pu = new PanelUpdater(viewer);
 	pu.start();
       }
     }    
@@ -3086,9 +3086,9 @@ class JManagerPanel
   {
     if(groupID > 0) {
       PanelGroup<JNodeBrowserPanel> panels = UIMaster.getInstance().getNodeBrowserPanels();
-      JNodeBrowserPanel viewer = panels.getPanel(groupID);
-      if(viewer != null) {
-	PanelUpdater pu = new PanelUpdater(viewer, true);
+      JNodeBrowserPanel browser = panels.getPanel(groupID);
+      if(browser != null) {
+	PanelUpdater pu = new PanelUpdater(browser, true);
 	pu.start();
       }
     }    

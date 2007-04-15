@@ -1,4 +1,4 @@
-// $Id: TestMasterMgr2App.java,v 1.10 2006/11/22 09:08:01 jim Exp $
+// $Id: TestMasterMgr2App.java,v 1.11 2007/04/15 10:30:47 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -495,13 +495,15 @@ class TestMasterMgr2App
       printGlue("BaseVersion", details.getBaseVersion(), indent, buf);
       printGlue("LatestVersion", details.getLatestVersion(), indent, buf);
       
-      buf.append(indent2 + "OverallNodeState = " + details.getOverallNodeState() + "\n" +
-		 indent2 + "OverallQueueState = " + details.getOverallQueueState() + "\n" +
-		 indent2 + "VersionState = " + details.getVersionState() + "\n" +
+      if(!details.isLightweight())
+        buf.append(indent2 + "OverallNodeState = " + details.getOverallNodeState() + "\n" +
+                   indent2 + "OverallQueueState = " + details.getOverallQueueState() + "\n");
+
+      buf.append(indent2 + "VersionState = " + details.getVersionState() + "\n" +
 		 indent2 + "PropertyState = " + details.getPropertyState() + "\n" +
 		 indent2 + "LinkState = " + details.getLinkState() + "\n");
       
-      {
+      if(!details.isLightweight()) {
 	buf.append(indent2 + "FileStates = {\n");
 	Date ts[] = details.getFileTimeStamps();
 	for(FileSeq fseq : details.getFileStateSequences()) {

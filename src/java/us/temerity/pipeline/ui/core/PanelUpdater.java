@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.10 2007/03/28 20:07:15 jim Exp $
+// $Id: PanelUpdater.java,v 1.11 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,6 +39,7 @@ class PanelUpdater
     initPanels(panel);
 
     pNodeStatusModified = true;
+    pLightweightNodeStatus = true;
     pNodeBrowserSelection = panel.getSelected(); 
 
     if(pNodeViewerPanel != null) {
@@ -77,18 +78,45 @@ class PanelUpdater
   }
 
   /**
+   * A lightweight panel update originating from the Node Viewer panel. <P> 
+   */ 
+  public
+  PanelUpdater
+  (
+   JNodeViewerPanel panel
+  ) 
+  {
+    this(panel, false, true, new TreeSet<String>());
+  }
+
+  /**
    * A panel update originating from the Node Viewer panel. <P> 
    * 
-   * The update could be due to a change in the root nodes or a simple update.
+   * @param panel
+   *   The new viewer panel.
+   * 
+   * @param detailsOnly
+   *   Just update any connected node details panels.
+   * 
+   * @param lightweight 
+   *   Whether perform lightweight status (true) or heavyweight status (false).
+   * 
+   * @param brachRoots
+   *   If doing lightweight status, first perform heavyweight status on the branch of 
+   *   nodes upstream of these nodes. 
    */ 
   public
   PanelUpdater
   (
    JNodeViewerPanel panel,
-   boolean detailsOnly
+   boolean detailsOnly, 
+   boolean lightweight, 
+   TreeSet<String> branchRoots
   ) 
   {
     pNodeDetailsOnly = detailsOnly; 
+    pLightweightNodeStatus = lightweight;
+    pNodeViewerBranchRoots = branchRoots; 
     initPanels(panel);
     pNodeStatusModified = true;
     pNodeViewerRoots = panel.getRoots();
@@ -103,6 +131,7 @@ class PanelUpdater
    JNodeDetailsPanel panel
   ) 
   {
+    pLightweightNodeStatus = true;
     initPanels(panel);
   }
 
@@ -115,6 +144,7 @@ class PanelUpdater
    JNodeFilesPanel panel
   ) 
   {
+    pLightweightNodeStatus = true;
     initPanels(panel);
   }
 
@@ -127,6 +157,7 @@ class PanelUpdater
    JNodeLinksPanel panel
   ) 
   {
+    pLightweightNodeStatus = true;
     initPanels(panel);
   }
 
@@ -139,6 +170,7 @@ class PanelUpdater
    JNodeHistoryPanel panel
   ) 
   {
+    pLightweightNodeStatus = true;
     initPanels(panel);
   }
 
@@ -266,7 +298,7 @@ class PanelUpdater
       if(!(panel instanceof JNodeViewerPanel) && 
 	 !pJobDetailsOnly && !pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
 
-	pNodeViewerRoots  = pNodeViewerPanel.getRoots();
+	pNodeViewerRoots = pNodeViewerPanel.getRoots();
 	for(String name : pNodeViewerRoots.keySet()) 
 	  pNodeViewerRoots.put(name, null);
       }
@@ -320,26 +352,31 @@ class PanelUpdater
 
 	    /* update node status */ 
 	    if(!pNodeDetailsOnly) {
-	      TreeSet<String> dead = new TreeSet<String>();
-	      for(String name : pNodeViewerRoots.keySet()) {
-		if(pNodeViewerRoots.get(name) == null) {
-		  try {
-		    master.updatePanelOp(pGroupID, "Updating Node Status...");
-		    NodeStatus status = mclient.status(pAuthor, pView, name);
-		    pNodeViewerRoots.put(name, status);
-		  }
-		  catch(PipelineException ex) {
-		    dead.add(name);
-		  }
+              TreeSet<String> roots = new TreeSet<String>(); 
+              for(String name : pNodeViewerRoots.keySet()) {
+                if(pNodeViewerRoots.get(name) == null) 
+                  roots.add(name); 
+              }
 
-		  pNodeStatusModified = true;
-		}
-	      }	 
-	      
-	      for(String name : dead) 
-		pNodeViewerRoots.remove(name);
-	    }
-	    
+              TreeMap<String,Boolean> all = new TreeMap<String,Boolean>();
+              for(String name : roots) 
+                all.put(name, pLightweightNodeStatus);
+
+              if(pLightweightNodeStatus) {
+                for(String name : pNodeViewerBranchRoots)
+                  all.put(name, false);
+              }
+
+              master.updatePanelOp(pGroupID, "Updating Node Status...");
+              LinkedList<NodeStatus> results = mclient.status(pAuthor, pView, all); 
+
+              for(NodeStatus status : results) {
+                String name = status.getName();
+                if(roots.contains(name))
+                  pNodeViewerRoots.put(name, status);
+              }
+            }
+
 	    /* find the current status of detailed node */ 
 	    if(pDetailedNodeName != null) {
 	      for(NodeStatus root : pNodeViewerRoots.values()) {
@@ -354,7 +391,7 @@ class PanelUpdater
 	  if(pDetailedNode != null) {
 	    
 	    /* file novelty */ 
-	    if(pNodeFilesPanel != null) {
+	    if((pNodeFilesPanel != null) && !pLightweightNodeStatus) {
 	      master.updatePanelOp(pGroupID, "Updating File Novelty...");
 	      pFileNovelty = mclient.getCheckedInFileNovelty(pDetailedNodeName);
 	    }
@@ -755,12 +792,23 @@ class PanelUpdater
    */ 
   private boolean  pNodeStatusModified; 
   
+  /**
+   * Whether node status computed should contain only lightweight node details information.
+   */ 
+  private boolean  pLightweightNodeStatus;
+  
 
   /**
    * The names of the new changed selected nodes from the Node Browser panel.
    */ 
   private TreeSet<String>  pNodeBrowserSelection; 
 
+
+  /**
+   * If doing lightweight status, first perform heavyweight status on the branch of 
+   * nodes upstream of these nodes. 
+   */ 
+  private TreeSet<String>  pNodeViewerBranchRoots;
 
   /**
    * The status of all currently displayed roots indexed by root node name from the 

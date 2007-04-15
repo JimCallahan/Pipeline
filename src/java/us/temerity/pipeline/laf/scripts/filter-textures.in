@@ -101,7 +101,7 @@ do
   #-------------------------------------------------------------------------------------------
   # Unfrozen Node/Queue State Icons
   #-------------------------------------------------------------------------------------------
- 
+
   frame=0
   for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
                 Conflicted ModifiedLinks Missing Added Obsolete \
@@ -124,7 +124,7 @@ do
   #-------------------------------------------------------------------------------------------
 
   frame=112
-  for extra in Blank
+  for extra in Blank Lightweight
   do
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
     dir=`echo $dest/$extra-$mode`
@@ -153,9 +153,12 @@ do
       printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
       anynewer1=1
     fi
+
+    frame=$(($frame + 1))
   done
 
-  for extra in Blank
+  frame=112
+  for extra in Blank Lightweight
   do
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
     dir=`echo $dest/$extra-$mode`
@@ -171,6 +174,8 @@ do
       printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile1
       anynewer1=1
     fi
+
+    frame=$(($frame + 1))
   done
 
 
@@ -180,7 +185,7 @@ do
 
   if [ $mode == "Normal" ]
   then
-    frame=113
+    frame=114
     for extra in Collapsed Locked
     do 
       simg=`printf "%s.%04d.sgi" $src/$mode $frame`
@@ -214,12 +219,12 @@ do
       frame=$(($frame + 1))
     done
 
-    frame=113
+    frame=114
     for extra in Collapsed Locked
     do 
       simg=`printf "%s.%04d.sgi" $src/$mode $frame`
       dir=`echo $dest/$extra-$mode`
-      
+
       if [ ! -d $dir ]
       then 
 	mkdir -p $dir
@@ -240,7 +245,7 @@ do
   #-------------------------------------------------------------------------------------------
   # Frozen Node/Queue State Icons
   #-------------------------------------------------------------------------------------------
- 
+
   nstate=Identical
 
   qstate=Finished

@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.17 2007/03/28 19:31:03 jim Exp $
+// $Id: NodeDetails.java,v 1.18 2007/04/15 10:30:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,9 +13,12 @@ import java.io.*;
 
 /**
  * A detailed compilation of information related to state of node with respect to a 
- * particular user and view.
+ * particular user and view.<P> 
  * 
- * @see NodeStatus
+ * Node details can be either heavy weight (the default) or lightweight.  Lightweight
+ * details do not include any node, queue, version, link or per-file state information
+ * for a node.  Both kinds of details do include working, base and latest checked-in version
+ * information for the node.
  */
 public
 class NodeDetails
@@ -24,6 +27,88 @@ class NodeDetails
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct with the given lightweight state information. <P> 
+   * 
+   * The <CODE>work</CODE> argument may be <CODE>null</CODE> if the node has not been 
+   * checked-out. <P> 
+   * 
+   * The <CODE>base</CODE> argument may be <CODE>null</CODE> if this is an initial working
+   * version or if the node has not been checked-out. <P> 
+   * 
+   * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial working
+   * version. <P> 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param work
+   *   The working version of the node.
+   * 
+   * @param base
+   *   The checked-in version of the node upon which the working version was based.
+   * 
+   * @param latest    
+   *   The latest checked-in version of the node.
+   *
+   * @param versionIDs
+   *   The revision numbers of all checked-in versions.
+   * 
+   * @param versionState
+   *   The version state of the node.
+   * 
+   * @param propertyState  
+   *   The state of the node properties.
+   * 
+   * @param linkState 
+   *   The state of the upstream node links.
+   */
+  public 
+  NodeDetails
+  (
+   String name, 
+   NodeMod work, 
+   NodeVersion base, 
+   NodeVersion latest, 
+   Collection<VersionID> versionIDs, 
+   VersionState versionState, 
+   PropertyState propertyState, 
+   LinkState linkState
+  ) 
+  {
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+    pName = name;
+
+    pTimeStamp = TimeStamps.now();
+
+    if((work != null) && !work.getName().equals(pName))
+      throw new IllegalArgumentException
+	("The working version name (" + work.getName() + ") didn't match the " + 
+	 "details name (" + pName + ")!");
+    pWorkingVersion = work;
+
+    if((base != null) && !base.getName().equals(pName))
+      throw new IllegalArgumentException
+	("The base checked-in version name (" + base.getName() + ") didn't match the " + 
+	 "details name (" + pName + ")!");
+    pBaseVersion = base;
+
+    if((latest != null) && !latest.getName().equals(pName))
+      throw new IllegalArgumentException
+	("The latest checked-in version name (" + latest.getName() + ") didn't match the " + 
+	 "details name (" + pName + ")!");
+    pLatestVersion = latest;
+
+    pVersionIDs = new ArrayList<VersionID>(versionIDs);
+
+    pVersionState  = versionState;
+    pPropertyState = propertyState;
+    pLinkState     = linkState;
+
+    pIsLightweight = true;
+  }
 
   /**
    * Construct with the given state information. <P> 
@@ -168,6 +253,26 @@ class NodeDetails
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether only lightweight details are available.<P> 
+   * 
+   * Lightweight node details contain only a small subset of the information available to 
+   * a normal full node details instance.  Getter methods not supported in lightweight mode
+   * are noted in the documentation for each method.  Calling one of these methods when in 
+   * lightweight mode will generate an IllegalStateException.
+   */ 
+  public  boolean 
+  isLightweight() 
+  {
+    return pIsLightweight; 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -249,10 +354,17 @@ class NodeDetails
    * 
    * @return
    *   The node state or <CODE>null</CODE> if the node state is undefined.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */
   public OverallNodeState
   getOverallNodeState() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pOverallNodeState;
   }
   
@@ -261,10 +373,17 @@ class NodeDetails
    * 
    * @return
    *   The queue state or <CODE>null</CODE> if the queue state is undefined.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */
   public OverallQueueState
   getOverallQueueState() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pOverallQueueState;
   }
 
@@ -303,10 +422,17 @@ class NodeDetails
 
   /**
    * Get the set of file sequences for which file state information is defined.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */ 
   public Set<FileSeq>
   getFileStateSequences() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return Collections.unmodifiableSet(pFileStates.keySet());
   }
   
@@ -315,6 +441,10 @@ class NodeDetails
    *
    * @param fseq
    *   The file sequences to lookup.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */ 
   public FileState[]
   getFileState
@@ -322,44 +452,75 @@ class NodeDetails
    FileSeq fseq
   ) 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pFileStates.get(fseq);
   }
 
   /**
    * Get the newest timestamp which needs to be considered when computing wheter each file 
    * index is {@link QueueState#Stale Stale}. 
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */ 
   public long[] 
   getFileTimeStamps() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pFileTimeStamps;
   }
 
   /**
    * Whether the timestamps returned by {@link #getFileTimeStamps getFileTimeStamps} should 
    * be ignored when computing whether each file index is {@link QueueState#Stale Stale}.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */ 
   public boolean[] 
   ignoreTimeStamps() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pIgnoreTimeStamps;
   }
 
   /**
    * Get the unique job identifiers associated with the file sequences.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */ 
   public Long[]
   getJobIDs() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pJobIDs; 
   }
 
   /**
    * Get the queue states associated with the file sequences.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
    */ 
   public QueueState[]
   getQueueState() 
   {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
     return pQueueStates;
   }
 
@@ -407,16 +568,19 @@ class NodeDetails
     if(!pVersionIDs.isEmpty()) 
       encoder.encode("VersionIDs", pVersionIDs);
 
-    encoder.encode("OverallNodeState", pOverallNodeState);
-    encoder.encode("OverallQueueState", pOverallQueueState);
     encoder.encode("VersionState", pVersionState);
     encoder.encode("PropertyState", pPropertyState);
     encoder.encode("LinkState", pLinkState);
-    encoder.encode("FileStates", pFileStates);
-    encoder.encode("FileTimeStamps", pFileTimeStamps);
-    encoder.encode("IgnoreTimeStamps", pIgnoreTimeStamps);
-    encoder.encode("JobIDs", pJobIDs);
-    encoder.encode("QueueStates", pQueueStates);
+
+    if(!pIsLightweight) {
+      encoder.encode("OverallNodeState", pOverallNodeState);
+      encoder.encode("OverallQueueState", pOverallQueueState);
+      encoder.encode("FileStates", pFileStates);
+      encoder.encode("FileTimeStamps", pFileTimeStamps);
+      encoder.encode("IgnoreTimeStamps", pIgnoreTimeStamps);
+      encoder.encode("JobIDs", pJobIDs);
+      encoder.encode("QueueStates", pQueueStates);
+    }
   }
   
   public void 
@@ -476,19 +640,7 @@ class NodeDetails
   private ArrayList<VersionID>  pVersionIDs;
 
 
-  /** 
-   * A single state computed from the combination of {@link VersionState VersioState}, 
-   * {@link PropertyState PropertyState}, {@link LinkState LinkState} and the individual
-   * {@link FileState FileState} of each file associated with the node.
-   */
-  private OverallNodeState pOverallNodeState;
-  
-  /** 
-   * A single state computed from the combination of the individual 
-   * {@link QueueState QueueState} and {@link FileState FileState} of each file associated 
-   * with the node. 
-   */
-  private OverallQueueState pOverallQueueState;
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The relationship between the revision numbers of working and checked-in versions of 
@@ -507,6 +659,30 @@ class NodeDetails
    * and the latest checked-in version of a node. <P> 
    */   
   private LinkState  pLinkState;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether only lightweight details are available.<P> 
+   * 
+   * In other words, whether all the fields below are undefined.
+   */ 
+  private boolean  pIsLightweight; 
+
+  /** 
+   * A single state computed from the combination of {@link VersionState VersioState}, 
+   * {@link PropertyState PropertyState}, {@link LinkState LinkState} and the individual
+   * {@link FileState FileState} of each file associated with the node.
+   */
+  private OverallNodeState pOverallNodeState;
+  
+  /** 
+   * A single state computed from the combination of the individual 
+   * {@link QueueState QueueState} and {@link FileState FileState} of each file associated 
+   * with the node. 
+   */
+  private OverallQueueState pOverallQueueState;
 
   /** 
    * The relationship between the individual files associated with the working and checked-in 

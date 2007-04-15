@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.55 2007/03/18 02:25:39 jim Exp $
+// $Id: MasterRequest.java,v 1.56 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -536,6 +536,11 @@ enum MasterRequest
    * An instance of {@link NodeStatusReq} is next.
    */
   Status, 
+
+  /**
+   * An instance of {@link NodeMultiStatusReq} is next.
+   */
+  MultiStatus, 
 
 
   /*----------------------------------------------------------------------------------------*/

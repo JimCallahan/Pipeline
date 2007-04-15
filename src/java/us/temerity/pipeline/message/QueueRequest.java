@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.22 2006/12/01 18:33:41 jim Exp $
+// $Id: QueueRequest.java,v 1.23 2007/04/15 10:30:47 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -284,6 +284,27 @@ enum QueueRequest
    * Resume execution of the paused jobs with the given IDs. <P> 
    */
   ResumeJobs, 
+
+
+  /**
+   * Kill and requeue all jobs associated with the given working version.<P> 
+   */
+  PreemptNodeJobs, 
+
+  /**
+   * Kill all jobs associated with the given working version.<P> 
+   */
+  KillNodeJobs, 
+
+  /**
+   * Pause all jobs associated with the given working version.<P> 
+   */
+  PauseNodeJobs, 
+
+  /**
+   * Resume execution of all paused jobs associated with the given working version.<P> 
+   */
+  ResumeNodeJobs, 
 
 
   /**
