@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.10 2007/03/30 23:19:39 jim Exp $
+// $Id: Toolset.java,v 1.11 2007/04/15 10:28:41 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -592,11 +592,15 @@ class Toolset
 
     super.toGlue(encoder);
 
-    encoder.encode("Packages",       pPackages);
-    encoder.encode("PackageHistory", pPackageHistory);
-    encoder.encode("Versions",       pVersionIDs);
-    encoder.encode("Message",        pMessage);
-    encoder.encode("Environment",    pEnvironment);
+    encoder.encode("Packages", pPackages);
+    encoder.encode("Versions", pVersionIDs);
+    encoder.encode("Message",  pMessage);
+
+    if(!pPackageHistory.isEmpty()) 
+      encoder.encode("PackageHistory", pPackageHistory);
+
+    if(!pEnvironment.isEmpty()) 
+      encoder.encode("Environment", pEnvironment);
   }
   
   public void 
@@ -615,9 +619,8 @@ class Toolset
 
     TreeMap<String,LinkedList<Integer>> hist = 
       (TreeMap<String,LinkedList<Integer>>) decoder.decode("PackageHistory");
-    if(hist == null) 
-      throw new GlueException("The \"PackageHistory\" was missing or (null)!");
-    pPackageHistory = hist;
+    if(hist != null) 
+      pPackageHistory = hist;
 
     ArrayList<VersionID> versions = (ArrayList<VersionID>) decoder.decode("Versions");
     if(versions == null) 
@@ -630,9 +633,8 @@ class Toolset
     pMessage = msg;    
 
     TreeMap<String,String> env = (TreeMap<String,String>) decoder.decode("Environment");
-    if(env == null) 
-      throw new GlueException("The \"Environment\" was missing or (null)!");
-    pEnvironment = env;
+    if(env != null) 
+      pEnvironment = env;
 
     pHasModifiable = false;
     pConflicts     = new TreeMap<String,LinkedList<Integer>>();
