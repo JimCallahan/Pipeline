@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.12 2007/04/15 13:37:11 jim Exp $
+// $Id: PanelUpdater.java,v 1.13 2007/04/17 20:11:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -375,13 +375,17 @@ class PanelUpdater
               }
 
               master.updatePanelOp(pGroupID, "Updating Node Status...");
-              LinkedList<NodeStatus> results = mclient.status(pAuthor, pView, all); 
+              TreeMap<String,NodeStatus> results = mclient.status(pAuthor, pView, all); 
               pNodeStatusModified = true;
 
-              for(NodeStatus status : results) {
-                String name = status.getName();
-                if(roots.contains(name))
-                  pNodeViewerRoots.put(name, status);
+              for(String name : results.keySet()) {
+                if(roots.contains(name)) {
+                  NodeStatus status = results.get(name);
+                  if(status != null) 
+                    pNodeViewerRoots.put(name, status);
+                  else 
+                    pNodeViewerRoots.remove(name);
+                }
               }
             }
 

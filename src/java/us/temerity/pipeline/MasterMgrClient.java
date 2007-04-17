@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.95 2007/04/15 10:30:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.96 2007/04/17 20:11:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4223,11 +4223,18 @@ class MasterMgrClient
    * details. See the {@link NodeDetails} class for more information about the information
    * available for each mode.<P> 
    * 
-   * This method returns a {@link NodeStatus} instance for each of the given root nodes.  
-   * A <CODE>NodeStatus</CODE> can be used access the status of all nodes (both upstream 
-   * and downstream) linked to the given node.  The status information for the upstream 
-   * nodes will also include detailed state and version information accessable by calling 
-   * the {@link NodeStatus#getDetails NodeStatus.getDetails} method.<P> 
+   * This method returns a table containing {@link NodeStatus} instances for each of the 
+   * given root nodes indexed by their fully resolved node names.  If status for a root
+   * node is requested and the node does not exist, then the entry in this table for the 
+   * missing node will be <CODE>null</CODE>.  To enable partial completion of this method
+   * when specified both existing and missing root nodes, a PipelineException will not be
+   * thrown in the limited case of one or more root nodes not existing. <P> 
+   * 
+   * In not <CODE>null</CODE>, the <CODE>NodeStatus</CODE> for each root node can be used 
+   * access the status of all nodes (both upstream and downstream) linked to the node.  The 
+   * status information for the upstream nodes will also include detailed state and version 
+   * information accessable by calling the {@link NodeStatus#getDetails 
+   * NodeStatus.getDetails} method.<P> 
    * 
    * Note that when computing node status where the given root nodes share a large percentage
    * of thier upstream nodes, this method will be much more efficient than calling the single
@@ -4246,10 +4253,14 @@ class MasterMgrClient
    *   Whether to get only lightweight (true) or heavyweight (false) node status detail 
    *   information indexed by the fully resolved named of the root nodes.
    * 
+   * @return 
+   *   The node status for each of the root nodes indexed by the root nodes fully resolved
+   *   node name.  This table contain <CODE>null</CODE> values (see above).
+   * 
    * @throws PipelineException
    *   If unable to determine the status of the node.
    */ 
-  public synchronized LinkedList<NodeStatus> 
+  public synchronized TreeMap<String,NodeStatus> 
   status
   ( 
    String author, 

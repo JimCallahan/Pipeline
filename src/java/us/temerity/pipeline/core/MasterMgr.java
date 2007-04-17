@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.198 2007/04/15 10:30:44 jim Exp $
+// $Id: MasterMgr.java,v 1.199 2007/04/17 20:11:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7617,28 +7617,77 @@ class MasterMgr
       String author = req.getAuthor();
       String view   = req.getView();
 
+      TreeMap<String,NodeStatus> results = new TreeMap<String,NodeStatus>();
+
+      /* filter out missing root nodes */ 
       TreeMap<String,Boolean> roots = req.getRoots();
+      {
+        TreeSet<String> dead = new TreeSet<String>(); 
+        for(String name : roots.keySet()) {
+          boolean found = false;
 
-      HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
-      LinkedList<NodeStatus> results = new LinkedList<NodeStatus>();
+          NodeID nodeID = new NodeID(author, view, name); 
+          timer.aquire();
+          ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+          workingLock.readLock().lock();
+          ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+          checkedInLock.readLock().lock();
+          try {
+            timer.resume();	
+              
+            try {
+              getWorkingBundle(nodeID);
+              found = true;
+            }
+            catch(PipelineException ex) {
+            }
 
-      /* do heavyweight status roots first */ 
-      for(String name : roots.keySet()) {
-        Boolean lightweight = roots.get(name);
-        if((lightweight != null) && !lightweight) {
-          NodeID nodeID = new NodeID(author, view, name);
-          NodeStatus status = performNodeOperation(new NodeOp(), nodeID, cache, timer);
-          results.add(status);
+            if(!found) {
+              try {
+                getCheckedInBundles(name);
+                found = true;
+              }
+              catch(PipelineException ex) {
+              }
+            }
+          }
+          finally {
+            checkedInLock.readLock().unlock();  
+            workingLock.readLock().unlock();
+          }
+
+          if(!found) 
+            dead.add(name);
+        }
+        
+        for(String name : dead) {
+          roots.remove(name);
+          results.put(name, null);
         }
       }
 
-      /* then add lightweight status roots */ 
-      for(String name : roots.keySet()) {
-        Boolean lightweight = roots.get(name);
-        if((lightweight != null) && lightweight) {
-          NodeID nodeID = new NodeID(author, view, name);
-          NodeStatus status = performNodeOperation(null, nodeID, cache, timer);
-          results.add(status);          
+      /* compute the node status */ 
+      {
+        HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
+
+        /* do heavyweight status roots first */ 
+        for(String name : roots.keySet()) {
+          Boolean lightweight = roots.get(name);
+          if((lightweight != null) && !lightweight) {
+            NodeID nodeID = new NodeID(author, view, name);
+            NodeStatus status = performNodeOperation(new NodeOp(), nodeID, cache, timer);
+            results.put(name, status);
+          }
+        }
+
+        /* then add lightweight status roots */ 
+        for(String name : roots.keySet()) {
+          Boolean lightweight = roots.get(name);
+          if((lightweight != null) && lightweight) {
+            NodeID nodeID = new NodeID(author, view, name);
+            NodeStatus status = performNodeOperation(null, nodeID, cache, timer);
+            results.put(name, status);          
+          }
         }
       }
 

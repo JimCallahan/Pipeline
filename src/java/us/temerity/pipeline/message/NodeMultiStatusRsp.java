@@ -1,4 +1,4 @@
-// $Id: NodeMultiStatusRsp.java,v 1.1 2007/04/15 20:27:07 jim Exp $
+// $Id: NodeMultiStatusRsp.java,v 1.2 2007/04/17 20:11:44 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,7 +36,7 @@ class NodeMultiStatusRsp
   NodeMultiStatusRsp
   (
    TaskTimer timer, 
-   LinkedList<NodeStatus> status
+   TreeMap<String,NodeStatus> status
   )
   { 
     super(timer);
@@ -61,7 +61,7 @@ class NodeMultiStatusRsp
   /**
    * Gets the status of the node roots.
    */
-  public LinkedList<NodeStatus>
+  public TreeMap<String,NodeStatus> 
   getNodeStatus() 
   {
     return pNodeStatus;
@@ -84,7 +84,7 @@ class NodeMultiStatusRsp
   /**
    * The status of the node roots.
    */
-  private LinkedList<NodeStatus>  pNodeStatus;
+  private TreeMap<String,NodeStatus>  pNodeStatus;
 
 }
   
