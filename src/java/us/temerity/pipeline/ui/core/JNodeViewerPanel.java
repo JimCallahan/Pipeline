@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.80 2007/04/20 18:23:28 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.81 2007/04/20 19:55:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1578,7 +1578,7 @@ class JNodeViewerPanel
           /* layout downstream nodes */ 
           Point2d dpos = null;
           BBox2d dbox = null;
-	  if(pShowDownstream) {
+	  if(pShowDownstream && status.hasTargets()) {
             ArrayList<ViewerNode> lowest = new ArrayList<ViewerNode>();
             TreeMap<NodePath,ViewerNode> above = new TreeMap<NodePath,ViewerNode>();
 	    TreeSet<String> seen = new TreeSet<String>();
@@ -1592,7 +1592,7 @@ class JNodeViewerPanel
           /* shift the upstream and downstream nodes to their final position */ 
           if(pHorizontalOrientation) {
             double span = 0.0;
-            if(pShowDownstream) {
+            if(pShowDownstream && status.hasTargets()) {
               Point2d dleft = new Point2d(dbox.getMin().x(), dpos.y());
               Vector2d delta = new Vector2d(dleft, origin);
               shiftBranch(true, false, status, path, delta);
@@ -1613,7 +1613,7 @@ class JNodeViewerPanel
           }
           else {
             double span = 0.0;
-            if(pShowDownstream) {
+            if(pShowDownstream && status.hasTargets()) {
               double shiftY = upos.y() - dpos.y();
 
               double uminY = ubox.getMin().y();
@@ -1645,7 +1645,7 @@ class JNodeViewerPanel
         }
       }
 
-      /* shift entire layout */ 
+      /* shift all nodes to minimize the transition between the previous and current layuot */
       {
  	Vector2d delta = null;
 
