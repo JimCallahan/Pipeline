@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -787,6 +787,10 @@ class GenUserPrefsApp
     }
 
     {
+      LinkedList<String> orient = new LinkedList<String>();
+      orient.add("Horizontal");
+      orient.add("Vertical");
+
       LinkedList<String> styles = new LinkedList();
       styles.add("Scales with Nodes");
       styles.add("Fixed Size");
@@ -805,6 +809,10 @@ class GenUserPrefsApp
 	 "HeavyweightUpdates", "Heavyweight Updates:", false), 
 
 	new BasePref(),
+
+	new ChoicePref
+	("The initial orientation and alignment of the displayed node trees.", 
+	 "Orientation", "Default Orientation:", orient, "Horizontal"),
 
 	new BooleanPref
 	("Whether to initially show downstream links by default.",
@@ -963,6 +971,11 @@ class GenUserPrefsApp
 	 "NodeViewerShowHideActionHint", "Show/Hide Action Hint:"), 
 
 	new BasePref(),
+
+	new HotKeyPref
+	("Toggle the node tree orientation between Horizontal and Vertical.",
+	 "ToggleOrientation", "Toggle Orientation:", 
+	 false, false, false, 79),  /* O */
 
 	new HotKeyPref
 	("Show/hide nodes downstream of the focus node.",
@@ -1465,8 +1478,8 @@ class GenUserPrefsApp
 
       BasePref prefs[] = {
 	new ChoicePref
-	("The orientation of job group layout.", 
-	 "JobViewerOrientation", "Orientation:", orient, "Horizontal"),
+	("The initial orientation of job group layout.", 
+	 "JobViewerOrientation", "Default Orientation:", orient, "Horizontal"),
 	
 	new BoundedDoublePref
 	("The distance between job groups.",
@@ -1550,6 +1563,11 @@ class GenUserPrefsApp
 	("Expand the first 9 levels of jobs.",
 	 "JobViewerExpand9Levels", "Expand 9 Levels:", "Expand9Levels"), 
 	
+	new BasePref(),
+
+	new DuplicateHotKeyPref
+	("Toggle the job group orientation between Horizontal and Vertical.",
+	 "JobViewerToggleOrientation", "Toggle Orientation:", "ToggleOrientation"), 
       };
 
       pPrefs.put("Panels|Job Viewer|Hot Keys", prefs);
@@ -1981,6 +1999,7 @@ class GenUserPrefsApp
 	camera.add("Expand7Levels");	
 	camera.add("Expand8Levels");	
 	camera.add("Expand9Levels");	
+        camera.add("ToggleOrientation");
       }
       
       String details      = "Details";
@@ -2296,7 +2315,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2553,7 +2572,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3910,7 +3929,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.47 2007/04/15 13:37:11 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

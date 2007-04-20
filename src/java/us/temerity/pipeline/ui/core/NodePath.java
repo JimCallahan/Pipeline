@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.3 2006/11/22 09:08:01 jim Exp $
+// $Id: NodePath.java,v 1.4 2007/04/20 18:07:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -94,6 +94,41 @@ class NodePath
     buildCache();
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /** 
+   * Whether the given path is a sibling of this path.<P> 
+   * 
+   * In other words, whether they share all but the last node in the path.
+   */
+  public boolean
+  isSibling
+  (
+   NodePath path
+  ) 
+  {
+    ArrayList<String> onames = new ArrayList<String>(path.getNames());
+    if(onames.size() != pNames.size()) 
+      return false;
+
+    int idx = 0;
+    for(String name : pNames) {
+      if(idx == onames.size()-1) 
+        break;
+
+      if(!name.equals(onames.get(idx)))
+        return false;
+      
+      idx++;
+    }
+
+    return true;
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

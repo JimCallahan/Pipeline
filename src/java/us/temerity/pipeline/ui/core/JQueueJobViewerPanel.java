@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.38 2007/03/29 19:45:50 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.39 2007/04/20 18:07:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,6 +67,8 @@ class JQueueJobViewerPanel
   {  
     super.initUI(128.0, true);
 
+    UserPrefs prefs = UserPrefs.getInstance();
+
     /* initialize fields */ 
     {
       pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
@@ -77,6 +79,9 @@ class JQueueJobViewerPanel
 
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
       pSelected       = new HashMap<JobPath,ViewerJob>();
+
+      pHorizontalOrientation = 
+        ((prefs.getOrientation() != null) && prefs.getOrientation().equals("Horizontal"));
     }
 
     /* panel popup menu */ 
@@ -128,6 +133,12 @@ class JQueueJobViewerPanel
 
       pPanelPopup.addSeparator();
       
+      item = new JMenuItem("Toggle Orientation");
+      pToggleOrientationItem = item;
+      item.setActionCommand("toggle-orientation");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
       item = new JMenuItem("Hide All Groups");
       pHideAllItem = item;
       item.setActionCommand("hide-all");
@@ -619,6 +630,9 @@ class JQueueJobViewerPanel
       (pCollapseAllItem, prefs.getCollapseAll(), 
        "Collapse all jobs.");
     updateMenuToolTip
+      (pToggleOrientationItem, prefs.getToggleOrientation(), 
+       "Toggle the job group orientation between Horizontal and Vertical.");
+    updateMenuToolTip
       (pHideAllItem, prefs.getHideAll(), 
        "Hide all of the job groups.");
 
@@ -709,7 +723,6 @@ class JQueueJobViewerPanel
     pViewerJobs.clear();
 
     UserPrefs prefs = UserPrefs.getInstance();
-    boolean horzLayout = prefs.getJobViewerOrientation().equals("Horizontal");
     if(!pJobGroups.isEmpty()) {
       Point2d ganchor = new Point2d();
       for(QueueJobGroup group : pJobGroups.values()) {
@@ -751,7 +764,7 @@ class JQueueJobViewerPanel
 	    bbox.grow(vjob.getFullBounds()); 
 	  }
 
-	  if(horzLayout) 
+	  if(pHorizontalOrientation) 
 	    ganchor.x(bbox.getMax().x() + prefs.getJobGroupSpace());
 	  else 
 	    ganchor.y(bbox.getMin().y() - 0.45 - prefs.getJobGroupSpace());
@@ -1751,10 +1764,6 @@ class JQueueJobViewerPanel
 	      prefs.getExpandAll().wasPressed(e))
 	doExpandAll();
 
-      else if((prefs.getHideAll() != null) &&
-	      prefs.getHideAll().wasPressed(e))
-	doHideAll();
-
       else if((prefs.getExpand1Level() != null) &&
 	      prefs.getExpand1Level().wasPressed(e))
 	doExpandDepth(1);
@@ -1782,6 +1791,13 @@ class JQueueJobViewerPanel
       else if((prefs.getExpand9Levels() != null) &&
 	      prefs.getExpand9Levels().wasPressed(e))
 	doExpandDepth(9);      
+
+      else if((prefs.getToggleOrientation() != null) &&
+              prefs.getToggleOrientation().wasPressed(e))
+	doToggleOrientation();     
+      else if((prefs.getHideAll() != null) &&
+	      prefs.getHideAll().wasPressed(e))
+	doHideAll();
 
       else
 	undefined = true;
@@ -1869,6 +1885,8 @@ class JQueueJobViewerPanel
       doExpandAll();
     else if(cmd.equals("collapse-all"))
       doCollapseAll();
+    else if(cmd.equals("toggle-orientation"))
+      doToggleOrientation();
     else if(cmd.equals("hide-all"))
       doHideAll();
 
@@ -2014,6 +2032,17 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Toggle the job group orientation between Horizontal and Vertical.
+   */ 
+  private synchronized void
+  doToggleOrientation() 
+  {
+    clearSelection();
+    pHorizontalOrientation = !pHorizontalOrientation;
+    updateUniverse();
+  }
 
   /**
    * Update the job details panels with the current primary selected job status.
@@ -2421,7 +2450,42 @@ class JQueueJobViewerPanel
     refresh(); 
   }
 
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public synchronized void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+
+    encoder.encode("HorizontalOrientation", pHorizontalOrientation);
+  }
+
+  public synchronized void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    /* whether to orient and align job groups horizontally */    
+    {
+      Boolean horz = (Boolean) decoder.decode("HorizontalOrientation");
+      if(horz != null) 
+	pHorizontalOrientation = horz; 
+    }
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -2902,6 +2966,11 @@ class JQueueJobViewerPanel
   private TreeMap<Long,JobStatus>  pJobStatus;
 
   /**
+   * Whether to orient and align job groups horizontally (true) or vertically (false).
+   */ 
+  private boolean pHorizontalOrientation; 
+
+  /**
    * The toolset used to build the editor menu.
    */ 
   private String  pEditorMenuToolset;
@@ -2965,7 +3034,8 @@ class JQueueJobViewerPanel
   private JMenuItem  pAutomaticExpandItem;
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;
-  private JMenuItem  pHideAllItem;
+  private JMenuItem  pHideAllItem; 
+  private JMenuItem  pToggleOrientationItem;
 
   /**
    * The job popup menu.

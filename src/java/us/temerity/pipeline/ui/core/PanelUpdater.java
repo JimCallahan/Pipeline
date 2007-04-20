@@ -1,8 +1,10 @@
-// $Id: PanelUpdater.java,v 1.13 2007/04/17 20:11:44 jim Exp $
+// $Id: PanelUpdater.java,v 1.14 2007/04/20 18:07:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
 
 import java.awt.*;
 import java.util.*;

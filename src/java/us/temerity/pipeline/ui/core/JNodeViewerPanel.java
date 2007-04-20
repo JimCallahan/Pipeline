@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.78 2007/04/15 13:37:11 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.79 2007/04/20 18:07:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -75,8 +75,11 @@ class JNodeViewerPanel
     {
       pRoots = new TreeMap<String,NodeStatus>();
 
-      pShowDetailHints = prefs.getShowDetailHints();
+      pHorizontalOrientation = 
+        ((prefs.getOrientation() != null) && prefs.getOrientation().equals("Horizontal"));
+
       pShowDownstream  = prefs.getShowDownstream();
+      pShowDetailHints = prefs.getShowDetailHints();
 
       pViewerNodeHint = 
 	new ViewerNodeHint(this, 
@@ -159,6 +162,12 @@ class JNodeViewerPanel
       pPanelPopup.add(item);  
 
       pPanelPopup.addSeparator();
+
+      item = new JMenuItem("Toggle Orientation");
+      pToggleOrientationItem = item;
+      item.setActionCommand("toggle-orientation");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
 
       item = new JMenuItem();
       pShowHideDownstreamItem = item;
@@ -976,6 +985,9 @@ class JNodeViewerPanel
        "Collapse all nodes.");
 
     updateMenuToolTip
+      (pToggleOrientationItem, prefs.getToggleOrientation(), 
+       "Toggle the node tree orientation between Horizontal and Vertical.");
+    updateMenuToolTip
       (pShowHideDownstreamItem, prefs.getNodeViewerShowHideDownstreamNodes(), 
        "Show/hide nodes downstream of the focus node.");
     updateMenuToolTip
@@ -1522,6 +1534,8 @@ class JNodeViewerPanel
   private synchronized void 
   updateUniverse() 
   { 
+    UserPrefs prefs = UserPrefs.getInstance();
+
     /* get current user privileges */ 
     updatePrivileges();
 
@@ -1540,81 +1554,146 @@ class JNodeViewerPanel
 
     /* rebuild the viewer nodes and links */ 
     if(!pRoots.isEmpty()) {
-      double anchorHeight = 0.0;
+      Point2d origin = new Point2d();
       for(String name : pRoots.keySet()) {
 	NodeStatus status = pRoots.get(name);
 	if(status != null) {
 	  NodePath path = new NodePath(name);
-	  Point2d anchor = new Point2d(0.0, anchorHeight);
-	  
-	  /* layout the upstream nodes */ 
-	  double uheight = 0.0;
+	  Point2d anchor = new Point2d(0.0, 0.0); 
+
+	  /* layout upstream nodes */ 
+          Point2d upos = null;
+          BBox2d ubox = null;
 	  {
+            ArrayList<ViewerNode> lowest = new ArrayList<ViewerNode>();
+            TreeMap<NodePath,ViewerNode> above = new TreeMap<NodePath,ViewerNode>();
 	    TreeSet<String> seen = new TreeSet<String>();
-	    uheight = layoutNodes(true, true, status, path, anchor, seen);
+
+            upos = layoutNodes(true, true, status, path, anchor, lowest, above, seen);
+
+            ubox = new BBox2d(upos, upos);
+            computeLayoutBounds(true, true, status, path, ubox);
+
+//             System.out.print
+//               ("   Upstrem Root = " + upos + "\n" +
+//                "Upstream Bounds = " + ubox + "\n\n"); 
 	  }
 	  
-	  /* layout the downstream nodes */ 
-	  double dheight = 0.0;  
+          /* layout downstream nodes */ 
+          Point2d dpos = null;
+          BBox2d dbox = null;
 	  if(pShowDownstream) {
+            ArrayList<ViewerNode> lowest = new ArrayList<ViewerNode>();
+            TreeMap<NodePath,ViewerNode> above = new TreeMap<NodePath,ViewerNode>();
 	    TreeSet<String> seen = new TreeSet<String>();
-	    dheight = layoutNodes(true, false, status, path, anchor, seen);
-	  }
-	  
-	  /* shift the upstream/downstream nodes so that they line up vertically */ 
-	  if(uheight > dheight) {
-	    shiftUpstreamNodes(true, status, path, 
-			       anchorHeight + dheight*0.5, (dheight - uheight)*0.5);
-	  }
-	  else {
-	    shiftUpstreamNodes(true, status, path, anchorHeight + uheight*0.5, 0.0);
-	    if(pShowDownstream) 
-	      shiftDownstreamNodes(true, status, path, (uheight - dheight)*0.5);
-	  }
-	
-	  anchorHeight += Math.min(uheight, dheight);
-	}
+
+            dpos = layoutNodes(true, false, status, path, anchor, lowest, above, seen);
+
+            dbox = new BBox2d(dpos, dpos);
+            computeLayoutBounds(true, false, status, path, dbox);
+
+//             System.out.print
+//               ("   Downstrem Root = " + dpos + "\n" +
+//                "Downstream Bounds = " + dbox + "\n\n"); 
+          }
+            
+          /* shift the upstream and downstream nodes to their final position */ 
+          if(pHorizontalOrientation) {
+            double span = 0.0;
+            if(pShowDownstream) {
+              Point2d dleft = new Point2d(dbox.getMin().x(), dpos.y());
+              Vector2d delta = new Vector2d(dleft, origin);
+              shiftBranch(true, false, status, path, delta);
+
+              delta.add(new Vector2d(0.0, dpos.y() - upos.y()));
+              shiftBranch(true, true, status, path, delta);
+              
+              span = dbox.getRange().x() + ubox.getRange().x() + 1.5*prefs.getNodeSpaceX();
+            }
+            else {
+              Vector2d delta = new Vector2d(upos, origin);
+              shiftBranch(true, true, status, path, delta);
+
+              span = ubox.getRange().x() + 1.5*prefs.getNodeSpaceX();
+            }
+
+            origin.add(new Vector2d(span, 0.0));
+          }
+          else {
+            double span = 0.0;
+            if(pShowDownstream) {
+              double shiftY = upos.y() - dpos.y();
+
+              double uminY = ubox.getMin().y();
+              double umaxY = ubox.getMax().y();
+              
+              double dminY = dbox.getMin().y() + shiftY;
+              double dmaxY = dbox.getMax().y() + shiftY;
+
+              double minY = Math.min(uminY, dminY);              
+              double maxY = Math.max(umaxY, dmaxY);
+              
+              Vector2d delta = new Vector2d(new Point2d(upos.x(), maxY), origin);
+              shiftBranch(true, true, status, path, delta);
+
+              delta.add(new Vector2d(0.0, shiftY));
+              shiftBranch(true, false, status, path, delta);
+
+              span = (maxY - minY) + 1.5*prefs.getNodeSpaceY();
+            }
+            else {
+              Vector2d delta = new Vector2d(new Point2d(upos.x(), ubox.getMax().y()), origin);
+              shiftBranch(true, true, status, path, delta);
+              
+              span = ubox.getRange().y() + 1.5*prefs.getNodeSpaceY();
+            }
+
+            origin.add(new Vector2d(0.0, -span));
+          }
+        }
+
+//         System.out.print("Origin = " + origin + "\n\n"); 
       }
 
       /* shift entire layout */ 
       {
-	Vector2d delta = null;
+ 	Vector2d delta = null;
 
-	/* shift all active nodes so that the pinned node remains stationary */ 
-	if(pPinnedPath != null) {
-	  ViewerNode vnode = pViewerNodes.get(pPinnedPath);
-	  if(vnode != null) 
-	    delta = new Vector2d(vnode.getPosition(), pPinnedPos);
-	}
+ 	/* shift all active nodes so that the pinned node remains stationary */ 
+ 	if(pPinnedPath != null) {
+ 	  ViewerNode vnode = pViewerNodes.get(pPinnedPath);
+ 	  if(vnode != null) 
+ 	    delta = new Vector2d(vnode.getPosition(), pPinnedPos);
+ 	}
 
-	/* shift all active nodes so that center of the new layout is the same as the 
-	     center of the previous layout */ 
-	else if(pPinnedPos != null) {
-	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
-	  if(bbox != null) 
-	    delta = new Vector2d(bbox.getCenter(), pPinnedPos);
-	}
+ 	/* shift all active nodes so that center of the new layout is the same as the 
+ 	     center of the previous layout */ 
+ 	else if(pPinnedPos != null) {
+ 	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
+ 	  if(bbox != null) 
+ 	    delta = new Vector2d(bbox.getCenter(), pPinnedPos);
+ 	}
 
-	/* this is the first layout, shift all nodes so that they lie in the same position
-	     they did when the layout was saved */ 
-	else if(pInitialCenter != null) {
-	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
-	  if(bbox != null) 
-	    delta = new Vector2d(bbox.getCenter(), pInitialCenter);
-	  else 
-	    delta = new Vector2d(0.0, 0.0);
-	  pInitialCenter = null;
-	}
-
-	if(delta != null) {
-	  for(ViewerNode vnode : pViewerNodes.values()) 
-	    vnode.movePosition(delta);
-	}
-
-	pPinnedPos  = null;
-	pPinnedPath = null;
+ 	/* this is the first layout, shift all nodes so that they lie in the same position
+           they did when the layout was saved */ 
+ 	else if(pInitialCenter != null) {
+ 	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
+ 	  if(bbox != null) 
+ 	    delta = new Vector2d(bbox.getCenter(), pInitialCenter);
+ 	  else 
+ 	    delta = new Vector2d(0.0, 0.0);
+ 	  pInitialCenter = null;
+ 	}
+        
+ 	if(delta != null) {
+ 	  for(ViewerNode vnode : pViewerNodes.values()) 
+ 	    vnode.movePosition(delta);
+ 	}
+        
+        pPinnedPos  = null;
+        pPinnedPath = null;
       }
-   
+      
       /* preserve the current layout */ 
       pExpandDepth  = null; 
       pLayoutPolicy = LayoutPolicy.Preserve;
@@ -1625,10 +1704,9 @@ class JNodeViewerPanel
   }
   
   /**
-   * Recursively layout the nodes.
    * 
    * @param isRoot
-   *   Is this the root node?
+   *   Whether current node is the root node.
    * 
    * @param upstream
    *   Whether to traverse the nodes in an upstream direction (or downstream).
@@ -1642,136 +1720,217 @@ class JNodeViewerPanel
    * @param anchor
    *   The upper-left corner of the layout area for the current node.
    * 
+   * @param lowest
+   *   The current lowest node in each layout column.
+   * 
+   * @param above
+   *   The viewer node in the layout column above the node specified by node path. 
+   * 
    * @param seen
    *   The fully resolved node names of processed nodes.
    * 
-   * @return 
-   *   The height of the layout area of the viewer node including its children.
+   * @return
+   *   The final position of the current node.
    */ 
-   private synchronized double
-   layoutNodes
-   (
-    boolean isRoot, 
-    boolean upstream,
-    NodeStatus status, 
-    NodePath path, 
-    Point2d anchor, 
-    TreeSet<String> seen
-   ) 
-   {
-     UserPrefs prefs = UserPrefs.getInstance();
+  private synchronized Point2d
+  layoutNodes
+  (
+   boolean isRoot, 
+   boolean upstream,
+   NodeStatus status, 
+   NodePath path, 
+   Point2d anchor, 
+   ArrayList<ViewerNode> lowest, 
+   TreeMap<NodePath,ViewerNode> above, 
+   TreeSet<String> seen
+  ) 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    
+    /* create a new viewer node */ 
+    ViewerNode vnode = null;
+    if(!isRoot || upstream) {
+      vnode = new ViewerNode(status, path);
+      pViewerNodes.put(path, vnode);
+    }
+    else {
+      vnode = pViewerNodes.get(path);
+      assert(vnode != null);
+    }
+    
+    /* set the collapsed state of the node */ 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if((upstream && status.hasSources()) || 
+         (!upstream && status.hasTargets() && !isRoot)) {
+        
+        if(pExpandDepth != null) {
+          boolean collapsed = (path.getNumNodes() >= pExpandDepth);
+          vnode.setCollapsed(collapsed); 
+          master.setNodeCollapsed(path.toString(), collapsed);
+        }
+        else {
+          switch(pLayoutPolicy) {
+          case Preserve:
+            vnode.setCollapsed(master.wasNodeCollapsed(path.toString()));
+            break;
+            
+          case AutomaticExpand:
+            {
+              boolean collapsed = seen.contains(status.getName());
+              vnode.setCollapsed(collapsed);
+              master.setNodeCollapsed(path.toString(), collapsed);
+            }
+            break;
+            
+          case CollapseAll:
+            vnode.setCollapsed(true);
+            master.setNodeCollapsed(path.toString(), true);
+            break;
+            
+          case ExpandAll:
+            master.setNodeCollapsed(path.toString(), false);	   
+          }
+        }
+      }
+      
+      seen.add(status.getName());
+    }
+    
+    /* initialize the lowest node in column (if not existing already) */
+    if(lowest.size() < path.getNumNodes())
+      lowest.add(null);
 
-     ViewerNode vnode = null;
-     if(!isRoot || upstream) {
-       vnode = new ViewerNode(status, path);
-       pViewerNodes.put(path, vnode);
-     }
-     else {
-       vnode = pViewerNodes.get(path);
-       assert(vnode != null);
-     }
+    /* set the above node (ok if null) */ 
+    above.put(path, lowest.get(path.getNumNodes()-1));
+    
+    /* determine if there are any child nodes to process */ 
+    ArrayList<NodeStatus> children = null; 
+    if(!vnode.isCollapsed()) {
+      if(upstream && status.hasSources())
+        children = new ArrayList<NodeStatus>(status.getSources());
+      else if(!upstream && status.hasTargets()) 
+        children = new ArrayList<NodeStatus>(status.getTargets());
+    }
+     
+    /* final position of this node */ 
+    Point2d finalPos = anchor;
 
-     /* set the collapsed state of the node */ 
-     UIMaster master = UIMaster.getInstance();
-     if((upstream && status.hasSources()) || 
-	(!upstream && status.hasTargets() && !isRoot)) {
+    /* if this node is a leaf or a collapsed node, 
+         just place the node at its initial unpacked position */ 
+    if((children == null) || children.isEmpty()) {
+      vnode.setPosition(anchor);
+    }
+    
+    /* handle placing and packing the branch */ 
+    else {
+      /* shift in X-position for children */ 
+      double deltaX  = (upstream ? 1.0 : -1.0) * prefs.getNodeSpaceX(); 
+      double currentY = anchor.y();
+      Double minY = null;
+      Double maxY = null;
 
-       if(pExpandDepth != null) {
-	 boolean collapsed = (path.getNumNodes() >= pExpandDepth);
-	 vnode.setCollapsed(collapsed); 
-	 master.setNodeCollapsed(path.toString(), collapsed);
-       }
-       else {
-	 switch(pLayoutPolicy) {
-	 case Preserve:
-	   vnode.setCollapsed(master.wasNodeCollapsed(path.toString()));
-	   break;
-	   
-	 case AutomaticExpand:
-	   {
-	     boolean collapsed = seen.contains(status.getName());
-	     vnode.setCollapsed(collapsed);
-	     master.setNodeCollapsed(path.toString(), collapsed);
-	   }
-	   break;
-	 
-	 case CollapseAll:
-	   vnode.setCollapsed(true);
-	   master.setNodeCollapsed(path.toString(), true);
-	   break;
-	   
-	 case ExpandAll:
-	   master.setNodeCollapsed(path.toString(), false);	   
-	 }
-       }
-     }
-       
-     seen.add(status.getName());
+      /* first layout the children... */
+      for(NodeStatus cstatus : children) {
+        NodePath cpath = new NodePath(path, cstatus.getName());
+        
+        /* place the child node and all of its children */ 
+        Point2d canchor = new Point2d(anchor.x() + deltaX, currentY); 
+        layoutNodes(false, upstream, cstatus, cpath, canchor, lowest, above, seen);
 
-     double height = 0.0;
-     if(vnode.isCollapsed() && !(isRoot && !upstream)) {
-       height = -prefs.getNodeSpaceY();
-     }
-     else {      
-       Collection<NodeStatus> children = null;
-       if(upstream && status.hasSources())
- 	children = status.getSources();
-       else if(!upstream && status.hasTargets()) 
- 	children = status.getTargets();
+        /* set currentY to lowest of existing nodes */ 
+        for(ViewerNode cnode : lowest) {
+          if(cnode != null) 
+            currentY = Math.min(currentY, cnode.getPosition().y());
+        }
 
-       if(children != null) {
- 	for(NodeStatus cstatus : children) {
- 	  NodePath cpath = new NodePath(path, cstatus.getName());
-	  
- 	  /* layout the child node */ 
- 	  {
- 	    double sign = upstream ? 1.0 : -1.0;
-	    Point2d canchor = 
-	      Point2d.add(anchor, new Vector2d(sign*prefs.getNodeSpaceX(), height));
- 	    height += layoutNodes(false, upstream, cstatus, cpath, canchor, seen);
- 	  }
+        /* move down for the next sibling */ 
+        currentY -= prefs.getNodeSpaceY();
 
- 	  /* add a link between this node and the child node */ 
- 	  {
-  	    ViewerNode cvnode = pViewerNodes.get(cpath);
-  	    if(upstream) {
-  	      LinkCommon link = null;
-  	      {
-  		NodeDetails details = status.getDetails();
-  		if(details.getWorkingVersion() != null) 
-  		  link = details.getWorkingVersion().getSource(cstatus.getName());
-  		else if(details.getLatestVersion() != null)
-		  link = details.getLatestVersion().getSource(cstatus.getName());
-  	      }
-  	      assert(link != null);	    
-	      
-  	      pViewerLinks.addUpstreamLink(vnode, cvnode, link, 
-					   status.isStaleLink(link.getName()));
-  	    }
-  	    else {
-  	      pViewerLinks.addDownstreamLink(cvnode, vnode);
-  	    }				   
-  	  }  
- 	}
-       }
-       else {
- 	height = -prefs.getNodeSpaceY();
-       }
-     }
+        /* lookup the newly created child node */ 
+        ViewerNode cnode = pViewerNodes.get(cpath);
 
-     if(!isRoot) {
-       double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
-       vnode.setPosition(Point2d.add(anchor, new Vector2d(0.0, 0.5*height + offset)));
-     }
+        /* add a link between this node and child node */ 
+        if(upstream) {
+          LinkCommon link = null;
+          {
+            NodeDetails details = status.getDetails();
+            if(details.getWorkingVersion() != null) 
+              link = details.getWorkingVersion().getSource(cstatus.getName());
+            else if(details.getLatestVersion() != null)
+              link = details.getLatestVersion().getSource(cstatus.getName());
+          }
+          assert(link != null);	    
+          
+          pViewerLinks.addUpstreamLink(vnode, cnode, link, 
+                                       status.isStaleLink(link.getName()));
+        }
+        else {
+            pViewerLinks.addDownstreamLink(cnode, vnode);
+        }		
+      
+        /* update the vertical bounds */ 
+        if((minY == null) || (cnode.getPosition().y() < minY))
+          minY = cnode.getPosition().y();
 
-     return height;
-   }
+        if((maxY == null) || (cnode.getPosition().y() > maxY))
+          maxY = cnode.getPosition().y();
+      }
+
+      /* position this node centered vertically relative to its already packed children */
+      finalPos = new Point2d(anchor.x(), (minY + maxY) * 0.5);
+      if(!isRoot || upstream) 
+        vnode.setPosition(finalPos); 
+    }
+
+    /* if the current node has a sibling above, 
+          shift the whole branch rooted at the current node upwards as much as possible */ 
+    if(!isRoot) {  // add preference check here... 
+      ViewerNode anode = above.get(path);     
+      boolean isSibling = (anode != null) && anode.getNodePath().isSibling(path);
+
+//       System.out.print
+//         ("Viewer Node = " + path.getCurrentName() + "\n" + 
+//          " Above Node = "+((anode!=null)?anode.getNodePath().getCurrentName():"NONE")+"\n" + 
+//          " Is Sibling = " + (isSibling ? "YES" : "no") + "\n\n"); 
+      
+      if(isSibling) {
+        /* determine the minimum vertical distance between the top-edge nodes of this 
+             branch and nodes directly above them */ 
+        pBranchGapDepth = 0;
+        Double gap = computeBranchGap(upstream, status, path, above);
+             
+//         if(gap == null) 
+//           System.out.print("UNDEFINED GAP!\n\n"); 
+   
+        /* shift the entire branch up rigidly as much as possible */ 
+        if((gap != null) && (gap > prefs.getNodeSpaceY())) {
+          double shift = gap - prefs.getNodeSpaceY();
+
+//           System.out.print
+//             ("Minimum Gap = " + gap + "\n" +
+//              "   Shifting = " + shift + "\n\n" + 
+//              "-------------------------------------------------------------------------\n\n");
+          
+          Vector2d delta = new Vector2d(0.0, shift);
+          shiftBranch(isRoot, upstream, status, path, delta);
+          if(!isRoot || upstream) 
+            finalPos = finalPos.add(delta); 
+        }
+      }
+    }
+
+    /* this node is now the lowest in the layout column */ 
+    lowest.set(path.getNumNodes()-1, vnode);
+
+    return finalPos;
+  }
   
   /**
-   * Recursively shift the upstream nodes by the given vertical offset.
+   * Recursively determine the maximum vertical shift limited by all top-edge children.
    * 
-   * @param isRoot
-   *   Is this the root node?
+   * @param upstream
+   *   Whether to traverse the nodes in an upstream direction (or downstream).
    * 
    * @param status
    *   The status of the current node. 
@@ -1779,42 +1938,129 @@ class JNodeViewerPanel
    * @param path
    *   The path from the root node to the current node.
    * 
-   * @param ry
-   *   The vertical position of the root node.
+   * @param above
+   *   The viewer node in the layout column above the node specified by node path. 
    * 
-   * @param offset
-   *   The vertical distance to shift all nodes except the root node.
+   * @return 
+   *   The maximum vertical shift possible.
    */ 
-  private synchronized void
-  shiftUpstreamNodes
+  private synchronized Double
+  computeBranchGap
   (
-   boolean isRoot, 
+   boolean upstream,
    NodeStatus status, 
    NodePath path, 
-   double ry, 
-   double offset
+   TreeMap<NodePath,ViewerNode> above   
+  ) 
+  {
+    ViewerNode vnode = pViewerNodes.get(path);
+
+    /* if this node is the first to be encountered for a given layout column (i.e. top-edge), 
+         determine the distance between this node and the node directly above it */ 
+    Double gap = null;
+    if(path.getNumNodes() > pBranchGapDepth) {
+      pBranchGapDepth = path.getNumNodes();
+
+      ViewerNode anode = above.get(path);
+      if(anode != null) {
+        gap = anode.getPosition().y() - vnode.getPosition().y();
+        
+//         System.out.print
+//           ("  Gap Node = " + path.getCurrentName() + "\n" + 
+//            "Above Node = " + anode.getNodePath().getCurrentName() + "\n" + 
+//            "       Gap = " + gap + "\n\n");
+      }
+    }
+
+    /* determine if there are any child nodes to process */ 
+    ArrayList<NodeStatus> children = null; 
+    if(!vnode.isCollapsed()) {
+      if(upstream && status.hasSources())
+        children = new ArrayList<NodeStatus>(status.getSources());
+      else if(!upstream && status.hasTargets()) 
+        children = new ArrayList<NodeStatus>(status.getTargets());
+    }
+
+    /* process the children */ 
+    if(children != null) {
+      for(NodeStatus cstatus : children) {
+        NodePath cpath = new NodePath(path, cstatus.getName());
+        Double cgap = computeBranchGap(upstream, cstatus, cpath, above);
+      
+        if(cgap != null) {
+          if(gap == null) 
+            gap = cgap;
+          else 
+            gap = Math.min(gap, cgap);
+        }
+      }
+    }
+
+    return gap;
+  }
+
+  /**
+   * Recursively vertically shift a branch of nodes by the given amount.
+   * 
+   * @param isRoot
+   *   Whether current node is the root node.
+   * 
+   * @param upstream
+   *   Whether to traverse the nodes in an upstream direction (or downstream).
+   * 
+   * @param status
+   *   The status of the current node. 
+   * 
+   * @param path
+   *   The path from the root node to the current node.
+   * 
+   * @param delta
+   *   The amount to shift the nodes.
+   */ 
+  private synchronized void
+  shiftBranch
+  (
+   boolean isRoot, 
+   boolean upstream,
+   NodeStatus status, 
+   NodePath path,
+   Vector2d delta
   ) 
   {
     ViewerNode vnode = pViewerNodes.get(path);
     if(vnode == null) 
       return;
 
-    if(isRoot) 
-      vnode.setPosition(new Point2d(0.0, ry));
-    else 
-      vnode.movePosition(new Vector2d(0.0, offset));
+    /* shift this node */ 
+    if(!isRoot || upstream)
+      vnode.movePosition(delta);
 
-    for(NodeStatus cstatus : status.getSources()) {
-      NodePath cpath = new NodePath(path, cstatus.getName());
-      shiftUpstreamNodes(false, cstatus, cpath, ry, offset);
+    /* determine if there are any child nodes to process */ 
+    Collection<NodeStatus> children = null; 
+    if(!vnode.isCollapsed()) {
+      if(upstream && status.hasSources())
+        children = status.getSources();
+      else if(!upstream && status.hasTargets()) 
+        children = new ArrayList<NodeStatus>(status.getTargets());
+    }
+
+    /* shift the child nodes */ 
+    if(children != null) {
+      for(NodeStatus cstatus : children) {
+        NodePath cpath = new NodePath(path, cstatus.getName());
+        shiftBranch(false, upstream, cstatus, cpath, delta); 
+      }
     }
   }
 
   /**
-   * Recursively shift the downstream nodes by the given vertical offset.
+   * Recursively compute the bounding box of all nodes in the layout.
    * 
    * @param isRoot
-   *   Is this the root node?
+   *   Whether current node is the root node.
+   * 
+   * @param upstream
+   *   Whether to traverse the nodes in an upstream direction (or downstream).
    * 
    * @param status
    *   The status of the current node. 
@@ -1822,28 +2068,43 @@ class JNodeViewerPanel
    * @param path
    *   The path from the root node to the current node.
    * 
-   * @param offset
-   *   The vertical distance to shift all nodes.
+   * @param bbox
+   *   The bounding box to compute. 
    */ 
-  private synchronized void
-  shiftDownstreamNodes
+  private synchronized void 
+  computeLayoutBounds
   (
    boolean isRoot, 
+   boolean upstream,
    NodeStatus status, 
    NodePath path, 
-   double offset
+   BBox2d bbox
   ) 
   {
     ViewerNode vnode = pViewerNodes.get(path);
     if(vnode == null) 
       return;
 
+    /* root node is used to initialize the bounding box and
+         should be ignored for downstream nodes anyway */ 
     if(!isRoot) 
-      vnode.movePosition(new Vector2d(0.0, offset));
+      bbox.grow(vnode.getPosition());
+    
+    /* determine if there are any child nodes to process */ 
+    Collection<NodeStatus> children = null; 
+    if(!vnode.isCollapsed()) {
+      if(upstream && status.hasSources())
+        children = status.getSources();
+      else if(!upstream && status.hasTargets()) 
+        children = new ArrayList<NodeStatus>(status.getTargets());
+    }
 
-    for(NodeStatus cstatus : status.getTargets()) {
-      NodePath cpath = new NodePath(path, cstatus.getName());
-      shiftDownstreamNodes(false, cstatus, cpath, offset);
+    /* shift the child nodes */ 
+    if(children != null) {
+      for(NodeStatus cstatus : children) {
+        NodePath cpath = new NodePath(path, cstatus.getName());
+        computeLayoutBounds(false, upstream, cstatus, cpath, bbox);
+      }
     }
   }
 
@@ -2832,6 +3093,9 @@ class JNodeViewerPanel
 	      prefs.getExpand9Levels().wasPressed(e))
 	doExpandDepth(9);
       
+      else if((prefs.getToggleOrientation() != null) &&
+              prefs.getToggleOrientation().wasPressed(e))
+	doToggleOrientation();     
       else if((prefs.getNodeViewerShowHideDownstreamNodes() != null) &&
 		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
 	doShowHideDownstream();      
@@ -3029,6 +3293,8 @@ class JNodeViewerPanel
       doExpandAll();
     else if(cmd.equals("collapse-all"))
       doCollapseAll();
+    else if(cmd.equals("toggle-orientation"))
+      doToggleOrientation();
     else if(cmd.equals("show-hide-downstream"))
       doShowHideDownstream();
     else if(cmd.equals("show-hide-detail-hints"))
@@ -4486,6 +4752,20 @@ class JNodeViewerPanel
     updateUniverse();
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Toggle the node tree orientation between Horizontal and Vertical.
+   */ 
+  private synchronized void
+  doToggleOrientation() 
+  {
+    clearSelection();
+    pHorizontalOrientation = !pHorizontalOrientation;
+    updateUniverse();
+  }
+
   /**
    * Show/Hide the downstream node tree.
    */ 
@@ -4582,6 +4862,7 @@ class JNodeViewerPanel
     }
 
     encoder.encode("ShowDownstream", pShowDownstream);
+    encoder.encode("HorizontalOrientation", pHorizontalOrientation);
   }
 
   public synchronized void 
@@ -4631,6 +4912,13 @@ class JNodeViewerPanel
       Boolean show = (Boolean) decoder.decode("ShowDownstream");
       if(show != null) 
 	pShowDownstream = show; 
+    }
+
+    /* whether to orient and align node trees horizontally */    
+    {
+      Boolean horz = (Boolean) decoder.decode("HorizontalOrientation");
+      if(horz != null) 
+	pHorizontalOrientation = horz; 
     }
   }
   
@@ -6209,6 +6497,11 @@ class JNodeViewerPanel
   private boolean  pShowDownstream;
 
   /**
+   * Whether to orient and align node tree roots horizontally (true) or vertically (false).
+   */ 
+  private boolean pHorizontalOrientation; 
+
+  /**
    * The fully resolved name of the node who's status was last sent to the node 
    * details, links, files and history panels. 
    */ 
@@ -6250,6 +6543,11 @@ class JNodeViewerPanel
    */ 
   private ViewerLinks  pViewerLinks; 
 
+  /**
+   * A node path recursion depth counter used by computeBranchGap to keep track of 
+   * which layout columns have already been processed which searching for top-edge nodes.
+   */ 
+  private int  pBranchGapDepth;
 
   /**
    * The currently selected nodes indexed by <CODE>NodePath</CODE>.
@@ -6304,6 +6602,7 @@ class JNodeViewerPanel
   private JMenuItem  pAutomaticExpandItem;
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;
+  private JMenuItem  pToggleOrientationItem;
   private JMenuItem  pShowHideDownstreamItem;
   private JMenuItem  pRemoveAllRootsItem;
   private JMenuItem  pShowHideDetailHintsItem;
