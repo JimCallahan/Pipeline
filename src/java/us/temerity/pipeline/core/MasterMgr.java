@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.199 2007/04/17 20:11:44 jim Exp $
+// $Id: MasterMgr.java,v 1.200 2007/04/20 18:04:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7677,6 +7677,15 @@ class MasterMgr
             NodeID nodeID = new NodeID(author, view, name);
             NodeStatus status = performNodeOperation(new NodeOp(), nodeID, cache, timer);
             results.put(name, status);
+
+            /* replace the cached root node status copy without targets, 
+                 this way the orignal's targets won't get stomped on when its looked up 
+                 from the cache during future performNodeOperation() calls */ 
+            NodeStatus copy = new NodeStatus(nodeID);
+            copy.setDetails(status.getDetails());
+            for(NodeStatus source : status.getSources())
+              copy.addSource(source);
+            cache.put(name, copy);
           }
         }
 
@@ -7686,7 +7695,16 @@ class MasterMgr
           if((lightweight != null) && lightweight) {
             NodeID nodeID = new NodeID(author, view, name);
             NodeStatus status = performNodeOperation(null, nodeID, cache, timer);
-            results.put(name, status);          
+            results.put(name, status);  
+
+            /* replace the cached root node status copy without targets, 
+                 this way the orignal's targets won't get stomped on when its looked up 
+                 from the cache during future performNodeOperation() calls */ 
+            NodeStatus copy = new NodeStatus(nodeID);
+            copy.setDetails(status.getDetails());
+            for(NodeStatus source : status.getSources())
+              copy.addSource(source);
+            cache.put(name, copy);        
           }
         }
       }
