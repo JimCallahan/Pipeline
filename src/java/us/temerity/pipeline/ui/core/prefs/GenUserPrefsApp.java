@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.49 2007/04/20 18:23:28 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -818,6 +818,10 @@ class GenUserPrefsApp
 	("Whether to initially show downstream links by default.",
 	 "ShowDownstream", "Show Downstream:", false), 
 
+	new BooleanPref
+	("Whether to fit nodes as closely together as possible.", 
+	 "CompactLayout", "Compact Layout", true), 
+	
 	new BasePref(),
 
 	new BooleanPref
@@ -2315,7 +2319,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.49 2007/04/20 18:23:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2572,7 +2576,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.49 2007/04/20 18:23:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3929,7 +3933,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.48 2007/04/20 18:07:18 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.49 2007/04/20 18:23:28 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

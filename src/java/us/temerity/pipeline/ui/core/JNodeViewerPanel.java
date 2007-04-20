@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.79 2007/04/20 18:07:17 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.80 2007/04/20 18:23:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1573,10 +1573,6 @@ class JNodeViewerPanel
 
             ubox = new BBox2d(upos, upos);
             computeLayoutBounds(true, true, status, path, ubox);
-
-//             System.out.print
-//               ("   Upstrem Root = " + upos + "\n" +
-//                "Upstream Bounds = " + ubox + "\n\n"); 
 	  }
 	  
           /* layout downstream nodes */ 
@@ -1591,10 +1587,6 @@ class JNodeViewerPanel
 
             dbox = new BBox2d(dpos, dpos);
             computeLayoutBounds(true, false, status, path, dbox);
-
-//             System.out.print
-//               ("   Downstrem Root = " + dpos + "\n" +
-//                "Downstream Bounds = " + dbox + "\n\n"); 
           }
             
           /* shift the upstream and downstream nodes to their final position */ 
@@ -1651,8 +1643,6 @@ class JNodeViewerPanel
             origin.add(new Vector2d(0.0, -span));
           }
         }
-
-//         System.out.print("Origin = " + origin + "\n\n"); 
       }
 
       /* shift entire layout */ 
@@ -1883,35 +1873,20 @@ class JNodeViewerPanel
         vnode.setPosition(finalPos); 
     }
 
-    /* if the current node has a sibling above, 
+    /* if the current node has a sibling above and CompatLayout preference is on, 
           shift the whole branch rooted at the current node upwards as much as possible */ 
-    if(!isRoot) {  // add preference check here... 
+    if(!isRoot && prefs.getCompactLayout()) {
       ViewerNode anode = above.get(path);     
       boolean isSibling = (anode != null) && anode.getNodePath().isSibling(path);
-
-//       System.out.print
-//         ("Viewer Node = " + path.getCurrentName() + "\n" + 
-//          " Above Node = "+((anode!=null)?anode.getNodePath().getCurrentName():"NONE")+"\n" + 
-//          " Is Sibling = " + (isSibling ? "YES" : "no") + "\n\n"); 
-      
       if(isSibling) {
         /* determine the minimum vertical distance between the top-edge nodes of this 
              branch and nodes directly above them */ 
         pBranchGapDepth = 0;
         Double gap = computeBranchGap(upstream, status, path, above);
              
-//         if(gap == null) 
-//           System.out.print("UNDEFINED GAP!\n\n"); 
-   
         /* shift the entire branch up rigidly as much as possible */ 
         if((gap != null) && (gap > prefs.getNodeSpaceY())) {
           double shift = gap - prefs.getNodeSpaceY();
-
-//           System.out.print
-//             ("Minimum Gap = " + gap + "\n" +
-//              "   Shifting = " + shift + "\n\n" + 
-//              "-------------------------------------------------------------------------\n\n");
-          
           Vector2d delta = new Vector2d(0.0, shift);
           shiftBranch(isRoot, upstream, status, path, delta);
           if(!isRoot || upstream) 
@@ -1962,14 +1937,8 @@ class JNodeViewerPanel
       pBranchGapDepth = path.getNumNodes();
 
       ViewerNode anode = above.get(path);
-      if(anode != null) {
+      if(anode != null) 
         gap = anode.getPosition().y() - vnode.getPosition().y();
-        
-//         System.out.print
-//           ("  Gap Node = " + path.getCurrentName() + "\n" + 
-//            "Above Node = " + anode.getNodePath().getCurrentName() + "\n" + 
-//            "       Gap = " + gap + "\n\n");
-      }
     }
 
     /* determine if there are any child nodes to process */ 
@@ -6447,8 +6416,6 @@ class JNodeViewerPanel
 	}
 	else {
 	  pOpTask.endTool(true);
-// 	  if(pTool.updateOnExit()) 
-// 	    setRoots(pTool.rootsOnExit());
 	}
       }
       catch(Exception ex) {
