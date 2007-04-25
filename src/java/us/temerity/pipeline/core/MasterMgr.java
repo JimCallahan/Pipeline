@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.200 2007/04/20 18:04:03 jim Exp $
+// $Id: MasterMgr.java,v 1.201 2007/04/25 22:15:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11368,7 +11368,7 @@ class MasterMgr
 	   "(" + maxArchives + ") must be positive!");
 
       /* get the node names which match the pattern */ 
-      DoubleMap<String,String,TreeSet<String>> matches = null;
+      TreeSet<String> matches = null;
       try {
 	Pattern pat = null;
 	if(pattern != null) 
@@ -11383,13 +11383,13 @@ class MasterMgr
       
       /* lock online/offline status */ 
       timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(matches.keySet());
+      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(matches);
       try {
 	timer.resume();	
 
 	/* process the matching nodes */ 
 	ArrayList<ArchiveInfo> archiveInfo = new ArrayList<ArchiveInfo>();
-	for(String name : matches.keySet()) {
+	for(String name : matches) {
 	  
 	  /* get the revision numbers and creation timestamps of the included versions */ 
 	  TreeMap<VersionID,Long> stamps = new TreeMap<VersionID,Long>();
@@ -11846,7 +11846,7 @@ class MasterMgr
 	   "(" + minArchives + ") cannot be negative!");
 
       /* get the node names which match the pattern */ 
-      DoubleMap<String,String,TreeSet<String>> matches = null;
+      TreeSet<String> matches = null;
       try {
 	Pattern pat = null;
 	if(pattern != null) 
@@ -11861,14 +11861,14 @@ class MasterMgr
       
       /* lock online/offline status */ 
       timer.aquire();
-      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(matches.keySet());
+      List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(matches);
       try {
 	timer.resume();	
 
 	/* process the matching nodes */ 
 	ArrayList<OfflineInfo> offlineInfo = new ArrayList<OfflineInfo>();
 	VersionID latestID = null;
-	for(String name : matches.keySet()) {
+	for(String name : matches) {
 	  
 	  /* get the revision numbers of the included versions */ 
 	  TreeSet<VersionID> vids = new TreeSet<VersionID>();
@@ -11950,7 +11950,7 @@ class MasterMgr
 	      String lastView = null;
 	      boolean canOffline = true;
 	      {	      
-		TreeMap<String,TreeSet<String>> areas = matches.get(name);
+		TreeMap<String,TreeSet<String>> areas = pNodeTree.getViewsContaining(name);
 		for(String author : areas.keySet()) {
 		  TreeSet<String> views = areas.get(author);
 		  for(String view : views) {

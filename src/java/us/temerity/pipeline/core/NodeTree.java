@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.3 2006/12/20 15:10:44 jim Exp $
+// $Id: NodeTree.java,v 1.4 2007/04/25 22:15:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -805,17 +805,15 @@ class NodeTree
    *   The regular expression used to match the fully resolved node name.
    * 
    * @return 
-   *   The names of the working area views containing the matching nodes, indexed by 
-   *   fully resolved node name and working area owner.
+   *   The fully resolved names of the matching nodes. 
    */ 
-  public synchronized DoubleMap<String,String,TreeSet<String>> 
+  public synchronized TreeSet<String>
   getMatchingCheckedInNodes
   ( 
    Pattern pattern
   ) 
   {
-    DoubleMap<String,String,TreeSet<String>> matches = 
-      new DoubleMap<String,String,TreeSet<String>>();
+    TreeSet<String> matches = new TreeSet<String>();
 
     for(NodeTreeEntry entry : pNodeTreeRoot.values())
       matchingCheckedInNodesHelper(pattern, "", entry, matches);
@@ -837,8 +835,7 @@ class NodeTree
    *   The current node tree entry. 
    * 
    * @param matches
-   *   The names of the working area views containing the matching nodes, indexed by 
-   *   fully resolved node name and working area owner.
+   *   The fully resolved names of the matching nodes. 
    */ 
   private synchronized void 
   matchingCheckedInNodesHelper
@@ -846,15 +843,13 @@ class NodeTree
    Pattern pattern, 
    String path,
    NodeTreeEntry entry,
-   DoubleMap<String,String,TreeSet<String>> matches
+   TreeSet<String> matches
   ) 
   {
     String name = (path + "/" + entry.getName());
     if(entry.isLeaf() && entry.isCheckedIn()) {
-      if((pattern == null) || pattern.matcher(name).matches()) {
-	for(String author : entry.getWorkingAuthors()) 
-	  matches.put(name, author, new TreeSet<String>(entry.getWorkingViews(author)));
-      }
+      if((pattern == null) || pattern.matcher(name).matches()) 
+        matches.add(name); 
     }
     else {
       for(NodeTreeEntry child : entry.values())
