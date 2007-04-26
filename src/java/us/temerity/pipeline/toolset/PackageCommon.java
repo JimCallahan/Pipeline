@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.9 2007/03/30 23:19:39 jim Exp $
+// $Id: PackageCommon.java,v 1.10 2007/04/26 17:58:13 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -179,22 +179,27 @@ class PackageCommon
       throw new IllegalArgumentException("The author cannot be (null)!");
 
     TreeMap<String,String> env = getEnvironment();
-    Path home = new Path(PackageInfo.sHomePath, author);
 
     switch(PackageInfo.sOsType) {
     case Unix:
     case MacOS:
-      env.put("USER", author);
-      env.put("HOME", home.toOsString()); 
+      {
+        env.put("USER", author);
+
+        Path home = new Path(PackageInfo.sHomePath, author);
+        env.put("HOME", home.toOsString()); 
+      }
       break;
 
     case Windows:
       {
 	env.put("USERNAME", author);
-	env.put("USERPROFILE", home.toOsString());
-	env.put("HOMEPATH", home.toOsString());
+        
+        Path profdir = new Path("C:/Documents and Settings");  // SHOULD THIS BE A PLCONFIG
+        Path profile = new Path(profdir, author);              //   PARAMETER?
+	env.put("USERPROFILE", profile.toOsString());
 
-	Path appdata = new Path(home, "Application Data");
+	Path appdata = new Path(PackageInfo.sHomePath, "Application Data");
 	env.put("APPDATA", appdata.toOsString());
       }
     }

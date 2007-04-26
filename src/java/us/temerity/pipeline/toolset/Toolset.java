@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.11 2007/04/15 10:28:41 jim Exp $
+// $Id: Toolset.java,v 1.12 2007/04/26 17:58:13 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -513,22 +513,27 @@ class Toolset
       throw new IllegalArgumentException("The author cannot be (null)!");
 
     TreeMap<String,String> env = getEnvironment();
-    Path home = new Path(PackageInfo.getHomePath(os), author);
 
     switch(os) {
     case Unix:
     case MacOS:
-      env.put("USER", author);
-      env.put("HOME", home.toOsString(os)); 
+      {
+        env.put("USER", author);
+
+        Path home = new Path(PackageInfo.getHomePath(os), author);        
+        env.put("HOME", home.toOsString(os)); 
+      }
       break;
 
     case Windows:
       {
 	env.put("USERNAME", author);
-	env.put("USERPROFILE", home.toOsString(os));
-	env.put("HOMEPATH", home.toOsString(os));
+        
+        Path profdir = new Path("C:/Documents and Settings");   // SHOULD THIS BE A PLCONFIG
+        Path profile = new Path(profdir, author);               //   PARAMETER?
+	env.put("USERPROFILE", profile.toOsString(os));
 
-	Path appdata = new Path(home, "Application Data");
+	Path appdata = new Path(PackageInfo.getHomePath(os), "Application Data");
 	env.put("APPDATA", appdata.toOsString(os));
       }
     }
