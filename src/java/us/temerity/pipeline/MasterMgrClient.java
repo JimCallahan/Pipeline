@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.96 2007/04/17 20:11:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.97 2007/04/26 17:54:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6357,8 +6357,7 @@ class MasterMgrClient
     if(obj instanceof MiscCreateInitialPanelLayoutRsp) {
       MiscCreateInitialPanelLayoutRsp rsp = (MiscCreateInitialPanelLayoutRsp) obj;
 
-      Path lpath = new Path(PackageInfo.sHomePath, 
-			    PackageInfo.sUser + "/.pipeline/layouts"); 
+      Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
       Path path = new Path(lpath, name);
       File file = path.toFile();
       try {

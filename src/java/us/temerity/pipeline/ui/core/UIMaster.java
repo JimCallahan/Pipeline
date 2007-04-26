@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.62 2007/04/15 10:30:47 jim Exp $
+// $Id: UIMaster.java,v 1.63 2007/04/26 17:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2908,8 +2908,7 @@ class UIMaster
   saveLayoutHelper() 
   {
     try {
-      Path lpath = new Path(PackageInfo.sHomePath, 
-			    PackageInfo.sUser + "/.pipeline/layouts");
+      Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
       Path path = new Path(lpath, pLayoutPath);
       
       File dir = path.getParentPath().toFile();
@@ -2975,8 +2974,7 @@ class UIMaster
       saveLayoutHelper();
 
     try {
-      Path path = new Path(PackageInfo.sHomePath, 
-			   PackageInfo.sUser + "/.pipeline/default-layout");
+      Path path = new Path(PackageInfo.getSettingsPath(), "default-layout");
       File file = path.toFile();
       if(layoutPath != null) 
 	LockedGlueFile.save(file, "DefaultLayout", layoutPath.toString());
@@ -3050,8 +3048,7 @@ class UIMaster
 
     /* save the collapsed node paths */ 
     synchronized(pCollapsedNodePaths) {
-      Path path = new Path(PackageInfo.sHomePath, 
-			   PackageInfo.sUser + "/.pipeline/collapsed-nodes");
+      Path path = new Path(PackageInfo.getSettingsPath(), "collapsed-nodes");
       File file = path.toFile();
       if(pCollapsedNodePaths.isEmpty()) {
 	file.delete();
@@ -3132,8 +3129,7 @@ class UIMaster
     run() 
     {  
       try {
-	Path base = new Path(PackageInfo.sHomePath, 
-			     PackageInfo.sUser + "/.pipeline");
+	Path base = PackageInfo.getSettingsPath();
 
 	/* create an intial layout (if none exists) and make it the default */ 
 	{
@@ -3147,7 +3143,6 @@ class UIMaster
 	      LogMgr.getInstance().flush();
 	      System.exit(1);	    
 	    }
-	    NativeFileSys.chmod(0700, dir);
 	    
 	    getMasterMgrClient().createInitialPanelLayout
 	      ("Default", PackageInfo.sUser, "default");
@@ -3525,8 +3520,7 @@ class UIMaster
 	  layoutPath = pOverrideLayoutPath;
 	  if(layoutPath == null) {
 	    try {
-	      Path path = new Path(PackageInfo.sHomePath, 
-				   PackageInfo.sUser + "/.pipeline/default-layout"); 
+	      Path path = new Path(PackageInfo.getSettingsPath(), "default-layout"); 
 	      File file = path.toFile();
 	      if(file.isFile()) {
 		String lname = (String) LockedGlueFile.load(file);
@@ -3782,8 +3776,7 @@ class UIMaster
     run() 
     {
       try {
-	Path lpath = new Path(PackageInfo.sHomePath, 
-			      PackageInfo.sUser + "/.pipeline/layouts");
+	Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
 	Path path = new Path(lpath, pLayoutPath);
 	File dir = path.getParentPath().toFile();
 	if(!dir.isDirectory()) 
@@ -3929,8 +3922,7 @@ class UIMaster
       {
 	pIsRestoring.set(true);
 	
-	Path lpath = new Path(PackageInfo.sHomePath, 
-			      PackageInfo.sUser + "/.pipeline/layouts");
+	Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
 	Path path = new Path(lpath, pPath);
 	File file = path.toFile();
 	try {      

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.37 2007/04/15 10:30:47 jim Exp $
+// $Id: JManagerPanel.java,v 1.38 2007/04/26 17:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3224,13 +3224,21 @@ class JManagerPanel
 	pRestoreLayoutMenu.removeAll();
 	pRestoreLayoutNoSelectMenu.removeAll();
 	
-	Path path = new Path(PackageInfo.sHomePath, 
-			     PackageInfo.sUser + "/.pipeline/layouts");  
+	Path path = new Path(PackageInfo.getSettingsPath(), "layouts"); 
 	File dir = path.toFile();
-	if(!dir.isDirectory()) {
-	  UIMaster.getInstance().showErrorDialog
-	    ("Error:", "The saved layout directory (" + dir + ") was missing!");
-	  pRestoreLayoutMenu.setEnabled(false);
+        if(!dir.isDirectory()) {
+          String result = null;
+          if(dir.mkdirs()) 
+            result = "Recreated layouts root directory (" + dir + ")!"; 
+          else
+            result = "Unable to recreate layouts root directory (" + dir + ")!"; 
+
+          UIMaster.getInstance().showErrorDialog
+            ("Error:", "The saved layout directory (" + dir + ") was missing!\n\n" + result);
+        }
+        
+        if(!dir.isDirectory()) {
+          pRestoreLayoutMenu.setEnabled(false);
 	  pRestoreLayoutNoSelectMenu.setEnabled(false);
 	} 
 	else {

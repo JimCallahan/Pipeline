@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.6 2006/12/05 20:35:29 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.7 2007/04/26 17:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -230,8 +230,7 @@ class JManageLayoutsDialog
    String nname
   ) 
   {
-    Path base = new Path(PackageInfo.sHomePath, 
-			 PackageInfo.sUser + "/.pipeline/layouts");
+    Path base = new Path(PackageInfo.getSettingsPath(), "layouts"); 
 
     Path opath = new Path(base, oname);
     File ofile = opath.toFile();
@@ -274,8 +273,7 @@ class JManageLayoutsDialog
     if(selected == null) 
       return;
     
-    Path lpath = new Path(PackageInfo.sHomePath, 
-			  PackageInfo.sUser + "/.pipeline/layouts"); 
+    Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
     Path path = new Path(lpath, selected);
     Files.deleteAll(path.toFile()); 
 

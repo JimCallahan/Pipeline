@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.7 2007/04/26 17:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -281,8 +281,7 @@ class JSaveLayoutDialog
 
       /* create the new directory */ 
       {
-	Path lpath = new Path(PackageInfo.sHomePath, 
-			      PackageInfo.sUser + "/.pipeline/layouts");
+	Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts");
 	Path path = new Path(lpath, cdata.getPath().getParentPath()); 
 	File dir = path.toFile();
 	if(!dir.isDirectory()) 

@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessHeavyApp.java,v 1.4 2007/03/18 02:30:13 jim Exp $
+// $Id: TestNativeProcessHeavyApp.java,v 1.5 2007/04/26 17:54:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -55,7 +55,7 @@ class TestNativeProcessHeavyApp
     try {
       LogMgr.getInstance().setLevels(LogMgr.Level.Info);
 
-      if(argv.length < 4) 
+      if(argv.length < 3) 
 	throw new IllegalArgumentException
 	  ("usage: pltestheavy user program [args ...]");
 

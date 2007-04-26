@@ -442,7 +442,7 @@ void StandardLogFile() :
 {
   <STANDARD_LOG_FILE>
   { 
-    pLogFile = new Path(PackageInfo.sHomePath, PackageInfo.sUser + "/plui.log");
+    pLogFile = new Path(PackageInfo.getSettingsPath(), "plui.log");
   }
 }
 

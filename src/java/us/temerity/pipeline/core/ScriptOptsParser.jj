@@ -1972,7 +1972,7 @@ void StandardLogFile() :
 {
   <STANDARD_LOG_FILE>
   { 
-    pLogFile = new Path(PackageInfo.sHomePath, PackageInfo.sUser + "/plscript.log");
+    pLogFile = new Path(PackageInfo.getSettingsPath(), "plscript.log");
   }
 }
 

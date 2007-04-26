@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.4 2007/04/26 17:54:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -135,8 +135,7 @@ class JBaseLayoutDialog
       root = new DefaultMutableTreeNode(new TreeData(), true);
 
       {
-	Path path = new Path(PackageInfo.sHomePath, 
-			     PackageInfo.sUser + "/.pipeline/layouts"); 
+	Path path = new Path(PackageInfo.getSettingsPath(), "layouts"); 
 	rebuildTreeModel(path, new Path("/"), root);
       }
       

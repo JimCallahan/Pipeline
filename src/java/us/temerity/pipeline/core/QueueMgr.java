@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.90 2007/04/15 10:30:44 jim Exp $
+// $Id: QueueMgr.java,v 1.91 2007/04/26 17:54:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5448,12 +5448,18 @@ class QueueMgr
 	    throw new IllegalStateException("The toolset cannot be (null)!");
 	  
 	  TreeMap<String,String> env = null;
-	  if((author != null) && (view != null)) 
-	    env = tset.getEnvironment(author, view, os);
-	  else if(author != null)
-	    env = tset.getEnvironment(author, os);
-	  else 
-	    env = tset.getEnvironment();
+          switch(os) {
+          case Windows:
+            {
+              env = tset.getEnvironment(PackageInfo.sPipelineUser, os);  
+              Path working = new Path(PackageInfo.getWorkPath(os), author + "/" + view);
+              env.put("WORKING", working.toOsString(os));
+            }
+            break;
+
+          default:
+            env = tset.getEnvironment(author, view, os);         
+          }
 	  
 	  if(env == null) 
 	    throw new IllegalStateException("The environment cannot be (null)!");

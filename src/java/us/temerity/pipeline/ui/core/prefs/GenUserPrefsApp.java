@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.50 2007/04/20 19:56:48 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.51 2007/04/26 17:54:44 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -2315,7 +2315,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.50 2007/04/20 19:56:48 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.51 2007/04/26 17:54:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2424,8 +2424,7 @@ class GenUserPrefsApp
 	 "  save()\n" + 
 	 "    throws GlueException, GlueLockException\n" + 
 	 "  {\n" + 
-	 "    Path path = new Path(PackageInfo.sHomePath,\n" + 
-	 "		           PackageInfo.sUser + \"/.pipeline/preferences\");\n" + 
+	 "    Path path = new Path(PackageInfo.getSettingsPath(), \"preferences\");\n" + 
 	 "    LockedGlueFile.save(path.toFile(), \"UserPreferences\", sUserPrefs);\n" + 
 	 "  }\n" + 
 	 "\n" + 
@@ -2436,8 +2435,7 @@ class GenUserPrefsApp
 	 "  load()\n" + 
 	 "    throws GlueException, GlueLockException\n" + 
 	 "  {\n" + 
-	 "    Path path = new Path(PackageInfo.sHomePath,\n" + 
-	 "		           PackageInfo.sUser + \"/.pipeline/preferences\");\n" + 
+	 "    Path path = new Path(PackageInfo.getSettingsPath(), \"preferences\");\n" + 
 	 "    sUserPrefs = (UserPrefs) LockedGlueFile.load(path.toFile());\n" + 
 	 "  }\n" + 
 	 "\n" + 
@@ -2572,7 +2570,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.50 2007/04/20 19:56:48 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.51 2007/04/26 17:54:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3929,7 +3927,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.50 2007/04/20 19:56:48 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.51 2007/04/26 17:54:44 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
