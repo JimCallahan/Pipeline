@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.7 2006/11/22 09:08:01 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.8 2007/04/27 23:59:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -385,7 +385,7 @@ class JBaseUserPrefsDialog
 
   private static final long serialVersionUID = 3304277022745906011L;
 
-  protected static final int  sTSize = 150;
+  protected static final int  sTSize = 165;
   protected static final int  sVSize = 210;
 
 
