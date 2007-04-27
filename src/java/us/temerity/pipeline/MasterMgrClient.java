@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.97 2007/04/26 17:54:08 jim Exp $
+// $Id: MasterMgrClient.java,v 1.98 2007/04/27 20:45:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3451,6 +3451,111 @@ class MasterMgrClient
   } 
 
   /**
+   * Create or modify an existing link between the working versions. <P> 
+   * 
+   * The LinkRelationship defaults to <CODE>All</CODE> with no frame offset. Use the other 
+   * form of {@link #link} to specify a different LinkRelationship and frame offset.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param target 
+   *   The fully resolved name of the downstream node to connect.
+   * 
+   * @param source 
+   *   The fully resolved name of the upstream node to connect.
+   * 
+   * @param policy 
+   *   The node state propogation policy.
+   * 
+   * @throws PipelineException
+   *   If unable to create or modify the link.
+   */
+  public synchronized void 
+  link
+  (
+   String author, 
+   String view, 
+   String target, 
+   String source,
+   LinkPolicy policy
+  ) 
+    throws PipelineException
+  {
+    link(author, view, target, source, policy, LinkRelationship.All, null);
+  } 
+
+  /**
+   * Create or modify an existing link between the working versions. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param target 
+   *   The fully resolved name of the downstream node to connect.
+   * 
+   * @param link 
+   *   Information about the relationship between the downstream node and the upstream 
+   *   node to connect.
+   * 
+   * @param policy 
+   *   The node state propogation policy.
+   * 
+   * @throws PipelineException
+   *   If unable to create or modify the link.
+   */
+  public synchronized void 
+  link
+  (
+   String author, 
+   String view, 
+   String target, 
+   LinkCommon link
+  ) 
+    throws PipelineException
+  {
+    link(author, view, target, 
+         link.getName(), link.getPolicy(), link.getRelationship(), link.getFrameOffset());
+  } 
+
+  /**
+   * Create or modify an existing link between the working versions. <P> 
+   * 
+   * @param target
+   *   The unique working version identifier of the downstream node to connect.
+   * 
+   * @param link 
+   *   Information about the relationship between downstream node and the upstream 
+   *   node to connect.
+   * 
+   * @param policy 
+   *   The node state propogation policy.
+   * 
+   * @throws PipelineException
+   *   If unable to create or modify the link.
+   */
+  public synchronized void 
+  link
+  (
+   NodeID target, 
+   LinkCommon link
+  ) 
+    throws PipelineException
+  {
+    link(target.getAuthor(), target.getView(), target.getName(), 
+         link.getName(), link.getPolicy(), link.getRelationship(), link.getFrameOffset());
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Destroy an existing link between the working versions. <P> 
    * 
    * @param author 
@@ -3485,6 +3590,29 @@ class MasterMgrClient
 
     Object obj = performTransaction(MasterRequest.Unlink, req);
     handleSimpleResponse(obj);
+  } 
+
+  /**
+   * Destroy an existing link between the working versions. <P> 
+   * 
+   * @param target
+   *   The unique working version identifier of the downstream node to disconnect.
+   * 
+   * @param source 
+   *   The fully resolved name of the upstream node to disconnect.
+   * 
+   * @throws PipelineException
+   *   If unable to destroy the link.
+   */
+  public synchronized void 
+  unlink
+  (
+   NodeID target, 
+   String source
+  )
+    throws PipelineException
+  {
+    unlink(target.getAuthor(), target.getView(), target.getName(), source);
   } 
 
 

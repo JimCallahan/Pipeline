@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.9 2006/02/28 19:47:45 jim Exp $
+// $Id: LinkMod.java,v 1.10 2007/04/27 20:45:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,6 +29,35 @@ class LinkMod
   LinkMod() 
   {
     super();
+  }
+
+  /**
+   * Construct a node link from the given source node. <P> 
+   * 
+   * The LinkRelationship defaults to <CODE>All</CODE> with no frame offset. Use the other 
+   * constructor to specify a different LinkRelationship and frame offset.
+   * 
+   * @param name 
+   *   The fully resolved name of the source node.
+   * 
+   * @param policy 
+   *   The node state propogation policy.
+   * 
+   * @param relationship 
+   *   The nature of the relationship between files associated with the source and 
+   *   target nodes. 
+   * 
+   * @param offset 
+   *   The frame index offset.
+   */ 
+  public 
+  LinkMod
+  (
+   String name, 
+   LinkPolicy policy
+  ) 
+  {
+    super(name, policy, LinkRelationship.All, null);
   }
 
   /**
