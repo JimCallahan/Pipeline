@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.17 2007/02/12 15:49:56 jim Exp $
+// $Id: JobReqs.java,v 1.18 2007/04/27 20:45:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -354,6 +354,9 @@ class JobReqs
    String key
   ) 
   {
+    if(key == null) 
+      throw new IllegalArgumentException("The license key cannot be (null)!");
+
     pLicenseKeys.add(key);
   }
 
@@ -369,6 +372,10 @@ class JobReqs
    Set<String> keys
   ) 
   {
+    for(String key : keys)
+      if(key == null) 
+        throw new IllegalArgumentException("The license key cannot be (null)!");
+
     pLicenseKeys.addAll(keys);
   }
 
@@ -435,6 +442,9 @@ class JobReqs
    String key
   ) 
   {
+    if(key == null) 
+      throw new IllegalArgumentException("The selection key cannot be (null)!");
+
     pSelectionKeys.add(key);
   }
 
@@ -450,6 +460,10 @@ class JobReqs
    Set<String> keys
   ) 
   {
+    for(String key : keys)
+      if(key == null) 
+        throw new IllegalArgumentException("The selection key cannot be (null)!");
+
     pSelectionKeys.addAll(keys);
   }
 
