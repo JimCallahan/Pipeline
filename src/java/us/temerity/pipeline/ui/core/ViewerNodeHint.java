@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.5 2007/04/15 10:30:47 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.6 2007/04/27 21:42:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -203,11 +203,14 @@ class ViewerNodeHint
 
     pCountDLs = null;
 
-    NodeMod mod = pDetails.getWorkingVersion();
-    if(mod != null) {
-      pToolset = mod.getToolset();
-      pEditor  = mod.getEditor();
-      pAction  = mod.getAction();
+    NodeCommon com = pDetails.getWorkingVersion();
+    if(com == null) 
+      com = pDetails.getLatestVersion();
+
+    if(com != null) {
+      pToolset = com.getToolset();
+      pEditor  = com.getEditor();
+      pAction  = com.getAction();
     }
 
     pToolsetDL = null; 
