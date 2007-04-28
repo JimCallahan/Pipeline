@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.9 2007/04/28 00:04:28 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.10 2007/04/28 22:46:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -147,8 +147,8 @@ class JBaseUserPrefsDialog
 	{
 	  JScrollPane scroll = new JScrollPane(pCardPanel);
 	  
-	  scroll.setMinimumSize(new Dimension(410, 120));
-	  scroll.setMaximumSize(new Dimension(410, Integer.MAX_VALUE));
+	  scroll.setMinimumSize(new Dimension(sTSize+sVSize+50, 120));
+	  scroll.setMaximumSize(new Dimension(sTSize+sVSize+50, Integer.MAX_VALUE));
 
 	  scroll.setHorizontalScrollBarPolicy
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
