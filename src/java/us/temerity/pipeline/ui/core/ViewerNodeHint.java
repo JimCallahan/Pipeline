@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.6 2007/04/27 21:42:19 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.7 2007/04/28 00:01:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -34,7 +34,8 @@ class ViewerNodeHint
    JNodeViewerPanel parent, 
    boolean showToolset, 
    boolean showEditor, 
-   boolean showAction
+   boolean showAction, 
+   boolean showEditing
   ) 
   {
     super();
@@ -44,9 +45,12 @@ class ViewerNodeHint
     pFileStates  = new TreeMap<FileState,Integer>();
     pQueueStates = new TreeMap<QueueState,Integer>();
 
+    pViewsEditing = new TreeMap<String,TreeSet<String>>();
+
     pShowToolset = showToolset; 
     pShowAction  = showAction; 
     pShowEditor  = showEditor; 
+    pShowEditing = showEditing; 
   }
 
 
@@ -89,6 +93,15 @@ class ViewerNodeHint
   showAction()
   {
     return pShowAction; 
+  }
+
+  /**
+   * Whether to display the list of working areas editing the node.
+   */ 
+  public boolean
+  showEditing()
+  {
+    return pShowEditing;
   }
 
 
@@ -145,77 +158,108 @@ class ViewerNodeHint
     pShowAction = tf;
   }
 
+  /**
+   * Set whether to display the list of working areas editing the node.
+   */ 
+  public void
+  setShowEditing
+  (
+   boolean tf
+  ) 
+  {
+    pShowEditing = tf;
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the current node status being displayed.
+   * Update the node status information being displayed in the hint.
    */ 
   public void 
-  setNodeStatus
+  updateHint
   (
-   NodeStatus status
+   NodeStatus status, 
+   TreeMap<String,TreeSet<String>> editing
   ) 
   {              
-    pVersionState  = null;
-    pPropertyState = null;
-    pLinkState     = null;
-    pFileStates.clear();
-    pQueueStates.clear();
+    /* clear any current settings */ 
+    {
+      pVersionState  = null;
+      pPropertyState = null;
+      pLinkState     = null;
+      pFileStates.clear();
+      pQueueStates.clear();
+      
+      pToolset = null;
+      pEditor  = null; 
+      pAction  = null;
+      
+      pViewsEditing.clear();
+    }
 
-    pToolset = null;
-    pEditor  = null; 
-    pAction  = null;
+    /* skip nodes without detailed status */ 
+    {
+      if(status == null)
+        return;
+      
+      pDetails = status.getDetails();
+      if(pDetails == null) 
+        return;
+    }
 
-    if(status == null)
-      return;
-
-    pDetails = status.getDetails();
-    if(pDetails == null) 
-      return;
-
-    pBaseVersionDL   = null;
-    pLatestVersionDL = null;
-
-    if(!pDetails.isLightweight()) {
-      for(FileSeq fseq : pDetails.getFileStateSequences()) {
-        FileState fs[] = pDetails.getFileState(fseq);
-        int wk;
-        for(wk=0; wk<fs.length; wk++) {
-          Integer fcnt = pFileStates.get(fs[wk]);
-          if(fcnt == null)
-            fcnt = new Integer(0);
-          pFileStates.put(fs[wk], fcnt+1);
+    /* reinitialize the cached node properties and display lists */ 
+    {
+      pBaseVersionDL   = null;
+      pLatestVersionDL = null;
+      
+      if(!pDetails.isLightweight()) {
+        for(FileSeq fseq : pDetails.getFileStateSequences()) {
+          FileState fs[] = pDetails.getFileState(fseq);
+          int wk;
+          for(wk=0; wk<fs.length; wk++) {
+            Integer fcnt = pFileStates.get(fs[wk]);
+            if(fcnt == null)
+              fcnt = new Integer(0);
+            pFileStates.put(fs[wk], fcnt+1);
+          }
+        }
+        
+        {
+          QueueState qs[] = pDetails.getQueueState();
+          int wk;
+          for(wk=0; wk<qs.length; wk++) {
+            Integer qcnt = pQueueStates.get(qs[wk]);
+            if(qcnt == null)
+              qcnt = new Integer(0);
+            pQueueStates.put(qs[wk], qcnt+1);
+          }
         }
       }
 
+      pCountDLs = null;
+      
       {
-        QueueState qs[] = pDetails.getQueueState();
-        int wk;
-        for(wk=0; wk<qs.length; wk++) {
-          Integer qcnt = pQueueStates.get(qs[wk]);
-          if(qcnt == null)
-            qcnt = new Integer(0);
-          pQueueStates.put(qs[wk], qcnt+1);
+        NodeCommon com = pDetails.getWorkingVersion();
+        if(com == null) 
+          com = pDetails.getLatestVersion();
+        
+        if(com != null) {
+          pToolset = com.getToolset();
+          pEditor  = com.getEditor();
+          pAction  = com.getAction();
         }
       }
+      
+      pToolsetDL = null; 
+      pEditorDLs = null;
+      pActionDLs = null;
+
+      if(editing != null) 
+        pViewsEditing.putAll(editing);
+      
+      pEditingDLs = null;
     }
-
-    pCountDLs = null;
-
-    NodeCommon com = pDetails.getWorkingVersion();
-    if(com == null) 
-      com = pDetails.getLatestVersion();
-
-    if(com != null) {
-      pToolset = com.getToolset();
-      pEditor  = com.getEditor();
-      pAction  = com.getAction();
-    }
-
-    pToolsetDL = null; 
-    pEditorDLs = null;
-    pActionDLs = null;
   }
 
 
@@ -236,6 +280,9 @@ class ViewerNodeHint
    GL gl
   )
   {
+    if(!pIsVisible) 
+      return;
+
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
       if(pDetails != null) {
@@ -488,6 +535,44 @@ class ViewerNodeHint
           Math.max(pActionWidth, 
                    mgr.getTextWidth(PackageInfo.sGLFont, pAction.getVendor(), 0.05));
       }
+
+      /* views editing title */ 
+      if(pEditingTitleDL == null) {
+	pEditingTitleDL = 
+	  mgr.getTextDL(gl, PackageInfo.sGLFont, "Editing:", 
+			GeometryMgr.TextAlignment.Right, 0.05);
+      }
+
+      /* views editing */ 
+      if(pShowEditing && !pViewsEditing.isEmpty()) {
+	if(pEditingDLs == null) {
+          int cnt = 0;
+          for(String author : pViewsEditing.keySet()) {
+            for(String view : pViewsEditing.get(author)) 
+              cnt++;
+          }
+
+	  pEditingDLs = new int[cnt];
+          pEditingWidth = 0.0;
+
+          cnt = 0;
+          for(String author : pViewsEditing.keySet()) {
+            for(String view : pViewsEditing.get(author)) {
+              String title = author + " | " + view;
+
+              pEditingDLs[cnt] = 
+                mgr.getTextDL(gl, PackageInfo.sGLFont, title, 
+                              GeometryMgr.TextAlignment.Left, 0.05);
+
+              pEditingWidth = 
+                Math.max(pEditingWidth, 
+                         mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05));
+
+              cnt++;
+            }
+          }
+        }
+      }
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
@@ -588,13 +673,16 @@ class ViewerNodeHint
         }
          
 	if((pShowToolset) && (pToolsetDL != null)) 
-          valueWidth =  Math.max(valueWidth, pToolsetWidth);                  
+          valueWidth = Math.max(valueWidth, pToolsetWidth);                  
 
 	if((pShowEditor) && (pEditorDLs != null)) 
-          valueWidth =  Math.max(valueWidth, pEditorWidth);         
+          valueWidth = Math.max(valueWidth, pEditorWidth);         
         
 	if((pShowAction) && (pActionDLs != null)) 
-          valueWidth =  Math.max(valueWidth, pActionWidth);  
+          valueWidth = Math.max(valueWidth, pActionWidth);  
+
+	if((pShowEditing) && (pEditingDLs != null)) 
+          valueWidth = Math.max(valueWidth, pEditingWidth);  
 
         valueWidth *= sTextHeight;
       }
@@ -638,6 +726,11 @@ class ViewerNodeHint
 
 	  if(pShowAction) {
 	    orows += (pActionDLs != null) ? 3.0 : 1.0;
+	    oborders += 2.0;
+	  }
+          
+	  if(pShowEditing) {
+	    orows += (pEditingDLs != null) ? pEditingDLs.length : 1.0;
 	    oborders += 2.0;
 	  }
 	  
@@ -689,6 +782,16 @@ class ViewerNodeHint
 	    }
 	    
 	    if(pShowAction) {
+	      gl.glVertex2d(-x, y); 
+	      gl.glVertex2d( x, y); 
+
+	      if(pActionDLs == null) 
+		y -= sTextHeight + sBorder*2.0;
+	      else 
+		y -= sTextHeight*3.0 + sBorder*2.0;
+	    }
+
+	    if(pShowEditing) {
 	      gl.glVertex2d(-x, y); 
 	      gl.glVertex2d( x, y); 
 	    }
@@ -1005,7 +1108,52 @@ class ViewerNodeHint
 	  else {
 	    y -= sTextHeight;
 	  }
+
+	  y -= sBorder*2.0;
 	}
+
+	/* editing */ 
+	if(pShowEditing) {
+	  if(pEditingTitleDL != null) {
+	    double py = y;
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(toffset, py, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+	      gl.glCallList(pEditingTitleDL); 
+	    }
+	    gl.glPopMatrix();
+	  }
+
+	  if(pEditingDLs != null) {
+	    int wk;
+	    for(wk=0; wk<pEditingDLs.length; wk++) {
+	      gl.glPushMatrix();
+	      {
+                gl.glTranslated(voffset, y, 0.0);
+		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+		gl.glCallList(pEditingDLs[wk]); 
+	      }
+	      gl.glPopMatrix();
+	      
+	      y -= sTextHeight;
+	    }
+	  }
+	  else if(pNullDL != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(noffset, y, 0.0);
+	      gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
+	      gl.glCallList(pNullDL); 
+	    }
+	    gl.glPopMatrix();
+
+	    y -= sTextHeight;
+	  }
+	  else {
+	    y -= sTextHeight;
+	  }
+        }
       }
       gl.glPopMatrix();
     }
@@ -1047,6 +1195,7 @@ class ViewerNodeHint
   private boolean  pShowToolset; 
   private boolean  pShowEditor; 
   private boolean  pShowAction; 
+  private boolean  pShowEditing; 
 
   /**
    * The node status details. 
@@ -1064,6 +1213,11 @@ class ViewerNodeHint
   private LinkState                   pLinkState;      
   private TreeMap<FileState,Integer>  pFileStates; 
   private TreeMap<QueueState,Integer> pQueueStates; 
+
+  /**
+   * Working area views editing/containig the target node.
+   */ 
+  private TreeMap<String,TreeSet<String>>  pViewsEditing; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1121,4 +1275,12 @@ class ViewerNodeHint
 
   private int[]    pActionDLs; 
   private double   pActionWidth;
+
+  /**
+   * The OpenGL display list handles for the working areas editing the node.
+   */ 
+  private Integer  pEditingTitleDL;
+  private int[]    pEditingDLs; 
+  private double   pEditingWidth; 
+  
 }

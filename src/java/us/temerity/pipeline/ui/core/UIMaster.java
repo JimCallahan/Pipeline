@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.63 2007/04/26 17:54:44 jim Exp $
+// $Id: UIMaster.java,v 1.64 2007/04/28 00:01:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -628,7 +628,7 @@ class UIMaster
    * @return
    *   The names of the working area views indexed by author name.
    */ 
-  private TreeMap<String,TreeSet<String>>
+  public TreeMap<String,TreeSet<String>>
   lookupWorkingAreaContainingMenus
   (
    int channel, 
@@ -668,7 +668,7 @@ class UIMaster
    * @return
    *   The names of the working area views indexed by author name.
    */ 
-  private TreeMap<String,TreeSet<String>>
+  public TreeMap<String,TreeSet<String>>
   lookupWorkingAreaEditingMenus
   (
    int channel, 

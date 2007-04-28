@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.81 2007/04/20 19:55:53 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.82 2007/04/28 00:01:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -85,7 +85,8 @@ class JNodeViewerPanel
 	new ViewerNodeHint(this, 
 			   prefs.getShowToolsetHints(), 
 			   prefs.getShowEditorHints(), 
-			   prefs.getShowActionHints()); 			   
+			   prefs.getShowActionHints(), 
+                           prefs.getShowEditingHints());                           
 
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
@@ -204,6 +205,12 @@ class JNodeViewerPanel
       item = new JMenuItem();
       pShowHideActionHintItem = item;
       item.setActionCommand("show-hide-action-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
+
+      item = new JMenuItem();
+      pShowHideEditingHintItem = item;
+      item.setActionCommand("show-hide-editing-hint");
       item.addActionListener(this);
       pPanelPopup.add(item);   
     }
@@ -1006,6 +1013,10 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pShowHideActionHintItem, prefs.getNodeViewerShowHideActionHint(), 
        "Show/hide the Action property as part of the node detail hints."); 
+    updateMenuToolTip
+      (pShowHideEditingHintItem, prefs.getNodeViewerShowHideEditingHint(), 
+       "Show/hide the listing of working area views editing the node in the node " + 
+       "detail hints."); 
     
 
     /* node menus */ 
@@ -1164,6 +1175,10 @@ class JNodeViewerPanel
       pShowHideActionHintItem.setText
 	((pViewerNodeHint.showAction() ? "Hide" : "Show") + " Action Hint");
       pShowHideActionHintItem.setEnabled(true);
+
+      pShowHideEditingHintItem.setText
+	((pViewerNodeHint.showEditing() ? "Hide" : "Show") + " Editing Hint");
+      pShowHideEditingHintItem.setEnabled(true);
     }
     else {
       pShowHideToolsetHintItem.setText("Show Toolset Hint");
@@ -1174,6 +1189,9 @@ class JNodeViewerPanel
 
       pShowHideActionHintItem.setText("Show Action Hint");
       pShowHideActionHintItem.setEnabled(false);
+
+      pShowHideEditingHintItem.setText("Show Editing Hint");
+      pShowHideEditingHintItem.setEnabled(false);
     }
   }
 
@@ -2813,7 +2831,17 @@ class JNodeViewerPanel
 	if((pLastViewerNodeHint == null) || 
 	   !pLastViewerNodeHint.getName().equals(vunder.getNodeStatus().getName())) {
 	  pLastViewerNodeHint = vunder.getNodeStatus(); 
-	  pViewerNodeHint.setNodeStatus(pLastViewerNodeHint);
+          
+          TreeMap<String,TreeSet<String>> editing = null;
+          if(pLastViewerNodeHint.getDetails() != null) {
+            UIMaster master = UIMaster.getInstance();
+            String name = pLastViewerNodeHint.getName(); 
+            if(pViewerNodeHint.showEditing())
+              editing = master.lookupWorkingAreaEditingMenus(pGroupID, name); 
+          }
+
+	  pViewerNodeHint.updateHint(pLastViewerNodeHint, editing);
+
 	  pViewerNodeHint.setPosition(vunder.getPosition());
 	  pViewerNodeHint.setVisible(true);
 	  refresh();
@@ -3274,6 +3302,8 @@ class JNodeViewerPanel
       doShowHideEditorHint();
     else if(cmd.equals("show-hide-action-hint"))
       doShowHideActionHint();
+    else if(cmd.equals("show-hide-editing-hint"))
+      doShowHideEditingHint();
 
     /* tool menu events */ 
     else if(cmd.startsWith("run-tool:")) 
@@ -4718,6 +4748,18 @@ class JNodeViewerPanel
     clearSelection();
     if(pViewerNodeHint != null) 
       pViewerNodeHint.setShowAction(!pViewerNodeHint.showAction());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the listing of working area views editing the node in the node detail hints.
+   */ 
+  private synchronized void
+  doShowHideEditingHint()
+  {
+    clearSelection();
+    if(pViewerNodeHint != null) 
+      pViewerNodeHint.setShowEditing(!pViewerNodeHint.showEditing());
     updateUniverse();
   }
   
@@ -6576,6 +6618,7 @@ class JNodeViewerPanel
   private JMenuItem  pShowHideToolsetHintItem;
   private JMenuItem  pShowHideEditorHintItem;
   private JMenuItem  pShowHideActionHintItem;
+  private JMenuItem  pShowHideEditingHintItem;
   
 
   /*----------------------------------------------------------------------------------------*/
