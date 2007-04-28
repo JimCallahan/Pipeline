@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.10 2007/03/28 20:07:15 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.11 2007/04/28 22:43:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -794,6 +794,8 @@ class JQueueJobDetailsPanel
   {
     updatePrivileges();
 
+    UserPrefs prefs = UserPrefs.getInstance();
+
     pJob           = job;
     pJobInfo       = info;
     pExecDetails   = details; 
@@ -902,8 +904,12 @@ class JQueueJobDetailsPanel
 
       {
 	String text = "-";
-	if((pJobInfo != null) && (pJobInfo.getHostname() != null)) 
-	  text = pJobInfo.getHostname();
+	if((pJobInfo != null) && (pJobInfo.getHostname() != null)) {
+          if(prefs.getShowFullHostnames()) 
+            text = pJobInfo.getHostname();
+          else 
+            text = pJobInfo.getShortHostname();
+        }
 
 	pHostnameField.setText(text);
       }

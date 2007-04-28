@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.52 2007/04/28 00:01:45 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -482,7 +482,13 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to show panel type labels.", 
-	 "ShowPanelLabels", "Show Panel Labels:", false)
+	 "ShowPanelLabels", "Show Panel Labels:", false), 
+
+	new BasePref(),
+
+	new BooleanPref
+	("Whether to display fully resolved hostnames.", 
+	 "ShowFullHostnames", "Show Full Hostnames:", false)
       };
 
       pPrefs.put("Panels|Appearance", prefs);
@@ -2326,7 +2332,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.52 2007/04/28 00:01:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2581,7 +2587,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.52 2007/04/28 00:01:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3938,7 +3944,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.52 2007/04/28 00:01:45 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

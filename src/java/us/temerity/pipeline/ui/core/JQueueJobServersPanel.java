@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.6 2007/03/28 20:07:15 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.7 2007/04/28 22:43:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -596,7 +596,17 @@ class JQueueJobServersPanel
       pHeaderLabel.setText("Queue Servers:" + 
                            (filtered ? ("  ( " + hosts.size() + " matched )") : ""));  
 
-      pHostnamesTableModel.setHostnames(hosts.keySet());
+      UserPrefs prefs = UserPrefs.getInstance();
+      if(prefs.getShowFullHostnames()) {
+        pHostnamesTableModel.setHostnames(hosts.keySet());          
+      }
+      else {
+        ArrayList<String> names = new ArrayList<String>();
+        for(QueueHostInfo qinfo : hosts.values()) 
+          names.add(qinfo.getShortName());
+          
+        pHostnamesTableModel.setHostnames(names);         
+      }
 
       pHostsTableModel.setQueueHosts
 	(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules, 

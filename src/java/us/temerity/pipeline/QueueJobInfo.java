@@ -1,10 +1,11 @@
-// $Id: QueueJobInfo.java,v 1.17 2007/03/28 19:31:03 jim Exp $
+// $Id: QueueJobInfo.java,v 1.18 2007/04/28 22:43:21 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
+import java.util.regex.*; 
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -154,6 +155,19 @@ class QueueJobInfo
   }
   
   /**
+   * Get the short hostname (without domain name suffix) of the host assigned to execute 
+   * the job.
+   * 
+   * @return 
+   *   The hostname or <CODE>null</CODE> if the job was never assigned to a specific host.
+   */ 
+  public synchronized String
+  getShortHostname() 
+  {
+    return pShortHostname;
+  }
+
+  /**
    * The operating system type of the host assigned to execute the job.
    * 
    * @return 
@@ -221,6 +235,14 @@ class QueueJobInfo
       throw new IllegalArgumentException
 	("The hostname cannot be (null)!");
     pHostname = hostname; 
+    
+    {
+      Matcher m = sHostPattern.matcher(hostname);
+      if(m.find() && (m.group().length() > 0))
+        pShortHostname = m.group();
+      else 
+        pShortHostname = hostname;
+    }
 
     if(os == null) 
       throw new IllegalArgumentException
@@ -238,6 +260,7 @@ class QueueJobInfo
   preempted() 
   {
     pHostname = null;
+    pShortHostname = null;
     pStartedStamp = null;
     pOsType = null;
 
@@ -310,6 +333,9 @@ class QueueJobInfo
     if(pHostname != null)
       encoder.encode("Hostname", pHostname);
 
+    if(pShortHostname != null)
+      encoder.encode("ShortHostname", pShortHostname);
+
     if(pOsType != null)
       encoder.encode("OsType", pOsType);
 
@@ -360,6 +386,14 @@ class QueueJobInfo
     }
 
     {
+      String host = (String) decoder.decode("ShortHostname"); 
+      if(host != null) 
+	pShortHostname = host;
+      else 
+        pShortHostname = pHostname;
+    }
+
+    {
       OsType os = (OsType) decoder.decode("OsType"); 
       if(os != null) 
 	pOsType = os; 
@@ -379,6 +413,11 @@ class QueueJobInfo
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 4135404054158504196L;
+
+  /**
+   * A regular expression to match the first component of a fully resolved hostname.
+   */ 
+  private static final Pattern sHostPattern = Pattern.compile("^\\p{Alpha}(\\p{Alnum})+");
 
 
 
@@ -428,6 +467,12 @@ class QueueJobInfo
    * job was never assigned to a specific host.
    */ 
   private String pHostname;   
+
+  /**
+   * The short hostname (without domain name suffix) of the host assigned to execute 
+   * the job or <CODE>null</CODE> if the job was never assigned to a specific host.
+   */ 
+  private String pShortHostname;
 
   /**
    * The operating system type of the host assigned to execute the job or <CODE>null</CODE> 

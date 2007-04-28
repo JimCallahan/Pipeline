@@ -1,10 +1,11 @@
-// $Id: QueueHostInfo.java,v 1.4 2007/03/28 19:31:03 jim Exp $
+// $Id: QueueHostInfo.java,v 1.5 2007/04/28 22:43:21 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
+import java.util.regex.*; 
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -103,6 +104,14 @@ class QueueHostInfo
   {
     super(name);
 
+    {
+      Matcher m = sHostPattern.matcher(name);
+      if(m.find() && (m.group().length() > 0))
+        pShortName = m.group();
+      else 
+        pShortName = name;
+    }
+
     if(status == null) 
       throw new IllegalArgumentException("The status cannot be (null)!");
     pStatus = status;
@@ -148,6 +157,15 @@ class QueueHostInfo
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the short hostname without domain name suffix.
+   */ 
+  public synchronized String
+  getShortName() 
+  {
+    return pShortName;
+  }
 
   /**
    * Get the current operational status of the host.
@@ -491,6 +509,9 @@ class QueueHostInfo
   {
     super.toGlue(encoder); 
     
+    if(pShortName != null)
+      encoder.encode("ShortName", pShortName);
+
     if(pReservation != null) 
       encoder.encode("Reservation", pReservation);
      
@@ -509,6 +530,12 @@ class QueueHostInfo
     throws GlueException
   {
     super.fromGlue(decoder);
+
+    String sname = (String) decoder.decode("ShortName"); 
+    if(sname != null) 
+      pShortName = sname;
+    else 
+      pShortName = pName;
 
     String author = (String) decoder.decode("Reservation"); 
     if(author != null) 
@@ -536,11 +563,21 @@ class QueueHostInfo
 
   private static final long serialVersionUID = 3815152450621478990L;
 
+  /**
+   * A regular expression to match the first component of a fully resolved hostname.
+   */ 
+  private static final Pattern sHostPattern = Pattern.compile("^\\p{Alpha}(\\p{Alnum})+");
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The short hostname without domain name suffix.
+   */
+  private String  pShortName; 
   
   /**
    * The current operational status of the host.

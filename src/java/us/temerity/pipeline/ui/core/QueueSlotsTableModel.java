@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.9 2007/03/28 20:07:15 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.10 2007/04/28 22:43:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -255,7 +255,9 @@ class QueueSlotsTableModel
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo
   ) 
-  {
+  { 
+    UserPrefs prefs = UserPrefs.getInstance();
+
     int cnt = 0;
     for(QueueHostInfo host : hosts.values()) {
       switch(host.getStatus()) {
@@ -302,7 +304,11 @@ class QueueSlotsTableModel
 	  int sk;
 	  for(sk=0; sk<host.getJobSlots(); sk++) {
 	    pIsEnabled[wk] = (host.getStatus() == QueueHostStatus.Enabled);
-	    pHostnames[wk] = hostname;
+
+            if(prefs.getShowFullHostnames())   
+              pHostnames[wk] = hostname;
+            else
+              pHostnames[wk] = host.getShortName(); 
 	    
 	    if(sk < hinfo.size()) {
 	      QueueJobInfo info = hinfo.get(sk);
