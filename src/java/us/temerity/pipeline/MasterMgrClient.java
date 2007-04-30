@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.98 2007/04/27 20:45:37 jim Exp $
+// $Id: MasterMgrClient.java,v 1.99 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3504,9 +3504,6 @@ class MasterMgrClient
    *   Information about the relationship between the downstream node and the upstream 
    *   node to connect.
    * 
-   * @param policy 
-   *   The node state propogation policy.
-   * 
    * @throws PipelineException
    *   If unable to create or modify the link.
    */
@@ -3533,9 +3530,6 @@ class MasterMgrClient
    * @param link 
    *   Information about the relationship between downstream node and the upstream 
    *   node to connect.
-   * 
-   * @param policy 
-   *   The node state propogation policy.
    * 
    * @throws PipelineException
    *   If unable to create or modify the link.
@@ -4373,9 +4367,6 @@ class MasterMgrClient
    * 
    * @param view 
    *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
    * 
    * @param roots
    *   Whether to get only lightweight (true) or heavyweight (false) node status detail 

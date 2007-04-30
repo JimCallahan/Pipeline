@@ -1,4 +1,4 @@
-// $Id: TextDiffComparator.java,v 1.1 2007/03/24 03:45:34 jim Exp $
+// $Id: TextDiffComparator.java,v 1.2 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -44,7 +44,7 @@ class TextDiffComparator
 
   /**
    * Whether Pipeline programs which launch Comparator plugins should ignore the exit code 
-   * returned by the Subprocess created in the {@link #prep prep} method. <P> 
+   * returned by the Subprocess created in the {@link #launch launch} method. <P> 
    */ 
   public boolean
   ignoreExitCode() 

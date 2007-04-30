@@ -1,4 +1,4 @@
-// $Id: PythonActionUtils.java,v 1.2 2007/04/08 21:01:23 jim Exp $
+// $Id: PythonActionUtils.java,v 1.3 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -176,8 +176,8 @@ class PythonActionUtils
    * 
    * The generated code requires the "os" package to have been imported previously.
    * 
-   * @param paths
-   *   The abstract file system paths to the file to check. 
+   * @param path
+   *   The abstract file system path to the file to check. 
    * 
    * @param title
    *   What to call the file being validated in progress and error messages.
@@ -197,8 +197,8 @@ class PythonActionUtils
    * 
    * The generated code requires the "os" package to have been imported previously.
    * 
-   * @param paths
-   *   The abstract file system paths to the file to check. 
+   * @param path
+   *   The abstract file system path to the file to check. 
    * 
    * @param title
    *   What to call the file being validated in progress and error messages.
@@ -215,13 +215,13 @@ class PythonActionUtils
    Path path, 
    String title, 
    boolean nonEmpty, 
-   int ident
+   int indent
   ) 
   {
     ArrayList<Path> paths = new ArrayList<Path>();
     paths.add(path); 
 
-    return getPythonFileVerify(path, title, nonEmpty, ident);
+    return getPythonFileVerify(path, title, nonEmpty, indent);
   }
 
   /**
@@ -268,10 +268,10 @@ class PythonActionUtils
    FileSeq fseq,
    String title, 
    boolean nonEmpty, 
-   int ident
+   int indent
   ) 
   {
-    return getPythonFileVerify(fseq.getPaths(), title, nonEmpty, ident);
+    return getPythonFileVerify(fseq.getPaths(), title, nonEmpty, indent);
   }
 
   /**

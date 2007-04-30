@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.10 2007/04/27 20:45:37 jim Exp $
+// $Id: LinkMod.java,v 1.11 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -42,13 +42,6 @@ class LinkMod
    * 
    * @param policy 
    *   The node state propogation policy.
-   * 
-   * @param relationship 
-   *   The nature of the relationship between files associated with the source and 
-   *   target nodes. 
-   * 
-   * @param offset 
-   *   The frame index offset.
    */ 
   public 
   LinkMod

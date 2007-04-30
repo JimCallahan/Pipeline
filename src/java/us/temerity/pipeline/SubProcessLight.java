@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.17 2007/04/02 10:46:12 jim Exp $
+// $Id: SubProcessLight.java,v 1.18 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -128,7 +128,7 @@ class SubProcessLight
    * 
    * The Pipeline utility program <I>plrun(1)</I> is used to run the subprocess as another 
    * user. Due to the fact that the <I>plrun(1)</I> utility can only be run by the 
-   * "pipeline" user, this constructor will throw a {@link PipelineArgumentException} if 
+   * "pipeline" user, this constructor will throw a {@link PipelineException} if 
    * instantiated by any other user. Running a subprocess as another user is not supported 
    * on Windows.<P>
    * 

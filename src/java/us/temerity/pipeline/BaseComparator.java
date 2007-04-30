@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.10 2007/03/24 02:58:12 jim Exp $
+// $Id: BaseComparator.java,v 1.11 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -84,7 +84,7 @@ class BaseComparator
 
   /**
    * Whether Pipeline programs which launch Comparator plugins should ignore the exit code 
-   * returned by the Subprocess created in the {@link #prep prep} method. <P> 
+   * returned by the Subprocess created in the {@link #launch launch} method. <P> 
    * 
    * By default, this method always returns <CODE>false</CODE>.  Subclasses which run 
    * 3rd party applications which always return non-zero (failure) error codes may consider

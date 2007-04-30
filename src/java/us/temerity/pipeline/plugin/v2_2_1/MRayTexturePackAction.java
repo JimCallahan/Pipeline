@@ -1,4 +1,4 @@
-// $Id: MRayTexturePackAction.java,v 1.4 2007/04/04 07:33:30 jim Exp $
+// $Id: MRayTexturePackAction.java,v 1.5 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -34,7 +34,7 @@ import java.io.*;
  *   source.0007.tif (2x2)
  * </DIV> <BR>
  * 
- * The advantage of using this action over {@link MRayTexutreAction MRayTexture} is that 
+ * The advantage of using this action over {@link MRayTextureAction MRayTexture} is that 
  * you can have more control over how the smaller resolution levels are generated from the 
  * original fully resolution source texture.  MRayTexture uses a simple box filter to 
  * produce these images.<P> 

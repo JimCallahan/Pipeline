@@ -1,21 +1,19 @@
-/**
- * 
- */
+// $Id: JMultiEnumField.java,v 1.4 2007/04/30 20:51:40 jim Exp $
+
 package us.temerity.pipeline.ui;
+
+import us.temerity.pipeline.PipelineException;
 
 import java.awt.Dimension;
 import java.util.*;
-
 import javax.swing.*;
-
-import us.temerity.pipeline.PipelineException;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M U L T I   E N U M   F I E L D                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A field which represents a {@link MultiEnumParam}.
+ * A field which represents a list of optional boolean parameters.
  * <P>
  * This field displays itself as a list of boolean parameters, organized with an optional
  * layout or alphabetically if no layout is specified.
@@ -52,7 +50,7 @@ public class JMultiEnumField
     Set<String> values,
     ArrayList<String> layout
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     super();
     this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -152,8 +150,6 @@ public class JMultiEnumField
   
   /**
    * Gets all the keys that are set to true
-   * 
-   * @return
    */
   public Collection<String>
   getSelectedValues()
@@ -175,8 +171,6 @@ public class JMultiEnumField
 
   /**
    * Gets all the {@link JBooleanField}s that make up the field.
-   * 
-   * @return
    */
   public TreeMap<String, JBooleanField>
   getFields()

@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.2 2007/04/05 08:38:02 jim Exp $
+// $Id: CommonActionUtils.java,v 1.3 2007/04/30 20:51:40 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -18,7 +18,7 @@ import java.io.*;
  * 
  * This class provides convenience methods for accessing and validating Action parameters, 
  * constructing node target/source related file system paths, creating subprocesses and other 
- * common operations performed inside the {@link BaseAcrion#prep prep} method of most Actions.
+ * common operations performed inside the {@link BaseAction#prep prep} method of most Actions.
  */
 public 
 class CommonActionUtils
