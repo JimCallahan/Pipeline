@@ -1,18 +1,20 @@
-// $Id: GEditEditor.java,v 1.2 2007/04/30 08:21:49 jim Exp $
+// $Id: VimEditor.java,v 1.1 2007/04/30 08:20:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   G E D I T   E D I T O R                                                                */
+/*   V I M   E D I T O R                                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The lightweight GNOME desktop text editor.                                            
+ * The Vi IMproved, a programmers text editor. <P> 
+ * 
+ * See the <A href="http://www.vim.org/docs.php">Vim</A> documentation for details.
  */
 public
-class GEditEditor
+class VimEditor
   extends SimpleSingleEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -20,20 +22,25 @@ class GEditEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GEditEditor()
+  VimEditor()
   {
-    super("GEdit", new VersionID("2.2.1"), "Temerity", 
-	  "A lightweight text editor for the GNOME desktop.", 
-	  "gedit");
-  }
+    super("Vim", new VersionID("2.2.1"), "Temerity", 
+	  "The Vi IMproved, a programmers text editor.", 
+	  "gvim");
 
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
+
+    underDevelopment();
+  }
+ 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 5276607364697906004L;
+  private static final long serialVersionUID = 383389058182003212L;
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.7 2007/04/04 07:33:30 jim Exp $
+// $Id: PythonAction.java,v 1.8 2007/04/30 08:20:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -199,13 +199,13 @@ class PythonAction
   )
     throws PipelineException
   {
-    /* get the name of the executable script file */ 
+    /* make sure Python script was specified */ 
     String scriptName = (String) getSingleParamValue(aScript); 
     if(scriptName == null) 
       throw new PipelineException
         ("The Script parameter was not set!");
 
-    /* get the executable script path */ 
+    /* get the Python script path */ 
     Path scriptPath = getPrimarySourcePath(aScript, agenda, "py", "Python source (.py) file");
     if(scriptPath == null) 
       throw new PipelineException("The Script node was not specified!");
