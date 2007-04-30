@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.7 2007/04/28 00:01:45 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.8 2007/04/30 08:19:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -686,9 +686,8 @@ class ViewerNodeHint
 
         valueWidth *= sTextHeight;
       }
-      double wholeWidth = pTitleWidth + 0.1 + valueWidth;
-      double minWidth = Math.max(sWidth, wholeWidth);
-      double toffset = pTitleWidth - wholeWidth*0.5;
+      double width = pTitleWidth + 0.1 + valueWidth;
+      double toffset = pTitleWidth - width*0.5;
       double voffset = toffset + 0.1;
       double noffset = voffset + valueWidth*0.35;
 
@@ -734,7 +733,7 @@ class ViewerNodeHint
 	    oborders += 2.0;
 	  }
 	  
-	  double x  = minWidth*0.5 + sBorder; 
+	  double x  = width*0.5 + sBorder; 
 	  double y1 = 0.8*sTextHeight + sBorder;
 	  double y2 = y1 - (sTextHeight + sBorder*2.0); 
 	  double y3 = y1 - (sTextHeight*(1.0+srows+orows) + sBorder*(2.0+sborders+oborders)); 
@@ -804,7 +803,7 @@ class ViewerNodeHint
 
 	/* versions */ 
 	{
-	  double x = minWidth*0.25 + sBorder*0.5; 
+	  double x = width*0.25 + sBorder*0.5; 
 
 	  if(pBaseVersionDL != null) {
 	    gl.glPushMatrix();
@@ -1165,7 +1164,6 @@ class ViewerNodeHint
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private final double  sWidth       = 2.0; 
   private final double  sBorder      = 0.15;
   private final double  sTextHeight  = 0.35;
   private final double  sScaleFactor = 0.75;

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.39 2007/04/20 18:07:18 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.40 2007/04/30 08:19:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -71,19 +71,28 @@ class JQueueJobViewerPanel
 
     /* initialize fields */ 
     {
+      pHorizontalOrientation = 
+        ((prefs.getOrientation() != null) && prefs.getOrientation().equals("Horizontal"));
+
+      pShowDetailHints = prefs.getShowJobDetailHints();
+
+      pViewerJobHint = 
+	new ViewerJobHint(this, 
+                          prefs.getShowJobToolsetHints(), 
+                          prefs.getShowJobActionHints(), 
+                          prefs.getShowJobHostHints(), 
+                          prefs.getShowJobTimingHints());
+
       pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
       pJobStatus = new TreeMap<Long,JobStatus>();
-
+      
       pViewerJobGroups = new TreeMap<Long,ViewerJobGroup>();
       pViewerJobs      = new HashMap<JobPath,ViewerJob>();
 
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
       pSelected       = new HashMap<JobPath,ViewerJob>();
-
-      pHorizontalOrientation = 
-        ((prefs.getOrientation() != null) && prefs.getOrientation().equals("Horizontal"));
     }
-
+    
     /* panel popup menu */ 
     {
       JMenuItem item;
@@ -144,6 +153,37 @@ class JQueueJobViewerPanel
       item.setActionCommand("hide-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
+      pPanelPopup.addSeparator();
+
+      item = new JMenuItem();
+      pShowHideDetailHintsItem = item;
+      item.setActionCommand("show-hide-detail-hints");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
+
+      item = new JMenuItem();
+      pShowHideToolsetHintItem = item;
+      item.setActionCommand("show-hide-toolset-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideActionHintItem = item;
+      item.setActionCommand("show-hide-action-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
+
+      item = new JMenuItem();
+      pShowHideHostHintItem = item;
+      item.setActionCommand("show-hide-host-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
+
+      item = new JMenuItem();
+      pShowHideTimingHintItem = item;
+      item.setActionCommand("show-hide-timing-hint");
+      item.addActionListener(this);
+      pPanelPopup.add(item);   
     }
     
     /* job popup menu */ 
@@ -598,6 +638,9 @@ class JQueueJobViewerPanel
   public void 
   updateUserPrefs() 
   {
+    UserPrefs prefs = UserPrefs.getInstance();
+    pShowDetailHints = prefs.getShowJobDetailHints();
+
     updateUniverse();
     updateMenuToolTips();
   }
@@ -635,6 +678,22 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pHideAllItem, prefs.getHideAll(), 
        "Hide all of the job groups.");
+
+    updateMenuToolTip
+      (pShowHideDetailHintsItem, prefs.getShowHideDetailHints(), 
+       "Show/hide job detail hints.");
+    updateMenuToolTip
+      (pShowHideToolsetHintItem, prefs.getShowHideToolsetHint(), 
+       "Show/hide the Toolset property as part of the job detail hints."); 
+    updateMenuToolTip
+      (pShowHideActionHintItem, prefs.getShowHideActionHint(), 
+       "Show/hide the Action property as part of the job detail hints."); 
+    updateMenuToolTip
+      (pShowHideHostHintItem, prefs.getJobViewerShowHideHostHint(), 
+       "Show/hide job server host information as part of the job detail hints."); 
+    updateMenuToolTip
+      (pShowHideTimingHintItem, prefs.getJobViewerShowHideTimingHint(), 
+       "Show/hide job timing information as part of the job detail hints."); 
 
     /* job menu */ 
     updateMenuToolTip
@@ -706,6 +765,51 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Update the panel menu.
+   */ 
+  public void 
+  updatePanelMenu() 
+  {
+    pShowHideDetailHintsItem.setText
+      ((pShowDetailHints ? "Hide" : "Show") + " Detail Hints");
+    pShowHideDetailHintsItem.setEnabled(true);
+
+    if(pViewerJobHint != null) {
+      pShowHideToolsetHintItem.setText
+	((pViewerJobHint.showToolset() ? "Hide" : "Show") + " Toolset Hint");
+      pShowHideToolsetHintItem.setEnabled(true);
+
+      pShowHideActionHintItem.setText
+	((pViewerJobHint.showAction() ? "Hide" : "Show") + " Action Hint");
+      pShowHideActionHintItem.setEnabled(true);
+
+      pShowHideHostHintItem.setText
+	((pViewerJobHint.showHost() ? "Hide" : "Show") + " Host Hint");
+      pShowHideHostHintItem.setEnabled(true);
+
+      pShowHideTimingHintItem.setText
+	((pViewerJobHint.showTiming() ? "Hide" : "Show") + " Timing Hint");
+      pShowHideTimingHintItem.setEnabled(true);
+    }
+    else {
+      pShowHideToolsetHintItem.setText("Show Toolset Hint");
+      pShowHideToolsetHintItem.setEnabled(false);
+
+      pShowHideActionHintItem.setText("Show Action Hint");
+      pShowHideActionHintItem.setEnabled(false);
+
+      pShowHideHostHintItem.setText("Show Host Hint");
+      pShowHideHostHintItem.setEnabled(false);
+
+      pShowHideTimingHintItem.setText("Show Timing Hint");
+      pShowHideTimingHintItem.setEnabled(false);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Update the visualization graphics.
    */
   private synchronized void 
@@ -721,6 +825,7 @@ class JQueueJobViewerPanel
     /* remove all previous jobs and job groups */ 
     pViewerJobGroups.clear();
     pViewerJobs.clear();
+    pLastJobHintID = null;
 
     UserPrefs prefs = UserPrefs.getInstance();
     if(!pJobGroups.isEmpty()) {
@@ -1273,6 +1378,11 @@ class JQueueJobViewerPanel
       else {
 	gl.glCallList(pSceneDL.get());
       }
+
+      if(pViewerJobHint.isVisible()) {
+        pViewerJobHint.rebuild(gl);
+        pViewerJobHint.render(gl);
+      }
     }    
   }
    
@@ -1504,6 +1614,7 @@ class JQueueJobViewerPanel
 	    
 	    /* BUTTON3: panel popup menu */ 
 	    if((mods & (on1 | off1)) == on1) {
+	      updatePanelMenu();
 	      pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
@@ -1608,6 +1719,64 @@ class JQueueJobViewerPanel
    
     /* refresh the view */ 
     pCanvas.setCursor(Cursor.getDefaultCursor());
+    refresh();
+  }
+
+
+  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
+ 
+  /**
+   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
+   * been pushed. 
+   */ 
+  public void 	
+  mouseMoved 
+  (
+   MouseEvent e
+  ) 
+  {
+    super.mouseMoved(e);
+
+    boolean hideHint = true;
+    if(pShowDetailHints) {  
+      Object under = objectAtMousePos();
+      if((under != null) && (under instanceof ViewerJob)) {
+	ViewerJob vunder = (ViewerJob) under;
+        Long jobID = vunder.getJobPath().getCurrentJobID();
+    
+	if(pLastJobHintID != jobID) {
+          UIMaster master = UIMaster.getInstance();
+          if(master.beginSilentPanelOp(0)) {
+            try {
+              QueueMgrClient qclient = master.getQueueMgrClient(0);
+              QueueJob job = qclient.getJob(jobID);
+              QueueJobInfo info = qclient.getJobInfo(jobID);
+              
+              pViewerJobHint.updateHint(job, info); 
+              pViewerJobHint.setPosition(vunder.getPosition());
+              pViewerJobHint.setVisible(true);
+              
+              pLastJobHintID = jobID;
+              hideHint = false;              
+            }
+            catch(PipelineException ex) {
+            }
+            finally {
+              master.endSilentPanelOp(0);
+            }
+          }
+	}
+        else {
+          hideHint = false;
+        }
+      }
+    }
+
+    if(hideHint) {
+      pLastJobHintID = null;
+      pViewerJobHint.setVisible(false);
+    } 
+
     refresh();
   }
 
@@ -1799,6 +1968,22 @@ class JQueueJobViewerPanel
 	      prefs.getHideAll().wasPressed(e))
 	doHideAll();
 
+      else if((prefs.getShowHideDetailHints() != null) &&
+	      prefs.getShowHideDetailHints().wasPressed(e))
+	doShowHideDetailHints();
+      else if((prefs.getShowHideToolsetHint() != null) &&
+	      prefs.getShowHideToolsetHint().wasPressed(e))
+	doShowHideToolsetHint();
+      else if((prefs.getShowHideActionHint() != null) &&
+	      prefs.getShowHideActionHint().wasPressed(e))
+	doShowHideActionHint();
+      else if((prefs.getJobViewerShowHideHostHint() != null) &&
+	      prefs.getJobViewerShowHideHostHint().wasPressed(e))
+	doShowHideHostHint();
+      else if((prefs.getJobViewerShowHideTimingHint() != null) &&
+	      prefs.getJobViewerShowHideTimingHint().wasPressed(e))
+	doShowHideTimingHint();
+
       else
 	undefined = true;
     } 
@@ -1889,6 +2074,16 @@ class JQueueJobViewerPanel
       doToggleOrientation();
     else if(cmd.equals("hide-all"))
       doHideAll();
+    else if(cmd.equals("show-hide-detail-hints"))
+      doShowHideDetailHints();
+    else if(cmd.equals("show-hide-toolset-hint"))
+      doShowHideToolsetHint();
+    else if(cmd.equals("show-hide-action-hint"))
+      doShowHideActionHint();
+    else if(cmd.equals("show-hide-host-hint"))
+      doShowHideHostHint();
+    else if(cmd.equals("show-hide-timing-hint"))
+      doShowHideTimingHint();
 
     /* job/group events */ 
     else if(cmd.equals("details"))
@@ -2015,6 +2210,69 @@ class JQueueJobViewerPanel
     updateUniverse();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Show/Hide the job detail hints.
+   */ 
+  private synchronized void
+  doShowHideDetailHints()
+  {
+    clearSelection();
+    pShowDetailHints = !pShowDetailHints;
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the Toolset property as part of the job detail hints.
+   */ 
+  private synchronized void
+  doShowHideToolsetHint()
+  {
+    clearSelection();
+    if(pViewerJobHint != null) 
+      pViewerJobHint.setShowToolset(!pViewerJobHint.showToolset());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide the Action property as part of the job detail hints.
+   */ 
+  private synchronized void
+  doShowHideActionHint()
+  {
+    clearSelection();
+    if(pViewerJobHint != null) 
+      pViewerJobHint.setShowAction(!pViewerJobHint.showAction());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide job server host information as part of the job detail hints.
+   */ 
+  private synchronized void
+  doShowHideHostHint()
+  {
+    clearSelection();
+    if(pViewerJobHint != null) 
+      pViewerJobHint.setShowHost(!pViewerJobHint.showHost());
+    updateUniverse();
+  }
+  
+  /**
+   * Show/Hide job timing information as part of the job detail hints.
+   */ 
+  private synchronized void
+  doShowHideTimingHint()
+  {
+    clearSelection();
+    if(pViewerJobHint != null) 
+      pViewerJobHint.setShowTiming(!pViewerJobHint.showTiming());
+    updateUniverse();
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2465,6 +2723,16 @@ class JQueueJobViewerPanel
   {
     super.toGlue(encoder);
 
+    /* job detail hints */
+    encoder.encode("ShowDetailHints", pShowDetailHints);
+    if(pViewerJobHint != null) {
+      encoder.encode("ShowToolsetHints", pViewerJobHint.showToolset());
+      encoder.encode("ShowActionHints", pViewerJobHint.showAction());
+      encoder.encode("ShowHostHints", pViewerJobHint.showHost());
+      encoder.encode("ShowTimingHints", pViewerJobHint.showTiming());
+    }
+
+    /* initial layout orientation */
     encoder.encode("HorizontalOrientation", pHorizontalOrientation);
   }
 
@@ -2476,6 +2744,31 @@ class JQueueJobViewerPanel
     throws GlueException
   {
     super.fromGlue(decoder);
+
+    /* whether to show the job status detail hints */    
+    {
+      Boolean show = (Boolean) decoder.decode("ShowDetailHints");
+      if(show != null) 
+	pShowDetailHints = show; 
+
+      if(pViewerJobHint != null) {
+	Boolean tset = (Boolean) decoder.decode("ShowToolsetHints");
+	if(tset != null) 
+	  pViewerJobHint.setShowToolset(tset);
+	
+	Boolean act = (Boolean) decoder.decode("ShowActionHints");
+	if(act != null) 
+	  pViewerJobHint.setShowAction(act);
+
+	Boolean host = (Boolean) decoder.decode("ShowHostHints");
+	if(host != null) 
+	  pViewerJobHint.setShowHost(host);
+
+	Boolean timing = (Boolean) decoder.decode("ShowTimingHints");
+	if(timing != null) 
+	  pViewerJobHint.setShowTiming(timing);
+      }
+    }
 
     /* whether to orient and align job groups horizontally */    
     {
@@ -2966,6 +3259,11 @@ class JQueueJobViewerPanel
   private TreeMap<Long,JobStatus>  pJobStatus;
 
   /**
+   * Whether to display the job detail hints.
+   */ 
+  private boolean  pShowDetailHints;
+
+  /**
    * Whether to orient and align job groups horizontally (true) or vertically (false).
    */ 
   private boolean pHorizontalOrientation; 
@@ -2979,6 +3277,17 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The job status hint.
+   */ 
+  private ViewerJobHint  pViewerJobHint; 
+
+  /**
+   * The ID of the job last used to update the job hint.
+   */ 
+  private Long  pLastJobHintID; 
+
+
+  /**
    * The currently displayed job groups indexed by unique job group ID.
    */ 
   private TreeMap<Long,ViewerJobGroup>  pViewerJobGroups;
@@ -2988,7 +3297,6 @@ class JQueueJobViewerPanel
    */ 
   private HashMap<JobPath,ViewerJob>  pViewerJobs; 
 
-  
 
   /**
    * The set of currently selected job groups indexed by group ID.
@@ -3036,6 +3344,12 @@ class JQueueJobViewerPanel
   private JMenuItem  pCollapseAllItem;
   private JMenuItem  pHideAllItem; 
   private JMenuItem  pToggleOrientationItem;
+  private JMenuItem  pShowHideDetailHintsItem;
+  private JMenuItem  pShowHideToolsetHintItem;
+  private JMenuItem  pShowHideEditorHintItem;
+  private JMenuItem  pShowHideActionHintItem;
+  private JMenuItem  pShowHideHostHintItem;
+  private JMenuItem  pShowHideTimingHintItem;
 
   /**
    * The job popup menu.

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.54 2007/04/30 08:19:10 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -855,11 +855,11 @@ class GenUserPrefsApp
 
 	new ChoicePref
 	("How to determine the size of the node detail hints.", 
-	 "DetailHintStyle", "Detail Hint Style:", styles, "Scales with Nodes"), 
+	 "DetailHintStyle", "Detail Hint Style:", styles, "Fixed Size"), 
 
 	new BoundedDoublePref
 	("The size of node detail hints.", 
-	 "DetailHintSize", "Detail Hint Size:", 0.5, 1.5, 1.0), 
+	 "DetailHintSize", "Detail Hint Size:", 0.4, 1.2, 0.8), 
 
 	new BasePref(),
 
@@ -966,12 +966,12 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Show/hide node status detail hints.",
-	 "NodeViewerShowHideDetailHints", "Show/Hide Node Detail Hints:", 
+	 "ShowHideDetailHints", "Show/Hide Node Detail Hints:", 
 	 false, false, false, 72),  /* H */
 
 	new HotKeyPref
 	("Show/hide the Toolset property as part of the node detail hints.",
-	 "NodeViewerShowHideToolsetHint", "Show/Hide Toolset Hint:"), 
+	 "ShowHideToolsetHint", "Show/Hide Toolset Hint:"), 
 	
 	new HotKeyPref
 	("Show/hide the Editor property as part of the node detail hints.",
@@ -979,7 +979,7 @@ class GenUserPrefsApp
 	
 	new HotKeyPref
 	("Show/hide the Action property as part of the node detail hints.",
-	 "NodeViewerShowHideActionHint", "Show/Hide Action Hint:"), 
+	 "ShowHideActionHint", "Show/Hide Action Hint:"), 
 
 	new HotKeyPref
 	("Show/hide the listing of working area views editing the node in the node " + 
@@ -1492,6 +1492,14 @@ class GenUserPrefsApp
       orient.add("Horizontal");
       orient.add("Vertical");
 
+      LinkedList<String> styles = new LinkedList();
+      styles.add("Scales with Jobs");
+      styles.add("Fixed Size");
+
+      LinkedList<String> looks = new LinkedList();
+      looks.add("Rounded");
+      looks.add("Square");
+
       BasePref prefs[] = {
 	new ChoicePref
 	("The initial orientation of job group layout.", 
@@ -1499,7 +1507,44 @@ class GenUserPrefsApp
 	
 	new BoundedDoublePref
 	("The distance between job groups.",
-	 "JobGroupSpace", "Group Space:", 0.15, 3.0, 0.3)
+	 "JobGroupSpace", "Group Space:", 0.15, 3.0, 0.3), 
+
+	new BasePref(),
+
+	new BooleanPref
+	("Whether to show job status detail hints by default.",
+	 "ShowJobDetailHints", "Show Job Detail Hints:", true), 
+
+	new BooleanPref
+	("Whether to show the Toolset property as part of the job detail hints by default.",
+	 "ShowJobToolsetHints", "Show Toolset Hints:", false), 
+
+	new BooleanPref
+	("Whether to show the Action property as part of the job detail hints by default.",
+	 "ShowJobActionHints", "Show Action Hints:", true), 
+
+	new BooleanPref
+	("Whether to show job server host information as part of the job detail hints " + 
+         "by default.",
+	 "ShowJobHostHints", "Show Host Hints:", false), 
+
+	new BooleanPref
+	("Whether to show job timing information as part of the job detail hints by default.",
+	 "ShowJobTimingHints", "Show Timing Hints:", true), 
+
+	new BasePref(),
+
+	new ChoicePref
+	("How to determine the size of the job detail hints.", 
+	 "JobDetailHintLook", "Detail Hint Look:", looks, "Rounded"), 
+
+	new ChoicePref
+	("How to determine the size of the job detail hints.", 
+	 "JobDetailHintStyle", "Detail Hint Style:", styles, "Fixed Size"), 
+
+	new BoundedDoublePref
+	("The size of job detail hints.", 
+	 "JobDetailHintSize", "Detail Hint Size:", 0.4, 1.2, 0.8)
       };
 
       pPrefs.put("Panels|Job Viewer|Appearance", prefs);
@@ -1579,6 +1624,29 @@ class GenUserPrefsApp
 	("Expand the first 9 levels of jobs.",
 	 "JobViewerExpand9Levels", "Expand 9 Levels:", "Expand9Levels"), 
 	
+	new BasePref(),
+
+	new DuplicateHotKeyPref
+	("Show/hide job detail hints.",
+	 "JobViewerShowHideDetailHints", "Show/Hide Job Detail Hints:", 
+         "ShowHideDetailHints"),
+
+	new DuplicateHotKeyPref
+	("Show/hide the Toolset property as part of the job detail hints.",
+	 "JobViewerShowHideToolsetHint", "Show/Hide Toolset Hint:", "ShowHideToolsetHint"),
+	
+	new DuplicateHotKeyPref
+	("Show/hide the Action property as part of the job detail hints.",
+	 "JobViewerShowHideActionHint", "Show/Hide Action Hint:", "ShowHideActionHint"),
+
+	new HotKeyPref
+	("Show/hide job server information as part of the job detail hints.",
+	 "JobViewerShowHideHostHint", "Show/Hide Host Hint:"), 
+	
+	new HotKeyPref
+	("Show/hide job timing information as part of the job detail hints.",
+	 "JobViewerShowHideTimingHint", "Show/Hide Timing Hint:"), 
+
 	new BasePref(),
 
 	new DuplicateHotKeyPref
@@ -2048,10 +2116,10 @@ class GenUserPrefsApp
 	group.add("NodeViewerRegisterNewNode");
 	group.add(update);
 	group.addAll(camera);
-	group.add("NodeViewerShowHideDetailHints"); 
-	group.add("NodeViewerShowHideToolsetHint"); 
+	group.add("ShowHideDetailHints"); 
+	group.add("ShowHideToolsetHint"); 
 	group.add("NodeViewerShowHideEditorHint"); 
-	group.add("NodeViewerShowHideActionHint"); 
+	group.add("ShowHideActionHint"); 
 	group.add("NodeViewerShowHideEditingHint"); 
 	group.add("NodeViewerShowHideDownstreamNodes");
 	group.add(hideAll);
@@ -2205,6 +2273,11 @@ class GenUserPrefsApp
 	group.addAll(manager);
 	group.add(update);
 	group.addAll(camera);
+	group.add("ShowHideDetailHints"); 
+	group.add("ShowHideToolsetHint"); 
+	group.add("ShowHideActionHint"); 
+	group.add("JobViewerShowHideHostHint"); 
+	group.add("JobViewerShowHideTimingHint"); 
 	group.add(hideAll);
       }
     
@@ -2332,7 +2405,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.54 2007/04/30 08:19:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2587,7 +2660,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.54 2007/04/30 08:19:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3944,7 +4017,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.53 2007/04/28 22:43:21 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.54 2007/04/30 08:19:10 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.82 2007/04/28 00:01:45 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.83 2007/04/30 08:19:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1002,16 +1002,16 @@ class JNodeViewerPanel
        "Hide all of the root nodes.");
 
     updateMenuToolTip
-      (pShowHideDetailHintsItem, prefs.getNodeViewerShowHideDetailHints(), 
+      (pShowHideDetailHintsItem, prefs.getShowHideDetailHints(), 
        "Show/hide node status detail hints.");
     updateMenuToolTip
-      (pShowHideToolsetHintItem, prefs.getNodeViewerShowHideToolsetHint(), 
+      (pShowHideToolsetHintItem, prefs.getShowHideToolsetHint(), 
        "Show/hide the Toolset property as part of the node detail hints."); 
     updateMenuToolTip
       (pShowHideEditorHintItem, prefs.getNodeViewerShowHideEditorHint(), 
        "Show/hide the Editor property as part of the node detail hints."); 
     updateMenuToolTip
-      (pShowHideActionHintItem, prefs.getNodeViewerShowHideActionHint(), 
+      (pShowHideActionHintItem, prefs.getShowHideActionHint(), 
        "Show/hide the Action property as part of the node detail hints."); 
     updateMenuToolTip
       (pShowHideEditingHintItem, prefs.getNodeViewerShowHideEditingHint(), 
@@ -1568,7 +1568,7 @@ class JNodeViewerPanel
     /* remove all previous nodes and links */ 
     pViewerNodes.clear();
     pViewerLinks.clear();
-    pLastViewerNodeHint = null;
+    pLastNodeHintName = null;
 
     /* rebuild the viewer nodes and links */ 
     if(!pRoots.isEmpty()) {
@@ -2412,8 +2412,10 @@ class JNodeViewerPanel
 	gl.glCallList(pSceneDL.get());
       }
 
-      pViewerNodeHint.rebuild(gl);
-      pViewerNodeHint.render(gl);
+      if(pViewerNodeHint.isVisible()) {
+        pViewerNodeHint.rebuild(gl);
+        pViewerNodeHint.render(gl);
+      }
     }
   }
 
@@ -2822,42 +2824,38 @@ class JNodeViewerPanel
   {
     super.mouseMoved(e);
 
-    UserPrefs prefs = UserPrefs.getInstance();
+    boolean hideHint = true;
     if(pShowDetailHints) {  
       Object under = objectAtMousePos();
       if((under != null) && (under instanceof ViewerNode)) {
 	ViewerNode vunder = (ViewerNode) under;
+        NodeStatus status = vunder.getNodeStatus(); 
 
-	if((pLastViewerNodeHint == null) || 
-	   !pLastViewerNodeHint.getName().equals(vunder.getNodeStatus().getName())) {
-	  pLastViewerNodeHint = vunder.getNodeStatus(); 
+        if(!status.getName().equals(pLastNodeHintName)) {
+          pLastNodeHintName = status.getName();
           
           TreeMap<String,TreeSet<String>> editing = null;
-          if(pLastViewerNodeHint.getDetails() != null) {
+          if(status.getDetails() != null) {
             UIMaster master = UIMaster.getInstance();
-            String name = pLastViewerNodeHint.getName(); 
             if(pViewerNodeHint.showEditing())
-              editing = master.lookupWorkingAreaEditingMenus(pGroupID, name); 
+              editing = master.lookupWorkingAreaEditingMenus(0, pLastNodeHintName);
           }
 
-	  pViewerNodeHint.updateHint(pLastViewerNodeHint, editing);
-
+	  pViewerNodeHint.updateHint(status, editing);
 	  pViewerNodeHint.setPosition(vunder.getPosition());
 	  pViewerNodeHint.setVisible(true);
-	  refresh();
 	}
-      }
-      else if(pViewerNodeHint.isVisible()) {
-	pLastViewerNodeHint = null;
-	pViewerNodeHint.setVisible(false);
-	refresh();
+
+        hideHint = false;
       }
     }
-    else if(pViewerNodeHint.isVisible()) {
-      pLastViewerNodeHint = null;
+    
+    if(hideHint) {
+      pLastNodeHintName = null;
       pViewerNodeHint.setVisible(false);
-      refresh();
     }
+
+    refresh();
   }
 
 
@@ -3100,18 +3098,21 @@ class JNodeViewerPanel
 	      prefs.getHideAll().wasPressed(e))
 	doRemoveAllRoots();
 
-      else if((prefs.getNodeViewerShowHideDetailHints() != null) &&
-	      prefs.getNodeViewerShowHideDetailHints().wasPressed(e))
+      else if((prefs.getShowHideDetailHints() != null) &&
+	      prefs.getShowHideDetailHints().wasPressed(e))
 	doShowHideDetailHints();
-      else if((prefs.getNodeViewerShowHideToolsetHint() != null) &&
-	      prefs.getNodeViewerShowHideToolsetHint().wasPressed(e))
+      else if((prefs.getShowHideToolsetHint() != null) &&
+	      prefs.getShowHideToolsetHint().wasPressed(e))
 	doShowHideToolsetHint();
       else if((prefs.getNodeViewerShowHideEditorHint() != null) &&
 	      prefs.getNodeViewerShowHideEditorHint().wasPressed(e))
 	doShowHideEditorHint();
-      else if((prefs.getNodeViewerShowHideActionHint() != null) &&
-	      prefs.getNodeViewerShowHideActionHint().wasPressed(e))
+      else if((prefs.getShowHideActionHint() != null) &&
+	      prefs.getShowHideActionHint().wasPressed(e))
 	doShowHideActionHint();
+      else if((prefs.getNodeViewerShowHideEditingHint() != null) &&
+	      prefs.getNodeViewerShowHideEditingHint().wasPressed(e))
+	doShowHideEditingHint();
 
       else
 	undefined = true;
@@ -4704,6 +4705,9 @@ class JNodeViewerPanel
     updateUniverse();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Show/Hide the node status detail hints.
    */ 
@@ -4863,16 +4867,19 @@ class JNodeViewerPanel
 	encoder.encode("InitialCenter", bbox.getCenter());
     } 
 
-    /* whether to show the downstram links */
+    /* node detail hints */
     encoder.encode("ShowDetailHints", pShowDetailHints);
-
     if(pViewerNodeHint != null) {
       encoder.encode("ShowToolsetHints", pViewerNodeHint.showToolset());
-      encoder.encode("ShowActionHints", pViewerNodeHint.showAction());
       encoder.encode("ShowEditorHints", pViewerNodeHint.showEditor());
+      encoder.encode("ShowActionHints", pViewerNodeHint.showAction());
+      encoder.encode("ShowEditingHints", pViewerNodeHint.showEditing());
     }
 
+    /* whether to show the downstram links */
     encoder.encode("ShowDownstream", pShowDownstream);
+
+    /* initial layout orientation */
     encoder.encode("HorizontalOrientation", pHorizontalOrientation);
   }
 
@@ -4908,13 +4915,17 @@ class JNodeViewerPanel
 	if(tset != null) 
 	  pViewerNodeHint.setShowToolset(tset);
 	
+	Boolean edit = (Boolean) decoder.decode("ShowEditorHints");
+	if(edit != null) 
+	  pViewerNodeHint.setShowEditor(edit);
+
 	Boolean act = (Boolean) decoder.decode("ShowActionHints");
 	if(act != null) 
 	  pViewerNodeHint.setShowAction(act);
 
-	Boolean edit = (Boolean) decoder.decode("ShowEditorHints");
-	if(edit != null) 
-	  pViewerNodeHint.setShowEditor(edit);
+	Boolean editing = (Boolean) decoder.decode("ShowEditingHints");
+	if(editing != null) 
+	  pViewerNodeHint.setShowEditing(editing);
       }
     }
 
@@ -6519,7 +6530,7 @@ class JNodeViewerPanel
 
   /**
    * The toolset used to build the editor menu.
-   */ 
+   */
   private String  pEditorMenuToolset;
 
   /**
@@ -6536,10 +6547,14 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The node status hint graphic.
+   * The node status hint. 
    */ 
-  private NodeStatus      pLastViewerNodeHint; 
   private ViewerNodeHint  pViewerNodeHint; 
+
+  /**
+   * The name of the node last used to update the node hint.
+   */ 
+  private String  pLastNodeHintName; 
 
 
   /**
