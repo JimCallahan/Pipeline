@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.3 2007/04/30 20:51:40 jim Exp $
+// $Id: CommonActionUtils.java,v 1.4 2007/05/02 03:17:12 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -299,7 +299,7 @@ class CommonActionUtils
     EnumActionParam param = (EnumActionParam) getSingleParam(name);
     if(param == null) 
       throw new PipelineException
-        ("The required parameter (" + name + ") was not illegal!"); 
+        ("There is no Action parameter named (" + pname + ")!");
       
     return param.getIndex();
   }
@@ -875,6 +875,10 @@ class CommonActionUtils
     ArrayList<Path> paths = null; 
 
     ActionParam param = getSingleParam(pname);
+    if(param == null) 
+      throw new PipelineException
+        ("There is no Action parameter named (" + pname + ")!");
+
     String title = param.getNameUI();
 
     String mname = (String) param.getValue();
@@ -1000,6 +1004,10 @@ class CommonActionUtils
     Path path = null; 
 
     ActionParam param = getSingleParam(pname);
+    if(param == null) 
+      throw new PipelineException
+        ("There is no Action parameter named (" + pname + ")!");
+
     String title = param.getNameUI();
 
     String mname = (String) param.getValue();
