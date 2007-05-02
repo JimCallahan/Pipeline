@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.20 2007/03/24 02:58:12 jim Exp $
+// $Id: BaseEditor.java,v 1.21 2007/05/02 03:15:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -312,6 +312,59 @@ class BaseEditor
     }
   }
   
+  /** 
+   * Create a unique temporary file with the given suffix.<P> 
+   * 
+   * If successful, the temporary file will be added to the set of files which will be 
+   * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
+   * 
+   * @param suffix
+   *   The filename suffix of the temporary file.
+   * 
+   * @return 
+   *   The temporary file.
+   * 
+   * @throws IOException 
+   *   If unable to create the temporary file.
+   */ 
+  public final File
+  createTemp
+  (
+   String suffix
+  ) 
+    throws PipelineException 
+  {
+    File tmp = null;
+    try {
+      tmp = File.createTempFile(getName(), "." + suffix, 
+				PackageInfo.sTempPath.toFile()); 
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to create temporary file for the " + getName() + " Editor:\n\n" + 
+	 ex.getMessage());
+    }
+
+    cleanupLater(tmp);
+
+    return tmp;
+  }
+
+  /**
+   * Add the given file to the set of files which will be removed upon termination of the
+   * Java runtime.
+   * 
+   * @param file 
+   *   The temporary file to cleanup.
+   */
+  protected final void 
+  cleanupLater
+  (
+   File file
+  ) 
+  {
+    FileCleaner.add(file);
+  }
 
 
 
