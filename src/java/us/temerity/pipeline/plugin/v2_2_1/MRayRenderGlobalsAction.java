@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.7 2007/04/06 21:16:25 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.8 2007/05/03 03:12:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -1808,7 +1808,6 @@ class MRayRenderGlobalsAction
       layout.addEntry(aImageResolution);
       layout.addEntry(aImageWidth);
       layout.addEntry(aImageHeight);
-      layout.addSeparator(); 
       layout.addEntry(aPixelAspectRatio);
       
       {

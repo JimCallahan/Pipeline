@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.1 2007/04/07 01:07:56 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.2 2007/05/03 03:12:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -780,11 +780,10 @@ class MayaRenderGlobalsAction
     /* layout */ 
     {
       LayoutGroup layout = new LayoutGroup(true);
-      layout.addEntry("ImageResolution");
-      layout.addEntry("ImageWidth");
-      layout.addEntry("ImageHeight");
-      layout.addSeparator(); 
-      layout.addEntry("PixelAspectRatio");
+      layout.addEntry(aImageResolution);
+      layout.addEntry(aImageWidth);
+      layout.addEntry(aImageHeight);
+      layout.addEntry(aPixelAspectRatio);
       
       {
 	LayoutGroup aaq = new LayoutGroup

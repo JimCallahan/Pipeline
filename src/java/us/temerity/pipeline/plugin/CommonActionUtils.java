@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.4 2007/05/02 03:17:12 jim Exp $
+// $Id: CommonActionUtils.java,v 1.5 2007/05/03 03:12:25 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -299,7 +299,7 @@ class CommonActionUtils
     EnumActionParam param = (EnumActionParam) getSingleParam(name);
     if(param == null) 
       throw new PipelineException
-        ("There is no Action parameter named (" + pname + ")!");
+        ("There is no Action parameter named (" + name + ")!");
       
     return param.getIndex();
   }

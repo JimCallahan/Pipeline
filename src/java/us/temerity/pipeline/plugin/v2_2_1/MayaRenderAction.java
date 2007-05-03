@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2007/04/07 01:07:56 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2007/05/03 03:12:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -276,6 +276,9 @@ class MayaRenderAction
 
     /* the source Maya scene */ 
     Path sourceScene = getMayaSceneSourcePath(aMayaScene, agenda);
+    if(sourceScene == null) 
+      throw new PipelineException 
+        ("A source MayaScene must be specified!"); 
 
     /* MEL script paths */ 
     Path preRenderMEL  = getMelScriptSourcePath(aPreRenderMEL, agenda);
