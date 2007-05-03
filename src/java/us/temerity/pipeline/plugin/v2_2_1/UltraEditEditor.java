@@ -1,4 +1,4 @@
-// $Id: UltraEditEditor.java,v 1.1 2007/04/30 08:20:58 jim Exp $
+// $Id: UltraEditEditor.java,v 1.2 2007/05/03 03:33:17 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -23,8 +23,6 @@ class UltraEditEditor
     
     removeSupport(OsType.Unix);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 	
