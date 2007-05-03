@@ -1,4 +1,4 @@
-// $Id: TextEditEditor.java,v 1.1 2007/04/30 08:20:58 jim Exp $
+// $Id: TextEditEditor.java,v 1.2 2007/05/03 20:51:46 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -31,8 +31,6 @@ class TextEditEditor
 
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 
-
-    underDevelopment();
   }
 
 
