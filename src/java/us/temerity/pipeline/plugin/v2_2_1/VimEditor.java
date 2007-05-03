@@ -1,4 +1,4 @@
-// $Id: VimEditor.java,v 1.1 2007/04/30 08:20:58 jim Exp $
+gvim// $Id: VimEditor.java,v 1.2 2007/05/03 08:20:07 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -30,8 +30,6 @@ class VimEditor
 
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-
-    underDevelopment();
   }
  
 
