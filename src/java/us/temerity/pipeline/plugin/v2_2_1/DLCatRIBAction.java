@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.2 2007/04/12 15:21:55 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.3 2007/05/04 19:18:34 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -14,7 +14,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * The 3Delight tool for concatenates and converting RIB files. <P> 
+ * The 3Delight tool for concatenating and converting RIB files. <P> 
  * 
  * All of the RIB file (.rib) dependencies of the target image which set the Order per-source 
  * sequence parameter will be processed to produce the target RIB file(s). <P> 

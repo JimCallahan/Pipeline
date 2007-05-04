@@ -1,4 +1,4 @@
-// $Id: MayaImgCvtAction.java,v 1.1 2007/04/07 01:10:34 jim Exp $
+// $Id: MayaImgCvtAction.java,v 1.2 2007/05/04 19:18:16 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -16,7 +16,7 @@ import java.io.*;
 /** 
  * Maya image conversion utility. 
  * 
- * Convert the images files which make up the primary file sequence of one of the source
+ * Converts the images files which make up the primary file sequence of one of the source
  * nodes into the image format of the primary file sequence of this node. <P> 
  * 
  * This action defines the following single valued parameters: <BR>

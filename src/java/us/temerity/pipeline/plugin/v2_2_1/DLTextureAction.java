@@ -1,4 +1,4 @@
-// $Id: DLTextureAction.java,v 1.3 2007/04/09 17:54:06 jim Exp $
+// $Id: DLTextureAction.java,v 1.4 2007/05/04 19:18:34 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -14,7 +14,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Generates optimized 3Delight textures from source images. <P> 
+ * Generates optimized 3Delight textures and environment maps from source images. <P> 
  * 
  * Converts the images which make up the primary file sequence of one of the source
  * nodes into the texture maps which make up the primary file sequence of this node. <P>
@@ -135,7 +135,7 @@ class DLTextureAction
   DLTextureAction() 
   {
     super("DLTexture", new VersionID("2.2.1"), "Temerity", 
-	  "Generates optimized 3Delight textures from source images.");
+	  "Generates optimized 3Delight textures and environment maps from source images.");
     
     {
       ActionParam param = 
