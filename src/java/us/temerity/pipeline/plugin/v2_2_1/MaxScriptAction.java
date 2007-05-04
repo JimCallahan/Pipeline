@@ -1,4 +1,4 @@
-// $Id: MaxScriptAction.java,v 1.2 2007/05/02 03:18:23 jim Exp $
+// $Id: MaxScriptAction.java,v 1.3 2007/05/04 15:56:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -108,8 +108,6 @@ class MaxScriptAction
 
     addSupport(OsType.Windows);  
     removeSupport(OsType.Unix);
-
-    underDevelopment();
   }
 
 
