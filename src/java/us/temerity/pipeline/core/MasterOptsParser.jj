@@ -112,6 +112,11 @@ MasterOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+  /**
    * The name of the log file.
    */ 
   private Path pLogFile; 
@@ -274,48 +279,48 @@ MasterMgrServer
 CommandLine() 
   throws PipelineException :
 {
-  MasterMgrServer s = null;
+  init();
 }
 {
-  (InformationOpts() | s=Commands()) <EOF>
+  (InformationOpts() | Commands()) <EOF>
   {
-    return s;
+    if(pHasCommands) {    
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+          System.exit(1);
+        }
+      }
+      
+      if(pInternalFileMgr && (!PackageInfo.sFileServer.equals(PackageInfo.sMasterServer)))
+        throw new PipelineException 
+          ("The --file-mgr option cannot be used if the file manager host " + 
+           "(" + PackageInfo.sFileServer + ") is not identical to the master manager " + 
+           "host (" + PackageInfo.sMasterServer + ")!");
+
+      /* create the server */ 
+      return new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, 
+                                 pInternalFileMgr, pAvgNodeSize, pMinOverhead, pMaxOverhead, 
+                                 pNodeGCInterval, pRestoreCleanupInterval);
+    }
+
+    return null;
   }
 }
 
 
-MasterMgrServer
+void
 Commands() 
   throws PipelineException :
-{
-  init();
-}
+{}
 {
   (GlobalOpts() AE())*
   { 
-    /* setup the log files */ 
-    if(pLogFile != null) {
-      try {
-	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
-      }
-      catch(Exception ex) {
-	System.out.print("Unable to setup log file: " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    if(pInternalFileMgr && (!PackageInfo.sFileServer.equals(PackageInfo.sMasterServer)))
-      throw new PipelineException 
-	("The --file-mgr option cannot be used if the file manager host " + 
-	 "(" + PackageInfo.sFileServer + ") is not identical to the master manager " + 
-	 "host (" + PackageInfo.sMasterServer + ")!");
-
-    /* create the server */ 
-    MasterMgrServer server = 
-      new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, pInternalFileMgr,
-			  pAvgNodeSize, pMinOverhead, pMaxOverhead, pNodeGCInterval, 
-			  pRestoreCleanupInterval);
-    return server;
+    pHasCommands = true;
   }
 }
     

@@ -15,7 +15,7 @@ import java.io.*;
 import javax.swing.*;        
 
 /*------------------------------------------------------------------------------------------*/
-/*   G R A P H I C A L   O P T S   P A R S E R                                              */
+/*   V A L I D A T E   O P T S   P A R S E R                                                */
 /*                                                                                          */
 /*    The parser for the plui(1) graphical client program.                                  */
 /*------------------------------------------------------------------------------------------*/
@@ -80,6 +80,11 @@ ValidateOptsParser
 
   
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
 
   /**
    * The root production directory.
@@ -224,34 +229,38 @@ TOKEN :
 void
 CommandLine() 
   throws PipelineException :
-{}
+{
+  init();
+}
 {
   (InformationOpts() | Commands()) <EOF>
-  {}
+  {
+    if(pHasCommands) {
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+          System.exit(1);
+        }
+      }
+      
+      pApp.validate(pProdPath);
+    }
+  }
 }
 
 
 void 
 Commands() 
   throws PipelineException :
-{
-  init();
-}
+{}
 {
   (GlobalOpts() AE())*
   {
-    /* setup the log files */ 
-    if(pLogFile != null) {
-      try {
-	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
-      }
-      catch(Exception ex) {
-	System.out.print("Unable to setup log file: " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    pApp.validate(pProdPath);
+    pHasCommands = true;
   }
 }
     

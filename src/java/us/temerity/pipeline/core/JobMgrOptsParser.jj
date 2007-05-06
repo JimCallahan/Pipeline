@@ -67,6 +67,11 @@ JobMgrOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+  /**
    * The name of the log file.
    */ 
   private Path  pLogFile; 
@@ -202,53 +207,55 @@ TOKEN :
 JobMgrServer
 CommandLine() :
 {
-  JobMgrServer s = null;
+  init();
 }
 {
-  (InformationOpts() | s=Commands()) <EOF>
+  (InformationOpts() | Commands()) <EOF>
   {
-    return s;
+    if(pHasCommands) {
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+          System.exit(1);
+        }
+      }
+      
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Net, LogMgr.Level.Info,
+         "Establishing Network Connections [PluginMgr]...");
+      LogMgr.getInstance().flush();
+      
+      /* initialize the plugins */ 
+      try {
+        PluginMgrClient.init(pFailFast);
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+           ex.getMessage());
+        System.exit(1);
+      }
+      
+      /* create the server */ 
+      return new JobMgrServer();
+    }
+    
+    return null;
   }
 }
 
 
-JobMgrServer
+void
 Commands() :
-{
-  init();
-}
+{}
 {
   (GlobalOpts() AE())*
   { 
-    /* setup the log files */ 
-    if(pLogFile != null) {
-      try {
-	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
-      }
-      catch(Exception ex) {
-	System.out.print("Unable to setup log file: " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "Establishing Network Connections [PluginMgr]...");
-    LogMgr.getInstance().flush();
-
-    /* initialize the plugins */ 
-    try {
-      PluginMgrClient.init(pFailFast);
-    }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Severe,
-	 ex.getMessage());
-      System.exit(1);
-    }
-
-    /* create the server */ 
-    return (new JobMgrServer());
+    pHasCommands = true;
   }
 }
     

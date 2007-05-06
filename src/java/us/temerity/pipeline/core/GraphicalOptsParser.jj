@@ -72,6 +72,11 @@ GraphicalOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+  /**
    * The name of the log file.
    */ 
   private Path  pLogFile; 
@@ -293,46 +298,50 @@ TOKEN :
 
 void
 CommandLine() :
-{}
+{
+  init();
+}
 {
   (InformationOpts() | Commands()) <EOF>
-  {}
+  {
+    if(pHasCommands) {
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+          System.exit(1);
+        }
+      }
+      
+      /* initialize the plugins */
+      try {
+        PluginMgrClient.init();
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+           ex.getMessage());
+        System.exit(1);
+      }
+      
+      /* start the application */ 
+      UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, 
+                    pDebugGL, pTraceGL);
+    }
+  }
 }
 
 
 void 
 Commands() :
-{
-  init();
-}
+{}
 {
   (GlobalOpts() AE())*
   {
-    /* setup the log files */ 
-    if(pLogFile != null) {
-      try {
-	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
-      }
-      catch(Exception ex) {
-	System.out.print("Unable to setup log file: " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    /* initialize the plugins */
-    try {
-      PluginMgrClient.init();
-    }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Severe,
-	 ex.getMessage());
-      System.exit(1);
-    }
-
-    /* start the application */ 
-    UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, 
-		  pDebugGL, pTraceGL);
+    pHasCommands = true;
   }
 }
     

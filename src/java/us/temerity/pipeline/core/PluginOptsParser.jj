@@ -80,6 +80,11 @@ PluginOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+  /**
    * Whether to list information about the installed plugins.
    */ 
   private boolean  pList; 
@@ -219,82 +224,86 @@ TOKEN :
 void
 CommandLine() 
   throws PipelineException :
-{}
+{
+  init();
+}
 {
   (InformationOpts() | Commands()) <EOF>
-  {}
+  {
+    if(pHasCommands) {
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+          System.exit(1);
+        }
+      }
+
+      /* initialize the plugins */ 
+      PluginMgrControlClient client = new PluginMgrControlClient();
+      try {
+        try {
+          client.update();
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+             "Unable to load plugins: " + ex);
+          System.exit(1);
+        }
+      
+        /* run the program */ 
+        if(pList) {
+          pApp.listPlugins(client);
+        }
+        else if(pInstall) {
+          if(pPluginFiles.isEmpty()) 
+            throw new ParseException
+              ("No plugins where installed, since no Java class or JAR files were given!");
+	
+          File plugindir = new File(".");
+          Iterator iter = pPluginFiles.iterator();
+          while(iter.hasNext()) {
+            File pluginfile = (File) iter.next();
+	  
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Info,
+               "Installing: " + pluginfile); 
+            LogMgr.getInstance().flush();
+	  
+            try {
+              client.installPlugin(plugindir, pluginfile);
+            }
+            catch(PipelineException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                 ex.getMessage());
+            }
+          }
+        }
+      }
+      finally {
+        client.disconnect();
+        LogMgr.getInstance().flush();
+      }
+    }
+  }
 }
 
 
 void
 Commands()
   throws PipelineException :
-{
-  init();
-}
+{}
 {
   (GlobalOpts() AE())* 
-  ((List()) | 
-   (Install() (PluginFile() AE())+))
+    ((List()) | 
+     (Install() (PluginFile() AE())+))
   { 
-    /* setup the log files */ 
-    if(pLogFile != null) {
-      try {
-	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
-      }
-      catch(Exception ex) {
-	System.out.print("Unable to setup log file: " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    /* initialize the plugins */ 
-    PluginMgrControlClient client = new PluginMgrControlClient();
-    try {
-      try {
-	client.update();
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Severe,
-	   "Unable to load plugins: " + ex);
-	System.exit(1);
-      }
-      
-      /* run the program */ 
-      if(pList) {
-	pApp.listPlugins(client);
-      }
-      else if(pInstall) {
-	if(pPluginFiles.isEmpty()) 
-	  throw new ParseException
-	    ("No plugins where installed, since no Java class or JAR files were given!");
-	
-	File plugindir = new File(".");
-	Iterator iter = pPluginFiles.iterator();
-	while(iter.hasNext()) {
-	  File pluginfile = (File) iter.next();
-	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     "Installing: " + pluginfile); 
-	  LogMgr.getInstance().flush();
-	  
-	  try {
-	    client.installPlugin(plugindir, pluginfile);
-	  }
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	       ex.getMessage());
-	  }
-	}
-      }
-    }
-    finally {
-      client.disconnect();
-      LogMgr.getInstance().flush();
-    }
+    pHasCommands = true;
   }
 }
     

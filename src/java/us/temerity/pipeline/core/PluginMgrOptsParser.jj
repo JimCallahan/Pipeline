@@ -65,6 +65,11 @@ PluginMgrOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+  /**
    * The name of the log file.
    */ 
   private Path pLogFile; 
@@ -211,37 +216,39 @@ TOKEN :
 PluginMgrServer
 CommandLine() :
 {
-  PluginMgrServer s = null;
+  init();
 }
 {
-  (InformationOpts() | s=Commands()) <EOF>
+  (InformationOpts() | Commands()) <EOF>
   {
-    return s;
+    if(pHasCommands) {
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+        }
+      }
+      
+      /* create the server */ 
+      return new PluginMgrServer();
+    }
+
+    return null;
   }
 }
 
 
-PluginMgrServer
+void 
 Commands() :
-{
-  init();
-}
+{}
 {
   (GlobalOpts() AE())*
   { 
-    /* setup the log files */ 
-    if(pLogFile != null) {
-      try {
-	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
-      }
-      catch(Exception ex) {
-	System.out.print("Unable to setup log file: " + ex.getMessage());
-	System.exit(1);
-      }
-    }
-
-    /* create the server */ 
-    return (new PluginMgrServer());
+    pHasCommands = true;    
   }
 }
     
