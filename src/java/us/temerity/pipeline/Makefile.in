@@ -251,7 +251,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
       JAVA_PATHS = -d ../../.. \
-                   -classpath "../../..:$(srcdir)/../../..:$(srcdir)/../../../jogl/jogl.jar"
+                   -classpath "../../..:$(srcdir)/../../..:$(srcdir)/../../../jogl/jogl.jar:$(srcdir)/../../../jython/jython.jar"
 
 
            ENUMS = CheckOutMode \
@@ -322,6 +322,7 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
                    GraphicalOptsParser \
                    MasterOptsParser \
                    PluginOptsParser \
+                   PythonOptsParser \
                    PluginMgrOptsParser \
                    QueueMgrOptsParser \
                    ScriptOptsParser \

@@ -31,10 +31,12 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS/bin/plplugin
 @ROOT_INST_DIR@/MacOS/bin/plscript
+@ROOT_INST_DIR@/MacOS/bin/plpython
 @ROOT_INST_DIR@/MacOS/bin/plui
 
 @ROOT_INST_DIR@/MacOS/debug/bin/plplugin
 @ROOT_INST_DIR@/MacOS/debug/bin/plscript
+@ROOT_INST_DIR@/MacOS/debug/bin/plpython
 @ROOT_INST_DIR@/MacOS/debug/bin/plui
 @ROOT_INST_DIR@/MacOS/debug/bin/pltestnative
 @ROOT_INST_DIR@/MacOS/debug/bin/pltestlight
@@ -42,6 +44,7 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS/profile/bin/plplugin
 @ROOT_INST_DIR@/MacOS/profile/bin/plscript
+@ROOT_INST_DIR@/MacOS/profile/bin/plpython
 @ROOT_INST_DIR@/MacOS/profile/bin/plui
 
 %defattr(4550,root,@PIPELINE_GROUP@)
@@ -60,6 +63,10 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/jogl/lib/MacOS/libjogl_awt.jnilib
 @ROOT_INST_DIR@/jogl/lib/MacOS/libjogl_cg.jnilib
 @ROOT_INST_DIR@/jogl/lib/MacOS/libjogl.jnilib
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/jython/MacOS/jython
+@ROOT_INST_DIR@/jython/MacOS/jythonc
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

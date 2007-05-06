@@ -1,12 +1,12 @@
 
 if IS_MAC_OS
-  SUBDIRS = jogl scripts
+  SUBDIRS = jogl jython scripts
 else
 
 if IS_WINDOWS 
-  SUBDIRS = jogl
+  SUBDIRS = jogl jython
 else 
-  SUBDIRS = jogl scripts share us
+  SUBDIRS = jogl jython scripts share us
 endif
 
 endif

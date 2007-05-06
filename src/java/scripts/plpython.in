@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd `pwd`
+exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
+  @PLSCRIPT_GC_OPTS@ \
+  -cp @PIPELINE_JAR@:@JYTHON_JAR@ \
+  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.PythonApp "$@"
+

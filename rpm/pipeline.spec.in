@@ -37,10 +37,12 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix/bin/plplugin
 @ROOT_INST_DIR@/Unix/bin/plscript
+@ROOT_INST_DIR@/Unix/bin/plpython
 @ROOT_INST_DIR@/Unix/bin/plui
 
 @ROOT_INST_DIR@/Unix/debug/bin/plplugin
 @ROOT_INST_DIR@/Unix/debug/bin/plscript
+@ROOT_INST_DIR@/Unix/debug/bin/plpython
 @ROOT_INST_DIR@/Unix/debug/bin/plui
 @ROOT_INST_DIR@/Unix/debug/bin/pltestnative
 @ROOT_INST_DIR@/Unix/debug/bin/pltestlight
@@ -48,6 +50,7 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix/profile/bin/plplugin
 @ROOT_INST_DIR@/Unix/profile/bin/plscript
+@ROOT_INST_DIR@/Unix/profile/bin/plpython
 @ROOT_INST_DIR@/Unix/profile/bin/plui
 
 @ROOT_INST_DIR@/etc/init.d/pljobmgr
@@ -111,6 +114,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/plqueuemgr.html 
 @ROOT_INST_DIR@/share/docs/man/plrestore.html 
 @ROOT_INST_DIR@/share/docs/man/plscript.html 
+@ROOT_INST_DIR@/share/docs/man/plpython.html 
 @ROOT_INST_DIR@/share/docs/man/plui.html 
 @ROOT_INST_DIR@/share/docs/man/plvalidate.html 
 
@@ -140,10 +144,25 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/jogl/lib/Unix/libjogl_cg.so
 @ROOT_INST_DIR@/jogl/lib/Unix/libjogl.so
 
+%defattr(-,root,root)
+@ROOT_INST_DIR@/jython/Doc
+@ROOT_INST_DIR@/jython/Lib
+@ROOT_INST_DIR@/jython/Tools
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/jython/ACKNOWLEDGMENTS 
+@ROOT_INST_DIR@/jython/LICENSE.txt	 
+@ROOT_INST_DIR@/jython/NEWS 
+@ROOT_INST_DIR@/jython/README.txt
+@ROOT_INST_DIR@/jython/jython.jar             
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/jython/Unix/jython
+@ROOT_INST_DIR@/jython/Unix/jythonc
+
+%defattr(777,root,root)
+@ROOT_INST_DIR@/jython/cachedir
+
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
 Latest build.
-
-
-
-1

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.2.1b6)
+AM_INIT_AUTOMAKE(Pipeline, 2.2.1)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -960,36 +960,57 @@ AC_SUBST(JOGL_LIBRARY_PATH)
 JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
 
 
+AC_SUBST(JYTHON_DIR)
+JYTHON_DIR=""
+
+AC_SUBST(JYTHON_JAR)
+JYTHON_JAR=""
+
+
 AC_SUBST(JAVA_RUNTIME_OPTS)
 JAVA_RUNTIME_OPTS=""
 
+
 AC_SUBST(PIPELINE_JAR)
 PIPELINE_JAR=""
+
+AC_SUBST(PIPELINE_LIBDIR)
+PIPELINE_LIBDIR=""
+
 
 case "$NATIVE_OSTYPE" in 
   (Unix)  
     JAVA_RUNTIME="$JAVA_HOME/bin/java";
     CLIENT_JAVA_RUNTIME="$UNIX_JAVA_HOME/bin/java";
     PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
+    PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
-    JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
+    JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+    JYTHON_DIR="$ROOT_INST_DIR/jython";
+    JYTHON_JAR="$ROOT_INST_DIR/jython/jython.jar";;
 
   (MacOS) 
     JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
+    PIPELINE_LIBDIR="$MAC_ROOT_INST_DIR/lib";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
-    JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
+    JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+    JYTHON_DIR="$MAC_ROOT_INST_DIR/jython";
+    JYTHON_JAR="$MAC_ROOT_INST_DIR/jython/jython.jar";;
 
   (Windows) 
     JAVA_RUNTIME="$WIN_JAVA_HOME/bin/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
     PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
+    PIPELINE_LIBDIR="$WIN_ROOT_INST_DIR/lib";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
-    JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";;
+    JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+    JYTHON_DIR="$WIN_ROOT_INST_DIR/jython";
+    JYTHON_JAR="$WIN_ROOT_INST_DIR/jython/jython.jar";;
 esac
 
 AC_SUBST(EXTRA_DEBUG_SUBDIRS)
@@ -1462,7 +1483,8 @@ AC_CONFIG_FILES([
   docs/man/plpluginmgr.src.html
   docs/man/plqueuemgr.src.html
   docs/man/plrestore.src.html
-  docs/man/plscript.src.html
+  docs/man/plscript.src.html  
+  docs/man/plpython.src.html
   docs/man/plui.src.html
   docs/man/plvalidate.src.html
   docs/manuals/Makefile
@@ -1504,6 +1526,17 @@ AC_CONFIG_FILES([
   src/java/jogl/Unix/Makefile
   src/java/jogl/Windows/Makefile
 
+  src/java/jython/Makefile
+  src/java/jython/Unix/Makefile
+  src/java/jython/Unix/jython
+  src/java/jython/Unix/jythonc
+  src/java/jython/MacOS/Makefile
+  src/java/jython/MacOS/jython
+  src/java/jython/MacOS/jythonc
+  src/java/jython/Windows/Makefile
+  src/java/jython/Windows/jython.bat.src
+  src/java/jython/Windows/jythonc.bat.src
+
   src/java/scripts/Makefile
   src/java/scripts/plfilemgr
   src/java/scripts/pljobmgr
@@ -1512,6 +1545,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr
   src/java/scripts/plscript
+  src/java/scripts/plpython
   src/java/scripts/plui
   src/java/scripts/plvalidate
   src/java/scripts/plrestoreA
@@ -1526,6 +1560,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plpluginmgr
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plscript
+  src/java/scripts/debug/plpython
   src/java/scripts/debug/plui
   src/java/scripts/debug/pltestnative
   src/java/scripts/debug/pltestlight
@@ -1540,6 +1575,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plpluginmgr
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plscript
+  src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
 
   src/java/share/Makefile
@@ -1574,6 +1610,7 @@ AC_CONFIG_FILES([
 
   src/windows/scripts/Makefile
   src/windows/scripts/plscript.bat.src
+  src/windows/scripts/plpython.bat.src
   src/windows/scripts/pljobmgr.bat.src
 
   src/windows/scripts/debug/Makefile
@@ -1581,6 +1618,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src
   src/windows/scripts/debug/plscript.bat.src
+  src/windows/scripts/debug/plpython.bat.src
   src/windows/scripts/debug/plui2.bat.src  
   src/windows/scripts/debug/pljobmgr.bat.src
 

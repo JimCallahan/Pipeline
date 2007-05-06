@@ -38,11 +38,13 @@ can begin processing jobs using:
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/Windows/bin/plscript.bat
+@ROOT_INST_DIR@/Windows/bin/plpython.bat
 @ROOT_INST_DIR@/Windows/bin/plui.exe
 
 @ROOT_INST_DIR@/Windows/sbin/pljobmgr.bat
 
 @ROOT_INST_DIR@/Windows/debug/bin/plscript.bat
+@ROOT_INST_DIR@/Windows/debug/bin/plpython.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plui2.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plui.exe
 
@@ -62,6 +64,10 @@ can begin processing jobs using:
 @ROOT_INST_DIR@/jogl/lib/Windows/jogl_awt.dll
 @ROOT_INST_DIR@/jogl/lib/Windows/jogl_cg.dll
 @ROOT_INST_DIR@/jogl/lib/Windows/jogl.dll
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/jython/Windows/jython.bat
+@ROOT_INST_DIR@/jython/Windows/jythonc.bat
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

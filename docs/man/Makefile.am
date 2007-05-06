@@ -7,6 +7,7 @@ html_DATA = \
   plmaster.html \
   plplugin.html \
   plpluginmgr.html \
+  plpython.html \
   plqueuemgr.html \
   plrestore.html \
   pls.html \

@@ -4,6 +4,7 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/bin
 instbin_SCRIPTS = \
   plplugin \
   plscript \
+  plpython \
   plui \
   pltestnative \
   pltestheavy \

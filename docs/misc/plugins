@@ -173,6 +173,8 @@ UMW     ./v2_0_9/VimEditor.java
 
 UMW     ./v2_2_1/WebBrowserEditor.java
 
+--W     ./2_2_1/WordPadEditor.java
+
 ./v1_0_0/XDviEditor.java
 ./v2_0_0/XDviEditor.java
 
@@ -189,7 +191,8 @@ UM-     ./v2_2_1/XImageEditor.java
 
 ./v1_0_0/GimpDiffComparator.java
 ./v2_0_0/GimpDiffComparator.java
-./v2_0_9/GimpDiffComparator.java
+UM-     ./v2_0_9/GimpDiffComparator.java
+UMW     ./v2_2_1/GimpDiffComparator.java
 
 ./v2_0_0/ShakeDiffComparator.java
 UM-     ./v2_0_9/ShakeDiffComparator.java

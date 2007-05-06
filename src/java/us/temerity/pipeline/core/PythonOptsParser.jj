@@ -1,0 +1,640 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(PythonOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   P Y T H O N   O P T S   P A R S E R                                                    */
+/*                                                                                          */
+/*    The parser for the plpython(1) tool.                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+class 
+PythonOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   PythonApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private void 
+  init()
+  {
+    pLogBackups = 10;
+    pPythonArgs = new ArrayList<String>();
+  }
+ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private PythonApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private Path  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+  /**
+   * The path to a Python script to interpret.
+   */ 
+  private Path  pScriptPath; 
+
+  /**
+   * Whether to read the Python source code from STDIN.
+   */ 
+  private boolean  pReadFromStdin; 
+
+  /**
+   * The Python command line arguments. 
+   */ 
+  private ArrayList<String>  pPythonArgs; 
+
+}
+
+
+PARSER_END(PythonOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* global options */
+| <LOG_FILE:          "--log-file">             : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">          : INTEGER_SEP
+| <LOG:               "--log">                  : LOG_SEP
+
+  /* action options */	
+| <FILE:   "--file">                            : PATH_SEP
+| <STDIN:  "--stdin">    
+
+  /* python command line arguments */ 
+| <PYTHON_SEP: "--">                            : PYTHON_ARGS_STATE
+
+  /* seperators */ 
+| <AE1: (["\0"])+>
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: ["\0"]>      : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>  : IGNORE_STATE
+}
+
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
+/* --log arguments */ 
+<LOG_SEP> 
+TOKEN :
+{
+  <EQ3:               "=">   : LOG_TYPE
+| <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LOG_TYPE> 
+TOKEN :
+{
+  <LOG_ALL:          "all">       
+| <LOG_ARG: 	     "arg">     
+| <LOG_OPS: 	     "ops">      
+| <LOG_NET: 	     "net">     
+| <LOG_PLG: 	     "plg">     
+| <LOG_SUB: 	     "sub">     
+| <COLON:  	     ":">        : LOG_LEVEL  
+| <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
+}
+
+<LOG_LEVEL> 
+TOKEN : 
+{
+  <SEVERE:  	      "severe">  
+| <WARNING: 	      "warning"> 
+| <INFO:    	      "info">    
+| <FINE:    	      "fine">    
+| <FINER :  	      "finer">   
+| <FINEST:    	      "finest">  
+| <COMMA:  	      ",">             : LOG_TYPE
+| <AE2:               (["\0"])+>       : DEFAULT
+| <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
+}
+
+
+/* -- args ... */ 
+<PYTHON_ARGS_STATE> 
+TOKEN :
+{
+  <PYTHON_ARG:  (~["\0"])+>       
+| <AE3:         (["\0"])+>
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() 
+  throws PipelineException :
+{
+  init();
+}
+{
+  (InformationOpts() | Commands()) <EOF>
+  {
+    if(pHasCommands) {
+      /* setup the log files */ 
+      if(pLogFile != null) {
+        try {
+          LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+        }
+        catch(Exception ex) {
+          System.out.print("Unable to setup log file: " + ex.getMessage());
+          System.exit(1);
+        }
+      }
+      
+      /* execute Python code */ 
+      if((pScriptPath != null) && pReadFromStdin)
+        throw new ParseException
+          ("The --file and --stdin options are mutually exclusive!");
+      
+      if(pScriptPath != null) 
+        pApp.executeScript(pScriptPath, pPythonArgs);
+      else if(pReadFromStdin) 
+        pApp.readScriptFromStdIn(pPythonArgs);
+      else
+        pApp.interactive();
+    }
+  }
+}
+
+
+void
+Commands()
+  throws PipelineException :
+{}
+{
+  (GlobalOpts() AE())* 
+    ((File() | Stdin()) (<PYTHON_SEP> AE() (PythonArg())+)?)?
+  { 
+    pHasCommands = true;
+  }
+}
+    
+void
+File() :
+{
+  Token t;
+}
+{
+  <FILE> EQ() t=<PATH_ARG> AE() 
+  { 
+    pScriptPath = new Path(t.image);
+  }
+}
+
+void
+Stdin() :
+{}
+{
+  <STDIN> AE() 
+  { 
+    pReadFromStdin = true; 
+  }
+}
+
+void
+PythonArg() :
+{
+  Token t;
+}
+{
+  t=<PYTHON_ARG> AE()
+  { 
+    pPythonArgs.add(t.image);
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> AE()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> AE()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> AE()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> AE()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> AE() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> AE() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts() :
+{}
+{
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
+  {}
+}
+
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = new Path(t.image);
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = new Path(PackageInfo.sInstPath, "/logs/plplugin.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
+
+void Log() : 
+{}
+{
+  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  {}
+}
+
+void LoggerArg() : 
+{}
+{
+  (LoggerAll() | LoggerPair()) 
+  {}
+}
+
+
+void LoggerAll() : 
+{
+  LogMgr.Level v;
+}
+{
+  (<LOG_ALL> <COLON> v=LogLevel())
+  {
+    LogMgr.getInstance().setLevels(v);
+  }
+}
+
+void LoggerPair() : 
+{
+  LogMgr.Kind k;
+  LogMgr.Level v;
+}
+{
+  (k=LogKind() <COLON> v=LogLevel())
+  {
+    LogMgr.getInstance().setLevel(k, v);
+  }
+}
+
+LogMgr.Kind LogKind() : 
+{
+  LogMgr.Kind g;
+}
+{
+  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=PlgKind() | g=SubKind())
+  {
+    return g;
+  }
+}
+
+LogMgr.Kind ArgKind() : 
+{}
+{
+  <LOG_ARG>
+  {
+    return LogMgr.Kind.Arg;
+  }
+}
+
+LogMgr.Kind OpsKind() : 
+{}
+{
+  <LOG_OPS>
+  {
+    return LogMgr.Kind.Ops;
+  }
+}
+
+LogMgr.Kind NetKind() : 
+{}
+{
+  <LOG_NET>
+  {
+    return LogMgr.Kind.Net;
+  }
+}
+
+LogMgr.Kind PlgKind() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return LogMgr.Kind.Plg;
+  }
+}
+
+LogMgr.Kind SubKind() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return LogMgr.Kind.Sub;
+  }
+}
+
+
+
+LogMgr.Level LogLevel() : 
+{
+  LogMgr.Level v;
+}
+{
+  (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+  {
+    return v;
+  }
+}
+
+LogMgr.Level SevereLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <SEVERE> 
+  {
+    return LogMgr.Level.Severe;
+  }
+}
+
+LogMgr.Level WarningLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <WARNING> 
+  {
+    return LogMgr.Level.Warning;
+  }
+}
+
+LogMgr.Level InfoLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <INFO> 
+  {
+    return LogMgr.Level.Info;
+  }
+}
+
+LogMgr.Level FineLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINE> 
+  {
+    return LogMgr.Level.Fine;
+  }
+}
+
+LogMgr.Level FinerLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINER> 
+  {
+    return LogMgr.Level.Finer;
+  }
+}
+
+LogMgr.Level FinestLevel() :
+{
+  LogMgr.Level v;
+}
+{
+  <FINEST> 
+  {
+    return LogMgr.Level.Finest;
+  }
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1> | t=<AE2> | t=<AE3>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2> | t=<EQ3>)  
+  { 
+    return t; 
+  }
+}
