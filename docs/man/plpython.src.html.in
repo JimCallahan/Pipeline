@@ -37,13 +37,10 @@ specified:&nbsp; <br>
 <ol>
   <li>If the <span style="font-weight: bold;">--file</span> option is
 given, then <span style="font-weight: bold;">plpython</span>(1) will
-evaluate the
-contents of a script file (<span style="font-style: italic;">script.py</span>).&nbsp;
+execute the contents of the given file. <br>
   </li>
   <li>If the <span style="font-weight: bold;">--stdin</span> option is
-given, Python source code will be read from the
-standard in stream of <span style="font-weight: bold;">plpython</span>(1).&nbsp;&nbsp;
-  </li>
+given, Python source code will be read from standard in. </li>
   <li>Otherwise, an interactive Python session will be started.</li>
 </ol>
 </div>
@@ -60,12 +57,12 @@ empty string for interactive sessions.<br>
 For example, the following interactive session will print the name of
 the default Toolset:<br>
   <br>
-  <div style="margin-left: 40px;"><span style="font-family: monospace;">$
+  <div style="margin-left: 40px;"><code>$
 plpython <br>
 Pipeline 2.2.1<br>
 Jython 2.1 on java1.5.0_11 (JIT: null)<br
  style="font-family: monospace;">
-  </span><span style="font-family: monospace;">&gt;&gt;&gt; from
+  <span style="font-family: monospace;">&gt;&gt;&gt; from
 us.temerity.pipeline import MasterMgrClient</span><br
  style="font-family: monospace;">
   <span style="font-family: monospace;">&gt;&gt;&gt; client =
@@ -74,9 +71,9 @@ MasterMgrClient()</span><br style="font-family: monospace;">
 client.getDefaultToolsetName()</span><br style="font-family: monospace;">
   <span style="font-family: monospace;">'070503'<br>
   <br>
-  </span></div>
+  </span></code></div>
   <span style="font-family: monospace;"></span><span class="postbody"><span
- style="color: darkred;">Its
+ style="color: rgb(184, 17, 45);">Its
 important to stress that Jython was not created by Temerity Software
 nor are we one of its maintainers.&nbsp; If you choose to use Jython,
 you
@@ -200,14 +197,12 @@ The default number of backups is (10).</div>
  style="font-style: italic;">logger:level</span>[<span
  style="font-style: italic;">,logger:level</span>[...]]</div>
 <br>
-<div style="margin-left: 80px;">Normally all output from <span
- style="font-weight: bold;">plpython</span>(1) is displayed using
-dialogs and other graphical components.&nbsp; In addition to this UI
+<div style="margin-left: 80px;">In addition to the normal program
 output, <span style="font-weight: bold;">plpython</span>(1) can
 generate
-detailed
+detailed detailed
 output on the command line tracing the various stages of internal
-execution.&nbsp; <br>
+execution. <br>
 <br>
 The following arguments control the several different
 types of logging information (<span style="font-style: italic;">logger</span>)
@@ -290,8 +285,9 @@ Also</h3>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><a
  href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
-Java API</span></a>, <a href="../javadoc/index.html"></a><a
- href="../../jython/Doc/index.html"><span style="font-weight: bold;">Jython
+Java API</span></a>, <a
+ href="http://www.jython.org/docs/javadoc/index.html"><span
+ style="font-weight: bold;">Jython
 API</span></a><span style="font-weight: bold;"></span><span
  style="font-weight: bold;"></span></div>
 </div>
@@ -320,13 +316,6 @@ API</span></a><span style="font-weight: bold;"></span><span
   </div>
   <span style="font-weight: bold;">Other Software</span><br>
   <div style="margin-left: 40px;"><a href="http://www.mozilla.org/"><b>mozilla</b></a>(1)</div>
-</blockquote>
-<blockquote>
-  <blockquote>
-    <blockquote> </blockquote>
-    <blockquote> </blockquote>
-    <blockquote> </blockquote>
-  </blockquote>
 </blockquote>
 <h3><a name="Author"></a>Author</h3>
 <div style="margin-left: 40px;">Created by <span
