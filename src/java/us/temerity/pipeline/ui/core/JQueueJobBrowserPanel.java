@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.28 2006/12/12 00:06:45 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.29 2007/05/06 21:54:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -470,6 +470,11 @@ class JQueueJobBrowserPanel
    boolean selectionOnly
   ) 
   {
+    pSelectionModified = false;
+
+    if(pGroupsTablePanel != null) 
+      pGroupsTablePanel.getTable().setEnabled(false);
+
     PanelUpdater pu = new PanelUpdater(this, selectionOnly);
     pu.start();
   }
@@ -502,6 +507,9 @@ class JQueueJobBrowserPanel
       super.setAuthorView(author, view);    
 
     updateJobs(groups, jobStatus);
+
+    if(pGroupsTablePanel != null) 
+      pGroupsTablePanel.getTable().setEnabled(true);
   }
 
 
@@ -1317,7 +1325,7 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Makes the given component have the keyboard focuse when the mouse is over it.
+   * Makes the given component have the keyboard focus when the mouse is over it.
    */ 
   private 
   class KeyFocuser
@@ -1373,10 +1381,15 @@ class JQueueJobBrowserPanel
     ) 
     {
       super(model);
-
+      
       pSelector = selector;
-      ListSelectionModel smodel = getTable().getSelectionModel();
+
+      JTable table = getTable();
+      ListSelectionModel smodel = table.getSelectionModel();
+
       smodel.addListSelectionListener(pSelector);
+      table.addMouseListener(pSelector); 
+      table.addKeyListener(pSelector);
     }
 
     protected void 
@@ -1401,7 +1414,8 @@ class JQueueJobBrowserPanel
 
   private 
   class GroupsListSelector
-    implements ListSelectionListener
+    extends MouseAdapter
+    implements ListSelectionListener, KeyListener
   {
     public 
     GroupsListSelector() 
@@ -1426,7 +1440,7 @@ class JQueueJobBrowserPanel
      ListSelectionEvent e
     )
     {
-      if(e.getValueIsAdjusting()) 
+      if(e.getValueIsAdjusting())
 	return;
       
       int numPrevSelected = pSelectedIDs.size();
@@ -1444,13 +1458,68 @@ class JQueueJobBrowserPanel
       }
 
       pJustSelected = null;    
-      if((pSelectedIDs.size() == 1) && (numPrevSelected <= 1))
+      if(pSelectedIDs.size() == 1) {
 	pJustSelected = pSelectedIDs.first();
-  
-      updatePanels(true);      
+        updatePanels(true);
+      }
+      else {
+        pSelectionModified = true;
+      }
     }
 
-    private Long  pJustSelected; 
+    /**
+     * invoked when a key has been pressed.
+     */   
+    public void 
+    keyPressed(KeyEvent e) {} 
+
+    /**
+     * Invoked when a key has been released.
+     */ 
+    public void 	
+    keyReleased
+    (
+     KeyEvent e
+    ) 
+    {
+      int mods = e.getModifiersEx();
+      if(pSelectionModified) {
+        switch(e.getKeyCode()) {
+        case KeyEvent.VK_SHIFT:
+        case KeyEvent.VK_CONTROL:
+          {
+            int on1  = 0;
+            
+            int off1 = (MouseEvent.SHIFT_DOWN_MASK |
+                        MouseEvent.CTRL_DOWN_MASK);
+            
+            if((mods & (on1 | off1)) == on1) 
+              updatePanels(true);
+          }      
+        }
+      }
+    }
+    
+    /**
+     * Invoked when a key has been typed.
+     */ 
+    public void 	
+    keyTyped(KeyEvent e) {} 
+
+    /**
+     * Invoked when the mouse exits a component. 
+     */ 
+    public void 
+    mouseExited
+    (
+     MouseEvent e
+    ) 
+    {
+      if(pSelectionModified) 
+        updatePanels(true);
+    }
+
+    private Long     pJustSelected; 
   }
 
  
@@ -1880,5 +1949,10 @@ class JQueueJobBrowserPanel
    * The list selection listener.
    */ 
   private GroupsListSelector  pGroupsListSelector;
+
+  /**
+   * Whether the selection has been modified after the last SHIFT/CTRL press.
+   */ 
+  private boolean  pSelectionModified; 
 
 }
