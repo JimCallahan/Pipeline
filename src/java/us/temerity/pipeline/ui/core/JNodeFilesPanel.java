@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.37 2007/04/15 10:30:47 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.38 2007/05/07 20:05:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -559,8 +559,7 @@ class JNodeFilesPanel
       pNoveltyComps   = new TreeMap<String,TreeMap<String,ArrayList<JComponent>>>();
       pVersionBoxes   = new TreeMap<String,TreeMap<String,TreeMap<String,JFileCheckBox>>>();
 
-      if((pNovelty != null) && 
-         (details != null) && !details.isLightweight()) {
+      if((pNovelty != null) && (details != null)) {
 	NodeMod mod     = details.getWorkingVersion(); 
 	NodeVersion vsn = details.getLatestVersion();
 
@@ -643,11 +642,24 @@ class JNodeFilesPanel
     if(pStatus != null) 
       details = pStatus.getDetails();
 
+    boolean isPresentInWorking = false;
     boolean isFrozen = false;
     if(details != null) {
       NodeMod mod = details.getWorkingVersion();
-      if((mod != null) && mod.isFrozen()) 
-	isFrozen = true; 
+      if(mod != null) {
+        isFrozen = mod.isFrozen();
+        
+        if(mod.getPrimarySequence().equals(fseq)) 
+          isPresentInWorking = true;
+        else {
+          for(FileSeq sfseq : mod.getSecondarySequences()) {
+            if(sfseq.equals(fseq)) {
+              isPresentInWorking = true;
+              break;
+            }
+          }
+        }
+      }
     }
 
     /* collate the row information */ 
@@ -659,26 +671,43 @@ class JNodeFilesPanel
     TreeMap<FileSeq,Boolean[]> novel = new TreeMap<FileSeq,Boolean[]>();
     {
       if(details != null) {
-	{	  
-	  FileState[]  fs = details.getFileState(fseq);
-	  QueueState[] qs = details.getQueueState();
-	  if((fs != null) && (qs != null)) {
-	    assert(fs.length == fseq.numFrames());
-	    assert(qs.length == fseq.numFrames());
-	    
-	    int wk;
-	    for(wk=0; wk<fs.length; wk++) {
-	      FileSeq sfseq = new FileSeq(fseq, wk);
-	      singles.put(sfseq, wk);
-	      
-	      fstates.put(sfseq, fs[wk]);
-	      qstates.put(sfseq, qs[wk]);
-
-	      if(fs[wk] != FileState.CheckedIn) 
-		enabled.add(sfseq);
-	    }
-	  }
-	}
+	if(isPresentInWorking) {
+          if(details.isLightweight()) {	  
+            int wk;
+            for(wk=0; wk<fseq.numFrames(); wk++) {
+              FileSeq sfseq = new FileSeq(fseq, wk);
+              singles.put(sfseq, wk);
+              
+              if(details.getVersionState() == VersionState.CheckedIn) {
+                fstates.put(sfseq, FileState.CheckedIn); 
+                qstates.put(sfseq, QueueState.Undefined);
+              }
+              else {
+                enabled.add(sfseq);
+              }
+            }
+          }
+          else {
+            FileState[]  fs = details.getFileState(fseq);
+            QueueState[] qs = details.getQueueState();
+            if((fs != null) && (qs != null)) {
+              assert(fs.length == fseq.numFrames());
+              assert(qs.length == fseq.numFrames());
+              
+              int wk;
+              for(wk=0; wk<fs.length; wk++) {
+                FileSeq sfseq = new FileSeq(fseq, wk);
+                singles.put(sfseq, wk);
+                
+                fstates.put(sfseq, fs[wk]);
+                qstates.put(sfseq, qs[wk]);
+                
+                if(fs[wk] != FileState.CheckedIn) 
+                  enabled.add(sfseq);
+              }
+            }
+          }
+        }
 	
 	{
 	  ArrayList<VersionID> vids = new ArrayList<VersionID>(pNovelty.keySet());
@@ -746,7 +775,7 @@ class JNodeFilesPanel
 	      JFileSeqLabel label = new JFileSeqLabel(fseq);
 	      
 	      if((details != null) && (details.getWorkingVersion() != null) && 
-  	       details.getWorkingVersion().getSequences().contains(fseq))
+                 details.getWorkingVersion().getSequences().contains(fseq))
 		label.addMouseListener(this);
 	      
 	      lbox.add(label);
@@ -770,7 +799,7 @@ class JNodeFilesPanel
 	      boolean isActive = enabled.contains(sfseq);
 
 	      JFilePanel fpanel = 
-		new JFilePanel(sfseq.toString(), fseq, idx, 
+		new JFilePanel(sfseq.toString(), fseq, idx, isActive, 
 			       fstate, qstate, isFrozen, this);
 
 	      if(idx != null) 
@@ -1228,7 +1257,8 @@ class JNodeFilesPanel
 
     for(FileSeq fseq : pFilePanels.keySet()) {
       JFilePanel fpanel = pFilePanels.get(fseq).get(idx);
-      fpanel.setSelected(true);
+      if(fpanel != null) 
+        fpanel.setSelected(true);
     }    
   }
   
@@ -2138,6 +2168,7 @@ class JNodeFilesPanel
      String text,
      FileSeq fseq, 
      Integer idx,
+     boolean isActive, 
      FileState fstate, 
      QueueState qstate, 
      boolean isFrozen, 
@@ -2156,6 +2187,10 @@ class JNodeFilesPanel
 	  pTexPrefix = (fstate + "-" + qstate + (isFrozen ? "-Frozen-" : "-"));
 	  pIsSelectable = (fstate != FileState.CheckedIn);
 	}
+        else if(isActive) {
+          pTexPrefix = "Lightweight-";
+          pIsSelectable = true;
+        }
 
 	pIsModified = ((fstate != null) && (fstate != FileState.Identical));
       }

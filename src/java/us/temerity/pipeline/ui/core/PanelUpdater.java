@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.15 2007/05/07 04:14:08 jim Exp $
+// $Id: PanelUpdater.java,v 1.16 2007/05/07 20:05:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -436,7 +436,7 @@ class PanelUpdater
 	  if(pDetailedNode != null) {
 	    
 	    /* file novelty */ 
-	    if((pNodeFilesPanel != null) && !pLightweightNodeStatus) {
+	    if(pNodeFilesPanel != null) {
 	      master.updatePanelOp(pGroupID, "Updating File Novelty...");
 	      pFileNovelty = mclient.getCheckedInFileNovelty(pDetailedNodeName);
 	    }
