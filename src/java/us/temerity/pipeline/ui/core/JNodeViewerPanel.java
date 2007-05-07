@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.84 2007/05/07 04:14:08 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.85 2007/05/07 06:37:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3339,7 +3339,7 @@ class JNodeViewerPanel
   }
   
   /**
-   * Update the status of all upstread of the primary selected node. 
+   * Update the status of all upstream of the primary selected node. 
    */ 
   private synchronized void
   doUpdateBranch()
