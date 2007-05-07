@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.14 2006/12/31 20:44:53 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.15 2007/05/07 04:14:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -722,7 +722,7 @@ class JNodeBrowserPanel
 	    case WorkingOtherCheckedInSome:
 	    case WorkingNoneCheckedInSome:
 	    case WorkingCurrentCheckedInNone:
-	      {
+	      if(!isUpdateInProgress()) {
 		int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
 		
 		int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 

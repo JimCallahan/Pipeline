@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.29 2007/05/06 21:54:10 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.30 2007/05/07 04:14:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -471,9 +471,7 @@ class JQueueJobBrowserPanel
   ) 
   {
     pSelectionModified = false;
-
-    if(pGroupsTablePanel != null) 
-      pGroupsTablePanel.getTable().setEnabled(false);
+    pModifierPressed = false;
 
     PanelUpdater pu = new PanelUpdater(this, selectionOnly);
     pu.start();
@@ -507,9 +505,37 @@ class JQueueJobBrowserPanel
       super.setAuthorView(author, view);    
 
     updateJobs(groups, jobStatus);
+  }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform any operations needed before an panel update starts. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  preUpdate() 
+  {
+    super.preUpdate(); 
+    
+    if(pGroupsTablePanel != null) 
+      pGroupsTablePanel.getTable().setEnabled(false);
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
     if(pGroupsTablePanel != null) 
       pGroupsTablePanel.getTable().setEnabled(true);
+    
+    super.postUpdate(); 
   }
 
 
@@ -1471,7 +1497,17 @@ class JQueueJobBrowserPanel
      * invoked when a key has been pressed.
      */   
     public void 
-    keyPressed(KeyEvent e) {} 
+    keyPressed
+    (
+     KeyEvent e
+    ) 
+    {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_CONTROL:
+        pModifierPressed = true;
+      }
+    } 
 
     /**
      * Invoked when a key has been released.
@@ -1507,6 +1543,22 @@ class JQueueJobBrowserPanel
     keyTyped(KeyEvent e) {} 
 
     /**
+     * Invoked when a mouse button has been released on a component. 
+     */ 
+    public void 
+    mouseReleased
+    (
+     MouseEvent e
+    ) 
+    {    
+      switch(e.getButton()) {
+      case MouseEvent.BUTTON1:
+        if(pSelectionModified && !pModifierPressed) 
+          updatePanels(true);
+      }
+    }
+
+    /**
      * Invoked when the mouse exits a component. 
      */ 
     public void 
@@ -1519,7 +1571,7 @@ class JQueueJobBrowserPanel
         updatePanels(true);
     }
 
-    private Long     pJustSelected; 
+    private Long pJustSelected; 
   }
 
  
@@ -1955,4 +2007,8 @@ class JQueueJobBrowserPanel
    */ 
   private boolean  pSelectionModified; 
 
+  /**
+   * Whether the SHIFT/CTRL key is currently being pressed.
+   */ 
+  private boolean  pModifierPressed; 
 }

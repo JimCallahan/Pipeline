@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.8 2007/03/29 19:45:50 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.9 2007/05/07 04:14:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -431,6 +431,37 @@ class JQueueJobSlotsPanel
       super.setAuthorView(author, view);    
 
     updateJobs(jobStatus, jobInfo, hosts); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform any operations needed before an panel update starts. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  preUpdate() 
+  {
+    super.preUpdate(); 
+    
+    if(pSlotsTablePanel != null) 
+      pSlotsTablePanel.getTable().setEnabled(false);
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    if(pSlotsTablePanel != null) 
+      pSlotsTablePanel.getTable().setEnabled(true);
+    
+    super.postUpdate(); 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.7 2007/04/28 22:43:21 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.8 2007/05/07 04:14:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -548,6 +548,43 @@ class JQueueJobServersPanel
 
     updateJobs(filtered, hosts, samples, 
                workGroups, workUsers, selectionGroups, selectionSchedules);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform any operations needed before an panel update starts. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  preUpdate() 
+  {
+    super.preUpdate(); 
+    
+    if(pHostnamesTablePanel != null) 
+      pHostnamesTablePanel.getTable().setEnabled(false);
+
+    if(pHostsTablePanel != null) 
+      pHostsTablePanel.getTable().setEnabled(false);
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    if(pHostnamesTablePanel != null) 
+      pHostnamesTablePanel.getTable().setEnabled(true);
+
+    if(pHostsTablePanel != null) 
+      pHostsTablePanel.getTable().setEnabled(true);
+    
+    super.postUpdate(); 
   }
 
 

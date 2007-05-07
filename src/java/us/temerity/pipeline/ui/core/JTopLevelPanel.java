@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.7 2006/10/18 06:34:22 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.8 2007/05/07 04:14:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 
+import java.util.concurrent.atomic.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -39,6 +40,8 @@ class JTopLevelPanel
       
     setAuthorView(PackageInfo.sUser, "default");
     setGroupID(0);
+
+    pUpdateInProgress = new AtomicBoolean(false);
   }
 
   /**
@@ -62,6 +65,8 @@ class JTopLevelPanel
       setAuthorView(PackageInfo.sUser, "default");
       setGroupID(0);
     }
+
+    pUpdateInProgress = new AtomicBoolean(false);
   }
 
 
@@ -295,6 +300,42 @@ class JTopLevelPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether a panel update is currently in progress.
+   */ 
+  public boolean
+  isUpdateInProgress() 
+  {
+    return pUpdateInProgress.get();
+  }
+
+  /**
+   * Perform any operations needed before an panel update starts. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  preUpdate() 
+  {
+    pUpdateInProgress.set(true);
+    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
+    pUpdateInProgress.set(false);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Refocus keyboard events on this panel if it contains the mouse.
    * 
    * @return
@@ -404,5 +445,11 @@ class JTopLevelPanel
    * The details of the administrative privileges granted to the current user. 
    */ 
   protected PrivilegeDetails  pPrivilegeDetails; 
+
+
+  /**
+   * Whether a panel update is currently in progress.
+   */ 
+  private AtomicBoolean  pUpdateInProgress; 
 
 }

@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.14 2007/01/05 23:46:10 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.15 2007/05/07 04:14:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -182,6 +182,38 @@ class JBaseViewerPanel
     pRefreshScene = true;
     pCanvas.repaint();
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform any operations needed before an panel update starts. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  preUpdate() 
+  {
+    super.preUpdate(); 
+  
+    if(pCanvas != null) 
+      pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    if(pCanvas != null) 
+      pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
+    
+    super.postUpdate(); 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -497,10 +529,12 @@ class JBaseViewerPanel
       return true;
     }
     else if(pan || zoom) {
-      if(pan) 
-	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-      else 
-	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+      if(!isUpdateInProgress()) {
+        if(pan) 
+          pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        else 
+          pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+      }
       
       pDragStart = new Point2d(pMousePos);
 
