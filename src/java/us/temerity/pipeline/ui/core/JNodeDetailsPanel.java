@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.37 2007/04/15 10:30:47 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.38 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1662,7 +1662,7 @@ class JNodeDetailsPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -1697,6 +1697,35 @@ class JNodeDetailsPanel
       super.setAuthorView(author, view);    
 
     updateNodeStatus(status, licenseKeys, selectionKeys);
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
+
+    super.postUpdate();
+  }
+  
+  /**
+   * Register the name of a panel property which has just been modified.
+   */ 
+  public void
+  unsavedChange
+  (
+   String name
+  )
+  {
+    pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
+
+    super.unsavedChange(name); 
   }
 
 
@@ -1999,6 +2028,7 @@ class JNodeDetailsPanel
 	}
       }
 
+      pWorkingActionEnabledField.removeActionListener(this);
       if((work != null) && (getWorkingAction() != null)) {
 	pWorkingActionEnabledField.setValue(work.isActionEnabled()); 
 	pWorkingActionEnabledField.setEnabled(!isLocked() && !pIsFrozen);
@@ -2007,6 +2037,7 @@ class JNodeDetailsPanel
 	pWorkingActionEnabledField.setValue(null);
 	pWorkingActionEnabledField.setEnabled(false);
       }
+      pWorkingActionEnabledField.addActionListener(this);
 
       {
 	if((latest != null) && (latest.getAction() != null)) 
@@ -2018,15 +2049,12 @@ class JNodeDetailsPanel
       pActionParamComponents.clear();
 
       updateActionFields();
-      updateActionParams();
+      updateActionParams(false);
       updateActionColors();
     }
 
     /* job requirements panel */ 
     updateJobRequirements(true);
-
-    pApplyButton.setEnabled(false);
-    pApplyItem.setEnabled(false);
   }
 
   /**
@@ -2038,9 +2066,6 @@ class JNodeDetailsPanel
     /* lookup the selected checked-in version */ 
     NodeVersion vsn = getCheckedInVersion();
     assert(vsn != null);
-
-    /* save whether the apply button is already enabled? */ 
-    boolean isEnabled = pApplyButton.isEnabled();
 
     /* properties panel */ 
     {
@@ -2097,16 +2122,12 @@ class JNodeDetailsPanel
 
       pActionParamComponents.clear();
 
-      updateActionParams();
+      updateActionParams(false);
       updateActionColors();
     }
 
     /* job requirements panel */ 
     updateJobRequirements(false); 
-
-    /* restore the enabled state of the apply button */ 
-    pApplyButton.setEnabled(isEnabled);
-    pApplyItem.setEnabled(isEnabled);
   }
 
 
@@ -2220,7 +2241,10 @@ class JNodeDetailsPanel
    * Update the UI components associated with the working and checked-in actions.
    */ 
   private void 
-  updateActionParams()
+  updateActionParams
+  (
+   boolean modified
+  ) 
   {
     pActionParamsBox.removeAll();
 
@@ -2402,7 +2426,7 @@ class JNodeDetailsPanel
 	
 	vpanel.add(hbox);
 	
-	doSourceParamsChanged();
+	doSourceParamsChanged(modified);
       }	
     }
     else {
@@ -2783,14 +2807,11 @@ class JNodeDetailsPanel
 
   /**
    * Update the UI components associated with the working and checked-in job requirements.
-   * 
-   * @param refresh
-   *   Whether to reset the values of existing working components.
    */ 
   private void 
   updateJobRequirements
   (
-   boolean refresh
+   boolean modified
   )
   {
     BaseAction waction = getWorkingAction();
@@ -2818,7 +2839,7 @@ class JNodeDetailsPanel
 
       /* overflow policy */ 
       {
-	if(refresh) {
+	if(modified) {
 	  pWorkingOverflowPolicyField.removeActionListener(this);
 	  if(waction != null) {
 	    OverflowPolicy policy = work.getOverflowPolicy();
@@ -2848,12 +2869,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInOverflowPolicyField.setText("-");
 
-	doOverflowPolicyChanged();
+	doOverflowPolicyChanged(modified);
       }
 
       /* execution method */ 
       {
-	if(refresh) {
+	if(modified) {
 	  pWorkingExecutionMethodField.removeActionListener(this);
 	  if(waction != null) {
 	    ExecutionMethod method = work.getExecutionMethod();
@@ -2883,12 +2904,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInExecutionMethodField.setText("-");
 
-	doExecutionMethodChanged();
+	doExecutionMethodChanged(modified);
       }
 
       /* batch size */ 
       { 
-	if(refresh) {
+	if(modified) {
 	  pWorkingBatchSizeField.removeActionListener(this);
 	  {
 	    if(waction != null) 
@@ -2904,12 +2925,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInBatchSizeField.setText("-");
 
-	doBatchSizeChanged();
+	doBatchSizeChanged(modified);
       }
 
       /* priority */ 
       { 
-	if(refresh) {
+	if(modified) {
 	  pWorkingPriorityField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -2930,12 +2951,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInPriorityField.setText("-");
 
-	doPriorityChanged();
+	doPriorityChanged(modified);
       }
 
       /* ramp-up interval */ 
       { 
-	if(refresh) {
+	if(modified) {
 	  pWorkingRampUpField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -2956,12 +2977,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInRampUpField.setText("-");
 
-	doRampUpChanged();
+	doRampUpChanged(modified);
       }
 
       /* maximum load */ 
       { 
-	if(refresh) {
+	if(modified) {
 	  pWorkingMaxLoadField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -2982,12 +3003,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInMaxLoadField.setText("-");
 
-	doMaxLoadChanged();
+	doMaxLoadChanged(modified);
       }
 
       /* minimum memory */ 
       { 
-	if(refresh) {
+	if(modified) {
 	  pWorkingMinMemoryField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -3009,12 +3030,12 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInMinMemoryField.setText("-");
 
-	doMinMemoryChanged();
+	doMinMemoryChanged(modified);
       }
 
       /* minimum disk */ 
       { 
-	if(refresh) {
+	if(modified) {
 	  pWorkingMinDiskField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -3036,7 +3057,7 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInMinDiskField.setText("-");
 
-	doMinDiskChanged();
+	doMinDiskChanged(modified);
       }
 
       /* selection keys */ 
@@ -3139,7 +3160,7 @@ class JNodeDetailsPanel
 
 	    pSelectionKeyComponents.put(kname, pcomps);
 
-	    doSelectionKeyChanged(kname);
+	    doSelectionKeyChanged(kname, modified);
 	  }
 	}
 
@@ -3246,7 +3267,7 @@ class JNodeDetailsPanel
 	    
 	    pLicenseKeyComponents.put(kname, pcomps);
 	    
-	    doLicenseKeyChanged(kname);
+	    doLicenseKeyChanged(kname, modified);
 	  }
 	}
 
@@ -3851,17 +3872,17 @@ class JNodeDetailsPanel
     else if(cmd.equals("set-toolset")) 
       doSetToolset();
     else if(cmd.equals("toolset-changed")) 
-      doToolsetChanged();
+      doToolsetChanged(true);
     else if(cmd.equals("set-editor")) 
       doSetEditor();
     else if(cmd.equals("editor-changed")) 
-      doEditorChanged();
+      doEditorChanged(true);
     else if(cmd.equals("set-action")) 
       doSetAction();
     else if(cmd.equals("action-changed")) 
-      doActionChanged();
+      doActionChanged(true);
     else if(cmd.equals("action-enabled-changed")) 
-      doActionEnabledChanged();
+      doActionEnabledChanged(true);
     else if(cmd.startsWith("set-action-param:")) 
       doSetActionParam(cmd.substring(17));
     else if(cmd.startsWith("action-param-changed:")) 
@@ -3875,41 +3896,41 @@ class JNodeDetailsPanel
     else if(cmd.equals("set-overflow-policy")) 
       doSetOverflowPolicy();
     else if(cmd.equals("overflow-policy-changed")) 
-      doOverflowPolicyChanged();
+      doOverflowPolicyChanged(true);
     else if(cmd.equals("set-execution-method")) 
       doSetExecutionMethod();
     else if(cmd.equals("execution-method-changed")) 
-      doExecutionMethodChanged();
+      doExecutionMethodChanged(true);
     else if(cmd.equals("set-batch-size")) 
       doSetBatchSize();
     else if(cmd.equals("batch-size-changed")) 
-      doBatchSizeChanged();
+      doBatchSizeChanged(true);
     else if(cmd.equals("set-priority")) 
       doSetPriority();
     else if(cmd.equals("priority-changed")) 
-      doPriorityChanged();
+      doPriorityChanged(true);
     else if(cmd.equals("set-ramp-up")) 
       doSetRampUp();
     else if(cmd.equals("ramp-up-changed")) 
-      doRampUpChanged();
+      doRampUpChanged(true);
     else if(cmd.equals("set-maximum-load")) 
       doSetMaxLoad();
     else if(cmd.equals("maximum-load-changed")) 
-      doMaxLoadChanged();
+      doMaxLoadChanged(true);
     else if(cmd.equals("set-minimum-memory")) 
       doSetMinMemory();
     else if(cmd.equals("minimum-memory-changed")) 
-      doMinMemoryChanged();
+      doMinMemoryChanged(true);
     else if(cmd.equals("set-minimum-disk")) 
       doSetMinDisk();
     else if(cmd.equals("minimum-disk-changed")) 
-      doMinDiskChanged();
+      doMinDiskChanged(true);
     else if(cmd.startsWith("selection-key-changed:")) 
-      doSelectionKeyChanged(cmd.substring(22));
+      doSelectionKeyChanged(cmd.substring(22), true);
     else if(cmd.startsWith("set-selection-key:")) 
       doSetSelectionKey(cmd.substring(18));
     else if(cmd.startsWith("license-key-changed:")) 
-      doLicenseKeyChanged(cmd.substring(20));
+      doLicenseKeyChanged(cmd.substring(20), true);
     else if(cmd.startsWith("set-license-key:")) 
       doSetLicenseKey(cmd.substring(16));
 
@@ -3949,9 +3970,11 @@ class JNodeDetailsPanel
    * Modify the working version of the node based on the current settings if the 
    * UI components.
    */ 
-  private void 
+  public void 
   doApply()
   {
+    super.doApply();
+
     if(isLocked() || pIsFrozen) 
       return;
 
@@ -4143,9 +4166,6 @@ class JNodeDetailsPanel
 	    mod.setJobRequirements(jreq);
 	  }	
 
-	  pApplyButton.setEnabled(false);
-	  pApplyItem.setEnabled(false);
-	  
 	  ModifyTask task = new ModifyTask(mod);
 	  task.start();
 	}
@@ -4183,17 +4203,20 @@ class JNodeDetailsPanel
     }
     pWorkingToolsetField.addActionListener(this);
   
-    doToolsetChanged();
+    doToolsetChanged(true);
   }
 
   /**
    * Update the appearance of the toolset field after a change of value.
    */ 
   private void 
-  doToolsetChanged() 
+  doToolsetChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified) 
+      unsavedChange("Toolset"); 
 
     updateToolsetColors();
   }
@@ -4215,18 +4238,20 @@ class JNodeDetailsPanel
     }
     pWorkingEditorField.addActionListener(this);
 
-    updateEditorFields();
-    updateEditorColors();
+    doEditorChanged(true);
   }
 
   /**
    * Update the appearance of the editor field after a change of value.
    */ 
   private void 
-  doEditorChanged() 
+  doEditorChanged
+  (
+   boolean modified
+  )  
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified) 
+      unsavedChange("Editor"); 
 
     updateEditorFields();
     updateEditorColors();
@@ -4269,7 +4294,7 @@ class JNodeDetailsPanel
     pActionParamComponents.clear();
 
     updateActionFields();
-    updateActionParams();
+    updateActionParams(true);
     updateActionColors();
 
     updateJobRequirements((oaction == null) && (getWorkingAction() != null));
@@ -4279,10 +4304,13 @@ class JNodeDetailsPanel
    * Update the appearance of the action fields after a change of value.
    */ 
   private void 
-  doActionChanged()
+  doActionChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Action");
 
     BaseAction oaction = getWorkingAction();
     {
@@ -4334,7 +4362,7 @@ class JNodeDetailsPanel
       }
 
       updateActionFields();
-      updateActionParams();
+      updateActionParams(modified);
       updateActionColors();
     }
 
@@ -4348,10 +4376,13 @@ class JNodeDetailsPanel
    * Update the appearance of the action enabled fields after a change of value.
    */ 
   private void 
-  doActionEnabledChanged() 
+  doActionEnabledChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified) 
+      unsavedChange("Action Enabled");
 
     updateActionEnabledColors();
   }
@@ -4432,9 +4463,7 @@ class JNodeDetailsPanel
    String pname
   ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
-  
+    unsavedChange("Action Parameter: " + pname);
     updateActionParamColor(pname, null);
   }
 
@@ -4451,7 +4480,7 @@ class JNodeDetailsPanel
 
     if(pEditSourceParamsDialog.wasConfirmed()) {
       pEditSourceParamsDialog.updateParams(pWorkingAction);
-      doSourceParamsChanged();
+      doSourceParamsChanged(true);
     }
   }
 
@@ -4506,7 +4535,7 @@ class JNodeDetailsPanel
 	     sfseqs, waction);
       }
 
-      doSourceParamsChanged();
+      doSourceParamsChanged(true);
     }
   }
 
@@ -4514,10 +4543,13 @@ class JNodeDetailsPanel
    * Update the appearance of the edit/view source params button after a change of value.
    */ 
   private void 
-  doSourceParamsChanged()
+  doSourceParamsChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Action Source Parameters");
 
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4552,17 +4584,20 @@ class JNodeDetailsPanel
       pWorkingOverflowPolicyField.setSelected(pCheckedInOverflowPolicyField.getText());
     pWorkingOverflowPolicyField.addActionListener(this);
 
-    doOverflowPolicyChanged();
+    doOverflowPolicyChanged(true);
   }
 
   /**
    * Update the appearance of the overflow policy field after a change of value.
    */ 
   private void 
-  doOverflowPolicyChanged()
+  doOverflowPolicyChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified) 
+      unsavedChange("Overflow Policy");
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4590,17 +4625,20 @@ class JNodeDetailsPanel
       pWorkingExecutionMethodField.setSelected(pCheckedInExecutionMethodField.getText());
     pWorkingExecutionMethodField.addActionListener(this);
 
-    doExecutionMethodChanged();
+    doExecutionMethodChanged(true);
   }
 
   /**
    * Update the appearance of the execution method field after a change of value.
    */ 
   private void 
-  doExecutionMethodChanged()
+  doExecutionMethodChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Execution Method"); 
 
     String cmethod = null;
     Color color = Color.white;
@@ -4629,7 +4667,7 @@ class JNodeDetailsPanel
 	(!isLocked() && !pIsFrozen && (cmethod != null) && (cmethod.equals("Parallel")));
     }
 
-    doBatchSizeChanged();
+    doBatchSizeChanged(modified);
   }
 
 
@@ -4645,17 +4683,20 @@ class JNodeDetailsPanel
       pWorkingBatchSizeField.setText(pCheckedInBatchSizeField.getText());
     pWorkingBatchSizeField.addActionListener(this);
 
-    doBatchSizeChanged();
+    doBatchSizeChanged(true);
   }
 
   /**
    * Update the appearance of the batch size field after a change of value.
    */ 
   private void 
-  doBatchSizeChanged()
+  doBatchSizeChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Batch Size"); 
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4686,17 +4727,20 @@ class JNodeDetailsPanel
       pWorkingPriorityField.setText(pCheckedInPriorityField.getText());
     pWorkingPriorityField.addActionListener(this);
 
-    doPriorityChanged();
+    doPriorityChanged(true);
   }
 
   /**
    * Update the appearance of the priority field after a change of value.
    */ 
   private void 
-  doPriorityChanged()
+  doPriorityChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Priority"); 
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4725,17 +4769,20 @@ class JNodeDetailsPanel
       pWorkingRampUpField.setText(pCheckedInRampUpField.getText());
     pWorkingRampUpField.addActionListener(this);
 
-    doRampUpChanged();
+    doRampUpChanged(true);
   }
 
   /**
    * Update the appearance of the ramp-up interval field after a change of value.
    */ 
   private void 
-  doRampUpChanged()
+  doRampUpChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Ramp Up Interval"); 
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4764,17 +4811,20 @@ class JNodeDetailsPanel
       pWorkingMaxLoadField.setText(pCheckedInMaxLoadField.getText());
     pWorkingMaxLoadField.addActionListener(this);
 
-    doMaxLoadChanged();
+    doMaxLoadChanged(true);
   }
 
   /**
    * Update the appearance of the maximum load field after a change of value.
    */ 
   private void 
-  doMaxLoadChanged()
+  doMaxLoadChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Maximum Load"); 
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4802,17 +4852,20 @@ class JNodeDetailsPanel
       pWorkingMinMemoryField.setText(pCheckedInMinMemoryField.getText());
     pWorkingMinMemoryField.addActionListener(this);
 
-    doMinMemoryChanged();
+    doMinMemoryChanged(true);
   }
 
   /**
    * Update the appearance of the minimum memory field after a change of value.
    */ 
   private void 
-  doMinMemoryChanged()
+  doMinMemoryChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Minimum Memory"); 
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4840,17 +4893,20 @@ class JNodeDetailsPanel
       pWorkingMinDiskField.setText(pCheckedInMinDiskField.getText());
     pWorkingMinDiskField.addActionListener(this);
 
-    doMinDiskChanged();
+    doMinDiskChanged(true);
   }
 
   /**
    * Update the appearance of the minimum disk field after a change of value.
    */ 
   private void 
-  doMinDiskChanged()
+  doMinDiskChanged
+  (
+   boolean modified
+  ) 
   {
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    if(modified)
+      unsavedChange("Minimum Disk"); 
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -4887,7 +4943,7 @@ class JNodeDetailsPanel
       else if(ckey.equals("no"))
 	wfield.setValue(false);
 
-      doSelectionKeyChanged(kname);
+      doSelectionKeyChanged(kname, true);
     }
   }
 
@@ -4898,13 +4954,14 @@ class JNodeDetailsPanel
   private void 
   doSelectionKeyChanged
   (
-   String kname
+   String kname,
+   boolean modified
   ) 
   {
     Component pcomps[] = pSelectionKeyComponents.get(kname);
     if(pcomps != null) {
-      pApplyButton.setEnabled(true);
-      pApplyItem.setEnabled(true);
+      if(modified)
+        unsavedChange("Selection Key: " + kname); 
     
       Color color = Color.white;
       if(hasWorking() && hasCheckedIn()) {
@@ -4942,7 +4999,7 @@ class JNodeDetailsPanel
       else if(ckey.equals("no"))
 	wfield.setValue(false);
 
-      doLicenseKeyChanged(kname);
+      doLicenseKeyChanged(kname, true);
     }
   }
 
@@ -4953,13 +5010,14 @@ class JNodeDetailsPanel
   private void 
   doLicenseKeyChanged
   (
-   String kname
+   String kname,
+   boolean modified
   ) 
   {
     Component pcomps[] = pLicenseKeyComponents.get(kname);
     if(pcomps != null) {
-      pApplyButton.setEnabled(true);
-      pApplyItem.setEnabled(true);
+      if(modified)
+        unsavedChange("License Key: " + kname); 
     
       Color color = Color.white;
       if(hasWorking() && hasCheckedIn()) {

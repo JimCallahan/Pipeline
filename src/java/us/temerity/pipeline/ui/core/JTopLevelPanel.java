@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.8 2007/05/07 04:14:08 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.9 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,11 +6,12 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 
-import java.util.concurrent.atomic.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.plaf.basic.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O P   L E V E L   P A N E L                                                          */
@@ -37,11 +38,11 @@ class JTopLevelPanel
     super();
 
     pPrivilegeDetails = new PrivilegeDetails();
+    pUpdateInProgress = new AtomicBoolean(false);
+    pUnsavedChanges   = new TreeSet<String>();
       
     setAuthorView(PackageInfo.sUser, "default");
     setGroupID(0);
-
-    pUpdateInProgress = new AtomicBoolean(false);
   }
 
   /**
@@ -56,6 +57,8 @@ class JTopLevelPanel
     super();
 
     pPrivilegeDetails = new PrivilegeDetails();
+    pUpdateInProgress = new AtomicBoolean(false);
+    pUnsavedChanges   = new TreeSet<String>();
 
     if(panel != null) {
       setAuthorView(panel.getAuthor(), panel.getView());
@@ -65,8 +68,6 @@ class JTopLevelPanel
       setAuthorView(PackageInfo.sUser, "default");
       setGroupID(0);
     }
-
-    pUpdateInProgress = new AtomicBoolean(false);
   }
 
 
@@ -207,6 +208,9 @@ class JTopLevelPanel
    String view 
   ) 
   {
+    if(warnUnsavedChangesBeforeAuthorView()) 
+      return; 
+
     if(author == null)
       throw new IllegalArgumentException("The author cannot be (null)!");
     pAuthor = author;
@@ -330,7 +334,137 @@ class JTopLevelPanel
   {
     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
     pUpdateInProgress.set(false);
+    pUnsavedChanges.clear();
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether panel properties have been modified since the last update.
+   */ 
+  public boolean 
+  hasUnsavedChanges() 
+  {
+    return (!pUnsavedChanges.isEmpty());
+  }
+
+  /**
+   * The names of the panel properties which have been modified since the last panel update.
+   */ 
+  public SortedSet<String> 
+  unsavedChanges()
+  {
+    return Collections.unmodifiableSortedSet(pUnsavedChanges);
+  }
+
+  /**
+   * Register the name of a panel property which has just been modified.
+   */ 
+  public void
+  unsavedChange
+  (
+   String name
+  )
+  {
+    pUnsavedChanges.add(name);
+  }
+
+  /**
+   * If unsaved panel modifications exist, display a dialog that warns the user about 
+   * these unsaged changes and either apply or discard the changes base on the users 
+   * input. 
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean
+  warnUnsavedChanges
+  (
+   String msg
+  )
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    if(!hasUnsavedChanges() || !prefs.getWarnUnsavedChanges()) 
+      return false;
+
+    JUnsavedChangesDialog diag = new JUnsavedChangesDialog(this, msg);
+    diag.setVisible(true);
+
+    pUnsavedChanges.clear();
+
+    if(!diag.wasConfirmed()) 
+      return false;
+
+    doApply();
+    return true;
+  }
+
+  /**
+   * Warn about unsaved changes prior to a panel update.
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean
+  warnUnsavedChangesBeforeUpdate()   
+  {
+    String msg = 
+      ("The " + getTypeName() + " panel on channel (" + getGroupID() + ") contains " + 
+       "unsaved changes which will be lost during the requested panel update!"); 
+
+    return warnUnsavedChanges(msg);
+  }
+    
+  /**
+   * Warn about unsaved changes prior to closing a panel.
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean
+  warnUnsavedChangesBeforeClose()   
+  {
+    String msg = 
+      ("The " + getTypeName() + " panel on channel (" + getGroupID() + ") contains " + 
+       "unsaved changes which will be lost when the panel is closed!"); 
+
+    return warnUnsavedChanges(msg);
+  }
+    
+  /**
+   * Warn about unsaved changes prior to replacing the current panel with a panel
+   * of a different type.
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean
+  warnUnsavedChangesBeforeReplace()   
+  {
+    String msg = 
+      ("The " + getTypeName() + " panel on channel (" + getGroupID() + ") contains " + 
+       "unsaved changes which will be lost when the panel type is changed!"); 
+
+    return warnUnsavedChanges(msg);
+  }
+    
+  /**
+   * Warn about unsaved changes prior to a change of working area view. 
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean
+  warnUnsavedChangesBeforeAuthorView()   
+  {
+    String msg = 
+      ("The " + getTypeName() + " panel on channel (" + getGroupID() + ") contains " + 
+       "unsaved changes which will be lost when switching to another working area view!"); 
+
+    return warnUnsavedChanges(msg);
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -362,6 +496,21 @@ class JTopLevelPanel
   public void 
   freeDisplayLists() 
   {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Apply panel changes.
+   */ 
+  public void 
+  doApply()
+  {
+    pUnsavedChanges.clear();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -451,5 +600,10 @@ class JTopLevelPanel
    * Whether a panel update is currently in progress.
    */ 
   private AtomicBoolean  pUpdateInProgress; 
+
+  /**
+   * The names of panel properties which have been modified since the last panel update.
+   */ 
+  private TreeSet<String>  pUnsavedChanges; 
 
 }

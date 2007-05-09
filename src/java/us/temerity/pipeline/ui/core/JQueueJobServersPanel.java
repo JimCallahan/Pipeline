@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.8 2007/05/07 04:14:08 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.9 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -105,7 +105,7 @@ class JQueueJobServersPanel
 	pHostsPopup.addSeparator();
 	
 	item = new JMenuItem("Apply Changes");
-	pHostsApplyItem = item;
+	pApplyItem = item;
 	item.setActionCommand("hosts-apply");
 	item.addActionListener(this);
 	pHostsPopup.add(item);
@@ -245,7 +245,7 @@ class JQueueJobServersPanel
 
 	{
 	  JButton btn = new JButton();		
-	  pHostsApplyButton = btn;
+	  pApplyButton = btn;
 	  btn.setName("ApplyHeaderButton");
 	    
 	  Dimension size = new Dimension(19, 19);
@@ -496,7 +496,7 @@ class JQueueJobServersPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -550,8 +550,20 @@ class JQueueJobServersPanel
                workGroups, workUsers, selectionGroups, selectionSchedules);
   }
 
+  /**
+   * Register the name of a panel property which has just been modified.
+   */ 
+  public void
+  unsavedChange
+  (
+   String name
+  )
+  {
+    pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
 
-  /*----------------------------------------------------------------------------------------*/
+    super.unsavedChange(name); 
+  }
 
   /**
    * Perform any operations needed before an panel update starts. <P> 
@@ -584,6 +596,9 @@ class JQueueJobServersPanel
     if(pHostsTablePanel != null) 
       pHostsTablePanel.getTable().setEnabled(true);
     
+    pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
+
     super.postUpdate(); 
   }
 
@@ -652,9 +667,6 @@ class JQueueJobServersPanel
       updateHostsHeaderButtons();
       pHostsTablePanel.tableStructureChanged();  
       pHostsTablePanel.adjustmentValueChanged(null);
-
-      pHostsApplyItem.setEnabled(false);
-      pHostsApplyButton.setEnabled(false);
     }
   }
 
@@ -827,7 +839,7 @@ class JQueueJobServersPanel
       (pHostsHistoryItem, prefs.getJobServersHistory(),
        "Show the resource usage history for the selected servers.");
     updateMenuToolTip
-      (pHostsApplyItem, prefs.getApplyChanges(),
+      (pApplyItem, prefs.getApplyChanges(),
        "Apply the changes to job server properties.");
     updateMenuToolTip
       (pHostsAddItem, prefs.getJobServersAdd(),
@@ -936,7 +948,7 @@ class JQueueJobServersPanel
 	doHostsHistory();
       else if((prefs.getApplyChanges() != null) &&
 	      prefs.getApplyChanges().wasPressed(e))
-	doHostsApply();
+	doApply();
       else if((prefs.getJobServersAdd() != null) &&
 	      prefs.getJobServersAdd().wasPressed(e))
 	doHostsAdd();
@@ -992,7 +1004,7 @@ class JQueueJobServersPanel
     else if(cmd.equals("hosts-history")) 
       doHostsHistory();
     else if(cmd.equals("hosts-apply")) 
-      doHostsApply();
+      doApply();
     else if(cmd.equals("hosts-add")) 
       doHostsAdd();
     else if(cmd.equals("hosts-remove")) 
@@ -1040,16 +1052,6 @@ class JQueueJobServersPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Signals that the hosts properties have been edited.
-   */ 
-  public void 
-  doHostsEdited() 
-  {
-    pHostsApplyItem.setEnabled(true);
-    pHostsApplyButton.setEnabled(true);
-  }
-
-  /**
    * Show the resource usage history dialogs for the selected hosts.
    */ 
   public void   
@@ -1065,8 +1067,10 @@ class JQueueJobServersPanel
    * Apply the changes to server properties. 
    */ 
   public void 
-  doHostsApply()
+  doApply()
   {
+    super.doApply();
+
     EditHostsTask task = new EditHostsTask();
     task.start();
   }
@@ -1463,7 +1467,7 @@ class JQueueJobServersPanel
    */ 
   private JMenuItem  pHostsUpdateItem;
   private JMenuItem  pHostsHistoryItem;
-  private JMenuItem  pHostsApplyItem;
+  private JMenuItem  pApplyItem;
   private JMenuItem  pHostsAddItem;
   private JMenuItem  pHostsRemoveItem;
 
@@ -1489,7 +1493,7 @@ class JQueueJobServersPanel
   /**
    * The button used to apply changes to the host properties.
    */ 
-  private JButton  pHostsApplyButton; 
+  private JButton  pApplyButton; 
 
 
   /**

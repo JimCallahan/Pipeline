@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.38 2007/04/26 17:54:44 jim Exp $
+// $Id: JManagerPanel.java,v 1.39 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2398,6 +2398,9 @@ class JManagerPanel
       return; 
     }
 
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeBrowserPanel panel = new JNodeBrowserPanel(dead);
     setContents(panel); 
@@ -2418,6 +2421,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeViewerPanel panel = new JNodeViewerPanel(dead);
@@ -2440,6 +2446,9 @@ class JManagerPanel
       return; 
     }
 
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeDetailsPanel panel = new JNodeDetailsPanel(dead);
     setContents(panel);
@@ -2460,6 +2469,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeFilesPanel panel = new JNodeFilesPanel(dead);
@@ -2482,6 +2494,9 @@ class JManagerPanel
       return; 
     }
 
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeLinksPanel panel = new JNodeLinksPanel(dead);
     setContents(panel);
@@ -2502,6 +2517,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeHistoryPanel panel = new JNodeHistoryPanel(dead);
@@ -2527,6 +2545,9 @@ class JManagerPanel
       return; 
     }
 
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobServerStatsPanel(dead));
     dead.setGroupID(0);
@@ -2544,6 +2565,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobServersPanel(dead));
@@ -2563,6 +2587,9 @@ class JManagerPanel
       return; 
     }
 
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobSlotsPanel(dead));
     dead.setGroupID(0);
@@ -2580,6 +2607,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobBrowserPanel(dead));
@@ -2599,6 +2629,9 @@ class JManagerPanel
       return; 
     }
 
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobViewerPanel(dead));
     dead.setGroupID(0);
@@ -2616,6 +2649,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobDetailsPanel(dead));
@@ -2637,6 +2673,9 @@ class JManagerPanel
       Toolkit.getDefaultToolkit().beep();
       return; 
     }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JEmptyPanel(dead));
@@ -2844,6 +2883,9 @@ class JManagerPanel
 
     /* replace the parent split pane with the other child */ 
     if((parent instanceof JHorzSplitPanel) || (parent instanceof JVertSplitPanel)) {
+      if(pTopLevelPanel.warnUnsavedChangesBeforeClose()) 
+        return;
+
       Container sparent = null;
       Component live = null;
       if(parent instanceof JHorzSplitPanel) {
@@ -2890,6 +2932,9 @@ class JManagerPanel
 
     /* remove this tab from the parent tabbed pane */ 
     else if(parent instanceof JTabbedPanel) {
+      if(pTopLevelPanel.warnUnsavedChangesBeforeClose()) 
+        return;
+
       JTabbedPanel tab = (JTabbedPanel) parent;
       tab.remove(this);
 
@@ -3069,7 +3114,7 @@ class JManagerPanel
       JNodeViewerPanel viewer = panels.getPanel(groupID);
       if(viewer != null) {
 	PanelUpdater pu = new PanelUpdater(viewer);
-	pu.start();
+	pu.execute();
       }
     }    
   }
@@ -3089,7 +3134,7 @@ class JManagerPanel
       JNodeBrowserPanel browser = panels.getPanel(groupID);
       if(browser != null) {
 	PanelUpdater pu = new PanelUpdater(browser, true);
-	pu.start();
+	pu.execute();
       }
     }    
   }

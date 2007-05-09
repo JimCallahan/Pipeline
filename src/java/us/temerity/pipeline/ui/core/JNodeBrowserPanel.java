@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.15 2007/05/07 04:14:08 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.16 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -250,7 +250,7 @@ class JNodeBrowserPanel
     pSelectionModified = false;
 
     PanelUpdater pu = new PanelUpdater(this, forceUpdate);
-    pu.start();
+    pu.execute();
   }
 
   /**

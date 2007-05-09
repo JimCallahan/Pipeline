@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.38 2007/05/07 20:05:52 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.39 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -400,7 +400,7 @@ class JNodeFilesPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -435,6 +435,35 @@ class JNodeFilesPanel
       super.setAuthorView(author, view);    
 
     updateNodeStatus(status, novelty, offline);
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
+
+    super.postUpdate();
+  }
+  
+  /**
+   * Register the name of a panel property which has just been modified.
+   */ 
+  public void
+  unsavedChange
+  (
+   String name
+  )
+  {
+    pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
+
+    super.unsavedChange(name); 
   }
 
 
@@ -622,9 +651,6 @@ class JNodeFilesPanel
     }
       
     pFileSeqBox.revalidate();
-
-    pApplyButton.setEnabled(false);
-    pApplyItem.setEnabled(false);
   }
 
 
@@ -1619,9 +1645,11 @@ class JNodeFilesPanel
   /**
    * Replace working files with the selected checked-in files.
    */ 
-  private void 
+  public void 
   doApply()
   {
+    super.doApply();
+
     if(pIsFrozen) 
       return;
 
@@ -1638,9 +1666,6 @@ class JNodeFilesPanel
       }
     }
 
-    pApplyButton.setEnabled(false);
-    pApplyItem.setEnabled(false);
-	  
     RevertTask task = new RevertTask(files);
     task.start();
   }
@@ -1702,8 +1727,7 @@ class JNodeFilesPanel
     JFileArrow arrow = pFileArrows.get(fname);
     arrow.setSelected(selected);
 
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);
+    unsavedChange("Revert Files"); 
   }
   
   /**

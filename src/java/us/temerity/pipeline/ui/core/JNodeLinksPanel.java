@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.19 2007/04/15 10:30:47 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.20 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -407,7 +407,7 @@ class JNodeLinksPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -442,6 +442,35 @@ class JNodeLinksPanel
       super.setAuthorView(author, view);    
 
     updateNodeStatus(status, links, offline);
+  }
+
+  /**
+   * Perform any operations needed after an panel update has completed. <P> 
+   * 
+   * This method is run by the Swing Event thread.
+   */ 
+  public void 
+  postUpdate() 
+  {
+    pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
+
+    super.postUpdate();
+  }
+  
+  /**
+   * Register the name of a panel property which has just been modified.
+   */ 
+  public void
+  unsavedChange
+  (
+   String name
+  )
+  {
+    pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
+
+    super.unsavedChange(name); 
   }
 
 
@@ -855,9 +884,6 @@ class JNodeLinksPanel
 
       pLinksBox.revalidate();
     }
-
-    pApplyButton.setEnabled(false);
-    pApplyItem.setEnabled(false);
   }
 
   /**
@@ -1240,9 +1266,11 @@ class JNodeLinksPanel
   /**
    * Replace working files with the selected checked-in files.
    */ 
-  private void 
+  public void 
   doApply()
   {
+    super.doApply();
+
     if(pIsFrozen) 
       return;
 
@@ -1282,9 +1310,6 @@ class JNodeLinksPanel
 	    }
 	  }
 	
-	  pApplyButton.setEnabled(false);
-	  pApplyItem.setEnabled(false);
-	  
 	  ApplyTask task = new ApplyTask(links);
 	  task.start();
 	}
@@ -1304,10 +1329,8 @@ class JNodeLinksPanel
    String name
   )
   {
-    if(updatePolicyColors(name)) {
-      pApplyButton.setEnabled(true);
-      pApplyItem.setEnabled(true);
-    }
+    if(updatePolicyColors(name)) 
+      unsavedChange("Link Policy: " + name); 
   }
   
   /**
@@ -1372,15 +1395,11 @@ class JNodeLinksPanel
       ofield.setEnabled(false);
     }
     
-    if(updateRelationshipColors(name)) {
-      pApplyButton.setEnabled(true);
-      pApplyItem.setEnabled(true);    
-    }
+    if(updateRelationshipColors(name)) 
+      unsavedChange("Link Relationship: " + name);
 
-    if(updateOffsetColors(name)) {
-      pApplyButton.setEnabled(true);
-      pApplyItem.setEnabled(true);    
-    }
+    if(updateOffsetColors(name)) 
+      unsavedChange("Link Frame Offset: " + name); 
   }
   
   /**
@@ -1425,10 +1444,8 @@ class JNodeLinksPanel
    String name
   ) 
   {
-    if(updateOffsetColors(name)) {
-      pApplyButton.setEnabled(true);
-      pApplyItem.setEnabled(true);    
-    }
+    if(updateOffsetColors(name)) 
+      unsavedChange("Link Frame Offset: " + name);
   }
   
   /**
@@ -1585,8 +1602,7 @@ class JNodeLinksPanel
     JLinkArrow arrow = pArrows.get(name);
     arrow.setSelected(selected);
 
-    pApplyButton.setEnabled(true);
-    pApplyItem.setEnabled(true);    
+    unsavedChange("Revert Links: " + name);
   }
 
 

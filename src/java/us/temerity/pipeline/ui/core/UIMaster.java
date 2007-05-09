@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.64 2007/04/28 00:01:45 jim Exp $
+// $Id: UIMaster.java,v 1.65 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2377,6 +2377,7 @@ class UIMaster
     pResourceUsageHistoryDialog.updateSamples(channel, hosts);
   } 
 
+ 
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -5156,64 +5157,21 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The active node browser panels. <P> 
+   * The active top level panels.
    */ 
   private PanelGroup<JNodeBrowserPanel>  pNodeBrowserPanels;
-
-  /**
-   * The active node viewer panels. <P> 
-   */ 
-  private PanelGroup<JNodeViewerPanel>  pNodeViewerPanels;
-
-  /**
-   * The active node detail panels. <P> 
-   */ 
+  private PanelGroup<JNodeViewerPanel>   pNodeViewerPanels;
   private PanelGroup<JNodeDetailsPanel>  pNodeDetailsPanels;
-
-  /**
-   * The active node history panels. <P> 
-   */ 
   private PanelGroup<JNodeHistoryPanel>  pNodeHistoryPanels;
+  private PanelGroup<JNodeFilesPanel>    pNodeFilesPanels;
+  private PanelGroup<JNodeLinksPanel>    pNodeLinksPanels;
 
-  /**
-   * The active node files panels. <P> 
-   */ 
-  private PanelGroup<JNodeFilesPanel>  pNodeFilesPanels;
-
-  /**
-   * The active node links panels. <P> 
-   */ 
-  private PanelGroup<JNodeLinksPanel>  pNodeLinksPanels;
-
-
-  /**
-   * The active job servers panels. <P> 
-   */ 
-  private PanelGroup<JQueueJobServersPanel>  pQueueJobServersPanels;
-
-  /**
-   * The active job server stats panels. <P> 
-   */ 
+  private PanelGroup<JQueueJobServersPanel>      pQueueJobServersPanels;
   private PanelGroup<JQueueJobServerStatsPanel>  pQueueJobServerStatsPanels;
+  private PanelGroup<JQueueJobSlotsPanel>        pQueueJobSlotsPanels;
 
-  /**
-   * The active job slots panels. <P> 
-   */ 
-  private PanelGroup<JQueueJobSlotsPanel>  pQueueJobSlotsPanels;
-
-  /**
-   * The active job browser panels. <P> 
-   */ 
   private PanelGroup<JQueueJobBrowserPanel>  pQueueJobBrowserPanels;
-
-  /**
-   * The active job viewer panels. <P> 
-   */ 
-  private PanelGroup<JQueueJobViewerPanel>  pQueueJobViewerPanels;
-
-  /**
-   * The active job details panels. <P> 
-   */ 
+  private PanelGroup<JQueueJobViewerPanel>   pQueueJobViewerPanels;
   private PanelGroup<JQueueJobDetailsPanel>  pQueueJobDetailsPanels;
 
   

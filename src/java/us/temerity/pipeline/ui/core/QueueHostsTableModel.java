@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.16 2007/03/28 20:07:15 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.17 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -877,11 +877,10 @@ class QueueHostsTableModel
       }
     }
       
-    if(edited) {
+    if(edited) 
       fireTableDataChanged();
-      pParent.doHostsEdited(); 
-    }
   }
+
 
   public boolean 
   setValueAtHelper
@@ -894,6 +893,10 @@ class QueueHostsTableModel
   ) 
   {
     QueueHostInfo host = pQueueHosts.get(srow);
+
+    UserPrefs prefs = UserPrefs.getInstance();
+    String hostname = prefs.getShowFullHostnames() ? host.getName() : host.getShortName(); 
+
     switch(col) {
     case 0:
       if(QueueHostStatusChange.titles().contains((String) value)) {
@@ -901,6 +904,7 @@ class QueueHostsTableModel
 	  QueueHostStatusChange.valueOf(QueueHostStatusChange.class, (String) value);
 	
 	pQueueHostStatusChanges.set(srow, change);
+        pParent.unsavedChange("Status: " + hostname);
 	return true;
       }
       else {
@@ -914,6 +918,7 @@ class QueueHostsTableModel
 	  host.setJobSlots(slots);
 
 	pEditedSlotsIndices.add(srow);
+        pParent.unsavedChange("Slots: " + hostname);
 	return true; 
       }
       
@@ -928,6 +933,7 @@ class QueueHostsTableModel
 	  host.setReservation(res);
 
 	pEditedReserveIndices.add(srow);
+        pParent.unsavedChange("Reservation: " + hostname);
 	return true;
       }
 
@@ -938,6 +944,7 @@ class QueueHostsTableModel
 	  host.setOrder(order);
 
 	pEditedOrderIndices.add(srow);
+        pParent.unsavedChange("Order: " + hostname);
 	return true; 
       }
 
@@ -949,6 +956,7 @@ class QueueHostsTableModel
 	host.setSelectionGroup(group);
 
 	pEditedGroupIndices.add(srow);
+        pParent.unsavedChange("Selection Group: " + hostname);
 	return true; 
       }
 
@@ -960,10 +968,12 @@ class QueueHostsTableModel
 	host.setSelectionSchedule(sched);
 
 	pEditedScheduleIndices.add(srow);
+        pParent.unsavedChange("Selection Schedule: " + hostname);
 
 	if(modifyGroup) {
 	  host.setSelectionGroup(newGroup);
 	  pEditedGroupIndices.add(srow);
+          pParent.unsavedChange("Selection Group: " + hostname);
 	}
 
 	return true; 

@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.16 2007/05/07 20:05:52 jim Exp $
+// $Id: PanelUpdater.java,v 1.17 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -364,6 +364,35 @@ class PanelUpdater
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform pre-update checks and if successful start the update thread.
+   */ 
+  public void 
+  execute() 
+  {
+    if(!pJobDetailsOnly && !pJobBrowserSelectionOnly) {
+      if((pNodeDetailsPanel != null) && 
+         pNodeDetailsPanel.warnUnsavedChangesBeforeUpdate())
+        return;
+
+     if((pNodeFilesPanel != null) && 
+         pNodeFilesPanel.warnUnsavedChangesBeforeUpdate())
+        return;
+
+     if((pNodeLinksPanel != null) && 
+         pNodeLinksPanel.warnUnsavedChangesBeforeUpdate())
+        return;
+    
+     if(!pNodeDetailsOnly && !pJobSlotsSelectionOnly) {
+       if((pQueueJobServersPanel != null) && 
+          pQueueJobServersPanel.warnUnsavedChangesBeforeUpdate())
+         return;   
+     }
+    }
+
+    start();
+  }
 
   /**
    * Perform the update in a seperate thread.

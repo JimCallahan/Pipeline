@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.85 2007/05/07 06:37:41 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.86 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -682,7 +682,7 @@ class JNodeViewerPanel
       pRoots.put(name, null);
     
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -726,7 +726,7 @@ class JNodeViewerPanel
       pRoots.put(name, null);
     
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -808,7 +808,7 @@ class JNodeViewerPanel
     pRoots.remove(name);
     
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -829,7 +829,7 @@ class JNodeViewerPanel
       pRoots.remove(name);
     
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -902,7 +902,7 @@ class JNodeViewerPanel
   restoreSelections() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
@@ -3335,7 +3335,7 @@ class JNodeViewerPanel
       pRoots.put(name, null);
     
     PanelUpdater pu = new PanelUpdater(this, false, false, null);
-    pu.start();
+    pu.execute();
   }
   
   /**
@@ -3360,7 +3360,7 @@ class JNodeViewerPanel
       pRoots.put(name, null);
     
     PanelUpdater pu = new PanelUpdater(this, false, true, branches);
-    pu.start();    
+    pu.execute();    
   }
   
 
@@ -3376,7 +3376,7 @@ class JNodeViewerPanel
       pLastDetailsName = pPrimary.getNodeStatus().getName();
 
       PanelUpdater pu = new PanelUpdater(this, true, true, null);
-      pu.start();
+      pu.execute();
     }
 
     clearSelection();

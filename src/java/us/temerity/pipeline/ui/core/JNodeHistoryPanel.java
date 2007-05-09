@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.21 2007/04/15 10:30:47 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.22 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -348,7 +348,7 @@ class JNodeHistoryPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**

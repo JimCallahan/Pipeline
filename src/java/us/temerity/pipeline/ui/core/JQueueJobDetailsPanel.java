@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.11 2007/04/28 22:43:21 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.12 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -716,7 +716,7 @@ class JQueueJobDetailsPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**

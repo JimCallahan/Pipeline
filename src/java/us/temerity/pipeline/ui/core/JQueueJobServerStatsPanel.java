@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.3 2007/01/05 23:46:10 jim Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.4 2007/05/09 15:27:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -220,7 +220,7 @@ class JQueueJobServerStatsPanel
   updatePanels() 
   {
     PanelUpdater pu = new PanelUpdater(this);
-    pu.start();
+    pu.execute();
   }
 
   /**
