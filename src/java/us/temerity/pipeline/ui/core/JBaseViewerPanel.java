@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.15 2007/05/07 04:14:08 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.16 2007/05/11 21:48:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -196,8 +196,10 @@ class JBaseViewerPanel
   {
     super.preUpdate(); 
   
-    if(pCanvas != null) 
-      pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    if(pCanvas != null) {
+      CursorTask task = new CursorTask(pCanvas, Cursor.WAIT_CURSOR);
+      task.start(); 
+    }
   }
 
   /**
@@ -208,8 +210,10 @@ class JBaseViewerPanel
   public void 
   postUpdate() 
   {
-    if(pCanvas != null) 
-      pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
+    if(pCanvas != null) {
+      CursorTask task = new CursorTask(pCanvas, Cursor.DEFAULT_CURSOR);
+      task.start(); 
+    }
     
     super.postUpdate(); 
   }

@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.9 2007/05/09 15:27:44 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.10 2007/05/11 21:48:40 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -321,7 +321,9 @@ class JTopLevelPanel
   preUpdate() 
   {
     pUpdateInProgress.set(true);
-    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    
+    CursorTask task = new CursorTask(this, Cursor.WAIT_CURSOR);
+    task.start(); 
   }
 
   /**
@@ -332,7 +334,9 @@ class JTopLevelPanel
   public void 
   postUpdate() 
   {
-    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
+    CursorTask task = new CursorTask(this, Cursor.DEFAULT_CURSOR);
+    task.start(); 
+
     pUpdateInProgress.set(false);
     pUnsavedChanges.clear();
   }
@@ -553,6 +557,40 @@ class JTopLevelPanel
   }
   
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L   C L A S S E S                                                       */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Change the mouse cursor for the given component to the given predefined type.
+   */ 
+  protected 
+  class CursorTask
+    extends Thread
+  {
+    public CursorTask
+    (
+     Component comp, 
+     int preDefCursor
+    ) 
+    {
+      pComponent = comp;
+      pPreDefCursor = preDefCursor; 
+    }
+    
+    
+    public void 
+    run() 
+    {
+      pComponent.setCursor(Cursor.getPredefinedCursor(pPreDefCursor));  
+    }
+
+    private Component pComponent; 
+    private int pPreDefCursor;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
