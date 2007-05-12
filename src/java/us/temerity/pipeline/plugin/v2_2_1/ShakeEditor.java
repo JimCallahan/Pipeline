@@ -1,4 +1,4 @@
-// $Id: ShakeEditor.java,v 1.2 2007/03/23 00:47:31 jim Exp $
+// $Id: ShakeEditor.java,v 1.3 2007/05/12 22:53:34 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -12,7 +12,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The Shake image viewer.
+ * The Shake compositing application and image viewer from Apple.
  */
 public
 class ShakeEditor
@@ -26,7 +26,7 @@ class ShakeEditor
   ShakeEditor()
   {
     super("Shake", new VersionID("2.2.1"), "Temerity",
-	  "The Shake image viewer.", 
+	  "The Shake compositing application and image viewer from Apple.", 
 	  "shake");  
 
     addSupport(OsType.MacOS);
