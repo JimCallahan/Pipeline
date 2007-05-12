@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.45 2007/04/30 20:51:40 jim Exp $
+// $Id: BaseAction.java,v 1.46 2007/05/12 06:21:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1661,19 +1661,6 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -8953612926185824947L;
-  
-  public static final String aExtraOptions = "ExtraOptions"; 
-
-  private static final String sPythonLaunchHeader = 
-    ("import subprocess;\n" +
-     "import sys;\n\n" +
-     "def launch(program, args):\n" +
-     "    a = [program] + args\n" +
-     "    print('RUNNING: ' + ' '.join(a))\n" +
-     "    sys.stdout.flush()\n" + 
-     "    result = subprocess.call(a)\n" +
-     "    if result != 0:\n" +
-     "        sys.exit('  FAILED: Exit Code = ' + str(result));\n\n");
   
 
 
