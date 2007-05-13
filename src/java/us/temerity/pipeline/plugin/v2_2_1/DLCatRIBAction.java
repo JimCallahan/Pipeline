@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.3 2007/05/04 19:18:34 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.4 2007/05/13 10:38:39 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -280,16 +280,16 @@ class DLCatRIBAction
       for(Path tpath : targetPaths) {
 
         out.write("launch('" + program + "', " + 
-                  "['-noinit', '-catrib', '-o', '" + pathToStr(tpath) + "'"); 
+                  "['-noinit', '-catrib', '-o', '" + toPythonStr(tpath) + "'"); 
 
         for(String arg : args) 
           out.write(", '" + arg + "'"); 
         
         for(ArrayList<Path> spaths : sourcePaths.values()) {
           if(spaths.size() == 1)
-            out.write(", '" + pathToStr(spaths.get(0)) + "'"); 
+            out.write(", '" + toPythonStr(spaths.get(0)) + "'"); 
           else 
-            out.write(", '" + pathToStr(spaths.get(wk)) + "'"); 
+            out.write(", '" + toPythonStr(spaths.get(wk)) + "'"); 
         }
 
         out.write("])\n"); 
@@ -316,23 +316,6 @@ class DLCatRIBAction
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Generate a properly escaped OS specific Python string for the given path.
-   */ 
-  private String
-  pathToStr
-  (
-   Path path 
-  ) 
-  {
-    if(PackageInfo.sOsType == OsType.Windows) 
-      return path.toOsString().replaceAll("\\\\", "\\\\\\\\");
-    return path.toOsString(); 
-  }
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /**

@@ -1,4 +1,4 @@
-// $Id: MRayShaderAction.java,v 1.4 2007/04/12 12:31:53 jim Exp $
+// $Id: MRayShaderAction.java,v 1.5 2007/05/13 10:38:39 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -364,10 +364,10 @@ class MRayShaderAction
       }
       else if(PackageInfo.sOsType == OsType.Windows) {
         /* compile to object code */ 
-        out.write("launch('cl.exe', ['/I', '" + winPath(devkit) + "'");
+        out.write("launch('cl.exe', ['/I', '" + toPythonStr(devkit) + "'");
 
         for(Path inc : includes) 
-          out.write(", '/I', '" + winPath(inc) + "'");
+          out.write(", '/I', '" + toPythonStr(inc) + "'");
         
         if(getSingleEnumParamIndex(aArchitecture) == 1) 
           out.write(", '/Zp8', '/EHsc'"); 
@@ -381,16 +381,16 @@ class MRayShaderAction
           out.write(", '-DBIT64'"); 
         
         for(String def : defines) 
-          out.write(", '/D" + winStr(def) + "'");
+          out.write(", '/D" + toPythonStr(def) + "'");
          
-        out.write(", '" + winPath(sourceTemp) + "'])\n\n");
+        out.write(", '" + toPythonStr(sourceTemp) + "'])\n\n");
 
         /* link the object code into a DLL */ 
         String targetName = targetPath.getName();
         out.write
-          ("launch('link.exe', ['/libpath:" + winPath(devkit) + "', 'shader.lib', " +
+          ("launch('link.exe', ['/libpath:" + toPythonStr(devkit) + "', 'shader.lib', " +
            "'/nologo', '/dll', '/nodefaultlib:LIBC.LIB', '/opt:noref', '/incremental:no', " + 
-           "'/out:" + targetName + "', '" + winPath(objectTemp) + "'])\n\n");
+           "'/out:" + targetName + "', '" + toPythonStr(objectTemp) + "'])\n\n");
 
         /* add manifest to the DLL */ 
         out.write
@@ -435,30 +435,6 @@ class MRayShaderAction
       return createSubProcess(agenda, getPythonProgram(agenda), args, null, tempPath.toFile(),
                               outFile, errFile);
     }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  private String
-  winPath
-  (
-   Path path 
-  ) 
-  {
-    return winStr(path.toOsString()); 
-  }
-
-  private String
-  winStr
-  (
-   String str
-  ) 
-  {
-    return str.replaceAll("\\\\", "\\\\\\\\");
   }
 
 
