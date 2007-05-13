@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.13 2007/04/30 20:51:38 jim Exp $
+// $Id: ActionAgenda.java,v 1.14 2007/05/13 10:26:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -175,7 +175,21 @@ class ActionAgenda
   {
     return pNodeID;
   }
+
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the primary and secondary file sequences to generate.
+   */
+  public TreeSet<FileSeq>
+  getTargetSequences() 
+  {
+    TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>(pSecondaryTargets);
+    fseqs.add(pPrimaryTarget);
+    return fseqs;
+  }
+
   /**
    * Get the primary file sequence to generate.
    */ 
