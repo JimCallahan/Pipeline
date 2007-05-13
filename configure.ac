@@ -1465,6 +1465,9 @@ AC_MSG_RESULT([Cooking configurable files:])
 
 AC_CONFIG_FILES([
   Makefile
+  
+  app-extra/Makefile
+  app-extra/nuke/Makefile
 
   docs/Makefile 
   docs/images/Makefile
