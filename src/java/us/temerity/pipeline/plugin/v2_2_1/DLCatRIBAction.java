@@ -1,4 +1,4 @@
-// $Id: DLCatRIBAction.java,v 1.4 2007/05/13 10:38:39 jim Exp $
+// $Id: DLCatRIBAction.java,v 1.5 2007/05/14 13:13:10 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -280,16 +280,16 @@ class DLCatRIBAction
       for(Path tpath : targetPaths) {
 
         out.write("launch('" + program + "', " + 
-                  "['-noinit', '-catrib', '-o', '" + toPythonStr(tpath) + "'"); 
+                  "['-noinit', '-catrib', '-o', '" + escPath(tpath) + "'"); 
 
         for(String arg : args) 
           out.write(", '" + arg + "'"); 
         
         for(ArrayList<Path> spaths : sourcePaths.values()) {
           if(spaths.size() == 1)
-            out.write(", '" + toPythonStr(spaths.get(0)) + "'"); 
+            out.write(", '" + escPath(spaths.get(0)) + "'"); 
           else 
-            out.write(", '" + toPythonStr(spaths.get(wk)) + "'"); 
+            out.write(", '" + escPath(spaths.get(wk)) + "'"); 
         }
 
         out.write("])\n"); 

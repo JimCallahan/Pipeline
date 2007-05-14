@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.5 2007/05/03 03:12:25 jim Exp $
+// $Id: CommonActionUtils.java,v 1.6 2007/05/14 13:13:10 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -589,6 +589,34 @@ class CommonActionUtils
   
   /*----------------------------------------------------------------------------------------*/
   /*   P A T H   G E N E R A T I O N                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Escape any backslashes in the given file system path string.
+   */ 
+  public static final String 
+  escPath
+  (
+   String str
+  ) 
+  {
+    return str.replaceAll("\\\\", "\\\\\\\\");
+  }
+
+  /**
+   * Convert an abstract file system path into an OS specific path string with any
+   * backslashes escaped.
+   */ 
+  public static final String 
+  escPath
+  (
+   Path path 
+  ) 
+  {
+    return escPath(path.toOsString());
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

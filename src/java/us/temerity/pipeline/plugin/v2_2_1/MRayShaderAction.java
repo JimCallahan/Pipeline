@@ -1,4 +1,4 @@
-// $Id: MRayShaderAction.java,v 1.5 2007/05/13 10:38:39 jim Exp $
+// $Id: MRayShaderAction.java,v 1.6 2007/05/14 13:13:10 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -364,10 +364,10 @@ class MRayShaderAction
       }
       else if(PackageInfo.sOsType == OsType.Windows) {
         /* compile to object code */ 
-        out.write("launch('cl.exe', ['/I', '" + toPythonStr(devkit) + "'");
+        out.write("launch('cl.exe', ['/I', '" + escPath(devkit) + "'");
 
         for(Path inc : includes) 
-          out.write(", '/I', '" + toPythonStr(inc) + "'");
+          out.write(", '/I', '" + escPath(inc) + "'");
         
         if(getSingleEnumParamIndex(aArchitecture) == 1) 
           out.write(", '/Zp8', '/EHsc'"); 
@@ -381,16 +381,16 @@ class MRayShaderAction
           out.write(", '-DBIT64'"); 
         
         for(String def : defines) 
-          out.write(", '/D" + toPythonStr(def) + "'");
+          out.write(", '/D" + escPath(def) + "'");
          
-        out.write(", '" + toPythonStr(sourceTemp) + "'])\n\n");
+        out.write(", '" + escPath(sourceTemp) + "'])\n\n");
 
         /* link the object code into a DLL */ 
         String targetName = targetPath.getName();
         out.write
-          ("launch('link.exe', ['/libpath:" + toPythonStr(devkit) + "', 'shader.lib', " +
+          ("launch('link.exe', ['/libpath:" + escPath(devkit) + "', 'shader.lib', " +
            "'/nologo', '/dll', '/nodefaultlib:LIBC.LIB', '/opt:noref', '/incremental:no', " + 
-           "'/out:" + targetName + "', '" + toPythonStr(objectTemp) + "'])\n\n");
+           "'/out:" + targetName + "', '" + escPath(objectTemp) + "'])\n\n");
 
         /* add manifest to the DLL */ 
         out.write

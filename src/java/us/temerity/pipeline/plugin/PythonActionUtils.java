@@ -1,4 +1,4 @@
-// $Id: PythonActionUtils.java,v 1.4 2007/05/13 10:38:38 jim Exp $
+// $Id: PythonActionUtils.java,v 1.5 2007/05/14 13:13:10 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -127,33 +127,6 @@ class PythonActionUtils
     for(wk=0; wk<level; wk++) 
       buf.append("  ");
     return buf.toString();
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Generate a properly escaped OS specific Python string for the given Path.
-   */ 
-  public static final String 
-  toPythonStr
-  (
-   String str
-  ) 
-  {
-    return str.replaceAll("\\\\", "\\\\\\\\");
-  }
-
-  /**
-   * Generate a properly escaped OS specific Python string for the given String.
-   */ 
-  public static final String 
-  toPythonStr
-  (
-   Path path 
-  ) 
-  {
-    return toPythonStr(path.toOsString());
   }
 
 
