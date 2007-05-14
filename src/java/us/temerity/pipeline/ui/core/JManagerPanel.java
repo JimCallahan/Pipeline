@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.39 2007/05/09 15:27:44 jim Exp $
+// $Id: JManagerPanel.java,v 1.40 2007/05/14 13:32:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3364,14 +3364,16 @@ class JManagerPanel
       {
 	Path current = new Path(root, local);
 	File files[] = current.toFile().listFiles();
-	int wk;
-	for(wk=0; wk<files.length; wk++) {
-	  String name = files[wk].getName();
-	  if(files[wk].isDirectory()) 
-	    subdirs.add(new Path(local, name)); 
-	  else if(files[wk].isFile()) 
-	    layouts.add(name);
-	}
+	if(files != null) {
+          int wk;
+          for(wk=0; wk<files.length; wk++) {
+            String name = files[wk].getName();
+            if(files[wk].isDirectory()) 
+              subdirs.add(new Path(local, name)); 
+            else if(files[wk].isFile()) 
+              layouts.add(name);
+          }
+        }
       }
       
       for(Path subdir : subdirs) {
