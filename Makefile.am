@@ -1,6 +1,6 @@
 
 if FOUNDATION
-SUBDIRS = src docs www 
+SUBDIRS = src app-extra docs www 
 else 
 SUBDIRS = src
 endif
