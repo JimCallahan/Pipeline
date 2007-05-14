@@ -1,3 +1,13 @@
 ArchiverMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
+  Children <LinkedList> #3 {
+    <PluginMenuLayout> #4 {
+      Title <String> #5 { "TarFile" }
+      Name <String> #6 { "TarFile" }
+      VersionID <VersionID> #7 {
+        RevisionNumber <String> #8 { "2.0.0" }
+      }
+      Vendor <String> #9 { "Temerity" }
+    }
+  }
 }

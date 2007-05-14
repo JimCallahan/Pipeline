@@ -13,7 +13,7 @@ ComparatorMenuLayout <PluginMenuLayout> #1 {
       Title <String> #11 { "GimpDiff" }
       Name <String> #12 { "GimpDiff" }
       VersionID <VersionID> #13 {
-        RevisionNumber <String> #14 { "2.0.9" }
+        RevisionNumber <String> #14 { "2.2.1" }
       }
       Vendor <String> #15 { "Temerity" }
     }
