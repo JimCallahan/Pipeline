@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.65 2007/05/09 15:27:44 jim Exp $
+// $Id: UIMaster.java,v 1.66 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1983,7 +1983,75 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   /*   P A N E L   G R O U P S                                                              */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Get all top level panels which share the same panel group.
+   */ 
+  public ArrayList<JTopLevelPanel> 
+  getChannelPanels
+  (
+   int channel
+  ) 
+  {
+    ArrayList<JTopLevelPanel> topPanels = new ArrayList<JTopLevelPanel>();
+    if((channel > 0) && (channel < 10)) {
+      JTopLevelPanel panel = null;
+
+      panel = getNodeBrowserPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getNodeViewerPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getNodeDetailsPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getNodeFilesPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getNodeLinksPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getNodeHistoryPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getQueueJobServerStatsPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getQueueJobServersPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getQueueJobSlotsPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getQueueJobBrowserPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getQueueJobViewerPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
+      panel = getQueueJobDetailsPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+    }
+
+    return topPanels; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the node browsers panel group.
    */ 
@@ -3579,6 +3647,10 @@ class UIMaster
 	pProgressPanel.revalidate();
 	pProgressPanel.repaint();
       }
+
+      ArrayList<JTopLevelPanel> panels = getChannelPanels(pIdx); 
+      for(JTopLevelPanel panel : panels) 
+        panel.prePanelOp();
     }
 
     private int     pIdx; 
@@ -3636,6 +3708,10 @@ class UIMaster
     public void 
     run() 
     {
+      ArrayList<JTopLevelPanel> panels = getChannelPanels(pIdx); 
+      for(JTopLevelPanel panel : panels) 
+        panel.postPanelOp();
+
       pProgressFields[pIdx].setText(pMsg);
       pProgressLights[pIdx].setIcon(sProgressFinishedIcons[pIdx]); 
       

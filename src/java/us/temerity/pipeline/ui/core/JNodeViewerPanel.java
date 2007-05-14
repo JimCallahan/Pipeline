@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.86 2007/05/09 15:27:44 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.87 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2805,7 +2805,7 @@ class JNodeViewerPanel
     pRbEnd   = null;
    
     /* refresh the view */ 
-    if(!isUpdateInProgress()) 
+    if(!isPanelOpInProgress()) 
       pCanvas.setCursor(Cursor.getDefaultCursor());
     refresh();
   }

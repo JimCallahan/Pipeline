@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.39 2007/05/09 15:27:44 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.40 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -438,17 +438,17 @@ class JNodeFilesPanel
   }
 
   /**
-   * Perform any operations needed after an panel update has completed. <P> 
+   * Perform any operations needed after an panel operation has completed. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  postUpdate() 
+  postPanelOp() 
   {
     pApplyButton.setEnabled(false);
     pApplyItem.setEnabled(false);
 
-    super.postUpdate();
+    super.postPanelOp();
   }
   
   /**

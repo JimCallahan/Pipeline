@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.17 2007/05/09 15:27:44 jim Exp $
+// $Id: PanelUpdater.java,v 1.18 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -292,37 +292,6 @@ class PanelUpdater
       pQueueJobBrowserPanel = master.getQueueJobBrowserPanels().getPanel(pGroupID);
       pQueueJobViewerPanel  = master.getQueueJobViewerPanels().getPanel(pGroupID);
       pQueueJobDetailsPanel = master.getQueueJobDetailsPanels().getPanel(pGroupID);
-
-      /* perform any operations needed before an panel update starts */ 
-      {	
-        if(pNodeBrowserPanel != null) 
-          pNodeBrowserPanel.preUpdate(); 
-        if(pNodeViewerPanel != null) 
-          pNodeViewerPanel.preUpdate(); 
-        
-        if(pNodeDetailsPanel != null) 
-          pNodeDetailsPanel.preUpdate(); 
-        if(pNodeHistoryPanel != null) 
-          pNodeHistoryPanel.preUpdate(); 
-        if(pNodeFilesPanel != null) 
-          pNodeFilesPanel.preUpdate(); 
-        if(pNodeLinksPanel != null)  
-          pNodeLinksPanel.preUpdate(); 
-        
-        if(pQueueJobServerStatsPanel != null) 
-          pQueueJobServerStatsPanel.preUpdate(); 
-        if(pQueueJobServersPanel != null)  
-          pQueueJobServersPanel.preUpdate(); 
-        if(pQueueJobSlotsPanel != null)    
-          pQueueJobSlotsPanel.preUpdate(); 
-        
-        if(pQueueJobBrowserPanel != null) 
-          pQueueJobBrowserPanel.preUpdate(); 
-        if(pQueueJobViewerPanel != null) 
-          pQueueJobViewerPanel.preUpdate(); 
-        if(pQueueJobDetailsPanel != null) 
-          pQueueJobDetailsPanel.preUpdate(); 
-      }
     }
 
     if(pNodeViewerPanel != null) {
@@ -795,37 +764,6 @@ class PanelUpdater
 	  pQueueJobDetailsPanel.applyPanelUpdates
 	    (pAuthor, pView, pDetailedJob, pDetailedJobInfo, pDetailedJobExecDetails, 
 	     pLicenseKeys, pSelectionKeys);
-      }
-
-      /* perform any operations needed after an panel update has completed */ 
-      {
-        if(pNodeBrowserPanel != null) 
-          pNodeBrowserPanel.postUpdate(); 
-        if(pNodeViewerPanel != null) 
-          pNodeViewerPanel.postUpdate(); 
-
-        if(pNodeDetailsPanel != null) 
-          pNodeDetailsPanel.postUpdate(); 
-        if(pNodeHistoryPanel != null) 
-          pNodeHistoryPanel.postUpdate(); 
-        if(pNodeFilesPanel != null) 
-          pNodeFilesPanel.postUpdate(); 
-        if(pNodeLinksPanel != null)  
-          pNodeLinksPanel.postUpdate(); 
-
-        if(pQueueJobServerStatsPanel != null) 
-          pQueueJobServerStatsPanel.postUpdate(); 
-        if(pQueueJobServersPanel != null)  
-          pQueueJobServersPanel.postUpdate(); 
-        if(pQueueJobSlotsPanel != null)    
-          pQueueJobSlotsPanel.postUpdate(); 
-
-        if(pQueueJobBrowserPanel != null) 
-          pQueueJobBrowserPanel.postUpdate(); 
-        if(pQueueJobViewerPanel != null) 
-          pQueueJobViewerPanel.postUpdate(); 
-        if(pQueueJobDetailsPanel != null) 
-          pQueueJobDetailsPanel.postUpdate(); 
       }
     }
   }

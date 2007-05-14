@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.42 2007/05/09 15:27:44 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.43 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1718,7 +1718,7 @@ class JQueueJobViewerPanel
     pRbEnd   = null;
    
     /* refresh the view */ 
-    if(!isUpdateInProgress()) 
+    if(!isPanelOpInProgress()) 
       pCanvas.setCursor(Cursor.getDefaultCursor());
     refresh();
   }

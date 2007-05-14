@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.9 2007/05/09 15:27:44 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.10 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -566,14 +566,14 @@ class JQueueJobServersPanel
   }
 
   /**
-   * Perform any operations needed before an panel update starts. <P> 
+   * Perform any operations needed before an panel operation starts. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  preUpdate() 
+  prePanelOp() 
   {
-    super.preUpdate(); 
+    super.prePanelOp(); 
     
     if(pHostnamesTablePanel != null) 
       pHostnamesTablePanel.getTable().setEnabled(false);
@@ -583,12 +583,12 @@ class JQueueJobServersPanel
   }
 
   /**
-   * Perform any operations needed after an panel update has completed. <P> 
+   * Perform any operations needed after an panel operation has completed. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  postUpdate() 
+  postPanelOp() 
   {
     if(pHostnamesTablePanel != null) 
       pHostnamesTablePanel.getTable().setEnabled(true);
@@ -599,7 +599,7 @@ class JQueueJobServersPanel
     pApplyButton.setEnabled(false);
     pApplyItem.setEnabled(false);
 
-    super.postUpdate(); 
+    super.postPanelOp(); 
   }
 
 

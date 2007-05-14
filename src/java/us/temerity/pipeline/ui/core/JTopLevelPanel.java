@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.10 2007/05/11 21:48:40 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.11 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -38,7 +38,7 @@ class JTopLevelPanel
     super();
 
     pPrivilegeDetails = new PrivilegeDetails();
-    pUpdateInProgress = new AtomicBoolean(false);
+    pPanelOpInProgress = new AtomicBoolean(false);
     pUnsavedChanges   = new TreeSet<String>();
       
     setAuthorView(PackageInfo.sUser, "default");
@@ -57,7 +57,7 @@ class JTopLevelPanel
     super();
 
     pPrivilegeDetails = new PrivilegeDetails();
-    pUpdateInProgress = new AtomicBoolean(false);
+    pPanelOpInProgress = new AtomicBoolean(false);
     pUnsavedChanges   = new TreeSet<String>();
 
     if(panel != null) {
@@ -304,40 +304,36 @@ class JTopLevelPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether a panel update is currently in progress.
+   * Whether a panel operation is currently in progress.
    */ 
   public boolean
-  isUpdateInProgress() 
+  isPanelOpInProgress() 
   {
-    return pUpdateInProgress.get();
+    return pPanelOpInProgress.get();
   }
 
   /**
-   * Perform any operations needed before an panel update starts. <P> 
+   * Perform any operations needed before an panel operation starts. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  preUpdate() 
+  prePanelOp() 
   {
-    pUpdateInProgress.set(true);
-    
-    CursorTask task = new CursorTask(this, Cursor.WAIT_CURSOR);
-    task.start(); 
+    pPanelOpInProgress.set(true);
+    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));  
   }
 
   /**
-   * Perform any operations needed after an panel update has completed. <P> 
+   * Perform any operations needed after an panel operation has completed. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  postUpdate() 
+  postPanelOp() 
   {
-    CursorTask task = new CursorTask(this, Cursor.DEFAULT_CURSOR);
-    task.start(); 
-
-    pUpdateInProgress.set(false);
+    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
+    pPanelOpInProgress.set(false);
     pUnsavedChanges.clear();
   }
 
@@ -556,40 +552,6 @@ class JTopLevelPanel
     setAuthorView(author, view);
   }
   
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  I N T E R N A L   C L A S S E S                                                       */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Change the mouse cursor for the given component to the given predefined type.
-   */ 
-  protected 
-  class CursorTask
-    extends Thread
-  {
-    public CursorTask
-    (
-     Component comp, 
-     int preDefCursor
-    ) 
-    {
-      pComponent = comp;
-      pPreDefCursor = preDefCursor; 
-    }
-    
-    
-    public void 
-    run() 
-    {
-      pComponent.setCursor(Cursor.getPredefinedCursor(pPreDefCursor));  
-    }
-
-    private Component pComponent; 
-    private int pPreDefCursor;
-  }
-
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -637,7 +599,7 @@ class JTopLevelPanel
   /**
    * Whether a panel update is currently in progress.
    */ 
-  private AtomicBoolean  pUpdateInProgress; 
+  private AtomicBoolean  pPanelOpInProgress; 
 
   /**
    * The names of panel properties which have been modified since the last panel update.

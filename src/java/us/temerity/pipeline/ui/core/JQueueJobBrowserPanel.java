@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.31 2007/05/09 15:27:44 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.32 2007/05/14 16:22:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -511,31 +511,31 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Perform any operations needed before an panel update starts. <P> 
+   * Perform any operations needed before an panel operation starts. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  preUpdate() 
+  prePanelOp() 
   {
-    super.preUpdate(); 
+    super.prePanelOp(); 
     
     if(pGroupsTablePanel != null) 
       pGroupsTablePanel.getTable().setEnabled(false);
   }
 
   /**
-   * Perform any operations needed after an panel update has completed. <P> 
+   * Perform any operations needed after an panel operation has completed. <P> 
    * 
    * This method is run by the Swing Event thread.
    */ 
   public void 
-  postUpdate() 
+  postPanelOp() 
   {
     if(pGroupsTablePanel != null) 
       pGroupsTablePanel.getTable().setEnabled(true);
     
-    super.postUpdate(); 
+    super.postPanelOp(); 
   }
 
 
