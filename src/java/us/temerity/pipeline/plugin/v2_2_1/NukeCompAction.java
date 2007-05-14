@@ -1,4 +1,4 @@
-// $Id: NukeCompAction.java,v 1.1 2007/05/13 10:25:10 jim Exp $
+// $Id: NukeCompAction.java,v 1.2 2007/05/14 16:18:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -14,7 +14,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Executes a Nuke script evaluating one or more Write nodes. <P> 
+ * Executes a Nuke script evaluating one or more Write nodes to generate composited images.<P>
  * 
  * All Write nodes in the Nuke script for file sequences associated with the target node 
  * will be executed.  Any Write nodes not associated with target file sequences will be
@@ -61,7 +61,8 @@ class NukeCompAction
   NukeCompAction() 
   {
     super("NukeComp", new VersionID("2.2.1"), "Temerity",
-	  "Executes a Nuke script evaluating one or more Write nodes.");
+	  "Executes a Nuke script evaluating one or more Write nodes to generate " + 
+          "composited images.");
     
     {
       ActionParam param = 
@@ -139,11 +140,6 @@ class NukeCompAction
     for(FileSeq fseq : agenda.getTargetSequences()) 
       targetNukeSeqs.add(toNukeSeq(fseq));
 
-    // DEBUG
-    for(String npat : targetNukeSeqs) 
-      System.out.print("TARGET NPAT = (" + npat + ")\n");
-    // DEBUG
-
     /* create a temporary Nuke script based on the source script which is modified to: 
        + insure that all file paths are prefixed with "WORKING" (see above) 
        + replace file path for Write nodes which match the target file sequences with 
@@ -189,7 +185,6 @@ class NukeCompAction
             if(isWrite) {
               Path path = new Path(file.substring(7));
               String npat = path.getName();
-              System.out.print("NPAT = (" + npat + ")\n");
               if(targetNukeSeqs.contains(npat)) {
                 out.write(" file ./" + npat + "\n"); 
                 wasWritten = true;
