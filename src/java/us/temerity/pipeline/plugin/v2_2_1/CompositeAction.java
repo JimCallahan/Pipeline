@@ -1,4 +1,4 @@
-// $Id: CompositeAction.java,v 1.3 2007/04/04 07:33:30 jim Exp $
+// $Id: CompositeAction.java,v 1.4 2007/05/14 16:51:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -92,8 +92,6 @@ class CompositeAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 
