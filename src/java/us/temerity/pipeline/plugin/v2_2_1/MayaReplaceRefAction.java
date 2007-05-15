@@ -1,4 +1,4 @@
-// $Id: MayaReplaceRefAction.java,v 1.7 2007/05/03 03:12:25 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.8 2007/05/15 06:10:59 jesse Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -27,6 +27,15 @@ import java.util.*;
  *     The Maya scene which will have its references replaced.
  *   </DIV> <BR>
  * 
+ *   Response <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     What this Action does when it encounters a reference that is not being replaced.
+ *     <ul>
+ *     <li>Ignore will cause the Action to ignore any reference not being replaced.
+ *     <li>Replace will cause the Action to remove any reference not being replaced.
+ *     </ul> 
+ *   </DIV> <BR>
+ * 
  *   Pre Replace MEL <BR>
  *   <DIV style="margin-left: 40px;">
  *     The MEL script to evaluate before replacing the references. 
@@ -48,7 +57,7 @@ import java.util.*;
  * </DIV> <P> 
  */
 public class 
-MayaReplaceRefAction  
+MayaReplaceRefAction
   extends MayaActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
@@ -59,9 +68,11 @@ MayaReplaceRefAction
   MayaReplaceRefAction() 
   {
     super("MayaReplaceRef", new VersionID("2.2.1"), "Temerity", 
-	  "Replaces specific references in the source Maya scene to generate a new " + 
-          "target Maya scene.");
+	  "Replaces specific references in the source Maya scene to generate a new " +
+	  "target Maya scene.");
 
+    underDevelopment();
+    
     {
       ActionParam param = 
 	new LinkActionParam
@@ -88,10 +99,25 @@ MayaReplaceRefAction
 	 null); 
       addSingleParam(param);
     }
+    
+    {
+      ArrayList<String> choices = new ArrayList<String>();
+      choices.add(aIgnore);
+      choices.add(aRemove);
+      
+      ActionParam param = 
+	new EnumActionParam
+	(aResponse,
+	 "The action to be taken when a non-replaced reference is found.", 
+	 aIgnore,
+	 choices); 
+      addSingleParam(param);
+    }
 
     {    
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry(aMayaScene);
+      layout.addEntry(aResponse);
       layout.addSeparator();
       layout.addEntry(aPreReplaceMEL);
       layout.addEntry(aPostReplaceMEL);
@@ -185,15 +211,20 @@ MayaReplaceRefAction
     /* the target Maya scene */
     Path targetScene = getMayaSceneTargetPath(agenda);
     String sceneType = getMayaSceneType(agenda);
+    String response = getSingleStringParamValue(aResponse);
+    boolean remove = response.equals(aRemove);
     
     /* lookup reference replacement paths */ 
     TreeMap<String,Path> replacePaths = new TreeMap<String,Path>();
     {
-      NodeID nodeID = agenda.getNodeID();
       for(String sname : agenda.getSourceNames()) {
 	if(hasSourceParams(sname)) {
 	  FileSeq fseq = agenda.getPrimarySource(sname);
 	  String rname = (String) getSourceParamValue(sname, aNameSpace);
+	  if (rname == null)
+	    throw new PipelineException
+	      ("Source (" + sname + ") has source parameters, but had a (null) value for " +
+	       "its namespace.");
           addReplacePaths(rname, sname, fseq, replacePaths);
 	}
 
@@ -236,19 +267,44 @@ MayaReplaceRefAction
        
     /* create a temporary post-replace MEL script */ 
     Path postMEL = null;
-    if(postReplaceMEL != null) {
+    if(postReplaceMEL != null || remove) {
       postMEL = new Path(createTemp(agenda, "mel"));
       try {      
         FileWriter out = new FileWriter(postMEL.toFile());
         
+        if (remove) {
+          out.write("{\n" +
+          	    "string $namespaces[] = {");
+          LinkedList<String> names = new LinkedList<String>(replacePaths.keySet());
+          for (int i = 0; i < names.size(); i ++) {
+            out.write("\"" + names.get(i) + "\"");
+            if (i < names.size() - 1)
+              out.write(",");
+          }
+          out.write("};\n");
+          out.write("string $files[] = `file -q -r`;\n" +
+          	    "string $file;\n" +
+          	    "for ($file in $files)\n" +
+          	    "{\n" +
+          	    "  string $space = `file -q -ns $file`;\n" +
+          	    "  if (stringArrayCount($space, $namespaces) == 0)\n" +
+          	    "    file -rr $file;\n" +
+          	    "}\n" +
+          	    "}\n");
+        }
+        
+        if (postReplaceMEL != null) {
+          out.write
+            ("// POST-EXPORT SCRIPT\n" + 
+             "print \"Post-Replace Script: " + postReplaceMEL + "\\n\";\n" +
+             "source \"" + postReplaceMEL + "\";\n");
+        }
+        
         out.write
-          ("// POST-EXPORT SCRIPT\n" + 
-           "print \"Post-Replace Script: " + postReplaceMEL + "\\n\";\n" +
-           "source \"" + postReplaceMEL + "\";\n" +
-           "file -rename \"" + targetScene + "\";\n" + 
+          ("file -rename \"" + targetScene + "\";\n" + 
            "file -type \"" + sceneType + "\";\n" + 
            "file -save;\n");
-
+      
         out.close();
       } 
       catch (IOException ex) {
@@ -289,7 +345,7 @@ MayaReplaceRefAction
            "  for line in source:\n" + 
            "    if line.startswith('file -r'):\n");
         
-        String idt = "      ";
+        //String idt = "      ";
 
         boolean first = true;
         for(String nm : replacePaths.keySet()) {
@@ -393,6 +449,9 @@ MayaReplaceRefAction
   public static final String aMayaScene      = "MayaScene"; 
   public static final String aPreReplaceMEL  = "PreReplaceMEL"; 
   public static final String aPostReplaceMEL = "PostReplaceMEL"; 
-  public static final String aNameSpace      = "NameSpace"; 
+  public static final String aNameSpace      = "NameSpace";
+  public static final String aResponse       = "Response";
+  public static final String aRemove         = "Remove";
+  public static final String aIgnore         = "Ignore";
 
 }
