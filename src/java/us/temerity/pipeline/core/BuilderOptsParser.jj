@@ -150,7 +150,8 @@ TOKEN :
 | <LOG_NET: 	     "net">    
 | <LOG_PLG: 	     "plg">    
 | <LOG_SUB: 	     "sub">     
-| <LOG_TEX: 	     "tex">      
+| <LOG_TEX: 	     "tex">
+| <LOG_BLD:			 "bld">      
 | <COLON:  	         ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -168,6 +169,7 @@ TOKEN :
 | <AE2:               (["\0"])+>       : DEFAULT
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
 }
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -193,6 +195,7 @@ Commands()
   {}
 }
     
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   I N F O R M A T I O N   O P T I O N S                                                  */
@@ -257,6 +260,8 @@ Copyright() :
     pApp.copyright(); 
   }
 }
+
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   G L O B A L   O P T I O N S                                                            */
@@ -385,9 +390,19 @@ LogMgr.Kind LogKind() :
   LogMgr.Kind g;
 }
 {
-  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=PlgKind() | g=TexKind())
+  (g=BldKind() | g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() 
+    | g=PlgKind() | g=TexKind())
   {
     return g;
+  }
+}
+
+LogMgr.Kind BldKind() :
+{}
+{
+  <LOG_BLD>
+  {
+    return LogMgr.Kind.Bld;
   }
 }
 
