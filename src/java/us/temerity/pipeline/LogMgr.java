@@ -1,4 +1,4 @@
-// $Id: LogMgr.java,v 1.10 2007/03/28 19:31:03 jim Exp $
+// $Id: LogMgr.java,v 1.11 2007/05/15 06:25:07 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -688,11 +688,15 @@ class LogMgr
      */ 
     Ext,
 
-
     /**
      * Client/Server time synchronization. 
      */ 
-    Tim;
+    Tim,
+    
+    /**
+     * Internal Builder Operations
+     */
+    Bld;
 
     /**
      * Get the list of all possible states.
@@ -788,7 +792,8 @@ class LogMgr
     "COL",
     "SCH", 
     "EXT", 
-    "TIM"
+    "TIM",
+    "BLD"
   };
 
 
