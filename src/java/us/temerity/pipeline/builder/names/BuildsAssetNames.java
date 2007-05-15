@@ -1,24 +1,26 @@
-/*
- * Created on Nov 2, 2006
- * Created by jesse
- * For Use in us.temerity.pipeline.builders.names
- * 
- */
 package us.temerity.pipeline.builder.names;
 
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.FileSeq;
+import us.temerity.pipeline.PipelineException;
 
-public interface 
-BuildsAssetNames
+public 
+interface BuildsAssetNames
 {
   public void 
   generateNames() 
     throws PipelineException;
+
   /**
    * @return the assetName
    */
   public String 
   getAssetName();
+  
+  /**
+   * @return the assetName
+   */
+  public String 
+  getNameSpace();
 
   /**
    * @return the assetType

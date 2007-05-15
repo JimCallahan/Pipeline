@@ -1,4 +1,4 @@
-// $Id: UtilContextBuilderParam.java,v 1.4 2007/04/02 21:44:51 jesse Exp $
+// $Id: UtilContextBuilderParam.java,v 1.5 2007/05/15 06:14:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -216,18 +216,25 @@ class UtilContextBuilderParam
   /*   U P D A T E                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
+  protected boolean
+  needsUpdating()
+  {
+    return !pAllowsNewView;
+  }
+  
   /**
    * Called when setting a param value.  Makes sure that the view values are correct.
    */
-  protected void
+  @Override
+  protected boolean
   valueUpdated
   (
-    @SuppressWarnings("unused")
-    String paramName
+    List<String> paramName
   )
   {
-    if (paramName.equals(aAuthor) && !pAllowsNewView)
-    {
+    String name = paramName.get(0);
+    if (name.equals(aAuthor)) {
       String author = pAuthorParam.getStringValue();
       String view = pViewParam.getStringValue();
       TreeSet<String> views = pWorkingAreas.get(author);
@@ -237,7 +244,7 @@ class UtilContextBuilderParam
       if(views.contains(view))
         viewValue = view;
       else if (views.contains("default"))
-        viewValue = view; 
+        viewValue = "default"; 
       else
         viewValue = views.first();
   
@@ -250,7 +257,9 @@ class UtilContextBuilderParam
          new ArrayList<String>(views));
       
       replaceParam(pViewParam);
+      return true;
     }
+    return false;
   }
   
   

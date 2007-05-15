@@ -3,8 +3,7 @@ package us.temerity.pipeline.builder.builders;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-import us.temerity.pipeline.LogMgr;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.interfaces.AnswersBuilderQueries;
 import us.temerity.pipeline.builder.interfaces.DefaultBuilderAnswers;
@@ -16,7 +15,7 @@ import us.temerity.pipeline.builder.stages.*;
 /*   A S S E T   B U I L D E R                                                              */
 /*------------------------------------------------------------------------------------------*/
 
-public
+public 
 class NewAssetBuilder
   extends BaseBuilder
 {
@@ -41,11 +40,13 @@ class NewAssetBuilder
     throws PipelineException
   {
     super("NewAssetBuilder", 
-      	  "The Revised Temerity Asset Builder that works with the basic Temerity Names class.");
+      	  "The Revised Temerity Asset Builder that works " +
+      	  "with the basic Temerity Names class.");
     pBuilderInfo = builderInfo;
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
-        ("The naming class that was passed in does not implement the BuildsAssetNames interface");
+        ("The naming class that was passed in does not implement " +
+         "the BuildsAssetNames interface");
     addSubBuilder(assetNames);
     {
       BuilderParam param = 
@@ -74,7 +75,7 @@ class NewAssetBuilder
     {
       BuilderParam param = 
 	new BooleanBuilderParam
-	(aBuildAdvancedShadingNetwork,
+	(aBuildAdvShadeNetwork,
          "Build an advanced shading setup for mental ray standalone rendering", 
          false); 
       addParam(param);
@@ -123,13 +124,54 @@ class NewAssetBuilder
       addParam(param);
     }
     {
+      AdvancedLayoutGroup layout = 
+	new AdvancedLayoutGroup
+	  ("Information Pass", 
+	   "The pass where all the basic information about the asset is collected " +
+	   "from the user.", 
+	   "BuilderSettings", 
+	   true);
+      layout.addColumn("SelectionKeys", true);
+      layout.addEntry(1, aUtilContext);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aCheckinWhenDone);
+      layout.addEntry(1, aActionOnExistance);
+      layout.addEntry(1, aReleaseOnError);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aProjectName);
       
+      
+      LayoutGroup mayaGroup = 
+	new LayoutGroup("MayaGroup", "Parameters related to Maya scenes", true);
+      LayoutGroup assetGroup = 
+	new LayoutGroup("AssetGroup", "Parameters related to the asset", true);
+      
+      mayaGroup.addEntry(aMayaContext);
+
+      assetGroup.addEntry(aBuildLowRez);
+      assetGroup.addEntry(null);
+      assetGroup.addEntry(aBuildAdvShadeNetwork);
+      assetGroup.addEntry(aBuildTextureNode);
+      assetGroup.addEntry(null);
+      assetGroup.addEntry(aAutoRigSetup);
+      assetGroup.addEntry(aBuildSeparateHead);
+      
+      layout.addSubGroup(1, mayaGroup);
+      layout.addSubGroup(1, assetGroup);
+      
+      layout.addEntry(2, aSelectionKeys);
+      
+      PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
+      setLayout(finalLayout);
     }
     configNamer(assetNames);
     pAssetNames = (BuildsAssetNames) assetNames;
     addSetupPass(new InformationLoop());
-    addConstuctPass(new BuildLoop());
-    addConstuctPass(new FinalizeLoop());
+    ConstructPass build = new BuildLoop();
+    ConstructPass finalize = new FinalizeLoop();
+    addConstuctPass(finalize);
+    addConstuctPass(build);
+    addPassDependency(build, finalize);
   }
   
   
@@ -189,22 +231,20 @@ class NewAssetBuilder
   protected String pPlaceHolderMEL;
 
   protected String pMRInitMEL;
+  
+  protected String pAutoRigMEL;
 
-  // builder conditions
+  // conditions on what is being built
   protected boolean pBuildLowRez;
-
   protected boolean pBuildTextureNode;
-
   protected boolean pBuildAdvancedShadingNetwork;
-
-  protected boolean pCheckInWhenDone;
-  
   protected boolean pBuildSeparateHead;
-  
   protected boolean pAutoRigSetup;
+  
+  // builder conditions
+  protected boolean pCheckInWhenDone;
 
-
-  // private variables for tracking things.
+  // variables for tracking things.
 
   protected ArrayList<AssetBuilderModelStage> pModelStages = 
     new ArrayList<AssetBuilderModelStage>();
@@ -221,10 +261,10 @@ class NewAssetBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public final static String aMayaContext = "MayaContext";
+  public final static String aMayaContext = "Maya";
   public final static String aBuildLowRez = "BuildLowRez";
   public final static String aBuildTextureNode = "BuildTextureNode";
-  public final static String aBuildAdvancedShadingNetwork = "BuildAdvancedShadingNetwork";
+  public final static String aBuildAdvShadeNetwork = "BuildAdvShadeNetwork";
   public final static String aCheckinWhenDone = "CheckinWhenDone";
   public final static String aBuildSeparateHead = "BuildSeparateHead";
   public final static String aSelectionKeys = "SelectionKeys";
@@ -237,8 +277,8 @@ class NewAssetBuilder
   /*   F I R S T   L O O P                                                                  */
   /*----------------------------------------------------------------------------------------*/
   
-  protected class 
-  InformationLoop
+  protected 
+  class InformationLoop
     extends SetupPass
   {
     public 
@@ -261,7 +301,7 @@ class NewAssetBuilder
       pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
       pBuildAdvancedShadingNetwork = 
-	getBooleanParamValue(new ParamMapping(aBuildAdvancedShadingNetwork));
+	getBooleanParamValue(new ParamMapping(aBuildAdvShadeNetwork));
       pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
       pBuildSeparateHead = getBooleanParamValue(new ParamMapping(aBuildSeparateHead));
       pAutoRigSetup = getBooleanParamValue(new ParamMapping(aAutoRigSetup));
@@ -273,6 +313,8 @@ class NewAssetBuilder
       pMRInitMEL = pAssetNames.getMRInitScriptName();
 
       pPlaceHolderMEL = pAssetNames.getPlaceholderScriptName();
+      
+      pAutoRigMEL = pAssetNames.getAutoRigScriptName();
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
@@ -291,8 +333,8 @@ class NewAssetBuilder
   /*   S E C O N D   L O O P                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  protected class
-  BuildLoop
+  protected 
+  class BuildLoop
     extends ConstructPass
   {
     public 
@@ -474,11 +516,27 @@ class NewAssetBuilder
         removeFromCheckInList(pAssetNames.getFinalNodeName());
       }
     }
+
+    @Override
+    public TreeSet<String> 
+    nodesDependedOn()
+    {
+      TreeSet<String> list = new TreeSet<String>();
+      addNonNullValue(pFinalizeMEL, list);
+      addNonNullValue(pPlaceHolderMEL, list);
+      if (pBuildLowRez)
+	addNonNullValue(pLRFinalizeMEL, list);
+      if (pBuildAdvancedShadingNetwork)
+	addNonNullValue(pMRInitMEL, list);
+      if (pAutoRigSetup)
+	addNonNullValue(pAutoRigMEL, list);
+      return list;
+    }
     private static final long serialVersionUID = -2455380248604721406L;
   }
    
-  protected class
-  FinalizeLoop
+  protected 
+  class FinalizeLoop
     extends ConstructPass
   {
     public 
@@ -518,6 +576,25 @@ class NewAssetBuilder
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes)
 	stage.finalizeStage();
       disableActions();
+    }
+    
+    @Override
+    public TreeSet<String> 
+    nodesDependedOn()
+    {
+      TreeSet<String> list = new TreeSet<String>();
+      
+      list.addAll(getDisableList());
+      addNonNullValue(pAssetNames.getModelNodeName(), list);
+      if (pAutoRigSetup) {
+	addNonNullValue(pAssetNames.getRigInfoNodeName(), list);
+	addNonNullValue(pAssetNames.getSkeletonNodeName(), list);
+      }
+      if (pBuildSeparateHead) {
+	addNonNullValue(pAssetNames.getBlendShapeModelNodeName(), list);
+	addNonNullValue(pAssetNames.getHeadModelNodeName(), list);
+      }
+      return list;
     }
     private static final long serialVersionUID = 3776473936564046625L;
   }

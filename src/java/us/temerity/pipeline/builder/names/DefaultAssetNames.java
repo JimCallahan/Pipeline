@@ -4,15 +4,20 @@ import us.temerity.pipeline.FileSeq;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.*;
 
-public class DefaultAssetNames
+public 
+class DefaultAssetNames
   extends BaseNames
   implements BuildsAssetNames
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
   public 
-  DefaultAssetNames() 
+  DefaultAssetNames()
     throws PipelineException 
   {
-    super("BuildsAssetNames", 
+    super("DefaultAssetNames", 
           "The basic naming class for an asset provided by Temerity");
     {
       BuilderParam param =
@@ -46,6 +51,8 @@ public class DefaultAssetNames
     pProject = getStringParamValue(new ParamMapping(aProjectName));
     pAssetName =  getStringParamValue(new ParamMapping(aAssetName));
     pAssetType =  getStringParamValue(new ParamMapping(aAssetType));
+    
+    pNameSpace = pAssetName;
 
     String assetStart = "/projects/" + pProject + "/assets/" + pAssetType + "/" + pAssetName;
     String melStart = "/projects/" + pProject + "/assets/tools/mel/";
@@ -95,6 +102,15 @@ public class DefaultAssetNames
   getAssetType()
   {
     return pAssetType.toString();
+  }
+  
+  /**
+   * @return the Name Space
+   */
+  public String 
+  getNameSpace()
+  {
+    return pNameSpace;
   }
 
   /**
@@ -313,6 +329,8 @@ public class DefaultAssetNames
   private String pAssetName;
 
   private String pAssetType;
+  
+  private String pNameSpace;
 
   // Hi Rez Models
   private String pModelNodeName;

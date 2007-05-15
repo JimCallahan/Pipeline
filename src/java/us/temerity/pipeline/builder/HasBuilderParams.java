@@ -77,6 +77,10 @@ class HasBuilderParams
         ("A parameter named (" + param.getName() + ") already exists!");
 
     pParams.put(param.getName(), param);
+    
+    sLog.log(Kind.Bld, Level.Finest, 
+      "Adding a parameter named (" + param.getName() + ") to a Builder " +
+      "identified by (" + getName() + ")");
   }
 
   /**
@@ -215,7 +219,7 @@ class HasBuilderParams
   }
   
   /**
-   * Gets a sorted Map of all the Parametesr in this builder, with the keys being
+   * Gets a sorted Map of all the Parameters in this builder, with the keys being
    * the name of the parameters and the values the actual parameters.
    */
   public SortedMap<String, BuilderParam> 
@@ -233,7 +237,7 @@ class HasBuilderParams
    *        The new value of the parameter.
    */
   @SuppressWarnings("unchecked")
-  public void 
+  public final boolean 
   setParamValue
   (
     String name, 
@@ -253,10 +257,11 @@ class HasBuilderParams
          "SimpleParamAccess.");
 
     ((SimpleParamAccess) param).setValue(value);
+    return false;
   }
 
   @SuppressWarnings("unchecked")
-  public void
+  public final boolean
   setParamValue
   (
     String name,
@@ -272,11 +277,11 @@ class HasBuilderParams
       throw new IllegalArgumentException
         ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
          "ComplexParamAccess.");
-    ((ComplexParamAccess<BuilderParam>) param).setValue(keys, value);
+    return ((ComplexParamAccess<BuilderParam>) param).setValue(keys, value);
   }
   
   @SuppressWarnings("unchecked")
-  public void
+  public final boolean
   setParamValue
   (
     ParamMapping mapping,
@@ -284,9 +289,9 @@ class HasBuilderParams
   )
   {
     if (mapping.hasKeys())
-      setParamValue(mapping.getParamName(), mapping.getKeys(), value);
-    else
-      setParamValue(mapping.getParamName(), value);
+      return setParamValue(mapping.getParamName(), mapping.getKeys(), value);
+    
+    return setParamValue(mapping.getParamName(), value);
   }
   
   public boolean
@@ -483,6 +488,7 @@ class HasBuilderParams
 	  ("The single valued parameter (" + name + ") defined by this Builder was not " + 
 	   "specified by any the parameter layout group!");
     }
+    pLayout = layout;
   }
   
   /**
@@ -600,7 +606,7 @@ class HasBuilderParams
     return pAllowsChildren;
   }
   
-  public final void
+  protected final void
   addParamMapping
   (
     ParamMapping subParam,
@@ -619,19 +625,41 @@ class HasBuilderParams
     return Collections.unmodifiableSortedMap(pParamMapping);
   }
   
-  public String 
-  getNamedPrefix()
+  /**
+   * Gets all the mapped parameters and the parameters that drive them.
+   */
+  public final Set<ParamMapping> 
+  getMappedParamNames()
   {
-    return pNamedPrefix;
+    return Collections.unmodifiableSet(pParamMapping.keySet());
+  }
+  
+  /**
+   * Returns the prefix name for this builder, which includes the full path to this builder as
+   * a '-' separate list.
+   * 
+   * If this method is called on something with Builder Parameters which is used as a
+   * Sub-Builder, then it should only be used after
+   * {@link BaseBuilder#addSubBuilder(HasBuilderParams)} is called. The addSubBuilder method
+   * is responsible for setting the value returned by this function correctly. If this method
+   * is called before the value is correctly set, it will just return the name of the builder.
+   * 
+   */
+  public PrefixedName 
+  getPrefixedName()
+  {
+    if (pPrefixName == null)
+      return new PrefixedName(getName());
+    return pPrefixName;
   }
   
   public void
-  setNamedPrefix
+  setPrefixedName
   (
-    String namedPrefix
+    PrefixedName namedPrefix
   )
   {
-    pNamedPrefix = namedPrefix;
+    pPrefixName = new PrefixedName(namedPrefix);
   }
   
   public abstract int
@@ -646,15 +674,17 @@ class HasBuilderParams
     int currentPass = getCurrentPass();
     TreeSet<String> passParams = getPassParamNames(currentPass);
     
-    String prefixName = getNamedPrefix();
-    if(prefixName == null)
-      prefixName = getName();
+    String prefixName = getPrefixedName().toString();
     
     MultiMap<String, String> specificEntrys = 
       BaseBuilder.getCommandLineParams().get(prefixName);
     
+    sLog.log(Kind.Arg, Level.Fine, 
+      "Assigning command line parameters for Builder identified by (" + prefixName + ") " +
+      "for pass number (" + currentPass + ")");
+    
     if (specificEntrys == null) {
-      LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
+      sLog.log(Kind.Arg, Level.Finer, 
 	"No command line parameters for Builder with prefixName (" + prefixName + ")");
       return;
     }
@@ -688,9 +718,9 @@ class HasBuilderParams
 		  "from a command line argument.\n" + ex.getMessage(); 
 		if (abort)
     		  throw new PipelineException(message);
-		LogMgr.getInstance().log(Kind.Arg, Level.Warning, message);
+		sLog.log(Kind.Arg, Level.Warning, message);
 	      }
-	      LogMgr.getInstance().log(Kind.Arg, Level.Finer, 
+	      sLog.log(Kind.Arg, Level.Finest, 
 		"Setting command line parameter (" + mapping + ") from builder " +
 		"(" + prefixName + ") with the value (" + value + ").");
 	    }
@@ -700,7 +730,7 @@ class HasBuilderParams
 	        "Parameter is not a Simple Parameter"; 
 	      if (abort)
 		throw new PipelineException(message);
-	      LogMgr.getInstance().log(Kind.Arg, Level.Warning, message);
+	      sLog.log(Kind.Arg, Level.Warning, message);
 	    }
 	  }
 	}
@@ -1144,6 +1174,17 @@ class HasBuilderParams
   
   
   /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Instance of the log manager for builder logging purposes.
+   */
+  protected static LogMgr sLog = LogMgr.getInstance();
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
@@ -1180,7 +1221,7 @@ class HasBuilderParams
   /**
    * 
    */
-  private String pNamedPrefix = null;
+  private PrefixedName pPrefixName = null;
   
 
   
@@ -1192,6 +1233,15 @@ class HasBuilderParams
   class ParamMapping
     implements Comparable<ParamMapping>
   {
+    public
+    ParamMapping
+    (
+      ParamMapping mapping
+    )
+    {
+      this(mapping.getParamName(), mapping.getKeys());
+    }
+    
     public
     ParamMapping
     (
@@ -1239,6 +1289,18 @@ class HasBuilderParams
       if (pKeys == null)
 	return null;
       return Collections.unmodifiableList(pKeys);
+    }
+    
+    public void
+    addKey
+    (
+      String key
+    )
+    {
+      if (pKeys == null)
+	pKeys = ComplexParam.listFromObject(key);
+      else
+	pKeys.add(key);
     }
 
     public int 
@@ -1293,10 +1355,91 @@ class HasBuilderParams
     public String
     toString()
     {
-      return "Param Name: " + pParamName + "\tKeys: " + pKeys;
+      return "Param Name (" + pParamName + ") with Keys: " + pKeys;
     }
     
     private String pParamName;
     private LinkedList<String> pKeys;
+  }
+  
+  public static 
+  class PrefixedName
+  {
+    public
+    PrefixedName
+    (
+      LinkedList<String> prefixes,
+      String name
+    )
+    {
+      if (prefixes == null)
+	pPrefixes = new LinkedList<String>();
+      else
+	pPrefixes = new LinkedList<String>(prefixes);
+      if (name != null)
+	pPrefixes.add(name);
+    }
+    
+    public PrefixedName
+    (
+      String name
+    )
+    {
+      pPrefixes = ComplexParam.listFromObject(name);
+    }
+    
+    public PrefixedName
+    (
+      PrefixedName prefixName,
+      String name
+    )
+    {
+      if (prefixName.pPrefixes == null)
+	pPrefixes = new LinkedList<String>();
+      else
+	pPrefixes = new LinkedList<String>(prefixName.pPrefixes);
+      if (name != null)
+	pPrefixes.add(name);
+    }
+    
+    public PrefixedName
+    (
+      PrefixedName prefixName
+    )
+    {
+      if (prefixName.pPrefixes == null)
+	pPrefixes = new LinkedList<String>();
+      else
+	pPrefixes = new LinkedList<String>(prefixName.pPrefixes);
+    }
+    
+    @Override
+    public String toString()
+    {
+      StringBuilder toReturn = new StringBuilder();
+      for (String each : pPrefixes) {
+	if (toReturn.length() > 0)
+	  toReturn.append("-");
+	toReturn.append(each);
+      }
+      return toReturn.toString();
+    }
+    
+    @Override
+    public boolean 
+    equals
+    (
+      Object that
+    )
+    {
+      if (!(that instanceof PrefixedName)) 
+	return false;
+      PrefixedName that1 = (PrefixedName) that;
+      if (that1.toString().equals(this.toString()))
+	return true;
+      return false;
+    }
+
+    private LinkedList<String> pPrefixes;
   }
 }

@@ -1026,20 +1026,6 @@ class BaseUtil
     return pContext.getToolset();
   }
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   U T I L I T Y   M E T H O D S                                          */
-  /*----------------------------------------------------------------------------------------*/
-  
-  public static LinkedList<String>
-  listFromString
-  (
-    String key
-  )
-  {
-    LinkedList<String> list = new LinkedList<String>();
-    list.add(key);
-    return list;
-  }
   
   
   /*----------------------------------------------------------------------------------------*/

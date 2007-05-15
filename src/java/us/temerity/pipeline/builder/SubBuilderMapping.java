@@ -6,10 +6,9 @@
  */
 package us.temerity.pipeline.builder;
 
-import java.awt.Component;
 import java.util.*;
 
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.PipelineException;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S U B   B U I L D E R   M A P P I N G                                                  */
@@ -33,7 +32,7 @@ import us.temerity.pipeline.*;
  * Builder is used to create multiple shots in a single project, then it might have a 
  * <code> Project </code> parameter which would be linked to a <code>Project</code> parameter 
  * in each Sub-Builder used to construct a single shot.  When a Builder actually begins its execution, 
- * it should use the {@link BaseBuilder#initializeSubBuilders()} method to initialize all the 
+ * it should use the method to initialize all the 
  * linked parameters of its Sub-Builders with the appropriate values. 
  * 
  * This class is also used to associated {@link BaseNames} classes with Builders.  Naming classes
@@ -291,6 +290,4 @@ class SubBuilderMapping
    *  Contains a mapping of the Sub-Builder Parameter name to the parent Parameter name.
    */
   private TreeMap<String, String> pParamMapping;
-  
-  private int pOffset;
 }

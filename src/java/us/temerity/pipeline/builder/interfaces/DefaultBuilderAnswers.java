@@ -16,7 +16,6 @@ class DefaultBuilderAnswers
   (
     UtilContext context
   ) 
-    throws PipelineException 
   {
     super("BasicBuilderImplemention", 
           "The basic implementation of the AnswersBuilderQueries, provided by Temerity", 
@@ -65,6 +64,18 @@ class DefaultBuilderAnswers
   )
   {
     pContext = context;
+  }
+  
+  public ArrayList<String>
+  getListOfAssets
+  (
+    String project,
+    String assetType
+  ) 
+    throws PipelineException
+  {
+    String searchPath = "/projects/" + project + "/assets/" + assetType;
+    return findChildBranchNames(new Path(searchPath));
   }
 
   private static final String sGlobalMelPath = "/global/assets/tools/mel";

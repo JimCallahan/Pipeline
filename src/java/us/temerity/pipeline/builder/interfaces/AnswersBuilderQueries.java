@@ -26,5 +26,12 @@ interface AnswersBuilderQueries
   ) 
     throws PipelineException;
   
+  public ArrayList<String>
+  getListOfAssets
+  (
+    String project, 
+    String assetType
+  )
+    throws PipelineException;
 
 }

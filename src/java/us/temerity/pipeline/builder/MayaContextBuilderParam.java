@@ -1,4 +1,4 @@
-// $Id: MayaContextBuilderParam.java,v 1.4 2007/04/02 21:44:51 jesse Exp $
+// $Id: MayaContextBuilderParam.java,v 1.5 2007/05/15 06:14:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -150,6 +150,19 @@ class MayaContextBuilderParam
     setValue(aAngularUnits, context.getAngularUnit());
     setValue(aLinearUnits, context.getLinearUnit());
     setValue(aTimeUnits, context.getTimeUnit());
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U P D A T E                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  @Override
+  protected boolean
+  needsUpdating()
+  {
+    return false;
   }
   
   

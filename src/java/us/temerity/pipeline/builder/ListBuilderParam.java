@@ -11,7 +11,8 @@ import us.temerity.pipeline.glue.GlueDecoder;
 /*   L I S T   B U I L D E R   P A R A M                                                    */
 /*------------------------------------------------------------------------------------------*/
 
-public class ListBuilderParam
+public 
+class ListBuilderParam
   extends ListParam<BuilderParam>
   implements BuilderParam
 {
