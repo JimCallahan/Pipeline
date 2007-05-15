@@ -51,4 +51,7 @@ class JBuilderTopPanel
   
   private JPanel pFirstPasses;
   private JPanel pSecondPasses;
+  
+  private static final long serialVersionUID = 634240817965602649L;
+
 }
