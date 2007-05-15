@@ -1,27 +1,18 @@
-// $Id: UIFactory.java,v 1.19 2007/02/23 20:38:11 jesse Exp $
+// $Id: UIFactory.java,v 1.20 2007/05/15 06:08:25 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.MayaContext;
-import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
-
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.locks.*;
-import java.text.*;
+import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.TreeSet;
 
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.plaf.basic.*;
-import javax.swing.plaf.synth.*;
-import javax.media.opengl.*;
+import javax.swing.plaf.synth.SynthLookAndFeel;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.math.Color3d;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   F A C T O R Y                                                                    */
@@ -38,7 +29,7 @@ class UIFactory
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  private void 
+  private  
   UIFactory() 
   {}
 
@@ -885,9 +876,6 @@ class UIFactory
    * @param text
    *   The initial text.
    * 
-   * @param width
-   *   The minimum and preferred width.
-   * 
    * @param rows
    *   The initial number of rows.
    */ 
@@ -895,7 +883,6 @@ class UIFactory
   createTextArea
   (
    String text, 
-   int width,
    int rows
   )
   {
@@ -916,9 +903,6 @@ class UIFactory
    * @param text
    *   The initial text.
    * 
-   * @param width
-   *   The minimum and preferred width.
-   * 
    * @param rows
    *   The initial number of rows.
    */ 
@@ -926,11 +910,10 @@ class UIFactory
   createEditableTextArea
   (
    String text, 
-   int width,
    int rows
   )
   {
-    JTextArea area = createTextArea(text, width, rows);
+    JTextArea area = createTextArea(text, rows);
     area.setName("EditableTextArea");
 
     area.setEditable(true);
@@ -1083,178 +1066,6 @@ class UIFactory
     return field;
   }
   
-  /**
-   * Create a UtilContext field.
-   * 
-   * @param value
-   * 	The initial value
-   * 
-   * @param parent
-   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public static JUtilContextField
-  createUtilContextField
-  (
-    UtilContext value, 
-    JDialog parent, 
-    int width
-  ) 
-    throws PipelineException 
-  {
-    JUtilContextField field = new JUtilContextField(parent);
-    field.setValue(value);
-
-    int maxSize = 19*3 + 2*3;
-    Dimension size = new Dimension(width, maxSize);
-    field.setMinimumSize(size);
-    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
-    field.setPreferredSize(size);
-
-    return field;
-  }
-
-  /**
-   * Create a UtilContext field.
-   *
-   * @param value
-   * 	The initial value
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public static JUtilContextField
-  createUtilContextField
-  (
-    UtilContext value, 
-    int width
-  ) 
-    throws PipelineException 
-  {
-    return createUtilContextField(value, null, width);
-  }
-  
-  /**
-   * Create a MayaContext field.
-   * 
-   * @param value
-   * 	The initial value
-   * 
-   * @param parent
-   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public static JMayaContextField
-  createMayaContextField
-  (
-    MayaContext value, 
-    JDialog parent, 
-    int width
-  ) 
-    throws PipelineException 
-  {
-    JMayaContextField field = new JMayaContextField(parent);
-    field.setValue(value);
-
-    int maxSize = 19*3 + 2*3;
-    Dimension size = new Dimension(width, maxSize);
-    field.setMinimumSize(size);
-    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
-    field.setPreferredSize(size);
-
-    return field;
-  }
-
-  /**
-   * Create a MayaContext field.
-   *
-   * @param value
-   * 	The initial value
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public static JMayaContextField
-  createMayaContextField
-  (
-    MayaContext value, 
-    int width
-  ) 
-    throws PipelineException 
-  {
-    return createMayaContextField(value, null, width);
-  }
-  
-  /**
-   * Create a MultiEnum field.
-   * 
-   * @param values
-   *   The full set of values in the enum.
-   * 
-   * @param initialValues
-   * 	The values that start out with a <code>true</code> value.
-   * 
-   * @param layout
-   * 	The layout of the values. Pass in <code>null</code> to have
-   * 	the values displayed in alphabetical order.
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public static JMultiEnumField
-  createMultiEnumField
-  (
-   Set<String> initialValues,
-   Set<String> values,
-   ArrayList<String> layout,
-   int width
-  ) 
-  throws PipelineException 
-  {
-    JMultiEnumField field = new JMultiEnumField(initialValues, values, layout);
-    int nulls = 0;
-    for (String value :  field.getFieldLayout()) {
-      if (value == null)
-	nulls++;
-    }
-    int maxSize = (12 * nulls) + (19 * values.size()) + ((values.size() - 1) * 3);
-    Dimension size = new Dimension(width, maxSize);
-    field.setMinimumSize(size);
-    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, maxSize));
-    field.setPreferredSize(size);
-    
-    return field;
-  }
-  
-  /**
-   * Create a MultiEnum field, with no initial values.
-   * 
-   * @param values
-   *   The full set of values in the enum.
-   *   
-   * @param layout
-   * 	The layout of the values. Pass in <code>null</code> to have
-   * 	the values displayed in alphabetical order.
-   * 
-   * @param width
-   *   The minimum and preferred width of the field.
-   */ 
-  public static JMultiEnumField
-  createMultiEnumField
-  (
-   Set<String> values,
-   ArrayList<String> layout,
-   int width
-  ) 
-  throws PipelineException 
-  {
-    return createMultiEnumField(null, values, layout, width);
-  }
-
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -2720,7 +2531,7 @@ class UIFactory
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
 
-    JTextArea area = createTextArea(text, vwidth, rows);
+    JTextArea area = createTextArea(text, rows);
     if(isScrolled) {
       area.setName("ScrolledTextArea");
 
@@ -2827,7 +2638,7 @@ class UIFactory
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
 
-    JTextArea area = createEditableTextArea(text, vwidth, rows);
+    JTextArea area = createEditableTextArea(text, rows);
     if(isScrolled) {
       area.setName("ScrolledTextArea");
 
@@ -3405,442 +3216,6 @@ class UIFactory
     return field;
   }
 
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Create a new UtilContext field with a title and add them to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param value
-   *   The initial value.
-   * 
-   * @param parent
-   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   * 
-   * @param tooltip
-   *   The tooltip text.
-   */ 
-  public static JUtilContextField
-  createTitledUtilContextField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   UtilContext value,
-   JDialog parent,
-   int vwidth,
-   String tooltip
-  ) 
-    throws PipelineException
-  {
-    JUtilContextField field = createUtilContextField(value, parent, vwidth);
-    vpanel.add(field);
-    tpanel.add(createFixedLabel(title + " User:", twidth, JLabel.RIGHT, 
-                                "The user being operated on"));
-    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + " View:", twidth, JLabel.RIGHT, 
-                                "The user's working area being operated on"));
-    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + " Toolset:", twidth, JLabel.RIGHT, 
-                                "The toolset being used."));
-
-    return field;
-  }
-  
-  /**
-   * Create a new UtilContext field with a title and add them to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param value
-   *   The initial value.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   * 
-   * @param tooltip
-   *   The tooltip text.
-   */ 
-  public static JUtilContextField
-  createTitledUtilContextField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   UtilContext value,
-   int vwidth,
-   String tooltip
-  ) 
-    throws PipelineException
-  {
-    return UIFactory.createTitledUtilContextField(tpanel, title, twidth, vpanel, 
-      						  value, null, vwidth, 
-      						  tooltip);
-  }
-  
-  /**
-   * Create a new UtilContext field with a title and add them to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param value
-   *   The initial value.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   */ 
-  public static JUtilContextField
-  createTitledUtilContextField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   UtilContext value,
-   int vwidth
-  ) 
-    throws PipelineException
-  {
-    return UIFactory.createTitledUtilContextField(tpanel, title, twidth, vpanel, 
-      						  value, null, vwidth, 
-      						  null);
-  }
-
- /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Create a new MayaContext field with a title and add them to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param value
-   *   The initial value.
-   * 
-   * @param parent
-   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   * 
-   * @param tooltip
-   *   The tooltip text.
-   */ 
-  public static JMayaContextField
-  createTitledMayaContextField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   MayaContext value,
-   JDialog parent,
-   int vwidth,
-   String tooltip
-  ) 
-    throws PipelineException
-  {
-    JMayaContextField field = createMayaContextField(value, parent, vwidth);
-    vpanel.add(field);
-
-    tpanel.add(createFixedLabel(title + " Angular:", twidth, JLabel.RIGHT, 
-                                "The angular units"));
-    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + " Linear:", twidth, JLabel.RIGHT, 
-                                "The linear units"));
-    tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-    tpanel.add(createFixedLabel(title + " Time:", twidth, JLabel.RIGHT, 
-                                "The time units"));
-    
-    return field;
-  }
-  
-  /**
-   * Create a new MayaContext field with a title and add them to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param value
-   *   The initial value.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   * 
-   * @param tooltip
-   *   The tooltip text.
-   */ 
-  public static JMayaContextField
-  createTitledMayaContextField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   MayaContext value,
-   int vwidth,
-   String tooltip
-  ) 
-    throws PipelineException
-  {
-    return UIFactory.createTitledMayaContextField(tpanel, title, twidth, vpanel, 
-      						  value, null, vwidth, 
-      						  tooltip);
-  }
-  
-  /**
-   * Create a new MayaContext field with a title and add it to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param value
-   *   The initial value.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   */ 
-  public static JMayaContextField
-  createTitledMayaContextField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   MayaContext value,
-   int vwidth
-  ) 
-    throws PipelineException
-  {
-    return UIFactory.createTitledMayaContextField(tpanel, title, twidth, vpanel, 
-      						  value, null, vwidth, 
-      						  null);
-  }
-  
-  /**
-   * Create a new MultiEnum field with a title and add it to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param values
-   *   All the values of the param.
-   *   
-   * @param initialValues
-   * 	The values initially set to true.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   *   
-   * @param layout
-   * 	The layout of the values. Pass in <code>null</code> to have
-   * 	the values displayed in alphabetical order.
-   * 
-   * @param tooltips
-   *   A list of tooltips, mapped by value name.  If this is null, then
-   *   no tooltips will be used.
-   */
-  public static JMultiEnumField
-  createTitledMultiEnumField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   Set<String> initialValues,
-   Set<String> values,
-   int vwidth,
-   ArrayList<String> layout, 
-   TreeMap<String, String> tooltips
-  ) 
-   throws PipelineException
-  {
-    JMultiEnumField field = createMultiEnumField(initialValues, values, layout, vwidth);
-    vpanel.add(field);
-    
-    if (tooltips == null)
-      tooltips = new TreeMap<String, String>();
-
-    layout = field.getFieldLayout();
-    int size = layout.size();
-    for(int i = 0; i < size; i++) {
-      String entry = layout.get(i);
-      if(entry != null) {
-	JLabel label = 
-	  createFixedLabel(title + " " + entry + ":", twidth, JLabel.RIGHT, tooltips.get(entry));
-	tpanel.add(label);
-      if (i != (size -1))
-        tpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-      } else 
-      {
-	tpanel.add(Box.createRigidArea(new Dimension(0, 12)));
-      }
-    }
-    return field;
-  }
- 
-  /**
-   * Create a new MultiEnum field with a title and add it to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param values
-   *   All the values of the param.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   * 
-   * @param layout
-   * 	The layout of the values. Pass in <code>null</code> to have
-   * 	the values displayed in alphabetical order.
-   * 
-   * @param tooltips
-   *   A list of tooltips, mapped by value name.  If this is null, then
-   *   no tooltips will be used.
-   */
-  public static JMultiEnumField
-  createTitledMultiEnumField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   Set<String> values,
-   int vwidth,
-   ArrayList<String> layout, 
-   TreeMap<String, String> tooltips
-  ) 
-    throws PipelineException
-  {
-    return createTitledMultiEnumField(tpanel, title, twidth, 
-                                      vpanel, null, values , vwidth, 
-                                      layout, tooltips);
-  }
-
-  /**
-   * Create a new MultiEnum field with a title and add it to the given panels.
-   * 
-   * @param tpanel
-   *   The titles panel.
-   *  
-   * @param title
-   *   The title text.
-   * 
-   * @param twidth
-   *   The minimum and preferred width of the title.
-   * 
-   * @param vpanel
-   *   The values panel.
-   * 
-   * @param values
-   *   All the values of the param.
-   *   
-   * @param vwidth
-   *   The minimum and preferred width of the identifier field.
-   *   
-   * @param layout
-   * 	The layout of the values. Pass in <code>null</code> to have
-   * 	the values displayed in alphabetical order.
-   */
-  public static JMultiEnumField
-  createTitledMultiEnumField
-  (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   Set<String> values,
-   int vwidth,
-   ArrayList<String> layout
-  ) 
-    throws PipelineException
-  {
-    return createTitledMultiEnumField(tpanel, title, twidth, 
-                                      vpanel, null, values, vwidth, 
-                                      layout, null);
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4074,5 +3449,49 @@ class UIFactory
     }
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Method to allow a standalone application to have a UI matching Pipeline.
+   * <p>
+   * Pipeline has a host of its own UI settings that control how it looks. When plui starts
+   * all of these settings are loaded as part of its startup. However, standalone applications
+   * do not have this initialization feature, which means they will be using Java's default
+   * look-and-feel. For the sake of consistency and aesthetics, it is preferable to use the
+   * Pipeline look-and-feel for standalone applications. Calling this method will set things
+   * up suitable for that to happen.
+   */
+  public static void
+  initializePipelineUI()
+  {
+    /* load the look-and-feel */
+    {
+      try
+      {
+	SynthLookAndFeel synth = new SynthLookAndFeel();
+	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
+	  LookAndFeelLoader.class);
+	UIManager.setLookAndFeel(synth);
+      } catch ( java.text.ParseException ex )
+      {
+	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	  "Unable to parse the look-and-feel XML file (synth.xml):\n" + "  "
+	  + ex.getMessage());
+	System.exit(1);
+      } catch ( UnsupportedLookAndFeelException ex )
+      {
+	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	  "Unable to load the Pipeline look-and-feel:\n" + "  " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+    /* application wide UI settings */
+    {
+      JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+      ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+    }
+  }
 
 }

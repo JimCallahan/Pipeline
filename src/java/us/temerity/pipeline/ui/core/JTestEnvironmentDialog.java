@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.8 2007/02/22 16:12:39 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.9 2007/05/15 06:08:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -90,7 +90,7 @@ class JTestEnvironmentDialog
       body.add(Box.createRigidArea(new Dimension(0, 4)));
       
       {
-	JTextArea area = UIFactory.createEditableTextArea(null, sSize, 3);
+	JTextArea area = UIFactory.createEditableTextArea(null, 3);
 	pCommandArea = area;
 
 	body.add(area);
