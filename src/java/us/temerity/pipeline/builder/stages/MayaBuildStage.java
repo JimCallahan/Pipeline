@@ -38,7 +38,6 @@ class MayaBuildStage
    *            the extention of the node.
    * @param editor
    *            The Editor to assign to the created node.
-   * @throws PipelineException
    */
   protected 
   MayaBuildStage
@@ -53,20 +52,35 @@ class MayaBuildStage
   ) 
     throws PipelineException
   {
-    super
-    (
-      name,
-      desc,
-      context, 
-      mayaContext, 
-      nodeName, 
-      isAscii, 
-      editor, 
-      new PluginContext("MayaBuild")
-    );
+    super(name,
+      	  desc,
+      	  context,
+      	  mayaContext,
+      	  nodeName,
+      	  isAscii,
+      	  editor,
+      	  new PluginContext("MayaBuild"));
     setUnits();
   }
   
+  /**
+   * Constructor for this branch stage that allows the caller to override the default
+   * editor.
+   *
+   * @param name
+   *        The name of the stage.
+   * @param desc
+   *        A description of what the stage should do.
+   * @param context
+   *            The {@link UtilContext} that this stage acts in.
+   * @param mayaContext
+   *            The {@link MayaContext} that this stage acts in.
+   * @param nodeName
+   *            The name of the node that is to be created.
+   * @param isAscii
+   *            Is the node an ascii or binary Maya file. This parameter will determine
+   *            the extention of the node.
+   */
   protected 
   MayaBuildStage
   (
@@ -79,38 +93,35 @@ class MayaBuildStage
   ) 
     throws PipelineException
   {
-    super
-    (
-      name,
-      desc,
-      context, 
-      mayaContext, 
-      nodeName, 
-      isAscii, 
-      null, 
-      new PluginContext("MayaBuild")
-    );
+    super(name,
+          desc,
+          context,
+          mayaContext,
+          nodeName,
+          isAscii,
+          null,
+          new PluginContext("MayaBuild"));
     setUnits();
   }
 
   /**
    * Utility method for adding a link to this stage.
    * <p>
-   * This method combines two things into one function call. It creates the LinkMod and
-   * then sets the correct source parameters. The values that are set depend upon the
-   * {@link MayaBuildType} that is passed in. This enum represents the two different cases
-   * in which links are typcially made to a MayaBuild node and set the {@link LinkPolicy}
-   * and the Source Params to correctly match the selected case.
+   * This method combines two things into one function call. It creates the LinkMod and then
+   * sets the correct source parameters. The values that are set depend upon the
+   * {@link MayaBuildType} that is passed in. This enum represents the two different cases in
+   * which links are typcially made to a MayaBuild node and sets the {@link LinkPolicy} and
+   * the Source Params to correctly match the selected case.
    * 
    * @param sourceName
-   *            The name of the source to be linked to the node.
+   *        The name of the source to be linked to the node.
    * @param namespace
-   *            The namespace to be used when the source is imported or referenced.
+   *        The namespace to be used when the source is imported or referenced.
    * @param type
-   *            The sort of Maya connection that this link is going to represent. This
-   *            value will effect the {@link LinkPolicy} and the source parameters that
-   *            are set.
-   * @throws PipelineException
+   *        The sort of Maya connection that this link is going to represent. This value will
+   *        effect the {@link LinkPolicy} and the source parameters that are set.
+   * @param useNamespace
+   *        Should this node use a namespace when it is brought into the scene.
    */
   public void 
   setupLink
@@ -138,7 +149,7 @@ class MayaBuildStage
       ("You must specify a MayaBuildType when you call linkNode()");
     }
 
-    LinkMod link = new LinkMod(sourceName, policy, LinkRelationship.All, null);
+    LinkMod link = new LinkMod(sourceName, policy);
     addLink(link);
     addSourceParam(sourceName, "PrefixName", namespace);
     addSourceParam(sourceName, "BuildType", sourceParamValue);
@@ -147,7 +158,7 @@ class MayaBuildStage
     else
       addSourceParam(sourceName, "NameSpace", false);
   }
-
+  
   /**
    * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType, boolean)}
    * method.

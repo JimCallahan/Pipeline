@@ -1,6 +1,3 @@
-/*
- * Created on Sep 12, 2006 Created by jesse For Use in us.temerity.pipeline.stages
- */
 package us.temerity.pipeline.builder.stages;
 
 import us.temerity.pipeline.*;
@@ -85,9 +82,43 @@ class MayaFileStage
     if(pMayaContext.getTimeUnit() != null)
       addSingleParam("TimeUnits", pMayaContext.getTimeUnit());
   }
+  
+  /**
+   * Takes the values in the {@link FrameRange} and uses them to set the correct Single
+   * Parameters on the Maya Action.
+   */
+  public void
+  setFrameRange
+  (
+    FrameRange range 
+  ) 
+    throws PipelineException
+  {
+    addSingleParam("StartFrame", range.getStart());
+    addSingleParam("EndFrame", range.getEnd());
+  }
 
   /**
-   * Utility method for linking a node ande setting the <code>InitialMEL</code> single
+   * Utilty method for linking a node and setting the <code>MayaScene</code> single
+   * parameter value that many Maya Actions Share.
+   * <p>
+   * This should only be called after the Stage's Action has been created.  
+   */
+  public void
+  setMayaScene
+  (
+    String mayaScene
+  ) 
+    throws PipelineException
+  {
+    if (mayaScene != null ) {
+     addLink(new LinkMod(mayaScene, LinkPolicy.Dependency));
+     addSingleParam("MayaScene", mayaScene);
+    }
+  }
+
+  /**
+   * Utility method for linking a node and setting the <code>InitialMEL</code> single
    * parameter value that many Maya Actions share.
    * <p>
    * The name of a MEL script is passed to this method. That MEL script is then added as a
@@ -96,7 +127,6 @@ class MayaFileStage
    * 
    * @param melScript
    *            The value for the parameter.
-   * @throws PipelineException
    */
   public void 
   setInitialMel
@@ -106,8 +136,7 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-	null));
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
       addSingleParam("InitialMEL", melScript);
     }
   }
@@ -132,8 +161,7 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-	null));
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
       addSingleParam("ModelMEL", melScript);
     }
   }
@@ -158,8 +186,7 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-	null));
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
       addSingleParam("AnimMEL", melScript);
     }
   }
@@ -184,8 +211,7 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency, LinkRelationship.All,
-	null));
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
       addSingleParam("FinalMEL", melScript);
     }
   }

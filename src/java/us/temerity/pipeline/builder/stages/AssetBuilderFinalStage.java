@@ -1,6 +1,3 @@
-/*
- * Created on Sep 18, 2006 Created by jesse For Use in us.temerity.pipeline.stages
- */
 package us.temerity.pipeline.builder.stages;
 
 import us.temerity.pipeline.PipelineException;
@@ -15,8 +12,6 @@ import us.temerity.pipeline.builder.UtilContext;
  * scene and then runs the finalize script to do any and all clean-up on the model to
  * prepare it for later use. It is suggested that the finalize mel imports the references
  * and possibly cleans up namespaces.
- * 
- * @author Jesse Clemens
  */
 public 
 class AssetBuilderFinalStage 

@@ -41,7 +41,6 @@ class BaseStage
     String desc,
     UtilContext context
   ) 
-    throws PipelineException
   {
     super(name, desc, context);
   }

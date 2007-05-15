@@ -78,7 +78,7 @@ class NewAssetBuilderRigStage
     if (skelName != null)
       setupLink(skelName, "skel", MayaBuildStage.getImport(), false);
     if (rigInfoName != null) {
-      LinkMod mod = new LinkMod(rigInfoName, LinkPolicy.Dependency, LinkRelationship.All, null);
+      LinkMod mod = new LinkMod(rigInfoName, LinkPolicy.Dependency);
       addLink(mod);
     }
     if (autoRigMel != null)

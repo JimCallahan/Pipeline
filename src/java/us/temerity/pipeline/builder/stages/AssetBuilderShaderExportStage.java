@@ -50,8 +50,7 @@ class AssetBuilderShaderExportStage
   {
     super("AssetBuilderShaderExport", "Stage to build the shader export scene", context, mayaContext, nodeName, true, null,
       new PluginContext("MayaShaderExport"));
-    addLink(new LinkMod(shadeName, LinkPolicy.Dependency, LinkRelationship.All, null));
+    setMayaScene(shadeName);
     addSingleParam("SelectionPrefix", prefix);
-    addSingleParam("MayaScene", shadeName);
   }
 }

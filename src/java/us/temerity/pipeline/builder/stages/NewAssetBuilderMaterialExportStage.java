@@ -44,9 +44,7 @@ class NewAssetBuilderMaterialExportStage
           true,
           null,
           new PluginContext("MayaShaderExport"));
-    LinkMod mod = new LinkMod(matName, LinkPolicy.Dependency, LinkRelationship.All, null);
-    addLink(mod);
     addSingleParam("SelectionPrefix", "");
-    addSingleParam("MayaScene", matName);
+    setMayaScene(matName);
   }
 }

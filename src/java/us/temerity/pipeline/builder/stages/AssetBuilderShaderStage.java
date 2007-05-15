@@ -57,8 +57,7 @@ class AssetBuilderShaderStage
   {
     super("AssetBuilderShader", "Stage to build the shader scene", context, mayaContext, nodeName, true);
     setupLink(finalName, "final", MayaBuildStage.getReference(), true);
-    addLink(new LinkMod(shaderIncludeName, LinkPolicy.Reference, LinkRelationship.All,
-      null));
+    addLink(new LinkMod(shaderIncludeName, LinkPolicy.Reference));
     setModelMel(mrInitMel);
   }
 }
