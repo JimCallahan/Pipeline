@@ -173,7 +173,7 @@ public class JBuilderParamTreePanel
     SortedMap<String, BuilderParam> params = builder.getParamMap();
     
     createTreeNodes(treeName);
-    JBuilderParamPanel panel = new JBuilderParamPanel(builder.getName(), params, layout);
+    JBuilderParamPanel panel = new JBuilderParamPanel(builder, pass);
     pCardPanel.add(panel, panelName);
     for(BaseBuilder hbp : builder.getSubBuilders().values()) {
       uiHelper(hbp, treeName, panelName);
@@ -197,7 +197,7 @@ public class JBuilderParamTreePanel
    SortedMap<String, BuilderParam> params = hbp.getParamMap();
    
    createTreeNodes(newTreeName);
-   JBuilderParamPanel panel = new JBuilderParamPanel(hbp.getName(), params, layout);
+   JBuilderParamPanel panel = new JBuilderParamPanel(hbp, pass);
    pCardPanel.add(panel, newPanelName);
    if(hbp.allowsChildren()) {
       BaseBuilder builder = hbp;
