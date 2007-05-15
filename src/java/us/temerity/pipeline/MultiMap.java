@@ -81,9 +81,7 @@ class MultiMap<K, V>
     boolean leafOnly
   ) 
   {
-    LinkedList<K> keys = new LinkedList<K>();
-    keys.add(key);
-    return putValue(keys, value, leafOnly);
+    return putValue(listFromObject(key), value, leafOnly);
   }
   
   public V 
@@ -143,6 +141,26 @@ class MultiMap<K, V>
     List<K> keys
   )
   {
+    return getMap(keys).getLeafValue();
+  }
+  
+  public V 
+  getValue
+  (
+    K key
+  ) 
+  {
+    return getValue(listFromObject(key));
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  public MultiMap<K, V>
+  getMap
+  (
+    List<K> keys
+  )
+  {
     validateKeys(keys);
     MultiMap<K, V> old = this;
     MultiMap<K, V> current = null;
@@ -152,20 +170,18 @@ class MultiMap<K, V>
 	return null;
       old = current;
     }
-    return current.getLeafValue();
+    return current;
   }
   
-  public V 
-  getValue
+  public MultiMap<K, V>
+  getMap
   (
     K key
   ) 
   {
-    LinkedList<K> keys = new LinkedList<K>();
-    keys.add(key);
-    return getValue(keys);
+    return getMap(listFromObject(key));
   }
-
+  
   /*----------------------------------------------------------------------------------------*/
 
   public V
@@ -195,9 +211,7 @@ class MultiMap<K, V>
     K key
   )
   {
-    LinkedList<K> keys = new LinkedList<K>();
-    keys.add(key);
-    return removeValue(keys);  
+    return removeValue(listFromObject(key));  
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -233,6 +247,7 @@ class MultiMap<K, V>
   /*----------------------------------------------------------------------------------------*/
   /*   P R I V A T E   M E T H O D S                                                        */
   /*----------------------------------------------------------------------------------------*/
+  
   private void
   validateKeys
   (
@@ -265,6 +280,7 @@ class MultiMap<K, V>
     if (!entry.hasLeafValue() && entry.isEmpty())
       remove(key);
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -329,6 +345,7 @@ class MultiMap<K, V>
     }
   }
 
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
@@ -395,6 +412,23 @@ class MultiMap<K, V>
       newKeys.add(key);
       get(key).buildNamedEntries(store, newKeys);
     }
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   U T I L I T Y   M E T H O D S                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static <E> LinkedList<E>
+  listFromObject
+  (
+    E key
+  )
+  {
+    LinkedList<E> list = new LinkedList<E>();
+    list.add(key);
+    return list;
   }
   
   
