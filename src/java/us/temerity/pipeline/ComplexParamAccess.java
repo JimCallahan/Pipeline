@@ -115,7 +115,7 @@ interface ComplexParamAccess<E>
    * Sets the value of the parameter identified with the key.
    */
   @SuppressWarnings("unchecked")
-  public void 
+  public boolean 
   setValue
   (
     String key, 
@@ -126,7 +126,7 @@ interface ComplexParamAccess<E>
    * Sets the value of the nested parameter identified by the list of keys.
    */
   @SuppressWarnings("unchecked")
-  public void 
+  public boolean
   setValue
   (
     List<String> keys, 
@@ -139,9 +139,9 @@ interface ComplexParamAccess<E>
   /*   U P D A T E                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
-//  public boolean
-//  requiresUpdating();
-//  
+  public boolean
+  requiresUpdating();
+
 //  public void
 //  valuesUpdated();
   

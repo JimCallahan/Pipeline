@@ -1,4 +1,4 @@
-// $Id: ListParam.java,v 1.3 2007/04/02 21:45:49 jesse Exp $
+// $Id: ListParam.java,v 1.4 2007/05/15 06:13:43 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -218,6 +218,18 @@ class ListParam<E>
 	toReturn.put(name, false);
     }
     return toReturn;
+  }
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U P D A T E                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  protected boolean
+  needsUpdating()
+  {
+    return false;
   }
   
   

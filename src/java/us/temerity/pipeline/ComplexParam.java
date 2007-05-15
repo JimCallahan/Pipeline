@@ -2,7 +2,6 @@ package us.temerity.pipeline;
 
 import java.util.*;
 
-import us.temerity.pipeline.builder.BaseUtil;
 import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
@@ -49,7 +48,6 @@ class ComplexParam<E>
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-
   /**
    * Adds a parameter to this complex parameters.
    * 
@@ -74,7 +72,17 @@ class ComplexParam<E>
     pParams.put(paramName, param);
   }
   
-  public final void
+  /**
+   * Replaces an existing parameter with a new one.
+   * <p>
+   * This is a name based replacement. So if the new parameter you pass in has the name 'foo',
+   * the existing parameter with the name 'foo' will be removed and the new parameter will be
+   * added in its place.
+   * <p>
+   * If there is no parameter that exists with the name 'foo', then this method will perform
+   * similarly to addParam.
+   */
+  public final E
   replaceParam
   (
     E param
@@ -85,8 +93,9 @@ class ComplexParam<E>
       ("A Complex Parameter can only contain instances of BaseParam");
     BaseParam base = (BaseParam) param;
     String paramName = base.getName();
-    pParams.remove(paramName);
+    E old = pParams.remove(paramName);
     pParams.put(paramName, param);
+    return old;
   }
   
   /**
@@ -98,7 +107,7 @@ class ComplexParam<E>
     String key
   )
   {
-    return getParam(BaseUtil.listFromString(key));
+    return getParam(listFromObject(key));
   }
 
   /**
@@ -136,13 +145,13 @@ class ComplexParam<E>
    * Gets the value of the parameter identified by the key.
    */
   @SuppressWarnings("unchecked")
-  public Comparable
+  public final Comparable
   getValue
   (
     String key
   )
   {
-    return getValue(BaseUtil.listFromString(key));
+    return getValue(listFromObject(key));
   }
   
   /**
@@ -175,25 +184,25 @@ class ComplexParam<E>
   /**
    *  Returns a list of all the Parameters in this Complex Parameter with their names as keys. 
    */
-  public TreeMap<String, E> 
+  public final TreeMap<String, E> 
   getParams()
   {
     return pParams;
   }
   
   @SuppressWarnings("unchecked")
-  public void 
+  public final boolean 
   setValue
   (
     String key, 
     Comparable value
   )
   {
-    setValue(BaseUtil.listFromString(key), value);
+    return setValue(listFromObject(key), value);
   }
   
   @SuppressWarnings("unchecked")
-  public void 
+  public final boolean
   setValue
   (
     List<String> keys, 
@@ -208,27 +217,29 @@ class ComplexParam<E>
       if(param instanceof SimpleParamAccess) {
 	SimpleParamAccess simple = (SimpleParamAccess) param;
 	simple.setValue(value);
-	return;
+	return valueUpdated(listFromObject(key));
       }
       throw new IllegalArgumentException
         ("Attempt to call setValue() on a parameter that is not a simple parameter.");
     }
 
     ComplexParamAccess<E> param = getComplexParam(key);
-    param.setValue(newKeys, value);
-    valueUpdated(key);
+    boolean returned = param.setValue(newKeys, value);
+    if (requiresUpdating())
+      return (valueUpdated(listFromObject(key)) || returned);
+    return returned;
   }
   
-  public boolean 
+  public final boolean 
   hasParam
   (
     String key
   )
   {
-    return hasParam(BaseUtil.listFromString(key));
+    return hasParam(listFromObject(key));
   }
 
-  public boolean 
+  public final boolean 
   hasParam
   (
     List<String> keys
@@ -248,16 +259,16 @@ class ComplexParam<E>
     return param.hasParam(newKeys);
   }
   
-  public boolean 
+  public final boolean 
   hasSimpleParam
   (
     String key
   )
   {
-    return hasSimpleParam(BaseUtil.listFromString(key));
+    return hasSimpleParam(listFromObject(key));
   }
   
-  public boolean 
+  public final boolean 
   hasSimpleParam
   (
     List<String> keys
@@ -284,20 +295,20 @@ class ComplexParam<E>
    * Is there a Simple Parameter which implements {@link SimpleParamFromString} 
    * identified with this key? 
    */
-  public boolean 
+  public final boolean 
   canSetSimpleParamFromString
   (
     String key
   )
   {
-    return hasSimpleParam(BaseUtil.listFromString(key));
+    return canSetSimpleParamFromString(listFromObject(key));
   }
 
   /**
    * Is there a nested Simple Parameter which implements {@link SimpleParamFromString} 
    * identified by this list of keys? 
    */
-  public boolean 
+  public final boolean 
   canSetSimpleParamFromString
   (
     List<String> keys
@@ -320,7 +331,7 @@ class ComplexParam<E>
     return param.hasParam(newKeys);
   }
 
-  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   U P D A T E                                                                          */
@@ -330,19 +341,50 @@ class ComplexParam<E>
    * This method needs to be overwritten if the Parameter has to adjust some of its values
    * when some of its other values have changed.
    * <p>
-   * By default it does nothing.
+   * By default it does nothing.  This method gets called by setValue.  There should never
+   * be a need for this method to be called directly.
    * 
    * @param paramName The name of the parameter that has been changed.
    */
-  protected void
+  protected boolean
   valueUpdated
   (
     @SuppressWarnings("unused")
-    String paramName
+    List<String> paramName
   )
-  {}
+  {
+    return false;
+  }
   
-
+  /**
+   * Method that can be called to check if this Complex Parameter needs to have its values
+   * updated after its values have been changed.
+   * <p>
+   * This method is used by Builders in the the GUI mode to know which parameters need to have
+   * ActionListeners assigned to them. This method works by first querying the
+   * {@link #needsUpdating()} method of the current ComplexParameter and then recursing down
+   * into any Complex Parameters that are nested inside this one.
+   */
+  @SuppressWarnings("unchecked")
+  public final boolean
+  requiresUpdating()
+  {
+    if(needsUpdating() == true)
+      return true;
+    for (E param : pParams.values()) {
+      if(!(param instanceof SimpleParamAccess)) {
+	ComplexParamAccess<E> complex = (ComplexParamAccess<E>) param;
+	if (complex.requiresUpdating() == true)
+	  return true;
+      }
+    }
+    return false;
+  }
+  
+  protected abstract boolean
+  needsUpdating();
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   L A Y O U T                                                                          */
@@ -461,6 +503,24 @@ class ComplexParam<E>
     }
     return toReturn;
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   U T I L I T Y   M E T H O D S                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static <E> LinkedList<E>
+  listFromObject
+  (
+    E key
+  )
+  {
+    LinkedList<E> list = new LinkedList<E>();
+    list.add(key);
+    return list;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
