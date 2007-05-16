@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.87 2007/05/14 16:22:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.88 2007/05/16 22:32:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1293,7 +1293,7 @@ class JNodeViewerPanel
     pCheckInItem.setEnabled(nodePrivileged);
     pCheckOutItems[2].setEnabled(hasCheckedIn && nodePrivileged);
     pLockItems[2].setEnabled(hasCheckedIn && nodePrivileged);
-    pReleaseItems[1].setEnabled(pPrivilegeDetails.isMasterAdmin());
+    pReleaseItems[1].setEnabled(nodePrivileged);
     pDeleteItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
 
     pEvolveItem.setEnabled(hasCheckedIn && nodePrivileged);
