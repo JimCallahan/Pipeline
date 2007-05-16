@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.39 2007/05/14 16:22:01 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.40 2007/05/16 13:14:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2054,7 +2054,7 @@ class JNodeDetailsPanel
     }
 
     /* job requirements panel */ 
-    updateJobRequirements(false);
+    updateJobRequirements(false, true);
   }
 
   /**
@@ -2127,7 +2127,7 @@ class JNodeDetailsPanel
     }
 
     /* job requirements panel */ 
-    updateJobRequirements(false); 
+    updateJobRequirements(false, false); 
   }
 
 
@@ -2811,7 +2811,8 @@ class JNodeDetailsPanel
   private void 
   updateJobRequirements
   (
-   boolean modified
+   boolean modified, 
+   boolean initialize
   )
   {
     BaseAction waction = getWorkingAction();
@@ -2839,7 +2840,7 @@ class JNodeDetailsPanel
 
       /* overflow policy */ 
       {
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingOverflowPolicyField.removeActionListener(this);
 	  if(waction != null) {
 	    OverflowPolicy policy = work.getOverflowPolicy();
@@ -2874,7 +2875,7 @@ class JNodeDetailsPanel
 
       /* execution method */ 
       {
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingExecutionMethodField.removeActionListener(this);
 	  if(waction != null) {
 	    ExecutionMethod method = work.getExecutionMethod();
@@ -2909,7 +2910,7 @@ class JNodeDetailsPanel
 
       /* batch size */ 
       { 
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingBatchSizeField.removeActionListener(this);
 	  {
 	    if(waction != null) 
@@ -2930,7 +2931,7 @@ class JNodeDetailsPanel
 
       /* priority */ 
       { 
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingPriorityField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -2956,7 +2957,7 @@ class JNodeDetailsPanel
 
       /* ramp-up interval */ 
       { 
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingRampUpField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -2982,7 +2983,7 @@ class JNodeDetailsPanel
 
       /* maximum load */ 
       { 
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingMaxLoadField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -3008,7 +3009,7 @@ class JNodeDetailsPanel
 
       /* minimum memory */ 
       { 
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingMinMemoryField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -3035,7 +3036,7 @@ class JNodeDetailsPanel
 
       /* minimum disk */ 
       { 
-	if(modified) {
+	if(modified || initialize) {
 	  pWorkingMinDiskField.removeActionListener(this);
 	  {
 	    if(wjreq != null) 
@@ -4297,7 +4298,7 @@ class JNodeDetailsPanel
     updateActionParams(true);
     updateActionColors();
 
-    updateJobRequirements((oaction == null) && (getWorkingAction() != null));
+    updateJobRequirements((oaction == null) && (getWorkingAction() != null), false);
   }
 
   /**
@@ -4366,7 +4367,7 @@ class JNodeDetailsPanel
       updateActionColors();
     }
 
-    updateJobRequirements((oaction == null) && (getWorkingAction() != null));
+    updateJobRequirements((oaction == null) && (getWorkingAction() != null), false);
   }
   
 
