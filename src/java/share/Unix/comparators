@@ -10,20 +10,28 @@ ComparatorMenuLayout <PluginMenuLayout> #1 {
       Vendor <String> #9 { "Temerity" }
     }
     <PluginMenuLayout> #10 {
-      Title <String> #11 { "GimpDiff" }
-      Name <String> #12 { "GimpDiff" }
+      Title <String> #11 { "NukeDiff" }
+      Name <String> #12 { "NukeDiff" }
       VersionID <VersionID> #13 {
         RevisionNumber <String> #14 { "2.2.1" }
       }
       Vendor <String> #15 { "Temerity" }
     }
     <PluginMenuLayout> #16 {
-      Title <String> #17 { "TextDiff" }
-      Name <String> #18 { "TextDiff" }
+      Title <String> #17 { "GimpDiff" }
+      Name <String> #18 { "GimpDiff" }
       VersionID <VersionID> #19 {
         RevisionNumber <String> #20 { "2.2.1" }
       }
       Vendor <String> #21 { "Temerity" }
+    }
+    <PluginMenuLayout> #22 {
+      Title <String> #23 { "TextDiff" }
+      Name <String> #24 { "TextDiff" }
+      VersionID <VersionID> #25 {
+        RevisionNumber <String> #26 { "2.2.1" }
+      }
+      Vendor <String> #27 { "Temerity" }
     }
   }
 }
