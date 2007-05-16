@@ -1,4 +1,4 @@
-// $Id: ShakeDiffComparator.java,v 1.1 2007/04/07 01:07:08 jim Exp $
+// $Id: ShakeDiffComparator.java,v 1.2 2007/05/16 13:15:17 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S H A K E   C O M P A R A T O R                                                        */
+/*   S H A K E   D I F F   C O M P A R A T O R                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
