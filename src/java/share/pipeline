@@ -329,17 +329,6 @@ SuffixEditors <TreeSet> #1 {
       Vendor <REF> #9
     }
   }
-  <SuffixEditor> #196 {
-    Suffix <String> #197 { "max" }
-    Description <String> #198 { "3dsmax scene file." }
-    Editor <BaseEditor> #199 {
-      Name <String> #200 { "3dsMax" }
-      VersionID <VersionID> #201 {
-        RevisionNumber <String> #202 { "2.2.1" }
-      }
-      Vendor <REF> #9
-    }
-  }
   <SuffixEditor> #203 {
     Suffix <String> #204 { "mb" }
     Description <String> #205 { "Maya scene file (binary)." }
