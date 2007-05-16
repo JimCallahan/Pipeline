@@ -1,4 +1,4 @@
-// $Id: NukeActionUtils.java,v 1.1 2007/05/13 10:25:10 jim Exp $
+// $Id: NukeActionUtils.java,v 1.2 2007/05/16 13:12:26 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -60,17 +60,16 @@ class NukeActionUtils
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Convert a Pipeline file sequence into a Nuke file pattern string.
+   * Convert a Pipeline file pattern into a Nuke file pattern string.
    */ 
   public static final String
-  toNukeSeq
+  toNukeFilePattern
   (
-   FileSeq fseq
+   FilePattern fpat
   ) 
   {
     StringBuilder buf = new StringBuilder();
 
-    FilePattern fpat = fseq.getFilePattern();
     buf.append(fpat.getPrefix()); 
 
     if(fpat.hasFrameNumbers()) {
@@ -85,6 +84,23 @@ class NukeActionUtils
     return buf.toString();
   }
 
+  /**
+   * Convert a Pipeline frame range into a Nuke frame range string.
+   */ 
+  public static final String
+  toNukeFrameRange
+  (
+   FrameRange range
+  ) 
+  {
+    if(range.isSingle()) 
+      return Integer.toString(range.getStart());
+    else if(range.getBy() == 1) 
+      return (range.getStart() + "," + range.getEnd());
+    else 
+      return (range.getStart() + "," + range.getEnd() + "," + range.getBy());
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
