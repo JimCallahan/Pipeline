@@ -1,4 +1,4 @@
-// $Id: NukeCompAction.java,v 1.2 2007/05/14 16:18:24 jim Exp $
+// $Id: NukeCompAction.java,v 1.3 2007/05/16 13:12:53 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -136,9 +136,9 @@ class NukeCompAction
     }
 
     /* all target file sequences in Nuke notation */ 
-    TreeSet<String> targetNukeSeqs = new TreeSet<String>();
+    TreeSet<String> targetNukePatterns = new TreeSet<String>();
     for(FileSeq fseq : agenda.getTargetSequences()) 
-      targetNukeSeqs.add(toNukeSeq(fseq));
+      targetNukePatterns.add(toNukeFilePattern(fseq.getFilePattern()));
 
     /* create a temporary Nuke script based on the source script which is modified to: 
        + insure that all file paths are prefixed with "WORKING" (see above) 
@@ -185,7 +185,7 @@ class NukeCompAction
             if(isWrite) {
               Path path = new Path(file.substring(7));
               String npat = path.getName();
-              if(targetNukeSeqs.contains(npat)) {
+              if(targetNukePatterns.contains(npat)) {
                 out.write(" file ./" + npat + "\n"); 
                 wasWritten = true;
               }

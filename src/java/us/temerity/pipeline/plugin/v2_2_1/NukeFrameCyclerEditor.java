@@ -1,4 +1,4 @@
-// $Id: NukeViewerEditor.java,v 1.2 2007/05/16 13:12:53 jim Exp $
+// $Id: NukeFrameCyclerEditor.java,v 1.1 2007/05/16 13:12:53 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -9,19 +9,25 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N U K E   V I E W E R   E D I T O R                                                    */
+/*   N U K E   F R A M E   C Y C L E R   E D I T O R                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Displays an image sequence using a Nuke viewer. <P> 
+ * Displays an image sequence using FrameCycler bundled with Nuke. <P> 
  * 
  * By default, this Editor launches the "Nuke4.6" binary.  This can be overridden by 
  * specifying an alternate binary with the NUKE_BINARY environmental variable in the 
  * Toolset used to run this Editor plugin. On Windows, the Nuke binary name should 
- * include the ".exe" extension.
+ * include the ".exe" extension.<P> 
+ * 
+ * By default, the "python" program is used by this Editor run feed the TCL required to 
+ * launch FrameCycler into Nuke. An alternative program can be specified by setting 
+ * PYTHON_BINARY in the Toolset environment to the name of the Python interpertor this 
+ * Editor should use.  When naming an alternative Python interpretor under Windows, make 
+ * sure to include the ".exe" extension in the program name.
  */
 public
-class NukeViewerEditor
+class NukeFrameCyclerEditor
   extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -29,14 +35,14 @@ class NukeViewerEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  NukeViewerEditor()
+  NukeFrameCyclerEditor()
   {
-    super("NukeViewer", new VersionID("2.2.1"), "Temerity",
-	  "Displays an image sequence using a Nuke viewer.", 
+    super("NukeFrameCycler", new VersionID("2.2.1"), "Temerity",
+	  "Displays an image sequence using FrameCycler bundled with Nuke.", 
 	  "Nuke4.6");
 
     addSupport(OsType.MacOS);
-    addSupport(OsType.Windows);
+    //addSupport(OsType.Windows);
   }
 
 
@@ -85,24 +91,90 @@ class NukeViewerEditor
     throws PipelineException
   {
     try {
+      FrameRange range = fseq.getFrameRange();
       FilePattern fpat = fseq.getFilePattern();
       if(fpat.getSuffix() == null) 
         throw new PipelineException
           ("The image sequence to be viewed (" + fseq + ") must have a image format suffix!");
 
+      /* create a temporary Nuke script to load the frames */ 
+      Path nukeScript = new Path(createTemp("nk"));
+      try {
+        FileWriter out = new FileWriter(nukeScript.toFile()); 
+
+        out.write
+          ("load framecycler_this.tcl\n" + 
+           "IrToken\n" + 
+           "exec $fc_path " + fpat + " "); 
+
+        if(range != null) 
+          out.write(range.getStart() + "-" + range.getEnd());
+
+        out.write("\n"); 
+
+        out.close();
+      } 
+      catch (IOException ex) {
+        throw new PipelineException
+          ("Unable to write temporary Nuke script (" + nukeScript + ") required by " + 
+           "the " + getName() + " Editor!\n" + 
+           ex.getMessage());
+      }
+
+      /* create a temporary Python script to run Nuke piping the script to STDIN */ 
+      File script = createTemp("py");
+      try {
+        FileWriter out = new FileWriter(script); 
+
+//      String nuke = null; 
+//      {
+//        String path = env.get("PATH"); 
+//        if(path == null) 
+//          throw new PipelineException
+//            ("Somehow the PATH environmental variable was not set!");
+//        ExecPath epath = new ExecPath(path);
+        
+//        String nukeProg = NukeActionUtils.getNukeProgram(env); 
+//        File nukeBinary = epath.which(nukeProg); 
+//        if(nukeBinary == null) {
+//          StringBuilder buf = new StringBuilder();
+//          buf.append("Unable to find the Nuke binary (" + nukeProg + ") using the PATH " + 
+//                     "defined by the Toolset environment!\n\n" +
+// 	          "The directories which make up the PATH are: \n");
+	 
+//          for(File edir : epath.getDirectories()) 
+//            buf.append("  " + edir + "\n");
+
+//          throw new PipelineException(buf.toString());
+//        }
+         
+//        nuke = CommonActionUtils.escPath(nukeBinary.getPath());
+//      }        
+
+        String nuke = NukeActionUtils.getNukeProgram(env); 
+
+        out.write
+          ("import subprocess\n" + 
+           "nuke = open('" + nukeScript + "', 'r')\n" + 
+           "p = subprocess.Popen(['" + nuke + "', '-t'], stdin=nuke)\n" + 
+           "p.communicate()\n");
+
+        out.close();
+      } 
+      catch (IOException ex) {
+        throw new PipelineException
+          ("Unable to write temporary Python script (" + script + ") required by " + 
+           "the " + getName() + " Editor!\n" + 
+           ex.getMessage());
+      }
+
       /* command line arguments */ 
       ArrayList<String> args = new ArrayList<String>();
-      args.add("-g");
-      args.add("-v");
-      args.add(NukeActionUtils.toNukeFilePattern(fpat));
+      args.add(script.getPath());
 
-      FrameRange range = fseq.getFrameRange();      
-      if(range != null) 
-        args.add(NukeActionUtils.toNukeFrameRange(range));
-      
-      String nuke = NukeActionUtils.getNukeProgram(env); 
+      String python = PythonActionUtils.getPythonProgram(env);
 
-      return new SubProcessLight(author, getName(), nuke, args, env, dir);
+      return new SubProcessLight(author, getName(), python, args, env, dir);
     }
     catch(Exception ex) {
       throw new PipelineException
@@ -151,7 +223,7 @@ class NukeViewerEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5067755326994537128L;
+  private static final long serialVersionUID = -3479250668021781442L;
 
 }
 

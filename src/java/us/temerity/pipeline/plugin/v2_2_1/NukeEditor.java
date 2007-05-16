@@ -1,8 +1,9 @@
-// $Id: NukeEditor.java,v 1.1 2007/05/13 10:25:10 jim Exp $
+// $Id: NukeEditor.java,v 1.2 2007/05/16 13:12:53 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*;
 
 import java.io.*;
 import java.util.*;
@@ -14,11 +15,6 @@ import java.util.*;
 /**
  * The Nuke compositing application from The Foundry. <P> 
  * 
- * By default, this Editor launches the "Nuke4.6" binary.  This can be overridden by 
- * specifying an alternate binary with the NUKE_BINARY environmental variable in the 
- * Toolset used to run this Editor plugin. On Windows, the Nuke binary name should 
- * include the ".exe" extension.<P> 
- *
  * All Read/Write nodes should have absolute file paths relative to the root working 
  * directory which start with the string "WORKING" in order to support portability of 
  * Nuke scripts between artists and operation sytems.  To enable the "WORKING" prefix to 
@@ -26,7 +22,12 @@ import java.util.*;
  * a "init.tcl" script as been provided with Pipeline in the "app-extra/nuke" directory 
  * where Pipeline is installed at your site.  You must either copy this script into the 
  * "plugin/user" directory of your Nuke installation or add Pipeline's "app-extra/nuke" 
- * directory to the NUKE_PATH defined in the Toolset using this plugin.
+ * directory to the NUKE_PATH defined in the Toolset using this plugin.<P> 
+ * 
+ * By default, this Editor launches the "Nuke4.6" binary.  This can be overridden by 
+ * specifying an alternate binary with the NUKE_BINARY environmental variable in the 
+ * Toolset used to run this Editor plugin. On Windows, the Nuke binary name should 
+ * include the ".exe" extension.<P> 
  */
 public
 class NukeEditor
@@ -91,13 +92,11 @@ class NukeEditor
       throw new PipelineException
         ("The " + getName() + " Editor can only edit a single Nuke script at a time!");
 
-    String nuke = env.get("NUKE_BINARY");
-    if((nuke == null) || (nuke.length() == 0)) 
-      nuke = getProgram();
-
     ArrayList<String> args = new ArrayList<String>();
     args.add("-g"); 
     args.add(fseq.getFile(0).toString());
+
+    String nuke = NukeActionUtils.getNukeProgram(env); 
 
     return new SubProcessLight(author, getName(), nuke, args, env, dir);
   }
