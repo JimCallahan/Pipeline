@@ -1,4 +1,4 @@
-// $Id: MaxScriptAction.java,v 1.3 2007/05/04 15:56:51 jim Exp $
+// $Id: MaxScriptAction.java,v 1.4 2007/05/17 16:54:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -220,21 +220,21 @@ class MaxScriptAction
       FileWriter out = new FileWriter(script); 
       
       if(sourceScene != null) 
-        out.write("loadMaxFile " + escPath(sourceScene) + 
-                  " useFileUnits:" + getSingleBooleanParamValue(aUseFileUnits) + "\n"); 
+        out.write("loadMaxFile \"" + escPath(sourceScene) + "\" " +
+                  "useFileUnits:" + getSingleBooleanParamValue(aUseFileUnits) + "\n"); 
       
       /* evaluate the MAXScripts */ 
       if(!sourceMsPaths.isEmpty()) {
 	for(LinkedList<Path> paths : sourceMsPaths.values()) {
 	  for(Path spath : paths) 
-	    out.write("include " + escPath(spath) + "\n");
+	    out.write("include \"" + escPath(spath) + "\"\n");
 	}
 	out.write("\n");
       }
       
       /* save the resulting file */ 
       if(targetScene != null) 
-	out.write("saveMAXFile " + escPath(targetScene) + "\n"); 
+	out.write("saveMAXFile \"" + escPath(targetScene) + "\"\n"); 
 
       /* all done */
       out.write("quitMax #noPrompt");
@@ -257,18 +257,6 @@ class MaxScriptAction
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Generate a MAXScript string to represent the given file path.
-   */ 
-  private String
-  escPath
-  (
-   Path path
-  ) 
-  {
-    return ("\"" + path.toOsString().replaceAll("\\\\", "\\\\\\\\") + "\"");
-  }
 
   /**
    * A helper method for generating MAXScript filenames.
