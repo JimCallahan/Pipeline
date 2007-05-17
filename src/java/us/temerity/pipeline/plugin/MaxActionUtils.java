@@ -1,4 +1,4 @@
-// $Id: MaxActionUtils.java,v 1.1 2007/05/02 03:19:02 jim Exp $
+// $Id: MaxActionUtils.java,v 1.2 2007/05/17 16:53:12 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -52,6 +52,62 @@ class MaxActionUtils
     super(name, vid, vendor, desc);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  M A X   S C R I P T S                                                                 */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a MAXScript fragment which loads the path configuration file for the given
+   * scene, makes sure all project directories exist and sets the current project. <P> 
+   * 
+   * The scene is assumed to live in a sub-directory called (scenes) of the main project
+   * directory. If a 3dsmax path configuration file with the same prefix as the scene 
+   * exists in the top-level project directory, it will be loaded before reinitializing
+   * and setting the project.  This way scene specific paths can be setup each time the 
+   * scene is loaded.
+   * 
+   * @param scene
+   *   The fully resolved 3dsmax scene.
+   */ 
+  public static final String 
+  getProjectInitScript
+  (
+   FileSeq scene
+  ) 
+    throws PipelineException
+  {
+    Path scenePath = new Path(scene.getFilePattern().getPrefix());
+    Path parentPath = scenePath.getParentPath();
+    if((parentPath == null) || !parentPath.getName().equals("scenes"))
+      throw new PipelineException
+        ("Cannot generate the MAXScript to initialize the 3dsmax scene (" + scene + ") " + 
+         "which must live under the (scenes) directory of a standard 3dsmax project " + 
+         "structure!");
+
+    Path projPath = parentPath.getParentPath(); 
+    if(projPath == null) 
+      throw new PipelineException
+        ("Cannot generate the MAXScript to initialize the 3dsmax scene (" + scene + ") " + 
+         "because the (scenes) directory containing the scene has no parent project " + 
+         "directory!");       
+
+    StringBuilder buf = new StringBuilder(); 
+    {
+      Path mxpPath = new Path(projPath, projPath.getName() + ".mxp");
+      if(mxpPath.toFile().isFile()) 
+        buf.append("pathConfig.load(\"" + escPath(mxpPath) + "\")\n");
+
+      String projStr = escPath(projPath);
+      buf.append("pathConfig.doProjectSetupStepsUsingDirectory(\"" + projStr + "\")\n");
+      
+      buf.append("pathConfig.setCurrentProjectFolder(\"" + projStr + "\")\n");
+    }
+
+    return buf.toString();
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
