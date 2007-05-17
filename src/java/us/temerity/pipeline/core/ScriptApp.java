@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.74 2007/04/15 13:37:11 jim Exp $
+// $Id: ScriptApp.java,v 1.75 2007/05/17 21:21:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3771,7 +3771,7 @@ class ScriptApp
 	}
 
 	if(sections.contains("link") && 
-	   ((mod != null) && mod.hasSources()) || ((vsn != null) && (vsn.hasSources()))) {
+	   (((mod != null) && mod.hasSources()) || ((vsn != null) && (vsn.hasSources())))) {
 	  
 	  buf.append
 	    ("\n\n" +
