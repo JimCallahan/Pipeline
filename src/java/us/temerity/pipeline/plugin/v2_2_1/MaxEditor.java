@@ -1,8 +1,9 @@
-// $Id: MaxEditor.java,v 1.4 2007/05/02 03:18:22 jim Exp $
+// $Id: MaxEditor.java,v 1.5 2007/05/17 16:54:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.*; 
 
 import java.util.*;
 import java.io.*;
@@ -83,19 +84,14 @@ class MaxEditor
         ("The " + getName() + " Editor can only edit a single file at a time!");
 
     try {
-      /* create a temporary MAXScript to setup the project paths */ 
+      /* create a temporary MAXScript to setup the project paths and load the scene */ 
       File script = createTemp("ms");
       try {
         FileWriter out = new FileWriter(script); 
         
-        Path current = new Path(dir);
-        if(!current.getName().equals("scenes"))
-          throw new PipelineException
-            ("The " + getName() + " Editor requires that the 3dsmax scene live in a " + 
-             "directory named (scenes) in order for the project paths to be set correctly!");
-
-        Path project = current.getParentPath();
-        out.write("pathConfig.setCurrentProjectFolder " + escPath(project) + "\n");
+        out.write
+          (MaxActionUtils.getProjectInitScript(fseq) + "\n" +
+           "loadMaxFile \"" + CommonActionUtils.escPath(fseq.getPath(0)) + "\"\n");
 
         out.close();
       } 
@@ -111,7 +107,6 @@ class MaxEditor
       args.add("-U");
       args.add("MAXScript");
       args.add(script.toString());
-      args.add(fseq.getPath(0).toOsString());
       
       return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
     }
@@ -156,25 +151,7 @@ class MaxEditor
       ("This method should never be called since the prep() method does not return (null)!");
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Generate a MAXScript string to represent the given file path.
-   */ 
-  private String
-  escPath
-  (
-   Path path
-  ) 
-  {
-    return ("\"" + path.toOsString().replaceAll("\\\\", "\\\\\\\\") + "\"");
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
