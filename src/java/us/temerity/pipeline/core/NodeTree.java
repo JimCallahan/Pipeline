@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.4 2007/04/25 22:15:08 jim Exp $
+// $Id: NodeTree.java,v 1.5 2007/05/18 22:45:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -111,6 +111,8 @@ class NodeTree
       if(wk < (comps.length-1)) {
 	if(entry == null) 
 	  return true;
+        else if(entry.isLeaf()) 
+          return false;         
       }
       else {
 	if(!checkSeqsOnly && (entry != null)) 
