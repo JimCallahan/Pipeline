@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.201 2007/04/25 22:15:08 jim Exp $
+// $Id: MasterMgr.java,v 1.202 2007/05/18 22:31:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1201,7 +1201,7 @@ class MasterMgr
       File dir = new File(pNodeDir, "downstream");
       if(dir.isDirectory()) 
 	throw new PipelineException
-	  ("Somehow the downstream links directory (" + dir + ") already exitsts!");
+	  ("Somehow the downstream links directory (" + dir + ") already exists!");
 
       if(!dir.mkdir()) 
 	throw new IllegalArgumentException
