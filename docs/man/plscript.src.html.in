@@ -4518,10 +4518,142 @@ Operations</span></span></h3>
 status of the target working node version (<span
  style="font-style: italic;">node-name</span>) in the working area (<span
  style="font-style: italic;">view-name</span>) owned by the user (<span
- style="font-style: italic;">user-name</span>).&nbsp; The <span
- style="font-weight: bold;">--brief</span> option specifies that an
+ style="font-style: italic;">user-name</span>).&nbsp; <br>
+<br>
+The <span style="font-weight: bold;">--brief</span> option specifies
+that an
 abreviated one line status should be printed instead of the default
-multiple line report for each node.<br>
+multiple line report for each node.&nbsp; The one line status is
+composed three fields: Overall Node State, Overall Queue State and Node
+Name.&nbsp; The Node/Queue states are represented by a single ASCII
+character.&nbsp; Here is a key to the meanings of these brief mode
+state characters: <br>
+<br>
+<div style="margin-left: 40px;">
+Overall Node State:<br>
+<br>
+</div>
+<table style="text-align: left; width: 250px; margin-left: 80px;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"P"</td>
+      <td style="vertical-align: top;">Pending<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"I"<br>
+      </td>
+      <td style="vertical-align: top;">Checked-In<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"="<br>
+      </td>
+      <td style="vertical-align: top;">Identical<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"K"<br>
+      </td>
+      <td style="vertical-align: top;">Modified Locks<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"L"<br>
+      </td>
+      <td style="vertical-align: top;">Modified Links<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"M"<br>
+      </td>
+      <td style="vertical-align: top;">Modified<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"O"<br>
+      </td>
+      <td style="vertical-align: top;">Needs Check-Out<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"C"<br>
+      </td>
+      <td style="vertical-align: top;">Conficted<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"?"<br>
+      </td>
+      <td style="vertical-align: top;">Missing<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"X"<br>
+      </td>
+      <td style="vertical-align: top;">Missing Newer<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<ul style="margin-left: 40px;">
+</ul>
+<div style="margin-left: 40px;">Overall Queue State:<br>
+<br>
+</div>
+<table style="text-align: left; width: 250px; margin-left: 80px;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"U"</td>
+      <td style="vertical-align: top;">Undefined<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"F"<br>
+      </td>
+      <td style="vertical-align: top;">Finished<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"S"<br>
+      </td>
+      <td style="vertical-align: top;">Stale<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"Q"<br>
+      </td>
+      <td style="vertical-align: top;">Queued<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"P"<br>
+      </td>
+      <td style="vertical-align: top;">Paused<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"R"<br>
+      </td>
+      <td style="vertical-align: top;">Running<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"A"<br>
+      </td>
+      <td style="vertical-align: top;">Aborted<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">"E"<br>
+      </td>
+      <td style="vertical-align: top;">Failed<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
 <br>
 By default, only the status of the given node is printed.&nbsp; If the <span
  style="font-weight: bold;">--upstream</span> option is specified, the
