@@ -1,10 +1,13 @@
+// $Id: AfterFXBuildAction.java,v 1.2 2007/05/19 13:34:51 jim Exp $
+
 package us.temerity.pipeline.plugin.v2_2_1;
-import java.io.*;
-import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.plugin.CommonActionUtils;
+
+import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A F T E R   F X   B U I L D   A C T I O N                                              */
@@ -80,8 +83,6 @@ class AfterFXBuildAction
     //addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
     removeSupport(OsType.Unix);
-    
-    underDevelopment();
   }
   
   
@@ -121,7 +122,8 @@ class AfterFXBuildAction
 	new IntegerActionParam
 	(aLevel, 
 	 "Which level of the comp the source should appear at.  " +
-	 "The higher the number, the closer to the top of the composition it will be layered.",
+	 "The higher the number, the closer to the top of the composition it will be " + 
+         "layered.",
 	 0);
       params.put(param.getName(), param);
     }
@@ -355,7 +357,7 @@ class AfterFXBuildAction
 	    String blendMode = (String) getSourceParamValue(sourceName, aBlendMode);
 
 	    out.println("{");
-	    out.println("  var f = new File(\"" + spath.toOsString().replaceAll("\\\\", "\\\\\\\\") + "\");");
+	    out.println("  var f = new File(\"" + escPath(spath) + "\");");
 	    out.println("  var importOptions = new ImportOptions (f);");
 	    out.println("  importOptions.importAs = ImportAsType.FOOTAGE;");
 	    if (sequence)
@@ -383,7 +385,7 @@ class AfterFXBuildAction
       }
       
       //out.println("{");
-      out.println("var f = new File(\"" + targetPath.toOsString().replaceAll("\\\\", "\\\\\\\\") + "\");");
+      out.println("var f = new File(\"" + escPath(targetPath) + "\");");
       out.println("app.project.save(f);");
       out.println("app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);");
       out.println("app.newProject();");
@@ -398,11 +400,12 @@ class AfterFXBuildAction
 	 "(" + agenda.getJobID() + ")!\n" +
 	 ex.getMessage());
     }
+
     {
       ArrayList<String> args = new ArrayList<String>();
       args.add("-m");
       args.add("-r");
-      args.add(script.getAbsolutePath());
+      args.add(script.getPath());
       
       return createSubProcess(agenda, "AfterFX.exe", args, outFile, errFile);
     }
@@ -417,27 +420,28 @@ class AfterFXBuildAction
   private static final long serialVersionUID = -435600151478672924L;
   
   // Single Params
-  public static final String aCompName = "CompName";
-  public static final String aCompFrameRate = "CompFrameRate";
+  public static final String aCompName       = "CompName";
+  public static final String aCompFrameRate  = "CompFrameRate";
   public static final String aCompPixelRatio = "CompPixelRatio";
-  public static final String aCompHeight = "CompHeight";
-  public static final String aCompWidth = "CompWidth";
+  public static final String aCompHeight     = "CompHeight";
+  public static final String aCompWidth      = "CompWidth";
   
   // Source Params
-  public static final String aFrameRate = "FrameRate";
-  public static final String aPixelRatio = "PixelRatio";
-  public static final String aAlphaMode = "AlphaMode";
+  public static final String aFrameRate        = "FrameRate";
+  public static final String aPixelRatio       = "PixelRatio";
+  public static final String aAlphaMode        = "AlphaMode";
   public static final String aPreMultiplyColor = "PreMultiplyColor";
-  public static final String aLevel = "Level";
-  public static final String aOrder = "Order";
-  public static final String aBlendMode = "BlendMode";
+  public static final String aLevel            = "Level";
+  public static final String aOrder            = "Order";
+  public static final String aBlendMode        = "BlendMode";
   
   // Options for AlphaMode
-  public static final String aIgnore = "IGNORE";
-  public static final String aStraight = "STRAIGHT";
+  public static final String aIgnore       = "IGNORE";
+  public static final String aStraight     = "STRAIGHT";
   public static final String aPreMultipled = "PREMULTIPLIED";
   
   // Options for PreMultiplyColor
   public static final String aWhite =  "White";
   public static final String aBlack = "Black";
+
 }

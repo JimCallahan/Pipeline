@@ -1,4 +1,4 @@
-// $Id: ExplorerEditor.java,v 1.1 2007/05/18 23:06:03 jim Exp $
+// $Id: ExplorerEditor.java,v 1.2 2007/05/19 13:34:51 jim Exp $
 
 package us.temerity.pipeline.plugin.v2_2_1;
 
@@ -94,7 +94,7 @@ public class ExplorerEditor
   {
     
     ArrayList<String> args = new ArrayList<String>();
-    args.add("/e," + dir.getAbsolutePath());
+    args.add("/e," + dir.getPath());
 
     return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
   }
