@@ -1,4 +1,4 @@
-// $Id: BooleanParam.java,v 1.7 2007/04/02 21:45:49 jesse Exp $
+// $Id: BooleanParam.java,v 1.8 2007/05/20 00:06:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,17 +82,20 @@ class BooleanParam
     String value
   )
   {
-    if (value == null)
-      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    if(value == null)
+      throw new IllegalArgumentException
+        ("Cannot set a Parameter value from a null string");
+
     Boolean booleanValue = null;
-    if ("false".equalsIgnoreCase(value))
+    if("false".equalsIgnoreCase(value) || "no".equalsIgnoreCase(value))
       booleanValue = Boolean.FALSE;
-    else if ("true".equalsIgnoreCase(value))
+    else if("true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value))
       booleanValue = Boolean.TRUE;
     else
       throw new IllegalArgumentException
         ("The value (" + value + ") passed into the fromString method cannot be parsed " +
          "as a boolean.");
+
     setValue(booleanValue);
   }
   
