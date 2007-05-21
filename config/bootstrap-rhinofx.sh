@@ -1,3 +1,3 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh rhinofx 070518 43000 43100
+../../src/pipeline/config/bootstrap.sh rhinofx 070521 43000 43100
