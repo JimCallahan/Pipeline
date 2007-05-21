@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.14 2007/03/28 19:31:03 jim Exp $
+// $Id: BaseArchiver.java,v 1.15 2007/05/21 17:51:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -221,10 +221,13 @@ class BaseArchiver
   }
   
 
-  /*----------------------------------------------------------------------------------------*/
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A R A M E T E R S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
-   * Does the action have any parameters?
+   * Does the archiver have any parameters?
    */ 
   public final boolean 
   hasParams()
