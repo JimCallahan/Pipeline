@@ -12,14 +12,14 @@ import us.temerity.pipeline.glue.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A collection of {@link AdvancedLayoutGroup}s and {@link LayoutGroup}s each one
- * representing a different pass of GUI display in a Builder.
+ * A collection of {@link AdvancedLayoutGroup AdvancedLayoutGroups} and
+ * {@link LayoutGroup LayoutGroups} each one representing a different pass of GUI display in a
+ * Builder.
  * <P>
- * Builders may wish to have multiple GUI displays, sometimes for clarity's sake and
- * sometimes 
+ * Builders may wish to have multiple GUI displays, sometimes for clarity's sake and sometimes
  * 
  * @author jesse clemens
- *
+ * 
  */
 public 
 class PassLayoutGroup
@@ -158,7 +158,9 @@ class PassLayoutGroup
     AdvancedLayoutGroup layout
   )
   {
-    Integer newPass = pEntries.lastKey() + 1;
+    Integer newPass = 1;
+    if (!pEntries.isEmpty())
+      newPass = pEntries.lastKey() + 1;
     pPassNames.put(newPass, passName);
     pEntries.put(newPass, layout);
     

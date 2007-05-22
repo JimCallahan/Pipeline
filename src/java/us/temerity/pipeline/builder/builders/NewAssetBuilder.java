@@ -123,6 +123,16 @@ class NewAssetBuilder
 	 null);
       addParam(param);
     }
+
+    configNamer(assetNames);
+    pAssetNames = (BuildsAssetNames) assetNames;
+    addSetupPass(new InformationLoop());
+    ConstructPass build = new BuildLoop();
+    ConstructPass finalize = new FinalizeLoop();
+    addConstuctPass(finalize);
+    addConstuctPass(build);
+    addPassDependency(build, finalize);
+    
     {
       AdvancedLayoutGroup layout = 
 	new AdvancedLayoutGroup
@@ -164,14 +174,6 @@ class NewAssetBuilder
       PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       setLayout(finalLayout);
     }
-    configNamer(assetNames);
-    pAssetNames = (BuildsAssetNames) assetNames;
-    addSetupPass(new InformationLoop());
-    ConstructPass build = new BuildLoop();
-    ConstructPass finalize = new FinalizeLoop();
-    addConstuctPass(finalize);
-    addConstuctPass(build);
-    addPassDependency(build, finalize);
   }
   
   

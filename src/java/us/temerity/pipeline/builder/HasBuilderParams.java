@@ -32,6 +32,11 @@ class HasBuilderParams
   {
     super(name, desc);
     
+    if (name.contains(" "))
+      throw new PipelineException
+      ("A class with Builder Parameters cannot have a space in its name, " +
+       "due to command-line parsing restrictions.  (" + name + ") is not a valid name.");
+    
     if (name.contains("-"))
       throw new PipelineException
       ("Due to command line parsing requirements, you cannot include the '-' character " +

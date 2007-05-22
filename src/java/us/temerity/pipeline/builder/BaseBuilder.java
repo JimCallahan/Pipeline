@@ -67,6 +67,7 @@ class BaseBuilder
     pPreppedBuilders = new TreeMap<String, BaseBuilder>();
     pGeneratedNames = new TreeMap<String, BaseNames>();
     pFirstLoopPasses = new ArrayList<SetupPass>();
+    pRemainingFirstLoopPasses = new LinkedList<SetupPass>();
     pSecondLoopPasses = new ArrayList<ConstructPass>();
     {
       UtilContext context = BaseUtil.getDefaultUtilContext();
@@ -96,8 +97,28 @@ class BaseBuilder
       addParam(param);
     }
     pCurrentPass = 1;
+    pInitialized = false;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   L A Y O U T                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  @Override
+  protected void
+  setLayout
+  (
+    PassLayoutGroup layout
+  )
+  {
+    int num = layout.getNumberOfPasses();
+    int setupNum = pFirstLoopPasses.size();
+    if (num > setupNum)
+      throw new IllegalArgumentException
+        ("There are more passes in the layout than SetupPasses exist for " +
+         "builder (" + getName() + ").");
+    super.setLayout(layout);
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -466,9 +487,18 @@ class BaseBuilder
   runGUI()
   {
     pCurrentBuilder = this;
+    pNextBuilder = null;
+    callHierarchy = new LinkedList<BaseBuilder>();
     SwingUtilities.invokeLater(new BuilderGuiThread(this));
   }
-  
+
+  public void
+  testGuiInit()
+  {
+    pCurrentBuilder = this;
+    pNextBuilder = null;
+    callHierarchy = new LinkedList<BaseBuilder>();
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -510,6 +540,7 @@ class BaseBuilder
     if (pass == null)
       throw new PipelineException("Cannot add a null SetupPass");
     pFirstLoopPasses.add(pass);
+    pRemainingFirstLoopPasses.add(pass);
     sLog.log(Kind.Bld, Level.Fine, 
       "Adding a SetupPass named (" + pass.getName() + ") to the " +
       "Builder identified by (" + getPrefixedName() + ")");
@@ -594,13 +625,17 @@ class BaseBuilder
     throws PipelineException
   {
     sLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
-    assignCommandLineParams();
     for (SetupPass pass : pFirstLoopPasses) {
+      assignCommandLineParams();
       pass.run();
-      for (String subBuilderName : pSubBuilders.keySet()) {
+      Iterator<String> subBuilders = pSubBuilders.keySet().iterator();
+      while (subBuilders.hasNext()) {
+	String subBuilderName = subBuilders.next();
 	initializeSubBuilder(subBuilderName);
 	BaseBuilder subBuilder = pSubBuilders.get(subBuilderName);
 	subBuilder.executeFirstLoop();
+	subBuilders.remove();
+	pPreppedBuilders.put(subBuilderName, subBuilder);
       }
       pCurrentPass++;
     }
@@ -929,8 +964,8 @@ class BaseBuilder
       if(state.equals(JobsState.InProgress)) {
         try {
           sLog.log(Kind.Ops, Level.Finer, 
-            "Sleeping for 5 seconds before checking jobs again.");
-          Thread.sleep(5000);
+            "Sleeping for 7 seconds before checking jobs again.");
+          Thread.sleep(7000);
         }
 	catch(InterruptedException e) {
           e.printStackTrace();
@@ -1085,6 +1120,103 @@ class BaseBuilder
   }
   
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  G U I   S P E C I F I C   M E T H O D S                                               */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public synchronized void
+  setAbort
+  (
+    boolean abort
+  )
+  {
+    pAbort = abort;
+  }
+  
+  public synchronized boolean
+  getNextSetupPass(boolean first) 
+    throws PipelineException
+  {
+    pNextSetupPass = null;
+    
+    if (pNextBuilder != null)
+      pCurrentBuilder = pNextBuilder;
+    
+    int totalPasses = pCurrentBuilder.pFirstLoopPasses.size();
+    int remainingPasses = pCurrentBuilder.pRemainingFirstLoopPasses.size();
+    
+    // This means that current builder has the next pass to get run.
+    if (totalPasses == remainingPasses && totalPasses > 0) {
+      if (first)
+	pCurrentBuilder.assignCommandLineParams();
+      pNextSetupPass = pCurrentBuilder.pRemainingFirstLoopPasses.poll();
+      if (pCurrentBuilder.pSubBuilders.size() > 0) {
+	initNextBuilder();
+      }
+    }
+    // This means the current pass is out of passes, so look at the first subbuilder.
+    else if (pCurrentBuilder.pSubBuilders.size() > 0) {
+      initNextBuilder();
+      getNextSetupPass(first);
+    }
+    // This means the current builder has passes left.
+    else if (pCurrentBuilder.pRemainingFirstLoopPasses.size() > 0) {
+      pCurrentBuilder.assignCommandLineParams();
+      pNextSetupPass = pCurrentBuilder.pRemainingFirstLoopPasses.poll();
+      if (pCurrentBuilder.pSubBuilders.size() > 0) {
+	initNextBuilder();
+      }
+    }
+    // No passes and no children
+    else {
+      // Are we in the middle of nested builders
+      if (callHierarchy.size() > 0) {
+	BaseBuilder parent = callHierarchy.poll();
+	parent.pSubBuilders.remove(pCurrentBuilder.getName());
+	parent.pPreppedBuilders.put(pCurrentBuilder.getName(), pCurrentBuilder);
+	pNextBuilder = parent;
+	getNextSetupPass(first);
+      }
+    }
+    return (pNextSetupPass != null);
+  }
+
+  private void 
+  initNextBuilder()
+    throws PipelineException
+  {
+    callHierarchy.addFirst(pCurrentBuilder);
+    String nextName = new TreeSet<String>(pCurrentBuilder.pSubBuilders.keySet()).first();
+    pNextBuilder = pCurrentBuilder.pSubBuilders.get(nextName);
+    pNextBuilder.assignCommandLineParams();
+    if (!pNextBuilder.pInitialized) {
+      pCurrentBuilder.initializeSubBuilder(nextName);
+      pNextBuilder.pInitialized = true;
+    }
+  }
+  
+  public synchronized void
+  runNextSetupPass() 
+    throws PipelineException
+  {
+    pNextSetupPass.run();
+    pCurrentBuilder.pCurrentPass++;
+  }
+  
+  public BaseBuilder
+  getCurrentBuilder()
+  {
+    return pCurrentBuilder;
+  }
+  
+  public SetupPass
+  getCurrentSetupPass()
+  {
+    return pNextSetupPass;
+  }
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   P A R S E R   M E T H O D S                                                          */
@@ -1258,7 +1390,29 @@ class BaseBuilder
   /*  G U I   S P E C I F I C   I N T E R N A L S                                           */
   /*----------------------------------------------------------------------------------------*/
 
-  private HasBuilderParams pCurrentBuilder;
+  private BaseBuilder pCurrentBuilder;
+  
+  private BaseBuilder pNextBuilder;
+  
+  /**
+   * Early termination variable for GUI mode.
+   * <p>
+   * This is checked each time before a ConstructPass is run.  If it is <code>true</code>, then
+   * a {@link PipelineException} is thrown and the pass is not run.  The Exception should
+   * end up triggering the error handling code.
+   */
+  private boolean pAbort;
+  
+  private boolean pInitialized;
+  
+  /**
+   * List of {@link SetupPass SetupPasses} which have not been run yet. 
+   */
+  private LinkedList<SetupPass> pRemainingFirstLoopPasses;
+  
+  private static LinkedList<BaseBuilder> callHierarchy;
+  
+  private SetupPass pNextSetupPass;
   
   
 
@@ -1350,6 +1504,12 @@ class BaseBuilder
       validatePhase();
       gatherPhase();
       initPhase();
+    }
+    
+    public String
+    toString()
+    {
+      return pDescription;
     }
     
     private static final long serialVersionUID = -2836639845295302403L;
@@ -1557,9 +1717,16 @@ class BaseBuilder
     run() 
     {  
       UIFactory.initializePipelineUI();
-      JBuilderParamDialog main = new JBuilderParamDialog(pBuilder);
-      main.initUI();
-      main.setVisible(true);
+      try {
+	getNextSetupPass(true);
+	JBuilderParamDialog main = new JBuilderParamDialog(pBuilder);
+	main.initUI();
+	main.setVisible(true);
+      }
+      catch (PipelineException e) {
+	System.err.println("Problem initializing builder in gui mode.\n" + e.getMessage());
+	System.exit(1);
+      }
     }
     
     private BaseBuilder pBuilder;

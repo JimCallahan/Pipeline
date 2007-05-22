@@ -35,7 +35,6 @@ class ShotBuilder
   @Override
   protected TreeSet<String> getNodesToCheckIn()
   {
-    // TODO Auto-generated method stub
     return null;
   }
   
