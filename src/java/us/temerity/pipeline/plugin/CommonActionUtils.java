@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.6 2007/05/14 13:13:10 jim Exp $
+// $Id: CommonActionUtils.java,v 1.7 2007/05/22 02:29:03 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -585,7 +585,761 @@ class CommonActionUtils
     return null;    
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O U R C E   P A R A M E T E R   L O O K U P                                        */
+  /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * Get the selected index of the single valued source Enum parameter with the given name.<P> 
+   * 
+   * @param source
+   *   The name of the source.
+   *   
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists.
+   */ 
+  public final int
+  getSourceEnumParamIndex
+  (
+    String source,
+    String name   
+  ) 
+    throws PipelineException
+  {
+    EnumActionParam param = (EnumActionParam) getSourceParam(source, name);
+    if(param == null) 
+      throw new PipelineException
+        ("There is no Action parameter named (" + name + ")!");
+      
+    return param.getIndex();
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null source Boolean parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists.
+   */ 
+  public final boolean
+  getSourceBooleanParamValue
+  (
+    String source,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getSourceParamValue(source, name);  
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    return value;
+  }  
+
+  /** 
+   * Get the value of the single valued source Boolean parameter with the given name.<P> 
+   * 
+   * If <CODE>null</CODE> value is treated as <CODE>false</CODE>.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists.
+   */ 
+  public final boolean
+  getSourceOptionalBooleanParamValue
+  (
+    String source,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getSourceParamValue(source, name);
+    return ((value != null) && value);
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null source Long parameter with the given name.<P> 
+   * 
+   * This method can be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final long
+  getSourceLongParamValue
+  (
+    String source,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    return getSourceLongParamValue(source, name, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null source Long parameter with 
+   * the given name. <P> 
+   * 
+   * This method can also be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final long
+  getSourceLongParamValue
+  (
+    String source,
+    String name,   
+    Range<Long> range
+  ) 
+    throws PipelineException
+  {
+    Long value = (Long) getSourceParamValue(source, name);
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null source Integer parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final int
+  getSourceIntegerParamValue
+  (
+    String source,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    return getSourceIntegerParamValue(source, name, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null source Integer parameter with 
+   * the given name. <P> 
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final int
+  getSourceIntegerParamValue
+  (
+    String source,
+    String name, 
+    Range<Integer> range
+  ) 
+    throws PipelineException
+  {
+    Integer value = (Integer) getSourceParamValue(source, name);
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null source Double parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final double
+  getSourceDoubleParamValue
+  (
+    String source,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    return getSourceDoubleParamValue(source, name, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null source Double parameter with 
+   * the given name. <P> 
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final double
+  getSourceDoubleParamValue
+  (
+    String source,
+    String name,   
+    Range<Double> range
+  ) 
+    throws PipelineException
+  {
+    Double value = (Double) getSourceParamValue(source, name);
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued source String parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value or 
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists.
+   */ 
+  public final String
+  getSourceStringParamValue
+  (
+    String source,
+    String name     
+  ) 
+    throws PipelineException
+  { 
+    String value = (String) getSourceParamValue(source, name);
+    if((value != null) && (value.length() > 0))
+      return value;
+
+    return null;    
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E C O N D A R Y   S O U R C E   P A R A M E T E R   L O O K U P                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the selected index of the single valued secondary source Enum parameter with the 
+   * given name.<P> 
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence. 
+   *  
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists.
+   */ 
+  public final int
+  getSecondarySourceEnumParamIndex
+  (
+    String source,
+    FilePattern fpat,
+    String name   
+  ) 
+    throws PipelineException
+  {
+    EnumActionParam param = (EnumActionParam) getSecondarySourceParam(source, fpat, name);
+    if(param == null) 
+      throw new PipelineException
+        ("There is no Action parameter named (" + name + ")!");
+      
+    return param.getIndex();
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null secondary  source Boolean parameter with 
+   * the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists.
+   */ 
+  public final boolean
+  getSecondarySourceBooleanParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getSecondarySourceParamValue(source, fpat, name);  
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    return value;
+  }  
+
+  /** 
+   * Get the value of the single valued secondary source Boolean parameter with 
+   * the given name.<P> 
+   * 
+   * If <CODE>null</CODE> value is treated as <CODE>false</CODE>.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists.
+   */ 
+  public final boolean
+  getSecondarySourceOptionalBooleanParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getSecondarySourceParamValue(source, fpat, name);;
+    return ((value != null) && value);
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null secondary source Long parameter with the 
+   * given name.<P> 
+   * 
+   * This method can be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final long
+  getSecondarySourceLongParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    return getSecondarySourceLongParamValue(source, fpat, name, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null secondary source Long 
+   * parameter with the given name. <P> 
+   * 
+   * This method can also be used to retrieve ByteSizeActionParam values.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final long
+  getSecondarySourceLongParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name,   
+    Range<Long> range
+  ) 
+    throws PipelineException
+  {
+    Long value = (Long) getSecondarySourceParamValue(source, fpat, name);
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null secondary source Integer parameter with 
+   * the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final int
+  getSecondarySourceIntegerParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    return getSecondarySourceIntegerParamValue(source, fpat, name, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null secondary source Integer 
+   * parameter with the given name. <P> 
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final int
+  getSecondarySourceIntegerParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name, 
+    Range<Integer> range
+  ) 
+    throws PipelineException
+  {
+    Integer value = (Integer) getSecondarySourceParamValue(source, fpat, name);;
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null secondary source Double parameter with 
+   * the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final double
+  getSecondarySourceDoubleParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name     
+  ) 
+    throws PipelineException
+  {
+    return getSecondarySourceDoubleParamValue(source, fpat, name, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null secondary source Double 
+   * parameter with the given name. <P> 
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final double
+  getSecondarySourceDoubleParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name,   
+    Range<Double> range
+  ) 
+    throws PipelineException
+  {
+    Double value = (Double) getSecondarySourceParamValue(source, fpat, name);
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued secondary source String parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value or 
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists.
+   */ 
+  public final String
+  getSecondarySourceStringParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name     
+  ) 
+    throws PipelineException
+  { 
+    String value = (String) getSecondarySourceParamValue(source, fpat, name);
+    if((value != null) && (value.length() > 0))
+      return value;
+
+    return null;    
+  }
+
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   P A T H   G E N E R A T I O N                                                        */
