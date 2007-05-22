@@ -9,8 +9,7 @@ import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.BaseBuilder;
 import us.temerity.pipeline.builder.BaseBuilder.SetupPass;
 import us.temerity.pipeline.builder.HasBuilderParams.PrefixedName;
-import us.temerity.pipeline.ui.JFancyTree;
-import us.temerity.pipeline.ui.UIFactory;
+import us.temerity.pipeline.ui.*;
 
 
 public 
@@ -30,10 +29,10 @@ class JBuilderTopPanel
     BoxLayout layout = new BoxLayout(this, BoxLayout.X_AXIS);
     this.setLayout(layout);
     
-    jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
+    jSplitPane = new JHorzSplitPanel();
     jSplitPane.setDividerLocation(100);
     
-    jSecondSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
+    jSecondSplitPane = new JVertSplitPanel();
     jSecondSplitPane.setDividerLocation(.5);
     jSecondSplitPane.setResizeWeight(.5);
     

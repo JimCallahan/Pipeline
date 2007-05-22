@@ -606,6 +606,7 @@ public class JBuilderParamPanel
     
     scroll.setMinimumSize(size);
     scroll.setPreferredSize(size);
+    scroll.setMaximumSize(size);
 
     scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
     
@@ -647,7 +648,7 @@ public class JBuilderParamPanel
 
   private static final long serialVersionUID = -8771701862983719790L;
   private final static int sTSize = 175;
-  private final static int sVSize = 150;
+  private final static int sVSize = 175;
   
 
   
