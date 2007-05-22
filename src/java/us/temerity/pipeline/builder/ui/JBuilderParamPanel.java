@@ -50,7 +50,6 @@ public class JBuilderParamPanel
     if (layout.hasEntries()) {
       int numCol = layout.getNumberOfColumns();
       boolean multiColumn = ( numCol > 1) ? true : false; 
-      //Box topBox = new Box(BoxLayout.X_AXIS);
       
       for(int col : layout.getAllColumns()) {
         Box finalBox = new Box(BoxLayout.Y_AXIS);
@@ -60,9 +59,6 @@ public class JBuilderParamPanel
         Component comps[] = UIFactory.createTitledPanels();
         JPanel tpanel = (JPanel) comps[0];
         JPanel vpanel = (JPanel) comps[1];
-
-        JScrollPane scroll = 
-          makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 35, 100));
 
         boolean first = true;
         for(String pname : layout.getEntries(col)) {
@@ -88,15 +84,23 @@ public class JBuilderParamPanel
           finalBox.add(hbox);
         }
         
-
+        JScrollPane scroll = 
+          makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize, 100));
+        
         finalBox.add(UIFactory.createFiller(sTSize + sVSize));
 
-        JDrawer colDraw = new JDrawer(columnName, scroll, isOpen);  
+        JDrawer colDraw = new JDrawer(columnName, scroll, isOpen);
         this.add(colDraw);
         if(multiColumn && col < numCol)
           this.add(Box.createRigidArea(new Dimension(10, 0)));
       }
     }
+    Dimension size = new Dimension(sTSize + sVSize, 100);
+    this.setMinimumSize(size);
+    this.setPreferredSize(size);
+    this.setMaximumSize(size);
+    this.setAlignmentX(LEFT_ALIGNMENT);
+    this.setAlignmentY(TOP_ALIGNMENT);
   }
   
   @SuppressWarnings("unchecked")
