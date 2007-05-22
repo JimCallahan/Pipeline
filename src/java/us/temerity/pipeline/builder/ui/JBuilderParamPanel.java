@@ -37,6 +37,7 @@ public class JBuilderParamPanel
     throws PipelineException
   {
     super();
+    this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     
     pStorage = new DoubleMap<String, ParamMapping, Component>();
     pCompToParam = new ListMap<Component, ParamMapping>();
@@ -49,8 +50,7 @@ public class JBuilderParamPanel
     if (layout.hasEntries()) {
       int numCol = layout.getNumberOfColumns();
       boolean multiColumn = ( numCol > 1) ? true : false; 
-      Box topBox = new Box(BoxLayout.X_AXIS);
-      topBox.add(UIFactory.createSidebar());
+      //Box topBox = new Box(BoxLayout.X_AXIS);
       
       for(int col : layout.getAllColumns()) {
         Box finalBox = new Box(BoxLayout.Y_AXIS);
@@ -92,12 +92,10 @@ public class JBuilderParamPanel
         finalBox.add(UIFactory.createFiller(sTSize + sVSize));
 
         JDrawer colDraw = new JDrawer(columnName, scroll, isOpen);  
-        topBox.add(colDraw);
+        this.add(colDraw);
         if(multiColumn && col < numCol)
-          topBox.add(Box.createRigidArea(new Dimension(10, 0)));
+          this.add(Box.createRigidArea(new Dimension(10, 0)));
       }
-      topBox.add(UIFactory.createSidebar());
-      this.add(topBox); 
     }
   }
   

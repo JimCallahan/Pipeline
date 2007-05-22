@@ -57,12 +57,16 @@ class JBuilderTopPanel
       jSplitPane.setLeftComponent(pTreeCardPanel);
     }
     {
-      pFirstPassPanel = new JPanel();
-      pFirstPassLayouts = new CardLayout();
       Box hBox = new Box(BoxLayout.X_AXIS);
-      pFirstPassPanel.setLayout(pFirstPassLayouts);
-      hBox.add(pFirstPassPanel);
-      hBox.add(UIFactory.createFiller(5));
+      {
+	pFirstPassPanel = new JPanel();
+	pFirstPassLayouts = new CardLayout();
+        pFirstPassPanel.setLayout(pFirstPassLayouts);
+        pFirstPassPanel.setAlignmentX(LEFT_ALIGNMENT);
+        hBox.add(pFirstPassPanel);
+        hBox.add(UIFactory.createFiller(5));
+        hBox.setAlignmentX(LEFT_ALIGNMENT);
+      }
       
       JScrollPane scroll = new JScrollPane(hBox);
       scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
