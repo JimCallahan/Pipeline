@@ -5,16 +5,14 @@ package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
 import java.util.Enumeration;
-import java.util.SortedMap;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 
-import us.temerity.pipeline.AdvancedLayoutGroup;
 import us.temerity.pipeline.PipelineException;
-import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseBuilder;
 import us.temerity.pipeline.ui.JFancyTree;
 import us.temerity.pipeline.ui.UIFactory;
 import us.temerity.pipeline.ui.core.JUserPrefsTreeCellRenderer;
@@ -136,9 +134,9 @@ public class JBuilderParamTreePanel
 	scroll.setMaximumSize(new Dimension(410, Integer.MAX_VALUE));
 
 	scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	scroll.setVerticalScrollBarPolicy
-	(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
 	scroll.getVerticalScrollBar().setUnitIncrement(23);
 
@@ -168,9 +166,6 @@ public class JBuilderParamTreePanel
     String panelName = builder.getName();
     
     int pass = builder.getCurrentPass();
-    //TODO only display unmapped params.
-    AdvancedLayoutGroup layout = builder.getPassLayout(pass);
-    SortedMap<String, BuilderParam> params = builder.getParamMap();
     
     createTreeNodes(treeName);
     JBuilderParamPanel panel = new JBuilderParamPanel(builder, pass);
@@ -192,9 +187,6 @@ public class JBuilderParamTreePanel
    String newPanelName = panelName + " - " + hbp.getName();
    
    int pass = hbp.getCurrentPass();
-   //TODO fix this layout stuff.
-   AdvancedLayoutGroup layout = hbp.getPassLayout(pass);
-   SortedMap<String, BuilderParam> params = hbp.getParamMap();
    
    createTreeNodes(newTreeName);
    JBuilderParamPanel panel = new JBuilderParamPanel(hbp, pass);

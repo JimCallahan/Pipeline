@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.event.*;
 import java.util.*;
 
-import javax.crypto.spec.PSource;
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
@@ -40,7 +39,6 @@ public class JBuilderParamPanel
     super();
     
     pStorage = new DoubleMap<String, ParamMapping, Component>();
-    //pSource = new DoubleMap<String, ParamMapping, BuilderParam>();
     pCompToParam = new ListMap<Component, ParamMapping>();
     
     pBuilder = builder;
@@ -53,21 +51,18 @@ public class JBuilderParamPanel
       boolean multiColumn = ( numCol > 1) ? true : false; 
       Box topBox = new Box(BoxLayout.X_AXIS);
       topBox.add(UIFactory.createSidebar());
-      if (multiColumn)
-        topBox.add(Box.createRigidArea(new Dimension(10, 0)));
       
       for(int col : layout.getAllColumns()) {
         Box finalBox = new Box(BoxLayout.Y_AXIS);
-        
-        finalBox.add(UIFactory.createPanelLabel(layout.getColumnNameUI(col)  + ":"));
-        finalBox.add(Box.createRigidArea(new Dimension(0,3)));
+        String columnName = layout.getColumnNameUI(col);
+        boolean isOpen = layout.isOpen(col);
         
         Component comps[] = UIFactory.createTitledPanels();
         JPanel tpanel = (JPanel) comps[0];
         JPanel vpanel = (JPanel) comps[1];
 
         JScrollPane scroll = 
-          makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 52, 500));
+          makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 35, 100));
 
         boolean first = true;
         for(String pname : layout.getEntries(col)) {
@@ -85,14 +80,20 @@ public class JBuilderParamPanel
         } 
         finalBox.add(comps[2]);
         
-        for(LayoutGroup group : layout.getSubGroups(col)) 
-          buildSubGroup(params, group, finalBox, 1);
+        for(LayoutGroup group : layout.getSubGroups(col)) {
+          Box hbox = new Box(BoxLayout.X_AXIS);
+          hbox.addComponentListener(this);
+          hbox.add(UIFactory.createSidebar());
+          buildSubGroup(params, group, hbox, 1);
+          finalBox.add(hbox);
+        }
         
 
         finalBox.add(UIFactory.createFiller(sTSize + sVSize));
 
-        topBox.add(scroll);
-        if(multiColumn)
+        JDrawer colDraw = new JDrawer(columnName, scroll, isOpen);  
+        topBox.add(colDraw);
+        if(multiColumn && col < numCol)
           topBox.add(Box.createRigidArea(new Dimension(10, 0)));
       }
       topBox.add(UIFactory.createSidebar());
@@ -516,14 +517,14 @@ public class JBuilderParamPanel
    ComponentEvent e
   )
   {
-    Box box = (Box) e.getComponent();
-    
-    Dimension size = box.getComponent(1).getSize();
-
-    JPanel spacer = (JPanel) box.getComponent(0);
-    spacer.setMaximumSize(new Dimension(7, size.height));
-    spacer.revalidate();
-    spacer.repaint();
+//    Box box = (Box) e.getComponent();
+//    
+//    Dimension size = box.getComponent(1).getSize();
+//
+//    JPanel spacer = (JPanel) box.getComponent(0);
+//    spacer.setMaximumSize(new Dimension(7, size.height));
+//    spacer.revalidate();
+//    spacer.repaint();
   }
   
   /**
@@ -547,7 +548,6 @@ public class JBuilderParamPanel
   )
   {
     String command = e.getActionCommand();
-    System.out.println(command);
     
     Component source = (Component) e.getSource();
     ParamMapping mapping = pCompToParam.get(source);
@@ -556,12 +556,10 @@ public class JBuilderParamPanel
     
     if (update) {
       Map<ParamMapping, Component> comps = pStorage.get(command);
-      //Map<ParamMapping, BuilderParam> params = pSource.get(command);
       
       for (ParamMapping map : comps.keySet()) {
 	Component comp = comps.get(map);
 	BuilderParam param = pBuilder.getParam(map);
-	//pSource.put(map.getParamName(), map, param);
 	if (comp == source)
 	  continue;
 	if (comp instanceof JCollectionField) {
@@ -668,12 +666,6 @@ public class JBuilderParamPanel
    * A map of all the components in a builder pass indexed by the name of the parameters.
    */
   private DoubleMap<String, ParamMapping, Component> pStorage;
-  
-  /**
-   * A map of the all the builder params in a builder pass indexed by the name of the
-   * parameters.
-   */
-  //private DoubleMap<String, ParamMapping, BuilderParam> pSource;
   
   /**
    * A map of all the components and the parameters that correspond to them.

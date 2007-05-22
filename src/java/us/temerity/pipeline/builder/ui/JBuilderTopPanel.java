@@ -5,7 +5,12 @@ import java.awt.CardLayout;
 import javax.swing.*;
 
 import us.temerity.pipeline.LogMgr;
+import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.BaseBuilder;
+import us.temerity.pipeline.builder.BaseBuilder.SetupPass;
+import us.temerity.pipeline.builder.HasBuilderParams.PrefixedName;
+import us.temerity.pipeline.ui.JFancyTree;
+import us.temerity.pipeline.ui.UIFactory;
 
 
 public 
@@ -16,36 +21,101 @@ class JBuilderTopPanel
   public JBuilderTopPanel
   (
     BaseBuilder builder
-  )
+  ) 
+    throws PipelineException
   {
     super();
     pBuilder = builder;
     
-    jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false);
+    BoxLayout layout = new BoxLayout(this, BoxLayout.X_AXIS);
+    this.setLayout(layout);
+    
+    jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
     jSplitPane.setDividerLocation(100);
     
+    jSecondSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
+    jSecondSplitPane.setDividerLocation(.5);
+    jSecondSplitPane.setResizeWeight(.5);
+    
     {
-      pLogPanel = new JPanel();
       Box logBox = new Box(BoxLayout.X_AXIS);
-      pLogArea = new JTextArea(8, 0);
+      
+      pLogArea = new JTextArea(4, 0);
+      pLogArea.setWrapStyleWord(true);
+      pLogArea.setEditable(false);
+      pLogArea.setLineWrap(true);
+      logBox.add(pLogArea);
+      JScrollPane scroll = new JScrollPane(logBox);
       LogMgr.getInstance().logToTextArea(pLogArea);
-      jSplitPane.setTopComponent(logBox);
+      jSecondSplitPane.setBottomComponent(scroll);
     }
     {
-      JPanel cardPanel = new JPanel();
-      pCardLayout = new CardLayout();
-      cardPanel.setLayout(pCardLayout);
+      pTreeCardPanel = new JPanel();
+      pTreeCardLayout = new CardLayout();
+      pTreeCardPanel.setLayout(pTreeCardLayout);
       
-      jSplitPane.setBottomComponent(cardPanel);
+      jSplitPane.setLeftComponent(pTreeCardPanel);
     }
+    {
+      pFirstPassPanel = new JPanel();
+      pFirstPassLayouts = new CardLayout();
+      Box hBox = new Box(BoxLayout.X_AXIS);
+      pFirstPassPanel.setLayout(pFirstPassLayouts);
+      hBox.add(pFirstPassPanel);
+      hBox.add(UIFactory.createFiller(5));
+      
+      JScrollPane scroll = new JScrollPane(hBox);
+      scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+      jSecondSplitPane.setTopComponent(scroll);
+    }
+    {
+      jSplitPane.setRightComponent(jSecondSplitPane);
+    }
+    {
+      BaseBuilder theBuilder = pBuilder.getCurrentBuilder();
+      SetupPass pass = pBuilder.getCurrentSetupPass();
+      PrefixedName prefixName = new PrefixedName(theBuilder.getPrefixedName(), pass.getName());
+      int passNum = theBuilder.getCurrentPass();
+      
+      JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum);
+      pFirstPassPanel.add(paramPanel, prefixName.toString());
+      pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
+    }
+    this.add(jSplitPane);
+  }
+  
+  public void
+  addNextSetupPass() 
+    throws PipelineException
+  {
+    BaseBuilder theBuilder = pBuilder.getCurrentBuilder();
+    SetupPass pass = pBuilder.getCurrentSetupPass();
+    PrefixedName prefixName = new PrefixedName(theBuilder.getPrefixedName(), pass.getName());
+    int passNum = theBuilder.getCurrentPass();
+    JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum);
+    pFirstPassPanel.add(paramPanel, prefixName.toString());
+    pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
+  }
+  
+  public void
+  setLeftSplitDivider
+  (
+    double percentage 
+  )
+  {
+    jSecondSplitPane.setDividerLocation(percentage);
   }
   
   private BaseBuilder pBuilder;
-  private JPanel pLogPanel;
+  private JPanel pTreeCardPanel;
+  private JPanel pFirstPassPanel;
   private JTextArea pLogArea;
   private JSplitPane jSplitPane;
+  private JSplitPane jSecondSplitPane;
   
-  private CardLayout pCardLayout;
+  private CardLayout pTreeCardLayout;
+  
+  private JFancyTree pTree;
   
   private CardLayout pFirstPassLayouts;
   
