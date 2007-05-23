@@ -83,24 +83,20 @@ public class JBuilderParamPanel
           buildSubGroup(params, group, hbox, 1);
           finalBox.add(hbox);
         }
+
+        finalBox.add(UIFactory.createFiller(sTSize + sVSize));
+        
+        JDrawer colDraw = new JDrawer(columnName, finalBox, isOpen);
         
         JScrollPane scroll = 
-          makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize, 100));
+          makeInternalScrollPane(colDraw, new Dimension(sTSize + sVSize + 35, 100));
         
-        finalBox.add(UIFactory.createFiller(sTSize + sVSize));
-
-        JDrawer colDraw = new JDrawer(columnName, scroll, isOpen);
-        this.add(colDraw);
+        this.add(scroll);
         if(multiColumn && col < numCol)
-          this.add(Box.createRigidArea(new Dimension(10, 0)));
+          this.add(UIFactory.createSidebar());
       }
     }
-    Dimension size = new Dimension(sTSize + sVSize, 100);
-    this.setMinimumSize(size);
-    this.setPreferredSize(size);
-    this.setMaximumSize(size);
-    this.setAlignmentX(LEFT_ALIGNMENT);
-    this.setAlignmentY(TOP_ALIGNMENT);
+    this.add(UIFactory.createFiller(5));
   }
   
   @SuppressWarnings("unchecked")
@@ -610,7 +606,7 @@ public class JBuilderParamPanel
     
     scroll.setMinimumSize(size);
     scroll.setPreferredSize(size);
-    scroll.setMaximumSize(size);
+    scroll.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));
 
     scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
     

@@ -175,6 +175,7 @@ class JBuilderParamDialog
   {
     LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Warning, "The next button was pressed");
     disableAllButtons();
+    pTopPanel.listPanels();
     new RunSetupPassTask().start();
   }
   

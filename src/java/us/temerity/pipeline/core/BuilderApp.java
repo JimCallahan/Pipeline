@@ -47,7 +47,7 @@ public class BuilderApp
      "  builderName --license\n" + 
      "\n" + 
      "GLOBAL OPTIONS:\n" +
-     " [--log=...][--gui][--builder=...][--<paramName>=<paramValue>...]\n" +
+     " [--log=...][--abort][--gui][--builder=...][--<paramName>=<paramValue>...]\n" +
      "\n" + 
      "\n" +  
      "Use \"builderName --html-help\" to browse the full documentation.\n");
