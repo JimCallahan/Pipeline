@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.88 2007/05/16 22:32:51 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.89 2007/05/27 21:06:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3187,10 +3187,14 @@ class JNodeViewerPanel
    ActionEvent e
   ) 
   {
-    updateRecentNodeMenuItems(e);
+    String cmd = e.getActionCommand();
+
+    /* recent menu items */ 
+    if(!cmd.startsWith("remove-secondary:") && 
+       !cmd.startsWith("author-view:")) 
+      updateRecentNodeMenuItems(e);
 
     /* node menu events */ 
-    String cmd = e.getActionCommand();
     if(cmd.equals("details"))
       doDetails();  
     else if(cmd.equals("update-branch"))
