@@ -1,8 +1,9 @@
-// $Id: BaseArchiver.java,v 1.15 2007/05/21 17:51:49 jim Exp $
+// $Id: BaseArchiver.java,v 1.16 2007/05/28 13:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
-import  us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.*;
+
 
 import java.util.*;
 import java.io.*;
@@ -40,7 +41,6 @@ class BaseArchiver
   BaseArchiver() 
   {
     super();
-    
     pParams = new TreeMap<String,ArchiverParam>();
   }
 
@@ -69,7 +69,6 @@ class BaseArchiver
   ) 
   {
     super(name, vid, vendor, desc);
-
     pParams = new TreeMap<String,ArchiverParam>();
   }
 
@@ -86,7 +85,6 @@ class BaseArchiver
   ) 
   {
     super(archiver.pName, archiver.pVersionID, archiver.pVendor, archiver.pDescription);
-
     pParams = archiver.pParams;
   }
 
