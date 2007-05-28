@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.5 2007/05/18 22:45:18 jim Exp $
+// $Id: NodeTree.java,v 1.6 2007/05/28 19:17:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,7 +58,7 @@ class NodeTree
    FileSeq fseq
   ) 
   {
-    return isNodeSeqUnused(name, fseq, false);
+    return (getNodeReservingPrimary(name, fseq) == null); 
   }
 
   /** 
@@ -80,7 +80,7 @@ class NodeTree
    FileSeq fseq
   ) 
   {
-    return isNodeSeqUnused(name, fseq, true);
+    return (getNodeReservingSecondary(name, fseq) == null); 
   }
 
   /** 
@@ -103,27 +103,127 @@ class NodeTree
    boolean checkSeqsOnly 
   ) 
   {
+    return (getNodeReservingSeq(name, fseq, checkSeqsOnly) == null); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the name of the node which has already reserved the given primary sequence.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The file sequence to test.
+   * 
+   * @param checkSeqsOnly
+   *   Whether to only check the file sequences, ignoring node name conflicts.
+   * 
+   * @return 
+   *   The node already using the given sequence or <CODE>null</CODE> if unused.
+   */ 
+  public synchronized String
+  getNodeReservingPrimary
+  (
+   String name, 
+   FileSeq fseq
+  ) 
+  {
+    return getNodeReservingSeq(name, fseq, false);
+  }
+
+  /** 
+   * Get the name of the node which has already reserved the given secondary sequence.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The file sequence to test.
+   * 
+   * @param checkSeqsOnly
+   *   Whether to only check the file sequences, ignoring node name conflicts.
+   * 
+   * @return 
+   *   The node already using the given sequence or <CODE>null</CODE> if unused.
+   */ 
+  public synchronized String
+  getNodeReservingSecondary
+  (
+   String name, 
+   FileSeq fseq
+  ) 
+  {
+    return getNodeReservingSeq(name, fseq, true);
+  }
+
+  /** 
+   * Get the name of the node which has already reserved the given file sequence.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The file sequence to test.
+   * 
+   * @param checkSeqsOnly
+   *   Whether to only check the file sequences, ignoring node name conflicts.
+   * 
+   * @return 
+   *   The node already using the given sequence or <CODE>null</CODE> if unused.
+   */ 
+  public synchronized String
+  getNodeReservingSeq
+  (
+   String name, 
+   FileSeq fseq, 
+   boolean checkSeqsOnly 
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+
     String comps[] = name.split("/"); 
     NodeTreeEntry parent = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<comps.length; wk++) {
       NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
+      
+      if(entry != null) 
+        buf.append("/" + entry.getName());
+
       if(wk < (comps.length-1)) {
 	if(entry == null) 
-	  return true;
-        else if(entry.isLeaf()) 
-          return false;         
+	  return null;
+        else if(entry.isLeaf())
+          return buf.toString(); 
       }
       else {
+        /* ignore the existance of the primary seq for the node itself,
+             when testing secondary sequences */ 
 	if(!checkSeqsOnly && (entry != null)) 
-	  return false;
+          return (buf.toString() + " (or nodes prefixed by this path)");
 	
+        /* for each entry in the same directory as the node owning the seq being tested: 
+           + ignore entries which don't represent nodes in the current directory
+           + ignore existing seqs from the owning node, since NodeMod will catch these
+               if they are already on the current working version and this prevents 
+               false conflicts with the same seq on an existing checked-in version
+           + check file sequences on all other nodes for conflicts */ 
 	for(NodeTreeEntry child : parent.values()) {
-	  if(child.isLeaf() && !child.isSequenceUnused(fseq)) 
-	    return false;	      
+	  if(child.isLeaf() && 
+             !child.getName().equals(comps[wk]) &&  
+             !child.isSequenceUnused(fseq)) {
+            buf.append("/" + child.getName());
+            return buf.toString();
+          }
 	}
 	
-	return true;
+	return null; 
       }
       
       parent = entry;
@@ -133,9 +233,6 @@ class NodeTree
   }
 
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -249,10 +346,14 @@ class NodeTree
   ) 
     throws PipelineException
   {
-    if(!isNodePrimaryUnused(nodeID.getName(), primary)) 
+    String reserving = getNodeReservingPrimary(nodeID.getName(), primary);
+    if(reserving != null) 
       throw new PipelineException
-	("Cannot register node (" + nodeID.getName() + ") because its name conflicts " + 
-	 "with an existing node or one of its associated file sequences!");
+	("Cannot register node:\n\n" +
+         "  " + nodeID.getName() + "\n\n" + 
+         "The new node's name conflicts with one of the associated file sequences of the " + 
+         "existing node:\n\n" + 
+         "  " + reserving + "\n");
 	
     addWorkingNodeTreePath(nodeID, newSeqs);     
   }
@@ -301,18 +402,30 @@ class NodeTree
       String name  = oldID.getName();
       String nname = newID.getName();
 
-      if(!isNodePrimaryUnused(nname, primary)) 
-	throw new PipelineException
-	  ("Cannot rename node (" + name + ") to (" + nname + ") because the " + 
-	   "new primary sequence name (" + primary + ") conflicts with an existing " + 
-	   "node or one of its associated file sequences!");
+      {
+        String reserving = getNodeReservingPrimary(nname, primary);
+        if(reserving != null) 
+          throw new PipelineException
+            ("Cannot rename node:\n\n" +
+             "  " + oldID.getName() + "\n\n" + 
+             "To the new name:\n\n" + 
+             "  " + nname + "\n\n" +
+             "The new primary sequence name (" + primary + ") conflicts with one of the " + 
+             "associated file sequences of the existing node:\n\n" + 
+             "  " + reserving + "\n");
+      }
       
       for(FileSeq fseq : secondary) {
-	if(!isNodePrimaryUnused(nname, fseq)) 
+        String reserving = getNodeReservingPrimary(nname, fseq); 
+        if(reserving != null) 
 	  throw new PipelineException 
-	    ("Cannot rename node (" + oldID.getName() + ") to (" + nname + ") because the " + 
-	     "new secondary sequence name (" + fseq + ") conflicts with an existing " + 
-	     "node or one of its associated file sequences!");
+            ("Cannot rename node:\n\n" +
+             "  " + oldID.getName() + "\n\n" + 
+             "To the new name:\n\n" + 
+             "  " + nname + "\n\n" +
+             "The new secondary sequence name (" + fseq + ") conflicts with one of the " + 
+             "associated file sequences of the existing node:\n\n" + 
+             "  " + reserving + "\n");
       }
     }
     catch(PipelineException ex) {
@@ -347,11 +460,14 @@ class NodeTree
   ) 
     throws PipelineException
   {
-    if(!isNodeSecondaryUnused(nodeID.getName(), fseq))
+    String reserving = getNodeReservingSecondary(nodeID.getName(), fseq);
+    if(reserving != null) 
       throw new PipelineException
-	("Cannot add secondary file sequence (" + fseq + ") " + 
-	 "to node (" + nodeID.getName() + ") because its name conflicts with " + 
-	 "an existing node or one of its associated file sequences!");
+	("Cannot add secondary file sequence to node:\n\n" + 
+         "  " + nodeID.getName() + "\n\n" + 
+         "The new secondary sequence name (" + fseq + ") conflicts with one of the " + 
+         "associated file sequences of the existing node:\n\n" +
+         "  " + reserving + "\n");
     
     TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
     secondary.add(fseq);
