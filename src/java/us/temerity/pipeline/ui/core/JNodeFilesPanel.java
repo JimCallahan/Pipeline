@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.40 2007/05/14 16:22:01 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.41 2007/05/28 01:28:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -999,9 +999,15 @@ class JNodeFilesPanel
 
   /**
    * Update the node menu.
+   * 
+   * @param isIndividual
+   *   Whether the menu invked over an individual file label.
    */ 
   public void 
-  updateNodeMenu() 
+  updateNodeMenu
+  (
+   boolean isIndividual
+  ) 
   {
     boolean queuePrivileged = 
       (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isQueueManaged(pAuthor));
@@ -1009,13 +1015,21 @@ class JNodeFilesPanel
     boolean nodePrivileged = 
       (PackageInfo.sUser.equals(pAuthor) || pPrivilegeDetails.isNodeManaged(pAuthor));
 
+    boolean lightweight = false;
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) 
+        lightweight = details.isLightweight();
+    }
+
     pQueueJobsItem.setEnabled(queuePrivileged);
     pQueueJobsSpecialItem.setEnabled(queuePrivileged);
 
-    pPauseJobsItem.setEnabled(queuePrivileged);
-    pResumeJobsItem.setEnabled(queuePrivileged);
-    pPreemptJobsItem.setEnabled(queuePrivileged);
-    pKillJobsItem.setEnabled(queuePrivileged);
+    boolean queueOps = queuePrivileged && !(lightweight && isIndividual); 
+    pPauseJobsItem.setEnabled(queueOps); 
+    pResumeJobsItem.setEnabled(queueOps); 
+    pPreemptJobsItem.setEnabled(queueOps); 
+    pKillJobsItem.setEnabled(queueOps); 
 
     pRemoveFilesItem.setEnabled(nodePrivileged);  
 
@@ -1414,8 +1428,9 @@ class JNodeFilesPanel
 	  pTargetFileSeq   = null;
 	  pTargetVersionID = null;
 
-	  boolean hasWorking = false;
+	  boolean hasWorking      = false;
 	  boolean checkedInHeader = false;
+          boolean isIndividual    = false;
 
 	  if(source instanceof JFileBar) {
 	    JFileBar bar = (JFileBar) source;
@@ -1472,6 +1487,7 @@ class JNodeFilesPanel
 	      JFilePanel fpanel = (JFilePanel) parent;
 	      pTargetFileSeq = fpanel.getFileSeq();
 	      addSelect(fpanel.getFileIdx());
+              isIndividual = true;
 	    }
 	    else {
 	      return;
@@ -1482,17 +1498,17 @@ class JNodeFilesPanel
 	  }
 
 	  if((pTargetVersionID != null) && !checkedInHeader) {
-	    updateNodeMenu();
+	    updateNodeMenu(isIndividual);
 	    updateComparatorMenus();
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else if(pIsFrozen || checkedInHeader) {
-	    updateNodeMenu();
+	    updateNodeMenu(isIndividual);
 	    pFrozenPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else {
-	    updateNodeMenu();
+	    updateNodeMenu(isIndividual);
 	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	}
@@ -1934,35 +1950,36 @@ class JNodeFilesPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> pausedJobs    = new TreeSet<Long>();
+    if(!pIsFrozen && !pSelected.isEmpty()) {
+      TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
+      TreeSet<Long> pausedJobs    = new TreeSet<Long>();
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          pausedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-              assert(jobIDs[wk] != null);
-              pausedJobs.add(jobIDs[wk]);
+      if(pStatus != null) {
+        NodeDetails details = pStatus.getDetails();
+        if(details != null) {
+          if(details.isLightweight()) {
+            pausedNodes.add(pStatus.getNodeID());
+          }
+          else {
+            Long[] jobIDs   = details.getJobIDs();
+            QueueState[] qs = details.getQueueState();
+            assert(jobIDs.length == qs.length);
+            
+            for(Integer idx : pSelected) {
+              switch(qs[idx]) {
+              case Queued:
+                assert(jobIDs[idx] != null);
+                pausedJobs.add(jobIDs[idx]);
+              }
             }
           }
         }
       }
-    }
 
-    if(!pausedNodes.isEmpty() || !pausedJobs.isEmpty()) {
-      PauseJobsTask task = new PauseJobsTask(pausedNodes, pausedJobs);
-      task.start();
+      if(!pausedNodes.isEmpty() || !pausedJobs.isEmpty()) {
+        PauseJobsTask task = new PauseJobsTask(pausedNodes, pausedJobs);
+        task.start();
+      }
     }
   }
 
@@ -1975,35 +1992,36 @@ class JNodeFilesPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> resumedJobs    = new TreeSet<Long>();
-
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          resumedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
+    if(!pIsFrozen && !pSelected.isEmpty()) {
+      TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
+      TreeSet<Long> resumedJobs    = new TreeSet<Long>();
+      
+      if(pStatus != null) {
+        NodeDetails details = pStatus.getDetails();
+        if(details != null) {
+          if(details.isLightweight()) {
+            resumedNodes.add(pStatus.getNodeID());
+          }
+          else {
+            Long[] jobIDs   = details.getJobIDs();
+            QueueState[] qs = details.getQueueState();
+            assert(jobIDs.length == qs.length);
           
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Paused:
-              assert(jobIDs[wk] != null);
-              resumedJobs.add(jobIDs[wk]);
+            for(Integer idx : pSelected) {
+              switch(qs[idx]) {
+              case Paused:
+                assert(jobIDs[idx] != null);
+                resumedJobs.add(jobIDs[idx]);
+              }
             }
           }
         }
       }
-    }
 
-    if(!resumedNodes.isEmpty() || !resumedJobs.isEmpty()) {
-      ResumeJobsTask task = new ResumeJobsTask(resumedNodes, resumedJobs);
-      task.start();
+      if(!resumedNodes.isEmpty() || !resumedJobs.isEmpty()) {
+        ResumeJobsTask task = new ResumeJobsTask(resumedNodes, resumedJobs);
+        task.start();
+      }
     }
   }
 
@@ -2016,37 +2034,38 @@ class JNodeFilesPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
-
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          preemptedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-            case Paused:
-            case Running:
-              assert(jobIDs[wk] != null);
-              preemptedJobs.add(jobIDs[wk]);
+    if(!pIsFrozen && !pSelected.isEmpty()) {
+      TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
+      TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
+      
+      if(pStatus != null) {
+        NodeDetails details = pStatus.getDetails();
+        if(details != null) {
+          if(details.isLightweight()) {
+            preemptedNodes.add(pStatus.getNodeID());
+          }
+          else {
+            Long[] jobIDs   = details.getJobIDs();
+            QueueState[] qs = details.getQueueState();
+            assert(jobIDs.length == qs.length);
+            
+            for(Integer idx : pSelected) {
+              switch(qs[idx]) {
+              case Queued:
+              case Paused:
+              case Running:
+                assert(jobIDs[idx] != null);
+                preemptedJobs.add(jobIDs[idx]);
+              }
             }
           }
         }
       }
-    }
       
-    if(!preemptedNodes.isEmpty() || !preemptedJobs.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(preemptedNodes, preemptedJobs);
-      task.start();
+      if(!preemptedNodes.isEmpty() || !preemptedJobs.isEmpty()) {
+        PreemptJobsTask task = new PreemptJobsTask(preemptedNodes, preemptedJobs);
+        task.start();
+      }
     }
   }
 
@@ -2059,37 +2078,38 @@ class JNodeFilesPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> killedJobs    = new TreeSet<Long>();
-
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          killedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-            case Paused:
-            case Running:
-              assert(jobIDs[wk] != null);
-              killedJobs.add(jobIDs[wk]);              
+    if(!pIsFrozen && !pSelected.isEmpty()) {
+      TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
+      TreeSet<Long> killedJobs    = new TreeSet<Long>();
+      
+      if(pStatus != null) {
+        NodeDetails details = pStatus.getDetails();
+        if(details != null) {
+          if(details.isLightweight()) {
+            killedNodes.add(pStatus.getNodeID());
+          }
+          else {
+            Long[] jobIDs   = details.getJobIDs();
+            QueueState[] qs = details.getQueueState();
+            assert(jobIDs.length == qs.length);
+     
+            for(Integer idx : pSelected) {
+              switch(qs[idx]) {
+              case Queued:
+              case Paused:
+              case Running:
+                assert(jobIDs[idx] != null);
+                killedJobs.add(jobIDs[idx]);              
+              }
             }
           }
         }
       }
-    }
-
-    if(!killedNodes.isEmpty() || !killedJobs.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(killedNodes, killedJobs);
-      task.start();
+      
+      if(!killedNodes.isEmpty() || !killedJobs.isEmpty()) {
+        KillJobsTask task = new KillJobsTask(killedNodes, killedJobs);
+        task.start();
+      }
     }
   }
 
