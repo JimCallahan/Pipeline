@@ -309,9 +309,8 @@ MRayAddTexturesTool.jar: java-all
 #--------------------------------------------------------------------------------------------#
 
 install: all installdirs install-sources install-classes 
-#install: all installdirs install-sources install-classes install-extra-classes
 
-install-classes: $(shell find . -type f -name "*.class") 
+install-classes: $(PLUGIN_JARS) $(shell find . -type f -name "*.class") 
 	@list='$^'; for p in $$list; do \
           if test -f $$p; then \
             echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR); \
