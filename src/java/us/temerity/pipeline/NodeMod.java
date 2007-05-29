@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.52 2007/03/28 19:31:03 jim Exp $
+// $Id: NodeMod.java,v 1.53 2007/05/29 18:26:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1267,6 +1267,7 @@ class NodeMod
     pSources.remove(name);
 
     if(pAction != null) {
+      pAction.clearLinkParams(name);
       pAction.removeSourceParams(name); 
       pAction.removeSecondarySourceParams(name);
     }
@@ -1290,8 +1291,10 @@ class NodeMod
 
     pSources.clear();
 
-    if(pAction != null) 
+    if(pAction != null) {
+      pAction.clearAllLinkParams();
       pAction.removeAllSourceParams(); 
+    }
 
     updateLastCriticalMod();
   }

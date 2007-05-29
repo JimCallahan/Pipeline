@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.46 2007/05/12 06:21:18 jim Exp $
+// $Id: BaseAction.java,v 1.47 2007/05/29 18:26:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -304,6 +304,49 @@ class BaseAction
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Unset any single valued LinkActionParam parameters which are currently set to the given
+   * source node.<P> 
+   * 
+   * @param source  
+   *   The fully resolved dependency node name.
+   */ 
+  public final void 
+  clearLinkParams
+  (
+   String source
+  ) 
+  {
+    if(source == null) 
+      throw new IllegalArgumentException
+        ("The source node name cannot be (null)!");
+
+    for(String name : pSingleParams.keySet()) {
+      ActionParam aparam = pSingleParams.get(name);
+      if(aparam instanceof LinkActionParam) {
+        LinkActionParam param = (LinkActionParam) aparam; 
+        if(source.equals(param.getStringValue()))
+          param.setValue(null);
+      }
+    }    
+  }
+
+  /**
+   * Unset all single valued LinkActionParam parameters.
+   */ 
+  public final void 
+  clearAllLinkParams() 
+  {
+    for(String name : pSingleParams.keySet()) {
+      ActionParam aparam = pSingleParams.get(name);
+      if(aparam instanceof LinkActionParam) 
+        aparam.setValue(null);
+    }    
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P E R - S O U R C E   P A R A M E T E R S                                            */
