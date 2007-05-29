@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.18 2007/05/14 16:22:01 jim Exp $
+// $Id: PanelUpdater.java,v 1.19 2007/05/29 18:52:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -345,19 +345,19 @@ class PanelUpdater
          pNodeDetailsPanel.warnUnsavedChangesBeforeUpdate())
         return;
 
-     if((pNodeFilesPanel != null) && 
+      if((pNodeFilesPanel != null) && 
          pNodeFilesPanel.warnUnsavedChangesBeforeUpdate())
         return;
-
-     if((pNodeLinksPanel != null) && 
+      
+      if((pNodeLinksPanel != null) && 
          pNodeLinksPanel.warnUnsavedChangesBeforeUpdate())
         return;
-    
-     if(!pNodeDetailsOnly && !pJobSlotsSelectionOnly) {
-       if((pQueueJobServersPanel != null) && 
-          pQueueJobServersPanel.warnUnsavedChangesBeforeUpdate())
-         return;   
-     }
+      
+      if(!pNodeDetailsOnly && !pJobSlotsSelectionOnly) {
+        if((pQueueJobServersPanel != null) && 
+           pQueueJobServersPanel.warnUnsavedChangesBeforeUpdate())
+          return;   
+      }
     }
 
     start();
