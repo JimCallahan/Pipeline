@@ -109,10 +109,14 @@ given log file (filename) instead of printing to stdout.<br>
 file for <span style="font-weight: bold;">plui</span>(1) instead of
 printing to stdout.<br>
 <br>
-The standard log file for this site is:<br>
-<div style="margin-left: 40px;"><br>
-$HOME/plui.log.#<br>
+The standard log file for this site on Linux and Mac OS X is:<br>
+<br>
+<div style="margin-left: 40px;">$HOME/.pipeline/plui.log.#<br>
+<br>
 </div>
+On Windows the standard log file path is:<br>
+<div style="margin-left: 40px;">&nbsp;<br>
+%APPDATA%\Temerity\Pipeline\plui.log.#</div>
 </div>
 <div style="margin-left: 40px;">
 <div style="margin-left: 80px;"></div>
