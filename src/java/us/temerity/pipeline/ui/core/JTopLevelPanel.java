@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.11 2007/05/14 16:22:01 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.12 2007/05/29 22:23:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -372,7 +372,7 @@ class JTopLevelPanel
 
   /**
    * If unsaved panel modifications exist, display a dialog that warns the user about 
-   * these unsaged changes and either apply or discard the changes base on the users 
+   * these unsaged changes and either apply or discard the changes based on the users 
    * input. 
    * 
    * @return 
@@ -388,14 +388,21 @@ class JTopLevelPanel
     if(!hasUnsavedChanges() || !prefs.getWarnUnsavedChanges()) 
       return false;
 
-    JUnsavedChangesDialog diag = new JUnsavedChangesDialog(this, msg);
-    diag.setVisible(true);
-
-    pUnsavedChanges.clear();
-
-    if(!diag.wasConfirmed()) 
+    UnsavedChangesQueryTask task = new UnsavedChangesQueryTask(this, msg);
+    if(SwingUtilities.isEventDispatchThread()) {
+      task.run();
+    }
+    else {
+      try {
+        SwingUtilities.invokeAndWait(task);
+      }
+      catch(Exception ex) {
+      }
+    }
+    
+    if(!task.wasConfirmed()) 
       return false;
-
+    
     doApply();
     return true;
   }
@@ -416,6 +423,25 @@ class JTopLevelPanel
     return warnUnsavedChanges(msg);
   }
     
+  /**
+   * Warn about unsaved changes prior to an panel operation.
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean 
+  warnUnsavedChangesBeforeOp
+  (
+   String opname
+  ) 
+  {
+    String msg = 
+      ("The " + getTypeName() + " panel on channel (" + getGroupID() + ") contains " + 
+       "unsaved changes which will be lost during the requested " + opname + " operation!"); 
+
+    return warnUnsavedChanges(msg);
+  }
+
   /**
    * Warn about unsaved changes prior to closing a panel.
    * 
@@ -553,6 +579,53 @@ class JTopLevelPanel
   }
   
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /** 
+   * Show the dialog querying the user about unsaved changes.
+   */ 
+  private
+  class UnsavedChangesQueryTask
+    extends Thread
+  {
+    public 
+    UnsavedChangesQueryTask
+    (
+     JTopLevelPanel panel,
+     String msg
+    ) 
+    {
+      super("JTopLevelPanel:UnsavedChangesQueryTask"); 
+
+      pParentPanel = panel; 
+      pMessage     = msg; 
+    }
+    
+    public boolean 
+    wasConfirmed() 
+    {
+      return pWasConfirmed;
+    }
+
+    public void 
+    run() 
+    {  
+      JUnsavedChangesDialog diag = new JUnsavedChangesDialog(pParentPanel, pMessage);
+      diag.setVisible(true);
+      
+      pUnsavedChanges.clear();
+      
+      pWasConfirmed = diag.wasConfirmed(); 
+    }
+ 
+    private JTopLevelPanel pParentPanel; 
+    private String         pMessage; 
+    private boolean        pWasConfirmed;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

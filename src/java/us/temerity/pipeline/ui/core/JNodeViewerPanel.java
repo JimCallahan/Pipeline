@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.89 2007/05/27 21:06:43 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.90 2007/05/29 22:23:07 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -932,6 +932,47 @@ class JNodeViewerPanel
     pRoots.putAll(roots); 
     
     updateUniverse();
+  }
+
+  /**
+   * Warn about unsaved changes in dependent node detail panels prior to an panel operation.
+   * 
+   * @return 
+   *   Whether previously unsaved changes where applied.
+   */ 
+  public boolean 
+  warnUnsavedDetailPanelChangesBeforeOp
+  (
+   String opname
+  ) 
+  {
+    UIMaster master = UIMaster.getInstance();
+
+    {
+      JNodeDetailsPanel panel = master.getNodeDetailsPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    {
+      JNodeHistoryPanel panel = master.getNodeHistoryPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    {
+      JNodeFilesPanel panel = master.getNodeFilesPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    {
+      JNodeLinksPanel panel = master.getNodeLinksPanels().getPanel(getGroupID());
+      if((panel != null) && panel.warnUnsavedChangesBeforeOp(opname))
+        return true;
+    }
+    
+    return false; 
   }
 
 
@@ -3599,6 +3640,9 @@ class JNodeViewerPanel
   private synchronized void 
   doLink() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Link")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3637,13 +3681,15 @@ class JNodeViewerPanel
     refresh(); 
   }
 
-
   /**
    * Unlink the secondary selected nodes from the primary selected node.
    */ 
   private synchronized void 
   doUnlink()
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Unlink")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3678,6 +3724,9 @@ class JNodeViewerPanel
   private synchronized void 
   doAddSecondary() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Add Secondary")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3713,6 +3762,9 @@ class JNodeViewerPanel
    String name
   ) 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Remove Secondary")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3741,6 +3793,9 @@ class JNodeViewerPanel
   private synchronized void 
   doExport() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Export")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3786,6 +3841,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRename() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Rename")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3824,6 +3882,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRenumber() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Renumber")) 
+      return; 
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3867,6 +3928,9 @@ class JNodeViewerPanel
   private synchronized void 
   doClone() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Clone")) 
+      return;
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -3897,6 +3961,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRegister() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Register")) 
+      return;
+
     if(pRegisterDialog == null) 
       pRegisterDialog = new JRegisterDialog(pGroupID, getTopFrame());
 
@@ -3914,6 +3981,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRelease() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Release")) 
+      return;
+
     String text = null;
     TreeSet<String> names = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) {
@@ -3974,6 +4044,9 @@ class JNodeViewerPanel
   private synchronized void 
   doReleaseView() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Release View")) 
+      return;
+
     if(pReleaseViewDialog == null) 
       pReleaseViewDialog = new JReleaseViewDialog(getTopFrame());
 
@@ -3996,6 +4069,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRemoveFiles() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Remove Files")) 
+      return;
+
     TreeSet<String> names = new TreeSet<String>();
     boolean confirmed = false;
     for(ViewerNode vnode : pSelected.values()) {
@@ -4035,6 +4111,9 @@ class JNodeViewerPanel
   private synchronized void 
   doDelete() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Delete")) 
+      return;
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -4079,6 +4158,9 @@ class JNodeViewerPanel
   private synchronized void 
   doQueueJobs() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Queue Jobs")) 
+      return; 
+
     TreeSet<String> roots = new TreeSet<String>();
     for(String name : getMostDownstreamOfSelectedNames()) {
       for(ViewerNode vnode : pSelected.values()) {
@@ -4111,6 +4193,9 @@ class JNodeViewerPanel
   private synchronized void 
   doQueueJobsSpecial() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Queue Jobs Special")) 
+      return; 
+
     TreeSet<String> roots = new TreeSet<String>();
     for(String name : getMostDownstreamOfSelectedNames()) {
       for(ViewerNode vnode : pSelected.values()) {
@@ -4167,6 +4252,9 @@ class JNodeViewerPanel
   private synchronized void 
   doPauseJobs() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Pause Jobs")) 
+      return; 
+
     TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
     TreeSet<Long> pausedJobs    = new TreeSet<Long>();
 
@@ -4209,6 +4297,9 @@ class JNodeViewerPanel
   private synchronized void 
   doResumeJobs() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Resume Jobs")) 
+      return;
+
     TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
     TreeSet<Long> resumedJobs    = new TreeSet<Long>();
 
@@ -4251,6 +4342,9 @@ class JNodeViewerPanel
   private synchronized void 
   doPreemptJobs() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Preempt Jobs")) 
+      return;
+
     TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
     TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
 
@@ -4295,6 +4389,9 @@ class JNodeViewerPanel
   private synchronized void 
   doKillJobs() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Kill Jobs")) 
+      return;
+
     TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
     TreeSet<Long> killedJobs    = new TreeSet<Long>();
 
@@ -4342,6 +4439,9 @@ class JNodeViewerPanel
   private synchronized void 
   doCheckIn() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Check-In")) 
+      return;
+
     try {
       TreeSet<String> roots = getMostDownstreamOfSelectedNames();
       if(!roots.isEmpty()) {
@@ -4403,6 +4503,9 @@ class JNodeViewerPanel
   private synchronized void 
   doCheckOut() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Check-Out")) 
+      return;
+
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
 
@@ -4445,6 +4548,9 @@ class JNodeViewerPanel
   private synchronized void 
   doLock() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Lock")) 
+      return;
+
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.getMasterMgrClient();
 
@@ -4502,6 +4608,9 @@ class JNodeViewerPanel
   private synchronized void 
   doEvolve() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Evolve")) 
+      return;
+
     if(pPrimary != null) {
       NodeStatus status = pPrimary.getNodeStatus();
       NodeDetails details = status.getDetails();
@@ -4550,6 +4659,9 @@ class JNodeViewerPanel
   private synchronized void 
   doRestore() 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Restore")) 
+      return;
+
     RestoreQueryTask task = new RestoreQueryTask(getSelectedNames());
     task.start();
 
@@ -4566,6 +4678,9 @@ class JNodeViewerPanel
   private synchronized void 
   doLinkEdit()
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Edit Link")) 
+      return;
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       NodeMod mod = details.getWorkingVersion();
@@ -4604,6 +4719,9 @@ class JNodeViewerPanel
   private synchronized void 
   doLinkUnlink()
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Unlink")) 
+      return;
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails(); 
       NodeMod mod = details.getWorkingVersion();
@@ -4809,6 +4927,9 @@ class JNodeViewerPanel
    String name 
   ) 
   {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Run Tool")) 
+      return;
+
     String parts[] = name.split(":");
     assert(parts.length == 3);
     

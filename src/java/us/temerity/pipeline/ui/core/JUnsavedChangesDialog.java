@@ -1,4 +1,4 @@
-// $Id: JUnsavedChangesDialog.java,v 1.1 2007/05/09 15:28:26 jim Exp $
+// $Id: JUnsavedChangesDialog.java,v 1.2 2007/05/29 22:23:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -61,8 +61,9 @@ class JUnsavedChangesDialog
           
           buf.append
             ("\n" + 
-             "Before continuing, please decide whether to apply or ignore these unsaved " + 
-             "changes.");
+             "Before continuing, please decide whether to Apply these changes now and " + 
+             "abort the planned operation or to Ignore this warning and proceed normally " +
+             "abandoning these unsaved changes.");
         }
 
 	JTextArea area = new JTextArea(buf.toString(), 12, 35); 
