@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.99 2007/04/30 20:51:40 jim Exp $
+// $Id: MasterMgrClient.java,v 1.100 2007/05/30 04:29:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3123,36 +3123,39 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Get the names of the nodes in a working matching the given search pattern.
+   * Get the names of all nodes who's name matches the given search pattern.
    * 
    * @param pattern
    *   A regular expression {@link Pattern pattern} used to match the fully resolved 
    *   names of nodes or <CODE>null</CODE> to match all nodes.
    * 
    * @return 
-   *   The fully resolved names of the matching working versions. 
+   *   The fully resolved names of the matching nodes. 
    * 
    * @throws PipelineException 
    *   If determine which working versions match the pattern.
    */ 
   public synchronized TreeSet<String> 
-  getWorkingNames
+  getNodeNames
   (
-   String author, 
-   String view, 
    String pattern
   )
     throws PipelineException
   {
     verifyConnection();
 
-    NodeGetWorkingNamesReq req = 
-      new NodeGetWorkingNamesReq(author, view, pattern);
+    NodeGetNodeNamesReq req = new NodeGetNodeNamesReq(pattern);
 
-    Object obj = performTransaction(MasterRequest.GetWorkingNames, req);
-    if(obj instanceof NodeGetWorkingNamesRsp) {
-      NodeGetWorkingNamesRsp rsp = (NodeGetWorkingNamesRsp) obj;
+    Object obj = performTransaction(MasterRequest.GetNodeNames, req);
+    if(obj instanceof NodeGetNodeNamesRsp) {
+      NodeGetNodeNamesRsp rsp = (NodeGetNodeNamesRsp) obj;
       return rsp.getNames();
     }
     else {
@@ -3161,10 +3164,6 @@ class MasterMgrClient
     }
   } 
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   P A T H S                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -3277,9 +3276,48 @@ class MasterMgrClient
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the nodes in a working matching the given search pattern.
+   * 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> to match all nodes.
+   * 
+   * @return 
+   *   The fully resolved names of the matching working versions. 
+   * 
+   * @throws PipelineException 
+   *   If determine which working versions match the pattern.
+   */ 
+  public synchronized TreeSet<String> 
+  getWorkingNames
+  (
+   String author, 
+   String view, 
+   String pattern
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetWorkingNamesReq req = 
+      new NodeGetWorkingNamesReq(author, view, pattern);
+
+    Object obj = performTransaction(MasterRequest.GetWorkingNames, req);
+    if(obj instanceof NodeGetNodeNamesRsp) {
+      NodeGetNodeNamesRsp rsp = (NodeGetNodeNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
 
   /** 
    * Get the working version of a node. <P> 
@@ -3946,6 +3984,42 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K E D - I N   V E R S I O N S                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the nodes with at least one checked-in version who's name matches 
+   * the given search pattern.
+   * 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> to match all nodes.
+   * 
+   * @return 
+   *   The fully resolved names of the matching checked-in versions. 
+   * 
+   * @throws PipelineException 
+   *   If determine which working versions match the pattern.
+   */ 
+  public synchronized TreeSet<String> 
+  getCheckedInNames
+  (
+   String pattern
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetNodeNamesReq req = new NodeGetNodeNamesReq(pattern);
+
+    Object obj = performTransaction(MasterRequest.GetCheckedInNames, req);
+    if(obj instanceof NodeGetNodeNamesRsp) {
+      NodeGetNodeNamesRsp rsp = (NodeGetNodeNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
 
   /** 
    * Get the revision numbers of all checked-in versions of a node. <P> 

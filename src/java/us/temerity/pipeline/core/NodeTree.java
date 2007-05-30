@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.6 2007/05/28 19:17:02 jim Exp $
+// $Id: NodeTree.java,v 1.7 2007/05/30 04:29:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -972,6 +972,67 @@ class NodeTree
     else {
       for(NodeTreeEntry child : entry.values())
 	matchingCheckedInNodesHelper(pattern, name, child, matches);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Recursively check the names of all nodes against the given regular expression pattern.
+   * 
+   * @param pattern
+   *   The regular expression used to match the fully resolved node name.
+   * 
+   * @return 
+   *   The fully resolved names of the matching nodes. 
+   */ 
+  public synchronized TreeSet<String>
+  getMatchingNodes
+  ( 
+   Pattern pattern
+  ) 
+  {
+    TreeSet<String> matches = new TreeSet<String>();
+
+    for(NodeTreeEntry entry : pNodeTreeRoot.values())
+      matchingNodesHelper(pattern, "", entry, matches);
+
+    return matches;
+  }
+
+  /** 
+   * Recursively check the names of all nodes against the given regular expression pattern.
+   * 
+   * @param pattern
+   *   The regular expression used to match the fully resolved node name.
+   * 
+   * @param path
+   *   The current partial node name path.
+   * 
+   * @param entry
+   *   The current node tree entry. 
+   * 
+   * @param matches
+   *   The fully resolved names of the matching nodes. 
+   */ 
+  private synchronized void 
+  matchingNodesHelper
+  ( 
+   Pattern pattern, 
+   String path,
+   NodeTreeEntry entry,
+   TreeSet<String> matches
+  ) 
+  {
+    String name = (path + "/" + entry.getName());
+    if(entry.isLeaf()) {
+      if((pattern == null) || pattern.matcher(name).matches()) 
+        matches.add(name); 
+    }
+    else {
+      for(NodeTreeEntry child : entry.values())
+	matchingNodesHelper(pattern, name, child, matches);
     }
   }
 

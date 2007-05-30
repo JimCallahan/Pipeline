@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingNamesRsp.java,v 1.1 2005/02/23 06:50:07 jim Exp $
+// $Id: NodeGetNodeNamesReq.java,v 1.1 2007/05/30 04:29:45 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,48 +9,34 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   G E T   W O R K I N G   N A M E S   R S P                                    */
+/*   N O D E   G E T   N O D E   N A M E S                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link NodeGetWorkingNamesReq NodeGetWorkingNamesReq} request.
+ * A request to get the names of all nodes who's name matches the given search pattern.
  */
 public
-class NodeGetWorkingNamesRsp
-  extends TimedRsp
+class NodeGetNodeNamesReq
+  implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new response.
+   * Constructs a new request.
    * 
-   * @param timer 
-   *   The timing statistics for a task.
-   * 
-   * @param names
-   *   The fully resolved names of the matching working versions. 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> to match all nodes.
    */
   public
-  NodeGetWorkingNamesRsp
+  NodeGetNodeNamesReq
   (
-   TaskTimer timer, 
-   TreeSet<String> names
+   String pattern
   )
   { 
-    super(timer);
-
-    if(names == null) 
-      throw new IllegalArgumentException("The node names cannot be (null)!");
-    pNames = names;
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.getWorkingNames():\n" + 
-       "  " + getTimer());
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
+    pPattern = pattern;
   }
 
 
@@ -58,14 +44,15 @@ class NodeGetWorkingNamesRsp
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
-   * Gets the fully resolved names of the matching working versions. 
-   */
-  public TreeSet<String> 
-  getNames()
+   * Get the regular expression {@link Pattern pattern} used to match the fully resolved 
+   * names of nodes or <CODE>null</CODE> to match all nodes.
+   */ 
+  public String
+  getPattern() 
   {
-    return pNames; 
+    return pPattern;
   }
 
 
@@ -74,7 +61,7 @@ class NodeGetWorkingNamesRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2294318842409037147L;
+  //private static final long serialVersionUID =
 
   
 
@@ -83,9 +70,10 @@ class NodeGetWorkingNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved names of the matching working versions. 
-   */
-  private TreeSet<String>  pNames; 
+   * The regular expression {@link Pattern pattern} used to match the fully resolved 
+   * names of nodes or <CODE>null</CODE> to match all nodes.
+   */ 
+  private String  pPattern;
 
 }
   

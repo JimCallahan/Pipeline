@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.78 2007/04/15 10:30:44 jim Exp $
+// $Id: MasterMgrServer.java,v 1.79 2007/05/30 04:29:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -954,16 +954,16 @@ class MasterMgrServer
 	      }
 	      break;
 
-	    case GetWorkingNames:
+
+	    /*-- NODE PATHS ----------------------------------------------------------------*/
+	    case GetNodeNames:
 	      {
-		NodeGetWorkingNamesReq req = (NodeGetWorkingNamesReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.getWorkingNames(req));
+		NodeGetNodeNamesReq req = (NodeGetNodeNamesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getNodeNames(req));
 		objOut.flush(); 
 	      }
 	      break;
 
-
-	    /*-- NODE PATHS ----------------------------------------------------------------*/
 	    case UpdatePaths:
 	      {
 		NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
@@ -982,7 +982,15 @@ class MasterMgrServer
 
 
 	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
-	    case GetWorking:
+	    case GetWorkingNames:
+	      {
+		NodeGetWorkingNamesReq req = (NodeGetWorkingNamesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getWorkingNames(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case GetWorking:
 	      {
 		NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.getWorkingVersion(req));
@@ -1032,7 +1040,15 @@ class MasterMgrServer
 
 
 	    /*-- CHECKED-IN VERSIONS -------------------------------------------------------*/
-	    case GetCheckedIn:
+	    case GetCheckedInNames:
+	      {
+		NodeGetNodeNamesReq req = (NodeGetNodeNamesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getCheckedInNames(req));
+		objOut.flush(); 
+	      }
+	      break;
+            
+            case GetCheckedIn:
 	      {
 		NodeGetCheckedInReq req = (NodeGetCheckedInReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.getCheckedInVersion(req));

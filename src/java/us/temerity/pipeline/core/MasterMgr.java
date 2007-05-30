@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.202 2007/05/18 22:31:40 jim Exp $
+// $Id: MasterMgr.java,v 1.203 2007/05/30 04:29:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5869,54 +5869,6 @@ class MasterMgr
   }  
 
   /**
-   * Get the names of the nodes in a working area for which have a name matching the 
-   * given search pattern.
-   * 
-   * @param req 
-   *   The request.
-   * 
-   * @return
-   *   <CODE>NodeGetWorkingNamesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to remove the given working area.
-   */ 
-  public Object 
-  getWorkingNames
-  ( 
-   NodeGetWorkingNamesReq req 
-  ) 
-  {
-    TaskTimer timer = new TaskTimer();
-
-    timer.aquire();
-    pDatabaseLock.readLock().lock();
-    try {
-      timer.resume();	
-
-      String author  = req.getAuthor();
-      String view    = req.getView();
-      String pattern = req.getPattern();  
-
-      /* get the node names which match the pattern */ 
-      try {
-	Pattern pat = null;
-	if(pattern != null) 
-	  pat = Pattern.compile(pattern);
-	
-	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, pat);
-
-	return new NodeGetWorkingNamesRsp(timer, matches);
-      }
-      catch(PatternSyntaxException ex) {
-	return new FailureRsp(timer, 
-			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
-      }
-    }
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }
-  }  
-
-  /**
    * Get the table of current working area authors and views.
    * 
    * @return
@@ -5994,8 +5946,53 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   P A T H S                                                                  */
+  /*   N O D E S                                                                            */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all nodes who's name matches the given search pattern.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetNodeNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> on failure.
+   */ 
+  public Object 
+  getNodeNames
+  ( 
+   NodeGetNodeNamesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      String pattern = req.getPattern();  
+
+      /* get the node names which match the pattern */ 
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+	
+	TreeSet<String> matches = pNodeTree.getMatchingNodes(pat);
+
+	return new NodeGetNodeNamesRsp(timer, matches);
+      }
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp(timer, 
+			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }  
 
   /**
    * Update the immediate children of all node path components along the given path 
@@ -6068,6 +6065,54 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the nodes in a working area for which have a name matching the 
+   * given search pattern.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetWorkingNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the given working area.
+   */ 
+  public Object 
+  getWorkingNames
+  ( 
+   NodeGetWorkingNamesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      String author  = req.getAuthor();
+      String view    = req.getView();
+      String pattern = req.getPattern();  
+
+      /* get the node names which match the pattern */ 
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+	
+	TreeSet<String> matches = pNodeTree.getMatchingWorkingNodes(author, view, pat);
+
+	return new NodeGetNodeNamesRsp(timer, matches);
+      }
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp(timer, 
+			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }  
 
   /** 
    * Get the working version of the node.
@@ -7141,6 +7186,52 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K E D - I N   V E R S I O N S                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the nodes with at least one checked-in version who's name matches 
+   * the given search pattern.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> on failure.
+   */ 
+  public Object 
+  getCheckedInNames
+  ( 
+   NodeGetNodeNamesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      String pattern = req.getPattern();  
+
+      /* get the node names which match the pattern */ 
+      try {
+	Pattern pat = null;
+	if(pattern != null) 
+	  pat = Pattern.compile(pattern);
+	
+	TreeSet<String> matches = pNodeTree.getMatchingCheckedInNodes(pat);
+
+	return new NodeGetNodeNamesRsp(timer, matches);
+      }
+      catch(PatternSyntaxException ex) {
+	return new FailureRsp(timer, 
+			      "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }  
 
   /** 
    * Get the revision numbers of all checked-in versions of the given node. <P> 
