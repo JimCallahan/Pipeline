@@ -30,6 +30,8 @@ The core features of Pipeline include:
 %files
 
 %defattr(555,root,root)
+@ROOT_INST_PARENT_DIR@/pipeline-latest
+
 @ROOT_INST_DIR@/Unix/bin/realpath
 @ROOT_INST_DIR@/Unix/bin/pls
 @ROOT_INST_DIR@/Unix/bin/plshakeio

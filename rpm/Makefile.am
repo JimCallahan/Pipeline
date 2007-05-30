@@ -83,6 +83,8 @@ pipeline-install: clean-rpms rpm-mkdirs
 	mkdir -p DEST/plmaster/@NODEDIR@
 	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
 	mkdir -p DEST/plqueuemgr/@QUEUEDIR@
+	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
+              DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
 
 
 core-rpms: pipeline-install \
@@ -156,19 +158,31 @@ RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	@echo "-----------------------------------------------------------------------------"
 	ssh lizard "source .bash_profile; $(MAKE) -C $(WIN_BUILD_DIR) all"
 	rsync -av lizard:$(WIN_BUILD_DIR)/DEST/plwin DEST
+	mv DEST/plwin/PipelineJobManager.msi \
+           PipelineJobManager-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi
 	rpmbuild --rcfile rpmrc -bb SPECS/plwin-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plwin-@CUSTOMER@-@VERSION@.spec: plwin.spec
 	cp -f plwin.spec $@
 
+install-win-service:
+	$(INSTALL_DATA) \
+          @RPM_ROOT@/PipelineJobManager-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi \
+          ../../../../releases/pipeline
+
+else 
+
+install-win-service:
+
 endif
 
 
 
-install: all
+install: all install-win-service 
 	mkdir -p ../../../../releases/pipeline
 	$(INSTALL_PROGRAM) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin \
           ../../../../releases/pipeline
+
 
 
 

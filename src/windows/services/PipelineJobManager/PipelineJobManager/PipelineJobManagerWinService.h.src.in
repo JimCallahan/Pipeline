@@ -158,7 +158,7 @@ namespace PipelineJobManager {
             options[2].optionString = "-Xrs"; 
             options[3].optionString = "-Xdebug"; 
             options[4].optionString = "@PLJOBMGR_XRUNJDWP@";
-            options[5].optionString = "-Djava.class.path=@PIPELINE_JAR@"; 
+            options[5].optionString = "-Djava.class.path=@PIPELINE_LATEST_JAR@"; 
       
             vm_args.version = JNI_VERSION_1_2;
             vm_args.options = options;

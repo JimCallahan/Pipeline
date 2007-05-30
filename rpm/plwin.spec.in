@@ -20,20 +20,6 @@ These resources are accessed over a network share using the path supplied
 to the Windows Root Install Directory (--win-root-dir option) to 
 plconfig(1) during Pipeline configuration process.
 
-Windows machines must install the PipelineJobManager service locally in
-order to participate in procesing jobs for the Pipeline queue.  You must
-first run the Windows installer for the Job Manager service which can be
-found here:
-
-  @WIN_ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
-
-This will install a Windows service wrapper program and a pair of 
-utilities for installing and uninstalling the program as a Windows 
-service.  Once the service is installed, you must also start it before it
-can begin processing jobs using:
-
-  Control Panel -> Administrative Tools -> Services
-
 %files
 
 %defattr(555,root,root)
@@ -53,8 +39,6 @@ can begin processing jobs using:
 @ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
 
 @ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
-
-@ROOT_INST_DIR@/Windows/services/PipelineJobManager.msi
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows/libNative.dll

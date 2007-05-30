@@ -1,17 +1,17 @@
 
-instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/services
+instbindir = /
 
 instbin_SCRIPTS = \
   PipelineJobManager.msi
 
 
-WIN_PIPELINE_JAR = $(shell echo '@PIPELINE_JAR@' | sed -e 's|/|\\\\\\\\\\\\\\\\|g')
+WIN_PIPELINE_JAR = $(shell echo '@PIPELINE_LATEST_JAR@' | sed -e 's|/|\\\\\\\\\\\\\\\\|g')
 WIN_SRCDIR       = $(shell echo '@srcdir@/PipelineJobManager/Setup' | sed -e 's|/|\\|g')
 WIN_SERVICE_H    = PipelineJobManager/PipelineJobManager/PipelineJobManagerWinService.h
 
 
 $(WIN_SERVICE_H): $(WIN_SERVICE_H).src
-	(cat $< | sed -e "s|@PIPELINE_JAR@|$(WIN_PIPELINE_JAR)|g" > $@) 
+	(cat $< | sed -e "s|@PIPELINE_LATEST_JAR@|$(WIN_PIPELINE_JAR)|g" > $@) 
 
 $(WIN_SERVICE_H).src: $(WIN_SERVICE_H).src.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@

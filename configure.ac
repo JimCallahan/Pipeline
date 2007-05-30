@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.2.4)
+AM_INIT_AUTOMAKE(Pipeline, 2.2.5)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -337,6 +337,9 @@ AC_MSG_RESULT([$LICENSE_END])
 
 AC_MSG_CHECKING([Root Installation Directory])
 
+AC_SUBST(ROOT_INST_PARENT_DIR)
+ROOT_INST_PARENT_DIR=""
+
 AC_SUBST(ROOT_INST_DIR)
 ROOT_INST_DIR=""
 
@@ -346,6 +349,7 @@ if test "$root_inst_dir" == "null"
 then
   AC_MSG_ERROR([customer profile was incomplete.])
 else 
+  ROOT_INST_PARENT_DIR=$root_inst_dir
   ROOT_INST_DIR=$root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP
 fi 
 
@@ -671,6 +675,9 @@ AC_MSG_RESULT([$PIPELINE_GID])
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_SUBST(MAC_ROOT_INST_PARENT_DIR)
+MAC_ROOT_INST_PARENT_DIR=""
+
 AC_SUBST(MAC_ROOT_INST_DIR)
 MAC_ROOT_INST_DIR=""
 
@@ -697,6 +704,7 @@ if test "$mac_support" == "true" \
      -a "$mac_temp_dir" != "null"
 then
   AC_MSG_CHECKING([MacOs Root Installation Directory])
+  MAC_ROOT_INST_PARENT_DIR=$mac_root_inst_dir
   MAC_ROOT_INST_DIR=$mac_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP
   AC_MSG_RESULT([$MAC_ROOT_INST_DIR])
 
@@ -720,6 +728,9 @@ AM_CONDITIONAL(HAS_MAC, test x$has_mac = xtrue)
 
 
 dnl ------------------------------------------------------------------------------------------
+
+AC_SUBST(WIN_ROOT_INST_PARENT_DIR)
+WIN_ROOT_INST_PARENT_DIR=""
 
 AC_SUBST(WIN_ROOT_INST_DIR)
 WIN_ROOT_INST_DIR=""
@@ -752,6 +763,7 @@ if test "$win_support" == "true" \
      -a "$win_java_home" != "null"
 then
   AC_MSG_CHECKING([Windows Root Installation Directory])
+  WIN_ROOT_INST_PARENT_DIR="$win_root_inst_dir"
   WIN_ROOT_INST_DIR="$win_root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP"
   AC_MSG_RESULT([$WIN_ROOT_INST_DIR])
 
@@ -776,6 +788,8 @@ fi
 
 AM_CONDITIONAL(HAS_WINDOWS, test x$has_windows = xtrue)
 
+AC_SUBST(WIN_SERVICE_VERSION)
+WIN_SERVICE_VERSION=1.0.0
 
 AC_SUBST(WIN_PIPELINE_USERNAME)
 WIN_PIPELINE_USERNAME="nullptr"
@@ -971,6 +985,9 @@ AC_SUBST(JAVA_RUNTIME_OPTS)
 JAVA_RUNTIME_OPTS=""
 
 
+AC_SUBST(PIPELINE_LATEST_JAR)
+PIPELINE_LATEST_JAR=""
+
 AC_SUBST(PIPELINE_JAR)
 PIPELINE_JAR=""
 
@@ -982,6 +999,7 @@ case "$NATIVE_OSTYPE" in
   (Unix)  
     JAVA_RUNTIME="$JAVA_HOME/bin/java";
     CLIENT_JAVA_RUNTIME="$UNIX_JAVA_HOME/bin/java";
+    PIPELINE_LATEST_JAR="$ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
@@ -993,6 +1011,7 @@ case "$NATIVE_OSTYPE" in
   (MacOS) 
     JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
+    PIPELINE_LATEST_JAR="$MAC_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$MAC_ROOT_INST_DIR/lib";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
@@ -1004,6 +1023,7 @@ case "$NATIVE_OSTYPE" in
   (Windows) 
     JAVA_RUNTIME="$WIN_JAVA_HOME/bin/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
+    PIPELINE_LATEST_JAR="$WIN_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$WIN_ROOT_INST_DIR/lib";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
