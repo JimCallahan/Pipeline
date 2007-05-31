@@ -1,4 +1,4 @@
-// $Id: NodeGetNodeNamesReq.java,v 1.1 2007/05/30 04:29:45 jim Exp $
+// $Id: NodeGetNodeNamesReq.java,v 1.2 2007/05/31 16:20:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -61,7 +61,7 @@ class NodeGetNodeNamesReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID =
+  private static final long serialVersionUID = 5697748567982146978L;
 
   
 
