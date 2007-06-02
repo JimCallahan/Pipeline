@@ -99,14 +99,18 @@ public class BuilderApp
       BuilderOptsParser parser = 
 	new BuilderOptsParser(new StringReader(pPackedArgs));
       parser.setApp(this);
-      if(hasClassName) {
+      if (hasClassName) {
 	ClassLoader loader = ClassLoader.getSystemClassLoader();
 	Class cls = loader.loadClass(args[0]);
 	parser.CommandLine();
+	BaseBuilder.setUsingGUI(pGui);
 	BaseBuilder builder = (BaseBuilder) cls.newInstance();
 	builder.run();
-      }else 
+      } 
+      else {
 	parser.CommandLine();
+	BaseBuilder.setUsingGUI(pGui);
+      }
     }
     catch(ParseException ex) {
       ex.printStackTrace();
@@ -170,9 +174,20 @@ public class BuilderApp
     }      
   }
   
+  public void
+  setUsingGUI
+  (
+    boolean gui
+  )
+  {
+    pGui = gui;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
+  
+  private boolean pGui = false;
 }

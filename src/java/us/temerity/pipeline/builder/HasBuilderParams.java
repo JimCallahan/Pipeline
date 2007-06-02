@@ -1424,7 +1424,7 @@ class HasBuilderParams
       StringBuilder toReturn = new StringBuilder();
       for (String each : pPrefixes) {
 	if (toReturn.length() > 0)
-	  toReturn.append("-");
+	  toReturn.append(" - ");
 	toReturn.append(each);
       }
       return toReturn.toString();

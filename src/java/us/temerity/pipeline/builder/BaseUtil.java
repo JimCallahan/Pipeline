@@ -68,6 +68,40 @@ class BaseUtil
   
   
   /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets a modified form of the name of this instance with spaces inserted between 
+   * each word. <P> 
+   * 
+   * This name is used in the UI to label fields and table columns in a more human 
+   * friendly manner.
+   * 
+   * @see #getName
+   */ 
+  public final String
+  getNameUI()
+  {
+    StringBuilder buf = new StringBuilder();
+    char c[] = getName().toCharArray();
+    int wk;
+    buf.append(c[0]);
+    for(wk=1; wk<(c.length-1); wk++) {
+      if(Character.isUpperCase(c[wk]) && 
+	 (Character.isLowerCase(c[wk-1]) ||
+	  Character.isLowerCase(c[wk+1])))
+	  buf.append(" ");
+
+      buf.append(c[wk]);
+    }
+    buf.append(c[wk]);
+
+    return (buf.toString());
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   U T I L   C O N T E X T S                                                            */
   /*----------------------------------------------------------------------------------------*/
   

@@ -224,7 +224,7 @@ public class JBuilderParamTreePanel
 	if(e != null) {
 	  while(e.hasMoreElements()) {
 	    DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) e.nextElement(); 
-	    String name = (String) tnode.getUserObject();
+	    String name = ((BuilderTreeNodeInfo) tnode.getUserObject()).getText();
 	    if(name.equals(paths[wk])) {
 	      next = tnode;
 	      break;
@@ -234,7 +234,8 @@ public class JBuilderParamTreePanel
       }
 
       if(next == null) {
-	next = new DefaultMutableTreeNode(paths[wk], wk < (paths.length-1));
+	BuilderTreeNodeInfo info = new BuilderTreeNodeInfo(paths[wk]);
+	next = new DefaultMutableTreeNode(info, wk < (paths.length-1));
 	parent.add(next);
       }
       parent = next;
@@ -252,7 +253,7 @@ public class JBuilderParamTreePanel
   public void valueChanged(TreeSelectionEvent e)
   {
     CardLayout layout = (CardLayout) pCardPanel.getLayout();
-
+    
     TreePath tpath = pTree.getSelectionPath(); 
     if(tpath != null) {
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();

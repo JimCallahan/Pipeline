@@ -1,11 +1,12 @@
-/**
- * 
- */
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.event.*;
+import java.util.LinkedList;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 
 import us.temerity.pipeline.LogMgr;
 import us.temerity.pipeline.PipelineException;
@@ -13,6 +14,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.BaseBuilder;
 import us.temerity.pipeline.builder.BaseUtil;
+import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
 import us.temerity.pipeline.ui.JTopLevelDialog;
 
 /*------------------------------------------------------------------------------------------*/
@@ -25,7 +27,7 @@ import us.temerity.pipeline.ui.JTopLevelDialog;
 public 
 class JBuilderParamDialog
   extends JTopLevelDialog
-  implements ActionListener
+  implements ActionListener, TreeSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,6 +46,8 @@ class JBuilderParamDialog
     
     pBuilder = builder;
     
+    pRunning = false;
+    
     pLoop = 1;
   }
   
@@ -51,9 +55,7 @@ class JBuilderParamDialog
   initUI()
     throws PipelineException
   {
-    //this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    
-    String header = pBuilder.getName();
+    String header = pBuilder.getNameUI();
     String cancel = "Quit";
     String[][] extras = new String[3][2];
     extras[0][0] = "Next";
@@ -68,13 +70,16 @@ class JBuilderParamDialog
     pNextButton = buttons[0];
     pRunNextButton = buttons[1];
     pRunAllButton = buttons[2];
+
+    pTopPanel.setupListeners();
     
-    pRunNextButton.setEnabled(false);
-    pRunAllButton.setEnabled(false);
+    if (pTopPanel.allParamsReady())
+      firstPassEnableButtons();
+    else
+      disableAllButtons();
     
     this.validate();
     this.pack();
-    pTopPanel.setLeftSplitDivider(.5);
   }
   
   
@@ -113,44 +118,61 @@ class JBuilderParamDialog
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
-  (
-   ActionEvent e
-  ) 
-  {
-    String cmd = e.getActionCommand();
-    if(cmd.equals("next-pass")) 
-      doNextPass();
-    else if(cmd.equals("run-next-pass")) 
-      ;
-    else if(cmd.equals("run-all-passes"))
-      ;
-    else if(cmd.equals("cancel")) 
-      doCancel();
-  }
-  
   /*-- WINDOW LISTENER METHODS -------------------------------------------------------------*/
-  
+
   /**
    * Invoked when the user attempts to close the window from the window's system menu.
    */ 
   public void 	
   windowClosing
   (
-   WindowEvent e
+    @SuppressWarnings("unused")
+    WindowEvent e
   ) 
   {
     doCancel();
   }
   
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+  
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+    ActionEvent e
+  ) 
+  {
+    String cmd = e.getActionCommand();
+    if(cmd.equals("next-pass")) 
+      doNextPass();
+    else if(cmd.equals("run-next-pass")) 
+      runNextPass();
+    else if(cmd.equals("run-all-passes"))
+      runAllPasses();
+    else if(cmd.equals("cancel")) 
+      doCancel();
+  }
+  
+  /*-- TREE SELECTION LISTENER METHODS -----------------------------------------------------*/
+  
+  /**
+   * Called whenever the value of the selection changes.
+   */ 
+  public void 
+  valueChanged
+  (
+    @SuppressWarnings("unused")
+    TreeSelectionEvent e
+  )
+  {
+    if (pTopPanel.allParamsReady())
+      firstPassEnableButtons();
+  }
   
   
+    
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -161,10 +183,12 @@ class JBuilderParamDialog
   public synchronized void 
   doCancel()
   {
-    if (pLoop == 1)
+    if (pLoop == 1 || pLoop == 3)
       quit();
-    else if (pLoop == 2)
-      pBuilder.setAbort(true);
+    else if (pRunning == false)
+      handleException(new PipelineException("Execution halted by user!"));
+    else
+      pAbort = true;
   }
   
   /**
@@ -173,17 +197,27 @@ class JBuilderParamDialog
   public void 
   doNextPass()
   {
-    LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Warning, "The next button was pressed");
     disableAllButtons();
-    pTopPanel.listPanels();
+    JBuilderParamPanel panel = pTopPanel.getCurrentBuilderParamPanel();
+    panel.disableAllComponents();
+    panel.assignValuesToBuilder();
     new RunSetupPassTask().start();
   }
   
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
+  private void runAllPasses()
+  {
+    pRunning = true;
+    disableAllButtons();
+    new RunAllConstructPassTask().start();
+  }
+
+  private void runNextPass()
+  {
+    pRunning = true;
+    disableAllButtons();
+    new RunOneConstructPassTask().start();
+  }
+
   
   private void
   quit()
@@ -191,6 +225,37 @@ class JBuilderParamDialog
     BaseUtil.disconnectClients();
     System.exit(1);
   }
+  
+  private void
+  finish()
+  {
+    disableAllButtons();
+    LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Info, "Execution is now complete.");
+    pBuilder.new CheckinTask().start();
+  }
+  
+  public void
+  reallyFinish()
+  {
+    if (pAbort)
+      quit();
+    pLoop = 3;    
+  }
+  
+  public void
+  handleException
+  (
+    PipelineException ex  
+  )
+  {
+    ex.printStackTrace();
+    //System.exit(1);
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
   
   private
   class NextParameterPassTask
@@ -201,11 +266,11 @@ class JBuilderParamDialog
     {
       try {
 	pTopPanel.addNextSetupPass();
-	firstPassEnableButtons();
+	if (pTopPanel.allParamsReady())
+	  firstPassEnableButtons();
       }
       catch (PipelineException ex) {
-	ex.printStackTrace();
-	//TODO handle exception with a callback to GUI
+	handleException(ex);
       }
     }
   }
@@ -223,13 +288,118 @@ class JBuilderParamDialog
 	pMorePasses = pBuilder.getNextSetupPass(false);
       }
       catch (PipelineException ex) {
-	ex.printStackTrace();
-	//TODO handle exception with a callback to GUI 
+	handleException(ex);
       }
       if (pMorePasses)
 	SwingUtilities.invokeLater(new NextParameterPassTask());
+      else {
+	disableAllButtons();
+	pLoop = 2;
+	pBuilder.new ExecutionOrderThread().start();
+      }
+    }
+  }
+  
+  public
+  class PrepareConstructPassesTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      pExecutionOrder = new LinkedList<ConstructPass>(pBuilder.getExecutionOrder());
+      pTopPanel.prepareConstructLoop(pExecutionOrder);
+      secondPassEnableButtons();
+    }
+  }
+  
+  private 
+  class RunAllConstructPassTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      LinkedList<ConstructPass> run = new LinkedList<ConstructPass>(pExecutionOrder);
+      for (ConstructPass pass : run) {
+	try {
+	  pass.run();
+	  pExecutionOrder.remove(pass);
+	  if (pAbort)
+	    throw new PipelineException("Execution halted by user!");
+	  SwingUtilities.invokeLater(new DuringAllConstructPassTask());
+	}
+	catch (PipelineException ex) {
+	  handleException(ex);
+	}
+      }
+      pRunning =  false;
+      SwingUtilities.invokeLater(new AfterAllConstructPassTask());
+    }
+  }
+  
+  private
+  class DuringAllConstructPassTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      pTopPanel.makeNextActive();
+    }
+  }
+  
+  private
+  class AfterAllConstructPassTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      finish();
+    }
+  }
+  
+  private 
+  class RunOneConstructPassTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      ConstructPass pass = pExecutionOrder.poll();
+      if (pass != null)
+	try {
+	  pass.run();
+	  SwingUtilities.invokeLater(new AfterOneConstructPassTask());
+	}
+	catch (PipelineException ex) {
+	  handleException(ex);
+	}
+    }
+  }
+  
+  private
+  class AfterOneConstructPassTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      if (pAbort)
+	handleException(new PipelineException("Execution halted by user!"));
+      pRunning = false;
+      pTopPanel.makeNextActive();
+      if (!pExecutionOrder.isEmpty())
+	secondPassEnableButtons();
       else
-	; //Need to move onto the second loop now.
+	finish();
     }
   }
   
@@ -255,8 +425,13 @@ class JBuilderParamDialog
   
   private BaseBuilder pBuilder;
   
+  private boolean pAbort;
+  
   private int pLoop;
   
   private JBuilderTopPanel pTopPanel;
   
+  private LinkedList<ConstructPass> pExecutionOrder;
+  
+  private boolean pRunning;
 }

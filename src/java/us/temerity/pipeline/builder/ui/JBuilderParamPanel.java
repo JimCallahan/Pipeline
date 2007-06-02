@@ -89,7 +89,7 @@ public class JBuilderParamPanel
         JDrawer colDraw = new JDrawer(columnName, finalBox, isOpen);
         
         JScrollPane scroll = 
-          makeInternalScrollPane(colDraw, new Dimension(sTSize + sVSize + 35, 100));
+          makeInternalScrollPane(colDraw, new Dimension(sTSize + sVSize + 50, 100));
         
         this.add(scroll);
         if(multiColumn && col < numCol)
@@ -474,6 +474,12 @@ public class JBuilderParamPanel
   {
     for (Component comp : pCompToParam.keySet())
       comp.setEnabled(false);
+  }
+  
+  public static int
+  returnWidth()
+  {
+    return sTSize + sVSize + 50;
   }
 
   

@@ -286,7 +286,7 @@ Gui()
 {
   <GUI> 
   { 
-    BaseBuilder.setUsingGUI(true);
+    pApp.setUsingGUI(true);
   }
 }
 

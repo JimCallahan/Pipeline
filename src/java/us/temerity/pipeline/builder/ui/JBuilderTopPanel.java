@@ -1,23 +1,35 @@
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.util.*;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.*;
 
-import us.temerity.pipeline.LogMgr;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilder;
+import us.temerity.pipeline.builder.BaseNames;
+import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
 import us.temerity.pipeline.builder.BaseBuilder.SetupPass;
 import us.temerity.pipeline.builder.HasBuilderParams.PrefixedName;
 import us.temerity.pipeline.ui.*;
 
+/*------------------------------------------------------------------------------------------*/
+/*   B U I L D E R   T O P   P A N E L                                                      */
+/*------------------------------------------------------------------------------------------*/
 
 public 
 class JBuilderTopPanel
   extends JPanel
-  implements ComponentListener
+  implements ComponentListener, TreeSelectionListener
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
   
   public JBuilderTopPanel
   (
@@ -28,15 +40,18 @@ class JBuilderTopPanel
     super();
     pBuilder = builder;
     
+    pViewedYet = new ListMap<DefaultMutableTreeNode, Boolean>();
+    
     BoxLayout layout = new BoxLayout(this, BoxLayout.X_AXIS);
     this.setLayout(layout);
     
-    jSplitPane = new JHorzSplitPanel();
-    jSplitPane.setDividerLocation(100);
+    pSplitPane = new JHorzSplitPanel();
+    pSplitPane.setDividerLocation(325);
+    pSplitPane.setResizeWeight(.1);
     
-    jSecondSplitPane = new JVertSplitPanel();
-    jSecondSplitPane.setDividerLocation(.5);
-    jSecondSplitPane.setResizeWeight(.5);
+    pSecondSplitPane = new JVertSplitPanel();
+    pSecondSplitPane.setDividerLocation(.5);
+    pSecondSplitPane.setResizeWeight(.5);
     
     {
       {
@@ -46,16 +61,52 @@ class JBuilderTopPanel
 	pLogArea.setLineWrap(true);
 	LogMgr.getInstance().logToTextArea(pLogArea);
       }
+      
       JScrollPane scroll = new JScrollPane(pLogArea);
       scroll.addComponentListener(this);
-      jSecondSplitPane.setBottomComponent(scroll);
+      pSecondSplitPane.setBottomComponent(scroll);
     }
     {
       pTreeCardPanel = new JPanel();
       pTreeCardLayout = new CardLayout();
       pTreeCardPanel.setLayout(pTreeCardLayout);
+      pTreeCardPanel.setMinimumSize(new Dimension(325, 0));
       
-      jSplitPane.setLeftComponent(pTreeCardPanel);
+      {
+	DefaultMutableTreeNode root = new DefaultMutableTreeNode(new BuilderTreeNodeInfo(""), true);
+	DefaultTreeModel model = new DefaultTreeModel(root, true);
+	
+	pTree = new JFancyTree(model); 
+	pTree.setName("DarkTree");
+	
+	pTree.setCellRenderer(new JBuilderTreeCellRenderer());
+	pTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+	pTree.setExpandsSelectedPaths(true);
+	JScrollPane scroll = new JScrollPane(pTree);
+	scroll.setMinimumSize(new Dimension(325, 0));
+	pTreeCardPanel.add(scroll, aSetupPasses);
+	pTreeCardLayout.show(pTreeCardPanel, aSetupPasses);
+      }
+      {
+	DefaultMutableTreeNode root = new DefaultMutableTreeNode(new BuilderTreeNodeInfo(""), true);
+	DefaultTreeModel model = new DefaultTreeModel(root, true);
+	
+	pSecondTree = new JFancyTree(model); 
+	pSecondTree.setName("DarkTree");
+	
+	pSecondTree.setCellRenderer(new JBuilderTreeCellRenderer());
+	pSecondTree.setSelectionModel(null);
+	pSecondTree.setExpandsSelectedPaths(true);
+	pSecondTree.addTreeSelectionListener(this);
+	JScrollPane scroll = new JScrollPane(pSecondTree);
+	pTreeCardPanel.add(scroll, aConstructPasses);
+      }
+      {
+	JScrollPane scroll = new JScrollPane(pTreeCardPanel);
+	scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+	//pSplitPane.setLeftComponent(pTreeCardPanel);
+	pSplitPane.setLeftComponent(scroll);
+      }
     }
     {
       pFirstPassPanel = new JPanel();
@@ -63,12 +114,16 @@ class JBuilderTopPanel
       pFirstPassPanel.setLayout(pFirstPassLayouts);
       pFirstPassPanel.setAlignmentX(LEFT_ALIGNMENT);
       pFirstPassPanel.setAlignmentY(TOP_ALIGNMENT);
+      Dimension size = new Dimension(JBuilderParamPanel.returnWidth() * 3, 100);
+      pFirstPassPanel.setMinimumSize(size);
+      pFirstPassPanel.setPreferredSize(size);
+      pFirstPassPanel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));      
     }
     {  
-      jSecondSplitPane.setTopComponent(pFirstPassPanel);
+      pSecondSplitPane.setTopComponent(pFirstPassPanel);
     }
     {
-      jSplitPane.setRightComponent(jSecondSplitPane);
+      pSplitPane.setRightComponent(pSecondSplitPane);
     }
     {
       BaseBuilder theBuilder = pBuilder.getCurrentBuilder();
@@ -77,21 +132,87 @@ class JBuilderTopPanel
       int passNum = theBuilder.getCurrentPass();
       
       JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum);
+      pActiveNode = createTreeNodes(prefixName.toString());
+      ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
       pFirstPassPanel.add(paramPanel, prefixName.toString());
+      {
+	Map<String, BaseNames> namers = theBuilder.getNamers();
+	for (String name : namers.keySet()) {
+	  BaseNames baseName = namers.get(name);
+	  PrefixedName prefixName2 = new PrefixedName(theBuilder.getPrefixedName(), name);
+	  JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1);
+	  DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
+	  ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
+	  pFirstPassPanel.add(namerPanel, prefixName2.toString());
+	  pViewedYet.put(node, false);
+	}
+      }
       pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
+      {
+	TreePath treePath = new TreePath(pActiveNode.getPath());
+	pTree.setSelectionPath(treePath);
+      }
+      
+      pFirstPassPanel.add(new JPanel(), aEmpty);
     }
-    this.add(jSplitPane);
+    this.add(pSplitPane);
   }
+  
+  public void
+  setupListeners()
+  {
+    pTree.addTreeSelectionListener((JBuilderParamDialog) this.getTopLevelAncestor());
+    pTree.addTreeSelectionListener(this);
+  }
+  
+  /*-- SETUP PASSES ------------------------------------------------------------------------*/
   
   public void
   addNextSetupPass() 
     throws PipelineException
   {
+    ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
+    {
+      for (DefaultMutableTreeNode node : pViewedYet.keySet()) {
+	((BuilderTreeNodeInfo) node.getUserObject()).setDone();
+      }
+      pViewedYet.clear();
+    }
+    
     BaseBuilder theBuilder = pBuilder.getCurrentBuilder();
     SetupPass pass = pBuilder.getCurrentSetupPass();
     PrefixedName prefixName = new PrefixedName(theBuilder.getPrefixedName(), pass.getName());
     int passNum = theBuilder.getCurrentPass();
     JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum);
+    
+    pActiveNode = createTreeNodes(prefixName.toString());
+    ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
+    {
+      Map<String, BaseNames> namers = theBuilder.getNamers();
+      for (String name : namers.keySet()) {
+	BaseNames baseName = namers.get(name);
+	PrefixedName prefixName2 = new PrefixedName(theBuilder.getPrefixedName(), name);
+	JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1);
+	DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
+	((BuilderTreeNodeInfo) node.getUserObject()).setActive();
+	pFirstPassPanel.add(namerPanel, prefixName2.toString());
+	pViewedYet.put(node, false);
+      }
+    }
+    {
+      TreePath treePath = new TreePath(pActiveNode.getPath());
+      pTree.setSelectionPath(treePath);
+    }
+    setCurrentBuilderParamPanel(paramPanel, prefixName);
+  }
+  
+  private void
+  setCurrentBuilderParamPanel
+  (
+    JBuilderParamPanel paramPanel,
+    PrefixedName prefixName
+  )
+  {
     pFirstPassPanel.add(paramPanel, prefixName.toString());
     pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
   }
@@ -99,30 +220,118 @@ class JBuilderTopPanel
   public JBuilderParamPanel
   getCurrentBuilderParamPanel()
   {
-    return (JBuilderParamPanel) pFirstPassPanel.getComponent(0);
+    for (Component c : pFirstPassPanel.getComponents()) {
+      if (c.isVisible() && c instanceof JBuilderParamPanel)
+	return (JBuilderParamPanel) c;
+    }
+    return null;
   }
   
-  public void 
-  listPanels()
+  /**
+   * Create the set of tree nodes corresponding to the given panel path.
+   * 
+   * @param path 
+   *    The "-" seperated panel title path.
+   */ 
+  @SuppressWarnings("unchecked")
+  private DefaultMutableTreeNode 
+  createTreeNodes
+  (
+   String path
+  ) 
   {
-    for (Component c : pFirstPassPanel.getComponents())
-    {
-      System.out.println(c);
+    DefaultTreeModel model = (DefaultTreeModel) pTree.getModel();
+    DefaultMutableTreeNode parent = (DefaultMutableTreeNode) model.getRoot();
+
+    String paths[] = path.split("-");
+    int wk;
+    for(wk=0; wk<paths.length; wk++) {
+      DefaultMutableTreeNode next = null;
+      {
+	Enumeration e = parent.children();
+	if(e != null) {
+	  while(e.hasMoreElements()) {
+	    DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) e.nextElement(); 
+	    String name = ((BuilderTreeNodeInfo) tnode.getUserObject()).getText();
+	    if(name.equals(paths[wk])) {
+	      next = tnode;
+	      break;
+	    }
+	  }
+	}
+      }
+
+      if(next == null) {
+	next = new DefaultMutableTreeNode(new BuilderTreeNodeInfo(paths[wk]), wk < (paths.length-1));
+	model.insertNodeInto(next, parent, parent.getChildCount());
+	TreePath treePath = new TreePath(next.getPath());
+	pTree.expandPath(treePath);
+      }
+      parent = next;
     }
+    {
+      TreePath treePath = new TreePath(parent.getPath());
+      pTree.setSelectionPath(treePath);
+    }
+    return parent;
   }
+  
+  public boolean
+  allParamsReady()
+  {
+    for (boolean bool : pViewedYet.values())
+      if (!bool)
+	return bool;
+    return true;
+  }
+  
+  /*-- CONSTRUCT PASSES --------------------------------------------------------------------*/
   
   public void
-  setLeftSplitDivider
+  prepareConstructLoop
   (
-    double percentage 
+    LinkedList<ConstructPass> executionOrder
   )
   {
-    jSecondSplitPane.setDividerLocation(percentage);
+    pFirstPassLayouts.show(pFirstPassPanel, aEmpty);
+    DefaultTreeModel model = (DefaultTreeModel) pSecondTree.getModel();
+    DefaultMutableTreeNode parent = (DefaultMutableTreeNode) model.getRoot();
+    
+    for (ConstructPass pass : executionOrder) {
+      String name = pass.toString();
+      DefaultMutableTreeNode node = 
+	new DefaultMutableTreeNode(new BuilderTreeNodeInfo(name), false);
+      model.insertNodeInto(node, parent, parent.getChildCount());
+    }
+    pTreeCardLayout.show(pTreeCardPanel, aConstructPasses);
+    pActiveNode = (DefaultMutableTreeNode) model.getChild(parent, 0);
+    ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
   }
+  
+  public synchronized void
+  makeNextActive()
+  {
+    DefaultTreeModel model = (DefaultTreeModel) pSecondTree.getModel();
+    ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
+    model.nodeChanged(pActiveNode);
+    pActiveNode = pActiveNode.getNextSibling();
+    if (pActiveNode != null)
+      ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
+    model.nodeChanged(pActiveNode);
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
   
   public void 
   componentHidden
   (
+    @SuppressWarnings("unused")
     ComponentEvent e
   )
   {}
@@ -130,6 +339,7 @@ class JBuilderTopPanel
   public void 
   componentMoved
   (
+    @SuppressWarnings("unused")
     ComponentEvent e
   )
   {}
@@ -152,23 +362,89 @@ class JBuilderTopPanel
   public void 
   componentShown
   (
+    @SuppressWarnings("unused")
     ComponentEvent e
   )
   {}
+  
+  /*-- TREE SELECTION LISTENER METHODS -----------------------------------------------------*/
+  
+  /**
+   * Called whenever the value of the selection changes.
+   */ 
+  public void 
+  valueChanged
+  (
+    TreeSelectionEvent e
+  )
+  {
+    TreePath tpath = pTree.getSelectionPath(); 
+    DefaultMutableTreeNode newNode = null;
+    if(tpath != null) {
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      if(tnode.isLeaf()) {
+	String title = null;
+	{
+	  StringBuilder buf = new StringBuilder();
+	  TreeNode path[] = tnode.getPath();
+	  int wk;
+	  for(wk=1; wk<path.length-1; wk++) {
+	    BuilderTreeNodeInfo info = 
+	      (BuilderTreeNodeInfo) ((DefaultMutableTreeNode) path[wk]).getUserObject(); 
+	    buf.append(info.getText() + "-");
+	  }
+	  BuilderTreeNodeInfo info = 
+	      (BuilderTreeNodeInfo) ((DefaultMutableTreeNode) path[wk]).getUserObject();
+	  buf.append(info.getText());
+	  title = buf.toString();
+	  newNode = (DefaultMutableTreeNode) path[wk];
+	}
 
+	pFirstPassLayouts.show(pFirstPassPanel, title);
+	for (DefaultMutableTreeNode node : pViewedYet.keySet()) {
+	  if (node.equals(newNode))
+	    pViewedYet.put(node, true);
+	}
+	return;
+      }
+    }
+    pFirstPassLayouts.show(pFirstPassPanel, " ");
+  }
   
-  private BaseBuilder pBuilder;
-  private JPanel pTreeCardPanel;
-  private JPanel pFirstPassPanel;
-  private JTextArea pLogArea;
-  private JSplitPane jSplitPane;
-  private JSplitPane jSecondSplitPane;
   
-  private CardLayout pTreeCardLayout;
   
-  private JFancyTree pTree;
-  
-  private CardLayout pFirstPassLayouts;
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 634240817965602649L;
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  private BaseBuilder pBuilder;
+
+  private JPanel pTreeCardPanel;
+  private JPanel pFirstPassPanel;
+  
+  private JTextArea pLogArea;
+  
+  private JSplitPane pSplitPane;
+  private JSplitPane pSecondSplitPane;
+  
+  private CardLayout pTreeCardLayout;
+  private CardLayout pFirstPassLayouts;
+  private JFancyTree pTree;
+  private JFancyTree pSecondTree;
+  
+  private DefaultMutableTreeNode pActiveNode;
+  
+  private ListMap<DefaultMutableTreeNode, Boolean> pViewedYet;
+  
+  private static final String aConstructPasses = "ConstructPasses";
+  private static final String aSetupPasses = "SetupPasses";
+  private static final String aEmpty = "Empty";
 }

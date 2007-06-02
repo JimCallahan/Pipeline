@@ -224,6 +224,12 @@ class BaseBuilder
       throw new IllegalArgumentException
         ("This builder does not contain a Sub-Builder with the name (" + instanceName + ").");
   }
+  
+  public Map<String, BaseNames>
+  getNamers()
+  {
+    return Collections.unmodifiableMap(pSubNames);
+  }
 
   /**
    * Gets a Sub-Builder that has not been initialized yet.
@@ -461,6 +467,7 @@ class BaseBuilder
     sLog.log(Kind.Ops, Level.Fine, "Starting the command line execution.");
     boolean finish = false;
     try {
+      sLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
       executeFirstLoop();
       buildSecondLoopExecutionOrder();
       executeSecondLoop();
@@ -624,9 +631,10 @@ class BaseBuilder
   executeFirstLoop()
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
     for (SetupPass pass : pFirstLoopPasses) {
       assignCommandLineParams();
+      for (BaseNames namers : pSubNames.values())
+	namers.assignCommandLineParams();
       pass.run();
       Iterator<String> subBuilders = pSubBuilders.keySet().iterator();
       while (subBuilders.hasNext()) {
@@ -639,6 +647,7 @@ class BaseBuilder
       }
       pCurrentPass++;
     }
+    sCheckInOrder.add(this);
   }
   
   /**
@@ -647,6 +656,9 @@ class BaseBuilder
    * Loops through all the ConstructPasses that have been registered. Those that have
    * dependencies as set by {@link #addPassDependency(ConstructPass, ConstructPass)} will be
    * deferred until their dependencies have run.
+   * <p>
+   * Users should never need to call this method.  It is only public to facilitate GUI
+   * interaction.
    * 
    * @throws PipelineException
    *         If there is no way to resolve the execution order due to unresolvable
@@ -702,6 +714,12 @@ class BaseBuilder
       number = newNumber;
     }
   }
+  
+  public final List<ConstructPass>
+  getExecutionOrder()
+  {
+    return Collections.unmodifiableList(pExecutionOrder);
+  }
 
   /**
    * Runs all the ConstructPasses in the order that was determined by
@@ -723,9 +741,11 @@ class BaseBuilder
   executeCheckIn()
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Fine, "Beginning execution of the check-ins.");
-    if (performCheckIn()) {
-      checkInNodes(getNodesToCheckIn(), VersionID.Level.Minor, getCheckInMessage());
+    sLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
+    for (BaseBuilder builder : sCheckInOrder) {
+      if (builder.performCheckIn()) {
+	builder.checkInNodes(getNodesToCheckIn(), VersionID.Level.Minor, getCheckInMessage());
+      }
     }
   }
 
@@ -1125,15 +1145,14 @@ class BaseBuilder
   /*  G U I   S P E C I F I C   M E T H O D S                                               */
   /*----------------------------------------------------------------------------------------*/
   
-  public synchronized void
-  setAbort
-  (
-    boolean abort
-  )
-  {
-    pAbort = abort;
-  }
-  
+  /**
+   * Gets the next setup pass for the builder to run in GUI mode.
+   * <P>
+   * Users should never have to call this method.
+   * 
+   * @param first
+   *        Is this the first time we're asking for a Setup Pass?
+   */
   public synchronized boolean
   getNextSetupPass(boolean first) 
     throws PipelineException
@@ -1148,14 +1167,17 @@ class BaseBuilder
     
     // This means that current builder has the next pass to get run.
     if (totalPasses == remainingPasses && totalPasses > 0) {
-      if (first)
+      if (first) {
 	pCurrentBuilder.assignCommandLineParams();
+	for (BaseNames namer : pCurrentBuilder.getNamers().values())
+	  namer.assignCommandLineParams();
+      }
       pNextSetupPass = pCurrentBuilder.pRemainingFirstLoopPasses.poll();
       if (pCurrentBuilder.pSubBuilders.size() > 0) {
 	initNextBuilder();
       }
     }
-    // This means the current pass is out of passes, so look at the first subbuilder.
+    // This means the current builder is out of passes, so look at the first subbuilder.
     else if (pCurrentBuilder.pSubBuilders.size() > 0) {
       initNextBuilder();
       getNextSetupPass(first);
@@ -1163,6 +1185,8 @@ class BaseBuilder
     // This means the current builder has passes left.
     else if (pCurrentBuilder.pRemainingFirstLoopPasses.size() > 0) {
       pCurrentBuilder.assignCommandLineParams();
+      for (BaseNames namer : pCurrentBuilder.getNamers().values())
+	namer.assignCommandLineParams();
       pNextSetupPass = pCurrentBuilder.pRemainingFirstLoopPasses.poll();
       if (pCurrentBuilder.pSubBuilders.size() > 0) {
 	initNextBuilder();
@@ -1175,6 +1199,7 @@ class BaseBuilder
 	BaseBuilder parent = callHierarchy.poll();
 	parent.pSubBuilders.remove(pCurrentBuilder.getName());
 	parent.pPreppedBuilders.put(pCurrentBuilder.getName(), pCurrentBuilder);
+	sCheckInOrder.add(pCurrentBuilder);
 	pNextBuilder = parent;
 	getNextSetupPass(first);
       }
@@ -1190,6 +1215,8 @@ class BaseBuilder
     String nextName = new TreeSet<String>(pCurrentBuilder.pSubBuilders.keySet()).first();
     pNextBuilder = pCurrentBuilder.pSubBuilders.get(nextName);
     pNextBuilder.assignCommandLineParams();
+    for (BaseNames namer : pNextBuilder.getNamers().values())
+      namer.assignCommandLineParams();
     if (!pNextBuilder.pInitialized) {
       pCurrentBuilder.initializeSubBuilder(nextName);
       pNextBuilder.pInitialized = true;
@@ -1222,13 +1249,28 @@ class BaseBuilder
   /*   P A R S E R   M E T H O D S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Should never be called by the user.
+   * <p>
+   * This method is called by by the App that runs the builder.
+   * 
+   * @throws PipelineException If this method is called more than once.
+   */
   public static void
   setUsingGUI
   (
     boolean usingGUI
-  )
+  ) 
+    throws PipelineException
   {
-    sUsingGUI = usingGUI;
+    sLog.log(Kind.Bld, Level.Fine, "Setting the GUI values to " + usingGUI);
+    if (!sSetGUI) {
+      sUsingGUI = usingGUI;
+      sSetGUI = true;
+    }
+    else
+      throw new PipelineException("Cannot set the GUI flag twice.");
+      
   }
   
   public static void
@@ -1254,6 +1296,7 @@ class BaseBuilder
     String value
   )
   {
+    builder = builder.replaceAll("-", " - ");
     sLog.log(Kind.Arg, Level.Finest, 
       "Reading command line arg for Builder (" + builder + ").\n" +
       "Keys are (" + keys + ").\n" +
@@ -1340,7 +1383,11 @@ class BaseBuilder
    */
   private static boolean sUsingGUI = false;
   
+  private static boolean sSetGUI = false;
+  
   private static boolean sAbortOnBadParam = false;
+  
+  private static LinkedList<BaseBuilder> sCheckInOrder = new LinkedList<BaseBuilder>(); 
 
   
   
@@ -1394,15 +1441,6 @@ class BaseBuilder
   
   private BaseBuilder pNextBuilder;
   
-  /**
-   * Early termination variable for GUI mode.
-   * <p>
-   * This is checked each time before a ConstructPass is run.  If it is <code>true</code>, then
-   * a {@link PipelineException} is thrown and the pass is not run.  The Exception should
-   * end up triggering the error handling code.
-   */
-  private boolean pAbort;
-  
   private boolean pInitialized;
   
   /**
@@ -1414,7 +1452,7 @@ class BaseBuilder
   
   private SetupPass pNextSetupPass;
   
-  
+  private JBuilderParamDialog pGuiDialog;
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -1495,7 +1533,6 @@ class BaseBuilder
       TreeSet<String> listOfNames = new TreeSet<String>(pSubNames.keySet());
       for(String name : listOfNames) {
 	BaseNames names = pSubNames.get(name);
-	names.assignCommandLineParams();
 	initializeSubBuilder(name);
 	names.generateNames();
 	pSubNames.remove(name);
@@ -1582,6 +1619,7 @@ class BaseBuilder
       return getBuilderFromPass(this);
     }
     
+    @Override
     public String
     toString()
     {
@@ -1592,6 +1630,16 @@ class BaseBuilder
 	message += builder.getPrefixedName();
       message += ")";
       return message;
+    }
+    
+    @Override
+    public boolean
+    equals
+    (
+      Object that
+    )
+    {
+      return this == that; 
     }
     
     private static final long serialVersionUID = 2397375949761850587L;
@@ -1713,15 +1761,16 @@ class BaseBuilder
       pBuilder = builder;
     }
     
+    @Override
     public void 
     run() 
     {  
       UIFactory.initializePipelineUI();
       try {
 	getNextSetupPass(true);
-	JBuilderParamDialog main = new JBuilderParamDialog(pBuilder);
-	main.initUI();
-	main.setVisible(true);
+	pGuiDialog = new JBuilderParamDialog(pBuilder);
+	pGuiDialog.initUI();
+	pGuiDialog.setVisible(true);
       }
       catch (PipelineException e) {
 	System.err.println("Problem initializing builder in gui mode.\n" + e.getMessage());
@@ -1730,5 +1779,53 @@ class BaseBuilder
     }
     
     private BaseBuilder pBuilder;
+  }
+  
+  public class
+  ExecutionOrderThread
+    extends Thread
+  {
+    @Override
+    public void 
+    run() 
+    {
+      try {
+	buildSecondLoopExecutionOrder();
+	SwingUtilities.invokeLater(pGuiDialog.new PrepareConstructPassesTask());
+      }
+      catch (PipelineException ex) {
+	pGuiDialog.handleException(ex);
+      }
+    }
+  }
+  
+  public 
+  class CheckinTask
+    extends Thread
+  {
+    @Override
+    public void
+    run()
+    {
+      try {
+	executeCheckIn();
+	SwingUtilities.invokeLater(new AfterCheckinTask());
+      }
+      catch (PipelineException ex) {
+	pGuiDialog.handleException(ex);
+      }
+    }
+  }
+  
+  public
+  class AfterCheckinTask
+    extends Thread
+  {
+    @Override
+    public void
+    run()
+    {
+      pGuiDialog.reallyFinish();
+    }
   }
 }
