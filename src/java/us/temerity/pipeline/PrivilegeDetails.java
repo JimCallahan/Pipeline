@@ -1,4 +1,4 @@
-// $Id: PrivilegeDetails.java,v 1.2 2006/02/28 19:47:45 jim Exp $
+// $Id: PrivilegeDetails.java,v 1.3 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,6 +53,7 @@ class PrivilegeDetails
 
     pIsMasterAdmin  = privs.isMasterAdmin(); 
     pIsDeveloper    = privs.isDeveloper(); 
+    pIsAnnotator    = privs.isAnnotator(); 
     pIsQueueAdmin   = privs.isQueueAdmin(); 
     pIsQueueManager = privs.isQueueManager(); 
     pIsNodeManager  = privs.isNodeManager(); 

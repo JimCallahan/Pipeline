@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.6 2006/10/11 22:45:40 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.7 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -48,6 +48,10 @@ class PluginUpdateRsp
    *   The new or updated Tool plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
    * 
+   * @param annotations
+   *   The new or updated Annotation plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
+   * 
    * @param archivers
    *   The new or updated Archiver plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
@@ -69,6 +73,7 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> actions,
    TripleMap<String,String,VersionID,Object[]> comparators,
    TripleMap<String,String,VersionID,Object[]> tools,
+   TripleMap<String,String,VersionID,Object[]> annotations,
    TripleMap<String,String,VersionID,Object[]> archivers,
    TripleMap<String,String,VersionID,Object[]> masterExts, 
    TripleMap<String,String,VersionID,Object[]> queueExts
@@ -95,6 +100,10 @@ class PluginUpdateRsp
     if(tools == null) 
       throw new IllegalArgumentException("The Tool plugins cannot be (null)!");
     pTools = tools;
+
+    if(annotations == null) 
+      throw new IllegalArgumentException("The Annotation plugins cannot be (null)!");
+    pAnnotations = annotations;
 
     if(archivers == null) 
       throw new IllegalArgumentException("The Archiver plugins cannot be (null)!");
@@ -175,6 +184,16 @@ class PluginUpdateRsp
   }
 
   /**
+   * Gets the new or updated Annotation plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */
+  public TripleMap<String,String,VersionID,Object[]>
+  getAnnotations() 
+  {
+    return pAnnotations; 
+  }
+
+  /**
    * Gets the new or updated Archiver plugin class [name, bytes, supports] 
    * indexed by class name and revision number.
    */
@@ -250,6 +269,12 @@ class PluginUpdateRsp
    * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pTools; 
+
+  /**
+   * The new or updated Annotation plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,Object[]>  pAnnotations; 
 
   /**
    * The new or updated Archiver plugin class [name, bytes, supports] 

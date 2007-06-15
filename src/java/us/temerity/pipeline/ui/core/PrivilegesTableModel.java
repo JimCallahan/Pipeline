@@ -1,4 +1,4 @@
-// $Id: PrivilegesTableModel.java,v 1.2 2006/11/06 00:58:33 jim Exp $
+// $Id: PrivilegesTableModel.java,v 1.3 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -55,11 +55,12 @@ class PrivilegesTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 5;
+      pNumColumns = 6;
 
       {
 	String names[] = { 
-	  "Master Admin", "Developer", "Queue Admin", "Queue Manager", "Node Manager"
+	  "Master Admin", "Developer", "Annotator", 
+          "Queue Admin", "Queue Manager", "Node Manager"
 	};
 	pColumnNames = names;
       }
@@ -68,6 +69,7 @@ class PrivilegesTableModel
 	String desc[] = {
 	  "Whether the user has full administrative privileges.", 
 	  "Whether the user has developer privileges.", 
+	  "Whether the user has annotator privileges.", 
 	  "Whether the user has queue administration privileges.", 
 	  "Whether the user has queue manager privileges.", 
 	  "Whether the user has node manager privileges.", 
@@ -115,19 +117,23 @@ class PrivilegesTableModel
 	break;
 
       case 2:
-	value = new Boolean(privs.isQueueAdmin());  
+	value = new Boolean(privs.isAnnotator());
 	break;
 
       case 3:
-	value = new Boolean(privs.isQueueManager()); 
+	value = new Boolean(privs.isQueueAdmin());  
 	break;
 
       case 4:
+	value = new Boolean(privs.isQueueManager()); 
+	break;
+
+      case 5:
 	value = new Boolean(privs.isNodeManager()); 
 	break;
       
       default:
-	Boolean tf = pGroupMemberships.get(idx).get(pSortColumn-5);
+	Boolean tf = pGroupMemberships.get(idx).get(pSortColumn-6);
 	if(tf == null) 
 	  value = "";
 	else 
@@ -202,7 +208,7 @@ class PrivilegesTableModel
    int col
   )
   {
-    if(col < 5) 
+    if(col < 6) 
       return "Blue";
     return "";
   }
@@ -216,7 +222,7 @@ class PrivilegesTableModel
    int col
   ) 
   {
-    if(col < 5)
+    if(col < 6)
       return super.getColumnDescription(col);
     return "Work group membership.";
   }
@@ -230,7 +236,7 @@ class PrivilegesTableModel
    int col   
   )
   {
-    if(col < 5)
+    if(col < 6)
       return pPrivRenderer; 
     return pMemberRenderer;
   }
@@ -244,7 +250,7 @@ class PrivilegesTableModel
    int col   
   )
   {
-    if(col < 5) 
+    if(col < 6) 
       return pPrivEditor; 
     return pMemberEditor;
   }
@@ -273,7 +279,7 @@ class PrivilegesTableModel
   public int
   getColumnCount()
   {
-    return (pGroupNames.size() + 5);
+    return (pGroupNames.size() + 6);
   }
 
   /**
@@ -285,9 +291,9 @@ class PrivilegesTableModel
    int col
   ) 
   {
-    if(col < 5) 
+    if(col < 6) 
       return super.getColumnName(col);
-    return pGroupNames.get(col-5);
+    return pGroupNames.get(col-6);
   }
 
 
@@ -449,10 +455,11 @@ class PrivilegesTableModel
       
     case 1:
     case 2:
-    case 4:
+    case 3:
+    case 5:
       return new Boolean(!privs.isMasterAdmin());
       
-    case 3:
+    case 4:
       return new Boolean(!(privs.isMasterAdmin() || privs.isQueueAdmin()));
     }
 
@@ -479,16 +486,19 @@ class PrivilegesTableModel
       return new Boolean(privs.isDeveloper());
       
     case 2:
-      return new Boolean(privs.isQueueAdmin()); 
+      return new Boolean(privs.isAnnotator());
       
     case 3:
-      return new Boolean(privs.isQueueManager()); 
+      return new Boolean(privs.isQueueAdmin()); 
       
     case 4:
+      return new Boolean(privs.isQueueManager()); 
+      
+    case 5:
       return new Boolean(privs.isNodeManager()); 
     }
 
-    return pGroupMemberships.get(srow).get(col-5);
+    return pGroupMemberships.get(srow).get(col-6);
   }
 
   /**
@@ -543,22 +553,27 @@ class PrivilegesTableModel
       break;
       
     case 2:
-      privs.setQueueAdmin((Boolean) value);  
+      privs.setAnnotator((Boolean) value);
       pEditedPrivilegeIndices.add(srow);
       break;
       
     case 3:
-      privs.setQueueManager((Boolean) value); 
+      privs.setQueueAdmin((Boolean) value);  
       pEditedPrivilegeIndices.add(srow);
       break;
       
     case 4:
+      privs.setQueueManager((Boolean) value); 
+      pEditedPrivilegeIndices.add(srow);
+      break;
+      
+    case 5:
       privs.setNodeManager((Boolean) value); 
       pEditedPrivilegeIndices.add(srow);
       break;
       
     default:
-      pGroupMemberships.get(srow).set(col-5, (Boolean) value);
+      pGroupMemberships.get(srow).set(col-6, (Boolean) value);
       pEditedMemberIndices.add(srow);
     }
     
@@ -609,7 +624,7 @@ class PrivilegesTableModel
   private ArrayList<String>  pGroupNames; 
 
   /**
-   * The memberships of users in work groups indexed by user (row) and group (col-5).<P>
+   * The memberships of users in work groups indexed by user (row) and group (col-6).<P>
    * 
    * Where (true) = Manager, (false) = Member and (null) = Not part of group.
    */ 

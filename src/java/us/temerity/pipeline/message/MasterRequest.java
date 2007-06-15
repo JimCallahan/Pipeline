@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.57 2007/05/30 04:29:45 jim Exp $
+// $Id: MasterRequest.java,v 1.58 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -456,6 +456,34 @@ enum MasterRequest
    * An instance of {@link NodeGetNodeOwningReq} is next.
    */
   GetNodeOwning, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link NodeGetAnnotationReq} is next.
+   */
+  GetAnnotation, 
+  
+  /**
+   * An instance of {@link NodeGetAnnotationsReq} is next.
+   */
+  GetAnnotations, 
+  
+  /**
+   * An instance of {@link NodeAddAnnotationReq} is next.
+   */
+  AddAnnotation, 
+  
+  /**
+   * An instance of {@link NodeRemoveAnnotationReq} is next.
+   */
+  RemoveAnnotation, 
+  
+  /**
+   * An instance of {@link NodeRemoveAnnotationsReq} is next.
+   */
+  RemoveAnnotations, 
   
 
   /*----------------------------------------------------------------------------------------*/

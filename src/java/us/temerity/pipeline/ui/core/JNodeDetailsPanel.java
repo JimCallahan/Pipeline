@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.40 2007/05/16 13:14:56 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.41 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2450,16 +2450,18 @@ class JNodeDetailsPanel
 	Box hbox = new Box(BoxLayout.X_AXIS);
 	hbox.addComponentListener(this);
 
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
+        hbox.add(UIFactory.createSidebar());
+      
+// 	{
+// 	  JPanel spanel = new JPanel();
+// 	  spanel.setName("Spacer");
 	  
-	  spanel.setMinimumSize(new Dimension(7, 0));
-	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(7, 0));
+// 	  spanel.setMinimumSize(new Dimension(7, 0));
+// 	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+// 	  spanel.setPreferredSize(new Dimension(7, 0));
 	  
-	  hbox.add(spanel);
-	}
+// 	  hbox.add(spanel);
+// 	}
 
 	updateSingleActionParams(action, waction, caction, action.getSingleLayout(), hbox, 1);
 	

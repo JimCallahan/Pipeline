@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.55 2007/05/09 15:27:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -277,6 +277,12 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
+	("Create a new window containing a Node Annotations panel.", 
+	 "ManagerNodeAnnotationsWindow", "Node Annotations:"), 
+
+	new BasePref(),
+        
+	new HotKeyPref
 	("Create a new window containing a Queue Stats panel.",
 	 "ManagerJobServerStatsWindow", "Queue Stats:"),
 	
@@ -350,6 +356,12 @@ class GenUserPrefsApp
 	 "ManagerNodeHistoryPanel", "Node History:",
 	 false, false, false, 117),  /* F6 */ 
 
+	new BasePref(),
+
+	new HotKeyPref
+	("Change the panel type to a Node Annotations panel.", 
+	 "ManagerNodeAnnotationsPanel", "Node Annotations:"), 
+        
 	new BasePref(),
 
 	new HotKeyPref
@@ -1984,6 +1996,7 @@ class GenUserPrefsApp
 	manager.add("ManagerNodeFilesWindow");
 	manager.add("ManagerNodeLinksWindow");
 	manager.add("ManagerNodeHistoryWindow");
+	manager.add("ManagerNodeAnnotationsWindow");
 	manager.add("ManagerJobServerStatsWindow");
 	manager.add("ManagerJobServersWindow");
 	manager.add("ManagerJobSlotsWindow");
@@ -2001,6 +2014,7 @@ class GenUserPrefsApp
 	manager.add("ManagerNodeFilesPanel");
 	manager.add("ManagerNodeLinksPanel");
 	manager.add("ManagerNodeHistoryPanel");
+	manager.add("ManagerNodeAnnotationsPanel");
 	manager.add("ManagerJobServerStatsPanel");
 	manager.add("ManagerJobServersPanel");
 	manager.add("ManagerJobSlotsPanel");
@@ -2223,6 +2237,19 @@ class GenUserPrefsApp
     
       {
 	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeAnnotations", group);
+      
+	group.addAll(manager);
+	group.add(applyChanges);
+	group.add(edit);
+	group.add(editDefault);
+	group.add(editAsOwner);
+	group.addAll(jobs);
+	group.add(removeFiles);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
 	pHotKeyGroups.put("JobServerStats", group);
       
 	group.addAll(manager);
@@ -2409,7 +2436,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.55 2007/05/09 15:27:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2664,7 +2691,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.55 2007/05/09 15:27:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4021,7 +4048,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.55 2007/05/09 15:27:44 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -312,8 +312,7 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
                    $(shell ls $(srcdir)/utils/v2_0_14/*.java)
 
     MOST_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) $(MATH_SOURCES) \
-                   $(EVENT_SOURCES) $(TS_SOURCES) $(UTIL_SOURCES) $(BUILDER_SOURCS) \
-                   $(BUILDEXP_SOURCES) $(PLG_UTIL_SOURCES)
+                   $(EVENT_SOURCES) $(TS_SOURCES) $(UTIL_SOURCES) $(PLG_UTIL_SOURCES)
 
     CORE_PARSERS = BatchParser \
                    ToolsetEnvParser \
@@ -335,8 +334,6 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
     GLUE_PARSERS = GlueParser
 
 
-
-
          JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(MOST_SOURCES)) \
                         $(patsubst %,glue/io/%.java,$(GLUE_PARSERS)) \
                         PackageInfo.java 
@@ -351,6 +348,8 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
 
  JAVA_UI_CORE_SOURCES = $(filter-out $(ENUM_SOURCES),$(UI_CORE_SOURCES)) \
                         ui/core/UserPrefs.java ui/core/JUserPrefsDialog.java
+
+     JAVA_BLD_SOURCES = $(filter-out $(ENUM_SOURCES),$(BUILDER_SOURCES) $(BUILDEXP_SOURCES)) 
 
            BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                          bootstrap/BootStrapLoader.java
@@ -449,12 +448,13 @@ ui/core/prefs/GenUserPrefsApp.class: ui/core/prefs/GenUserPrefsApp.java
 	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/core/prefs -classpath $(srcdir)/ui/core/prefs $<
 
 java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOURCES) \
-          $(JAVA_UI_CORE_SOURCES) 
+          $(JAVA_UI_CORE_SOURCES) $(JAVA_BLD_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_MSG_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_UI_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_CORE_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_UI_CORE_SOURCES)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_BLD_SOURCES)
 	touch $@
 	ls core/*.class ui/core/*.class core/exts/*.class > vault-sources
 	rm -f $(top_builddir)/docs/javadoc/docs-all
@@ -503,6 +503,7 @@ web-icons: laf/scripts/build-web-icons textures
 
 install: all installdirs install-jar
 	$(MAKE) -C plugin $@
+	$(MAKE) -C builder $@
 
 install-jar: $(API_JAR) $(VAULT)
 	$(INSTALL) -m 444 $(API_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib

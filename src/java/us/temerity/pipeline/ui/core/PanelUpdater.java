@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.19 2007/05/29 18:52:17 jim Exp $
+// $Id: PanelUpdater.java,v 1.20 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -176,6 +176,19 @@ class PanelUpdater
     initPanels(panel);
   }
 
+  /**
+   * A panel update originating from the Node Annotatios panel. 
+   */ 
+  public
+  PanelUpdater
+  (
+   JNodeAnnotationsPanel panel
+  ) 
+  {
+    pLightweightNodeStatus = true;
+    initPanels(panel);
+  }
+
 
   /**
    * A panel update originating from the Queue Stats panel. 
@@ -285,6 +298,8 @@ class PanelUpdater
       pNodeFilesPanel   = master.getNodeFilesPanels().getPanel(pGroupID);   
       pNodeLinksPanel   = master.getNodeLinksPanels().getPanel(pGroupID);   
 
+      pNodeAnnotationsPanel = master.getNodeAnnotationsPanels().getPanel(pGroupID);   
+
       pQueueJobServerStatsPanel = master.getQueueJobServerStatsPanels().getPanel(pGroupID);
       pQueueJobServersPanel     = master.getQueueJobServersPanels().getPanel(pGroupID);
       pQueueJobSlotsPanel       = master.getQueueJobSlotsPanels().getPanel(pGroupID);
@@ -351,6 +366,10 @@ class PanelUpdater
       
       if((pNodeLinksPanel != null) && 
          pNodeLinksPanel.warnUnsavedChangesBeforeUpdate())
+        return;
+      
+      if((pNodeAnnotationsPanel != null) && 
+         pNodeAnnotationsPanel.warnUnsavedChangesBeforeUpdate())
         return;
       
       if(!pNodeDetailsOnly && !pJobSlotsSelectionOnly) {
@@ -724,6 +743,10 @@ class PanelUpdater
 	if(pNodeHistoryPanel != null) 
 	  pNodeHistoryPanel.applyPanelUpdates
 	    (pAuthor, pView, pDetailedNode, pNodeHistory, pOfflineVersionIDs);
+
+	/* node annotations */ 
+	if(pNodeAnnotationsPanel != null) 
+	  pNodeAnnotationsPanel.applyPanelUpdates(pAuthor, pView, pDetailedNode);
       }
 
       /* full update... */ 
@@ -817,6 +840,8 @@ class PanelUpdater
   private JNodeHistoryPanel  pNodeHistoryPanel; 
   private JNodeFilesPanel    pNodeFilesPanel;     
   private JNodeLinksPanel    pNodeLinksPanel;     
+
+  private JNodeAnnotationsPanel  pNodeAnnotationsPanel;     
 
   private JQueueJobServerStatsPanel  pQueueJobServerStatsPanel;
   private JQueueJobServersPanel      pQueueJobServersPanel;

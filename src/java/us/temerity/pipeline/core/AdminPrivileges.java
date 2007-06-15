@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.5 2006/12/20 15:10:43 jim Exp $
+// $Id: AdminPrivileges.java,v 1.6 2007/06/15 00:27:31 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -84,6 +84,29 @@ class AdminPrivileges
     
     Privileges privs = pPrivileges.get(requestor);
     return ((privs != null) && privs.isDeveloper());      
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the requesting user has been granted annotator privileges.
+   * 
+   * @param req
+   *   The request.
+   */ 
+  public synchronized boolean
+  isAnnotator
+  (
+   PrivilegedReq req
+  ) 
+  {
+    String requestor = req.getRequestor();
+    if(requestor.equals(PackageInfo.sPipelineUser))
+      return true;
+    
+    Privileges privs = pPrivileges.get(requestor);
+    return ((privs != null) && privs.isAnnotator());      
   }
 
 
@@ -441,29 +464,63 @@ class AdminPrivileges
   )
   {
     timer.resume();	
+    PrivilegeDetails details = getPrivilegeDetails(req.getUserName());
+    return new MiscGetPrivilegeDetailsRsp(timer, details);
+  }
 
+  /**
+   * Get the privileges granted to a specific user with respect to all other users. 
+   * 
+   * @param timer
+   *   The task timer.
+   * 
+   * @param req 
+   *   The request.
+   */ 
+  public synchronized PrivilegeDetails
+  getPrivilegeDetails
+  (
+   PrivilegedReq req
+  )
+  {	
+    return getPrivilegeDetails(req.getRequestor());
+  }
+
+  /**
+   * Get the privileges granted to a specific user with respect to all other users. 
+   * 
+   * @param uname
+   *   The name of the user who's privileges are being requested.
+   * 
+   * @return
+   *   The privilege details.
+   */ 
+  public synchronized PrivilegeDetails
+  getPrivilegeDetails
+  (
+   String uname
+  )
+  {
     PrivilegeDetails details = null;
-    {
-      String uname = req.getUserName();
-      if(uname.equals(PackageInfo.sPipelineUser)) {
-	Privileges privs = new Privileges();
-	privs.setMasterAdmin(true);
-	details = new PrivilegeDetails(privs, null);
-      }
+
+    if(uname.equals(PackageInfo.sPipelineUser)) {
+      Privileges privs = new Privileges();
+      privs.setMasterAdmin(true);
+      details = new PrivilegeDetails(privs, null);
+    }
+    else {
+      Privileges privs = pPrivileges.get(uname);
+      if(privs == null) 
+        details = new PrivilegeDetails();
       else {
-	Privileges privs = pPrivileges.get(uname);
-	if(privs == null) 
-	  details = new PrivilegeDetails();
-	else {
-	  Set<String> managed = null;
-	  if(privs.isQueueManager() || privs.isNodeManager()) 
-	    managed = pWorkGroups.getManagedUsers(uname);
-	  details = new PrivilegeDetails(privs, managed);
-	}
+        Set<String> managed = null;
+        if(privs.isQueueManager() || privs.isNodeManager()) 
+          managed = pWorkGroups.getManagedUsers(uname);
+        details = new PrivilegeDetails(privs, managed);
       }
     }
 
-    return new MiscGetPrivilegeDetailsRsp(timer, details);
+    return details;
   }
 
 

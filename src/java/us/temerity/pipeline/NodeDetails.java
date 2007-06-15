@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.18 2007/04/15 10:30:44 jim Exp $
+// $Id: NodeDetails.java,v 1.19 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -43,6 +43,9 @@ class NodeDetails
    * @param name 
    *   The fully resolved node name.
    * 
+   * @param annotations
+   *   The table of node annotation plugin instances indexed by annotation name.
+   * 
    * @param work
    *   The working version of the node.
    * 
@@ -68,6 +71,7 @@ class NodeDetails
   NodeDetails
   (
    String name, 
+   TreeMap<String,BaseAnnotation> annotations,
    NodeMod work, 
    NodeVersion base, 
    NodeVersion latest, 
@@ -82,6 +86,11 @@ class NodeDetails
     pName = name;
 
     pTimeStamp = TimeStamps.now();
+
+    if(annotations == null) 
+      throw new IllegalArgumentException
+        ("The node annotations table cannot be (null)!");
+    pAnnotations = annotations;
 
     if((work != null) && !work.getName().equals(pName))
       throw new IllegalArgumentException
@@ -143,6 +152,9 @@ class NodeDetails
    * @param name 
    *   The fully resolved node name.
    * 
+   * @param annotations
+   *   The table of node annotation plugin instances indexed by annotation name.
+   * 
    * @param work
    *   The working version of the node.
    * 
@@ -191,6 +203,7 @@ class NodeDetails
   NodeDetails
   (
    String name, 
+   TreeMap<String,BaseAnnotation> annotations,
    NodeMod work, 
    NodeVersion base, 
    NodeVersion latest, 
@@ -212,6 +225,11 @@ class NodeDetails
     pName = name;
 
     pTimeStamp = TimeStamps.now();
+
+    if(annotations == null) 
+      throw new IllegalArgumentException
+        ("The node annotations table cannot be (null)!");
+    pAnnotations = annotations;
 
     if((work != null) && !work.getName().equals(pName))
       throw new IllegalArgumentException
@@ -300,6 +318,18 @@ class NodeDetails
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the table of node annotation plugin instances indexed by annotation name. 
+   * 
+   * @return
+   *   The annotations (may be empty).
+   */ 
+  public TreeMap<String,BaseAnnotation>
+  getAnnotations()
+  {
+    return pAnnotations;
+  }
+
   /**
    * Get the working version of the node.
    * 
@@ -542,6 +572,120 @@ class NodeDetails
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseAction instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    out.writeObject(pName);
+    out.writeObject(pTimeStamp);
+
+    {
+      TreeMap<String,BaseAnnotation> annots = new TreeMap<String,BaseAnnotation>(); 
+      
+      for(String name : pAnnotations.keySet()) {
+        BaseAnnotation annot = pAnnotations.get(name);
+        if(annot != null) 
+          annots.put(name, new BaseAnnotation(annot));
+      }
+      
+      out.writeObject(annots);
+    }
+
+    out.writeObject(pWorkingVersion);
+    out.writeObject(pBaseVersion);
+    out.writeObject(pLatestVersion);
+    out.writeObject(pVersionIDs);
+
+    out.writeObject(pVersionState);
+    out.writeObject(pPropertyState);
+    out.writeObject(pLinkState);
+
+    out.writeObject(pIsLightweight);
+    out.writeObject(pOverallNodeState);
+    out.writeObject(pOverallQueueState);
+    out.writeObject(pFileStates);
+    out.writeObject(pFileTimeStamps);
+    out.writeObject(pIgnoreTimeStamps);
+    out.writeObject(pJobIDs);
+    out.writeObject(pQueueStates);
+  }
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * stream. 
+   */ 
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+     pName = (String) in.readObject();
+     pTimeStamp = (Long) in.readObject();
+
+     {
+       pAnnotations = new TreeMap<String,BaseAnnotation>(); 
+
+       TreeMap<String,BaseAnnotation> annots = 
+         (TreeMap<String,BaseAnnotation>) in.readObject();
+
+       for(String name : annots.keySet()) {
+         BaseAnnotation annot = annots.get(name);
+         if(annot != null) {
+           try {
+             PluginMgrClient client = PluginMgrClient.getInstance();
+             BaseAnnotation nannot = client.newAnnotation(annot.getName(), 
+                                                          annot.getVersionID(), 
+                                                          annot.getVendor());
+             nannot.setParamValues(annot);
+             pAnnotations.put(name, nannot);
+           }
+           catch(PipelineException ex) {
+             throw new IOException(ex.getMessage());
+           }
+         }
+       }
+     }
+
+     pWorkingVersion = (NodeMod) in.readObject();
+     pBaseVersion = (NodeVersion) in.readObject();
+     pLatestVersion = (NodeVersion) in.readObject();
+     pVersionIDs = (ArrayList<VersionID>) in.readObject();
+
+     pVersionState = (VersionState) in.readObject();
+     pPropertyState = (PropertyState) in.readObject();
+     pLinkState = (LinkState) in.readObject();
+
+     pIsLightweight = (Boolean) in.readObject();
+     pOverallNodeState = (OverallNodeState) in.readObject();
+     pOverallQueueState = (OverallQueueState) in.readObject();
+     pFileStates = (TreeMap<FileSeq,FileState[]>) in.readObject();
+     pFileTimeStamps = (long[]) in.readObject();
+     pIgnoreTimeStamps = (boolean[]) in.readObject();
+     pJobIDs = (Long[]) in.readObject();
+     pQueueStates = (QueueState[]) in.readObject();
+  }
+  
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -556,6 +700,9 @@ class NodeDetails
     encoder.encode("Name", pName); 
     encoder.encode("TimeStamp", pTimeStamp);
     
+    if(!pAnnotations.isEmpty()) 
+      encoder.encode("Annotations", pAnnotations);       
+
     if(pWorkingVersion != null) 
       encoder.encode("WorkingVersion", pWorkingVersion);
 
@@ -618,6 +765,11 @@ class NodeDetails
    */ 
   private long  pTimeStamp; 
 
+
+  /**
+   * The table of node annotation plugin instances indexed by annotation name. 
+   */ 
+  private TreeMap<String,BaseAnnotation>  pAnnotations; 
 
   /**
    * The working version of the node.

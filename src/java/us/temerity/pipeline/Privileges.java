@@ -1,4 +1,4 @@
-// $Id: Privileges.java,v 1.1 2006/01/15 06:29:25 jim Exp $
+// $Id: Privileges.java,v 1.2 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -51,6 +51,7 @@ class Privileges
   {
     pIsMasterAdmin  = privs.isMasterAdmin(); 
     pIsDeveloper    = privs.isDeveloper(); 
+    pIsAnnotator    = privs.isAnnotator(); 
     pIsQueueAdmin   = privs.isQueueAdmin(); 
     pIsQueueManager = privs.isQueueManager(); 
     pIsNodeManager  = privs.isNodeManager(); 
@@ -77,6 +78,7 @@ class Privileges
    * Includes all privileges granted to: <BR>
    * <DIV style="margin-left: 40px;">
    *   Developer<BR>
+   *   Annotator<BR>
    *   Queue Admin<BR>
    *   Queue Manager<BR>
    *   Node Manager
@@ -108,6 +110,7 @@ class Privileges
    * Includes all privileges granted to: <BR>
    * <DIV style="margin-left: 40px;">
    *   Developer<BR>
+   *   Annotator<BR>
    *   Queue Admin<BR>
    *   Queue Manager<BR>
    *   Node Manager
@@ -167,6 +170,50 @@ class Privileges
   ) 
   {
     pIsDeveloper = isDeveloper; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the user has been granted annotator privileges. <P> 
+   * 
+   * Privileges granted include:<BR>
+   * <DIV style="margin-left: 40px;">
+   *   Add and Remove node Annotations<BR>
+   *   Change the values of node Annotations
+   * <DIV><P> 
+   * 
+   * These privileges should be granted to users which manage the organizational structure 
+   * and policies of the studio through annotations and extension plugins which relying upon 
+   * these annotations.
+   */ 
+  public boolean
+  isAnnotator() 
+  {
+    return (pIsMasterAdmin || pIsAnnotator);
+  }
+
+  /**
+   * Set whether the user should be granted annotator privileges. <P> 
+   * 
+   * Privileges granted include:<BR>
+   * <DIV style="margin-left: 40px;">
+   *   Add and Remove node Annotations<BR>
+   *   Change the values of node Annotations
+   * <DIV><P> 
+   * 
+   * These privileges should be granted to users which manage the organizational structure 
+   * and policies of the studio through annotations and extension plugins which relying upon 
+   * these annotations.
+   */ 
+  public void 
+  setAnnotator
+  (
+   boolean isAnnotator
+  ) 
+  {
+    pIsAnnotator = isAnnotator; 
   }
 
 
@@ -336,7 +383,7 @@ class Privileges
   public boolean
   hasAnyPrivileges() 
   {
-    return (pIsMasterAdmin || pIsDeveloper || 
+    return (pIsMasterAdmin || pIsDeveloper || pIsAnnotator || 
 	    pIsQueueAdmin || pIsQueueManager || pIsNodeManager);
   }
 
@@ -355,6 +402,7 @@ class Privileges
   {
     encoder.encode("IsMasterAdmin", isMasterAdmin());
     encoder.encode("IsDeveloper", isDeveloper());
+    encoder.encode("IsAnnotator", isAnnotator());
     encoder.encode("IsQueueAdmin", isQueueAdmin());
     encoder.encode("IsQueueManager", isQueueManager());
     encoder.encode("IsNodeManager", isNodeManager());
@@ -375,6 +423,11 @@ class Privileges
     {
       Boolean tf = (Boolean) decoder.decode("IsDeveloper"); 
       pIsDeveloper = ((tf != null) && tf);
+    }
+
+    {
+      Boolean tf = (Boolean) decoder.decode("IsAnnotator"); 
+      pIsAnnotator = ((tf != null) && tf);
     }
 
     {
@@ -416,6 +469,11 @@ class Privileges
    * Whether the user has been granted developer privileges.
    */
   protected boolean  pIsDeveloper;
+
+  /**
+   * Whether the user has been granted annotator privileges.
+   */
+  protected boolean  pIsAnnotator;
 
   /**
    * Whether the user has been granted queue administration privileges.

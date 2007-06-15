@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.25 2007/04/13 10:56:35 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.26 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3466,12 +3466,18 @@ class JManageToolsetsDialog
 	    
 	    case Windows:
 	      {
-		String home    = PackageInfo.getHomePath(os).toOsString(os);
+		String profile = PackageInfo.getUserProfilePath().toOsString(os);
 		String working = PackageInfo.getWorkPath(os).toOsString(os);
 
 		buf.append
 		  ("set TOOLSET=" + toolset.getName() + "\n" +
-		   "set HOMEPATH=" + home + "\\%USERNAME%\n" +
+		   "set HOMEPATH=" + profile);
+                
+                if(PackageInfo.sWinUserProfileNeedsUser) 
+                  buf.append("\\%USERNAME%"); 
+
+                buf.append
+                  ("\n" +
 		   "set WORKING=" + working + "\\%USERNAME%\\default\n");
 		
 		TreeMap<String,String> env = toolset.getEnvironment();

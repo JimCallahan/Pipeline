@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.203 2007/05/30 04:29:44 jim Exp $
+// $Id: MasterMgr.java,v 1.204 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -398,6 +398,9 @@ class MasterMgr
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
       pNodeTree         = new NodeTree();
 
+      pAnnotationLocks = new HashMap<String,ReentrantReadWriteLock>();
+      pAnnotations     = new HashMap<String,TreeMap<String,BaseAnnotation>>();
+
       pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
       pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
 
@@ -492,6 +495,7 @@ class MasterMgr
 	("The root node directory (" + pNodeDir + ") does not exist!");
     
     ArrayList<File> dirs = new ArrayList<File>();
+    dirs.add(new File(pNodeDir, "annotations"));
     dirs.add(new File(pNodeDir, "repository"));
     dirs.add(new File(pNodeDir, "working"));
     dirs.add(new File(pNodeDir, "toolsets/packages"));
@@ -6061,6 +6065,276 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a specific annotation for the given node.<P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetAnnotationRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable determine the annotations.
+   */
+  public Object
+  getAnnotation
+  (
+   NodeGetAnnotationReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    String name  = req.getNodeName();
+    String aname = req.getAnnotationName(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+    lock.readLock().lock();
+    try {
+      timer.resume();
+    
+      BaseAnnotation annot = null;
+      {
+        TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+        if(table != null) 
+          annot = table.get(aname);
+      }
+
+      return new NodeGetAnnotationRsp(timer, annot);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }   
+  }
+
+  /**
+   * Get all of the annotations for the given node.<P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetAnnotationsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable determine the annotations.
+   */
+  public Object
+  getAnnotations
+  (
+   NodeGetAnnotationsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    String name = req.getNodeName();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+    lock.readLock().lock();
+    try {
+      timer.resume();
+    
+      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+
+      return new NodeGetAnnotationsRsp(timer, table);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+  
+  /**
+   * Add the given annotation to the set of current annotations for the given node.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the annotation.
+   */
+  public Object
+  addAnnotation
+  (
+   NodeAddAnnotationReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    String name          = req.getNodeName();
+    String aname         = req.getAnnotationName();
+    BaseAnnotation annot = req.getAnnotation();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+    
+      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+      if(table == null) 
+        table = new TreeMap<String,BaseAnnotation>();
+      
+      BaseAnnotation tannot = table.get(aname);
+      if((tannot == null) || 
+         !(tannot.getName().equals(annot.getName())) ||
+         !(tannot.getVersionID().equals(annot.getVersionID())) ||
+         !(tannot.getVendor().equals(annot.getVendor()))) {
+
+        if(!pAdminPrivileges.isAnnotator(req)) 
+          throw new PipelineException
+            ("Only a user with Annotator privileges may add new annotations or replace " + 
+             "existing annotations of with a different plugin Name, Version or Vendor!"); 
+        
+        table.put(aname, annot);
+      }
+      else {
+        tannot.setParamValues(annot, pAdminPrivileges.getPrivilegeDetails(req));
+      }
+
+      writeAnnotations(name, table);
+
+      synchronized(pAnnotations) {
+        pAnnotations.put(name, table);
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Remove a specific annotation from a node. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the annotation.
+   */
+  public Object
+  removeAnnotation
+  (
+   NodeRemoveAnnotationReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    String name  = req.getNodeName();
+    String aname = req.getAnnotationName();
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+    
+      if(!pAdminPrivileges.isAnnotator(req)) 
+        throw new PipelineException
+          ("Only a user with Annotator privileges may remove annotations from a node!");
+
+      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+      if(table == null) 
+        throw new PipelineException
+          ("No annotations exist for node (" + name + ")!"); 
+      
+      BaseAnnotation annot = table.get(aname);
+      if(annot == null) 
+        throw new PipelineException
+          ("No annotation name (" + aname + ") exists for node (" + name + ")!"); 
+            
+      table.remove(annot); 
+      writeAnnotations(name, table);
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Remove all annotations from a node. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the annotations.
+   */
+  public Object
+  removeAnnotations
+  (
+   NodeRemoveAnnotationsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    String name  = req.getNodeName();
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+    
+      if(!pAdminPrivileges.isAnnotator(req)) 
+        throw new PipelineException
+          ("Only a user with Annotator privileges may remove annotations from a node!");
+
+      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+      if(table == null) 
+        throw new PipelineException
+          ("No annotations exist for node (" + name + ")!"); 
+      
+      File file = new File(pNodeDir, "annotations" + name); 
+      if(!file.delete()) 
+        throw new PipelineException
+          ("Unable to remove the annotations file (" + file + ")!");        
+      
+      synchronized(pAnnotations) {
+        pAnnotations.remove(name); 
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */
@@ -8554,7 +8828,7 @@ class MasterMgr
 
       /* get the current status of the nodes */ 
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, 
+      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, true, 
 			    new LinkedList<String>(), table, timer);
 
       /* determine all checked-in versions required by the check-out operation */ 
@@ -8759,7 +9033,7 @@ class MasterMgr
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
-	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, 
+	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, true, 
 			      new LinkedList<String>(), stable, timer);
 	status = stable.get(name);
       }
@@ -8975,7 +9249,7 @@ class MasterMgr
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
-	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, 
+	performUpstreamNodeOp(new NodeOp(), nodeID, isLocked, true,
 			      new LinkedList<String>(), stable, timer);
 	status = stable.get(name);
       }
@@ -13883,7 +14157,8 @@ class MasterMgr
   {
     NodeStatus root = null;
     {
-      performUpstreamNodeOp(nodeOp, nodeID, false, new LinkedList<String>(), cache, timer);
+      performUpstreamNodeOp(nodeOp, nodeID, false, false, 
+                            new LinkedList<String>(), cache, timer);
 
       root = cache.get(nodeID.getName());
       if(root == null)
@@ -13924,6 +14199,9 @@ class MasterMgr
    * @param isTargetLinkLocked
    *   Whether a locked link from a checked-in target node to this node exists.
    * 
+   * @param ignoreAnnotations
+   *   Whether to skip the lookup of node annotations when generating NodeDetails.
+   * 
    * @param branch
    *   The names of the nodes from the root to this node.
    * 
@@ -13942,6 +14220,7 @@ class MasterMgr
    NodeOp nodeOp,
    NodeID nodeID, 
    boolean isTargetLinkLocked, 
+   boolean ignoreAnnotations, 
    LinkedList<String> branch, 
    HashMap<String,NodeStatus> table, 
    TaskTimer timer
@@ -13960,6 +14239,29 @@ class MasterMgr
     /* push the current node onto the end of the branch */ 
     branch.addLast(name);
     
+    /* node annotations */ 
+    TreeMap<String,BaseAnnotation> annotations = new TreeMap<String,BaseAnnotation>();
+    if(!ignoreAnnotations) {
+      timer.aquire();
+      ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+      lock.readLock().lock();
+      try {
+        timer.resume();
+      
+        TreeMap<String,BaseAnnotation> annots = getAnnotationsTable(name);
+        if(annots != null) {
+          for(String aname : annots.keySet()) {
+            BaseAnnotation annot = annots.get(aname);
+            if(annot != null) 
+              annotations.put(aname, (BaseAnnotation) annot.clone());
+          }
+        }
+      }
+      finally {
+        lock.readLock().unlock();
+      }   
+    }
+
     timer.aquire();
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
     workingLock.writeLock().lock();
@@ -14096,7 +14398,8 @@ class MasterMgr
 	  for(LinkVersion link : latest.getSources()) {
 	    NodeID lnodeID = new NodeID(nodeID, link.getName());
 	    
-	    performUpstreamNodeOp(nodeOp, lnodeID, link.isLocked(), branch, table, timer);
+	    performUpstreamNodeOp(nodeOp, lnodeID, link.isLocked(), ignoreAnnotations, 
+                                  branch, table, timer);
 	    NodeStatus lstatus = table.get(link.getName());
 	    
 	    status.addSource(lstatus);
@@ -14110,7 +14413,8 @@ class MasterMgr
 	  for(LinkMod link : work.getSources()) {
 	    NodeID lnodeID = new NodeID(nodeID, link.getName());
 	    
-	    performUpstreamNodeOp(nodeOp, lnodeID, false, branch, table, timer);
+	    performUpstreamNodeOp(nodeOp, lnodeID, false, ignoreAnnotations, 
+                                  branch, table, timer);
 	    NodeStatus lstatus = table.get(link.getName());
 	    
 	    status.addSource(lstatus);
@@ -14199,8 +14503,9 @@ class MasterMgr
 
       /* if only lightweight node status details are required this time... */ 
       if(nodeOp == null) {
-        NodeDetails details = new NodeDetails(name, work, base, latest, versionIDs, 
-                                              versionState, propertyState, linkState); 
+        NodeDetails details = 
+          new NodeDetails(name, annotations, work, base, latest, versionIDs, 
+                          versionState, propertyState, linkState); 
         status.setDetails(details);
       }
 
@@ -14924,7 +15229,7 @@ class MasterMgr
 
         /* create the node details */
         NodeDetails details = 
-          new NodeDetails(name, 
+          new NodeDetails(name, annotations,
                           work, base, latest, versionIDs, 
                           overallNodeState, overallQueueState, 
                           versionState, propertyState, linkState, 
@@ -15372,6 +15677,31 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Lookup the lock for the table of annotations for the node with the 
+   * given name. 
+   * 
+   * @param name 
+   *   The fully resolved node name
+   */
+  private ReentrantReadWriteLock
+  getAnnotationsLock
+  (
+   String name
+  ) 
+  {
+    synchronized(pAnnotationLocks) {
+      ReentrantReadWriteLock lock = pAnnotationLocks.get(name);
+
+      if(lock == null) { 
+	lock = new ReentrantReadWriteLock();
+	pAnnotationLocks.put(name, lock);
+      }
+
+      return lock;
+    }
+  }
+
+  /** 
    * Lookup the lock for the table of checked-in version bundles for the node with the 
    * given name. 
    * 
@@ -15449,7 +15779,50 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   B U N D L E   H E L P E R S                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Get the table of annotations for the node with the given name.
+   *   
+   * This method assumes that a read/write lock for the annotation has already been 
+   * aquired.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The table of annotations or <CODE>null</CODE> if no annotations exist.
+   */
+  private TreeMap<String,BaseAnnotation> 
+  getAnnotationsTable
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    /* lookup the annotations */ 
+    TreeMap<String,BaseAnnotation> table = null;
+    synchronized(pAnnotations) {
+      table = pAnnotations.get(name);
+    }
+
+    if(table != null) 
+      return table;
+
+    /* read in the annotations from disk */ 
+    table = readAnnotations(name);
+    if(table == null) 
+      return null; 
+
+    synchronized(pAnnotations) {
+      pAnnotations.put(name, table);
+    }    
+
+    /* keep track of the change to the node version cache (annotations count as a version) */ 
+    incrementAnnotationCounter(name); 
+
+    return table;
+  }
+
   /**
    * Get the table of checked-in bundles for the node with the given name.
    * 
@@ -15534,8 +15907,8 @@ class MasterMgr
     NodeMod mod = readWorkingVersion(id);
     if(mod == null) 
       throw new PipelineException
-	("No working version of node (" + name + ") exists under the view (" + 
-	 id.getView() + ") owned by user (" + id.getAuthor() + ")!");
+	("No working version of node (" + name + ") exists under the view " + 
+         "(" + id.getView() + ") owned by user (" + id.getAuthor() + ")!");
     
     bundle = new WorkingBundle(mod);
 
@@ -15722,6 +16095,10 @@ class MasterMgr
 	      for(String name : names) {
 		long newest = 0L;
 		long count = 0L;
+
+                if(pAnnotations.get(name) != null) 
+                  count++;
+
 		{
 		  TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
 		  if(table != null) {
@@ -15788,6 +16165,12 @@ class MasterMgr
 		    decrementCheckedInCounter(name, vid);
 		}
 	      }
+
+              /* free annotations */ 
+              if(pAnnotations.get(name) != null) {
+                pAnnotations.remove(name);
+                decrementAnnotationCounter(name); 
+              }
 	    }
 	  }
 	  finally {
@@ -15894,6 +16277,47 @@ class MasterMgr
 	catch(InterruptedException ex) {
 	}
       }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Record that a new set of annotations have been added to the node cache.
+   */ 
+  private void 
+  incrementAnnotationCounter
+  (
+   String name
+  ) 
+  {
+    pNodeCacheSize.getAndAdd(1L);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Cached Annotation: " + name + "\n" + 
+	 "  Total Cached = " + pNodeCacheSize.get()); 
+    }
+  }
+
+  /**
+   * Record that a new set of annotations have been freed from the node cache. 
+   */ 
+  private void 
+  decrementAnnotationCounter
+  (
+   String name
+  ) 
+  {
+    pNodeCacheSize.getAndAdd(-1L);
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Mem, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Mem, LogMgr.Level.Finest,
+	 "Freed Annotation: " + name + "\n" + 
+	 "  Total Cached = " + pNodeCacheSize.get()); 
     }
   }
 
@@ -18179,6 +18603,152 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the node annotations to disk. <P> 
+   * 
+   * This method assumes that the write lock for the table of annotations for
+   * the node already been aquired.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param annotations
+   *   The annotations to write. 
+   * 
+   * @throws PipelineException
+   *   If unable to write the annotations file or create the needed parent directories.
+   */ 
+  private void 
+  writeAnnotations
+  (
+   String name, 
+   TreeMap<String,BaseAnnotation> annotations
+  ) 
+    throws PipelineException
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Annotations: " + name); 
+
+    File file = new File(pNodeDir, "annotations" + name); 
+    File dir  = file.getParentFile();
+
+    try {
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create annotations directory (" + dir + ")!");
+      }
+      
+      if(file.exists()) {
+        if(!file.delete()) 
+          throw new IOException
+            ("Unable to overwrite the existing annotations file (" + file + ")!");
+      }
+      
+      String glue = null;
+      try {
+        TreeMap<String,BaseAnnotation> table = new TreeMap<String,BaseAnnotation>();
+        for(String aname : annotations.keySet()) 
+          table.put(aname, new BaseAnnotation(annotations.get(aname)));
+
+	GlueEncoder ge = new GlueEncoderImpl("Annotations", table);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of the annotations for " + 
+	   "node (" + name + ")!");
+	LogMgr.getInstance().flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+      
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write annotations for node (" + name + ") to file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+
+  /**
+   * Read annotations for a node from disk. <P> 
+   * 
+   * This method assumes that the write lock for the annotations has already been 
+   * aquired.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The annotations or <CODE>null</CODE> if no annotation files exist.
+   * 
+   * @throws PipelineException
+   *   If the annotations file is corrupted in some manner.
+   */ 
+  private TreeMap<String,BaseAnnotation> 
+  readAnnotations
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    File file = new File(pNodeDir, "annotations" + name);
+    if(!file.isFile()) 
+      return null;
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Reading Annotations: " + name);
+
+    TreeMap<String,BaseAnnotation> table = new TreeMap<String,BaseAnnotation>();
+    try {
+      GlueDecoder gd = new GlueDecoderImpl(file);
+      table = (TreeMap<String,BaseAnnotation>) gd.getObject();
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+         "The annotations file (" + file + ") appears to be corrupted:\n" + 
+         "  " + ex.getMessage());
+      LogMgr.getInstance().flush();
+      
+      throw new PipelineException
+        ("I/O ERROR: \n" + 
+         "  While attempting to read annotations for node (" + name + ") from file...\n" +
+         "    " + ex.getMessage());
+    }
+    
+    TreeMap<String,BaseAnnotation> annotations = new TreeMap<String,BaseAnnotation>();
+    {
+      PluginMgrClient client = PluginMgrClient.getInstance();
+      for(String aname : table.keySet()) {
+        BaseAnnotation tannot = table.get(aname);
+        BaseAnnotation annot = client.newAnnotation(tannot.getName(), 
+                                                    tannot.getVersionID(), 
+                                                    tannot.getVendor());
+        annot.setParamValues(tannot);
+        annotations.put(aname, annot);
+      }
+    }
+
+    return annotations;
+  }
+
+      
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the checked-in version to disk. <P> 
    * 
    * This method assumes that the write lock for the table of checked-in versions for
@@ -18966,7 +19536,7 @@ class MasterMgr
 
 	  /* update the node status details */ 
 	  NodeDetails ndetails = 
-	    new NodeDetails(name, 
+	    new NodeDetails(name, new TreeMap<String,BaseAnnotation>(), 
 			    nwork, vsn, checkedIn.get(checkedIn.lastKey()).getVersion(),
 			    checkedIn.keySet(), 
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
@@ -19524,6 +20094,22 @@ class MasterMgr
    * take (in milliseconds).
    */ 
   private AtomicLong  pNodeGCInterval; 
+
+
+  /**
+   * The per-node locks indexed by fully resolved node name. <P> 
+   * 
+   * These locks protect the annotations for each node. The per-node read-lock should 
+   * be aquired for operations which will only access the table of annotations for a node. 
+   * The per-node write-lock should be aquired when adding new annotations, modifying or 
+   * removing existing annotations for a node. 
+   */
+  private HashMap<String,ReentrantReadWriteLock>  pAnnotationLocks;
+
+  /**
+   * The annotations associated with nodes indexed by fully resolved node name. 
+   */ 
+  private HashMap<String,TreeMap<String,BaseAnnotation>>  pAnnotations;
 
 
   /**

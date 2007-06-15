@@ -1,4 +1,4 @@
-// $Id: PluginInputStream.java,v 1.10 2007/02/07 21:13:37 jim Exp $
+// $Id: PluginInputStream.java,v 1.11 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -86,11 +86,15 @@ class PluginInputStream
 
   private static final String sClassNames[] = {
     "us.temerity.pipeline.NodeCommon",
+    "us.temerity.pipeline.NodeDetails",
     "us.temerity.pipeline.QueueJob",
     "us.temerity.pipeline.Archive",
     "us.temerity.pipeline.SuffixEditor",
     "us.temerity.pipeline.MasterExtensionConfig",
     "us.temerity.pipeline.QueueExtensionConfig",
+    "us.temerity.pipeline.message.NodeGetAnnotationRsp", 
+    "us.temerity.pipeline.message.NodeGetAnnotationsRsp", 
+    "us.temerity.pipeline.message.NodeAddAnnotationReq", 
     "us.temerity.pipeline.message.MiscArchiveReq",
     "us.temerity.pipeline.message.FileArchiveReq",
     "us.temerity.pipeline.message.MiscRestoreReq", 

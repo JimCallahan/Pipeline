@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.75 2007/05/17 21:21:55 jim Exp $
+// $Id: ScriptApp.java,v 1.76 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -142,9 +142,9 @@ class ScriptApp
        "    privilege\n" + 
        "      --get-info=user-name\n" + 
        "      --get-info-all\n" + 
-       "      --grant=user-name --master-admin | --developer |\n" + 
+       "      --grant=user-name --master-admin | --developer | --annotator |\n" + 
        "        --queue-admin | --queue-manager | --node-mananger\n" + 
-       "      --revoke=user-name --master-admin | --developer |\n" + 
+       "      --revoke=user-name --master-admin | --developer | --annotator |\n" + 
        "        --queue-admin | --queue-manager | --node-mananger\n" + 
        "\n" + 
        "  Administration\n" +
@@ -555,6 +555,7 @@ class ScriptApp
 	       "\n" +
 	       "Master Admin  : " + (privs.isMasterAdmin() ? "YES" : "no") + "\n" + 
 	       "Developer     : " + (privs.isDeveloper() ? "YES" : "no") + "\n" + 
+	       "Annotator     : " + (privs.isAnnotator() ? "YES" : "no") + "\n" + 
 	       "Queue Admin   : " + (privs.isQueueAdmin() ? "YES" : "no") + "\n" + 
 	       "Queue Manager : " + (privs.isQueueManager() ? "YES" : "no") + "\n" + 
 	       "Node Manager  : " + (privs.isNodeManager() ? "YES" : "no") + "\n");
@@ -569,6 +570,7 @@ class ScriptApp
    String uname, 
    Boolean isMasterAdmin,
    Boolean isDeveloper,
+   Boolean isAnnotator,
    Boolean isQueueAdmin, 
    Boolean isQueueManager, 
    Boolean isNodeManager,
@@ -586,6 +588,9 @@ class ScriptApp
 
     if(isDeveloper != null) 
       privs.setDeveloper(isDeveloper);
+
+    if(isAnnotator != null) 
+      privs.setAnnotator(isAnnotator);
 
     if(isQueueAdmin != null) 
       privs.setQueueAdmin(isQueueAdmin);

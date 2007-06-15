@@ -92,7 +92,9 @@ Privileges<br>
  style="font-style: italic;">user-name</span> <span
  style="font-weight: bold;">--master-admin</span> | <span
  style="font-weight: bold;">--developer</span> | <span
- style="font-weight: bold;">--queue-admin</span> | <span
+ style="font-weight: bold;">--annotator </span></span><span
+ style="font-weight: normal;">|</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"> --queue-admin</span> | <span
  style="font-weight: bold;">--queue-manager</span> | <span
  style="font-weight: bold;">--node-mananger</span><br>
           </span></li>
@@ -100,9 +102,11 @@ Privileges<br>
  style="font-weight: normal;"><span style="font-weight: bold;">--revoke</span></span></a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>
           <span style="font-weight: bold;">--master-admin</span> | <span
- style="font-weight: bold;">--developer</span> | <span
- style="font-weight: bold;">--queue-admin</span> | <span
- style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--developer</span> |</span><span
+ style="font-weight: normal;"> <span style="font-weight: bold;">--annotator
+          </span></span><span style="font-weight: normal;">|</span><span
+ style="font-weight: normal;"> <span style="font-weight: bold;">--queue-admin</span>
+| <span style="font-weight: bold;">--queue-manager</span> | <span
  style="font-weight: bold;">--node-mananger</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span><span
  style="font-style: italic;"><br>
@@ -2039,9 +2043,13 @@ all users.<br>
  style="font-weight: normal;"><span style="font-weight: bold;">--grant</span>=<span
  style="font-style: italic;">user-name</span> <span
  style="font-weight: bold;">--master-admin</span> | <span
- style="font-weight: bold;">--developer</span> | <span
- style="font-weight: bold;">--queue-admin</span> | <span
- style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--</span> </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">developer
+</span></span><span style="font-weight: normal;">| </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--annotator
+</span></span><span style="font-weight: normal;">| </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--queue-admin</span>
+| <span style="font-weight: bold;">--queue-manager</span> | <span
  style="font-weight: bold;">--node-mananger</span></span><br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="privilege_--revoke"></a>privilege</span></span><span
@@ -2049,9 +2057,13 @@ all users.<br>
  style="font-weight: normal;"><span style="font-weight: bold;">--revoke</span></span><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>
 <span style="font-weight: bold;">--master-admin</span> | <span
- style="font-weight: bold;">--developer</span> | <span
- style="font-weight: bold;">--queue-admin</span> | <span
- style="font-weight: bold;">--queue-manager</span> | <span
+ style="font-weight: bold;">--developer</span> |</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--annotator
+</span></span><span style="font-weight: normal;">| </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"> <span style="font-weight: bold;">--queue-admin</span>
+| <span style="font-weight: bold;">--queue-manager</span> | <span
  style="font-weight: bold;">--node-mananger</span></span><br>
 </div>
 <br>
@@ -2079,6 +2091,7 @@ Also includes the privileges granted to:<br>
   <br>
   <ul>
 Developer <br>
+Annotator <br>
 Queue Admin <br>
 Queue Manager (over all users) <br>
 Node Manager (over all users)
@@ -2094,7 +2107,21 @@ all users):</span><br>
 </div>
 </div>
 <div style="margin-left: 80px;">Manage Editor, Action, Comparator and
-Tool Plugin Menus<span class="postbody"></span></div>
+Tool Plugin Menus<br>
+<br>
+</div>
+<span class="postbody"><span style="font-weight: bold;">--annotator</span><br>
+</span>
+<div style="margin-left: 40px;"><span class="postbody"><br>
+&nbsp;
+Annotator privileges provide access to the following operations (over
+all users):</span><br>
+<br>
+<div style="margin-left: 40px;">Add and Remove node Annotations<br>
+Change the values of node Annotations<br>
+</div>
+</div>
+<div style="margin-left: 80px;"><span class="postbody"></span></div>
 <span class="postbody"><br>
 <span style="font-weight: bold;">--queue-admin</span><br>
 <br>

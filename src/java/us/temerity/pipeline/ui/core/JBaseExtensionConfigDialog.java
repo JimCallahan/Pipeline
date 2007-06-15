@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.2 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -76,7 +76,7 @@ class JBaseExtensionConfigDialog
 	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField
 	    (tpanel, "Toolset:", sTSize, 
-	     vpanel, values, sVSize, 
+	     vpanel, values, this, sVSize, 
 	     "The name of the shell environment under which the Archiver plugin is run.");
 	  pToolsetField = field;
 

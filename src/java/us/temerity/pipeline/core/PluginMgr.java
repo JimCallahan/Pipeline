@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.13 2006/10/26 07:03:45 jim Exp $
+// $Id: PluginMgr.java,v 1.14 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,6 +52,7 @@ class PluginMgr
       pActions     = new TripleMap<String,String,VersionID,Plugin>();  
       pComparators = new TripleMap<String,String,VersionID,Plugin>();  
       pTools  	   = new TripleMap<String,String,VersionID,Plugin>();   
+      pAnnotations = new TripleMap<String,String,VersionID,Plugin>();   
       pArchivers   = new TripleMap<String,String,VersionID,Plugin>();  
       pMasterExts  = new TripleMap<String,String,VersionID,Plugin>();  
       pQueueExts   = new TripleMap<String,String,VersionID,Plugin>();  
@@ -134,6 +135,9 @@ class PluginMgr
       TripleMap<String,String,VersionID,Object[]> tools =
 	collectUpdated(cycleID, pTools);
 
+      TripleMap<String,String,VersionID,Object[]> annotations =
+	collectUpdated(cycleID, pAnnotations);
+
       TripleMap<String,String,VersionID,Object[]> archivers = 
 	collectUpdated(cycleID, pArchivers);
 
@@ -144,8 +148,8 @@ class PluginMgr
 	collectUpdated(cycleID, pQueueExts);
 
       return new PluginUpdateRsp(timer, pLoadCycleID, 
-				 editors, actions, comparators, tools, archivers, 
-				 masterExts, queueExts);
+				 editors, actions, comparators, tools, annotations, 
+                                 archivers, masterExts, queueExts);
     }
     finally {
       pPluginLock.readLock().unlock();
@@ -642,6 +646,8 @@ class PluginMgr
 	addPlugin(plg, cname, contents, pComparators);
       else if(plg instanceof BaseTool) 
 	addPlugin(plg, cname, contents, pTools);
+      else if(plg instanceof BaseAnnotation) 
+	addPlugin(plg, cname, contents, pAnnotations);
       else if(plg instanceof BaseArchiver) 
 	addPlugin(plg, cname, contents, pArchivers);
       else if(plg instanceof BaseMasterExt) 
@@ -820,6 +826,11 @@ class PluginMgr
    * The loaded Tool plugins indexed by plugin name and revision number.
    */
   private TripleMap<String,String,VersionID,Plugin>  pTools; 
+
+  /**
+   * The loaded Annotation plugins indexed by plugin name and revision number.
+   */
+  private TripleMap<String,String,VersionID,Plugin>  pAnnotations; 
 
   /**
    * The loaded Archiver plugins indexed by plugin name and revision number.

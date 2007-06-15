@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.2 2006/09/25 12:11:44 jim Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.3 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -341,6 +341,7 @@ class  JManagePrivilegesDialog
       TreeSet<String> cnames = new TreeSet<String>();
       cnames.add("Master Admin");
       cnames.add("Developer");
+      cnames.add("Annotator");
       cnames.add("Queue Admin");
       cnames.add("Queue Manager");
       cnames.add("Node Manager");
@@ -756,6 +757,7 @@ class  JManagePrivilegesDialog
     TreeSet<String> cnames = new TreeSet<String>();
     cnames.add("Master Admin");
     cnames.add("Developer");
+    cnames.add("Annotator");
     cnames.add("Queue Admin");
     cnames.add("Queue Manager");
     cnames.add("Node Manager");

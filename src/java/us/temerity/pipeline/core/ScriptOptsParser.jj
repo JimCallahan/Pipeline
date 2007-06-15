@@ -147,6 +147,7 @@ ScriptOptsParser
    */ 
   private Boolean  pIsMasterAdmin; 
   private Boolean  pIsDeveloper; 
+  private Boolean  pIsAnnotator; 
   private Boolean  pIsQueueAdmin; 
   private Boolean  pIsQueueManager; 
   private Boolean  pIsNodeManager; 
@@ -364,6 +365,7 @@ TOKEN :
 | <USER2:              "--user">                : USER_NAME_SEP
 | <MASTER_ADMIN:       "--master-admin">    
 | <DEVELOPER:          "--developer">    
+| <ANNOTATOR:          "--annotator">    
 | <QUEUE_ADMIN:        "--queue-admin">    
 | <QUEUE_MANAGER:      "--queue-manager">    
 | <NODE_MANAGER:       "--node-manager">    
@@ -2531,6 +2533,7 @@ PrivilegeGrant()
 
   pIsMasterAdmin  = null;
   pIsDeveloper    = null; 
+  pIsAnnotator    = null; 
   pIsQueueAdmin   = null; 
   pIsQueueManager = null; 
   pIsNodeManager  = null; 
@@ -2539,7 +2542,7 @@ PrivilegeGrant()
   <PRIVILEGE_GRANT> EQ() user=UserName() AE() (PrivilegeGrantOpts())* 
   {
     pApp.editPrivileges(user, 
-			pIsMasterAdmin, pIsDeveloper, 
+			pIsMasterAdmin, pIsDeveloper, pIsAnnotator, 
 			pIsQueueAdmin, pIsQueueManager, pIsNodeManager, 
 			pMasterMgrClient);
   }
@@ -2550,7 +2553,7 @@ PrivilegeGrantOpts()
   throws PipelineException : 
 {}
 {
-  (GrantMasterAdmin() | GrantDeveloper() | 
+  (GrantMasterAdmin() | GrantDeveloper() | GrantAnnotator() | 
    GrantQueueAdmin() | GrantQueueManager() | GrantNodeManager())
   {}
 }
@@ -2572,6 +2575,16 @@ GrantDeveloper() :
   <DEVELOPER> AE() 
   {
     pIsDeveloper = new Boolean(true);
+  }
+}
+
+void 
+GrantAnnotator() : 
+{}
+{
+  <ANNOTATOR> AE() 
+  {
+    pIsAnnotator = new Boolean(true);
   }
 }
 
@@ -2613,6 +2626,7 @@ PrivilegeRevoke()
 
   pIsMasterAdmin  = null;
   pIsDeveloper    = null; 
+  pIsAnnotator    = null; 
   pIsQueueAdmin   = null; 
   pIsQueueManager = null; 
   pIsNodeManager  = null; 
@@ -2621,7 +2635,7 @@ PrivilegeRevoke()
   <PRIVILEGE_REVOKE> EQ() user=UserName() AE() (PrivilegeRevokeOpts())* 
   {
     pApp.editPrivileges(user, 
-			pIsMasterAdmin, pIsDeveloper, 
+			pIsMasterAdmin, pIsDeveloper, pIsAnnotator, 
 			pIsQueueAdmin, pIsQueueManager, pIsNodeManager, 
 			pMasterMgrClient);
   }
@@ -2632,7 +2646,7 @@ PrivilegeRevokeOpts()
   throws PipelineException : 
 {}
 {
-  (RevokeMasterAdmin() | RevokeDeveloper() | 
+  (RevokeMasterAdmin() | RevokeDeveloper() | RevokeAnnotator() | 
    RevokeQueueAdmin() | RevokeQueueManager() | RevokeNodeManager())
   {}
 }
@@ -2654,6 +2668,16 @@ RevokeDeveloper() :
   <DEVELOPER> AE() 
   {
     pIsDeveloper = new Boolean(false);
+  }
+}
+
+void 
+RevokeAnnotator() : 
+{}
+{
+  <ANNOTATOR> AE() 
+  {
+    pIsAnnotator = new Boolean(false);
   }
 }
 

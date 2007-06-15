@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.10 2006/08/20 05:46:51 jim Exp $
+// $Id: PluginApp.java,v 1.11 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -195,6 +195,27 @@ class PluginApp
     }
     
     {
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getAnnotations();
+      if(!versions.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  A N N O T A T I O N S"); 
+	
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	      BaseAnnotation plg = client.newAnnotation(name, vid, vendor);
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
+	    }
+	  }
+	}
+      }
+    }
+    
+    {
       TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getArchivers();
       if(!versions.isEmpty()) {
 	LogMgr.getInstance().log
@@ -206,6 +227,48 @@ class PluginApp
 	  for(String name : versions.get(vendor).keySet()) {
 	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
 	      BaseArchiver plg = client.newArchiver(name, vid, vendor);
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
+	    }
+	  }
+	}
+      }
+    }
+
+    {
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getMasterExts();
+      if(!versions.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  M A S T E R   E X T S");
+	
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	      BaseMasterExt plg = client.newMasterExt(name, vid, vendor);
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
+	    }
+	  }
+	}
+      }
+    }
+
+    {
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getQueueExts();
+      if(!versions.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  Q U E U E   E X T S");
+	
+	for(String vendor : versions.keySet()) {
+	  for(String name : versions.get(vendor).keySet()) {
+	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	      BaseQueueExt plg = client.newQueueExt(name, vid, vendor);
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Ops, LogMgr.Level.Info,
 		 bar(80) + "\n\n" + plg + "\n");

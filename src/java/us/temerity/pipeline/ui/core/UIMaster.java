@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.66 2007/05/14 16:22:01 jim Exp $
+// $Id: UIMaster.java,v 1.67 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -110,10 +110,13 @@ class UIMaster
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
+
     pNodeDetailsPanels = new PanelGroup<JNodeDetailsPanel>();
     pNodeHistoryPanels = new PanelGroup<JNodeHistoryPanel>();
     pNodeFilesPanels   = new PanelGroup<JNodeFilesPanel>();
     pNodeLinksPanels   = new PanelGroup<JNodeLinksPanel>();
+
+    pNodeAnnotationsPanels = new PanelGroup<JNodeAnnotationsPanel>();
 
     pQueueJobServersPanels     = new PanelGroup<JQueueJobServersPanel>();
     pQueueJobServerStatsPanels = new PanelGroup<JQueueJobServerStatsPanel>();
@@ -2021,6 +2024,10 @@ class UIMaster
       if(panel != null) 
         topPanels.add(panel); 
 
+      panel = getNodeAnnotationsPanels().getPanel(channel);  
+      if(panel != null) 
+        topPanels.add(panel); 
+
       panel = getQueueJobServerStatsPanels().getPanel(channel);  
       if(panel != null) 
         topPanels.add(panel); 
@@ -2104,6 +2111,15 @@ class UIMaster
   getNodeLinksPanels() 
   {
     return pNodeLinksPanels;
+  }
+
+  /**
+   * Get the node annotations panel group.
+   */ 
+  public PanelGroup<JNodeAnnotationsPanel>
+  getNodeAnnotationsPanels() 
+  {
+    return pNodeAnnotationsPanels;
   }
 
 
@@ -2787,6 +2803,7 @@ class UIMaster
  	 pNodeHistoryPanels.isGroupUnused(idx) && 
  	 pNodeFilesPanels.isGroupUnused(idx) && 
  	 pNodeLinksPanels.isGroupUnused(idx) && 
+ 	 pNodeAnnotationsPanels.isGroupUnused(idx) && 
   	 pQueueJobServersPanels.isGroupUnused(idx) && 
   	 pQueueJobServerStatsPanels.isGroupUnused(idx) && 
   	 pQueueJobSlotsPanels.isGroupUnused(idx) && 
@@ -3922,10 +3939,13 @@ class UIMaster
 	
 	pNodeBrowserPanels.clear();
 	pNodeViewerPanels.clear();
+
 	pNodeDetailsPanels.clear();
 	pNodeHistoryPanels.clear();
 	pNodeFilesPanels.clear();
 	pNodeLinksPanels.clear();
+
+	pNodeAnnotationsPanels.clear();
 	
  	pQueueJobServersPanels.clear();
  	pQueueJobServerStatsPanels.clear();
@@ -5235,12 +5255,15 @@ class UIMaster
   /**
    * The active top level panels.
    */ 
-  private PanelGroup<JNodeBrowserPanel>  pNodeBrowserPanels;
-  private PanelGroup<JNodeViewerPanel>   pNodeViewerPanels;
+  private PanelGroup<JNodeBrowserPanel> pNodeBrowserPanels;
+  private PanelGroup<JNodeViewerPanel>  pNodeViewerPanels;
+
   private PanelGroup<JNodeDetailsPanel>  pNodeDetailsPanels;
   private PanelGroup<JNodeHistoryPanel>  pNodeHistoryPanels;
   private PanelGroup<JNodeFilesPanel>    pNodeFilesPanels;
   private PanelGroup<JNodeLinksPanel>    pNodeLinksPanels;
+
+  private PanelGroup<JNodeAnnotationsPanel>  pNodeAnnotationsPanels;
 
   private PanelGroup<JQueueJobServersPanel>      pQueueJobServersPanels;
   private PanelGroup<JQueueJobServerStatsPanel>  pQueueJobServerStatsPanels;

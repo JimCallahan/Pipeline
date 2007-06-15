@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.79 2007/05/30 04:29:45 jim Exp $
+// $Id: MasterMgrServer.java,v 1.80 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -979,7 +979,47 @@ class MasterMgrServer
 		objOut.flush(); 
 	      }
 	      break;
+	   
+	    /*-- ANNOTATIONS ---------------------------------------------------------------*/
+            case GetAnnotation:
+	      {
+		NodeGetAnnotationReq req = (NodeGetAnnotationReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getAnnotation(req));
+		objOut.flush(); 
+	      }
+	      break; 
 
+            case GetAnnotations:
+	      {
+		NodeGetAnnotationsReq req = (NodeGetAnnotationsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getAnnotations(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case AddAnnotation:
+	      {
+		NodeAddAnnotationReq req = (NodeAddAnnotationReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.addAnnotation(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case RemoveAnnotation:
+	      {
+		NodeRemoveAnnotationReq req = (NodeRemoveAnnotationReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removeAnnotation(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case RemoveAnnotations:
+	      {
+		NodeRemoveAnnotationsReq req = (NodeRemoveAnnotationsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removeAnnotations(req));
+		objOut.flush(); 
+	      }
+	      break;
 
 	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
 	    case GetWorkingNames:

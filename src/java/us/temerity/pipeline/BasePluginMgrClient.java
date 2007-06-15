@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.9 2006/10/11 22:45:40 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.10 2007/06/15 00:27:31 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -43,6 +43,7 @@ class BasePluginMgrClient
     pActions     = new TripleMap<String,String,VersionID,PluginData>();  
     pComparators = new TripleMap<String,String,VersionID,PluginData>();  
     pTools  	 = new TripleMap<String,String,VersionID,PluginData>();   
+    pAnnotations = new TripleMap<String,String,VersionID,PluginData>();   
     pArchivers   = new TripleMap<String,String,VersionID,PluginData>();  
     pMasterExts  = new TripleMap<String,String,VersionID,PluginData>();  
     pQueueExts   = new TripleMap<String,String,VersionID,PluginData>();  
@@ -75,6 +76,7 @@ class BasePluginMgrClient
       updatePlugins(rsp.getActions(), pActions); 
       updatePlugins(rsp.getComparators(), pComparators);
       updatePlugins(rsp.getTools(), pTools); 
+      updatePlugins(rsp.getAnnotations(), pAnnotations); 
       updatePlugins(rsp.getArchivers(), pArchivers); 
       updatePlugins(rsp.getMasterExts(), pMasterExts); 
       updatePlugins(rsp.getQueueExts(), pQueueExts); 
@@ -177,6 +179,16 @@ class BasePluginMgrClient
   getTools() 
   {
     return getPlugins(pTools);
+  }
+
+  /**
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available annotation plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getAnnotations() 
+  {
+    return getPlugins(pAnnotations);
   }
   
   /**
@@ -366,6 +378,38 @@ class BasePluginMgrClient
   }
 
   /**
+   * Create a new annotation plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseAnnotation#getName BaseAnnotation.getName} for the 
+   * returned annotation.
+   *
+   * @param name 
+   *   The name of the annotation plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the annotation to instantiate or <CODE>null</CODE> for the 
+   *   latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no annotation plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseAnnotation
+  newAnnotation
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    return (BaseAnnotation) newPlugin("Annotation", pAnnotations, name, vid, vendor);
+  }
+
+  /**
    * Create a new archiver plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
@@ -465,7 +509,8 @@ class BasePluginMgrClient
    * Create a new plugin instance. <P> 
    * 
    * @param ptype 
-   *   The kind of plugin being instantiated: Editor, Comparator, Action, Tool or Archiver
+   *   The kind of plugin being instantiated: Editor, Comparator, Action, Tool, Annotation, 
+   *   Archiver, MasterExt or QueueExt.
    * 
    * @param table 
    *   The table of cached plugin classes to search.
@@ -622,6 +667,11 @@ class BasePluginMgrClient
    * The cached Tool plugin data indexed by vendor, class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,PluginData>  pTools; 
+
+  /**
+   * The cached Annotation plugin data indexed by vendor, class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,PluginData>  pAnnotations; 
 
   /**
    * The cached Archiver plugin data indexed by vendor, class name and revision number.

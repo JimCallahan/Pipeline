@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.100 2007/05/30 04:29:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.101 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3276,6 +3276,184 @@ class MasterMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a specific annotation for the given node.<P> 
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   * 
+   * @throws PipelineException 
+   *   If unable to determine the annotations.
+   */ 
+  public synchronized BaseAnnotation
+  getAnnotation
+  (
+   String nname, 
+   String aname
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetAnnotationReq req = new NodeGetAnnotationReq(nname, aname); 
+
+    Object obj = performTransaction(MasterRequest.GetAnnotation, req);
+    if(obj instanceof NodeGetAnnotationRsp) {
+      NodeGetAnnotationRsp rsp = (NodeGetAnnotationRsp) obj;
+      return rsp.getAnnotation();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Get all of the annotations for the given node.<P> 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The annotations for the node indexed by annotation name (may be empty).
+   * 
+   * @throws PipelineException 
+   *   If unable to determine the annotations.
+   */ 
+  public synchronized TreeMap<String,BaseAnnotation> 
+  getAnnotations
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetAnnotationsReq req = new NodeGetAnnotationsReq(name); 
+
+    Object obj = performTransaction(MasterRequest.GetAnnotations, req);
+    if(obj instanceof NodeGetAnnotationsRsp) {
+      NodeGetAnnotationsRsp rsp = (NodeGetAnnotationsRsp) obj;
+      return rsp.getAnnotations();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Add the given annotation to the set of current annotations for the given node.<P> 
+   * 
+   * If an annotation with the same name already exists for the node, it will be replaced
+   * by this new annotation.  This method can therefore be used to modify existing annotations
+   * as well as add new ones.<P> 
+   * 
+   * When adding new annotations to a node or replacing an existing annotation with a plugin
+   * instance with a different plugin name/version/vendor, this method will fail if the 
+   * current user does not have Annotator privileges.  When only updating the values for an 
+   * existing annotation, the {@link BaseAnnotation#isParamModifiable 
+   * BaseAnnotation.isParamModifiable} method of the existing annotation will be used to 
+   * determine whether the user has permission to modify each annotation parameter.  Only 
+   * parameters with values not identical to those in the existing annotation will perform
+   * this test.  Identical values will simply be ignored.
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param annot 
+   *   The new node annotation to add.
+   *
+   * @throws PipelineException 
+   *   If unable to add the annotation.
+   */ 
+  public synchronized void
+  addAnnotation
+  (
+   String nname, 
+   String aname, 
+   BaseAnnotation annot 
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeAddAnnotationReq req = new NodeAddAnnotationReq(nname, aname, annot); 
+
+    Object obj = performTransaction(MasterRequest.AddAnnotation, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Remove a specific annotation from a node. <P> 
+   * 
+   * This method will fail if the current user does not have Annotator privileges. 
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @throws PipelineException 
+   *   If unable to remove the annotation.
+   */ 
+  public synchronized void
+  removeAnnotation
+  (
+   String nname,
+   String aname
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeRemoveAnnotationReq req = new NodeRemoveAnnotationReq(nname, aname); 
+
+    Object obj = performTransaction(MasterRequest.RemoveAnnotation, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove all annotations from a node. <P> 
+   * 
+   * This method will fail if the current user does not have Annotator privileges. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException 
+   *   If unable to remove the annotations.
+   */ 
+  public synchronized void
+  removeAnnotations
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeRemoveAnnotationsReq req = new NodeRemoveAnnotationsReq(name); 
+
+    Object obj = performTransaction(MasterRequest.RemoveAnnotations, req);
+    handleSimpleResponse(obj);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */
@@ -3292,7 +3470,7 @@ class MasterMgrClient
    *   The fully resolved names of the matching working versions. 
    * 
    * @throws PipelineException 
-   *   If determine which working versions match the pattern.
+   *   If unable to determine which working versions match the pattern.
    */ 
   public synchronized TreeSet<String> 
   getWorkingNames

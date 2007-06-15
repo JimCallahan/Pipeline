@@ -1,4 +1,4 @@
-// $Id: PluginType.java,v 1.1 2006/10/23 11:30:20 jim Exp $
+// $Id: PluginType.java,v 1.2 2007/06/15 00:27:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -33,6 +33,11 @@ enum PluginType
    * Plugins used to perform arbitrary operations on nodes.
    */
   Tool, 
+
+  /**
+   * Plugins used to add arbitrary global parameters to nodes.
+   */
+  Annotation, 
 
   /**
    * Plugins used to archive and restore checked-in plugin versions.
