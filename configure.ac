@@ -738,8 +738,20 @@ WIN_ROOT_INST_DIR=""
 AC_SUBST(WIN_PRODDIR)
 WIN_PRODDIR=""
 
-AC_SUBST(WIN_HOMEDIR)
-WIN_HOMEDIR=""
+AC_SUBST(WIN_USER_PROFILE_DIR)
+WIN_USER_PROFILE_DIR=""
+
+AC_SUBST(WIN_USER_PROFILE_NEEDS_USER)
+WIN_USER_PROFILE_NEEDS_USER="null"
+
+AC_SUBST(WIN_HAS_APP_DATA_DIR)
+WIN_HAS_APP_DATA_DIR="false"
+
+AC_SUBST(WIN_APP_DATA_DIR)
+WIN_APP_DATA_DIR=""
+
+AC_SUBST(WIN_APP_DATA_NEEDS_USER)
+WIN_APP_DATA_NEEDS_USER="null"
 
 AC_SUBST(WIN_TEMPDIR)
 WIN_TEMPDIR=""
@@ -750,7 +762,10 @@ WIN_JAVA_HOME=""
 win_support=`crypto_lookup WinSupport`
 win_root_inst_dir=`crypto_lookup WinRootInstallDirectory`
 win_prod_dir=`crypto_lookup WinProductionDirectory`
-win_home_dir=`crypto_lookup WinHomeDirectory`
+win_user_profile_dir=`crypto_lookup WinUserProfileDirectory`
+win_user_profile_needs_user=`crypto_lookup WinUserProfileNeedsUser`
+win_app_data_dir=`crypto_lookup WinAppDataDirectory`
+win_app_data_needs_user=`crypto_lookup WinAppDataNeedsUser`
 win_temp_dir=`crypto_lookup WinTemporaryDirectory`
 win_java_home=`crypto_lookup WinJavaHome`
 has_windows=false
@@ -758,7 +773,8 @@ has_windows=false
 if test "$win_support" == "true" \
      -a "$win_root_inst_dir" != "null" \
      -a "$win_prod_dir" != "null" \
-     -a "$win_home_dir" != "null" \
+     -a "$win_user_profile_dir" != "null" \
+     -a "$win_user_profile_needs_user" != "null" \
      -a "$win_temp_dir" != "null" \
      -a "$win_java_home" != "null"
 then
@@ -771,9 +787,27 @@ then
   WIN_PRODDIR="$win_prod_dir"
   AC_MSG_RESULT([$WIN_PRODDIR])
 
-  AC_MSG_CHECKING([Windows User Home Directory])
-  WIN_HOMEDIR="$win_home_dir"
-  AC_MSG_RESULT([$WIN_HOMEDIR])
+  AC_MSG_CHECKING([Windows User Profile Directory])
+  WIN_USER_PROFILE_DIR="$win_user_profile_dir"
+  AC_MSG_RESULT([$WIN_USER_PROFILE_DIR])
+
+  AC_MSG_CHECKING([Windows User Profile Needs User])
+  WIN_USER_PROFILE_NEEDS_USER="$win_user_profile_needs_user"
+  AC_MSG_RESULT([$WIN_USER_PROFILE_NEEDS_USER])
+  
+  if test "$win_app_data_dir" != "null" \
+       -a "$win_app_data_needs_user" != "null"
+  then
+    WIN_HAS_APP_DATA_DIR="true"
+  
+    AC_MSG_CHECKING([Windows App Data Directory])
+    WIN_APP_DATA_DIR="$win_app_data_dir"
+    AC_MSG_RESULT([$WIN_APP_DATA_DIR])
+
+    AC_MSG_CHECKING([Windows App Data Needs User])
+    WIN_APP_DATA_NEEDS_USER="$win_app_data_needs_user"
+    AC_MSG_RESULT([$WIN_APP_DATA_NEEDS_USER])
+  fi
 
   AC_MSG_CHECKING([Windows Temporary Directory])
   WIN_TEMPDIR="$win_temp_dir"
@@ -1519,6 +1553,11 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java.src
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
+  src/java/us/temerity/pipeline/builder/Makefile
+  src/java/us/temerity/pipeline/builder/builders/Makefile
+  src/java/us/temerity/pipeline/builder/interfaces/Makefile
+  src/java/us/temerity/pipeline/builder/names/Makefile
+  src/java/us/temerity/pipeline/builder/stages/Makefile
   src/java/us/temerity/pipeline/core/VerifiedApp.java
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures

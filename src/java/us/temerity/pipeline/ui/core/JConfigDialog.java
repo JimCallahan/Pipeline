@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
+// $Id: JConfigDialog.java,v 1.6 2007/06/15 00:22:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,8 +115,24 @@ class JConfigDialog
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
-	  UIFactory.createTitledTextField(tpanel, "User Home Directory:", sTSize, 
-					  vpanel, PackageInfo.sHomePath.toString(), sVSize);
+          switch(PackageInfo.sOsType) {
+          case Unix:
+          case MacOS:          
+            UIFactory.createTitledTextField(tpanel, "User Home Directory:", sTSize, 
+                                            vpanel, PackageInfo.sHomePath.toString(), sVSize);
+            break;
+
+          case Windows:
+            UIFactory.createTitledTextField
+              (tpanel, "User Profile Directory:", sTSize, 
+               vpanel, PackageInfo.getUserProfilePath().toString(), sVSize);
+            
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+            UIFactory.createTitledTextField
+              (tpanel, "Application Data Directory:", sTSize, 
+               vpanel, PackageInfo.getAppDataPath().toString(), sVSize);
+          }
 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 

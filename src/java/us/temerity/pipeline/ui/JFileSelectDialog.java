@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.9 2006/09/25 12:11:45 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.10 2007/06/15 00:22:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -415,7 +415,17 @@ class JFileSelectDialog
   protected void 
   doJumpHome()
   { 
-    Path home = new Path(PackageInfo.sHomePath, PackageInfo.sUser);
+    Path home = null;
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      home = new Path(PackageInfo.sHomePath, PackageInfo.sUser);
+      break;
+      
+    case Windows:
+      home = PackageInfo.getUserProfilePath();
+    }
+
     updateTargetFile(home.toFile());
   }
 

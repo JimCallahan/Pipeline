@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.31 2007/05/06 05:57:03 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.32 2007/06/15 00:22:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -98,8 +98,9 @@ class PackageInfo
       sRepoPath   = new Path("@WIN_PRODDIR@/repository");
       sWorkPath   = new Path("@WIN_PRODDIR@/working");
       sTargetPath = new Path("@WIN_PRODDIR@/target");
-      sHomePath   = new Path("@WIN_HOMEDIR@");
+      sHomePath   = null;
       sTempPath   = new Path("@WIN_TEMPDIR@");
+
       break;
 
     default:
@@ -118,6 +119,21 @@ class PackageInfo
       sHomePath   = null;
       sTempPath   = null;
     } 
+
+    /* Windows stuff... */ 
+    {
+      sWinUserProfilePath      = new Path("@WIN_USER_PROFILE_DIR@");
+      sWinUserProfileNeedsUser = @WIN_USER_PROFILE_NEEDS_USER@;
+
+      if(@WIN_HAS_APP_DATA_DIR@) {
+        sWinAppDataPath      = new Path("@WIN_APP_DATA_DIR@");
+        sWinAppDataNeedsUser = @WIN_APP_DATA_NEEDS_USER@;
+      }
+      else {
+        sWinAppDataPath      = null;
+        sWinAppDataNeedsUser = null;
+      }
+    }
   } 
 
 
@@ -364,16 +380,165 @@ class PackageInfo
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The abstract pathname of the directory which contains the Windows user profile hive for 
+   * the current user on the current host.<P>
+   * 
+   * @return
+   *   The path or <CODE>null</CODE> if the current OS is not Windows.
+   */
+  public static Path
+  getUserProfilePath()
+  {
+    return getUserProfilePath(sUser, sOsType);
+  }
+
+  /**
+   * The abstract pathname of the directory which contains the Windows user profile hive for
+   * the given author on the current host.
+   * 
+   * This method always returns <CODE>null</CODE> if the OS is not Windows.
+   * 
+   * @param author
+   *   The user in question.
+   * 
+   * @return
+   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   */
+  public static Path
+  getUserProfilePath
+  (
+   String author
+  ) 
+  {
+    return getUserProfilePath(author, sOsType);
+  }
+
+  /**
+   * The abstract pathname of the directory which contains the Windows user profile hive.
+   * 
+   * This method always returns <CODE>null</CODE> if the OS is not Windows.
+   * 
+   * @param author
+   *   The user in question.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return
+   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   */
+  public static Path
+  getUserProfilePath
+  (
+   String author, 
+   OsType os
+  ) 
+  {
+    switch(os) {
+    case Windows:
+      {
+        Path path = sWinUserProfilePath;
+        if(sWinUserProfileNeedsUser) 
+          path = new Path(path, author);
+        
+        return path;
+      }
+      
+    default:
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the abstract pathname of the Windows "Application Data" directory for the current
+   * user on the current host.<P> 
+   * 
+   * @return
+   *   The path or <CODE>null</CODE> if the current OS is not Windows.
+   */
+  public static Path
+  getAppDataPath() 
+  {
+    return getAppDataPath(sUser, sOsType);
+  }  
+
+  /** 
+   * Get the abstract pathname of the Windows "Application Data" directory for the given
+   * user on the current host.<P> 
+   *
+   * @param author
+   *   The user in question.
+   * 
+   * @return
+   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   */
+  public static Path
+  getAppDataPath
+  (
+   String author
+  ) 
+  {
+    return getAppDataPath(author, sOsType);
+  }
+
+  /** 
+   * Get the abstract pathname of the Windows "Application Data" directory for the current
+   * user on the current host.<P> 
+   * 
+   * @param author
+   *   The user in question.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @return
+   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   */
+  public static Path
+  getAppDataPath
+  (
+   String author, 
+   OsType os 
+  ) 
+  {
+    switch(os) {
+    case Windows:
+      {
+        Path path = sWinUserProfilePath;
+        if(sWinAppDataPath != null) {
+          path = sWinAppDataPath;
+          if(sWinAppDataNeedsUser) 
+            path = new Path(path, author);
+        }
+        else if(sWinUserProfileNeedsUser) {
+          path = new Path(path, author);
+        }
+        
+        return new Path(path, "Application Data"); 
+      }
+
+    default:
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Gets the abstract pathname of the directory where Pipeline preferences and other 
-   * settings should be stored for the current user on the current operating system.
+   * settings should be stored for the current user on the current operating system.<P>
    */ 
   public static Path
   getSettingsPath()
   {
     switch(sOsType) {
     case Windows:
-      return new Path(sHomePath, "Application Data/Temerity/Pipeline");
+      return new Path(getAppDataPath(), "Temerity/Pipeline");
 
     default:
       return new Path(new Path(sHomePath, sUser), ".pipeline"); 
@@ -742,7 +907,12 @@ class PackageInfo
    * The abstract pathname of the directory which contains the home directories for users 
    * for this site for the current operating system. <P>
    *
-   * Set by the [Mac|Win]HomeDirectory customer profile entry.
+   * Set by the [Mac]HomeDirectory customer profile entry.  Note that this path has no
+   * meaning on the Windows operation system where it is replaced by the combination of 
+   * {@link #sWinUserProfilePath sWinUserProfilePath
+   * {@link #sWinUserProfileNeedsUser sWinUserProfileNeedsUser}, 
+   * {@link #sWinAppDataPath sWinAppDataPath} and
+   * {@link #sWinAppDataNeedsUser sWinAppDataNeedsUser} 
    */ 
   public static final Path sHomePath;
 
@@ -750,7 +920,7 @@ class PackageInfo
    * The directory which contains the home directories for users for this site for 
    * the current operating system. <P>
    *
-   * Set by the [Mac|Win]HomeDirectory customer profile entry.
+   * Set by the [Mac]HomeDirectory customer profile entry.
    * 
    * @deprecated 
    *   This field is not properly initialized on Windows systems.  Use {@link #sHomePath} 
@@ -759,6 +929,87 @@ class PackageInfo
   @Deprecated
   public static final File sHomeDir;
 
+
+  /*----------------------------------------------------------------------------------------*/
+   
+  /**
+   * The abstract pathname of the directory which contains the Windows user profile hive.<P>
+   * 
+   * Depending on the value of {@link #sWinUserProfileNeedsUser sWinUserProfileNeedsUser}
+   * this path may or may not need to have the specific user name appended to it in order
+   * to specify the actual directory where the user's profile lives.  
+   * 
+   * Depending on site configuration, the user profile directory may be either local or on
+   * a network share.  In either case, it will contain at least the following well known 
+   * Windows user directories:
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   Application Data
+   *   Desktop
+   *   Favorites
+   *   My Documents
+   *   Start Menu
+   * </DIV> <P>
+   * 
+   * If not on a Windows host this path will be undefined and have a value of 
+   * <CODE>null</CODE>.<P>
+   *
+   * Set by the WinUserProfileDirectory customer profile entry.
+   */
+  public static final Path  sWinUserProfilePath; 
+
+  /**
+   * Whether the specific user's name needs to be appended to 
+   * {@link #sWinUserProfilePath sWinUserProfilePath} in order to generate the actual
+   * directory where the Windows user profile hive lives.<P>
+   * 
+   * Some site configurations may use a home share (UNC path) which does not contain the 
+   * users name, but is set by Windows to point to the specific users profile directory
+   * on the network file server.  In these configurations, this field will be set 
+   * to <CODE>false</CODE>.  In cases where the specific user name needs to be appended
+   * to the sWinUserProfilePath path, this field will be set to <CODE>true</CODE>.<P>
+   * 
+   * If not on a Windows host this field will be undefined and have a value of 
+   * <CODE>null</CODE>.<P>
+   *
+   * Set by the WinUserProfileNeedsUser customer profile entry.
+   */
+  public static final Boolean  sWinUserProfileNeedsUser;
+
+  /**
+   * The abstract pathname of the directory which contains the Windows "Application Data"
+   * directory.<P> 
+   * 
+   * Normally this is the same as the {@link #sWinUserProfilePath sWinUserProfilePath} but 
+   * may be overridden in the customer profile to point to an unrelated file system path.<P> 
+   * 
+   * If not on a Windows host or if unspecified in the customer site profile, this path 
+   * will be undefined and have a value of <CODE>null</CODE>.<P>
+   * 
+   * May be set by the WinAppDataDirectory customer profile entry.
+   */
+  public static final Path  sWinAppDataPath;
+  
+  /**
+   * Whether the specific user's name needs to be appended to 
+   * {@link #sWinAppDataPath sWinAppDataPath} in order to generate the actual
+   * Windows application data directory.<P>
+   * 
+   * Some site configurations may use a home share (UNC path) which does not contain the 
+   * users name, but is set by Windows to point to the specific users application data 
+   * parent directory on the network file server.  In these configurations, this field 
+   * will be set to <CODE>false</CODE>.  In cases where the specific user name needs to be 
+   * appended to the sWinAppDataPath path, this field will be set to <CODE>true</CODE>.<P>
+   * 
+   * If not on a Windows host or if no WinAppDataDirectory entry is defined in the customer 
+   * site profile, this field will be undefined and have a value of <CODE>null</CODE>.<P>
+   *
+   * Set by the WinAppDataNeedsUser customer profile entry.
+   */
+  public static final Boolean  sWinAppDataNeedsUser;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * The abstract pathname of the directory used to store temporary files generated by 
@@ -951,7 +1202,7 @@ class PackageInfo
    */ 
   private static final Path sOsHomePaths[] = {
     new Path("@HOMEDIR@"), 
-    new Path("@WIN_HOMEDIR@"),
+    null,
     new Path("@MAC_HOMEDIR@")
   };
 

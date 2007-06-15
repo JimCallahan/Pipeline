@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.10 2007/04/26 17:58:13 jim Exp $
+// $Id: PackageCommon.java,v 1.11 2007/06/15 00:22:27 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -194,13 +194,8 @@ class PackageCommon
     case Windows:
       {
 	env.put("USERNAME", author);
-        
-        Path profdir = new Path("C:/Documents and Settings");  // SHOULD THIS BE A PLCONFIG
-        Path profile = new Path(profdir, author);              //   PARAMETER?
-	env.put("USERPROFILE", profile.toOsString());
-
-	Path appdata = new Path(PackageInfo.sHomePath, "Application Data");
-	env.put("APPDATA", appdata.toOsString());
+	env.put("USERPROFILE", PackageInfo.getUserProfilePath(author).toOsString());
+	env.put("APPDATA", PackageInfo.getAppDataPath(author).toOsString());
       }
     }
 
