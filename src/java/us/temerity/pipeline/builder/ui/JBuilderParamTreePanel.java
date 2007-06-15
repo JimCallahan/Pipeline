@@ -250,7 +250,12 @@ public class JBuilderParamTreePanel
   /**
    * Called whenever the value of the selection changes.
    */ 
-  public void valueChanged(TreeSelectionEvent e)
+  public void 
+  valueChanged
+  (
+    @SuppressWarnings("unused")
+    TreeSelectionEvent e
+  )
   {
     CardLayout layout = (CardLayout) pCardPanel.getLayout();
     

@@ -41,13 +41,14 @@ class JBuilderTopPanel
     pBuilder = builder;
     
     pViewedYet = new ListMap<DefaultMutableTreeNode, Boolean>();
+    pPanels = new ListMap<DefaultMutableTreeNode, JBuilderParamPanel>();
     
     BoxLayout layout = new BoxLayout(this, BoxLayout.X_AXIS);
     this.setLayout(layout);
     
     pSplitPane = new JHorzSplitPanel();
     pSplitPane.setDividerLocation(325);
-    pSplitPane.setResizeWeight(.1);
+    pSplitPane.setResizeWeight(0);
     
     pSecondSplitPane = new JVertSplitPanel();
     pSecondSplitPane.setDividerLocation(.5);
@@ -71,6 +72,7 @@ class JBuilderTopPanel
       pTreeCardLayout = new CardLayout();
       pTreeCardPanel.setLayout(pTreeCardLayout);
       pTreeCardPanel.setMinimumSize(new Dimension(325, 0));
+      pTreeCardPanel.setPreferredSize(new Dimension(325, 0));
       
       {
 	DefaultMutableTreeNode root = new DefaultMutableTreeNode(new BuilderTreeNodeInfo(""), true);
@@ -84,6 +86,7 @@ class JBuilderTopPanel
 	pTree.setExpandsSelectedPaths(true);
 	JScrollPane scroll = new JScrollPane(pTree);
 	scroll.setMinimumSize(new Dimension(325, 0));
+	scroll.setPreferredSize(new Dimension(325, 0));
 	pTreeCardPanel.add(scroll, aSetupPasses);
 	pTreeCardLayout.show(pTreeCardPanel, aSetupPasses);
       }
@@ -114,10 +117,10 @@ class JBuilderTopPanel
       pFirstPassPanel.setLayout(pFirstPassLayouts);
       pFirstPassPanel.setAlignmentX(LEFT_ALIGNMENT);
       pFirstPassPanel.setAlignmentY(TOP_ALIGNMENT);
-      Dimension size = new Dimension(JBuilderParamPanel.returnWidth() * 3, 100);
-      pFirstPassPanel.setMinimumSize(size);
-      pFirstPassPanel.setPreferredSize(size);
-      pFirstPassPanel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));      
+      //Dimension size = new Dimension(JBuilderParamPanel.returnWidth() * 3, 100);
+      //pFirstPassPanel.setMinimumSize(size);
+      //pFirstPassPanel.setPreferredSize(size);
+      //pFirstPassPanel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));      
     }
     {  
       pSecondSplitPane.setTopComponent(pFirstPassPanel);
@@ -135,6 +138,7 @@ class JBuilderTopPanel
       pActiveNode = createTreeNodes(prefixName.toString());
       ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
       pFirstPassPanel.add(paramPanel, prefixName.toString());
+      pPanels.put(pActiveNode, paramPanel);
       {
 	Map<String, BaseNames> namers = theBuilder.getNamers();
 	for (String name : namers.keySet()) {
@@ -145,6 +149,7 @@ class JBuilderTopPanel
 	  ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
 	  pFirstPassPanel.add(namerPanel, prefixName2.toString());
 	  pViewedYet.put(node, false);
+	  pPanels.put(node, namerPanel);
 	}
       }
       pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
@@ -187,6 +192,7 @@ class JBuilderTopPanel
     
     pActiveNode = createTreeNodes(prefixName.toString());
     ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
+    pPanels.put(pActiveNode, paramPanel);
     {
       Map<String, BaseNames> namers = theBuilder.getNamers();
       for (String name : namers.keySet()) {
@@ -197,6 +203,7 @@ class JBuilderTopPanel
 	((BuilderTreeNodeInfo) node.getUserObject()).setActive();
 	pFirstPassPanel.add(namerPanel, prefixName2.toString());
 	pViewedYet.put(node, false);
+	pPanels.put(node, namerPanel);
       }
     }
     {
@@ -217,14 +224,16 @@ class JBuilderTopPanel
     pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
   }
   
-  public JBuilderParamPanel
-  getCurrentBuilderParamPanel()
+  public LinkedList<JBuilderParamPanel>
+  getCurrentBuilderParamPanels()
   {
-    for (Component c : pFirstPassPanel.getComponents()) {
-      if (c.isVisible() && c instanceof JBuilderParamPanel)
-	return (JBuilderParamPanel) c;
-    }
-    return null;
+    LinkedList<JBuilderParamPanel> toReturn = new LinkedList<JBuilderParamPanel>();
+    toReturn.add(pPanels.get(pActiveNode));
+    
+    for (DefaultMutableTreeNode node : pViewedYet.keySet())
+      toReturn.add(pPanels.get(node));
+    
+    return toReturn;
   }
   
   /**
@@ -375,6 +384,7 @@ class JBuilderTopPanel
   public void 
   valueChanged
   (
+    @SuppressWarnings("unused")
     TreeSelectionEvent e
   )
   {
@@ -443,6 +453,7 @@ class JBuilderTopPanel
   private DefaultMutableTreeNode pActiveNode;
   
   private ListMap<DefaultMutableTreeNode, Boolean> pViewedYet;
+  private ListMap<DefaultMutableTreeNode, JBuilderParamPanel> pPanels;
   
   private static final String aConstructPasses = "ConstructPasses";
   private static final String aSetupPasses = "SetupPasses";

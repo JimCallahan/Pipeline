@@ -15,7 +15,8 @@ import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.BaseBuilder;
 import us.temerity.pipeline.builder.BaseUtil;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
-import us.temerity.pipeline.ui.JTopLevelDialog;
+import us.temerity.pipeline.stages.BaseStage;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   P A R A M   D I A L O G                                                */
@@ -48,7 +49,7 @@ class JBuilderParamDialog
     
     pRunning = false;
     
-    pLoop = 1;
+    pPhase = GUIPhase.SetupPass;
   }
   
   public void
@@ -68,13 +69,13 @@ class JBuilderParamDialog
     pTopPanel = new JBuilderTopPanel(pBuilder);
     JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel);
     pNextButton = buttons[0];
-    pRunNextButton = buttons[1];
+    pNextActionButton = buttons[1];
     pRunAllButton = buttons[2];
 
     pTopPanel.setupListeners();
     
     if (pTopPanel.allParamsReady())
-      firstPassEnableButtons();
+      setupPhaseEnableButtons();
     else
       disableAllButtons();
     
@@ -92,26 +93,57 @@ class JBuilderParamDialog
   disableAllButtons()
   {
     pNextButton.setEnabled(false);
-    pRunNextButton.setEnabled(false);
+    pNextActionButton.setEnabled(false);
     pRunAllButton.setEnabled(false);
   }
   
   private void
-  firstPassEnableButtons()
+  disableQuitButton()
+  {
+    pCancelButton.setEnabled(false);
+  }
+  
+  private void
+  enableQuitButton()
+  {
+   pCancelButton.setEnabled(true); 
+  }
+  
+  private void
+  setupPhaseEnableButtons()
   {
     pNextButton.setEnabled(true);
-    pRunNextButton.setEnabled(false);
+    pNextActionButton.setEnabled(false);
     pRunAllButton.setEnabled(false);
   }
   
   private void
-  secondPassEnableButtons()
+  constructPhaseEnableButtons()
   {
     pNextButton.setEnabled(false);
-    pRunNextButton.setEnabled(true);
+    pNextActionButton.setEnabled(true);
     pRunAllButton.setEnabled(true);
   }
   
+  private void
+  queuePhaseEnableButtons()
+  {
+    pNextActionButton.setText("Queue");
+    pNextActionButton.setActionCommand("queue");
+    pNextButton.setEnabled(false);
+    pNextActionButton.setEnabled(true);
+    pRunAllButton.setEnabled(false);
+  }
+  
+  private void
+  checkinPhaseEnableButtons()
+  {
+    pNextActionButton.setText("Check-In");
+    pNextActionButton.setActionCommand("check-in");
+    pNextButton.setEnabled(false);
+    pNextActionButton.setEnabled(true);
+    pRunAllButton.setEnabled(false);
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -153,6 +185,10 @@ class JBuilderParamDialog
       runAllPasses();
     else if(cmd.equals("cancel")) 
       doCancel();
+    else if(cmd.equals("queue"))
+      doQueue();
+    else if(cmd.equals("check-in"))
+      doCheckin();
   }
   
   /*-- TREE SELECTION LISTENER METHODS -----------------------------------------------------*/
@@ -168,7 +204,7 @@ class JBuilderParamDialog
   )
   {
     if (pTopPanel.allParamsReady())
-      firstPassEnableButtons();
+      setupPhaseEnableButtons();
   }
   
   
@@ -183,7 +219,7 @@ class JBuilderParamDialog
   public synchronized void 
   doCancel()
   {
-    if (pLoop == 1 || pLoop == 3)
+    if (pPhase == GUIPhase.SetupPass || pPhase == GUIPhase.Finished || pPhase == GUIPhase.Error)
       quit();
     else if (pRunning == false)
       handleException(new PipelineException("Execution halted by user!"));
@@ -192,33 +228,36 @@ class JBuilderParamDialog
   }
   
   /**
-   * Cancel changes and close.
+   * 
    */ 
   public void 
   doNextPass()
   {
     disableAllButtons();
-    JBuilderParamPanel panel = pTopPanel.getCurrentBuilderParamPanel();
-    panel.disableAllComponents();
-    panel.assignValuesToBuilder();
+    LinkedList<JBuilderParamPanel> panels = pTopPanel.getCurrentBuilderParamPanels();
+    for (JBuilderParamPanel panel : panels) {
+      panel.disableAllComponents();
+      panel.assignValuesToBuilder();
+    }
     new RunSetupPassTask().start();
   }
   
-  private void runAllPasses()
+  private void 
+  runAllPasses()
   {
     pRunning = true;
     disableAllButtons();
     new RunAllConstructPassTask().start();
   }
 
-  private void runNextPass()
+  private void 
+  runNextPass()
   {
     pRunning = true;
     disableAllButtons();
     new RunOneConstructPassTask().start();
   }
 
-  
   private void
   quit()
   {
@@ -227,19 +266,49 @@ class JBuilderParamDialog
   }
   
   private void
-  finish()
+  doQueue()
   {
     disableAllButtons();
-    LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Info, "Execution is now complete.");
+    pBuilder.new QueueThread().start();
+  }
+  
+  private void
+  doCheckin()
+  {
+    disableAllButtons();
     pBuilder.new CheckinTask().start();
+  }
+  
+  public void
+  afterQueue(boolean didJobsFinish)
+  {
+    if (didJobsFinish) {
+      pPhase = GUIPhase.Checkin;
+      checkinPhaseEnableButtons();
+      enableQuitButton();
+    }
+    else
+      handleException(new PipelineException("The jobs did not complete successfully."));
+    //TODO this should really be another handler that allows you to retry queuing or try the afterQueue method again.
+    
+  }
+  
+  private void
+  queuePrep()
+  {
+    LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Info, "Building is now complete.");
+    pPhase = GUIPhase.Queue;
+    queuePhaseEnableButtons();
+    disableQuitButton();
   }
   
   public void
   reallyFinish()
   {
+    LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Info, "Everything is now complete.");
     if (pAbort)
       quit();
-    pLoop = 3;    
+    pPhase = GUIPhase.Finished;
   }
   
   public void
@@ -248,10 +317,41 @@ class JBuilderParamDialog
     PipelineException ex  
   )
   {
-    ex.printStackTrace();
-    //System.exit(1);
+    boolean releaseNodes = pBuilder.releaseOnError();  
+    String message = "The builder did not finish succesfully.\n";
+    message += ex.getMessage() + "\n";
+    pPhase = GUIPhase.Error;
+    if (releaseNodes) {
+      message += "The builder is set to release all registered nodes.  " +
+      		 "Do you wish to release these nodes?\n";
+      JConfirmDialog dialog = new JConfirmDialog(this, message);
+      dialog.setVisible(true);
+      if (dialog.wasConfirmed()) {
+	disableAllButtons();
+	disableQuitButton();
+	new ReleaseNodesTask().start();
+      }
+    }
+    else {
+      disableAllButtons();
+      JErrorDialog dialog = new JErrorDialog(this);
+      dialog.setMessage("Execution halted", message);
+      dialog.setVisible(true);
+    }
   }
   
+  private void
+  handleErrorReleasing
+  (
+    PipelineException ex
+  )
+  {
+    JErrorDialog dialog = new JErrorDialog(this);
+    dialog.setMessage("Error Releasing Nodes", ex.getMessage());
+    dialog.setVisible(true);
+    disableAllButtons();
+    pCancelButton.setEnabled(true);
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -267,7 +367,7 @@ class JBuilderParamDialog
       try {
 	pTopPanel.addNextSetupPass();
 	if (pTopPanel.allParamsReady())
-	  firstPassEnableButtons();
+	  setupPhaseEnableButtons();
       }
       catch (PipelineException ex) {
 	handleException(ex);
@@ -294,7 +394,7 @@ class JBuilderParamDialog
 	SwingUtilities.invokeLater(new NextParameterPassTask());
       else {
 	disableAllButtons();
-	pLoop = 2;
+	pPhase = GUIPhase.ConstructPass;
 	pBuilder.new ExecutionOrderThread().start();
       }
     }
@@ -310,7 +410,7 @@ class JBuilderParamDialog
     {
       pExecutionOrder = new LinkedList<ConstructPass>(pBuilder.getExecutionOrder());
       pTopPanel.prepareConstructLoop(pExecutionOrder);
-      secondPassEnableButtons();
+      constructPhaseEnableButtons();
     }
   }
   
@@ -360,7 +460,8 @@ class JBuilderParamDialog
     public void 
     run()
     {
-      finish();
+      queuePrep();
+      doQueue();
     }
   }
   
@@ -397,10 +498,65 @@ class JBuilderParamDialog
       pRunning = false;
       pTopPanel.makeNextActive();
       if (!pExecutionOrder.isEmpty())
-	secondPassEnableButtons();
+	constructPhaseEnableButtons();
       else
-	finish();
+	queuePrep();
     }
+  }
+  
+  private
+  class ReleaseNodesTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      try {
+	LogMgr.getInstance().log(Kind.Ops, Level.Warning, 
+	  "All the nodes that were registered will now be released.");
+	BaseStage.cleanUpAddedNodes();
+	SwingUtilities.invokeLater(new AfterReleaseNodesTask());
+      }
+      catch (PipelineException ex) {
+	SwingUtilities.invokeLater(new ProblemReleaseNodesTask(ex));
+      }    
+    }
+  }
+  
+  private
+  class AfterReleaseNodesTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      LogMgr.getInstance().log(Kind.Ops, Level.Info, 
+        "Finished releasing all the nodes.");
+      enableQuitButton();
+    }
+  }
+  
+  private
+  class ProblemReleaseNodesTask
+    extends Thread
+  {
+    public ProblemReleaseNodesTask
+    (
+      PipelineException ex
+    )
+    {
+      pException = ex;
+    }
+    
+    @Override
+    public void 
+    run()
+    {
+      handleErrorReleasing(pException);
+    }
+    private PipelineException pException;
   }
   
   
@@ -418,7 +574,7 @@ class JBuilderParamDialog
   /*----------------------------------------------------------------------------------------*/
   
   private JButton pNextButton;
-  private JButton pRunNextButton;
+  private JButton pNextActionButton;
   private JButton pRunAllButton;
   
   private boolean pMorePasses;
@@ -427,11 +583,16 @@ class JBuilderParamDialog
   
   private boolean pAbort;
   
-  private int pLoop;
-  
   private JBuilderTopPanel pTopPanel;
   
   private LinkedList<ConstructPass> pExecutionOrder;
   
   private boolean pRunning;
+  
+  private GUIPhase pPhase;
+  
+  enum GUIPhase
+  {
+    SetupPass, ConstructPass, Queue, Checkin, Finished, Error
+  }
 }

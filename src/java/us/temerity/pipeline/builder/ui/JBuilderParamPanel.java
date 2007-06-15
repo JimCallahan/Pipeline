@@ -44,7 +44,7 @@ public class JBuilderParamPanel
     
     pBuilder = builder;
     AdvancedLayoutGroup layout = builder.getPassLayout(pass);
-    SortedMap<String, BuilderParam> params = builder.getParamMap();
+    SortedMap<String, UtilityParam> params = builder.getParamMap();
     pMappedParams = builder.getMappedParamNames();
     
     if (layout.hasEntries()) {
@@ -65,7 +65,7 @@ public class JBuilderParamPanel
           if(pname == null) 
             UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
           else {
-            BuilderParam bparam = params.get(pname);
+            UtilityParam bparam = params.get(pname);
             if(bparam != null) {
               if(!first) 
         	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -103,7 +103,7 @@ public class JBuilderParamPanel
   private void
   doParam
   (
-    BuilderParam bparam,
+    UtilityParam bparam,
     ParamMapping mapping,
     JPanel tpanel,
     JPanel vpanel,
@@ -117,7 +117,7 @@ public class JBuilderParamPanel
     if (pMappedParams.contains(mapping))
       return;
     if (bparam instanceof ComplexParamAccess) {
-      ComplexParamAccess<BuilderParam> cparam = (ComplexParamAccess<BuilderParam>) bparam;
+      ComplexParamAccess<UtilityParam> cparam = (ComplexParamAccess<UtilityParam>) bparam;
       if (prefix == null)
 	prefix = bparam.getNameUI();
       else
@@ -133,7 +133,7 @@ public class JBuilderParamPanel
 	else {
 	  if (!first)
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  BuilderParam param = cparam.getParam(entry);
+	  UtilityParam param = cparam.getParam(entry);
 	  ParamMapping newMapping = new ParamMapping(mapping);
 	  newMapping.addKey(entry);
 	  doParam(param, newMapping, tpanel, vpanel, tSize, vSize, prefix, actionCommand);
@@ -164,7 +164,7 @@ public class JBuilderParamPanel
   private void 
   buildSubGroup
   (
-    SortedMap<String, BuilderParam> params,
+    SortedMap<String, UtilityParam> params,
     LayoutGroup group,
     Box sbox,
     int level
@@ -183,7 +183,7 @@ public class JBuilderParamPanel
 	if (pname == null) 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	else {
-	  BuilderParam bparam = params.get(pname);
+	  UtilityParam bparam = params.get(pname);
 	  int tsize = sTSize - 7 * level;
 	  
 	  if (bparam != null) {
@@ -230,20 +230,20 @@ public class JBuilderParamPanel
   private boolean
   rightSortOfParam
   (
-    BuilderParam param
+    UtilityParam param
   )
   {
     if (!(param instanceof SimpleParamAccess))
       return false;
-    if ( (param instanceof BooleanBuilderParam) ||
-         (param instanceof StringBuilderParam) ||
-         (param instanceof IntegerBuilderParam) ||
-         (param instanceof DoubleBuilderParam) ||
-         (param instanceof EnumBuilderParam) ||
-         (param instanceof OptionalEnumBuilderParam) ||
-         (param instanceof PathBuilderParam) ||
-         (param instanceof NodePathBuilderParam) ||
-         (param instanceof IdentifierBuilderParam) )
+    if ( (param instanceof BooleanUtilityParam) ||
+         (param instanceof StringUtilityParam) ||
+         (param instanceof IntegerUtilityParam) ||
+         (param instanceof DoubleUtilityParam) ||
+         (param instanceof EnumUtilityParam) ||
+         (param instanceof OptionalEnumUtilityParam) ||
+         (param instanceof PathUtilityParam) ||
+         (param instanceof NodePathUtilityParam) ||
+         (param instanceof IdentifierUtilityParam) )
       return true;
     return false;
   }
@@ -251,7 +251,7 @@ public class JBuilderParamPanel
   public Component 
   parameterToComponent
   (
-    BuilderParam bparam,
+    UtilityParam bparam,
     JPanel tpanel,
     JPanel vpanel,
     int tsize,
@@ -265,7 +265,7 @@ public class JBuilderParamPanel
       String displayName = bparam.getNameUI() + ":";
       if (prefix != null)
 	displayName = prefix + " " + displayName;
-      if(bparam instanceof BooleanBuilderParam) {
+      if(bparam instanceof BooleanUtilityParam) {
 	Boolean value = (Boolean) sparam.getValue();
 	JBooleanField field = 
 	  UIFactory.createTitledBooleanField 
@@ -279,7 +279,7 @@ public class JBuilderParamPanel
 	}
 	return field;
       }
-      else if(bparam instanceof DoubleBuilderParam) {
+      else if(bparam instanceof DoubleUtilityParam) {
 	Double value = (Double) sparam.getValue();
 	JDoubleField field = 
 	  UIFactory.createTitledDoubleField 
@@ -294,8 +294,8 @@ public class JBuilderParamPanel
 
 	return field;
       }
-      else if(bparam instanceof EnumBuilderParam) {
-	EnumBuilderParam eparam = (EnumBuilderParam) bparam;
+      else if(bparam instanceof EnumUtilityParam) {
+	EnumUtilityParam eparam = (EnumUtilityParam) bparam;
 
 	JCollectionField field = 
 	  UIFactory.createTitledCollectionField
@@ -311,7 +311,7 @@ public class JBuilderParamPanel
 	}
 	return field;
       }
-      else if(bparam instanceof IntegerBuilderParam) {
+      else if(bparam instanceof IntegerUtilityParam) {
 	Integer value = (Integer) sparam.getValue();
 	JIntegerField field = 
 	  UIFactory.createTitledIntegerField 
@@ -326,7 +326,7 @@ public class JBuilderParamPanel
 
 	return field;
       }
-      else if(bparam instanceof StringBuilderParam) {
+      else if(bparam instanceof StringUtilityParam) {
 	String value = (String) sparam.getValue();
 	JTextField field = 
 	  UIFactory.createTitledEditableTextField 
@@ -341,7 +341,7 @@ public class JBuilderParamPanel
 
 	return field;     
       }
-      else if(bparam instanceof PathBuilderParam) {
+      else if(bparam instanceof PathUtilityParam) {
 	Path value = (Path) sparam.getValue();
 	JPathField field = 
 	  UIFactory.createTitledPathField
@@ -356,7 +356,7 @@ public class JBuilderParamPanel
 
 	return field; 
       }
-      else if(bparam instanceof NodePathBuilderParam) {
+      else if(bparam instanceof NodePathUtilityParam) {
 	String value = (String) sparam.getValue();
 	JNodeIdentifierField field = 
 	  UIFactory.createTitledNodeIdentifierField
@@ -371,7 +371,7 @@ public class JBuilderParamPanel
 
 	return field;     
       }
-      else if(bparam instanceof IdentifierBuilderParam) {
+      else if(bparam instanceof IdentifierUtilityParam) {
 	String value = (String) sparam.getValue();
 	JIdentifierField field = 
 	  UIFactory.createTitledIdentifierField
@@ -386,8 +386,8 @@ public class JBuilderParamPanel
 
 	return field;      
       }
-      else if(bparam instanceof OptionalEnumBuilderParam) {
-	OptionalEnumBuilderParam eparam = (OptionalEnumBuilderParam) bparam;
+      else if(bparam instanceof OptionalEnumUtilityParam) {
+	OptionalEnumUtilityParam eparam = (OptionalEnumUtilityParam) bparam;
 
 	JCollectionField field = 
 	  UIFactory.createTitledCollectionField
@@ -415,7 +415,7 @@ public class JBuilderParamPanel
   updateValueFromParam
   (
     Component comp,
-    BuilderParam param
+    UtilityParam param
   )
   {
     if (comp instanceof JDoubleField) {
@@ -518,17 +518,18 @@ public class JBuilderParamPanel
   public void 
   componentResized
   (
-   ComponentEvent e
+   @SuppressWarnings("unused")
+  ComponentEvent e
   )
   {
-//    Box box = (Box) e.getComponent();
-//    
-//    Dimension size = box.getComponent(1).getSize();
-//
-//    JPanel spacer = (JPanel) box.getComponent(0);
-//    spacer.setMaximumSize(new Dimension(7, size.height));
-//    spacer.revalidate();
-//    spacer.repaint();
+    Box box = (Box) e.getComponent();
+    
+    Dimension size = box.getComponent(1).getSize();
+
+    JPanel spacer = (JPanel) box.getComponent(0);
+    spacer.setMaximumSize(new Dimension(7, size.height));
+    spacer.revalidate();
+    spacer.repaint();
   }
   
   /**
@@ -563,20 +564,20 @@ public class JBuilderParamPanel
       
       for (ParamMapping map : comps.keySet()) {
 	Component comp = comps.get(map);
-	BuilderParam param = pBuilder.getParam(map);
+	UtilityParam param = pBuilder.getParam(map);
 	if (comp == source)
 	  continue;
 	if (comp instanceof JCollectionField) {
 	  JCollectionField field = (JCollectionField) comp;
 	  String val = null;
 	  Collection<String> values = null;
-	  if (param instanceof EnumBuilderParam) {
-	    val = (String) ((EnumBuilderParam) param).getValue();
-	    values = ((EnumBuilderParam) param).getValues();
+	  if (param instanceof EnumUtilityParam) {
+	    val = (String) ((EnumUtilityParam) param).getValue();
+	    values = ((EnumUtilityParam) param).getValues();
 	  }
-	  else if (param instanceof OptionalEnumBuilderParam) {
-	    val = (String) ((OptionalEnumBuilderParam) param).getValue();
-	    values = ((OptionalEnumBuilderParam) param).getValues();
+	  else if (param instanceof OptionalEnumUtilityParam) {
+	    val = (String) ((OptionalEnumUtilityParam) param).getValue();
+	    values = ((OptionalEnumUtilityParam) param).getValues();
 	  }
 	  field.removeActionListener(this);
 	  field.setValues(values);
@@ -608,7 +609,7 @@ public class JBuilderParamPanel
     scroll.setHorizontalScrollBarPolicy
     			(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     scroll.setVerticalScrollBarPolicy
-    			(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+    			(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     
     scroll.setMinimumSize(size);
     scroll.setPreferredSize(size);
