@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.101 2007/06/15 00:27:31 jim Exp $
+// $Id: MasterMgrClient.java,v 1.102 2007/06/18 21:42:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6011,7 +6011,7 @@ class MasterMgrClient
     verifyConnection();
 
     MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file);
-    Object obj = performTransaction(MasterRequest.BackupDatabase, req);
+    Object obj = performLongTransaction(MasterRequest.BackupDatabase, req, 15000, 60000);  
     handleSimpleResponse(obj);    
   } 
 
