@@ -85,8 +85,6 @@ class BaseUtil
    *        The name of the utility.
    * @param desc
    *        A description of what the utility should do.
-   * @param context
-   *        The {@link UtilContext} that this utility is going to operate in.
    */
   protected 
   BaseUtil
@@ -1159,9 +1157,6 @@ class BaseUtil
    * 
    * This method should be called by subclasses in their constructor after building the appropriate 
    * {@link PassLayoutGroup}.
-   * 
-   * @param groups
-   *   The layout group broken down by passes.
    */
   protected void
   setLayout

@@ -157,7 +157,6 @@ class StageInformation
    * <code>initializeAddedNodes</code> method was not called before calling this method.
    * 
    * @param name
-   * @return
    * @throws PipelineException
    * @see #initializeAddedNodes()
    */
