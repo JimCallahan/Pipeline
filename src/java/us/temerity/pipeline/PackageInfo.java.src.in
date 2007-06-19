@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.32 2007/06/15 00:22:27 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.33 2007/06/19 20:16:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -385,7 +385,8 @@ class PackageInfo
    * the current user on the current host.<P>
    * 
    * @return
-   *   The path or <CODE>null</CODE> if the current OS is not Windows.
+   *   The path or <CODE>null</CODE> if the current OS is not Windows
+   *   or Windows is not supported by this site.
    */
   public static Path
   getUserProfilePath()
@@ -403,7 +404,8 @@ class PackageInfo
    *   The user in question.
    * 
    * @return
-   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   *   The path or <CODE>null</CODE> if the OS is not Windows
+   *   or Windows is not supported by this site.
    */
   public static Path
   getUserProfilePath
@@ -426,7 +428,8 @@ class PackageInfo
    *   The operating system type.
    * 
    * @return
-   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   *   The path or <CODE>null</CODE> if the OS is not Windows 
+   *   or Windows is not supported by this site.
    */
   public static Path
   getUserProfilePath
@@ -439,7 +442,7 @@ class PackageInfo
     case Windows:
       {
         Path path = sWinUserProfilePath;
-        if(sWinUserProfileNeedsUser) 
+        if((sWinUserProfileNeedsUser != null) && sWinUserProfileNeedsUser)
           path = new Path(path, author);
         
         return path;
@@ -458,7 +461,8 @@ class PackageInfo
    * user on the current host.<P> 
    * 
    * @return
-   *   The path or <CODE>null</CODE> if the current OS is not Windows.
+   *   The path or <CODE>null</CODE> if the current OS is not Windows
+   *   or Windows is not supported by this site.
    */
   public static Path
   getAppDataPath() 
@@ -474,7 +478,8 @@ class PackageInfo
    *   The user in question.
    * 
    * @return
-   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   *   The path or <CODE>null</CODE> if the OS is not Windows
+   *   or Windows is not supported by this site.
    */
   public static Path
   getAppDataPath
@@ -496,7 +501,8 @@ class PackageInfo
    *   The operating system type.
    * 
    * @return
-   *   The path or <CODE>null</CODE> if the OS is not Windows.
+   *   The path or <CODE>null</CODE> if the OS is not Windows
+   *   or Windows is not supported by this site.
    */
   public static Path
   getAppDataPath
@@ -514,11 +520,14 @@ class PackageInfo
           if(sWinAppDataNeedsUser) 
             path = new Path(path, author);
         }
-        else if(sWinUserProfileNeedsUser) {
+        else if((sWinUserProfileNeedsUser != null) && sWinUserProfileNeedsUser) {
           path = new Path(path, author);
         }
         
-        return new Path(path, "Application Data"); 
+        if(path != null) 
+          return new Path(path, "Application Data"); 
+
+        return null;
       }
 
     default:
@@ -909,7 +918,7 @@ class PackageInfo
    *
    * Set by the [Mac]HomeDirectory customer profile entry.  Note that this path has no
    * meaning on the Windows operation system where it is replaced by the combination of 
-   * {@link #sWinUserProfilePath sWinUserProfilePath
+   * {@link #sWinUserProfilePath sWinUserProfilePath}
    * {@link #sWinUserProfileNeedsUser sWinUserProfileNeedsUser}, 
    * {@link #sWinAppDataPath sWinAppDataPath} and
    * {@link #sWinAppDataNeedsUser sWinAppDataNeedsUser} 

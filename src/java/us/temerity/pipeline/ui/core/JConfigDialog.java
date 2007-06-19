@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.6 2007/06/15 00:22:27 jim Exp $
+// $Id: JConfigDialog.java,v 1.7 2007/06/19 20:16:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -123,15 +123,19 @@ class JConfigDialog
             break;
 
           case Windows:
-            UIFactory.createTitledTextField
-              (tpanel, "User Profile Directory:", sTSize, 
-               vpanel, PackageInfo.getUserProfilePath().toString(), sVSize);
-            
-            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-            UIFactory.createTitledTextField
-              (tpanel, "Application Data Directory:", sTSize, 
-               vpanel, PackageInfo.getAppDataPath().toString(), sVSize);
+            {
+              Path profile = PackageInfo.getUserProfilePath();
+              UIFactory.createTitledTextField
+                (tpanel, "User Profile Directory:", sTSize, 
+                 vpanel, (profile != null) ? profile.toString() : null, sVSize);
+              
+              UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+              
+              Path appdata = PackageInfo.getAppDataPath();
+              UIFactory.createTitledTextField
+                (tpanel, "Application Data Directory:", sTSize, 
+                 vpanel, (appdata != null) ? appdata.toString() : null, sVSize);
+            }
           }
 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);

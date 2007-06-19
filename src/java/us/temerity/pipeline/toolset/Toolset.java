@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.13 2007/06/15 00:22:27 jim Exp $
+// $Id: Toolset.java,v 1.14 2007/06/19 20:16:06 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -528,8 +528,14 @@ class Toolset
     case Windows:
       {
 	env.put("USERNAME", author);        
-	env.put("USERPROFILE", PackageInfo.getUserProfilePath(author, os).toOsString());
-	env.put("APPDATA", PackageInfo.getAppDataPath(author, os).toOsString());
+
+        Path profile = PackageInfo.getUserProfilePath(author, os);
+        if(profile != null) 
+          env.put("USERPROFILE", profile.toOsString());
+
+        Path appdata = PackageInfo.getAppDataPath(author, os);
+        if(appdata != null) 
+          env.put("APPDATA", appdata.toOsString());
       }
     }
 

@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.11 2007/06/15 00:22:27 jim Exp $
+// $Id: PackageCommon.java,v 1.12 2007/06/19 20:16:06 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -194,8 +194,14 @@ class PackageCommon
     case Windows:
       {
 	env.put("USERNAME", author);
-	env.put("USERPROFILE", PackageInfo.getUserProfilePath(author).toOsString());
-	env.put("APPDATA", PackageInfo.getAppDataPath(author).toOsString());
+
+        Path profile = PackageInfo.getUserProfilePath(author);
+	if(profile != null) 
+          env.put("USERPROFILE", profile.toOsString());
+
+        Path appdata = PackageInfo.getAppDataPath(author);
+        if(appdata != null) 
+          env.put("APPDATA", appdata.toOsString());
       }
     }
 
