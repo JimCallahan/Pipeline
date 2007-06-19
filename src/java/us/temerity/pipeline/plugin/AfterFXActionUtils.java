@@ -14,7 +14,7 @@ import us.temerity.pipeline.*;
  */
 public 
 class AfterFXActionUtils
-  extends CommonActionUtils
+  extends CompositeActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -43,6 +43,8 @@ class AfterFXActionUtils
   {
     super(name, vid, vendor, desc);
   }
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   U T I L I T Y    M E T H O D S                                                       */
@@ -113,6 +115,7 @@ class AfterFXActionUtils
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 2432054682863935407L;
+  
   
   public static final String aAfterFXScene = "AfterFXScene";
   public static final String aPreRenderScript = "PreRenderScript";

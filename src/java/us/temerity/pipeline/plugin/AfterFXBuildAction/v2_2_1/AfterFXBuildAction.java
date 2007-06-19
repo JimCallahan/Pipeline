@@ -1,13 +1,12 @@
-// $Id: AfterFXBuildAction.java,v 1.1 2007/06/17 15:34:37 jim Exp $
-
 package us.temerity.pipeline.plugin.AfterFXBuildAction.v2_2_1;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.math.Range;
-import us.temerity.pipeline.plugin.CommonActionUtils;
 
 import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.Range;
+import us.temerity.pipeline.plugin.AfterFXActionUtils;
+import us.temerity.pipeline.plugin.CommonActionUtils;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A F T E R   F X   B U I L D   A C T I O N                                              */
@@ -18,7 +17,7 @@ import java.util.*;
  **/
 public 
 class AfterFXBuildAction
-  extends CommonActionUtils
+  extends AfterFXActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -32,49 +31,18 @@ class AfterFXBuildAction
 
     {
       ActionParam param = 
-	new StringActionParam
-	(aCompName,
-	 "The name of the After Effects Comp to create.",
-	 "Comp1");
+  	new StringActionParam
+  	(aCompName,
+  	 "The name of the After Effects Comp to create.",
+  	 "Comp1");
       addSingleParam(param);
     }
     
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	(aCompFrameRate,
-	 "The frame rate for the comp.",
-	 30.);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	(aCompPixelRatio,
-	 "The pixel aspect ratio for the comp.",
-	 1.);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aCompHeight,
-	 "The height in pixels of the comp.",
-	 720);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aCompWidth,
-	 "The width in pixels of the comp.",
-	 486);
-      addSingleParam(param);
-    }
-    
+    addCompFrameRateParam();
+    addCompHeightParam();
+    addCompWidthParam();
+    addCompPixelRatioParam();
+
     /* 
      * Support for OsX can be added when After Effects CS3 launches, making it possible
      * to run AfterFX as an AppleScript app.  I have not been able to get the Mac version
@@ -83,6 +51,29 @@ class AfterFXBuildAction
     //addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
     removeSupport(OsType.Unix);
+    
+    LayoutGroup layout = new LayoutGroup(true);
+    layout.addEntry(aCompName);
+    layout.addEntry(null);
+    layout.addEntry(aCompHeight);
+    layout.addEntry(aCompWidth);
+    layout.addEntry(aCompPixelRatio);
+    layout.addEntry(null);
+    layout.addEntry(aFrameRate);
+    
+    LinkedList<String> sourceLayout = new LinkedList<String>();
+    sourceLayout.add(aLayer);
+    sourceLayout.add(aPass);
+    sourceLayout.add(aOrder);
+    sourceLayout.add(aBlendMode);
+    sourceLayout.add(aFrameRate);
+    sourceLayout.add(aPixelRatio);
+    sourceLayout.add(aAlphaMode);
+    sourceLayout.add(aPreMultColor);
+    
+    setSourceLayout(sourceLayout);
+    
+    underDevelopment();
   }
   
   
@@ -109,127 +100,61 @@ class AfterFXBuildAction
     TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
     
     {
-      ActionParam param = 
-	new DoubleActionParam
-	(aFrameRate, 
-	 "The Frame rate to interpret this footage at.",
-	 30.);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aLevel, 
-	 "Which level of the comp the source should appear at.  " +
-	 "The higher the number, the closer to the top of the composition it will be " + 
-         "layered.",
-	 0);
-      params.put(param.getName(), param);
-    }
-    
-    {
       ArrayList<String> choices = new ArrayList<String>();
-      choices.add("ADD");
-      choices.add("ALPHA_ADD");
-      choices.add("CLASSIC_COLOR_BURN");
-      choices.add("CLASSIC_COLOR_DODGE");
-      choices.add("CLASSIC_DIFFERENCE");
-      choices.add("COLOR");
-      choices.add("COLOR_BURN");
-      choices.add("COLOR_DODGE");
-      choices.add("DANCING_DISSOLVE");
-      choices.add("DARKEN");
-      choices.add("DIFFERENCE");
-      choices.add("DISSOLVE");
-      choices.add("EXCLUSION");
-      choices.add("HARD_LIGHT");
-      choices.add("HUE");
-      choices.add("LIGHTEN");
-      choices.add("LINEAR_BURN");
-      choices.add("LINEAR_DODGE");
-      choices.add("LINEAR_LIGHT");
-      choices.add("LUMINESCENT_PREMUL");
-      choices.add("LUMINOSITY");
-      choices.add("MULTIPLY");
-      choices.add("NORMAL");
-      choices.add("OVERLAY");
-      choices.add("PIN_LIGHT");
-      choices.add("SATURATION");
-      choices.add("SCREEN");
-      choices.add("SILHOUETTE_ALPHA");
-      choices.add("SILHOUETTE_LUMA");
-      choices.add("SOFT_LIGHT");
-      choices.add("STENCIL_ALPHA");
-      choices.add("STENCIL_LUMA");
-      choices.add("VIVID_LIGHT");
+      choices.add(aAdd);
+      choices.add(aAlphaAdd);
+      choices.add(aClassicColorBurn);
+      choices.add(aClassicColorDodge);
+      choices.add(aClassicDifference);
+      choices.add(aColor);
+      choices.add(aColorBurn);
+      choices.add(aColorDodge);
+      choices.add(aDancingDissolve);
+      choices.add(aDarken);
+      choices.add(aDifference);
+      choices.add(aDissolve);
+      choices.add(aExclusion);
+      choices.add(aHardLight);
+      choices.add(aHue);
+      choices.add(aLighten);
+      choices.add(aLinearBurn);
+      choices.add(aLinearDodge);
+      choices.add(aLinearLight);
+      choices.add(aLuminescentPremul);
+      choices.add(aLuminosity);
+      choices.add(aMultiply);
+      choices.add(aNormal);
+      choices.add(aOverlay);
+      choices.add(aPinLight);
+      choices.add(aSaturation);
+      choices.add(aScreen);
+      choices.add(aSilhouetteAlpha);
+      choices.add(aSilhouetteLuma);
+      choices.add(aSoftLight);
+      choices.add(aStencilAlpha);
+      choices.add(aStencilLuma);
+      choices.add(aVividLight);
       
       ActionParam param = 
 	new EnumActionParam
 	(aBlendMode, 
 	 "What blend mode should this layer be set to.",
-	 "NORMAL",
+	 aNormal,
 	 choices);
       params.put(param.getName(), param);
     }
     
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aOrder, 
-	 "Where in time order the source should appear.  " +
-	 "Sources with the same order will start at the same time.",
-	 100);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	(aPixelRatio, 
-	 "The Pixel Aspect ratio to interpret this footage at.",
-	 1.);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new DoubleActionParam
-	(aPixelRatio, 
-	 "The Pixel Aspect ratio to interpret this footage at.",
-	 1.);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ArrayList<String> choices = new ArrayList<String>(3);
-      choices.add(aIgnore);
-      choices.add(aStraight);
-      choices.add(aPreMultipled);
-      
-      ActionParam param = 
-	new EnumActionParam
-	(aAlphaMode, 
-	 "How should the footages alpha be interpreted.",
-	 aPreMultipled,
-	 choices);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ArrayList<String> choices = new ArrayList<String>(3);
-      choices.add(aBlack);
-      choices.add(aWhite);
-      
-      ActionParam param = 
-	new EnumActionParam
-	(aPreMultiplyColor, 
-	 "What color should the alpha be premultiplied by.",
-	 aBlack,
-	 choices);
-      params.put(param.getName(), param);
-    }
+    addSourceLayerParam(params);
+    addSourcePassParam(params);
+    addSourceOrderParam(params);
 
+    addSourceFrameRateParam(params);
+    
+    addSourcePixelRatioParam(params);
+    
+    addSourceAlphaModeParam(params);
+    addSourcePreMultColorParam(params);
+    
     return params;
   }
 
@@ -256,6 +181,7 @@ class AfterFXBuildAction
    *   The SubProcess which will fulfill the agenda.
    * 
    * @throws PipelineException 
+   * 
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
@@ -283,7 +209,7 @@ class AfterFXBuildAction
       extensions.add("tga");
     }
     
-    Path targetPath = getPrimaryTargetPath(agenda, "aep", "The Target After Effects Project");
+    Path targetPath = getAfterFXSceneTargetPath(agenda);
     
     String compName = getSingleStringParamValue(aCompName);
     Double compFrameRate = getSingleDoubleParamValue(aCompFrameRate, new Range<Double>(1., 99.));
@@ -292,23 +218,27 @@ class AfterFXBuildAction
     Integer compWidth = getSingleIntegerParamValue(aCompWidth, new Range<Integer>(4, 30000));
     double offset= 1/compFrameRate;
         
-    /* create a temporary MEL script file */ 
+    /* create a temporary JSX script file */ 
     File script = createTemp(agenda, "jsx");
     try {      
       PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(script)));
       
-      out.println("app.exitAfterLaunchAndEval = true;");
-      out.println("app.beginSuppressDialogs();");
-      out.println("app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);");
-      out.println("app.newProject();");
+      out.write("app.exitAfterLaunchAndEval = true;\n" + 
+      		"app.beginSuppressDialogs();\n" + 
+      		"app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);\n" +
+      		"app.newProject();\n\n");
       
-      out.println("");
+      MappedLinkedList<Integer, String> passList = new MappedLinkedList<Integer, String>();
+      for (String sourceName : agenda.getSourceNames()) {
+	Integer pass = (Integer) getSourceParamValue(sourceName, aPass);
+	passList.put(pass, sourceName);
+      }
       
-      MappedLinkedList<Integer, String> orderedList = new MappedLinkedList<Integer, String>();
+      LinkedList<String> zeroPasses = passList.remove(0);
+      
       MappedLinkedList<Integer, Double> orderLength = new MappedLinkedList<Integer, Double>();
       for (String sourceName : agenda.getSourceNames()) {
 	Integer order = (Integer) getSourceParamValue(sourceName, aOrder);
-	orderedList.put(order, sourceName);
 	FrameRange range = agenda.getPrimarySource(sourceName).getFrameRange();
 	Double frameRate = (Double) getSourceParamValue(sourceName, aFrameRate);
 	if (range.isSingle())
@@ -318,79 +248,73 @@ class AfterFXBuildAction
 	  orderLength.put(order, length);
 	}
       }
+
+      TreeMap<Integer, Double> orderStart = new TreeMap<Integer, Double>();
       
       double totalLength = offset;
-      for (int order : orderedList.keySet()) {
+      for (int order : orderLength.keySet()) {
+	orderStart.put(order, totalLength);
 	double length = (new TreeSet<Double>(orderLength.get(order))).last();
 	totalLength += length;
       }
-      totalLength = 20.;
       
-      out.println("var comp = app.project.items.addComp(\"" + compName + "\", " + 
-	          compHeight + ", " + compWidth + ", " + compPixelRatio + ", " + 
-	          totalLength + ", " + compFrameRate + ");");
-      out.println("var layers = comp.layers;");
+      out.write("var comp = app.project.items.addComp(\"" + compName + "\", " + 
+	          compWidth + ", " + compHeight + ", " + compPixelRatio + ", " + 
+	          totalLength + ", " + compFrameRate + ");\n" +
+      		"var layers = comp.layers;\n\n");
       
-      out.println("");
-
-      
-      double startTime = 0;
-      for (int order : orderedList.keySet()) {
-	double length = (new TreeSet<Double>(orderLength.get(order))).last();
-
-	MappedLinkedList<Integer, String> levelList = new MappedLinkedList<Integer, String>();
-	for (String sourceName : orderedList.get(order)) {
-	  Integer level = (Integer) getSourceParamValue(sourceName, aLevel);
-	  levelList.put(level, sourceName);
+      if (zeroPasses != null) {
+	MappedLinkedList<Integer, String> layerList = new MappedLinkedList<Integer, String>();
+	for (String sourceName : zeroPasses) {
+	  Integer layer = (Integer) getSourceParamValue(sourceName, aLayer);
+	  layerList.put(layer, sourceName);
 	}
-	
-	for (int level : levelList.keySet()) {
-	  for (String sourceName : levelList.get(level)) {
-	    FileSeq sSeq = agenda.getPrimarySource(sourceName);
-	    boolean sequence = sSeq.hasFrameNumbers();
-	    Path spath = getWorkingNodeFilePath(agenda, sourceName, sSeq);
-
-	    Double frameRate = (Double) getSourceParamValue(sourceName, aFrameRate);
-	    Double pixelAspect = (Double) getSourceParamValue(sourceName, aPixelRatio);
-	    String alphaMode = (String) getSourceParamValue(sourceName, aAlphaMode);
-	    String preMultColor = (String) getSourceParamValue(sourceName, aPreMultiplyColor);
-	    String blendMode = (String) getSourceParamValue(sourceName, aBlendMode);
-
-	    out.println("{");
-	    out.println("  var f = new File(\"" + escPath(spath) + "\");");
-	    out.println("  var importOptions = new ImportOptions (f);");
-	    out.println("  importOptions.importAs = ImportAsType.FOOTAGE;");
-	    if (sequence)
-	      out.println("  importOptions.sequence = true;");
-	    else
-	      out.println("  importOptions.sequence = false;");
-	    out.println("  var footage = app.project.importFile (importOptions);");
-	    out.println("  if (!footage.mainSource.isStill)");
-	    out.println("    footage.mainSource.conformFrameRate = " + frameRate + ";");
-	    out.println("  footage.pixelAspect = " + pixelAspect + ";");
-	    out.println("  footage.mainSource.alphaMode = AlphaMode." + alphaMode + ";");
-	    if (preMultColor.equals(aWhite))
-	      out.println("  footage.mainSource.premulColor = new Array(1,1,1);");
-	    else
-	      out.println("  footage.mainSource.premulColor = new Array(0,0,0);");
-	    
-	    out.println("  var avlayer = layers.add(footage);");
-	    out.println("  avlayer.startTime = " + startTime + ";");
-	    out.println("  avlayer.moveToBeginning();");
-	    out.println("  avlayer.blendingMode = BlendingMode." + blendMode + ";");
-	    out.println("}");
+	for (int layer : layerList.keySet()) {
+	  for (String sourceName : layerList.get(layer)) {
+	    writeSourceToScript(agenda, out, orderStart, sourceName, "layers", false);
 	  }
 	}
-	startTime += length;// + offset;
       }
       
-      //out.println("{");
-      out.println("var f = new File(\"" + escPath(targetPath) + "\");");
-      out.println("app.project.save(f);");
-      out.println("app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);");
-      out.println("app.newProject();");
-      out.println("app.quit();");
-      //out.println("}");
+      for (Integer pass : passList.keySet())
+      {
+	String passCompName = "Pass" + pass;
+	LinkedList<String> layers = passList.get(pass);
+
+	MappedLinkedList<Integer, String> layerList = new MappedLinkedList<Integer, String>();
+	for (String sourceName : layers) {
+	  Integer layer = (Integer) getSourceParamValue(sourceName, aLayer);
+	  layerList.put(layer, sourceName);
+	}
+	
+	out.write("{\n" +
+	          "var passComp = app.project.items.addComp(\"" + passCompName + "\", " + 
+	          compWidth + ", " + compHeight + ", " + compPixelRatio + ", " + 
+	          totalLength + ", " + compFrameRate + ");\n" +
+      		  "var passLayers = passComp.layers;\n\n");
+
+	boolean first = true;
+	String compBlendMode = null;
+	for (int layer : layerList.keySet()) {
+	  for (String sourceName : layerList.get(layer)) {
+	    String blendMode = 
+	      writeSourceToScript(agenda, out, orderStart, sourceName, "passLayers", first);
+	    if (first) {
+              compBlendMode = getBlendMode(blendMode);
+              first = false;
+	    }
+	  }
+	}
+        out.write("  var avlayer = layers.add(passComp);\n" +
+		  "  avlayer.startTime = " + offset + ";\n" + 
+		  "  avlayer.moveToBeginning();\n" +
+		  "  avlayer.blendingMode = BlendingMode." + compBlendMode + ";\n" + 
+      		  "}\n");
+      }
+      
+      out.write("var f = new File(\"" + CommonActionUtils.escPath(targetPath.toOsString()) + "\");\n" +
+      		"app.project.save(f);\n" +
+      		"app.quit();\n");
       
       out.close();
     }
@@ -400,48 +324,165 @@ class AfterFXBuildAction
 	 "(" + agenda.getJobID() + ")!\n" +
 	 ex.getMessage());
     }
-
     {
       ArrayList<String> args = new ArrayList<String>();
       args.add("-m");
       args.add("-r");
-      args.add(script.getPath());
+      args.add(script.getAbsolutePath());
       
       return createSubProcess(agenda, "AfterFX.exe", args, outFile, errFile);
     }
   }
+
+  private String 
+  writeSourceToScript
+  (
+    ActionAgenda agenda, 
+    PrintWriter out,
+    TreeMap<Integer, Double> orderStart, 
+    String sourceName,
+    String layerName,
+    boolean first 
+  )
+    throws PipelineException
+  {
+    FileSeq sSeq = agenda.getPrimarySource(sourceName);
+    boolean sequence = sSeq.hasFrameNumbers();
+    Path spath = getWorkingNodeFilePath(agenda, sourceName, sSeq);
+
+    Double frameRate = (Double) getSourceParamValue(sourceName, aFrameRate);
+    Double pixelAspect = (Double) getSourceParamValue(sourceName, aPixelRatio);
+    String alphaMode = ((String) getSourceParamValue(sourceName, aAlphaMode)).toUpperCase();
+    String preMultColor = (String) getSourceParamValue(sourceName, aPreMultColor);
+    String blendMode = (String) getSourceParamValue(sourceName, aBlendMode);
+
+    int order = (Integer) getSourceParamValue(sourceName, aOrder);
+    double startTime = orderStart.get(order);
+    
+    
+
+    out.write("{\n" +
+              "  var f = new File(\"" + CommonActionUtils.escPath(spath.toOsString()) + "\");\n" +
+              "  var importOptions = new ImportOptions (f);\n" + 
+              "  importOptions.importAs = ImportAsType.FOOTAGE;\n");
+
+    if (sequence)
+      out.println("  importOptions.sequence = true;");
+    else
+      out.println("  importOptions.sequence = false;");
+    out.write("  var footage = app.project.importFile (importOptions);\n" +
+              "  if (!footage.mainSource.isStill)\n" +
+              "    footage.mainSource.conformFrameRate = " + frameRate + ";\n" +
+              "  footage.pixelAspect = " + pixelAspect + ";\n" +
+              "  footage.mainSource.alphaMode = AlphaMode." + alphaMode + ";\n");
+    if (preMultColor.equals(aWhite))
+      out.println("  footage.mainSource.premulColor = new Array(1,1,1);");
+    else
+      out.println("  footage.mainSource.premulColor = new Array(0,0,0);");
+
+    if (!first)
+      out.write("  var avlayer = " + layerName + ".add(footage);\n" +
+    	"  avlayer.startTime = " + startTime + ";\n" + 
+    	"  avlayer.moveToBeginning();\n" +
+    	"  avlayer.blendingMode = BlendingMode." + getBlendMode(blendMode) + ";\n" + 
+            "}\n");
+    else {
+      out.write("  var avlayer = passLayers.add(footage);\n" +
+    	"  avlayer.startTime = " + startTime + ";\n" + 
+    	"  avlayer.moveToBeginning();\n" +
+    	"  avlayer.blendingMode = BlendingMode.NORMAL;\n" + 
+        "}\n");
+    }
+    return blendMode;
+  }
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  
+  public static String
+  getBlendMode
+  (
+    String paramName
+  )
+  {
+    if (paramName.equals(aAdd))
+      return "ADD";
+    else if (paramName.equals(aAlphaAdd))
+    	return "ALPHA_ADD";
+    else if (paramName.equals(aClassicColorBurn))
+  	return "CLASSIC_COLOR_BURN";
+    else if (paramName.equals(aClassicColorDodge))
+	return "CLASSIC_COLOR_DODGE";
+    else if (paramName.equals(aClassicDifference))
+	return "CLASSIC_DIFFERENCE";
+    else if (paramName.equals(aColor))
+	return "COLOR";
+    else if (paramName.equals(aColorBurn))
+	return "COLOR_BURN";
+    else if (paramName.equals(aColorDodge))
+	return "COLOR_DODGE";
+    else if (paramName.equals(aDancingDissolve))
+	return "DANCING_DISSOLVE";
+    else if (paramName.equals(aDarken))
+	return "DARKEN";
+    else if (paramName.equals(aDifference))
+	return "DIFFERENCE";
+    else if (paramName.equals(aDissolve))
+	return "DISSOLVE";
+    else if (paramName.equals(aExclusion))
+	return "EXCLUSION";
+    else if (paramName.equals(aHardLight))
+	return "HARD_LIGHT";
+    else if (paramName.equals(aHue))
+	return "HUE";
+    else if (paramName.equals(aLighten))
+	return "LIGHTEN";
+    else if (paramName.equals(aLinearBurn))
+	return "LINEAR_BURN";
+    else if (paramName.equals(aLinearDodge))
+	return "LINEAR_DODGE";
+    else if (paramName.equals(aLinearLight))
+	return "LINEAR_LIGHT";
+    else if (paramName.equals(aLuminescentPremul))
+	return "LUMINESCENT_PREMUL";
+    else if (paramName.equals(aLuminosity))
+	return "LUMINOSITY";
+    else if (paramName.equals(aMultiply))
+	return "MULTIPLY";
+    else if (paramName.equals(aNormal))
+	return "NORMAL";
+    else if (paramName.equals(aOverlay))
+	return "OVERLAY";
+    else if (paramName.equals(aPinLight))
+	return "PIN_LIGHT";
+    else if (paramName.equals(aSaturation))
+	return "SATURATION";
+  else if (paramName.equals(aScreen))
+	return "SCREEN";
+  else if (paramName.equals(aSilhouetteAlpha))
+	return "SILHOUETTE_ALPHA";
+  else if (paramName.equals(aSilhouetteLuma))
+	return "SILHOUETTE_LUMA";
+  else if (paramName.equals(aSoftLight))
+	return "SOFT_LIGHT";
+  else if (paramName.equals(aStencilAlpha))
+	return "STENCIL_ALPHA";
+  else if (paramName.equals(aStencilLuma))
+	return "STENCIL_LUMA";
+  else if (paramName.equals(aVividLight))
+    	return "VIVID_LIGHT";
+  else
+    return null;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  public static final String aCompName = "CompName";
+  
   private static final long serialVersionUID = -435600151478672924L;
-  
-  // Single Params
-  public static final String aCompName       = "CompName";
-  public static final String aCompFrameRate  = "CompFrameRate";
-  public static final String aCompPixelRatio = "CompPixelRatio";
-  public static final String aCompHeight     = "CompHeight";
-  public static final String aCompWidth      = "CompWidth";
-  
-  // Source Params
-  public static final String aFrameRate        = "FrameRate";
-  public static final String aPixelRatio       = "PixelRatio";
-  public static final String aAlphaMode        = "AlphaMode";
-  public static final String aPreMultiplyColor = "PreMultiplyColor";
-  public static final String aLevel            = "Level";
-  public static final String aOrder            = "Order";
-  public static final String aBlendMode        = "BlendMode";
-  
-  // Options for AlphaMode
-  public static final String aIgnore       = "IGNORE";
-  public static final String aStraight     = "STRAIGHT";
-  public static final String aPreMultipled = "PREMULTIPLIED";
-  
-  // Options for PreMultiplyColor
-  public static final String aWhite =  "White";
-  public static final String aBlack = "Black";
-
 }
