@@ -1,9 +1,10 @@
-// $Id: MasterTestFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: MasterTestFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
 import us.temerity.pipeline.*;
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   T E S T   F A C T O R Y                                                  */
@@ -14,6 +15,7 @@ import java.io.*;
  */
 public 
 interface MasterTestFactory
+  extends MasterFactory
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */

@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.2 2007/06/19 18:24:52 jim Exp $
+// $Id: TaskAnnotation.java,v 1.3 2007/06/19 22:05:04 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_2_1;
 
@@ -168,32 +168,36 @@ class TaskAnnotation
   /**
    * Whether a given user is allowed to modify a specific annotation parameter. <P> 
    * 
-   * The default implementation only grants users with Annotator privileges the right to 
-   * modify a parameter, but subclasses may override this method to implement their own 
-   * modification policy.  Note that users with Annotator privileges will always be able
-   * to modify annoation parameters even if a subclass overrides this method to always
-   * return <CODE>false</CODE>.
+   * Allows users who's name matches the SupervisedBy parameter to edit the AssignedTo
+   * parameter. Unless a user has Annotator privileges, all other parameters are read-only.
    * 
-   * @param name  
+   * @param pname  
    *   The name of the parameter. 
    * 
+   * @param user
+   *   The name of the user requesting access to modify the parameter.
+   * 
    * @param privileges
-   *   The details of the administrative privileges granted to the current user. 
+   *   The details of the administrative privileges granted to the user. 
    */ 
   public boolean
   isParamModifiable
   (
-   String name,
+   String pname,
+   String user, 
    PrivilegeDetails privileges
   )
   {
-    if(super.isParamModifiable(name, privileges))
-      return true;
-
-    if(name.equals(aAssignedTo) && privileges.getPrivilegedUser().equals(aSupervisedBy)) 
-      return true;
-
-    return false;
+    try {
+      String supervised = (String) getParamValue(aSupervisedBy);
+      return (pname.equals(aAssignedTo) && user.equals(supervised));
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
+	 ex.getMessage()); 
+      return false;
+    }
   } 
 
 

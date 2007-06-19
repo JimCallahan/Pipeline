@@ -1,4 +1,4 @@
-// $Id: DeleteExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: DeleteExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -46,6 +46,21 @@ class DeleteExtFactory
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all nodes associated with the operation.
+   */ 
+  public LinkedList<String> 
+  getNodeNames()
+  {
+    LinkedList<String> names = new LinkedList<String>();
+    names.add(pName);
+    
+    return names;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

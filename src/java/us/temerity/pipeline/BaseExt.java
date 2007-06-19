@@ -1,4 +1,4 @@
-// $Id: BaseExt.java,v 1.3 2006/11/23 00:46:59 jim Exp $
+// $Id: BaseExt.java,v 1.4 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -111,6 +111,7 @@ class BaseExt
     
     pParams      = new TreeMap<String,ExtensionParam>();
     pEnvironment = new TreeMap<String,String>();
+    pAnnotations = new DoubleMap<String,String,BaseAnnotation>();
   }
 
   /** 
@@ -141,6 +142,7 @@ class BaseExt
 
     pParams      = new TreeMap<String,ExtensionParam>();
     pEnvironment = new TreeMap<String,String>();
+    pAnnotations = new DoubleMap<String,String,BaseAnnotation>();
   }
 
   /**
@@ -159,6 +161,7 @@ class BaseExt
 
     pParams      = extension.pParams;
     pEnvironment = extension.pEnvironment;
+    pAnnotations = new DoubleMap<String,String,BaseAnnotation>();
   }
 
 
@@ -548,6 +551,102 @@ class BaseExt
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Clear the cache of all annotations.
+   */ 
+  public void 
+  clearAnnotations() 
+  {
+    pAnnotations.clear(); 
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given node annotation to the cache of annotations relevant to this extension.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param aname
+   *   The name of the annotation.
+   * 
+   * @param annot
+   *   The annotation plugin instance.
+   */ 
+  public void 
+  addAnnotation
+  (
+   String name, 
+   String aname,
+   BaseAnnotation annot
+  ) 
+  {
+    pAnnotations.put(name, aname, annot);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of nodes relevant to this extension with annotations.
+   */ 
+  public Set<String> 
+  getAnnotatedNodeNames() 
+  {
+    return Collections.unmodifiableSet(pAnnotations.keySet());
+  }
+
+  /**
+   * Get the names of the annotations for the given node. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The annotation names.
+   */ 
+  public Set<String> 
+  getAnnotationNames
+  (
+   String name
+  ) 
+  {
+    Set<String> names = pAnnotations.keySet(name);
+    if(names == null) 
+      names = new TreeSet<String>();
+    
+    return Collections.unmodifiableSet(names);
+  }
+
+  /**
+   * Get a specific annotation for the given node. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param aname
+   *   The name of the annotation.
+   * 
+   * @return
+   *   The annotation plugin instance or <CODE>null</CODE> if none exists.
+   */ 
+  public BaseAnnotation 
+  getAnnotation
+  (
+   String name, 
+   String aname
+  ) 
+  {
+    return pAnnotations.get(name, aname); 
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   M I S C   F I L E   U T I L S                                                        */
   /*----------------------------------------------------------------------------------------*/
 
@@ -789,10 +888,19 @@ class BaseExt
    */ 
   private LayoutGroup  pLayout;
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The cached toolset environment used to execute any subprocesses spawned by the extension.
    */
-  private TreeMap<String,String>  pEnvironment; 
+  private TreeMap<String,String>  pEnvironment;
+ 
+  /** 
+   * The cached annotations for the nodes involved indexed by fully resolved node name and 
+   * annoation name.
+   */
+  private DoubleMap<String,String,BaseAnnotation>   pAnnotations; 
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.1 2007/06/15 00:27:31 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.2 2007/06/19 22:05:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -544,11 +544,9 @@ class JNodeAnnotationsPanel
       pIsFrozen = false;
       if((details != null) && (details.getWorkingVersion() != null))
 	pIsFrozen = details.getWorkingVersion().isFrozen();
-
-      pApplyButton.setVisible(!pIsFrozen);
     }
 
-    /* check-in message history */ 
+    /* annotations */ 
     {
       pAnnotationsBox.removeAll();
       pAnnotationsPanels.clear(); 
@@ -931,6 +929,9 @@ class JNodeAnnotationsPanel
     else if(cmd.startsWith("rename-annotation:"))
       doRenameAnnotation(cmd.substring(18));
 
+    else if(cmd.startsWith("param-changed:"))
+      doAnnotationParamChanged(cmd.substring(14));
+
     else if(cmd.equals("edit"))
       doEdit();
     else if(cmd.equals("edit-with-default"))
@@ -971,14 +972,18 @@ class JNodeAnnotationsPanel
   {
     super.doApply();
 
+    TreeSet<String> dead = new TreeSet<String>(pDeadAnnotations); 
+    pDeadAnnotations.clear();
+
     TreeMap<String,BaseAnnotation> modified = new TreeMap<String,BaseAnnotation>();
     for(String aname : pAnnotationsPanels.keySet()) {
       JAnnotationPanel panel = pAnnotationsPanels.get(aname);
-      if(panel.isModified()) 
-        modified.put(aname, panel.getAnnotation());
+      if(panel.isModified()) {
+        modified.put(panel.getName(), panel.getAnnotation());
+        if(!aname.equals(panel.getName()))
+          dead.add(aname); 
+      }
     }
-
-    TreeSet<String> dead = new TreeSet<String>(pDeadAnnotations); 
     
     if(!modified.isEmpty() || !dead.isEmpty()) {
       ApplyTask task = new ApplyTask(pStatus.getName(), modified, dead);
@@ -1081,6 +1086,29 @@ class JNodeAnnotationsPanel
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Notify the panel that an annotation parameter has changed value.
+   */ 
+  public void 
+  doAnnotationParamChanged
+  (
+   String args
+  ) 
+  {
+    String parts[] = args.split(":");
+    if((parts.length == 2) && (parts[0].length() > 0) && (parts[1].length() > 0)) {
+      String name  = parts[0];
+      String aname = parts[1];
+
+      JAnnotationPanel panel = pAnnotationsPanels.get(name);
+      if(panel != null) 
+        panel.annotationParamChanged(aname); 
+    }
+  }
+
+ 
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1486,11 +1514,56 @@ class JNodeAnnotationsPanel
 	setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 	
         Box vbox = new Box(BoxLayout.Y_AXIS);
-
         {
           Component comps[] = UIFactory.createTitledPanels();
           JPanel tpanel = (JPanel) comps[0];
           JPanel vpanel = (JPanel) comps[1];
+          
+          if(pPrivilegeDetails.isAnnotator()) {
+            tpanel.add(Box.createRigidArea(new Dimension(0, 19)));
+            
+            Box hbox = new Box(BoxLayout.X_AXIS);
+            
+            {
+              JButton btn = new JButton("Rename...");
+              btn.setName("ValuePanelButton");
+              btn.setRolloverEnabled(false);
+              btn.setFocusable(false);
+              
+              Dimension size = new Dimension(sTSize/2-2, 19);
+              btn.setMinimumSize(size);
+              btn.setPreferredSize(size);
+              btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+              
+              btn.setActionCommand("rename-annotation:" + pName);
+              btn.addActionListener(pParent);
+              
+              hbox.add(btn);
+            }
+            
+            hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+            
+            {
+              JButton btn = new JButton("Remove...");
+              btn.setName("ValuePanelButton");
+              btn.setRolloverEnabled(false);
+              btn.setFocusable(false);
+              
+              Dimension size = new Dimension(sTSize/2-2, 19);
+              btn.setMinimumSize(size);
+              btn.setPreferredSize(size);
+              btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+              
+              btn.setActionCommand("remove-annotation:" + pName);
+              btn.addActionListener(pParent);
+              
+              hbox.add(btn);
+            }
+            
+            vpanel.add(hbox);
+          
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+          }
 	
           {
             JLabel label = 
@@ -1509,6 +1582,8 @@ class JNodeAnnotationsPanel
             
             field.setActionCommand("annotation-changed:" + pName);
             field.addActionListener(pParent);
+
+            field.setEnabled(pPrivilegeDetails.isAnnotator());
             
             vpanel.add(field);
           }
@@ -1565,7 +1640,7 @@ class JNodeAnnotationsPanel
           vbox.add(hbox);
         }
 
-        JDrawer drawer = new JDrawer(pName, vbox, true);
+        JDrawer drawer = new JDrawer("Annotation: " + pName, vbox, true);
         drawer.setToolTipText(UIFactory.formatToolTip("Node Annotation."));
         pTopDrawer = drawer;
         add(drawer);
@@ -1581,6 +1656,15 @@ class JNodeAnnotationsPanel
     isModified() 
     {
       return pIsModified; 
+    }
+
+    /**
+     * The name of the annotation plugin instance.
+     */ 
+    public String
+    getName() 
+    {
+      return pName;
     }
 
     /**
@@ -1636,7 +1720,20 @@ class JNodeAnnotationsPanel
     {
       pName = aname; 
       pAnnotationField.setActionCommand("annotation-changed:" + pName);
-      pTopDrawer.setTitle(pName);
+      pTopDrawer.setTitle("Annotation: " + pName);
+      pIsModified = true;
+    }
+
+    /**
+     * Notify the panel that an annotation parameter has changed value.
+     */ 
+    public void 
+    annotationParamChanged
+    (
+     String aname
+    ) 
+    {
+      unsavedChange("Parameter Changed: " + aname + " (" + aname + ")"); 
       pIsModified = true;
     }
 
@@ -1715,15 +1812,25 @@ class JNodeAnnotationsPanel
               UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
             
             AnnotationParam aparam = pAnnotation.getParam(pname);
+
+            boolean paramEnabled = 
+              pPrivilegeDetails.isAnnotator() ||
+              pAnnotation.isParamModifiable(pname, PackageInfo.sUser, pPrivilegeDetails);
+
             if(aparam != null) {
               if(aparam instanceof BooleanAnnotationParam) {
                 Boolean value = (Boolean) aparam.getValue();
                 JBooleanField field = 
                   UIFactory.createTitledBooleanField 
-                  (tpanel, aparam.getNameUI() + ":", sTSize, 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
                    vpanel, sVSize, 
                    aparam.getDescription());
                 field.setValue(value);
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+                
+                field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);
               }
@@ -1731,9 +1838,14 @@ class JNodeAnnotationsPanel
                 Double value = (Double) aparam.getValue();
                 JDoubleField field = 
                   UIFactory.createTitledDoubleField 
-                  (tpanel, aparam.getNameUI() + ":", sTSize, 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
                    vpanel, value, sVSize, 
                    aparam.getDescription());
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);
               }
@@ -1742,11 +1854,16 @@ class JNodeAnnotationsPanel
 	      
                 JCollectionField field = 
                   UIFactory.createTitledCollectionField
-                  (tpanel, aparam.getNameUI() + ":", sTSize, 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
                    vpanel, eparam.getValues(), sVSize, 
                    aparam.getDescription());
 	      
                 field.setSelected((String) eparam.getValue());
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);
               }
@@ -1754,9 +1871,14 @@ class JNodeAnnotationsPanel
                 Integer value = (Integer) aparam.getValue();
                 JIntegerField field = 
                   UIFactory.createTitledIntegerField 
-                  (tpanel, aparam.getNameUI() + ":", sTSize, 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
                    vpanel, value, sVSize, 
                    aparam.getDescription());
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);
               }
@@ -1764,9 +1886,14 @@ class JNodeAnnotationsPanel
                 String value = (String) aparam.getValue();
                 JTextField field = 
                   UIFactory.createTitledEditableTextField 
-                  (tpanel, aparam.getNameUI() + ":", sTSize, 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
                    vpanel, value, sVSize, 
                    aparam.getDescription());
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);	      
               }
@@ -1780,7 +1907,7 @@ class JNodeAnnotationsPanel
         }
       }
       else {
-        tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
+        tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
         vpanel.add(Box.createHorizontalGlue());
       }
 
@@ -1829,6 +1956,8 @@ class JNodeAnnotationsPanel
 
       pIsModified = true;
     }
+
+    
 
     private static final long serialVersionUID = -391904734639424578L;
 

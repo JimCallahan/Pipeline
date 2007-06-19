@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.21 2006/09/29 03:03:21 jim Exp $
+// $Id: FileSeq.java,v 1.22 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -211,7 +211,6 @@ class FileSeq
 
     buildCache();
   }
-
   
   /**
    * Copy constructor. 

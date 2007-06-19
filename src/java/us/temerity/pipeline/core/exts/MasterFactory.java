@@ -1,43 +1,30 @@
-// $Id: MasterTaskFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: MasterFactory.java,v 1.1 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
 import us.temerity.pipeline.*;
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A S T E R   T A S K   F A C T O R Y                                                  */
+/*   M A S T E R   F A C T O R Y                                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A creator of threads to run master extension plugin post-operation tasks.
+ * The common base class for master manager extension plugin factories.
  */
 public 
-interface MasterTaskFactory
-  extends MasterFactory
+interface MasterFactory
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the extension support post-tasks for this kind of operation.
+   * Get the names of all nodes associated with the operation.
    */ 
-  public boolean 
-  hasTask
-  (   
-   BaseMasterExt ext
-  ); 
-
-  /**
-   * Create and start a new thread to run the post-operation task. 
-   */ 
-  public void
-  startTask
-  (   
-   MasterExtensionConfig config, 
-   BaseMasterExt ext
-  );
+  public LinkedList<String> 
+  getNodeNames(); 
 
 }
 

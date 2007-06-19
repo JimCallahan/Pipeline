@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.204 2007/06/15 00:27:31 jim Exp $
+// $Id: MasterMgr.java,v 1.205 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5354,7 +5354,14 @@ class MasterMgr
    MasterTestFactory factory
   ) 
     throws PipelineException
-  {
+  { 
+    /* a temporary cache of the annotations relevant to all nodes for all tests */ 
+    DoubleMap<String,String,BaseAnnotation> annotations = 
+      new DoubleMap<String,String,BaseAnnotation>();
+
+    /* the enabled extensions which support the current test */ 
+    LinkedList<BaseMasterExt> extensions = new LinkedList<BaseMasterExt>();
+
     timer.aquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
@@ -5371,11 +5378,55 @@ class MasterMgr
 	       ex.getMessage()); 
 	  }
 
-	  if((ext != null) && factory.hasTest(ext)) 
-	    factory.performTest(ext); 
+          /* if the current extension has a test... */ 
+	  if((ext != null) && factory.hasTest(ext)) {
+
+            /* get the annotations for all nodes relavant to the currnent test */ 
+            for(String name : factory.getNodeNames()) {
+
+              /* pre-cache annotations for the node */ 
+              if(!annotations.containsKey(name)) {
+                timer.aquire();
+                ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+                lock.readLock().lock();
+                try {
+                  timer.resume();
+                  
+                  TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+                  if(table != null) {
+                    for(String aname : table.keySet()) {
+                      BaseAnnotation annot = table.get(aname);
+                      if(annot != null) 
+                        annotations.put(name, aname, (BaseAnnotation) annot.clone());
+                    }
+                  }
+                }
+                finally {
+                  lock.readLock().unlock();
+                }   
+              }
+
+              /* lookup the annotations for the node and
+                   register them with the extension plugin instance */ 
+              TreeMap<String,BaseAnnotation> annots = annotations.get(name);
+              if(annots != null) {
+                for(String aname : annots.keySet()) {
+                  BaseAnnotation annot = annots.get(aname);
+                  if(annot != null) 
+                    ext.addAnnotation(name, aname, annot);
+                }
+              }
+            }
+            
+            extensions.add(ext);
+          }
 	}
       }
     }
+    
+    /* perform the enabled pre-op tests */ 
+    for(BaseMasterExt ext : extensions) 
+      factory.performTest(ext); 
   }
 
   /**
@@ -5433,6 +5484,10 @@ class MasterMgr
    MasterTaskFactory factory
   ) 
   {
+    /* a temporary cache of the annotations relevant to all nodes for all tasks */ 
+    DoubleMap<String,String,BaseAnnotation> annotations = 
+      new DoubleMap<String,String,BaseAnnotation>();
+
     timer.aquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
@@ -5441,8 +5496,47 @@ class MasterMgr
 	if(config.isEnabled()) {
 	  try {
 	    BaseMasterExt ext = config.getMasterExt();
-	    if(factory.hasTask(ext)) 
+	    if(factory.hasTask(ext)) {
+              
+              /* get the annotations for all nodes relavant to the currnent task */ 
+              for(String name : factory.getNodeNames()) {
+
+                /* pre-cache annotations for the node */ 
+                if(!annotations.containsKey(name)) {
+                  timer.aquire();
+                  ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+                  lock.readLock().lock();
+                  try {
+                    timer.resume();
+                    
+                    TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+                    if(table != null) {
+                      for(String aname : table.keySet()) {
+                        BaseAnnotation annot = table.get(aname);
+                        if(annot != null) 
+                          annotations.put(name, aname, (BaseAnnotation) annot.clone());
+                      }
+                    }
+                  }
+                  finally {
+                    lock.readLock().unlock();
+                  }   
+                }
+                
+                /* lookup the annotations for the node and
+                   register them with the extension plugin instance */ 
+                TreeMap<String,BaseAnnotation> annots = annotations.get(name);
+                if(annots != null) {
+                  for(String aname : annots.keySet()) {
+                    BaseAnnotation annot = annots.get(aname);
+                    if(annot != null) 
+                      ext.addAnnotation(name, aname, annot);
+                  }
+                }
+              }
+
 	      factory.startTask(config, ext); 
+            }
 	  }
 	  catch(PipelineException ex) {
 	    LogMgr.getInstance().log
@@ -6202,7 +6296,8 @@ class MasterMgr
         table.put(aname, annot);
       }
       else {
-        tannot.setParamValues(annot, pAdminPrivileges.getPrivilegeDetails(req));
+        tannot.setParamValues(annot, req.getRequestor(), 
+                              pAdminPrivileges.getPrivilegeDetails(req));
       }
 
       writeAnnotations(name, table);
@@ -6264,7 +6359,7 @@ class MasterMgr
         throw new PipelineException
           ("No annotation name (" + aname + ") exists for node (" + name + ")!"); 
             
-      table.remove(annot); 
+      table.remove(aname); 
       writeAnnotations(name, table);
 
       return new SuccessRsp(timer);
@@ -6296,7 +6391,7 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    String name  = req.getNodeName();
+    String name = req.getNodeName();
     
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -18646,6 +18741,9 @@ class MasterMgr
             ("Unable to overwrite the existing annotations file (" + file + ")!");
       }
       
+      if(annotations.isEmpty()) 
+        return;
+
       String glue = null;
       try {
         TreeMap<String,BaseAnnotation> table = new TreeMap<String,BaseAnnotation>();

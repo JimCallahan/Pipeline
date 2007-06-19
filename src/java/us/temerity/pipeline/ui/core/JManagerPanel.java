@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.41 2007/05/27 23:24:20 jim Exp $
+// $Id: JManagerPanel.java,v 1.42 2007/06/19 22:05:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -112,6 +112,14 @@ class JManagerPanel
 	
 	sub.addSeparator();
 
+	item = new JMenuItem("Node Annotations");
+	pNodeAnnotationsWindowItem = item;
+	item.setActionCommand("node-annotations-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+
 	item = new JMenuItem("Queue Stats");
 	pJobServerStatsWindowItem = item;
 	item.setActionCommand("job-server-stats-window");
@@ -209,6 +217,14 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);  
 	
+	sub.addSeparator();
+
+	item = new JMenuItem("Node Annotations");
+	pNodeAnnotationsPanelItem = item;
+	item.setActionCommand("node-annotations");
+	item.addActionListener(this);
+	sub.add(item);  
+
 	sub.addSeparator();
 
 	item = new JMenuItem("Queue Stats");
@@ -1004,6 +1020,10 @@ class JManagerPanel
        "Create a new window containing a Node History panel.");
 
     updateMenuToolTip
+      (pNodeAnnotationsWindowItem, prefs.getManagerNodeAnnotationsWindow(), 
+       "Create a new window containing a Node Annotations panel.");
+
+    updateMenuToolTip
       (pJobServerStatsWindowItem, prefs.getManagerJobServerStatsWindow(), 
        "Create a new window containing a Queue Stats panel.");
     updateMenuToolTip
@@ -1050,6 +1070,10 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeHistoryPanelItem, prefs.getManagerNodeHistoryPanel(), 
        "Change the panel type to a Node History panel.");
+
+    updateMenuToolTip
+      (pNodeAnnotationsPanelItem, prefs.getManagerNodeAnnotationsPanel(), 
+       "Change the panel type to a Node Annotations panel.");
 
     updateMenuToolTip
       (pJobServerStatsPanelItem, prefs.getManagerJobServerStatsPanel(), 
@@ -1590,6 +1614,12 @@ class JManagerPanel
         return true;
       }
 
+      else if((prefs.getManagerNodeAnnotationsWindow() != null) &&
+              prefs.getManagerNodeAnnotationsWindow().wasPressed(e)) {
+        doNodeAnnotationsWindow();
+        return true;
+      }
+
       else if((prefs.getManagerJobServerStatsWindow() != null) &&
               prefs.getManagerJobServerStatsWindow().wasPressed(e)) {
         doJobServerStatsWindow();
@@ -1664,6 +1694,12 @@ class JManagerPanel
       else if((prefs.getManagerNodeHistoryPanel() != null) &&
               prefs.getManagerNodeHistoryPanel().wasPressed(e)) {
         doNodeHistoryPanel();
+        return true;
+      }
+
+      else if((prefs.getManagerNodeAnnotationsPanel() != null) &&
+              prefs.getManagerNodeAnnotationsPanel().wasPressed(e)) {
+        doNodeAnnotationsPanel();
         return true;
       }
 
@@ -1967,6 +2003,9 @@ class JManagerPanel
       else if(cmd.equals("node-history-window"))
         doNodeHistoryWindow();
 
+      else if(cmd.equals("node-annotations-window"))
+        doNodeAnnotationsWindow();
+
       else if(cmd.equals("job-server-stats-window"))
         doJobServerStatsWindow();
       else if(cmd.equals("job-servers-window"))
@@ -2001,6 +2040,9 @@ class JManagerPanel
         doNodeLinksPanel();
       else if(cmd.equals("node-history"))
         doNodeHistoryPanel();
+
+      else if(cmd.equals("node-annotations"))
+        doNodeAnnotationsPanel();
 
       else if(cmd.equals("job-server-stats"))
         doJobServerStatsPanel();
@@ -2234,6 +2276,25 @@ class JManagerPanel
     JManagerPanel mgr = frame.getManagerPanel();
     JNodeHistoryPanel panel = new JNodeHistoryPanel(pTopLevelPanel);
     mgr.setContents(panel); 
+
+    updateFromNodeViewer(panel.getGroupID());
+
+    frame.validate();
+    frame.repaint();
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JNodeAnnotationsPanel. 
+   */ 
+  private void 
+  doNodeAnnotationsWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(375, 752);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    JNodeAnnotationsPanel panel = new JNodeAnnotationsPanel(pTopLevelPanel);
+    mgr.setContents(panel);
 
     updateFromNodeViewer(panel.getGroupID());
 
@@ -2527,6 +2588,30 @@ class JManagerPanel
     dead.freeDisplayLists();
     refocusOnChildPanel();
 
+    updateFromNodeViewer(panel.getGroupID());
+  }
+
+  /**
+   * Change the contents of this panel to a JNodeAnnotationsPanel. 
+   */ 
+  private void 
+  doNodeAnnotationsPanel()
+  {
+    if(getContents() instanceof JNodeAnnotationsPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
+    if(pTopLevelPanel.warnUnsavedChangesBeforeReplace()) 
+      return;
+
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    JNodeAnnotationsPanel panel = new JNodeAnnotationsPanel(dead);
+    setContents(panel);
+    dead.setGroupID(0);
+    dead.freeDisplayLists();
+    refocusOnChildPanel();
+    
     updateFromNodeViewer(panel.getGroupID());
   }
 
@@ -3679,7 +3764,8 @@ class JManagerPanel
   private JMenuItem  pNodeDetailsWindowItem;
   private JMenuItem  pNodeFilesWindowItem;
   private JMenuItem  pNodeLinksWindowItem;
-  private JMenuItem  pNodeHistoryWindowItem;
+  private JMenuItem  pNodeHistoryWindowItem; 
+  private JMenuItem  pNodeAnnotationsWindowItem;
   private JMenuItem  pJobServerStatsWindowItem;
   private JMenuItem  pJobServersWindowItem;
   private JMenuItem  pJobSlotsWindowItem;
@@ -3696,6 +3782,7 @@ class JManagerPanel
   private JMenuItem  pNodeFilesPanelItem;
   private JMenuItem  pNodeLinksPanelItem;
   private JMenuItem  pNodeHistoryPanelItem;
+  private JMenuItem  pNodeAnnotationsPanelItem;
   private JMenuItem  pJobServerStatsPanelItem;
   private JMenuItem  pJobServersPanelItem;
   private JMenuItem  pJobSlotsPanelItem;

@@ -1,9 +1,10 @@
-// $Id: BaseLinkExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseLinkExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
 import us.temerity.pipeline.*;
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   L I N K   E X T   F A C T O R Y                                              */
@@ -48,6 +49,25 @@ class BaseLinkExtFactory
 
     pTarget = target; 
     pSource = source; 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all nodes associated with the operation.
+   */ 
+  public LinkedList<String> 
+  getNodeNames()
+  {
+    LinkedList<String> names = new LinkedList<String>();
+    names.add(pTarget); 
+    names.add(pSource);
+    
+    return names;
   }
 
 

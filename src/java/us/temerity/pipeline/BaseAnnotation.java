@@ -1,4 +1,4 @@
-// $Id: BaseAnnotation.java,v 1.1 2007/06/15 00:27:31 jim Exp $
+// $Id: BaseAnnotation.java,v 1.2 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -284,20 +284,24 @@ class BaseAnnotation
    * 
    * The default implementation only grants users with Annotator privileges the right to 
    * modify a parameter, but subclasses may override this method to implement their own 
-   * modification policy.  Note that users with Annotator privileges will always be able
-   * to modify annoation parameters even if a subclass overrides this method to always
-   * return <CODE>false</CODE>.
+   * more permissive modification policy.  Note that users with Annotator privileges will 
+   * always be able to modify annoation parameters even if a subclass overrides this method 
+   * to always return <CODE>false</CODE>.
    * 
-   * @param name  
+   * @param pname  
    *   The name of the parameter. 
    * 
+   * @param user
+   *   The name of the user requesting access to modify the parameter.
+   * 
    * @param privileges
-   *   The details of the administrative privileges granted to the current user. 
+   *   The details of the administrative privileges granted to the user. 
    */ 
   public boolean
   isParamModifiable
   (
-   String name,
+   String pname,
+   String user, 
    PrivilegeDetails privileges
   )
   {
@@ -381,32 +385,39 @@ class BaseAnnotation
    * @param annotation  
    *   The annotation to use as the source of parameter values.
    * 
+   * @param user
+   *   The name of the user requesting access to modify the parameter.
+   * 
+   * @param privileges
+   *   The details of the administrative privileges granted to the user. 
+   * 
    * @throws PipelineException
-   *   If an attempt to modify a parameter for which the user doesn not have sufficient
+   *   If an attempt to modify a parameter for which the user does not have sufficient
    *   privileges.
    */
   public final void 
   setParamValues
   (
-   BaseAnnotation annotation,    
+   BaseAnnotation annotation,
+   String user, 
    PrivilegeDetails privileges
   ) 
     throws PipelineException
   {
-    for(String name : pParams.keySet()) {
-      AnnotationParam aparam = annotation.getParam(name);
+    for(String pname : pParams.keySet()) {
+      AnnotationParam aparam = annotation.getParam(pname);
       if(aparam != null) {
-	AnnotationParam param = pParams.get(name);
+	AnnotationParam param = pParams.get(pname);
 	try {
           Comparable ovalue = param.getValue(); 
           Comparable nvalue = aparam.getValue();          
           if(((ovalue == null) && (nvalue != null)) ||  
              ((ovalue != null) && !ovalue.equals(nvalue))) {
 
-            if(!isParamModifiable(name, privileges)) 
+            if(!isParamModifiable(pname, user, privileges) && !privileges.isAnnotator()) 
               throw new PipelineException
                 ("You do not have sufficient privileges to modify the parameter named " + 
-                 "(" + name + ") for the annotation (" + getName() + ")!"); 
+                 "(" + pname + ") for the annotation (" + getName() + ")!"); 
 
             param.setValue(nvalue); 
           }

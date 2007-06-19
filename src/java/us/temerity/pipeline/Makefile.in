@@ -278,12 +278,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
      API_SOURCES = $(shell ls $(srcdir)/*.java)
 
- BUILDER_SOURCES = $(shell ls $(srcdir)/builder/*.java)
-
-BUILDEXP_SOURCES = $(shell ls $(srcdir)/builder/builders/*.java) \
-                   $(shell ls $(srcdir)/builder/names/*.java) \
-		   $(shell ls $(srcdir)/builder/stages/*.java) \
-                   $(shell ls $(srcdir)/builder/interfaces/*.java) \
+ BUILDER_SOURCES = $(shell ls $(srcdir)/stages/*.java) \
+                   $(shell ls $(srcdir)/builder/*.java) \
                    $(shell ls $(srcdir)/builder/ui/*.java)
 
     GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java $(srcdir)/glue/io/*.java) 
@@ -349,7 +345,7 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
  JAVA_UI_CORE_SOURCES = $(filter-out $(ENUM_SOURCES),$(UI_CORE_SOURCES)) \
                         ui/core/UserPrefs.java ui/core/JUserPrefsDialog.java
 
-     JAVA_BLD_SOURCES = $(filter-out $(ENUM_SOURCES),$(BUILDER_SOURCES) $(BUILDEXP_SOURCES)) 
+     JAVA_BLD_SOURCES = $(filter-out $(ENUM_SOURCES),$(BUILDER_SOURCES))
 
            BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                          bootstrap/BootStrapLoader.java
@@ -383,8 +379,8 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/ui/core/*.class \
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class \
-                    us/temerity/pipeline/builder/*.class \
                     us/temerity/pipeline/stages/*.class \
+                    us/temerity/pipeline/builder/*.class \
                     us/temerity/pipeline/builder/ui/*.class )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
@@ -407,8 +403,8 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class \
-                    us/temerity/pipeline/builder/*.class \
                     us/temerity/pipeline/stages/*.class \
+                    us/temerity/pipeline/builder/*.class \
                     us/temerity/pipeline/builder/ui/*.class )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
@@ -559,9 +555,7 @@ clean-class:
 	rm -f ui/core/*.class
 	rm -f ui/core/prefs/*.class
 	rm -f utils/*.class utils/v2_0_14/*.class
-	rm -f builder/*.class builder/builders/*.class
-	rm -f builder/interfaces/*.class builder/names/*.class
-	rm -f builder/stages/*.class builder/ui/*.class
+	rm -f stages/*.class builder/*.class builder/ui/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:

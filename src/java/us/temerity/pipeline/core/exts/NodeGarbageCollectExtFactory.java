@@ -1,9 +1,10 @@
-// $Id: NodeGarbageCollectExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: NodeGarbageCollectExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
 import us.temerity.pipeline.*;
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G A R B A G E   C O L L E C T O R   E X T   F A C T O R Y                    */
@@ -44,6 +45,18 @@ class NodeGarbageCollectExtFactory
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all nodes associated with the operation.
+   */ 
+  public LinkedList<String> 
+  getNodeNames()
+  {
+    return new LinkedList<String>();
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
