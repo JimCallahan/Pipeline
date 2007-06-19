@@ -1553,11 +1553,11 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java.src
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
+
   src/java/us/temerity/pipeline/builder/Makefile
-  src/java/us/temerity/pipeline/builder/builders/Makefile
-  src/java/us/temerity/pipeline/builder/interfaces/Makefile
-  src/java/us/temerity/pipeline/builder/names/Makefile
-  src/java/us/temerity/pipeline/builder/stages/Makefile
+  src/java/us/temerity/pipeline/builder/maya2mr/Makefile
+  src/java/us/temerity/pipeline/builder/maya2mr/v2_3_1/Makefile
+
   src/java/us/temerity/pipeline/core/VerifiedApp.java
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
@@ -1578,6 +1578,10 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/AfterFXBuildAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/AfterFXEditor/Makefile
   src/java/us/temerity/pipeline/plugin/AfterFXEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/AfterFXRenderImgAction/Makefile
+  src/java/us/temerity/pipeline/plugin/AfterFXRenderImgAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/AfterFXRenderMovAction/Makefile
+  src/java/us/temerity/pipeline/plugin/AfterFXRenderMovAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/AirBakeAction/Makefile
   src/java/us/temerity/pipeline/plugin/AirBakeAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/AirEnvCubeAction/Makefile
@@ -1636,11 +1640,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/CpioTapeArchiver/Makefile
   src/java/us/temerity/pipeline/plugin/CpioTapeArchiver/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/CpioTapeArchiver/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/DebugTextureAction/Makefile
-  src/java/us/temerity/pipeline/plugin/DebugTextureAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/DisableActionTool/Makefile
-  src/java/us/temerity/pipeline/plugin/DisableActionTool/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/DisableActionTool/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/DLCatRIBAction/Makefile
   src/java/us/temerity/pipeline/plugin/DLCatRIBAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/DLCatRIBAction/v2_0_0/Makefile
@@ -1670,13 +1669,18 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/DLTextureAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/DLTextureAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/DLTextureAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/DSViewEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/DSViewEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/DSViewEditor/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/DebugTextureAction/Makefile
+  src/java/us/temerity/pipeline/plugin/DebugTextureAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/DisableActionTool/Makefile
+  src/java/us/temerity/pipeline/plugin/DisableActionTool/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/DisableActionTool/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/DsmToTifAction/Makefile
   src/java/us/temerity/pipeline/plugin/DsmToTifAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/DsmToTifAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/DsmToTifAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/DSViewEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/DSViewEditor/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/DSViewEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/DviViewerEditor/Makefile
   src/java/us/temerity/pipeline/plugin/DviViewerEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsClientEditor/Makefile
@@ -1687,6 +1691,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v1_1_0/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/EnvCrossToSeqAction/Makefile
@@ -1720,6 +1725,11 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/GEditEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/GEditEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/GEditEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/GPlayEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/GPlayEditor/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/GelEnvCubeAction/Makefile
   src/java/us/temerity/pipeline/plugin/GelEnvCubeAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/GelEnvMapAction/Makefile
@@ -1749,11 +1759,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/GimpEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/GimpEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/GimpEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/GPlayEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/GPlayEditor/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/HdrToTifAction/Makefile
   src/java/us/temerity/pipeline/plugin/HdrToTifAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HdrToTifAction/v2_0_0/Makefile
@@ -1778,39 +1783,39 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/HfsGConvertAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGConvertAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGConvertAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v1_1_0/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGEOAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGEOAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGEOAction/v1_1_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGEOAction/v1_2_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsGEOAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v1_1_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsIConvertAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsIConvertAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsIConvertAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsIConvertAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsMRayDSAction/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsMRayDSAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsMRayDSAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsMantraAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsMantraAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsMantraAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsMantraAction/v2_0_4/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsMRayDSAction/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsMRayDSAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsMRayDSAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOTLMergeAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOTLMergeAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOTLMergeAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsRManDSAction/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsRManDSAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsRManDSAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsRenderAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsRenderAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsRenderAction/v1_1_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsRenderAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsRManDSAction/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsRManDSAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/HfsRManDSAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsScriptAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsScriptAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsScriptAction/v1_1_0/Makefile
@@ -1830,6 +1835,9 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/IDisplayEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/IDisplayEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/IDisplayEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/IVEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/IVEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/IVEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/IllustratorEditor/Makefile
   src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_0_9/Makefile
@@ -1847,13 +1855,14 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/IVEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/IVEditor/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/IVEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/IvViewEditor/Makefile
   src/java/us/temerity/pipeline/plugin/IvViewEditor/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/IvViewEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/IvViewEditor/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/JavaBuildAction/Makefile
+  src/java/us/temerity/pipeline/plugin/JavaBuildAction/v2_0_15/Makefile
+  src/java/us/temerity/pipeline/plugin/JavaUtilityAction/Makefile
+  src/java/us/temerity/pipeline/plugin/JavaUtilityAction/v2_0_15/Makefile
   src/java/us/temerity/pipeline/plugin/KPdfEditor/Makefile
   src/java/us/temerity/pipeline/plugin/KPdfEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/KWriteEditor/Makefile
@@ -1870,109 +1879,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/LyxEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/LyxExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/LyxExportAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxRenderAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxRenderAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxScriptAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxScriptAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxwellGlobalsAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxwellGlobalsAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxwellRenderAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MaxwellRenderAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAddRefTool/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAddRefTool/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaBuildAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_1_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_2_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_3_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaDLShaderExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaDLShaderExportAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaEditor/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaEditor/v1_1_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaImportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaImportAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaLqExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaLqExportAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMelAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMelAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaProjectEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaPygExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaPygExportAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v1_1_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_1_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_2_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_3_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_4/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaSdExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaSdExportAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MPlayEditor/Makefile
   src/java/us/temerity/pipeline/plugin/MPlayEditor/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MPlayEditor/v2_0_0/Makefile
@@ -1984,6 +1890,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MRayCamOverrideAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MRayCamOverrideAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/Makefile
@@ -1991,6 +1898,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_14/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderGlobalsAction/Makefile
@@ -2014,6 +1923,138 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MRayTexturePackAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MRayTextureUnpackAction/Makefile
   src/java/us/temerity/pipeline/plugin/MRayTextureUnpackAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxRenderAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxRenderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxScriptAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxScriptAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxwellGlobalsAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxwellGlobalsAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxwellRenderAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MaxwellRenderAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAddRefTool/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAddRefTool/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v2_0_12/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaBuildAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_0_12/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_1_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_2_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_3_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_12/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCollateAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaDLShaderExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaDLShaderExportAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/v1_1_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaImportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaImportAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaImportAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaImportAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaLqExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaLqExportAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMelAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMelAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMelAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_12/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_13/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_14/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaProjectEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaPygExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaPygExportAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v1_1_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_1_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_2_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v1_3_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_4/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaSdExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaSdExportAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_12/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_10/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_11/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/NEditEditor/Makefile
   src/java/us/temerity/pipeline/plugin/NEditEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/NukeCompAction/Makefile
@@ -2026,13 +2067,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/NukeFrameCyclerEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/NukeViewerEditor/Makefile
   src/java/us/temerity/pipeline/plugin/NukeViewerEditor/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/PatchAction/Makefile
-  src/java/us/temerity/pipeline/plugin/PatchAction/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/PatchAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/PRBrickMakeAction/Makefile
   src/java/us/temerity/pipeline/plugin/PRBrickMakeAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PRCatRIBAction/Makefile
@@ -2041,11 +2075,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/PREnvCubeAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PREnvMapAction/Makefile
   src/java/us/temerity/pipeline/plugin/PREnvMapAction/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/PreviewEditor/Makefile
-  src/java/us/temerity/pipeline/plugin/PreviewEditor/v1_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_0_0/Makefile
-  src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_0_9/Makefile
-  src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/PRPhotonMapAction/Makefile
   src/java/us/temerity/pipeline/plugin/PRPhotonMapAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PRRenderAction/Makefile
@@ -2062,6 +2091,18 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/PRSubSurfDiffCAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PRTextureAction/Makefile
   src/java/us/temerity/pipeline/plugin/PRTextureAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PatchAction/Makefile
+  src/java/us/temerity/pipeline/plugin/PatchAction/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PatchAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/PreviewEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/PreviewEditor/v1_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/PtViewerEditor/Makefile
   src/java/us/temerity/pipeline/plugin/PtViewerEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PtViewerEditor/v2_0_9/Makefile
@@ -2089,11 +2130,13 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/RealFlowSimAction/Makefile
   src/java/us/temerity/pipeline/plugin/RealFlowSimAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/RegisterMapTool/Makefile
+  src/java/us/temerity/pipeline/plugin/RegisterMapTool/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/RegisterMapTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/RenumberTool/Makefile
   src/java/us/temerity/pipeline/plugin/RenumberTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/RenumberTool/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/SciTEEditor/Makefile
+  src/java/us/temerity/pipeline/plugin/SciTEEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/SciTEEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/SciTEEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/ScriptAction/Makefile
@@ -2136,6 +2179,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/SyflexApplyCacheAction/Makefile
   src/java/us/temerity/pipeline/plugin/SyflexApplyCacheAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/SyflexCacheAction/Makefile
+  src/java/us/temerity/pipeline/plugin/SyflexCacheAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/SyflexCacheAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/SyflexCacheCopyAction/Makefile
   src/java/us/temerity/pipeline/plugin/SyflexCacheCopyAction/v2_0_9/Makefile
@@ -2149,10 +2193,13 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/TarTapeArchiver/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TaskAnnotation/Makefile
   src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/TaskPolicyExt/Makefile
+  src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/TerminalEditor/Makefile
   src/java/us/temerity/pipeline/plugin/TerminalEditor/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TerminalEditor/v1_1_0/Makefile
   src/java/us/temerity/pipeline/plugin/TerminalEditor/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/TerminalEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/TerminalEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/TerminalEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/TestAction/Makefile
