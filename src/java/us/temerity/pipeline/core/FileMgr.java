@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.64 2007/03/28 19:51:04 jim Exp $
+// $Id: FileMgr.java,v 1.65 2007/06/19 02:35:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2582,11 +2582,20 @@ class FileMgr
 	catch(IOException ex) {
 	}
 
-	throw new PipelineException
-	  ("The process creating archive volume (" + archiveName + ") failed with " +
-	   "exit code (" + proc.getExitCode() + ")!\n\n" + 
-	   "The STDERR output of the process:\n" + 
-	   errors);
+        {
+          StringBuilder buf = new StringBuilder();
+          buf.append
+            ("The process creating archive volume (" + archiveName + ") failed with " +
+             "exit code (" + proc.getExitCode() + ")!\n\n");
+          
+          if(errors != null) 
+            buf.append("The STDERR output of the process:\n" + 
+                       errors);
+          else 
+            buf.append("There was no STDERR output for the failed process.");
+          
+          throw new PipelineException(buf.toString());
+        }
       }
 
       /* read the generated STDOUT file */ 
