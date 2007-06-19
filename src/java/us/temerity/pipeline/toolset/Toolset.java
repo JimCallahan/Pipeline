@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.14 2007/06/19 20:16:06 jim Exp $
+// $Id: Toolset.java,v 1.15 2007/06/19 23:38:25 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -489,7 +489,10 @@ class Toolset
   public TreeMap<String,String>
   getEnvironment()
   {
-    return new TreeMap<String,String>(pEnvironment);
+    if(pEnvironment != null) 
+      return new TreeMap<String,String>(pEnvironment);
+    else 
+      return new TreeMap<String,String>();
   }
   
   /**
