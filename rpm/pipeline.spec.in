@@ -99,6 +99,7 @@ The core features of Pipeline include:
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/plugins-extra
+@ROOT_INST_DIR@/builders
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
