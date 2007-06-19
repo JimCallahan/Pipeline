@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.1 2007/06/17 15:34:46 jim Exp $
+// $Id: TaskAnnotation.java,v 1.2 2007/06/19 18:24:52 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_2_1;
 
@@ -27,7 +27,8 @@ import java.io.*;
  *   Assigned To<BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the WorkGroup or specific artist assigned to complete the task involving
- *     this node.
+ *     this node.  Users matching Supervised By are allowed to modify this parameter without
+ *     Annotator privileges.
  *   </DIV> <BR>
  * 
  *   Supervised By <BR>
@@ -36,23 +37,23 @@ import java.io.*;
  *     changes made by artists AssignedTo complete the task. 
  *   </DIV> <BR>
  * 
- *   Is Edit Node <BR>
+ *   Is Edit  <BR>
  *   <DIV style="margin-left: 40px;">
  *     Whether this node which should be manually edited by the assigned artist in order to
  *     accomplish the goals of the task.
  *   </DIV> <BR>
  * 
- *   Is Focus Node <BR>
+ *   Is Focus  <BR>
  *   <DIV style="margin-left: 40px;">
  *     Whether this node should be inspected as part of the review process for a task.
  *   </DIV> <BR>
  * 
- *   Is Submit Node <BR>
+ *   Is Submit  <BR>
  *   <DIV style="margin-left: 40px;">
  *     Whether a Checked-In of this node signals that a given task is ready for review.
  *   </DIV> <BR>
  * 
- *   Is Approve Node <BR>
+ *   Is Approve  <BR>
  *   <DIV style="margin-left: 40px;">
  *     Whether a Check-In of this node signals that the task as been approved.
  *   </DIV> <BR>
@@ -106,7 +107,7 @@ class TaskAnnotation
     {
       AnnotationParam param = 
 	new BooleanAnnotationParam
-	(aIsEditNode, 
+	(aIsEdit, 
 	 "Whether this node which should be manually edited by the assigned artist in " + 
          "order to accomplish the goals of the task.", 
 	 false); 
@@ -116,7 +117,7 @@ class TaskAnnotation
     {
       AnnotationParam param = 
 	new BooleanAnnotationParam
-	(aIsFocusNode, 
+	(aIsFocus, 
 	 "Whether this node should be inspected as part of the review process for a task.", 
 	 false); 
       addParam(param);
@@ -125,7 +126,7 @@ class TaskAnnotation
     {
       AnnotationParam param = 
 	new BooleanAnnotationParam
-	(aIsSubmitNode, 
+	(aIsSubmit, 
 	 "Whether a Checked-In of this node signals that a given task is ready for review.", 
 	 false); 
       addParam(param);
@@ -134,7 +135,7 @@ class TaskAnnotation
     {
       AnnotationParam param = 
 	new BooleanAnnotationParam
-	(aIsApproveNode, 
+	(aIsApprove, 
 	 "Whether a Check-In of this node signals that the task as been approved.", 
 	 false); 
       addParam(param);
@@ -147,10 +148,10 @@ class TaskAnnotation
       layout.add(aAssignedTo);
       layout.add(aSupervisedBy);
       layout.add(null);
-      layout.add(aIsEditNode);
-      layout.add(aIsFocusNode);
-      layout.add(aIsSubmitNode);
-      layout.add(aIsApproveNode);
+      layout.add(aIsEdit);
+      layout.add(aIsFocus);
+      layout.add(aIsSubmit);
+      layout.add(aIsApprove);
 
       setLayout(layout);      
     }
@@ -186,10 +187,13 @@ class TaskAnnotation
    PrivilegeDetails privileges
   )
   {
-    
-    // ... 
+    if(super.isParamModifiable(name, privileges))
+      return true;
 
-    return super.isParamModifiable(name, privileges);
+    if(name.equals(aAssignedTo) && privileges.getPrivilegedUser().equals(aSupervisedBy)) 
+      return true;
+
+    return false;
   } 
 
 
@@ -198,15 +202,15 @@ class TaskAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 2168290890306064601L;
 
   public static final String aTaskName      = "TaskName";
   public static final String aAssignedTo    = "AssignedTo";
   public static final String aSupervisedBy  = "SupervisedBy";
-  public static final String aIsEditNode    = "IsEditNode";
-  public static final String aIsFocusNode   = "IsFocusNode";
-  public static final String aIsSubmitNode  = "IsSubmitNode";
-  public static final String aIsApproveNode = "IsApproveNode";
+  public static final String aIsEdit        = "IsEdit";
+  public static final String aIsFocus       = "IsFocus";
+  public static final String aIsSubmit      = "IsSubmit";
+  public static final String aIsApprove     = "IsApprove";
 
 }
 

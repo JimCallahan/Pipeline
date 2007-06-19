@@ -1,9 +1,11 @@
 
-SUBDIRS =  \
+SUBDIRS = \
   AcrobatEditor \
   AcroreadEditor \
   AfterFXBuildAction \
   AfterFXEditor \
+  AfterFXRenderImgAction \
+  AfterFXRenderMovAction \
   AirBakeAction \
   AirEnvCubeAction \
   AirEnvMapAction \
@@ -85,6 +87,8 @@ SUBDIRS =  \
   InDesignEditor \
   IVEditor \
   IvViewEditor \
+  JavaBuildAction \
+  JavaUtilityAction \
   KPdfEditor \
   KWriteEditor \
   ListSourcesAction \
@@ -191,6 +195,7 @@ SUBDIRS =  \
   TarFileArchiver \
   TarTapeArchiver \
   TaskAnnotation \
+  TaskPolicyExt \
   TerminalEditor \
   TestAction \
   TextDiffComparator \
