@@ -33,7 +33,6 @@ class BuilderInformation
     pPassToBuilderMap = new ListMap<ConstructPass, BaseBuilder>();
     pNodesToQueue = new TreeSet<String>();
     pCheckInOrder = new LinkedList<BaseBuilder>();
-    pCommandLineParams = new MultiMap<String, String>();
     pCallHierarchy = new LinkedList<BaseBuilder>();
     pStageInformation = new StageInformation();
   }

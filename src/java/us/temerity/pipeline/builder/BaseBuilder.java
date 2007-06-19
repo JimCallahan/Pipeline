@@ -147,17 +147,6 @@ class BaseBuilder
         ("Cannot add a SubBuilder with the same name ("+ instanceName+") " +
          "as one that already exists.");
     
-    if (defaultMapping) {
-      addMappedParam(instanceName, aUtilContext, aUtilContext);
-      if (subBuilder instanceof BaseBuilder) {
-	addMappedParam(instanceName, aActionOnExistance, aActionOnExistance);
-	addMappedParam(instanceName, aReleaseOnError, aReleaseOnError);
-      }
-    }
-    
-    if (paramMapping != null)
-      addMappedParams(instanceName, paramMapping);
-
     PrefixedName prefixed = new PrefixedName(getPrefixedName(), instanceName);
     subBuilder.setPrefixedName(prefixed);
     
@@ -170,6 +159,17 @@ class BaseBuilder
     else {
       pSubBuilders.put(instanceName, (BaseBuilder) subBuilder);
     }
+    
+    if (defaultMapping) {
+      addMappedParam(instanceName, aUtilContext, aUtilContext);
+      if (subBuilder instanceof BaseBuilder) {
+	addMappedParam(instanceName, aActionOnExistance, aActionOnExistance);
+	addMappedParam(instanceName, aReleaseOnError, aReleaseOnError);
+      }
+    }
+    
+    if (paramMapping != null)
+      addMappedParams(instanceName, paramMapping);
   }
 
   /**

@@ -2,6 +2,7 @@ package us.temerity.pipeline.core;
 
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 
 import us.temerity.pipeline.*;
@@ -31,6 +32,7 @@ public class BuilderApp
   public BuilderApp()
   {
     super("plbuilder");
+    pCommandLineParams = new MultiMap<String, String>();
   }
 
   
@@ -104,14 +106,14 @@ public class BuilderApp
       if (hasClassName) {
 	ClassLoader loader = ClassLoader.getSystemClassLoader();
 	Class cls = loader.loadClass(args[0]);
-	Constructor<BaseBuilder> construct = 
+	Constructor construct = 
 	  cls.getConstructor
 	  (MasterMgrClient.class, 
 	   QueueMgrClient.class, 
 	   BuilderInformation.class);
 	parser.CommandLine();
 	BuilderInformation info = new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
-	BaseBuilder builder = construct.newInstance(mclient, qclient, info);
+	BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
 	builder.run();
       } 
       else {
@@ -126,6 +128,13 @@ public class BuilderApp
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
+    }
+    catch (InvocationTargetException ex) {
+      Throwable th = ex.getTargetException();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(th));
+      th.printStackTrace();
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
