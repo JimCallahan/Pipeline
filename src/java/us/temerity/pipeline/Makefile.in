@@ -384,11 +384,8 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class \
                     us/temerity/pipeline/builder/*.class \
-                    us/temerity/pipeline/builder/stages/*.class \
-                    us/temerity/pipeline/builder/builders/*.class \
-                    us/temerity/pipeline/builder/names/*.class \
-                    us/temerity/pipeline/builder/ui/*.class \
-                    us/temerity/pipeline/builder/interfaces/*.class)
+                    us/temerity/pipeline/stages/*.class \
+                    us/temerity/pipeline/builder/ui/*.class )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -411,11 +408,8 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/utils/*.class \
                     us/temerity/pipeline/utils/v2_0_14/*.class \
                     us/temerity/pipeline/builder/*.class \
-                    us/temerity/pipeline/builder/stages/*.class \
-                    us/temerity/pipeline/builder/builders/*.class \
-                    us/temerity/pipeline/builder/names/*.class \
-                    us/temerity/pipeline/builder/ui/*.class \
-                    us/temerity/pipeline/builder/interfaces/*.class )
+                    us/temerity/pipeline/stages/*.class \
+                    us/temerity/pipeline/builder/ui/*.class )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)

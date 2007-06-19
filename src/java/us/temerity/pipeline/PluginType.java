@@ -1,4 +1,4 @@
-// $Id: PluginType.java,v 1.2 2007/06/15 00:27:31 jim Exp $
+// $Id: PluginType.java,v 1.3 2007/06/19 05:47:00 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -52,7 +52,22 @@ enum PluginType
   /**
    * Plugins used to extend the behavior of the Queue Manager daemon.
    */
-  QueueExt; 
+  QueueExt,
+
+  /**
+   * External tools used to build networks of nodes.
+   */
+  Builder,
+  
+  /**
+   * Plugins that define groups of node names for use with Builders.
+   */
+  Namer,
+  
+  /**
+   * Plugins used to dynamically modify node networks inside pipeline.
+   */
+  Procedure; 
 
 
 

@@ -132,7 +132,8 @@ class NewAssetBuilder
 	ListUtilityParam.createSelectionKeyParam
 	(aSelectionKeys, 
 	 "Which Selection Keys Should be assigned to the constructred nodes", 
-	 null);
+	 null,
+	 qclient);
       addParam(param);
     }
 

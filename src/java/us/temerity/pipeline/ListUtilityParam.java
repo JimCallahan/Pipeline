@@ -2,8 +2,6 @@ package us.temerity.pipeline;
 
 import java.util.*;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseUtil;
 import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
@@ -106,11 +104,12 @@ class ListUtilityParam
   (
     String name,
     String desc,
-    Set<String> value
+    Set<String> value,
+    QueueMgrClient qclient
   )
     throws PipelineException
   {
-    ArrayList<SelectionKey> keys = BaseUtil.getSelectionKeys();
+    ArrayList<SelectionKey> keys = qclient.getSelectionKeys();
     
     TreeSet<String> values = new TreeSet<String>();
     TreeMap<String, String> tooltips = new TreeMap<String, String>();
@@ -130,11 +129,12 @@ class ListUtilityParam
   (
     String name,
     String desc,
-    Set<String> value
+    Set<String> value,
+    QueueMgrClient qclient
   )
     throws PipelineException
   {
-    ArrayList<LicenseKey> keys = BaseUtil.getLicenseKeys();
+    ArrayList<LicenseKey> keys = qclient.getLicenseKeys();
     
     TreeSet<String> values = new TreeSet<String>();
     TreeMap<String, String> tooltips = new TreeMap<String, String>();
