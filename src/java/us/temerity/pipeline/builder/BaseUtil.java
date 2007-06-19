@@ -3,6 +3,8 @@ package us.temerity.pipeline.builder;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
 
 /**
@@ -11,8 +13,9 @@ import us.temerity.pipeline.NodeTreeComp.State;
  * This class contains all the information and helper methods that will be used by
  * utility classes.
  */
-public 
+public abstract
 class BaseUtil
+  extends BasePlugin
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -32,19 +35,50 @@ class BaseUtil
   BaseUtil
   (
     String name,
+    VersionID vid,
+    String vendor,
     String desc,
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
     UtilContext context
   ) 
+    throws PipelineException 
   {
-    pName = name;
-    pDesc = desc;
+    super(name, vid, vendor, desc);
+    pClient = mclient;
+    pQueue = qclient;
+    pPlug = PluginMgrClient.getInstance();
     pContext = context;
+    
+    if (name.contains(" "))
+      throw new PipelineException
+      ("A class with Builder Parameters cannot have a space in its name, " +
+       "due to command-line parsing restrictions.  (" + name + ") is not a valid name.");
+    
+    if (name.contains("-"))
+      throw new PipelineException
+      ("Due to command line parsing requirements, you cannot include the '-' character " +
+       "in the name of any class that uses Builder Parameters.");
+    
+    pParams = new TreeMap<String, UtilityParam>();
+    pParamMapping = new TreeMap<ParamMapping, ParamMapping>();
+    
+    {
+      UtilityParam param = 
+      new UtilContextUtilityParam
+      (aUtilContext, 
+       "The User, View, and Toolset to perform these actions in.",  
+       context,
+       mclient);
+      setContext(context);
+      addParam(param);
+    }
   }
 
   /**
    * Default constructor for BaseUtil. <P>
    * The {@link UtilContext} for this utility will need to be initialized using
-   * {@link #setGlobalContext(UtilContext)} before any of the methods in this 
+   * {@link #setContext(UtilContext)} before any of the methods in this 
    * class are used. 
    * 
    * @param name
@@ -58,11 +92,15 @@ class BaseUtil
   BaseUtil
   (
     String name,
-    String desc
+    VersionID vid,
+    String vendor,
+    String desc,    
+    MasterMgrClient mclient,
+    QueueMgrClient qclient
   ) 
+    throws PipelineException 
   {
-    pName = name;
-    pDesc = desc;
+    this(name, vid, vendor, desc, mclient, qclient, null);
   }
 
   
@@ -78,7 +116,6 @@ class BaseUtil
    * This name is used in the UI to label fields and table columns in a more human 
    * friendly manner.
    * 
-   * @see #getName
    */ 
   public final String
   getNameUI()
@@ -108,14 +145,13 @@ class BaseUtil
   /**
    * Sets the {@link UtilContext} that this utility will operate in.
    * <P>
-   * This should only be used when the {@link #BaseUtil(String, String)} constructor is used.
    * This should not be used to change the context in the middle of running a tool.
    * 
    * @param context
    * 	The {@link UtilContext} for the utility. 
    */
-  protected void 
-  setGlobalContext
+  public void 
+  setContext
   (
     UtilContext context
   )
@@ -123,27 +159,6 @@ class BaseUtil
     pContext = context;
   }
   
-  /**
-   * Returns a default {@link UtilContext}
-   * 
-   * @throws PipelineException
-   */
-  public static UtilContext 
-  getDefaultUtilContext()
-    throws PipelineException
-  {
-    String author = PackageInfo.sUser;
-    TreeMap<String, TreeSet<String>> areas = sClient.getWorkingAreas();
-    TreeSet<String> userAreas = areas.get(author);
-    String view = null;
-    if(userAreas.contains("default"))
-      view = "default";
-    else
-      view = userAreas.first();
-    String toolset = sClient.getDefaultToolsetName();
-    return new UtilContext(author, view, toolset);
-  }
-
   /**
    * Disables a node's Action. Takes the name of a node and disables the Action for that
    * node. Throws a {@link PipelineException} if there is a problem disabling the action.
@@ -160,9 +175,9 @@ class BaseUtil
   throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), name);
-    NodeMod nodeMod = sClient.getWorkingVersion(nodeID);
+    NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
     nodeMod.setActionEnabled(false);
-    sClient.modifyProperties(getAuthor(), getView(), nodeMod);
+    pClient.modifyProperties(getAuthor(), getView(), nodeMod);
   }
 
   /**
@@ -181,13 +196,15 @@ class BaseUtil
   throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), name);
-    NodeMod nodeMod = sClient.getWorkingVersion(nodeID);
+    NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
     nodeMod.setActionEnabled(true);
-    sClient.modifyProperties(getAuthor(), getView(), nodeMod);
+    pClient.modifyProperties(getAuthor(), getView(), nodeMod);
   }
 
   /**
-   * Removes a node's Action. Takes the name of a node and removes any Action that the node
+   * Removes a node's Action.
+   * <p>
+   * Takes the name of a node and removes any Action that the node
    * might have. Throws a {@link PipelineException} if there is a problem removing the
    * action.
    * 
@@ -203,9 +220,9 @@ class BaseUtil
   throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), name);
-    NodeMod nodeMod = sClient.getWorkingVersion(nodeID);
+    NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
     nodeMod.setAction(null);
-    sClient.modifyProperties(getAuthor(), getView(), nodeMod);
+    pClient.modifyProperties(getAuthor(), getView(), nodeMod);
   }
 
   /**
@@ -224,160 +241,8 @@ class BaseUtil
   throws PipelineException
   {
     for(String s : nodes) {
-      sClient.release(getAuthor(), getView(), s, true);
+      pClient.release(getAuthor(), getView(), s, true);
     }
-  }
-
-  /**
-   * Creates a new node in Pipeline.
-   * <P>
-   * Registers a node in Pipeline and returns a {@link NodeMod} representing the newly
-   * created node. The node will be a single file without frame numbering. Use the
-   * registerSequence method if you need a single file with a frame number. Throws a
-   * {@link PipelineException} if it cannot register the node successfully.
-   * 
-   * @param name
-   *        The full node name of the new node.
-   * @param suffix
-   *        The filename suffix for the new node.
-   * @param editor
-   *        The Editor for the new node.
-   * @return The {@link NodeMod} representing the newly registered node.
-   * @throws PipelineException
-   */
-  public NodeMod 
-  registerNode
-  (
-    String name, 
-    String suffix, 
-    BaseEditor editor
-  )
-  throws PipelineException
-  {
-    Path p = new Path(name);
-    FileSeq fSeq = new FileSeq(p.getName(), suffix);
-    NodeMod nodeMod = new NodeMod(name, fSeq, null, getToolset(), editor);
-    sClient.register(getAuthor(), getView(), nodeMod);
-    return nodeMod;
-  }
-
-  /**
-   * Create a new node representing a sequence in Pipeline. Registers a node in Pipeline and
-   * returns a {@link NodeMod} representing the newly created node. The node will be a file
-   * sequence with frame numbers, starting at <code>startFrame</code>, ending at
-   * <code>endFrame</code>, with a step of <code>step</code>. If you want to register
-   * a node without frame numbers, use the registerNode method.
-   * 
-   * @param name
-   *        The full node name of the new node.
-   * @param pad
-   *        The amount of padding for the frame numbering
-   * @param suffix
-   *        The filename extention for the new node.
-   * @param editor
-   *        The Editor for the new node.
-   * @param startFrame
-   *        The starting frame for the sequence.
-   * @param endFrame
-   *        The ending frame for the sequence.
-   * @param step
-   *        The step for the sequence.
-   * @return The {@link NodeMod} representing the newly registered node.
-   * @throws PipelineException
-   */
-  public NodeMod 
-  registerSequence
-  (
-    String name, 
-    int pad, 
-    String suffix, 
-    BaseEditor editor,
-    int startFrame, 
-    int endFrame, 
-    int step
-  ) 
-  throws PipelineException
-  {
-    Path p = new Path(name);
-    FilePattern pat = new FilePattern(p.getName(), pad, suffix);
-    FrameRange range = new FrameRange(startFrame, endFrame, step);
-    FileSeq fSeq = new FileSeq(pat, range);
-    NodeMod nodeMod = new NodeMod(name, fSeq, null, getToolset(), editor);
-    sClient.register(getAuthor(), getView(), nodeMod);
-    return nodeMod;
-  }
-
-  /**
-   * Creates a new node that matches the old node and then (optionally) copies the old node's files to 
-   * the new node. 
-   * <P>
-   * This does not allow for any of the fine grained control that the GUI version of clone node does. 
-   * Throws a {@link PipelineException} if anything goes wrong.
-   * 
-   * @param oldName
-   *        The node to be cloned.
-   * @param newName
-   *        The new node to be created.
-   * @param cloneLinks
-   * 		Should the links of the old node be copied to the new node.
-   * @param cloneAction
-   *  		Should the action of the old node be copied to the new node.
-   * @return a {@link NodeMod} representing the newly created node.
-   * @throws PipelineException
-   */
-  public NodeMod 
-  cloneNode
-  (
-    String oldName, 
-    String newName,
-    boolean cloneLinks,
-    boolean cloneAction, 
-    boolean copyFiles
-  ) 
-    throws PipelineException
-  {
-    Path p = new Path(newName);
-    String name = p.getName();
-
-    NodeMod oldMod = sClient.getWorkingVersion(getAuthor(), getView(), oldName);
-    FileSeq oldSeq = oldMod.getPrimarySequence();
-    FilePattern oldPat = oldSeq.getFilePattern();
-
-    FrameRange range = null;
-    FilePattern pat = null;
-
-    if(oldSeq.hasFrameNumbers()) {
-      range = oldSeq.getFrameRange();
-      pat = new FilePattern(name, oldPat.getPadding(), oldPat.getSuffix());
-    }
-    else {
-      range = null;
-      pat = new FilePattern(name, oldPat.getSuffix());
-    }
-    FileSeq newSeq = new FileSeq(pat, range);
-    NodeMod newMod = new NodeMod(newName, newSeq, oldMod.getSecondarySequences(), 
-      oldMod.getToolset(), oldMod.getEditor());
-    sClient.register(getAuthor(), getView(), newMod);
-    if (cloneLinks)
-    {
-      for (LinkMod link : oldMod.getSources())
-      {
-	sClient.link(getAuthor(), getView(), newName, link.getName(), 
-	  link.getPolicy(), link.getRelationship(), link.getFrameOffset());
-      }
-    }
-    if (cloneAction)
-    {
-      BaseAction act = new BaseAction(oldMod.getAction());
-      newMod.setAction(act);
-      sClient.modifyProperties(getAuthor(), getView(), newMod);
-    }
-    if (copyFiles){
-      NodeID source = new NodeID(getAuthor(), getView(), oldName);
-      NodeID target = new NodeID(getAuthor(), getView(), newName);
-      sClient.cloneFiles(source, target);
-    }
-    return newMod;
   }
 
   /**
@@ -398,7 +263,7 @@ class BaseUtil
   {
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(name, false);
-    NodeTreeComp treeComps = sClient.updatePaths(getAuthor(), getView(), comps);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     State state = getState(treeComps, name);
     if ( state == null || state.equals(State.Branch) )
       return false;
@@ -431,7 +296,7 @@ class BaseUtil
   {
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(name, false);
-    NodeTreeComp treeComps = sClient.updatePaths(getAuthor(), getView(), comps);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     Path p = new Path(name);
     ArrayList<String> parts = p.getComponents();
     for (String comp : parts)
@@ -483,7 +348,7 @@ class BaseUtil
     ArrayList<String> toReturn = new ArrayList<String>();
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(start.toString(), false);
-    NodeTreeComp treeComps = sClient.updatePaths(getAuthor(), getView(), comps);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     Path p = new Path(start);
     ArrayList<String> parts = p.getComponents();
     for(String comp : parts) {
@@ -514,7 +379,7 @@ class BaseUtil
     ArrayList<String> toReturn = new ArrayList<String>();
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(start.toString(), false);
-    NodeTreeComp treeComps = sClient.updatePaths(getAuthor(), getView(), comps);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     Path p = new Path(start);
     ArrayList<String> parts = p.getComponents();
     for(String comp : parts) {
@@ -550,80 +415,12 @@ class BaseUtil
   {
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(start, true);
-    NodeTreeComp treeComps = sClient.updatePaths(getAuthor(), getView(), comps);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     ArrayList<String> toReturn = new ArrayList<String>();
     for(String s : treeComps.keySet()) {
       findNodes(treeComps.get(s), toReturn, "/");
     }
     return toReturn;
-  }
-
-  /**
-   * Shortcut method for linking nodes and setting the correct namespace in the target
-   * node's parameters. Links the target node to the source node using the given Link
-   * Policy. If the action on the target node is a MayaReference, MayaBuild, or a MayaImport
-   * it will also set the "Prefix Name" SourceParam on the action. In these cases, this
-   * method changes the action that is passed in.
-   * 
-   * @param target
-   *        The node that will be the target of the link.
-   * @param source
-   *        The node that will be the source of the link.
-   * @param action
-   *        The action associated with the target node. This will be modified.
-   * @param policy
-   *        What sort of link should be made.
-   * @param nameSpace
-   *        The namespace that will be used if the action is a MayaReference, MayaBuild, or
-   *        MayaImport.
-   * @throws PipelineException
-   */
-  public void 
-  referenceNode
-  (
-    String target, 
-    String source, 
-    BaseAction action,
-    LinkPolicy policy, 
-    String nameSpace
-  ) 
-  throws PipelineException
-  {
-    boolean reference = false;
-
-    String actionType = action.getName();
-    if ( actionType.equals("MayaReference") || actionType.equals("MayaImport")
-        || actionType.equals("MayaBuild") )
-      reference = true;
-
-    sClient
-      .link(getAuthor(), getView(), target, source, policy, LinkRelationship.All, null);
-    if(reference) {
-      action.initSourceParams(source);
-      action.setSourceParamValue(source, "PrefixName", nameSpace);
-    }
-  }
-
-  /**
-   * Shortcut for assigning preset values to an Action. Sets the Single Param Values of the
-   * Action to the values in the SortedMap. Modifies the Action which is passed in.
-   * 
-   * @param act
-   *        The Action to set the presets on.
-   * @param preset
-   *        The {@link SortedMap} that holds the preset names and values.
-   */
-  @SuppressWarnings("unchecked")
-  public void 
-  setPresets
-  (
-    BaseAction act, 
-    SortedMap<String, Comparable> preset
-  )
-  {
-    for(String name : preset.keySet()) {
-      act.setSingleParamValue(name, preset.get(name));
-    }
   }
 
   /**
@@ -653,14 +450,14 @@ class BaseUtil
   {
     NodeMod mod = null;
     try {
-      mod = sClient.getWorkingVersion(getAuthor(), getView(), name);
+      mod = pClient.getWorkingVersion(getAuthor(), getView(), name);
     }
     catch(PipelineException ex)
     {}
 
     TreeSet<VersionID> versions = null;
     try {
-      versions = sClient.getCheckedInVersionIDs(name);
+      versions = pClient.getCheckedInVersionIDs(name);
     }
     catch(PipelineException ex)
     {
@@ -674,11 +471,11 @@ class BaseUtil
       VersionID currentID = mod.getWorkingID();
 
       if(currentID.compareTo(latestID) < 0) {
-        sClient.checkOut(getAuthor(), getView(), name, latestID, mode, method);
+        pClient.checkOut(getAuthor(), getView(), name, latestID, mode, method);
       }
     }
     else {
-      sClient.checkOut(getAuthor(), getView(), name, latestID, mode, method);
+      pClient.checkOut(getAuthor(), getView(), name, latestID, mode, method);
     }
   }
 
@@ -705,7 +502,7 @@ class BaseUtil
   )
     throws PipelineException
   {
-    sClient.checkOut(getAuthor(), getView(), name, null, mode, method);
+    pClient.checkOut(getAuthor(), getView(), name, null, mode, method);
   }
 
   /**
@@ -723,7 +520,7 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    sClient.lock(getAuthor(), getView(), name, null);
+    pClient.lock(getAuthor(), getView(), name, null);
   }
 
   /**
@@ -744,7 +541,7 @@ class BaseUtil
   {
     TreeSet<VersionID> versions = null;
     try {
-      versions = sClient.getCheckedInVersionIDs(name);
+      versions = pClient.getCheckedInVersionIDs(name);
     }
     catch(PipelineException ex) {
       throw new PipelineException(
@@ -753,7 +550,7 @@ class BaseUtil
     }
     VersionID latestID = versions.last();
     NodeID id = new NodeID(getAuthor(), getView(), name);
-    sClient.evolve(id, latestID);
+    pClient.evolve(id, latestID);
   }
   
   
@@ -778,7 +575,7 @@ class BaseUtil
     throws PipelineException
   {
     for(String node : nodes) {
-      sClient.checkIn(getAuthor(), getView(), node, message, level);
+      pClient.checkIn(getAuthor(), getView(), node, message, level);
     }
   }
 
@@ -817,140 +614,25 @@ class BaseUtil
     }
   }
 
-  /**
-   * Returns a {@link BaseAction}.
-   * <p>
-   * Finds the latest version of a plugin from a specified vendor in the given toolset.
-   * 
-   * @param pluginUtil
-   *        Contains the name and the vendor the the plugin *
-   * @param toolset
-   *        The toolset from which the version of the Action will be extracted.
-   * @throws PipelineException
-   */
-  public static BaseAction 
-  getAction
-  (
-    PluginContext pluginUtil, 
-    String toolset
-  )
-    throws PipelineException
-  {
-    if(sPlug == null)
-      sPlug = PluginMgrClient.getInstance();
-    
-    DoubleMap<String, String, TreeSet<VersionID>> plugs = sClient
-      .getToolsetActionPlugins(toolset);
-    
-    TreeSet<VersionID> pluginSet = 
-      plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
-    if (pluginSet == null)
-      throw new PipelineException
-        ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
-         "in toolset (" + toolset + ")");
-    VersionID ver = pluginSet.last();
-
-    return sPlug.newAction(pluginUtil.getPluginName(), ver, pluginUtil.getPluginVendor());
-  }
-
-  /**
-   * Returns a {@link BaseEditor}.
-   * <p>
-   * Finds the latest version of a plugin from a specified vendor in the given toolset.
-   * 
-   * @param pluginUtil
-   *        Contains the name and the vendor the the plugin
-   * @param toolset
-   *        The toolset from which the version of the Editor will be extracted.
-   * @throws PipelineException
-   */
-  public static BaseEditor 
-  getEditor
-  (
-    PluginContext pluginUtil, 
-    String toolset
-  )
-    throws PipelineException
-  {
-    if(sPlug == null)
-      sPlug = PluginMgrClient.getInstance();
-    
-    DoubleMap<String, String, TreeSet<VersionID>> plugs = sClient
-      .getToolsetEditorPlugins(toolset);
-    VersionID ver = plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName())
-      .last();
-
-    return sPlug.newEditor(pluginUtil.getPluginName(), ver, pluginUtil.getPluginVendor());
-  }
-  
-  public static TreeMap<String, TreeSet<String>>
-  getWorkingAreas()
-    throws PipelineException
-  {
-    return sClient.getWorkingAreas();
-  }
-  
-  public static ArrayList<String> 
-  getViews
-  (
-    String user
-  ) 
-    throws PipelineException
-  {
-    return new ArrayList<String>(sClient.getWorkingAreas().get(user));
-  }
-  
-  public static ArrayList<String> 
-  getUsers() 
-    throws PipelineException
-  {
-    return new ArrayList<String>(sClient.getWorkingAreas().keySet());
-  }
-  
-  public static ArrayList<String>
-  getActiveToolsets()
-    throws PipelineException
-  {
-    return new ArrayList<String>(sClient.getActiveToolsetNames());
-  }
-  
-  public static String
-  getDefaultToolset()
-    throws PipelineException
-  {
-    return sClient.getDefaultToolsetName();
-  }
-  
   public static ArrayList<SelectionKey>
-  getSelectionKeys()
+  getSelectionKeys
+  (
+    QueueMgrClient client
+  )
     throws PipelineException
   {
-    return sQueue.getSelectionKeys();
+    return client.getSelectionKeys();
   }
   
   public static ArrayList<LicenseKey>
-  getLicenseKeys()
+  getLicenseKeys
+  (
+    QueueMgrClient client
+  )
     throws PipelineException
   {
-    return sQueue.getLicenseKeys();
+    return client.getLicenseKeys();
   }
-  
-  /**
-   * @return the name
-   */
-  public String getName()
-  {
-    return pName;
-  }
-
-  /**
-   * @return the desc
-   */
-  public String getDesc()
-  {
-    return pDesc;
-  }
-  
   
   // Utility methods for this class.
 
@@ -1061,47 +743,1062 @@ class BaseUtil
   }
 
   
-  
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   S H U T D O W N                                                        */
+  /* G L O B A L   P A R A M E T E R S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  public static void
-  disconnectClients()
+
+  /**
+   * Does the Class have any parameters?
+   */
+  public boolean 
+  hasParams()
   {
-    sClient.disconnect();
-    sQueue.disconnect();
+      return ( !pParams.isEmpty() );
+  }
+
+  /**
+   * Add a parameter to this Class.
+   * <P>
+   * This method is used by subclasses in their constructors to initialize the set of
+   * global parameters that they support.
+   * 
+   * @param param
+   *        The parameter to add.
+   */
+  protected void 
+  addParam
+  (
+    UtilityParam param
+  )
+  {
+    if ( pParams.containsKey(param.getName()) )
+      throw new IllegalArgumentException
+        ("A parameter named (" + param.getName() + ") already exists!");
+
+    pParams.put(param.getName(), param);
+    
+    pLog.log(Kind.Bld, Level.Finest, 
+      "Adding a parameter named (" + param.getName() + ") to a Builder " +
+      "identified by (" + getName() + ")");
+  }
+
+  /**
+   * Get the value of the parameter with the given name.
+   * 
+   * @param name
+   *        The name of the parameter.
+   * @return The parameter value.
+   * @throws IllegalArgumentException if no parameter with the given name exists or if the
+   * named parameter does not implement {@link SimpleParamAccess}.
+   */
+  @SuppressWarnings("unchecked")
+  public Comparable 
+  getParamValue
+  (
+    String name
+  ) 
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    if (! (param instanceof SimpleParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "SimpleParamAccess.");
+    return ((SimpleParamAccess) param).getValue();
   }
   
+  /**
+   * Get the value of the Simple Parameter located inside the named Complex Parameter and
+   * identified by the list of keys.
+   * 
+   * @throws IllegalArgumentException if no parameter with the given name exists or if the
+   * named parameter does not implement {@link SimpleParamAccess}.
+   */
+  @SuppressWarnings("unchecked")
+  public Comparable
+  getParamValue
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    
+    if (keys == null || keys.isEmpty())
+      return getParamValue(name);
+    
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    return ((ComplexParamAccess<UtilityParam>) param).getValue(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public Comparable
+  getParamValue
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return getParamValue(mapping.getParamName(), mapping.getKeys());
+    return getParamValue(mapping.getParamName());
+  }
+
+  @SuppressWarnings("unchecked")
+  public UtilityParam 
+  getParam
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    
+    if (keys == null || keys.isEmpty())
+      return param;
+    
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    return ((ComplexParamAccess<UtilityParam>) param).getParam(keys); 
+  }
+  
+  /**
+   * Get the parameter with the given name.
+   * 
+   * @param name
+   *        The name of the parameter.
+   * @return The parameter or <CODE>null</CODE> if no parameter with the given name
+   *         exists.
+   */
+  public UtilityParam 
+  getParam
+  (
+    String name
+  )
+  {
+    if ( name == null )
+      throw new IllegalArgumentException("The parameter name cannot be (null)!");
+    return pParams.get(name);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public UtilityParam
+  getParam
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return getParam(mapping.getParamName(), mapping.getKeys());
+    return getParam(mapping.getParamName());
+  }
+
+  public Collection<UtilityParam> 
+  getParams()
+  {
+    return Collections.unmodifiableCollection(pParams.values());
+  }
+  
+  public Collection<String> 
+  getParamNames()
+  {
+    return Collections.unmodifiableCollection(pParams.keySet());
+  }
+  
+  /**
+   * Gets a sorted Map of all the Parameters in this builder, with the keys being
+   * the name of the parameters and the values the actual parameters.
+   */
+  public SortedMap<String, UtilityParam> 
+  getParamMap()
+  {
+    return Collections.unmodifiableSortedMap(pParams);
+  }
+  
+  /**
+   * Set the value of a parameter.
+   * 
+   * @param name
+   *        The name of the parameter.
+   * @param value
+   *        The new value of the parameter.
+   */
+  @SuppressWarnings("unchecked")
+  public final boolean 
+  setParamValue
+  (
+    String name, 
+    Comparable value
+  )
+  {
+    if ( name == null )
+      throw new IllegalArgumentException("The parameter name cannot be (null)!");
+
+    UtilityParam param = pParams.get(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("No parameter named (" + param.getName() + ") exists for this extension!");
+    if (! (param instanceof SimpleParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "SimpleParamAccess.");
+
+    ((SimpleParamAccess) param).setValue(value);
+    return false;
+  }
+
+  @SuppressWarnings("unchecked")
+  public final boolean
+  setParamValue
+  (
+    String name,
+    List<String> keys,
+    Comparable value  
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      throw new IllegalArgumentException
+        ("Unable to determine the value of the (" + name + ") parameter!");
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    return ((ComplexParamAccess<UtilityParam>) param).setValue(keys, value);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public final boolean
+  setParamValue
+  (
+    ParamMapping mapping,
+    Comparable value
+  )
+  {
+    if (mapping.hasKeys())
+      return setParamValue(mapping.getParamName(), mapping.getKeys(), value);
+    
+    return setParamValue(mapping.getParamName(), value);
+  }
+  
+  public boolean
+  hasParam
+  (
+    String name
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      return false;
+    return true;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasParam
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      return false;
+    
+    if (keys == null || keys.isEmpty())
+      return hasParam(name);
+    
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    
+    return ((ComplexParamAccess<UtilityParam>) param).hasParam(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasParam
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return hasParam(mapping.getParamName(), mapping.getKeys());
+    return hasParam(mapping.getParamName());
+  }
+  
+  public boolean
+  hasSimpleParam
+  (
+    String name
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      return false;
+    if (param instanceof SimpleParamAccess)
+      return true;
+    return false;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasSimpleParam
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    UtilityParam param = getParam(name);
+    
+    if ( param == null )
+      return false;
+    
+    if (keys == null || keys.isEmpty())
+      return hasSimpleParam(name);
+
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    
+    return ((ComplexParamAccess<UtilityParam>) param).hasSimpleParam(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  hasSimpleParam
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return hasSimpleParam(mapping.getParamName(), mapping.getKeys());
+    return hasSimpleParam(mapping.getParamName());
+  }
+  
+  public boolean
+  canSetSimpleParamFromString
+  (
+    String name
+  )
+  {
+    UtilityParam param = getParam(name);
+    if ( param == null )
+      return false;
+    if (param instanceof SimpleParamFromString)
+      return true;
+    return false;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  canSetSimpleParamFromString
+  (
+    String name,
+    List<String> keys
+  )
+  {
+    UtilityParam param = getParam(name);
+    
+    if ( param == null )
+      return false;
+    
+    if (keys == null || keys.isEmpty())
+      return hasSimpleParam(name);
+
+    if (! (param instanceof ComplexParamAccess))
+      throw new IllegalArgumentException
+        ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
+         "ComplexParamAccess.");
+    
+    return ((ComplexParamAccess<UtilityParam>) param).canSetSimpleParamFromString(keys); 
+  }
+  
+  @SuppressWarnings("unchecked")
+  public boolean
+  canSetSimpleParamFromString
+  (
+    ParamMapping mapping
+  )
+  {
+    if (mapping.hasKeys())
+      return canSetSimpleParamFromString(mapping.getParamName(), mapping.getKeys());
+    return canSetSimpleParamFromString(mapping.getParamName());
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A R A M E T E R    L A Y O U T                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the hierarchical grouping of parameters which determine the layout of 
+   * UI components in different passes. <P> 
+   * 
+   * The given layouts must contain an entry for all parameters 
+   * defined for the action exactly once in all the passes.  A collapsible drawer component 
+   * will be created for each layout group which contains a field for each parameter
+   * entry in the order specified by the group.  All <CODE>null</CODE> entries will cause 
+   * additional space to be added between the UI fields. Each layout subgroup will be represented 
+   * by its own drawer nested within the drawer for the parent layout group. <P> 
+   * 
+   * This method should be called by subclasses in their constructor after building the appropriate 
+   * {@link PassLayoutGroup}.
+   * 
+   * @param groups
+   *   The layout group broken down by passes.
+   */
+  protected void
+  setLayout
+  (
+    PassLayoutGroup layout
+  ) 
+  {
+    TreeSet<String> names = new TreeSet<String>();
+    for(AdvancedLayoutGroup advanced : layout.getAllLayouts().values()) {
+      collectLayoutNames(advanced, names);
+    }
+    
+    for(String name : names) {
+      if(!pParams.containsKey(name))
+	throw new IllegalArgumentException
+	  ("The entry (" + name + ") specified by the builder parameter layout group " + 
+	   "does not match any single valued parameter defined for this Builder!");
+    }
+
+    for(String name : pParams.keySet()) {
+      if(!names.contains(name))
+	throw new IllegalArgumentException
+	  ("The single valued parameter (" + name + ") defined by this Builder was not " + 
+	   "specified by any the parameter layout group!");
+    }
+    pLayout = layout;
+  }
+  
+  /**
+   * Returns a name list for all the parameters that are contained in a particular
+   * pass of the layout.
+   * 
+   * @param pass Which pass the name list is generated for.
+   */
+  public TreeSet<String> 
+  getPassParamNames
+  (
+    int pass 
+  )
+  {
+    TreeSet<String> toReturn = new TreeSet<String>();
+    collectLayoutNames(getLayout().getPassLayout(pass), toReturn);
+    return toReturn;
+  }
+  
+  
+  /**
+   * Recursively search the parameter groups to collect the parameter names and verify
+   * that no parameter is specified more than once.
+   */ 
+  private void 
+  collectLayoutNames
+  (
+   AdvancedLayoutGroup group, 
+   TreeSet<String> names
+  ) 
+  {
+    for (Integer column : group.getAllColumns()) {
+      for(String name : group.getEntries(column)) {
+	if(name != null) {
+	  if(names.contains(name)) 
+	    throw new IllegalArgumentException
+    	      ("The single valued parameter (" + name + ") was specified more than once " +
+  	       "in the given parameter group!");
+	  names.add(name);
+	}
+      }
+      for(LayoutGroup sgroup : group.getSubGroups(column)) 
+	      collectLayoutNames(sgroup, names);
+    }
+  }
+
+  /**
+   * Get the grouping of parameters used to layout components which represent 
+   * the parameters in the user interface. <P> 
+   * 
+   * If no parameter group has been previously specified, a group will 
+   * be created which contains all parameters in alphabetical order, in a single pass.
+   */ 
+  public PassLayoutGroup
+  getLayout()
+  {
+    if(pLayout == null) {
+      AdvancedLayoutGroup layout = 
+	new AdvancedLayoutGroup("Pass 1", "The first pass of the params.", "Column 1", true);
+      for(String name : pParams.keySet()) 
+	layout.addEntry(1, name);
+      pLayout = 
+	new PassLayoutGroup("BuilderParams", "The BuilderParams", layout.getName(), layout );
+    }
+    return pLayout; 
+  }
+  
+  /**
+   * Gets the layout for a particular pass.
+   * 
+   * @param pass
+   * 	The number of the pass.
+   */
+  public AdvancedLayoutGroup
+  getPassLayout
+  (
+    int pass
+  )
+  {
+    return getLayout().getPassLayout(pass);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S U B - B U I L D E R S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  protected final void
+  addParamMapping
+  (
+    ParamMapping subParam,
+    ParamMapping masterParam
+  )
+  {
+    pParamMapping.put(subParam, masterParam);
+  }
+
+  /**
+   * Gets all the mapped parameters and the parameters that drive them.
+   */
+  public final SortedMap<ParamMapping, ParamMapping> 
+  getMappedParams()
+  {
+    return Collections.unmodifiableSortedMap(pParamMapping);
+  }
+  
+  /**
+   * Gets all the mapped parameters and the parameters that drive them.
+   */
+  public final Set<ParamMapping> 
+  getMappedParamNames()
+  {
+    return Collections.unmodifiableSet(pParamMapping.keySet());
+  }
+  
+  /**
+   * Returns the prefix name for this builder, which includes the full path to this builder as
+   * a '-' separate list.
+   * 
+   * If this method is called on something with Builder Parameters which is used as a
+   * Sub-Builder, then it should only be used after
+   * {@link BaseBuilder#addSubBuilder(BaseUtil)} is called. The addSubBuilder method
+   * is responsible for setting the value returned by this function correctly. If this method
+   * is called before the value is correctly set, it will just return the name of the builder.
+   * 
+   */
+  public PrefixedName 
+  getPrefixedName()
+  {
+    if (pPrefixName == null)
+      return new PrefixedName(getName());
+    return pPrefixName;
+  }
+  
+  public void
+  setPrefixedName
+  (
+    PrefixedName namedPrefix
+  )
+  {
+    pPrefixName = new PrefixedName(namedPrefix);
+  }
+  
+  public abstract int
+  getCurrentPass();
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A R A M E T E R   L O O K U P                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Get the selected index of the single valued Enum parameter with the given name.<P> 
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The index value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   * @throws ClassCastException
+   *   If the parameter is not an EnumParameter.
+   */ 
+  public int
+  getEnumParamIndex
+  (
+   ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    EnumUtilityParam param = (EnumUtilityParam) getParam(mapping);
+    if(param == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") does not exist!"); 
+      
+    return param.getIndex();
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Boolean parameter with the given name.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists.
+   */ 
+  public boolean
+  getBooleanParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    Boolean value = (Boolean) getParamValue(mapping);  
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+
+    return value;
+  }  
+
+  /** 
+   * Get the value of the single valued Boolean parameter with the given name.<P> 
+   * 
+   * If <CODE>null</CODE> value is treated as <CODE>false</CODE>.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   */ 
+  public boolean
+  getOptionalBooleanParamValue
+  (
+    ParamMapping mapping
+  ) 
+  {
+    Boolean value = (Boolean) getParamValue(mapping); 
+    return ((value != null) && value);
+  } 
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Long parameter with the given name.<P> 
+   * 
+   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public long
+  getLongParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    return getLongParamValue(mapping, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Long parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value) <P> 
+   * 
+   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public long
+  getLongParamValue
+  (
+    ParamMapping mapping,
+    Long minValue 
+  ) 
+    throws PipelineException
+  {
+    return getLongParamValue(mapping, minValue, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Long parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value <= maxValue)<P> 
+   * 
+   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param maxValue
+   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public long
+  getLongParamValue
+  (
+    ParamMapping mapping,
+    Long minValue, 
+    Long maxValue
+  ) 
+    throws PipelineException
+  {
+    Long value = (Long) getParamValue(mapping); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+
+    if((minValue != null) && (value < minValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was less-than the " + 
+         "minimum allowed value (" + minValue + ")!");
+    
+    if((maxValue != null) && (value > maxValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was greater-than the " + 
+         "maximum allowed value (" + maxValue + ")!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Integer parameter with the given name.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public int
+  getIntegerParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    return getIntegerParamValue(mapping, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Integer parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value) 
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public int
+  getIntegerParamValue
+  (
+    ParamMapping mapping,
+    Integer minValue 
+  ) 
+    throws PipelineException
+  {
+    return getIntegerParamValue(mapping, minValue, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Integer parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (minValue <= value <= maxValue)
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param minValue
+   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param maxValue
+   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public int
+  getIntegerParamValue
+  (
+    ParamMapping mapping,
+    Integer minValue, 
+    Integer maxValue
+  ) 
+    throws PipelineException
+  {
+    Integer value = (Integer) getParamValue(mapping); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+
+    if((minValue != null) && (value < minValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was less-than the " + 
+         "minimum allowed value (" + minValue + ")!");
+    
+    if((maxValue != null) && (value > maxValue)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was greater-than the " + 
+         "maximum allowed value (" + maxValue + ")!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Double parameter with the given name.
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public double
+  getDoubleParamValue
+  (
+    ParamMapping mapping
+  ) 
+    throws PipelineException
+  {
+    return getDoubleParamValue(mapping, null, null);
+  }
+
+  /** 
+   * Get the lower bounds checked value of the single valued non-null Double parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (lower < value)
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param lower
+   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public double
+  getDoubleParamValue
+  (
+    ParamMapping mapping,
+    Double lower
+  ) 
+    throws PipelineException
+  {
+    return getDoubleParamValue(mapping, lower, null);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued non-null Double parameter with 
+   * the given name. <P> 
+   * 
+   * Legal values must satisfy: (lower < value < upper)
+   * 
+   * @param mapping
+   *   The name and keys of the parameter. 
+   *
+   * @param lower
+   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
+   * 
+   * @param upper
+   *   The upper bounds (exclusive) of legal values or <CODE>null</CODE> for no upper bounds.
+   * 
+   * @return 
+   *   The parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists, 
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public double
+  getDoubleParamValue
+  (
+    ParamMapping mapping,
+    Double lower, 
+    Double upper
+  ) 
+    throws PipelineException
+  {
+    Double value = (Double) getParamValue(mapping); 
+    if(value == null) 
+      throw new PipelineException
+        ("The required parameter (" + mapping + ") was not set!"); 
+    
+    if((lower != null) && (value <= lower)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was not greater-than the " + 
+         "the lower bounds (" + lower + ") for legal values!");
+    
+    if((upper != null) && (value >= upper)) 
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + mapping + ") was not less-than the " + 
+         "the upper bounds (" + upper + ") for legal values!");
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+
+  /** 
+   * Get the value of the single valued String parameter with the given name.
+   * 
+   * @param mapping  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The parameter value or <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   */ 
+  public String
+  getStringParamValue
+  (
+    ParamMapping mapping   
+  ) 
+  { 
+    String value = (String) getParamValue(mapping); 
+    if((value != null) && (value.length() > 0))
+      return value;
+
+    return null;    
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  public final static String aUtilContext = "UtilContext";
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * The static instance of the Master Manager that is being used to perform all the
    * Pipeline operations in this stage.
    */
-  protected static final MasterMgrClient sClient = new MasterMgrClient();
+  protected final MasterMgrClient pClient;
   
   /**
    * The static instance of the Queue Manager that is being used to perform all the
    * Pipeline operations in this stage.
    */
-  protected static final QueueMgrClient sQueue = new QueueMgrClient();
+  protected final QueueMgrClient pQueue;
 
   /**
    * Static instance of the Plugin Manager which is used to perform all plugin related stage
    * operations.
    */
-  protected static PluginMgrClient sPlug = PluginMgrClient.getInstance();
-  
-
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
+  protected final PluginMgrClient pPlug;
   
   /**
    * The context which holds the user, view, and toolset that the stage is operating on.
@@ -1109,16 +1806,45 @@ class BaseUtil
   protected UtilContext pContext;
   
   /**
-   * The name of the utility.
+   * The table of Builder parameters.
    */
-  private String pName;
+  protected TreeMap<String, UtilityParam> pParams;
   
   /**
-   * The description of the utility.
+   * Specifies the grouping of parameters used to layout components which 
+   * represent the parameters in the user interface, broken down by pass. 
+   */ 
+  private PassLayoutGroup pLayout;
+  
+  /**
+   *  Contains a mapping of the Sub-Builder Parameter name to the parent Parameter name.
    */
-  private String pDesc;
+  private TreeMap<ParamMapping, ParamMapping> pParamMapping;
   
+  /**
+   * Is the class that inherets from this class allowed to have children?
+   * <p>
+   * This is an important consideration, since having child {@link HasBuilderParams} means
+   * that those classes have to be able to maange those children.  It also means that 
+   * calculations of things like the maximum number of passes necessary to run or the collection
+   * of layouts that much more difficult.
+   * <p>
+   * This value should be set by Abstract classes that inherit from this class and not by
+   * the actual implementing classes that use the Abstract classes.  Those Abstract classes need
+   * to define methods to deal with the complexities discussed above. 
+   */
+  //private final boolean pAllowsChildren;
   
+  /**
+   * 
+   */
+  private PrefixedName pPrefixName = null;
+  
+  /**
+   * Instance of the log manager for builder logging purposes.
+   */
+  protected final LogMgr pLog = LogMgr.getInstance();
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1151,5 +1877,225 @@ class BaseUtil
      * The node only exists in the another working area.
      */
     OTHER;
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   C L A S S E S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static
+  class ParamMapping
+    implements Comparable<ParamMapping>
+  {
+    public
+    ParamMapping
+    (
+      ParamMapping mapping
+    )
+    {
+      this(mapping.getParamName(), mapping.getKeys());
+    }
+    
+    public
+    ParamMapping
+    (
+      String paramName
+    )
+    {
+      this(paramName, null);
+    }
+    
+    public
+    ParamMapping
+    (
+      String paramName,
+      List<String> keys
+    )
+    {
+      if (paramName == null)
+	throw new IllegalArgumentException("Cannot have a null parameter name");
+      pParamName = paramName;
+      if (keys == null)
+	pKeys = null;
+      else if (keys.isEmpty())
+	pKeys = null;
+      else
+	pKeys = new LinkedList<String>(keys);
+    }
+    
+    public String
+    getParamName()
+    {
+      return pParamName;
+    }
+    
+    public boolean
+    hasKeys()
+    {
+      if (pKeys == null)
+	return false;
+      return true;
+    }
+    
+    public List<String>
+    getKeys()
+    {
+      if (pKeys == null)
+	return null;
+      return Collections.unmodifiableList(pKeys);
+    }
+    
+    public void
+    addKey
+    (
+      String key
+    )
+    {
+      if (pKeys == null)
+	pKeys = ComplexParam.listFromObject(key);
+      else
+	pKeys.add(key);
+    }
+
+    public int 
+    compareTo
+    (
+      ParamMapping that
+    )
+    {
+      int compare = this.pParamName.compareTo(that.pParamName);
+      if (compare != 0)
+	return compare;
+      if (this.pKeys == null) {
+	if (that.pKeys == null)
+	  return 0;
+	return -1;
+      }
+      if (that.pKeys == null)
+	return 1;
+      int thisSize = this.pKeys.size();
+      int thatSize = that.pKeys.size();
+      if (thisSize > thatSize)
+	return 1;
+      else if (thatSize < thisSize)
+	return -1;
+      for (int i = 0; i < thisSize; i++) {
+	String thisKey = this.pKeys.get(i);
+	String thatKey = that.pKeys.get(i);
+	compare = thisKey.compareTo(thatKey);
+	if (compare != 0)
+	  return compare;
+      }
+      return 0;
+    }
+    
+    @Override
+    public boolean 
+    equals
+    (
+      Object obj
+    )
+    {
+      if (!(obj instanceof ParamMapping ) )
+	return false;
+      ParamMapping mapping = (ParamMapping) obj;
+      int compare = this.compareTo(mapping);
+      if (compare == 0)
+	return true;
+      return false;
+    }
+
+    @Override
+    public String
+    toString()
+    {
+      return "Param Name (" + pParamName + ") with Keys: " + pKeys;
+    }
+    
+    private String pParamName;
+    private LinkedList<String> pKeys;
+  }
+  
+  public static 
+  class PrefixedName
+  {
+    public
+    PrefixedName
+    (
+      LinkedList<String> prefixes,
+      String name
+    )
+    {
+      if (prefixes == null)
+	pPrefixes = new LinkedList<String>();
+      else
+	pPrefixes = new LinkedList<String>(prefixes);
+      if (name != null)
+	pPrefixes.add(name);
+    }
+    
+    public PrefixedName
+    (
+      String name
+    )
+    {
+      pPrefixes = ComplexParam.listFromObject(name);
+    }
+    
+    public PrefixedName
+    (
+      PrefixedName prefixName,
+      String name
+    )
+    {
+      if (prefixName.pPrefixes == null)
+	pPrefixes = new LinkedList<String>();
+      else
+	pPrefixes = new LinkedList<String>(prefixName.pPrefixes);
+      if (name != null)
+	pPrefixes.add(name);
+    }
+    
+    public PrefixedName
+    (
+      PrefixedName prefixName
+    )
+    {
+      if (prefixName.pPrefixes == null)
+	pPrefixes = new LinkedList<String>();
+      else
+	pPrefixes = new LinkedList<String>(prefixName.pPrefixes);
+    }
+    
+    @Override
+    public String toString()
+    {
+      StringBuilder toReturn = new StringBuilder();
+      for (String each : pPrefixes) {
+	if (toReturn.length() > 0)
+	  toReturn.append(" - ");
+	toReturn.append(each);
+      }
+      return toReturn.toString();
+    }
+    
+    @Override
+    public boolean 
+    equals
+    (
+      Object that
+    )
+    {
+      if (!(that instanceof PrefixedName)) 
+	return false;
+      PrefixedName that1 = (PrefixedName) that;
+      if (that1.toString().equals(this.toString()))
+	return true;
+      return false;
+    }
+
+    private LinkedList<String> pPrefixes;
   }
 }

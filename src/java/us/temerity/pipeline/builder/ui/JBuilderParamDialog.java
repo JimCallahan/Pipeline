@@ -13,9 +13,7 @@ import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.BaseBuilder;
-import us.temerity.pipeline.builder.BaseUtil;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
-import us.temerity.pipeline.stages.BaseStage;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -261,7 +259,7 @@ class JBuilderParamDialog
   private void
   quit()
   {
-    BaseUtil.disconnectClients();
+    pTopPanel.disconnect();
     System.exit(1);
   }
   
@@ -515,7 +513,7 @@ class JBuilderParamDialog
       try {
 	LogMgr.getInstance().log(Kind.Ops, Level.Warning, 
 	  "All the nodes that were registered will now be released.");
-	BaseStage.cleanUpAddedNodes();
+	pTopPanel.releaseNodes();
 	SwingUtilities.invokeLater(new AfterReleaseNodesTask());
       }
       catch (PipelineException ex) {

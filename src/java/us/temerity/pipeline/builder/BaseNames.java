@@ -6,22 +6,25 @@
  */
 package us.temerity.pipeline.builder;
 
-import us.temerity.pipeline.PassLayoutGroup;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 
 public abstract
 class BaseNames
-  extends HasBuilderParams
+  extends BaseUtil
 {
   protected 
   BaseNames
   (
     String name,
-    String desc
+    VersionID vid,
+    String vendor,
+    String desc,
+    MasterMgrClient mclient,
+    QueueMgrClient qclient
   ) 
     throws PipelineException
   {
-    super(name, desc, false);
+    super(name, vid, vendor, desc, mclient, qclient);
   }
   
   public abstract void 
@@ -48,6 +51,4 @@ class BaseNames
   {
     return 1;
   }
-  
-  
 }

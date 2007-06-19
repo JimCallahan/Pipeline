@@ -297,7 +297,7 @@ Abort()
 {
   <ABORT> 
   { 
-    BaseBuilder.setAbortOnBadParam(true);
+    pApp.setAbortOnBadParam(true);
   }
 }
 
@@ -326,7 +326,7 @@ Param()
   <PARAM> t1=<PARAM_NAME> (Key(keys))* EQ() t2=<PARAM_VALUE>
   {
     keys.addFirst(t1.image);
-    BaseBuilder.setCommandLineParam(currentBuilderName, keys, t2.image);
+    pApp.setCommandLineParam(currentBuilderName, keys, t2.image);
   }
 }
 

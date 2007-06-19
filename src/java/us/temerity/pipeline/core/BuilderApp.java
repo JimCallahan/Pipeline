@@ -1,12 +1,14 @@
 package us.temerity.pipeline.core;
 
 import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.util.LinkedList;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.BaseBuilder;
-import us.temerity.pipeline.builder.stages.BaseStage;
+import us.temerity.pipeline.builder.BuilderInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   A P P                                                                  */
@@ -92,8 +94,8 @@ public class BuilderApp
       return;
     }
     
-    BaseStage.initializeAddedNodes();
-
+    MasterMgrClient mclient = new MasterMgrClient();
+    QueueMgrClient qclient = new QueueMgrClient();
     
     try {
       BuilderOptsParser parser = 
@@ -102,14 +104,18 @@ public class BuilderApp
       if (hasClassName) {
 	ClassLoader loader = ClassLoader.getSystemClassLoader();
 	Class cls = loader.loadClass(args[0]);
+	Constructor<BaseBuilder> construct = 
+	  cls.getConstructor
+	  (MasterMgrClient.class, 
+	   QueueMgrClient.class, 
+	   BuilderInformation.class);
 	parser.CommandLine();
-	BaseBuilder.setUsingGUI(pGui);
-	BaseBuilder builder = (BaseBuilder) cls.newInstance();
+	BuilderInformation info = new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
+	BaseBuilder builder = construct.newInstance(mclient, qclient, info);
 	builder.run();
       } 
       else {
 	parser.CommandLine();
-	BaseBuilder.setUsingGUI(pGui);
       }
     }
     catch(ParseException ex) {
@@ -183,6 +189,41 @@ public class BuilderApp
     pGui = gui;
   }
   
+  public void
+  setAbortOnBadParam
+  (
+    boolean abort
+  )
+  {
+    pAbortOnGui = abort;
+  }
+  
+  public void
+  setCommandLineParam
+  (
+    String builder, 
+    LinkedList<String> keys, 
+    String value
+  )
+  {
+    builder = builder.replaceAll("-", " - ");
+    LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
+      "Reading command line arg for Builder (" + builder + ").\n" +
+      "Keys are (" + keys + ").\n" +
+      "Value is (" + value + ").");
+    if (builder == null)
+      throw new IllegalArgumentException
+        ("Illegal attempt in setting a Parameter value before specifying the Builder " +
+         "that the Parameter resides in.");
+    LinkedList<String> list;
+    if (keys == null)
+      list = new LinkedList<String>();
+    else
+      list = new LinkedList<String>(keys);
+    list.addFirst(builder);
+    pCommandLineParams.putValue(list, value, true);
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -190,4 +231,6 @@ public class BuilderApp
   /*----------------------------------------------------------------------------------------*/
   
   private boolean pGui = false;
+  private boolean pAbortOnGui = false;
+  private MultiMap<String, String> pCommandLineParams; 
 }

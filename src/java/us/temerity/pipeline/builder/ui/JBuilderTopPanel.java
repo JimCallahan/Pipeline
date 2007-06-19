@@ -15,7 +15,7 @@ import us.temerity.pipeline.builder.BaseBuilder;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
 import us.temerity.pipeline.builder.BaseBuilder.SetupPass;
-import us.temerity.pipeline.builder.HasBuilderParams.PrefixedName;
+import us.temerity.pipeline.builder.BaseUtil.PrefixedName;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -327,6 +327,19 @@ class JBuilderTopPanel
     if (pActiveNode != null)
       ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
     model.nodeChanged(pActiveNode);
+  }
+  
+  public void
+  disconnect()
+  {
+    pBuilder.disconnectClients();
+  }
+  
+  public void
+  releaseNodes()
+    throws PipelineException
+  {
+    pBuilder.releaseNodes();
   }
 
   

@@ -7,8 +7,9 @@ import javax.swing.SwingUtilities;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
-import us.temerity.pipeline.builder.stages.BaseStage;
+import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
 import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
+import us.temerity.pipeline.stages.BaseStage;
 import us.temerity.pipeline.ui.UIFactory;
 
 /*------------------------------------------------------------------------------------------*/
@@ -16,7 +17,7 @@ import us.temerity.pipeline.ui.UIFactory;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The parent class of all Builder.
+ * The parent class of all Builders.
  * <p>
  * Stuff here.
  * <p>
@@ -26,7 +27,7 @@ import us.temerity.pipeline.ui.UIFactory;
  * <dd>Refers to any instance of this class. Usually preceded with 'parent' when being used
  * with Sub-Builder to make the relation clear. </dd>
  * <dt>Sub-Builder</dt>
- * <dd>Refers to any instance of {@link HasBuilderParams} that is being used as a child of
+ * <dd>Refers to any instance of {@link BaseUtil} that is being used as a child of
  * the current Builder.</dd>
  * <dt>child Builder</dt>
  * <dd>Refers to any instance of this class that is being used as a child of the current
@@ -47,7 +48,7 @@ import us.temerity.pipeline.ui.UIFactory;
  */
 public abstract 
 class BaseBuilder
-  extends HasBuilderParams
+  extends BaseUtil
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -57,11 +58,17 @@ class BaseBuilder
   BaseBuilder
   (
     String name,
-    String desc
+    VersionID vid,
+    String vendor,
+    String desc,
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
+    BuilderInformation builderInformation
   )
     throws PipelineException
   {
-    super(name, desc, true);
+    super(name, vid, vendor, desc, mclient, qclient);
+    pBuilderInformation = builderInformation;
     pSubBuilders = new TreeMap<String, BaseBuilder>();
     pSubNames = new TreeMap<String, BaseNames>();
     pPreppedBuilders = new TreeMap<String, BaseBuilder>();
@@ -70,18 +77,8 @@ class BaseBuilder
     pRemainingFirstLoopPasses = new LinkedList<SetupPass>();
     pSecondLoopPasses = new ArrayList<ConstructPass>();
     {
-      UtilContext context = BaseUtil.getDefaultUtilContext();
-      BuilderParam param = 
-      new UtilContextBuilderParam
-      (aUtilContext, 
-       "The User, View, and Toolset to perform these actions in.", 
-       context);
-      setGlobalContext(context);
-      addParam(param);
-    }
-    {
-      BuilderParam param = 
-	new EnumBuilderParam
+      UtilityParam param = 
+	new EnumUtilityParam
 	(aActionOnExistance,
 	 "What action should the Builder take when a node already exists.",
 	 ActionOnExistance.Continue.toString(),
@@ -89,8 +86,8 @@ class BaseBuilder
       addParam(param);
     }
     {
-      BuilderParam param = 
-	new BooleanBuilderParam
+      UtilityParam param = 
+	new BooleanUtilityParam
 	(aReleaseOnError,
 	 "Release all the created nodes if an exception is thrown.", 
 	 false);
@@ -105,7 +102,7 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
   
   @Override
-  protected void
+  protected final void
   setLayout
   (
     PassLayoutGroup layout
@@ -120,6 +117,7 @@ class BaseBuilder
     super.setLayout(layout);
   }
   
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S U B - B U I L D E R S                                                              */
@@ -127,7 +125,8 @@ class BaseBuilder
   
   /**
    * Adds a Sub-Builder to the current Builder, with the given Builder Parameter mapping.
-   * 
+   * <p>
+   * Should never be called in a Builder constructor.  
    * @throws PipelineException
    *         If an attempt is made to add a Sub-Builder with the same name as on that already
    *         exists.
@@ -135,7 +134,8 @@ class BaseBuilder
   public final void 
   addSubBuilder
   (
-    HasBuilderParams subBuilder, 
+    BaseUtil subBuilder,
+    boolean defaultMapping,
     TreeMap<ParamMapping, ParamMapping> paramMapping
   ) 
     throws PipelineException
@@ -147,13 +147,21 @@ class BaseBuilder
         ("Cannot add a SubBuilder with the same name ("+ instanceName+") " +
          "as one that already exists.");
     
+    if (defaultMapping) {
+      addMappedParam(instanceName, aUtilContext, aUtilContext);
+      if (subBuilder instanceof BaseBuilder) {
+	addMappedParam(instanceName, aActionOnExistance, aActionOnExistance);
+	addMappedParam(instanceName, aReleaseOnError, aReleaseOnError);
+      }
+    }
+    
     if (paramMapping != null)
       addMappedParams(instanceName, paramMapping);
 
     PrefixedName prefixed = new PrefixedName(getPrefixedName(), instanceName);
     subBuilder.setPrefixedName(prefixed);
     
-    sLog.log(Kind.Bld, Level.Fine, 
+    pLog.log(Kind.Bld, Level.Fine, 
       "Adding a SubBuilder with instanceName (" + prefixed.toString() + ") to " +
       "Builder (" + getName() + ").");
     
@@ -166,7 +174,8 @@ class BaseBuilder
 
   /**
    * Adds a Sub-Builder to the current Builder.
-   * 
+   * <p>
+   * Should never be called in a Builder constructor.  
    * @throws PipelineException
    *         If an attempt is made to add a Sub-Builder with the same name as on that already
    *         exists.
@@ -174,17 +183,37 @@ class BaseBuilder
   public final void 
   addSubBuilder
   (
-    HasBuilderParams subBuilder
+    BaseUtil subBuilder,
+    boolean defaultMapping
   ) 
     throws PipelineException
   {
-    addSubBuilder(subBuilder, new TreeMap<ParamMapping, ParamMapping>());
+    addSubBuilder(subBuilder, defaultMapping, new TreeMap<ParamMapping, ParamMapping>());
   }
+
+  /**
+   * Adds a Sub-Builder to the current Builder.
+   * <p>
+   * Should never be called in a Builder constructor.   
+   * @throws PipelineException
+   *         If an attempt is made to add a Sub-Builder with the same name as on that already
+   *         exists.
+   */
+  public final void 
+  addSubBuilder
+  (
+    BaseUtil subBuilder
+  ) 
+    throws PipelineException
+  {
+    addSubBuilder(subBuilder, true, new TreeMap<ParamMapping, ParamMapping>());
+  }
+
   
   /**
    * Gets a mapping of all the Sub-Builders, keyed by the names of the Sub-Builders.
    */
-  public TreeMap<String, BaseBuilder>
+  public final TreeMap<String, BaseBuilder>
   getSubBuilders()
   {
     TreeMap<String, BaseBuilder> toReturn = new TreeMap<String, BaseBuilder>();
@@ -206,7 +235,7 @@ class BaseBuilder
    * @throws IllegalArgumentException
    *         If the instance name passed in does not correspond to an existing Sub-Builder.
    */
-  public HasBuilderParams 
+  public final BaseUtil 
   getSubBuilder
   (
     String instanceName
@@ -225,7 +254,7 @@ class BaseBuilder
         ("This builder does not contain a Sub-Builder with the name (" + instanceName + ").");
   }
   
-  public Map<String, BaseNames>
+  public final Map<String, BaseNames>
   getNamers()
   {
     return Collections.unmodifiableMap(pSubNames);
@@ -237,7 +266,7 @@ class BaseBuilder
    * This means either a child Builder before its Setup Passes were run or a child Namer
    * before generateNames is run.
    */
-  public HasBuilderParams 
+  public final BaseUtil 
   getNewSubBuilder
   (
     String instanceName
@@ -271,7 +300,7 @@ class BaseBuilder
    * @throws PipelineException
    * 	When either Parameter is not a Simple Parameter or doesn't exist.
    */
-  public void
+  public final void
   addMappedParam
   (
     String subBuilderName,
@@ -280,7 +309,7 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
-    HasBuilderParams subBuilder = getSubBuilder(subBuilderName);
+    BaseUtil subBuilder = getSubBuilder(subBuilderName);
     
     if (!subBuilder.hasSimpleParam(subParam))
       throw new PipelineException
@@ -300,7 +329,7 @@ class BaseBuilder
     
     subBuilder.addParamMapping(subParam, masterParam);
 
-    sLog.log(Kind.Bld, Level.Finer, 
+    pLog.log(Kind.Bld, Level.Finer, 
       "Creating a parameter mapping between " + subParam + " in " +
       "SubBuilder (" + subBuilderName + ") and " + masterParam + " in " +
       "Builder (" + getName() + ")");
@@ -325,7 +354,7 @@ class BaseBuilder
    * @throws PipelineException
    * 	When either Parameter is not a Simple Parameter or doesn't exist.
    */
-  public void
+  public final void
   addMappedParam
   (
     String subBuilderName, 
@@ -360,7 +389,7 @@ class BaseBuilder
    * @throws PipelineException
    * 	When either Parameter is not a Simple Parameter or doesn't exist.
    */
-  public void
+  public final void
   addMappedParam
   (
     String subBuilderName, 
@@ -381,7 +410,7 @@ class BaseBuilder
   /**
    * Adds a group of Parameter mappings to a Sub-Builder.
    */
-  public void
+  public final void
   addMappedParams
   (
     String subBuilderName, 
@@ -410,7 +439,7 @@ class BaseBuilder
   initializeSubBuilder(String name)
     throws PipelineException
   {
-    HasBuilderParams subBuilder = getNewSubBuilder(name);
+    BaseUtil subBuilder = getNewSubBuilder(name);
     if (subBuilder == null)
       throw new PipelineException
         ("Somehow a SubBuilder/Name with the name (" + name + ") was submited for " +
@@ -419,26 +448,97 @@ class BaseBuilder
       	 "This exception most likely represents a fundamental problem with the Builder " +
       	 "backend and should be reported to Temerity.");
     SortedMap<ParamMapping, ParamMapping> paramMapping = subBuilder.getMappedParams();
-    sLog.log(Kind.Ops, Level.Fine, "Initializing the subBuilder (" + name + ").");
+    pLog.log(Kind.Ops, Level.Fine, "Initializing the subBuilder (" + name + ").");
     for (ParamMapping subParamMapping : paramMapping.keySet()) {
       ParamMapping masterParamMapping = paramMapping.get(subParamMapping);
       
-      BuilderParam subParam = subBuilder.getParam(subParamMapping);
-      BuilderParam masterParam = this.getParam(masterParamMapping);
+      UtilityParam subParam = subBuilder.getParam(subParamMapping);
+      UtilityParam masterParam = this.getParam(masterParamMapping);
       
       assert (subParam != null) : "The subParam value should never be null.";
       assert (masterParam != null) : "The masterParam value should never be null.";
       
       subBuilder.setParamValue(subParamMapping, 
 	((SimpleParamAccess) masterParam).getValue());
-      sLog.log(Kind.Ops, Level.Finer, 
+      pLog.log(Kind.Ops, Level.Finer, 
 	"Mapped param (" + subParamMapping + ") in subBuilder " + 
 	"(" + name + ") to value from param (" + masterParamMapping + ") " + 
 	"in builder (" + getName() + ")");
     }
   }
   
-  
+  private final void
+  assignCommandLineParams(BaseUtil utility)
+    throws PipelineException
+  {
+    boolean abort = pBuilderInformation.abortOnBadParam();
+    
+    int currentPass = utility.getCurrentPass();
+    TreeSet<String> passParams = utility.getPassParamNames(currentPass);
+    
+    String prefixName = utility.getPrefixedName().toString();
+    
+    MultiMap<String, String> specificEntrys = 
+      pBuilderInformation.getCommandLineParams().get(prefixName);
+    
+    pLog.log(Kind.Arg, Level.Fine, 
+      "Assigning command line parameters for Builder identified by (" + prefixName + ") " +
+      "for pass number (" + currentPass + ")");
+    
+    if (specificEntrys == null) {
+      pLog.log(Kind.Arg, Level.Finer, 
+	"No command line parameters for Builder with prefixName (" + prefixName + ")");
+      return;
+    }
+    
+    /* This creates a Mapped ArrayList with Parameter name as the key set and
+     * the list of keys contained in the MultiMapNamedEntry as the key set.
+     */
+    MappedArrayList<String, MultiMapNamedEntry<String, String>> commandLineValues = 
+      specificEntrys.namedEntries();
+    
+    
+    if(commandLineValues != null) {
+
+      Set<ParamMapping> mappedParams = utility.getMappedParams().keySet();
+      
+      for (String paramName : commandLineValues.keySet()) {
+	if (!passParams.contains(paramName))
+	  continue;
+	for (MultiMapNamedEntry<String, String> entry : commandLineValues.get(paramName)) {
+	  List<String> keys = entry.getKeys();
+	  ParamMapping mapping = new ParamMapping(paramName, keys);
+	  if (!mappedParams.contains(mapping)) {
+	    String value = entry.getValue();
+	    if (utility.canSetSimpleParamFromString(mapping)) {
+	      SimpleParamFromString param = (SimpleParamFromString) utility.getParam(mapping);
+	      try {
+		param.fromString(value);
+	      } 
+	      catch (IllegalArgumentException ex) {
+		String message = "There was an error setting the value of a Parameter " +
+		  "from a command line argument.\n" + ex.getMessage(); 
+		if (abort)
+    		  throw new PipelineException(message);
+		pLog.log(Kind.Arg, Level.Warning, message);
+	      }
+	      pLog.log(Kind.Arg, Level.Finest, 
+		"Setting command line parameter (" + mapping + ") from builder " +
+		"(" + prefixName + ") with the value (" + value + ").");
+	    }
+	    else {
+	      String message = "Cannot set command line parameter (" + mapping + ") " +
+	      	"from builder (" + prefixName + ") with the value (" + value + ").\n" +
+	        "Parameter is not a Simple Parameter"; 
+	      if (abort)
+		throw new PipelineException(message);
+	      pLog.log(Kind.Arg, Level.Warning, message);
+	    }
+	  }
+	}
+      }
+    }
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   E X E C U T I O N                                                                    */
@@ -451,7 +551,7 @@ class BaseBuilder
   run()
     throws PipelineException
   {
-    if (sUsingGUI == true)
+    if (pBuilderInformation.usingGui())
       runGUI();
     else
       runCommandLine();
@@ -464,24 +564,24 @@ class BaseBuilder
   runCommandLine()
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Fine, "Starting the command line execution.");
+    pLog.log(Kind.Ops, Level.Fine, "Starting the command line execution.");
     boolean finish = false;
     try {
-      sLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
+      pLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
       executeFirstLoop();
       buildSecondLoopExecutionOrder();
       executeSecondLoop();
       waitForJobs(queueJobs());
-      finish = didTheNodesFinishCorrectly(sNodesToQueue);
+      finish = didTheNodesFinishCorrectly(pBuilderInformation.getQueueList());
     }
     catch (Exception ex) {
       String logMessage = "An Exception was thrown during the course of execution.\n";
       logMessage += ex.getMessage() + "\n";
       if (pReleaseOnError) 
 	logMessage += "All the nodes that were registered will now be released.";
-      sLog.log(Kind.Ops, Level.Severe, logMessage);
-      if (pReleaseOnError) 
-	BaseStage.cleanUpAddedNodes();
+      pLog.log(Kind.Ops, Level.Severe, logMessage);
+      if (pReleaseOnError)
+	BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageInformation());
       return;
     }
     if (finish)
@@ -495,7 +595,6 @@ class BaseBuilder
   {
     pCurrentBuilder = this;
     pNextBuilder = null;
-    callHierarchy = new LinkedList<BaseBuilder>();
     SwingUtilities.invokeLater(new BuilderGuiThread(this));
   }
 
@@ -504,7 +603,6 @@ class BaseBuilder
   {
     pCurrentBuilder = this;
     pNextBuilder = null;
-    callHierarchy = new LinkedList<BaseBuilder>();
   }
   
   
@@ -520,12 +618,12 @@ class BaseBuilder
    * method in their first {@link SetupPass}.  Otherwise there may be unpredictable behavior.
    * @throws PipelineException 
    */
-  public void 
+  public final void 
   validateBuiltInParams() 
     throws PipelineException 
   {
-    sLog.log(Kind.Bld, Level.Finest, "Validating the built-in Parameters.");
-    setGlobalContext((UtilContext) getParamValue(aUtilContext));
+    pLog.log(Kind.Bld, Level.Finest, "Validating the built-in Parameters.");
+    setContext((UtilContext) getParamValue(aUtilContext));
     pReleaseOnError = getBooleanParamValue(new ParamMapping(aReleaseOnError));
     pActionOnExistance = 
       ActionOnExistance.valueOf(getStringParamValue(new ParamMapping(aActionOnExistance)));
@@ -548,7 +646,7 @@ class BaseBuilder
       throw new PipelineException("Cannot add a null SetupPass");
     pFirstLoopPasses.add(pass);
     pRemainingFirstLoopPasses.add(pass);
-    sLog.log(Kind.Bld, Level.Fine, 
+    pLog.log(Kind.Bld, Level.Fine, 
       "Adding a SetupPass named (" + pass.getName() + ") to the " +
       "Builder identified by (" + getPrefixedName() + ")");
   }
@@ -570,39 +668,24 @@ class BaseBuilder
     if (pass == null)
       throw new PipelineException("Cannot add a null ConstructPass");
     pSecondLoopPasses.add(pass);
-    if (sPassToBuilderMap.put(pass, this) != null) 
+    if (!pBuilderInformation.addConstuctPass(pass, this))
       throw new PipelineException
         ("The attempt to add the Construct Pass (" + pass.getName() + ") to " +
          "the Builder identified with (" + this.getPrefixedName() + ") was invalid.  " +
          "That exact pass already existed in the table");
-    sAllConstructPasses.add(pass);
     
-    sLog.log(Kind.Bld, Level.Fine, 
+    pLog.log(Kind.Bld, Level.Fine, 
       "Adding a ConstructPass named (" + pass.getName() + ") to the " +
       "Builder identified by (" + getPrefixedName() + ")");
   }
   
-  /**
-   * Gets the Builder that is associated with a given {@link ConstructPass}.
-   */
-  protected BaseBuilder
-  getBuilderFromPass
-  (
-    ConstructPass pass
-  ) 
-  {
-    if (pass == null)
-      throw new IllegalArgumentException("Cannot have a null ConstructPass.");
-    return sPassToBuilderMap.get(pass);
-  }
-
   /**
    * Creates a dependency between two ConstructPasses.
    * <p>
    * The target ConstructPass will not be run until the source ConstructPass has completed.
    * This allows for Builders to specify the order in which their passes run.
    */
-  protected void
+  protected final void
   addPassDependency
   (
     ConstructPass sourcePass,
@@ -632,9 +715,9 @@ class BaseBuilder
     throws PipelineException
   {
     for (SetupPass pass : pFirstLoopPasses) {
-      assignCommandLineParams();
+      assignCommandLineParams(this);
       for (BaseNames namers : pSubNames.values())
-	namers.assignCommandLineParams();
+	assignCommandLineParams(namers);
       pass.run();
       Iterator<String> subBuilders = pSubBuilders.keySet().iterator();
       while (subBuilders.hasNext()) {
@@ -647,7 +730,7 @@ class BaseBuilder
       }
       pCurrentPass++;
     }
-    sCheckInOrder.add(this);
+    pBuilderInformation.addToCheckinList(this);
   }
   
   /**
@@ -668,14 +751,14 @@ class BaseBuilder
   buildSecondLoopExecutionOrder() 
     throws PipelineException
   {
-    sLog.log(Kind.Bld, Level.Finer, "Building the Second Loop Execution Order.");
+    pLog.log(Kind.Bld, Level.Finer, "Building the Second Loop Execution Order.");
     ArrayList<PassDependency> dependencies = new ArrayList<PassDependency>();
     pExecutionOrder = new ArrayList<ConstructPass>();  
     
-    for (ConstructPass pass : sAllConstructPasses) {
+    for (ConstructPass pass : pBuilderInformation.getAllConstructPasses()) {
       if (!sPassDependencies.containsKey(pass)) {
 	pExecutionOrder.add(pass);
-	sLog.log(Kind.Bld, Level.Finest, 
+	pLog.log(Kind.Bld, Level.Finest, 
 	  "Adding (" + pass.toString() + ") to the execution order.");
       }
       else
@@ -698,7 +781,7 @@ class BaseBuilder
 	if (ready) {
 	  pExecutionOrder.add(pd.getTarget());
 	  iter.remove();
-	  sLog.log(Kind.Bld, Level.Finest, 
+	  pLog.log(Kind.Bld, Level.Finest, 
 	    "Adding (" + pd.toString() + ") to the execution order.");
 	}
       }
@@ -729,7 +812,7 @@ class BaseBuilder
   executeSecondLoop()
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Fine, "Beginning execution of ConstructPasses.");
+    pLog.log(Kind.Ops, Level.Fine, "Beginning execution of ConstructPasses.");
     for (ConstructPass pass : pExecutionOrder)
       pass.run();
   }
@@ -741,8 +824,8 @@ class BaseBuilder
   executeCheckIn()
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
-    for (BaseBuilder builder : sCheckInOrder) {
+    pLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
+    for (BaseBuilder builder : pBuilderInformation.getCheckinList()) {
       if (builder.performCheckIn()) {
 	builder.checkInNodes(getNodesToCheckIn(), VersionID.Level.Minor, getCheckInMessage());
       }
@@ -795,7 +878,7 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
-    sLog.log(Kind.Bld, Level.Finer, "Getting a needed node (" + nodeName + ")");
+    pLog.log(Kind.Bld, Level.Finer, "Getting a needed node (" + nodeName + ")");
     boolean exists = nodeExists(nodeName);
     if (!exists)
       throw new PipelineException
@@ -809,15 +892,15 @@ class BaseBuilder
          "never checked in.  The Builder is aborting due to this problem.");
     case LOCAL:
       if (pActionOnExistance.equals(ActionOnExistance.CheckOut)) {
-	sClient.checkOut(getAuthor(), getView(), nodeName, null, 
+	pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	  CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	sLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
       }
       break;
     case REP:
-      sClient.checkOut(getAuthor(), getView(), nodeName, null, 
+      pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-      sLog.log(Kind.Bld, Level.Finest, "Checking out the node.");
+      pLog.log(Kind.Bld, Level.Finest, "Checking out the node.");
       break;
     default:
       break;
@@ -833,11 +916,11 @@ class BaseBuilder
   {
     if (nodeName == null)
       return false;
-    sLog.log(Kind.Ops, Level.Finer, "Checking for existance of the node (" + nodeName + ")");
+    pLog.log(Kind.Ops, Level.Finer, "Checking for existance of the node (" + nodeName + ")");
     boolean exists = nodeExists(nodeName);
     if (!exists) 
       return false;
-    sLog.log(Kind.Ops, Level.Finest, "The node exists.");
+    pLog.log(Kind.Ops, Level.Finest, "The node exists.");
     if (pActionOnExistance.equals(ActionOnExistance.Abort))
       throw new PipelineException
         ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
@@ -854,9 +937,9 @@ class BaseBuilder
     case LOCAL:
       switch(pActionOnExistance) {
       case CheckOut:
-	 sClient.checkOut(getAuthor(), getView(), nodeName, null, 
+	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 sLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
       case Continue:
 	return true;
@@ -864,9 +947,9 @@ class BaseBuilder
     case REP:
       switch(pActionOnExistance) {
       case CheckOut:
-	 sClient.checkOut(getAuthor(), getView(), nodeName, null, 
+	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
            CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 sLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	 return true;
       case Continue:
 	throw new PipelineException
@@ -894,7 +977,7 @@ class BaseBuilder
   private final LinkedList<QueueJobGroup> 
   queueJobs() 
   {
-    return queueNodes(sNodesToQueue);
+    return queueNodes(pBuilderInformation.getQueueList());
   }
 
   protected final LinkedList<QueueJobGroup>
@@ -903,14 +986,14 @@ class BaseBuilder
      TreeSet<String> nodes
   )
   {
-    sLog.log(Kind.Ops, Level.Fine, "Queuing the following nodes " + nodes );
+    pLog.log(Kind.Ops, Level.Fine, "Queuing the following nodes " + nodes );
     LinkedList<QueueJobGroup> toReturn = new LinkedList<QueueJobGroup>();
     for(String nodeName : nodes) {
       try {
-	toReturn.add(sClient.submitJobs(getAuthor(), getView(), nodeName, null));
+	toReturn.add(pClient.submitJobs(getAuthor(), getView(), nodeName, null));
       }
       catch(PipelineException ex) {
-	sLog.log(Kind.Ops, Level.Warning, 
+	pLog.log(Kind.Ops, Level.Warning, 
 	  "No job was generated for node ("+nodeName+")\n" + ex.getMessage()); 
       }
     }
@@ -932,28 +1015,28 @@ class BaseBuilder
     for(QueueJobGroup job : queueJobs) {
       TreeSet<Long> stuff = new TreeSet<Long>();
       stuff.add(job.getGroupID());
-      TreeMap<Long, JobStatus> statuses = sQueue.getJobStatus(stuff);
+      TreeMap<Long, JobStatus> statuses = pQueue.getJobStatus(stuff);
       for(JobStatus status : statuses.values()) {
 	total++;
 	String nodeName = status.getNodeID().getName();
-	sLog.log(Kind.Ops, Level.Finest, 
+	pLog.log(Kind.Ops, Level.Finest, 
 	  "Checking the status of Job (" + status.getJobID() + ") " +
 	  "for node (" + nodeName + ").");
 	JobState state = status.getState();
 	switch(state) {
 	case Failed:
 	case Aborted:
-	  sLog.log(Kind.Ops, Level.Finest, "\tThe Job did not completely successfully"); 
+	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job did not completely successfully"); 
 	  return JobsState.Problem;
 	case Paused:
 	case Preempted:
 	case Queued:
-	  sLog.log(Kind.Ops, Level.Finest, "\tThe Job has not started running."); 
+	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job has not started running."); 
 	  done = false;
 	  waiting++;
 	  break;
 	case Running:
-	  sLog.log(Kind.Ops, Level.Finest, "\tThe Job is still running."); 
+	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job is still running."); 
 	  done = false;
 	  running++;
 	  break;
@@ -963,7 +1046,7 @@ class BaseBuilder
 	}
       }
     }
-    sLog.log(Kind.Ops, Level.Fine, 
+    pLog.log(Kind.Ops, Level.Fine, 
       "Out of (" + total + ") total jobs, (" + finished + ") are finished, " +
       "(" + running + ") are running, and (" + waiting + ") are waiting.");
     if (!done)
@@ -978,12 +1061,12 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Fine, "Waiting for the jobs to finish");
+    pLog.log(Kind.Ops, Level.Fine, "Waiting for the jobs to finish");
     do {
       JobsState state = areJobsFinished(jobs);
       if(state.equals(JobsState.InProgress)) {
         try {
-          sLog.log(Kind.Ops, Level.Finer, 
+          pLog.log(Kind.Ops, Level.Finer, 
             "Sleeping for 7 seconds before checking jobs again.");
           Thread.sleep(7000);
         }
@@ -1011,10 +1094,10 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
-    sLog.log(Kind.Ops, Level.Finer, "Checking if all the queued nodes finished correctly");
+    pLog.log(Kind.Ops, Level.Finer, "Checking if all the queued nodes finished correctly");
     boolean toReturn = true;
     for(String nodeName : queuedNodes) {
-      NodeStatus status = sClient.status(getAuthor(), getView(), nodeName);
+      NodeStatus status = pClient.status(getAuthor(), getView(), nodeName);
       toReturn = getTreeState(status);
       if(!toReturn)
 	break;
@@ -1034,8 +1117,8 @@ class BaseBuilder
     String nodeName
   )
   {
-    sNodesToQueue.add(nodeName);
-    sLog.log(Kind.Bld, Level.Finest, 
+    pBuilderInformation.addToQueueList(nodeName);
+    pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to queue list in Builder (" + getPrefixedName() + ").");
   }
 
@@ -1045,8 +1128,8 @@ class BaseBuilder
     String nodeName
   )
   {
-    sNodesToQueue.remove(nodeName);
-    sLog.log(Kind.Bld, Level.Finest, 
+    pBuilderInformation.removeFromQueueList(nodeName);
+    pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from queue list in " +
       "Builder (" + getPrefixedName() + ").");
   }
@@ -1058,7 +1141,7 @@ class BaseBuilder
   )
   {
     pNodesToDisable.add(nodeName);
-    sLog.log(Kind.Bld, Level.Finest, 
+    pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to disable list in " +
       "Builder (" + getPrefixedName() + ").");
   }
@@ -1070,7 +1153,7 @@ class BaseBuilder
   )
   {
     pNodesToDisable.remove(nodeName);
-    sLog.log(Kind.Bld, Level.Finest, 
+    pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from disable list in " +
       "Builder (" + getPrefixedName() + ").");
   }
@@ -1082,7 +1165,7 @@ class BaseBuilder
   )
   {
     pNodesToCheckIn.add(nodeName);
-    sLog.log(Kind.Bld, Level.Finest, 
+    pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to check-in list in " +
       "Builder (" + getPrefixedName() + ").");
   }
@@ -1094,7 +1177,7 @@ class BaseBuilder
   )
   {
     pNodesToCheckIn.remove(nodeName);
-    sLog.log(Kind.Bld, Level.Finest, 
+    pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from check-in list in " +
       "Builder (" + getPrefixedName() + ").");
   }
@@ -1102,8 +1185,8 @@ class BaseBuilder
   protected final void 
   clearQueueList()
   {
-    sNodesToQueue.clear();
-    sLog.log(Kind.Bld, Level.Finest, 
+    pBuilderInformation.clearQueueList();
+    pLog.log(Kind.Bld, Level.Finest, 
       "Clearing queue list in Builder (" + getPrefixedName() + ").");
   }
 
@@ -1111,14 +1194,8 @@ class BaseBuilder
   clearDisableList()
   {
     pNodesToDisable.clear();
-    sLog.log(Kind.Bld, Level.Finest, 
+    pLog.log(Kind.Bld, Level.Finest, 
       "Clearing disable list in Builder (" + getPrefixedName() + ").");
-  }
-
-  protected final TreeSet<String> 
-  getQueueList()
-  {
-    return new TreeSet<String>(sNodesToQueue);
   }
 
   protected final TreeSet<String> 
@@ -1153,7 +1230,7 @@ class BaseBuilder
    * @param first
    *        Is this the first time we're asking for a Setup Pass?
    */
-  public synchronized boolean
+  public final synchronized boolean
   getNextSetupPass(boolean first) 
     throws PipelineException
   {
@@ -1168,9 +1245,9 @@ class BaseBuilder
     // This means that current builder has the next pass to get run.
     if (totalPasses == remainingPasses && totalPasses > 0) {
       if (first) {
-	pCurrentBuilder.assignCommandLineParams();
+	assignCommandLineParams(pCurrentBuilder);
 	for (BaseNames namer : pCurrentBuilder.getNamers().values())
-	  namer.assignCommandLineParams();
+	  assignCommandLineParams(namer);
       }
       pNextSetupPass = pCurrentBuilder.pRemainingFirstLoopPasses.poll();
       if (pCurrentBuilder.pSubBuilders.size() > 0) {
@@ -1184,9 +1261,9 @@ class BaseBuilder
     }
     // This means the current builder has passes left.
     else if (pCurrentBuilder.pRemainingFirstLoopPasses.size() > 0) {
-      pCurrentBuilder.assignCommandLineParams();
+      assignCommandLineParams(pCurrentBuilder);
       for (BaseNames namer : pCurrentBuilder.getNamers().values())
-	namer.assignCommandLineParams();
+	assignCommandLineParams(namer);
       pNextSetupPass = pCurrentBuilder.pRemainingFirstLoopPasses.poll();
       if (pCurrentBuilder.pSubBuilders.size() > 0) {
 	initNextBuilder();
@@ -1195,11 +1272,11 @@ class BaseBuilder
     // No passes and no children
     else {
       // Are we in the middle of nested builders
-      if (callHierarchy.size() > 0) {
-	BaseBuilder parent = callHierarchy.poll();
+      if (pBuilderInformation.getCallHierarchySize() > 0) {
+	BaseBuilder parent = pBuilderInformation.pollCallHierarchy();
 	parent.pSubBuilders.remove(pCurrentBuilder.getName());
 	parent.pPreppedBuilders.put(pCurrentBuilder.getName(), pCurrentBuilder);
-	sCheckInOrder.add(pCurrentBuilder);
+	pBuilderInformation.addToCheckinList(parent);
 	pNextBuilder = parent;
 	getNextSetupPass(first);
       }
@@ -1211,19 +1288,19 @@ class BaseBuilder
   initNextBuilder()
     throws PipelineException
   {
-    callHierarchy.addFirst(pCurrentBuilder);
+    pBuilderInformation.addToCallHierarchy(pCurrentBuilder);
     String nextName = new TreeSet<String>(pCurrentBuilder.pSubBuilders.keySet()).first();
     pNextBuilder = pCurrentBuilder.pSubBuilders.get(nextName);
-    pNextBuilder.assignCommandLineParams();
+    assignCommandLineParams(pNextBuilder);
     for (BaseNames namer : pNextBuilder.getNamers().values())
-      namer.assignCommandLineParams();
+      assignCommandLineParams(namer);
     if (!pNextBuilder.pInitialized) {
       pCurrentBuilder.initializeSubBuilder(nextName);
       pNextBuilder.pInitialized = true;
     }
   }
   
-  public synchronized void
+  public final synchronized void
   runNextSetupPass() 
     throws PipelineException
   {
@@ -1231,106 +1308,48 @@ class BaseBuilder
     pCurrentBuilder.pCurrentPass++;
   }
   
-  public BaseBuilder
+  public final BaseBuilder
   getCurrentBuilder()
   {
     return pCurrentBuilder;
   }
   
-  public SetupPass
+  public final SetupPass
   getCurrentSetupPass()
   {
     return pNextSetupPass;
   }
   
+  public boolean
+  releaseOnError()
+  {
+    return pReleaseOnError;
+  }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
-  /*   P A R S E R   M E T H O D S                                                          */
+  /*   S H U T D O W N                                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Should never be called by the user.
-   * <p>
-   * This method is called by by the App that runs the builder.
-   * 
-   * @throws PipelineException If this method is called more than once.
-   */
-  public static void
-  setUsingGUI
-  (
-    boolean usingGUI
-  ) 
+  
+  public void
+  disconnectClients()
+  {
+    pClient.disconnect();
+    pQueue.disconnect();
+  }
+  
+  public void
+  releaseNodes() 
     throws PipelineException
   {
-    sLog.log(Kind.Bld, Level.Fine, "Setting the GUI values to " + usingGUI);
-    if (!sSetGUI) {
-      sUsingGUI = usingGUI;
-      sSetGUI = true;
-    }
-    else
-      throw new PipelineException("Cannot set the GUI flag twice.");
-      
-  }
-  
-  public static void
-  setAbortOnBadParam
-  (
-    boolean abortOnBadParam
-  )
-  {
-    sAbortOnBadParam = abortOnBadParam;
-  }
-  
-  public static boolean
-  getAbortOnBadParam()
-  {
-    return sAbortOnBadParam;
-  }
-  
-  public static void
-  setCommandLineParam
-  (
-    String builder, 
-    LinkedList<String> keys, 
-    String value
-  )
-  {
-    builder = builder.replaceAll("-", " - ");
-    sLog.log(Kind.Arg, Level.Finest, 
-      "Reading command line arg for Builder (" + builder + ").\n" +
-      "Keys are (" + keys + ").\n" +
-      "Value is (" + value + ").");
-    if (builder == null)
-      throw new IllegalArgumentException
-        ("Illegal attempt in setting a Parameter value before specifying the Builder " +
-         "that the Parameter resides in.");
-    LinkedList<String> list;
-    if (keys == null)
-      list = new LinkedList<String>();
-    else
-      list = new LinkedList<String>(keys);
-    list.addFirst(builder);
-    sCommandLineParams.putValue(list, value, true);
-  }
-  
-  /**
-   * Returns a {@link MultiMap} of all the command line parameters.
-   * <p>
-   * The first level in the MultiMap is made up of the names of all the builders, the second
-   * level is all the parameter names, and every level after that (if they exist) are keys
-   * into Complex Parameters.  Values are stored in the leaf nodes.
-   */
-  public static MultiMap<String, String>
-  getCommandLineParams()
-  {
-    return sCommandLineParams;
+    BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageInformation());
   }
 
-  
+
   
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*   U T I L I T Y   M E T H O D S                                                        */
   /*----------------------------------------------------------------------------------------*/
   
   public <E> boolean
@@ -1351,50 +1370,20 @@ class BaseBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * A list of nodes names that need to be queued.
-   */
-  private static TreeSet<String> sNodesToQueue = new TreeSet<String>();
-
   /*
    * Parameter names.
    */
-  public final static String aUtilContext = "UtilContext";
   public final static String aReleaseOnError = "ReleaseOnError";
   public final static String aActionOnExistance = "ActionOnExistance";
   
-  private static ListMap<ConstructPass, BaseBuilder> sPassToBuilderMap = 
-    new ListMap<ConstructPass, BaseBuilder>();
-  
-  ListMap<ConstructPass, PassDependency> sPassDependencies = 
-    new ListMap<ConstructPass, PassDependency>();
-  
-  private static LinkedList<ConstructPass> sAllConstructPasses = 
-    new LinkedList<ConstructPass>();
-  
-  /**
-   * 
-   */
-  private static MultiMap<String, String> sCommandLineParams = 
-    new MultiMap<String, String>();
-  
-  /**
-   * Is this Builder in GUI mode.
-   */
-  private static boolean sUsingGUI = false;
-  
-  private static boolean sSetGUI = false;
-  
-  private static boolean sAbortOnBadParam = false;
-  
-  private static LinkedList<BaseBuilder> sCheckInOrder = new LinkedList<BaseBuilder>(); 
 
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
 
+  protected BuilderInformation pBuilderInformation;
+  
   /**
    * Should the builder release all the registered nodes if it fails.
    */
@@ -1430,8 +1419,11 @@ class BaseBuilder
   private ActionOnExistance pActionOnExistance;
   
   private ArrayList<ConstructPass> pExecutionOrder;
+  
+  private ListMap<ConstructPass, PassDependency> sPassDependencies = 
+    new ListMap<ConstructPass, PassDependency>();
 
-
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  G U I   S P E C I F I C   I N T E R N A L S                                           */
@@ -1448,12 +1440,13 @@ class BaseBuilder
    */
   private LinkedList<SetupPass> pRemainingFirstLoopPasses;
   
-  private static LinkedList<BaseBuilder> callHierarchy;
-  
   private SetupPass pNextSetupPass;
   
   private JBuilderParamDialog pGuiDialog;
 
+  private boolean pJobsFinishedCorrectly;
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  E N U M E R A T I O N S                                                               */
@@ -1504,7 +1497,7 @@ class BaseBuilder
     validatePhase() 
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
 	"Stub validate phase in the " + pName + ".");      
     }
     
@@ -1513,7 +1506,7 @@ class BaseBuilder
     gatherPhase() 
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
 	"Stub gather phase in the " + pName + ".");
     }
     
@@ -1522,7 +1515,7 @@ class BaseBuilder
     initPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
 	"Stub init phase in the " + pName + ".");
     }
 
@@ -1571,7 +1564,7 @@ class BaseBuilder
     preBuildPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
 	"Stub preBuild phase in the " + pName + ".");
       return new TreeSet<String>();
     }
@@ -1581,7 +1574,7 @@ class BaseBuilder
     buildPhase()
       throws PipelineException
     {
-      sLog.log(Kind.Ops, Level.Finest, 
+      pLog.log(Kind.Ops, Level.Finest, 
 	"Stub build phase in the " + pName + ".");
     }
     
@@ -1610,13 +1603,13 @@ class BaseBuilder
     public PrefixedName
     getParentBuilderName()
     {
-      return getBuilderFromPass(this).getPrefixedName();
+      return pBuilderInformation.getBuilderFromPass(this).getPrefixedName();
     }
     
     private BaseBuilder
     getParentBuilder()
     {
-      return getBuilderFromPass(this);
+      return pBuilderInformation.getBuilderFromPass(this);
     }
     
     @Override
@@ -1818,6 +1811,26 @@ class BaseBuilder
   }
   
   public
+  class QueueThread
+    extends Thread
+  {
+    @Override
+    public void
+    run()
+    {
+      try {
+	waitForJobs(queueJobs());
+	pJobsFinishedCorrectly = didTheNodesFinishCorrectly(pBuilderInformation.getQueueList());
+	SwingUtilities.invokeLater(new AfterQueueTask());
+      }
+      catch (PipelineException ex) {
+	pGuiDialog.handleException(ex);
+      }
+      
+    }
+  }
+  
+  public
   class AfterCheckinTask
     extends Thread
   {
@@ -1826,6 +1839,17 @@ class BaseBuilder
     run()
     {
       pGuiDialog.reallyFinish();
+    }
+  }
+  
+  public class AfterQueueTask
+  extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      pGuiDialog.afterQueue(pJobsFinishedCorrectly); 
     }
   }
 }

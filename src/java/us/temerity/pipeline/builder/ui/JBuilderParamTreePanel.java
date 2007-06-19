@@ -183,19 +183,17 @@ public class JBuilderParamTreePanel
   ) 
     throws PipelineException
   {
-   String newTreeName = treeName + "|" + hbp.getName();
-   String newPanelName = panelName + " - " + hbp.getName();
-   
-   int pass = hbp.getCurrentPass();
-   
-   createTreeNodes(newTreeName);
-   JBuilderParamPanel panel = new JBuilderParamPanel(hbp, pass);
-   pCardPanel.add(panel, newPanelName);
-   if(hbp.allowsChildren()) {
-      BaseBuilder builder = hbp;
-      for(BaseBuilder hbp2 : builder.getSubBuilders().values()) {
-	uiHelper(hbp2, treeName, panelName);
-      }
+    String newTreeName = treeName + "|" + hbp.getName();
+    String newPanelName = panelName + " - " + hbp.getName();
+
+    int pass = hbp.getCurrentPass();
+
+    createTreeNodes(newTreeName);
+    JBuilderParamPanel panel = new JBuilderParamPanel(hbp, pass);
+    pCardPanel.add(panel, newPanelName);
+    BaseBuilder builder = hbp;
+    for(BaseBuilder hbp2 : builder.getSubBuilders().values()) {
+      uiHelper(hbp2, treeName, panelName);
     }
   }
   

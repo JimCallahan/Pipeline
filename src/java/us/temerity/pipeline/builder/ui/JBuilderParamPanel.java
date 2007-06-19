@@ -8,8 +8,8 @@ import java.util.*;
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.HasBuilderParams.ParamMapping;
+import us.temerity.pipeline.builder.BaseUtil;
+import us.temerity.pipeline.builder.BaseUtil.ParamMapping;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ public class JBuilderParamPanel
   public
   JBuilderParamPanel
   (
-    HasBuilderParams builder,
+    BaseUtil builder,
     int pass
   ) 
     throws PipelineException
@@ -666,7 +666,7 @@ public class JBuilderParamPanel
   /**
    * The Builder that is having its parameters created in this panel.
    */
-  private HasBuilderParams pBuilder;
+  private BaseUtil pBuilder;
   
   /**
    * A map of all the components in a builder pass indexed by the name of the parameters.

@@ -1,11 +1,9 @@
-// $Id: UtilContextUtilityParam.java,v 1.1 2007/06/15 22:29:47 jesse Exp $
+// $Id: UtilContextUtilityParam.java,v 1.2 2007/06/19 04:45:59 jesse Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseUtil;
 import us.temerity.pipeline.builder.UtilContext;
 import us.temerity.pipeline.glue.GlueDecoder;
 
@@ -56,11 +54,12 @@ class UtilContextUtilityParam
   (
    String name,  
    String desc, 
-   UtilContext value
+   UtilContext value,
+   MasterMgrClient client
   ) 
     throws PipelineException 
   {
-    this(name, desc, value, false);
+    this(name, desc, value, false, client);
   }
   
   
@@ -87,18 +86,19 @@ class UtilContextUtilityParam
    String name,  
    String desc, 
    UtilContext value,
-   boolean allowsNewView
+   boolean allowsNewView,
+   MasterMgrClient client
   ) 
     throws PipelineException 
   {
     super(name, desc);
     
     pAllowsNewView = allowsNewView;
-    pWorkingAreas = BaseUtil.getWorkingAreas();
-    pToolsets = BaseUtil.getActiveToolsets();
+    pWorkingAreas = client.getWorkingAreas();
+    pToolsets = new ArrayList<String>(client.getActiveToolsetNames());
     
     if (value == null)
-      value = BaseUtil.getDefaultUtilContext();
+      value = UtilContext.getDefaultUtilContext(client);
     
     String author = value.getAuthor();
     {
@@ -113,7 +113,7 @@ class UtilContextUtilityParam
 
     String view = value.getView();
     if (!pAllowsNewView) {
-      ArrayList<String> views = new ArrayList<String> (pWorkingAreas.get(author));
+      ArrayList<String> views = new ArrayList<String>(pWorkingAreas.get(author));
       pViewParam = 
 	new EnumUtilityParam
 	(aView, 
@@ -262,7 +262,7 @@ class UtilContextUtilityParam
     }
     return false;
   }
-  
+
   
   
   /*----------------------------------------------------------------------------------------*/

@@ -4,7 +4,10 @@
 package us.temerity.pipeline.builder;
 
 import java.io.Serializable;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -49,6 +52,8 @@ public class UtilContext
     pToolset = toolset;
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -79,6 +84,36 @@ public class UtilContext
   {
     return pView;
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns a default {@link UtilContext}
+   */
+  public static UtilContext 
+  getDefaultUtilContext
+  (
+    MasterMgrClient client  
+  )
+    throws PipelineException
+  {
+    String author = PackageInfo.sUser;
+    TreeMap<String, TreeSet<String>> areas = client.getWorkingAreas();
+    TreeSet<String> userAreas = areas.get(author);
+    String view = null;
+    if(userAreas.contains("default"))
+      view = "default";
+    else
+      view = userAreas.first();
+    String toolset = client.getDefaultToolsetName();
+    return new UtilContext(author, view, toolset);
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
@@ -100,6 +135,8 @@ public class UtilContext
     return value;
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -127,12 +164,16 @@ public class UtilContext
     encoder.encode("Toolset", pToolset);
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -6913346629352411368L;
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
