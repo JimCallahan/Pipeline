@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.205 2007/06/19 22:05:03 jim Exp $
+// $Id: MasterMgr.java,v 1.206 2007/06/20 18:07:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19465,7 +19465,8 @@ class MasterMgr
       case ModifiedLinks:
       case ModifiedLocks:
 	{	
-	  NodeID nodeID = status.getNodeID();
+	  NodeID nodeID  = status.getNodeID();
+          NodeID rnodeID = pRequest.getNodeID();
 
 	  /* get working bundle */ 
 	  WorkingBundle working = getWorkingBundle(nodeID);
@@ -19514,7 +19515,7 @@ class MasterMgr
 	  /* pre-op tests */
 	  if(pHasExtTests) {
 	    CheckInExtFactory factory = 
-	      new CheckInExtFactory(nodeID, new NodeMod(work), 
+	      new CheckInExtFactory(rnodeID.getName(), nodeID, new NodeMod(work), 
 				    pRequest.getLevel(), pRequest.getMessage());
 	    performExtensionTests(timer, factory);
 	  }
@@ -19573,8 +19574,8 @@ class MasterMgr
 	  /* create a new checked-in version and write it disk */ 
 	  NodeVersion vsn = 
 	    new NodeVersion(work, vid, lvids, locked, isNovel, 
-			    pRequest.getNodeID().getAuthor(), pRequest.getMessage(), 
-			    pRequest.getNodeID().getName(), pRootVersionID);
+			    rnodeID.getAuthor(), pRequest.getMessage(), 
+			    rnodeID.getName(), pRootVersionID);
 
 	  writeCheckedInVersion(vsn);
 

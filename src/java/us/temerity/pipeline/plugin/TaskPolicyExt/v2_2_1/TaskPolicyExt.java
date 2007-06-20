@@ -1,4 +1,4 @@
-// $Id: TaskPolicyExt.java,v 1.1 2007/06/19 18:24:52 jim Exp $
+// $Id: TaskPolicyExt.java,v 1.2 2007/06/20 18:07:46 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_2_1;
 
@@ -101,6 +101,9 @@ TaskPolicyExt
   /**
    * Test to perform before checking-in an individual node.
    * 
+   * @param rname
+   *   The fully resolved node name of the root node of the check-in operation.
+   * 
    * @param nodeID 
    *   The unique working version identifier.
    * 
@@ -119,6 +122,7 @@ TaskPolicyExt
   public void
   preCheckInTest
   (
+   String rname, 
    NodeID nodeID, 
    NodeMod mod,
    VersionID.Level level, 

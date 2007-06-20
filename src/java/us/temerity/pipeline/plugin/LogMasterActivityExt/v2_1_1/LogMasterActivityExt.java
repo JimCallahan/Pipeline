@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.1 2007/06/17 15:34:42 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.2 2007/06/20 18:07:46 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -1815,6 +1815,9 @@ LogMasterActivityExt
   /**
    * Test to perform before checking-in an individual node.
    * 
+   * @param rname
+   *   The fully resolved node name of the root node of the check-in operation.
+   * 
    * @param nodeID 
    *   The unique working version identifier.
    * 
@@ -1833,6 +1836,7 @@ LogMasterActivityExt
   public void
   preCheckInTest
   (
+   String rname, 
    NodeID nodeID, 
    NodeMod mod,
    VersionID.Level level, 
@@ -1843,7 +1847,8 @@ LogMasterActivityExt
     if(!isParamTrue(aAllowCheckIn)) 
       throw new PipelineException
 	("Checking-in node (" + nodeID.getName() + ") in working area " + 
-	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
+	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!\n\n" + 
+         "The root node of the check-in operation was (" + rname + ").");
   }
 
 

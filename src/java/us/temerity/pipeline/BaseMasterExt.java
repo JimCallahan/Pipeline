@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.3 2007/03/28 19:06:56 jim Exp $
+// $Id: BaseMasterExt.java,v 1.4 2007/06/20 18:07:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1005,6 +1005,9 @@ class BaseMasterExt
   /**
    * Test to perform before checking-in an individual node.
    * 
+   * @param rname
+   *   The fully resolved node name of the root node of the check-in operation.
+   * 
    * @param nodeID 
    *   The unique working version identifier.
    * 
@@ -1023,6 +1026,7 @@ class BaseMasterExt
   public void
   preCheckInTest
   (
+   String rname, 
    NodeID nodeID, 
    NodeMod mod,
    VersionID.Level level, 

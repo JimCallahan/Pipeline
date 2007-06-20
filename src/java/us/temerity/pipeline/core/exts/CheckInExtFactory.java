@@ -1,9 +1,10 @@
-// $Id: CheckInExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: CheckInExtFactory.java,v 1.2 2007/06/20 18:07:46 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
 import us.temerity.pipeline.*;
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C H E C K - I N   E X T   F A C T O R Y                                                */
@@ -33,6 +34,9 @@ class CheckInExtFactory
   /**
    * Construct a task factory.
    * 
+   * @param rname
+   *   The fully resolved node name of the root node of the check-in operation.
+   * 
    * @param nodeID 
    *   The unique working version identifier.
    * 
@@ -48,6 +52,7 @@ class CheckInExtFactory
   public 
   CheckInExtFactory
   (
+   String rname, 
    NodeID nodeID, 
    NodeMod mod,
    VersionID.Level level, 
@@ -56,9 +61,10 @@ class CheckInExtFactory
   {
     super(nodeID);
 
-    pNodeMod = mod; 
-    pLevel   = level; 
-    pMessage = msg;
+    pRootName = rname;
+    pNodeMod  = mod; 
+    pLevel    = level; 
+    pMessage  = msg;
   }
 
   /**
@@ -75,12 +81,29 @@ class CheckInExtFactory
   {
     super(null);
 
+    pRootName = vsn.getLogMessage().getRootName();
     pNodeVsn = vsn; 
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all nodes associated with the operation.
+   */ 
+  public LinkedList<String> 
+  getNodeNames()
+  {
+    LinkedList<String> names = super.getNodeNames(); 
+    names.add(pRootName);
+    
+    return names;
+  } 
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -108,7 +131,7 @@ class CheckInExtFactory
   )
     throws PipelineException
   {
-    ext.preCheckInTest(pNodeID, pNodeMod, pLevel, pMessage); 
+    ext.preCheckInTest(pRootName, pNodeID, pNodeMod, pLevel, pMessage); 
   }
 
 
@@ -177,6 +200,11 @@ class CheckInExtFactory
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved node name of the root node of the check-in operation.
+   */ 
+  private String  pRootName; 
 
   /**
    * The working version of the node.
