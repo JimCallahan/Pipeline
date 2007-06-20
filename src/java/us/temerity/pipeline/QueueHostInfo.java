@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.5 2007/04/28 22:43:21 jim Exp $
+// $Id: QueueHostInfo.java,v 1.6 2007/06/20 18:09:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -566,7 +566,7 @@ class QueueHostInfo
   /**
    * A regular expression to match the first component of a fully resolved hostname.
    */ 
-  private static final Pattern sHostPattern = Pattern.compile("^\\p{Alpha}(\\p{Alnum})+");
+  private static final Pattern sHostPattern = Pattern.compile("([^\\.])+");
 
 
 
