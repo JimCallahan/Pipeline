@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.102 2007/06/18 21:42:49 jim Exp $
+// $Id: MasterMgrClient.java,v 1.103 2007/06/20 20:22:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -5314,9 +5314,11 @@ class MasterMgrClient
     }
 
     if(cloneAction) {
-      BaseAction action = new BaseAction(oldMod.getAction());
-      newMod.setAction(action);
-      modifyProperties(author, view, newMod);
+      if (oldMod.getAction() != null) {
+        BaseAction action = new BaseAction(oldMod.getAction());
+        newMod.setAction(action);
+        modifyProperties(author, view, newMod);
+      }
     }
 
     if(cloneFiles) {
