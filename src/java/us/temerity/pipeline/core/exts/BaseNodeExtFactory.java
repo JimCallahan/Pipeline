@@ -1,4 +1,4 @@
-// $Id: BaseNodeExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: BaseNodeExtFactory.java,v 1.3 2007/06/21 01:21:57 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -48,7 +48,8 @@ class BaseNodeExtFactory
   getNodeNames()
   {
     LinkedList<String> names = new LinkedList<String>();
-    names.add(pNodeID.getName()); 
+    if(pNodeID != null) 
+      names.add(pNodeID.getName()); 
     
     return names;
   }

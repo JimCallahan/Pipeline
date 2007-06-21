@@ -1,4 +1,4 @@
-// $Id: CheckInExtFactory.java,v 1.2 2007/06/20 18:07:46 jim Exp $
+// $Id: CheckInExtFactory.java,v 1.3 2007/06/21 01:21:57 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -97,7 +97,9 @@ class CheckInExtFactory
   public LinkedList<String> 
   getNodeNames()
   {
-    LinkedList<String> names = super.getNodeNames(); 
+    LinkedList<String> names = super.getNodeNames();
+    if(pNodeVsn != null) 
+      names.add(pNodeVsn.getName());
     names.add(pRootName);
     
     return names;
