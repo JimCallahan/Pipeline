@@ -61,13 +61,12 @@ class BaseStage
    * Attempts to release all the nodes that have been added so far.
    * <P>
    * This method is intended to be used to clean-up a builder that did not succesfully
-   * complete. It uses the added node information to go through and attempt to release
-   * each node. To accomplish this, the method uses the class's static instance of
-   * {@link MasterMgrClient}. If an exception is encountered while releasing a node, it
-   * is caught and the method continues to execute. Once the method has attempted to
-   * remove all the nodes in the added nodes list, then a {@link PipelineException} will
-   * be thrown (if an error had occured during execution) that contains the exception
-   * messages for all the exceptions that had been thrown.
+   * complete. It uses the added node information to go through and attempt to release each
+   * node. If an exception is encountered while releasing a node, it is caught and the method
+   * continues to execute. Once the method has attempted to remove all the nodes in the added
+   * nodes list, then a {@link PipelineException} will be thrown (if an error had occured
+   * during execution) that contains the exception messages for all the exceptions that had
+   * been thrown.
    * 
    * @throws PipelineException
    */
