@@ -141,12 +141,11 @@ class TripleMapParam<E>
   protected boolean
   valueUpdated
   (
-    List<String> paramName
+    String paramName
   )
   {
     boolean toReturn = false;
-    String name = paramName.get(0);
-    if (name.equals(aFirst)) {
+    if (paramName.equals(aFirst)) {
       String firstValue = (String) getValue(aFirst);
       String secondValue = (String) getValue(aSecond);
       ArrayList<String> paramValues = new ArrayList<String>(pValues.get(firstValue).keySet());
@@ -164,7 +163,7 @@ class TripleMapParam<E>
       replaceParam(param);
       toReturn = true;
     }
-    if (name.equals(aFirst) || name.equals(aSecond)) {
+    if (paramName.equals(aFirst) || paramName.equals(aSecond)) {
       String firstValue = (String) getValue(aFirst);
       String secondValue = (String) getValue(aSecond);
       String thirdValue = (String) getValue(aThird);
@@ -184,7 +183,7 @@ class TripleMapParam<E>
       replaceParam(param);
       toReturn = true;
     }
-    if (name.equals(aFirst) || name.equals(aSecond) || name.equals(aThird)) {
+    if (paramName.equals(aFirst) || paramName.equals(aSecond) || paramName.equals(aThird)) {
       String firstValue = (String) getValue(aFirst);
       String secondValue = (String) getValue(aSecond);
       String thirdValue = (String) getValue(aThird);

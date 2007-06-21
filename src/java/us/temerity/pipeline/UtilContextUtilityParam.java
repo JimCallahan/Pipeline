@@ -1,4 +1,4 @@
-// $Id: UtilContextUtilityParam.java,v 1.2 2007/06/19 04:45:59 jesse Exp $
+// $Id: UtilContextUtilityParam.java,v 1.3 2007/06/21 18:17:19 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -231,11 +231,10 @@ class UtilContextUtilityParam
   protected boolean
   valueUpdated
   (
-    List<String> paramName
+    String paramName
   )
   {
-    String name = paramName.get(0);
-    if (name.equals(aAuthor)) {
+    if (paramName.equals(aAuthor)) {
       String author = pAuthorParam.getStringValue();
       String view = pViewParam.getStringValue();
       TreeSet<String> views = pWorkingAreas.get(author);

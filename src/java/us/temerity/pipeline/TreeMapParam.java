@@ -105,11 +105,10 @@ class TreeMapParam<E>
   protected boolean
   valueUpdated
   (
-    List<String> paramName
+    String paramName
   )
   {
-    String name = paramName.get(0);
-    if (name.equals(aFirst)) {
+    if (paramName.equals(aFirst)) {
       String firstValue = (String) getValue(aFirst);
       String secondValue = (String) getValue(aSecond);
       ArrayList<String> paramValues = pValues.get(firstValue);

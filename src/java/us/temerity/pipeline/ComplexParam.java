@@ -10,6 +10,34 @@ import us.temerity.pipeline.glue.GlueDecoder;
 
 /**
  * Parameter that can contain other parameters.
+ * <p>
+ * A Complex Parameter is a parameter that contains other parameters, both
+ * {@link SimpleParam SimpleParams} and other ComplexParams. It is implemented using Generics,
+ * allowing for easy subclassing for each parameter type. For an example of this behavior, see
+ * {@link ComplexUtilityParam} which subclasses this class. In the end, this class is just an
+ * implementation of the {@link ComplexParamAccess} interface, which is also implemented using
+ * Generics. It is theoretically possible to create an alternative implementation of
+ * {@link ComplexParamAccess} and not use {@link ComplexParam}, though it is hard to think of
+ * a compelling reason to go to the trouble.
+ * <p>
+ * Complex Parameters are more than just grouping of other parameters, however. They also have
+ * functionality that can cause some of their members to change their values based upon
+ * changes to values in other of their member. This is done through two methods that
+ * implementing classes should override. The method {@link #needsUpdating()} simply needs to
+ * return a boolean that indicates if this ComplexParameter ever needs to update its values.
+ * This method should only consider the scope of the current Parameter. Complex Parameters
+ * which are nested inside this parameter will be asked as well and a final answer will be
+ * created from an aggregate of all their responses.
+ * <p>
+ * The other method is {@link #valueUpdated(String)}. This method is called by
+ * {@link #setValue(List, Comparable)} or {@link #setValue(String, Comparable)} if it is
+ * indicated by {@link #needsUpdating()} that the Parameter needs to be updated. This method
+ * needs to return a boolean that indicates if any values were actually changed. That boolean
+ * allows the GUI to correctly display the changes in values.
+ * <p>
+ * Complex Parameters also need to specify layouts that describe the order in which their
+ * component parameters are displayed. The layout is simply an {@link ArrayList} of parameter
+ * names and <code>null</code> values to indicate spaces.
  */
 public abstract
 class ComplexParam<E>
@@ -217,7 +245,9 @@ class ComplexParam<E>
       if(param instanceof SimpleParamAccess) {
 	SimpleParamAccess simple = (SimpleParamAccess) param;
 	simple.setValue(value);
-	return valueUpdated(listFromObject(key));
+	if (needsUpdating())
+	  return valueUpdated(key);
+	return false;
       }
       throw new IllegalArgumentException
         ("Attempt to call setValue() on a parameter that is not a simple parameter.");
@@ -225,8 +255,8 @@ class ComplexParam<E>
 
     ComplexParamAccess<E> param = getComplexParam(key);
     boolean returned = param.setValue(newKeys, value);
-    if (requiresUpdating())
-      return (valueUpdated(listFromObject(key)) || returned);
+    if (needsUpdating())
+      return (valueUpdated(key) || returned);
     return returned;
   }
   
@@ -259,6 +289,9 @@ class ComplexParam<E>
     return param.hasParam(newKeys);
   }
   
+  /**
+   * Is there a Simple Parameter identified with this key?
+   */
   public final boolean 
   hasSimpleParam
   (
@@ -267,7 +300,10 @@ class ComplexParam<E>
   {
     return hasSimpleParam(listFromObject(key));
   }
-  
+
+  /**
+   * Is there a Simple Parameter identified with this list of keys?
+   */
   public final boolean 
   hasSimpleParam
   (
@@ -345,12 +381,15 @@ class ComplexParam<E>
    * be a need for this method to be called directly.
    * 
    * @param paramName The name of the parameter that has been changed.
+   * 
+   * @return A boolean that indicates if values have been changed.  This value is used by
+   * the GUI to determine if it needs to update its fields.  
    */
   protected boolean
   valueUpdated
   (
     @SuppressWarnings("unused")
-    List<String> paramName
+    String paramName
   )
   {
     return false;
@@ -381,6 +420,13 @@ class ComplexParam<E>
     return false;
   }
   
+  /**
+   * Does this Complex Parameter require updating if any of its values change?
+   * <p>
+   * Having this return <code>true</code> will cause this Complex Parameter and any Complex
+   * Parameter it is a member of to return <code>true</code> when
+   * {@link #requiresUpdating()} is called.
+   */
   protected abstract boolean
   needsUpdating();
   
@@ -430,16 +476,6 @@ class ComplexParam<E>
     pLayout = layout;
   }
 
-
-//  public TreeMap<String, ArrayList<String>> getPossibleEnumValues()
-//  {
-//    return null;
-//  }
-//
-//  public boolean needsUpdating()
-//  {
-//    return false;
-//  }
 
   
   /*----------------------------------------------------------------------------------------*/
