@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.2 2007/06/19 22:05:04 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.3 2007/06/21 20:18:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1698,6 +1698,24 @@ class JNodeAnnotationsPanel
             JTextField field = (JTextField) comp;
             value = field.getText();	  
           }
+          else if(aparam instanceof ToolsetAnnotationParam) {
+            JCollectionField field = (JCollectionField) comp;
+            String toolset = field.getSelected();
+            if(toolset.equals("-") || (toolset.length() == 0))
+              value = null;
+            else 
+              value = toolset;
+          }
+          else if(aparam instanceof WorkGroupAnnotationParam) {
+            JCollectionField field = (JCollectionField) comp;
+            String ugname = field.getSelected(); 
+            if(ugname.equals("-") || (ugname.length() == 0))
+              value = null;
+            else if(ugname.startsWith("[") && ugname.endsWith("]"))
+              value = ugname.substring(1, ugname.length()-1);
+            else 
+              value = ugname;
+          }
           else {
             assert(false) : "Unknown annotation parameter type!";
           }
@@ -1795,6 +1813,46 @@ class JNodeAnnotationsPanel
     private void 
     updateAnnotationParams() 
     {
+      /* lookup common server info... */ 
+      TreeSet<String> toolsets = null; 
+      Set<String> workUsers  = null;
+      Set<String> workGroups = null;
+      if(pAnnotation != null) {
+        UIMaster master = UIMaster.getInstance();
+        MasterMgrClient mclient = master.getMasterMgrClient();
+
+        boolean needsToolsets = false;
+        boolean needsWorkGroups = false;
+        for(AnnotationParam aparam : pAnnotation.getParams()) {
+          if(aparam instanceof ToolsetAnnotationParam) 
+            needsToolsets = true;
+          else if(aparam instanceof WorkGroupAnnotationParam) 
+            needsWorkGroups = true;
+        }
+
+        if(needsToolsets) {
+          toolsets = new TreeSet<String>();
+          toolsets.add("-");
+          try {
+            toolsets.addAll(mclient.getActiveToolsetNames());
+          }
+          catch(PipelineException ex) {
+          }
+        }
+
+        if(needsWorkGroups) {
+          try {
+            WorkGroups wgroups = mclient.getWorkGroups();
+            workGroups = wgroups.getGroups();
+            workUsers  = wgroups.getUsers();
+          }
+          catch(PipelineException ex) {
+            workGroups = new TreeSet<String>(); 
+            workUsers  = new TreeSet<String>(); 
+          }
+        }
+      }
+
       pParamComponents.clear();
 
       Component comps[] = UIFactory.createTitledPanels();
@@ -1896,6 +1954,68 @@ class JNodeAnnotationsPanel
                 field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);	      
+              }
+              else if(aparam instanceof ToolsetAnnotationParam) {
+                String value = (String) aparam.getValue();
+
+                TreeSet<String> values = new TreeSet<String>(toolsets);
+                if((value != null) && !values.contains(value))
+                  values.add(value); 
+
+                JCollectionField field = 
+                  UIFactory.createTitledCollectionField
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                   vpanel, values, sVSize, 
+                   aparam.getDescription());
+
+                if(value != null) 
+                  field.setSelected(value);
+                else 
+                  field.setSelected("-");
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
+
+                pParamComponents.put(pname, field);	      
+              }
+              else if(aparam instanceof WorkGroupAnnotationParam) {
+                WorkGroupAnnotationParam wparam = (WorkGroupAnnotationParam) aparam;
+                String value = (String) aparam.getValue();
+
+                TreeSet<String> values = new TreeSet<String>();
+                values.add("-");
+                if(wparam.allowsGroups()) {
+                  for(String gname : workGroups) 
+                    values.add("[" + gname + "]"); 
+                }
+                if(wparam.allowsUsers()) 
+                  values.addAll(workUsers);
+                
+                JCollectionField field = 
+                  UIFactory.createTitledCollectionField
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                   vpanel, values, sVSize, 
+                   aparam.getDescription());
+                
+                if(value == null) 
+                  field.setSelected("-");
+                else {                  
+                  if(wparam.allowsGroups() && workGroups.contains(value))
+                    field.setSelected("[" + value + "]");
+                  else if(wparam.allowsUsers() && workUsers.contains(value))
+                    field.setSelected(value);
+                  else 
+                    field.setSelected("-");
+                }
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
+
+                pParamComponents.put(pname, field);	                      
               }
               else {
                 assert(false) : "Unknown annotation parameter type!";

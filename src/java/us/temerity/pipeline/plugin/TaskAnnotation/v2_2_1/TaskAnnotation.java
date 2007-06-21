@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.3 2007/06/19 22:05:04 jim Exp $
+// $Id: TaskAnnotation.java,v 1.4 2007/06/21 20:18:31 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_2_1;
 
@@ -86,21 +86,30 @@ class TaskAnnotation
 
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aAssignedTo, 
-	 "The name of the WorkGroup or specific artist assigned to complete the task " + 
-         "involving this node.", 
-	 null); 
+	new ToolsetAnnotationParam
+	(aTestToolset, 
+	 "Just for testing purposes...",
+         null); 
       addParam(param);
     }
 
     {
       AnnotationParam param = 
-	new StringAnnotationParam
+	new WorkGroupAnnotationParam
+	(aAssignedTo, 
+	 "The name of the WorkGroup or specific artist assigned to complete the task " + 
+         "involving this node.", 
+	 true, true, null); 
+      addParam(param);
+    }
+
+    {
+      AnnotationParam param = 
+	new WorkGroupAnnotationParam
 	(aSupervisedBy, 
 	 "The name of the WorkGroup or or project supervisor who is responsible for " + 
          "approving changes made by artists AssignedTo complete the task.", 
-	 null); 
+	 true, true, null); 
       addParam(param);
     }
 
@@ -144,6 +153,7 @@ class TaskAnnotation
     {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aTaskName);
+      layout.add(aTestToolset); 
       layout.add(null);
       layout.add(aAssignedTo);
       layout.add(aSupervisedBy);
@@ -207,6 +217,8 @@ class TaskAnnotation
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 2168290890306064601L;
+
+  public static final String aTestToolset   = "TestToolset";  // remove me
 
   public static final String aTaskName      = "TaskName";
   public static final String aAssignedTo    = "AssignedTo";
