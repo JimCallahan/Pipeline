@@ -1,3 +1,3 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh dimetrodon 070610 45000 45100
+../../src/pipeline/config/bootstrap.sh dimetrodon 070620 45000 45100
