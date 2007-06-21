@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.53 2007/05/29 18:26:53 jim Exp $
+// $Id: NodeMod.java,v 1.54 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -193,9 +193,15 @@ class NodeMod
 
     pSources = new TreeMap<String,LinkMod>();
     for(LinkVersion link : vsn.getSources()) {
-      if(pIsLocked && (link.getPolicy() == LinkPolicy.Reference))
-	throw new IllegalArgumentException
-	  ("Locked nodes must cannot have any Reference links!");
+      if(pIsLocked) {
+        switch(link.getPolicy()) {
+        case Association:
+        case Reference:
+          throw new IllegalArgumentException
+            ("Locked nodes must cannot have any " + link.getPolicy() + " links!");
+        }
+      }
+
       pSources.put(link.getName(), new LinkMod(link));
     }
 

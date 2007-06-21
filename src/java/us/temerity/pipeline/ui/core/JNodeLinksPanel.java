@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.21 2007/05/14 16:22:01 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.22 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2321,6 +2321,10 @@ class JNodeLinksPanel
 		{
 		  String text = null;
 		  switch(link.getPolicy()) {
+		  case Association: 
+		    text = "Asc";
+		    break;
+
 		  case Reference: 
 		    text = "Ref";
 		    break;

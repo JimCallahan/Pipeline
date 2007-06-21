@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.6 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -57,7 +57,7 @@ class JBaseLinkDialog
 	{
 	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField(tpanel, "Link Policy:", sTSize, 
-						 vpanel, LinkPolicy.titles(), sVSize);
+                                                  vpanel, LinkPolicy.titles(), sVSize);
 	  pPolicyField = field;
 
 	  field.addActionListener(this);

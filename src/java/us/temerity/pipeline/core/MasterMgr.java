@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.206 2007/06/20 18:07:45 jim Exp $
+// $Id: MasterMgr.java,v 1.207 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9820,13 +9820,17 @@ class MasterMgr
 	      throw new IllegalStateException(); 
 	  }
 
-	  /* make sure the checked-in version has no Reference links */ 
+	  /* make sure the checked-in version has no Association/Reference links */ 
 	  for(LinkVersion link : vsn.getSources()) {
-	    if(link.getPolicy() == LinkPolicy.Reference) 
+            switch(link.getPolicy()) {
+            case Association:
+            case Reference:
 	      throw new PipelineException
 		("Unable to lock node (" + name + ") because the checked-in version " + 
-		 "of the node had a Reference link to node (" + link.getName() + ")!");
-	  }
+		 "of the node had a " + link.getPolicy() + " link to node " + 
+                 "(" + link.getName() + ")!");
+            }
+	  } 
 
 	  /* get the current timestamp */ 
 	  long timestamp = TimeStamps.now(); 
@@ -10565,14 +10569,10 @@ class MasterMgr
 	  ("Only a user with Queue Manager privileges may submit jobs for nodes in " + 
 	   "working areas owned by another user!");
 
-      /* get the current status of the nodes */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
-
-      /* submit the jobs */ 
-      return submitJobsCommon(status, req.getFileIndices(), 
-			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
-			      req.getSelectionKeys(), req.getLicenseKeys(), 
-			      timer);
+      return submitJobGroupsCommon(req.getNodeID(), req.getFileIndices(), null, 
+                                   req.getBatchSize(), req.getPriority(), req.getRampUp(), 
+                                   req.getSelectionKeys(), req.getLicenseKeys(), 
+                                   timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -10617,42 +10617,11 @@ class MasterMgr
 	  ("Only a user with Queue Manager privileges may submit jobs for nodes in " + 
 	   "working areas owned by another user!");
 
-      /* get the current status of the nodes */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
-
-      /* compute the file indices of the given target file sequences */ 
-      TreeSet<Integer> indices = new TreeSet<Integer>();      
-      {
-	NodeDetails details = status.getDetails();
-	if(details == null) 
-	  throw new PipelineException
-	    ("Cannot generate jobs for the checked-in node (" + status + ")!");
-	
-	TreeMap<File,Integer> fileIndices = new TreeMap<File,Integer>();
-	{
-	  NodeMod work = details.getWorkingVersion();
-	  FileSeq fseq = work.getPrimarySequence(); 
-	  int wk = 0;
-	  for(File file : fseq.getFiles()) {
-	    fileIndices.put(file, wk);
-	    wk++;
-	  }
-	}
-
-	for(FileSeq fseq : req.getTargetFileSequences()) {
-	  for(File file : fseq.getFiles()) {
-	    Integer idx = fileIndices.get(file);
-	    if(idx != null) 
-	      indices.add(idx);
-	  }
-	}
-      }
-
       /* submit the jobs */ 
-      return submitJobsCommon(status, indices, 
-			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
-			      req.getSelectionKeys(), req.getLicenseKeys(), 
-			      timer);
+      return submitJobGroupsCommon(req.getNodeID(), null, req.getTargetFileSequences(), 
+                                   req.getBatchSize(), req.getPriority(), req.getRampUp(), 
+                                   req.getSelectionKeys(), req.getLicenseKeys(), 
+                                   timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -10664,7 +10633,158 @@ class MasterMgr
 
   /**
    * Common code used by {@link #submitJobs submitJobs} and {@link #resubmitJobs resubmitJobs}
-   * methods.
+   * methods to submit a single job group.
+   * 
+   * @param status
+   *   The status of the tree of nodes. 
+   * 
+   * @param indices
+   *   The file sequence indices of the files to regenerate or 
+   *   <CODE>null</CODE> for all files.
+   * 
+   * @param targetSeqs
+   *   The target primary file sequences to regenerate or 
+   *   <CODE>null</CODE> to use the file "indices" parameter directly.
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param rampUp
+   *   Overrides the ramp-up interval (in seconds) for the job.
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
+   * 
+   * @param licenseKeys 
+   *   Overrides the set of license keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
+   * @param assocRoots
+   *   The names of nodes encountered on the upstream side of an Association link.
+   * 
+   * @param timer
+   *   The task timer.
+   * 
+   * @return 
+   *   The <CODE>NodeSubmitJobsRsp</CODE> for the newly created job groups.
+   */ 
+  private NodeSubmitJobsRsp
+  submitJobGroupsCommon
+  (
+   NodeID rootNodeID, 
+   TreeSet<Integer> indices,
+   TreeSet<FileSeq> targetSeqs, 
+   Integer batchSize, 
+   Integer priority, 
+   Integer rampUp, 
+   Set<String> selectionKeys,
+   Set<String> licenseKeys,
+   TaskTimer timer 
+  )
+    throws PipelineException 
+  {
+    LinkedList<QueueJobGroup> jobGroups = new LinkedList<QueueJobGroup>();
+    {
+      TreeSet<String> assocRoots = new TreeSet<String>();     
+      NodeID nodeID = rootNodeID;
+      
+      /* as long as there are more root nodes to submit... */ 
+      while((nodeID != null) || !assocRoots.isEmpty()) {
+        
+        String name = null;
+        if(nodeID == null) {
+          name = assocRoots.first();
+          nodeID = new NodeID(rootNodeID, name);
+        }
+        
+        /* get the current status of the root submit node */ 
+        NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
+        
+        /* compute file indices if not already specified */ 
+        if(indices == null) {
+          indices = new TreeSet<Integer>();  
+        
+          NodeDetails details = status.getDetails();
+          if(details == null) 
+            throw new PipelineException
+              ("Cannot generate jobs for the checked-in node (" + status + ")!");
+          
+          NodeMod work = details.getWorkingVersion();
+
+          /* compute the file indices for all of the given target file sequences */ 
+          if(targetSeqs != null) {
+            TreeMap<File,Integer> fileIndices = new TreeMap<File,Integer>();
+            {
+              FileSeq fseq = work.getPrimarySequence(); 
+              int wk = 0;
+              for(File file : fseq.getFiles()) {
+                fileIndices.put(file, wk);
+                wk++;
+              }
+            }
+
+            for(FileSeq fseq : targetSeqs) {
+              for(File file : fseq.getFiles()) {
+                Integer idx = fileIndices.get(file);
+                if(idx != null) 
+                  indices.add(idx);
+              }
+            }
+          }
+
+          /* compute the file indices of all primary target files */
+          else {  
+            FileSeq fseq = work.getPrimarySequence(); 
+            int wk; 
+            for(wk=0; wk<fseq.numFrames(); wk++) 
+              indices.add(wk);
+          }
+        }
+        
+        /* submit the jobs for the root node */ 
+        QueueJobGroup group = null;
+        if(rootNodeID.equals(nodeID)) {
+          group = submitJobsCommon(status, indices, batchSize, priority, rampUp, 
+                                   selectionKeys, licenseKeys, assocRoots, 
+                                   timer);
+        }
+        else {
+          group = submitJobsCommon(status, indices, null, null, null, 
+                                   null, null, assocRoots, 
+                                   timer);
+        }
+
+        if(group != null) 
+          jobGroups.add(group);
+        
+        /* reset for the next root node (if any) */
+        {
+          nodeID  = null; 
+          indices = null;
+
+          if(name != null) 
+            assocRoots.remove(name);           
+        }
+      }
+    }
+
+    if(jobGroups.isEmpty()) 
+      throw new PipelineException
+        ("No new jobs where generated for node (" + rootNodeID.getName() + ") or any " + 
+         "node upstream of this node!");
+    
+    return new NodeSubmitJobsRsp(timer, jobGroups);
+  }
+
+  /**
+   * Common code used by {@link #submitJobs submitJobs} and {@link #resubmitJobs resubmitJobs}
+   * methods to submit a single job group.
    * 
    * @param status
    *   The status of the tree of nodes. 
@@ -10691,10 +10811,17 @@ class MasterMgr
    *   Overrides the set of license keys required by them job associated with the root 
    *   node of the job submission.
    * 
+   * @param assocRoots
+   *   The names of nodes encountered on the upstream side of an Association link.
+   * 
    * @param timer
    *   The task timer.
+   * 
+   * @return
+   *   The newly create job group or 
+   *   <CODE>null</CODE> if no jobs where submitted for the root node.
    */ 
-  private NodeSubmitJobsRsp
+  private QueueJobGroup
   submitJobsCommon
   (
    NodeStatus status, 
@@ -10704,6 +10831,7 @@ class MasterMgr
    Integer rampUp, 
    Set<String> selectionKeys,
    Set<String> licenseKeys,
+   TreeSet<String> assocRoots, 
    TaskTimer timer 
   )
     throws PipelineException 
@@ -10718,13 +10846,11 @@ class MasterMgr
       
       submitJobs(status, indices, 
 		 true, batchSize, priority, rampUp, selectionKeys, licenseKeys, 
-		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
+		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
 		 timer);
       
       if(jobs.isEmpty()) 
-	throw new PipelineException
-	  ("No new jobs where generated for node (" + status + ") or any node upstream " +
-	   "of this node!");
+        return null; 
       
       /* generate the root target file sequence for the job group, 
 	   sorting root IDs by target file sequence order */ 
@@ -10793,7 +10919,7 @@ class MasterMgr
       /* submit the jobs and job group */ 
       pQueueMgrClient.submitJobs(group, jobs.values());
       
-      return new NodeSubmitJobsRsp(timer, group);
+      return group; 
     }
   }  
 
@@ -10854,7 +10980,10 @@ class MasterMgr
    * 
    * @param jobs
    *   The table of jobs generated by the job submission process indexed by job ID.
-   * 
+   *
+   * @param assocRoots
+   *   The names of nodes encountered on the upstream side of an Association link.
+   *
    * @param timer
    *   The task timer.
    */
@@ -10874,6 +11003,7 @@ class MasterMgr
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
    TreeSet<Long> rootJobIDs,    
    TreeMap<Long,QueueJob> jobs, 
+   TreeSet<String> assocRoots, 
    TaskTimer timer 
   ) 
     throws PipelineException
@@ -10891,7 +11021,8 @@ class MasterMgr
 
     /* collect upstream jobs for:
        + nodes without an action or with a disabled action
-       + finished nodes with an enabled action and upstream links which are all references */
+       + finished nodes with an enabled action and upstream links which are all 
+           References or Associations */
     {
       boolean allRef = false; 
       if(work.isActionEnabled()) {
@@ -10911,7 +11042,7 @@ class MasterMgr
       if(allRef || !work.isActionEnabled()) {
         collectNoActionJobs(status, isRoot, 
                             extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-                            jobs, timer);
+                            jobs, assocRoots, timer);
         return;
       }
     }
@@ -11095,8 +11226,10 @@ class MasterMgr
       }
     }
     
-    /* no batches to generate, skip processing upstream nodes */ 
+    /* no batches to generate so no need to try to create jobs for upstream nodes
+         unless we find an association link */ 
     if(batches.isEmpty()) {
+      findJobAssocRoots(status, assocRoots);
       return; 
     }
 
@@ -11114,89 +11247,110 @@ class MasterMgr
 	   frames of this batch */
 	TreeMap<String,TreeSet<Integer>> sourceIndices = 
 	  new TreeMap<String,TreeSet<Integer>>();
-	{
-	  for(LinkMod link : work.getSources()) {
-	    NodeStatus lstatus = status.getSource(link.getName());
-	    NodeDetails ldetails = lstatus.getDetails();
-	    NodeMod lwork = ldetails.getWorkingVersion();
-	    int lnumFrames = lwork.getPrimarySequence().numFrames();
-
-	    switch(link.getRelationship()) {
-	    case All:
-	      {
-		TreeSet<Integer> frames = new TreeSet<Integer>();
-		int idx; 
-		for(idx=0; idx<lnumFrames; idx++)
-		  frames.add(idx);
-		
-		sourceIndices.put(link.getName(), frames);
-	      }
-	      break;
-	      
-	    case OneToOne:
-	      {
-		TreeSet<Integer> frames = new TreeSet<Integer>();
-		for(Integer idx : batch) {
-		  int lidx = idx + link.getFrameOffset();
-		  
-		  if((lidx < 0) || (lidx >= lnumFrames)) {
-		    switch(work.getOverflowPolicy()) {
-		    case Ignore:
-		      break;
-		      
-		    case Abort:
-		      throw new PipelineException
-			("The frame offset (" + link.getFrameOffset() + ") for the link " +
-			 "between target node (" + status + ") and source node " +
-			 "(" + lstatus + ") overflows the frame range of the source node!");
-		    }
-		  }
-		  else {
-		    frames.add(lidx);
-		  }
-		}
-		
-		sourceIndices.put(link.getName(), frames);
-	      }
-	    }
-	  }
-	}
+        for(LinkMod link : work.getSources()) {
+          switch(link.getPolicy()) {
+          case Reference:
+          case Dependency:
+            {
+              NodeStatus lstatus = status.getSource(link.getName());
+              NodeDetails ldetails = lstatus.getDetails();
+              NodeMod lwork = ldetails.getWorkingVersion();
+              int lnumFrames = lwork.getPrimarySequence().numFrames();
+              
+              switch(link.getRelationship()) {
+              case All:
+                {
+                  TreeSet<Integer> frames = new TreeSet<Integer>();
+                  int idx; 
+                  for(idx=0; idx<lnumFrames; idx++)
+                    frames.add(idx);
+                  
+                  sourceIndices.put(link.getName(), frames);
+                }
+                break;
+                
+              case OneToOne:
+                {
+                  TreeSet<Integer> frames = new TreeSet<Integer>();
+                  for(Integer idx : batch) {
+                    int lidx = idx + link.getFrameOffset();
+                    
+                    if((lidx < 0) || (lidx >= lnumFrames)) {
+                      switch(work.getOverflowPolicy()) {
+                      case Ignore:
+                        break;
+                        
+                      case Abort:
+                        throw new PipelineException
+                          ("The frame offset (" + link.getFrameOffset() + ") for the " + 
+                           "link between target node (" + status + ") and source node " +
+                           "(" + lstatus + ") overflows the frame range of the source " + 
+                           "node!");
+                      }
+                    }
+                    else {
+                      frames.add(lidx);
+                    }
+                  }
+                  
+                  sourceIndices.put(link.getName(), frames);
+                }
+              }
+            }
+          }
+        }
       
 	/* generate jobs for the source frames first */ 
-	for(LinkMod link : work.getSources()) {
-	  TreeSet<Integer> lindices = sourceIndices.get(link.getName());
-	  if((lindices != null) && (!lindices.isEmpty())) {
-	    NodeStatus lstatus = status.getSource(link.getName());
-	    submitJobs(lstatus, lindices, 
-		       false, null, null, null, null, null, 
-		       extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-		       jobs, timer);
-	  }
+	for(LinkMod link : work.getSources()) {  
+          switch(link.getPolicy()) {
+          case Association:
+            assocRoots.add(link.getName());
+            break;
+            
+          case Reference:
+          case Dependency:
+            {
+              TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+              if((lindices != null) && (!lindices.isEmpty())) {
+                NodeStatus lstatus = status.getSource(link.getName());
+                submitJobs(lstatus, lindices, 
+                           false, null, null, null, null, null, 
+                           extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
+                           jobs, assocRoots, timer);
+              }
+            }
+          }
 	}
 
 	/* determine the source job IDs */ 
 	TreeSet<Long> sourceIDs = new TreeSet<Long>();
 	for(LinkMod link : work.getSources()) {
-	  NodeStatus lstatus = status.getSource(link.getName());
-	  NodeID lnodeID = lstatus.getNodeID();
-	  
-	  TreeSet<Long> upsIDs = upsJobIDs.get(lnodeID);
-	  if(upsIDs != null) 
-	    sourceIDs.addAll(upsIDs);
-
-	  TreeSet<Integer> lindices = sourceIndices.get(link.getName());
-	  if((lindices != null) && !lindices.isEmpty()) {		  
-	    Long[] nIDs = nodeJobIDs.get(lnodeID);
-	    Long[] eIDs = extJobIDs.get(lnodeID);
-	    
-	    for(Integer idx : lindices) {
-	      if((nIDs != null) && (nIDs[idx] != null)) 
-		sourceIDs.add(nIDs[idx]);
-	      else if((eIDs != null) && (eIDs[idx] != null)) 
-		sourceIDs.add(eIDs[idx]);
-	    }
-	  }
-	}
+          switch(link.getPolicy()) {
+          case Reference:
+          case Dependency:
+            {
+              NodeStatus lstatus = status.getSource(link.getName());
+              NodeID lnodeID = lstatus.getNodeID();
+              
+              TreeSet<Long> upsIDs = upsJobIDs.get(lnodeID);
+              if(upsIDs != null) 
+                sourceIDs.addAll(upsIDs);
+              
+              TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+              if((lindices != null) && !lindices.isEmpty()) {		  
+                Long[] nIDs = nodeJobIDs.get(lnodeID);
+                Long[] eIDs = extJobIDs.get(lnodeID);
+                
+                for(Integer idx : lindices) {
+                  if((nIDs != null) && (nIDs[idx] != null)) 
+                    sourceIDs.add(nIDs[idx]);
+                  else if((eIDs != null) && (eIDs[idx] != null)) 
+                    sourceIDs.add(eIDs[idx]);
+                }
+              }
+            }
+          }
+        }
       
 	/* generate a QueueJob for the batch */ 
 	long jobID = pNextJobID++;
@@ -11364,6 +11518,9 @@ class MasterMgr
    * @param jobs
    *   The table of jobs generated by the job submission process indexed by job ID.
    * 
+   * @param assocRoots
+   *   The names of nodes encountered on the upstream side of an Association link.
+   *
    * @param timer
    *   The task timer.
    */
@@ -11377,6 +11534,7 @@ class MasterMgr
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
    TreeSet<Long> rootJobIDs,    
    TreeMap<Long,QueueJob> jobs, 
+   TreeSet<String> assocRoots, 
    TaskTimer timer 
   ) 
     throws PipelineException
@@ -11400,51 +11558,102 @@ class MasterMgr
     TreeSet<Long> jobIDs = new TreeSet<Long>();
     upsJobIDs.put(nodeID, jobIDs);
     
-    /* submit and collect the IDs of the jobs associated with the upstream nodes */ 
+    /* submit and collect the IDs of the jobs associated with the upstream nodes, 
+         but don't follow Association links */ 
     for(LinkMod link : work.getSources()) {
-      NodeStatus lstatus = status.getSource(link.getName());
-      NodeID lnodeID = lstatus.getNodeID();
+      switch(link.getPolicy()) {
+      case Association:
+        assocRoots.add(link.getName());
+        break;
 
-      submitJobs(lstatus, null, 
-		 false, null, null, null, null, null, 
-		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-		 jobs, timer);
-      
-      /* external job IDs */ 
-      {
-	Long ids[] = extJobIDs.get(lnodeID);
-	if(ids != null) {
-	  int wk;
-	  for(wk=0; wk<ids.length; wk++) {
-	    if(ids[wk] != null) 
-	      jobIDs.add(ids[wk]);
-	  }
-	}
-      }
-      
-      /* generated job IDs (for nodes with actions) */ 
-      {
-	Long ids[] = nodeJobIDs.get(lnodeID);
-	if(ids != null) {
-	  int wk;
-	  for(wk=0; wk<ids.length; wk++) {
-	    if(ids[wk] != null) 
-	      jobIDs.add(ids[wk]);
-	  }
-	}
-      }
-      
-      /* collected upstream job IDs (for nodes without actions) */ 
-      {
-	TreeSet<Long> ids = upsJobIDs.get(lnodeID);
-	if(ids != null) 
-	    jobIDs.addAll(ids);
+      case Reference:
+      case Dependency:
+        {
+          NodeStatus lstatus = status.getSource(link.getName());
+          NodeID lnodeID = lstatus.getNodeID();
+          
+          submitJobs(lstatus, null, 
+                     false, null, null, null, null, null, 
+                     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
+                     jobs, assocRoots, timer);
+           
+          /* external job IDs */ 
+          {
+            Long ids[] = extJobIDs.get(lnodeID);
+            if(ids != null) {
+              int wk;
+               for(wk=0; wk<ids.length; wk++) {
+                 if(ids[wk] != null) 
+                   jobIDs.add(ids[wk]);
+               }
+            }
+          }
+          
+          /* generated job IDs (for nodes with actions) */ 
+          {
+            Long ids[] = nodeJobIDs.get(lnodeID);
+            if(ids != null) {
+              int wk;
+              for(wk=0; wk<ids.length; wk++) {
+                if(ids[wk] != null) 
+                  jobIDs.add(ids[wk]);
+              }
+            }
+          }
+          
+          /* collected upstream job IDs (for nodes without actions) */ 
+          {
+            TreeSet<Long> ids = upsJobIDs.get(lnodeID);
+            if(ids != null) 
+              jobIDs.addAll(ids);
+          }
+        }
       }
     }
 
     /* if this is the root node, make the collected jobs the root jobs */ 
     if(isRoot) 
       rootJobIDs.addAll(jobIDs);
+  }
+
+  /**
+   * Search the upstream links of the current node for Associations and register the 
+   * nodes on the upstream side of these links for further job processing.
+   * 
+   * @param status
+   *   The current node status.
+   * 
+   * @param assocRoots
+   *   The names of nodes encountered on the upstream side of an Association link.
+   */ 
+  private void 
+  findJobAssocRoots
+  (
+   NodeStatus status, 
+   TreeSet<String> assocRoots
+  ) 
+    throws PipelineException 
+  {
+    NodeDetails details = status.getDetails();
+    if(details == null) 
+      throw new PipelineException
+	("Cannot generate jobs for the checked-in node (" + status + ")!");
+    
+    NodeMod work = details.getWorkingVersion();
+    if(work.isLocked()) 
+      return;
+    
+    for(LinkMod link : work.getSources()) {
+      switch(link.getPolicy()) {
+      case Association:
+        assocRoots.add(link.getName());
+        break;
+        
+      case Reference:
+      case Dependency:
+        findJobAssocRoots(status.getSource(link.getName()), assocRoots);
+      }
+    }
   }
 
   /**
@@ -15135,75 +15344,83 @@ class MasterMgr
             int wk;
             for(wk=0; wk<queueStates.length; wk++) {
               for(LinkMod link : work.getSources()) {
-                boolean staleLink = false;
+                switch(link.getPolicy()) {
+                case Reference:
+                case Dependency:
+                  {
+                    boolean staleLink = false;
 
-                switch(overallQueueState) {
-                case Running:
-                  break;
+                    switch(overallQueueState) {
+                    case Running:
+                      break;
+                      
+                    default:	
+                      if((link.getPolicy() == LinkPolicy.Reference) || 
+                         work.isActionEnabled()) {
 
-                default:	
-                  if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
-                    NodeStatus lstatus = status.getSource(link.getName());
-                    NodeDetails ldetails = lstatus.getDetails();
-                    switch(ldetails.getOverallQueueState()) {
-                    case Finished:
-                      {
-                        QueueState lqs[]   = ldetails.getQueueState();
-                        long lstamps[]     = ldetails.getFileTimeStamps();
-                        boolean lignored[] = ldetails.ignoreTimeStamps();
-
-                        boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-
-                        boolean lanyMissing[] = null;
-                        for(FileSeq lfseq : ldetails.getFileStateSequences()) {
-                          FileState lfs[] = ldetails.getFileState(lfseq);
-
-                          if(lanyMissing == null) 
-                            lanyMissing = new boolean[lfs.length];
-
-                          int mk;
-                          for(mk=0; mk<lanyMissing.length; mk++) {
-                            if(lfs[mk] == FileState.Missing) 
-                              lanyMissing[mk] = true;
-                          }
-                        }
-
-                        switch(link.getRelationship()) {
-                        case OneToOne:
+                        NodeStatus lstatus = status.getSource(link.getName());
+                        NodeDetails ldetails = lstatus.getDetails();
+                        switch(ldetails.getOverallQueueState()) {
+                        case Finished:
                           {
-                            Integer offset = link.getFrameOffset();
-                            int idx = wk+offset;
-                            if((idx >= 0) && (idx < lqs.length)) {
-                              if(anyMissing[wk] || lanyMissing[idx] || 
-                                 ((!lignored[idx] || nonIgnored) && 
-                                  (oldestStamps[wk] < lstamps[idx])))
-                                staleLink = true;
+                            QueueState lqs[]   = ldetails.getQueueState();
+                            long lstamps[]     = ldetails.getFileTimeStamps();
+                            boolean lignored[] = ldetails.ignoreTimeStamps();
+                            
+                            boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+                            
+                            boolean lanyMissing[] = null;
+                            for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+                              FileState lfs[] = ldetails.getFileState(lfseq);
+                              
+                              if(lanyMissing == null) 
+                                lanyMissing = new boolean[lfs.length];
+                              
+                              int mk;
+                              for(mk=0; mk<lanyMissing.length; mk++) {
+                                if(lfs[mk] == FileState.Missing) 
+                                  lanyMissing[mk] = true;
+                              }
+                            }
+                            
+                            switch(link.getRelationship()) {
+                            case OneToOne:
+                              {
+                                Integer offset = link.getFrameOffset();
+                                int idx = wk+offset;
+                                if((idx >= 0) && (idx < lqs.length)) {
+                                  if(anyMissing[wk] || lanyMissing[idx] || 
+                                     ((!lignored[idx] || nonIgnored) && 
+                                      (oldestStamps[wk] < lstamps[idx])))
+                                    staleLink = true;
+                                }
+                              }
+                              break;
+                              
+                            case All:
+                              {
+                                int fk;
+                                for(fk=0; fk<lqs.length; fk++) {
+                                  if(anyMissing[wk] || lanyMissing[fk] || 
+                                     ((!lignored[fk] || nonIgnored) && 
+                                      (oldestStamps[wk] < lstamps[fk])))
+                                    staleLink = true;
+                                }
+                              }
                             }
                           }
                           break;
-
-                        case All:
-                          {
-                            int fk;
-                            for(fk=0; fk<lqs.length; fk++) {
-                              if(anyMissing[wk] || lanyMissing[fk] || 
-                                 ((!lignored[fk] || nonIgnored) && 
-                                  (oldestStamps[wk] < lstamps[fk])))
-                                staleLink = true;
-                            }
-                          }
+                          
+                        default:
+                          staleLink = true;
                         }
                       }
-                      break;
-
-                    default:
-                      staleLink = true;
                     }
+                    
+                    if(staleLink) 
+                      status.addStaleLink(link.getName());
                   }
                 }
-
-                if(staleLink) 
-                  status.addStaleLink(link.getName());
               }
             }
           }
@@ -15278,40 +15495,46 @@ class MasterMgr
               }
 
               for(LinkMod link : work.getSources()) { 
-                if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
-                  NodeStatus lstatus = status.getSource(link.getName());
-                  NodeDetails ldetails = lstatus.getDetails();
+                switch(link.getPolicy()) {
+                case Reference:
+                case Dependency:
+                  if((link.getPolicy() == LinkPolicy.Reference) || 
+                     work.isActionEnabled()) {
 
-                  QueueState lqs[]   = ldetails.getQueueState();
-                  long lstamps[]     = ldetails.getFileTimeStamps();
-                  boolean lignored[] = ldetails.ignoreTimeStamps();
-
-                  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-
-                  switch(link.getRelationship()) {
-                  case OneToOne:
-                    {
-                      Integer offset = link.getFrameOffset();
-                      int idx = wk+offset;
-
-                      if((idx >= 0) && (idx < lqs.length)) {
-                        if(!lignored[idx] || nonIgnored) {
-                          ignoreStamps[wk] = false;
-                          if(lstamps[idx] > fileStamps[wk])
-                            fileStamps[wk] = lstamps[idx];
+                    NodeStatus lstatus = status.getSource(link.getName());
+                    NodeDetails ldetails = lstatus.getDetails();
+                    
+                    QueueState lqs[]   = ldetails.getQueueState();
+                    long lstamps[]     = ldetails.getFileTimeStamps();
+                    boolean lignored[] = ldetails.ignoreTimeStamps();
+                    
+                    boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+                    
+                    switch(link.getRelationship()) {
+                    case OneToOne:
+                      {
+                        Integer offset = link.getFrameOffset();
+                        int idx = wk+offset;
+                        
+                        if((idx >= 0) && (idx < lqs.length)) {
+                          if(!lignored[idx] || nonIgnored) {
+                            ignoreStamps[wk] = false;
+                            if(lstamps[idx] > fileStamps[wk])
+                              fileStamps[wk] = lstamps[idx];
+                          }
                         }
                       }
-                    }
-                    break;
-
-                  case All:
-                    {
-                      int fk;
-                      for(fk=0; fk<lqs.length; fk++) {
-                        if(!lignored[fk] || nonIgnored) {
-                          ignoreStamps[wk] = false;
-                          if(lstamps[fk] > fileStamps[wk])
-                            fileStamps[wk] = lstamps[fk];
+                      break;
+                      
+                    case All:
+                      {
+                        int fk;
+                        for(fk=0; fk<lqs.length; fk++) {
+                          if(!lignored[fk] || nonIgnored) {
+                            ignoreStamps[wk] = false;
+                            if(lstamps[fk] > fileStamps[wk])
+                              fileStamps[wk] = lstamps[fk];
+                          }
                         }
                       }
                     }

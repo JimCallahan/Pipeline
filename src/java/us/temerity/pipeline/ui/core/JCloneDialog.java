@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.11 2007/01/12 00:05:15 jim Exp $
+// $Id: JCloneDialog.java,v 1.12 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -642,7 +642,9 @@ class JCloneDialog
 	/* the action and parameters */ 
 	{
 	  PluginMgrClient mgr = PluginMgrClient.getInstance();
-	  action = mgr.newAction(oaction.getName(), oaction.getVersionID(), oaction.getVendor()); 
+	  action = mgr.newAction(oaction.getName(), 
+                                 oaction.getVersionID(), 
+                                 oaction.getVendor()); 
 	  
 	  for(ActionParam param : oaction.getSingleParams()) {
 	    if(pExportPanel.exportActionSingleParam(param.getName())) 

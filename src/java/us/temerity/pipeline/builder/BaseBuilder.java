@@ -990,7 +990,7 @@ class BaseBuilder
     LinkedList<QueueJobGroup> toReturn = new LinkedList<QueueJobGroup>();
     for(String nodeName : nodes) {
       try {
-	toReturn.add(pClient.submitJobs(getAuthor(), getView(), nodeName, null));
+	toReturn.addAll(pClient.submitJobs(getAuthor(), getView(), nodeName, null));
       }
       catch(PipelineException ex) {
 	pLog.log(Kind.Ops, Level.Warning, 

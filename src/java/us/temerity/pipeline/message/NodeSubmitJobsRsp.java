@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsRsp.java,v 1.4 2005/01/22 06:10:10 jim Exp $
+// $Id: NodeSubmitJobsRsp.java,v 1.5 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,26 +29,25 @@ class NodeSubmitJobsRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param group
-   *   The submitted job group.
+   * @param groups
+   *   The list of newly submitted job groups.
    */
   public
   NodeSubmitJobsRsp
   (
    TaskTimer timer, 
-   QueueJobGroup group
+   LinkedList<QueueJobGroup> groups
   )
   { 
     super(timer);
 
-    if(group == null) 
-      throw new IllegalArgumentException("The job group cannot be (null)!");
-    pJobGroup = group;
+    if(groups == null) 
+      throw new IllegalArgumentException("The job groups cannot be (null)!");
+    pJobGroups = groups;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.submitJobs(): Group [" + group.getGroupID() + "]:\n  " + 
-       getTimer());
+       "MasterMgr.submitJobs():\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -60,12 +59,12 @@ class NodeSubmitJobsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the submitted job group.
+   * Gets the list of newly submitted job groups.
    */
-  public QueueJobGroup
-  getJobGroup()
+  public LinkedList<QueueJobGroup> 
+  getJobGroups()
   {
-    return pJobGroup;
+    return pJobGroups;
   }
   
 
@@ -83,9 +82,9 @@ class NodeSubmitJobsRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The ubmitted job group.
+   * The list of newly submitted job groups.
    */ 
-  private QueueJobGroup  pJobGroup; 
+  private LinkedList<QueueJobGroup> pJobGroups; 
 
 }
   

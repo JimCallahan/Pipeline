@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.14 2007/05/13 10:26:07 jim Exp $
+// $Id: ActionAgenda.java,v 1.15 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -262,7 +262,7 @@ class ActionAgenda
    * 
    * @return 
    *   The action info or <CODE>null</CODE> if the given source does not have an action
-   *   or is linked to the target node by a Reference link.
+   *   or is linked to the target node by a Association/Reference link.
    */ 
   public ActionInfo 
   getSourceActionInfo

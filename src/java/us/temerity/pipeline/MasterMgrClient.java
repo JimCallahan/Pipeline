@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.103 2007/06/20 20:22:32 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.104 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -5623,12 +5623,12 @@ class MasterMgrClient
    *   regenerate all <CODE>Stale</CODE> files.
    * 
    * @return 
-   *   The submitted job group.
+   *   The list of newly submitted job groups.
    * 
    * @throws PipelineException
    *   If unable to generate or submit the jobs.
    */ 
-  public synchronized QueueJobGroup
+  public synchronized LinkedList<QueueJobGroup> 
   submitJobs
   ( 
    String author, 
@@ -5687,12 +5687,12 @@ class MasterMgrClient
    *   node of the job submission.
    * 
    * @return 
-   *   The submitted job group.
+   *   The list of newly submitted job groups.
    * 
    * @throws PipelineException
    *   If unable to generate or submit the jobs.
    */ 
-  public synchronized QueueJobGroup
+  public synchronized LinkedList<QueueJobGroup> 
   submitJobs
   ( 
    String author, 
@@ -5726,12 +5726,12 @@ class MasterMgrClient
    *   regenerate all <CODE>Stale</CODE> files.
    * 
    * @return 
-   *   The submitted job group.
+   *   The list of newly submitted job groups.
    * 
    * @throws PipelineException
    *   If unable to generate or submit the jobs.
    */ 
-  public synchronized QueueJobGroup
+  public synchronized LinkedList<QueueJobGroup> 
   submitJobs
   ( 
    NodeID nodeID,
@@ -5751,6 +5751,13 @@ class MasterMgrClient
    * associated with the root node of this submisssion.  However, the node will not be 
    * modified by this operation and all jobs associated with nodes upstream of the root node
    * of the submission will be unaffected. <P>
+   * 
+   * It is possible that more than one job group will be generated when there are Association
+   * links involved.  Pipeline treats the network of nodes upstream of an Assocation link
+   * as independent from the nodes on the downstream side of the link in terms of staleness
+   * and therefore job group generation.  When Association links are encountered, there may 
+   * be additional job groups submitted rooted at the first stale node on the upstream side
+   * of each Association link. <P> 
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -5782,12 +5789,12 @@ class MasterMgrClient
    *   node of the job submission.
    * 
    * @return 
-   *   The submitted job group.
+   *   The list of newly submitted job groups.
    * 
    * @throws PipelineException
    *   If unable to generate or submit the jobs.
    */ 
-  public synchronized QueueJobGroup
+  public synchronized LinkedList<QueueJobGroup> 
   submitJobs
   ( 
    NodeID nodeID,
@@ -5809,7 +5816,7 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
       NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
-      return rsp.getJobGroup();
+      return rsp.getJobGroups();
     }
     else {
       handleFailure(obj);
@@ -5832,6 +5839,13 @@ class MasterMgrClient
    * associated with the root node of this submisssion.  However, the node will not be 
    * modified by this operation and all jobs associated with nodes upstream of the root node
    * of the submission will be unaffected. <P>
+   * 
+   * It is possible that more than one job group will be generated when there are Association
+   * links involved.  Pipeline treats the network of nodes upstream of an Assocation link
+   * as independent from the nodes on the downstream side of the link in terms of staleness
+   * and therefore job group generation.  When Association links are encountered, there may 
+   * be additional job groups submitted rooted at the first stale node on the upstream side
+   * of each Association link. <P> 
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -5862,12 +5876,12 @@ class MasterMgrClient
    *   node of the job submission.
    * 
    * @return 
-   *   The submitted job group.
+   *   The list of newly submitted job groups.
    * 
    * @throws PipelineException
    *   If unable to generate or submit the jobs.
    */ 
-  public synchronized QueueJobGroup
+  public synchronized LinkedList<QueueJobGroup> 
   resubmitJobs
   ( 
    NodeID nodeID,
@@ -5889,7 +5903,7 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.ResubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
       NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
-      return rsp.getJobGroup();
+      return rsp.getJobGroups();
     }
     else {
       handleFailure(obj);

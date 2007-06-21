@@ -1,4 +1,4 @@
-// $Id: LinkPolicy.java,v 1.8 2005/01/03 00:05:31 jim Exp $
+// $Id: LinkPolicy.java,v 1.9 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -19,6 +19,17 @@ import java.util.*;
 public
 enum LinkPolicy
 {  
+  /**
+   * This kind of link represents a indirect relationship between nodes which does not
+   * affect node status. <P> 
+   * 
+   * An Association is similar to a Reference, except that changes to the source node do 
+   * not affect the the target node's <CODE>OverallQueueState</CODE> in any way.  They can 
+   * be used in place of Reference links in cases where propogation of staleness from the 
+   * source to targe node is not desirable. 
+   */ 
+  Association, 
+  
   /**
    * This kind of link represents an indirect relationship between the target node on the 
    * source node. <P> 

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.76 2007/06/15 00:27:31 jim Exp $
+// $Id: ScriptApp.java,v 1.77 2007/06/21 16:40:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2912,12 +2912,15 @@ class ScriptApp
     NodeMod mod = mclient.getWorkingVersion(nodeID);
     TreeSet<Integer> frameIndices = 
       buildFrameIndices(mod, (ArrayList<int[]>) frames, (ArrayList<int[]>) indices);
-    QueueJobGroup group = mclient.submitJobs(nodeID, frameIndices);
+    
+    LinkedList<QueueJobGroup> groups = mclient.submitJobs(nodeID, frameIndices);
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-       "Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
-    LogMgr.getInstance().flush();        
+    for(QueueJobGroup group : groups) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+         "Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
+      LogMgr.getInstance().flush();        
+    }
     
     if(wait) {
       LogMgr.getInstance().log
@@ -2926,7 +2929,8 @@ class ScriptApp
       LogMgr.getInstance().flush();   
 
       TreeSet<Long> groupIDs = new TreeSet<Long>();
-      groupIDs.add(group.getGroupID());
+      for(QueueJobGroup group : groups)
+        groupIDs.add(group.getGroupID());
 
       while(true) {
 	TreeMap<Long,JobStatus> table = qclient.getJobStatus(groupIDs);
@@ -2969,7 +2973,7 @@ class ScriptApp
 	}
 	
 	try {
-	  Thread.sleep(5000);
+	  Thread.sleep(15000);
 	}
 	catch(InterruptedException ex) {
 	  throw new PipelineException
