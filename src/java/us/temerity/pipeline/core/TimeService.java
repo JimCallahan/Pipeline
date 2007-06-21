@@ -1,4 +1,4 @@
-// $Id: TimeService.java,v 1.3 2006/11/22 09:08:01 jim Exp $
+// $Id: TimeService.java,v 1.4 2007/06/21 01:21:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -194,12 +194,26 @@ class TimeService
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The IP addresses of some trusted NTP servers.
+   * The IP addresses of some trusted (Stratum One) NTP servers.
    */
   private static final String[] sNtpServers = {
-    "0.pool.ntp.org", 
-    "1.pool.ntp.org", 
-    "2.pool.ntp.org"
+    "76.169.239.34",           // t2.timegps.net
+    "76.168.30.201",           // t4.timegps.net
+    "76.169.237.141",          // t3.timegps.net
+    
+    "129.6.15.28",             // time-a.nist.gov
+    "129.6.15.29",             // time-b.nist.gov
+    
+    "131.188.3.221",           // ntp1.fau.de
+    "131.188.3.223",           // ntp3.fau.de
+    
+    "193.79.237.14",           // ntp1.nl.net
+    "193.79.237.30",           // ntp2.nl.net
+    
+    "133.243.238.243",         // ntp.nict.jp
+    
+    "128.250.36.3",            // ntp1.cs.mu.OZ.AU
+    "128.250.36.2",            // ntp0.cs.mu.OZ.AU
   };
 
 }
