@@ -1971,6 +1971,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaFTNBuildAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaFTNBuildAction/v2_3_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaImportAction/Makefile
@@ -2049,6 +2051,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_12/Makefile
   src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_3_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/Makefile
   src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_0/Makefile
@@ -2094,6 +2097,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/PatchAction/Makefile
   src/java/us/temerity/pipeline/plugin/PatchAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PatchAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/PatternCloneTool/Makefile
+  src/java/us/temerity/pipeline/plugin/PatternCloneTool/v2_3_1/Makefile
   src/java/us/temerity/pipeline/plugin/PhotoshopEditor/Makefile
   src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_9/Makefile

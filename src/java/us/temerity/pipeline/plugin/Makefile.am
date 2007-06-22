@@ -110,6 +110,7 @@ SUBDIRS = \
   MayaDLRenderAction \
   MayaDLShaderExportAction \
   MayaEditor \
+  MayaFTNBuildAction \
   MayaImgCvtAction \
   MayaImportAction \
   MayaLqExportAction \
@@ -149,6 +150,7 @@ SUBDIRS = \
   NukeFrameCyclerEditor \
   NukeViewerEditor \
   PatchAction \
+  PatternCloneTool \
   PhotoshopEditor \
   PRBrickMakeAction \
   PRCatRIBAction \
