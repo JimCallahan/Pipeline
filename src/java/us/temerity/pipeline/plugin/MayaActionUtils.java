@@ -1,4 +1,4 @@
-// $Id: MayaActionUtils.java,v 1.3 2007/06/22 01:04:39 jesse Exp $
+// $Id: MayaActionUtils.java,v 1.4 2007/06/22 01:17:15 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -57,6 +57,32 @@ class MayaActionUtils
   /*----------------------------------------------------------------------------------------*/
   /*   C O M M O N   P A R A M E T E R S                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Adds an Maya Scene parameter to the action. <p>
+   * 
+   * The following single valued parameters are added: <BR>
+   * 
+   * <DIV style="margin-left: 40px;"> 
+ *   Maya Scene <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Maya scene that the Action is going to act upon.
+ *   </DIV> <BR>
+   * </DIV> <P> 
+   * 
+   * This method should be called in the subclass constructor before specifying parameter
+   * layouts.
+   */
+  protected void
+  addMayaSceneParam()
+  {
+    ActionParam param = 
+      new LinkActionParam
+      (aMayaScene,
+       "The Maya scene that the Action is going to act upon.",
+       null);
+    addSingleParam(param);
+  }
   
   /**
    * Adds an Initial MEL parameter to the action. <p>
@@ -868,6 +894,8 @@ class MayaActionUtils
   public static final String aModelMEL = "ModelMEL";
   public static final String aAnimMEL = "AnimMEL";
   public static final String aFinalMEL = "FinalMEL";
+  
+  public static final String aMayaScene = "MayaScene";
 
 }
 
